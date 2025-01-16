@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2025-01-16 Version 2.44.2
+
+New features:
+- Add Adversarial Highway Driver controller based on IDM and MOBIL
+  - see more info in [User guide - NaturalDriverController](https://esmini.github.io/#_naturaldrivercontroller)
+
+Improvements and fixes:
+- Bugfix: Avoid potential duplicate OSI points rendering
+- Clear also a few missed OSI static data items
+- Fix bug sometimes causing missed delayed triggers (introduced in v2.44.0)
+  - could happen for non fixed time case
+- Reset speed when can't move along s, e.g. end of road
+- Apply a few fixes for SVADDS bazel build
+
 ### 2025-01-14 Version 2.44.1
 
 New features:
