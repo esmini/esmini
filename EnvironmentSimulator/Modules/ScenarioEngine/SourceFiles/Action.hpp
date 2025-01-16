@@ -40,7 +40,7 @@ namespace scenarioengine
             TELEPORT                  = 13,
             ASSIGN_ROUTE              = 14,
             FOLLOW_TRAJECTORY         = 15,
-            Acquire_POSITION          = 16,
+            ACQUIRE_POSITION          = 16,
             SYNCHRONIZE_ACTION        = 17,
             CONNECT_TRAILER_ACTION    = 18,
             DISCONNECT_TRAILER_ACTION = 19,
