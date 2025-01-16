@@ -34,7 +34,7 @@ set(TARGET3_SOURCES
 
 # ############################### Creating executable for target1 (replayer) #########################################
 
-if(USE_OSG)
+if(BUILD_REPLAYER)
 
     add_executable(
         ${TARGET1}
@@ -55,8 +55,14 @@ if(USE_OSG)
         PUBLIC ${ROAD_MANAGER_PATH}
                ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_PUGIXML_PATH}
-               ${EXTERNALS_OSG_INCLUDES}
                ${EXTERNALS_DIRENT_INCLUDES})
+
+    if(USE_OSG)
+        target_include_directories(
+            ${TARGET1}
+            SYSTEM
+            PUBLIC ${EXTERNALS_OSG_INCLUDES})
+    endif()
 
     target_link_libraries(
         ${TARGET1}
@@ -64,6 +70,7 @@ if(USE_OSG)
                 RoadManager
                 ScenarioEngine
                 CommonMini
+                Controllers
                 ${SPDLOG_LIBRARIES}
                 ${TIME_LIB})
 
@@ -72,7 +79,6 @@ if(USE_OSG)
             ${TARGET1}
             PRIVATE ViewerBase
                     ScenarioEngine
-                    Controllers
                     ${OSG_LIBRARIES})
     endif()
 
@@ -89,7 +95,7 @@ if(USE_OSG)
         TARGETS ${TARGET1}
         DESTINATION "${INSTALL_PATH}")
 
-endif()
+endif(BUILD_REPLAYER)
 
 # ############################### Creating executable for target2 (dat2csv) ##########################################
 

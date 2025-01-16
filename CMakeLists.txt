@@ -86,6 +86,16 @@ set(USE_IMPLOT
     CACHE BOOL
           "If implot for real-time plotting should be compiled.")
 
+set(BUILD_ODRVIEWER
+    ON
+    CACHE BOOL
+          "If odrviewer should be compiled.")
+
+set(BUILD_REPLAYER
+    ON
+    CACHE BOOL
+          "If replayer should be compiled.")
+
 set(ESMINI_BUILD_VERSION
     "N/A - client build"
     CACHE STRING

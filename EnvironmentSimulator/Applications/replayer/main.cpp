@@ -21,14 +21,17 @@
 #include <fstream>
 #include <map>
 
+#ifdef _USE_OSG
 #include "viewer.hpp"
-#include "ScenarioGateway.hpp"
-#include "RoadManager.hpp"
 #include "RubberbandManipulator.hpp"
-#include "CommonMini.hpp"
-#include "Replay.hpp"
 #include "helpText.hpp"
+#endif  // _USE_OSG
+
+#include "CommonMini.hpp"
+#include "ScenarioGateway.hpp"
 #include "collision.hpp"
+#include "RoadManager.hpp"
+#include "Replay.hpp"
 #include "logger.hpp"
 
 #include <signal.h>
@@ -40,33 +43,20 @@ using namespace scenarioengine;
 #define JUMP_DELTA_TIME_LARGE 1.0
 #define JUMP_DELTA_TIME_SMALL 0.1
 
-static const double     stepSize       = 0.01;
-static const double     maxStepSize    = 0.1;
-static const double     minStepSize    = 0.001;
-static bool             pause_player   = false;  // continuous play
-static double           time_scale     = 1.0;
-static bool             no_ghost       = false;
-static bool             no_ghost_model = false;
-static std::vector<int> removeObjects;
-static bool             quit_request = false;
-
-double deltaSimTime;  // external - used by Viewer::RubberBandCamera
-
+static const double                stepSize    = 0.01;
+static const double                maxStepSize = 0.1;
+static const double                minStepSize = 0.001;
+static std::vector<int>            removeObjects;
+static bool                        quit_request = false;
 static std::vector<ScenarioEntity> scenarioEntity;
 
-static void signal_handler(int s)
-{
-    if (s == SIGINT)
-    {
-        LOG_INFO("Quit request from user");
-        quit_request = true;
-    }
-}
-
-void log_callback(const char* str)
-{
-    printf("%s\n", str);
-}
+static bool pause_player   = false;  // continuous play
+static bool no_ghost       = false;
+static bool no_ghost_model = false;
+#ifdef _USE_OSG
+static double          time_scale = 1.0;
+static viewer::Viewer* viewer_    = nullptr;
+double                 deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
 void setEntityVisibility(int index, bool visible)
 {
@@ -82,19 +72,6 @@ void setEntityVisibility(int index, bool visible)
             }
         }
     }
-}
-
-ScenarioEntity* getScenarioEntityById(int id)
-{
-    for (size_t i = 0; i < scenarioEntity.size(); i++)
-    {
-        if (scenarioEntity[i].id == id)
-        {
-            return &scenarioEntity[i];
-        }
-    }
-
-    return 0;
 }
 
 int ShowGhosts(Replay* player, bool show)
@@ -120,167 +97,7 @@ int ShowGhosts(Replay* player, bool show)
             entity->entityModel->txNode_->setNodeMask(show ? 0xffffffff : 0x0);
         }
     }
-
     return 0;
-}
-
-int ParseEntities(viewer::Viewer* viewer, Replay* player)
-{
-    double minTrajPointDist = 1;
-    double z_offset         = 0.2;
-    double width            = 1.75;
-
-    struct OdoInfo
-    {
-        double x, y, odometer;
-    };
-    std::map<int, OdoInfo> odo_info;  // temporary keep track of entity odometers
-
-    for (int i = 0; i < static_cast<int>(player->data_.size()); i++)
-    {
-        ReplayEntry*          entry = &player->data_[static_cast<unsigned int>(i)];
-        ObjectStateStructDat* state = &entry->state;
-        OdoInfo               odo_entry;
-
-        if (no_ghost && state->info.ctrl_type == GHOST_CTRL_TYPE)
-        {
-            continue;
-        }
-
-        if (std::find(removeObjects.begin(), removeObjects.end(), state->info.id) != removeObjects.end())
-        {
-            continue;
-        }
-
-        ScenarioEntity* sc = getScenarioEntityById(state->info.id);
-
-        // If not available, create it
-        if (sc == 0)
-        {
-            ScenarioEntity new_sc;
-
-            new_sc.id             = state->info.id;
-            new_sc.trajPoints     = 0;
-            new_sc.pos            = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f, 0.0f, 0.0f};
-            new_sc.trajectory     = nullptr;
-            new_sc.wheel_angle    = 0.0f;
-            new_sc.wheel_rotation = 0.0f;
-            new_sc.name           = state->info.name;
-            new_sc.visible        = true;
-            std::string filename;
-            if (state->info.model_id >= 0)
-            {
-                filename = SE_Env::Inst().GetModelFilenameById(state->info.model_id);
-            }
-
-            if ((new_sc.entityModel = viewer->CreateEntityModel(filename.c_str(),
-                                                                osg::Vec4(0.5, 0.5, 0.5, 1.0),
-                                                                viewer::EntityModel::EntityType::VEHICLE,
-                                                                false,
-                                                                state->info.name,
-                                                                &state->info.boundingbox,
-                                                                static_cast<EntityScaleMode>(state->info.scaleMode))) == 0)
-            {
-                return -1;
-            }
-            else
-            {
-                if (viewer->AddEntityModel(new_sc.entityModel) != 0)
-                {
-                    return -1;
-                }
-            }
-
-            if (state->info.ctrl_type == GHOST_CTRL_TYPE && no_ghost_model)
-            {
-                new_sc.entityModel->txNode_->setNodeMask(0x0);
-            }
-
-            new_sc.bounding_box = state->info.boundingbox;
-
-            // Add it to the list of scenario cars
-            scenarioEntity.push_back(new_sc);
-
-            sc = &scenarioEntity.back();
-
-            odo_entry.x        = state->pos.x;
-            odo_entry.y        = state->pos.y;
-            odo_entry.odometer = 0.0;
-
-            odo_info.insert(std::make_pair(new_sc.id, odo_entry));  // Set inital odometer value for the entity
-        }
-
-        if (sc->trajPoints == 0)
-        {
-            sc->trajPoints = new osg::Vec3Array;
-        }
-
-        if (sc->trajPoints->size() == 0)
-        {
-            sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer->origin_[0]),
-                                                 static_cast<float>(static_cast<double>(state->pos.y) - viewer->origin_[1]),
-                                                 state->pos.z + static_cast<float>(z_offset)));
-        }
-        else
-        {
-            if (sc->trajPoints->size() > 2 && GetLengthOfLine2D(state->pos.x,
-                                                                state->pos.y,
-                                                                (*sc->trajPoints)[sc->trajPoints->size() - 2][0],
-                                                                (*sc->trajPoints)[sc->trajPoints->size() - 2][1]) < minTrajPointDist)
-            {
-                // Replace last point until distance is above threshold
-                sc->trajPoints->back() = osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer->origin_[0]),
-                                                    static_cast<float>(static_cast<double>(state->pos.y) - viewer->origin_[1]),
-                                                    state->pos.z + static_cast<float>(z_offset));
-            }
-            else
-            {
-                sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer->origin_[0]),
-                                                     static_cast<float>(static_cast<double>(state->pos.y) - viewer->origin_[1]),
-                                                     state->pos.z + static_cast<float>(z_offset)));
-            }
-        }
-
-        // calculate odometer
-        odo_entry    = odo_info[sc->id];
-        double delta = GetLengthOfLine2D(odo_entry.x, odo_entry.y, state->pos.x, state->pos.y);
-        odo_entry.x  = state->pos.x;
-        odo_entry.y  = state->pos.y;
-        odo_entry.odometer += delta;
-        odo_info[sc->id] = odo_entry;  // save updated odo info for next calculation
-
-        entry->odometer = odo_entry.odometer;  // update odometer
-    }
-
-    for (int i = 0; i < static_cast<int>(scenarioEntity.size()); i++)
-    {
-        osg::Vec4 color;
-        if (scenarioEntity[static_cast<unsigned int>(i)].id == 0)
-        {
-            color = osg::Vec4d(0.9, 0.8, 0.75, 1.0);
-        }
-        else
-        {
-            // color = osg::Vec4d(0.9, 0.3, 0.2, 1.0);
-            color = osg::Vec4d(0.9, 0.7, 0.3, 1.0);
-        }
-        scenarioEntity[static_cast<unsigned int>(i)].trajectory =
-            viewer->AddPolyLine(viewer, viewer->trajectoryLines_, scenarioEntity[static_cast<unsigned int>(i)].trajPoints, color, width);
-    }
-
-    return 0;
-}
-
-int GetGhostIdx()
-{
-    for (size_t i = 0; i < scenarioEntity.size(); i++)
-    {
-        if (scenarioEntity[i].name.find("_ghost") != std::string::npos)
-        {
-            return static_cast<int>(i);
-        }
-    }
-    return -1;  // No ghost
 }
 
 void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
@@ -357,15 +174,205 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
         }
     }
 }
+#endif  // _USE_OSG
+
+static void signal_handler(int s)
+{
+    if (s == SIGINT)
+    {
+        LOG_INFO("Quit request from user");
+        quit_request = true;
+    }
+}
+
+void log_callback(const char* str)
+{
+    printf("%s\n", str);
+}
+
+ScenarioEntity* getScenarioEntityById(int id)
+{
+    for (size_t i = 0; i < scenarioEntity.size(); i++)
+    {
+        if (scenarioEntity[i].id == id)
+        {
+            return &scenarioEntity[i];
+        }
+    }
+
+    return 0;
+}
+
+int ParseEntities(Replay* player)
+{
+    struct OdoInfo
+    {
+        double x, y, odometer;
+    };
+    std::map<int, OdoInfo> odo_info;  // temporary keep track of entity odometers
+
+    for (int i = 0; i < static_cast<int>(player->data_.size()); i++)
+    {
+        ReplayEntry*          entry = &player->data_[static_cast<unsigned int>(i)];
+        ObjectStateStructDat* state = &entry->state;
+        OdoInfo               odo_entry;
+
+        if (no_ghost && state->info.ctrl_type == GHOST_CTRL_TYPE)
+        {
+            continue;
+        }
+
+        if (std::find(removeObjects.begin(), removeObjects.end(), state->info.id) != removeObjects.end())
+        {
+            continue;
+        }
+
+        ScenarioEntity* sc = getScenarioEntityById(state->info.id);
+
+        // If not available, create it
+        if (sc == 0)
+        {
+            ScenarioEntity new_sc;
+
+            new_sc.id             = state->info.id;
+            new_sc.pos            = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f, 0.0f, 0.0f};
+            new_sc.wheel_angle    = 0.0f;
+            new_sc.wheel_rotation = 0.0f;
+            new_sc.name           = state->info.name;
+            new_sc.visible        = true;
+            new_sc.bounding_box   = state->info.boundingbox;
+
+            odo_entry.x        = state->pos.x;
+            odo_entry.y        = state->pos.y;
+            odo_entry.odometer = 0.0;
+            odo_info.insert(std::make_pair(new_sc.id, odo_entry));  // Set inital odometer value for the entity
+
+#ifdef _USE_OSG
+            new_sc.trajectory = nullptr;
+            new_sc.trajPoints = 0;
+
+            std::string filename;
+            if (state->info.model_id >= 0)
+            {
+                filename = SE_Env::Inst().GetModelFilenameById(state->info.model_id);
+            }
+
+            if ((new_sc.entityModel = viewer_->CreateEntityModel(filename.c_str(),
+                                                                 osg::Vec4(0.5, 0.5, 0.5, 1.0),
+                                                                 viewer::EntityModel::EntityType::VEHICLE,
+                                                                 false,
+                                                                 state->info.name,
+                                                                 &state->info.boundingbox,
+                                                                 static_cast<EntityScaleMode>(state->info.scaleMode))) == 0)
+            {
+                return -1;
+            }
+            else
+            {
+                if (viewer_->AddEntityModel(new_sc.entityModel) != 0)
+                {
+                    return -1;
+                }
+            }
+
+            if (state->info.ctrl_type == GHOST_CTRL_TYPE && no_ghost_model)
+            {
+                new_sc.entityModel->txNode_->setNodeMask(0x0);
+            }
+#endif  // _USE_OSG
+
+            // Add it to the list of scenario cars
+            scenarioEntity.push_back(new_sc);
+            sc = &scenarioEntity.back();
+        }
+
+#ifdef _USE_OSG
+        if (sc->trajPoints == 0)
+        {
+            sc->trajPoints = new osg::Vec3Array;
+        }
+
+        double z_offset = 0.2;
+
+        if (sc->trajPoints->size() == 0)
+        {
+            sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer_->origin_[0]),
+                                                 static_cast<float>(static_cast<double>(state->pos.y) - viewer_->origin_[1]),
+                                                 state->pos.z + static_cast<float>(z_offset)));
+        }
+        else
+        {
+            double minTrajPointDist = 1;
+
+            if (sc->trajPoints->size() > 2 && GetLengthOfLine2D(state->pos.x,
+                                                                state->pos.y,
+                                                                (*sc->trajPoints)[sc->trajPoints->size() - 2][0],
+                                                                (*sc->trajPoints)[sc->trajPoints->size() - 2][1]) < minTrajPointDist)
+            {
+                // Replace last point until distance is above threshold
+                sc->trajPoints->back() = osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer_->origin_[0]),
+                                                    static_cast<float>(static_cast<double>(state->pos.y) - viewer_->origin_[1]),
+                                                    state->pos.z + static_cast<float>(z_offset));
+            }
+            else
+            {
+                sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer_->origin_[0]),
+                                                     static_cast<float>(static_cast<double>(state->pos.y) - viewer_->origin_[1]),
+                                                     state->pos.z + static_cast<float>(z_offset)));
+            }
+        }
+#endif  // _USE_OSG
+
+        // calculate odometer
+        odo_entry    = odo_info[sc->id];
+        double delta = GetLengthOfLine2D(odo_entry.x, odo_entry.y, state->pos.x, state->pos.y);
+        odo_entry.odometer += delta;
+        odo_entry.x      = state->pos.x;
+        odo_entry.y      = state->pos.y;
+        odo_info[sc->id] = odo_entry;  // save updated odo info for next calculation
+
+        entry->odometer = odo_entry.odometer;  // update odometer
+    }
+
+#ifdef _USE_OSG
+    double width = 1.75;
+
+    for (int i = 0; i < static_cast<int>(scenarioEntity.size()); i++)
+    {
+        osg::Vec4 color;
+        if (scenarioEntity[static_cast<unsigned int>(i)].id == 0)
+        {
+            color = osg::Vec4d(0.9, 0.8, 0.75, 1.0);
+        }
+        else
+        {
+            // color = osg::Vec4d(0.9, 0.3, 0.2, 1.0);
+            color = osg::Vec4d(0.9, 0.7, 0.3, 1.0);
+        }
+        scenarioEntity[static_cast<unsigned int>(i)].trajectory =
+            viewer_->AddPolyLine(viewer_, viewer_->trajectoryLines_, scenarioEntity[static_cast<unsigned int>(i)].trajPoints, color, width);
+    }
+#endif  // _USE_OSG
+
+    return 0;
+}
+
+int GetGhostIdx()
+{
+    for (size_t i = 0; i < scenarioEntity.size(); i++)
+    {
+        if (scenarioEntity[i].name.find("_ghost") != std::string::npos)
+        {
+            return static_cast<int>(i);
+        }
+    }
+    return -1;  // No ghost
+}
 
 int main(int argc, char** argv)
 {
-    roadmanager::OpenDrive* odrManager;
-    viewer::Viewer*         viewer;
     std::unique_ptr<Replay> player;
-    double                  simTime   = 0;
-    double                  view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
-    static char             info_str_buf[256];
+    double                  simTime = 0;
     std::string             arg_str;
 
     // Setup signal handler to catch Ctrl-C
@@ -378,6 +385,7 @@ int main(int argc, char** argv)
     opt.Reset();
 
     opt.AddOption("file", "Simulation recording data file (.dat)", "filename");
+#ifdef _USE_OSG
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
     opt.AddOption("camera_mode",
                   "Initial camera mode (\"orbit\", \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\"). Toggle key 'k'",
@@ -385,56 +393,79 @@ int main(int argc, char** argv)
                   "orbit",
                   true);
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
+#endif  // _USE_OSG
     opt.AddOption("collision", "Detect collisions and optionally pauses the replay <pause/continue> (pause is default)", "mode", "pause");
+#ifdef _USE_OSG
     opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
     opt.AddOption("custom_fixed_camera",
                   "Additional custom fixed camera position <x,y,z>[,h,p] (multiple occurrences supported)",
                   "position and optional orientation");
     opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot> (multiple occurrences supported)", "position and rotation");
+#endif  // _USE_OSG
     opt.AddOption("dir",
                   "Directory containing replays to overlay, pair with \"file\" argument, where \"file\" is .dat filename match substring",
                   "path");
+#ifdef _USE_OSG
     opt.AddOption("ground_plane", "Add a large flat ground surface");
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
+#endif  // _USEOSG
     opt.AddOption("headless", "Run without viewer window");
+    opt.AddOption("help", "Show this help message");
+#ifdef _USE_OSG
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
+#endif  // _USEOSG
     opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", REPLAYER_LOG_FILENAME, false);
+#ifdef _USE_OSG
     opt.AddOption("no_ghost", "Remove ghost entities");
     opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
+#endif  // _USEOSG
     opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path");
     opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
+#ifdef _USE_OSG
     opt.AddOption("remove_object", "Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.", "id");
     opt.AddOption("repeat", "loop scenario");
+#endif  // _USEOSG
     opt.AddOption("res_path", "Path to resources root folder - relative or absolut", "path");
+#ifdef _USE_OSG
     opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
+#endif  // _USEOSG
     opt.AddOption("save_merged", "Save merged data into one dat file, instead of viewing", "filename");
     opt.AddOption("start_time", "Start playing at timestamp", "ms");
     opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
+#ifdef _USE_OSG
     opt.AddOption("text_scale", "Scale screen overlay text", "size factor", "1.0", true);
+#endif  // _USEOSG
     opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
+#ifdef _USE_OSG
     opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
+#endif  // _USEOSG
 
-    if (opt.ParseArgs(argc, argv) != 0 || argc < 2)
+    if (opt.ParseArgs(argc, argv) != 0)
     {
         opt.PrintUsage();
 #ifdef _USE_OSG
         viewer::Viewer::PrintUsage();
-#endif
+#endif  // _USE_OSG
         return -1;
     }
 
     TxtLogger::Inst().LogTimeOnly();
     TxtLogger::Inst().SetLoggerTime(&simTime);
-    if (opt.GetOptionArg("file").empty())
+
+#ifndef _USE_OSG
+    LOG_INFO("Compiled with USE_OSG=FALSE, limited functionality available");
+#endif  // _USE_OSG
+
+    if (opt.GetOptionArg("file").empty() || argc < 2 || opt.GetOptionSet("help"))
     {
-        printf("Missing file argument\n");
+        printf("Missing required file argument\n");
         opt.PrintUsage();
 #ifdef _USE_OSG
         viewer::Viewer::PrintUsage();
-#endif
+#endif  // _USE_OSG
         return -1;
     }
 
@@ -544,13 +575,14 @@ int main(int argc, char** argv)
             }
         }
 
-        odrManager = roadmanager::Position::GetOpenDrive();
+#ifdef _USE_OSG
+        char                    info_str_buf[256];
+        double                  targetSimTime = simTime;
+        roadmanager::OpenDrive* odrManager    = roadmanager::Position::GetOpenDrive();
+        osg::ArgumentParser     arguments(&argc, argv);
+        viewer_ = new viewer::Viewer(odrManager, player->header_.model_filename, NULL, argv[0], arguments, &opt);
 
-        osg::ArgumentParser arguments(&argc, argv);
-
-        viewer = new viewer::Viewer(odrManager, player->header_.model_filename, NULL, argv[0], arguments, &opt);
-
-        if (viewer == nullptr)
+        if (viewer_ == nullptr)
         {
             printf("Failed to create viewer");
             return -1;
@@ -560,27 +592,27 @@ int main(int argc, char** argv)
         {
             if (arg_str == "orbit")
             {
-                viewer->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_ORBIT);
+                viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_ORBIT);
             }
             else if (arg_str == "fixed")
             {
-                viewer->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_FIXED);
+                viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_FIXED);
             }
             else if (arg_str == "flex")
             {
-                viewer->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND);
+                viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND);
             }
             else if (arg_str == "flex-orbit")
             {
-                viewer->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND_ORBIT);
+                viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_RUBBER_BAND_ORBIT);
             }
             else if (arg_str == "top")
             {
-                viewer->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_TOP);
+                viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_TOP);
             }
             else if (arg_str == "driver")
             {
-                viewer->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_DRIVER);
+                viewer_->SetCameraMode(osgGA::RubberbandManipulator::RB_MODE_DRIVER);
             }
             else
             {
@@ -597,17 +629,17 @@ int main(int argc, char** argv)
 
                 if (splitted.size() == 3)
                 {
-                    viewer->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), false);
+                    viewer_->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), false);
                     LOG_INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
                 }
                 else if (splitted.size() == 5)
                 {
-                    viewer->AddCustomCamera(strtod(splitted[0]),
-                                            strtod(splitted[1]),
-                                            strtod(splitted[2]),
-                                            strtod(splitted[3]),
-                                            strtod(splitted[4]),
-                                            false);
+                    viewer_->AddCustomCamera(strtod(splitted[0]),
+                                             strtod(splitted[1]),
+                                             strtod(splitted[2]),
+                                             strtod(splitted[3]),
+                                             strtod(splitted[4]),
+                                             false);
                     LOG_INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})",
                              counter,
                              splitted[0],
@@ -620,7 +652,7 @@ int main(int argc, char** argv)
                 {
                     LOG_ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
                 }
-                viewer->SetCameraMode(-1);  // activate last camera which is the one just added
+                viewer_->SetCameraMode(-1);  // activate last camera which is the one just added
 
                 counter++;
             }
@@ -636,17 +668,17 @@ int main(int argc, char** argv)
 
                 if (splitted.size() == 3)
                 {
-                    viewer->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), true);
+                    viewer_->AddCustomCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), true);
                     LOG_INFO("Created custom fixed camera {} ({}, {}, {})", counter, splitted[0], splitted[1], splitted[2]);
                 }
                 else if (splitted.size() == 5)
                 {
-                    viewer->AddCustomCamera(strtod(splitted[0]),
-                                            strtod(splitted[1]),
-                                            strtod(splitted[2]),
-                                            strtod(splitted[3]),
-                                            strtod(splitted[4]),
-                                            true);
+                    viewer_->AddCustomCamera(strtod(splitted[0]),
+                                             strtod(splitted[1]),
+                                             strtod(splitted[2]),
+                                             strtod(splitted[3]),
+                                             strtod(splitted[4]),
+                                             true);
                     LOG_INFO("Created custom fixed camera {} ({}, {}, {}, {}, {})",
                              counter,
                              splitted[0],
@@ -659,7 +691,7 @@ int main(int argc, char** argv)
                 {
                     LOG_ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
                 }
-                viewer->SetCameraMode(-1);  // activate last camera which is the one just added
+                viewer_->SetCameraMode(-1);  // activate last camera which is the one just added
                 counter++;
             }
         }
@@ -675,8 +707,8 @@ int main(int argc, char** argv)
                 {
                     LOG_ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
                 }
-                viewer->AddCustomFixedTopCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]));
-                viewer->SetCameraMode(-1);  // activate last camera which is the one just added
+                viewer_->AddCustomFixedTopCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]));
+                viewer_->SetCameraMode(-1);  // activate last camera which is the one just added
 
                 LOG_INFO("Created custom fixed top camera {} ({}, {}, {}, {})", counter, splitted[0], splitted[1], splitted[2], splitted[3]);
                 counter++;
@@ -690,11 +722,17 @@ int main(int argc, char** argv)
             {
                 LOG_ERROR_AND_QUIT("Invalid on-screen info mode {}. Valid range is 0-3", mask);
             }
-            viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO | viewer::NodeMask::NODE_MASK_INFO_PER_OBJ,
-                                    mask * viewer::NodeMask::NODE_MASK_INFO);
+            viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO | viewer::NodeMask::NODE_MASK_INFO_PER_OBJ,
+                                     mask * viewer::NodeMask::NODE_MASK_INFO);
         }
 
-        viewer->RegisterKeyEventCallback(ReportKeyEvent, player.get());
+        viewer_->RegisterKeyEventCallback(ReportKeyEvent, player.get());
+        viewer_->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));
+
+        __int64 now           = 0;
+        __int64 lastTimeStamp = 0;
+
+#endif  // _USE_OSG
 
         if (opt.HasUnknownArgs())
         {
@@ -702,44 +740,45 @@ int main(int argc, char** argv)
             opt.PrintUsage();
 #ifdef _USE_OSG
             viewer::Viewer::PrintUsage();
-#endif
+#endif  // _USE_OSG
             return -1;
         }
-        viewer->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));
-
-        __int64 now           = 0;
-        __int64 lastTimeStamp = 0;
 
         if (opt.GetOptionSet("time_scale"))
         {
+#ifdef _USE_OSG
             time_scale = atof(opt.GetOptionArg("time_scale").c_str());
             if (time_scale < SMALL_NUMBER)
             {
                 time_scale = SMALL_NUMBER;
             }
+#else
+            LOG_INFO("Ignoring --time_scale option for non_osg build. Stepping all frames.");
+#endif  // _USE_OSG
         }
 
         if (opt.GetOptionSet("repeat"))
         {
             player->SetRepeat(true);
         }
-
+#ifdef _USE_OSG
         if (opt.GetOptionSet("capture_screen"))
         {
             LOG_INFO("Activate continuous screen capture");
-            viewer->SaveImagesToFile(-1);
+            viewer_->SaveImagesToFile(-1);
         }
 
         if (opt.GetOptionSet("road_features"))
         {
-            viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+            viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
         }
         else
         {
-            viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES, 0x0);
+            viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES, 0x0);
         }
 
         // Set visual representation of entities
+        int         view_mode        = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
         std::string view_mode_string = opt.GetOptionArg("view_mode");
         if (view_mode_string == "boundingbox")
         {
@@ -749,7 +788,23 @@ int main(int argc, char** argv)
         {
             view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB;
         }
-        viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB, static_cast<int>(view_mode));
+        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB, view_mode);
+
+        if (opt.GetOptionSet("hide_trajectories"))
+        {
+            viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAJECTORY_LINES);
+        }
+#endif  // _USE_OSG
+
+        bool quit_at_end = false;
+#ifdef _USE_OSG
+        if (opt.GetOptionSet("quit_at_end"))
+        {
+            quit_at_end = true;
+        }
+#else
+        quit_at_end = true;
+#endif  // _USE_OSG
 
         if (opt.GetOptionSet("no_ghost"))
         {
@@ -787,28 +842,15 @@ int main(int argc, char** argv)
             } while (pos != std::string::npos);
         }
 
-        if (ParseEntities(viewer, player.get()) != 0)
+        if (ParseEntities(player.get()) != 0)
         {
-            delete viewer;
+#ifdef _USE_OSG
+            delete viewer_;
+#endif  // _USE_OSG
             return -1;
         }
 
         const int ghost_idx = GetGhostIdx();
-
-        /* TODO: Some functionality to distinguish "main replay" from variations
-        for (size_t i = 0; i < viewer->entities_.size(); i++)
-        {
-                if (i % player->GetNumberOfScenarios() != 0)
-                {
-                        viewer->entities_[i]->SetTransparency(0.5);
-                }
-        }
-        */
-
-        if (opt.GetOptionSet("hide_trajectories"))
-        {
-            viewer->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAJECTORY_LINES);
-        }
 
         std::string start_time_str = opt.GetOptionArg("start_time");
         if (!start_time_str.empty())
@@ -854,7 +896,12 @@ int main(int argc, char** argv)
         }
 
         bool col_analysis = false;
-        bool col_pause    = true;
+        bool col_pause =
+#ifdef _USE_OSG
+            true;
+#else
+            false;
+#endif  // _USE_OSG
         if (opt.GetOptionSet("collision"))
         {
             col_analysis = true;
@@ -864,15 +911,18 @@ int main(int argc, char** argv)
             }
         }
 
-        while (!(viewer->osgViewer_->done() || (opt.GetOptionSet("quit_at_end") && simTime >= (player->GetStopTime() - SMALL_NUMBER)) ||
-                 quit_request == true))
+        while (!(
+#ifdef _USE_OSG
+            viewer_->osgViewer_->done() ||
+#endif  // _USE_OSG
+            (quit_at_end && simTime >= (player->GetStopTime() - SMALL_NUMBER)) || quit_request == true))
         {
-            simTime              = player->GetTime();  // potentially wrapped for repeat
-            double targetSimTime = simTime;
+            simTime = player->GetTime();  // potentially wrapped for repeat
 
             if (!pause_player)
             {
-                if (viewer->GetSaveImagesToFile())
+#ifdef _USE_OSG
+                if (viewer_->GetSaveImagesToFile())
                 {
                     player->GoToNextFrame();
                 }
@@ -894,15 +944,22 @@ int main(int argc, char** argv)
                     deltaSimTime *= time_scale;
                     targetSimTime = simTime + deltaSimTime;
                 }
+#else
+                player->GoToNextFrame();
+#endif  // _USE_OSG
             }
 
             do
             {
-                if (!(pause_player || viewer->GetSaveImagesToFile()))
+#ifdef _USE_OSG
+                if (!(pause_player || viewer_->GetSaveImagesToFile()))
                 {
                     player->GoToDeltaTime(deltaSimTime, true);
                     simTime = player->GetTime();  // potentially wrapped for repeat
                 }
+#else
+                simTime = player->GetTime();  // potentially wrapped for repeat
+#endif  // _USE_OSG
 
                 // Fetch states of scenario objects
                 ReplayEntry*          entry = nullptr;
@@ -910,46 +967,44 @@ int main(int argc, char** argv)
                 for (int index = 0; index < static_cast<int>(scenarioEntity.size()); index++)
                 {
                     ScenarioEntity* sc = &scenarioEntity[static_cast<unsigned int>(index)];
+                    if (sc == nullptr)
+                    {
+                        throw std::runtime_error(std::string("Unexpected entity found: ").append(std::to_string(state->info.id)));
+                    }
 
                     entry = player->GetEntry(sc->id);
                     if (entry)
                     {
-                        state = &entry->state;
+                        state              = &entry->state;
+                        sc->pos            = state->pos;
+                        sc->wheel_angle    = state->info.wheel_angle;
+                        sc->wheel_rotation = state->info.wheel_rot;
                     }
                     else
                     {
                         state = nullptr;
                     }
 
+#ifdef _USE_OSG
                     if (state == nullptr || (state->info.visibilityMask & 0x01) == 0)  // no state for given object (index) at this timeframe
                     {
                         setEntityVisibility(index, false);
 
-                        if (index == viewer->currentCarInFocus_)
+                        if (index == viewer_->currentCarInFocus_)
                         {
                             // Update overlay info text
                             snprintf(info_str_buf,
                                      sizeof(info_str_buf),
                                      "%.3fs entity[%d]: %s (%d) NO INFO",
                                      simTime,
-                                     viewer->currentCarInFocus_,
+                                     viewer_->currentCarInFocus_,
                                      sc->name.c_str(),
                                      sc->id);
-                            viewer->SetInfoText(info_str_buf);
+                            viewer_->SetInfoText(info_str_buf);
                         }
                         continue;
                     }
                     setEntityVisibility(index, true);
-
-                    // If not available, create it
-                    if (sc == 0)
-                    {
-                        throw std::runtime_error(std::string("Unexpected entity found: ").append(std::to_string(state->info.id)));
-                    }
-
-                    sc->pos            = state->pos;
-                    sc->wheel_angle    = state->info.wheel_angle;
-                    sc->wheel_rotation = state->info.wheel_rot;
 
                     // on screen text following each entity
                     snprintf(sc->entityModel->on_screen_info_.string_,
@@ -970,14 +1025,14 @@ int main(int argc, char** argv)
                              static_cast<double>(sc->pos.y + sc->bounding_box.center_.x_ * sin(sc->pos.h)));
                     sc->entityModel->on_screen_info_.osg_text_->setText(sc->entityModel->on_screen_info_.string_);
 
-                    if (index == viewer->currentCarInFocus_)
+                    if (index == viewer_->currentCarInFocus_)
                     {
                         // Update overlay info text
                         snprintf(info_str_buf,
                                  sizeof(info_str_buf),
                                  "%.3fs entity[%d]: %s (%d) %.2fs %.2fkm/h %.2fm (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f ",
                                  simTime,
-                                 viewer->currentCarInFocus_,
+                                 viewer_->currentCarInFocus_,
                                  state->info.name,
                                  state->info.id,
                                  static_cast<double>(state->info.timeStamp),
@@ -991,10 +1046,10 @@ int main(int argc, char** argv)
                                  static_cast<double>(sc->pos.y),
                                  static_cast<double>(sc->pos.h),
                                  time_scale);
-                        viewer->SetInfoText(info_str_buf);
+                        viewer_->SetInfoText(info_str_buf);
                     }
+#endif  // _USE_OSG
                 }
-
                 // Collision detection
                 if (col_analysis && scenarioEntity.size() > 1)
                 {
@@ -1060,12 +1115,17 @@ int main(int argc, char** argv)
                         }
                     }
                 }
+            } while
+#ifdef _USE_OSG
+                (!pause_player && simTime < player->GetStopTime() - SMALL_NUMBER  // As long as time is < end
+                 && simTime > player->GetStartTime() + SMALL_NUMBER               // As long as time is > start time
+                 && (deltaSimTime < 0 ? (player->GetTime() > targetSimTime) : (player->GetTime() < targetSimTime)));  // until reached target timestep
+#else
+                // for non osg build, full steps only
+                (false);
+#endif  // _USE_OSG
 
-            } while (
-                !pause_player && simTime < player->GetStopTime() - SMALL_NUMBER &&                                // As long as time is < end
-                simTime > player->GetStartTime() + SMALL_NUMBER &&                                                // As long as time is > start time
-                (deltaSimTime < 0 ? (player->GetTime() > targetSimTime) : (player->GetTime() < targetSimTime)));  // until reached target timestep
-
+#ifdef _USE_OSG
             // Visualize scenario cars
             for (size_t j = 0; j < scenarioEntity.size(); j++)
             {
@@ -1083,9 +1143,12 @@ int main(int argc, char** argv)
             }
 
             // Update graphics
-            viewer->osgViewer_->frame();
+            viewer_->osgViewer_->frame();
+#endif  // _USE_OSG
         }
-        delete viewer;
+#ifdef _USE_OSG
+        delete viewer_;
+#endif  // _USE_OSG
     }
     catch (std::logic_error& e)
     {
