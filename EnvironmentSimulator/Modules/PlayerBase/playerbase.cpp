@@ -13,7 +13,6 @@
 #include <iostream>
 #include <string>
 #include <random>
-#include <filesystem>
 
 #include "PlayerServer.hpp"
 #include "ScenarioEngine.hpp"
