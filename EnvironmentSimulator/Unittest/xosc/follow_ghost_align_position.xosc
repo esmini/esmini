@@ -75,6 +75,18 @@
                     </ByEntityCondition>
                 </Condition>
             </ConditionGroup>
+            <ConditionGroup>
+                <Condition name="StopCondition" delay="0.0" conditionEdge="none">
+                    <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                            <EntityRef entityRef="Ego"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                            <SpeedCondition value="0.01" rule="lessOrEqual"/>
+                        </EntityCondition>
+                    </ByEntityCondition>
+                </Condition>
+            </ConditionGroup>
         </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>

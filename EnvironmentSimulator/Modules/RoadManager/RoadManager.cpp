@@ -8988,7 +8988,7 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
     if (GetOpenDrive()->GetNumOfRoads() == 0 || track_idx_ < 0)
     {
         // No roads available or current track undefined
-        return Position::ReturnCode::OK;
+        return Position::ReturnCode::ERROR_GENERIC;
     }
 
     double s_stop             = 0;
