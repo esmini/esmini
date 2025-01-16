@@ -286,6 +286,9 @@ int OSIReporter::ClearOSIGroundTruth()
     obj_osi_external.gt->clear_traffic_light();
     obj_osi_external.gt->clear_traffic_sign();
     obj_osi_external.gt->clear_road_marking();
+    obj_osi_external.gt->clear_map_reference();
+    obj_osi_external.gt->clear_proj_string();
+    obj_osi_external.gt->clear_model_reference();
 
     return 0;
 }
