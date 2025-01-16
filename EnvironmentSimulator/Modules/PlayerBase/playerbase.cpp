@@ -1355,20 +1355,37 @@ int ScenarioPlayer::Init()
     }
 
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
+    std::string               scenario_filename;
 
     if (dist.GetNumPermutations() > 0)
     {
         LOG_INFO("Re-using parameter distribution {}", dist.GetFilename());
     }
-    else if (opt.IsOptionArgumentSet("param_dist"))
+    else if (opt.IsOptionArgumentSet("param_dist") || opt.IsOptionArgumentSet("osc"))
     {
         if (dist.GetNumPermutations() == 0)
         {
-            if (LoadParameterDistribution(opt.GetOptionArg("param_dist")) != 0)
+            std::string strParamDist = "";
+            if (opt.IsOptionArgumentSet("param_dist"))
+            {  // use the param_dist to read the distribution and scenario file
+                strParamDist = opt.GetOptionArg("param_dist");
+            }
+            else if (opt.IsOptionArgumentSet("osc"))
+            {  // use osc to read the distribution and scenario file
+                strParamDist     = opt.GetOptionArg("osc");
+                dist.IsParamDist = false;
+            }
+
+            if (LoadParameterDistribution(strParamDist) != 0)
             {
                 return -1;
             }
         }
+    }
+
+    if (!dist.GetScenarioFileName().empty() && !(opt.IsOptionArgumentSet("param_dist") && opt.IsOptionArgumentSet("osc")))
+    {  // set the scenario file name from the distribution file only if it is not set by the user via command line
+        opt.SetOptionValue("osc", dist.GetScenarioFileName());
     }
 
     if (opt.GetOptionSet("return_nr_permutations"))
@@ -1564,7 +1581,7 @@ int ScenarioPlayer::Init()
         }
         else
         {
-            LOG_ERROR("Error: Missing required OpenSCENARIO filename argument or XML string");
+            LOG_ERROR("Error: Missing required OpenSCENARIO filename argument or XML string or parameter distribution");
             PrintUsage();
 
             return -1;

@@ -50,7 +50,7 @@ namespace scenarioengine
         {
             return filename_;
         }
-
+        std::string GetScenarioFileName() const;
         // Returns current permutation index
         int GetIndex()
         {
@@ -68,5 +68,6 @@ namespace scenarioengine
         std::string         GetParamValue(unsigned int param_index);
         std::string         AddInfoToFilename(std::string filename);
         std::string         AddInfoToFilepath(std::string filepath);
+        bool                IsParamDist = true;
     };
 }  // namespace scenarioengine

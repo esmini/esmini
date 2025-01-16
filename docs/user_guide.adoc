@@ -1204,9 +1204,13 @@ Parameter values and distributions can be specified in a separate https://www.as
 
 Here's an example: https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_parameter_set.xosc[cut-in_parameter_set.xosc].
 
-To run all permutations with esmini:
+Below 3 ways shall be used to run all permutations with esmini:
 
-`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc`
+. `./bin/esmini --window 60 60 800 400 --param_dist ./resources/xosc/cut-in_parameter_set.xosc`
+. `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc`
+. `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc`
+
+The first two ways will run all permutations of the scenario defined in the parameter set file. The third way will run the scenario defined in the scenario file, but with all permutations of the parameter set file.
 
 How to abort:
 
