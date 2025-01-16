@@ -1631,44 +1631,31 @@ bool ConditionDelay::RegisterValue(double time, bool value)
 void ConditionDelay::Reset()
 {
     values_.clear();
+    current_index_ = 0;
 }
 
 bool ConditionDelay::GetValueAtTime(double time)
 {
-    if (values_.empty())
-    {
-        return false;
-    }
+    bool retval = false;
 
-    auto it = std::lower_bound(values_.begin(), values_.end(), time, [](const ConditionValue& p, double t) { return p.time_ < t + SMALL_NUMBER; });
-
-    // Handle edge cases:
-    if (it == values_.begin())
+    if (!values_.empty())
     {
-        if (time < it->time_ + SMALL_NUMBER)
+        if (current_index_ >= values_.size())
         {
-            // Query time is before the first data point
-            return false;
+            // passed last registered value, pick it
+            retval = values_.back().value_;
         }
         else
         {
-            // Return the value of the first data point
-            LOG_WARN("Unexpected hit condition first time value {:.2f} with {:.2f}", it->time_, time);
-            return it->value_;
+            // Check if value has become true in the time window since last check
+            for (; current_index_ < values_.size() && time > values_[current_index_].time_ - SMALL_NUMBER; current_index_++)
+            {
+                retval |= values_[current_index_].value_;
+            }
         }
     }
-    else if (it == values_.end())
-    {
-        // Query time is after the last data point
-        return values_.back().value_;  // Or handle this case appropriately
-    }
-    else
-    {
-        // Return the value of the closest data point
-        return (it - 1)->value_;
-    }
 
-    return false;
+    return retval;
 }
 
 size_t ConditionDelay::GetNumberOfEntries() const

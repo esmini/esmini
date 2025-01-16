@@ -50,6 +50,7 @@ namespace scenarioengine
             bool   value_;
         };
         std::vector<ConditionValue> values_;
+        unsigned int                current_index_ = 0;  // point to next value to check
     };
 
     class OSCCondition
