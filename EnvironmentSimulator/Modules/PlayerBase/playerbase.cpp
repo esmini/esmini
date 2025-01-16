@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 #include <random>
+#include <filesystem>
 
 #include "PlayerServer.hpp"
 #include "ScenarioEngine.hpp"
@@ -1355,20 +1356,41 @@ int ScenarioPlayer::Init()
     }
 
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
+    std::string               scenario_filename;
 
     if (dist.GetNumPermutations() > 0)
     {
         LOG_INFO("Re-using parameter distribution {}", dist.GetFilename());
     }
-    else if (opt.IsOptionArgumentSet("param_dist"))
+    else if (opt.IsOptionArgumentSet("param_dist") || opt.IsOptionArgumentSet("osc"))
     {
         if (dist.GetNumPermutations() == 0)
         {
-            if (LoadParameterDistribution(opt.GetOptionArg("param_dist")) != 0)
+            std::string strParamDist = "";
+            if (opt.IsOptionArgumentSet("param_dist") && opt.IsOptionArgumentSet("osc"))
+            {  // both options are set, use the param_dist to read the distribution and scenario file
+                strParamDist = opt.GetOptionArg("param_dist");
+            }
+            else if (opt.IsOptionArgumentSet("osc"))
+            {  // only osc is set, use it to read the distribution and scenario file
+                strParamDist     = opt.GetOptionArg("osc");
+                dist.IsParamDist = false;
+            }
+            else
+            {  // only param_dist is set, use it to read the distribution and scenario file
+                strParamDist = opt.GetOptionArg("param_dist");
+            }
+
+            if (LoadParameterDistribution(strParamDist) != 0)
             {
                 return -1;
             }
         }
+    }
+
+    if (!dist.GetScenarioFileName().empty() && !(opt.IsOptionArgumentSet("param_dist") && opt.IsOptionArgumentSet("osc")))
+    {
+        opt.SetOptionValue("osc", dist.GetScenarioFileName());
     }
 
     if (opt.GetOptionSet("return_nr_permutations"))
@@ -1564,7 +1586,7 @@ int ScenarioPlayer::Init()
         }
         else
         {
-            LOG_ERROR("Error: Missing required OpenSCENARIO filename argument or XML string");
+            LOG_ERROR("Error: Missing required OpenSCENARIO filename argument or XML string or parameter distribution");
             PrintUsage();
 
             return -1;
