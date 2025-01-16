@@ -10,12 +10,19 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
-#include "playerbase.hpp"
-#include "CommonMini.cpp"
-#include "OSCParameterDistribution.hpp"
-#include "Plot.hpp"
-#include <osgViewer/ViewerEventHandlers>
 #include <signal.h>
+
+#include "playerbase.hpp"
+#include "CommonMini.hpp"
+#include "OSCParameterDistribution.hpp"
+
+#ifdef _USE_IMPLOT
+#include "Plot.hpp"
+#endif  // _USE_IMPLOT
+
+#ifdef _USE_OSG
+#include <osgViewer/ViewerEventHandlers>
+#endif  // _USE_OSG
 
 #define MIN_TIME_STEP 0.01
 #define MAX_TIME_STEP 0.1

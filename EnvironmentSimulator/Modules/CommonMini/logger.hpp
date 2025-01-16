@@ -23,7 +23,7 @@ template <typename T>
 struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::formatter<int>
 {
     template <typename FormatContext>
-    auto format(T t, FormatContext& ctx)
+    auto format(T t, FormatContext& ctx) const
     {
         return fmt::formatter<int>::format(static_cast<int>(t), ctx);
     }
