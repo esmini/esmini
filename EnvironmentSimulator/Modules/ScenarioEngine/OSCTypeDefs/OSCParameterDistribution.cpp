@@ -15,6 +15,15 @@
 #include "logger.hpp"
 #include <iomanip>
 #include <sstream>
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
 
 using namespace scenarioengine;
 
@@ -91,7 +100,14 @@ int OSCParameterDistribution::Load(std::string filename)
     node = node.child("ParameterValueDistribution");
     if (node.empty())
     {
-        LOG_WARN("No or empty ParameterValueDistribution element");
+        if (IsParamDist)
+        {
+            LOG_WARN("No or empty ParameterValueDistribution element");
+        }
+        else
+        {
+            return 0;  // no distribution defined in this case is ok(used for single run as osc)
+        }
     }
 
     pugi::xml_node scenario_filename_node = node.child("ScenarioFile");
@@ -105,6 +121,11 @@ int OSCParameterDistribution::Load(std::string filename)
         if (scenario_filename_.empty())
         {
             LOG_ERROR("Scenario filepath attribute missing");
+        }
+        else
+        {
+            scenario_filename_ = (fs::path(filename_).parent_path() / fs::path(scenario_filename_)).string();
+            file_name_candidates.push_back(scenario_filename_);
         }
     }
 
@@ -392,6 +413,11 @@ void OSCParameterDistribution::Reset()
     scenario_filename_.clear();
     index_           = -1;
     requested_index_ = 0;  // first permutation
+}
+
+std::string OSCParameterDistribution::GetScenarioFileName() const
+{
+    return scenario_filename_;
 }
 
 int OSCParameterDistribution::SetIndex(unsigned int index)
