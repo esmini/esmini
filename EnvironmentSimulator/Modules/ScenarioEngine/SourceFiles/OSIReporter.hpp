@@ -72,7 +72,7 @@ public:
     /**
     Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
     */
-    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
+    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, bool reloadStaticGt);
     /**
     Fills up the osi message with  static GroundTruth
     */
@@ -197,4 +197,5 @@ private:
     void                   CreateMovingObjectFromSensorData(const osi3::SensorData& sd, int obj_nr);
     void                   CreateLaneBoundaryFromSensordata(const osi3::SensorData& sd, int lane_boundary_nr);
     bool                   osi_updated_ = false;
+    int                    osi_static_gt_loaded = -1;
 };
