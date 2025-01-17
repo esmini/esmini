@@ -1359,10 +1359,10 @@ pass:[*] calculated based on entity heading sign
 The following test cases cover the various cases and beyond.
 
 .test case scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/trajectory_speed.xosc[trajectory_speed.xosc]
-image::traj_heading_test.png[]
+video::mSekcv5Mqeo[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
 .scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/trajectory_special_cases.xosc[trajectory_special_cases.xosc] including example how to transition between reverse and forward driving
-image::traj_special_cases.png[]
+video::sjOgdx8qfEM[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
 === Friction
 
