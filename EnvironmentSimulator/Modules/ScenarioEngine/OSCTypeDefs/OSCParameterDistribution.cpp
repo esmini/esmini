@@ -124,7 +124,7 @@ int OSCParameterDistribution::Load(std::string filename)
         }
         else
         {
-            scenario_filename_ = fs::path(filename_).parent_path() / fs::path(scenario_filename_).string();
+            scenario_filename_ = (fs::path(filename_).parent_path() / fs::path(scenario_filename_)).string();
             file_name_candidates.push_back(scenario_filename_);
         }
     }
