@@ -15,7 +15,8 @@
 #include "logger.hpp"
 #include <iomanip>
 #include <sstream>
-#include <filesystem>
+// #include <filesystem>
+// namespace fs = std::filesystem;
 
 using namespace scenarioengine;
 
@@ -116,7 +117,8 @@ int OSCParameterDistribution::Load(std::string filename)
         }
         else
         {
-            scenario_filename_ = (std::filesystem::path(filename_).parent_path() / std::filesystem::path(scenario_filename_)).string();
+            // scenario_filename_ = fs::path(filename_).parent_path() / fs::path(scenario_filename_).string();
+            scenario_filename_ = CombineDirectoryPathAndFilepath(DirNameOf(filename_), scenario_filename_);
             file_name_candidates.push_back(scenario_filename_);
         }
     }

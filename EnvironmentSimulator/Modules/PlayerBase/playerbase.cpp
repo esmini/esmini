@@ -1366,18 +1366,14 @@ int ScenarioPlayer::Init()
         if (dist.GetNumPermutations() == 0)
         {
             std::string strParamDist = "";
-            if (opt.IsOptionArgumentSet("param_dist") && opt.IsOptionArgumentSet("osc"))
-            {  // both options are set, use the param_dist to read the distribution and scenario file
+            if (opt.IsOptionArgumentSet("param_dist"))
+            {  // use the param_dist to read the distribution and scenario file
                 strParamDist = opt.GetOptionArg("param_dist");
             }
             else if (opt.IsOptionArgumentSet("osc"))
-            {  // only osc is set, use it to read the distribution and scenario file
+            {  // use osc to read the distribution and scenario file
                 strParamDist     = opt.GetOptionArg("osc");
                 dist.IsParamDist = false;
-            }
-            else
-            {  // only param_dist is set, use it to read the distribution and scenario file
-                strParamDist = opt.GetOptionArg("param_dist");
             }
 
             if (LoadParameterDistribution(strParamDist) != 0)
@@ -1388,7 +1384,7 @@ int ScenarioPlayer::Init()
     }
 
     if (!dist.GetScenarioFileName().empty() && !(opt.IsOptionArgumentSet("param_dist") && opt.IsOptionArgumentSet("osc")))
-    {
+    {  // set the scenario file name from the distribution file only if it is not set by the user via command line
         opt.SetOptionValue("osc", dist.GetScenarioFileName());
     }
 
