@@ -293,7 +293,7 @@ int OSIReporter::ClearOSIGroundTruth()
     return 0;
 }
 
-int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)
+int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, bool reloadStaticGt)
 {
     if (GetUpdated() == true)
     {
@@ -301,20 +301,35 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
         return 0;
     }
 
+    if (osi_static_gt_loaded == 0)
+    {
+        ClearOSIGroundTruth();
+        osi_static_gt_loaded = -1;
+    }
+
+
     if (GetCounter() == 0)
     {
-        UpdateOSIStaticGroundTruth(objectState);
-    }
-    else if (GetCounter() == 1)
-    {
-        // Clear the static data now when it has been reported once
-        ClearOSIGroundTruth();
+        osi_static_gt_loaded = UpdateOSIStaticGroundTruth(objectState);
     }
 
     UpdateOSIDynamicGroundTruth(objectState);
-
+    
     if (GetUDPClientStatus() == 0 || IsFileOpen())
     {
+        obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+        osiGroundTruth.size = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
+    }
+
+    if (IsFileOpen())
+    {
+        WriteOSIFile();
+    }
+    
+    if (reloadStaticGt && GetCounter() > 0 && (GetUDPClientStatus() == 0 || IsFileOpen()))
+    {
+        osi_static_gt_loaded = UpdateOSIStaticGroundTruth(objectState);
+        // Clear the static data now when it has been reported once
         obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
         osiGroundTruth.size = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
     }
@@ -352,11 +367,6 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
                 sentDataBytes += osi_udp_buf.datasize;
             }
         }
-    }
-
-    if (IsFileOpen())
-    {
-        WriteOSIFile();
     }
 
     IncrementCounter();
