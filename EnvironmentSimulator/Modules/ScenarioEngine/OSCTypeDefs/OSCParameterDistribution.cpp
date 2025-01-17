@@ -15,8 +15,15 @@
 #include "logger.hpp"
 #include <iomanip>
 #include <sstream>
-// #include <filesystem>
-// namespace fs = std::filesystem;
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
 
 using namespace scenarioengine;
 
@@ -117,8 +124,7 @@ int OSCParameterDistribution::Load(std::string filename)
         }
         else
         {
-            // scenario_filename_ = fs::path(filename_).parent_path() / fs::path(scenario_filename_).string();
-            scenario_filename_ = CombineDirectoryPathAndFilepath(DirNameOf(filename_), scenario_filename_);
+            scenario_filename_ = fs::path(filename_).parent_path() / fs::path(scenario_filename_).string();
             file_name_candidates.push_back(scenario_filename_);
         }
     }
