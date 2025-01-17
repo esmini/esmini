@@ -279,6 +279,24 @@ void OSIReporter::FlushOSIFile()
     }
 }
 
+int OSIReporter::SetOSIStaticExternalData()
+{
+    // Set road data
+    obj_osi_external.gt->mutable_stationary_object()->CopyFrom(*obj_osi_internal.gt->mutable_stationary_object());
+    obj_osi_external.gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
+    obj_osi_external.gt->mutable_lane_boundary()->CopyFrom(*obj_osi_internal.gt->mutable_lane_boundary());
+    obj_osi_external.gt->mutable_traffic_sign()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_sign());
+    obj_osi_external.gt->mutable_traffic_light()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_light());
+    obj_osi_external.gt->mutable_road_marking()->CopyFrom(*obj_osi_internal.gt->mutable_road_marking());
+
+    // Set strings
+    obj_osi_external.gt->set_model_reference(*obj_osi_internal.gt->mutable_model_reference());
+    obj_osi_external.gt->set_map_reference(*obj_osi_internal.gt->mutable_map_reference());
+    obj_osi_external.gt->set_proj_string(*obj_osi_internal.gt->mutable_proj_string());
+
+    return 0;
+}
+
 int OSIReporter::ClearOSIGroundTruth()
 {
     obj_osi_external.gt->clear_moving_object();
@@ -295,28 +313,57 @@ int OSIReporter::ClearOSIGroundTruth()
     return 0;
 }
 
-int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)
+int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, bool refetchStaticGt)
 {
     if (GetUpdated() == true)
     {
-        // already updated within this scenario frame, skip
-        return 0;
+        // We want static data but its not been loaded, dont return
+        if (refetchStaticGt && osi_static_gt_loaded_ == -1)
+        {
+            // Don't return
+        }
+        else
+        {
+            // already updated within this scenario frame, skip
+            return 0;
+        }
     }
 
+    // if data is loaded, clear it
+    if (osi_static_gt_loaded_ == 0)
+    {
+        ClearOSIGroundTruth();
+        osi_static_gt_loaded_ = -1;
+    }
+
+    // Always load on first frame
     if (GetCounter() == 0)
     {
-        UpdateOSIStaticGroundTruth(objectState);
+        osi_static_gt_loaded_ = UpdateOSIStaticGroundTruth(objectState);
     }
-    else if (GetCounter() == 1)
+
+    // Update, serialize and write dynamic gt only if the GT not updated before in this frame
+    if (GetUpdated() == false)
     {
+        UpdateOSIDynamicGroundTruth(objectState);
+
+        if ((GetUDPClientStatus() == 0 || IsFileOpen()))
+        {
+            obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+            osiGroundTruth.size = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
+        }
+
+        if (IsFileOpen())
+        {
+            WriteOSIFile();
+        }
+    }
+
+    // Serialize static gt if requested, and not been loaded
+    if (GetCounter() > 0 && refetchStaticGt && osi_static_gt_loaded_ == -1 && (GetUDPClientStatus() == 0 || IsFileOpen()))
+    {
+        osi_static_gt_loaded_ = SetOSIStaticExternalData();
         // Clear the static data now when it has been reported once
-        ClearOSIGroundTruth();
-    }
-
-    UpdateOSIDynamicGroundTruth(objectState);
-
-    if (GetUDPClientStatus() == 0 || IsFileOpen())
-    {
         obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
         osiGroundTruth.size = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
     }
@@ -354,11 +401,6 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
                 sentDataBytes += osi_udp_buf.datasize;
             }
         }
-    }
-
-    if (IsFileOpen())
-    {
-        WriteOSIFile();
     }
 
     IncrementCounter();
@@ -411,26 +453,19 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
     UpdateOSIIntersection();
     UpdateTrafficSignals();
 
-    // Set GeoReference in OSI as map_reference
-    obj_osi_external.gt->set_map_reference(opendrive->GetGeoReferenceAsString());
-
-    // also set the original geo reference string as is
+    // Set the original geo reference string as is
     std::string proj_string_delimiter = "";
     if (!opendrive->GetGeoReferenceOriginalString().empty() && !opendrive->GetGeoOffsetOriginalString().empty())
     {
         proj_string_delimiter = ";";
     }
-    obj_osi_external.gt->set_proj_string(
+    obj_osi_internal.gt->set_proj_string(
         (opendrive->GetGeoReferenceOriginalString() + proj_string_delimiter + opendrive->GetGeoOffsetOriginalString()).c_str());
+    obj_osi_internal.gt->set_map_reference(opendrive->GetGeoReferenceAsString());
+    obj_osi_internal.gt->set_model_reference(stationary_model_reference);
 
-    obj_osi_external.gt->mutable_stationary_object()->CopyFrom(*obj_osi_internal.gt->mutable_stationary_object());
-    obj_osi_external.gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
-    obj_osi_external.gt->mutable_lane_boundary()->CopyFrom(*obj_osi_internal.gt->mutable_lane_boundary());
-    obj_osi_external.gt->mutable_traffic_sign()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_sign());
-    obj_osi_external.gt->mutable_traffic_light()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_light());
-    obj_osi_external.gt->mutable_road_marking()->CopyFrom(*obj_osi_internal.gt->mutable_road_marking());
-
-    obj_osi_external.gt->set_model_reference(stationary_model_reference);
+    // Map the external groundtruth data to the internal data
+    SetOSIStaticExternalData();
 
     return 0;
 }

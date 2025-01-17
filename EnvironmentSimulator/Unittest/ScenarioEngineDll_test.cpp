@@ -271,7 +271,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
     EXPECT_EQ(n_Objects, 14);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     std::vector<std::vector<id_t>> lane_bound = {{ID_UNDEFINED, 8, 9, 10},
                                                  {8, 9, 10, 0},
@@ -315,7 +315,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids_no_obj)
     const char* Scenario_file = scenario_file.c_str();
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     SE_LaneBoundaryId ids;
     SE_LaneBoundaryId right_lanes_id = {ID_UNDEFINED, ID_UNDEFINED, ID_UNDEFINED, ID_UNDEFINED};
@@ -335,7 +335,7 @@ TEST(OSIintersections, threeway)
     const char* Scenario_file = scenario_file.c_str();
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     int               lanes_found        = 0;
     bool              intersection_found = false;
     osi3::GroundTruth osi_gt;
@@ -368,7 +368,7 @@ TEST(OSIintersections, fourway)
     const char* Scenario_file = scenario_file.c_str();
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     int               lanes_found        = 0;
     bool              intersection_found = false;
     osi3::GroundTruth osi_gt;
@@ -401,7 +401,7 @@ TEST(OSIintersections, motorway)
     const char* Scenario_file = scenario_file.c_str();
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     int               lanes_found        = 0;
     bool              intersection_found = false;
     osi3::GroundTruth osi_gt;
@@ -430,7 +430,7 @@ TEST(OSIStationaryObjects, square_building)
     const char* Scenario_file = scenario_file.c_str();
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    // SE_UpdateOSIGroundTruth();
+    // SE_UpdateOSIGroundTruth(false);
 
     // osi3::GroundTruth osi_gt;
     // int               sv_size = 0;
@@ -461,7 +461,7 @@ TEST_P(OSIStationaryObjectsOutline, object_with_outline)
     const char* Scenario_file = scenario_file.c_str();
     ASSERT_EQ(SE_Init(Scenario_file, 0, 0, 0, 0), 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     osi3::GroundTruth osi_gt;
     int               sv_size = 0;
@@ -492,7 +492,7 @@ TEST(OSIintersections, multilane)
     const char* Scenario_file = scenario_file.c_str();
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     int               lanes_found        = 0;
     bool              intersection_found = false;
     osi3::GroundTruth osi_gt;
@@ -533,7 +533,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     EXPECT_EQ(fileStatus.st_size, 0);  // so far, nothing has been saved
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
     EXPECT_EQ(fileStatus.st_size, 84957);  // initial OSI size, including static content
@@ -546,13 +546,13 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     EXPECT_EQ(road_lane, nullptr);
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
     EXPECT_EQ(fileStatus.st_size, 85969);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
     EXPECT_EQ(fileStatus.st_size, 86982);  // slight growth due to only dynamic updates
@@ -568,7 +568,7 @@ TEST(GetOSIRoadLaneTest, lane_id)
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     std::vector<int> lanes  = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
     std::vector<int> veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
@@ -598,7 +598,7 @@ TEST(GetOSIRoadLaneTest, left_lane_id)
     EXPECT_EQ(n_Objects, 14);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     int        road_lane_size;
     osi3::Lane osi_lane;
 
@@ -638,7 +638,7 @@ TEST(GetOSIRoadLaneTest, right_lane_id)
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     int        road_lane_size;
     osi3::Lane osi_lane;
 
@@ -679,7 +679,7 @@ TEST(GetOSIRoadLaneTest, right_lane_boundary_id)
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     int        road_lane_size;
     osi3::Lane osi_lane;
 
@@ -705,7 +705,7 @@ TEST(GetOSIRoadLaneTest, left_lane_boundary_id)
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     int        road_lane_size;
     osi3::Lane osi_lane;
 
@@ -737,7 +737,7 @@ TEST_P(GetOSIRoadLaneTest, centerline_is_driving_direction)
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     int        road_lane_size;
     osi3::Lane osi_lane;
@@ -775,7 +775,7 @@ TEST(GetOSIRoadLaneTest, is_host_vehicle_lane)
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     int        road_lane_size;
     osi3::Lane osi_lane;
 
@@ -801,7 +801,7 @@ TEST(GetOSIRoadLaneTest, lane_classification)
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     int        road_lane_size;
     osi3::Lane osi_lane;
 
@@ -842,7 +842,7 @@ TEST(GetOSILaneBoundaryTests, lane_boundary_id_existing)
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     int                lb_size;
     osi3::LaneBoundary osi_lb;
 
@@ -879,7 +879,7 @@ TEST_P(GetOSILaneBoundaryTests, lane_boundary_id_not_existing)
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     int lb_size = 0;
 
     const char* lb = SE_GetOSILaneBoundary(&lb_size, std::get<0>(GetParam()));
@@ -902,7 +902,7 @@ TEST(OSIFile, writeosifile_two_step)
     SE_Init(Scenario_file, 0, 0, 0, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     SE_FlushOSIFile();
 
     std::ifstream in_file("ground_truth.osi", std::ios::binary);
@@ -911,7 +911,7 @@ TEST(OSIFile, writeosifile_two_step)
     // std::cout <<"Size of the file at first step "<< file_size1 << " bytes" << std::endl;
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     SE_FlushOSIFile();
 
     in_file.seekg(0, std::ios::end);
@@ -929,7 +929,7 @@ TEST(OSIFile, updateosi_no_init)
 {
     SE_EnableOSIFile(0);
 
-    EXPECT_EQ(SE_UpdateOSIGroundTruth(), false);
+    EXPECT_EQ(SE_UpdateOSIGroundTruth(false), false);
 
     SE_DisableOSIFile();
 }
@@ -964,7 +964,7 @@ TEST_P(GetGroundTruthTests, receive_GroundTruth)
 
     SE_StepDT(0.001f);
 
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     const char* sv = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(sv, sv_size);
@@ -1037,7 +1037,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 
     SE_EnableOSIFile("gt.osi");
     ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
@@ -1057,7 +1057,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
         if (i < 2)  // skip step of the last round
         {
             SE_StepDT(0.01f);
-            SE_UpdateOSIGroundTruth();
+            SE_UpdateOSIGroundTruth(false);
         }
     }
 
@@ -1108,7 +1108,7 @@ TEST(GroundTruthTests, check_frequency_implicit)
 
     SE_EnableOSIFile("gt_implicit.osi");
     ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
@@ -1131,7 +1131,7 @@ TEST(GroundTruthTests, check_frequency_implicit)
             SE_StepDT(0.01f);
             if ((i % 2) == 1)  // Update OSI every second time
             {
-                SE_UpdateOSIGroundTruth();
+                SE_UpdateOSIGroundTruth(false);
             }
         }
     }
@@ -1277,6 +1277,61 @@ TEST(GroundTruthTests, check_teleport_not_affecting_vel_and_acc)
     SE_Close();
 }
 
+TEST(GroundTruthTests, check_update_osi_ground_truth_api)
+{
+    const osi3::GroundTruth* osi_gt_ptr;
+    struct stat              fileStatus;
+
+    SE_EnableOSIFile("gt_static_dynamic.osi");
+    ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
+    SE_UpdateOSIGroundTruth(false);
+
+    osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 7);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_StepDT(0.01f);
+    SE_UpdateOSIGroundTruth(false);
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 0);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_StepDT(0.01f);
+    SE_UpdateOSIGroundTruth(true);
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 7);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_StepDT(0.01f);
+    SE_UpdateOSIGroundTruth(false);
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 0);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_Close();
+    ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
+    EXPECT_EQ(fileStatus.st_size, 9489);
+}
+
+TEST(GroundTruthTests, check_update_gt_twice_same_frame)
+{
+    struct stat fileStatus;
+
+    SE_EnableOSIFile("gt_static_dynamic.osi");
+    SE_SetOptionValue("osi_freq", "1");
+
+    ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
+
+    SE_StepDT(0.01f);
+
+    SE_UpdateOSIGroundTruth(true);
+
+    SE_Close();
+    ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
+    EXPECT_EQ(fileStatus.st_size, 7863);
+}
+
 TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 {
     int               sv_size = 0;
@@ -1286,7 +1341,7 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 
     SE_StepDT(0.001f);
 
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     const char* gt = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
@@ -1338,7 +1393,7 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
 
     SE_StepDT(0.001f);
 
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     const char* gt = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
@@ -1390,7 +1445,7 @@ TEST(TestGetAndSet, SetOSITimestampTest)
     EXPECT_EQ(n_Objects, 2);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     osi_gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
@@ -1401,19 +1456,19 @@ TEST(TestGetAndSet, SetOSITimestampTest)
 
     SE_OSISetTimeStamp(1234543210);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     EXPECT_EQ(osi_gt->timestamp().seconds(), 1);
     EXPECT_EQ(osi_gt->timestamp().nanos(), static_cast<unsigned int>(234543210));
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     // Expect no change as timestamp has been set explicitly only once
     EXPECT_EQ(osi_gt->timestamp().seconds(), 1);
     EXPECT_EQ(osi_gt->timestamp().nanos(), static_cast<unsigned int>(234543210));
 
     SE_OSISetTimeStamp(5234543229);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     // Expect updated timestamp
     EXPECT_EQ(osi_gt->timestamp().seconds(), 5);
     EXPECT_EQ(osi_gt->timestamp().nanos(), static_cast<unsigned int>(234543229));
@@ -1433,7 +1488,7 @@ TEST(TestGetAndSet, ReportObjectAcc)
     EXPECT_EQ(n_Objects, 2);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     osi_gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
@@ -1444,19 +1499,19 @@ TEST(TestGetAndSet, ReportObjectAcc)
 
     SE_ReportObjectAcc(0, 0, 1, 2, 3);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     EXPECT_EQ(osi_gt->moving_object(0).base().acceleration().x(), 1.0);
 
     SE_ReportObjectAcc(0, 0, 4, 1, 8);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     EXPECT_EQ(osi_gt->moving_object(0).base().acceleration().x(), 4.0);
     EXPECT_EQ(osi_gt->moving_object(0).base().acceleration().y(), 1.0);
     EXPECT_EQ(osi_gt->moving_object(0).base().acceleration().z(), 8.0);
 
     SE_ReportObjectAngularAcc(1, 0, 5, 4, 3);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     EXPECT_EQ(osi_gt->moving_object(1).base().orientation_acceleration().yaw(), 5.0);
     EXPECT_EQ(osi_gt->moving_object(1).base().orientation_acceleration().pitch(), 4.0);
     EXPECT_EQ(osi_gt->moving_object(1).base().orientation_acceleration().roll(), 3.0);
@@ -1476,7 +1531,7 @@ TEST(TestGetAndSet, ReportObjectVel)
     EXPECT_EQ(n_Objects, 2);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     osi_gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
@@ -1487,19 +1542,19 @@ TEST(TestGetAndSet, ReportObjectVel)
 
     SE_ReportObjectVel(0, 0, 11, 12, 13);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     EXPECT_EQ(osi_gt->moving_object(0).base().velocity().x(), 11.0);
 
     SE_ReportObjectVel(0, 0, 21, 22, 23);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     EXPECT_EQ(osi_gt->moving_object(0).base().velocity().x(), 21.0);
     EXPECT_EQ(osi_gt->moving_object(0).base().velocity().y(), 22.0);
     EXPECT_EQ(osi_gt->moving_object(0).base().velocity().z(), 23.0);
 
     SE_ReportObjectAngularVel(1, 0, 25, 24, 23);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     EXPECT_EQ(osi_gt->moving_object(1).base().orientation_rate().yaw(), 25.0);
     EXPECT_EQ(osi_gt->moving_object(1).base().orientation_rate().pitch(), 24.0);
     EXPECT_EQ(osi_gt->moving_object(1).base().orientation_rate().roll(), 23.0);
@@ -1514,7 +1569,7 @@ TEST(OSILaneParing, multi_roads)
     int         i_init        = SE_Init(Scenario_file, 0, 0, 0, 0);
     ASSERT_EQ(i_init, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     osi3::GroundTruth osi_gt;
     int               sv_size = 0;
@@ -1583,7 +1638,7 @@ TEST(OSILaneParing, multi_lanesections)
     int         i_init        = SE_Init(Scenario_file, 0, 0, 0, 0);
     ASSERT_EQ(i_init, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     osi3::GroundTruth osi_gt;
     int               sv_size = 0;
@@ -1664,7 +1719,7 @@ TEST(OSILaneParing, highway_split)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     osi3::GroundTruth osi_gt;
     int               sv_size = 0;
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
@@ -1732,7 +1787,7 @@ TEST(OSILaneParing, highway_merge_lht)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     osi3::GroundTruth osi_gt;
     int               sv_size = 0;
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
@@ -1799,7 +1854,7 @@ TEST(OSILaneParing, highway_merge)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     osi3::GroundTruth osi_gt;
     int               sv_size = 0;
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
@@ -1875,7 +1930,7 @@ TEST(OSILaneParing, highway_merge_w_split)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     osi3::GroundTruth osi_gt;
     int               sv_size = 0;
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
@@ -1943,7 +1998,7 @@ TEST(OSILaneParing, circular_road)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     osi3::GroundTruth osi_gt;
     int               sv_size = 0;
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
@@ -2008,7 +2063,7 @@ TEST(OSILaneParing, simple_3way_intersection)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     osi3::GroundTruth osi_gt;
     int               sv_size = 0;
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
@@ -2083,7 +2138,7 @@ TEST(OSILaneParing, simple_3way_intersection_lht)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     osi3::GroundTruth osi_gt;
     int               sv_size = 0;
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
@@ -2158,7 +2213,7 @@ TEST(OSILaneParing, simple_4way_intersection)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
     osi3::GroundTruth osi_gt;
     int               sv_size = 0;
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
@@ -2225,7 +2280,7 @@ TEST(OSILaneParing, Signs)
     int i_init = SE_Init(Scenario_file, 0, 0, 0, 0);
     ASSERT_EQ(i_init, 0);
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     osi3::GroundTruth osi_gt;
     int               sv_size = 0;
@@ -2864,7 +2919,7 @@ TEST(TestOsiReporter, AssignRoleTest)
     osi_gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(false);
 
     EXPECT_EQ(osi_gt->moving_object(1).vehicle_classification().role(), osi3::MovingObject_VehicleClassification_Role_ROLE_POLICE);
 

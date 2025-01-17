@@ -1416,7 +1416,7 @@ extern "C"
             The SE_UpdateOSIGroundTruth function calls SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth and updates OSI Groundtruth
             @return 0
     */
-    SE_DLL_API int SE_UpdateOSIGroundTruth();
+    SE_DLL_API int SE_UpdateOSIGroundTruth(bool refetchStaticGt);
 
     /**
             The SE_UpdateOSIStaticGroundTruth function updates OSI static Groundtruth

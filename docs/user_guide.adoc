@@ -3598,7 +3598,7 @@ Fetch OSI data by either one of the API calls:
 The "raw" version will simply return a pointer to the already existing OSI data structure. No additional data copying will be performed. This is the preferered option if:
 
 1. The application is coded in C++, making the Protobuf data structures fully compatible
-2. The data is read before next call to `SE_UpdateOSIGroundTruth()`, which will update the data
+2. The data is read before next call to `SE_UpdateOSIGroundTruth(bool refetchStaticGt)`, which will update the data
 
 See code example: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/osi-groundtrut[osi-groundtruth], also covered in User guide - Hello world tutorial https://esmini.github.io/#_osi_groundtruth[OSI groundtruth].
 
@@ -3610,13 +3610,22 @@ See code examples in ScenarioEngineDLL test cases, e.g: https://github.com/esmin
 ====
 **Note:**
 
-`SE_UpdateOSIGroundTruth()` needs to be called after each SE_Step* in order to prepare and populate OSI data. This function will also save the OSI frame to file and send over UDP, if requested. Only after this preparation the SE_GetOSIGroundTruth* methods will get updated OSI data.
+`SE_UpdateOSIGroundTruth(bool refetchStaticGt)` needs to be called after each `SE_Step*` in order to prepare and populate OSI data. This function will also save the OSI frame to file and send over UDP, if requested. Only after this preparation the `SE_GetOSIGroundTruth*` functions will get updated OSI data.
 
-An exception is when OSI file or UDP receiver is specified by corrsponding launch arguments `--osi_file [filename]` and `--osi_receiver_ip <ip addr>`. Then, OSI update will automatically be updated by esmini according to specified multiplier `--osi_freq <number>` (1 is default). For example, `--osi_freq 3` will update OSI every third step.
+An exception is when OSI file or UDP receiver is specified by corresponding launch arguments `--osi_file [filename]` and `--osi_receiver_ip <ip addr>`. Then, OSI groundtruth will automatically be updated by esmini according to specified multiplier `--osi_freq <number>`. For example, `--osi_freq 3` will update OSI every third step.
 
 The purpose of this explicit OSI update control is to support use cases where esmini is running at much higher frequency than needed for OSI data (e.g. for vehicle dynamics purposes). To optimize performance, OSI update can then be skipped most frames and only run when needed.
 
-BTW: Any additional explicit calls to `SE_UpdateOSIGroundTruth()` will be ignored. Which means that the programmer does not have to worry about additional performance penalty introduced by multiple calls to this function.
+The bool argument `refetchStaticGt` affects the data received from the next `SE_GetOSIGroundTruth*` functions as follows:
+
+- `SE_UpdateOSIGroundTruth(false)`: OSI groundtruth will not contain static data, except the first frame (after `SE_Init()` and before first call to `SE_Step*`) which always does.
+- `SE_UpdateOSIGroundTruth(true)`: OSI groundtruth will contain static data.
+
+OSI log file is not affected by the `refetchStaticGt` flag. It will always contain static data and only in first frame.
+
+Also, just for information: If OSI frequency option is set, the SE_Step* function will internally update OSI in accordance with `SE_UpdateOSIGroundTruth(false)`, as described above. For example, setting osi_freq to 1, will update OSI each frame. Hence, there is no need to call `SE_UpdateOSIGroundTruth*`, unless static data is desired.
+
+BTW: Any additional explicit calls to `SE_UpdateOSIGroundTruth*` in the same frame will be ignored. Which means that the programmer does not have to worry about additional performance penalty introduced by multiple calls to this function.
 ====
 
 ==== Program Options
