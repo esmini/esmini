@@ -253,7 +253,7 @@ bool OSIReporter::WriteOSIFile()
     {
         auto osiGroundTruthDynamicSize = osiGroundTruth.size - osi_static_data_size_; 
         osi_file.write(reinterpret_cast<char *>(&osiGroundTruthDynamicSize), sizeof(osiGroundTruthDynamicSize));
-        osi_file.write(&osiGroundTruth.ground_truth.c_str()[osi_static_data_size_-1], osiGroundTruthDynamicSize); 
+        osi_file.write(&osiGroundTruth.ground_truth.c_str()[osi_static_data_size_], osiGroundTruthDynamicSize); 
     }
     else
     {
