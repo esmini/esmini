@@ -1714,12 +1714,12 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_UpdateOSIGroundTruth()
+    SE_DLL_API int SE_UpdateOSIGroundTruth(bool updateStaticGt)
     {
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
+            return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_, updateStaticGt);
         }
 #endif  // _USE_OSI
 

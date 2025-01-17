@@ -249,12 +249,20 @@ bool OSIReporter::WriteOSIFile()
         return false;
     }
 
-    // write to file, first size of message
-    osi_file.write(reinterpret_cast<char *>(&osiGroundTruth.size), sizeof(osiGroundTruth.size));
+    if (GetCounter() != 0 && osi_static_gt_set_ == 0)
+    {
+        auto osiGroundTruthDynamicSize = osiGroundTruth.size - osi_static_data_size_; 
+        osi_file.write(reinterpret_cast<char *>(&osiGroundTruthDynamicSize), sizeof(osiGroundTruthDynamicSize));
+        osi_file.write(&osiGroundTruth.ground_truth.c_str()[osi_static_data_size_-1], osiGroundTruthDynamicSize); 
+    }
+    else
+    {
+        // write to file, first size of message
+        osi_file.write(reinterpret_cast<char *>(&osiGroundTruth.size), sizeof(osiGroundTruth.size));
 
-    // write to file, actual message - the groundtruth object including timestamp and moving objects
-    osi_file.write(osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size);
-
+        // write to file, actual message - the groundtruth object including timestamp and moving objects
+        osi_file.write(osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size);
+    }
     // write to file, first size of message
     // osi_file.write(reinterpret_cast<char *>(&osiTrafficCommand.size), sizeof(osiTrafficCommand.size));
 
@@ -277,6 +285,18 @@ void OSIReporter::FlushOSIFile()
     }
 }
 
+int OSIReporter::SetExternalOSIStaticGroundTruth()
+{
+    obj_osi_external.gt->mutable_stationary_object()->CopyFrom(*obj_osi_internal.gt->mutable_stationary_object());
+    obj_osi_external.gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
+    obj_osi_external.gt->mutable_lane_boundary()->CopyFrom(*obj_osi_internal.gt->mutable_lane_boundary());
+    obj_osi_external.gt->mutable_traffic_sign()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_sign());
+    obj_osi_external.gt->mutable_traffic_light()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_light());
+    obj_osi_external.gt->mutable_road_marking()->CopyFrom(*obj_osi_internal.gt->mutable_road_marking());
+
+    return 0;
+}
+
 int OSIReporter::ClearOSIGroundTruth()
 {
     obj_osi_external.gt->clear_moving_object();
@@ -289,11 +309,19 @@ int OSIReporter::ClearOSIGroundTruth()
     obj_osi_external.gt->clear_map_reference();
     obj_osi_external.gt->clear_proj_string();
     obj_osi_external.gt->clear_model_reference();
+    obj_osi_external.gt->clear_country_code();
+    obj_osi_external.gt->clear_environmental_conditions();
+    obj_osi_external.gt->clear_host_vehicle_id();
+    obj_osi_external.gt->clear_logical_lane();
+    obj_osi_external.gt->clear_occupant();
+    obj_osi_external.gt->clear_reference_line();
+    obj_osi_external.gt->clear_timestamp();
+    obj_osi_external.gt->clear_version();
 
     return 0;
 }
 
-int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)
+int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, bool staticGt)
 {
     if (GetUpdated() == true)
     {
@@ -303,13 +331,24 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
 
     if (GetCounter() == 0)
     {
-        UpdateOSIStaticGroundTruth(objectState);
+        osi_static_gt_set_ = UpdateOSIStaticGroundTruth(objectState);
+        osi_static_data_size_ = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
     }
-    else if (GetCounter() == 1)
+    else
     {
-        // Clear the static data now when it has been reported once
-        ClearOSIGroundTruth();
-    }
+        if (!osi_gt_cleared_ == 0)
+        {
+            osi_gt_cleared_ = ClearOSIGroundTruth();
+            auto static_data_size_ = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
+            // osi_residual_data_ = obj_osi_external.gt->ByteSizeLong();
+            osi_static_gt_set_ = -1;
+        }
+        if (staticGt && !osi_static_gt_set_ == 0)
+        {
+            osi_static_gt_set_ = SetExternalOSIStaticGroundTruth();
+            osi_gt_cleared_ = -1;
+        }
+    } 
 
     UpdateOSIDynamicGroundTruth(objectState);
 
