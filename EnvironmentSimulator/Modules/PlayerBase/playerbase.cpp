@@ -1798,6 +1798,8 @@ void ScenarioPlayer::UpdateCSV_Log()
     // Flag for signalling end of data line, all vehicles reported
     bool isendline = false;
 
+    CSV_Log->LogEntryHeader(scenarioEngine->getSimulationTime());
+
     // For each vehicle (entitity) stored in the ScenarioPlayer
     for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
     {
@@ -1825,7 +1827,6 @@ void ScenarioPlayer::UpdateCSV_Log()
             }
         }
         CSV_Log->LogVehicleData(isendline,
-                                scenarioEngine->getSimulationTime(),
                                 name_,
                                 obj->id_,
                                 obj->speed_,

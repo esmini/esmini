@@ -1436,8 +1436,14 @@ CSV_Logger::~CSV_Logger()
     callback_ = 0;
 }
 
+void CSV_Logger::LogEntryHeader(double timestamp)
+{
+    static char data_entry[max_csv_entry_length];
+    snprintf(data_entry, max_csv_entry_length, "%d, %f, ", data_index_, timestamp);
+    file_ << data_entry;
+}
+
 void CSV_Logger::LogVehicleData(bool        isendline,
-                                double      timestamp,
                                 char const* name,
                                 int         id,
                                 double      speed,
@@ -1473,93 +1479,54 @@ void CSV_Logger::LogVehicleData(bool        isendline,
 {
     static char data_entry[max_csv_entry_length];
 
-    // If this data is for Ego (position 0 in the Entities vector) print using the first format
-    // Otherwise use the second format
-    if (id == 0)
-        snprintf(
-            data_entry,
-            max_csv_entry_length,
-            "%d, %f, %s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %d, %f, %f, %f, %f, %f, %f, %f, %s, ",
-            data_index_,
-            timestamp,
-            name,
-            id,
-            speed,
-            wheel_angle,
-            wheel_rot,
-            bb_x,
-            bb_y,
-            bb_z,
-            bb_length,
-            bb_width,
-            bb_height,
-            posX,
-            posY,
-            posZ,
-            velX,
-            velY,
-            velZ,
-            accX,
-            accY,
-            accZ,
-            distance_road,
-            distance_lanem,
-            lane_id,
-            lane_offset,
-            heading,
-            heading_rate,
-            heading_angle,
-            heading_angle_driving_direction,
-            pitch,
-            curvature,
-            collisions);
-    else
-        snprintf(data_entry,
-                 max_csv_entry_length,
-                 "%s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %d, %f, %f, %f, %f, %f, %f, %f, %s, ",
-                 name,
-                 id,
-                 speed,
-                 wheel_angle,
-                 wheel_rot,
-                 bb_x,
-                 bb_y,
-                 bb_z,
-                 bb_length,
-                 bb_width,
-                 bb_height,
-                 posX,
-                 posY,
-                 posZ,
-                 velX,
-                 velY,
-                 velZ,
-                 accX,
-                 accY,
-                 accZ,
-                 distance_road,
-                 distance_lanem,
-                 lane_id,
-                 lane_offset,
-                 heading,
-                 heading_rate,
-                 heading_angle,
-                 heading_angle_driving_direction,
-                 pitch,
-                 curvature,
-                 collisions);
+    snprintf(data_entry,
+             max_csv_entry_length,
+             "%s, %d, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %d, %f, %f, %f, %f, %f, %f, %f, %s, ",
+             name,
+             id,
+             speed,
+             wheel_angle,
+             wheel_rot,
+             bb_x,
+             bb_y,
+             bb_z,
+             bb_length,
+             bb_width,
+             bb_height,
+             posX,
+             posY,
+             posZ,
+             velX,
+             velY,
+             velZ,
+             accX,
+             accY,
+             accZ,
+             distance_road,
+             distance_lanem,
+             lane_id,
+             lane_offset,
+             heading,
+             heading_rate,
+             heading_angle,
+             heading_angle_driving_direction,
+             pitch,
+             curvature,
+             collisions);
 
-    // Add lines horizontally until the endline is reached
-    if (isendline == false)
+    if (file_.is_open())
     {
-        file_ << data_entry;
-    }
-    else if (file_.is_open())
-    {
-        file_ << data_entry << std::endl;
-        file_.flush();
-
-        data_index_++;
+        // Add lines horizontally until the endline is reached
+        if (isendline == true)
+        {
+            file_ << data_entry << std::endl;
+            file_.flush();
+            data_index_++;
+        }
+        else
+        {
+            file_ << data_entry;
+        }
     }
 
     if (callback_)

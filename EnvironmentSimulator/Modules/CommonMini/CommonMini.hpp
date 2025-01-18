@@ -772,9 +772,11 @@ public:
     // Instantiator
     static CSV_Logger& Inst();
 
+    // Call this first for each timestep, before LogVehicleData()
+    void LogEntryHeader(double timestamp);
+
     // Logging function called by VehicleLogger object using pass by value
     void LogVehicleData(bool        isendline,
-                        double      timestamp,
                         char const* name,
                         int         id,
                         double      speed,
