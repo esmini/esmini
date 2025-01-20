@@ -86,11 +86,6 @@ set(USE_IMPLOT
     CACHE BOOL
           "If implot for real-time plotting should be compiled.")
 
-set(BUILD_ODRVIEWER
-    ON
-    CACHE BOOL
-          "If odrviewer should be compiled.")
-
 set(BUILD_REPLAYER
     ON
     CACHE BOOL
