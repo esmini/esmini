@@ -2497,7 +2497,7 @@ That should basically be it.
 
 === Colors, textures and wheel rotations
 
-See https://github.com/esmini/esmini/issues/63#issuecomment-742273326[issue 63] for brief info.
+See https://github.com/esmini/esmini/issues/63#issuecomment-742273326[issue 63] for brief information on how to create vehicle 3D models with moving wheels.
 
 And these two scripts operating on textures and material respectively, can potentially provide some inspiration: +
 - https://github.com/esmini/esmini/blob/master/scripts/bake_signs.sh[bake_signs.sh] +
