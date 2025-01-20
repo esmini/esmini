@@ -28,13 +28,13 @@ add_subdirectory(Libraries/esminiRMLib)
 
 add_subdirectory(Applications/esmini)
 add_subdirectory(Applications/esmini-dyn)
-
-if(BUILD_ODRVIEWER)
+if(USE_OSG)
     add_subdirectory(Applications/odrviewer)
-endif(BUILD_ODRVIEWER)
-
+endif(USE_OSG)
 add_subdirectory(Applications/odrplot)
-add_subdirectory(Applications/replayer)
+if(BUILD_REPLAYER)
+    add_subdirectory(Applications/replayer)
+endif(BUILD_REPLAYER)
 add_subdirectory(code-examples)
 
 # ############################### Building Unittest ####################################################################
@@ -101,12 +101,10 @@ if(BUILD_REPLAYER)
         replayer
         ${ApplicationsFolder})
 endif(BUILD_REPLAYER)
-if(BUILD_ODRVIEWER)
+if(USE_OSG)
     set_folder(
         odrviewer
         ${ApplicationsFolder})
-endif(BUILD_ODRVIEWER)
-if(USE_OSG)
     set_folder(
         ViewerBase
         ${ModulesFolder})

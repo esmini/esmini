@@ -30,7 +30,6 @@
 #include "logger.hpp"
 #include "RoadManager.hpp"
 #include "helpText.hpp"
-#ifdef _USE_OSG
 #include "viewer.hpp"
 
 #define ROAD_MIN_LENGTH 30.0
@@ -368,8 +367,6 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
     }
 }
 
-#endif  // _USE_OSG
-
 int main(int argc, char **argv)
 {
     SE_Options &opt = SE_Env::Inst().GetOptions();
@@ -383,7 +380,6 @@ int main(int argc, char **argv)
 
     // use an ArgumentParser object to manage the program arguments.
     opt.AddOption("help", "Show this help message");
-#ifdef _USE_OSG
     opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many .tga files will be created");
@@ -423,7 +419,6 @@ int main(int argc, char **argv)
     opt.AddOption("text_scale", "Scale screen overlay text", "size factor", "1.0", true);
     opt.AddOption("traffic_rule", "Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)", "rule (right/left)");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
-#endif  // _USE_OSG
     opt.AddOption("version", "Show version and quit");
 
     if (opt.ParseArgs(argc, argv) != 0)
@@ -460,18 +455,9 @@ int main(int argc, char **argv)
     if (opt.GetOptionSet("help"))
     {
         opt.PrintUsage();
-#ifdef _USE_OSG
         viewer::Viewer::PrintUsage();
-#endif  // _USE_OSG
         return 0;
     }
-
-#ifndef _USE_OSG
-    LOG_INFO("Compiled with USE_OSG=FALSE, no functionality available");
-    return -1;
-#endif  // _USE_OSG
-
-#ifdef _USE_OSG
 
     static char str_buf[128];
 
@@ -785,5 +771,4 @@ int main(int argc, char **argv)
         delete (cars[i]);
     }
     return 0;
-#endif  // _USE_OSG
 }
