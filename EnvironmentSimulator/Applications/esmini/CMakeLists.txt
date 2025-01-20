@@ -78,7 +78,11 @@ target_link_libraries(
 
 target_link_libraries(
     esmini
-    PUBLIC yaml-cpp::yaml-cpp) # This is how you link against the yaml-cpp library
+    PUBLIC yaml-cpp::yaml-cpp)
+
+target_link_libraries(
+    esmini
+    PUBLIC ryml::ryml)
 
 if(USE_OSG)
     target_link_libraries(
