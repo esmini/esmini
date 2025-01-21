@@ -70,6 +70,10 @@ public:
     */
     int ClearOSIGroundTruth();
     /**
+    Copies the content of the OSI internal data struct to OSI external data struct
+     */
+    int SetOSIStaticExternalData();
+    /**
     Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
     */
     int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, bool reloadStaticGt);
@@ -197,5 +201,7 @@ private:
     void                   CreateMovingObjectFromSensorData(const osi3::SensorData& sd, int obj_nr);
     void                   CreateLaneBoundaryFromSensordata(const osi3::SensorData& sd, int lane_boundary_nr);
     bool                   osi_updated_ = false;
-    int                    osi_static_gt_loaded = -1;
+    bool                   osi_file_written_ = false;
+    int                    osi_static_gt_loaded_ = -1;
+    int                    osi_dynamic_gt_loaded_ = -1;
 };
