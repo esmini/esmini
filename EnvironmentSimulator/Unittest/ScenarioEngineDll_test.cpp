@@ -1277,6 +1277,61 @@ TEST(GroundTruthTests, check_teleport_not_affecting_vel_and_acc)
     SE_Close();
 }
 
+TEST(GroundTruthTests, check_update_osi_ground_truth_api)
+{
+    const osi3::GroundTruth* osi_gt_ptr;
+    struct stat              fileStatus;
+
+    SE_EnableOSIFile("gt_static_dynamic.osi");
+    ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
+    SE_UpdateOSIGroundTruth(false);
+
+    osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 7);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_StepDT(0.01f);
+    SE_UpdateOSIGroundTruth(false);
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 0);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_StepDT(0.01f);
+    SE_UpdateOSIGroundTruth(true);
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 7);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_StepDT(0.01f);
+    SE_UpdateOSIGroundTruth(false);
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 0);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_Close();
+    ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
+    EXPECT_EQ(fileStatus.st_size, 9489);
+}
+
+TEST(GroundTruthTests, check_update_gt_twice_same_frame)
+{
+    struct stat fileStatus;
+
+    SE_EnableOSIFile("gt_static_dynamic.osi");
+    SE_SetOptionValue("osi_freq", "1");
+
+    ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
+
+    SE_StepDT(0.01f);
+
+    SE_UpdateOSIGroundTruth(true);
+
+    SE_Close();
+    ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
+    EXPECT_EQ(fileStatus.st_size, 7863);
+}
+
 TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 {
     int               sv_size = 0;
