@@ -313,8 +313,8 @@ int OSIReporter::ClearOSIGroundTruth()
 
 int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, bool reloadStaticGt)
 {
-    if (GetUpdated() == true) 
-    {   
+    if (GetUpdated() == true)
+    {
         // We want static data but its not been loaded, dont return
         if (reloadStaticGt && osi_static_gt_loaded_ == -1)
         {
@@ -344,7 +344,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
     if (GetUpdated() == false)
     {
         UpdateOSIDynamicGroundTruth(objectState);
-        
+
         if ((GetUDPClientStatus() == 0 || IsFileOpen()))
         {
             obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
@@ -356,7 +356,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
             WriteOSIFile();
         }
     }
-    
+
     // Serialize static gt if requested, and not been loaded
     if (GetCounter() > 0 && reloadStaticGt && osi_static_gt_loaded_ == -1 && (GetUDPClientStatus() == 0 || IsFileOpen()))
     {
@@ -457,7 +457,8 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
     {
         proj_string_delimiter = ";";
     }
-    obj_osi_internal.gt->set_proj_string((opendrive->GetGeoReferenceOriginalString() + proj_string_delimiter + opendrive->GetGeoOffsetOriginalString()).c_str());
+    obj_osi_internal.gt->set_proj_string(
+        (opendrive->GetGeoReferenceOriginalString() + proj_string_delimiter + opendrive->GetGeoOffsetOriginalString()).c_str());
     obj_osi_internal.gt->set_map_reference(opendrive->GetGeoReferenceAsString());
     obj_osi_internal.gt->set_model_reference(stationary_model_reference);
 
