@@ -1699,8 +1699,9 @@ extern "C"
         {
             return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_, reloadStaticGt);
         }
+#else
+        (void)reloadStaticGt;
 #endif  // _USE_OSI
-
         return 0;
     }
 
