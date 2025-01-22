@@ -3691,9 +3691,9 @@ TEST(TestOsiReporter, CrestCurveRoadObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().base_polygon_size(), 52);
 #else
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().base_polygon_size(), 22);
-#endif  // _USE_OSG
     EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(0).x(), 3.208, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(0).y(), 10.820, 1e-3);
+#endif  // _USE_OSG
 #ifdef _USE_OSG
     EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(3).x(), 14.723, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(4).base().base_polygon(3).y(), 6.180, 1e-3);

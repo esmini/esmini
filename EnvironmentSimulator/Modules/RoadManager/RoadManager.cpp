@@ -6200,12 +6200,20 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             {
                                 LOG_ERROR("skiping outline, Mixed corners found in outline id {}", outline.GetId());
                                 isValidOutline = false;
+                                if (corner != NULL)
+                                {
+                                    delete corner;
+                                }
                                 break;
                             }
                             if (cornerId != -1 && cornerIds.find(cornerId) != cornerIds.end())
                             {
                                 LOG_ERROR("skiping outline, Corner id {} is not unique in outline id {}", cornerId, outline.GetId());
                                 isValidOutline = false;
+                                if (corner != NULL)
+                                {
+                                    delete corner;
+                                }
                                 break;
                             }
                             else
