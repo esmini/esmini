@@ -3027,14 +3027,14 @@ namespace roadmanager
             Z_REL     = 7,  // 0111
             Z_MASK    = 7,  // 0111
             H_SET     = Z_SET << 4,
+            H_DEFAULT = Z_DEFAULT << 4,
             H_ABS     = Z_ABS << 4,
             H_REL     = Z_REL << 4,
-            H_DEFAULT = Z_DEFAULT << 4,
             H_MASK    = Z_MASK << 4,
             P_SET     = Z_SET << 8,
+            P_DEFAULT = Z_DEFAULT << 8,
             P_ABS     = Z_ABS << 8,
             P_REL     = Z_REL << 8,
-            P_DEFAULT = Z_DEFAULT << 8,
             P_MASK    = Z_MASK << 8,
             R_SET     = Z_SET << 12,
             R_DEFAULT = Z_DEFAULT << 12,

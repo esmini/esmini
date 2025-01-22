@@ -609,6 +609,62 @@ extern "C"
         return -1;
     }
 
+    RM_DLL_API int RM_SetH(int handle, float h)
+    {
+        if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
+        {
+            return -1;
+        }
+        else
+        {
+            roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
+            if (pos)
+            {
+                if ((pos->GetMode(roadmanager::Position::PosModeType::SET) & roadmanager::Position::PosMode::H_MASK) ==
+                    roadmanager::Position::PosMode::H_ABS)
+                {
+                    pos->SetHeading(h);
+                    return 0;
+                }
+                else if ((pos->GetMode(roadmanager::Position::PosModeType::SET) & roadmanager::Position::PosMode::H_MASK) ==
+                         roadmanager::Position::PosMode::H_REL)
+                {
+                    pos->SetHeadingRelative(h);
+                    return 0;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    RM_DLL_API int RM_SetHMode(int handle, float h, int mode)
+    {
+        if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
+        {
+            return -1;
+        }
+        else
+        {
+            roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
+            if (pos)
+            {
+                if ((mode & roadmanager::Position::PosMode::H_MASK) == roadmanager::Position::PosMode::H_ABS)
+                {
+                    pos->SetHeading(h);
+                    return 0;
+                }
+                else if ((mode & roadmanager::Position::PosMode::H_MASK) == roadmanager::Position::PosMode::H_REL)
+                {
+                    pos->SetHeadingRelative(h);
+                    return 0;
+                }
+            }
+        }
+
+        return -1;
+    }
+
     RM_DLL_API int RM_SetRoadId(int handle, id_t roadId)
     {
         if (odrManager == nullptr || handle >= static_cast<int>(position.size()))

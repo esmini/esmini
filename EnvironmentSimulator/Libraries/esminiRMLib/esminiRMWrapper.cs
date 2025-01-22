@@ -147,26 +147,30 @@ namespace OpenDRIVE
 
         // Modes for interpret Z, Head, Pitch, Roll coordinate value as absolute or relative
         // grouped as bitmask: 0000 => skip/use current, 0001=DEFAULT, 0011=ABS, 0111=REL
-        // example: Relative Z, Absolute H, Default R, Current P = RM_Z_REL | RM_H_ABS | RM_R_DEF = 4151 = 0001 0000 0011 0111
+        // example: Relative Z, Absolute H, Default R, Current P = RM_Z_REL | RM_H_ABS | RM_R_DEFAULT = 4151 = 0001 0000 0011 0111
         // Must match roadmanager::Position::PositionMode
         public enum RM_PositionMode
         {
-            RM_Z_SET = 1,  // 0001
-            RM_Z_DEF = 1,  // 0001
-            RM_Z_ABS = 3,  // 0011
-            RM_Z_REL = 7,  // 0111
+            RM_Z_SET = 1,      // 0001
+            RM_Z_DEFAULT = 1,  // 0001
+            RM_Z_ABS = 3,      // 0011
+            RM_Z_REL = 7,      // 0111
+            RM_Z_MASK = 7,     // 0111
             RM_H_SET = RM_Z_SET << 4,
-            RM_H_DEF = RM_Z_DEF << 4,
+            RM_H_DEFAULT = RM_Z_DEFAULT << 4,
             RM_H_ABS = RM_Z_ABS << 4,
             RM_H_REL = RM_Z_REL << 4,
+            RM_H_MASK = RM_Z_MASK << 4,
             RM_P_SET = RM_Z_SET << 8,
-            RM_P_DEF = RM_Z_DEF << 8,
+            RM_P_DEFAULT = RM_Z_DEFAULT << 8,
             RM_P_ABS = RM_Z_ABS << 8,
             RM_P_REL = RM_Z_REL << 8,
+            RM_P_MASK = RM_Z_MASK << 8,
             RM_R_SET = RM_Z_SET << 12,
-            RM_R_DEF = RM_Z_DEF << 12,
+            RM_R_DEFAULT = RM_Z_DEFAULT << 12,
             RM_R_ABS = RM_Z_ABS << 12,
             RM_R_REL = RM_Z_REL << 12,
+            RM_R_MASK = RM_Z_MASK << 12
         };
 
         /// <summary>Initialize the OpenDRIVE utility manager</summary>
@@ -377,7 +381,7 @@ namespace OpenDRIVE
         /// Specify relative or absolute mode per component
         /// Any value set to float.NaN will be ignored/no change
         /// </summary>
-        /// <param name="index">Handle to the position object</param>
+        /// <param name="handle">Handle to the position object</param>
         /// <param name="x">cartesian coordinate x value</param>
         /// <param name="y">cartesian coordinate y value</param>
         /// <param name="z">cartesian coordinate z value</param>
@@ -394,6 +398,25 @@ namespace OpenDRIVE
         /// </example>
         [DllImport(LIB_NAME, EntryPoint = "RM_SetWorldPositionMode")]
         public static extern int SetWorldPositionMode(int index, float x, float y, float z, float h, float p, float r, int mode);
+
+        /// <summary>
+        /// Set heading (yaw), mode (relative/absolute) given by current setting for the object
+        /// </summary>
+        /// <param name="handle">Handle to the position object</param>
+        /// <param name="h">heading</param>
+        /// <returns>0 if successful, -1 if not</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetH")]
+        public static extern int SetH(int handle, float h);
+
+        /// <summary>
+        /// Set heading (yaw), mode (relative/absolute) given by current setting for the object
+        /// </summary>
+        /// <param name="handle">Handle to the position object</param>
+        /// <param name="h">heading</param>
+        /// <param name="mode">RM_H_ABS or RM_H_REL, see RM_PositionMode</param>
+        /// <returns>0 if successful, -1 if not</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetHMode")]
+        public static extern int SetHMode(int handle, float h, int mode);
 
         /// <summary>
         /// Change road belonging of position object, keeping actual x,y location, regardless other roads being closer

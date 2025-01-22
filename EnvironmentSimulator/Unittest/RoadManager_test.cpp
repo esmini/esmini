@@ -1802,7 +1802,7 @@ TEST(DistanceTest, CalcDistanceLong)
     pos0.SetHeading(M_PI_2);
     pos1.SetLanePos(1, -1, 1.0, 0.15);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
-    EXPECT_NEAR(dist, -9.48687, 1e-5);
+    EXPECT_NEAR(dist, -9.4868, 1e-3);
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_LONGITUDINAL, dist), 0);
     EXPECT_NEAR(dist, -11.96060, 1e-5);
 
@@ -4081,7 +4081,7 @@ TEST(RotationTest, TestFindOutRelativeOrientation)
     EXPECT_NEAR(pos.GetY(), 18.738, 1e-3);
     EXPECT_NEAR(pos.GetZ(), 12.5, 1e-3);
     EXPECT_NEAR(pos.GetH(), 0.785, 1e-3);
-    EXPECT_NEAR(pos.GetP(), -0.464, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), -0.463647609), 0.0, 1e-3);
     EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.0), 0.0, 1e-3);
     // move slightly forward
     pos.MoveAlongS(0.1);

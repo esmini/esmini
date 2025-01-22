@@ -80,9 +80,9 @@ TEST(TestSetMethods, SetWorldPosition)
     EXPECT_NEAR(pos_data.x, 40.0, 1E-5);
     EXPECT_NEAR(pos_data.y, -1.8, 1E-5);
     EXPECT_NEAR(pos_data.z, -0.3, 1E-5);
-    EXPECT_NEAR(pos_data.h, 0.25, 1E-5);
-    EXPECT_NEAR(pos_data.p, 2.0, 1E-5);
-    EXPECT_NEAR(pos_data.r, 3.0, 1E-5);
+    EXPECT_NEAR(pos_data.h, 3.3915, 1E-3);
+    EXPECT_NEAR(pos_data.p, 1.1415, 1E-3);
+    EXPECT_NEAR(pos_data.r, 6.1415, 1E-3);
     EXPECT_EQ(pos_data.roadId, 1);
     EXPECT_EQ(pos_data.laneId, -1);
     EXPECT_NEAR(pos_data.laneOffset, -0.10529, 1E-5);
@@ -94,7 +94,7 @@ TEST(TestSetMethods, SetWorldPosition)
     EXPECT_NEAR(pos_data.y, 16.0, 1E-5);
     EXPECT_NEAR(pos_data.z, 0.8, 1E-5);
     EXPECT_NEAR(pos_data.h, 4.8, 1E-5);
-    EXPECT_NEAR(pos_data.p, 2.0, 1E-5);  // from last setting
+    EXPECT_NEAR(pos_data.p, 1.1415, 1E-3);  // from last setting
     EXPECT_NEAR(pos_data.r, 0.0, 1E-5);
     EXPECT_EQ(pos_data.roadId, 2);
     EXPECT_EQ(pos_data.laneId, 1);
@@ -427,6 +427,62 @@ TEST(RoadId, TestStringRoadId)
     EXPECT_EQ(pos_data.junctionId, 0);
 
     EXPECT_EQ(RM_GetJunctionIdFromString("Junction4"), 0);
+
+    RM_Close();
+}
+
+TEST(TestSetMethods, TestSetH)
+{
+    const char*     odr_file = "../../../EnvironmentSimulator/Unittest/xodr/slope_up_slope_down.xodr";
+    RM_PositionData pos_data;
+
+    ASSERT_EQ(RM_Init(odr_file), 0);
+    ASSERT_EQ(RM_GetNumberOfRoads(), 1);
+
+    int pos_handle = RM_CreatePosition();
+
+    RM_SetLanePosition(pos_handle, 1, -1, 0.0f, 25.0f, true);
+    RM_GetPositionData(pos_handle, &pos_data);
+    EXPECT_NEAR(pos_data.roadId, 1, 1e-3);
+    EXPECT_NEAR(pos_data.x, 18.9151, 1e-3);
+    EXPECT_NEAR(pos_data.y, 16.4402, 1e-3);
+    EXPECT_NEAR(pos_data.z, 12.5, 1e-3);
+    EXPECT_NEAR(pos_data.h, 0.7853, 1e-3);
+    EXPECT_NEAR(pos_data.p, 5.8195, 1e-3);
+    EXPECT_NEAR(pos_data.r, 0.0, 1e-3);
+
+    // set absolute heading quarter of circle left
+    RM_SetH(pos_handle, static_cast<float>(M_PI_2));
+    RM_GetPositionData(pos_handle, &pos_data);
+    EXPECT_NEAR(pos_data.roadId, 1, 1e-3);
+    EXPECT_NEAR(pos_data.x, 18.9151, 1e-3);
+    EXPECT_NEAR(pos_data.y, 16.4402, 1e-3);
+    EXPECT_NEAR(pos_data.z, 12.5, 1e-3);
+    EXPECT_NEAR(pos_data.h, 1.6264, 1e-3);
+    EXPECT_NEAR(pos_data.p, 5.9614, 1e-3);
+    EXPECT_NEAR(pos_data.r, 5.9433, 1e-3);
+
+    // set relative (road) heading quarter of circle right
+    RM_SetHMode(pos_handle, static_cast<float>(2.0 * M_PI * 7.0 / 8.0), RM_PositionMode::RM_H_REL);
+    RM_GetPositionData(pos_handle, &pos_data);
+    EXPECT_NEAR(pos_data.roadId, 1, 1e-3);
+    EXPECT_NEAR(pos_data.x, 18.9151, 1e-3);
+    EXPECT_NEAR(pos_data.y, 16.4402, 1e-3);
+    EXPECT_NEAR(pos_data.z, 12.5, 1e-3);
+    EXPECT_NEAR(pos_data.h, 6.2275, 1e-3);
+    EXPECT_NEAR(pos_data.p, 5.9614, 1e-3);
+    EXPECT_NEAR(pos_data.r, 0.3398, 1e-3);
+
+    // set aboslute heading quarter of circle left (again) using mode variant of function
+    RM_SetHMode(pos_handle, static_cast<float>(M_PI_2), RM_PositionMode::RM_H_ABS);
+    RM_GetPositionData(pos_handle, &pos_data);
+    EXPECT_NEAR(pos_data.roadId, 1, 1e-3);
+    EXPECT_NEAR(pos_data.x, 18.9151, 1e-3);
+    EXPECT_NEAR(pos_data.y, 16.4402, 1e-3);
+    EXPECT_NEAR(pos_data.z, 12.5, 1e-3);
+    EXPECT_NEAR(pos_data.h, 1.6264, 1e-3);
+    EXPECT_NEAR(pos_data.p, 5.9614, 1e-3);
+    EXPECT_NEAR(pos_data.r, 5.9433, 1e-3);
 
     RM_Close();
 }

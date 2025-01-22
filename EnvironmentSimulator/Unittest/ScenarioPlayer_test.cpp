@@ -367,6 +367,76 @@ TEST(AlignmentTest, TestPosMode)
     delete player;
 }
 
+TEST(AlignmentTest, TestSetOrientationOnly)
+{
+    const char* args[] = {
+        "esmini",
+#if 0  // set to 1 to visualize the test
+                          "--window",
+                          "60",
+                          "60",
+                          "800",
+                          "400",
+#else
+        "--headless",
+#endif
+        "--osc",
+        "../../../EnvironmentSimulator/Unittest/xosc/slope_up_slope_down.xosc",
+        "--disable_stdout"
+    };
+
+    int             argc           = sizeof(args) / sizeof(char*);
+    ScenarioPlayer* player         = new ScenarioPlayer(argc, const_cast<char**>(args));
+    double          pause_duration = 0.1;  // useful for visualization of the test
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ASSERT_EQ(player->scenarioEngine->entities_.object_.size(), 1);
+    roadmanager::Position& pos = player->scenarioEngine->entities_.object_[0]->pos_;
+
+    while (player->scenarioEngine->getSimulationTime() < 1 * pause_duration - SMALL_NUMBER)
+    {
+        player->Frame(0.01);
+    }
+    // check initial pose
+    EXPECT_NEAR(pos.GetX(), 18.9151, 1e-3);
+    EXPECT_NEAR(pos.GetY(), 16.4402, 1e-3);
+    EXPECT_NEAR(pos.GetZ(), 12.5, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 0.7853, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 5.8195, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.0, 1e-3);
+
+    // set absolute heading quarter of circle left
+    pos.SetHeading(M_PI_2);
+    while (player->scenarioEngine->getSimulationTime() < 2 * pause_duration - SMALL_NUMBER)
+    {
+        player->Frame(0.01);
+    }
+    EXPECT_NEAR(pos.GetX(), 18.9151, 1e-3);
+    EXPECT_NEAR(pos.GetY(), 16.4402, 1e-3);
+    EXPECT_NEAR(pos.GetZ(), 12.5, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 1.6264, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 5.9614, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 5.9433, 1e-3);
+
+    // set relative (road) heading quarter of circle right
+    pos.SetHeadingRelative(2.0 * M_PI * 7.0 / 8.0);  // 7/8 of a full circle
+    while (player->scenarioEngine->getSimulationTime() < 3 * pause_duration - SMALL_NUMBER)
+    {
+        player->Frame(0.01);
+    }
+    EXPECT_NEAR(pos.GetX(), 18.9151, 1e-3);
+    EXPECT_NEAR(pos.GetY(), 16.4402, 1e-3);
+    EXPECT_NEAR(pos.GetZ(), 12.5, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 6.2275, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 5.9614, 1e-3);
+    EXPECT_NEAR(pos.GetR(), 0.3398, 1e-3);
+
+    delete player;
+}
+
 TEST(Controllers, TestSeparateControllersOnLatLong)
 {
     const char*     args[] = {"esmini",

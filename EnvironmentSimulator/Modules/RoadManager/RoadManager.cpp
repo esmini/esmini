@@ -9648,15 +9648,7 @@ void Position::EvaluateZHPR()
 
 void Position::EvaluateZHPR(int mode)
 {
-    double h          = 0.0;
-    double p          = 0.0;
-    double r          = 0.0;
-    double h_relative = 0.0;
-    double p_relative = 0.0;
-    double r_relative = 0.0;
-
-    if (CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_REL) || CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_REL) ||
-        CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_REL))
+    if (mode & (PosMode::H_SET | PosMode::P_SET | PosMode::R_SET))
     {
         R0R12EulerAngles(GetHRoad(),
                          CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS) ? 0.0 : GetPRoad(),
@@ -9687,32 +9679,6 @@ void Position::EvaluateZHPR(int mode)
             {
                 r_relative_ = r_rel_tmp;
             }
-        }
-    }
-    else
-    {
-        h = GetH();
-        p = GetP();
-        r = GetR();
-
-        CalcRelAnglesFromRoadAndAbsAngles(GetHRoad(), GetPRoad(), GetRRoad(), h, p, r, h_relative, p_relative, r_relative);
-
-        if (CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_ABS))
-        {
-            h_          = h;
-            h_relative_ = h_relative;
-        }
-
-        if (CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS))
-        {
-            p_          = p;
-            p_relative_ = p_relative;
-        }
-
-        if (CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_ABS))
-        {
-            r_          = r;
-            r_relative_ = r_relative;
         }
     }
 

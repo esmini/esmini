@@ -133,22 +133,26 @@ typedef struct
 // Must match roadmanager::Position::PositionMode
 typedef enum
 {
-    RM_Z_SET = 1,  // 0001
-    RM_Z_DEF = 1,  // 0001
-    RM_Z_ABS = 3,  // 0011
-    RM_Z_REL = 7,  // 0111
-    RM_H_SET = RM_Z_SET << 4,
-    RM_H_DEF = RM_Z_DEF << 4,
-    RM_H_ABS = RM_Z_ABS << 4,
-    RM_H_REL = RM_Z_REL << 4,
-    RM_P_SET = RM_Z_SET << 8,
-    RM_P_DEF = RM_Z_DEF << 8,
-    RM_P_ABS = RM_Z_ABS << 8,
-    RM_P_REL = RM_Z_REL << 8,
-    RM_R_SET = RM_Z_SET << 12,
-    RM_R_DEF = RM_Z_DEF << 12,
-    RM_R_ABS = RM_Z_ABS << 12,
-    RM_R_REL = RM_Z_REL << 12,
+    RM_Z_SET     = 1,  // 0001
+    RM_Z_DEFAULT = 1,  // 0001
+    RM_Z_ABS     = 3,  // 0011
+    RM_Z_REL     = 7,  // 0111
+    RM_Z_MASK    = 7,  // 0111
+    RM_H_SET     = RM_Z_SET << 4,
+    RM_H_DEFAULT = RM_Z_DEFAULT << 4,
+    RM_H_ABS     = RM_Z_ABS << 4,
+    RM_H_REL     = RM_Z_REL << 4,
+    RM_H_MASK    = RM_Z_MASK << 4,
+    RM_P_SET     = RM_Z_SET << 8,
+    RM_P_DEFAULT = RM_Z_DEFAULT << 8,
+    RM_P_ABS     = RM_Z_ABS << 8,
+    RM_P_REL     = RM_Z_REL << 8,
+    RM_P_MASK    = RM_Z_MASK << 8,
+    RM_R_SET     = RM_Z_SET << 12,
+    RM_R_DEFAULT = RM_Z_DEFAULT << 12,
+    RM_R_ABS     = RM_Z_ABS << 12,
+    RM_R_REL     = RM_Z_REL << 12,
+    RM_R_MASK    = RM_Z_MASK << 12
 } RM_PositionMode;
 
 #ifdef __cplusplus
@@ -393,6 +397,23 @@ extern "C"
     @return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
     */
     RM_DLL_API int RM_SetWorldPositionMode(int handle, float x, float y, float z, float h, float p, float r, int mode);
+
+    /**
+    Set heading (yaw), mode (relative/absolute) given by current setting for the object
+    @param handle Handle to the position object
+    @param h Heading
+    @return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
+    */
+    RM_DLL_API int RM_SetH(int handle, float h);
+
+    /**
+    Set heading (yaw), mode (relative/absolute) given by argument
+    @param handle Handle to the position object
+    @param h Heading
+    @param mode RM_H_ABS or RM_H_REL, see RM_PositionMode
+    @return >= 0 on success. For all codes see roadmanager.hpp::Position::enum class ReturnCode
+    */
+    RM_DLL_API int RM_SetHMode(int handle, float h, int mode);
 
     /**
     Change road belonging of position object, keeping actual x,y location, regardless other roads being closer
