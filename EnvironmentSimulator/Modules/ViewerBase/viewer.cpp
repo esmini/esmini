@@ -635,7 +635,7 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
     {
         if (object_->visibilityMask_ & scenarioengine::Object::Visibility::GRAPHICS)
         {
-            entity_->txNode_->getChild(0)->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB);
+            entity_->txNode_->getChild(0)->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB_WF);
             if (object_->visibilityMask_ & scenarioengine::Object::Visibility::SENSORS)
             {
                 entity_->SetTransparency(0.0);
@@ -1447,7 +1447,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     ClearNodeMaskBits(NodeMask::NODE_MASK_OSI_POINTS);
     ClearNodeMaskBits(NodeMask::NODE_MASK_OBJECT_SENSORS);
     ClearNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
-    ClearNodeMaskBits(NodeMask::NODE_MASK_ENTITY_BB);
+    ClearNodeMaskBits(NodeMask::NODE_MASK_ENTITY_BB_WF);
     ClearNodeMaskBits(NodeMask::NODE_MASK_INFO_PER_OBJ);
     SetNodeMaskBits(NodeMask::NODE_MASK_ENTITY_MODEL);
     SetNodeMaskBits(NodeMask::NODE_MASK_INFO);
@@ -2155,11 +2155,11 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     osg::ref_ptr<osg::StateSet> stateset = bbGeode->getOrCreateStateSet();  // Get the StateSet of the group
     stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
     stateset->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-    bbGeode->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
+    bbGeode->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB_WF);
 
     osg::ref_ptr<osg::Geode> center = new osg::Geode;
     center->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0.0f, 0.0f, 0.0f), 0.2f)));
-    center->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
+    center->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB_WF);
 
     bbGroup->addChild(bbGeode);
     bbGroup->addChild(center);
@@ -2669,6 +2669,8 @@ int Viewer::DrawMarking(roadmanager::RMObject* object)
                 geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
 
                 group->addChild(geode);
+                group->setNodeMask(NODE_MASK_MARKING);
+                printf("maskmarkingViewer: %d\n", GetNodeMaskBit(viewer::NodeMask::NODE_MASK_MARKING));
                 env_origin2odr_->addChild(group);
             }
         }
@@ -2892,6 +2894,11 @@ double Viewer::GetViewerDimension(const double val)
     return std::max(val, DEFAULT_MIN_DIM);
 }
 
+bool viewer::Viewer::IsMarkingActive() const
+{
+    return markingActive_;
+}
+
 // search, load and return trandform node for the given filename
 osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::GetModel(std::string filename, roadmanager::RMObject* object)
 {
@@ -3014,12 +3021,16 @@ void Viewer::AddModel(roadmanager::RMObject* object, osg::ref_ptr<osg::PositionA
     lod->setRange(0, 0, LOD_DIST_ROAD_FEATURES + MAX(GetViewerDimension(object->GetLength()), GetViewerDimension(object->GetWidth())));
     objGroup->addChild(lod);
     LODGroup->addChild(tx);
-    if (object->GetNumberOfMarkings() > 0)  // draw outlink marking
-    {
-        osg::PolygonMode* polygonMode = new osg::PolygonMode;
-        polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-        LODGroup->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-    }
+    tx->setNodeMask(NODE_MASK_OBJECT_SOLID);
+
+    // create wireframe model
+    osg::PolygonMode* polygonMode = new osg::PolygonMode;
+    polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+    osg::ref_ptr<osg::PositionAttitudeTransform> tx_wf = dynamic_cast<osg::PositionAttitudeTransform*>(
+        tx->clone(osg::CopyOp::DEEP_COPY_ALL));  // todo check if deep copy is needed or shallow copy is enough
+    tx_wf->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+    tx_wf->setNodeMask(NODE_MASK_OBJECT_WF);
+    LODGroup->addChild(tx_wf);
 }
 
 bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                       object,
@@ -3134,11 +3145,20 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                     objGroup->addChild(OutlineGroup);
                 }
             }
-            if (object->GetNumberOfMarkings() > 0)
-            {
-                ChangeModelAsWireFrame(objGroup);
-            }
+            // if (object->GetNumberOfMarkings() > 0)
+            // {
+            //     ChangeModelAsWireFrame(objGroup);
+            // }
             DrawMarking(object);
+            if (object->GetNumberOfMarkings() > 0)  // wrong, cannot clear all node mask bits if one object with marking and other without marking
+            {
+                ClearNodeMaskBits(NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF);
+                markingActive_ = true;  // maybe not correct, cannot say for sure what if one object with marking and other without marking
+            }
+            else
+            {
+                ClearNodeMaskBits(NODE_MASK_OBJECT_WF | NODE_MASK_MARKING);
+            }
         }
     }
 
@@ -3757,13 +3777,44 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
         {
             if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
             {
-                int mask = viewer_->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB) /
+                int mask = viewer_->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB_WF) /
                            viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
 
                 // Toggle between modes: 0: none, 1: model only, 2: bounding box, 3. model + Bounding box
                 mask = ((mask + 1) % 4) * viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
 
-                viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB, mask);
+                viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB_WF, mask);
+
+                int maskObject = 0;
+                if (viewer_->IsMarkingActive())
+                {
+                    maskObject = NODE_MASK_OBJECT_WF | NODE_MASK_MARKING;
+                    // Toggle between modes: 0: none, 1: markings, 2: wireframe, 3. wireframe + markings
+                    if (viewer_->GetNodeMaskBit(maskObject) == NODE_MASK_NONE)
+                    {
+                        viewer_->SetNodeMaskBits(maskObject, NODE_MASK_MARKING);
+                    }
+                    else if (viewer_->GetNodeMaskBit(maskObject) == NODE_MASK_MARKING)
+                    {
+                        viewer_->SetNodeMaskBits(maskObject, NODE_MASK_OBJECT_WF);
+                    }
+                    else if (viewer_->GetNodeMaskBit(maskObject) == NODE_MASK_OBJECT_WF)
+                    {
+                        viewer_->SetNodeMaskBits(maskObject, maskObject);
+                    }
+                    else if (viewer_->GetNodeMaskBit(maskObject) == maskObject)
+                    {
+                        viewer_->SetNodeMaskBits(maskObject, NODE_MASK_NONE);
+                    }
+                }
+                else
+                {
+                    maskObject = viewer_->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OBJECT_SOLID | viewer::NodeMask::NODE_MASK_OBJECT_WF) /
+                                 viewer::NodeMask::NODE_MASK_OBJECT_SOLID;
+                    // Toggle between modes: 0: none, 1: bounding box, 2: wireframe, 3. wireframe + Bounding box
+                    maskObject = ((maskObject + 1) % 4) * viewer::NodeMask::NODE_MASK_OBJECT_SOLID;
+                    viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OBJECT_SOLID | viewer::NodeMask::NODE_MASK_OBJECT_WF, maskObject);
+                }
             }
         }
         break;

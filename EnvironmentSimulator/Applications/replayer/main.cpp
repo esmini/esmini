@@ -742,13 +742,13 @@ int main(int argc, char** argv)
         std::string view_mode_string = opt.GetOptionArg("view_mode");
         if (view_mode_string == "boundingbox")
         {
-            view_mode = viewer::NodeMask::NODE_MASK_ENTITY_BB;
+            view_mode = viewer::NodeMask::NODE_MASK_ENTITY_BB_WF;
         }
         else if (view_mode_string == "both")
         {
-            view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB;
+            view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB_WF;
         }
-        viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB, static_cast<int>(view_mode));
+        viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB_WF, static_cast<int>(view_mode));
 
         if (opt.GetOptionSet("no_ghost"))
         {

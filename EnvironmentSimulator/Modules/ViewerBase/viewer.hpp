@@ -61,13 +61,17 @@ namespace viewer
         NODE_MASK_OSI_LINES        = (1 << 5),
         NODE_MASK_ENV_MODEL        = (1 << 6),
         NODE_MASK_ENTITY_MODEL     = (1 << 7),
-        NODE_MASK_ENTITY_BB        = (1 << 8),
+        NODE_MASK_ENTITY_BB_WF     = (1 << 8),
         NODE_MASK_INFO             = (1 << 9),
         NODE_MASK_INFO_PER_OBJ     = (1 << 10),
         NODE_MASK_ROAD_SENSORS     = (1 << 11),
         NODE_MASK_TRAJECTORY_LINES = (1 << 12),
         NODE_MASK_ROUTE_WAYPOINTS  = (1 << 13),
         NODE_MASK_SIGN             = (1 << 14),
+        NODE_MASK_OBJECT_SOLID     = (1 << 15),
+        NODE_MASK_OBJECT_WF        = (1 << 16),
+        NODE_MASK_MARKING          = (1 << 17),
+
     } NodeMask;
 
     osg::Vec4 ODR2OSGColor(roadmanager::RoadMarkColor color);
@@ -588,6 +592,7 @@ namespace viewer
         static double GetViewerDimension(const esmini::DimensionComponent component);
         // Gives dimension for viewer
         static double GetViewerDimension(const double val);
+        bool          IsMarkingActive() const;
 
     private:
         // Get bounding box from the given 3D model node
@@ -649,6 +654,7 @@ namespace viewer
         osg::ref_ptr<FetchImage>              fetch_image_;
         osgViewer::ViewerBase::ThreadingModel initialThreadingModel_;
         bool                                  stand_in_model_;
+        bool                                  markingActive_ = false;
 
         struct
         {
