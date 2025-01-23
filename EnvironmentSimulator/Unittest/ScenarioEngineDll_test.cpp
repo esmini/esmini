@@ -536,7 +536,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 148188);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 148210);  // initial OSI size, including static content
 
     int road_lane_size;
 
@@ -549,13 +549,13 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 149481);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 149503);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_UpdateOSIGroundTruth();
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 150775);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 150797);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -3650,7 +3650,7 @@ TEST(TestOsiReporter, CrestCurveRoadObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().dimension().height(), 10);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().orientation().roll(), 0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().orientation().pitch(), 0);
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().orientation().yaw(), 0);
+    EXPECT_NEAR(osi_gt.stationary_object(2).base().orientation().yaw(), -0.900, 1e-3);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(2).base().base_polygon_size(), 4);
     EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(0).x(), 0.0, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(2).base().base_polygon(0).y(), 0.0, 1e-3);
@@ -3667,7 +3667,7 @@ TEST(TestOsiReporter, CrestCurveRoadObjectTest)
     EXPECT_NEAR(osi_gt.stationary_object(3).base().dimension().height(), 3.100, 1e-3);
     EXPECT_EQ(osi_gt.stationary_object(3).base().orientation().roll(), 0);
     EXPECT_EQ(osi_gt.stationary_object(3).base().orientation().pitch(), 0);
-    EXPECT_EQ(osi_gt.stationary_object(3).base().orientation().yaw(), 0);
+    EXPECT_NEAR(osi_gt.stationary_object(3).base().orientation().yaw(), -0.63, 1e-3);
     EXPECT_EQ(osi_gt.stationary_object(3).base().base_polygon_size(), 8);
     EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(0).x(), -2.308, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(3).base().base_polygon(0).y(), -4.434, 1e-3);
@@ -3686,7 +3686,7 @@ TEST(TestOsiReporter, CrestCurveRoadObjectTest)
     EXPECT_NEAR(osi_gt.stationary_object(4).base().dimension().height(), 2.000, 1e-3);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().orientation().roll(), 0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().orientation().pitch(), 0);
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().orientation().yaw(), 0);
+    EXPECT_NEAR(osi_gt.stationary_object(4).base().orientation().yaw(), -0.333, 1e-3);
 #ifdef _USE_OSG
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(4).base().base_polygon_size(), 52);
 #else
@@ -3738,7 +3738,7 @@ TEST(TestOsiReporter, CrestCurveRoadObjectTest)
     EXPECT_NEAR(osi_gt.stationary_object(8).base().dimension().height(), 2.050, 1e-3);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(8).base().orientation().roll(), 0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(8).base().orientation().pitch(), 0);
-    EXPECT_DOUBLE_EQ(osi_gt.stationary_object(8).base().orientation().yaw(), 0);
+    EXPECT_NEAR(osi_gt.stationary_object(8).base().orientation().yaw(), -0.333, 1e-3);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(8).base().base_polygon_size(), 24);
     EXPECT_NEAR(osi_gt.stationary_object(8).base().base_polygon(3).x(), 18.098, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(8).base().base_polygon(3).y(), 11.546, 1e-3);
