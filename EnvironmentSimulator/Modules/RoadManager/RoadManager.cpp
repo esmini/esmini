@@ -3823,11 +3823,6 @@ std::vector<Outline> roadmanager::RMObject::CreateOutlinesFromRepeat(const Repea
             corner->SetCornerId(outline.GetNumberOfCorners());
             outline.AddCorner(corner);
         }
-        double outline_scale_u = abs(GetValueOrZero(GetRepeatedObjLengthWithFactor(repeat, factor)) / lengthBb);
-        double outline_scale_v = abs(GetValueOrZero(GetRepeatedObjWidthWithFactor(repeat, factor)) / widthBb);
-        double outline_scale_z =
-            abs((GetValueOrZero(GetRepeatedObjZOffsetWithFactor(repeat, factor)) + GetValueOrZero(GetRepeatedObjHeightWithFactor(repeat, factor))) /
-                (zBb + heightBb));
         outline.SetScale(scale_u, scale_v, scale_z);
         outlines.emplace_back(std::move(outline));
     }
@@ -4091,7 +4086,7 @@ void RMObject::AddMarking(Marking marking)
 void RMObject::AddRepeat(Repeat repeat)
 {
     repeats_.emplace_back(std::move(repeat));
-};
+}
 
 int RMObject::GetNumberOfOutlines()
 {
@@ -4151,12 +4146,12 @@ void RMObject::SetHeight(const esmini::DimensionComponent& height)
     height_ = height;
 }
 // Set the road id which this object belong
-void RMObject::SetRoadId(double val)
+void RMObject::SetRoadId(int val)
 {
     road_id_ = val;
 }
 // Get the road id which this object belong
-double RMObject::GetRoadId() const
+int RMObject::GetRoadId() const
 {
     return road_id_;
 }

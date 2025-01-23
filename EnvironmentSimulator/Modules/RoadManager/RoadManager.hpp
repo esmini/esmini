@@ -1965,9 +1965,9 @@ namespace roadmanager
     {
     public:
         MarkingSegment(){};
-        MarkingSegment(int startCornerId, int endCornerId_, int outlineId)
+        MarkingSegment(int startCornerId, int endCornerId, int outlineId)
             : startCornerId_(startCornerId),
-              endCornerId_(endCornerId_),
+              endCornerId_(endCornerId),
               outlineId_(outlineId)
         {
         }
@@ -2175,9 +2175,9 @@ namespace roadmanager
         esmini::DimensionComponent &GetHeight();
         void                        SetHeight(const esmini::DimensionComponent &height);
         // Set the road id which this object belong
-        void SetRoadId(double val);
+        void SetRoadId(int val);
         // Get the road id which this object belong
-        double GetRoadId() const;
+        int GetRoadId() const;
         // check whether all corners in all outlines are local, In which each all outlines shall have same shape. Hence e.g. shallow copies is
         // possible
         bool IsAllCornersLocal();
@@ -2204,7 +2204,7 @@ namespace roadmanager
         double                     heading_ = 0.0;
         double                     pitch_   = 0.0;
         double                     roll_    = 0.0;
-        double                     road_id_;
+        int                        road_id_;
         int                        numberOfOriginalOutline_   = -1;
         double                     lengthOfCompoundOutlines_  = std::nan("");
         double                     widthOfCompoundOutlines_   = std::nan("");
