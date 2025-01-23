@@ -601,6 +601,14 @@ double GetReporterDimension(const double val)
     return DEFAULT_MIN_DIM;
 }
 
+void UpdateOSIStationaryObjectOrientation(roadmanager::RMObject *object)
+{
+    // Set OSI Stationary Object Orientation
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(object->GetRoll()));
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(object->GetPitch()));
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(object->GetH() + object->GetHOffset()));
+}
+
 void UpdateOSIStationaryObjectDimensionAndOrientation(roadmanager::RMObject *object)
 {
     // Set OSI Stationary Object Bounding box
@@ -609,10 +617,7 @@ void UpdateOSIStationaryObjectDimensionAndOrientation(roadmanager::RMObject *obj
     obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(GetReporterDimension(object->GetLength().GetRawValue()));
     // only bounding box
 
-    // Set OSI Stationary Object Orientation
-    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(object->GetRoll()));
-    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(object->GetPitch()));
-    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(object->GetH() + object->GetHOffset()));
+    UpdateOSIStationaryObjectOrientation(object);
 }
 
 int UpdateOSIStationaryObjectODRPosition(double x, double y, double z)
@@ -666,6 +671,7 @@ int OSIReporter::CreateOSIStationaryObjectODR(roadmanager::RMObject *object, boo
         {
             AddOSIStationaryObjectAtPosition(object, isRepeat);  // each outline is separate object
             AddPolygonToOSIStationaryObject(outline);
+            UpdateOSIStationaryObjectOrientation(object);
         }
     }
     else
