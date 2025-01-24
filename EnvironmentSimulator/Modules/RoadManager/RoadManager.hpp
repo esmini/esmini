@@ -2194,7 +2194,7 @@ namespace roadmanager
         //  create new object for given repeat, current s, factor and position
         RMObject *CreateObjectFromRepeat(const Repeat &repeat, double cur_s, double factor, roadmanager::Position &pos);
         // create new outline for given repeat, current s and factor
-        std::vector<Outline> CreateOutlinesFromRepeat(const Repeat &repeat, double cur_s, double factor, double outlineId, Position &pos);
+        std::vector<Outline> CreateOutlinesFromRepeat(const Repeat &repeat, double cur_s, double factor, int outlineId, Position &pos);
         // get the bb of outlines(compound bb of all corners) for the given object
         void GetCompoundOutlinesBB(double &length, double &width, double &height, double &z);
         // create and fill markings points in itself for the given object.

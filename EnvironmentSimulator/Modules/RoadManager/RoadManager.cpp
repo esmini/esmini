@@ -3725,11 +3725,7 @@ RMObject* roadmanager::RMObject::CreateObjectFromRepeat(const Repeat& repeat, do
     return obj;
 }
 
-std::vector<Outline> roadmanager::RMObject::CreateOutlinesFromRepeat(const Repeat& repeat,
-                                                                     double        cur_s,
-                                                                     double        factor,
-                                                                     double        outlineId,
-                                                                     Position&     pos)
+std::vector<Outline> roadmanager::RMObject::CreateOutlinesFromRepeat(const Repeat& repeat, double cur_s, double factor, int outlineId, Position& pos)
 {
     double scale_u = 1.0;
     double scale_v = 1.0;
