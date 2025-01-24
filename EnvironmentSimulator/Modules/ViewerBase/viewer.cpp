@@ -2670,7 +2670,6 @@ int Viewer::DrawMarking(roadmanager::RMObject* object)
 
                 group->addChild(geode);
                 group->setNodeMask(NODE_MASK_MARKING);
-                printf("maskmarkingViewer: %d\n", GetNodeMaskBit(viewer::NodeMask::NODE_MASK_MARKING));
                 env_origin2odr_->addChild(group);
             }
         }
@@ -2768,13 +2767,6 @@ void Viewer::CreateOutlineModel(const roadmanager::Outline& outline, osg::Vec4 c
     material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
     material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
     geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
-}
-
-void Viewer::ChangeModelAsWireFrame(osg::ref_ptr<osg::Group> objGroup)
-{
-    osg::PolygonMode* polygonMode = new osg::PolygonMode;
-    polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-    objGroup->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
 }
 
 osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(std::string filename)
@@ -3012,7 +3004,10 @@ void Viewer::UpdateModel(roadmanager::RMObject*                       object,
 }
 
 // create object from given object and scales
-void Viewer::AddModel(roadmanager::RMObject* object, osg::ref_ptr<osg::PositionAttitudeTransform> tx, osg::ref_ptr<osg::Group> objGroup)
+void Viewer::AddModel(bool                                         IsMarkingAvailable,
+                      roadmanager::RMObject*                       object,
+                      osg::ref_ptr<osg::PositionAttitudeTransform> tx,
+                      osg::ref_ptr<osg::Group>                     objGroup)
 {
     // add current LOD and create a new one
     osg::ref_ptr<osg::LOD>   lod      = new osg::LOD();
@@ -3020,8 +3015,11 @@ void Viewer::AddModel(roadmanager::RMObject* object, osg::ref_ptr<osg::PositionA
     lod->addChild(LODGroup);
     lod->setRange(0, 0, LOD_DIST_ROAD_FEATURES + MAX(GetViewerDimension(object->GetLength()), GetViewerDimension(object->GetWidth())));
     objGroup->addChild(lod);
-    LODGroup->addChild(tx);
-    tx->setNodeMask(NODE_MASK_OBJECT_SOLID);
+    if (!IsMarkingAvailable)  // show bounding box for objects without markings
+    {
+        LODGroup->addChild(tx);
+        tx->setNodeMask(NODE_MASK_OBJECT_SOLID);
+    }
 
     // create wireframe model
     osg::PolygonMode* polygonMode = new osg::PolygonMode;
@@ -3031,6 +3029,24 @@ void Viewer::AddModel(roadmanager::RMObject* object, osg::ref_ptr<osg::PositionA
     tx_wf->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
     tx_wf->setNodeMask(NODE_MASK_OBJECT_WF);
     LODGroup->addChild(tx_wf);
+}
+
+// create object from given object and scales
+void Viewer::AddOutlineModel(bool IsMarkingAvailable, osg::ref_ptr<osg::Geode> geode, osg::ref_ptr<osg::Group> objGroup)
+{
+    if (!IsMarkingAvailable)  // show bounding box only for objects without markings
+    {
+        objGroup->addChild(geode);
+        geode->setNodeMask(NODE_MASK_OBJECT_SOLID);
+    }
+    // create wireframe model
+    osg::PolygonMode* polygonMode = new osg::PolygonMode;
+    polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+    osg::ref_ptr<osg::Geode> geode_wf =
+        dynamic_cast<osg::Geode*>(geode->clone(osg::CopyOp::DEEP_COPY_ALL));  // todo check if deep copy is needed or shallow copy is enough
+    geode_wf->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+    geode_wf->setNodeMask(NODE_MASK_OBJECT_WF);
+    objGroup->addChild(geode_wf);
 }
 
 bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                       object,
@@ -3051,7 +3067,7 @@ bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                       
                 {
                     osg::ref_ptr<osg::Geode> geodeNew = new osg::Geode;
                     CreateOutlineModel(repeatedObj->GetOutline(0), color, geodeNew);  // zero distance outlie. only one outline shall be avilable
-                    objGroup->addChild(geodeNew);
+                    AddOutlineModel(object->GetNumberOfMarkings() > 0, geodeNew, objGroup);
                 }
                 else
                 {
@@ -3061,7 +3077,7 @@ bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                       
                     scale_y = GetViewerDimension(repeatedObj->GetWidth().Get()) / GetViewerDimension(object->GetWidth().Get());
                     scale_z = GetViewerDimension(repeatedObj->GetHeight().Get()) / GetViewerDimension(object->GetHeight().Get());
                     UpdateModel(repeatedObj, scale_x, scale_y, scale_z, clone);
-                    AddModel(repeatedObj, clone, objGroup);
+                    AddModel(object->GetNumberOfMarkings() > 0, repeatedObj, clone, objGroup);
                 }
             }
             else
@@ -3076,13 +3092,13 @@ bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                       
                         osg::ref_ptr<osg::PositionAttitudeTransform> xform = new osg::PositionAttitudeTransform();
                         xform->addChild(OutlineGroup->getChild(i));
                         UpdateModel(repeatedObj, scale_x, scale_y, scale_z, xform);
-                        AddModel(repeatedObj, xform, objGroup);
+                        AddModel(object->GetNumberOfMarkings() > 0, repeatedObj, xform, objGroup);
                     }
                     else
                     {
                         osg::ref_ptr<osg::Geode> geodeNew = new osg::Geode;
                         CreateOutlineModel(outline, color, geodeNew);  // create outline model
-                        objGroup->addChild(geodeNew);
+                        AddOutlineModel(object->GetNumberOfMarkings() > 0, geodeNew, objGroup);
                     }
                 }
             }
@@ -3138,26 +3154,22 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 if (tx != nullptr)
                 {
                     UpdateModel(object, scale_x, scale_y, scale_z, tx);  // update object with position and scale
-                    AddModel(object, tx, objGroup);
+                    AddModel(object->GetNumberOfMarkings() > 0, object, tx, objGroup);
                 }
                 else
                 {
-                    objGroup->addChild(OutlineGroup);
+                    for (unsigned int i = 0; i < OutlineGroup->getNumChildren(); i++)
+                    {
+                        AddOutlineModel(object->GetNumberOfMarkings() > 0, dynamic_cast<osg::Geode*>(OutlineGroup->getChild(i)), objGroup);
+                    }
                 }
             }
-            // if (object->GetNumberOfMarkings() > 0)
-            // {
-            //     ChangeModelAsWireFrame(objGroup);
-            // }
             DrawMarking(object);
-            if (object->GetNumberOfMarkings() > 0)  // wrong, cannot clear all node mask bits if one object with marking and other without marking
+            int allObjMask = NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF | NODE_MASK_MARKING;
+            int maskObj    = GetNodeMaskBit(allObjMask);
+            if (maskObj / allObjMask == 1)  // marking and object are visible
             {
-                ClearNodeMaskBits(NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF);
-                markingActive_ = true;  // maybe not correct, cannot say for sure what if one object with marking and other without marking
-            }
-            else
-            {
-                ClearNodeMaskBits(NODE_MASK_OBJECT_WF | NODE_MASK_MARKING);
+                SetNodeMaskBits(allObjMask, viewer::NodeMask::NODE_MASK_MARKING | viewer::NodeMask::NODE_MASK_OBJECT_SOLID);
             }
         }
     }
@@ -3785,35 +3797,23 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 
                 viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB_WF, mask);
 
-                int maskObject = 0;
-                if (viewer_->IsMarkingActive())
+                int allMaskActive = NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF | NODE_MASK_MARKING;
+
+                if (viewer_->GetNodeMaskBit(allMaskActive) / (NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF | NODE_MASK_MARKING) == 1)
                 {
-                    maskObject = NODE_MASK_OBJECT_WF | NODE_MASK_MARKING;
-                    // Toggle between modes: 0: none, 1: markings, 2: wireframe, 3. wireframe + markings
-                    if (viewer_->GetNodeMaskBit(maskObject) == NODE_MASK_NONE)
-                    {
-                        viewer_->SetNodeMaskBits(maskObject, NODE_MASK_MARKING);
-                    }
-                    else if (viewer_->GetNodeMaskBit(maskObject) == NODE_MASK_MARKING)
-                    {
-                        viewer_->SetNodeMaskBits(maskObject, NODE_MASK_OBJECT_WF);
-                    }
-                    else if (viewer_->GetNodeMaskBit(maskObject) == NODE_MASK_OBJECT_WF)
-                    {
-                        viewer_->SetNodeMaskBits(maskObject, maskObject);
-                    }
-                    else if (viewer_->GetNodeMaskBit(maskObject) == maskObject)
-                    {
-                        viewer_->SetNodeMaskBits(maskObject, NODE_MASK_NONE);
-                    }
+                    viewer_->SetNodeMaskBits(allMaskActive, NODE_MASK_NONE);
+                }
+                else if (viewer_->GetNodeMaskBit(allMaskActive) / (NODE_MASK_OBJECT_SOLID | NODE_MASK_MARKING) == 1)
+                {
+                    viewer_->SetNodeMaskBits(allMaskActive, NODE_MASK_OBJECT_WF);
+                }
+                else if (viewer_->GetNodeMaskBit(allMaskActive) / (NODE_MASK_OBJECT_WF) == 1)
+                {
+                    viewer_->SetNodeMaskBits(allMaskActive | NODE_MASK_MARKING);
                 }
                 else
                 {
-                    maskObject = viewer_->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OBJECT_SOLID | viewer::NodeMask::NODE_MASK_OBJECT_WF) /
-                                 viewer::NodeMask::NODE_MASK_OBJECT_SOLID;
-                    // Toggle between modes: 0: none, 1: bounding box, 2: wireframe, 3. wireframe + Bounding box
-                    maskObject = ((maskObject + 1) % 4) * viewer::NodeMask::NODE_MASK_OBJECT_SOLID;
-                    viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OBJECT_SOLID | viewer::NodeMask::NODE_MASK_OBJECT_WF, maskObject);
+                    viewer_->SetNodeMaskBits(allMaskActive, NODE_MASK_OBJECT_SOLID | NODE_MASK_MARKING);
                 }
             }
         }

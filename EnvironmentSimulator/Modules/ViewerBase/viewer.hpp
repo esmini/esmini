@@ -604,7 +604,11 @@ namespace viewer
                          double                                       scale_z,
                          osg::ref_ptr<osg::PositionAttitudeTransform> clone);
         // Add model to the given graphics group
-        void AddModel(roadmanager::RMObject* object, osg::ref_ptr<osg::PositionAttitudeTransform> tx, osg::ref_ptr<osg::Group> objGroup);
+        void AddModel(bool                                         IsMarkingAvailable,
+                      roadmanager::RMObject*                       object,
+                      osg::ref_ptr<osg::PositionAttitudeTransform> tx,
+                      osg::ref_ptr<osg::Group>                     objGroup);
+        void AddOutlineModel(bool IsMarkingAvailable, osg::ref_ptr<osg::Geode> geode, osg::ref_ptr<osg::Group> objGroup);
         // validate and throw warning only if viewer default value used
         void ValidateDimensionsForViewing(roadmanager::RMObject* object) const;
         // Update RM object and get scale only if RM object cant be updated. eg. respect RM object dimension
@@ -619,8 +623,6 @@ namespace viewer
         bool                             CreateRoadMarkLines(roadmanager::OpenDrive* od);
         // create one outline model
         void CreateOutlineModel(const roadmanager::Outline& outline, osg::Vec4 color, osg::ref_ptr<osg::Geode> geode, bool isShallowCopy = false);
-        // change viewer object as wireframe for better marking view
-        void ChangeModelAsWireFrame(osg::ref_ptr<osg::Group> objGroup);
         // create marking for the object
         int DrawMarking(roadmanager::RMObject* object);
         // load and return the model for this given model name
