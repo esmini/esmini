@@ -788,7 +788,7 @@ int main(int argc, char** argv)
         {
             view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB_WF;
         }
-        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB_WF, static_cast<int>(view_mode));
+        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB_WF, view_mode);
 
         if (opt.GetOptionSet("hide_trajectories"))
         {

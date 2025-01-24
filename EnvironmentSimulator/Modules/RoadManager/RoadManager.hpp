@@ -2424,7 +2424,7 @@ namespace roadmanager
         {
             return static_cast<unsigned int>(object_.size());
         }
-        RMObject               *GetRoadObject(int idx) const;
+        RMObject               *GetRoadObject(idx_t idx) const;
         std::vector<RMObject *> GetRoadObjects()
         {
             return object_;

@@ -628,7 +628,7 @@ int UpdateOSIStationaryObjectODRPosition(roadmanager::RMObject *object)
     // Set OSI Stationary Object Position
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(object->GetX());
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(object->GetY());
-    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(object->GetZ() + object->GetZOffset() + object->GetHeight() / 2.0);
+    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(object->GetZ() + object->GetZOffset() + object->GetHeight().Get() / 2.0);
     return 0;
 }
 

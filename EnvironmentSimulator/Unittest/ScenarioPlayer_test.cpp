@@ -738,19 +738,19 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().x(), 20.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().y(), -7.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().z(), 8.0, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().yaw(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().yaw(), 0.2, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().pitch(), 0.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().roll(), 0.0, 1e-3);
 
     EXPECT_EQ(osi_gt_ptr->stationary_object(0).base().base_polygon_size(), 4);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(0).x(), -2.3574, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(0).y(), 1.5627, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(1).x(), -1.3641, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(1).y(), -3.3375, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(2).x(), 7.8405, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(2).y(), 1.5893, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(3).x(), 4.5029, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(3).y(), 2.9534, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(0).x(), -2.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(0).y(), 2.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(1).x(), -2.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(1).y(), -3.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(2).x(), 8.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(2).y(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(3).x(), 5.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(3).y(), 2.0, 1e-3);
 
     // verify correct location of OpenDRIVE second stationary object
     EXPECT_EQ(osi_gt_ptr->stationary_object(1).id().value(), 1);
