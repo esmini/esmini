@@ -8,6 +8,8 @@ int main(int argc, char* argv[])
     (void)argc;
     (void)argv;
 
+    SE_SetOption("sensors");  // enable visualization of sensor view frustums
+
     SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
 
     int sensor_id = -1;
