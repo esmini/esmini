@@ -1,5 +1,31 @@
 ## esmini release notes
 
+### 2025-01-24 Version 2.45.0
+
+New features:
+- Compile `replayer` also for [slim esmini](https://esmini.github.io/#_slim_esmini_customize_configration) without graphics support
+  - offering limited functionality:
+    - collision detection report
+    - merge dat files
+
+Improvements and fixes:
+- Possible to request static OSI GT anytime ([issue #639](https://github.com/esmini/esmini/issues/639))
+  - add flag argument to [`SE_UpdateOSIGroundTruth()`](https://github.com/esmini/esmini/blob/043ba440c809e1cbd850e318bc0bf159b88bab0e/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1419)
+  - more info in [User guide - OSI data via API call](https://esmini.github.io/#_osi_data_via_api_call)
+- Fix csv logger id order issue ([issue #655](https://github.com/esmini/esmini/issues/655))
+  - previous assumed id 0 always first object
+  - now object order does not matter
+- Pass AcquirePositionAction to ghost vehicle ([PR #654](https://github.com/esmini/esmini/pull/654))
+- Refactor RoadManager to comply with enabled CI compile warnings checks
+- Improve 3D wheel model discoverability in [User guide](https://esmini.github.io/#_colors_textures_and_wheel_rotations) ([PR #657](https://github.com/esmini/esmini/pull/657))
+
+esminiLib/esminiRMlib API updates:
+- Add roadmanager lib functions `RM_SetH*` to set heading alone
+  - see [esminiRMLib](https://github.com/esmini/esmini/blob/043ba440c809e1cbd850e318bc0bf159b88bab0e/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp#L401C1-L416C63) and [esminiRMWrapper.cs](https://github.com/esmini/esmini/blob/043ba440c809e1cbd850e318bc0bf159b88bab0e/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs#L402)
+- Update some types from int to unsigned int (including id_t and idx_t)
+  - should not affect actual functionality
+  - undefined indicated by 0xffff ffff instead of -1 (binary identical)
+
 ### 2025-01-16 Version 2.44.2
 
 New features:
