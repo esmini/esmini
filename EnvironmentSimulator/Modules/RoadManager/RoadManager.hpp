@@ -1690,7 +1690,7 @@ namespace roadmanager
         void       SetCornerId(int cornerId) override;
 
     private:
-        id_t                       roadId_;
+        id_t                      roadId_;
         double                    s_, t_, dz_, height_, center_s_, center_t_, center_heading_;
         int                       cornerId_, originalCornerId_;
         OutlineCorner::CornerType type_      = OutlineCorner::CornerType::ROAD_CORNER;
@@ -1718,7 +1718,7 @@ namespace roadmanager
         void       SetCornerId(int cornerId) override;
 
     private:
-        id_t                       roadId_;
+        id_t                      roadId_;
         double                    s_, t_, u_, v_, zLocal_, height_, heading_;
         int                       cornerId_, originalCornerId_;
         OutlineCorner::CornerType type_      = OutlineCorner::CornerType::LOCAL_CORNER;
@@ -2148,7 +2148,7 @@ namespace roadmanager
         void                        AddOutline(Outline outline);
         void                        AddMarking(Marking marking);
         void                        AddRepeat(Repeat repeat);
-        size_t                         GetNumberOfOutlines();
+        size_t                      GetNumberOfOutlines();
         size_t                      GetNumberOfRepeats() const;
         size_t                      GetNumberOfMarkings() const;
         std::vector<Repeat>        &GetRepeats();
@@ -2402,25 +2402,25 @@ namespace roadmanager
         {
             return static_cast<unsigned int>(type_.size());
         }
-        RoadTypeEntry *GetRoadType(idx_t idx) const;
-        RoadLink      *GetLink(LinkType type) const;
-        void           AddLine(Line *line);
-        void           AddArc(Arc *arc);
-        void           AddSpiral(Spiral *spiral);
-        void           AddPoly3(Poly3 *poly3);
-        void           AddParamPoly3(ParamPoly3 *param_poly3);
-        void           AddElevation(Elevation *elevation);
-        void           AddSuperElevation(Elevation *super_elevation);
-        void           AddLaneSection(LaneSection *lane_section);
-        void           AddLaneOffset(LaneOffset *lane_offset);
-        void           AddSignal(Signal *signal);
-        void           AddObject(RMObject *object);
-        Elevation     *GetElevation(idx_t idx) const;
-        Elevation     *GetSuperElevation(idx_t idx) const;
-        unsigned int   GetNumberOfSignals() const;
-        Signal        *GetSignal(idx_t idx) const;
+        RoadTypeEntry        *GetRoadType(idx_t idx) const;
+        RoadLink             *GetLink(LinkType type) const;
+        void                  AddLine(Line *line);
+        void                  AddArc(Arc *arc);
+        void                  AddSpiral(Spiral *spiral);
+        void                  AddPoly3(Poly3 *poly3);
+        void                  AddParamPoly3(ParamPoly3 *param_poly3);
+        void                  AddElevation(Elevation *elevation);
+        void                  AddSuperElevation(Elevation *super_elevation);
+        void                  AddLaneSection(LaneSection *lane_section);
+        void                  AddLaneOffset(LaneOffset *lane_offset);
+        void                  AddSignal(Signal *signal);
+        void                  AddObject(RMObject *object);
+        Elevation            *GetElevation(idx_t idx) const;
+        Elevation            *GetSuperElevation(idx_t idx) const;
+        unsigned int          GetNumberOfSignals() const;
+        Signal               *GetSignal(idx_t idx) const;
         std::vector<Signal *> GetSignals() const;
-        unsigned int   GetNumberOfObjects() const
+        unsigned int          GetNumberOfObjects() const
         {
             return static_cast<unsigned int>(object_.size());
         }

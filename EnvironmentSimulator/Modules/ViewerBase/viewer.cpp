@@ -2925,7 +2925,6 @@ double Viewer::GetViewerDimension(const double val)
     return std::max(val, DEFAULT_MIN_DIM);
 }
 
-
 // search, load and return trandform node for the given filename
 osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::GetModel(std::string filename, roadmanager::RMObject* object)
 {
