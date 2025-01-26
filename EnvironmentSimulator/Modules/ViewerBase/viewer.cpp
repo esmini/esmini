@@ -2670,6 +2670,7 @@ int Viewer::DrawMarking(roadmanager::RMObject* object)
 
                 group->addChild(geode);
                 group->setNodeMask(NODE_MASK_MARKING);
+                SetNodeMaskBits(NODE_MASK_MARKING | NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF, NODE_MASK_MARKING | NODE_MASK_OBJECT_SOLID);
                 env_origin2odr_->addChild(group);
             }
         }
@@ -3009,44 +3010,66 @@ void Viewer::AddModel(bool                                         IsMarkingAvai
                       osg::ref_ptr<osg::PositionAttitudeTransform> tx,
                       osg::ref_ptr<osg::Group>                     objGroup)
 {
+    printf("model added\n");
     // add current LOD and create a new one
     osg::ref_ptr<osg::LOD>   lod      = new osg::LOD();
     osg::ref_ptr<osg::Group> LODGroup = new osg::Group();
     lod->addChild(LODGroup);
     lod->setRange(0, 0, LOD_DIST_ROAD_FEATURES + MAX(GetViewerDimension(object->GetLength()), GetViewerDimension(object->GetWidth())));
     objGroup->addChild(lod);
+
+    osg::ref_ptr<osg::Geode> bb_wf = new osg::Geode;
+    osg::ComputeBoundsVisitor cbv;
+    tx->accept(cbv);
+    osg::BoundingBox         modelBB;
+    modelBB    = cbv.getBoundingBox();
+    bb_wf->addDrawable(new osg::ShapeDrawable(new osg::Box(modelBB.center(),
+                                                                 modelBB._max.x() - modelBB._min.x(),
+                                                                 modelBB._max.y() - modelBB._min.y(),
+                                                                 modelBB._max.z() - modelBB._min.z())));
+    osg::PolygonMode* polygonMode = new osg::PolygonMode;
+    polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+    bb_wf->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+    bb_wf->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+    bb_wf->setNodeMask(NodeMask::NODE_MASK_OBJECT_WF);
+    LODGroup->addChild(bb_wf);
+    SetNodeMaskBits(NODE_MASK_MARKING | NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF, NODE_MASK_OBJECT_WF);
+
     if (!IsMarkingAvailable)  // show bounding box for objects without markings
     {
         LODGroup->addChild(tx);
         tx->setNodeMask(NODE_MASK_OBJECT_SOLID);
+        SetNodeMaskBits(NODE_MASK_MARKING | NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF, NODE_MASK_OBJECT_SOLID);
     }
 
-    // create wireframe model
-    osg::PolygonMode* polygonMode = new osg::PolygonMode;
-    polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-    osg::ref_ptr<osg::PositionAttitudeTransform> tx_wf = dynamic_cast<osg::PositionAttitudeTransform*>(
-        tx->clone(osg::CopyOp::DEEP_COPY_ALL));  // todo check if deep copy is needed or shallow copy is enough
-    tx_wf->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-    tx_wf->setNodeMask(NODE_MASK_OBJECT_WF);
-    LODGroup->addChild(tx_wf);
 }
 
 // create object from given object and scales
 void Viewer::AddOutlineModel(bool IsMarkingAvailable, osg::ref_ptr<osg::Geode> geode, osg::ref_ptr<osg::Group> objGroup)
 {
+    osg::ref_ptr<osg::Geode> bb_wf = new osg::Geode;
+    osg::ComputeBoundsVisitor cbv;
+    geode->accept(cbv);
+    osg::BoundingBox         modelBB;
+    modelBB    = cbv.getBoundingBox();
+    bb_wf->addDrawable(new osg::ShapeDrawable(new osg::Box(modelBB.center(),
+                                                                 modelBB._max.x() - modelBB._min.x(),
+                                                                 modelBB._max.y() - modelBB._min.y(),
+                                                                 modelBB._max.z() - modelBB._min.z())));
+    osg::PolygonMode* polygonMode = new osg::PolygonMode;
+    polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+    bb_wf->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+    bb_wf->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+    bb_wf->setNodeMask(NodeMask::NODE_MASK_OBJECT_WF);
+    objGroup->addChild(bb_wf);
+    SetNodeMaskBits(NODE_MASK_MARKING | NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF, NODE_MASK_OBJECT_WF);
+
     if (!IsMarkingAvailable)  // show bounding box only for objects without markings
     {
         objGroup->addChild(geode);
         geode->setNodeMask(NODE_MASK_OBJECT_SOLID);
+        SetNodeMaskBits(NODE_MASK_MARKING | NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF, NODE_MASK_OBJECT_SOLID);
     }
-    // create wireframe model
-    osg::PolygonMode* polygonMode = new osg::PolygonMode;
-    polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-    osg::ref_ptr<osg::Geode> geode_wf =
-        dynamic_cast<osg::Geode*>(geode->clone(osg::CopyOp::DEEP_COPY_ALL));  // todo check if deep copy is needed or shallow copy is enough
-    geode_wf->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-    geode_wf->setNodeMask(NODE_MASK_OBJECT_WF);
-    objGroup->addChild(geode_wf);
 }
 
 bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                       object,
@@ -3165,12 +3188,6 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 }
             }
             DrawMarking(object);
-            int allObjMask = NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF | NODE_MASK_MARKING;
-            int maskObj    = GetNodeMaskBit(allObjMask);
-            if (maskObj / allObjMask == 1)  // marking and object are visible
-            {
-                SetNodeMaskBits(allObjMask, viewer::NodeMask::NODE_MASK_MARKING | viewer::NodeMask::NODE_MASK_OBJECT_SOLID);
-            }
         }
     }
 
@@ -3801,19 +3818,24 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
 
                 if (viewer_->GetNodeMaskBit(allMaskActive) / (NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF | NODE_MASK_MARKING) == 1)
                 {
+                    printf("All objects are hidden\n");
                     viewer_->SetNodeMaskBits(allMaskActive, NODE_MASK_NONE);
                 }
-                else if (viewer_->GetNodeMaskBit(allMaskActive) / (NODE_MASK_OBJECT_SOLID | NODE_MASK_MARKING) == 1)
+                else if (viewer_->GetNodeMaskBit(allMaskActive) / (NODE_MASK_OBJECT_SOLID | NODE_MASK_MARKING) == 1 ||
+                        viewer_->GetNodeMaskBit(allMaskActive) / (NODE_MASK_OBJECT_SOLID) == 1)
                 {
                     viewer_->SetNodeMaskBits(allMaskActive, NODE_MASK_OBJECT_WF);
+                    printf("Wireframe objects are shown\n");
                 }
                 else if (viewer_->GetNodeMaskBit(allMaskActive) / (NODE_MASK_OBJECT_WF) == 1)
                 {
                     viewer_->SetNodeMaskBits(allMaskActive | NODE_MASK_MARKING);
+                    printf("All markiings are shown\n");
                 }
                 else
                 {
                     viewer_->SetNodeMaskBits(allMaskActive, NODE_MASK_OBJECT_SOLID | NODE_MASK_MARKING);
+                    printf("Solid objects and marking are shown\n");
                 }
             }
         }
