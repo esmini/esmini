@@ -204,13 +204,13 @@ typedef struct
 
 typedef struct
 {
-    int         id;           // just an unique identifier of the sign
+    id_t        id;           // just an unique identifier of the sign
     float       x;            // global x coordinate of sign position
     float       y;            // global y coordinate of sign position
     float       z;            // global z coordinate of sign position
     float       z_offset;     // z offset from road level
     float       h;            // global heading of sign orientation
-    int         roadId;       // road id of sign road position
+    id_t        roadId;       // road id of sign road position
     float       s;            // longitudinal position along road
     float       t;            // lateral position from road reference line
     const char *name;         // sign name, typically used for 3D model filename

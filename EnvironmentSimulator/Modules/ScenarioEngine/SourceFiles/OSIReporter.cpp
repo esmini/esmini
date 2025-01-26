@@ -2410,7 +2410,7 @@ int OSIReporter::UpdateTrafficSignals()
                 if (signal->IsDynamic())
                 {
                     osi3::TrafficLight *trafficLight = obj_osi_internal.gt->add_traffic_light();
-                    trafficLight->mutable_id()->set_value(static_cast<unsigned int>(signal->GetId()));
+                    trafficLight->mutable_id()->set_value(signal->GetId());
                     trafficLight->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
                     trafficLight->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
                     trafficLight->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(
@@ -2428,7 +2428,7 @@ int OSIReporter::UpdateTrafficSignals()
                     // Traffic Sign
                     osi3::TrafficSign *trafficSign = obj_osi_internal.gt->add_traffic_sign();
                     // Set ID, Value, Text
-                    trafficSign->mutable_id()->set_value(static_cast<unsigned int>(signal->GetId()));
+                    trafficSign->mutable_id()->set_value(signal->GetId());
                     trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value(signal->GetValue());
                     trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_text(signal->GetText());
                     trafficSign->mutable_main_sign()->mutable_classification()->set_type(
