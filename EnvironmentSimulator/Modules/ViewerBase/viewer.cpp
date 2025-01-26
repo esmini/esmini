@@ -2733,7 +2733,7 @@ void Viewer::CreateOutlineModel(const roadmanager::Outline& outline, osg::Vec4 c
     uint64_t                     nrPoints       = roof ? outline.GetNumberOfCorners() + 1 : outline.GetNumberOfCorners();
     osg::ref_ptr<osg::Vec3Array> vertices_sides = new osg::Vec3Array(nrPoints * 2);  // one set at bottom and one at top
     osg::ref_ptr<osg::Vec3Array> vertices_top   = new osg::Vec3Array(nrPoints);      // one set at bottom and one at top
-    // printf("from viewer\n");
+
     for (size_t i = 0; i < outline.GetNumberOfCorners(); i++)
     {
         double                      x, y, z_bottom;
@@ -2911,7 +2911,6 @@ double Viewer::GetViewerDimension(const double val)
     return std::max(val, DEFAULT_MIN_DIM);
 }
 
-
 // search, load and return trandform node for the given filename
 osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::GetModel(std::string filename, roadmanager::RMObject* object)
 {
@@ -2971,16 +2970,15 @@ void Viewer::UpdateObjectDimensionsAndGetScale(const osg::BoundingBox& boundingB
 
     // model has to be scaled if dimension was provided in the OpenDRIVE
     // otherwise, update object dimension from the 3D model (which do not need to scale)
-    bool valueNotChanged;
-    if ((valueNotChanged = !object->GetLength().SetIfNot(dim_x)) && dim_x > SMALL_NUMBER)  // consider only non zero dimensions for scaling
+    if (!object->GetLength().SetIfNot(dim_x) && dim_x > SMALL_NUMBER)  // consider only non zero dimensions for scaling
     {
         scale_x = object->GetLength().Get() / dim_x;
     }
-    if ((valueNotChanged = !object->GetWidth().SetIfNot(dim_y)) && dim_y > SMALL_NUMBER)
+    if (!object->GetWidth().SetIfNot(dim_y) && dim_y > SMALL_NUMBER)
     {
         scale_y = object->GetWidth().Get() / dim_y;
     }
-    if ((valueNotChanged = !object->GetHeight().SetIfNot(dim_z)) && dim_z > SMALL_NUMBER)
+    if (!object->GetHeight().SetIfNot(dim_z) && dim_z > SMALL_NUMBER)
     {
         scale_z = object->GetHeight().Get() / dim_z;
     }

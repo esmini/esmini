@@ -82,7 +82,7 @@ typedef struct
 
 typedef struct
 {
-    int         id;           // just an unique identifier of the sign
+    id_t        id;           // just an unique identifier of the sign
     float       x;            // global x coordinate of sign position
     float       y;            // global y coordinate of sign position
     float       z;            // global z coordinate of sign position
