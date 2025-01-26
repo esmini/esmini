@@ -4198,7 +4198,8 @@ TEST(TestOsiReporter, StationaryObjectWithRepeatTest)
 
 TEST(TestOsiReporter, CrestCurveRoadObjectTest)
 {
-    const char* args[] = {"--osc", "../EnvironmentSimulator/Unittest/xosc/test_crest-curve.xosc", "--window", "60", "60", "800", "400", "--headless"};
+    const char* args[] =
+        {"--osc", "../../../EnvironmentSimulator/Unittest/xosc/test_crest-curve.xosc", "--window", "60", "60", "800", "400", "--headless"};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
 
     SE_StepDT(0.001f);
@@ -4309,12 +4310,13 @@ TEST(TestOsiReporter, CrestCurveRoadObjectTest)
     EXPECT_EQ(id5, 5);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().position().x(), 272.740, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().position().y(), -79.856, 1e-3);
-    EXPECT_NEAR(osi_gt.stationary_object(5).base().position().z(), 4.295, 1e-3);
 #ifdef _USE_OSG
+    EXPECT_NEAR(osi_gt.stationary_object(5).base().position().z(), 3.295 + osi_gt.stationary_object(5).base().dimension().height() / 2.0, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().dimension().length(), 0.200, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().dimension().width(), 0.200, 1e-3);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().dimension().height(), 2);
 #else
+    EXPECT_NEAR(osi_gt.stationary_object(5).base().position().z(), 3.295, 1e-3);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().dimension().length(), DEFAULT_MIN_DIM);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().dimension().width(), DEFAULT_MIN_DIM);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().dimension().height(), DEFAULT_MIN_DIM);
