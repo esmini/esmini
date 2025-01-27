@@ -6128,13 +6128,12 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 
                             if (!strcmp(corner_node.name(), "cornerRoad"))
                             {
-                                foundRoadcorner     = true;
-                                double      sc      = corner_node.attribute("s").as_double();
-                                double      tc      = corner_node.attribute("t").as_double();
-                                double      dz      = corner_node.attribute("dz").as_double();
-                                double      heightc = corner_node.attribute("height").as_double();
-                                const auto& val     = corner_node.attribute("id");
-                                if (!val.empty())
+                                foundRoadcorner = true;
+                                double sc       = corner_node.attribute("s").as_double();
+                                double tc       = corner_node.attribute("t").as_double();
+                                double dz       = corner_node.attribute("dz").as_double();
+                                double heightc  = corner_node.attribute("height").as_double();
+                                if (const auto& val = corner_node.attribute("id"); !val.empty())
                                 {
                                     cornerId = val.as_uint();
                                 }
@@ -6143,13 +6142,12 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             }
                             else if (!strcmp(corner_node.name(), "cornerLocal"))
                             {
-                                foundLocalCorner    = true;
-                                double      u       = corner_node.attribute("u").as_double();
-                                double      v       = corner_node.attribute("v").as_double();
-                                double      zLocal  = corner_node.attribute("z").as_double();
-                                double      heightc = corner_node.attribute("height").as_double();
-                                const auto& val     = corner_node.attribute("id");
-                                if (!val.empty())
+                                foundLocalCorner = true;
+                                double u         = corner_node.attribute("u").as_double();
+                                double v         = corner_node.attribute("v").as_double();
+                                double zLocal    = corner_node.attribute("z").as_double();
+                                double heightc   = corner_node.attribute("height").as_double();
+                                if (const auto& val = corner_node.attribute("id"); !val.empty())
                                 {
                                     cornerId = val.as_uint();
                                 }
@@ -6244,8 +6242,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                  cornerReference_node                = cornerReference_node.next_sibling())
                             {
                                 // check if id is present
-                                const auto& val = cornerReference_node.attribute("id");
-                                if (!val.empty())
+                                if (const auto& val = cornerReference_node.attribute("id"); !val.empty())
                                 {
                                     id_t id = val.as_uint();
                                     // check if id is present in any of the outline
