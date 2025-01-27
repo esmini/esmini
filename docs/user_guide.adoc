@@ -3456,7 +3456,7 @@ Although esmini lib is a shared library itself, it includes everything needed in
 
 [Note]
 ====
-**Note:** esmini utilizes, in accordance with C\++ standard, default values on some function parameters in the API, this might lead to some users *not* using C++ when programming with the lib to have to supply values to the function arguments even though there is a defined default value in the API.
+**Note:** esmini utilizes, in accordance with pass:[C++] standard, default values on some function parameters in the API. Those default values will work at least in any pass:[C++] context. For other environments like pure C, C# or Python it might be required to explicitly supply argument values.
 ====
 
 === How to interact with esmini lib API
@@ -3615,7 +3615,7 @@ See code examples in ScenarioEngineDLL test cases, e.g: https://github.com/esmin
 ====
 **Note:**
 
-`SE_UpdateOSIGroundTruth(bool refetchStaticGt)` (`refetchStaticGt` defaults to `false`) needs to be called after each `SE_Step*` in order to prepare and populate OSI data. This function will also save the OSI frame to file and send over UDP, if requested. Only after this preparation the `SE_GetOSIGroundTruth*` functions will get updated OSI data.
+`SE_UpdateOSIGroundTruth(bool refetchStaticGt)` needs to be called after each `SE_Step*` in order to prepare and populate OSI data. This function will also save the OSI frame to file and send over UDP, if requested. Only after this preparation the `SE_GetOSIGroundTruth*` functions will get updated OSI data.
 
 An exception is when OSI file or UDP receiver is specified by corresponding launch arguments `--osi_file [filename]` and `--osi_receiver_ip <ip addr>`. Then, OSI groundtruth will automatically be updated by esmini according to specified multiplier `--osi_freq <number>`. For example, `--osi_freq 3` will update OSI every third step.
 
@@ -3625,6 +3625,8 @@ The bool argument `refetchStaticGt` affects the data received from the next `SE_
 
 - `SE_UpdateOSIGroundTruth(false)`: OSI groundtruth will not contain static data, except the first frame (after `SE_Init()` and before first call to `SE_Step*`) which always does.
 - `SE_UpdateOSIGroundTruth(true)`: OSI groundtruth will contain static data.
+
+`refetchStaticGt = false` is default and should be good for most use cases.
 
 OSI log file is not affected by the `refetchStaticGt` flag. It will always contain static data and only in first frame.
 
