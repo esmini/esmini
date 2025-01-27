@@ -3454,6 +3454,11 @@ An additional important advantage with dynamic linking is that the library can b
 
 Although esmini lib is a shared library itself, it includes everything needed in terms of 3rd party functionality. It's actally linking all dependencies statically. Think about it as a single container including everything needed, e.g. support for 3D graphics, XML, expressions, and SUMO traffic simulation. There are two advantages with this approach: 1. Getting rid of dependency to hundreds of 3rd party shared libraries and 2. The linker makes sure to only include relevant functions which reduce the size by extreme (compared to bundle individual and complete shared libraries).
 
+[Note]
+====
+**Note:** esmini utilizes, in accordance with C\++ standard, default values on some function parameters in the API, this might lead to some users *not* using C++ when programming with the lib to have to supply values to the function arguments even though there is a defined default value in the API.
+====
+
 === How to interact with esmini lib API
 
 Below is a typical interaction between a custom application (e.g. vehicle simulator) and esmini (providing simulation of the environment, like road and traffic).
@@ -3610,7 +3615,7 @@ See code examples in ScenarioEngineDLL test cases, e.g: https://github.com/esmin
 ====
 **Note:**
 
-`SE_UpdateOSIGroundTruth(bool refetchStaticGt)` needs to be called after each `SE_Step*` in order to prepare and populate OSI data. This function will also save the OSI frame to file and send over UDP, if requested. Only after this preparation the `SE_GetOSIGroundTruth*` functions will get updated OSI data.
+`SE_UpdateOSIGroundTruth(bool refetchStaticGt)` (`refetchStaticGt` defaults to `false`) needs to be called after each `SE_Step*` in order to prepare and populate OSI data. This function will also save the OSI frame to file and send over UDP, if requested. Only after this preparation the `SE_GetOSIGroundTruth*` functions will get updated OSI data.
 
 An exception is when OSI file or UDP receiver is specified by corresponding launch arguments `--osi_file [filename]` and `--osi_receiver_ip <ip addr>`. Then, OSI groundtruth will automatically be updated by esmini according to specified multiplier `--osi_freq <number>`. For example, `--osi_freq 3` will update OSI every third step.
 

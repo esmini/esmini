@@ -1414,10 +1414,10 @@ extern "C"
 
     /**
             The SE_UpdateOSIGroundTruth function calls SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth and updates OSI Groundtruth
-            @param refetchStaticGt Toggle true or false to change whether to include static ground truth in OSI data structure or not
+            @param refetchStaticGt Optional flag, whether to include static ground truth in OSI data structure or not
             @return 0
     */
-    SE_DLL_API int SE_UpdateOSIGroundTruth(bool refetchStaticGt);
+    SE_DLL_API int SE_UpdateOSIGroundTruth(bool refetchStaticGt = false);
 
     /**
             The SE_UpdateOSIStaticGroundTruth function updates OSI static Groundtruth
@@ -1430,7 +1430,7 @@ extern "C"
             @param reportGhost Optional flag, if we should include ghost vehicle info in the osi messages
             @return 0
     */
-    SE_DLL_API int SE_UpdateOSIDynamicGroundTruth(bool reportGhost);
+    SE_DLL_API int SE_UpdateOSIDynamicGroundTruth(bool reportGhost = true);
 
     /**
             @return 0

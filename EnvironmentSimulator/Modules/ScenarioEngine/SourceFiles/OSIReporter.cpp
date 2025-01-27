@@ -345,7 +345,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
     // Update, serialize and write dynamic gt only if the GT not updated before in this frame
     if (GetUpdated() == false)
     {
-        UpdateOSIDynamicGroundTruth(objectState, true);
+        UpdateOSIDynamicGroundTruth(objectState);
 
         if ((GetUDPClientStatus() == 0 || IsFileOpen()))
         {
