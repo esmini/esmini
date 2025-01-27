@@ -2133,7 +2133,11 @@ TEST(ControllerTest, TestControllers)
     unsigned int signalIds1[] = {294, 295, 287, 288};
     for (unsigned int i = 0; i < controller->GetNumberOfControls(); i++)
     {
-        EXPECT_EQ(controller->GetControl(i)->signalId_, signalIds1[i]);
+        ASSERT_NE(controller->GetControl(i), nullptr);
+        if (controller->GetControl(i) != nullptr)
+        {
+            EXPECT_EQ(controller->GetControl(i)->signalId_, signalIds1[i]);
+        }
     }
 
     controller = odr->GetControllerByIdx(22);

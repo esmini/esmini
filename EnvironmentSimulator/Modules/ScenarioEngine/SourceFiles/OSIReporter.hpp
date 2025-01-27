@@ -76,7 +76,7 @@ public:
     /**
     Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
     */
-    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, bool refetchStaticGt);
+    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, bool refetchStaticGt = false);
     /**
     Fills up the osi message with  static GroundTruth
     */
