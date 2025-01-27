@@ -321,12 +321,9 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     *timestamp   = static_cast<float>(trailPos.time);
 
     // Update object sensor position for visualization
-    if (obj->sensor_pos_)
-    {
-        obj->sensor_pos_[0] = trailPos.x;
-        obj->sensor_pos_[1] = trailPos.y;
-        obj->sensor_pos_[2] = trailPos.z;
-    }
+    obj->sensor_pos_[0] = trailPos.x;
+    obj->sensor_pos_[1] = trailPos.y;
+    obj->sensor_pos_[2] = trailPos.z;
 
     return returncode;
 }
@@ -382,12 +379,9 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     *speed_ghost = static_cast<float>(trailPos.speed);
 
     // Update object sensor position for visualization
-    if (obj->sensor_pos_)
-    {
-        obj->sensor_pos_[0] = trailPos.x;
-        obj->sensor_pos_[1] = trailPos.y;
-        obj->sensor_pos_[2] = trailPos.z;
-    }
+    obj->sensor_pos_[0] = trailPos.x;
+    obj->sensor_pos_[1] = trailPos.y;
+    obj->sensor_pos_[2] = trailPos.z;
 
     return returncode;
 }
