@@ -3214,12 +3214,6 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 }
             }
             DrawMarking(object);
-            int allObjMask = NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF | NODE_MASK_MARKING;
-            int maskObj    = GetNodeMaskBit(allObjMask);
-            if (maskObj / allObjMask == 1)  // marking and object are visible
-            {
-                SetNodeMaskBits(allObjMask, viewer::NodeMask::NODE_MASK_MARKING | viewer::NodeMask::NODE_MASK_OBJECT_SOLID);
-            }
         }
     }
 
