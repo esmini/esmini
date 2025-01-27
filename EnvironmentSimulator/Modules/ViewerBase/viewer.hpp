@@ -609,7 +609,10 @@ namespace viewer
                       roadmanager::RMObject*                       object,
                       osg::ref_ptr<osg::PositionAttitudeTransform> tx,
                       osg::ref_ptr<osg::Group>                     objGroup);
-        void AddOutlineModel(bool IsMarkingAvailable, osg::ref_ptr<osg::Geode> geode, osg::ref_ptr<osg::Group> objGroup);
+        void AddOutlineModel(bool                     IsMarkingAvailable,
+                             roadmanager::RMObject*   object,
+                             osg::ref_ptr<osg::Group> group,
+                             osg::ref_ptr<osg::Group> objGroup);
         // validate and throw warning only if viewer default value used
         void ValidateDimensionsForViewing(roadmanager::RMObject* object) const;
         // Update RM object and get scale only if RM object cant be updated. eg. respect RM object dimension
@@ -623,7 +626,7 @@ namespace viewer
         bool                             CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
         bool                             CreateRoadMarkLines(roadmanager::OpenDrive* od);
         // create one outline model
-        void CreateOutlineModel(const roadmanager::Outline& outline, osg::Vec4 color, osg::ref_ptr<osg::Geode> geode, bool isShallowCopy = false);
+        void CreateOutlineModel(const roadmanager::Outline& outline, osg::Vec4 color, osg::ref_ptr<osg::Group> group, bool isShallowCopy = false);
         // create marking for the object
         int DrawMarking(roadmanager::RMObject* object);
         // load and return the model for this given model name
