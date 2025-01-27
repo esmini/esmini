@@ -3454,6 +3454,11 @@ An additional important advantage with dynamic linking is that the library can b
 
 Although esmini lib is a shared library itself, it includes everything needed in terms of 3rd party functionality. It's actally linking all dependencies statically. Think about it as a single container including everything needed, e.g. support for 3D graphics, XML, expressions, and SUMO traffic simulation. There are two advantages with this approach: 1. Getting rid of dependency to hundreds of 3rd party shared libraries and 2. The linker makes sure to only include relevant functions which reduce the size by extreme (compared to bundle individual and complete shared libraries).
 
+[Note]
+====
+**Note:** esmini utilizes, in accordance with pass:[C++] standard, default values on some function parameters in the API. Those default values will work at least in any pass:[C++] context. For other environments like pure C, C# or Python it might be required to explicitly supply argument values.
+====
+
 === How to interact with esmini lib API
 
 Below is a typical interaction between a custom application (e.g. vehicle simulator) and esmini (providing simulation of the environment, like road and traffic).
@@ -3620,6 +3625,8 @@ The bool argument `refetchStaticGt` affects the data received from the next `SE_
 
 - `SE_UpdateOSIGroundTruth(false)`: OSI groundtruth will not contain static data, except the first frame (after `SE_Init()` and before first call to `SE_Step*`) which always does.
 - `SE_UpdateOSIGroundTruth(true)`: OSI groundtruth will contain static data.
+
+`refetchStaticGt = false` is default and should be good for most use cases.
 
 OSI log file is not affected by the `refetchStaticGt` flag. It will always contain static data and only in first frame.
 
