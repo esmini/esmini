@@ -3019,20 +3019,16 @@ void Viewer::AddModel(bool                                         IsMarkingAvai
     objGroup->addChild(lod);
 
     osg::ref_ptr<osg::Geode> bb_wf = new osg::Geode;
-    osg::ComputeBoundsVisitor cbv;
-    tx->accept(cbv);
-    osg::BoundingBox         modelBB;
-    modelBB    = cbv.getBoundingBox();
-    bb_wf->addDrawable(new osg::ShapeDrawable(new osg::Box(modelBB.center(),
-                                                                 modelBB._max.x() - modelBB._min.x(),
-                                                                 modelBB._max.y() - modelBB._min.y(),
-                                                                 modelBB._max.z() - modelBB._min.z())));
+    bb_wf->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(0.0, 0.0, object->GetHeight().Get() / 2.0),
+                                                           object->GetLength().Get(),
+                                                           object->GetWidth().Get(),
+                                                           object->GetHeight().Get())));
     osg::PolygonMode* polygonMode = new osg::PolygonMode;
     polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
     bb_wf->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
     bb_wf->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
     bb_wf->setNodeMask(NodeMask::NODE_MASK_OBJECT_WF);
-    LODGroup->addChild(bb_wf);
+    tx->addChild(bb_wf);
     SetNodeMaskBits(NODE_MASK_MARKING | NODE_MASK_OBJECT_SOLID | NODE_MASK_OBJECT_WF, NODE_MASK_OBJECT_WF);
 
     if (!IsMarkingAvailable)  // show bounding box for objects without markings
