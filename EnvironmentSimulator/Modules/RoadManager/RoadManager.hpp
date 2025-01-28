@@ -1947,6 +1947,9 @@ namespace roadmanager
         std::vector<RMObject *> repeatedObjects_;
     };
 
+
+    // A marking segment represents marking of ONE edge of an object
+    // it may be one solid marking or multiple individual markings with space in between (dashed)
     class MarkingSegment
     {
     public:
@@ -1980,7 +1983,7 @@ namespace roadmanager
     private:
         id_t                              startCornerId_, endCornerId_;
         id_t                              outlineId_;
-        std::vector<std::vector<Point3D>> allPoints_;
+        std::vector<std::vector<Point3D>> allPoints_;  // all points for the whole segment/edge
         MergeType                         mergeType_ = MergeType::MERGE_NONE;
     };
 
