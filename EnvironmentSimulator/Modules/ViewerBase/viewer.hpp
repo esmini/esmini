@@ -608,8 +608,8 @@ namespace viewer
         void AddModel(bool                                         IsMarkingAvailable,
                       roadmanager::RMObject*                       object,
                       osg::ref_ptr<osg::PositionAttitudeTransform> tx,
-                      osg::ref_ptr<osg::Group>                     objGroup);
-        void AddOutlineModel(bool IsMarkingAvailable, osg::ref_ptr<osg::Geode> geode, osg::ref_ptr<osg::Group> objGroup);
+                      osg::ref_ptr<osg::Group>                     parent);
+        void AddOutlineModel(bool IsMarkingAvailable, osg::ref_ptr<osg::Geode> geode, osg::ref_ptr<osg::Group> parent);
         // validate and throw warning only if viewer default value used
         void ValidateDimensionsForViewing(roadmanager::RMObject* object) const;
         // Update RM object and get scale only if RM object cant be updated. eg. respect RM object dimension
@@ -625,7 +625,7 @@ namespace viewer
         // create one outline model
         void CreateOutlineModel(const roadmanager::Outline& outline, osg::Vec4 color, osg::ref_ptr<osg::Geode> geode, bool isShallowCopy = false);
         // create marking for the object
-        int DrawMarking(roadmanager::RMObject* object);
+        int DrawMarking(roadmanager::RMObject* object, osg::Group* parent);
         // load and return the model for this given model name
         osg::ref_ptr<osg::PositionAttitudeTransform> GetModel(std::string filename, roadmanager::RMObject* object);
         osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(std::string filename);
@@ -634,8 +634,8 @@ namespace viewer
         int  CreateRoadSignals(osg::ref_ptr<osg::Group> objGroup_, const std::vector<roadmanager::Signal*> signals);
         bool CreateRepeats(roadmanager::RMObject*                       object,
                            osg::ref_ptr<osg::PositionAttitudeTransform> tx,
-                           osg::ref_ptr<osg::Group>                     OutlineGroup,
-                           osg::ref_ptr<osg::Group>                     objGroup);
+                           osg::ref_ptr<osg::Group>                     outlineGroup,
+                           osg::ref_ptr<osg::Group>                     parent);
         int  InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
                         int                                        x,
                         int                                        y,
