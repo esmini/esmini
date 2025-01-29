@@ -17,11 +17,15 @@
 #include <osgViewer/ViewerEventHandlers>
 #include <signal.h>
 
-#include <yaml-cpp/yaml.h>
-#include <ryml.hpp>
-#include <ryml_std.hpp>  // For std::string and std::istream integration
+// #include "ConfigFileParser.cpp"
+// #include "yaml-cpp/yaml.h"
+// #include <yaml-cpp/yaml.h>
+
+#include "Config.cpp"
+
 #include <fstream>
 #include <iostream>
+#include <cstdlib>
 
 #define MIN_TIME_STEP 0.01
 #define MAX_TIME_STEP 0.1
@@ -36,52 +40,16 @@ static void CreateConfigFile(const std::string& filename)
         std::cerr << "Failed to create file: " << filename << std::endl;
         return;
     }
-
     // Write YAML content
-    file << "options:\n";
+    file << "esmini:\n";
     file << "  window: 60 60 800 400\n";
     file << "  log_filepath: c:/tmp/kalle.txt\n";
+    file << "  window: 30 30 400 200\n";
     file << "\n";
-    file << "parameters:\n";
+    file << "replayer:\n";
     file << "  tesselation_factor: 1.1\n";
 
     file.close();
-    std::cout << "Config file created: " << filename << std::endl;
-}
-
-static void TesYamlcpp()
-{
-    std::cout << "---start testing yaml-cpp---\n";
-    YAML::Node content = YAML::LoadFile("config.yaml");
-    std::cout << "content start\n" << content << "\ncontent end\n";
-    std::cout << "Picking them up one by one\n";
-    std::cout << "window:" << content["options"]["window"] << std::endl;
-    std::cout << "log_filepath:" << content["options"]["log_filepath"] << std::endl;
-    std::cout << "tesselation_factor:" << content["parameters"]["tesselation_factor"] << std::endl;
-    std::cout << "---end testing yaml-cpp---\n";
-}
-
-static void TestRyml()
-{
-    std::cout << "---start testing ryml---\n";
-    std::ifstream file("config.yaml");
-    if (!file)
-    {
-        std::cerr << "Failed to open config.yaml" << std::endl;
-        return;
-    }
-
-    // Load the file into a string
-    std::string yaml_content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
-    // Parse the YAML content
-    ryml::Tree tree = ryml::parse_in_arena(ryml::to_csubstr(yaml_content));
-    std::cout << "tree start\n" << tree << "\ntree end\n";
-    std::cout << "Picking them up one by one\n";
-    std::cout << "window:" << tree["options"]["window"].val() << std::endl;
-    std::cout << "log_filepath:" << tree["options"]["log_filepath"].val() << std::endl;
-    std::cout << "tesselation_factor:" << tree["parameters"]["tesselation_factor"].val() << std::endl;
-    std::cout << "---end testing ryml---\n";
 }
 
 static void signal_handler(int s)
@@ -175,9 +143,12 @@ static int execute_scenario(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    CreateConfigFile("config.yaml");
-    TesYamlcpp();
-    TestRyml();
+    CreateConfigFile("config.yml");
+
+    // esmini::common::Config& config = esmini::common::Config::Inst();
+    esmini::common::Config::Inst();
+
+    return 0;
     OSCParameterDistribution& dist   = OSCParameterDistribution::Inst();
     int                       retval = 0;
 

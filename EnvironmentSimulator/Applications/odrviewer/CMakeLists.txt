@@ -42,7 +42,8 @@ target_link_libraries(
             RoadManager
             CommonMini
             ${TIME_LIB}
-            ${SPDLOG_LIBRARIES})
+            ${SPDLOG_LIBRARIES}
+            ${YAMLCPP_LIBRARIES})
 
 if(USE_OSG)
     target_link_libraries(

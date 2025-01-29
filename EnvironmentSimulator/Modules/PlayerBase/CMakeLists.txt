@@ -62,7 +62,8 @@ target_include_directories(
            ${EXTERNALS_OSI_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_IMPLOT_INCLUDES}
-           ${EXTERNALS_SPDLOG_INCLUDES})
+           ${EXTERNALS_SPDLOG_INCLUDES}
+           ${EXTERNALS_YAMLCPP_INCLUDES})
 
 target_link_libraries(
     ${TARGET}

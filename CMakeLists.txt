@@ -198,36 +198,6 @@ if(NOT
         "${GTEST_PACKAGE_URL}")
 endif()
 
-# ############################### YAML-CPP ##########################################################
-
-include(FetchContent)
-
-FetchContent_Declare(
-    yaml-cpp
-    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
-    GIT_TAG yaml-cpp-0.7.0 # Can be a tag (yaml-cpp-x.x.x), a commit hash, or a branch name (master)
-)
-FetchContent_MakeAvailable(yaml-cpp)
-
-# ############################### RYML ##########################################################
-
-set(RYML_REPO_URL
-    https://github.com/biojppm/rapidyaml
-    CACHE STRING
-          "")
-set(RYML_BRANCH_NAME
-    master
-    CACHE STRING
-          "")
-include(FetchContent)
-FetchContent_Declare(
-    ryml
-    GIT_REPOSITORY ${RYML_REPO_URL}
-    GIT_TAG ${RYML_BRANCH_NAME}
-    GIT_SHALLOW FALSE # ensure submodules are checked out
-)
-FetchContent_MakeAvailable(ryml)
-
 # ############################### Loading external packages ##########################################################
 
 if(USE_GTEST)
@@ -265,7 +235,10 @@ if(NOT
       "test/OSC-NCAP-scenarios/.git"
    OR NOT
       EXISTS
-      "externals/spdlog/.git")
+      "externals/spdlog/.git"
+   OR NOT
+      EXISTS
+      "externals/yaml-cpp/.git")
     execute_process(
         COMMAND git submodule update --init
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -286,7 +259,9 @@ if(LINUX)
         ${SPDLOG_LIBRARIES}
         "-lstdc++fs")
 endif()
-
+set(YAMLCPP_LIBRARIES
+    yaml-cpp)
+add_subdirectory(externals/yaml-cpp)
 # ############################### OTHERS #############################################################################
 
 # Add variables to global scope, e.g. when esmini is used as submodule

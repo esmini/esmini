@@ -78,7 +78,8 @@ target_include_directories(
            ${EXTERNALS_SUMO_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_EXPR_PATH}
-           ${EXTERNALS_SPDLOG_INCLUDES})
+           ${EXTERNALS_SPDLOG_INCLUDES}
+           ${EXTERNALS_YAMLCPP_INCLUDES})
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})
