@@ -8,9 +8,10 @@
         <ParameterDeclaration name="DummyParameter2" parameterType="boolean" value="false"/>
         <ParameterDeclaration name="DummyParameter3" parameterType="string" value="lane_change_param3"/>
         <ParameterDeclaration name="DummyParameter4" parameterType="string" value="lane_change_param4"/>
+        <ParameterDeclaration name="DummyParameter5" parameterType="double" value="${$DummyParameter + 4}"/>
     </ParameterDeclarations>    
     <VariableDeclarations>
-        <VariableDeclaration name="DummyVariable" variableType="double" value="2"/>
+        <VariableDeclaration name="DummyVariable" variableType="double" value="${$DummyParameter - 4}"/>
         <VariableDeclaration name="DummyVariable2" variableType="boolean" value="true"/>
         <VariableDeclaration name="DummyVariable3" variableType="string" value="lane_change_var3"/>
         <VariableDeclaration name="DummyVariable4" variableType="string" value="lane_change_var4"/>
@@ -143,7 +144,7 @@
                                 <ConditionGroup>
                                     <Condition name="Lane change Target condition by parameter" delay="0" conditionEdge="rising">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="6" rule="greaterThan"/>
+                                            <SimulationTimeCondition value="$DummyParameter5" rule="greaterThan"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>

@@ -71,6 +71,8 @@ ScenarioReader::~ScenarioReader()
         delete controller_[i];
     }
     controller_.clear();
+    parameters.Clear();
+    variables.Clear();
 }
 
 void ScenarioReader::LoadControllers()

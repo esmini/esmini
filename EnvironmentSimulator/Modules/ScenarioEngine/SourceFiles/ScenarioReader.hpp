@@ -112,6 +112,9 @@ namespace scenarioengine
         void                              parseGlobalParameterDeclarations()
         {
             parameters.parseGlobalParameterDeclarations(osc_root_.child("ParameterDeclarations"));
+        }
+        void parseGlobalVariableDeclarations()
+        {
             variables.parseGlobalParameterDeclarations(osc_root_.child("VariableDeclarations"));
         }
 

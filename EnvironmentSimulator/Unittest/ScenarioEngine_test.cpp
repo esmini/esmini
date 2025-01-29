@@ -979,7 +979,7 @@ TEST(OptionsTest, TestOptionHandling)
 
 TEST(ParameterTest, ResolveParameterTest)
 {
-    Parameters params;
+    Parameters& params = ScenarioReader::parameters;
 
     params.parameterDeclarations_.Parameter.push_back({"speed", OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE, {0, 5.0, "5.0", false}});
     params.parameterDeclarations_.Parameter.push_back({"acc", OSCParameterDeclarations::ParameterType::PARAM_TYPE_DOUBLE, {0, 3.0, "3.0", false}});
@@ -1010,7 +1010,7 @@ TEST(ParameterTest, ParseParameterTest)
     paramDeclNode1.append_attribute("parameterType") = "boolean";
     paramDeclNode1.append_attribute("value")         = "true";
 
-    Parameters params;
+    Parameters& params = ScenarioReader::parameters;
     params.addParameterDeclarations(paramDeclsNode);
 
     // Create an XML element with attributes referring to parameters

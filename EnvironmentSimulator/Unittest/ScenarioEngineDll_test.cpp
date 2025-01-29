@@ -3117,6 +3117,40 @@ TEST(ParameterTest, SetParameterValuesBeforeInit)
     SE_RegisterParameterDeclarationCallback(0, 0);
 }
 
+static void callbackParamVar(void*)
+{
+    SE_SetParameterDouble("DummyParameter", 3.0);
+    SE_SetVariableBool("DummyVariable2", false);
+}
+
+TEST(ParameterTest, ReEvaluateExpressionsAfterCallback)
+{
+    double dummy_parameter;
+    double dummy_parameter5;
+    double dummy_variable;
+    bool   dummy_variable2;
+
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/lane_change_trig_by_variable.xosc";
+
+    SE_RegisterParameterDeclarationCallback(callbackParamVar, 0);
+
+    ASSERT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+
+    SE_GetParameterDouble("DummyParameter", &dummy_parameter);
+    SE_GetParameterDouble("DummyParameter5", &dummy_parameter5);
+    SE_GetVariableDouble("DummyVariable", &dummy_variable);
+    SE_GetVariableBool("DummyVariable2", &dummy_variable2);
+
+    EXPECT_EQ(dummy_parameter, 3.0);
+    EXPECT_EQ(dummy_parameter5, 7.0);
+    EXPECT_EQ(dummy_variable, -1.0);
+    EXPECT_EQ(dummy_variable2, false);
+
+    SE_Close();
+
+    SE_RegisterParameterDeclarationCallback(0, 0);
+}
+
 TEST(TestGetAndSet, OverrideActionTest)
 {
     std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/override_action.xosc";

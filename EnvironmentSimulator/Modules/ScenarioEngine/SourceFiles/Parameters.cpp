@@ -11,6 +11,7 @@
  */
 
 #include "Parameters.hpp"
+#include "ScenarioReader.hpp"
 #include "simple_expr.h"
 #include "logger.hpp"
 
@@ -26,7 +27,7 @@ void Parameters::parseGlobalParameterDeclarations(pugi::xml_node node)
 {
     if (parameterDeclarations_.Parameter.size() != 0)
     {
-        LOG_ERROR("Unexpected non empty parameterDeclarations_ when about to parse global declarations");
+        LOG_INFO("ParameterDeclarations contains parameters with modified values, all parameters and variables will be re-evaluated");
     }
 
     parseParameterDeclarations(node, &parameterDeclarations_);
@@ -69,15 +70,16 @@ int Parameters::setParameter(std::string name, std::string value)
     return -1;
 }
 
-std::string Parameters::getParameter(OSCParameterDeclarations& parameterDeclaration, std::string name)
+std::string Parameters::getParameter(std::string name)
 {
     // If string already present in parameterDeclaration
-    for (size_t i = 0; i < parameterDeclaration.Parameter.size(); i++)
+    const std::vector<OSCParameterDeclarations::ParameterStruct>& parameters = ScenarioReader::parameters.parameterDeclarations_.Parameter;
+    for (size_t i = 0; i < parameters.size(); i++)
     {
-        if (PARAMETER_PREFIX + parameterDeclaration.Parameter[i].name == name ||  // parameter names should not include prefix
-            parameterDeclaration.Parameter[i].name == name)                       // But support also parameter name including prefix
+        if (PARAMETER_PREFIX + parameters[i].name == name ||  // parameter names should not include prefix
+            parameters[i].name == name)                       // But support also parameter name including prefix
         {
-            return parameterDeclaration.Parameter[i].value._string;
+            return parameters[i].value._string;
         }
     }
     LOG_ERROR("Failed to resolve parameter {}", name);
@@ -150,6 +152,8 @@ int Parameters::setParameterValue(std::string name, const void* value)
         LOG_ERROR("Unexpected type: {}", ps->type);
         return -1;
     }
+
+    ps->dirty = true;
 
     return 0;
 }
@@ -305,6 +309,8 @@ int Parameters::setParameterValueByString(std::string name, std::string value)
         return -1;
     }
 
+    ps->dirty = true;
+
     return 0;
 }
 
@@ -319,6 +325,7 @@ int Parameters::setParameterValue(std::string name, int value)
 
     ps->value._int    = value;
     ps->value._string = std::to_string(ps->value._int);
+    ps->dirty         = true;
 
     return 0;
 }
@@ -334,6 +341,7 @@ int Parameters::setParameterValue(std::string name, double value)
 
     ps->value._double = value;
     ps->value._string = std::to_string(ps->value._double);
+    ps->dirty         = true;
 
     return 0;
 }
@@ -348,6 +356,7 @@ int Parameters::setParameterValue(std::string name, const char* value)
     }
 
     ps->value._string = value;
+    ps->dirty         = true;
 
     return 0;
 }
@@ -363,6 +372,7 @@ int Parameters::setParameterValue(std::string name, bool value)
 
     ps->value._bool   = value;
     ps->value._string = ps->value._bool == true ? "true" : "false";
+    ps->dirty         = true;
 
     return 0;
 }
@@ -375,11 +385,11 @@ std::string Parameters::ResolveParametersInString(std::string str)
         size_t found_space = str.find_first_of(" ({)}-+*/%^!|&<>=,", found);
         if (found_space != std::string::npos)
         {
-            str.replace(found, found_space - found, getParameter(parameterDeclarations_, str.substr(found, found_space - found)));
+            str.replace(found, found_space - found, getParameter(str.substr(found, found_space - found)));
         }
         else
         {
-            str.replace(found, std::string::npos, getParameter(parameterDeclarations_, str.substr(found)));
+            str.replace(found, std::string::npos, getParameter(str.substr(found)));
         }
     }
 
@@ -395,6 +405,8 @@ static void ReplaceStringInPlace(std::string& subject, const std::string& search
         pos += replace.length();
     }
 }
+
+// std::string ReadAttributeFrom
 
 std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute_name, bool required)
 {
@@ -459,7 +471,7 @@ std::string Parameters::ReadAttribute(pugi::xml_node node, std::string attribute
             else
             {
                 // Resolve variable
-                return_value = getParameter(parameterDeclarations_, attr.value());
+                return_value = getParameter(attr.value());
             }
         }
         else
@@ -492,6 +504,12 @@ void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSC
 
         param.name     = pdChild.attribute("name").value();
         param.variable = is_variable;
+
+        auto pos = std::find_if(pd->Parameter.begin(), pd->Parameter.end(), [&param](const auto& p) { return p.name == param.name; });
+        if (pos != pd->Parameter.end())
+        {
+            continue;
+        }
 
         // Check for catalog parameter assignements, overriding default value
         // Start from end of parameter list, in case of duplicates we want the most recent
@@ -551,6 +569,7 @@ void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSC
         {
             LOG_ERROR_AND_QUIT("Unexpected Type: {}", type_str);
         }
+
         pd->Parameter.insert(pd->Parameter.begin(), param);
     }
 }

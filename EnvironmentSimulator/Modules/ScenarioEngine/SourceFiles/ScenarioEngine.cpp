@@ -545,6 +545,40 @@ ScenarioGateway* ScenarioEngine::getScenarioGateway()
     return &scenarioGateway;
 }
 
+void ScenarioEngine::ParseGlobalDeclarations()
+{
+    scenarioReader->parseGlobalParameterDeclarations();
+    scenarioReader->parseGlobalVariableDeclarations();
+}
+
+void ScenarioEngine::EraseCleanVariables()
+{
+    auto iter = scenarioReader->variables.parameterDeclarations_.Parameter.begin();
+    while (iter != scenarioReader->variables.parameterDeclarations_.Parameter.end())
+    {
+        if (!iter->dirty)
+        {
+            iter = scenarioReader->variables.parameterDeclarations_.Parameter.erase(iter);
+            continue;
+        }
+        iter++;
+    }
+}
+
+void ScenarioEngine::EraseCleanParams()
+{
+    auto iter = scenarioReader->parameters.parameterDeclarations_.Parameter.begin();
+    while (iter != scenarioReader->parameters.parameterDeclarations_.Parameter.end())
+    {
+        if (!iter->dirty)
+        {
+            iter = scenarioReader->parameters.parameterDeclarations_.Parameter.erase(iter);
+            continue;
+        }
+        iter++;
+    }
+}
+
 int ScenarioEngine::parseScenario()
 {
     SetSimulationTime(0);
@@ -564,14 +598,20 @@ int ScenarioEngine::parseScenario()
     }
     LOG_INFO("Loading {} (v{}.{})", scenarioReader->getScenarioFilename(), scenarioReader->GetVersionMajor(), scenarioReader->GetVersionMinor());
 
-    scenarioReader->parseGlobalParameterDeclarations();
-    scenarioReader->variables.Print("variables");  // All variables parsed at this point (not the case with parameters)
+    ParseGlobalDeclarations();
 
-    // Now that parameter declaration has been parsed, call any registered callbacks before applying the parameters
+    // Now that parameter and variable declarations has been parsed, call any registered callbacks
     if (paramDeclCallback.func != nullptr)
     {
         paramDeclCallback.func(paramDeclCallback.data);
+        // Remove all parameters and variables not modified by callback, then re-evaluate all parameters and variables in case any values has been
+        // modified
+        EraseCleanParams();
+        EraseCleanVariables();
+        ParseGlobalDeclarations();
     }
+
+    scenarioReader->variables.Print("variables");  // All variables parsed at this point (not the case with parameters)
 
     // Init road manager
     scenarioReader->parseRoadNetwork(roadNetwork);

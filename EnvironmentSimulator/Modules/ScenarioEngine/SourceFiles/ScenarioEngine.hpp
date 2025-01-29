@@ -75,6 +75,9 @@ namespace scenarioengine
         void SetupGhost(Object *object);
         void ResetEvents();
         int  DetectCollisions();
+        void ParseGlobalDeclarations();
+        void EraseCleanParams();
+        void EraseCleanVariables();
         bool GetDisableControllersFlag()
         {
             return disable_controllers_;

@@ -47,6 +47,7 @@ namespace scenarioengine
                 bool        _bool = false;
             } value;
             bool variable = false;
+            bool dirty    = false;
         };
 
         std::vector<ParameterStruct> Parameter;
