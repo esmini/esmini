@@ -3085,7 +3085,7 @@ id_t roadmanager::MarkingSegment::GetOutlineId()
     return outlineId_;
 }
 
-Marking::RoadSide Marking::GetSide() const
+Marking::Side Marking::GetSide() const
 {
     return side_;
 }
@@ -3189,40 +3189,59 @@ unsigned int MarkingSegment::GetNumberOfPoints() const
     return static_cast<unsigned int>(allPoints_.size());
 }
 
-void roadmanager::MarkingGenerator::getCenterAlignedPoint(Point2D& point, double alpha, Marking::RoadSide side)
+void roadmanager::MarkingGenerator::getCenterAlignedPoint(Point2D& point, double alpha, Marking::Side side)
 {
+    Point2D point_local;
+    RotateVec2D(marking_.GetWidth() / 2, 0.0, alpha, point_local.x, point_local.y);
+
+#if 1
+    point.x += point_local.x;
+    point.y += point_local.y;
+#else
     // to do center align seems wrong
-    if (side == Marking::RoadSide::RIGHT)  // center allign the marking
-    {
-        point.x -= cos(alpha) * (marking_.GetWidth() / 2);
-        point.y += sin(alpha) * (marking_.GetWidth() / 2);
-    }
-    else
+    if (side == Marking::Side::FRONT)
     {
         point.x += cos(alpha) * (marking_.GetWidth() / 2);
         point.y -= sin(alpha) * (marking_.GetWidth() / 2);
     }
+    else if (side == Marking::Side::LEFT)
+    {
+        point.x += cos(alpha) * (marking_.GetWidth() / 2);
+        point.y -= sin(alpha) * (marking_.GetWidth() / 2);
+    }
+    else if (side == Marking::Side::REAR)
+    {
+        point.x += cos(alpha) * (marking_.GetWidth() / 2);
+        point.y -= sin(alpha) * (marking_.GetWidth() / 2);
+    }
+    else if (side == Marking::Side::RIGHT)  // center allign the marking
+    {
+        point.x -= cos(alpha) * (marking_.GetWidth() / 2);
+        point.y += sin(alpha) * (marking_.GetWidth() / 2);
+    }
+#endif
 }
 
 void roadmanager::MarkingGenerator::CalculateDetailsBasedOnAngle(Point2D& start, Point2D& end)
 {
     segmentlength_ = GetLengthOfVector2D((end.x - start.x), (end.y - start.y));
-    alpha_         = atan2(end.x - start.x, end.y - start.y);  // find the angle between two points
-    getCenterAlignedPoint(start, alpha_, marking_.GetSide());  // center allign the marking
+    alpha_         = GetAngleOfVector(end.x - start.x, end.y - start.y);  // find the angle between two points
+    Point2D point_local;
+    RotateVec2D(marking_.GetWidth() / 2, 0.0, alpha_, point_local.x, point_local.y);
+
     start_ = start;
     end_   = end;
     // find the actual distance of below parameters based on angle
-    deltaP1Gap_         = cos(alpha_) * marking_.GetSpaceLength();
-    deltaP0Gap_         = sin(alpha_) * marking_.GetSpaceLength();
-    deltaP1Line_        = cos(alpha_) * marking_.GetResolvedLineLength(segmentlength_);
-    deltaP0Line_        = sin(alpha_) * marking_.GetResolvedLineLength(segmentlength_);
-    deltaP1StartOffset_ = cos(alpha_) * marking_.GetStartOffset();
-    deltaP0StartOffset_ = sin(alpha_) * marking_.GetStartOffset();
+    gap_dx_         = cos(alpha_) * marking_.GetSpaceLength();
+    gap_dy_         = sin(alpha_) * marking_.GetSpaceLength();
+    line_dx_        = cos(alpha_) * marking_.GetResolvedLineLength(segmentlength_);
+    line_dy_        = sin(alpha_) * marking_.GetResolvedLineLength(segmentlength_);
+    start_offset_dx_ = cos(alpha_) * marking_.GetStartOffset();
+    start_offset_dy_ = sin(alpha_) * marking_.GetStartOffset();
 
     // find the far points of the marking
-    beta_       = marking_.GetSide() == Marking::RoadSide::RIGHT ? M_PI_2 + alpha_ : -M_PI_2 + alpha_;
-    deltaP1Far_ = cos(beta_) * marking_.GetWidth();
-    deltaP0Far_ = sin(beta_) * marking_.GetWidth();
+    dx_ = cos(alpha_ + M_PI_2) * marking_.GetWidth() / 2.0;
+    dy_ = sin(alpha_ + M_PI_2) * marking_.GetWidth() / 2.0;
 }
 
 Point3D MarkingGenerator::GetPoint3D(const Point2D& point)
@@ -3238,8 +3257,11 @@ Point3D MarkingGenerator::GetPoint3D(const Point2D& point)
     return pointTemp;
 }
 
-void MarkingGenerator::GenerateMarkingSegment(Point2D start, Point2D end, MarkingSegment& markingSegment)
+void MarkingGenerator::GenerateMarkingSegment(Point2D start, Point2D end, double angle, MarkingSegment& markingSegment)
 {
+    segmentlength_ = GetLengthOfVector2D((end.x - start.x), (end.y - start.y));
+    alpha_         = angle;
+
     CalculateDetailsBasedOnAngle(start, end);
     if (marking_.GetStartOffset() == 0.0)  // no startoffset add start merge
     {
@@ -3257,18 +3279,19 @@ void MarkingGenerator::GenerateMarkingSegment(Point2D start, Point2D end, Markin
     double  cur_s = 0.0;
     Point2D pointTemp;
     double  segmentMarkinglength = segmentlength_ - marking_.GetStopOffset();
+
     // if first block, add start offset
-    point.x += deltaP0StartOffset_;
-    point.y += deltaP1StartOffset_;
+    point.x += start_offset_dx_;
+    point.y += start_offset_dy_;
     while (segmentlength_ - cur_s >= 0.0)  // loop till total length is covered
     {
         std::vector<Point3D> points;
-        points.reserve(3);
+        points.reserve(4);
 
         if (cur_s > 0.0)  // if not first block, add gap
         {
-            point.x += deltaP0Gap_;
-            point.y += deltaP1Gap_;
+            point.x += gap_dx_;
+            point.y += gap_dy_;
         }
         cur_s = GetLengthOfVector2D((point.x - start_.x), (point.y - start_.y));
         if (segmentMarkinglength - cur_s < SMALL_NUMBER)  // total_length and cur_s are approximately equal
@@ -3276,26 +3299,38 @@ void MarkingGenerator::GenerateMarkingSegment(Point2D start, Point2D end, Markin
             break;
         }
 
-        pointTemp.x = point.x + deltaP0Far_;
-        pointTemp.y = point.y + deltaP1Far_;
-        points.emplace_back(std::move(GetPoint3D(point)));      // point_ A
-        points.emplace_back(std::move(GetPoint3D(pointTemp)));  // point_ B
+        // lower left corner
+        pointTemp.x = point.x + dx_;
+        pointTemp.y = point.y + dy_;
+        points.emplace_back(std::move(GetPoint3D(pointTemp)));
 
-        if (GetLengthOfVector2D((point.x + deltaP0Line_ - start_.x), (point.y + deltaP1Line_ - start_.y)) > segmentMarkinglength + SMALL_NUMBER)
+        // lower right corner
+        pointTemp.x = point.x - dx_;
+        pointTemp.y = point.y - dy_;
+        points.emplace_back(std::move(GetPoint3D(pointTemp)));
+
+        if (GetLengthOfVector2D((point.x + line_dx_ - start_.x), (point.y + line_dy_ - start_.y)) > segmentMarkinglength + SMALL_NUMBER)
         {                                                             // after gap length check line length can be trancated
             point.x += sin(alpha_) * (segmentMarkinglength - cur_s);  // new deltaP0Line
             point.y += cos(alpha_) * (segmentMarkinglength - cur_s);  // new deltaP1Line
         }
         else
         {
-            point.x += deltaP0Line_;
-            point.y += deltaP1Line_;
+            point.x += line_dx_;
+            point.y += line_dy_;
         }
-        pointTemp.x = point.x + deltaP0Far_;
-        pointTemp.y = point.y + deltaP1Far_;
-        cur_s       = GetLengthOfVector2D((point.x - start.x), (point.y - start.y));
-        points.emplace_back(std::move(GetPoint3D(pointTemp)));  // point_ D
-        points.emplace_back(std::move(GetPoint3D(point)));      // point_ C
+
+        // upper right corner
+        pointTemp.x = point.x - dx_;
+        pointTemp.y = point.y - dy_;
+        points.emplace_back(std::move(GetPoint3D(pointTemp)));
+
+        // upper left corner
+        pointTemp.x = point.x + dx_;
+        pointTemp.y = point.y + dy_;
+        points.emplace_back(std::move(GetPoint3D(pointTemp)));
+
+        cur_s = GetLengthOfVector2D((point.x - start.x), (point.y - start.y));
         if (cur_s <= segmentMarkinglength + SMALL_NUMBER)
         // cur_s is less than or equal to total_length + SMALL_NUMBER, add the points
         {
@@ -3326,7 +3361,7 @@ void MarkingGenerator::GenerateMarkingSegmentFromOutlines(const std::vector<Outl
                 segment = MarkingSegment(cornerReferences[i]->GetCornerId(), cornerReferences[i + 1]->GetCornerId(), outline.GetId());
                 cornerReferences[i]->GetPos(start.x, start.y, z1);
                 cornerReferences[i + 1]->GetPos(end.x, end.y, z2);
-                GenerateMarkingSegment(start, end, segment);
+                GenerateMarkingSegment(start, end, GetAngleOfVector(end.x - start.x, end.y - start.y), segment);
                 if (segment.GetNumberOfPoints() > 0)
                 {
                     marking_.AddMarkingSegment(std::move(segment));
@@ -3344,14 +3379,7 @@ void MarkingGenerator::GenerateMarkingSegmentFromOutlines(const std::vector<Outl
                 static_cast<roadmanager::OutlineCornerRoad*>(outline.GetCornerByIndex(k))->GetPos(start.x, start.y, z1);  // 1st corner
                 static_cast<roadmanager::OutlineCornerRoad*>(outline.GetCornerByIndex(outline.GetNumberOfCorners() - k - 1))
                     ->GetPos(end.x, end.y, z2);  // last corner
-                if (marking_.GetSide() == Marking::RoadSide::LEFT)
-                {
-                    GenerateMarkingSegment(start, end, segment);
-                }
-                else
-                {
-                    GenerateMarkingSegment(start, end, segment);
-                }
+                GenerateMarkingSegment(start, end, GetAngleOfVector(end.x - start.x, end.y - start.y), segment);
                 if (segment.GetNumberOfPoints() > 0)
                 {
                     marking_.AddMarkingSegment(std::move(segment));
@@ -3365,28 +3393,43 @@ void RMObject::GenerateMarkingsFromObject(Marking& marking)
 {
     MarkingGenerator markingGenerator(marking);
     MarkingSegment   segment(0, 0, 0);
-    segment.SetMergeType(MarkingSegment::MergeType::MERGE_NOT_REQUIRED);  // merge not required for not outline object
-    Point2D start;
-    Point2D end;
-    if (marking.GetSide() == Marking::RoadSide::LEFT)
+    segment.SetMergeType(MarkingSegment::MergeType::MERGE_END);  // merge not required for non outline object
+    Point2D start, end;
+    double  heading = GetH() + GetHOffset();
+    double dh = 0.0;
+
+    // find local start and end points of edge
+    if (marking.GetSide() == Marking::Side::FRONT)
     {
-        // find local lower left corner
-        RotateVec2D(-GetLength().Get() / 2, -GetWidth().Get() / 2, GetH() + GetHOffset(), start.x, start.y);
-        // find local upper left corner
-        RotateVec2D(-GetLength().Get() / 2, GetWidth().Get() / 2, GetH() + GetHOffset(), end.x, end.y);
+        RotateVec2D(GetLength().Get() / 2.0, -GetWidth().Get() / 2.0, heading, start.x, start.y);
+        RotateVec2D(GetLength().Get() / 2.0, GetWidth().Get() / 2.0, heading, end.x, end.y);
+        dh = M_PI_2;
     }
-    else
+    else if (marking.GetSide() == Marking::Side::LEFT)
     {
-        // find local lower right corner
-        RotateVec2D(GetLength().Get() / 2, -GetWidth().Get() / 2, GetH() + GetHOffset(), start.x, start.y);
-        // find local upper right corner
-        RotateVec2D(GetLength().Get() / 2, GetWidth().Get() / 2, GetH() + GetHOffset(), end.x, end.y);
+        RotateVec2D(GetLength().Get() / 2.0, GetWidth().Get() / 2.0, heading, start.x, start.y);
+        RotateVec2D(-GetLength().Get() / 2.0, GetWidth().Get() / 2.0, heading, end.x, end.y);
+        dh = M_PI;
     }
+    else if (marking.GetSide() == Marking::Side::REAR)
+    {
+        RotateVec2D(-GetLength().Get() / 2.0, GetWidth().Get() / 2, heading, start.x, start.y);
+        RotateVec2D(-GetLength().Get() / 2.0, -GetWidth().Get() / 2, heading, end.x, end.y);
+        dh = 3 * M_PI_2;
+    }
+    else if (marking.GetSide() == Marking::Side::RIGHT)
+    {
+        RotateVec2D(-GetLength().Get() / 2, -GetWidth().Get() / 2.0, heading, start.x, start.y);
+        RotateVec2D(GetLength().Get() / 2, -GetWidth().Get() / 2.0, heading, end.x, end.y);
+    }
+
+    // add global position
     start.x = GetX() + start.x;
     start.y = GetY() + start.y;
     end.x   = GetX() + end.x;
     end.y   = GetY() + end.y;
-    markingGenerator.GenerateMarkingSegment(start, end, segment);
+
+    markingGenerator.GenerateMarkingSegment(start, end, heading + dh, segment);
     if (segment.GetNumberOfPoints() > 0)
     {
         marking.AddMarkingSegment(std::move(segment));
@@ -3461,7 +3504,7 @@ void RMObject::ResolveTwoLinesWithWidth(std::vector<std::vector<Point3D>>& line1
         line1[line1.size() - 1][3].y = y3;
         line2[0][0].x                = x3;
         line2[0][0].y                = y3;
-        // printf("Resolved secound line\n");
+        // printf("Resolved second line\n");
     }
 }
 
@@ -6204,7 +6247,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     {
                         bool              isValidMarking = true;
                         Marking           marking;
-                        Marking::RoadSide side = Marking::RoadSide::RIGHT;
+                        Marking::Side side = Marking::Side::RIGHT;
                         if (!strcmp(marking_node.name(), "marking"))
                         {
                             LaneRoadMark  laneRoadMark;
@@ -6212,17 +6255,25 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             std::string   side_str = marking_node.attribute("side").value();
                             if (obj->GetNumberOfOutlines() == 0)
                             {
-                                if (side_str == "left")
+                                if (side_str == "front")
                                 {
-                                    side = Marking::RoadSide::LEFT;
+                                    side = Marking::Side::FRONT;
+                                }
+                                else if (side_str == "left")
+                                {
+                                    side = Marking::Side::LEFT;
+                                }
+                                else if (side_str == "rear")
+                                {
+                                    side = Marking::Side::REAR;
                                 }
                                 else if (side_str == "right")
                                 {
-                                    side = Marking::RoadSide::RIGHT;
+                                    side = Marking::Side::RIGHT;
                                 }
                                 else
                                 {
-                                    LOG_ERROR("skiping marking, Side attribute is mandatory in marking with no outline");
+                                    LOG_ERROR("skiping marking, bounding box side attribute missing or wrong");
                                     isValidMarking = false;
                                     break;
                                 }

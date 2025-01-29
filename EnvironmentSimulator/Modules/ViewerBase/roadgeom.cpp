@@ -33,13 +33,6 @@
 #define MAX_GEOM_LENGTH 50                    // maximum length of a road geometry mesh segment
 #define MIN_GEOM_LENGTH 0.1                   // minimum length of a road geometry mesh segment, adjust if possible
 
-#define POLYGON_OFFSET_SIDEWALK  2.0
-#define POLYGON_OFFSET_ROADMARKS 1.0
-#define POLYGON_OFFSET_BORDER    -1.0
-#define POLYGON_OFFSET_GRASS     -2.0
-
-#define ROADMARK_Z_OFFSET 0.02
-
 const static double friction_max     = 5.0;
 const static double friction_default = 1.0;
 static osg::Vec3d   origin_          = {0.0, 0.0, 0.0};

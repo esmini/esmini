@@ -300,14 +300,14 @@
                                                 <Vertex>
                                                     <Position>
                                                         <RoadPosition roadId="1" s="8.0" t="8">
-                                                            <Orientation type="relative" h="0"/>
+                                                            <Orientation type="relative" h="-0.2"/>
                                                         </RoadPosition>
                                                     </Position>
                                                 </Vertex>
                                                 <Vertex>
                                                     <Position>
                                                         <RoadPosition roadId="1" s="17.0" t="6">
-                                                            <Orientation type="relative" h="0"/>
+                                                            <Orientation type="relative" h="-0.2"/>
                                                         </RoadPosition>
                                                     </Position>
                                                 </Vertex>

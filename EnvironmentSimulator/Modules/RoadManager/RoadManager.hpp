@@ -26,6 +26,11 @@
 
 #define PARAMPOLY3_STEPS 100
 #define FRICTION_DEFAULT 1.0
+#define POLYGON_OFFSET_SIDEWALK  2.0
+#define POLYGON_OFFSET_ROADMARKS 1.0
+#define POLYGON_OFFSET_BORDER    -1.0
+#define POLYGON_OFFSET_GRASS     -2.0
+#define ROADMARK_Z_OFFSET 0.02
 
 namespace roadmanager
 {
@@ -1990,9 +1995,11 @@ namespace roadmanager
     class Marking
     {
     public:
-        enum class RoadSide
+        enum class Side
         {
+            FRONT,
             LEFT,
+            REAR,
             RIGHT
         };
 
@@ -2005,7 +2012,7 @@ namespace roadmanager
                 double        lineLength,
                 double        startOffset,
                 double        stopOffset,
-                RoadSide      side)
+                Side      side)
             : roadId_(roadId),
               color_(color_str),
               width_(width),
@@ -2017,7 +2024,7 @@ namespace roadmanager
               side_(side)
         {
         }
-        RoadSide                     GetSide() const;
+        Side                     GetSide() const;
         RoadMarkColor                GetColor() const;
         void                         GetPos(double s, double t, double dz, double &x, double &y, double &z);
         const std::vector<id_t>     &GetCornerReferenceIds() const;
@@ -2038,7 +2045,7 @@ namespace roadmanager
         id_t                        roadId_;
         RoadMarkColor               color_ = RoadMarkColor::WHITE;
         double                      width_, z_offset_, spaceLength_, lineLength_, startOffset_, stopOffset_;
-        RoadSide                    side_ = RoadSide::RIGHT;
+        Side                        side_ = Side::RIGHT;
         std::vector<id_t>           cornerReferenceIds_;
         std::vector<MarkingSegment> MarkingSegments_;  // todo can be private member variable
     };
@@ -2052,18 +2059,18 @@ namespace roadmanager
         // Generate marking segment for the given outlines. e.g for non repeat outline object and store it in marking object
         void GenerateMarkingSegmentFromOutlines(const std::vector<Outline> &outlines);
         // generate marking segment in markingSegment for the given start and end points
-        void GenerateMarkingSegment(Point2D start, Point2D end, MarkingSegment &markingSegment);
+        void GenerateMarkingSegment(Point2D start, Point2D end, double angle, MarkingSegment &markingSegment);
 
     private:
         Marking &marking_;
         Point2D  start_;
         Point2D  end_;
-        double   segmentlength_, alpha_, beta_, deltaP1Gap_, deltaP0Gap_, deltaP1Line_, deltaP0Line_, deltaP1StartOffset_, deltaP0StartOffset_,
-            deltaP1Far_, deltaP0Far_;
+        double   segmentlength_, alpha_, beta_, gap_dx_, gap_dy_, line_dx_, line_dy_, start_offset_dx_, start_offset_dy_,
+            dx_, dy_;
         // get resolved points in 3D
         Point3D GetPoint3D(const Point2D &point);
         // get points in the center aligned to the start and end points
-        void getCenterAlignedPoint(Point2D &point, double alpha, Marking::RoadSide side);
+        void getCenterAlignedPoint(Point2D &point, double alpha, Marking::Side side);
         // set start and end points for the given corner type along calculating the alpha, beta other parameters
         void CalculateDetailsBasedOnAngle(Point2D &start, Point2D &end);
     };

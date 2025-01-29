@@ -28,6 +28,7 @@
 #include <osgDB/Registry>
 #include <osgDB/WriteFile>
 #include <osgUtil/SmoothingVisitor>
+#include <osg/PolygonOffset>
 #include <osgUtil/Tessellator>  // to tessellate multiple contours
 #include <osgUtil/Optimizer>    // to flatten transform nodes
 
@@ -1452,10 +1453,10 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     // establish initial node mask settings, show or hide elements by default
     SetNodeMaskBits(NodeMask::NODE_MASK_ENTITY_MODEL | NODE_MASK_MARKING | NODE_MASK_OBJECT_SOLID | NODE_MASK_INFO | NODE_MASK_TRAJECTORY_LINES |
-                    NODE_MASK_ROUTE_WAYPOINTS);
+                    NODE_MASK_ROUTE_WAYPOINTS | NODE_MASK_ENTITY_BB_WF | NODE_MASK_OBJECT_WF);
 
     ClearNodeMaskBits(NODE_MASK_TRAIL_LINES | NODE_MASK_TRAIL_DOTS | NODE_MASK_OSI_LINES | NODE_MASK_OSI_POINTS | NODE_MASK_OBJECT_SENSORS |
-                      NODE_MASK_ODR_FEATURES | NODE_MASK_ENTITY_BB_WF | NODE_MASK_OBJECT_WF | NODE_MASK_INFO_PER_OBJ);
+                      NODE_MASK_ODR_FEATURES | NODE_MASK_INFO_PER_OBJ);
 
     roadSensors_ = new osg::Group;
     roadSensors_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
@@ -2663,45 +2664,44 @@ int Viewer::DrawMarking(roadmanager::RMObject* object, osg::Group* parent)
         osg::ref_ptr<osg::Group> group = new osg::Group();
         for (auto& segment : marking.GetMarkingSegments())  // get all segments/edges for each marking definition
         {
+            osg::ref_ptr<osg::Geode> geode = new osg::Geode;
             for (auto& points : segment.GetAllPoints())  // get all points per segment
             {
-                osg::ref_ptr<osg::Vec3Array> vertices_top = new osg::Vec3Array(points.size());  // one set at bottom and one at top
+                osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(points.size());  // one set at bottom and one at top
 
                 for (int i = 0; i < points.size(); i += 4)  // get vertices defining each individual marking, defined by 4 vertices
                 {
-                    (*vertices_top)[i + 0].set(static_cast<float>(points[i + 0].x - origin_[0]),
-                                               static_cast<float>(points[i + 0].y - origin_[1]),
-                                               static_cast<float>(points[i + 0].z));
-                    (*vertices_top)[i + 1].set(static_cast<float>(points[i + 1].x - origin_[0]),
-                                               static_cast<float>(points[i + 1].y - origin_[1]),
-                                               static_cast<float>(points[i + 1].z));
-                    (*vertices_top)[i + 2].set(static_cast<float>(points[i + 2].x - origin_[0]),
-                                               static_cast<float>(points[i + 2].y - origin_[1]),
-                                               static_cast<float>(points[i + 2].z));
-                    (*vertices_top)[i + 3].set(static_cast<float>(points[i + 3].x - origin_[0]),
-                                               static_cast<float>(points[i + 3].y - origin_[1]),
-                                               static_cast<float>(points[i + 3].z));
+                    (*vertices)[i * 4 + 0].set(static_cast<float>(points[i * 4 + 0].x - origin_[0]),
+                                               static_cast<float>(points[i * 4 + 0].y - origin_[1]),
+                                               static_cast<float>(points[i * 4 + 0].z));
+                    (*vertices)[i * 4 + 1].set(static_cast<float>(points[i * 4 + 1].x - origin_[0]),
+                                               static_cast<float>(points[i * 4 + 1].y - origin_[1]),
+                                               static_cast<float>(points[i * 4 + 1].z));
+                    (*vertices)[i * 4 + 2].set(static_cast<float>(points[i * 4 + 2].x - origin_[0]),
+                                               static_cast<float>(points[i * 4 + 2].y - origin_[1]),
+                                               static_cast<float>(points[i * 4 + 2].z));
+                    (*vertices)[i * 4 + 3].set(static_cast<float>(points[i * 4 + 3].x - origin_[0]),
+                                               static_cast<float>(points[i * 4 + 3].y - origin_[1]),
+                                               static_cast<float>(points[i * 4 + 3].z));
                 }
 
                 // Finally create and add geometry
-                osg::ref_ptr<osg::Geode>    geode = new osg::Geode;
                 osg::ref_ptr<osg::Geometry> geom  = new osg::Geometry;
-
-                geom->setVertexArray(vertices_top.get());
+                osg::ref_ptr<osg::Vec4Array> color_array = new osg::Vec4Array;
+                color_array->push_back(ODR2OSGColor(marking.GetColor()));
+                geom->setVertexArray(vertices.get());
                 geom->addPrimitiveSet(new osg::DrawArrays(GL_QUADS, 0, points.size()));
-
+                geom->setColorArray(color_array);
+                geom->setColorBinding(osg::Geometry::BIND_OVERALL);
+                osgUtil::SmoothingVisitor::smooth(*geom, 0.0);
                 geom->setDataVariance(osg::Object::STATIC);
                 geom->setUseDisplayList(true);
+                geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(-POLYGON_OFFSET_ROADMARKS, -SIGN(POLYGON_OFFSET_ROADMARKS)));
                 geode->addDrawable(geom);
-                group->addChild(geode);
             }
+            group->addChild(geode);
         }
 
-        osg::Vec4                   color     = ODR2OSGColor(marking.GetColor());
-        osg::ref_ptr<osg::Material> material_ = new osg::Material;
-        material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
-        material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
-        group->getOrCreateStateSet()->setAttributeAndModes(material_.get());
         group->setNodeMask(NODE_MASK_MARKING);
         parent->addChild(group);
     }
@@ -3062,9 +3062,8 @@ void Viewer::AddModel(bool                                         IsMarkingAvai
 
     osg::PolygonMode* polygonMode = new osg::PolygonMode;
     polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-    bb_wf->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-    bb_wf->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-    bb_wf->setNodeMask(NodeMask::NODE_MASK_OBJECT_WF);
+    bb_wf->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::ON);
+    bb_wf->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
 }
 
 // create object from given object and scales
