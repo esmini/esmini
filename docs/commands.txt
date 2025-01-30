@@ -108,8 +108,8 @@ Options:
       Return number of permutations without executing the scenario (-1 = error)
   --save_generated_model
       Save generated 3D model (n/a when a scenegraph is loaded)
-  --save_xosc
-      Save OpenSCENARIO file with any populated parameter values (from distribution)
+  --save_xosc [mode]  (default if value omitted: continue)
+      Save OpenSCENARIO file with any populated parameter values (from distribution). Modes: quit, continue.
   --seed <number>
       Specify seed number for random generator
   --sensors
