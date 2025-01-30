@@ -1200,17 +1200,17 @@ Examples:
 
 === Parameter distributions
 
-Parameter values and distributions can be specified in a separate https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_parameter_value_distribution_file[Parameter value distribution file]. This is a convenient way of running multiple variations, or parameter value permutations, of a single scenario.
+Parameter values and distributions can be specified in a separate https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/09_reuse_mechanisms/09_03_parameter_distribution.html[Parameter value distribution file]. This is a convenient way of running multiple variations, or parameter value permutations, of a single scenario.
 
 Here's an example: https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_parameter_set.xosc[cut-in_parameter_set.xosc].
 
-Below 3 ways shall be used to run all permutations with esmini:
+To run all permutations with esmini, the following variants works:
 
-. `./bin/esmini --window 60 60 800 400 --param_dist ./resources/xosc/cut-in_parameter_set.xosc`
 . `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc`
+. `./bin/esmini --window 60 60 800 400 --param_dist ./resources/xosc/cut-in_parameter_set.xosc`
 . `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc`
 
-The first two ways will run all permutations of the scenario defined in the parameter set file. The third way will run the scenario defined in the scenario file, but with all permutations of the parameter set file.
+The first two will use the scenario file referred to by the https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/ParameterValueDistribution.html[ParameterValueDistriution element] inside the parameter value distribution file (`cut-in_parameter_set.xosc`). The third example will apply the parameter settings on the scenario defined by the `osc` launch argument, overriding any scenario reference in the specified `param_dist` file. This can be useful when a single parameter distribution applies to multiple scenarios (instead of having one parameter file for each scenario).
 
 How to abort:
 
@@ -1222,40 +1222,44 @@ The log files are now named according to:
 
 For example:
 
-`log_1_of_6.txt` relates to the 1:th run of 6, permutation index 0 +
-`log_4_of_6.txt` relates to the 4:th run of 6, permutation index 3
+`log_1_of_12.txt` relates to the 1:th run of 12, permutation index 0 +
+`log_4_of_12.txt` relates to the 4:th run of 12, permutation index 3
 
 Of course this will apply also to custom log filenames. Example:
 
-`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --logfile_path my_scenario.txt`
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc --logfile_path my_scenario.txt`
 
-will result in `my_scenario_1_of_6.txt`...
+will output `my_scenario_1_of_12.txt`, `my_scenario_2_of_12.txt` ...
 
 Also any recording (.dat), osi and csv files will be named in similar way. Example:
 
-`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --record sim.dat --osi_file gt.osi --csv_logger data_log.csv`
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc --record sim.dat --osi_file gt.osi --csv_logger data_log.csv`
 
-will result in complete sets of files: +
-`log_1_of_6.txt` ... +
-`sim_1_of_6.dat` ... +
-`gt_1_of_6.osi` ... +
-`data_log_1_of_6.csv` ...
+will output complete sets of files: +
+`log_1_of_12.txt` ... +
+`sim_1_of_12.dat` ... +
+`gt_1_of_12.osi` ... +
+`data_log_1_of_12.csv` ...
 
 To run a specific permutation only, specify index like this:
 
-`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --param_permutation 2`
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc --param_permutation 2`
 
-will run 3:rd permutation (of 6 available in this case)
+will run 3:rd permutation (of 12 available in this case)
 
 Save the resulting OpenSCENARIO file with populated parameter values:
 
-`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --save_xosc`
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc --save_xosc`
 
-will give `cut-in_1_of_6.xosc`...
+will output all twelve scenarios `cut-in_1_of_12.xosc` ...
+
+To just save the scenario files quickly without executing them, add optional `quit` argument to the `save_osc` option, like this:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc --save_xosc quit`
 
 To view all results in parallel, make use of replayer like this:
 
-`./bin/esmini --headless --fixed_timestep 0.05 --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --record sim.dat ; ./bin/replayer --window 60 60 800 400 --res_path ./resources/ --file sim_ --dir .`
+`./bin/esmini --headless --fixed_timestep 0.05 --osc ./resources/xosc/cut-in_parameter_set.xosc --record sim.dat ; ./bin/replayer --window 60 60 800 400 --res_path ./resources/ --file sim_ --dir .`
 
 .View all permutations in parallel
 image::param_dist0.jpg[]
@@ -1267,33 +1271,32 @@ Making use of Python threading pool framework we can utilize any multiple CPU ke
 Usage: `run_distribution.py <esmini args>`
 
 Make sure to add at least the following esmini arguments: +
-`--osc <scenario file>` +
-`--param_dist <parameter distribution file>` +
+`--osc <parameter distribution file>` +
 `--fixed_timestep <timestep>` +
 `--headless`
 
 Example:
 
-`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --fixed_timestep 0.05 --headless`
+`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in_parameter_set.xosc --fixed_timestep 0.05 --headless --record sim.dat`
 
 Of course, the --headless (and --fixed_timestep) is not required. It is possible to run with viewer as well:
 
-`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --window 60 60 800 400`
+`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in_parameter_set.xosc --window 60 60 800 400`
 
 but the windows will open on top of each other at the same location on the screen, so you need to manually move them apart to see the parallel runs. Anyway, this use case is probably not relevant so the recommendation is to run headless with fixed time step.
 
 Putting it all together, execute the scenario permutations in parallel and then view the result in replayer:
 
-`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --fixed_timestep 0.05 --headless --record sim.dat ; ./bin/replayer --window 60 60 800 400 --res_path ./resources/ --file sim_ --dir .`
+`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in_parameter_set.xosc --fixed_timestep 0.05 --headless --record sim.dat ; ./bin/replayer --window 60 60 800 400 --res_path ./resources/ --file sim_ --dir .`
 
 ==== Finding out number of permutations
 
 To find out the number of permutations of a specific scenario and parameter distribution, use the `--return_nr_permutations` launch argument. Example:
 
-`./bin/esmini --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc --return_nr_permutations`
+`./bin/esmini --osc ./resources/xosc/cut-in_parameter_set.xosc --return_nr_permutations`
 
 Output:
-`Nr permutations: 6`
+`Nr permutations: 12`
 
 For scripters: esmini will also return the number of permutations as exit code, for simple use in scripts.
 After executing the above the exit code can be inspected/verified from shell as well:

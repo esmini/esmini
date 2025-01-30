@@ -84,6 +84,11 @@ namespace scenarioengine
 
         ScenarioPlayer(int argc, char *argv[]);
         ~ScenarioPlayer();
+
+        /**
+        Initialize the player for the specified scenario and road network
+        @return -1 on failure, 0 on success
+        */
         int  Init();
         void PrintUsage();
         bool IsQuitRequested()

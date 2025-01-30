@@ -62,6 +62,10 @@ static int execute_scenario(int argc, char* argv[])
             // Skip scenario, return immediately
             return static_cast<int>(OSCParameterDistribution::Inst().GetNumPermutations());
         }
+        else if (player->IsQuitRequested())
+        {
+            return 0;  // e.g. --save_xosc quit
+        }
     }
     catch (const std::exception& e)
     {

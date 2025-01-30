@@ -120,6 +120,7 @@ ScenarioPlayer::~ScenarioPlayer()
     if (osiReporter)
     {
         delete osiReporter;
+        osiReporter = nullptr;
     }
 #endif  // _USE_OSI
 
@@ -189,7 +190,10 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
     if (!IsPaused() || server_mode)
     {
 #ifdef _USE_OSI
-        osiReporter->SetUpdated(false);
+        if (osiReporter != nullptr)
+        {
+            osiReporter->SetUpdated(false);
+        }
 #endif
         scenarioEngine->mutex_.Lock();
         retval = ScenarioFrame(timestep_s, true);
@@ -1275,7 +1279,11 @@ int ScenarioPlayer::Init()
     opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
     opt.AddOption("return_nr_permutations", "Return number of permutations without executing the scenario (-1 = error)");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
-    opt.AddOption("save_xosc", "Save OpenSCENARIO file with any populated parameter values (from distribution)");
+    opt.AddOption("save_xosc",
+                  "Save OpenSCENARIO file with any populated parameter values (from distribution). Modes: quit, continue.",
+                  "mode",
+                  "continue",
+                  false);
     opt.AddOption("seed", "Specify seed number for random generator", "number");
     opt.AddOption("sensors", "Show sensor frustums. Toggle key 'r'");
     opt.AddOption("server", "Launch server to receive state of external Ego simulator");
@@ -1611,6 +1619,12 @@ int ScenarioPlayer::Init()
         {
             filename = dist.AddInfoToFilepath(filename);
             xml_doc->save_file(filename.c_str());
+        }
+
+        if (opt.GetOptionArg("save_xosc") == "quit")
+        {
+            SetQuitRequest(true);
+            return 0;
         }
     }
 
