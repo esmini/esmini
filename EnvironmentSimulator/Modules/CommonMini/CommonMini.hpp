@@ -21,6 +21,7 @@
 #include <condition_variable>
 #include <cstring>
 #include <map>
+#include <unordered_map>
 
 #ifndef _WIN32
 #include <inttypes.h>
@@ -839,20 +840,27 @@ public:
     bool                     set_;
     std::vector<std::string> arg_value_;
     std::string              default_value_;
-    bool                     persistent_ = false;
-    bool                     autoApply_  = false;
+    bool                     persistent_             = false;
+    bool                     autoApply_              = false;
+    bool                     shouldHaveOnlyOneValue_ = false;
 
-    SE_Option(std::string opt_str, std::string opt_desc, std::string opt_arg = "", std::string default_value = "", bool autoApply = false)
+    SE_Option(std::string opt_str,
+              std::string opt_desc,
+              std::string opt_arg                = "",
+              std::string default_value          = "",
+              bool        autoApply              = false,
+              bool        shouldHaveOnlyOneValue = false)
         : opt_str_(opt_str),
           opt_desc_(opt_desc),
           opt_arg_(opt_arg),
           set_(false),
           default_value_(default_value),
-          autoApply_(autoApply)
+          autoApply_(autoApply),
+          shouldHaveOnlyOneValue_(shouldHaveOnlyOneValue)
     {
     }
 
-    void Usage();
+    void Usage() const;
 };
 
 class SE_Options
@@ -862,9 +870,10 @@ class SE_Options
 public:
     void AddOption(std::string opt_str,
                    std::string opt_desc,
-                   std::string opt_arg               = "",
-                   std::string opt_arg_default_value = "",
-                   bool        autoApply             = false);
+                   std::string opt_arg                = "",
+                   std::string opt_arg_default_value  = "",
+                   bool        autoApply              = false,
+                   bool        shouldHaveOnlyOneValue = false);
 
     void        PrintUsage();
     void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");
@@ -888,10 +897,10 @@ public:
     int UnsetOption(const std::string& opt);
     // clears only value(s) of the option and let the other flags as they are
     int                           ClearOption(const std::string& opt);
-    const std::vector<SE_Option>& GetAllOptions() const;
+    const std::unordered_map<std::string, SE_Option>& GetAllOptions() const;
 
 private:
-    std::vector<SE_Option>   option_;
+    std::unordered_map<std::string, SE_Option>   option_;
     std::string              app_name_;
     std::vector<std::string> originalArgs_;
     std::vector<std::string> unknown_args_;

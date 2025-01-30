@@ -17,10 +17,6 @@
 #include <osgViewer/ViewerEventHandlers>
 #include <signal.h>
 
-// #include "ConfigFileParser.cpp"
-// #include "yaml-cpp/yaml.h"
-// #include <yaml-cpp/yaml.h>
-
 #include "Config.cpp"
 
 #include <fstream>
@@ -148,7 +144,6 @@ int main(int argc, char* argv[])
     // esmini::common::Config& config = esmini::common::Config::Inst();
     esmini::common::Config::Inst();
 
-    return 0;
     OSCParameterDistribution& dist   = OSCParameterDistribution::Inst();
     int                       retval = 0;
 

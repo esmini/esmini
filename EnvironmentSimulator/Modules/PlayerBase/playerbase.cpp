@@ -1296,7 +1296,7 @@ int ScenarioPlayer::Init()
     }
 
     std::string strAllSetOptions;
-    for (const auto& option : opt.GetAllOptions())
+    for (const auto& [key, option] : opt.GetAllOptions())
     {
         if (option.set_)
         {

@@ -25,7 +25,6 @@ namespace esmini::common
 
         esmini::common::ConfigParser parser(configFilePaths_);
         const auto                   config = parser.Parse();
-        // const auto& esminiConfig = parser.GetApplicationConfig("esmini");
     }
 
     std::optional<std::string> Config::GetEnvironmentVariable(const std::string& variableName)

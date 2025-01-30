@@ -1757,7 +1757,7 @@ void SE_Mutex::Unlock()
 #endif
 }
 
-void SE_Option::Usage()
+void SE_Option::Usage() const
 {
     if (!default_value_.empty())
     {
@@ -1779,7 +1779,7 @@ void SE_Option::Usage()
     printf("\n      %s\n", opt_desc_.c_str());
 }
 
-void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value, bool autoApply)
+void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value, bool autoApply, bool shouldHaveOnlyOneValue)
 {
     SE_Option* option = GetOption(opt_str);
     if (option)
@@ -1790,11 +1790,12 @@ void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::strin
         option->opt_arg_       = opt_arg;
         option->default_value_ = default_value;
         option->autoApply_     = autoApply;
+        option->shouldHaveOnlyOneValue_ = shouldHaveOnlyOneValue;
     }
     else
     {
-        SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply);
-        option_.push_back(opt);
+        SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply, shouldHaveOnlyOneValue);
+        option_.insert(std::make_pair(opt_str, opt));
     }
 }
 
@@ -1802,10 +1803,14 @@ void SE_Options::PrintUsage()
 {
     printf("\nUsage: %s [options]\n", app_name_.c_str());
     printf("Options: \n");
-    for (size_t i = 0; i < option_.size(); i++)
+    for( const auto& [key, option] : option_)
     {
-        option_[i].Usage();
+        option.Usage();
     }
+    // for (size_t i = 0; i < option_.size(); i++)
+    // {
+    //     option_[i].Usage();
+    // }
     printf("\n");
 }
 
@@ -1945,7 +1950,7 @@ int SE_Options::ClearOption(const std::string& opt)
     return 0;
 }
 
-const std::vector<SE_Option>& SE_Options::GetAllOptions() const
+const std::unordered_map<std::string, SE_Option>& SE_Options::GetAllOptions() const
 {
     return option_;
 }
@@ -2014,7 +2019,7 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
 
 void SE_Options::ApplyDefaultValues()
 {
-    for (auto& opt : option_)
+    for (auto& [key, opt] : option_)
     {
         if (opt.arg_value_.empty() && !opt.default_value_.empty())
         {
@@ -2029,14 +2034,19 @@ void SE_Options::ApplyDefaultValues()
 
 SE_Option* SE_Options::GetOption(std::string opt)
 {
-    for (size_t i = 0; i < option_.size(); i++)
+    if( auto itr = option_.find(opt); itr != option_.end())
     {
-        if (opt == option_[i].opt_str_)
-        {
-            return &option_[i];
-        }
+        return &itr->second;
     }
-    return 0;
+    return nullptr;
+    // for (size_t i = 0; i < option_.size(); i++)
+    // {
+    //     if (opt == option_[i].opt_str_)
+    //     {
+    //         return &option_[i];
+    //     }
+    // }
+    // return 0;
 }
 
 bool SE_Options::IsInOriginalArgs(std::string opt)
@@ -2056,15 +2066,20 @@ bool SE_Options::HasUnknownArgs()
 
 void SE_Options::Reset()
 {
-    for (size_t i = 0; i < option_.size(); i++)
+    for(auto& [key, option] : option_)
     {
-        if (!option_[i].persistent_)
-        {
-            option_[i].arg_value_.clear();
-            option_[i].set_ = false;
-        }
+        option.arg_value_.clear();
+        option.set_ = false;
     }
-    // option_.clear();
+    // for (size_t i = 0; i < option_.size(); i++)
+    // {
+    //     if (!option_[i].persistent_)
+    //     {
+    //         option_[i].arg_value_.clear();
+    //         option_[i].set_ = false;
+    //     }
+    // }
+
     originalArgs_.clear();
 }
 
