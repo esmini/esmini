@@ -1296,20 +1296,20 @@ int ScenarioPlayer::Init()
     }
 
     std::string strAllSetOptions;
-    for (const auto& [key, option] : opt.GetAllOptions())
+    for (const auto& pair : opt.GetAllOptions())
     {
-        if (option.set_)
+        if (pair.second.set_)
         {
             std::string currentOptionValue;
-            if (!option.arg_value_.empty())
+            if (!pair.second.arg_value_.empty())
             {
-                for (auto itr = option.arg_value_.begin(); itr != option.arg_value_.end(); ++itr)
+                for (auto itr = pair.second.arg_value_.begin(); itr != pair.second.arg_value_.end(); ++itr)
                 {
                     currentOptionValue = fmt::format("{} {}", currentOptionValue, *itr);
                 }
             }
 
-            strAllSetOptions = fmt::format("{}--{}{} ", strAllSetOptions, option.opt_str_, currentOptionValue);
+            strAllSetOptions = fmt::format("{}--{}{} ", strAllSetOptions, pair.second.opt_str_, currentOptionValue);
         }
     }
 

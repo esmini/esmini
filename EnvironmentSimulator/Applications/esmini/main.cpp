@@ -28,25 +28,25 @@
 
 static bool quit = false;
 
-static void CreateConfigFile(const std::string& filename)
-{
-    std::ofstream file(filename);
-    if (!file)
-    {
-        std::cerr << "Failed to create file: " << filename << std::endl;
-        return;
-    }
-    // Write YAML content
-    file << "esmini:\n";
-    file << "  window: 60 60 800 400\n";
-    file << "  log_filepath: c:/tmp/kalle.txt\n";
-    file << "  window: 30 30 400 200\n";
-    file << "\n";
-    file << "replayer:\n";
-    file << "  tesselation_factor: 1.1\n";
+// static void CreateConfigFile(const std::string& filename)
+// {
+//     std::ofstream file(filename);
+//     if (!file)
+//     {
+//         std::cerr << "Failed to create file: " << filename << std::endl;
+//         return;
+//     }
+//     // Write YAML content
+//     file << "esmini:\n";
+//     file << "  window: 60 60 800 400\n";
+//     file << "  log_filepath: c:/tmp/kalle.txt\n";
+//     file << "  window: 30 30 400 200\n";
+//     file << "\n";
+//     file << "replayer:\n";
+//     file << "  tesselation_factor: 1.1\n";
 
-    file.close();
-}
+//     file.close();
+// }
 
 static void signal_handler(int s)
 {
