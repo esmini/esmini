@@ -1810,6 +1810,7 @@ void SE_Options::PrintUsage()
     printf("Options: \n");
     for (const auto& [key, option] : option_)
     {
+        [[maybe_unused]] const auto& unused_key = key;
         option.Usage();
     }
     // for (size_t i = 0; i < option_.size(); i++)
@@ -2026,6 +2027,7 @@ void SE_Options::ApplyDefaultValues()
 {
     for (auto& [key, opt] : option_)
     {
+        [[maybe_unused]] const auto& unused_key = key;
         if (opt.arg_value_.empty() && !opt.default_value_.empty())
         {
             if ((!opt.autoApply_ && opt.set_) || (opt.autoApply_ && !opt.set_))
@@ -2073,6 +2075,7 @@ void SE_Options::Reset()
 {
     for (auto& [key, option] : option_)
     {
+        [[maybe_unused]] const auto& unused_key = key;
         if (!option.persistent_)
         {
             option.arg_value_.clear();
