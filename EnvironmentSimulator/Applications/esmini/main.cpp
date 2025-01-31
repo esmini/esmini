@@ -139,10 +139,10 @@ static int execute_scenario(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    CreateConfigFile("config.yml");
+    // CreateConfigFile("config.yml");
 
     // esmini::common::Config& config = esmini::common::Config::Inst();
-    esmini::common::Config::Inst();
+    // esmini::common::Config::Inst();
 
     OSCParameterDistribution& dist   = OSCParameterDistribution::Inst();
     int                       retval = 0;

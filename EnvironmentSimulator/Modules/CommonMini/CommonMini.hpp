@@ -896,14 +896,14 @@ public:
     // it does the whole cleanup of the option i.e. unsets, non-persists and clears value(s) of the option
     int UnsetOption(const std::string& opt);
     // clears only value(s) of the option and let the other flags as they are
-    int                           ClearOption(const std::string& opt);
+    int                                               ClearOption(const std::string& opt);
     const std::unordered_map<std::string, SE_Option>& GetAllOptions() const;
 
 private:
-    std::unordered_map<std::string, SE_Option>   option_;
-    std::string              app_name_;
-    std::vector<std::string> originalArgs_;
-    std::vector<std::string> unknown_args_;
+    std::unordered_map<std::string, SE_Option> option_;
+    std::string                                app_name_;
+    std::vector<std::string>                   originalArgs_;
+    std::vector<std::string>                   unknown_args_;
 
     // Get option by name if present otherwise will return null
     SE_Option* GetOption(std::string opt);

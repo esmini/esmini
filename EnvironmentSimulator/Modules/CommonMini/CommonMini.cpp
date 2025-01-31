@@ -1779,17 +1779,22 @@ void SE_Option::Usage() const
     printf("\n      %s\n", opt_desc_.c_str());
 }
 
-void SE_Options::AddOption(std::string opt_str, std::string opt_desc, std::string opt_arg, std::string default_value, bool autoApply, bool shouldHaveOnlyOneValue)
+void SE_Options::AddOption(std::string opt_str,
+                           std::string opt_desc,
+                           std::string opt_arg,
+                           std::string default_value,
+                           bool        autoApply,
+                           bool        shouldHaveOnlyOneValue)
 {
     SE_Option* option = GetOption(opt_str);
     if (option)
     {
         // there can be option already added, maybe the api has done it. which don't have values for str, desc, arg, default value, auto apply
-        option->opt_str_       = opt_str;
-        option->opt_desc_      = opt_desc;
-        option->opt_arg_       = opt_arg;
-        option->default_value_ = default_value;
-        option->autoApply_     = autoApply;
+        option->opt_str_                = opt_str;
+        option->opt_desc_               = opt_desc;
+        option->opt_arg_                = opt_arg;
+        option->default_value_          = default_value;
+        option->autoApply_              = autoApply;
         option->shouldHaveOnlyOneValue_ = shouldHaveOnlyOneValue;
     }
     else
@@ -1803,7 +1808,7 @@ void SE_Options::PrintUsage()
 {
     printf("\nUsage: %s [options]\n", app_name_.c_str());
     printf("Options: \n");
-    for( const auto& [key, option] : option_)
+    for (const auto& [key, option] : option_)
     {
         option.Usage();
     }
@@ -1839,9 +1844,9 @@ bool SE_Options::GetOptionSet(std::string opt)
 
 bool SE_Options::IsOptionArgumentSet(std::string opt)
 {
-    if (GetOption(opt) != nullptr)
+    if (const auto option = GetOption(opt); option != nullptr)
     {
-        return GetOption(opt)->set_;
+        return option->set_;
     }
 
     return false;
@@ -1905,7 +1910,7 @@ int SE_Options::SetOptionValue(std::string opt, std::string value, bool add, boo
     {
         if (!option->opt_arg_.empty())
         {
-            if (!add)
+            if (!add || option->shouldHaveOnlyOneValue_)
             {
                 option->arg_value_.clear();
             }
@@ -2034,7 +2039,7 @@ void SE_Options::ApplyDefaultValues()
 
 SE_Option* SE_Options::GetOption(std::string opt)
 {
-    if( auto itr = option_.find(opt); itr != option_.end())
+    if (auto itr = option_.find(opt); itr != option_.end())
     {
         return &itr->second;
     }
@@ -2066,10 +2071,13 @@ bool SE_Options::HasUnknownArgs()
 
 void SE_Options::Reset()
 {
-    for(auto& [key, option] : option_)
+    for (auto& [key, option] : option_)
     {
-        option.arg_value_.clear();
-        option.set_ = false;
+        if (!option.persistent_)
+        {
+            option.arg_value_.clear();
+            option.set_ = false;
+        }
     }
     // for (size_t i = 0; i < option_.size(); i++)
     // {
