@@ -1,5 +1,22 @@
 ## esmini release notes
 
+### 2025-01-31 Version 2.45.1
+
+New features:
+
+Improvements and fixes:
+- Use default argument value in [`SE_UpdateOSIGroundTruth()`](https://github.com/esmini/esmini/blob/043ba440c809e1cbd850e318bc0bf159b88bab0e/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1419)
+  - no need to supply argument (at least not from C++ environment)
+  - see updated info in [User guide - OSI data via API call](https://esmini.github.io/#_osi_data_via_api_call)
+- Extend parameter distribution support
+  - make use of `ScenarioFile` reference in [ParameterValueDistribution](https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/ParameterValueDistribution.html)
+  - no need to specify both xosc file and parameter distribution file
+  - new option to save scenario with resolved parameter values asap (not executing)
+  - see updated info in [User guide - Parameter distributions](https://esmini.github.io/#_parameter_distributions)
+- Support parameter and variable modification via callback ([issue #624](https://github.com/esmini/esmini/issues/624))
+  - by re-evaluating expressions correctly
+  - fix issue preventing variable expressions referring to parameters
+
 ### 2025-01-24 Version 2.45.0
 
 New features:
