@@ -5,7 +5,7 @@
 New features:
 
 Improvements and fixes:
-- Use default argument value in [`SE_UpdateOSIGroundTruth()`](https://github.com/esmini/esmini/blob/043ba440c809e1cbd850e318bc0bf159b88bab0e/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1419)
+- Use default argument value in [`SE_UpdateOSIGroundTruth()`](https://github.com/esmini/esmini/blob/b684c2609ee5f1182e2ee48d822275f36fb90c80/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1415-L1420)
   - no need to supply argument (at least not from C++ environment)
   - see updated info in [User guide - OSI data via API call](https://esmini.github.io/#_osi_data_via_api_call)
 - Extend parameter distribution support
