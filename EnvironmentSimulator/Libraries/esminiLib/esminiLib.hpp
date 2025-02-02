@@ -1456,13 +1456,13 @@ extern "C"
     SE_DLL_API const char *SE_GetOSITrafficCommandRaw();
 
     /**
-            The SE_SetOSISensorDataRaw function returns a char array containing the OSI GroundTruth information
+            Populate OSI SensorView from provided pointer to OSI SensorData
             @return 0
     */
     SE_DLL_API int SE_SetOSISensorDataRaw(const char *sensordata);
 
     /**
-            The SE_GetOSISensorDataRaw function returns a char array containing the OSI SensorData information
+            Return a pointer to OSI SensorData information
             @return osi3::SensorData*
     */
     SE_DLL_API const char *SE_GetOSISensorDataRaw();

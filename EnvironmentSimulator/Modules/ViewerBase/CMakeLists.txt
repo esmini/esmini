@@ -14,14 +14,24 @@ add_definitions(-DOSG_LIBRARY_STATIC)
 set(SOURCES
     viewer.cpp
     roadgeom.cpp
-    RubberbandManipulator.cpp
-    OSISensorView.cpp)
+    RubberbandManipulator.cpp)
+
+if(USE_OSI)
+    set(SOURCES
+        ${SOURCES}
+        OSISensorView.cpp)
+endif(USE_OSI)
 
 set(INCLUDES
     viewer.hpp
     roadgeom.hpp
-    RubberbandManipulator.hpp
-    OSISensorView.hpp)
+    RubberbandManipulator.hpp)
+
+if(USE_OSI)
+    set(INCLUDES
+        ${INCLUDES}
+        OSISensorView.hpp)
+endif(USE_OSI)
 
 # ############################### Setting target files ###############################################################
 
