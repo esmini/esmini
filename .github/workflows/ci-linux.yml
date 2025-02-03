@@ -21,12 +21,14 @@ jobs:
     
     container:
       image: ghcr.io/bounverif/esmini:latest-builder
-
+      env:
+        ESMINI_BUILD_DOWNLOAD_DEPS: FALSE
+        
     steps:
       - uses: actions/checkout@v4
         with:
             submodules: recursive
-            
+
       - run: |
           sudo apt-get update
           sudo apt-get install ninja-build

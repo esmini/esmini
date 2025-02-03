@@ -96,6 +96,11 @@ set(ESMINI_BUILD_VERSION
     CACHE STRING
           "Esmini CI Build Version")
 
+set(ESMINI_BUILD_DOWNLOAD_DEPS
+    ON
+    CACHE STRING
+          "Download Esmini dependencies")
+
 set(CMAKE_BUILD_TYPE
     "Release"
     CACHE STRING
@@ -157,6 +162,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/download.cmake)
 
 message(STATUS "Downloading dependencies...")
 
+if(ESMINI_BUILD_DOWNLOAD_DEPS)
 download(
     osg
     ${EXTERNALS_OSG_PATH}
@@ -202,7 +208,7 @@ if(NOT
         "*"
         "${GTEST_PACKAGE_URL}")
 endif()
-
+endif()
 # ############################### Loading external packages ##########################################################
 
 if(USE_GTEST)
