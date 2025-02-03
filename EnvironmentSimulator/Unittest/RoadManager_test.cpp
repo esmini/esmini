@@ -4260,6 +4260,37 @@ TEST(RoadId, TestStringRoadId)
     odr->Clear();
 }
 
+// Verify correct mapping of XY positions to road coordinates
+// For visual inspection, see scenario file with same name
+// is should include same positions as in this test
+TEST(PositionTest, TestClosestRoadPosFromXY)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../EnvironmentSimulator/Unittest/xodr/find_closest_road_pos.xodr");
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 2);
+
+    Position pos;
+
+    // car1
+    pos.SetInertiaPos(220.0, 40.0, 0.0);
+    EXPECT_EQ(pos.GetTrackId(), 1);
+    EXPECT_EQ(pos.GetLaneId(), 1);
+    EXPECT_NEAR(pos.GetS(), 207.65, 1e-2);
+
+    // car2
+    pos.SetInertiaPos(230.0, 35.0, 0.0);
+    EXPECT_EQ(pos.GetTrackId(), 1);
+    EXPECT_EQ(pos.GetLaneId(), 1);
+    EXPECT_NEAR(pos.GetS(), 416.45, 1e-2);
+
+    // car3
+    pos.SetInertiaPos(230.0, 45.0, 0.0);
+    EXPECT_EQ(pos.GetTrackId(), 2);
+    EXPECT_EQ(pos.GetLaneId(), 1);
+    EXPECT_NEAR(pos.GetS(), 171.34, 1e-2);
+}
+
 int main(int argc, char **argv)
 {
     // testing::GTEST_FLAG(filter) = "*RoadWidthAllLanes*";

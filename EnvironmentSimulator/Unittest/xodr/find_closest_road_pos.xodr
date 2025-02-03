@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenDRIVE>
+    <header name="my_road" revMajor="1" revMinor="5" date="2025-02-03 08:18:05.553323" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <road rule="RHT" id="1" junction="-1" length="520.0">
+        <link/>
+        <planView>
+            <geometry s="0" x="0" y="0" hdg="0.0" length="50">
+                <line/>
+            </geometry>
+            <geometry s="50" x="50.0" y="0.0" hdg="0.0" length="50.0">
+                <spiral curvStart="0.0" curvEnd="0.02"/>
+            </geometry>
+            <geometry s="100.0" x="98.76438441001723" y="8.185702368785028" hdg="0.5" length="100.0">
+                <spiral curvStart="0.02" curvEnd="-0.05"/>
+            </geometry>
+            <geometry s="200.0" x="181.19206101664972" y="39.07579398657756" hdg="-1.0000000000000002" length="100.0">
+                <spiral curvStart="-0.05" curvEnd="0.05"/>
+            </geometry>
+            <geometry s="300.0" x="156.48146764778778" y="-50.81657110681487" hdg="-1.0000000000000002" length="70.0">
+                <spiral curvStart="0.05" curvEnd="0.01"/>
+            </geometry>
+            <geometry s="370.0" x="211.42576257103588" y="-33.660927532881985" hdg="1.0999999999999999" length="50.0">
+                <spiral curvStart="0.01" curvEnd="-0.05"/>
+            </geometry>
+            <geometry s="420.0" x="242.71608654961378" y="2.2773398210200995" hdg="0.09999999999999964" length="100.0">
+                <spiral curvStart="-0.05" curvEnd="0.02"/>
+            </geometry>
+        </planView>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link/>
+                        <width a="3.1" b="0" c="0" d="0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link/>
+                        <width a="3.1" b="0" c="0" d="0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+    </road>
+    <road rule="RHT" id="2" junction="-1" length="400.0">
+        <link/>
+        <planView>
+            <geometry s="0" x="400" y="20" hdg="2.7" length="400.0">
+                <arc curvature="0.001"/>
+            </geometry>
+        </planView>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link/>
+                        <width a="3.1" b="0" c="0" d="0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link/>
+                        <width a="3.1" b="0" c="0" d="0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+    </road>
+</OpenDRIVE>
