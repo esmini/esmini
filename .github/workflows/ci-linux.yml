@@ -44,7 +44,6 @@ jobs:
             -DUSE_SUMO=0 \
             -DUSE_IMPLOT=0 \
             -DUSE_GTEST=0 \
-            -DCMAKE_FIND_STATIC_LIBS=TRUE \
             -DESMINI_BUILD_DOWNLOAD_DEPS=FALSE
 
       - name: CMake Build
