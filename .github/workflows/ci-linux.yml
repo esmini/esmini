@@ -41,6 +41,8 @@ jobs:
             -DUSE_SUMO=0 \
             -DUSE_IMPLOT=0 \
             -DUSE_GTEST=0 \
+            _DCMAKE_INCLUDE_PATH=/usr/local/include/osi3 \
+            -DCMAKE_LIBRARY_PATH=/usr/local/lib/osi3 \
             -DESMINI_BUILD_DOWNLOAD_DEPS=FALSE
 
       - name: CMake Build
