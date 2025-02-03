@@ -621,7 +621,7 @@ In OpenDRIVE, a cubic polynom is represented by a &lt;poly3&gt; element within t
 				</xs:attribute>
 				<xs:attribute name="type" use="required" type="e_roadType">
 					<xs:annotation>
-						<xs:documentation>For supported types, for values see UML model.</xs:documentation>
+						<xs:documentation>Type of the road defined as enumeration, see UML diagramm</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="country" use="optional" type="e_countryCode">

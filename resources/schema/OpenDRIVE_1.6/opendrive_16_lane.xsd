@@ -303,7 +303,7 @@ b) continuous two-way left turn lane on multi-lane roads – US road networks</x
 	</xs:complexType>
 	<xs:complexType name="t_road_lanes_laneSection">
 		<xs:annotation>
-			<xs:documentation>Lanes may be split into multiple lane sections. Each lane section contains a fixed number of lanes. Every time the number of lanes changes, a new lane section is required.</xs:documentation>
+			<xs:documentation>Lanes may be split into multiple lane sections. Each lane section contains a fixed number of lanes. Every time the number of lanes changes, a new lane section is required. The distance between two succeeding lane sections shall not be zero.</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="_OpenDriveElement">
@@ -356,7 +356,7 @@ b) continuous two-way left turn lane on multi-lane roads – US road networks</x
 	</xs:complexType>
 	<xs:complexType name="t_road_lanes_laneSection_lcr_lane_link">
 		<xs:annotation>
-			<xs:documentation>For links between lanes with an identical reference line, the lane predecessor and successor information provide the IDs of lanes on the preceding or following lane section. This element may only be omitted, if lanes end at a junction or have no physical link.</xs:documentation>
+			<xs:documentation>For links between lanes with an identical reference line, the lane predecessor and successor information provide the IDs of lanes on the preceding or following lane section. For links between lanes with different reference line,  the lane predecessor and successor information provide the IDs of lanes on the first or last lane section of the other reference line depending on the contact point of the road linkage. This element may only be omitted, if lanes end at a junction or have no physical link.</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="_OpenDriveElement">

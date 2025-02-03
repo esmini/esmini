@@ -360,7 +360,7 @@ For a parking space, the &lt;parkingSpace&gt; element may be used additionally.<
 		<xs:complexContent>
 			<xs:extension base="_OpenDriveElement">
 				<xs:sequence>
-					<xs:element name="cornerReference" type="t_road_objects_object_markings_marking_cornerReference" minOccurs="2" maxOccurs="unbounded"/>
+					<xs:element name="cornerReference" type="t_road_objects_object_markings_marking_cornerReference" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
 				</xs:sequence>
 				<xs:attribute name="width" use="required" type="t_grEqZero">
@@ -406,10 +406,10 @@ For a parking space, the &lt;parkingSpace&gt; element may be used additionally.<
 		<xs:complexContent>
 			<xs:extension base="_OpenDriveElement">
 				<xs:sequence>
-					<xs:element name="cornerReference" type="t_road_objects_object_markings_marking_cornerReference" minOccurs="2" maxOccurs="unbounded"/>
+					<xs:element name="cornerReference" type="t_road_objects_object_markings_marking_cornerReference" minOccurs="0" maxOccurs="unbounded"/>
 					<xs:group ref="g_additionalData" minOccurs="0" maxOccurs="unbounded"/>
 				</xs:sequence>
-				<xs:attribute name="side" use="required" type="e_sideType">
+				<xs:attribute name="side" use="optional" type="e_sideType">
 					<xs:annotation>
 						<xs:documentation>Side of the bounding box described in &lt;object&gt; element in the local coordinate system u/v. For values see UML model.</xs:documentation>
 					</xs:annotation>
