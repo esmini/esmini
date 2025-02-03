@@ -32,7 +32,7 @@ jobs:
 
       - run: |
           sudo apt-get update
-          sudo apt-get install ninja-build libjpeg-dev
+          sudo apt-get install -qqy ninja-build libjpeg-dev
 
       - name: CMake Configure
         run: |
