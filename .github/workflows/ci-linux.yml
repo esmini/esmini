@@ -1,0 +1,32 @@
+name: Continuous Integration (Linux)
+
+permissions:
+  contents: write
+
+on:
+  push:
+    paths:
+      - ".github/workflows/ci-linux.yml"
+      - "CMakeLists.txt"
+      - "support/cmake/**"
+
+jobs:
+  build:
+    name: Build esmini in container
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    
+    container:
+      image: ghcr.io/bounverif/esmini:latest-builder
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: CMake Configure - Default
+        run: cmake --preset=ci-ubuntu_release -DUSE_OSG=1 -DUSE_OSI=1 -DUSE_SUMO=0 -DUSE_IMPLOT=0 -DUSE_GTEST=0
+
+      - name: CMake Build
+        run: cmake --build build --config Release --target install -j4
