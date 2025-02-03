@@ -35,14 +35,14 @@ jobs:
 
       - name: CMake Configure
         run: |
+          export CMAKE_INCLUDE_PATH=/usr/local/include/osi3
+          export CMAKE_LIBRARY_PATH=/usr/local/lib/osi3
           cmake --preset=ci-ubuntu_release \
             -DUSE_OSG=1 \
             -DUSE_OSI=1 \
             -DUSE_SUMO=0 \
             -DUSE_IMPLOT=0 \
             -DUSE_GTEST=0 \
-            -DCMAKE_INCLUDE_PATH=/usr/local/include/osi3 \
-            -DCMAKE_LIBRARY_PATH=/usr/local/lib/osi3 \
             -DESMINI_BUILD_DOWNLOAD_DEPS=FALSE
 
       - name: CMake Build
