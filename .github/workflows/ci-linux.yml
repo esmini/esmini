@@ -23,7 +23,7 @@ jobs:
       image: ghcr.io/bounverif/esmini:latest-builder
       env:
         ESMINI_BUILD_DOWNLOAD_DEPS: FALSE
-        
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,8 +33,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install ninja-build
 
-      - name: CMake Configure - Default
-        run: cmake --preset=ci-ubuntu_release -DUSE_OSG=1 -DUSE_OSI=1 -DUSE_SUMO=0 -DUSE_IMPLOT=0 -DUSE_GTEST=0
+      - name: CMake Configure
+        run: |
+          cmake --preset=ci-ubuntu_release \
+            -DUSE_OSG=1 \
+            -DUSE_OSI=1 \
+            -DUSE_SUMO=0 \
+            -DUSE_IMPLOT=0 \
+            -DUSE_GTEST=0 \
+            -DESMINI_BUILD_DOWNLOAD_DEPS=FALSE
 
       - name: CMake Build
-        run: cmake --build build --config Release --target install -j4
+        run: cmake --build build --target install -j4
