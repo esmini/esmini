@@ -499,8 +499,9 @@ void roadmanager::GenerateApproximatedRoads2DTree(KdTree::TreeXY<BBoxAroundTwoOS
         bboxWPtr.bbox |= KdTree::Point{samplePos.GetX(), samplePos.GetY()};
     };
 
-    auto DefineBBox =
-        [&AddCornerPoint, &data](const roadmanager::Road* roadPtr, const roadmanager::PointStruct& ptMin, const roadmanager::PointStruct& ptMax)
+    auto DefineBBox = [&AddCornerPoint, &data, &expandBBox](const roadmanager::Road*        roadPtr,
+                                                            const roadmanager::PointStruct& ptMin,
+                                                            const roadmanager::PointStruct& ptMax)
     {
         BBoxAroundTwoOSIPoints& osiSegmentBBox = data.emplace_back();
 
@@ -526,16 +527,16 @@ void roadmanager::GenerateApproximatedRoads2DTree(KdTree::TreeXY<BBoxAroundTwoOS
         osiSegmentBBox.sMaxSin = std::sin(ptMax.h);
     };
 
-    for (size_t i = 0; i < roadmanager::Position::GetOpenDrive()->GetNumOfRoads(); i++)
+    for (unsigned int i = 0; i < roadmanager::Position::GetOpenDrive()->GetNumOfRoads(); i++)
     {
         const roadmanager::Road* roadPtr = roadmanager::Position::GetOpenDrive()->GetRoadByIdx(i);
-        for (size_t j = 0; j < roadPtr->GetNumberOfLaneSections(); j++)
+        for (unsigned int j = 0; j < roadPtr->GetNumberOfLaneSections(); j++)
         {
             const roadmanager::LaneSection* currLS = roadPtr->GetLaneSectionByIdx(j);
 
             auto lane = currLS->GetLaneById(0);
 
-            for (size_t k = 0; k < lane->GetOSIPoints()->GetNumOfOSIPoints() - 1; k++)
+            for (unsigned int k = 0; k + 1 < lane->GetOSIPoints()->GetNumOfOSIPoints(); k++)
             {
                 const PointStruct& ptMin = lane->GetOSIPoints()->GetPoint(k);
                 const PointStruct& ptMax = lane->GetOSIPoints()->GetPoint(k + 1);
@@ -7563,21 +7564,12 @@ typedef struct
     PointStruct* osi_point;  // osi point reference
 } XYZHVertex;
 
-double OSIPtsToSVal(const double             x3,
-                    const double             y3,
-                    const PointStruct&       osip_closest,
-                    const PointStruct&       osip_first,
-                    const PointStruct&       osip_second,
-                    const roadmanager::Road* road)
+double OSIPtsToSVal(const double x3, const double y3, const PointStruct& osip_first, const PointStruct& osip_second, const roadmanager::Road* road)
 {
     double closestS = 0;
     {
         // Find out what line the points projects to, starting or ending with closest point?
         // Do this by comparing the angle to the position with the road normal at found point
-
-        double xTangent = cos(osip_closest.h);
-        double yTangent = sin(osip_closest.h);
-        double dotP     = GetDotProduct2D(xTangent, yTangent, x3 - osip_closest.x, y3 - osip_closest.y);
 
         {
             // Different points
@@ -7654,6 +7646,7 @@ Position::ReturnCode roadmanager::Position::XYZH2TrackPosTreeBased(double x3, do
 {
     roadmanager::Road* roadMin  = nullptr;
     ReturnCode         retvalue = ReturnCode::OK;
+    (void)z3;
     this->resultBox.reserve(40);
 
     auto CollectOSISegmentsWithPointInside = [this, x3, y3](const BBoxAroundTwoOSIPoints& bboxWRoadPtr) -> bool
@@ -7686,7 +7679,7 @@ Position::ReturnCode roadmanager::Position::XYZH2TrackPosTreeBased(double x3, do
         return ReturnCode::ERROR_GENERIC;
     }
 
-    auto CheckIfRoadBelongsToRoute = [this](const int currRoadId)
+    auto CheckIfRoadBelongsToRoute = [this](const id_t currRoadId)
     {
         for (const auto& waypoint : route_->minimal_waypoints_)
         {
@@ -7704,7 +7697,7 @@ Position::ReturnCode roadmanager::Position::XYZH2TrackPosTreeBased(double x3, do
         if (route_ && !CheckIfRoadBelongsToRoute(bboxWRoadPtr.roadPtr->GetId()))
             continue;
 
-        resultSVal = OSIPtsToSVal(x3, y3, bboxWRoadPtr.sMin, bboxWRoadPtr.sMin, bboxWRoadPtr.sMax, bboxWRoadPtr.roadPtr);
+        resultSVal = OSIPtsToSVal(x3, y3, bboxWRoadPtr.sMin, bboxWRoadPtr.sMax, bboxWRoadPtr.roadPtr);
 
         // Set position exact on center line
         SetTrackPos(bboxWRoadPtr.roadPtr->GetId(), resultSVal, 0, true);
@@ -7783,11 +7776,11 @@ Position::ReturnCode roadmanager::Position::XYZH2TrackPosTreeBased(double x3, do
     SetY(y3);
     SetHeading(h3);
 
-   /* if (GetAlignModeZ() == Position::ALIGN_MODE::ALIGN_NONE)
-    {
-        SetZ(z3);
-    }
-    EvaluateRoadZPitchRoll();*/
+    /* if (GetAlignModeZ() == Position::ALIGN_MODE::ALIGN_NONE)
+     {
+         SetZ(z3);
+     }
+     EvaluateRoadZPitchRoll();*/
 
     if (GetS() > roadMin->GetLength())
     {
@@ -8669,7 +8662,6 @@ void Position::XYZ2Track(int mode)
     {
         XYZ2TrackPos(x_, y_, z_, mode == PosMode::UNDEFINED ? GetMode(PosModeType::SET) : mode);
     }
-    
 }
 
 Position::ReturnCode Position::XYZ2Route(int mode)

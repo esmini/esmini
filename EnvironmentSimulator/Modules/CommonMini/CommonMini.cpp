@@ -8,7 +8,7 @@
  *
  * Copyright (c) partners of Simulation Scenarios
  * https://sites.google.com/view/simulationscenarios
- * 
+ *
  * Copyright 2024, dSPACE GmbH, All rights reserved.
  * SPDX-License-Identifier: MPL-2.0
  * kduvnjak@dspace.hr

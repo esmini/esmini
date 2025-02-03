@@ -31,7 +31,6 @@
 #define PARAMPOLY3_STEPS 100
 #define FRICTION_DEFAULT 1.0
 
-
 namespace roadmanager
 {
     class Road;
@@ -58,6 +57,7 @@ namespace roadmanager
         double y;
         double z;
         double h;
+        bool   endpoint;
     } PointStruct;
 
     class BBoxAroundTwoOSIPoints
@@ -106,7 +106,6 @@ namespace std
         }
     };
 }  // namespace std
-
 
 namespace roadmanager
 {
@@ -186,16 +185,6 @@ namespace roadmanager
         double d_;
         double p_scale_;
     };
-
-    typedef struct
-    {
-        double s;
-        double x;
-        double y;
-        double z;
-        double h;
-        bool   endpoint;
-    } PointStruct;
 
     class OSIPoints
     {
@@ -2940,7 +2929,7 @@ namespace roadmanager
         id_t LookupRoadIdFromStr(std::string id_str);
         id_t LookupJunctionIdFromStr(std::string id_str);
 
-        KdTree::TreeXY<BBoxAroundTwoOSIPoints>& GetRnTree()
+        KdTree::TreeXY<BBoxAroundTwoOSIPoints> &GetRnTree()
         {
             return roadNetworkTree_;
         }
@@ -2949,7 +2938,6 @@ namespace roadmanager
         {
             return roadNetworkTree_;
         }
-
 
     private:
         pugi::xml_node                            root_node_;
@@ -2968,7 +2956,6 @@ namespace roadmanager
         std::vector<std::pair<id_t, std::string>> junction_ids_;
         id_t                                      LookupIdFromStr(std::vector<std::pair<id_t, std::string>> &ids, std::string id_str);
         KdTree::TreeXY<BBoxAroundTwoOSIPoints>    roadNetworkTree_;
-
     };
 
     typedef struct
@@ -4135,11 +4122,25 @@ namespace roadmanager
         std::optional<CandidateWHints>        candidatesOnRoad;
         std::optional<CandidateWHints>        candidatesOffRoad;
 
-        std::optional<double> GetZHint() const {return zHint_;}
-        void SetZHint(double z) {zHint_ = z;}
+        std::optional<double> GetZHint() const
+        {
+            return zHint_;
+        }
 
-        double                GetHdgHint() const {return hdgHint_;}
-        double                SetHdgHint(double hdg) {hdgHint_ = hdg;}
+        void SetZHint(double z)
+        {
+            zHint_ = z;
+        }
+
+        double GetHdgHint() const
+        {
+            return hdgHint_;
+        }
+
+        void SetHdgHint(double hdg)
+        {
+            hdgHint_ = hdg;
+        }
 
     protected:
         void       Track2Lane();

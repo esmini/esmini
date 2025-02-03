@@ -112,11 +112,11 @@ TEST(KdTree, CheckBasicKdTreeXYFunc)
     {
         std::set<int> set;
         tree.BoxOverlaps(box,
-                                [&set](const TestCircle& c)
-                                {
-                                    set.insert(c.id);
-                                    return false;
-                                });
+                         [&set](const TestCircle& c)
+                         {
+                             set.insert(c.id);
+                             return false;
+                         });
         return set;
     };
 
@@ -170,4 +170,3 @@ TEST(KdTree, CheckBasicKdTreeXYFunc)
         ASSERT_EQ(getIntersectingCircleSet(KdTree::BoundingBox({2.0, 2.0}, {2.0, 2.0}), tree), (std::set<int>{0, 1, 2}));
     }
 }
-
