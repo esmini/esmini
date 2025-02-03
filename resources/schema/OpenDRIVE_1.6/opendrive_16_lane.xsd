@@ -1,10 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 ASAM OpenDRIVE V1.6.0
 
 © by ASAM e.V., 2020
 
-ASAM OpenDRIVE lane dsecription
+ASAM OpenDRIVE lane description
 
 
 Any use is limited to the scope described in the ASAM license terms. 
@@ -12,7 +12,6 @@ This file is distributable in accordance with the ASAM license terms.
 See www.asam.net/license.html for further details.
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	<xs:include schemaLocation="opendrive_16_core.xsd"/>
 	<xs:simpleType name="e_accessRestrictionType">
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="simulator"/>
@@ -58,12 +57,12 @@ See www.asam.net/license.html for further details.
 			</xs:enumeration>
 			<xs:enumeration value="none">
 				<xs:annotation>
-					<xs:documentation>"Invisible" lane. This lane is on the most ouside of the road. Its only purpose is for simulation, that there is still opendrive present in case the (human) driver leaves the road. </xs:documentation>
+					<xs:documentation>"Invisible" lane. This lane is on the most outside the road. Its only purpose is for simulation, that there is still opendrive present in case the (human) driver leaves the road. </xs:documentation>
 				</xs:annotation>
 			</xs:enumeration>
 			<xs:enumeration value="restricted">
 				<xs:annotation>
-					<xs:documentation>Lane on which cars should not drive, but have the same height as the drivable lanes. Typically they are separated with lines and often there are additional striped lines on them. </xs:documentation>
+					<xs:documentation>Lane on which cars should not drive, but have the same height as the drivable lanes. Typically, they are separated with lines and often there are additional striped lines on them. </xs:documentation>
 				</xs:annotation>
 			</xs:enumeration>
 			<xs:enumeration value="parking">
@@ -73,7 +72,7 @@ See www.asam.net/license.html for further details.
 			</xs:enumeration>
 			<xs:enumeration value="median">
 				<xs:annotation>
-					<xs:documentation>Lane between driving lanes in oposite directions. Typically used in towns on large roads, to separate the traffic.</xs:documentation>
+					<xs:documentation>Lane between driving lanes in opposite directions. Typically used in towns on large roads, to separate the traffic.</xs:documentation>
 				</xs:annotation>
 			</xs:enumeration>
 			<xs:enumeration value="biking">
@@ -83,7 +82,7 @@ See www.asam.net/license.html for further details.
 			</xs:enumeration>
 			<xs:enumeration value="sidewalk">
 				<xs:annotation>
-					<xs:documentation>Lane on which pedestrians can walk savely</xs:documentation>
+					<xs:documentation>Lane on which pedestrians can walk safely</xs:documentation>
 				</xs:annotation>
 			</xs:enumeration>
 			<xs:enumeration value="curb">
@@ -248,7 +247,7 @@ b) continuous two-way left turn lane on multi-lane roads – US road networks</x
 	</xs:simpleType>
 	<xs:complexType name="t_road_lanes">
 		<xs:annotation>
-			<xs:documentation>Contains a series of lane section elements that define the characteristics of the road cross sections with respect to the lanes along the reference line.</xs:documentation>
+			<xs:documentation>Contains a series of lane section elements that define the characteristics of the road cross-sections with respect to the lanes along the reference line.</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="_OpenDriveElement">
@@ -280,22 +279,22 @@ b) continuous two-way left turn lane on multi-lane roads – US road networks</x
 				</xs:attribute>
 				<xs:attribute name="a" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter a, offset at @s (ds=0)</xs:documentation>
+						<xs:documentation>Polynomial parameter a, offset at @s (ds=0)</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="b" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter b</xs:documentation>
+						<xs:documentation>Polynomial parameter b</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="c" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter c</xs:documentation>
+						<xs:documentation>Polynomial parameter c</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="d" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter d</xs:documentation>
+						<xs:documentation>Polynomial parameter d</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>
@@ -498,22 +497,22 @@ If &lt;sway&gt; element is present, the lateral offset follows the sway.</xs:doc
 				</xs:attribute>
 				<xs:attribute name="a" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter a, sway value at @s (ds=0)</xs:documentation>
+						<xs:documentation>Polynomial parameter a, sway value at @s (ds=0)</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="b" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter b</xs:documentation>
+						<xs:documentation>Polynomial parameter b</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="c" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter c</xs:documentation>
+						<xs:documentation>Polynomial parameter c</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="d" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter d</xs:documentation>
+						<xs:documentation>Polynomial parameter d</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>
@@ -693,22 +692,22 @@ In OpenDRIVE, lane borders are represented by the &lt;border&gt; element within 
 				</xs:attribute>
 				<xs:attribute name="a" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter a, border position at @s (ds=0)</xs:documentation>
+						<xs:documentation>Polynomial parameter a, border position at @s (ds=0)</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="b" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter b</xs:documentation>
+						<xs:documentation>Polynomial parameter b</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="c" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter c</xs:documentation>
+						<xs:documentation>Polynomial parameter c</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="d" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter d</xs:documentation>
+						<xs:documentation>Polynomial parameter d</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>
@@ -716,7 +715,7 @@ In OpenDRIVE, lane borders are represented by the &lt;border&gt; element within 
 	</xs:complexType>
 	<xs:complexType name="t_road_lanes_laneSection_lr_lane_height">
 		<xs:annotation>
-			<xs:documentation>Lane height shall be defined along the h-coordinate. Lane height may be used to elevate a lane independent from the road elevation. Lane height is used to implement small-scale elevation such as raising pedestrian walkways. Lane height is specified as offset from the road (including elevation, superelevation, shape) in z direction.</xs:documentation>
+			<xs:documentation>Lane height shall be defined along the h-coordinate. Lane height may be used to elevate a lane independent of the road elevation. Lane height is used to implement small-scale elevation such as raising pedestrian walkways. Lane height is specified as offset from the road (including elevation, superelevation, shape) in z direction.</xs:documentation>
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="_OpenDriveElement">
@@ -786,7 +785,7 @@ In OpenDRIVE, lane borders are represented by the &lt;border&gt; element within 
 						<xs:documentation>Free text; currently recommended values are
 "no stopping at any time"
 "disabled parking"
-"car pool"</xs:documentation>
+"carpool"</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>
@@ -833,22 +832,22 @@ In OpenDRIVE, lane width is described by the &lt;width&gt; element within the &l
 				</xs:attribute>
 				<xs:attribute name="a" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter a, width at @s (ds=0)</xs:documentation>
+						<xs:documentation>Polynomial parameter a, width at @s (ds=0)</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="b" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter b</xs:documentation>
+						<xs:documentation>Polynomial parameter b</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="c" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter c</xs:documentation>
+						<xs:documentation>Polynomial parameter c</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="d" use="required" type="xs:double">
 					<xs:annotation>
-						<xs:documentation>Polynom parameter d</xs:documentation>
+						<xs:documentation>Polynomial parameter d</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>
