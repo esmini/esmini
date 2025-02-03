@@ -153,8 +153,7 @@ macro(set_project_includes)
     set(EXTERNALS_OSG_INCLUDES
         ${EXTERNALS_OSG_OS_SPECIFIC_PATH}/build/include
         ${EXTERNALS_OSG_OS_SPECIFIC_PATH}/include)
-    set(EXTERNALS_OSI_INCLUDES
-        ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/include)
+    set(EXTERNALS_OSI_INCLUDES /usr/local/include/osi3)
     set(EXTERNALS_SUMO_INCLUDES
         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/include)
     set(EXTERNALS_GOOGLETEST_INCLUDES
