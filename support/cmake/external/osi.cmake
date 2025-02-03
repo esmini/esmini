@@ -17,8 +17,8 @@ macro(set_osi_libs)
 
     elseif(LINUX)
         set(OSI_LIBRARIES
-            libprotobuf
-            libopen_simulation_interface_pic
+            libprotobuf.a
+            libopen_simulation_interface_pic.a
         )
     elseif(MSVC)
         if(DYN_PROTOBUF)

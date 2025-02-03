@@ -30,20 +30,20 @@ macro(set_osg_libs)
             z)
     elseif(LINUX)
         set(OSG_LIBRARIES
-            osg
-            osgViewer
-            osgDB
-            osgdb_serializers_osgsim
-            osgdb_serializers_osg
-            osgGA
-            osgText
-            osgSim
-            osgdb_osg
-            osgdb_jpeg
-            osgUtil
-            osgAnimation
-            OpenThreads
-            jpeg
+            libosg.a
+            libosgViewer.a
+            libosgDB.a
+            libosgdb_serializers_osgsim.a
+            libosgdb_serializers_osg.a
+            libosgGA.a
+            libosgText.a
+            libosgSim.a
+            libosgdb_osg.a
+            libosgdb_jpeg.a
+            libosgUtil.a
+            libosgAnimation.a
+            libOpenThreads.a
+            libjpeg.a
             GL
             X11
             Xrandr
