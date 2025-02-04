@@ -12,6 +12,7 @@ This file is distributable in accordance with the ASAM license terms.
 See www.asam.net/license.html for further details.
 -->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:include schemaLocation="opendrive_16_core.xsd"/>
 	<xs:simpleType name="e_accessRestrictionType">
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="simulator"/>
