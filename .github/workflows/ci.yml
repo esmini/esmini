@@ -148,6 +148,15 @@ jobs:
           pip3 install fmpy
           fmpy validate esmini.fmu
 
+      - name: Run OSMP FMU
+        if: runner.os == 'Linux'
+        run: |
+          cd OSMP_FMU/build
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip3 install fmpy
+          fmpy simulate esmini.fmu --start-values ../../resources/xosc/cut-in.xosc
+
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
         uses: coactions/setup-xvfb@v1.0.1
