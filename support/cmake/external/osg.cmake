@@ -42,6 +42,7 @@ macro(set_osg_libs)
             /usr/local/lib/osgPlugins-3.6.5/libosgdb_jpeg.a
             /usr/local/lib/libosgUtil.a
             /usr/local/lib/libosgAnimation.a
+            /usr/local/lib/libosg.a
             /usr/local/lib/libOpenThreads.a
             jpeg
             GL
