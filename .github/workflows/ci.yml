@@ -155,7 +155,7 @@ jobs:
           python3 -m venv .venv
           source .venv/bin/activate
           pip3 install fmpy
-          fmpy simulate esmini.fmu --start-values ../../resources/xosc/cut-in.xosc
+          fmpy simulate esmini.fmu --start-values xosc_path ../../resources/xosc/cut-in.xosc
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
