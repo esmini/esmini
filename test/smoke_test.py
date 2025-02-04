@@ -2105,6 +2105,13 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('8.000, 0, car_white, -17.070, 2.532, 0.000, 1.571, 0.000, 0.000, 0.000, 0.000, 3.484', csv, re.MULTILINE))
         self.assertTrue(re.search('8.000, 1, car_red, -29.070, 17.530, 0.000, 1.570, 0.000, 0.000, 0.000, 0.000, 5.703', csv, re.MULTILINE))
 
+    def test_scenario_not_found(self):
+        # This test case checks handling of missing scenario file
+        log = run_scenario(os.path.join(ESMINI_PATH, 'dummy_folder/dummy_filename.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1", ignoreReturnCode = True)
+
+        # Check some initialization steps
+        self.assertTrue(re.search("Couldn't locate OpenSCENARIO file dummy_filename.xosc", log)  is not None)
+
 if __name__ == "__main__":
     # execute only if run as a script
 

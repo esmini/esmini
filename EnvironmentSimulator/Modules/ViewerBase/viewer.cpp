@@ -3500,6 +3500,9 @@ void Viewer::SetWindowTitle(std::string title)
 void Viewer::SetWindowTitleFromArgs(std::vector<std::string>& args)
 {
     std::string titleString;
+    SE_Options& opt               = SE_Env::Inst().GetOptions();
+    bool        osc_active        = false;
+    bool        param_dist_active = false;
     for (unsigned int i = 0; i < args.size(); i++)
     {
         std::string arg = args[i];
@@ -3508,39 +3511,57 @@ void Viewer::SetWindowTitleFromArgs(std::vector<std::string>& args)
             if (args[i].compare(0, 2, "--"))
             {
                 // first argument is not an esmini argument, assume it's the name of the application.
-                arg = FileNameWithoutExtOf(arg);
+                titleString += FileNameWithoutExtOf(arg) + " ";
             }
             else
             {
                 // add esmini as application name
                 arg = "esmini";
+                titleString += arg + " ";
             }
         }
         else if (arg == "--osc" || arg == "--odr" || arg == "--model")
         {
             titleString += arg + " ";
             i++;
-            arg = FileNameOf(args[i]);
+            if (opt.IsOptionArgumentSet("osc"))
+            {
+                titleString += FileNameOf(opt.GetOptionArg("osc")) + " ";
+            }
+            else
+            {
+                titleString += FileNameOf(args[i]) + " ";
+            }
+
+            if (opt.IsOptionArgumentSet("param_dist"))
+            {
+                OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
+                titleString += " " + std::to_string(dist.GetIndex() + 1) + " of " + std::to_string(dist.GetNumPermutations()) + " ";
+                param_dist_active = true;
+            }
+            osc_active = true;
         }
         else if (arg == "--window")
         {
             i += 4;
-            continue;
         }
-        else if (arg == "--param_dist")
+        else if (arg == "--param_dist" &&
+                 !param_dist_active)  // if only --param_dist directly set in command line and not parm_dist already set by --osc <param_dist_file>
         {
+            if (opt.IsOptionArgumentSet("osc") && !osc_active)  // if ony --param_dist <param_dist_file>, set osc file name
+            {
+                arg = "--osc";
+                titleString += arg + " ";
+                titleString += FileNameOf(opt.GetOptionArg("osc")) + " ";
+            }
             i += 1;
             OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
             titleString += " " + std::to_string(dist.GetIndex() + 1) + " of " + std::to_string(dist.GetNumPermutations()) + " ";
-            continue;
         }
         else if (arg == "--param_permutation")
         {
             i += 1;
-            continue;
         }
-
-        titleString += arg + " ";
     }
 
     SetWindowTitle(titleString);

@@ -1363,7 +1363,6 @@ int ScenarioPlayer::Init()
     }
 
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
-    std::string               scenario_filename;
 
     if (dist.GetNumPermutations() > 0)
     {
@@ -1392,7 +1391,13 @@ int ScenarioPlayer::Init()
     }
 
     if (!dist.GetScenarioFileName().empty() && !(opt.IsOptionArgumentSet("param_dist") && opt.IsOptionArgumentSet("osc")))
-    {  // set the scenario file name from the distribution file only if it is not set by the user via command line
+    {
+        // User provided only param_dist file, as --osc option. Resolve --osc scenario file and --param_dist distribution file
+
+        // move the param dist from --osc to --param_dist option
+        opt.SetOptionValue("param_dist", opt.GetOptionArg("osc"));
+
+        // scenario file is resolved from within the param_dist file
         opt.SetOptionValue("osc", dist.GetScenarioFileName());
     }
 

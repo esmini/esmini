@@ -71,12 +71,19 @@ int OSCParameterDistribution::Load(std::string filename)
 
     if (i == file_name_candidates.size())
     {
-        LOG_ERROR("Failed to load parameter distribution file {}. Tried:", filename);
-        for (unsigned int j = 0; j < file_name_candidates.size(); j++)
+        if (IsParamDist)
         {
-            LOG_INFO("   {}\n", file_name_candidates[j]);
+            LOG_ERROR("Failed to load parameter distribution file {}. Tried:", filename);
+            for (unsigned int j = 0; j < file_name_candidates.size(); j++)
+            {
+                LOG_INFO("   {}\n", file_name_candidates[j]);
+            }
+            LOG_WARN("continue without road description\n");
         }
-        LOG_WARN("continue without road description\n");
+        else
+        {
+            return 0;  // Failed to load file, Used for single run as osc. Taken care as only osc.
+        }
     }
     else
     {
