@@ -39,7 +39,7 @@ jobs:
           export CMAKE_INCLUDE_PATH=/usr/local/include/osi3
           export CMAKE_LIBRARY_PATH=/usr/local/lib/osi3
           cmake --preset=ci-ubuntu_release \
-            -DUSE_OSG=0 \
+            -DUSE_OSG=1 \
             -DUSE_OSI=1 \
             -DUSE_SUMO=0 \
             -DUSE_IMPLOT=0 \
