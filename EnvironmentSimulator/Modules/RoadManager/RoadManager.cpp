@@ -13082,8 +13082,8 @@ int Route::AddWaypoint(const Position& wp_pos)
                 // don't sum the distance here, as the distance is calculated from the first waypoint and the user
                 // might add more than 2 waypoints on the same road.
                 std::unique_ptr<RoadPath> path = std::make_unique<RoadPath>(&minimal_waypoints_.back(), &wp_pos);
-                double dist = 0;
-                retval = path->Calculate(dist, false);
+                double                    dist = 0;
+                retval                         = path->Calculate(dist, false);
                 if (retval >= 0)
                 {
                     length_ = dist;
