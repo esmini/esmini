@@ -131,6 +131,7 @@ jobs:
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
 
       - name: CMake Build OSMP FMU
+        if: runner.os == 'Linux'
         run: |
           cd OSMP_FMU
           mkdir build
