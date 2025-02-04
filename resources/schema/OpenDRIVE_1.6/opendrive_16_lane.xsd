@@ -785,7 +785,7 @@ In OpenDRIVE, lane borders are represented by the &lt;border&gt; element within 
 						<xs:documentation>Free text; currently recommended values are
 "no stopping at any time"
 "disabled parking"
-"carpool"</xs:documentation>
+"car pool"</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>
