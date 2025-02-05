@@ -28,14 +28,8 @@ jobs:
         with:
             submodules: recursive
 
-      - run: |
-          sudo apt-get update
-          sudo apt-get install -qqy ninja-build libjpeg-dev
-
       - name: CMake Configure
         run: |
-          export CMAKE_INCLUDE_PATH=/usr/local/include/osi3
-          export CMAKE_LIBRARY_PATH=/usr/local/lib/osi3
           cmake --preset=ci-ubuntu_release \
             -DUSE_OSG=1 \
             -DUSE_OSI=1 \
