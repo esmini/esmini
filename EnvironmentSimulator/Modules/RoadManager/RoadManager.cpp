@@ -10421,6 +10421,11 @@ int Position::Distance(Position* pos_b, CoordinateSystem cs, RelativeDistanceTyp
         double dx, dy;
         dist = getRelativeDistance(pos_b->GetX(), pos_b->GetY(), dx, dy);
     }
+    else if (relDistType == RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS)
+    {
+        double dx, dy;
+        dist = abs(getRelativeDistance(pos_b->GetX(), pos_b->GetY(), dx, dy));
+    }
     else if (relDistType == RelativeDistanceType::REL_DIST_LATERAL || relDistType == RelativeDistanceType::REL_DIST_LONGITUDINAL)
     {
         if (cs == CoordinateSystem::CS_LANE)

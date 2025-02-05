@@ -327,6 +327,15 @@ typedef enum
     SE_GHOST_TRAIL_TIME_PAST   = -4,  // given time > last timestamp in trajectory, snapped to end of trajectory
 } SE_GhostTrailReturnCode;            // mirror roadmanager::GhostTrailReturnCode
 
+typedef enum
+{
+    REL_DIST_UNDEFINED    = 0,
+    REL_DIST_LATERAL      = 1,
+    REL_DIST_LONGITUDINAL = 2,
+    REL_DIST_CARTESIAN    = 3,
+    REL_DIST_EUCLIDIAN    = 4
+} SE_RelativeDistanceType;
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -1254,6 +1263,25 @@ extern "C"
             @return 0 if successful, -2 if route between positions can't be found, -1 if some other error
     */
     SE_DLL_API int SE_GetDistanceToObject(int object_a_id, int object_b_id, bool free_space, SE_PositionDiff *pos_diff);
+
+    /**
+            Optimized method to find the relative distance between two objects in the entities local coordinate system.
+            The method discards any object >500m away, will have a reduced tracking frequency (3s) for objects >tracking limit and avoids redundant
+       calculations.
+            @param object_a_id Id of the object from which to measure
+            @param object_b_id Id of the object to which the distance is measured
+            @param dist_type Enum specifying what distance to measure
+            @param distance reference to a variable returning the distance
+            @param timestamp reference to a variable returning the timestamp of the distance sample
+            @return 0 if successful, -1 if the distance measurement failed and -2 if the objects are out of bounds (>500m) or didn't update the
+       current sample.
+    */
+    SE_DLL_API int SE_SimpleGetDistanceToObject(const int               object_a_id,
+                                                const int               object_b_id,
+                                                SE_RelativeDistanceType dist_type,
+                                                const double            tracking_limit,
+                                                double                 &distance,
+                                                double                 &timestamp);
 
     /**
             Create an ideal object sensor and attach to specified vehicle

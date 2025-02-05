@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <math.h>
+#include <array>
 
 #include "Catalogs.hpp"
 #include "Entities.hpp"
@@ -78,6 +79,19 @@ namespace scenarioengine
         void ParseGlobalDeclarations();
         void EraseCleanParams();
         void EraseCleanVariables();
+        void GetIdxsFromIds(const int id_1, const int id_2, int &idx_1, int &idx_2);
+        int  UpdateDistance(Object                            *obj_1,
+                            Object                            *obj_2,
+                            roadmanager::RelativeDistanceType &dist_type,
+                            const uint64_t                    &key,
+                            const uint64_t                    &rev_key,
+                            const double                       tracking_limit);
+        int  GetDistance(Object                           *object_1,
+                         Object                           *object_2,
+                         roadmanager::RelativeDistanceType dist_type,
+                         const double                      tracking_limit,
+                         double                           &distance,
+                         double                           &timestamp);
         bool GetDisableControllersFlag()
         {
             return disable_controllers_;
@@ -167,6 +181,26 @@ namespace scenarioengine
         Vehicle         sumotemplate;
         ScenarioGateway scenarioGateway;
         Object         *ghost_;
+
+        // Distance map
+        struct DistanceMeasurement
+        {
+            double distance_  = 10000.0;
+            double timestamp_ = 0.0;
+        };
+
+        struct DistanceEntry
+        {
+            std::array<DistanceMeasurement, static_cast<size_t>(roadmanager::RelativeDistanceType::ENUM_SIZE)> measurement_;
+            double                                                                                             next_update_ = 0.0;
+        };
+
+        inline uint64_t GenerateKey(int id1, int id2) const
+        {
+            return (static_cast<uint64_t>(id1) << 32) | static_cast<uint32_t>(id2);
+        }
+
+        std::unordered_map<uint64_t, DistanceEntry> object_distance_map_;
 
         // execution control flags
         unsigned int frame_nr_;
