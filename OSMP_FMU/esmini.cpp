@@ -270,6 +270,8 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
   osi3::GroundTruth *currentGT = currentOut.mutable_global_ground_truth();
   currentGT->CopyFrom(*se_osi_ground_truth);
 
+  std::cout << "Time: " << time << ", lane boundary size: " << currentGT->lane_boundary_size() << std::endl;
+
   set_fmi_sensor_view_out(currentOut);
 
   // Handle OSI TrafficCommand output
