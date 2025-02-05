@@ -360,7 +360,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
     }
 
     // Serialize static gt if requested, and not been loaded
-    if (GetCounter() > 0 && refetchStaticGt && osi_static_gt_loaded_ == -1 && (GetUDPClientStatus() == 0 || IsFileOpen()))
+    if (GetCounter() > 0 && refetchStaticGt && osi_static_gt_loaded_ == -1)
     {
         osi_static_gt_loaded_ = SetOSIStaticExternalData();
         // Clear the static data now when it has been reported once
