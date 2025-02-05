@@ -160,6 +160,7 @@ if(STATIC_LINKING)
                 ${OSG_LIBRARIES}
                 spdlog
                 pugixml_lib
+                stdc++fs
                 ${ADDITIONAL_LIBS})
 else()
     message("Link esmini dynamically")

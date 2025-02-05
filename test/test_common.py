@@ -27,7 +27,7 @@ def set_timeout(timeout):
     global TIMEOUT
     TIMEOUT = timeout
 
-def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, application = None):
+def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, application = None, ignoreReturnCode = False):
 
     if os.path.exists(LOG_FILENAME):
         os.remove(LOG_FILENAME)
@@ -68,7 +68,8 @@ def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, 
             process.kill()
             assert False, 'Timeout'
 
-    assert return_code == 0
+    if not ignoreReturnCode:
+        assert return_code == 0
 
     with open(LOG_FILENAME, 'r') as logfile:
         return logfile.read()
