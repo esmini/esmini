@@ -251,7 +251,7 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
   }
 
   // Handle OSI SensorView output
-  if (SE_UpdateOSIGroundTruth() != 0)
+  if (SE_UpdateOSIGroundTruth(true) != 0)
   {
     std::cerr <<"Failed update OSI Ground Truth" << std::endl;
     return fmi2Error;
