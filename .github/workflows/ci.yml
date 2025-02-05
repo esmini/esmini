@@ -139,6 +139,11 @@ jobs:
           cmake ..
           cmake --build . -j2
 
+      - name: Check GCC Version
+        run: |
+          gcc --version
+          g++ --version
+
       - name: Validate OSMP FMU
         if: runner.os == 'Linux'
         run: |
