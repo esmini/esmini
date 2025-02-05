@@ -78,6 +78,7 @@ namespace scenarioengine
         void ParseGlobalDeclarations();
         void EraseCleanParams();
         void EraseCleanVariables();
+        int GetDistance(int id_1, int id_2, Entities::Distance& distance, double max_dist = 20);
         bool GetDisableControllersFlag()
         {
             return disable_controllers_;

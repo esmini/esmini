@@ -253,6 +253,28 @@ int ScenarioEngine::step(double deltaSimTime)
         }
     }
 
+    if (entities_.object_distance_map_.empty())
+    {
+        Entities::Distance dist1;
+        GetDistance(0, 1, dist1);
+    }
+    else
+    {
+        for (const auto& outer_pair : entities_.object_distance_map_) 
+        {
+            int id_1 = outer_pair.first; // Key in the outer map
+
+            for (const auto& inner_pair : outer_pair.second) 
+            {
+                int id_2 = inner_pair.first; // Key in the inner map
+                Entities::Distance distance; // Variable to store the output
+
+                GetDistance(id_1, id_2, distance);
+                std::cout << "id " << id_1 << " to id " << id_2 << " dist " << distance.euclidian_distance_ << " at time " << distance.timestamp_ << "\n";
+            }
+        }
+    }
+
     storyBoard.Step(simulationTime_, deltaSimTime);
 
     if (storyBoard.GetCurrentState() == StoryBoardElement::State::RUNNING)
@@ -1319,6 +1341,88 @@ int ScenarioEngine::DetectCollisions()
             }
         }
     }
+
+    return 0;
+}
+
+int ScenarioEngine::GetDistance(int id_1, int id_2, Entities::Distance& distance, double max_dist)
+{
+    bool first_id_exists = entities_.object_distance_map_.find(id_1) != entities_.object_distance_map_.end();
+    bool second_id_exists = false;
+
+    if (first_id_exists)
+    {
+        second_id_exists = entities_.object_distance_map_[id_1].find(id_2) != entities_.object_distance_map_[id_1].end();
+    }
+    
+    if (first_id_exists && second_id_exists)
+    {
+        // Update existing pairs
+        double euclidian_dist;
+        auto obj = entities_.object_distance_map_[id_1][id_2].object_1_;
+        auto obj_2 = entities_.object_distance_map_[id_1][id_2].object_2_;
+
+        obj->pos_.Distance(&obj_2->pos_, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, euclidian_dist, max_dist);
+        entities_.object_distance_map_[id_1][id_2].euclidian_distance_ = euclidian_dist;
+        entities_.object_distance_map_[id_1][id_2].timestamp_ = simulationTime_;
+
+    }
+    else if (first_id_exists && !second_id_exists)
+    {
+        // Add new target for first id
+        int idx_2 = -1;
+        for (size_t i = 0; i < entities_.object_.size(); i++)
+        {
+            if (idx_2 == -1 &&  entities_.object_[i]->GetId() == id_2)
+            {
+                idx_2 = static_cast<int>(i);
+                break;
+            }
+        }
+
+        double euclidian_dist;
+        auto obj = entities_.object_distance_map_[id_1][id_2].object_1_;
+        auto obj_2 = entities_.object_[static_cast<size_t>(idx_2)];
+
+        obj->pos_.Distance(&obj_2->pos_, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, euclidian_dist, max_dist);
+        entities_.object_distance_map_[id_1][id_2] = Entities::Distance{obj, obj_2, euclidian_dist, simulationTime_};
+    }
+    else
+    {
+        // Add new first id with new target
+        int idx_1 = -1; 
+        int idx_2 = -1;
+        for (size_t i = 0; i < entities_.object_.size(); i++)
+        {
+            if (idx_1 == -1 &&  entities_.object_[i]->GetId() == id_1)
+            {
+                idx_1 = static_cast<int>(i);
+            }
+            else if (idx_2 == -1 && entities_.object_[i]->GetId() == id_2)
+            {
+                idx_2 = static_cast<int>(i);
+            }
+
+            if (idx_1 != -1 && idx_2 != -1)
+            {
+                break;
+            }
+        }
+
+        if (idx_1 == -1 || idx_2 == -1)
+        {
+            return -1;
+        }
+
+        auto obj = entities_.object_[static_cast<size_t>(idx_1)];
+        auto obj_2 = entities_.object_[static_cast<size_t>(idx_2)];
+        double euclidian_dist;
+        
+        obj->pos_.Distance(&obj_2->pos_, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, euclidian_dist, 100);
+        entities_.object_distance_map_[id_1][id_2] = Entities::Distance{obj, obj_2, euclidian_dist, simulationTime_};
+    }
+
+    distance = entities_.object_distance_map_[id_1][id_2];
 
     return 0;
 }
