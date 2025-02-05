@@ -173,17 +173,18 @@ int main(int argc, char* argv[])
             // Print object id, position, orientation and velocity
             for (int i = 0; i < gt.mutable_moving_object()->size(); i++)
             {
-                printf(" obj id %d pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) \n",
-                       static_cast<int>(gt.mutable_moving_object(i)->mutable_id()->value()),
-                       gt.mutable_moving_object(i)->mutable_base()->mutable_position()->x(),
-                       gt.mutable_moving_object(i)->mutable_base()->mutable_position()->y(),
-                       gt.mutable_moving_object(i)->mutable_base()->mutable_position()->z(),
-                       gt.mutable_moving_object(i)->mutable_base()->mutable_orientation()->yaw(),
-                       gt.mutable_moving_object(i)->mutable_base()->mutable_orientation()->pitch(),
-                       gt.mutable_moving_object(i)->mutable_base()->mutable_orientation()->roll(),
-                       gt.mutable_moving_object(i)->mutable_base()->mutable_velocity()->x(),
-                       gt.mutable_moving_object(i)->mutable_base()->mutable_velocity()->y(),
-                       gt.mutable_moving_object(i)->mutable_base()->mutable_velocity()->z());
+                printf(" obj id %d pos (%.2f, %.2f, %.2f) orientation (%.2f, %.2f, %.2f) velocity (%.2f, %.2f, %.2f) assigned lane: %d\n",
+                       static_cast<int>(gt.moving_object(i).id().value()),
+                       gt.moving_object(i).base().position().x(),
+                       gt.moving_object(i).base().position().y(),
+                       gt.moving_object(i).base().position().z(),
+                       gt.moving_object(i).base().orientation().yaw(),
+                       gt.moving_object(i).base().orientation().pitch(),
+                       gt.moving_object(i).base().orientation().roll(),
+                       gt.moving_object(i).base().velocity().x(),
+                       gt.moving_object(i).base().velocity().y(),
+                       gt.moving_object(i).base().velocity().z(),
+                       gt.moving_object(i).assigned_lane_id_size() > 0 ? static_cast<int>(gt.moving_object(i).assigned_lane_id(0).value()) : -1);
             }
         }
         else

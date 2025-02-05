@@ -110,13 +110,20 @@ namespace scenarioengine
         @param pos_y The y coordinate of the sensor in object local coordinate system
         @param pos_z The z coordinate of the sensor in object local coordinate system
         @param heading The heading of the sensor in object local coordinate system
-        @param heading The heading of the sensor in object local coordinate system
-        @param near The distance from object reference point to start of sensor view frustum
-        @param far The distance from object reference point to end of sensor view frustum
+        @param near_dist The distance from object reference point to start of sensor view frustum
+        @param far_dist The distance from object reference point to end of sensor view frustum
         @param fovH The horizontal width, in radians, of the sensor view frustum
         @return -1 on failure, else the sensor ID (Global index of sensor)
         */
-        int AddObjectSensor(Object *obj, double pos_x, double pos_y, double pos_z, double heading, double near, double far, double fovH, int maxObj);
+        int AddObjectSensor(Object *obj,
+                            double  pos_x,
+                            double  pos_y,
+                            double  pos_z,
+                            double  heading,
+                            double  near_dist,
+                            double  far_dist,
+                            double  fovH,
+                            int     maxObj);
 
         /**
         Retrieve the total number of ideal sensors attached to any objects

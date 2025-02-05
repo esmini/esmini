@@ -117,11 +117,11 @@ See www.asam.net/license.html for further details.
             <xs:selector xpath="road/signals/signalReference"/>
             <xs:field xpath="@id"/>
         </xs:keyref>
-        <xs:keyref name="r_road_railroad_switch_mainTrack" refer="k_road_railroad_switchId">
+        <xs:keyref name="r_road_railroad_switch_mainTrack" refer="k_roadId">
             <xs:selector xpath="road/railroad/switch/mainTrack"/>
             <xs:field xpath="@id"/>
         </xs:keyref>
-        <xs:keyref name="r_road_railroad_switch_sideTrack" refer="k_road_railroad_switchId">
+        <xs:keyref name="r_road_railroad_switch_sideTrack" refer="k_roadId">
             <xs:selector xpath="road/railroad/switch/sideTrack"/>
             <xs:field xpath="@id"/>
         </xs:keyref>

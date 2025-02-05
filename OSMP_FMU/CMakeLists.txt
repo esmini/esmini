@@ -159,6 +159,7 @@ if(STATIC_LINKING)
                 ${SUMO_LIBRARIES}
                 ${OSG_LIBRARIES}
                 spdlog
+                pugixml_lib
                 ${ADDITIONAL_LIBS})
 else()
     message("Link esmini dynamically")

@@ -1075,6 +1075,38 @@ TEST(JunctionTest, JunctionSelectorTest)
     }
 }
 
+// Verify cars move correctly through connected junctions, reaching expected position
+TEST(JunctionTest, TestConnectivityTroughHeadToHeadJunctions)
+{
+    double dt = 0.1;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/connected_junctions_simple.xosc");
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities_.object_.size(), 2);
+
+    while (se->getSimulationTime() < 12.0 + SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetTrackId(), 2);
+    EXPECT_EQ(se->entities_.object_[0]->pos_.GetLaneId(), -2);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetS(), 55.277, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 255.2777, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -6.0, 1e-3);
+
+    EXPECT_EQ(se->entities_.object_[1]->pos_.GetTrackId(), 1);
+    EXPECT_EQ(se->entities_.object_[1]->pos_.GetLaneId(), -1);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetS(), 44.7222, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetX(), 44.7222, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetY(), -2.0, 1e-3);
+
+    delete se;
+}
+
 TEST(ConditionTest, CollisionTest)
 {
     double dt           = 0.01;
