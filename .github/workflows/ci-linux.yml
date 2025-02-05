@@ -22,8 +22,6 @@ jobs:
     
     container:
       image: ghcr.io/bounverif/esmini:latest-builder
-      env:
-        ESMINI_BUILD_DOWNLOAD_DEPS: FALSE
 
     steps:
       - uses: actions/checkout@v4
