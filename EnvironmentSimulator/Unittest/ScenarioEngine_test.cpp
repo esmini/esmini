@@ -1039,6 +1039,27 @@ TEST(ParameterTest, ParseParameterTest)
     ASSERT_EQ(params.ReadAttribute(someNode0, "attr9", false), "2.000000");
 }
 
+// Verify additional declarations of the same parameter will overwrite the previous one
+TEST(ParameterTest, KeepLastParameterValueTest)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/parameter_overwrite.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities_.object_.size(), 1);
+    ASSERT_EQ(se->GetScenarioReader()->parameters.GetNumberOfParameters(), 2);
+    EXPECT_STREQ(se->GetScenarioReader()->parameters.parameterDeclarations_.Parameter[0].name.c_str(), "posX");
+    EXPECT_NEAR(se->GetScenarioReader()->parameters.parameterDeclarations_.Parameter[0].value._double, 20.0, 1e-3);
+    EXPECT_STREQ(se->GetScenarioReader()->parameters.parameterDeclarations_.Parameter[1].name.c_str(), "posX");
+    EXPECT_NEAR(se->GetScenarioReader()->parameters.parameterDeclarations_.Parameter[1].value._double, 10.0, 1e-3);
+
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 20.0, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 0.0, 1e-3);
+
+    delete se;
+}
+
 // Test junction selector functionality
 // Utilizing fabriksgatan 4 way intersection
 // Car will always drive on road 0, north towards the intersection

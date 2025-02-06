@@ -505,12 +505,6 @@ void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSC
         param.name     = pdChild.attribute("name").value();
         param.variable = is_variable;
 
-        auto pos = std::find_if(pd->Parameter.begin(), pd->Parameter.end(), [&param](const auto& p) { return p.name == param.name; });
-        if (pos != pd->Parameter.end())
-        {
-            continue;
-        }
-
         // Check for catalog parameter assignements, overriding default value
         // Start from end of parameter list, in case of duplicates we want the most recent
         param.value._string = ReadAttribute(pdChild, "value");
@@ -568,6 +562,20 @@ void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSC
         else
         {
             LOG_ERROR_AND_QUIT("Unexpected Type: {}", type_str);
+        }
+
+        auto pos = std::find_if(pd->Parameter.begin(), pd->Parameter.end(), [&param](const auto& p) { return p.name == param.name; });
+        if (pos != pd->Parameter.end())
+        {
+            if (pos->dirty)
+            {
+                LOG_WARN("Parameter value {} updated from {} to {}", pos->name, pos->value._string, param.value._string);
+                continue;
+            }
+            else
+            {
+                LOG_WARN("Parameter {} redefined. Previous value {} will be shadowed by {}", pos->name, pos->value._string, param.value._string);
+            }
         }
 
         pd->Parameter.insert(pd->Parameter.begin(), param);
