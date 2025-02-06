@@ -563,9 +563,11 @@ void FollowTrajectoryAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 AcquirePositionAction::~AcquirePositionAction()
 {
+    object_->pos_.SetRoute(nullptr);
     if (route_ != nullptr)
     {
         delete route_;
+        route_ = nullptr;
     }
 }
 
