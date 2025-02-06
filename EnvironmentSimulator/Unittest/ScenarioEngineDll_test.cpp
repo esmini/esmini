@@ -1332,6 +1332,27 @@ TEST(GroundTruthTests, check_update_gt_twice_same_frame)
     EXPECT_EQ(fileStatus.st_size, 7863);
 }
 
+TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
+{
+    const osi3::GroundTruth* osi_gt_ptr;
+
+    ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
+    SE_UpdateOSIGroundTruth(true);
+
+    osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 7);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_StepDT(0.01f);
+    SE_UpdateOSIGroundTruth(true);
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 7);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_Close();
+}
+
 TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 {
     int               sv_size = 0;
