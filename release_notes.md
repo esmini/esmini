@@ -1,8 +1,23 @@
 ## esmini release notes
 
-### 2025-01-31 Version 2.45.1
+### 2025-02-06 Version 2.45.2
 
-New features:
+Improvements and fixes:
+
+- Fix build variant USE_OSG=1 USE_OSI=0 ([issue #661](https://github.com/esmini/esmini/issues/661))
+- Bump OpenDRIVE validation schema from v1.6 to v1.6.1
+- Fix some typos in OpenDRIVE v1.6.1 xsd ([PR #663](https://github.com/esmini/esmini/pull/663))
+- Fix issue with multiple waypoints on single road ([PR #665](https://github.com/esmini/esmini/pull/665))
+- Add OSMP FMU build and run checks to CI ([PR #667](https://github.com/esmini/esmini/pull/667))
+- Fix cosmetic issues in parameter distribution handling (introduced in v2.45.1)
+  - Restore log message in case of missing OpenSCENARIO file
+  - Restore correct arguments in window title
+- Improve odrviewer car spawning at short roads and end points
+- Add odrviewer option to pause at start
+- Fix precedence of additional declarations of same parameter (introduced in v2.45.1)
+  - keep last value instead of only first
+
+### 2025-01-31 Version 2.45.1
 
 Improvements and fixes:
 - Use default argument value in [`SE_UpdateOSIGroundTruth()`](https://github.com/esmini/esmini/blob/b684c2609ee5f1182e2ee48d822275f36fb90c80/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1415-L1420)
