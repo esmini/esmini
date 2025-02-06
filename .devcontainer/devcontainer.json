@@ -1,0 +1,13 @@
+{
+  "name": "esmini",
+  "image": "ghcr.io/bounverif/esmini:latest-devel",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cmake-tools",
+        "cheshirekow.cmake-format"
+      ]
+    }
+  },
+  "remoteUser": "ubuntu"
+}
