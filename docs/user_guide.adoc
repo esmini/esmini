@@ -3631,7 +3631,7 @@ The purpose of this explicit OSI update control is to support use cases where es
 The bool argument `refetchStaticGt` affects the data received from the next `SE_GetOSIGroundTruth*` functions as follows:
 
 - `SE_UpdateOSIGroundTruth(false)`: OSI groundtruth will not contain static data, except the first frame (after `SE_Init()` and before first call to `SE_Step*`) which always does.
-- `SE_UpdateOSIGroundTruth(true)`: OSI groundtruth will contain static data.
+- `SE_UpdateOSIGroundTruth(true)`: OSI groundtruth will contain static data, and the static data is assumed to be constant throughout the simulation.
 
 `refetchStaticGt = false` is default and should be good for most use cases.
 

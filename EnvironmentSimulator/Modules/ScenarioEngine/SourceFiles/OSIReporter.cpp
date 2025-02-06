@@ -315,10 +315,12 @@ int OSIReporter::ClearOSIGroundTruth()
 
 int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, bool refetchStaticGt)
 {
+    // osi_static_gt_loaded == 0 means its loaded, then static_gt_set == true as it is already set
+    bool static_gt_set = (osi_static_gt_loaded_ == 0) ? true : false;
     if (GetUpdated() == true)
     {
-        // We want static data but its not been loaded, dont return
-        if (refetchStaticGt && osi_static_gt_loaded_ == -1)
+        // We want static data but its not been set, dont return
+        if (refetchStaticGt && !static_gt_set)
         {
             // Don't return
         }
@@ -329,8 +331,8 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
         }
     }
 
-    // if data is loaded, clear it
-    if (!refetchStaticGt && osi_static_gt_loaded_ == 0)
+    // We dont want to refetch data but it is set, so we clear it
+    if (!refetchStaticGt && static_gt_set)
     {
         ClearOSIGroundTruth();
         osi_static_gt_loaded_ = -1;
@@ -359,11 +361,10 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
         }
     }
 
-    // Serialize static gt if requested, and not been loaded
+    // We want to get static gt data
     if (GetCounter() > 0 && refetchStaticGt)
     {
-        // osi_static_gt_loaded_ == 0 if loaded, -1 if not loaded
-        if (osi_static_gt_loaded_ == -1)
+        if (!static_gt_set)
         {
             osi_static_gt_loaded_ = SetOSIStaticExternalData();
         }
