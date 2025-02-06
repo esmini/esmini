@@ -32,9 +32,6 @@
 #include "helpText.hpp"
 #include "viewer.hpp"
 
-#define ROAD_MIN_LENGTH 30.0
-#define SIGN(X)         ((X < 0) ? -1 : 1)
-
 static const double stepSize            = 0.01;
 static const double maxStepSize         = 0.1;
 static const double minStepSize         = 0.01;
@@ -45,11 +42,12 @@ static int          first_car_in_focus  = -1;
 static double       fixed_timestep      = -1.0;
 static bool         stop_at_end_of_road = false;
 static double       duration            = -1.0;
+static double       avg_dist            = 100.0 / density;
 
 static struct
 {
     bool pause = false;
-    bool step  = false;
+    bool step  = true;
 } run_state;
 
 roadmanager::Road::RoadRule rule = roadmanager::Road::RoadRule::ROAD_RULE_UNDEFINED;
@@ -111,16 +109,81 @@ void FetchKeyEvent(viewer::KeyEvent *keyEvent, void *)
         if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Return))
         {
             run_state.step  = true;
-            run_state.pause = true;
+            run_state.pause = false;
         }
     }
 }
 
+void UpdateCarPose(Car *car)
+{
+    if (car->model->txNode_ != 0)
+    {
+        double h, p, r;
+        R0R12EulerAngles(car->pos.GetHRoad(), car->pos.GetPRoad(), car->pos.GetRRoad(), car->pos.GetHRelative(), 0.0, 0.0, h, p, r);
+
+        car->model->SetPosition(car->pos.GetX(), car->pos.GetY(), car->pos.GetZ());
+        car->model->SetRotation(h, p, r);
+    }
+}
+
+int SpawnCar(viewer::Viewer *viewer, const roadmanager::Road *road, const roadmanager::Lane *lane, double s, roadmanager::Road::RoadRule rrule)
+{
+    // randomly choose model
+    int carModelID = SE_Env::Inst().GetRand().GetNumberBetween(0, (sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) - 1);
+
+    Car *car_ = new Car;
+    // Higher speeds in lanes closer to reference lane
+    car_->speed_factor = 0.5 + 0.5 / abs(lane->GetId());  // Speed vary between 0.5 to 1.0 times default speed
+    car_->road_id_init = road->GetId();
+    car_->lane_id_init = lane->GetId();
+    car_->s_init       = s;
+    car_->pos.SetLanePos(road->GetId(), lane->GetId(), s, 0);
+    if (rrule == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC)
+    {
+        car_->pos.SetHeadingRelative(lane->GetId() < 0 ? M_PI : 0);
+    }
+    else
+    {
+        car_->pos.SetHeadingRelative(lane->GetId() < 0 ? 0 : M_PI);
+    }
+    car_->heading_init = car_->pos.GetHRelative();
+
+    if ((car_->model = viewer->CreateEntityModel(carModelsFiles_[carModelID],
+                                                 osg::Vec4(0.5, 0.5, 0.5, 1.0),
+                                                 viewer::EntityModel::EntityType::VEHICLE,
+                                                 false,
+                                                 "",
+                                                 0,
+                                                 EntityScaleMode::BB_TO_MODEL)) == 0)
+    {
+        return -1;
+    }
+    else
+    {
+        if (viewer->AddEntityModel(car_->model) != 0)
+        {
+            return -1;
+        }
+    }
+    car_->id = static_cast<int>(cars.size());
+    UpdateCarPose(car_);
+
+    LOG_DEBUG("Adding car %d of model {} to road id {} s {:.2f} lane id {}), ", cars.size(), carModelID, road->GetId(), s, lane->GetId());
+    cars.push_back(car_);
+
+    if (first_car_in_focus == -1 && lane->GetId() < 0)
+    {
+        first_car_in_focus = car_->id;
+    }
+
+    return 0;
+}
+
 int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 {
-    if (density < 1E-10)
+    if (density < SMALL_NUMBER)
     {
-        // Basically no scenario vehicles
+        // no scenario vehicles
         return 0;
     }
 
@@ -138,19 +201,8 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
 
         // Check for open end
         OpenEnd                openEnd;
-        roadmanager::RoadLink *tmpLink = road->GetLink(roadmanager::LinkType::PREDECESSOR);
-        if (tmpLink == nullptr)
-        {
-            openEnd.roadId = road->GetId();
-            openEnd.s      = 0;
-            openEnd.side   = rrule == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC ? 1 : -1;
-            openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, openEnd.side);
-            if (openEnd.nLanes > 0)
-            {
-                openEnds.push_back(openEnd);
-            }
-        }
-        tmpLink = road->GetLink(roadmanager::LinkType::SUCCESSOR);
+        double                 s       = 0.0;
+        roadmanager::RoadLink *tmpLink = road->GetLink(roadmanager::LinkType::SUCCESSOR);
         if (tmpLink == nullptr)
         {
             openEnd.roadId = road->GetId();
@@ -159,19 +211,46 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
             openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, openEnd.side);
             if (openEnd.nLanes > 0)
             {
+                // populate a car at every road endpoint
+                unsigned int lane_idx = static_cast<unsigned int>(SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(openEnd.nLanes - 1)));
+                s                     = MAX(0, road->GetLength() - 5.0);
+                SpawnCar(viewer, road, road->GetDrivingLaneSideByIdx(s, openEnd.side, lane_idx), s, rrule);
                 openEnds.push_back(openEnd);
             }
         }
 
-        if (road->GetLength() > ROAD_MIN_LENGTH)
+        tmpLink = road->GetLink(roadmanager::LinkType::PREDECESSOR);
+        if (tmpLink == nullptr)
         {
-            // Populate road lanes with vehicles at some random distances
-            for (double s = 10; s < road->GetLength() - average_distance;
-                 s += average_distance + 0.2 * average_distance * SE_Env::Inst().GetRand().GetReal())
+            openEnd.roadId = road->GetId();
+            openEnd.s      = 0;
+            openEnd.side   = rrule == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC ? 1 : -1;
+            openEnd.nLanes = road->GetNumberOfDrivingLanesSide(openEnd.s, openEnd.side);
+            if (openEnd.nLanes > 0)
             {
+                // populate a car at every road endpoint
+                unsigned int lane_idx = static_cast<unsigned int>(SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(openEnd.nLanes - 1)));
+                s                     = MIN(road->GetLength(), 5.0);
+                SpawnCar(viewer, road, road->GetDrivingLaneSideByIdx(s, openEnd.side, lane_idx), s, rrule);
+                openEnds.push_back(openEnd);
+            }
+        }
+
+        if (road->GetLength() > avg_dist)
+        {
+            // Populate road lanes with vehicles at some random distances, starting at s=10
+            for (int i = 0; s < road->GetLength() - SMALL_NUMBER; i++)
+            {
+                s += average_distance + 0.2 * average_distance * SE_Env::Inst().GetRand().GetReal();
+                if (s > road->GetLength() - average_distance - SMALL_NUMBER)
+                {
+                    break;
+                }
+
+                unsigned int n_lanes = road->GetNumberOfDrivingLanes(s);
+
                 // Pick lane by random
-                unsigned int       n_lanes = road->GetNumberOfDrivingLanes(s);
-                roadmanager::Lane *lane    = nullptr;
+                roadmanager::Lane *lane = nullptr;
                 if (n_lanes > 0)
                 {
                     idx_t lane_idx = static_cast<unsigned int>(SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(n_lanes - 1)));
@@ -191,54 +270,18 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
                 if (((SIGN(lane->GetId()) < 0) && (road->GetLength() - s < 50) && (road->GetLink(roadmanager::LinkType::SUCCESSOR) == 0)) ||
                     ((SIGN(lane->GetId()) > 0) && (s < 50) && (road->GetLink(roadmanager::LinkType::PREDECESSOR) == 0)))
                 {
-                    // Skip vehicles too close to road end - and where connecting road is missing
-                    continue;
-                }
-
-                // randomly choose model
-                int carModelID = SE_Env::Inst().GetRand().GetNumberBetween(0, (sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) - 1);
-                LOG_DEBUG("Adding car of model {} to road nr {} (road id {} s {:.2f} lane id {}), ", carModelID, r, road->GetId(), s, lane->GetId());
-
-                Car *car_ = new Car;
-                // Higher speeds in lanes closer to reference lane
-                car_->speed_factor = 0.5 + 0.5 / abs(lane->GetId());  // Speed vary between 0.5 to 1.0 times default speed
-                car_->road_id_init = odrManager->GetRoadByIdx(r)->GetId();
-                car_->lane_id_init = lane->GetId();
-                car_->s_init       = s;
-                car_->pos.SetLanePos(odrManager->GetRoadByIdx(r)->GetId(), lane->GetId(), s, 0);
-                if (rrule == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC)
-                {
-                    car_->pos.SetHeadingRelative(lane->GetId() < 0 ? M_PI : 0);
-                }
-                else
-                {
-                    car_->pos.SetHeadingRelative(lane->GetId() < 0 ? 0 : M_PI);
-                }
-                car_->heading_init = car_->pos.GetHRelative();
-
-                if ((car_->model = viewer->CreateEntityModel(carModelsFiles_[carModelID],
-                                                             osg::Vec4(0.5, 0.5, 0.5, 1.0),
-                                                             viewer::EntityModel::EntityType::VEHICLE,
-                                                             false,
-                                                             "",
-                                                             0,
-                                                             EntityScaleMode::BB_TO_MODEL)) == 0)
-                {
-                    return -1;
-                }
-                else
-                {
-                    if (viewer->AddEntityModel(car_->model) != 0)
+                    if (i == 0)
                     {
-                        return -1;
+                        // short road, populate one car anyway at 1/3rd of its length
+                        s = road->GetLength() / 3.0;
+                    }
+                    else
+                    {
+                        // Skip vehicles too close to road end - and where connecting road is missing
+                        continue;
                     }
                 }
-                car_->id = static_cast<int>(cars.size());
-                cars.push_back(car_);
-                if (first_car_in_focus == -1 && lane->GetId() < 0)
-                {
-                    first_car_in_focus = car_->id;
-                }
+                SpawnCar(viewer, road, lane, s, rrule);
             }
         }
     }
@@ -357,14 +400,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
         }
     }
 
-    if (car->model->txNode_ != 0)
-    {
-        double h, p, r;
-        R0R12EulerAngles(car->pos.GetHRoad(), car->pos.GetPRoad(), car->pos.GetRRoad(), car->pos.GetHRelative(), 0.0, 0.0, h, p, r);
-
-        car->model->SetPosition(car->pos.GetX(), car->pos.GetY(), car->pos.GetZ());
-        car->model->SetRotation(h, p, r);
-    }
+    UpdateCarPose(car);
 }
 
 int main(int argc, char **argv)
@@ -411,6 +447,7 @@ int main(int argc, char **argv)
     opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
     opt.AddOption("osi_points", "Show OSI road points. Toggle key 'y'");
     opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path");
+    opt.AddOption("pause", "Pause simulation after initialization. Press 'space' to start.");
     opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
     opt.AddOption("seed", "Specify seed number for random generator", "number");
@@ -465,6 +502,12 @@ int main(int argc, char **argv)
     {
         fixed_timestep = atof(arg_str.c_str());
         LOG_INFO("Run simulation decoupled from realtime, with fixed timestep: {:.3f}", fixed_timestep);
+    }
+
+    if (opt.GetOptionSet("pause"))
+    {
+        run_state.pause = true;
+        LOG_INFO("Pause requested. Press 'space' to start simulation");
     }
 
     if (opt.IsOptionArgumentSet("log_only_modules"))
@@ -522,9 +565,18 @@ int main(int argc, char **argv)
 
     if (opt.GetOptionArg("density") != "")
     {
-        density = strtod(opt.GetOptionArg("density"));
+        density  = strtod(opt.GetOptionArg("density"));
+        avg_dist = density < SMALL_NUMBER ? LARGE_NUMBER : 100.0 / density;
     }
-    LOG_INFO("density: {:.2f}", density);
+
+    if (density > SMALL_NUMBER)
+    {
+        LOG_INFO("density: {:.2f} cars / 100m (average distance {:.2f}m)", density, avg_dist);
+    }
+    else
+    {
+        LOG_INFO("density: 0 cars");
+    }
 
     if (opt.GetOptionArg("speed_factor") != "")
     {

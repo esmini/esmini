@@ -62,6 +62,8 @@ Options:
       Show OSI road points. Toggle key 'y'
   --path <path>
       Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported
+  --pause
+      Pause simulation after initialization. Press 'space' to start.
   --road_features [mode]  (default if value omitted: on)
       Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'
   --save_generated_model
