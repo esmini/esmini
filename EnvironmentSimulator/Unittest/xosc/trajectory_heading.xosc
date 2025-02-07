@@ -23,7 +23,7 @@
         <ScenarioObject name="bicycle1">
             <CatalogReference catalogName="VehicleCatalog" entryName="bicycle"/>
         </ScenarioObject>
-        <!-- <ScenarioObject name="scooter1">
+        <ScenarioObject name="scooter1">
             <CatalogReference catalogName="VehicleCatalog" entryName="scooter"/>
         </ScenarioObject>
         <ScenarioObject name="car_white">
@@ -52,7 +52,7 @@
         </ScenarioObject>
         <ScenarioObject name="truck_yellow">
             <CatalogReference catalogName="VehicleCatalog" entryName="truck_yellow"/>
-        </ScenarioObject> -->
+        </ScenarioObject>
     </Entities>
     <Storyboard>
         <Init>
