@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Excercise speed action with teleport -->
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="1" date="2021-12-29T10:00:00" description="Test dat2csv converter different mode with one frame speed change" author="esmini-team"/>
-    <ParameterDeclarations>
-        <ParameterDeclaration name="Tolerance" parameterType="double" value="1.0"/>
-    </ParameterDeclarations>
+    <FileHeader revMajor="1" revMinor="3" date="2023-12-29T10:00:00" description="Test dat2csv converter different mode with one frame position change" author="esmini-team"/>
     <CatalogLocations>
         <VehicleCatalog>
             <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>

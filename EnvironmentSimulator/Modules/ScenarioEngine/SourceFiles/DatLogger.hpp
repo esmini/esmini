@@ -52,7 +52,7 @@ namespace datLogger
     struct CommonPkgHdr
     {
         id_t id;
-        int content_size;
+        int  content_size;
     };
 
     // common package types
@@ -150,12 +150,12 @@ namespace datLogger
 
     struct Pos
     {
-        double x = 0.0;
-        double y = 0.0;
-        double z = 0.0;
-        double h = 0.0;
-        double p = 0.0;
-        double r = 0.0;
+        double x = SMALL_NUMBER;
+        double y = SMALL_NUMBER;
+        double z = SMALL_NUMBER;
+        double h = SMALL_NUMBER;
+        double p = SMALL_NUMBER;
+        double r = SMALL_NUMBER;
     };
 
     struct BoundingBox
@@ -241,7 +241,7 @@ namespace datLogger
 
     struct CompleteObjectState
     {
-        Time                  time; // keeps track of time of last update of the object states
+        Time                  time;  // keeps track of time of last update of the object states
         std::vector<ObjState> obj_states;
     };
 
@@ -278,7 +278,7 @@ namespace datLogger
         bool   notFirstEnd   = false;
         bool   TimePkgAdded  = false;
         bool   ObjIdPkgAdded = false;
-        double simTimeTemp   = SMALL_NUMBER; // keeps track of time of simulation
+        double simTimeTemp   = SMALL_NUMBER;  // keeps track of time of simulation
 
         CompleteObjectState     completeObjectState;
         std::vector<ObjIdAdded> objIdAdded_;

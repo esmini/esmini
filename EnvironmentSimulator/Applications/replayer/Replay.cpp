@@ -30,17 +30,17 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false), sh
     headerNew_ = *reinterpret_cast<datLogger::DatHdr*>(header_.content);
 
     LOG_INFO("Recording {} opened. dat version: {} odr: {} model: {}",
-        FileNameOf(filename),
-        headerNew_.version,
-        FileNameOf(headerNew_.odrFilename.string),
-        FileNameOf(headerNew_.modelFilename.string));
+             FileNameOf(filename),
+             headerNew_.version,
+             FileNameOf(headerNew_.odrFilename.string),
+             FileNameOf(headerNew_.modelFilename.string));
 
     if (headerNew_.version != DAT_FILE_FORMAT_VERSION)
     {
         LOG_ERROR_AND_QUIT("Version mismatch. {} is version {} while supported version is {}. Please re-create dat file.",
-                     filename,
-                     headerNew_.version,
-                     DAT_FILE_FORMAT_VERSION);
+                           filename,
+                           headerNew_.version,
+                           DAT_FILE_FORMAT_VERSION);
     }
 
     if (pkgs_.size() > 0)
@@ -77,10 +77,10 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         scenarioObjIds.push_back(objectIds);
 
         LOG_INFO("Recording {} opened. dat version: {} odr: {} model: {}",
-            FileNameOf(scenarios_[i]),
-            headerNew_.version,
-            FileNameOf(headerNew_.odrFilename.string),
-            FileNameOf(headerNew_.modelFilename.string));
+                 FileNameOf(scenarios_[i]),
+                 headerNew_.version,
+                 FileNameOf(headerNew_.odrFilename.string),
+                 FileNameOf(headerNew_.modelFilename.string));
 
         if (headerNew_.version != DAT_FILE_FORMAT_VERSION)
         {
@@ -669,9 +669,9 @@ bool Replay::IsObjAvailableActive(int id)  // check in current state
     return status;
 }
 
-void Replay::MoveToDeltaTime(double dt)
+void Replay::MoveToDeltaTime(double dt, bool stopAtEachFrame)
 {
-    MoveToTime(scenarioState.sim_time + dt);
+    MoveToTime(scenarioState.sim_time + dt, stopAtEachFrame);
 }
 
 void Replay::GetRestartTimes()
@@ -859,10 +859,24 @@ int Replay::MoveToTime(double t, bool stopAtEachFrame)
                     scenarioState.sim_time = t;  // sim time should be given time
                     break;
                 }
+                else if (stopAtEachFrame)  // stop at each min time frame also(might be some time frame might not written so each frame might not have
+                                           // time)
+                {
+                    if (time_ - scenarioState.sim_time > deltaTime_)
+                    {
+                        time_  = pervious_time_;
+                        index_ = pervious_index_;
+                        scenarioState.sim_time += deltaTime_;
+                        break;
+                    }
+                    else
+                    {
+                        timeLapsed = true;
+                    }
+                }
                 else if ((time_ + SMALL_NUMBER < pervious_time_ &&
-                          show_restart_) ||                 // next time less than pervious time. break only when show restart
-                         (time_ < t && stopAtEachFrame) ||  // less than requested time, break only when stop at each frame
-                         (isEqualDouble(t, time_)))         // requested time reached
+                          show_restart_) ||          // next time less than pervious time. break only when show restart
+                         (isEqualDouble(t, time_)))  // requested time reached
                 {
                     timeLapsed = true;
                 }
@@ -895,15 +909,31 @@ int Replay::MoveToTime(double t, bool stopAtEachFrame)
                     }
                 }
 
-                if ((time_ > t && stopAtEachFrame) ||  // less than given time
-                    (isEqualDouble(t, time_)) ||       // requested time equal to next time
-                    (time_ < t + SMALL_NUMBER))        // gone past requested time
+                double       pervious_time_  = time_;
+                unsigned int pervious_index_ = index_;
+                if (stopAtEachFrame)  // stop at each min time frame also(might be some time frame might not written so each frame might not have
+                                      // time)
+                {
+                    if (scenarioState.sim_time - time_ > deltaTime_)
+                    {
+                        time_  = pervious_time_;
+                        index_ = pervious_index_;
+                        scenarioState.sim_time += deltaTime_;
+                        break;
+                    }
+                    else
+                    {
+                        timeLapsed = true;
+                    }
+                }
+                else if ((isEqualDouble(t, time_)) ||  // requested time equal to next time
+                         (time_ < t + SMALL_NUMBER))   // gone past requested time
                 {
                     timeLapsed = true;
                 }
 
-                CheckObjAvailabilityBackward();
                 UpdateCache();
+                CheckObjAvailabilityBackward();
 
                 if (time_ < t + SMALL_NUMBER)  // gone past requested time, sim time should be given time
                 {
@@ -1536,9 +1566,9 @@ void Replay::AdjustObjectId(std::vector<std::vector<int>>& objIds)
         // std::string scenario_tmp = scenarioData[i].first;
         std::string scenario_tmp = scenarioData[i].first.first;
         LOG_INFO("Scenarios corresponding to IDs ({}:{}): {}",
-            static_cast<int>(i) * multiplier,
-            ((static_cast<int>(i) + 1) * multiplier) - 1,
-            FileNameOf(scenario_tmp.c_str()));
+                 static_cast<int>(i) * multiplier,
+                 ((static_cast<int>(i) + 1) * multiplier) - 1,
+                 FileNameOf(scenario_tmp.c_str()));
     }
 
     for (size_t i = 0; i < scenarioData.size(); i++)

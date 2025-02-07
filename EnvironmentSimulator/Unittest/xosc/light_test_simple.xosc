@@ -2,7 +2,7 @@
 <!-- scenario with brake lights on, off and flash mode-->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="2"
+               revMinor="3"
                date="2023-10-24T10:00:00"
                description="Scenario with brake lights on, off and flash mode"
                author="esmini-team"/>
@@ -64,7 +64,9 @@
                                        <VehicleLight vehicleLightType= "brakeLights"/>
                                     </LightType>
                                     <LightState mode= "on">
-                                       <Color colorType="green" />
+                                       <Color colorType="green">
+                                          <ColorRgb red="0" green="0.5" blue="0.0"/>
+                                       </Color>
                                     </LightState>
                                 </LightStateAction>
                            </AppearanceAction>

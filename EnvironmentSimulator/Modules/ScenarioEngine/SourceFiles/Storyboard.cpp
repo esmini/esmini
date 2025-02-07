@@ -255,9 +255,9 @@ void Event::Start(double simTime)
                                             {
                                                 // LightType overlap, at least one light type in common. Terminate old action.
                                                 LOG_WARN("Stopping object {} {} on conflicting {} light(s)",
-                                                    obj->GetName(),
-                                                    action2->GetName(),
-                                                    obj->LightType2Str(action2->GetLightType()));
+                                                         obj->GetName(),
+                                                         action2->GetName(),
+                                                         obj->LightType2Str(action2->GetLightType()));
                                                 action2->End();
                                             }
                                         }
@@ -266,9 +266,9 @@ void Event::Start(double simTime)
                                     {
                                         // Domains overlap, at least one domain in common. Terminate old action.
                                         LOG_WARN("Stopping object {} {} on conflicting {} domain(s)",
-                                                obj->GetName(),
-                                                pa2->GetName(),
-                                                ControlDomain2Str(pa2->GetDomains()));
+                                                 obj->GetName(),
+                                                 pa2->GetName(),
+                                                 ControlDomain2Str(pa2->GetDomains()));
                                         pa2->End();
                                     }
                                 }

@@ -26,23 +26,23 @@ namespace scenarioengine
 
     struct ObjectInfoStruct
     {
-        int                    id;
-        int                    model_id;
-        std::string            model3d;
-        int                    obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
-        int                    obj_category;  // sub type for vehicle, pedestrian and miscobj
-        int                    obj_role;      // role for vehicle and pedestrian
-        int                    ctrl_type;     // See Controller::Type enum
-        double                 timeStamp;
-        char                   name[NAME_LEN];
-        double                 speed;
-        double                 rear_axle_z_pos;   // z coordinate of the middle of rear axle under neutral load conditions
-        double                 front_axle_x_pos;  // x coordinate of the middle of front axle under neutral load conditions
-        double                 front_axle_z_pos;  // z coordinate of the middle of front axle under neutral load conditions
-        OSCBoundingBox         boundingbox;
-        int                    scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
-        int                    visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
-        std::vector<WheelData> wheel_data;      // make room for maximum number of wheels
+        int                              id;
+        int                              model_id;
+        std::string                      model3d;
+        int                              obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
+        int                              obj_category;  // sub type for vehicle, pedestrian and miscobj
+        int                              obj_role;      // role for vehicle and pedestrian
+        int                              ctrl_type;     // See Controller::Type enum
+        double                           timeStamp;
+        char                             name[NAME_LEN];
+        double                           speed;
+        double                           rear_axle_z_pos;   // z coordinate of the middle of rear axle under neutral load conditions
+        double                           front_axle_x_pos;  // x coordinate of the middle of front axle under neutral load conditions
+        double                           front_axle_z_pos;  // z coordinate of the middle of front axle under neutral load conditions
+        OSCBoundingBox                   boundingbox;
+        int                              scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
+        int                              visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        std::vector<WheelData>           wheel_data;      // make room for maximum number of wheels
         Object::VehicleLightActionStatus light_state[Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
     };
 
@@ -180,7 +180,7 @@ namespace scenarioengine
                     double                            wheel_angle,
                     double                            wheel_rot,
                     double                            rear_axle_z_pos,
-                    id_t                               roadId,
+                    id_t                              roadId,
                     double                            lateralOffset,
                     double                            s,
                     Object::VehicleLightActionStatus *light_state);
@@ -291,7 +291,7 @@ namespace scenarioengine
                          double                            wheel_angle,
                          double                            wheel_rot,
                          double                            rear_axle_z_pos,
-                         id_t                               roadId,
+                         id_t                              roadId,
                          int                               laneId,
                          double                            laneOffset,
                          double                            s,
@@ -312,29 +312,31 @@ namespace scenarioengine
                          double                            wheel_angle,
                          double                            wheel_rot,
                          double                            rear_axle_z_pos,
-                         id_t                               roadId,
+                         id_t                              roadId,
                          double                            lateralOffset,
                          double                            s,
                          Object::VehicleLightActionStatus *light_state);
 
-        int updateObjectPos(int id, double timestamp, roadmanager::Position *pos);
-        int updateObjectRoadPos(int id, double timestamp, id_t roadId, double lateralOffset, double s);
-        int updateObjectLanePos(int id, double timestamp, id_t roadId, int laneId, double offset, double s);
-        int updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r);
-        int updateObjectWorldPosMode(int id, double timestamp, double x, double y, double z, double h, double p, double r, int mode);
-        int updateObjectWorldPosXYH(int id, double timestamp, double x, double y, double h);
-        int updateObjectWorldPosXYHMode(int id, double timestamp, double x, double y, double h, int mode);
-        int updateObjectSpeed(int id, double timestamp, double speed);
-        int updateObjectVel(int id, double timestamp, double x_vel, double y_vel, double z_vel);
-        int updateObjectAcc(int id, double timestamp, double x_acc, double y_acc, double z_acc);
-        int updateObjectAngularVel(int id, double timestamp, double h_rate, double p_rate, double r_rate);
-        int updateObjectAngularAcc(int id, double timestamp, double h_acc, double p_acc, double r_acc);
-        int updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
-        int updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
-        int updateObjectVisibilityMask(int id, int visibilityMask);
-        int updateObjectControllerType(int id, int controllerType);
-        int updateObjectWheelData(int id, std::vector<WheelData> wheel_data);
-        int updateObjectLightState(int id, Object::VehicleLightActionStatus *light_state);
+        int    updateObjectPos(int id, double timestamp, roadmanager::Position *pos);
+        int    updateObjectRoadPos(int id, double timestamp, id_t roadId, double lateralOffset, double s);
+        int    updateObjectLanePos(int id, double timestamp, id_t roadId, int laneId, double offset, double s);
+        int    updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r);
+        int    updateObjectWorldPosMode(int id, double timestamp, double x, double y, double z, double h, double p, double r, int mode);
+        int    updateObjectWorldPosXYH(int id, double timestamp, double x, double y, double h);
+        int    updateObjectWorldPosXYHMode(int id, double timestamp, double x, double y, double h, int mode);
+        int    updateObjectSpeed(int id, double timestamp, double speed);
+        int    updateObjectVel(int id, double timestamp, double x_vel, double y_vel, double z_vel);
+        int    updateObjectAcc(int id, double timestamp, double x_acc, double y_acc, double z_acc);
+        int    updateObjectAngularVel(int id, double timestamp, double h_rate, double p_rate, double r_rate);
+        int    updateObjectAngularAcc(int id, double timestamp, double h_acc, double p_acc, double r_acc);
+        int    updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
+        int    updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
+        int    updateObjectVisibilityMask(int id, int visibilityMask);
+        int    updateObjectControllerType(int id, int controllerType);
+        int    updateObjectWheelData(int id, std::vector<WheelData> wheel_data);
+        int    updateObjectLightState(int id, Object::VehicleLightActionStatus *light_state);
+        void   setSimTime(double simTime);
+        double getSimTime() const;
 
         /**
         Specify if and how position object will align to the road. The setting is done for individual components:
@@ -391,6 +393,7 @@ namespace scenarioengine
                                                double                            wheel_rot,
                                                Object::VehicleLightActionStatus *light_state);
         datLogger::DatLogger *datLogger = nullptr;
+        double                simulationTime_;
     };
 
 }  // namespace scenarioengine

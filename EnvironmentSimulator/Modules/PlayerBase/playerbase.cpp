@@ -1133,7 +1133,8 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
         obj->SetVisibilityMask(obj->visibilityMask_ &= ~(Object::Visibility::SENSORS));
     }
 
-    // if (opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->lightStatusOn)  // fetch material details only right action or show lights
+    // if (opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->lightStatusOn)  // fetch material details only right action or show
+    // lights
     if (this->scenarioEngine->scenarioReader->lightStatusOn)  // fetch material details only right action or show lights
     {
         for (size_t i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)

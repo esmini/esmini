@@ -2,7 +2,7 @@
 <!-- scenario with different lights on, off and flash mode with circle road-->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="2"
+               revMinor="3"
                date="2023-10-24T10:00:00"
                description="Light state action demo scenario"
                author="esmini-team"/>

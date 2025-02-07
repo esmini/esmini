@@ -2828,8 +2828,7 @@ int LightStateAction::setbaseRgbAndPrepare(Object::VehicleLightActionStatus& lig
     // part 1 - set rgb
     if (CheckArrayRange0to1(cmyk_, 4) && CheckArrayRange0to1(lightStatus.baseRgb, 3))
     {  // both rgb and cmyk value are provided
-        LOG_WARN("cmyk and Rgb values provided for {} light color description, Accepting only Rgb values",
-            object_->LightType2Str(lightStatus.type));
+        LOG_WARN("cmyk and Rgb values provided for {} light color description, Accepting only Rgb values", object_->LightType2Str(lightStatus.type));
     }
     else if (CheckArrayRange0to1(cmyk_, 4))
     {

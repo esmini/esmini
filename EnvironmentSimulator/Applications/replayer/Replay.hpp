@@ -101,7 +101,7 @@ namespace scenarioengine
         void MoveToNextFrame();
         // bool                          MoveToPreviousFrame(double t);
         void MoveToPreviousFrame();
-        void MoveToDeltaTime(double dt);
+        void MoveToDeltaTime(double dt, bool stopAtEachFrame = false);
         void MoveToStart();
         void MoveToEnd();
         bool IsObjAvailableInCache(int Id);  // check in cache
@@ -176,7 +176,7 @@ namespace scenarioengine
         double                  GetH(int obj_id);
         double                  GetR(int obj_id);
         double                  GetP(int obj_id);
-        id_t                     GetRoadId(int obj_id);
+        id_t                    GetRoadId(int obj_id);
         int                     GetLaneId(int obj_id);
         double                  GetPosOffset(int obj_id);
         float                   GetPosT(int obj_id);

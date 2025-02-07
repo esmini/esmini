@@ -207,7 +207,7 @@ int ParseEntities(Replay* player)
     {
         for (int i = 0; i < static_cast<int>(player->scenarioState.obj_states.size()); i++)
         {
-            OdoInfo               odo_entry;
+            OdoInfo odo_entry;
             int     obj_id = player->scenarioState.obj_states[static_cast<size_t>(i)].id;
 
             if (no_ghost && player->GetCtrlType(obj_id) == GHOST_CTRL_TYPE)
@@ -226,7 +226,7 @@ int ParseEntities(Replay* player)
             if (sc == 0)
             {
                 ScenarioEntity new_sc;
-                std::string name;
+                std::string    name;
                 player->GetName(obj_id, name);
                 OSCBoundingBox bb;
                 player->GetBB(obj_id, bb);
@@ -244,23 +244,23 @@ int ParseEntities(Replay* player)
                 odo_entry.odometer = 0.0;
                 odo_info.insert(std::make_pair(new_sc.id, odo_entry));  // Set inital odometer value for the entity
 
-    #ifdef _USE_OSG
+#ifdef _USE_OSG
                 new_sc.trajectory = nullptr;
                 new_sc.trajPoints = 0;
 
                 std::string filename;
                 if (player->GetModelID(obj_id) >= 0)
                 {
-                   filename = SE_Env::Inst().GetModelFilenameById(player->GetModelID(obj_id));
+                    filename = SE_Env::Inst().GetModelFilenameById(player->GetModelID(obj_id));
                 }
 
                 if ((new_sc.entityModel = viewer_->CreateEntityModel(filename.c_str(),
-                                                                    osg::Vec4(0.5, 0.5, 0.5, 1.0),
-                                                                    viewer::EntityModel::EntityType::VEHICLE,
-                                                                    false,
-                                                                    name,
-                                                                    &bb,
-                                                                    static_cast<EntityScaleMode>(player->GetScaleMode(obj_id)))) == 0)
+                                                                     osg::Vec4(0.5, 0.5, 0.5, 1.0),
+                                                                     viewer::EntityModel::EntityType::VEHICLE,
+                                                                     false,
+                                                                     name,
+                                                                     &bb,
+                                                                     static_cast<EntityScaleMode>(player->GetScaleMode(obj_id)))) == 0)
                 {
                     return -1;
                 }
@@ -276,14 +276,14 @@ int ParseEntities(Replay* player)
                 {
                     new_sc.entityModel->txNode_->setNodeMask(0x0);
                 }
-    #endif  // _USE_OSG
+#endif  // _USE_OSG
 
                 // Add it to the list of scenario cars
                 scenarioEntity.push_back(new_sc);
                 sc = &scenarioEntity.back();
             }
 
-    #ifdef _USE_OSG
+#ifdef _USE_OSG
             if (sc->trajPoints == 0)
             {
                 sc->trajPoints = new osg::Vec3Array;
@@ -294,8 +294,8 @@ int ParseEntities(Replay* player)
             if (sc->trajPoints->size() == 0)
             {
                 sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(player->GetX(obj_id) - viewer_->origin_[0]),
-                                                    static_cast<float>(player->GetY(obj_id) - viewer_->origin_[1]),
-                                                    static_cast<float>(player->GetZ(obj_id) + z_offset)));
+                                                     static_cast<float>(player->GetY(obj_id) - viewer_->origin_[1]),
+                                                     static_cast<float>(player->GetZ(obj_id) + z_offset)));
             }
             else
             {
@@ -314,18 +314,18 @@ int ParseEntities(Replay* player)
                 else
                 {
                     sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(player->GetX(obj_id) - viewer_->origin_[0]),
-                                                        static_cast<float>(player->GetY(obj_id) - viewer_->origin_[1]),
-                                                        static_cast<float>(player->GetZ(obj_id) + z_offset)));
+                                                         static_cast<float>(player->GetY(obj_id) - viewer_->origin_[1]),
+                                                         static_cast<float>(player->GetZ(obj_id) + z_offset)));
                 }
             }
-    #endif  // _USE_OSG
+#endif  // _USE_OSG
 
             // calculate odometer
             odo_entry    = odo_info[sc->id];
-            double delta = GetLengthOfLine2D(odo_entry.x, odo_entry.y,  player->GetX(obj_id), player->GetY(obj_id));
+            double delta = GetLengthOfLine2D(odo_entry.x, odo_entry.y, player->GetX(obj_id), player->GetY(obj_id));
             odo_entry.odometer += delta;
-            odo_entry.x        = player->GetX(obj_id);
-            odo_entry.y        = player->GetY(obj_id);
+            odo_entry.x      = player->GetX(obj_id);
+            odo_entry.y      = player->GetY(obj_id);
             odo_info[sc->id] = odo_entry;  // save updated odo info for next calculation
 
             player->UpdateOdaMeter(sc->id, odo_entry.odometer);  // update odometer
@@ -587,8 +587,9 @@ int main(int argc, char** argv)
         }
 #ifdef _USE_OSG
         char                    info_str_buf[256];
-        roadmanager::OpenDrive* odrManager = roadmanager::Position::GetOpenDrive();
-        osg::ArgumentParser arguments(&argc, argv);
+        double                  targetSimTime = simTime;
+        roadmanager::OpenDrive* odrManager    = roadmanager::Position::GetOpenDrive();
+        osg::ArgumentParser     arguments(&argc, argv);
 
         viewer_ = new viewer::Viewer(odrManager, headerNew_.modelFilename.string, NULL, argv[0], arguments, &opt);
 
@@ -960,91 +961,72 @@ int main(int argc, char** argv)
                         deltaSimTime = minStepSize;
                     }
                     deltaSimTime *= time_scale;
+                    targetSimTime = simTime + deltaSimTime;
                 }
 #else
                 player->MoveToNextFrame();
 #endif  // _USE_OSG
             }
-#ifdef _USE_OSG
-            if (!(pause_player || viewer_->GetSaveImagesToFile()))
+
+            do
             {
-                player->MoveToDeltaTime(deltaSimTime);
-                simTime = player->GetTime();
-            }
+#ifdef _USE_OSG
+                if (!(pause_player || viewer_->GetSaveImagesToFile()))
+                {
+                    player->MoveToDeltaTime(deltaSimTime, true);
+                    simTime = player->GetTime();
+                }
 #else
-            simTime = player->GetTime();  // potentially wrapped for repeat
+                simTime = player->GetTime();  // potentially wrapped for repeat
 #endif  // _USE_OSG
-            // Fetch states of scenario objects
-            for (int index = 0; index < static_cast<int>(scenarioEntity.size()); index++)
-            {
-                ScenarioEntity* sc = &scenarioEntity[static_cast<unsigned int>(index)];
-                if (sc == nullptr)
+        // Fetch states of scenario objects
+                for (int index = 0; index < static_cast<int>(scenarioEntity.size()); index++)
                 {
-                    throw std::runtime_error(std::string("Unexpected entity found: ").append(std::to_string(scenarioEntity[static_cast<unsigned int>(index)].id)));
-                }
+                    ScenarioEntity* sc = &scenarioEntity[static_cast<unsigned int>(index)];
+                    if (sc == nullptr)
+                    {
+                        throw std::runtime_error(
+                            std::string("Unexpected entity found: ").append(std::to_string(scenarioEntity[static_cast<unsigned int>(index)].id)));
+                    }
 
-                sc->pos            = player->GetComPletePos(scenarioEntity[static_cast<unsigned int>(index)].id);
-                sc->wheel_angle    = static_cast<float>(player->GetWheelAngle(scenarioEntity[static_cast<unsigned int>(index)].id));
-                sc->wheel_rotation = static_cast<float>(player->GetWheelRot(scenarioEntity[static_cast<unsigned int>(index)].id));
+                    sc->pos            = player->GetComPletePos(scenarioEntity[static_cast<unsigned int>(index)].id);
+                    sc->wheel_angle    = static_cast<float>(player->GetWheelAngle(scenarioEntity[static_cast<unsigned int>(index)].id));
+                    sc->wheel_rotation = static_cast<float>(player->GetWheelRot(scenarioEntity[static_cast<unsigned int>(index)].id));
 
 #ifdef _USE_OSG
 
-                if (!player->IsObjAvailableActive(sc->id) || (player->GetVisibility(scenarioEntity[static_cast<unsigned int>(index)].id) & 0x01) ==
-                                                                 0)  // no state for given object (index) at this timeframe
-                {
-                    setEntityVisibility(index, false);
-
-                    if (index == viewer_->currentCarInFocus_)
+                    if (!player->IsObjAvailableActive(sc->id) || (player->GetVisibility(scenarioEntity[static_cast<unsigned int>(index)].id) &
+                                                                  0x01) == 0)  // no state for given object (index) at this timeframe
                     {
-                        // Update overlay info text
-                        snprintf(info_str_buf,
-                                 sizeof(info_str_buf),
-                                 "%.3fs entity[%d]: %s (%d) NO INFO",
-                                 player->scenarioState.sim_time,
-                                 viewer_->currentCarInFocus_,
-                                 sc->name.c_str(),
-                                 sc->id);
-                        viewer_->SetInfoText(info_str_buf);
+                        setEntityVisibility(index, false);
+
+                        if (index == viewer_->currentCarInFocus_)
+                        {
+                            // Update overlay info text
+                            snprintf(info_str_buf,
+                                     sizeof(info_str_buf),
+                                     "%.3fs entity[%d]: %s (%d) NO INFO",
+                                     player->scenarioState.sim_time,
+                                     viewer_->currentCarInFocus_,
+                                     sc->name.c_str(),
+                                     sc->id);
+                            viewer_->SetInfoText(info_str_buf);
+                        }
+                        continue;
                     }
-                    continue;
-                }
-                setEntityVisibility(index, true);
+                    setEntityVisibility(index, true);
 
-                std::string name;
-                player->GetName(scenarioEntity[static_cast<unsigned int>(index)].id, name);
+                    std::string name;
+                    player->GetName(scenarioEntity[static_cast<unsigned int>(index)].id, name);
 
-                // on screen text following each entity
-                snprintf(sc->entityModel->on_screen_info_.string_,
-                         sizeof(sc->entityModel->on_screen_info_.string_),
-                         " %s (%d) %.2fm\n %.2fkm/h road %d lane %d/%.2f s %.2f\n x %.2f y %.2f hdg %.2f\n osi x %.2f y %.2f \n|",
-                         name.c_str(),
-                         scenarioEntity[static_cast<unsigned int>(index)].id,
-                         player->GetOdaMeter(scenarioEntity[static_cast<unsigned int>(index)].id),
-                         3.6 * player->GetSpeed(scenarioEntity[static_cast<unsigned int>(index)].id),
-                         player->GetRoadId(scenarioEntity[static_cast<unsigned int>(index)].id),
-                         player->GetLaneId(scenarioEntity[static_cast<unsigned int>(index)].id),
-                         fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset,
-                         static_cast<double>(sc->pos.s),
-                         sc->pos.x,
-                         sc->pos.y,
-                         sc->pos.h,
-                         sc->pos.x + static_cast<double>(sc->bounding_box.center_.x_) * cos(sc->pos.h),
-                         sc->pos.y + static_cast<double>(sc->bounding_box.center_.x_) * sin(sc->pos.h));
-                sc->entityModel->on_screen_info_.osg_text_->setText(sc->entityModel->on_screen_info_.string_);
-
-                if (index == viewer_->currentCarInFocus_)
-                {
-                    // Update overlay info text
-                    snprintf(info_str_buf,
-                             sizeof(info_str_buf),
-                             "%.3fs entity[%d]: %s (%d) %.2fs %.2fkm/h %.2fm (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f ",
-                             player->scenarioState.sim_time,
-                             viewer_->currentCarInFocus_,
+                    // on screen text following each entity
+                    snprintf(sc->entityModel->on_screen_info_.string_,
+                             sizeof(sc->entityModel->on_screen_info_.string_),
+                             " %s (%d) %.2fm\n %.2fkm/h road %d lane %d/%.2f s %.2f\n x %.2f y %.2f hdg %.2f\n osi x %.2f y %.2f \n|",
                              name.c_str(),
                              scenarioEntity[static_cast<unsigned int>(index)].id,
-                             player->scenarioState.sim_time,
-                             3.6 * player->GetSpeed(scenarioEntity[static_cast<unsigned int>(index)].id),
                              player->GetOdaMeter(scenarioEntity[static_cast<unsigned int>(index)].id),
+                             3.6 * player->GetSpeed(scenarioEntity[static_cast<unsigned int>(index)].id),
                              player->GetRoadId(scenarioEntity[static_cast<unsigned int>(index)].id),
                              player->GetLaneId(scenarioEntity[static_cast<unsigned int>(index)].id),
                              fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset,
@@ -1052,74 +1034,108 @@ int main(int argc, char** argv)
                              sc->pos.x,
                              sc->pos.y,
                              sc->pos.h,
-                             time_scale);
-                    viewer_->SetInfoText(info_str_buf);
-                }
-#endif  // _USE_OSG
-            }
-            // Collision detection
-            if (col_analysis && scenarioEntity.size() > 1)
-            {
-                if (player->IsObjAvailableActive(scenarioEntity[0].id) &&
-                    player->GetVisibility(scenarioEntity[0].id) != 0)  // skip if Ego invisible for graphics, traffic and sensors
-                {
-                    for (size_t i = 0; i < scenarioEntity.size(); i++)
-                    {
-                        if (static_cast<int>(i) != ghost_idx)  // Ignore ghost
-                        {
-                            updateCorners(scenarioEntity[i]);
-                        }
-                    }
+                             sc->pos.x + static_cast<double>(sc->bounding_box.center_.x_) * cos(sc->pos.h),
+                             sc->pos.y + static_cast<double>(sc->bounding_box.center_.x_) * sin(sc->pos.h));
+                    sc->entityModel->on_screen_info_.osg_text_->setText(sc->entityModel->on_screen_info_.string_);
 
-                    for (size_t i = 0; i < scenarioEntity.size(); i++)
+                    if (index == viewer_->currentCarInFocus_)
                     {
-                        if (static_cast<int>(i) == ghost_idx)
+                        // Update overlay info text
+                        snprintf(info_str_buf,
+                                 sizeof(info_str_buf),
+                                 "%.3fs entity[%d]: %s (%d) %.2fs %.2fkm/h %.2fm (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f ",
+                                 player->scenarioState.sim_time,
+                                 viewer_->currentCarInFocus_,
+                                 name.c_str(),
+                                 scenarioEntity[static_cast<unsigned int>(index)].id,
+                                 player->scenarioState.sim_time,
+                                 3.6 * player->GetSpeed(scenarioEntity[static_cast<unsigned int>(index)].id),
+                                 player->GetOdaMeter(scenarioEntity[static_cast<unsigned int>(index)].id),
+                                 player->GetRoadId(scenarioEntity[static_cast<unsigned int>(index)].id),
+                                 player->GetLaneId(scenarioEntity[static_cast<unsigned int>(index)].id),
+                                 fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset,
+                                 static_cast<double>(sc->pos.s),
+                                 sc->pos.x,
+                                 sc->pos.y,
+                                 sc->pos.h,
+                                 time_scale);
+                        viewer_->SetInfoText(info_str_buf);
+                    }
+#endif  // _USE_OSG
+                }
+                // Collision detection
+                if (col_analysis && scenarioEntity.size() > 1)
+                {
+                    if (player->IsObjAvailableActive(scenarioEntity[0].id) &&
+                        player->GetVisibility(scenarioEntity[0].id) != 0)  // skip if Ego invisible for graphics, traffic and sensors
+                    {
+                        for (size_t i = 0; i < scenarioEntity.size(); i++)
                         {
-                            continue;
+                            if (static_cast<int>(i) != ghost_idx)  // Ignore ghost
+                            {
+                                updateCorners(scenarioEntity[i]);
+                            }
                         }
-                        for (size_t j = i + 1; j < scenarioEntity.size(); j++)
+
+                        for (size_t i = 0; i < scenarioEntity.size(); i++)
                         {
-                            if (static_cast<int>(j) == ghost_idx)
+                            if (static_cast<int>(i) == ghost_idx)
                             {
                                 continue;
                             }
-
-                            if (separating_axis_intersect(scenarioEntity[i], scenarioEntity[j]))
+                            for (size_t j = i + 1; j < scenarioEntity.size(); j++)
                             {
-                                if (std::find(scenarioEntity[i].overlap_entity_ids.begin(),
-                                                scenarioEntity[i].overlap_entity_ids.end(),
-                                                scenarioEntity[j].id) == scenarioEntity[i].overlap_entity_ids.end())
+                                if (static_cast<int>(j) == ghost_idx)
                                 {
-                                    // overlap not registered, do it
-                                    scenarioEntity[i].overlap_entity_ids.push_back(scenarioEntity[j].id);
-                                    pause_player     = col_pause ? true : false;
-                                    double rel_speed = abs(player->GetSpeed(scenarioEntity[i].id) - player->GetSpeed(scenarioEntity[j].id)) * 3.6;
-                                    double rel_angle = (scenarioEntity[i].pos.h - scenarioEntity[j].pos.h) * 180.0 / M_PI;
-                                    LOG_WARN(
-                                        "Collision between {} (id {}) and {} (id {}) at time {:.2f}, Relative speed {:.2f} km/h, Angle {:.2f} degrees (ego to target)",
-                                        scenarioEntity[i].name,
-                                        scenarioEntity[i].id,
-                                        scenarioEntity[j].name,
-                                        scenarioEntity[j].id,
-                                        simTime,
-                                        rel_speed,
-                                        rel_angle);
+                                    continue;
                                 }
-                            }
-                            else if (std::find(scenarioEntity[i].overlap_entity_ids.begin(),
-                                                scenarioEntity[i].overlap_entity_ids.end(),
-                                                scenarioEntity[j].id) != scenarioEntity[i].overlap_entity_ids.end())
-                            {
-                                // not overlapping anymore, unregister
-                                scenarioEntity[i].overlap_entity_ids.erase(std::remove(scenarioEntity[i].overlap_entity_ids.begin(),
-                                                                                        scenarioEntity[i].overlap_entity_ids.end(),
-                                                                                        scenarioEntity[j].id),
-                                                                            scenarioEntity[i].overlap_entity_ids.end());
+
+                                if (separating_axis_intersect(scenarioEntity[i], scenarioEntity[j]))
+                                {
+                                    if (std::find(scenarioEntity[i].overlap_entity_ids.begin(),
+                                                  scenarioEntity[i].overlap_entity_ids.end(),
+                                                  scenarioEntity[j].id) == scenarioEntity[i].overlap_entity_ids.end())
+                                    {
+                                        // overlap not registered, do it
+                                        scenarioEntity[i].overlap_entity_ids.push_back(scenarioEntity[j].id);
+                                        pause_player     = col_pause ? true : false;
+                                        double rel_speed = abs(player->GetSpeed(scenarioEntity[i].id) - player->GetSpeed(scenarioEntity[j].id)) * 3.6;
+                                        double rel_angle = (scenarioEntity[i].pos.h - scenarioEntity[j].pos.h) * 180.0 / M_PI;
+                                        LOG_WARN(
+                                            "Collision between {} (id {}) and {} (id {}) at time {:.2f}, Relative speed {:.2f} km/h, Angle {:.2f} degrees (ego to target)",
+                                            scenarioEntity[i].name,
+                                            scenarioEntity[i].id,
+                                            scenarioEntity[j].name,
+                                            scenarioEntity[j].id,
+                                            player->GetTime(),
+                                            rel_speed,
+                                            rel_angle);
+                                    }
+                                }
+                                else if (std::find(scenarioEntity[i].overlap_entity_ids.begin(),
+                                                   scenarioEntity[i].overlap_entity_ids.end(),
+                                                   scenarioEntity[j].id) != scenarioEntity[i].overlap_entity_ids.end())
+                                {
+                                    // not overlapping anymore, unregister
+                                    scenarioEntity[i].overlap_entity_ids.erase(std::remove(scenarioEntity[i].overlap_entity_ids.begin(),
+                                                                                           scenarioEntity[i].overlap_entity_ids.end(),
+                                                                                           scenarioEntity[j].id),
+                                                                               scenarioEntity[i].overlap_entity_ids.end());
+                                }
                             }
                         }
                     }
                 }
-            }
+            } while
+#ifdef _USE_OSG
+                (!pause_player && simTime < player->GetStopTime() - SMALL_NUMBER  // As long as time is < end
+                 && simTime > player->GetStartTime() + SMALL_NUMBER               // As long as time is > start time
+                 && (deltaSimTime < 0 ? (player->GetTime() > targetSimTime) : (player->GetTime() < targetSimTime)));  // until reached target timestep
+#else
+                // for non osg build, full steps only
+                (false);
+#endif  // _USE_OSG
+
 #ifdef _USE_OSG
             Object::VehicleLightActionStatus light_state[Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
 

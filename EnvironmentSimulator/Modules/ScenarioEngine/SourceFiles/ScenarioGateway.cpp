@@ -164,7 +164,7 @@ ObjectState::ObjectState(int                               id,
                          double                            wheel_angle,
                          double                            wheel_rot,
                          double                            rear_axle_z_pos,
-                         id_t                               roadId,
+                         id_t                              roadId,
                          int                               laneId,
                          double                            laneOffset,
                          double                            s,
@@ -218,7 +218,7 @@ ObjectState::ObjectState(int                               id,
                          double                            wheel_angle,
                          double                            wheel_rot,
                          double                            rear_axle_z_pos,
-                         id_t                               roadId,
+                         id_t                              roadId,
                          double                            lateralOffset,
                          double                            s,
                          Object::VehicleLightActionStatus* light_state)
@@ -293,7 +293,11 @@ ScenarioGateway::ScenarioGateway()
 ScenarioGateway::~ScenarioGateway()
 {
     objectState_.clear();
-    delete datLogger;
+    if (datLogger != nullptr)
+    {
+        datLogger->simTimeTemp = getSimTime();  // to do . check the last write this time is valid to use
+        delete datLogger;
+    }
 }
 
 ObjectState* ScenarioGateway::getObjectStatePtrById(int id)
@@ -582,7 +586,7 @@ int ScenarioGateway::reportObject(int                               id,
                                   double                            wheel_angle,
                                   double                            wheel_rot,
                                   double                            rear_axle_z_pos,
-                                  id_t                               roadId,
+                                  id_t                              roadId,
                                   int                               laneId,
                                   double                            laneOffset,
                                   double                            s,
@@ -645,7 +649,7 @@ int ScenarioGateway::reportObject(int                               id,
                                   double                            wheel_angle,
                                   double                            rear_axle_z_pos,
                                   double                            wheel_rot,
-                                  id_t                               roadId,
+                                  id_t                              roadId,
                                   double                            lateralOffset,
                                   double                            s,
                                   Object::VehicleLightActionStatus* light_state)
@@ -1046,6 +1050,16 @@ int ScenarioGateway::updateObjectLightState(int id, Object::VehicleLightActionSt
     return 0;
 }
 
+void scenarioengine::ScenarioGateway::setSimTime(double simTime)
+{
+    simulationTime_ = simTime;
+}
+
+double scenarioengine::ScenarioGateway::getSimTime() const
+{
+    return simulationTime_;
+}
+
 int ScenarioGateway::setObjectPositionMode(int id, int type, int mode)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
@@ -1179,18 +1193,12 @@ int ScenarioGateway::WriteStatesToFile()
                                    objectState_[i]->state_.pos.GetH(),
                                    objectState_[i]->state_.pos.GetP(),
                                    objectState_[i]->state_.pos.GetR());
-            LOG_INFO("Gateway x: {} y: {} z: {} h: {} p: {} r: {}",
-                     objectState_[i]->state_.pos.GetX(),
-                     objectState_[i]->state_.pos.GetY(),
-                     objectState_[i]->state_.pos.GetZ(),
-                     objectState_[i]->state_.pos.GetH(),
-                     objectState_[i]->state_.pos.GetP(),
-                     objectState_[i]->state_.pos.GetR());
             datLogger->WriteObjSpeed(objectState_[i]->state_.info.id, objectState_[i]->state_.info.speed);
             datLogger->WriteObjCategory(objId, objectState_[i]->state_.info.obj_category);
             datLogger->WriteObjType(objId, objectState_[i]->state_.info.obj_type);
             datLogger->WriteCtrlType(objId, objectState_[i]->state_.info.ctrl_type);
-            datLogger->WriteWheelAngle(objId, objectState_[i]->state_.info.wheel_data.size() > 0 ? objectState_[i]->state_.info.wheel_data[0].h : 0.0);
+            datLogger->WriteWheelAngle(objId,
+                                       objectState_[i]->state_.info.wheel_data.size() > 0 ? objectState_[i]->state_.info.wheel_data[0].h : 0.0);
             datLogger->WriteWheelRot(objId, objectState_[i]->state_.info.wheel_data.size() > 0 ? objectState_[i]->state_.info.wheel_data[0].p : 0.0);
             datLogger->WriteBB(objId,
                                objectState_[i]->state_.info.boundingbox.center_.x_,

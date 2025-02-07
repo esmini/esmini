@@ -499,7 +499,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^8.600, 0, Car, 42.931, 2.373, 0.000, 0.226, 0.000, 0.000, 10.000, -0.022, 6.089', csv, re.MULTILINE))
         self.assertTrue(re.search('^14.500, 0, Car, 20.505, -4.052, 0.000, 3.678, 0.000, 0.000, 10.000, -0.380, 4.708', csv, re.MULTILINE))
         self.assertTrue(re.search('^16.500, 0, Car, 0.984, -8.103, 0.000, 3.287, 0.000, 0.000, 10.000, 0.000, 5.302', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.200, 0, Car, 30.062, -28.801, 0.000, 1.929, 0.000, 0.000, 10.000, -0.057, 0.764', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.200, 0, Car, 30.063, -28.801, 0.000, 1.929, 0.000, 0.000, 10.000, -0.057, 0.764', csv, re.MULTILINE))
         self.assertTrue(re.search('^23.000, 0, Car, 21.832, 8.267, 0.000, 1.753, 0.000, 0.000, 10.000, -0.000, 2.521', csv, re.MULTILINE))
         self.assertTrue(re.search('^27.510, 0, Car, 16.639, -3.114, 0.000, 3.202, 0.000, 0.000, 10.000, -0.399, 5.714', csv, re.MULTILINE))
         self.assertTrue(re.search('^35.050, 0, Car, 23.577, 1.677, 0.000, 5.187, 0.000, 0.000, 10.000, 0.180, 1.231', csv, re.MULTILINE))
@@ -1568,7 +1568,7 @@ class TestSuite(unittest.TestCase):
                         os.replace('sim_model_' + models[0] + '.dat', 'sim.dat')
 
             # Check vehicle key positions
-            csv = generate_csv()
+            csv = generate_csv(mode_="min_step")
 
             self.assertTrue(re.search('^0.000, 0, Ego, 50.000, -1.535, 0.000, 0.000, 0.000, 0.000, 20.000, 0.000, 0.000', csv, re.MULTILINE))
             self.assertTrue(re.search('^0.000, 1, Target, 80.000, 1.535, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 0.000', csv, re.MULTILINE))
@@ -1588,7 +1588,7 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^2.840, 31, Target, 122.585, 0.991, 0.000, 6.202, 0.000, 0.000, 15.000, -0.016, 2.334', csv, re.MULTILINE))
             self.assertTrue(re.search('^2.850, 0, Ego, 107.000, -1.535, 0.000, 0.000, 0.000, 0.000, 20.000, 0.000, 5.778', csv, re.MULTILINE))
             self.assertTrue(re.search('^2.850, 1, Target, 122.734, 0.978, 0.000, 6.201, 0.000, 0.000, 15.000, -0.015, 2.762', csv, re.MULTILINE))
-            self.assertTrue(re.search('^2.850, 10, Ego, 107.000, -1.535, 0.000, 0.000, 0.000, 0.000, 19.996, 0.000, 5.777', csv, re.MULTILINE))
+            self.assertTrue(re.search('^2.850, 10, Ego, 107.000, -1.535, 0.000, 0.000, 0.000, 0.000, 19.999, 0.000, 5.777', csv, re.MULTILINE))
             self.assertTrue(re.search('^2.850, 11, Target, 122.734, 0.978, 0.000, 6.201, 0.000, 0.000, 15.000, -0.015, 2.762', csv, re.MULTILINE))
             self.assertTrue(re.search('^2.850, 20, Ego, 107.000, -1.535, 0.000, 0.000, 0.000, 0.000, 20.000, 0.000, 5.778', csv, re.MULTILINE))
             self.assertTrue(re.search('^2.850, 21, Target, 122.734, 0.978, 0.000, 6.201, 0.000, 0.000, 15.000, -0.015, 2.762', csv, re.MULTILINE))
@@ -1641,7 +1641,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.18.980.* DisconnectEvent: true\\n', log)  is not None)
 
         # Check vehicle key positions
-        csv = generate_csv()
+        csv = generate_csv(mode_ = "min_step")
 
         self.assertTrue(re.search('^0.000, 0, Trailer, 1.700, 13.500, 0.000, 1.571, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^0.000, 1, Car, -10.300, 30.200, 0.000, 3.142, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
@@ -1766,12 +1766,12 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.20.100.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions
-        csv = generate_csv()
+        csv = generate_csv(mode_ = "time_step", time_step_ = 0.1)
 
         self.assertTrue(re.search('^2.600, 0, Ego, 59.000, -1.535, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 4.614', csv, re.MULTILINE))
         self.assertTrue(re.search('^3.200, 0, Ego, 68.000, -2.081, 0.000, 6.157, 0.000, 0.000, 15.000, -0.062, 5.196', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.100, 0, Ego, 96.500, -5.485, 0.000, 0.045, 0.000, 0.000, 15.000, 0.032, 4.943', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.200, 0, Ego, 97.998, -5.401, 0.000, 0.056, 0.000, 0.000, 14.985, 0.024, 2.941', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.200, 0, Ego, 97.999, -5.401, 0.000, 0.056, 0.000, 0.000, 14.985, 0.024, 2.941', csv, re.MULTILINE))
         self.assertTrue(re.search('^10.100, 0, Ego, 169.618, -4.388, 0.000, 0.148, 0.000, 0.000, 14.268, 0.029, 0.224', csv, re.MULTILINE))
         self.assertTrue(re.search('^10.200, 0, Ego, 171.044, -4.388, 0.000, 0.000, 0.000, 0.000, 14.254, -0.021, 4.297', csv, re.MULTILINE))
         self.assertTrue(re.search('^10.300, 0, Ego, 172.468, -4.388, 0.000, 0.000, 0.000, 0.000, 14.240, 0.000, 2.082', csv, re.MULTILINE))
@@ -1935,7 +1935,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.10.100.* StopCondition: true, delay: 0.00, 10.1000 > 10.0000, edge: none', log)  is not None)
 
         # Check vehicle key positions
-        csv = generate_csv()
+        csv = generate_csv(mode_ = "time_step", time_step_ = 0.1)
         self.assertTrue(re.search('0.000, 0, bicycle1, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('0.000, 1, scooter1, -15.000, 4.000, 0.000, 3.142, 0.000, 0.000, -10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('0.000, 2, car_white, -30.000, 8.000, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
@@ -2092,7 +2092,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.8.100.* StopCondition: true, delay: 0.00, 8.1000 > 8.0000, edge: none', log)  is not None)
 
         # Check vehicle key positions
-        csv = generate_csv()
+        csv = generate_csv(mode_ = "min_step")
         self.assertTrue(re.search('0.000, 0, car_white, 0.000, 0.000, 0.000, 3.142, 0.000, 0.000, 8.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('0.000, 1, car_red, -12.000, 15.000, 0.000, 0.000, 0.000, 0.000, 8.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('2.500, 0, car_white, -17.070, -7.072, 0.000, 4.320, 0.000, 0.000, 8.000, 0.150, 0.594', csv, re.MULTILINE))

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Excercise very simple scenario -->
 <OpenSCENARIO>
-    <FileHeader revMajor="1" revMinor="1" date="2021-12-29T10:00:00" description="Test dat logger with very simple sceanrio" author="esmini-team"/>
+    <FileHeader revMajor="1" revMinor="3" date="2023-12-29T10:00:00" description="Test dat logger with very simple scenario" author="esmini-team"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="Tolerance" parameterType="double" value="1.0"/>
         <ParameterDeclaration name="StartPositon" parameterType="double" value="10"/>
@@ -45,6 +45,11 @@
         </Init>
         <Story name="MyStory">
             <Act name="MyAct">
+                <ManeuverGroup maximumExecutionCount="1" name="Maneuver">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Car"/>
+                    </Actors>
+                </ManeuverGroup>
             </Act>
         </Story>
             <StopTrigger>

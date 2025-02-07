@@ -2,7 +2,7 @@
 <!-- scenario with different lights on, off and flash mode -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="2"
+               revMinor="3"
                date="2023-10-24T10:00:00"
                description="Scenario with different lights on, off and flash mode"
                author="esmini-team"/>
@@ -553,7 +553,9 @@
                                     <VehicleLight vehicleLightType="brakeLights" />
                                  </LightType>
                                  <LightState mode="on">
-                                    <Color colorType="green" />
+                                    <Color colorType="green">
+                                       <ColorRgb red="0" green="0.5" blue="0"/>
+                                    </Color>
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -638,7 +640,9 @@
                                     <VehicleLight vehicleLightType="brakeLights" />
                                  </LightType>
                                  <LightState mode="on">
-                                    <Color colorType="blue" />
+                                    <Color colorType="blue">
+                                       <ColorRgb red="0" green="0.0" blue="0.5"/>
+                                    </Color>
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -699,7 +703,7 @@
                                        <VehicleLight vehicleLightType= "brakeLights"/>
                                     </LightType>
                                     <LightState mode= "on">
-                                       <Color>
+                                       <Color colorType="green">
                                           <ColorRgb red="0" green="0.5" blue="0"/>
                                        </Color>
                                     </LightState>
@@ -955,7 +959,9 @@
                                     <VehicleLight vehicleLightType="specialPurposeLights" />
                                  </LightType>
                                  <LightState mode="flashing">
-                                    <Color colorType="red" />
+                                    <Color colorType="red">
+                                          <ColorRgb red="0.5" green="0.0" blue="0.0"/>
+                                       </Color>
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -984,7 +990,9 @@
                                     <VehicleLight vehicleLightType="specialPurposeLights" />
                                  </LightType>
                                  <LightState mode="flashing">
-                                    <Color colorType="green" />
+                                    <Color colorType="green">
+                                          <ColorRgb red="0" green="0.5" blue="0.0"/>
+                                       </Color>
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>

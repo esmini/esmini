@@ -1253,8 +1253,7 @@ void CarModel::UpdateLight(Object::VehicleLightActionStatus* list)
                 }
                 else
                 {
-                    LOG_WARN_ONCE("Missing light node - {} - ignoring visualization",
-                             LightTypeInd2Str(Object::VehicleLightType::FOG_LIGHTS_FRONT));
+                    LOG_WARN_ONCE("Missing light node - {} - ignoring visualization", LightTypeInd2Str(Object::VehicleLightType::FOG_LIGHTS_FRONT));
                 }
                 if (light_material_[Object::VehicleLightType::FOG_LIGHTS_REAR] != nullptr)
                 {
