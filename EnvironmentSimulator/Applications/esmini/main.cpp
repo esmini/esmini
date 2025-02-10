@@ -17,7 +17,7 @@
 #include <osgViewer/ViewerEventHandlers>
 #include <signal.h>
 
-#include "Config.cpp"
+//#include "Config.cpp"
 
 #include <fstream>
 #include <iostream>

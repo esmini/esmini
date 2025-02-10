@@ -39,15 +39,13 @@ target_include_directories(
     SYSTEM
     PUBLIC ${ROAD_MANAGER_PATH}
            ${EXTERNALS_PUGIXML_PATH}
-           ${EXTERNALS_SPDLOG_INCLUDES}
-           ${EXTERNALS_YAMLCPP_INCLUDES})
+           ${EXTERNALS_SPDLOG_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
     PRIVATE RoadManager
     PRIVATE CommonMini
     PRIVATE ${SPDLOG_LIBRARIES}
-    PRIVATE ${YAMLCPP_LIBRARIES}
     PRIVATE ${TIME_LIB})
 
 disable_static_analysis(${TARGET})

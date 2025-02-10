@@ -53,7 +53,6 @@ unittest(
     ${OSI_LIBRARIES}
     ${SUMO_LIBRARIES}
     ${SPDLOG_LIBRARIES}
-    ${YAMLCPP_LIBRARIES}
     ${SOCK_LIB})
 
 # ############################### Creating executable (ScenarioPlayer_test) ##########################################
@@ -74,7 +73,6 @@ unittest(
     ${OSI_LIBRARIES}
     ${SUMO_LIBRARIES}
     ${SPDLOG_LIBRARIES}
-    ${YAMLCPP_LIBRARIES}
     ${SOCK_LIB})
 
 # ############################### Creating executable (ScenarioEngineDll_test) #######################################
@@ -142,5 +140,4 @@ unittest(
     ${OSI_LIBRARIES}
     ${SUMO_LIBRARIES}
     ${SPDLOG_LIBRARIES}
-    ${YAMLCPP_LIBRARIES}
     ${SOCK_LIB})

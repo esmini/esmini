@@ -235,10 +235,7 @@ if(NOT
       "test/OSC-NCAP-scenarios/.git"
    OR NOT
       EXISTS
-      "externals/spdlog/.git"
-   OR NOT
-      EXISTS
-      "externals/yaml-cpp/.git")
+      "externals/spdlog/.git")
     execute_process(
         COMMAND git submodule update --init
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -259,9 +256,7 @@ if(LINUX)
         ${SPDLOG_LIBRARIES}
         "-lstdc++fs")
 endif()
-set(YAMLCPP_LIBRARIES
-    yaml-cpp)
-add_subdirectory(externals/yaml-cpp)
+
 # ############################### OTHERS #############################################################################
 
 # Add variables to global scope, e.g. when esmini is used as submodule

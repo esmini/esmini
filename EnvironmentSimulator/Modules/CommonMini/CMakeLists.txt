@@ -34,17 +34,11 @@ target_include_directories(
     ${TARGET}
     PRIVATE project_options
             SYSTEM
-    PUBLIC ${EXTERNALS_SPDLOG_INCLUDES}
-           ${EXTERNALS_YAMLCPP_INCLUDES})
+    PUBLIC ${EXTERNALS_SPDLOG_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
-    PRIVATE ${SPDLOG_LIBRARIES}
-            ${YAMLCPP_LIBRARIES})
-
-# target_include_directories( ${TARGET} PRIVATE project_options SYSTEM PUBLIC ${EXTERNALS_YAMLCPP_INCLUDES})
-
-# target_link_libraries( ${TARGET} PRIVATE ${YAMLCPP_LIBRARIES})
+    PRIVATE ${SPDLOG_LIBRARIES})
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})

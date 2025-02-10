@@ -58,15 +58,7 @@ target_include_directories(
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_OSG_INCLUDES}
            ${EXTERNALS_SUMO_INCLUDES}
-           ${EXTERNALS_SPDLOG_INCLUDES}
-           ${EXTERNALS_YAMLCPP_INCLUDES})
-# Suppress warnings for yaml-cpp
-if(TARGET
-   yaml-cpp)
-    target_compile_options(
-        yaml-cpp
-        PRIVATE -w)
-endif()
+           ${EXTERNALS_SPDLOG_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
@@ -81,7 +73,6 @@ target_link_libraries(
             ${SUMO_LIBRARIES}
             ${IMPLOT_LIBRARIES}
             ${SPDLOG_LIBRARIES}
-            ${YAMLCPP_LIBRARIES}
             ${TIME_LIB}
             ${SOCK_LIB})
 

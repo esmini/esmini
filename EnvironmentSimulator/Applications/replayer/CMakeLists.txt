@@ -65,7 +65,6 @@ if(USE_OSG)
                 ScenarioEngine
                 CommonMini
                 ${SPDLOG_LIBRARIES}
-                ${YAMLCPP_LIBRARIES}
                 ${TIME_LIB})
 
     if(USE_OSG)
@@ -104,7 +103,6 @@ target_link_libraries(
             RoadManager
             CommonMini
             ${SPDLOG_LIBRARIES}
-            ${YAMLCPP_LIBRARIES}
             ${TIME_LIB})
 
 target_include_directories(
@@ -157,8 +155,7 @@ if(USE_OSI)
                 ${TIME_LIB}
                 ${SOCK_LIB}
                 ${OSI_LIBRARIES}
-                ${SPDLOG_LIBRARIES}
-                ${YAMLCPP_LIBRARIES})
+                ${SPDLOG_LIBRARIES})
 
     disable_static_analysis(${TARGET3})
     disable_iwyu(${TARGET3})

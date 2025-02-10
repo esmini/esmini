@@ -78,8 +78,7 @@ foreach(
                ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_OSG_INCLUDES}
                ${EXTERNALS_PUGIXML_PATH}
-               ${EXTERNALS_SPDLOG_INCLUDES}
-               ${EXTERNALS_YAMLCPP_INCLUDES})
+               ${EXTERNALS_SPDLOG_INCLUDES})
 
     target_link_libraries(
         ${TARGET}
@@ -89,7 +88,6 @@ foreach(
                 Controllers
                 RoadManager
                 ${SPDLOG_LIBRARIES}
-                ${YAMLCPP_LIBRARIES}
                 ${TIME_LIB}
                 ${SOCK_LIB})
 
