@@ -929,18 +929,17 @@ namespace scenarioengine
         template <typename T1, typename T2>
         std::size_t operator()(const std::pair<T1, T2>& pair) const
         {
-            auto sorted_pair = std::minmax(pair.first, pair.second);
-            return std::hash<T1>()(sorted_pair.first) ^ std::hash<T2>()(sorted_pair.second);
+            return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
         }
     };
 
-    struct PairEqual
-    {
-        bool operator()(const std::pair<int, int>& lhs, const std::pair<int, int>& rhs) const
-        {
-            return (std::minmax(lhs.first, rhs.second) == std::minmax(rhs.first, lhs.second));
-        }
-    };
+    // struct PairEqual
+    // {
+    //     bool operator()(const std::pair<int, int>& lhs, const std::pair<int, int>& rhs) const
+    //     {
+    //         return (std::minmax(lhs.first, rhs.second) == std::minmax(rhs.first, lhs.second));
+    //     }
+    // };
 
     class Entities
     {
@@ -968,13 +967,14 @@ namespace scenarioengine
             Object* object_2_;
             double euclidian_distance_;
             double timestamp_;
+            double next_update_;
         };
 
         std::vector<Object*> object_;
         std::vector<Object*> object_pool_;
 
-        // std::unordered_map<std::pair<int, int>, Distance, PairHash, PairEqual> object_distance_map_;
-        std::unordered_map<int, std::unordered_map<int, Distance>> object_distance_map_;
+        // std::unordered_map<std::pair<int, int>, Distance, PairHash, PairEqual> object_distance_map_; 
+        std::unordered_map<std::pair<int, int>, Distance, PairHash> object_distance_map_;
 
         int     addObject(Object* obj, bool activate, int call_index = 0);
         int     activateObject(Object* obj, int call_index = 0);
