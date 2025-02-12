@@ -258,6 +258,7 @@ int ScenarioEngine::step(double deltaSimTime)
         Entities::Distance dist1;
         GetDistance(0, 1, dist1);
         GetDistance(0, 2, dist1);
+        GetDistance(0, 3, dist1);
     }
     else
     {
@@ -1402,7 +1403,16 @@ int ScenarioEngine::GetDistance(int id_1, int id_2, Entities::Distance& distance
     {
         // Update existing pairs
         bool teleported = false;
-        for (const auto action : entities_.object_distance_map_[pair].object_1_->getPrivateActions())
+        auto actions = entities_.object_distance_map_[pair].object_1_->getPrivateActions();
+        for (const auto& action : actions)
+        {
+            if (action->action_type_ == scenarioengine::OSCPrivateAction::ActionType::TELEPORT && action->GetCurrentState() == scenarioengine::OSCPrivateAction::StoryBoardElement::State::RUNNING)
+            {
+                teleported = true;
+            }
+        }
+        actions = entities_.object_distance_map_[pair].object_2_->getPrivateActions();
+        for (const auto& action : actions)
         {
             if (action->action_type_ == scenarioengine::OSCPrivateAction::ActionType::TELEPORT && action->GetCurrentState() == scenarioengine::OSCPrivateAction::StoryBoardElement::State::RUNNING)
             {
