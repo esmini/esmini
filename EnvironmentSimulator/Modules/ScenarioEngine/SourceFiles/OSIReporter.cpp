@@ -1124,6 +1124,18 @@ int OSIReporter::UpdateOSIIntersection()
                 connecting_road     = connection->GetConnectingRoad();
                 new_connecting_road = true;
 
+                if (incomming_road == nullptr)
+                {
+                    LOG_WARN("WARNING: Can't find incoming road to intersection, can't establish an OSI intersection");
+                    return -1;
+                }
+
+                if (connecting_road == nullptr)
+                {
+                    LOG_WARN("WARNING: Can't find connectiong road in intersection, can't establish an OSI intersection");
+                    return -1;
+                }
+
                 // check if the connecting road has been used before
                 for (unsigned int l = 0; l < lane_lengths.size(); l++)
                 {
@@ -2311,7 +2323,7 @@ int OSIReporter::UpdateOSIRoadLane()
                         roadmanager::Lane *driving_lane_predecessor = 0;
                         roadmanager::Lane *driving_lane_successor   = 0;
 
-                        if (link_predecessor)
+                        if (link_predecessor && predecessor_lane_section)
                         {
                             driving_lane_predecessor =
                                 predecessorRoad->GetDrivingLaneById(predecessor_lane_section->GetS(), link_predecessor->GetId());
@@ -2324,7 +2336,7 @@ int OSIReporter::UpdateOSIRoadLane()
                             }
                         }
 
-                        if (link_successor)
+                        if (link_successor && successor_lane_section)
                         {
                             driving_lane_successor = successorRoad->GetDrivingLaneById(successor_lane_section->GetS(), link_successor->GetId());
                             if (!driving_lane_successor)
