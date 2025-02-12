@@ -1,7 +1,7 @@
 import random
 import xml.etree.ElementTree as ET
 
-def get_lanesection_ids(lane_element):
+def get_lanesection_ids(lane_element, all_types: bool = False):
     """
     Extracts the IDs of lanes of specific types (e.g., "driving", "offRamp", "onRamp") 
     from the given lane section element.
@@ -25,12 +25,51 @@ def get_lanesection_ids(lane_element):
         element = lane_element.find(f"laneSection/{side}")
         if element is not None:
             for lane in element.findall("lane"):
-                if lane.get("type") in ["driving", "offRamp", "onRamp"]:
+                if all_types:
+                    lane_ids.append(int(lane.get("id")))
+                elif lane.get("type") in ["driving", "offRamp", "onRamp"]:
                     lane_ids.append(int(lane.get("id")))
 
     return lane_ids
+
+def get_road_start_end(planview_element):
+    start = ()
+    stop = ()
+    geoms = planview_element.findall("geometry")
+    if geoms is not None:
+        start = (float(geoms[0].get("x")), float(geoms[0].get("y")))
+        stop = (float(geoms[-1].get("x")), float(geoms[-1].get("y")))
     
-def parse_road(roadfile: str) -> dict:
+    return start, stop
+
+def delete_roads(roadfile: str, keep: list):
+    tree = ET.parse(roadfile)
+    root = tree.getroot()
+    road_elem = root.findall('road')
+    if road_elem is None:
+        print("No road in file")
+        return
+    
+    removed_roads = []
+    for element in road_elem:
+        rid = int(element.get("id"))
+        if rid not in keep:
+            root.remove(element)
+            removed_roads.append(rid)
+    
+    junction_elem = root.findall("junction")
+    for junc in junction_elem:
+        connections = junc.findall("connection")
+        for connection in connections:
+            if int(connection.get("connectingRoad")) in removed_roads:
+                junc.remove(connection)
+
+    new_file = roadfile.replace(".xodr", "_sliced.xodr")
+    tree.write(new_file)
+
+
+
+def parse_road(roadfile: str, junctions: bool = False, all_lane_types: bool = False) -> dict:
     """
     Parses an OpenDRIVE road network file to extract road information and compute 
     road statistics.
@@ -72,10 +111,14 @@ def parse_road(roadfile: str) -> dict:
    
     for element in road_elem:
         road_id = int(element.get("id"))
-        if int(element.get("junction")) == 1:
+        if int(element.get("junction")) != -1 and not junctions:
                 continue # Skip junctions to avoid overlapping traffic
-        lanes = get_lanesection_ids(element.find("lanes"))
+        road_start, road_stop = get_road_start_end(element.find("planView"))
+        lanes = get_lanesection_ids(element.find("lanes"), all_types=all_lane_types)
+        
         road_dict[road_id] = {
+            "road_start": road_start,
+            "road_stop": road_stop,
             "length":  float(element.get("length")),
             "lane_ids": lanes
         }
