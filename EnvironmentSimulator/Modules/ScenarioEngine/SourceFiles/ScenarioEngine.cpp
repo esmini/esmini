@@ -262,7 +262,7 @@ int ScenarioEngine::step(double deltaSimTime)
     }
     else
     {
-        for (auto it = entities_.object_distance_map_.begin(); it != entities_.object_distance_map_.end();) 
+        for (auto it = entities_.object_distance_map_.begin(); it != entities_.object_distance_map_.end();)
         {
             int id_1 = it->first.first;
             int id_2 = it->first.second;
@@ -272,8 +272,8 @@ int ScenarioEngine::step(double deltaSimTime)
                 it = entities_.object_distance_map_.erase(it);
                 continue;
             }
-            
-            Entities::Distance distance; // Variable to store the output
+
+            Entities::Distance distance;  // Variable to store the output
             GetDistance(id_1, id_2, distance);
             std::cout << "id " << id_1 << " to id " << id_2 << " dist " << distance.euclidian_distance_ << " at time " << distance.timestamp_ << "\n";
             it++;
@@ -1350,14 +1350,14 @@ int ScenarioEngine::DetectCollisions()
     return 0;
 }
 
-void ScenarioEngine::GetIdxsFromIds(const int id_1, const int id_2, int &idx_1, int &idx_2)
+void ScenarioEngine::GetIdxsFromIds(const int id_1, const int id_2, int& idx_1, int& idx_2)
 {
     // Add new first id with new target
-    idx_1 = -1; 
+    idx_1 = -1;
     idx_2 = -1;
     for (size_t i = 0; i < entities_.object_.size(); i++)
     {
-        if (idx_1 == -1 &&  entities_.object_[i]->GetId() == id_1)
+        if (idx_1 == -1 && entities_.object_[i]->GetId() == id_1)
         {
             idx_1 = static_cast<int>(i);
         }
@@ -1379,7 +1379,10 @@ void ScenarioEngine::UpdateDistance(const std::pair<int, int> ids, Object* obj_1
 {
     // Update existing pairs
     double euclidian_dist;
-    obj_1->pos_.Distance(&obj_2->pos_, roadmanager::CoordinateSystem::CS_ENTITY, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, euclidian_dist);
+    obj_1->pos_.Distance(&obj_2->pos_,
+                         roadmanager::CoordinateSystem::CS_ENTITY,
+                         roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN,
+                         euclidian_dist);
     // Get delta speed
     // Get distance between current delta pos and detailed tracking
     // Update delta pos when getting close
@@ -1388,7 +1391,7 @@ void ScenarioEngine::UpdateDistance(const std::pair<int, int> ids, Object* obj_1
     {
         next_update = simulationTime_ + freq;
     }
-    else if (abs(euclidian_dist) > 500.0) 
+    else if (abs(euclidian_dist) > 500.0)
     {
         next_update = simulationTime_ + 3.0;
     }
@@ -1398,15 +1401,16 @@ void ScenarioEngine::UpdateDistance(const std::pair<int, int> ids, Object* obj_1
 int ScenarioEngine::GetDistance(int id_1, int id_2, Entities::Distance& distance, double detailed_tracking, double freq)
 {
     auto pair = std::make_pair(id_1, id_2);
-    
+
     if (entities_.object_distance_map_.find(pair) != entities_.object_distance_map_.end())
     {
         // Update existing pairs
         bool teleported = false;
-        auto actions = entities_.object_distance_map_[pair].object_1_->getPrivateActions();
+        auto actions    = entities_.object_distance_map_[pair].object_1_->getPrivateActions();
         for (const auto& action : actions)
         {
-            if (action->action_type_ == scenarioengine::OSCPrivateAction::ActionType::TELEPORT && action->GetCurrentState() == scenarioengine::OSCPrivateAction::StoryBoardElement::State::RUNNING)
+            if (action->action_type_ == scenarioengine::OSCPrivateAction::ActionType::TELEPORT &&
+                action->GetCurrentState() == scenarioengine::OSCPrivateAction::StoryBoardElement::State::RUNNING)
             {
                 teleported = true;
             }
@@ -1414,7 +1418,8 @@ int ScenarioEngine::GetDistance(int id_1, int id_2, Entities::Distance& distance
         actions = entities_.object_distance_map_[pair].object_2_->getPrivateActions();
         for (const auto& action : actions)
         {
-            if (action->action_type_ == scenarioengine::OSCPrivateAction::ActionType::TELEPORT && action->GetCurrentState() == scenarioengine::OSCPrivateAction::StoryBoardElement::State::RUNNING)
+            if (action->action_type_ == scenarioengine::OSCPrivateAction::ActionType::TELEPORT &&
+                action->GetCurrentState() == scenarioengine::OSCPrivateAction::StoryBoardElement::State::RUNNING)
             {
                 teleported = true;
             }
