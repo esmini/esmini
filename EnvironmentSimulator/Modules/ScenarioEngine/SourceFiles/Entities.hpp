@@ -923,7 +923,7 @@ namespace scenarioengine
 
         static std::string Category2String(int category);
     };
-    
+
     struct PairHash
     {
         template <typename T1, typename T2>
@@ -960,20 +960,19 @@ namespace scenarioengine
             }
         }
 
-
         struct Distance
         {
             Object* object_1_;
             Object* object_2_;
-            double euclidian_distance_;
-            double timestamp_;
-            double next_update_;
+            double  euclidian_distance_;
+            double  timestamp_;
+            double  next_update_;
         };
 
         std::vector<Object*> object_;
         std::vector<Object*> object_pool_;
 
-        // std::unordered_map<std::pair<int, int>, Distance, PairHash, PairEqual> object_distance_map_; 
+        // std::unordered_map<std::pair<int, int>, Distance, PairHash, PairEqual> object_distance_map_;
         std::unordered_map<std::pair<int, int>, Distance, PairHash> object_distance_map_;
 
         int     addObject(Object* obj, bool activate, int call_index = 0);
