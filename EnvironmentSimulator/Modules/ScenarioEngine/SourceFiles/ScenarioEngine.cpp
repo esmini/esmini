@@ -267,7 +267,7 @@ int ScenarioEngine::step(double deltaSimTime)
             int id_1 = it->first.first;
             int id_2 = it->first.second;
 
-            if (!it->second.object_1_->IsActive() || !it->second.object_2_->IsActive())
+            if (!it->second.objects_[0]->IsActive() || !it->second.objects_[1]->IsActive())
             {
                 it = entities_.object_distance_map_.erase(it);
                 continue;
@@ -1398,6 +1398,25 @@ void ScenarioEngine::UpdateDistance(const std::pair<int, int> ids, Object* obj_1
     entities_.object_distance_map_[ids] = Entities::Distance{obj_1, obj_2, euclidian_dist, simulationTime_, next_update};
 }
 
+bool ScenarioEngine::CheckTeleported(const std::pair<int, int> pair)
+{
+    for (const auto& obj : entities_.object_distance_map_[pair].objects_)
+    {
+        auto events    = obj->getEvents();
+        for (const auto& event : events)
+        {
+            for (const auto& action : event->action_)
+            {
+                if (action->action_type_ == scenarioengine::OSCPrivateAction::ActionType::TELEPORT && event->GetCurrentState() == scenarioengine::StoryBoardElement::State::COMPLETE)
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 int ScenarioEngine::GetDistance(int id_1, int id_2, Entities::Distance& distance, double detailed_tracking, double freq)
 {
     auto pair = std::make_pair(id_1, id_2);
@@ -1405,29 +1424,11 @@ int ScenarioEngine::GetDistance(int id_1, int id_2, Entities::Distance& distance
     if (entities_.object_distance_map_.find(pair) != entities_.object_distance_map_.end())
     {
         // Update existing pairs
-        bool teleported = false;
-        auto actions    = entities_.object_distance_map_[pair].object_1_->getPrivateActions();
-        for (const auto& action : actions)
-        {
-            if (action->action_type_ == scenarioengine::OSCPrivateAction::ActionType::TELEPORT &&
-                action->GetCurrentState() == scenarioengine::OSCPrivateAction::StoryBoardElement::State::RUNNING)
-            {
-                teleported = true;
-            }
-        }
-        actions = entities_.object_distance_map_[pair].object_2_->getPrivateActions();
-        for (const auto& action : actions)
-        {
-            if (action->action_type_ == scenarioengine::OSCPrivateAction::ActionType::TELEPORT &&
-                action->GetCurrentState() == scenarioengine::OSCPrivateAction::StoryBoardElement::State::RUNNING)
-            {
-                teleported = true;
-            }
-        }
+        bool teleported = CheckTeleported(pair);
         if (simulationTime_ >= entities_.object_distance_map_[pair].next_update_ || teleported)
         {
-            auto obj_1 = entities_.object_distance_map_[pair].object_1_;
-            auto obj_2 = entities_.object_distance_map_[pair].object_2_;
+            auto obj_1 = entities_.object_distance_map_[pair].objects_[0];
+            auto obj_2 = entities_.object_distance_map_[pair].objects_[1];
             UpdateDistance(pair, obj_1, obj_2, detailed_tracking, freq);
         }
     }
