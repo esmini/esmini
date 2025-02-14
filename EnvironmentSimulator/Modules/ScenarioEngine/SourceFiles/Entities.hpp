@@ -963,9 +963,9 @@ namespace scenarioengine
         struct Distance
         {
             std::array<Object*, 2> objects_;
-            double  euclidian_distance_;
-            double  timestamp_;
-            double  next_update_;
+            double                 euclidian_distance_;
+            double                 timestamp_;
+            double                 next_update_;
         };
 
         std::vector<Object*> object_;
