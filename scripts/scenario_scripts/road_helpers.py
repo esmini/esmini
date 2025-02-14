@@ -57,16 +57,40 @@ def get_first_last_road_geom(planview_element: ET.Element) -> tuple:
     
     return first_geom, last_geom
 
-def get_roads_within_bounds(road_dict: str, location: tuple, boundaries: tuple, condition: str = "start_and_stop") -> list:
+def get_roads_within_bounds(road_dict: dict, location: tuple, boundaries: tuple, condition: str = "start_and_stop") -> list:
+    """
+    Identifies roads within a specified boundary region based on their start and stop coordinates.
+
+    This function checks which roads from a given dictionary fall within a specified 
+    rectangular boundary around a central location. The inclusion criteria can be 
+    adjusted using different conditions to check either the start, stop, or both 
+    coordinates of the road.
+
+    Parameters:
+        road_dict (dict): A dictionary containing road data, where each road entry 
+                          includes "first_geom" and "last_geom" as (x, y) coordinate 
+                          tuples.
+        location (tuple[float, float]): The central point (x, y) around which the boundary is defined.
+        boundaries (tuple[float, float]): The (x, y) offsets from the location, defining 
+                                          the rectangular boundary region.
+        condition (str, optional): Defines the criteria for road inclusion:
+            - "start_and_stop" (default): Both start and stop coordinates must be within bounds.
+            - "start_or_stop": Either start or stop coordinate must be within bounds.
+            - "start": Only the start coordinate must be within bounds.
+            - "stop": Only the stop coordinate must be within bounds.
+
+    Returns:
+        list[str]: A list of road keys that satisfy the boundary condition.
+    """
     loc_max = (location[0]+boundaries[0], location[1]+boundaries[1])
     loc_min = (location[0]-boundaries[0], location[1]-boundaries[1])
 
     roads_within_bounds = []
-    for key in road_dict:
-        if key in ["total_road_length", "drivable_lanes_length"]:
+    for road in road_dict:
+        if road in ["total_road_length", "drivable_lanes_length"]: # Ignore these 2 summary keys
             continue
-        road_start = road_dict[key]["first_geom"]
-        road_stop = road_dict[key]["last_geom"]
+        road_start = road_dict[road]["first_geom"]
+        road_stop = road_dict[road]["last_geom"]
 
         road_start_in_bounds = road_start[0] < loc_max[0] and road_start[0] > loc_min[0] and road_start[1] < loc_max[1] and road_start[1] > loc_min[1]
         road_stop_in_bounds = road_stop[0] < loc_max[0] and road_stop[0] > loc_min[0] and road_stop[1] < loc_max[1] and road_stop[1] > loc_min[1]
@@ -83,9 +107,8 @@ def get_roads_within_bounds(road_dict: str, location: tuple, boundaries: tuple, 
             print(f"Not valid condition {condition}, using start_and_stop")
             boundary_condition = road_start_in_bounds and road_stop_in_bounds
 
-
         if boundary_condition:
-            roads_within_bounds.append(key)
+            roads_within_bounds.append(road)
     
     return roads_within_bounds
 
