@@ -257,6 +257,7 @@ int ScenarioEngine::step(double deltaSimTime)
     {
         Entities::Distance dist1;
         GetDistance(0, 1, dist1);
+        GetDistance(0, 1, dist1);
         GetDistance(0, 2, dist1);
         GetDistance(0, 3, dist1);
     }
@@ -1402,12 +1403,13 @@ bool ScenarioEngine::CheckTeleported(const std::pair<int, int> pair)
 {
     for (const auto& obj : entities_.object_distance_map_[pair].objects_)
     {
-        auto events    = obj->getEvents();
+        auto events = obj->getEvents();
         for (const auto& event : events)
         {
             for (const auto& action : event->action_)
             {
-                if (action->action_type_ == scenarioengine::OSCPrivateAction::ActionType::TELEPORT && event->GetCurrentState() == scenarioengine::StoryBoardElement::State::COMPLETE)
+                if (action->action_type_ == scenarioengine::OSCPrivateAction::ActionType::TELEPORT &&
+                    event->GetCurrentState() == scenarioengine::StoryBoardElement::State::COMPLETE)
                 {
                     return true;
                 }
@@ -1423,6 +1425,11 @@ int ScenarioEngine::GetDistance(int id_1, int id_2, Entities::Distance& distance
 
     if (entities_.object_distance_map_.find(pair) != entities_.object_distance_map_.end())
     {
+        if (NEAR_NUMBERS(entities_.object_distance_map_[pair].timestamp_, simulationTime_))
+        {
+            // Already updated this dt
+            return -1;
+        }
         // Update existing pairs
         bool teleported = CheckTeleported(pair);
         if (simulationTime_ >= entities_.object_distance_map_[pair].next_update_ || teleported)
