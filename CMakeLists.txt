@@ -249,7 +249,13 @@ set(SPDLOG_BUILD_PIC
     ON)
 set(SPDLOG_LIBRARIES
     spdlog)
+set(RYML_LIBRARIES
+    ryml)
+
 add_subdirectory(externals/spdlog)
+
+add_subdirectory(externals/ryml)
+
 if(LINUX)
     # add link lib for missing filesystem functions in case gcc 7.5 is used
     set(SPDLOG_LIBRARIES

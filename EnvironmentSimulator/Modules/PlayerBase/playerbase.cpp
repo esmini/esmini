@@ -23,6 +23,7 @@
 #include "helpText.hpp"
 #include "OSCParameterDistribution.hpp"
 #include "logger.hpp"
+#include "Config.hpp"
 
 #ifdef _USE_OSG
 #include "viewer.hpp"
@@ -1219,6 +1220,7 @@ int ScenarioPlayer::Init()
                   true);
     opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename", "log.csv");
     opt.AddOption("collision", "Enable global collision detection, potentially reducing performance");
+    opt.AddOption("config_file_path", "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", "config.yml", true, true);
     opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
     opt.AddOption("custom_fixed_camera",
                   "Additional custom fixed camera position <x,y,z>[,h,p] (multiple occurrences supported)",
@@ -1288,6 +1290,12 @@ int ScenarioPlayer::Init()
 
     exe_path_ = argv_[0];
     SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths
+
+    esmini::common::Config config("esmini");
+    const auto configs = config.GetConfig();
+    std::cout << "Config size: " << configs.size() << std::endl;
+
+    AppendPrefixArgcArgv(argc_, argv_, configs);
 
     if (opt.ParseArgs(argc_, argv_) != 0)
     {

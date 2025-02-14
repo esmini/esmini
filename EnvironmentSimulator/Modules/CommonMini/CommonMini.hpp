@@ -289,6 +289,8 @@ private:
 
 // Useful operations
 
+
+void AppendPrefixArgcArgv(int& argc, char**& argv, const std::vector<std::string>& prefixArgs);
 /**
         Get model filename from model_id.
 */
@@ -849,7 +851,7 @@ public:
               std::string opt_arg                = "",
               std::string default_value          = "",
               bool        autoApply              = false,
-              bool        shouldHaveOnlyOneValue = false)
+              bool        shouldHaveOnlyOneValue    = false)
         : opt_str_(opt_str),
           opt_desc_(opt_desc),
           opt_arg_(opt_arg),
@@ -873,7 +875,7 @@ public:
                    std::string opt_arg                = "",
                    std::string opt_arg_default_value  = "",
                    bool        autoApply              = false,
-                   bool        shouldHaveOnlyOneValue = false);
+                   bool        shouldHaveOnlyOneValue = true);
 
     void        PrintUsage();
     void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");

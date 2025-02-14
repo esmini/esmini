@@ -191,6 +191,39 @@ std::string ControlDomain2Str(unsigned int domains)
     return str;
 }
 
+void AppendPrefixArgcArgv(int& argc, char**& argv, const std::vector<std::string>& prefixArgs)
+{
+    int newArgc = argc + prefixArgs.size();
+    char** newArgv = new char*[newArgc + 1]; // +1 for the null terminator
+
+    int i = 0;
+    newArgv[i] = new char[std::strlen(argv[i]) + 1];
+    std::strcpy(newArgv[i], argv[i]);
+    i++;
+    for (const auto& arg : prefixArgs)
+    {
+        newArgv[i] = new char[arg.length() + 1];
+        std::strcpy(newArgv[i], arg.c_str());
+        i++;
+    }
+
+    for (int j = 1; j < argc; ++j)
+    {
+        newArgv[i] = new char[std::strlen(argv[j]) + 1];
+        std::strcpy(newArgv[i], argv[j]);
+        i++;
+    }
+    newArgv[newArgc] = nullptr; // null terminate the array
+    argc = newArgc;
+    argv = newArgv;
+
+    std::cout << "New argc: " << newArgc << std::endl;
+    for (int k = 0; k < argc; ++k)
+    {
+        std::cout << "New argv[" << k << "]: " << argv[k] << std::endl;
+    }
+}
+
 bool FileExists(const char* fileName)
 {
     std::ifstream infile(fileName);
@@ -1992,6 +2025,10 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
             {
                 if (i < static_cast<unsigned int>(argc - 1) && strncmp(args[i + 1], "--", 2))
                 {
+                    if( option->shouldHaveOnlyOneValue_)
+                    {
+                        option->arg_value_.clear();
+                    }
                     option->arg_value_.push_back(args[i + 1]);
                     i++;
                 }

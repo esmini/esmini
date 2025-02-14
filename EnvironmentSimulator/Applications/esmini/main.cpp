@@ -11,13 +11,14 @@
  */
 
 #include "playerbase.hpp"
-#include "CommonMini.cpp"
+#include "CommonMini.hpp"
+
 #include "OSCParameterDistribution.hpp"
 #include "Plot.hpp"
 #include <osgViewer/ViewerEventHandlers>
 #include <signal.h>
 
-// #include "Config.cpp"
+//#include "Config.cpp"
 
 #include <fstream>
 #include <iostream>
@@ -28,25 +29,26 @@
 
 static bool quit = false;
 
-// static void CreateConfigFile(const std::string& filename)
-// {
-//     std::ofstream file(filename);
-//     if (!file)
-//     {
-//         std::cerr << "Failed to create file: " << filename << std::endl;
-//         return;
-//     }
-//     // Write YAML content
-//     file << "esmini:\n";
-//     file << "  window: 60 60 800 400\n";
-//     file << "  log_filepath: c:/tmp/kalle.txt\n";
-//     file << "  window: 30 30 400 200\n";
-//     file << "\n";
-//     file << "replayer:\n";
-//     file << "  tesselation_factor: 1.1\n";
+static void CreateConfigFile(const std::string& filename)
+{
+    std::ofstream file(filename);
+    if (!file)
+    {
+        std::cerr << "Failed to create file: " << filename << std::endl;
+        return;
+    }
+    // Write YAML content
+    file << "esmini: \n";
+    file << "  window: 60 60 800 400\n";
+    file << "  logfile_path: c:/tmp/kalle.txt\n";
+    file << "  window: 60 60 800 400\n";
+    file << "  osc: ../../../../resources/xosc/cut-in.xosc\n";
+    file << "\n";
+    file << "replayer:\n";
+    file << "  tesselation_factor: 1.1";
 
-//     file.close();
-// }
+    file.close();
+}
 
 static void signal_handler(int s)
 {
@@ -139,10 +141,11 @@ static int execute_scenario(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
-    // CreateConfigFile("config.yml");
+    CreateConfigFile("config.yml");
 
-    // esmini::common::Config& config = esmini::common::Config::Inst();
-    // esmini::common::Config::Inst();
+    // esmini::common::Config config("esmini");
+    // const auto configs = config.GetConfig();
+    // std::cout << "Config size: " << configs.size() << std::endl;
 
     OSCParameterDistribution& dist   = OSCParameterDistribution::Inst();
     int                       retval = 0;
