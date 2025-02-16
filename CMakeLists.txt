@@ -154,7 +154,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/utils/get_subdirectories.cmake
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/utils/set_folder.cmake)
 
 # ############################### Downloading cloud packages #########################################################
-
+if(DOWNLOAD_EXTERNALS)
 include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/set_cloud_links.cmake)
 set_cloud_links()
 
@@ -162,7 +162,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/download.cmake)
 
 message(STATUS "Downloading dependencies...")
 
-if(DOWNLOAD_EXTERNALS)
 download(
     osg
     ${EXTERNALS_OSG_PATH}
