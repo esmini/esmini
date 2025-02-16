@@ -56,6 +56,11 @@ set(ENABLE_INCLUDE_WHAT_YOU_USE
     CACHE BOOL
           "Enable iwyu")
 
+set(DOWNLOAD_EXTERNALS
+    ON
+    CACHE BOOL
+          "Download external packages")
+
 set(USE_OSG
     ON
     CACHE BOOL
@@ -157,6 +162,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/download.cmake)
 
 message(STATUS "Downloading dependencies...")
 
+if(DOWNLOAD_EXTERNALS)
 download(
     osg
     ${EXTERNALS_OSG_PATH}
@@ -202,7 +208,7 @@ if(NOT
         "*"
         "${GTEST_PACKAGE_URL}")
 endif()
-
+endif()
 # ############################### Loading external packages ##########################################################
 
 if(USE_GTEST)
