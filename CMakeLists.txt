@@ -91,10 +91,20 @@ set(USE_IMPLOT
     CACHE BOOL
           "If implot for real-time plotting should be compiled.")
 
+set(BUILD_ODRPLOT
+    ON
+    CACHE BOOL
+          "If odrplot should be compiled.")
+
 set(BUILD_REPLAYER
     ON
     CACHE BOOL
           "If replayer should be compiled.")
+
+set(BUILD_EXAMPLES
+    ON
+    CACHE BOOL
+          "If examples should be compiled.")
 
 set(ESMINI_BUILD_VERSION
     "N/A - client build"
@@ -155,58 +165,58 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/utils/set_folder.cmake)
 
 # ############################### Downloading cloud packages #########################################################
 if(DOWNLOAD_EXTERNALS)
-include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/set_cloud_links.cmake)
-set_cloud_links()
+    include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/set_cloud_links.cmake)
+    set_cloud_links()
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/download.cmake)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/support/cmake/cloud/download.cmake)
 
-message(STATUS "Downloading dependencies...")
+    message(STATUS "Downloading dependencies...")
 
-download(
-    osg
-    ${EXTERNALS_OSG_PATH}
-    ${EXTERNALS_OSG_OS_SPECIFIC_PATH}
-    "*"
-    "${OSG_PACKAGE_URL}")
-
-download(
-    osi
-    ${EXTERNALS_OSI_PATH}
-    ${EXTERNALS_OSI_OS_SPECIFIC_PATH}
-    "*"
-    "${OSI_PACKAGE_URL}")
-
-download(
-    sumo
-    ${EXTERNALS_SUMO_PATH}
-    ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}
-    "*"
-    "${SUMO_PACKAGE_URL}")
-
-download(
-    implot
-    ${EXTERNALS_IMPLOT_PATH}
-    ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}
-    "*"
-    "${IMPLOT_PACKAGE_URL}")
-
-download(
-    models
-    ${RESOURCES_PATH}
-    ${MODELS_PATH}
-    "models"
-    "${MODELS_PACKAGE_URL}")
-
-if(NOT
-   (APPLE
-    OR MINGW))
     download(
-        googletest
-        ${EXTERNALS_GOOGLETEST_PATH}
-        ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}
+        osg
+        ${EXTERNALS_OSG_PATH}
+        ${EXTERNALS_OSG_OS_SPECIFIC_PATH}
         "*"
-        "${GTEST_PACKAGE_URL}")
-endif()
+        "${OSG_PACKAGE_URL}")
+
+    download(
+        osi
+        ${EXTERNALS_OSI_PATH}
+        ${EXTERNALS_OSI_OS_SPECIFIC_PATH}
+        "*"
+        "${OSI_PACKAGE_URL}")
+
+    download(
+        sumo
+        ${EXTERNALS_SUMO_PATH}
+        ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}
+        "*"
+        "${SUMO_PACKAGE_URL}")
+
+    download(
+        implot
+        ${EXTERNALS_IMPLOT_PATH}
+        ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}
+        "*"
+        "${IMPLOT_PACKAGE_URL}")
+
+    download(
+        models
+        ${RESOURCES_PATH}
+        ${MODELS_PATH}
+        "models"
+        "${MODELS_PACKAGE_URL}")
+
+    if(NOT
+       (APPLE
+        OR MINGW))
+        download(
+            googletest
+            ${EXTERNALS_GOOGLETEST_PATH}
+            ${EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH}
+            "*"
+            "${GTEST_PACKAGE_URL}")
+    endif()
 endif()
 # ############################### Loading external packages ##########################################################
 

@@ -31,12 +31,15 @@ add_subdirectory(Applications/esmini-dyn)
 if(USE_OSG)
     add_subdirectory(Applications/odrviewer)
 endif(USE_OSG)
-add_subdirectory(Applications/odrplot)
+if(BUILD_ODRPLOT)
+    add_subdirectory(Applications/odrplot)
+endif(BUILD_ODRPLOT)
 if(BUILD_REPLAYER)
     add_subdirectory(Applications/replayer)
 endif(BUILD_REPLAYER)
-add_subdirectory(code-examples)
-
+if(BUILD_EXAMPLES)
+    add_subdirectory(code-examples)
+endif(BUILD_EXAMPLES)
 # ############################### Building Unittest ####################################################################
 
 if((NOT
@@ -93,9 +96,11 @@ set_folder(
 set_folder(
     dat2csv
     ${ApplicationsFolder})
-set_folder(
-    odrplot
-    ${ApplicationsFolder})
+if(BUILD_ODRPLOT)
+    set_folder(
+        odrplot
+        ${ApplicationsFolder})
+endif(BUILD_ODRPLOT)
 if(BUILD_REPLAYER)
     set_folder(
         replayer
