@@ -91,10 +91,20 @@ set(USE_IMPLOT
     CACHE BOOL
           "If implot for real-time plotting should be compiled.")
 
+set(BUILD_ODRPLOT
+    ON
+    CACHE BOOL
+          "If odrplot should be compiled.")
+
 set(BUILD_REPLAYER
     ON
     CACHE BOOL
           "If replayer should be compiled.")
+
+set(BUILD_EXAMPLES
+    ON
+    CACHE BOOL
+          "If examples should be compiled.")
 
 set(ESMINI_BUILD_VERSION
     "N/A - client build"
