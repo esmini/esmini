@@ -588,7 +588,7 @@ class TestSuite(unittest.TestCase):
         if sys.platform != "darwin":
             # make sure replayer is available, which is not the case when USE_OSG=FALSE has been defined in build configuration
             if (os.path.isfile('../bin/replayer') or os.path.isfile('../bin/replayer.exe')):
-                log = run_replayer(COMMON_REPLAYER_ARGS + '--collision continue')
+                log = run_replayer(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc'), COMMON_REPLAYER_ARGS + '--collision continue')
                 self.assertTrue(re.search('Collision between Ego \\(id 0\\) and NPC2 \\(id 2\\) at time 5.25.', log, re.MULTILINE)  is not None)
                 self.assertTrue(re.search('Relative speed 14.40 km/h', log, re.MULTILINE)  is not None)
                 self.assertTrue(re.search('Angle -180.00 degrees \\(ego to target\\)', log, re.MULTILINE)  is not None)

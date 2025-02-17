@@ -75,7 +75,7 @@ def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, 
 
     assert False, 'No log file'
 
-def run_replayer(replayer_arguments = None):
+def run_replayer(osc_filename = None, replayer_arguments = None):
 
     if os.path.exists(LOG_FILENAME):
         os.remove(LOG_FILENAME)

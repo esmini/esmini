@@ -964,7 +964,7 @@ int main(int argc, char** argv)
                     targetSimTime = simTime + deltaSimTime;
                 }
 #else
-                player->MoveToNextFrame();
+                player->MoveToDeltaTime(player->deltaTime_, true);  // use delta time from scenario
 #endif  // _USE_OSG
             }
 
@@ -977,7 +977,7 @@ int main(int argc, char** argv)
                     simTime = player->GetTime();
                 }
 #else
-                simTime = player->GetTime();  // potentially wrapped for repeat
+                simTime = player->GetTime();                        // potentially wrapped for repeat
 #endif  // _USE_OSG
         // Fetch states of scenario objects
                 for (int index = 0; index < static_cast<int>(scenarioEntity.size()); index++)
