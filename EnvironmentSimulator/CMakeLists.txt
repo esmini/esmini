@@ -32,7 +32,7 @@ if(USE_OSG)
     add_subdirectory(Applications/odrviewer)
 endif(USE_OSG)
 if(BUILD_ODRPLOT)
-add_subdirectory(Applications/odrplot)
+    add_subdirectory(Applications/odrplot)
 endif(BUILD_ODRPLOT)
 if(BUILD_REPLAYER)
     add_subdirectory(Applications/replayer)
@@ -97,9 +97,9 @@ set_folder(
     dat2csv
     ${ApplicationsFolder})
 if(BUILD_ODRPLOT)
-set_folder(
-    odrplot
-    ${ApplicationsFolder})
+    set_folder(
+        odrplot
+        ${ApplicationsFolder})
 endif(BUILD_ODRPLOT)
 if(BUILD_REPLAYER)
     set_folder(
