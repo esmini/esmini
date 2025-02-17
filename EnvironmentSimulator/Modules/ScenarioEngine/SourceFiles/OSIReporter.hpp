@@ -24,6 +24,7 @@
 #include "osi_common.pb.h"
 #include "osi_trafficcommand.pb.h"
 #include "osi_trafficupdate.pb.h"
+#include "osi_version.pb.h"
 #include <iostream>
 #include <fstream>
 #include <string>

@@ -102,14 +102,12 @@ OSIReporter::OSIReporter(ScenarioEngine *scenarioengine)
     obj_osi_external.sv = new osi3::SensorView();
     obj_osi_external.tc = new osi3::TrafficCommand();
 
-    obj_osi_internal.gt->mutable_version()->set_version_major(3);
-#ifdef _OSI_VERSION_3_3_1
-    obj_osi_internal.gt->mutable_version()->set_version_minor(3);
-    obj_osi_internal.gt->mutable_version()->set_version_patch(1);
-#else
-    obj_osi_internal.gt->mutable_version()->set_version_minor(5);
-    obj_osi_internal.gt->mutable_version()->set_version_patch(0);
-#endif
+    // Read version number of the OSI code base
+    auto current_osi_version = osi3::InterfaceVersion::descriptor()->file()->options().GetExtension(osi3::current_interface_version);
+
+    obj_osi_internal.gt->mutable_version()->set_version_major(current_osi_version.version_major());
+    obj_osi_internal.gt->mutable_version()->set_version_minor(current_osi_version.version_minor());
+    obj_osi_internal.gt->mutable_version()->set_version_patch(current_osi_version.version_patch());
 
     obj_osi_internal.gt->mutable_timestamp()->set_seconds(0);
     obj_osi_internal.gt->mutable_timestamp()->set_nanos(0);
@@ -281,6 +279,9 @@ void OSIReporter::FlushOSIFile()
 
 int OSIReporter::SetOSIStaticExternalData()
 {
+    // Set version
+    obj_osi_external.gt->mutable_version()->CopyFrom(*obj_osi_internal.gt->mutable_version());
+
     // Set road data
     obj_osi_external.gt->mutable_stationary_object()->CopyFrom(*obj_osi_internal.gt->mutable_stationary_object());
     obj_osi_external.gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
@@ -309,6 +310,7 @@ int OSIReporter::ClearOSIGroundTruth()
     obj_osi_external.gt->clear_map_reference();
     obj_osi_external.gt->clear_proj_string();
     obj_osi_external.gt->clear_model_reference();
+    obj_osi_external.gt->clear_version();
 
     return 0;
 }
@@ -2441,59 +2443,60 @@ int OSIReporter::UpdateTrafficSignals()
                     trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_text(signal->GetText());
                     trafficSign->mutable_main_sign()->mutable_classification()->set_type(
                         static_cast<osi3::TrafficSign_MainSign_Classification_Type>(signal->GetOSIType()));
+                    trafficSign->mutable_main_sign()->mutable_classification()->set_country(signal->GetCountry());
 
                     // Set Unit
-                    if (std::strcmp(signal->GetUnit().c_str(), ""))
+                    if (std::strcmp(signal->GetUnit().c_str(), "") == 0)
                     {
                         trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(
                             osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_NO_UNIT);
                     }
-                    else if (std::strcmp(signal->GetUnit().c_str(), "m"))
+                    else if (std::strcmp(signal->GetUnit().c_str(), "m") == 0)
                     {
                         trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(
                             osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_METER);
                     }
-                    else if (std::strcmp(signal->GetUnit().c_str(), "km"))
+                    else if (std::strcmp(signal->GetUnit().c_str(), "km") == 0)
                     {
                         trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(
                             osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_KILOMETER);
                     }
-                    else if (std::strcmp(signal->GetUnit().c_str(), "ft"))
+                    else if (std::strcmp(signal->GetUnit().c_str(), "ft") == 0)
                     {
                         trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(
                             osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_FEET);
                     }
-                    else if (std::strcmp(signal->GetUnit().c_str(), "mile"))
+                    else if (std::strcmp(signal->GetUnit().c_str(), "mile") == 0)
                     {
                         trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(
                             osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_MILE);
                     }
-                    else if (std::strcmp(signal->GetUnit().c_str(), "m/s"))
+                    else if (std::strcmp(signal->GetUnit().c_str(), "m/s") == 0)
                     {
                         trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(
                             osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_OTHER);
                     }
-                    else if (std::strcmp(signal->GetUnit().c_str(), "mph"))
+                    else if (std::strcmp(signal->GetUnit().c_str(), "mph") == 0)
                     {
                         trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(
                             osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_MILE_PER_HOUR);
                     }
-                    else if (std::strcmp(signal->GetUnit().c_str(), "km/h"))
+                    else if (std::strcmp(signal->GetUnit().c_str(), "km/h") == 0)
                     {
                         trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(
                             osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_KILOMETER_PER_HOUR);
                     }
-                    else if (std::strcmp(signal->GetUnit().c_str(), "kg"))
+                    else if (std::strcmp(signal->GetUnit().c_str(), "kg") == 0)
                     {
                         trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(
                             osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_UNKNOWN);
                     }
-                    else if (std::strcmp(signal->GetUnit().c_str(), "t"))
+                    else if (std::strcmp(signal->GetUnit().c_str(), "t") == 0)
                     {
                         trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(
                             osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_METRIC_TON);
                     }
-                    else if (std::strcmp(signal->GetUnit().c_str(), "%"))
+                    else if (std::strcmp(signal->GetUnit().c_str(), "%") == 0)
                     {
                         trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value_unit(
                             osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_PERCENTAGE);
