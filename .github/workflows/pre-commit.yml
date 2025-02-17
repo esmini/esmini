@@ -1,0 +1,30 @@
+name: pre-commit
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+      - 'feature/**'
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+  pull_request:
+      
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+
+      - name: Run pre-commit hooks
+        uses: pre-commit/action@v3.0.1
+
+      - name: Auto-fix pre-commit issues
+        uses: pre-commit-ci/lite-action@v1.1.0
+        if: always()
