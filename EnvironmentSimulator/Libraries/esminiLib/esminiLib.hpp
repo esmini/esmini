@@ -1254,6 +1254,16 @@ extern "C"
     SE_DLL_API int SE_GetDistanceToObject(int object_a_id, int object_b_id, bool free_space, SE_PositionDiff *pos_diff);
 
     /**
+            Find out the delta between two objects, e.g. distance (long and lat) and delta laneId
+            search range is 1000 meters
+            @param object_a_id Id of the object from which to measure
+            @param object_b_id Id of the object to which the distance is measured
+            @param pos_diff Struct including all result values, see PositionDiff typedef
+            @return 0 if successful, -2 if route between positions can't be found, -1 if some other error
+    */
+//     SE_DLL_API int SE_GetDistanceToObjectSimple(int object_a_id, int object_b_id, SE_PositionDiff *pos_diff);
+
+    /**
             Create an ideal object sensor and attach to specified vehicle
             @param object_id Handle to the object to which the sensor should be attached
             @param x Position x coordinate of the sensor in vehicle local coordinates

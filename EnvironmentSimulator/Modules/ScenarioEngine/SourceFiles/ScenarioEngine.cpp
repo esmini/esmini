@@ -253,33 +253,45 @@ int ScenarioEngine::step(double deltaSimTime)
         }
     }
 
-    if (entities_.object_distance_map_.empty())
+    // if (entities_.object_distance_map_.empty())
+    // {
+    Entities::Distance dist1;
+    int res = GetDistance(0, 1, dist1);
+    if (res != -1)
     {
-        Entities::Distance dist1;
-        GetDistance(0, 1, dist1);
-        GetDistance(0, 1, dist1);
-        GetDistance(0, 2, dist1);
-        GetDistance(0, 3, dist1);
+        std::cout << "id " << 0 << " to id " << 1 << " dist " << dist1.euclidian_distance_ << " at time " << dist1.timestamp_ << "\n";
     }
-    else
+    res = GetDistance(0, 2, dist1);
+    if (res != -1)
     {
-        for (auto it = entities_.object_distance_map_.begin(); it != entities_.object_distance_map_.end();)
-        {
-            int id_1 = it->first.first;
-            int id_2 = it->first.second;
-
-            if (!it->second.objects_[0]->IsActive() || !it->second.objects_[1]->IsActive())
-            {
-                it = entities_.object_distance_map_.erase(it);
-                continue;
-            }
-
-            Entities::Distance distance;  // Variable to store the output
-            GetDistance(id_1, id_2, distance);
-            std::cout << "id " << id_1 << " to id " << id_2 << " dist " << distance.euclidian_distance_ << " at time " << distance.timestamp_ << "\n";
-            it++;
-        }
+        std::cout << "id " << 0 << " to id " << 2 << " dist " << dist1.euclidian_distance_ << " at time " << dist1.timestamp_ << "\n";
     }
+    res = GetDistance(0, 3, dist1);
+    if (res != -1)
+    {
+        std::cout << "id " << 0 << " to id " << 3 << " dist " << dist1.euclidian_distance_ << " at time " << dist1.timestamp_ << "\n";
+    }
+    //     GetDistance(0, 1, dist1);
+    //     GetDistance(0, 2, dist1);
+    //     GetDistance(0, 3, dist1);
+    // }
+    // else
+    // {
+    //     for (auto it = entities_.object_distance_map_.begin(); it != entities_.object_distance_map_.end();)
+    //     {
+    //         int id_1 = it->first.first;
+    //         int id_2 = it->first.second;
+
+    //         if (!it->second.objects_[0]->IsActive() || !it->second.objects_[1]->IsActive())
+    //         {
+    //             it = entities_.object_distance_map_.erase(it);
+    //             continue;
+    //         }
+
+    //         Entities::Distance distance;  // Variable to store the output
+    //         it++;
+    //     }
+    // }
 
     storyBoard.Step(simulationTime_, deltaSimTime);
 
@@ -1376,7 +1388,7 @@ void ScenarioEngine::GetIdxsFromIds(const int id_1, const int id_2, int& idx_1, 
     return;
 }
 
-void ScenarioEngine::UpdateDistance(const std::pair<int, int> ids, Object* obj_1, Object* obj_2, const double detailed_tracking, const double freq)
+void ScenarioEngine::UpdateDistance(const std::pair<int, int> ids, Object* obj_1, Object* obj_2, bool new_pair)
 {
     // Update existing pairs
     double euclidian_dist;
@@ -1384,19 +1396,23 @@ void ScenarioEngine::UpdateDistance(const std::pair<int, int> ids, Object* obj_1
                          roadmanager::CoordinateSystem::CS_ENTITY,
                          roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN,
                          euclidian_dist);
-    // Get delta speed
-    // Get distance between current delta pos and detailed tracking
-    // Update delta pos when getting close
+
     double next_update = 0.0;
-    if (abs(euclidian_dist) > detailed_tracking && abs(euclidian_dist) < 500.0)
-    {
-        next_update = simulationTime_ + freq;
-    }
-    else if (abs(euclidian_dist) > 500.0)
+    if (abs(euclidian_dist) > 1000.0)
     {
         next_update = simulationTime_ + 3.0;
     }
-    entities_.object_distance_map_[ids] = Entities::Distance{obj_1, obj_2, euclidian_dist, simulationTime_, next_update};
+
+    if (new_pair)
+    {
+        entities_.object_distance_map_[ids] = Entities::Distance{{obj_1, obj_2}, euclidian_dist, simulationTime_, next_update};
+    }
+    else
+    {
+        entities_.object_distance_map_[ids].euclidian_distance_ = euclidian_dist;
+        entities_.object_distance_map_[ids].timestamp_          = simulationTime_;
+        entities_.object_distance_map_[ids].next_update_        = next_update;
+    }
 }
 
 bool ScenarioEngine::CheckTeleported(const std::pair<int, int> pair)
@@ -1419,12 +1435,19 @@ bool ScenarioEngine::CheckTeleported(const std::pair<int, int> pair)
     return false;
 }
 
-int ScenarioEngine::GetDistance(int id_1, int id_2, Entities::Distance& distance, double detailed_tracking, double freq)
+int ScenarioEngine::GetDistance(int id_1, int id_2, Entities::Distance& distance)
 {
     auto pair = std::make_pair(id_1, id_2);
 
     if (entities_.object_distance_map_.find(pair) != entities_.object_distance_map_.end())
     {
+        if (!entities_.object_distance_map_[pair].objects_[0]->IsActive() || !entities_.object_distance_map_[pair].objects_[1]->IsActive())
+        {
+            // One of the objects is not active, remove the pair
+            entities_.object_distance_map_.erase(pair);
+            return -1;
+        }
+
         if (NEAR_NUMBERS(entities_.object_distance_map_[pair].timestamp_, simulationTime_))
         {
             // Already updated this dt
@@ -1436,7 +1459,13 @@ int ScenarioEngine::GetDistance(int id_1, int id_2, Entities::Distance& distance
         {
             auto obj_1 = entities_.object_distance_map_[pair].objects_[0];
             auto obj_2 = entities_.object_distance_map_[pair].objects_[1];
-            UpdateDistance(pair, obj_1, obj_2, detailed_tracking, freq);
+            UpdateDistance(pair, obj_1, obj_2, false);
+        }
+        else
+        {
+            LOG_INFO("Distance between {} and {} is very far and no teleport detected, reporting distance at time {}", id_1, id_2, entities_.object_distance_map_[pair].timestamp_);
+            distance = entities_.object_distance_map_[pair];
+            return 0;
         }
     }
     else
@@ -1451,7 +1480,7 @@ int ScenarioEngine::GetDistance(int id_1, int id_2, Entities::Distance& distance
 
         auto obj_1 = entities_.object_[static_cast<size_t>(idx_1)];
         auto obj_2 = entities_.object_[static_cast<size_t>(idx_2)];
-        UpdateDistance(pair, obj_1, obj_2, detailed_tracking, freq);
+        UpdateDistance(pair, obj_1, obj_2, true);
     }
 
     distance = entities_.object_distance_map_[pair];

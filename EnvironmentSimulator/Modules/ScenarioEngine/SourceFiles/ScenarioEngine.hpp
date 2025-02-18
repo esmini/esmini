@@ -80,8 +80,8 @@ namespace scenarioengine
         void EraseCleanVariables();
         void GetIdxsFromIds(const int id_1, const int id_2, int &idx_1, int &idx_2);
         bool CheckTeleported(const std::pair<int, int> pair);
-        int  GetDistance(int id_1, int id_2, Entities::Distance &distance, double detailed_tracking = 100.0, double freq = 0.5);
-        void UpdateDistance(const std::pair<int, int> ids, Object *obj_1, Object *obj_2, const double detailed_tracking, const double freq);
+        int  GetDistance(int id_1, int id_2, Entities::Distance &distance);
+        void UpdateDistance(const std::pair<int, int> ids, Object *obj_1, Object *obj_2, bool new_pair);
         bool GetDisableControllersFlag()
         {
             return disable_controllers_;
