@@ -371,7 +371,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
             osi_static_gt_loaded_ = SetOSIStaticExternalData();
         }
         // Clear the static data now when it has been reported once
-        if (GetUDPClientStatus() == 0 || IsFileOpen())
+        if (GetUDPClientStatus() == 0)
         {
             obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
             osiGroundTruth.size = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
