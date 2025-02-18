@@ -3,15 +3,14 @@ repos:
     rev: v19.1.7
     hooks:
       - id: clang-format
-        types: [file]
-        files: ".*\\.(cpp|hpp)"
 
   - repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: v0.6.13
     hooks:
       - id: cmake-format
+        additional_dependencies: [pyyaml>=5.1]
       - id: cmake-lint
-        files: ".*\\.(cmake|CMakeLists.txt)"
+        additional_dependencies: [pyyaml>=5.1]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
