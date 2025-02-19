@@ -24,6 +24,8 @@
 #include "OSCParameterDistribution.hpp"
 #include "logger.hpp"
 #include "Config.hpp"
+#include "Defines.hpp"
+#include "ConfigParser.hpp"
 
 #ifdef _USE_OSG
 #include "viewer.hpp"
@@ -1201,6 +1203,52 @@ void ScenarioPlayer::PrintUsage()
 #endif
 }
 
+
+void ScenarioPlayer::HandleConfigurations()
+{
+
+    // parse default config file and environment variable config files
+    esmini::common::Config config("esmini");
+    const auto defaultAndEnvironmentConfigs = config.GetConfig();
+    std::cout << "Default & Environment File Configs size: " << defaultAndEnvironmentConfigs.size() << std::endl;
+    std::vector<std::string> allConfigs{std::move(defaultAndEnvironmentConfigs)};
+
+    // there is a possibility that the config file path is already set in options, maybe through the api call
+    SE_Options& opt = SE_Env::Inst().GetOptions();
+    for( const auto& configFileName : opt.GetOptionArgs(CONFIG_FILE_OPTION_NAME))
+    {
+        std::cout << "config_file_path: " << configFileName << std::endl;
+        esmini::common::ConfigParser configParser("esmini", {configFileName});
+        auto configs = configParser.Parse();
+        allConfigs.insert(allConfigs.end(), std::make_move_iterator(configs.begin()), std::make_move_iterator(configs.end()));
+    }
+
+    // parse config file path(s) from the arguments, if present. And append the configs to the arguments
+    std::string configFilePathOption = fmt::format("--{}", CONFIG_FILE_OPTION_NAME);
+    for(int i = 1; i < argc_; ++i)
+    {
+        // std::cout << "argv[" << i << "]: " << argv_[i] << std::endl;
+        if (strcmp(configFilePathOption.c_str(), argv_[i]) == 0 ) // && i < static_cast<unsigned int>(argc_ - 1) && strncmp(argv_[i + 1], "--", 2)
+        {
+            std::cout << "config_file_path: " << argv_[i + 1] << std::endl;
+            // now we can parse config file here
+            esmini::common::ConfigParser configParser("esmini", {argv_[i + 1]});
+            auto configs = configParser.Parse();
+            // we need to wipe out the config file path from the arguments, so that they wont be consumed again
+            for ( int j = i; j < argc_ - 2; ++j)
+            {
+                argv_[j] = argv_[j + 2];
+            }
+            argc_-=2;
+            AppendArgcArgv(argc_, argv_, i, configs);
+        }
+    }
+
+    // since the config file(s) from arguments are already parsed and appended to the arguments.
+    // We just want to keep the application name at first index, after it we low priority configs
+    AppendArgcArgv(argc_, argv_, 1, allConfigs);
+}
+
 int ScenarioPlayer::Init()
 {
     std::string arg_str;
@@ -1220,7 +1268,7 @@ int ScenarioPlayer::Init()
                   true);
     opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename", "log.csv");
     opt.AddOption("collision", "Enable global collision detection, potentially reducing performance");
-    opt.AddOption("config_file_path", "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", "config.yml", true, true);
+    opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, true, false);
     opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
     opt.AddOption("custom_fixed_camera",
                   "Additional custom fixed camera position <x,y,z>[,h,p] (multiple occurrences supported)",
@@ -1268,7 +1316,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
     opt.AddOption("param_permutation", "Run specific permutation of parameter distribution, index in range (0 .. NumberOfPermutations-1)", "index");
     opt.AddOption("pause", "Pause simulation after initialization");
-    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path");
+    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path", "", false, false);
     opt.AddOption("player_server", "Launch UDP server for action/command injection");
 #ifdef _USE_IMPLOT
     opt.AddOption("plot", "Show window with line-plots of interesting data. Modes: asynchronous, synchronous", "mode", "asynchronous");
@@ -1291,11 +1339,7 @@ int ScenarioPlayer::Init()
     exe_path_ = argv_[0];
     SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths
 
-    esmini::common::Config config("esmini");
-    const auto configs = config.GetConfig();
-    std::cout << "Config size: " << configs.size() << std::endl;
-
-    AppendPrefixArgcArgv(argc_, argv_, configs);
+    HandleConfigurations();
 
     if (opt.ParseArgs(argc_, argv_) != 0)
     {

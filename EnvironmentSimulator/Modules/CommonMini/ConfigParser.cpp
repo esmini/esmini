@@ -2,6 +2,7 @@
 
 #include "CommonMini.hpp"
 #include "logger.hpp"
+#include "Defines.hpp"
 
 #include <iostream>
 
@@ -80,6 +81,17 @@ namespace esmini::common
     {
         if( app == applicationName_)
         {
+            // There is a possibility that the config file contains another config file's reference
+            // In that case, we need to parse the referenced file as well and put in the configs_
+            // exactly in the place where the reference was found, so the order of the configs_ is preserved
+            if( key == CONFIG_FILE_OPTION_NAME && !value.empty())
+            {
+                ConfigParser anotherFileParser(applicationName_, {value});
+                const auto anotherConfigs = anotherFileParser.Parse();
+                configs_.insert(configs_.end(), std::make_move_iterator(anotherConfigs.begin()), std::make_move_iterator(anotherConfigs.end()));
+                return;
+            }
+
             configs_.push_back(fmt::format("--{}", key));
             const auto valueVec  = SplitString(value, ' ');
             configs_.insert(configs_.end(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));

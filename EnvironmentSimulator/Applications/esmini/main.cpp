@@ -40,7 +40,7 @@ static void CreateConfigFile(const std::string& filename)
     // Write YAML content
     file << "esmini: \n";
     file << "  window: 60 60 800 400\n";
-    file << "  logfile_path: c:/tmp/kalle.txt\n";
+    file << "  logfile_path: kalle.txt\n";
     file << "  window: 60 60 800 400\n";
     file << "  osc: ../../../../resources/xosc/cut-in.xosc\n";
     file << "\n";

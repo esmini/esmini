@@ -289,8 +289,16 @@ private:
 
 // Useful operations
 
+// Appends Argc and Argv with the arguments
+/***
+ * @param argc: Number of arguments, that application already has
+ * @param argv: Argument list that application already has
+ * @param appendIndex: Index until which original arguments should be kept, after which new arguments will be added. Once new arguments are added,
+ *  remaining original arguments will be added at the last
+ * @param dataToAppend: Vector of strings to append, new arguments which needs to be added
+ */
+void AppendArgcArgv(int& argc, char**& argv,  size_t appendIndex, const std::vector<std::string>& dataToAppend);
 
-void AppendPrefixArgcArgv(int& argc, char**& argv, const std::vector<std::string>& prefixArgs);
 /**
         Get model filename from model_id.
 */
@@ -882,6 +890,8 @@ public:
     bool        GetOptionSet(std::string opt);
     bool        IsOptionArgumentSet(std::string opt);
     std::string GetOptionArg(std::string opt, int index = 0);
+    // returns all the values set for the option
+    std::vector<std::string> GetOptionArgs(std::string opt);
     int         ParseArgs(int argc, const char* const argv[]);
     // sets default values to options which are auto defaulted and are unset
     void                      ApplyDefaultValues();

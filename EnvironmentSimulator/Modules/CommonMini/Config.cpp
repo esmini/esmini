@@ -3,8 +3,7 @@
 #include "ConfigParser.hpp"
 #include "logger.hpp"
 #include "DefaultPathFinder.hpp"
-
-const std::string DEFAULT_CONFIG_FILE = "config.yml";
+#include "Defines.hpp"
 
 namespace esmini::common
 {

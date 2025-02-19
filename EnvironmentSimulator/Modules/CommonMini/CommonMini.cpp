@@ -35,6 +35,8 @@
 #endif
 
 #include "CommonMini.hpp"
+#include "Defines.hpp"
+#include "ConfigParser.hpp"
 
 // #define DEBUG_TRACE
 
@@ -191,27 +193,31 @@ std::string ControlDomain2Str(unsigned int domains)
     return str;
 }
 
-void AppendPrefixArgcArgv(int& argc, char**& argv, const std::vector<std::string>& prefixArgs)
+void AppendArgcArgv(int& argc, char**& argv, size_t appendIndex, const std::vector<std::string>& prefixArgs)
 {
     int newArgc = argc + prefixArgs.size();
     char** newArgv = new char*[newArgc + 1]; // +1 for the null terminator
 
-    int i = 0;
-    newArgv[i] = new char[std::strlen(argv[i]) + 1];
-    std::strcpy(newArgv[i], argv[i]);
-    i++;
+    int i;
+    // firstly, copy the original arguments before the appendIndex
+    for (i = 0; i < appendIndex; ++i)
+    {
+        newArgv[i] = new char[std::strlen(argv[i]) + 1];
+        std::strcpy(newArgv[i], argv[i]);
+    }
+    // secondly, copy the prefix arguments
     for (const auto& arg : prefixArgs)
     {
         newArgv[i] = new char[arg.length() + 1];
         std::strcpy(newArgv[i], arg.c_str());
-        i++;
+        ++i;
     }
-
-    for (int j = 1; j < argc; ++j)
+    // thirdly, copy the original arguments from the appendIndex
+    for (int j = appendIndex; j < argc; ++j)
     {
         newArgv[i] = new char[std::strlen(argv[j]) + 1];
         std::strcpy(newArgv[i], argv[j]);
-        i++;
+        ++i;
     }
     newArgv[newArgc] = nullptr; // null terminate the array
     argc = newArgc;
@@ -1884,6 +1890,18 @@ bool SE_Options::IsOptionArgumentSet(std::string opt)
     }
 
     return false;
+}
+
+std::vector<std::string> SE_Options::GetOptionArgs(std::string opt)
+{
+    SE_Option* option = GetOption(opt);
+
+    if (option == nullptr)
+    {
+        return {};
+    }
+
+    return option->arg_value_;
 }
 
 std::string SE_Options::GetOptionArg(std::string opt, int index)
