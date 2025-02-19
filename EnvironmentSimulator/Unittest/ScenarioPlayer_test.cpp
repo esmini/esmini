@@ -632,6 +632,69 @@ TEST(OSI, TestDirectJunctions)
     delete player;
 }
 
+TEST(OSI, TestLanePairingJunctionUnorderedRoads)
+{
+    const char*     args[] = {"esmini",
+                              "--osc",
+                              "../../../EnvironmentSimulator/Unittest/xosc/junction_simple_unordered_road_elements.xosc",
+                              "--headless",
+                              "--osi_file"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ScenarioEngine* se = player->scenarioEngine;
+    ASSERT_EQ(se->entities_.object_.size(), 0);
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+
+    // check all lane pairs
+    EXPECT_EQ(osi_gt_ptr->lane(0).id().value(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).has_antecessor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).antecessor_lane_id().value(), 5);
+    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).has_successor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).successor_lane_id().value(), 8);
+
+    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 3);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).has_antecessor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).antecessor_lane_id().value(), 6);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).has_successor_lane_id(), false);
+
+    EXPECT_EQ(osi_gt_ptr->lane(2).id().value(), 5);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).has_antecessor_lane_id(), false);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).has_successor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).successor_lane_id().value(), 1);
+
+    EXPECT_EQ(osi_gt_ptr->lane(3).id().value(), 6);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing_size(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).has_antecessor_lane_id(), false);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).has_successor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).successor_lane_id().value(), 3);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(1).has_antecessor_lane_id(), false);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(1).has_successor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(1).successor_lane_id().value(), 10);
+
+    EXPECT_EQ(osi_gt_ptr->lane(4).id().value(), 8);
+    EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing(0).has_antecessor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing(0).antecessor_lane_id().value(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing(0).has_successor_lane_id(), false);
+
+    EXPECT_EQ(osi_gt_ptr->lane(5).id().value(), 10);
+    EXPECT_EQ(osi_gt_ptr->lane(5).classification().lane_pairing_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(5).classification().lane_pairing(0).has_antecessor_lane_id(), true);
+    EXPECT_EQ(osi_gt_ptr->lane(5).classification().lane_pairing(0).antecessor_lane_id().value(), 6);
+
+    delete player;
+}
+
 TEST(OSI, TestGeoOffset)
 {
     const char* args[] =

@@ -149,6 +149,7 @@ public:
     osi3::SensorView* GetSensorView();
     bool              IsCentralOSILane(int lane_idx);
     idx_t             GetLaneIdxfromIdOSI(id_t lane_id);
+    osi3::Lane*       GetOSILaneFromGlobalId(id_t lane_global_id);
     SE_SOCKET         OpenSocket(std::string ipaddr);
     int               GetUDPClientStatus()
     {

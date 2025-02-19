@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+   <FileHeader description="test lane pairing with unordered road elements" author="esmini team" revMajor="1" revMinor="3" date="2025-02-20T09:00:00"/>
+   <ParameterDeclarations>
+    </ParameterDeclarations>
+   <CatalogLocations/>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/junction_simple_unordered_road_elements.xodr"/>
+   </RoadNetwork>
+   <Entities/>
+   <Storyboard>
+      <Init>
+         <Actions/>
+      </Init>
+   </Storyboard>
+</OpenSCENARIO>
