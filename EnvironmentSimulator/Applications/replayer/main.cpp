@@ -534,33 +534,32 @@ int main(int argc, char** argv)
 
     try
     {
-        datLogger::DatHdr headerNew_;
-        headerNew_ = *reinterpret_cast<datLogger::DatHdr*>(player->header_.content);
-        if (strcmp(headerNew_.odrFilename.string, ""))
+        if (strcmp(player->header_.odrFilename.string.data(), ""))
         {
             // find and OpenDRIVE file. Test some combinations of paths and filename
             std::vector<std::string> file_name_candidates;
 
             // just filepath as stated in .dat file
-            file_name_candidates.push_back(headerNew_.odrFilename.string);
+            file_name_candidates.push_back(player->header_.odrFilename.string.data());
 
             // Check registered paths
             for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
             {
                 // Including file path
-                file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], headerNew_.odrFilename.string));
+                file_name_candidates.push_back(
+                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], player->header_.odrFilename.string.data()));
 
                 // Excluding file path
                 file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(headerNew_.odrFilename.string)));
+                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(player->header_.odrFilename.string.data())));
 
                 // Including file path and xodr sub folder
                 file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", FileNameOf(headerNew_.odrFilename.string)));
+                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", FileNameOf(player->header_.odrFilename.string.data())));
 
                 // Excluding file path but add xodr sub folder
                 file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", headerNew_.odrFilename.string));
+                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", player->header_.odrFilename.string.data()));
             }
 
             size_t i;
@@ -577,7 +576,7 @@ int main(int argc, char** argv)
 
             if (i == file_name_candidates.size())
             {
-                printf("Failed to load OpenDRIVE file %s. Tried:\n", headerNew_.odrFilename.string);
+                printf("Failed to load OpenDRIVE file %s. Tried:\n", player->header_.odrFilename.string.data());
                 for (int j = 0; j < static_cast<int>(file_name_candidates.size()); j++)
                 {
                     printf("   %s\n", file_name_candidates[static_cast<unsigned int>(j)].c_str());
@@ -591,7 +590,7 @@ int main(int argc, char** argv)
         roadmanager::OpenDrive* odrManager    = roadmanager::Position::GetOpenDrive();
         osg::ArgumentParser     arguments(&argc, argv);
 
-        viewer_ = new viewer::Viewer(odrManager, headerNew_.modelFilename.string, NULL, argv[0], arguments, &opt);
+        viewer_ = new viewer::Viewer(odrManager, player->header_.modelFilename.string.data(), NULL, argv[0], arguments, &opt);
 
         if (viewer_ == nullptr)
         {
@@ -873,12 +872,12 @@ int main(int argc, char** argv)
         {
             double startTime = 1E-3 * strtod(start_time_str);
 
-            if (startTime < *reinterpret_cast<double*>(player->pkgs_[0].content))
+            if (startTime < *reinterpret_cast<double*>(player->pkgs_[0].content.data()))
             {
                 printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n",
                        startTime,
-                       *reinterpret_cast<double*>(player->pkgs_[0].content));
-                startTime = *reinterpret_cast<double*>(player->pkgs_[0].content);
+                       *reinterpret_cast<double*>(player->pkgs_[0].content.data()));
+                startTime = *reinterpret_cast<double*>(player->pkgs_[0].content.data());
             }
             else if (startTime > player->GetStopTime())
             {
@@ -899,12 +898,12 @@ int main(int argc, char** argv)
                 printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->GetStopTime());
                 stopTime = player->GetStopTime();
             }
-            else if (stopTime < *reinterpret_cast<double*>(player->pkgs_[0].content))
+            else if (stopTime < *reinterpret_cast<double*>(player->pkgs_[0].content.data()))
             {
                 printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n",
                        stopTime,
-                       *reinterpret_cast<double*>(player->pkgs_[0].content));
-                stopTime = *reinterpret_cast<double*>(player->pkgs_[0].content);
+                       *reinterpret_cast<double*>(player->pkgs_[0].content.data()));
+                stopTime = *reinterpret_cast<double*>(player->pkgs_[0].content.data());
             }
             player->SetStopTime(stopTime);
         }

@@ -51,15 +51,15 @@ namespace datLogger
     // mandatory packages
     struct CommonPkgHdr
     {
-        id_t id;
-        int  content_size;
+        id_t         id;
+        unsigned int content_size;
     };
 
     // common package types
     struct CommonString
     {
-        int   size;  // size of the string
-        char* string;
+        unsigned int      size;  // size of the string
+        std::vector<char> string;
     };
 
     // specific packages
@@ -145,7 +145,7 @@ namespace datLogger
 
     struct Name
     {
-        char* string;
+        std::vector<char> string;
     };
 
     struct Pos
@@ -210,9 +210,8 @@ namespace datLogger
 
     struct CommonPkg
     {
-        CommonPkgHdr hdr;
-        char*        content;  // pointer to allocated content
-        // CommonPkgEnd  end;
+        CommonPkgHdr      hdr;
+        std::vector<char> content;
     };
 
     struct ObjState
@@ -266,7 +265,7 @@ namespace datLogger
                 CommonPkg pkg;
                 pkg.hdr.id           = static_cast<int>(PackageId::END_OF_SCENARIO);
                 pkg.hdr.content_size = 0;
-                pkg.content          = nullptr;
+                pkg.content.resize(pkg.hdr.content_size);
                 writePackage(pkg);
 
                 data_file_.flush();

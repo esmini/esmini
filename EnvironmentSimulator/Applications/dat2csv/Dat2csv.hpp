@@ -59,12 +59,10 @@ public:
     }
 
 private:
-    Dat2csv::log_mode log_mode_;
-    double            step_time_;
-    bool              extended     = false;
-    bool              include_refs = false;
-    std::ofstream     file;
-    datLogger::DatHdr headerNew_;
-
+    Dat2csv::log_mode                       log_mode_;
+    double                                  step_time_;
+    bool                                    extended     = false;
+    bool                                    include_refs = false;
+    std::ofstream                           file;
     std::unique_ptr<scenarioengine::Replay> player;
 };

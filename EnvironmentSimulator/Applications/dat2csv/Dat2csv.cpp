@@ -37,8 +37,6 @@ Dat2csv::Dat2csv(std::string filename) : log_mode_(log_mode::ORIGINAL), step_tim
     {
         LOG_ERROR_AND_QUIT("{}", e.what());
     }
-
-    headerNew_ = *reinterpret_cast<datLogger::DatHdr*>(player->header_.content);
 }
 
 Dat2csv::~Dat2csv()
@@ -118,9 +116,9 @@ void Dat2csv::CreateCSV()
         snprintf(line,
                  MAX_LINE_LEN,
                  "Version: %d, OpenDRIVE: %s, 3DModel: %s\n",
-                 headerNew_.version,
-                 headerNew_.odrFilename.string,
-                 headerNew_.modelFilename.string);
+                 player->header_.version,
+                 player->header_.odrFilename.string.data(),
+                 player->header_.modelFilename.string.data());
         file << line;
     }
     if (!extended)
@@ -195,7 +193,7 @@ void Dat2csv::CreateCSV()
         {
             if (player->pkgs_[j].hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES))
             {
-                double timeTemp = *reinterpret_cast<double*>(player->pkgs_[j].content);
+                double timeTemp = *reinterpret_cast<double*>(player->pkgs_[j].content.data());
 
                 // next time
                 player->SetTime(timeTemp);

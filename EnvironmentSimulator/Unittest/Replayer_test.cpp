@@ -222,7 +222,7 @@ TEST(TestReplayer, WithTwoObject)
     ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[1].id), 4.0);
 }
 
-TEST(TestReplayer, WithTwoObjectAndAddAndDelete)
+TEST(TestReplayer, WithTwoObjectAndAdd)
 {
     std::string fileName    = "sim.dat";
     std::string odrFileName = "e6mini.xodr";
@@ -330,6 +330,64 @@ TEST(TestReplayer, WithTwoObjectAndAddAndDelete)
     ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[1].id), 5);
     ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[1].id), 6);
     ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[1].id), 3.0);
+}
+
+TEST(TestReplayer, WithTwoObjectAndDelete)
+{
+    std::string fileName    = "sim.dat";
+    std::string odrFileName = "e6mini.xodr";
+    std::string model_Name  = "e6mini.osgb";
+    int         version_    = 2;
+
+    DatLogger* logger = new DatLogger;
+
+    logger->init(fileName, version_, odrFileName, model_Name);
+
+    double x     = 1.0;
+    double y     = 2.0;
+    double z     = 3.0;
+    double h     = 4.0;
+    double r     = 5.0;
+    double p     = 6.0;
+    double speed = 1.0;
+
+    double current_time = 0.033;
+
+    int no_of_obj  = 3;
+    int total_time = 6;
+
+    for (int i = 0; i < total_time; i++)
+    {
+        if (i == 4 || i == 5)
+        {
+            h = 6.0;
+        }
+        logger->simTimeTemp = current_time;
+        for (int j = 0; j < no_of_obj; j++)
+        {
+            if (i == 2 && j == 2)
+            {
+                break;  // delete one object.
+            }
+            int object_id = j;
+            logger->AddObject(object_id);
+            logger->WriteObjPos(object_id, x, y, z, h, p, r);
+            logger->WriteObjSpeed(object_id, speed);
+            logger->ObjIdPkgAdded = false;
+        }
+        if (i != 3)
+        {
+            speed += 1.0;
+        }
+        current_time += 1.089;
+        logger->deleteObject();
+        logger->TimePkgAdded = false;
+    }
+
+    delete logger;
+
+    std::unique_ptr<scenarioengine::Replay> replayer_ = std::make_unique<scenarioengine::Replay>(fileName);
+    ASSERT_EQ(replayer_->pkgs_.size(), 51);  // header not stored.
 
     replayer_->MoveToTime(replayer_->GetTimeFromCnt(4));
     ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(4));
@@ -383,6 +441,61 @@ TEST(TestReplayer, WithTwoObjectAndAddAndDelete)
     ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[2].id), 5);
     ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[2].id), 6);
     ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[2].id), 4.0);
+}
+
+TEST(TestDat2csv, WithTwoObjectAddAndDelete)
+{
+    std::string fileName    = "sim.dat";
+    std::string odrFileName = "e6mini.xodr";
+    std::string model_Name  = "e6mini.osgb";
+    int         version_    = 2;
+
+    DatLogger* logger = new DatLogger;
+
+    logger->init(fileName, version_, odrFileName, model_Name);
+
+    double x     = 1.0;
+    double y     = 2.0;
+    double z     = 3.0;
+    double h     = 4.0;
+    double r     = 5.0;
+    double p     = 6.0;
+    double speed = 1.0;
+
+    double current_time = 0.033;
+
+    int no_of_obj  = 3;
+    int total_time = 6;
+
+    for (int i = 0; i < total_time; i++)
+    {
+        if (i == 4 || i == 5)
+        {
+            h = 6.0;
+        }
+        logger->simTimeTemp = current_time;
+        for (int j = 0; j < no_of_obj; j++)
+        {
+            if (i == 2 && j == 2)
+            {
+                break;  // delete one object.
+            }
+            int object_id = j;
+            logger->AddObject(object_id);
+            logger->WriteObjPos(object_id, x, y, z, h, p, r);
+            logger->WriteObjSpeed(object_id, speed);
+            logger->ObjIdPkgAdded = false;
+        }
+        if (i != 3)
+        {
+            speed += 1.0;
+        }
+        current_time += 1.089;
+        logger->deleteObject();
+        logger->TimePkgAdded = false;
+    }
+
+    delete logger;
 
     std::unique_ptr<Dat2csv> dat_to_csv;
     dat_to_csv = std::make_unique<Dat2csv>("sim.dat");
@@ -568,6 +681,8 @@ TEST(TestReplayer, SimpleScenario)
     ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 0);
     ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[0].id), 3.7510917186737061);
     ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState.obj_states[0].id), 0);
+
+    delete replayer_;
 }
 
 TEST(TestReplayer, SpeedChangeScenario)
@@ -631,6 +746,8 @@ TEST(TestReplayer, SpeedChangeScenario)
     ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 0.69052735824166378);
     ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 0);
     ASSERT_EQ(replayer_->GetObjCategory(replayer_->scenarioState.obj_states[0].id), 0);
+
+    delete replayer_;
 }
 
 TEST(TestReplayer, TwoSimpleScenarioMerge)
@@ -712,7 +829,7 @@ TEST(TestReplayer, TwoSimpleScenarioMerge)
     ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState.obj_states[1].id), 1);
 }
 
-TEST(TestReplayer, ShowAndNotShowRestart)
+TEST(TestReplayer, ShowRestart)
 {
     const char* args[] = {"--osc",
                           "../../../EnvironmentSimulator/Unittest/xosc/timing_scenario_with_restarts.xosc",
@@ -844,10 +961,62 @@ TEST(TestReplayer, ShowAndNotShowRestart)
     // check reverse from first restart start time
     replayer_->MoveToTime(replayer_->scenarioState.sim_time - 0.05);                                // shall go second restart frame
     ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->restartTimes[1].restart_time_);  // shall go to second restart triggered time
+    delete replayer_;
+}
+
+TEST(TestReplayer, NotShowRestart)
+{
+    const char* args[] = {"--osc",
+                          "../../../EnvironmentSimulator/Unittest/xosc/timing_scenario_with_restarts.xosc",
+                          "--record",
+                          "new_sim.dat",
+                          "--fixed_timestep",
+                          "0.1"};
+    SE_AddPath("../../../resources/xosc");
+    SE_AddPath("../../../resources/models");
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+
+    while (SE_GetQuitFlag() == 0)
+    {
+        SE_StepDT(0.01f);
+    }
+
+    SE_Close();
+
+    scenarioengine::Replay* replayer_ = new scenarioengine::Replay("new_sim.dat");
+    ASSERT_EQ(replayer_->pkgs_.size(), 10429);
+
+    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
+    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 10);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 10.0);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 1);
+    ASSERT_EQ(replayer_->GetObjCategory(replayer_->scenarioState.obj_states[0].id), 0);
+
+    std::string name;
+    replayer_->GetName(replayer_->scenarioState.obj_states[0].id, name);
+    EXPECT_EQ(name, "Ego");
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5, 1E-3);
+
+    replayer_->GetName(replayer_->scenarioState.obj_states[1].id, name);
+    EXPECT_EQ(name, "Target");
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), -4.5, 1E-3);
+
+    replayer_->GetName(replayer_->scenarioState.obj_states[2].id, name);
+    EXPECT_EQ(name, "Ego_ghost");
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[2].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
     // with no show restart
-    replayer_->InitiateStates();
     replayer_->SetShowRestart(false);
+    replayer_->GetRestartTimes();
 
     replayer_->MoveToTime(replayer_->restartTimes[0].restart_time_);  // first restart triggered frame
     ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
@@ -907,6 +1076,8 @@ TEST(TestReplayer, ShowAndNotShowRestart)
 
     replayer_->MoveToTime(replayer_->restartTimes[1].next_time_);  // shall go next frame
     ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->restartTimes[1].next_time_);
+
+    delete replayer_;
 }
 
 TEST(TestReplayer, StopAtEachTimeFrame)
@@ -943,9 +1114,11 @@ TEST(TestReplayer, StopAtEachTimeFrame)
 
     replayer_->MoveToTime(3, true);  // go through each frame
     EXPECT_NEAR(replayer_->scenarioState.sim_time, 2.0, 1E-3);
+
+    delete replayer_;
 }
 
-TEST(TestDat2Csv, TimeModes)
+TEST(TestDat2Csv, TimeModesOriginal)
 {
     const char* args[] = {"--osc", "../../../EnvironmentSimulator/Unittest/xosc/test_time_mode.xosc", "--record", "sim.dat"};
     SE_AddPath("../../../resources/xosc");
@@ -977,7 +1150,21 @@ TEST(TestDat2Csv, TimeModes)
     EXPECT_NEAR(std::stod(csv_original[4][3]), 50.0, 1E-3);
     EXPECT_NEAR(std::stod(csv_original[5][0]), 10.010, 1E-3);
     EXPECT_NEAR(std::stod(csv_original[5][3]), 50.0, 1E-3);
+}
 
+TEST(TestDat2Csv, TimeModesMinStep)
+{
+    const char* args[] = {"--osc", "../../../EnvironmentSimulator/Unittest/xosc/test_time_mode.xosc", "--record", "sim.dat"};
+    SE_AddPath("../../../resources/xosc");
+    SE_AddPath("../../../../resources/models");
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+
+    while (SE_GetQuitFlag() == 0)
+    {
+        SE_StepDT(0.01f);
+    }
+
+    SE_Close();
     std::unique_ptr<Dat2csv> dat_to_csv1;
     dat_to_csv1 = std::make_unique<Dat2csv>("sim.dat");
 
@@ -1001,7 +1188,21 @@ TEST(TestDat2Csv, TimeModes)
     EXPECT_NEAR(std::stod(csv_min_step[7][3]), 50.0, 1E-3);
     EXPECT_NEAR(std::stod(csv_min_step[8][0]), 10.010, 1E-3);
     EXPECT_NEAR(std::stod(csv_min_step[8][3]), 50.0, 1E-3);
+}
 
+TEST(TestDat2Csv, TimeModesMinStepMixed)
+{
+    const char* args[] = {"--osc", "../../../EnvironmentSimulator/Unittest/xosc/test_time_mode.xosc", "--record", "sim.dat"};
+    SE_AddPath("../../../resources/xosc");
+    SE_AddPath("../../../../resources/models");
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+
+    while (SE_GetQuitFlag() == 0)
+    {
+        SE_StepDT(0.01f);
+    }
+
+    SE_Close();
     std::unique_ptr<Dat2csv> dat_to_csv2;
     dat_to_csv2 = std::make_unique<Dat2csv>("sim.dat");
 
@@ -1029,7 +1230,21 @@ TEST(TestDat2Csv, TimeModes)
     EXPECT_NEAR(std::stod(csv_min_step_mixed[9][3]), 50.0, 1E-3);
     EXPECT_NEAR(std::stod(csv_min_step_mixed[10][0]), 10.010, 1E-3);
     EXPECT_NEAR(std::stod(csv_min_step_mixed[10][3]), 50.0, 1E-3);
+}
 
+TEST(TestDat2Csv, TimeModesCustomTimeStep)
+{
+    const char* args[] = {"--osc", "../../../EnvironmentSimulator/Unittest/xosc/test_time_mode.xosc", "--record", "sim.dat"};
+    SE_AddPath("../../../resources/xosc");
+    SE_AddPath("../../../../resources/models");
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+
+    while (SE_GetQuitFlag() == 0)
+    {
+        SE_StepDT(0.01f);
+    }
+
+    SE_Close();
     std::unique_ptr<Dat2csv> dat_to_csv3;
     dat_to_csv3 = std::make_unique<Dat2csv>("sim.dat");
 
@@ -1075,7 +1290,21 @@ TEST(TestDat2Csv, TimeModes)
 
     EXPECT_NEAR(std::stod(csv_time_step[13][0]), 10.010, 1E-3);
     EXPECT_NEAR(std::stod(csv_time_step[13][3]), 50.0, 1E-3);
+}
 
+TEST(TestDat2Csv, TimeModesCustomTimeStepMixed)
+{
+    const char* args[] = {"--osc", "../../../EnvironmentSimulator/Unittest/xosc/test_time_mode.xosc", "--record", "sim.dat"};
+    SE_AddPath("../../../resources/xosc");
+    SE_AddPath("../../../../resources/models");
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+
+    while (SE_GetQuitFlag() == 0)
+    {
+        SE_StepDT(0.01f);
+    }
+
+    SE_Close();
     std::unique_ptr<Dat2csv> dat_to_csv4;
     dat_to_csv4 = std::make_unique<Dat2csv>("sim.dat");
 

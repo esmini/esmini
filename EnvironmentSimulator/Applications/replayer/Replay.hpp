@@ -63,7 +63,7 @@ namespace scenarioengine
 
         ~Replay();
 
-        datLogger::CommonPkg header_;
+        datLogger::DatHdr header_;
 
         // vectors and methods to handle multiple files
         std::vector<std::pair<std::pair<std::string, bool>, std::vector<datLogger::CommonPkg>>> scenarioData;
@@ -158,9 +158,10 @@ namespace scenarioengine
         void   SetStopEntries();
         double deltaTime_ = LARGE_NUMBER;
 
-        datLogger::LightState* perviouslightState = nullptr;
-        datLogger::LightState* defaultLightState  = nullptr;
-        bool                   show_lights        = false;
+        datLogger::LightState perviousLightState;
+        datLogger::LightState defaultLightState;
+        bool                  show_lights     = false;
+        bool                  IsLightPkgFound = false;
 
         // method to read data from cache
         int                     GetModelID(int obj_id);
@@ -207,6 +208,7 @@ namespace scenarioengine
 
         datLogger::DatLogger* datLogger = nullptr;
         int                   FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
+        bool                  IsValidPocket(id_t id);
     };
 
 }  // namespace scenarioengine

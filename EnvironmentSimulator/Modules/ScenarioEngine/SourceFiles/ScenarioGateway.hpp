@@ -92,13 +92,6 @@ namespace scenarioengine
         struct ObjectPositionStructDat pos;
     };
 
-    typedef struct
-    {
-        int  version;
-        char odr_filename[DAT_FILENAME_SIZE];
-        char model_filename[DAT_FILENAME_SIZE];
-    } DatHeader;
-
     class ObjectState
     {
     public:

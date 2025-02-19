@@ -48,6 +48,12 @@ target_include_directories(
            ${EXTERNALS_OSG_INCLUDES}
            ${EXTERNALS_DIRENT_INCLUDES})
 
+if(USE_OSI)
+    target_link_libraries(
+        ${TARGET1}
+        PRIVATE ${OSI_LIBRARIES})
+endif()
+
 disable_static_analysis(${TARGET1})
 disable_iwyu(${TARGET1})
 
