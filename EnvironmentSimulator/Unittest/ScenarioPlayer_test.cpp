@@ -816,6 +816,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().orientation().roll(), 0.0, 1e-3);
 
     delete player;
+    player = nullptr;
 }
 
 #endif  // _USE_OSI

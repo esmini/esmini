@@ -2527,7 +2527,7 @@ TEST(ExternalControlTest, TestTimings)
 
         SE_Close();
 
-        scenarioengine::Replay* replay_ = new scenarioengine::Replay("sim.dat");
+        std::unique_ptr<scenarioengine::Replay> replay_ = std::make_unique<scenarioengine::Replay>("sim.dat");
         replay_->SetShowRestart(true);
 
         EXPECT_NEAR(replay_->scenarioState.sim_time, -3.0, 1E-3);
@@ -2774,8 +2774,6 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_EQ(name, "Ego_ghost");
             EXPECT_NEAR(replay_->GetX(replay_->scenarioState.obj_states[2].id), 367.748, 1E-3);
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
-
-            delete replay_;
 
             // Also check a few entries in the csv log file, focus on scenario controlled entity "Target"
             std::vector<std::vector<std::string>> csv;
@@ -4170,6 +4168,7 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
             EXPECT_NEAR(replay_->scenarioState.sim_time, 19.6, 1E-3);
             EXPECT_NEAR(replay_->scenarioState.obj_states[1].id, 1, 1E-3);
         }
+        delete replay_;
     }
 }
 
