@@ -96,10 +96,10 @@ set(CMAKE_BUILD_TYPE
     CACHE STRING
           "build mode")
 
-option(
-    RYML_INSTALL
-    "Enable RYML install"
-    OFF)
+set(RYML_INSTALL
+    OFF
+    CACHE BOOL
+        "Disable RYML installation.")
 
 # ############################### Setting project rules ############################################################
 
