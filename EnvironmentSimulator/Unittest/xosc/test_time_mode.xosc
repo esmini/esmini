@@ -91,14 +91,14 @@
                 </ManeuverGroup>
             </Act>
         </Story>
-            <StopTrigger>
-                <ConditionGroup>
-                    <Condition name="QuitCondition" delay="0" conditionEdge="rising">
-                        <ByValueCondition>
-                            <SimulationTimeCondition rule="greaterThan" value="10"/>
-                        </ByValueCondition>
-                    </Condition>
-                </ConditionGroup>
-            </StopTrigger>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="QuitCondition" delay="0" conditionEdge="rising">
+                    <ByValueCondition>
+                        <SimulationTimeCondition rule="greaterThan" value="10"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>
