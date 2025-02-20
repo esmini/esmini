@@ -246,7 +246,7 @@ if(NOT
    OR NOT
       EXISTS
       "externals/spdlog/.git"
-    OR NOT
+   OR NOT
       EXISTS
       "externals/ryml/ext/c4core.git")
     execute_process(
