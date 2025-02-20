@@ -24,7 +24,7 @@ namespace esmini::common
         HMODULE hModule = nullptr;
 
         // Get the handle of the current module (library)
-        if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)getLibraryPath, &hModule))
+        if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)GetLibraryPath, &hModule))
         {
             throw std::runtime_error("Failed to get library handle.");
         }
