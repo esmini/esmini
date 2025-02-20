@@ -245,9 +245,12 @@ if(NOT
       "test/OSC-NCAP-scenarios/.git"
    OR NOT
       EXISTS
-      "externals/spdlog/.git")
+      "externals/spdlog/.git"
+    OR NOT
+      EXISTS
+      "externals/ryml/ext/c4core.git")
     execute_process(
-        COMMAND git submodule update --init
+        COMMAND git submodule update --init --recursive
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
