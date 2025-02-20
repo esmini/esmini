@@ -2181,39 +2181,21 @@ extern "C"
         return obj_found ? 0 : -2;
     }
     
-    // SE_DLL_API int SE_GetDistanceToObjectSimple(int object_a_id, int object_b_id, SE_PositionDiff *pos_diff)
-    // {
-    //     bool obj_found = false;
+    SE_DLL_API int SE_SimpleGetDistanceToObject(int object_a_id, int object_b_id, SE_RelativeDistanceType dist_type, double &distance, double &timestamp)
+    {
+        bool obj_found = false;
 
-    //     player->scenarioEngine->GetDistance(object_a_id, object_b_id);
-    //     Object *obj_a = nullptr;
-    //     if (getObjectById(object_a_id, obj_a) == -1)
-    //     {
-    //         return -1;
-    //     }
+        roadmanager::RelativeDistanceType dist_type_converted = static_cast<roadmanager::RelativeDistanceType>(dist_type);
 
-    //     Object *obj_b = nullptr;
-    //     if (getObjectById(object_b_id, obj_b) == -1)
-    //     {
-    //         return -1;
-    //     }
+        auto ret = player->scenarioEngine->GetDistance(object_a_id, object_b_id, dist_type_converted, distance, timestamp);
 
-    //     roadmanager::PositionDiff diff;
+        if (ret == 0)
+        {
+            obj_found = true;
+        }
 
-    //     obj_found = obj_a->pos_.Delta(&obj_b->pos_, diff, true, 1000);  // look only 1000 meters
-
-    //     if (obj_found)
-    //     {
-    //         pos_diff->dLaneId       = diff.dLaneId;
-    //         pos_diff->ds            = static_cast<float>(diff.ds);
-    //         pos_diff->dt            = static_cast<float>(diff.dt);
-    //         pos_diff->dx            = static_cast<float>(diff.dx);
-    //         pos_diff->dy            = static_cast<float>(diff.dy);
-    //         pos_diff->oppositeLanes = diff.dOppLane;
-    //     }
-
-    //     return obj_found ? 0 : -2;
-    // }
+        return obj_found ? 0 : -2;
+    }
 
     void objCallbackFn(ObjectStateStruct *state, void *my_data)
     {

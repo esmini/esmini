@@ -325,6 +325,15 @@ typedef enum
     SE_GHOST_TRAIL_TIME_PAST   = -4,  // given time > last timestamp in trajectory, snapped to end of trajectory
 } SE_GhostTrailReturnCode;            // mirror roadmanager::GhostTrailReturnCode
 
+typedef enum
+{
+    REL_DIST_UNDEFINED = 0,
+    REL_DIST_LATERAL = 1,
+    REL_DIST_LONGITUDINAL = 2,
+    REL_DIST_CARTESIAN = 3,
+    REL_DIST_EUCLIDIAN = 4
+} SE_RelativeDistanceType;
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -1258,10 +1267,12 @@ extern "C"
             search range is 1000 meters
             @param object_a_id Id of the object from which to measure
             @param object_b_id Id of the object to which the distance is measured
-            @param pos_diff Struct including all result values, see PositionDiff typedef
+            @param dist_type Enum specifying what distance to measure
+            @param distance reference to a variable returning the distance
+            @param timestamp reference to a variable returning the timestamp of the distance
             @return 0 if successful, -2 if route between positions can't be found, -1 if some other error
     */
-//     SE_DLL_API int SE_GetDistanceToObjectSimple(int object_a_id, int object_b_id, SE_PositionDiff *pos_diff);
+    SE_DLL_API int SE_SimpleGetDistanceToObject(int object_a_id, int object_b_id, SE_RelativeDistanceType dist_type, double &distance, double &timestamp);
 
     /**
             Create an ideal object sensor and attach to specified vehicle
