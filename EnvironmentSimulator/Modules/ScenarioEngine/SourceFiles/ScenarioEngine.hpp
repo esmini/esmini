@@ -183,12 +183,17 @@ namespace scenarioengine
         Object         *ghost_;
         
         // Distance map
+        struct Measurement
+        {
+            double distance_;
+            double timestamp_;
+        };
+
         struct Distance
         {
             std::array<Object*, 2> objects_;
-            std::unordered_map<roadmanager::RelativeDistanceType, double> distance_;
-            double                 timestamp_;
-            double                 next_update_;
+            std::unordered_map<roadmanager::RelativeDistanceType, Measurement> distance_;
+            double next_update_;
         };
 
         std::unordered_map<std::pair<int, int>, Distance, PairHash> object_distance_map_;
