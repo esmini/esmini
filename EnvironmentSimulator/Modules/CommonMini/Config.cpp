@@ -32,9 +32,9 @@ namespace esmini::common
     std::string Config::MakeDefaultConfigFilePath() const
     {
         esmini::common::DefaultPathFinder pathFinder;
-        std::string defaultPath = pathFinder.GetDefaultPath();
-        defaultPath = defaultPath.substr(0, defaultPath.find_last_of("//"));
-        std::string defaultFilePath = fmt::format("{}/{}", defaultPath, DEFAULT_CONFIG_FILE);
+        std::string                       defaultPath = pathFinder.GetDefaultPath();
+        defaultPath                                   = defaultPath.substr(0, defaultPath.find_last_of("//"));
+        std::string defaultFilePath                   = fmt::format("{}/{}", defaultPath, DEFAULT_CONFIG_FILE);
         LOG_INFO("Default config file path: {}", defaultFilePath);
         return defaultFilePath;
     }

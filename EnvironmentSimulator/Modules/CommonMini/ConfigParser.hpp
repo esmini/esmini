@@ -2,7 +2,7 @@
 
 #include <ryml.hpp>
 #include <ryml_std.hpp>
-//#include <unordered_map>
+// #include <unordered_map>
 #include <vector>
 #include <string>
 
@@ -21,21 +21,21 @@ namespace esmini::common
         std::vector<std::string> Parse();
 
         // returns config map of a particular application
-        //const ConfigMap& GetApplicationConfig(const std::string& application) const;
+        // const ConfigMap& GetApplicationConfig(const std::string& application) const;
 
         // private functions
     private:
         // Function to parse the YAML file
         void ParseYamlFile(const std::string& filename);
         // Function to recursively parse the YAML node and populate the map
-        //void ParseNode(const ryml::NodeRef& node, const std::string& prefix);
+        // void ParseNode(const ryml::NodeRef& node, const std::string& prefix);
         void ParseNode(ryml::NodeRef node, ryml::csubstr parent);
 
         // Logs all applications config map
-        //void LogAllAppsConfig() const;
+        // void LogAllAppsConfig() const;
 
         // Logs one application config map
-        //void LogOneAppConfig(const std::string& app) const;
+        // void LogOneAppConfig(const std::string& app) const;
 
         // Logs the config for the application
         void LogConfig() const;
@@ -49,7 +49,7 @@ namespace esmini::common
         std::vector<std::string> configFilePaths_;
 
         // map to store application wise config
-        //ApplicationsConfigMap appsConfig_;
+        // ApplicationsConfigMap appsConfig_;
 
         // application name for which we are parsing the config file i.e. esmini, replayer etc.
         std::string applicationName_;

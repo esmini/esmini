@@ -15,13 +15,12 @@ namespace esmini::common
         // Get the config for the application
         std::vector<std::string> GetConfig() const;
 
-        Config() = delete;
+        Config()                      = delete;
         Config(Config const&)         = delete;
         void operator=(Config const&) = delete;
 
         // private interface
     private:
-
         //  Read environment variables
         std::optional<std::string> GetEnvironmentVariable(const std::string& variableName) const;
         // Make default config file path

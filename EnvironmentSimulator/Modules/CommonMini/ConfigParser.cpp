@@ -9,7 +9,8 @@
 namespace esmini::common
 {
     ConfigParser::ConfigParser(const std::string& applicationName, const std::vector<std::string>& configFilePaths)
-        : applicationName_(applicationName), configFilePaths_(configFilePaths)
+        : applicationName_(applicationName),
+          configFilePaths_(configFilePaths)
     {
     }
 
@@ -79,21 +80,21 @@ namespace esmini::common
 
     void ConfigParser::PutValue(const std::string& app, const std::string& key, const std::string& value)
     {
-        if( app == applicationName_)
+        if (app == applicationName_)
         {
             // There is a possibility that the config file contains another config file's reference
             // In that case, we need to parse the referenced file as well and put in the configs_
             // exactly in the place where the reference was found, so the order of the configs_ is preserved
-            if( key == CONFIG_FILE_OPTION_NAME && !value.empty())
+            if (key == CONFIG_FILE_OPTION_NAME && !value.empty())
             {
                 ConfigParser anotherFileParser(applicationName_, {value});
-                const auto anotherConfigs = anotherFileParser.Parse();
+                const auto   anotherConfigs = anotherFileParser.Parse();
                 configs_.insert(configs_.end(), std::make_move_iterator(anotherConfigs.begin()), std::make_move_iterator(anotherConfigs.end()));
                 return;
             }
 
             configs_.push_back(fmt::format("--{}", key));
-            const auto valueVec  = SplitString(value, ' ');
+            const auto valueVec = SplitString(value, ' ');
             configs_.insert(configs_.end(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
         }
     }
@@ -102,18 +103,18 @@ namespace esmini::common
 
     void ConfigParser::ParseNode(ryml::NodeRef node, ryml::csubstr parent)
     {
-        auto getkey = [](ryml::NodeRef node){ return node.has_key() ? node.key() : ryml::csubstr{}; };
-        auto getval = [](ryml::NodeRef node){ return node.has_val() ? node.val() : ryml::csubstr{}; };
+        auto getkey = [](ryml::NodeRef node) { return node.has_key() ? node.key() : ryml::csubstr{}; };
+        auto getval = [](ryml::NodeRef node) { return node.has_val() ? node.val() : ryml::csubstr{}; };
         if (!node.has_children())
         {
             auto key = getkey(node);
             auto val = getval(node);
-            //std::cout << "key: " << getkey(node) << " parent: " << parent << " value: " << getval(node) << std::endl;
-            if( key.empty() && !parent.empty())
+            // std::cout << "key: " << getkey(node) << " parent: " << parent << " value: " << getval(node) << std::endl;
+            if (key.empty() && !parent.empty())
             {
                 key = parent;
             }
-            //std::cout << "key: " << key << " value: " << val << std::endl;
+            // std::cout << "key: " << key << " value: " << val << std::endl;
             PutValue({parent.begin(), parent.end()}, {key.begin(), key.end()}, {val.begin(), val.end()});
         }
         else
@@ -162,7 +163,7 @@ namespace esmini::common
         {
             std::cerr << "Error parsing YAML file: " << e.what() << std::endl;
         }
-        //LogAllAppsConfig();
+        // LogAllAppsConfig();
         LogConfig();
         return configs_;
     }

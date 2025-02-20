@@ -45,7 +45,7 @@ target_include_directories(
 target_link_libraries(
     ${TARGET}
     PRIVATE ${SPDLOG_LIBRARIES}
-    ${RYML_LIBRARIES})
+            ${RYML_LIBRARIES})
 
 install(
     TARGETS ${TARGET}

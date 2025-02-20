@@ -297,7 +297,7 @@ private:
  *  remaining original arguments will be added at the last
  * @param dataToAppend: Vector of strings to append, new arguments which needs to be added
  */
-void AppendArgcArgv(int& argc, char**& argv,  size_t appendIndex, const std::vector<std::string>& dataToAppend);
+void AppendArgcArgv(int& argc, char**& argv, size_t appendIndex, const std::vector<std::string>& dataToAppend);
 
 /**
         Get model filename from model_id.
@@ -859,7 +859,7 @@ public:
               std::string opt_arg                = "",
               std::string default_value          = "",
               bool        autoApply              = false,
-              bool        shouldHaveOnlyOneValue    = false)
+              bool        shouldHaveOnlyOneValue = false)
         : opt_str_(opt_str),
           opt_desc_(opt_desc),
           opt_arg_(opt_arg),
@@ -892,7 +892,7 @@ public:
     std::string GetOptionArg(std::string opt, int index = 0);
     // returns all the values set for the option
     std::vector<std::string> GetOptionArgs(std::string opt);
-    int         ParseArgs(int argc, const char* const argv[]);
+    int                      ParseArgs(int argc, const char* const argv[]);
     // sets default values to options which are auto defaulted and are unset
     void                      ApplyDefaultValues();
     std::vector<std::string>& GetOriginalArgs()

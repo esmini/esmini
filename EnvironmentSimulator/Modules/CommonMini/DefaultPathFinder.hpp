@@ -4,10 +4,10 @@ namespace esmini::common
 {
     class DefaultPathFinder
     {
-        public:
-            std::string GetDefaultPath();
+    public:
+        std::string GetDefaultPath();
 
-        private:
-            //std::string GetLibraryPath();
+    private:
+        // std::string GetLibraryPath();
     };
-}
+}  // namespace esmini::common

@@ -195,8 +195,8 @@ std::string ControlDomain2Str(unsigned int domains)
 
 void AppendArgcArgv(int& argc, char**& argv, size_t appendIndex, const std::vector<std::string>& prefixArgs)
 {
-    int newArgc = argc + prefixArgs.size();
-    char** newArgv = new char*[newArgc + 1]; // +1 for the null terminator
+    int    newArgc = argc + prefixArgs.size();
+    char** newArgv = new char*[newArgc + 1];  // +1 for the null terminator
 
     int i;
     // firstly, copy the original arguments before the appendIndex
@@ -219,9 +219,9 @@ void AppendArgcArgv(int& argc, char**& argv, size_t appendIndex, const std::vect
         std::strcpy(newArgv[i], argv[j]);
         ++i;
     }
-    newArgv[newArgc] = nullptr; // null terminate the array
-    argc = newArgc;
-    argv = newArgv;
+    newArgv[newArgc] = nullptr;  // null terminate the array
+    argc             = newArgc;
+    argv             = newArgv;
 
     std::cout << "New argc: " << newArgc << std::endl;
     for (int k = 0; k < argc; ++k)
@@ -2043,7 +2043,7 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
             {
                 if (i < static_cast<unsigned int>(argc - 1) && strncmp(args[i + 1], "--", 2))
                 {
-                    if( option->shouldHaveOnlyOneValue_)
+                    if (option->shouldHaveOnlyOneValue_)
                     {
                         option->arg_value_.clear();
                     }
