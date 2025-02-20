@@ -102,7 +102,7 @@ set(RYML_INSTALL
           "Disable RYML installation.")
 
 set(RYML_STANDALONE
-    ON
+    OFF
     CACHE BOOL
           "Use RYML in standalone mode.")
 
