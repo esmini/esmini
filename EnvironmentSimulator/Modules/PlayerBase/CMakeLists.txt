@@ -69,6 +69,10 @@ target_link_libraries(
     ${TARGET}
     PRIVATE project_options)
 
+target_link_libraries(
+    ${TARGET}
+    PRIVATE ${RYML_LIBRARIES})
+
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})
 enable_fpic(${TARGET})
