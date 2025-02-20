@@ -99,7 +99,12 @@ set(CMAKE_BUILD_TYPE
 set(RYML_INSTALL
     OFF
     CACHE BOOL
-        "Disable RYML installation.")
+          "Disable RYML installation.")
+
+set(RYML_STANDALONE
+    ON
+    CACHE BOOL
+          "Use RYML in standalone mode.")
 
 # ############################### Setting project rules ############################################################
 
