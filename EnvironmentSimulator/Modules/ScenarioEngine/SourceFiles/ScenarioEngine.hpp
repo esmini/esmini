@@ -90,7 +90,7 @@ namespace scenarioengine
         void GetIdxsFromIds(const int id_1, const int id_2, int &idx_1, int &idx_2);
         bool CheckTeleported(const std::pair<int, int> pair);
         int  GetDistance(int id_1, int id_2, roadmanager::RelativeDistanceType dist_type, double& distance, double& timestamp);
-        void UpdateDistance(const std::pair<int, int> ids, Object* obj_1, Object* obj_2, bool new_pair, roadmanager::RelativeDistanceType dist_type);
+        void UpdateDistance(const std::pair<int, int> ids, Object* obj_1, Object* obj_2, roadmanager::RelativeDistanceType dist_type);
         bool GetDisableControllersFlag()
         {
             return disable_controllers_;

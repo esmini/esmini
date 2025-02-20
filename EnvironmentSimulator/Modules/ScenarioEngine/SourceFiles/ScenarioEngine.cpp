@@ -1370,70 +1370,6 @@ void ScenarioEngine::GetIdxsFromIds(const int id_1, const int id_2, int& idx_1, 
     return;
 }
 
-void ScenarioEngine::UpdateDistance(const std::pair<int, int> ids, Object* obj_1, Object* obj_2, bool new_pair, roadmanager::RelativeDistanceType dist_type)
-{
-    // Always calculate euclidian distance, but use the one from current time if it exist already
-    double euclidian_dist;
-    if (object_distance_map_[ids].distance_.find(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN) != object_distance_map_[ids].distance_.end() &&
-        NEAR_NUMBERS(object_distance_map_[ids].distance_[roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN].timestamp_, simulationTime_))
-    {
-        euclidian_dist = object_distance_map_[ids].distance_[roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN].distance_;
-    }
-    else
-    {
-        obj_1->pos_.Distance(&obj_2->pos_,
-                            roadmanager::CoordinateSystem::CS_ENTITY,
-                            roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN,
-                            euclidian_dist);
-    }
-
-    // If we are too far away, we don't need to calculate other distances
-    double next_update = 0.0;
-    if (abs(euclidian_dist) > 1000.0)
-    {
-        // Check again after 3s
-        next_update = simulationTime_ + 3.0;
-
-        // Create new pair with calculated euclidian distance, and timestamp, or update the euclidian distance of existing pair
-        if (new_pair)
-        {
-            object_distance_map_[ids] = Distance{{obj_1, obj_2}, {{roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, {euclidian_dist, simulationTime_}}}, next_update};
-        }
-        else
-        {
-            object_distance_map_[ids].distance_[roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN].distance_ = euclidian_dist;
-            object_distance_map_[ids].distance_[roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN].timestamp_ = simulationTime_;
-            object_distance_map_[ids].next_update_        = next_update;
-        }
-    }
-    else
-    {
-        // If requested distance is not euclidian, calculate it
-        double requested_dist;
-        if (dist_type == roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN)
-        {
-            requested_dist = euclidian_dist;
-        }
-        else
-        {
-            obj_1->pos_.Distance(&obj_2->pos_, roadmanager::CoordinateSystem::CS_ENTITY, dist_type, requested_dist);
-        }
-
-        // Create a new pair with calculated distance, and timestamp, or update the distance of existing pair
-        if (new_pair)
-        {
-            object_distance_map_[ids] = Distance{{obj_1, obj_2}, {{dist_type, {euclidian_dist, simulationTime_}}}, next_update};
-        }
-        else
-        {
-            object_distance_map_[ids].distance_[dist_type].distance_ = requested_dist;
-            object_distance_map_[ids].distance_[dist_type].timestamp_ = simulationTime_;
-            object_distance_map_[ids].next_update_        = next_update;
-        }
-    }
-
-}
-
 bool ScenarioEngine::CheckTeleported(const std::pair<int, int> pair)
 {
     for (const auto& obj : object_distance_map_[pair].objects_)
@@ -1454,6 +1390,51 @@ bool ScenarioEngine::CheckTeleported(const std::pair<int, int> pair)
     return false;
 }
 
+void ScenarioEngine::UpdateDistance(const std::pair<int, int> ids, Object* obj_1, Object* obj_2, roadmanager::RelativeDistanceType dist_type)
+{
+    // Always calculate euclidian distance, but use the one from current time if it exist already
+    double dist;
+    if (object_distance_map_[ids].distance_.find(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN) != object_distance_map_[ids].distance_.end() &&
+        NEAR_NUMBERS(object_distance_map_[ids].distance_[roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN].timestamp_, simulationTime_))
+    {
+        dist = object_distance_map_[ids].distance_[roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN].distance_;
+    }
+    else
+    {
+        obj_1->pos_.Distance(&obj_2->pos_,
+                            roadmanager::CoordinateSystem::CS_ENTITY,
+                            roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN,
+                            dist);
+    }
+
+    // If we are too far away, we don't need to calculate other distances
+    double next_update = 0.0;
+    if (abs(dist) > 1000.0)
+    {
+        dist_type = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN;
+        next_update = simulationTime_ + 3.0;
+    }
+    else if (dist_type != roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN)
+    {
+        // If requested distance is not euclidian, calculate it
+        obj_1->pos_.Distance(&obj_2->pos_, roadmanager::CoordinateSystem::CS_ENTITY, dist_type, dist);
+
+    }
+
+    // Create a new pair with calculated distance, and timestamp, or update the distance of existing pair
+    if (object_distance_map_[ids].distance_.find(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN) == object_distance_map_[ids].distance_.end())
+    {
+        object_distance_map_[ids] = Distance{{obj_1, obj_2}, {{dist_type, {dist, simulationTime_}}}, next_update};
+    }
+    else
+    {
+        object_distance_map_[ids].distance_[dist_type].distance_ = dist;
+        object_distance_map_[ids].distance_[dist_type].timestamp_ = simulationTime_;
+        object_distance_map_[ids].next_update_        = next_update;
+    }
+
+}
+
 int ScenarioEngine::GetDistance(int id_1, int id_2, roadmanager::RelativeDistanceType dist_type, double& distance, double& timestamp)
 {
     auto pair = std::make_pair(id_1, id_2);
@@ -1470,7 +1451,7 @@ int ScenarioEngine::GetDistance(int id_1, int id_2, roadmanager::RelativeDistanc
 
         auto obj_1 = entities_.object_[static_cast<size_t>(idx_1)];
         auto obj_2 = entities_.object_[static_cast<size_t>(idx_2)];
-        UpdateDistance(pair, obj_1, obj_2, true, dist_type);
+        UpdateDistance(pair, obj_1, obj_2, dist_type);
     }
     else
     {
@@ -1493,7 +1474,7 @@ int ScenarioEngine::GetDistance(int id_1, int id_2, roadmanager::RelativeDistanc
         {
             auto obj_1 = object_distance_map_[pair].objects_[0];
             auto obj_2 = object_distance_map_[pair].objects_[1];
-            UpdateDistance(pair, obj_1, obj_2, false, dist_type);
+            UpdateDistance(pair, obj_1, obj_2, dist_type);
         }
         else
         {
