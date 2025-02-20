@@ -255,15 +255,15 @@ int ScenarioEngine::step(double deltaSimTime)
 
     // if (entities_.object_distance_map_.empty())
     // {
-    auto dist_type = roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL;
-    double dist1, dist2, timestamp1, timestamp2;
-    int res = GetDistance(0, 2, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, dist1, timestamp1);
-    int res2 = GetDistance(0, 2, dist_type, dist2, timestamp2);
-    if (res != -1)
-    {
-        std::cout << "id " << 0 << " to id " << 2 << " dist " << dist1 << " at time " << timestamp1 << "\n";
-        std::cout << "id " << 0 << " to id " << 2 << " dist " << dist2 << " at time " << timestamp2 << "\n";
-    }
+    // auto dist_type = roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL;
+    // double dist1, dist2, timestamp1, timestamp2;
+    // int res = GetDistance(0, 2, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, dist1, timestamp1);
+    // int res2 = GetDistance(0, 2, dist_type, dist2, timestamp2);
+    // if (res != -1)
+    // {
+    //     std::cout << "id " << 0 << " to id " << 2 << " dist " << dist1 << " at time " << timestamp1 << "\n";
+    //     std::cout << "id " << 0 << " to id " << 2 << " dist " << dist2 << " at time " << timestamp2 << "\n";
+    // }
     // res = GetDistance(0, 2, dist_type, dist1, timestamp);
     // if (res != -1)
     // {
@@ -1468,8 +1468,9 @@ int ScenarioEngine::GetDistance(int id_1, int id_2, roadmanager::RelativeDistanc
             return -1;
         }
 
-        // Update existing pairs
         bool teleported = CheckTeleported(pair);
+
+        // Update existing pairs
         if (simulationTime_ >= object_distance_map_[pair].next_update_ || teleported)
         {
             auto obj_1 = object_distance_map_[pair].objects_[0];
