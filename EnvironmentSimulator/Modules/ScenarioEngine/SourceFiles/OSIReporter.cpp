@@ -817,9 +817,6 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN);
         }
 
-#ifdef _OSI_VERSION_3_3_1
-        LOG_WARN_ONCE("using OSI 3.3.1, skipping vehicle role attribute");
-#else
         if (objectState->state_.info.obj_role == static_cast<int>(Object::Role::AMBULANCE))
         {
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_AMBULANCE);
@@ -859,7 +856,6 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
                       Vehicle::Role2String(objectState->state_.info.obj_role).c_str());
             obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
         }
-#endif
     }
     else if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
     {

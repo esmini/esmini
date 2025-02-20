@@ -2928,7 +2928,6 @@ TEST(ExternalControlTest, TestTimings)
     }
 }
 
-#ifndef _OSI_VERSION_3_3_1
 TEST(TestOsiReporter, AssignRoleTest)
 {
     std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/emergency_vehicle.xosc";
@@ -2948,7 +2947,6 @@ TEST(TestOsiReporter, AssignRoleTest)
 
     SE_Close();
 }
-#endif
 
 #endif  // _USE_OSI
 
