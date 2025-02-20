@@ -42,6 +42,15 @@ namespace scenarioengine
         Object *object1;
     } CollisionPair;
 
+    struct PairHash
+    {
+        template <typename T1, typename T2>
+        std::size_t operator()(const std::pair<T1, T2>& pair) const
+        {
+            return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
+        }
+    };
+
     class ScenarioEngine
     {
     public:
@@ -80,8 +89,8 @@ namespace scenarioengine
         void EraseCleanVariables();
         void GetIdxsFromIds(const int id_1, const int id_2, int &idx_1, int &idx_2);
         bool CheckTeleported(const std::pair<int, int> pair);
-        int  GetDistance(int id_1, int id_2, Entities::Distance &distance);
-        void UpdateDistance(const std::pair<int, int> ids, Object *obj_1, Object *obj_2, bool new_pair);
+        int  GetDistance(int id_1, int id_2, roadmanager::RelativeDistanceType dist_type, double& distance, double& timestamp);
+        void UpdateDistance(const std::pair<int, int> ids, Object* obj_1, Object* obj_2, bool new_pair, roadmanager::RelativeDistanceType dist_type);
         bool GetDisableControllersFlag()
         {
             return disable_controllers_;
@@ -160,6 +169,7 @@ namespace scenarioengine
         StoryBoard storyBoard;
 
     private:
+
         // OpenSCENARIO parameters
         Catalogs                catalogs;
         RoadNetwork             roadNetwork;
@@ -171,6 +181,17 @@ namespace scenarioengine
         Vehicle         sumotemplate;
         ScenarioGateway scenarioGateway;
         Object         *ghost_;
+        
+        // Distance map
+        struct Distance
+        {
+            std::array<Object*, 2> objects_;
+            std::unordered_map<roadmanager::RelativeDistanceType, double> distance_;
+            double                 timestamp_;
+            double                 next_update_;
+        };
+
+        std::unordered_map<std::pair<int, int>, Distance, PairHash> object_distance_map_;
 
         // execution control flags
         unsigned int frame_nr_;
