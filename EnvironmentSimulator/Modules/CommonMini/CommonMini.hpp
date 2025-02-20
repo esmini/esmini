@@ -297,7 +297,7 @@ private:
  *  remaining original arguments will be added at the last
  * @param dataToAppend: Vector of strings to append, new arguments which needs to be added
  */
-void AppendArgcArgv(int& argc, char**& argv, size_t appendIndex, const std::vector<std::string>& dataToAppend);
+void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& dataToAppend);
 
 /**
         Get model filename from model_id.

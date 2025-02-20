@@ -193,7 +193,7 @@ std::string ControlDomain2Str(unsigned int domains)
     return str;
 }
 
-void AppendArgcArgv(int& argc, char**& argv, size_t appendIndex, const std::vector<std::string>& prefixArgs)
+void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& prefixArgs)
 {
     int    newArgc = argc + prefixArgs.size();
     char** newArgv = new char*[newArgc + 1];  // +1 for the null terminator

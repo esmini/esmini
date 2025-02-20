@@ -40,7 +40,8 @@ target_include_directories(
     ${TARGET}
     PRIVATE project_options
             SYSTEM
-    PUBLIC ${EXTERNALS_SPDLOG_INCLUDES})
+    PUBLIC ${EXTERNALS_SPDLOG_INCLUDES}
+           ${EXTERNALS_RYML_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
