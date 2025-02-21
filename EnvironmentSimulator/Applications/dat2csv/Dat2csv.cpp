@@ -84,8 +84,8 @@ void Dat2csv::PrintData(int obj_id)
                  player_->GetRoadId(obj_id),
                  player_->GetLaneId(obj_id),
                  player_->GetPosOffset(obj_id),
-                 static_cast<double>(player_->GetPosT(obj_id)),
-                 static_cast<double>(player_->GetPosS(obj_id)),
+                 player_->GetPosT(obj_id),
+                 player_->GetPosS(obj_id),
                  player_->GetSpeed(obj_id),
                  player_->GetWheelAngle(obj_id),
                  player_->GetWheelRot(obj_id));

@@ -147,8 +147,8 @@ namespace scenarioengine
         id_t                    GetRoadId(int obj_id);
         int                     GetLaneId(int obj_id);
         double                  GetPosOffset(int obj_id);
-        float                   GetPosT(int obj_id);
-        float                   GetPosS(int obj_id);
+        double                  GetPosT(int obj_id);
+        double                  GetPosS(int obj_id);
         ObjectPositionStructDat GetComPletePos(int obj_id);
         double                  GetWheelAngle(int obj_id);
         double                  GetWheelRot(int obj_id);
@@ -190,6 +190,10 @@ namespace scenarioengine
         bool   IsTimePkg(size_t index) const;
         double GetDoubleContent(size_t index);
         int    GetIntContent(size_t index);
+        int    GetIntFromPkg(datLogger::CommonPkg* pkg);
+        double GetDoubleFromPkg(datLogger::CommonPkg* pkg);
+        int    GetIntFromScenarioState(int obj_id, datLogger::PackageId id);
+        double GetDoubleFromScenarioState(int obj_id, datLogger::PackageId id);
     };
 
 }  // namespace scenarioengine

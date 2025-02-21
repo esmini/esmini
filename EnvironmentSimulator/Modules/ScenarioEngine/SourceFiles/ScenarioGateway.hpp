@@ -82,8 +82,8 @@ namespace scenarioengine
         id_t   roadId;
         int    laneId;
         double offset;
-        float  t;
-        float  s;
+        double t;
+        double s;
     };
 
     struct ObjectStateStructDat

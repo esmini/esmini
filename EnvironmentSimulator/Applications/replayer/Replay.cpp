@@ -349,23 +349,19 @@ datLogger::PackageId Replay::ReadPkgHdr(char* package)
 {
     datLogger::CommonPkg pkg;
     pkg = *reinterpret_cast<datLogger::CommonPkg*>(package);
-    // std::cout << "Found package ID from current state: " << pkgIdTostring( static_cast<PackageId>(pkg.hdr.id)) << std::endl;
     return static_cast<datLogger::PackageId>(pkg.hdr.id);
 }
 
 size_t Replay::GetPkgCntBtwObj(size_t idx)
 {
-    size_t count = 0;
     for (size_t i = idx + 1; i < pkgs_.size(); i++)  // start looking from next package
     {
-        if (static_cast<datLogger::PackageId>(pkgs_[i].hdr.id) == datLogger::PackageId::TIME_SERIES ||
-            static_cast<datLogger::PackageId>(pkgs_[i].hdr.id) == datLogger::PackageId::OBJ_ID)
+        if (IsTimePkg(i) || IsObjIdPkg(i))  // stop looking if time or obj id package found
         {
-            break;  // stop looking if time or obj id package found
+            return i - idx - 1;
         }
-        count += 1;  // count package
     }
-    return count;
+    return 0;
 }
 
 std::vector<size_t> Replay::GetNumberOfObjectsAtTime()
@@ -374,20 +370,20 @@ std::vector<size_t> Replay::GetNumberOfObjectsAtTime()
     bool                timeFound = false;
     for (size_t i = index_; i < pkgs_.size(); i++)
     {
-        if (pkgs_[i].hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES) && !timeFound)
+        if (IsTimePkg(i) && !timeFound)
         {
-            double timeTemp = *reinterpret_cast<double*>(pkgs_[i].content.data());
+            double timeTemp = GetDoubleContent(i);
             if (IsEqualDouble(timeTemp, time_))
             {
                 timeFound = true;
             }
             continue;  // continue till time match found. if time matched then
         }
-        if (timeFound && static_cast<datLogger::PackageId>(pkgs_[i].hdr.id) == datLogger::PackageId::OBJ_ID)
+        if (timeFound && IsObjIdPkg(i))
         {
             Indices.push_back(i);  // time matches
         }
-        if (pkgs_[i].hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES))
+        if (IsTimePkg(i))
         {
             return Indices;  // second time instances
         }
@@ -759,6 +755,22 @@ void Replay::DeleteObjState(int objId)
     }
 }
 
+void Replay::InitiateStates()
+{
+    // reset the timings
+    scenarioState_.obj_states.clear();
+    scenarioState_.sim_time = startTime_;
+    time_                   = startTime_;
+    index_                  = startIndex_;
+
+    std::vector<size_t> objIdIndices = GetNumberOfObjectsAtTime();
+
+    for (const auto index : objIdIndices)
+    {
+        AddObjState(index);
+    }
+}
+
 bool scenarioengine::Replay::IsObjectDeletePkg(size_t index) const
 {
     return pkgs_[index].hdr.id == static_cast<int>(datLogger::PackageId::OBJ_DELETED);
@@ -782,114 +794,138 @@ bool scenarioengine::Replay::IsTimePkg(size_t index) const
 double scenarioengine::Replay::GetDoubleContent(size_t index)
 {
     return *reinterpret_cast<double*>(pkgs_[index].content.data());
-    ;
 }
 
 int scenarioengine::Replay::GetIntContent(size_t index)
 {
     return *reinterpret_cast<int*>(pkgs_[index].content.data());
+}
+
+int scenarioengine::Replay::GetIntFromPkg(datLogger::CommonPkg* pkg)
+{
+    return *reinterpret_cast<int*>(pkg->content.data());
     ;
 }
 
-void Replay::InitiateStates()
+double scenarioengine::Replay::GetDoubleFromPkg(datLogger::CommonPkg* pkg)
 {
-    // reset the timings
-    scenarioState_.obj_states.clear();
-    scenarioState_.sim_time = startTime_;
-    time_                   = startTime_;
-    index_                  = startIndex_;
+    return *reinterpret_cast<double*>(pkg->content.data());
+    ;
+}
 
-    std::vector<size_t> objIdIndices = GetNumberOfObjectsAtTime();
-
-    for (const auto index : objIdIndices)
+int scenarioengine::Replay::GetIntFromScenarioState(int obj_id, datLogger::PackageId id)
+{
+    for (const auto& obj : scenarioState_.obj_states)
     {
-        AddObjState(index);
+        if (obj.id == obj_id)
+        {
+            for (const auto& objPkg : obj.pkgs)
+            {
+                datLogger::CommonPkg* cmnPkg = reinterpret_cast<datLogger::CommonPkg*>(objPkg.pkg);
+                if (static_cast<datLogger::PackageId>(cmnPkg->hdr.id) == id)
+                {
+                    return GetIntFromPkg(cmnPkg);
+                }
+            }
+        }
     }
+    return -1;
 }
 
 int Replay::GetModelID(int obj_id)
 {
-    int model_id = -1;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
-    {
-        if (scenarioState_.obj_states[i].id != obj_id)
-        {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::MODEL_ID)
-            {
-                model_id = *reinterpret_cast<int*>(pkg->content.data());
-            }
-        }
-    }
-    return model_id;
+    return GetIntFromScenarioState(obj_id, datLogger::PackageId::MODEL_ID);
 }
 
 int Replay::GetCtrlType(int obj_id)
 {
-    int ctrl_type = -1;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
-    {
-        if (scenarioState_.obj_states[i].id != obj_id)
-        {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::CTRL_TYPE)
-            {
-                ctrl_type = *reinterpret_cast<int*>(pkg->content.data());
-            }
-        }
-    }
-    return ctrl_type;
+    return GetIntFromScenarioState(obj_id, datLogger::PackageId::CTRL_TYPE);
 }
 
 int Replay::GetObjCategory(int obj_id)
 {
-    int objCategory = -1;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
+    return GetIntFromScenarioState(obj_id, datLogger::PackageId::OBJ_CATEGORY);
+}
+
+int Replay::GetScaleMode(int obj_id)
+{
+    return GetIntFromScenarioState(obj_id, datLogger::PackageId::SCALE_MODE);
+}
+
+int Replay::GetVisibility(int obj_id)
+{
+    return GetIntFromScenarioState(obj_id, datLogger::PackageId::VISIBILITY_MASK);
+}
+
+int Replay::GetLaneId(int obj_id)
+{
+    return GetIntFromScenarioState(obj_id, datLogger::PackageId::LANE_ID);
+}
+
+double scenarioengine::Replay::GetDoubleFromScenarioState(int obj_id, datLogger::PackageId id)
+{
+    for (const auto& obj : scenarioState_.obj_states)
     {
-        if (scenarioState_.obj_states[i].id != obj_id)
+        if (obj.id == obj_id)
         {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::OBJ_CATEGORY)
+            for (const auto& objPkg : obj.pkgs)
             {
-                objCategory = *reinterpret_cast<int*>(pkg->content.data());
+                datLogger::CommonPkg* cmnPkg = reinterpret_cast<datLogger::CommonPkg*>(objPkg.pkg);
+                if (static_cast<datLogger::PackageId>(cmnPkg->hdr.id) == id)
+                {
+                    return GetDoubleFromPkg(cmnPkg);
+                }
             }
         }
     }
-    return objCategory;
+    return 0.0;
+}
+
+double Replay::GetPosOffset(int obj_id)
+{
+    return GetDoubleFromScenarioState(obj_id, datLogger::PackageId::POS_OFFSET);
+}
+
+double Replay::GetWheelAngle(int obj_id)
+{
+    return GetDoubleFromScenarioState(obj_id, datLogger::PackageId::WHEEL_ANGLE);
+}
+
+double Replay::GetWheelRot(int obj_id)
+{
+    return GetDoubleFromScenarioState(obj_id, datLogger::PackageId::WHEEL_ROT);
+}
+
+double Replay::GetSpeed(int obj_id)
+{
+    return GetDoubleFromScenarioState(obj_id, datLogger::PackageId::SPEED);
+}
+
+double Replay::GetPosT(int obj_id)
+{
+    return GetDoubleFromScenarioState(obj_id, datLogger::PackageId::POS_T);
+}
+
+double Replay::GetPosS(int obj_id)
+{
+    return GetDoubleFromScenarioState(obj_id, datLogger::PackageId::POS_S);
 }
 
 int Replay::GetBB(int obj_id, OSCBoundingBox& bb)
 {
     datLogger::BoundingBox bb_;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
+    for (const auto& obj : scenarioState_.obj_states)  // loop current state object id to find the object id
     {
-        if (scenarioState_.obj_states[i].id != obj_id)
+        if (obj.id == obj_id)
         {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::BOUNDING_BOX)
+            for (const auto& objPkg : obj.pkgs)
             {
-                bb_ = *reinterpret_cast<datLogger::BoundingBox*>(pkg->content.data());
-                break;
+                datLogger::CommonPkg* cmnPkg = reinterpret_cast<datLogger::CommonPkg*>(objPkg.pkg);
+                if (static_cast<datLogger::PackageId>(cmnPkg->hdr.id) == datLogger::PackageId::BOUNDING_BOX)
+                {
+                    bb_ = *reinterpret_cast<datLogger::BoundingBox*>(cmnPkg->content.data());
+                    break;
+                }
             }
         }
     }
@@ -899,73 +935,24 @@ int Replay::GetBB(int obj_id, OSCBoundingBox& bb)
     bb.dimensions_.height_ = bb_.height;
     bb.dimensions_.length_ = bb_.length;
     bb.dimensions_.width_  = bb_.width;
-
     return 0;
-}
-
-int Replay::GetScaleMode(int obj_id)
-{
-    int scale_mode = -1;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
-    {
-        if (scenarioState_.obj_states[i].id != obj_id)
-        {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::SCALE_MODE)
-            {
-                scale_mode = *reinterpret_cast<int*>(pkg->content.data());
-            }
-        }
-    }
-
-    return scale_mode;
-}
-
-int Replay::GetVisibility(int obj_id)
-{
-    int vis = -1;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
-    {
-        if (scenarioState_.obj_states[i].id != obj_id)
-        {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::VISIBILITY_MASK)
-            {
-                vis = *reinterpret_cast<int*>(pkg->content.data());
-            }
-        }
-    }
-
-    return vis;
 }
 
 datLogger::Pos Replay::GetPos(int obj_id)
 {
     datLogger::Pos pos;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
+    for (const auto& obj : scenarioState_.obj_states)  // loop current state object id to find the object id
     {
-        if (scenarioState_.obj_states[i].id != obj_id)
+        if (obj.id == obj_id)
         {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::POSITIONS)
+            for (const auto& objPkg : obj.pkgs)
             {
-                pos = *reinterpret_cast<datLogger::Pos*>(pkg->content.data());
-                break;
+                datLogger::CommonPkg* cmnPkg = reinterpret_cast<datLogger::CommonPkg*>(objPkg.pkg);
+                if (static_cast<datLogger::PackageId>(cmnPkg->hdr.id) == datLogger::PackageId::POSITIONS)
+                {
+                    pos = *reinterpret_cast<datLogger::Pos*>(cmnPkg->content.data());
+                    break;
+                }
             }
         }
     }
@@ -1011,116 +998,22 @@ double Replay::GetP(int obj_id)
 id_t Replay::GetRoadId(int obj_id)
 {
     id_t road_id = ID_UNDEFINED;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
+    for (const auto& obj : scenarioState_.obj_states)  // loop current state object id to find the object id
     {
-        if (scenarioState_.obj_states[i].id != obj_id)
+        if (obj.id == obj_id)
         {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::ROAD_ID)
+            for (const auto& objPkg : obj.pkgs)
             {
-                road_id = *reinterpret_cast<id_t*>(pkg->content.data());
+                datLogger::CommonPkg* cmnPkg = reinterpret_cast<datLogger::CommonPkg*>(objPkg.pkg);
+                if (static_cast<datLogger::PackageId>(cmnPkg->hdr.id) == datLogger::PackageId::ROAD_ID)
+                {
+                    road_id = *reinterpret_cast<id_t*>(cmnPkg->content.data());
+                    break;
+                }
             }
         }
     }
-
     return road_id;
-}
-
-int Replay::GetLaneId(int obj_id)
-{
-    int lane_id = -1;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
-    {
-        if (scenarioState_.obj_states[i].id != obj_id)
-        {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::LANE_ID)
-            {
-                lane_id = *reinterpret_cast<int*>(pkg->content.data());
-            }
-        }
-    }
-
-    return lane_id;
-}
-
-double Replay::GetPosOffset(int obj_id)
-{
-    double offset = 0.0;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
-    {
-        if (scenarioState_.obj_states[i].id != obj_id)
-        {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::POS_OFFSET)
-            {
-                offset = *reinterpret_cast<double*>(pkg->content.data());
-            }
-        }
-    }
-
-    return offset;
-}
-
-float Replay::GetPosT(int obj_id)
-{
-    double pos_t = 0.0;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
-    {
-        if (scenarioState_.obj_states[i].id != obj_id)
-        {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::POS_T)
-            {
-                pos_t = *reinterpret_cast<double*>(pkg->content.data());
-            }
-        }
-    }
-
-    return static_cast<float>(pos_t);
-}
-
-float Replay::GetPosS(int obj_id)
-{
-    double pos_s = 0.0;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
-    {
-        if (scenarioState_.obj_states[i].id != obj_id)
-        {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::POS_S)
-            {
-                pos_s = *reinterpret_cast<double*>(pkg->content.data());
-            }
-        }
-    }
-
-    return static_cast<float>(pos_s);
 }
 
 ObjectPositionStructDat Replay::GetComPletePos(int obj_id)
@@ -1142,120 +1035,35 @@ ObjectPositionStructDat Replay::GetComPletePos(int obj_id)
     return complete_pos;
 }
 
-double Replay::GetWheelAngle(int obj_id)
-{
-    double wheel_angle = 0.0;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
-    {
-        if (scenarioState_.obj_states[i].id != obj_id)
-        {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::WHEEL_ANGLE)
-            {
-                wheel_angle = *reinterpret_cast<double*>(pkg->content.data());
-            }
-        }
-    }
-
-    return wheel_angle;
-}
-
-double Replay::GetWheelRot(int obj_id)
-{
-    double wheel_rot = 0.0;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
-    {
-        if (scenarioState_.obj_states[i].id != obj_id)
-        {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::WHEEL_ROT)
-            {
-                wheel_rot = *reinterpret_cast<double*>(pkg->content.data());
-            }
-        }
-    }
-
-    return wheel_rot;
-}
-
-double Replay::GetSpeed(int obj_id)
-{
-    double speed = 0.0;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
-    {
-        if (scenarioState_.obj_states[i].id != obj_id)
-        {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::SPEED)
-            {
-                speed = *reinterpret_cast<double*>(pkg->content.data());
-            }
-        }
-    }
-
-    return speed;
-}
-
 int Replay::GetName(int obj_id, std::string& name)
 {
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
+    for (const auto obj : scenarioState_.obj_states)  // loop current state object id to find the object id
     {
-        if (scenarioState_.obj_states[i].id != obj_id)
+        if (obj.id == obj_id)
         {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::NAME)
+            for (const auto objPkg : obj.pkgs)
             {
-                name = pkg->content.data();
+                datLogger::CommonPkg* cmnPkg = reinterpret_cast<datLogger::CommonPkg*>(objPkg.pkg);
+                if (static_cast<datLogger::PackageId>(cmnPkg->hdr.id) == datLogger::PackageId::NAME)
+                {
+                    name = cmnPkg->content.data();
+                    return 0;
+                }
             }
         }
     }
-    return 0;
+    return -1;  // maybe check success or not
 }
 
 void Replay::GetRgbValues(int obj_id, Object::VehicleLightActionStatus* vehicleLightActionStatusList)
 {
-    datLogger::LightState lightState_;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
-    {
-        if (scenarioState_.obj_states[i].id != obj_id)
-        {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::LIGHT_STATES)
-            {
-                lightState_ = *reinterpret_cast<datLogger::LightState*>(pkg->content.data());
-            }
-        }
-    }
+    datLogger::LightState lightState;
+    GetLightStates(obj_id, lightState);
 
-    const size_t numLights = sizeof(lightState_) / sizeof(datLogger::LightRGB);
+    const size_t numLights = sizeof(lightState) / sizeof(datLogger::LightRGB);
     for (size_t i = 0; i < numLights; ++i)
     {
-        datLogger::LightRGB* light         = reinterpret_cast<datLogger::LightRGB*>(&lightState_) + i;
+        datLogger::LightRGB* light         = reinterpret_cast<datLogger::LightRGB*>(&lightState) + i;
         datLogger::LightRGB* default_light = reinterpret_cast<datLogger::LightRGB*>(&defaultLightState) + i;
         if (light->red != default_light->red || light->green != default_light->green || light->blue != default_light->blue ||
             light->intensity != default_light->intensity)
@@ -1274,19 +1082,18 @@ void Replay::GetRgbValues(int obj_id, Object::VehicleLightActionStatus* vehicleL
 
 void Replay::GetLightStates(int obj_id, datLogger::LightState& light_states_)
 {
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
+    for (const auto obj : scenarioState_.obj_states)  // loop current state object id to find the object id
     {
-        if (scenarioState_.obj_states[i].id != obj_id)
+        if (obj.id == obj_id)
         {
-            continue;
-        }
-        for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
-        {
-            datLogger::CommonPkg* pkg;
-            pkg = reinterpret_cast<datLogger::CommonPkg*>(scenarioState_.obj_states[i].pkgs[j].pkg);
-            if (static_cast<datLogger::PackageId>(pkg->hdr.id) == datLogger::PackageId::LIGHT_STATES)
+            for (const auto objPkg : obj.pkgs)
             {
-                light_states_ = *reinterpret_cast<datLogger::LightState*>(pkg->content.data());
+                datLogger::CommonPkg* cmnPkg = reinterpret_cast<datLogger::CommonPkg*>(objPkg.pkg);
+                if (static_cast<datLogger::PackageId>(cmnPkg->hdr.id) == datLogger::PackageId::LIGHT_STATES)
+                {
+                    light_states_ = *reinterpret_cast<datLogger::LightState*>(cmnPkg->content.data());
+                    return;
+                }
             }
         }
     }
@@ -1301,11 +1108,6 @@ std::vector<datLogger::CommonPkg> scenarioengine::Replay::GetPkgs()
 {
     return pkgs_;
 }
-
-// datLogger::CommonPkg scenarioengine::Replay::GetPkgFromIndex(unsigned int index)
-// {
-//     return pkgs_[index];
-// }
 
 void Replay::SetStartTime(double time)
 {
@@ -1440,7 +1242,7 @@ void Replay::BuildData()
     int    endOfScenarioCount = 0;
     bool   firstIteration     = true;
 
-    while (true)
+    do
     {
         for (size_t j = 0; j < scenarioData.size(); j++)
         {
@@ -1507,11 +1309,7 @@ void Replay::BuildData()
         cur_timestamp  = min_time_stamp;
         timePkgWritten = false;
 
-        if (endOfScenarioCount == static_cast<int>(cur_idx.size()))
-        {
-            break;  // reached end of file
-        }
-    }
+    } while (endOfScenarioCount < static_cast<int>(cur_idx.size()));
 }
 
 int Replay::CreateMergedDatfile(const std::string filename)
@@ -1554,11 +1352,11 @@ int Replay::CreateMergedDatfile(const std::string filename)
 
 void Replay::UpdateOdaMeter(int obj_id, double value)
 {
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
+    for (auto& obj : scenarioState_.obj_states)
     {
-        if (scenarioState_.obj_states[i].id != obj_id)
+        if (obj.id == obj_id)
         {
-            scenarioState_.obj_states[i].odometer = value;
+            obj.odometer = value;
         }
     }
 }
@@ -1570,13 +1368,12 @@ void scenarioengine::Replay::SetShowRestart(bool showRestart)
 
 double Replay::GetOdaMeter(int obj_id)
 {
-    double odaMeter = 0.0;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)
+    for (const auto& obj : scenarioState_.obj_states)
     {
-        if (scenarioState_.obj_states[i].id != obj_id)
+        if (obj.id == obj_id)
         {
-            odaMeter = scenarioState_.obj_states[i].odometer;
+            return obj.odometer;
         }
     }
-    return odaMeter;
+    return 0.0;
 }
