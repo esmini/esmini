@@ -1,57 +1,57 @@
 #include "DefaultPathFinder.hpp"
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-#include <windows.h>
-#elif defined(__linux__)
-#include <unistd.h>
-#include <limits.h>
-#include <dlfcn.h>
+    #include <windows.h>
 #elif defined(__APPLE__)
-#include <mach-o/dyld.h>
-#include <dlfcn.h>
+    #include <mach-o/dyld.h>
+    #include <dlfcn.h>
+#elif defined(__linux__)
+    #include <dlfcn.h>
+    #include <unistd.h>
+    #include <limits.h>
 #endif
 
 #include <stdexcept>
 #include <iostream>
 
-namespace esmini::common
+extern "C" std::string GetLibraryPath()
 {
-
-    std::string GetLibraryPath()
-    {
 #if defined(_WIN32)
-        char    path[MAX_PATH];
-        HMODULE hModule = nullptr;
+    char    path[MAX_PATH];
+    HMODULE hModule = nullptr;
 
-        // Get the handle of the current module (library)
-        if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)GetLibraryPath, &hModule))
-        {
-            throw std::runtime_error("Failed to get library handle.");
-        }
+    // Get the handle of the current module (library)
+    if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)GetLibraryPath, &hModule))
+    {
+        throw std::runtime_error("Failed to get library handle.");
+    }
 
-        // Get the full path of the library
-        if (GetModuleFileName(hModule, path, MAX_PATH) == 0)
-        {
-            throw std::runtime_error("Failed to get library path.");
-        }
-        std::cout << "lib path from within the lib: " << path << std::endl;
-        std::string strPath(path);
-        return strPath;
+    // Get the full path of the library
+    if (GetModuleFileName(hModule, path, MAX_PATH) == 0)
+    {
+        throw std::runtime_error("Failed to get library path.");
+    }
+    std::cout << "lib path from within the lib: " << path << std::endl;
+    std::string strPath(path);
+    return strPath;
 
 #else
 
-        Dl_info dl_info;
+    Dl_info dl_info;
 
-        // Use dladdr to retrieve the path of the loaded library
-        if (dladdr((void*)&GetLibraryPath, &dl_info) == 0)
-        {
-            throw std::runtime_error("Failed to get library path.");
-        }
+    //Use dladdr to retrieve the path of the loaded library
+    if (dladdr((void*)&GetLibraryPath, &dl_info) == 0)
+    {
+        throw std::runtime_error("Failed to get library path.");
+    }
 
-        return dl_info.dli_fname;
+    return dl_info.dli_fname;
 
 #endif
-    }
+}
+
+namespace esmini::common
+{
 
     std::string DefaultPathFinder::GetDefaultPath()
     {

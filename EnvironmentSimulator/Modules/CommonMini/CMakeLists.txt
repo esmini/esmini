@@ -48,6 +48,10 @@ target_link_libraries(
     PRIVATE ${SPDLOG_LIBRARIES}
             ${RYML_LIBRARIES})
 
+if(NOT MSVC)
+    target_link_libraries(${TARGET} PRIVATE dl)
+endif(NOT MSVC)
+
 install(
     TARGETS ${TARGET}
     DESTINATION "${INSTALL_PATH}")
