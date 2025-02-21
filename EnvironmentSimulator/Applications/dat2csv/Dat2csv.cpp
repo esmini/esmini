@@ -193,7 +193,7 @@ void Dat2csv::CreateCSV()
                 }
                 else
                 {
-                    if (isEqualDouble(player_->GetTime(), requestedTime) || isEqualDouble(player_->GetTime(), player_->GetStartTime()))
+                    if (IsEqualDouble(player_->GetTime(), requestedTime) || IsEqualDouble(player_->GetTime(), player_->GetStartTime()))
                     {  // first time frame or until reach requested time frame reached, dont move to next time frame
                         requestedTime = player_->GetTime() + delta_time;
                         player_->GoToTime(player_->GetTime() + delta_time, true);  // continue

@@ -67,15 +67,15 @@ namespace scenarioengine
         void   AdjustObjectId(std::vector<std::vector<int>>& objectIds);
         void   GetReplaysFromDirectory(const std::string dir, const std::string sce);
         size_t GetNumberOfScenarios();
-        void   BuildData();
-        int    CreateMergedDatfile(const std::string filename);
+
+        int CreateMergedDatfile(const std::string filename);
 
         // vector and method for record and read pkg
         std::vector<datLogger::CommonPkg> pkgs_;
         ScenarioState                     scenarioState_;
         int                               RecordPkgs(const std::string& fileName);  // check package can be recorded or not
-        std::vector<int>                  GetNumberOfObjectsAtTime();               // till next time forward
-        int                               GetPkgCntBtwObj(size_t idx);              // till next time forward
+        std::vector<size_t>               GetNumberOfObjectsAtTime();               // till next time forward
+        size_t                            GetPkgCntBtwObj(size_t idx);              // till next time forward
         datLogger::PackageId              ReadPkgHdr(char* package);
         double                            GetTimeFromCnt(int count);  // give time for the time
         void                              GetRestartTimes();
@@ -84,8 +84,7 @@ namespace scenarioengine
         // method for cache
         void InitiateStates();
         void UpdateCache();
-        void AddObjState(size_t objId);  // add the object state for given object id from the current object state
-        void DeleteObjState(int objId);
+
         /**
          Go to specified timestamp
          @param time_frame Timestamp
@@ -107,7 +106,7 @@ namespace scenarioengine
         void GoToStart();
         void GoToEnd();
         bool IsObjAvailableInCache(int Id);  // check in cache
-        bool IsObjAvailableActive(int id);
+        bool IsObjAvailableActive(int id) const;
         void UpdateObjStatus(int id, bool status);
         void CheckObjAvailabilityForward();
         void CheckObjAvailabilityBackward();
@@ -159,7 +158,8 @@ namespace scenarioengine
         void                    GetRgbValues(int obj_id, Object::VehicleLightActionStatus* light_state);
         void                    GetLightStates(int obj_id, datLogger::LightState& light_states_);
 
-        const datLogger::DatHdr GetHeader() const;
+        const datLogger::DatHdr           GetHeader() const;
+        std::vector<datLogger::CommonPkg> GetPkgs();
 
     private:
         std::ifstream            file_;
@@ -181,6 +181,11 @@ namespace scenarioengine
 
         int  FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
         bool IsValidPocket(id_t id);
+        void BuildData();
+        void AddObjState(size_t objId);  // add the object state for given object id from the current object state
+        void DeleteObjState(int objId);
+        bool IsObjectDeletePkg(size_t index) const;
+        bool IsObjIdAddPkg(size_t index) const;
     };
 
 }  // namespace scenarioengine

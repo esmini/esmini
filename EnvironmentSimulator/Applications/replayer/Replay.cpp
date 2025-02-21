@@ -216,7 +216,7 @@ int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
         if (static_cast<datLogger::PackageId>(pkgs_[static_cast<unsigned int>(i)].hdr.id) == datLogger::PackageId::TIME_SERIES)
         {
             double timeTemp = *reinterpret_cast<double*>(pkgs_[static_cast<unsigned int>(i)].content.data());
-            if (isEqualDouble(timeTemp, timestamp) || (timeTemp > timestamp))
+            if (IsEqualDouble(timeTemp, timestamp) || (timeTemp > timestamp))
             {
                 break;
             }
@@ -303,7 +303,7 @@ int Replay::RecordPkgs(const std::string& fileName)
             {
                 double t = *reinterpret_cast<double*>(pkgs_[pkgs_.size() - 1].content.data());
 
-                if (!(t < 0) || !isEqualDouble(deltaTime_, LARGE_NUMBER))  // dont include till ghost reaches 0.0 time
+                if (!(t < 0) || !IsEqualDouble(deltaTime_, LARGE_NUMBER))  // dont include till ghost reaches 0.0 time
                 {
                     if (!std::isnan(previousTime_))
                     {
@@ -354,9 +354,9 @@ datLogger::PackageId Replay::ReadPkgHdr(char* package)
     return static_cast<datLogger::PackageId>(pkg.hdr.id);
 }
 
-int Replay::GetPkgCntBtwObj(size_t idx)
+size_t Replay::GetPkgCntBtwObj(size_t idx)
 {
-    int count = 0;
+    size_t count = 0;
     for (size_t i = idx + 1; i < pkgs_.size(); i++)  // start looking from next package
     {
         if (static_cast<datLogger::PackageId>(pkgs_[i].hdr.id) == datLogger::PackageId::TIME_SERIES ||
@@ -369,17 +369,16 @@ int Replay::GetPkgCntBtwObj(size_t idx)
     return count;
 }
 
-std::vector<int> Replay::GetNumberOfObjectsAtTime()
+std::vector<size_t> Replay::GetNumberOfObjectsAtTime()
 {
-    std::vector<int> Indices;
-    bool             timeFound = false;
-
+    std::vector<size_t> Indices;
+    bool                timeFound = false;
     for (size_t i = index_; i < pkgs_.size(); i++)
     {
         if (pkgs_[i].hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES) && !timeFound)
         {
             double timeTemp = *reinterpret_cast<double*>(pkgs_[i].content.data());
-            if (isEqualDouble(timeTemp, time_))
+            if (IsEqualDouble(timeTemp, time_))
             {
                 timeFound = true;
             }
@@ -387,7 +386,7 @@ std::vector<int> Replay::GetNumberOfObjectsAtTime()
         }
         if (timeFound && static_cast<datLogger::PackageId>(pkgs_[i].hdr.id) == datLogger::PackageId::OBJ_ID)
         {
-            Indices.push_back(static_cast<int>(i));  // time matches
+            Indices.push_back(i);  // time matches
         }
         if (pkgs_[i].hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES))
         {
@@ -399,30 +398,26 @@ std::vector<int> Replay::GetNumberOfObjectsAtTime()
 
 bool Replay::IsObjAvailableInCache(int id)  // check in current state
 {
-    bool status = false;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)  // loop current state object id to find the object id
+    for (const auto& obj : scenarioState_.obj_states)  // loop current state object id to find the object id
     {
-        if (scenarioState_.obj_states[i].id == id)
+        if (obj.id == id)
         {
-            status = true;  // obj id present
-            break;
+            return true;  // obj id present
         }
     }
-    return status;
+    return false;
 }
 
-bool Replay::IsObjAvailableActive(int id)  // check in current state
+bool Replay::IsObjAvailableActive(int id) const  // check in current state
 {
-    bool status = false;
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)  // loop current state object id to find the object id
+    for (const auto& obj : scenarioState_.obj_states)  // loop current state object id to find the object id
     {
-        if (scenarioState_.obj_states[i].id == id)
+        if (obj.id == id)
         {
-            status = scenarioState_.obj_states[i].active;  // obj id present
-            break;
+            return obj.active;  // obj id present
         }
     }
-    return status;
+    return false;
 }
 
 void Replay::GoToDeltaTime(double dt, bool stopAtEachFrame)
@@ -454,7 +449,7 @@ void Replay::GetRestartTimes()
                 {
                     for (size_t j = 0; j < restartTimes_.size(); j++)
                     {
-                        if (isEqualDouble(restartTimes_[j].next_time_, LARGE_NUMBER))  // only once
+                        if (IsEqualDouble(restartTimes_[j].next_time_, LARGE_NUMBER))  // only once
                         {
                             if (restartTimes_[j].restart_time_ < timeTemp)
                             {
@@ -499,25 +494,26 @@ void Replay::GoToPreviousFrame()
 }
 void Replay::UpdateCache()
 {
-    scenarioState_.sim_time       = time_;
-    std::vector<int> objIdIndices = GetNumberOfObjectsAtTime();
-    for (size_t l = 0; l < objIdIndices.size(); l++)
+    scenarioState_.sim_time          = time_;
+    std::vector<size_t> objIdIndices = GetNumberOfObjectsAtTime();
+
+    for (const auto objIdIndex : objIdIndices)
     {
-        int obj_id = *reinterpret_cast<int*>(pkgs_[static_cast<size_t>(objIdIndices[l])].content.data());
-        int pkgCnt = GetPkgCntBtwObj(static_cast<size_t>(objIdIndices[l]));
-        for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)  // loop current state object id to find the object id
+        int    obj_id = *reinterpret_cast<int*>(pkgs_[objIdIndex].content.data());
+        size_t pkgCnt = GetPkgCntBtwObj(objIdIndex);
+        for (auto& obj : scenarioState_.obj_states)  // loop current state object id to find the object id
         {
-            if (scenarioState_.obj_states[i].id == obj_id)  // found object id
+            if (obj.id == obj_id)  // found object id
             {
-                for (size_t j = 0; j < scenarioState_.obj_states[i].pkgs.size(); j++)
+                for (size_t j = 0; j < obj.pkgs.size(); j++)
                 {
-                    for (size_t k = static_cast<size_t>(objIdIndices[l] + 1); k < static_cast<size_t>(objIdIndices[l] + pkgCnt + 1);
+                    for (size_t k = objIdIndex + 1; k < objIdIndex + pkgCnt + 1;
                          k++)  // start with Index + 1, Index will have object id package index. looking from next package
                     {
-                        datLogger::PackageId id_ = ReadPkgHdr(scenarioState_.obj_states[i].pkgs[j].pkg);
+                        datLogger::PackageId id_ = ReadPkgHdr(obj.pkgs[j].pkg);
                         if (id_ == static_cast<datLogger::PackageId>(pkgs_[k].hdr.id))
                         {
-                            scenarioState_.obj_states[i].pkgs[j].pkg = reinterpret_cast<char*>(&pkgs_[k]);
+                            obj.pkgs[j].pkg = reinterpret_cast<char*>(&pkgs_[k]);
                             break;
                         }
                     }
@@ -541,22 +537,22 @@ void Replay::UpdateObjStatus(int id, bool status)
 void Replay::CheckObjAvailabilityForward()
 {
     // check all obj status in current time frame
-    std::vector<int> objIdIndices = GetNumberOfObjectsAtTime();
-    for (size_t Index = 0; Index < objIdIndices.size(); Index++)
+    std::vector<size_t> objIdIndices = GetNumberOfObjectsAtTime();
+    for (const auto index : objIdIndices)
     {
-        int obj_id = *reinterpret_cast<int*>(pkgs_[static_cast<size_t>(objIdIndices[Index])].content.data());
-        if (pkgs_[static_cast<size_t>(objIdIndices[Index] + 1)].hdr.id == static_cast<int>(datLogger::PackageId::OBJ_DELETED))
+        int obj_id = *reinterpret_cast<int*>(pkgs_[index].content.data());
+        if (IsObjectDeletePkg(index + 1))
         {
             UpdateObjStatus(obj_id, false);  // obj not active in cache
             continue;
         }
-        else if (pkgs_[static_cast<size_t>(objIdIndices[Index] + 1)].hdr.id == static_cast<int>(datLogger::PackageId::OBJ_ADDED))
+        else if (IsObjIdAddPkg(index + 1))
         {
             if (IsObjAvailableInCache(obj_id))  // make sure same obj deleted before adding the same object
             {
                 DeleteObjState(obj_id);  // make sure same obj deleted before adding the same object
             }
-            AddObjState(static_cast<size_t>(objIdIndices[Index]));  // obj added in cache. this will also initiate this obj
+            AddObjState(index);  // obj added in cache. this will also initiate this obj
             continue;
         }
     }
@@ -565,17 +561,16 @@ void Replay::CheckObjAvailabilityForward()
 void Replay::CheckObjAvailabilityBackward()
 {
     // check all obj status in current time frame
-    std::vector<int> objIdIndices = GetNumberOfObjectsAtTime();
-    for (size_t Index = 0; Index < objIdIndices.size(); Index++)
+    std::vector<size_t> objIdIndices = GetNumberOfObjectsAtTime();
+    for (const auto index : objIdIndices)
     {
-        int obj_id = *reinterpret_cast<int*>(pkgs_[static_cast<size_t>(objIdIndices[Index])].content.data());
-        if (pkgs_[static_cast<size_t>(objIdIndices[Index] + 1)].hdr.id == static_cast<int>(datLogger::PackageId::OBJ_DELETED))
+        int obj_id = *reinterpret_cast<int*>(pkgs_[index].content.data());
+        if (IsObjectDeletePkg(index + 1))
         {
             UpdateObjStatus(obj_id, true);  // obj added in cache with same state as when its deleted
             continue;
         }
-        else if (pkgs_[static_cast<size_t>(objIdIndices[Index] + 1)].hdr.id == static_cast<int>(datLogger::PackageId::OBJ_ADDED) &&
-                 !isEqualDouble(time_, startTime_))  // ignore first time frame
+        else if (IsObjIdAddPkg(index + 1) && !IsEqualDouble(time_, startTime_))  // ignore first time frame
         {
             UpdateObjStatus(obj_id, false);
             continue;
@@ -585,17 +580,17 @@ void Replay::CheckObjAvailabilityBackward()
 
 int Replay::GoToTime(double t, bool stopAtEachFrame)
 {
-    if ((t > stopTime_) || isEqualDouble(t, stopTime_))  // go to stop time
+    if ((t > stopTime_) || IsEqualDouble(t, stopTime_))  // go to stop time
     {
         t = stopTime_;
     }
-    else if ((t < startTime_) || isEqualDouble(t, startTime_))  // go to start time
+    else if ((t < startTime_) || IsEqualDouble(t, startTime_))  // go to start time
     {
         t = startTime_;
     }
 
     bool timeLapsed = false;
-    if (isEqualDouble(t, scenarioState_.sim_time))
+    if (IsEqualDouble(t, scenarioState_.sim_time))
     {
         return 0;  // no update to cache
     }
@@ -632,7 +627,7 @@ int Replay::GoToTime(double t, bool stopAtEachFrame)
                 }
                 else if ((time_ + SMALL_NUMBER < pervious_time_ &&
                           show_restart_) ||          // next time less than pervious time. break only when show restart
-                         (isEqualDouble(t, time_)))  // requested time reached
+                         (IsEqualDouble(t, time_)))  // requested time reached
                 {
                     timeLapsed = true;
                 }
@@ -682,7 +677,7 @@ int Replay::GoToTime(double t, bool stopAtEachFrame)
                         timeLapsed = true;
                     }
                 }
-                else if ((isEqualDouble(t, time_)) ||  // requested time equal to next time
+                else if ((IsEqualDouble(t, time_)) ||  // requested time equal to next time
                          (time_ < t + SMALL_NUMBER))   // gone past requested time
                 {
                     timeLapsed = true;
@@ -738,13 +733,13 @@ void Replay::AddObjState(size_t idx)
     ObjectStateWithObjId stateObjId;
     if (static_cast<datLogger::PackageId>(pkgs_[idx].hdr.id) != datLogger::PackageId::OBJ_ID)
     {
-        std::cout << " Initialization error->Stop replay " << std::endl;
+        LOG_ERROR_AND_QUIT(" Initialization error->Stop replay ");
     }
     stateObjId.id     = *reinterpret_cast<int*>(pkgs_[idx].content.data());
     stateObjId.active = true;
-    int pkgCount      = GetPkgCntBtwObj(idx);
+    size_t pkgCount   = GetPkgCntBtwObj(idx);
 
-    for (size_t i = idx + 1; i < static_cast<size_t>(pkgCount) + idx + 1; i++)
+    for (size_t i = idx + 1; i < pkgCount + idx + 1; i++)
     {  // GetPkgCntBtwObj will return count of package
 
         if (datLogger::PackageId::OBJ_ADDED == static_cast<datLogger::PackageId>(pkgs_[i].hdr.id) ||
@@ -772,6 +767,16 @@ void Replay::DeleteObjState(int objId)
     }
 }
 
+bool scenarioengine::Replay::IsObjectDeletePkg(size_t index) const
+{
+    return pkgs_[index].hdr.id == static_cast<int>(datLogger::PackageId::OBJ_DELETED);
+}
+
+bool scenarioengine::Replay::IsObjIdAddPkg(size_t index) const
+{
+    return pkgs_[index].hdr.id == static_cast<int>(datLogger::PackageId::OBJ_ADDED);
+}
+
 void Replay::InitiateStates()
 {
     // reset the timings
@@ -780,11 +785,11 @@ void Replay::InitiateStates()
     time_                   = startTime_;
     index_                  = startIndex_;
 
-    std::vector<int> objIdIndices = GetNumberOfObjectsAtTime();
+    std::vector<size_t> objIdIndices = GetNumberOfObjectsAtTime();
 
-    for (size_t Index = 0; Index < objIdIndices.size(); Index++)
+    for (const auto index : objIdIndices)
     {
-        AddObjState(static_cast<size_t>(objIdIndices[Index]));
+        AddObjState(index);
     }
 }
 
@@ -1278,6 +1283,11 @@ const datLogger::DatHdr scenarioengine::Replay::GetHeader() const
     return header_;
 }
 
+std::vector<datLogger::CommonPkg> scenarioengine::Replay::GetPkgs()
+{
+    return pkgs_;
+}
+
 // datLogger::CommonPkg scenarioengine::Replay::GetPkgFromIndex(unsigned int index)
 // {
 //     return pkgs_[index];
@@ -1434,7 +1444,7 @@ void Replay::BuildData()
                 if (scenarioData[j].second[k].hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES))
                 {
                     timeTemp = *reinterpret_cast<double*>(scenarioData[j].second[k].content.data());
-                    if (isEqualDouble(timeTemp, cur_timestamp))
+                    if (IsEqualDouble(timeTemp, cur_timestamp))
                     {
                         timeFound = true;
                     }

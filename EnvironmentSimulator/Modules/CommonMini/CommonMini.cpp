@@ -723,7 +723,7 @@ std::string GetVersionInfoForLog()
     return info;
 }
 
-bool isEqualDouble(double val1, double val2)
+bool IsEqualDouble(double val1, double val2)
 {
     return ((std::signbit(val1) == std::signbit(val2)) && (fabs(val1 - val2) < SMALL_NUMBER));
 }

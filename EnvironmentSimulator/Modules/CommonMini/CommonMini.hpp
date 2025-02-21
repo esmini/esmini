@@ -610,7 +610,7 @@ bool IsNumber(const std::string& str, int max_digits = -1);
 /**
        check two double values are equal with small margin
 */
-bool isEqualDouble(double val1, double val2);
+bool IsEqualDouble(double val1, double val2);
 /**
         Check whether array contains at least one non-zero element
 */
