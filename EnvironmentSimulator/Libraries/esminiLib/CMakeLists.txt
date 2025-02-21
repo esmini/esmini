@@ -89,8 +89,7 @@ foreach(
                 RoadManager
                 ${SPDLOG_LIBRARIES}
                 ${TIME_LIB}
-                ${SOCK_LIB}
-                ${RYML_LIBRARIES})
+                ${SOCK_LIB})
 
     if(USE_OSG)
         target_link_libraries(
