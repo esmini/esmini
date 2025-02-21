@@ -163,8 +163,7 @@ namespace esmini::common
         {
             std::cerr << "Error parsing YAML file: " << e.what() << std::endl;
         }
-        // LogAllAppsConfig();
-        LogConfig();
+        // LogConfig();
         return configs_;
     }
 

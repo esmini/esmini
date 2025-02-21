@@ -223,11 +223,11 @@ void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<
     argc             = newArgc;
     argv             = newArgv;
 
-    std::cout << "New argc: " << newArgc << std::endl;
-    for (int k = 0; k < argc; ++k)
-    {
-        std::cout << "New argv[" << k << "]: " << argv[k] << std::endl;
-    }
+    // std::cout << "New argc: " << newArgc << std::endl;
+    // for (int k = 0; k < argc; ++k)
+    // {
+    //     std::cout << "New argv[" << k << "]: " << argv[k] << std::endl;
+    // }
 }
 
 bool FileExists(const char* fileName)

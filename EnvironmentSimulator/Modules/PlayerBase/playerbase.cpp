@@ -1208,7 +1208,7 @@ void ScenarioPlayer::HandleConfigurations()
     // parse default config file and environment variable config files
     esmini::common::Config config("esmini");
     const auto             defaultAndEnvironmentConfigs = config.GetConfig();
-    std::cout << "Default & Environment File Configs size: " << defaultAndEnvironmentConfigs.size() << std::endl;
+    LOG_DEBUG("Size of options present in Default & Environment Config Files: {}", defaultAndEnvironmentConfigs.size());
     std::vector<std::string> allConfigs{std::move(defaultAndEnvironmentConfigs)};
 
     // there is a possibility that the config file path is already set in options, maybe through the api call
@@ -1225,7 +1225,6 @@ void ScenarioPlayer::HandleConfigurations()
     std::string configFilePathOption = fmt::format("--{}", CONFIG_FILE_OPTION_NAME);
     for (int i = 1; i < argc_; ++i)
     {
-        // std::cout << "argv[" << i << "]: " << argv_[i] << std::endl;
         if (strcmp(configFilePathOption.c_str(), argv_[i]) == 0)  // && i < static_cast<unsigned int>(argc_ - 1) && strncmp(argv_[i + 1], "--", 2)
         {
             std::cout << "config_file_path: " << argv_[i + 1] << std::endl;
@@ -1245,6 +1244,13 @@ void ScenarioPlayer::HandleConfigurations()
     // since the config file(s) from arguments are already parsed and appended to the arguments.
     // We just want to keep the application name at first index, after it we low priority configs
     AppendArgcArgv(argc_, argv_, 1, allConfigs);
+
+    std::string allArgvs;
+    for (int i = 0; i < argc_; ++i)
+    {
+        allArgvs = fmt::format("{} {}", allArgvs, argv_[i]);
+    }
+    LOG_INFO("Options after parsing: {}", allArgvs);
 }
 
 int ScenarioPlayer::Init()

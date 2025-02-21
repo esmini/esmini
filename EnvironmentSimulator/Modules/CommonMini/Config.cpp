@@ -19,7 +19,7 @@ namespace esmini::common
         }
         else
         {
-            std::cout << "Environment variable ESMINI_CONFIG_FILE not set" << std::endl;
+            LOG_INFO("Environment variable ESMINI_CONFIG_FILE not set");
         }
     }
 
