@@ -1,9 +1,21 @@
 ## esmini release notes
 
+### 2025-02-21 Version 2.45.3
+
+Improvements and fixes:
+- Fix AcquirePosition nullptr ref crash ([issue #662](https://github.com/esmini/esmini/issues/662))
+- Fix OSI HW junction connectivity
+  - previously dependent on xml road element order of appearance
+  - support multiple connections in each direction
+- Put actual OSI version in log
+  - read from OSI interface instead of hardcoded values
+- Fix missing OSI traffic sign country and unit support
+- Avoid OSI crash on invalid junction road connections
+- Cleanup, remove OSI 3.3.1 support
+
 ### 2025-02-06 Version 2.45.2
 
 Improvements and fixes:
-
 - Fix build variant USE_OSG=1 USE_OSI=0 ([issue #661](https://github.com/esmini/esmini/issues/661))
 - Bump OpenDRIVE validation schema from v1.6 to v1.6.1
 - Fix some typos in OpenDRIVE v1.6.1 xsd ([PR #663](https://github.com/esmini/esmini/pull/663))
