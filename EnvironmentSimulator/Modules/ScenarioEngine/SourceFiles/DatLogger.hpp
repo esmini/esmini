@@ -253,7 +253,7 @@ namespace datLogger
     class DatLogger
     {
     private:
-        std::fstream data_file_;
+        std::ofstream data_file_;
 
     public:
         DatLogger() = default;
@@ -283,7 +283,7 @@ namespace datLogger
         std::vector<ObjIdAdded> objIdAdded_;
 
         int  init(std::string fileName, int ver, std::string odrName, std::string modelName);
-        void deleteObjState(int objId);
+        void DeleteObjState(int objId);
 
         void writePackage(CommonPkg package);  // will just write package
         void WriteStringPkg(std::string name, PackageId pkg_id);

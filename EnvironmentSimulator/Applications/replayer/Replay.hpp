@@ -72,7 +72,6 @@ namespace scenarioengine
         void   GetReplaysFromDirectory(const std::string dir, const std::string sce);
         size_t GetNumberOfScenarios();
         void   BuildData();
-        double GetLastTime();
         int    CreateMergedDatfile(const std::string filename);
 
         // vector and method for record and read pkg
@@ -90,20 +89,39 @@ namespace scenarioengine
         void InitiateStates();
         void UpdateCache();
         void AddObjState(size_t objId);  // add the object state for given object id from the current object state
-        void deleteObjState(int objId);
+        void DeleteObjState(int objId);
         /**
-         Move to specified timestamp
+         Go to specified timestamp
          @param time_frame Timestamp
-         @param stopAtEachFrame Always fill cache for each time frame
+         @param stopAtEachFrame Always stop for each step time frame
         */
-        int MoveToTime(double time_frame, bool stopAtEachFrame = false);
-        // bool                          MoveToNextFrame(double t);
-        void MoveToNextFrame();
-        // bool                          MoveToPreviousFrame(double t);
-        void MoveToPreviousFrame();
-        void MoveToDeltaTime(double dt, bool stopAtEachFrame = false);
-        void MoveToStart();
-        void MoveToEnd();
+        int GoToTime(double time_frame, bool stopAtEachFrame = false);
+        // /**
+        //  Go to specified timestamp forward
+        //  @param time_frame Timestamp
+        //  @param stopAtEachFrame Always stop for each step time frame
+        // */
+        // int GoToForwardTime(double time_frame, bool stopAtEachFrame = false);
+        // /**
+        //  Go to specified timestamp backward
+        //  @param time_frame Timestamp
+        //  @param stopAtEachFrame Always stop for each step time frame
+        // */
+        // int GoToBackwardTime(double time_frame, bool stopAtEachFrame = false);
+        /**
+         Go to next time frame forward available in the dat file
+        */
+        void GoToNextFrame();
+        /**
+         Go to previous frame backward available in the dat file
+        */
+        void GoToPreviousFrame();
+        /**
+         * Go to given delta time
+         */
+        void GoToDeltaTime(double dt, bool stopAtEachFrame = false);
+        void GoToStart();
+        void GoToEnd();
         bool IsObjAvailableInCache(int Id);  // check in cache
         bool IsObjAvailableActive(int id);
         void UpdateObjStatus(int id, bool status);
@@ -203,10 +221,10 @@ namespace scenarioengine
         bool                     repeat_;
         std::string              create_datfile_;
         bool                     show_restart_;
-        bool                     IsRestart     = false;
+        bool                     IsRestart_    = false;
         double                   previousTime_ = std::nan("");
 
-        datLogger::DatLogger* datLogger = nullptr;
+        datLogger::DatLogger* datLogger_ = nullptr;
         int                   FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
         bool                  IsValidPocket(id_t id);
     };

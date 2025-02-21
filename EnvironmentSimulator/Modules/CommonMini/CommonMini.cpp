@@ -675,7 +675,7 @@ bool CheckArrayRange0to1(double array[], int size)
     return false;
 }
 
-int adjustByOffsetArray(double (&array)[3], double limit)
+int AdjustByOffsetArray(double (&array)[3], double limit)
 {
     double fraction = 1.0;
     double max_val  = MAX(array[0], MAX(array[1], array[2]));

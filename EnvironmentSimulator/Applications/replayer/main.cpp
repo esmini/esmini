@@ -103,19 +103,19 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL) &&
                 keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
             {
-                player->MoveToDeltaTime(JUMP_DELTA_TIME_LARGE);
+                player->GoToDeltaTime(JUMP_DELTA_TIME_LARGE);
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
             {
-                player->MoveToDeltaTime(JUMP_DELTA_TIME_SMALL);
+                player->GoToDeltaTime(JUMP_DELTA_TIME_SMALL);
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
-                player->MoveToEnd();
+                player->GoToEnd();
             }
             else
             {
-                player->MoveToDeltaTime(player->deltaTime_);
+                player->GoToDeltaTime(player->deltaTime_);
             }
 
             pause_player = true;  // step by step
@@ -125,20 +125,20 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL) &&
                 keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
             {
-                player->MoveToDeltaTime(-JUMP_DELTA_TIME_LARGE);
+                player->GoToDeltaTime(-JUMP_DELTA_TIME_LARGE);
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
             {
-                player->MoveToDeltaTime(-JUMP_DELTA_TIME_SMALL);
+                player->GoToDeltaTime(-JUMP_DELTA_TIME_SMALL);
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
                 // rewind to beginning
-                player->MoveToStart();
+                player->GoToStart();
             }
             else
             {
-                player->MoveToDeltaTime(-player->deltaTime_);
+                player->GoToDeltaTime(-player->deltaTime_);
             }
 
             pause_player = true;  // step by step
@@ -334,7 +334,7 @@ int ParseEntities(Replay* player)
         {
             break;  // reached end of file
         }
-        player->MoveToNextFrame();
+        player->GoToNextFrame();
         player->CheckObjAvailabilityForward();
         player->UpdateCache();
     }
@@ -886,7 +886,7 @@ int main(int argc, char** argv)
             }
 
             player->SetStartTime(startTime);
-            player->MoveToTime(startTime);
+            player->GoToTime(startTime);
         }
 
         std::string stop_time_str = opt.GetOptionArg("stop_time");
@@ -942,7 +942,7 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
                 if (viewer_->GetSaveImagesToFile())
                 {
-                    player->MoveToDeltaTime(player->deltaTime_);  // move to next frame
+                    player->GoToDeltaTime(player->deltaTime_);  // move to next frame
                 }
                 else
                 {
@@ -963,7 +963,7 @@ int main(int argc, char** argv)
                     targetSimTime = simTime + deltaSimTime;
                 }
 #else
-                player->MoveToDeltaTime(player->deltaTime_, true);  // use delta time from scenario
+                player->GoToDeltaTime(player->deltaTime_, true);  // use delta time from scenario
 #endif  // _USE_OSG
             }
 
@@ -972,11 +972,11 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
                 if (!(pause_player || viewer_->GetSaveImagesToFile()))
                 {
-                    player->MoveToDeltaTime(deltaSimTime, true);
+                    player->GoToDeltaTime(deltaSimTime, true);
                     simTime = player->GetTime();
                 }
 #else
-                simTime = player->GetTime();                        // potentially wrapped for repeat
+                simTime = player->GetTime();                      // potentially wrapped for repeat
 #endif  // _USE_OSG
         // Fetch states of scenario objects
                 for (int index = 0; index < static_cast<int>(scenarioEntity.size()); index++)

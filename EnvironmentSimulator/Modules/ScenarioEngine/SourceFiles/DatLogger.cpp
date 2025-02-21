@@ -1,7 +1,7 @@
 // logDat
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <cstring>
 #include <chrono>
 #include <cmath>
@@ -746,7 +746,7 @@ void DatLogger::writePackage(CommonPkg package)
     }
 }
 
-void DatLogger::deleteObjState(int objId)
+void DatLogger::DeleteObjState(int objId)
 {
     for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)  // loop current state object id to find the object id
     {
@@ -759,8 +759,7 @@ void DatLogger::deleteObjState(int objId)
 
 int DatLogger::init(std::string fileName, int ver, std::string odrName, std::string modelName)
 {
-    std::ofstream data_file(fileName, std::ios::binary);
-    data_file_.open(fileName, std::ios::in | std::ios::out | std::ios::binary);
+    data_file_.open(fileName, std::ios::binary);
     if (data_file_.fail())
     {
         std::printf("Cannot open file: %s", fileName.c_str());

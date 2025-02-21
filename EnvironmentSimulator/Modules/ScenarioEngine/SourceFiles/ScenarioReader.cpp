@@ -3671,7 +3671,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         {
                             if (lightTypeChild.name() == std::string("VehicleLight"))
                             {
-                                if (lightStateAction->parseVehicleLightType(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"),
+                                if (lightStateAction->ParseVehicleLightType(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"),
                                                                             LightActionStatus))
                                 {  // unkown light type
                                     delete lightStateAction;
@@ -3708,7 +3708,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                         if (!parameters.ReadAttribute(LightStateActionChild, "mode").empty())
                         {
-                            lightStateAction->parseVehicleLightMode(parameters.ReadAttribute(LightStateActionChild, "mode"), LightActionStatus);
+                            lightStateAction->ParseVehicleLightMode(parameters.ReadAttribute(LightStateActionChild, "mode"), LightActionStatus);
                         }
                         else
                         {  // shall be stoped
@@ -3722,11 +3722,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             {  // set to Unkown if color node missing-default
                                 if (!parameters.ReadAttribute(colourChild, "colorType").empty())
                                 {
-                                    lightStateAction->parseVehicleLightColor(parameters.ReadAttribute(colourChild, "colorType"), LightActionStatus);
+                                    lightStateAction->ParseVehicleLightColor(parameters.ReadAttribute(colourChild, "colorType"), LightActionStatus);
                                 }
                                 else
                                 {  // set to other if colorType missing
-                                    lightStateAction->parseVehicleLightColor("other", LightActionStatus);
+                                    lightStateAction->ParseVehicleLightColor("other", LightActionStatus);
                                 }
                                 for (pugi::xml_node colourDesChild = colourChild.first_child(); colourDesChild;
                                      colourDesChild                = colourDesChild.next_sibling())
@@ -3772,7 +3772,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         return nullptr;
                     }
                 }
-                lightStateAction->setbaseRgbAndPrepare(LightActionStatus);
+                lightStateAction->SetbaseRgbAndPrepare(LightActionStatus);
                 lightStateAction->AddVehicleLightActionStatus(LightActionStatus);
                 action = lightStateAction;
             }

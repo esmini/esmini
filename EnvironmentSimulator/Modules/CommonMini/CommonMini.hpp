@@ -614,9 +614,11 @@ bool isEqualDouble(double val1, double val2);
 /**
         Check whether array contains at least one non-zero element
 */
-bool   CheckArrayRange0to1(double array[], int size);
-double findMinIncrementArray(double array[], double limit, double percent);
-int    adjustByOffsetArray(double (&array)[3], double limit);
+bool CheckArrayRange0to1(double array[], int size);
+/**
+        Adjust array values by limit
+*/
+int AdjustByOffsetArray(double (&array)[3], double limit);
 
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 #else

@@ -180,17 +180,17 @@ size_t Replay::GetNumberOfScenarios()
 
 Replay::~Replay()
 {
-    delete datLogger;
+    delete datLogger_;
 }
 
-void Replay::MoveToStart()
+void Replay::GoToStart()
 {
     InitiateStates();
 }
 
-void Replay::MoveToEnd()
+void Replay::GoToEnd()
 {
-    MoveToTime(stopTime_);
+    GoToTime(stopTime_);
 }
 
 int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
@@ -199,7 +199,7 @@ int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
 
     if (timestamp > stopTime_)
     {
-        MoveToEnd();
+        GoToEnd();
         return static_cast<int>(index_);
     }
     else if (timestamp < GetStartTime())
@@ -427,9 +427,9 @@ bool Replay::IsObjAvailableActive(int id)  // check in current state
     return status;
 }
 
-void Replay::MoveToDeltaTime(double dt, bool stopAtEachFrame)
+void Replay::GoToDeltaTime(double dt, bool stopAtEachFrame)
 {
-    MoveToTime(scenarioState.sim_time + dt, stopAtEachFrame);
+    GoToTime(scenarioState.sim_time + dt, stopAtEachFrame);
 }
 
 void Replay::GetRestartTimes()
@@ -472,7 +472,7 @@ void Replay::GetRestartTimes()
     }
 }
 
-void Replay::MoveToNextFrame()
+void Replay::GoToNextFrame()
 {
     for (size_t i = static_cast<size_t>(index_) + 1; i < pkgs_.size(); i++)
     {
@@ -486,7 +486,7 @@ void Replay::MoveToNextFrame()
     }
 }
 
-void Replay::MoveToPreviousFrame()
+void Replay::GoToPreviousFrame()
 {
     for (size_t i = static_cast<size_t>(index_) - 1; static_cast<int>(i) >= 0; i--)
     {
@@ -556,7 +556,7 @@ void Replay::CheckObjAvailabilityForward()
         {
             if (IsObjAvailableInCache(obj_id))  // make sure same obj deleted before adding the same object
             {
-                deleteObjState(obj_id);  // make sure same obj deleted before adding the same object
+                DeleteObjState(obj_id);  // make sure same obj deleted before adding the same object
             }
             AddObjState(static_cast<size_t>(objIdIndices[Index]));  // obj added in cache. this will also initiate this obj
             continue;
@@ -585,7 +585,7 @@ void Replay::CheckObjAvailabilityBackward()
     }
 }
 
-int Replay::MoveToTime(double t, bool stopAtEachFrame)
+int Replay::GoToTime(double t, bool stopAtEachFrame)
 {
     if ((t > stopTime_) || isEqualDouble(t, stopTime_))  // go to stop time
     {
@@ -609,7 +609,7 @@ int Replay::MoveToTime(double t, bool stopAtEachFrame)
             {
                 double       pervious_time_  = time_;
                 unsigned int pervious_index_ = index_;
-                MoveToNextFrame();
+                GoToNextFrame();
                 if (time_ > t + SMALL_NUMBER)  // gone past requested time
                 {
                     time_                  = pervious_time_;
@@ -647,7 +647,7 @@ int Replay::MoveToTime(double t, bool stopAtEachFrame)
         {
             while (!timeLapsed)
             {
-                MoveToPreviousFrame();
+                GoToPreviousFrame();
 
                 if (restartTimes.size() > 0)
                 {
@@ -702,6 +702,11 @@ int Replay::MoveToTime(double t, bool stopAtEachFrame)
     }
     return 0;
 }
+
+// int scenarioengine::Replay::GoToForwardTime(double time_frame, bool stopAtEachFrame)
+// {
+//     return 0;
+// }
 
 void Replay::SetStopEntries()
 {
@@ -761,7 +766,7 @@ void Replay::AddObjState(size_t idx)
     scenarioState.obj_states.push_back(stateObjId);
 }
 
-void Replay::deleteObjState(int objId)
+void Replay::DeleteObjState(int objId)
 {
     for (size_t i = 0; i < scenarioState.obj_states.size(); i++)  // loop current state object id to find the object id
     {
@@ -1450,34 +1455,34 @@ int Replay::CreateMergedDatfile(const std::string filename)
 {
     if (!filename.empty())
     {
-        if (datLogger == nullptr)
+        if (datLogger_ == nullptr)
         {
-            if ((datLogger = new datLogger::DatLogger()) == nullptr)
+            if ((datLogger_ = new datLogger::DatLogger()) == nullptr)
             {
                 return -1;
             }
 
-            if (datLogger->init(filename, header_.version, header_.odrFilename.string.data(), header_.modelFilename.string.data()) != 0)
+            if (datLogger_->init(filename, header_.version, header_.odrFilename.string.data(), header_.modelFilename.string.data()) != 0)
             {
-                delete datLogger;
-                datLogger = nullptr;
+                delete datLogger_;
+                datLogger_ = nullptr;
                 return -1;
             }
         }
     }
 
-    if (datLogger->IsFileOpen())
+    if (datLogger_->IsFileOpen())
     {
         for (size_t i = 0; i < pkgs_.size(); i++)
         {
             if (pkgs_[i].hdr.id == static_cast<int>(datLogger::PackageId::NAME))
             {
                 std::string name = pkgs_[i].content.data();
-                datLogger->WriteStringPkg(name, static_cast<datLogger::PackageId>(pkgs_[i].hdr.id));
+                datLogger_->WriteStringPkg(name, static_cast<datLogger::PackageId>(pkgs_[i].hdr.id));
             }
             else
             {
-                datLogger->writePackage(pkgs_[i]);
+                datLogger_->writePackage(pkgs_[i]);
             }
         }
     }

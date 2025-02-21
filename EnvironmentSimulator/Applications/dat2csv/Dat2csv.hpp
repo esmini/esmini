@@ -63,6 +63,6 @@ private:
     double                                  step_time_;
     bool                                    extended     = false;
     bool                                    include_refs = false;
-    std::ofstream                           file;
-    std::unique_ptr<scenarioengine::Replay> player;
+    std::ofstream                           file_;
+    std::unique_ptr<scenarioengine::Replay> player_;
 };

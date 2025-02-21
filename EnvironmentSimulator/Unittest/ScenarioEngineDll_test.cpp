@@ -2550,7 +2550,7 @@ TEST(ExternalControlTest, TestTimings)
         EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
         // Check timestep before 0.0
-        replay_->MoveToTime(-0.05);
+        replay_->GoToTime(-0.05);
         EXPECT_NEAR(replay_->scenarioState.sim_time, -0.05, 1E-3);
         replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
         EXPECT_EQ(name, "Ego");
@@ -2568,7 +2568,7 @@ TEST(ExternalControlTest, TestTimings)
         EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
         // Check timestep 0.0
-        replay_->MoveToTime(0.0);
+        replay_->GoToTime(0.0);
         EXPECT_NEAR(replay_->scenarioState.sim_time, 0.0, 1E-3);
         replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
         EXPECT_EQ(name, "Ego");
@@ -2586,7 +2586,7 @@ TEST(ExternalControlTest, TestTimings)
         EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
         // Check timestep after 0.0
-        replay_->MoveToTime(dt);
+        replay_->GoToTime(dt);
         EXPECT_NEAR(replay_->scenarioState.sim_time, dt, 1E-3);
         replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
         EXPECT_EQ(name, "Ego");
@@ -2605,7 +2605,7 @@ TEST(ExternalControlTest, TestTimings)
 
         if (j == 1)  // additional restart tests
         {
-            replay_->MoveToTime(2.1);
+            replay_->GoToTime(2.1);
             EXPECT_NEAR(replay_->scenarioState.sim_time, 2.1, 1E-3);
             replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
             EXPECT_EQ(name, "Ego");
@@ -2622,7 +2622,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_NEAR(replay_->GetX(replay_->scenarioState.obj_states[2].id), 61.0, 1E-3);
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
-            replay_->MoveToTime(2.3);  // show restart time
+            replay_->GoToTime(2.3);  // show restart time
             EXPECT_NEAR(replay_->scenarioState.sim_time, -0.75, 1E-3);
             replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
             EXPECT_EQ(name, "Ego");
@@ -2639,7 +2639,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_NEAR(replay_->GetX(replay_->scenarioState.obj_states[2].id), 131.502, 1E-3);
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
-            replay_->MoveToTime(-0.70);
+            replay_->GoToTime(-0.70);
             EXPECT_NEAR(replay_->scenarioState.sim_time, -0.70, 1E-3);
             replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
             EXPECT_EQ(name, "Ego");
@@ -2656,7 +2656,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_NEAR(replay_->GetX(replay_->scenarioState.obj_states[2].id), 132.005, 1E-3);
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
-            replay_->MoveToTime(2.2);
+            replay_->GoToTime(2.2);
             EXPECT_NEAR(replay_->scenarioState.sim_time, 2.2, 1E-3);
             replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
             EXPECT_EQ(name, "Ego");
@@ -2673,7 +2673,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_NEAR(replay_->GetX(replay_->scenarioState.obj_states[2].id), 169.124, 1E-3);
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
-            replay_->MoveToTime(2.3);
+            replay_->GoToTime(2.3);
             EXPECT_NEAR(replay_->scenarioState.sim_time, 2.3, 1E-3);
             replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
             EXPECT_EQ(name, "Ego");
@@ -2690,7 +2690,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_NEAR(replay_->GetX(replay_->scenarioState.obj_states[2].id), 170.624, 1E-3);
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
-            replay_->MoveToTime(8.1);
+            replay_->GoToTime(8.1);
             EXPECT_NEAR(replay_->scenarioState.sim_time, 8.1, 1E-3);
             replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
             EXPECT_EQ(name, "Ego");
@@ -2707,7 +2707,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_NEAR(replay_->GetX(replay_->scenarioState.obj_states[2].id), 257.624, 1E-3);
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
-            replay_->MoveToTime(8.2);  // shall be in second restart
+            replay_->GoToTime(8.2);  // shall be in second restart
             EXPECT_NEAR(replay_->scenarioState.sim_time, 5.25, 1E-3);
             replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
             EXPECT_EQ(name, "Ego");
@@ -2724,7 +2724,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_NEAR(replay_->GetX(replay_->scenarioState.obj_states[2].id), 313.376, 1E-3);
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
-            replay_->MoveToTime(8.1);
+            replay_->GoToTime(8.1);
             EXPECT_NEAR(replay_->scenarioState.sim_time, 8.1, 1E-3);
             replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
             EXPECT_EQ(name, "Ego");
@@ -2741,7 +2741,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_NEAR(replay_->GetX(replay_->scenarioState.obj_states[2].id), 363.748, 1E-3);
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
-            replay_->MoveToTime(8.2);
+            replay_->GoToTime(8.2);
             EXPECT_NEAR(replay_->scenarioState.sim_time, 8.2, 1E-3);
             replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
             EXPECT_EQ(name, "Ego");
@@ -2758,7 +2758,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_NEAR(replay_->GetX(replay_->scenarioState.obj_states[2].id), 365.748, 1E-3);
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[2].id), -1.5, 1E-3);
 
-            replay_->MoveToTime(8.3);
+            replay_->GoToTime(8.3);
             EXPECT_NEAR(replay_->scenarioState.sim_time, 8.3, 1E-3);
             replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
             EXPECT_EQ(name, "Ego");
@@ -4106,7 +4106,7 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
         scenarioengine::Replay* replay_ = new scenarioengine::Replay(".", "multirep_test", "");
         EXPECT_EQ(replay_->GetNumberOfScenarios(), 2);
 
-        replay_->MoveToTime(-2.5);
+        replay_->GoToTime(-2.5);
         EXPECT_NEAR(replay_->scenarioState.sim_time, -2.5, 1E-3);
         std::string name;
         replay_->GetName(replay_->scenarioState.obj_states[0].id, name);
@@ -4115,39 +4115,39 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
         replay_->GetName(replay_->scenarioState.obj_states[1].id, name1);
         EXPECT_EQ(name1, "Ego_ghost");
 
-        replay_->MoveToTime(-2.45);
+        replay_->GoToTime(-2.45);
         EXPECT_NEAR(replay_->scenarioState.sim_time, -2.45, 1E-3);
         std::string name2;
         replay_->GetName(replay_->scenarioState.obj_states[0].id, name2);
         EXPECT_EQ(name2, "Ego");
 
-        replay_->MoveToTime(-2.40);
+        replay_->GoToTime(-2.40);
         EXPECT_NEAR(replay_->scenarioState.sim_time, -2.40, 1E-3);
 
-        replay_->MoveToTime(0.0);
+        replay_->GoToTime(0.0);
         EXPECT_NEAR(replay_->scenarioState.sim_time, 0.0, 1E-3);
         EXPECT_NEAR(replay_->scenarioState.obj_states[0].id, 0, 1E-3);
         EXPECT_NEAR(replay_->scenarioState.obj_states[1].id, 1, 1E-3);
         EXPECT_NEAR(replay_->scenarioState.obj_states[2].id, 10, 1E-3);
         EXPECT_NEAR(replay_->scenarioState.obj_states[3].id, 11, 1E-3);
 
-        replay_->MoveToTime(0.01);
+        replay_->GoToTime(0.01);
         EXPECT_NEAR(replay_->scenarioState.sim_time, 0.01, 1E-3);
         EXPECT_NEAR(replay_->scenarioState.obj_states[0].id, 0, 1E-3);
 
-        replay_->MoveToTime(0.02);
+        replay_->GoToTime(0.02);
         EXPECT_NEAR(replay_->scenarioState.sim_time, 0.02, 1E-3);
         EXPECT_NEAR(replay_->scenarioState.obj_states[0].id, 0, 1E-3);
 
-        replay_->MoveToTime(0.09);
+        replay_->GoToTime(0.09);
         EXPECT_NEAR(replay_->scenarioState.sim_time, 0.09, 1E-3);
         EXPECT_NEAR(replay_->scenarioState.obj_states[3].id, 11, 1E-3);
 
-        replay_->MoveToTime(0.1);
+        replay_->GoToTime(0.1);
         EXPECT_NEAR(replay_->scenarioState.sim_time, 0.1, 1E-3);
         EXPECT_NEAR(replay_->scenarioState.obj_states[0].id, 0, 1E-3);
 
-        replay_->MoveToTime(4.78);
+        replay_->GoToTime(4.78);
         EXPECT_NEAR(replay_->scenarioState.sim_time, 4.78, 1E-3);
         EXPECT_NEAR(replay_->scenarioState.obj_states[0].id, 0, 1E-3);
         EXPECT_NEAR(replay_->scenarioState.obj_states[3].id, 11, 1E-3);
@@ -4156,7 +4156,7 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
         {
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[0].id), 130.994, 1E-3);
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[3].id), 207.392, 1E-3);
-            replay_->MoveToTime(19.51);
+            replay_->GoToTime(19.51);
             EXPECT_NEAR(replay_->scenarioState.sim_time, 19.51, 1E-3);
             EXPECT_NEAR(replay_->scenarioState.obj_states[1].id, 1, 1E-3);
         }
@@ -4164,7 +4164,7 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
         {
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[0].id), 130.913, 1E-3);
             EXPECT_NEAR(replay_->GetY(replay_->scenarioState.obj_states[3].id), 210.738, 1E-3);
-            replay_->MoveToTime(19.6);
+            replay_->GoToTime(19.6);
             EXPECT_NEAR(replay_->scenarioState.sim_time, 19.6, 1E-3);
             EXPECT_NEAR(replay_->scenarioState.obj_states[1].id, 1, 1E-3);
         }
@@ -4905,7 +4905,7 @@ TEST(TestLightStateAction, BrakeLightActionTest)
     SE_Close();
 }
 #endif
-#if 0
+
 #ifdef _USE_OSI
 TEST(TestLightStateAction, AdvancedLightStateActionTest)
 {
@@ -5103,16 +5103,16 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     EXPECT_DOUBLE_EQ(lightList.intensity, 6000);
     EXPECT_EQ(lightList.lightMode, 1);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.45);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.70);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.65);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2], 0.45);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[0], 0.0);
-    EXPECT_DOUBLE_EQ(lightList.baseRgb[1], 0.5);
+    EXPECT_DOUBLE_EQ(lightList.baseRgb[1], 0.4);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.0);
     EXPECT_EQ(car3BrakeState, 3);
 
     EXPECT_EQ(SE_GetVehicleLightStatus(4, 5, &lightList), 0);
     EXPECT_EQ(lightList.lightType, 5);
-    EXPECT_EQ(lightList.colorName, 0);
+    EXPECT_EQ(lightList.colorName, 3);
     EXPECT_DOUBLE_EQ(lightList.intensity, 6000);
     EXPECT_EQ(lightList.lightMode, 1);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.45);
@@ -5193,10 +5193,10 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     EXPECT_DOUBLE_EQ(lightList.intensity, 10000);
     EXPECT_EQ(lightList.lightMode, 1);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.75);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.83333333333333337);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.81666666666666665);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2], 0.75);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[0], 0.0);
-    EXPECT_DOUBLE_EQ(lightList.baseRgb[1], 0.5);
+    EXPECT_DOUBLE_EQ(lightList.baseRgb[1], 0.4);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.0);
     EXPECT_EQ(car3BrakeState, 3);
 
@@ -5204,7 +5204,7 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
 
     EXPECT_EQ(SE_GetVehicleLightStatus(4, 5, &lightList), 0);
     EXPECT_EQ(lightList.lightType, 5);
-    EXPECT_EQ(lightList.colorName, 0);
+    EXPECT_EQ(lightList.colorName, 3);
     EXPECT_DOUBLE_EQ(lightList.intensity, -1.0);
     EXPECT_EQ(lightList.lightMode, 0);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.0);
@@ -5347,10 +5347,10 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     EXPECT_DOUBLE_EQ(lightList.intensity, -1.0);
     EXPECT_EQ(lightList.lightMode, 0);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.0);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.5);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.4);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2], 0.0);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[0], 0.0);
-    EXPECT_DOUBLE_EQ(lightList.baseRgb[1], 0.5);
+    EXPECT_DOUBLE_EQ(lightList.baseRgb[1], 0.4);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.0);
     EXPECT_EQ(car3BrakeState, 2);
 
@@ -5463,10 +5463,10 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     EXPECT_EQ(lightList.lightMode, 1);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.45);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.45);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2], 0.70);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2], 0.65);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[0], 0.0);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[1], 0.0);
-    EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.5);
+    EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.4);
     EXPECT_EQ(car3BrakeState, 3);
 
     for (; t < 19.0f; t += dt)
@@ -5511,10 +5511,10 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     EXPECT_EQ(lightList.lightMode, 0);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.0);
     EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.0);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2], 0.5);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2], 0.4);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[0], 0.0);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[1], 0.0);
-    EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.5);
+    EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.4);
     EXPECT_EQ(car3BrakeState, 2);
 
     car5IndState = osi_gt.mutable_moving_object(5)->mutable_vehicle_classification()->mutable_light_state()->indicator_state();
@@ -5631,7 +5631,7 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     SE_Close();
 }
 #endif
-#endif
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
