@@ -78,7 +78,7 @@ namespace scenarioengine
         size_t                            GetPkgCntBtwObj(size_t idx);              // till next time forward
         datLogger::PackageId              ReadPkgHdr(char* package);
         double                            GetTimeFromCnt(int count);  // give time for the time
-        void                              GetRestartTimes();
+        void                              ExtractRestartTimes();
         std::vector<RestartTimes>         restartTimes_;
 
         // method for cache
@@ -179,13 +179,17 @@ namespace scenarioengine
         datLogger::DatLogger* datLogger_ = nullptr;
         datLogger::DatHdr     header_;
 
-        int  FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
-        bool IsValidPocket(id_t id);
-        void BuildData();
-        void AddObjState(size_t objId);  // add the object state for given object id from the current object state
-        void DeleteObjState(int objId);
-        bool IsObjectDeletePkg(size_t index) const;
-        bool IsObjIdAddPkg(size_t index) const;
+        int    FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
+        bool   IsValidPocket(id_t id);
+        void   BuildData();
+        void   AddObjState(size_t objId);  // add the object state for given object id from the current object state
+        void   DeleteObjState(int objId);
+        bool   IsObjectDeletePkg(size_t index) const;
+        bool   IsObjIdAddPkg(size_t index) const;
+        bool   IsObjIdPkg(size_t index) const;
+        bool   IsTimePkg(size_t index) const;
+        double GetDoubleContent(size_t index);
+        int    GetIntContent(size_t index);
     };
 
 }  // namespace scenarioengine

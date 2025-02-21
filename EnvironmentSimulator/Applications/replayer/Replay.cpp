@@ -18,10 +18,9 @@
 
 using namespace scenarioengine;
 
-// new replayer constructor
 Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false), show_restart_(false)
 {
-    RecordPkgs(filename);
+    RecordPkgs(filename);  // read the dat file and store the data in pkgs_
 
     // round time step to closest 6:th decimal of a second
     deltaTime_ = std::round(deltaTime_ / SMALL_NUMBER) * SMALL_NUMBER;
@@ -425,7 +424,7 @@ void Replay::GoToDeltaTime(double dt, bool stopAtEachFrame)
     GoToTime(scenarioState_.sim_time + dt, stopAtEachFrame);
 }
 
-void Replay::GetRestartTimes()
+void Replay::ExtractRestartTimes()
 {
     double       perviousTime  = -LARGE_NUMBER;
     unsigned int perviousIndex = 0;
@@ -433,9 +432,9 @@ void Replay::GetRestartTimes()
     {
         for (size_t i = 0; i < pkgs_.size(); i++)
         {
-            if (pkgs_[i].hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES))
+            if (IsTimePkg(i))
             {
-                double timeTemp = *reinterpret_cast<double*>(pkgs_[i].content.data());
+                double timeTemp = GetDoubleContent(i);
                 if (perviousTime > timeTemp)
                 {
                     RestartTimes restartTime;
@@ -469,11 +468,10 @@ void Replay::GoToNextFrame()
 {
     for (size_t i = static_cast<size_t>(index_) + 1; i < pkgs_.size(); i++)
     {
-        if (pkgs_[i].hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES))
+        if (IsTimePkg(i))
         {
-            double timeTemp = *reinterpret_cast<double*>(pkgs_[i].content.data());
-            index_          = static_cast<unsigned int>(i);
-            time_           = timeTemp;
+            time_  = GetDoubleContent(i);
+            index_ = static_cast<unsigned int>(i);
             break;
         }
     }
@@ -483,11 +481,10 @@ void Replay::GoToPreviousFrame()
 {
     for (size_t i = static_cast<size_t>(index_) - 1; static_cast<int>(i) >= 0; i--)
     {
-        if (pkgs_[i].hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES))
+        if (IsTimePkg(i))
         {
-            double timeTemp = *reinterpret_cast<double*>(pkgs_[i].content.data());
-            index_          = static_cast<unsigned int>(i);
-            time_           = timeTemp;
+            time_  = GetDoubleContent(i);
+            index_ = static_cast<unsigned int>(i);
             break;
         }
     }
@@ -499,7 +496,7 @@ void Replay::UpdateCache()
 
     for (const auto objIdIndex : objIdIndices)
     {
-        int    obj_id = *reinterpret_cast<int*>(pkgs_[objIdIndex].content.data());
+        int    obj_id = GetIntContent(objIdIndex);
         size_t pkgCnt = GetPkgCntBtwObj(objIdIndex);
         for (auto& obj : scenarioState_.obj_states)  // loop current state object id to find the object id
         {
@@ -525,11 +522,11 @@ void Replay::UpdateCache()
 
 void Replay::UpdateObjStatus(int id, bool status)
 {
-    for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)  // loop current state object id to find the object id
-    {
-        if (scenarioState_.obj_states[i].id == id)
+    for (auto& obj : scenarioState_.obj_states)  // Iterate by reference
+    {                                            // loop current state object id to find the object id
+        if (obj.id == id)
         {
-            scenarioState_.obj_states[i].active = status;
+            obj.active = status;
         }
     }
 }
@@ -537,10 +534,9 @@ void Replay::UpdateObjStatus(int id, bool status)
 void Replay::CheckObjAvailabilityForward()
 {
     // check all obj status in current time frame
-    std::vector<size_t> objIdIndices = GetNumberOfObjectsAtTime();
-    for (const auto index : objIdIndices)
+    for (const auto index : GetNumberOfObjectsAtTime())
     {
-        int obj_id = *reinterpret_cast<int*>(pkgs_[index].content.data());
+        int obj_id = GetIntContent(index);
         if (IsObjectDeletePkg(index + 1))
         {
             UpdateObjStatus(obj_id, false);  // obj not active in cache
@@ -561,10 +557,9 @@ void Replay::CheckObjAvailabilityForward()
 void Replay::CheckObjAvailabilityBackward()
 {
     // check all obj status in current time frame
-    std::vector<size_t> objIdIndices = GetNumberOfObjectsAtTime();
-    for (const auto index : objIdIndices)
+    for (const auto index : GetNumberOfObjectsAtTime())
     {
-        int obj_id = *reinterpret_cast<int*>(pkgs_[index].content.data());
+        int obj_id = GetIntContent(index);
         if (IsObjectDeletePkg(index + 1))
         {
             UpdateObjStatus(obj_id, true);  // obj added in cache with same state as when its deleted
@@ -700,9 +695,9 @@ void Replay::SetStopEntries()
 {
     for (size_t i = pkgs_.size() - 1; static_cast<int>(i) >= 0; i--)
     {
-        if (static_cast<datLogger::PackageId>(pkgs_[i].hdr.id) == datLogger::PackageId::TIME_SERIES)
+        if (IsTimePkg(i))
         {
-            stopTime_  = *reinterpret_cast<double*>(pkgs_[i].content.data());
+            stopTime_  = GetDoubleContent(i);
             stopIndex_ = static_cast<unsigned int>(i);
             break;
         }
@@ -715,13 +710,12 @@ double Replay::GetTimeFromCnt(int count)
     int    count_   = 0;
     for (size_t i = 0; i < pkgs_.size(); i++)  // return time if idx is already time pkg or find the respective time pkg for given pkg idx
     {
-        if (static_cast<datLogger::PackageId>(pkgs_[i].hdr.id) == datLogger::PackageId::TIME_SERIES)  // find time pkg for given pkg idx
+        if (IsTimePkg(i))  // find time pkg for given pkg idx
         {
             count_ += 1;
             if (count == count_)
             {
-                timeTemp = *reinterpret_cast<double*>(pkgs_[i].content.data());
-                break;
+                return GetDoubleContent(i);
             }
         }
     }
@@ -731,19 +725,18 @@ double Replay::GetTimeFromCnt(int count)
 void Replay::AddObjState(size_t idx)
 {
     ObjectStateWithObjId stateObjId;
-    if (static_cast<datLogger::PackageId>(pkgs_[idx].hdr.id) != datLogger::PackageId::OBJ_ID)
+    if (!IsObjIdPkg(idx))
     {
         LOG_ERROR_AND_QUIT(" Initialization error->Stop replay ");
     }
-    stateObjId.id     = *reinterpret_cast<int*>(pkgs_[idx].content.data());
+    stateObjId.id     = GetIntContent(idx);
     stateObjId.active = true;
     size_t pkgCount   = GetPkgCntBtwObj(idx);
 
     for (size_t i = idx + 1; i < pkgCount + idx + 1; i++)
     {  // GetPkgCntBtwObj will return count of package
 
-        if (datLogger::PackageId::OBJ_ADDED == static_cast<datLogger::PackageId>(pkgs_[i].hdr.id) ||
-            datLogger::PackageId::OBJ_DELETED == static_cast<datLogger::PackageId>(pkgs_[i].hdr.id))
+        if (IsObjIdAddPkg(i) || IsObjectDeletePkg(i))
         {
             continue;  // skip packages.
         }
@@ -760,7 +753,6 @@ void Replay::DeleteObjState(int objId)
     {
         if (scenarioState_.obj_states[i].id == objId)  // found object id
         {
-            // scenarioState.obj_states[i].active = false;
             scenarioState_.obj_states.erase(scenarioState_.obj_states.begin() + static_cast<unsigned int>(i));
             break;
         }
@@ -775,6 +767,28 @@ bool scenarioengine::Replay::IsObjectDeletePkg(size_t index) const
 bool scenarioengine::Replay::IsObjIdAddPkg(size_t index) const
 {
     return pkgs_[index].hdr.id == static_cast<int>(datLogger::PackageId::OBJ_ADDED);
+}
+
+bool scenarioengine::Replay::IsObjIdPkg(size_t index) const
+{
+    return static_cast<datLogger::PackageId>(pkgs_[index].hdr.id) == datLogger::PackageId::OBJ_ID;
+}
+
+bool scenarioengine::Replay::IsTimePkg(size_t index) const
+{
+    return static_cast<datLogger::PackageId>(pkgs_[index].hdr.id) == datLogger::PackageId::TIME_SERIES;
+}
+
+double scenarioengine::Replay::GetDoubleContent(size_t index)
+{
+    return *reinterpret_cast<double*>(pkgs_[index].content.data());
+    ;
+}
+
+int scenarioengine::Replay::GetIntContent(size_t index)
+{
+    return *reinterpret_cast<int*>(pkgs_[index].content.data());
+    ;
 }
 
 void Replay::InitiateStates()

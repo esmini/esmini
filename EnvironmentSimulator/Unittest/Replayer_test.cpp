@@ -881,7 +881,7 @@ TEST(TestReplayer, ShowRestart)
 
     // with show restart
     replayer_->SetShowRestart(true);
-    replayer_->GetRestartTimes();
+    replayer_->ExtractRestartTimes();
 
     ASSERT_EQ(replayer_->restartTimes_.size(), 2);
     ASSERT_EQ(replayer_->restartTimes_[0].restart_index_, 2161);
@@ -1016,7 +1016,7 @@ TEST(TestReplayer, NotShowRestart)
 
     // with no show restart
     replayer_->SetShowRestart(false);
-    replayer_->GetRestartTimes();
+    replayer_->ExtractRestartTimes();
 
     replayer_->GoToTime(replayer_->restartTimes_[0].restart_time_);  // first restart triggered frame
     ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
