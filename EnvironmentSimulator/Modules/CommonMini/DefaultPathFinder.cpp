@@ -1,14 +1,14 @@
 #include "DefaultPathFinder.hpp"
 
 #if defined(_WIN32) || defined(__CYGWIN__)
-    #include <windows.h>
+#include <windows.h>
 #elif defined(__APPLE__)
-    #include <mach-o/dyld.h>
-    #include <dlfcn.h>
+#include <mach-o/dyld.h>
+#include <dlfcn.h>
 #elif defined(__linux__)
-    #include <dlfcn.h>
-    #include <unistd.h>
-    #include <limits.h>
+#include <dlfcn.h>
+#include <unistd.h>
+#include <limits.h>
 #endif
 
 #include <stdexcept>
@@ -39,7 +39,7 @@ extern "C" std::string GetLibraryPath()
 
     Dl_info dl_info;
 
-    //Use dladdr to retrieve the path of the loaded library
+    // Use dladdr to retrieve the path of the loaded library
     if (dladdr((void*)&GetLibraryPath, &dl_info) == 0)
     {
         throw std::runtime_error("Failed to get library path.");
