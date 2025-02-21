@@ -253,28 +253,6 @@ int ScenarioEngine::step(double deltaSimTime)
         }
     }
 
-    // if (entities_.object_distance_map_.empty())
-    // {
-    // auto dist_type = roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL;
-    // double dist1, dist2, timestamp1, timestamp2;
-    // int res = GetDistance(0, 2, roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN, dist1, timestamp1);
-    // int res2 = GetDistance(0, 2, dist_type, dist2, timestamp2);
-    // if (res != -1)
-    // {
-    //     std::cout << "id " << 0 << " to id " << 2 << " dist " << dist1 << " at time " << timestamp1 << "\n";
-    //     std::cout << "id " << 0 << " to id " << 2 << " dist " << dist2 << " at time " << timestamp2 << "\n";
-    // }
-    // res = GetDistance(0, 2, dist_type, dist1, timestamp);
-    // if (res != -1)
-    // {
-    //     std::cout << "id " << 0 << " to id " << 2 << " dist " << dist1 << " at time " << timestamp << "\n";
-    // }
-    // res = GetDistance(0, 3, dist_type, dist1, timestamp);
-    // if (res != -1)
-    // {
-    //     std::cout << "id " << 0 << " to id " << 3 << " dist " << dist1 << " at time " << timestamp << "\n";
-    // }
-
     storyBoard.Step(simulationTime_, deltaSimTime);
 
     if (storyBoard.GetCurrentState() == StoryBoardElement::State::RUNNING)
@@ -1479,7 +1457,6 @@ int ScenarioEngine::GetDistance(int id_1, int id_2, roadmanager::RelativeDistanc
         }
         else
         {
-            LOG_INFO("Distance between {} and {} is very far and no teleport detected, only euclidian dist calculated at time {}", id_1, id_2, object_distance_map_[pair].distance_[roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN].timestamp_);
             return -1;
         }
     }
