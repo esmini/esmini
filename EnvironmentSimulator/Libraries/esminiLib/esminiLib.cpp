@@ -1686,15 +1686,16 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_UpdateOSIGroundTruth(bool refetchStaticGt)
+    SE_DLL_API int SE_UpdateOSIGroundTruth(bool refetchStaticGt, bool logStaticGt)
     {
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_, refetchStaticGt);
+            return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_, refetchStaticGt, logStaticGt);
         }
 #else
         (void)refetchStaticGt;
+        (void)logStaticGt;
 #endif  // _USE_OSI
         return 0;
     }

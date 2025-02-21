@@ -1417,7 +1417,7 @@ extern "C"
             @param refetchStaticGt Optional flag, whether to include static ground truth in OSI data structure or not
             @return 0
     */
-    SE_DLL_API int SE_UpdateOSIGroundTruth(bool refetchStaticGt = false);
+    SE_DLL_API int SE_UpdateOSIGroundTruth(bool refetchStaticGt = false, bool logStaticGt = false);
 
     /**
             The SE_UpdateOSIStaticGroundTruth function updates OSI static Groundtruth

@@ -315,14 +315,14 @@ int OSIReporter::ClearOSIGroundTruth()
     return 0;
 }
 
-int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, bool refetchStaticGt)
+int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, bool refetchStaticGt, bool logStaticGt)
 {
     // osi_static_gt_loaded == 0 means its loaded, then static_gt_set == true as it is already set
     bool static_gt_set = (osi_static_gt_loaded_ == 0) ? true : false;
     if (GetUpdated() == true)
     {
         // We want static data but its not been set, dont return
-        if (refetchStaticGt && !static_gt_set)
+        if ((refetchStaticGt || logStaticGt) && !static_gt_set)
         {
             // Don't return
         }
@@ -333,8 +333,8 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
         }
     }
 
-    // We dont want to refetch data but it is set, so we clear it
-    if (!refetchStaticGt && static_gt_set)
+    // We dont want to refetch data and not log static data but it is set, so we clear it
+    if (!refetchStaticGt && !logStaticGt && static_gt_set)
     {
         ClearOSIGroundTruth();
         osi_static_gt_loaded_ = -1;
@@ -351,7 +351,12 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
     {
         UpdateOSIDynamicGroundTruth(objectState);
 
-        if ((GetUDPClientStatus() == 0 || IsFileOpen()))
+        if (GetCounter() > 0 && logStaticGt && !static_gt_set)
+        {
+            osi_static_gt_loaded_ = SetOSIStaticExternalData();
+        }
+
+        if (GetUDPClientStatus() == 0 || IsFileOpen())
         {
             obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
             osiGroundTruth.size = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
@@ -366,11 +371,11 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
     // We want to get static gt data
     if (GetCounter() > 0 && refetchStaticGt)
     {
-        if (!static_gt_set)
+        if (osi_static_gt_loaded_ != 0)
         {
             osi_static_gt_loaded_ = SetOSIStaticExternalData();
         }
-        // Clear the static data now when it has been reported once
+
         if (GetUDPClientStatus() == 0)
         {
             obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
