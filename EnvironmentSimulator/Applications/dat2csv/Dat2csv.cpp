@@ -43,18 +43,17 @@ Dat2csv::~Dat2csv()
 {
 }
 
-void Dat2csv::PrintData(size_t i)
+void Dat2csv::PrintData(int obj_id)
 {
     static char line[MAX_LINE_LEN];
-    int         obj_id = player_->scenarioState.obj_states[i].id;
     std::string name;
     player_->GetName(obj_id, name);
-    if (!extended)
+    if (!extended_)
     {
         snprintf(line,
                  MAX_LINE_LEN,
                  "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
-                 player_->scenarioState.sim_time,
+                 player_->scenarioState_.sim_time,
                  obj_id,
                  name.c_str(),
                  player_->GetX(obj_id),
@@ -73,7 +72,7 @@ void Dat2csv::PrintData(size_t i)
         snprintf(line,
                  MAX_LINE_LEN,
                  "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %d, %d, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, ",
-                 player_->scenarioState.sim_time,
+                 player_->scenarioState_.sim_time,
                  obj_id,
                  name.c_str(),
                  player_->GetX(obj_id),
@@ -107,21 +106,41 @@ void Dat2csv::PrintData(size_t i)
     }
 }
 
+void Dat2csv::SetLogExtended(bool option)
+{
+    extended_ = option;
+}
+
+void Dat2csv::SetIncludeRefs(bool option)
+{
+    include_refs_ = option;
+}
+
+void Dat2csv::SetLogMode(Dat2csv::log_mode mode_)
+{
+    log_mode_ = mode_;
+}
+
+void Dat2csv::SetStepTime(double t)
+{
+    step_time_ = t;
+}
+
 void Dat2csv::CreateCSV()
 {
     static char line[MAX_LINE_LEN];
-    if (include_refs)
+    if (include_refs_)
     {
         // First output header and CSV labels
         snprintf(line,
                  MAX_LINE_LEN,
                  "Version: %d, OpenDRIVE: %s, 3DModel: %s\n",
-                 player_->header_.version,
-                 player_->header_.odrFilename.string.data(),
-                 player_->header_.modelFilename.string.data());
+                 player_->GetHeader().version,
+                 player_->GetHeader().odrFilename.string.data(),
+                 player_->GetHeader().modelFilename.string.data());
         file_ << line;
     }
-    if (!extended)
+    if (!extended_)
     {
         snprintf(line, MAX_LINE_LEN, "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot\n");
         file_ << line;
@@ -149,11 +168,11 @@ void Dat2csv::CreateCSV()
         }
         while (true)
         {
-            for (size_t i = 0; i < player_->scenarioState.obj_states.size(); i++)
+            for (const auto obj : player_->scenarioState_.obj_states)
             {
-                if (player_->scenarioState.obj_states[i].active)
+                if (obj.active)
                 {
-                    PrintData(i);
+                    PrintData(obj.id);
                 }
             }
 
@@ -189,24 +208,26 @@ void Dat2csv::CreateCSV()
     }
     else if (log_mode_ == log_mode::ORIGINAL)
     {  // default setting, write time stamps available only in dat file
-        for (size_t j = 0; j < player_->pkgs_.size(); j++)
+        unsigned int index = 0;
+        for (auto pkg : player_->pkgs_)
         {
-            if (player_->pkgs_[j].hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES))
+            if (pkg.hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES))
             {
-                double timeTemp = *reinterpret_cast<double*>(player_->pkgs_[j].content.data());
+                double timeTemp = *reinterpret_cast<double*>(pkg.content.data());
 
                 // next time
                 player_->SetTime(timeTemp);
-                player_->SetIndex(static_cast<int>(j));
+                player_->SetIndex(index);
+                index++;
 
                 player_->CheckObjAvailabilityForward();
                 player_->UpdateCache();
-                player_->scenarioState.sim_time = timeTemp;
-                for (size_t i = 0; i < player_->scenarioState.obj_states.size(); i++)
+                player_->scenarioState_.sim_time = timeTemp;
+                for (const auto obj : player_->scenarioState_.obj_states)
                 {
-                    if (player_->scenarioState.obj_states[i].active)
+                    if (obj.active)
                     {
-                        PrintData(i);
+                        PrintData(obj.id);
                     }
                 }
             }

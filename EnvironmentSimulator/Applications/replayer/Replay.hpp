@@ -26,8 +26,6 @@ namespace scenarioengine
         double               odometer;
     } ReplayEntry;
 
-    // new replayer
-    // cache for reading states
     typedef struct
     {
         char* pkg;
@@ -63,8 +61,6 @@ namespace scenarioengine
 
         ~Replay();
 
-        datLogger::DatHdr header_;
-
         // vectors and methods to handle multiple files
         std::vector<std::pair<std::pair<std::string, bool>, std::vector<datLogger::CommonPkg>>> scenarioData;
         std::vector<int>                                                                        objectIds;
@@ -76,14 +72,14 @@ namespace scenarioengine
 
         // vector and method for record and read pkg
         std::vector<datLogger::CommonPkg> pkgs_;
-        ScenarioState                     scenarioState;
+        ScenarioState                     scenarioState_;
         int                               RecordPkgs(const std::string& fileName);  // check package can be recorded or not
         std::vector<int>                  GetNumberOfObjectsAtTime();               // till next time forward
         int                               GetPkgCntBtwObj(size_t idx);              // till next time forward
         datLogger::PackageId              ReadPkgHdr(char* package);
         double                            GetTimeFromCnt(int count);  // give time for the time
         void                              GetRestartTimes();
-        std::vector<RestartTimes>         restartTimes;
+        std::vector<RestartTimes>         restartTimes_;
 
         // method for cache
         void InitiateStates();
@@ -96,18 +92,6 @@ namespace scenarioengine
          @param stopAtEachFrame Always stop for each step time frame
         */
         int GoToTime(double time_frame, bool stopAtEachFrame = false);
-        // /**
-        //  Go to specified timestamp forward
-        //  @param time_frame Timestamp
-        //  @param stopAtEachFrame Always stop for each step time frame
-        // */
-        // int GoToForwardTime(double time_frame, bool stopAtEachFrame = false);
-        // /**
-        //  Go to specified timestamp backward
-        //  @param time_frame Timestamp
-        //  @param stopAtEachFrame Always stop for each step time frame
-        // */
-        // int GoToBackwardTime(double time_frame, bool stopAtEachFrame = false);
         /**
          Go to next time frame forward available in the dat file
         */
@@ -131,56 +115,22 @@ namespace scenarioengine
         // method to handle private members
         void   SetStartTime(double time);
         void   SetStopTime(double time);
-        double GetStartTime()
-        {
-            return startTime_;
-        }
+        double GetStartTime();
 
-        double GetStopTime()
-        {
-            return stopTime_;
-        }
-
-        double GetTime()
-        {
-            return scenarioState.sim_time;
-        }
-
-        int GetIndex()
-        {
-            return static_cast<int>(index_);
-        }
-
-        void SetTime(double t)
-        {
-            time_ = t;
-        }
-
-        void SetIndex(int index)
-        {
-            index_ = static_cast<unsigned int>(index);
-        }
-
-        void SetRepeat(bool repeat)
-        {
-            repeat_ = repeat;
-        }
-
-        void UpdateOdaMeter(int obj_id, double value);
-
-        void SetShowRestart(bool showRestart)
-        {
-            show_restart_ = showRestart;
-        }
-
-        void   SetStopEntries();
-        double deltaTime_ = LARGE_NUMBER;
-
+        double                GetStopTime();
+        double                GetTime();
+        int                   GetIndex();
+        void                  SetTime(double t);
+        void                  SetIndex(unsigned int index);
+        void                  SetRepeat(bool repeat);
+        void                  UpdateOdaMeter(int obj_id, double value);
+        void                  SetShowRestart(bool showRestart);
+        void                  SetStopEntries();
+        double                deltaTime_ = LARGE_NUMBER;
         datLogger::LightState perviousLightState;
         datLogger::LightState defaultLightState;
         bool                  show_lights     = false;
         bool                  IsLightPkgFound = false;
-
         // method to read data from cache
         int                     GetModelID(int obj_id);
         int                     GetCtrlType(int obj_id);
@@ -209,6 +159,8 @@ namespace scenarioengine
         void                    GetRgbValues(int obj_id, Object::VehicleLightActionStatus* light_state);
         void                    GetLightStates(int obj_id, datLogger::LightState& light_states_);
 
+        const datLogger::DatHdr GetHeader() const;
+
     private:
         std::ifstream            file_;
         std::vector<std::string> scenarios_;
@@ -225,8 +177,10 @@ namespace scenarioengine
         double                   previousTime_ = std::nan("");
 
         datLogger::DatLogger* datLogger_ = nullptr;
-        int                   FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
-        bool                  IsValidPocket(id_t id);
+        datLogger::DatHdr     header_;
+
+        int  FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
+        bool IsValidPocket(id_t id);
     };
 
 }  // namespace scenarioengine

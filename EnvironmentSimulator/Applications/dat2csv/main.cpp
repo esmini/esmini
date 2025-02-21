@@ -115,7 +115,7 @@ int main(int argc, char** argv)
         }
         else
         {
-            printf("Failed to provide fixed time step, Logging with default step time 0.05 \n");
+            LOG_WARN("Failed to provide fixed time step, Logging with default step time 0.05 ");
         }
     }
 

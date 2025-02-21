@@ -205,10 +205,10 @@ int ParseEntities(Replay* player)
 
     while (true)
     {
-        for (int i = 0; i < static_cast<int>(player->scenarioState.obj_states.size()); i++)
+        for (int i = 0; i < static_cast<int>(player->scenarioState_.obj_states.size()); i++)
         {
             OdoInfo odo_entry;
-            int     obj_id = player->scenarioState.obj_states[static_cast<size_t>(i)].id;
+            int     obj_id = player->scenarioState_.obj_states[static_cast<size_t>(i)].id;
 
             if (no_ghost && player->GetCtrlType(obj_id) == GHOST_CTRL_TYPE)
             {
@@ -534,32 +534,32 @@ int main(int argc, char** argv)
 
     try
     {
-        if (strcmp(player->header_.odrFilename.string.data(), ""))
+        if (strcmp(player->GetHeader().odrFilename.string.data(), ""))
         {
             // find and OpenDRIVE file. Test some combinations of paths and filename
             std::vector<std::string> file_name_candidates;
 
             // just filepath as stated in .dat file
-            file_name_candidates.push_back(player->header_.odrFilename.string.data());
+            file_name_candidates.push_back(player->GetHeader().odrFilename.string.data());
 
             // Check registered paths
             for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
             {
                 // Including file path
                 file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], player->header_.odrFilename.string.data()));
+                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], player->GetHeader().odrFilename.string.data()));
 
                 // Excluding file path
                 file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(player->header_.odrFilename.string.data())));
+                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(player->GetHeader().odrFilename.string.data())));
 
                 // Including file path and xodr sub folder
-                file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", FileNameOf(player->header_.odrFilename.string.data())));
+                file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/",
+                                                                               FileNameOf(player->GetHeader().odrFilename.string.data())));
 
                 // Excluding file path but add xodr sub folder
                 file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", player->header_.odrFilename.string.data()));
+                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", player->GetHeader().odrFilename.string.data()));
             }
 
             size_t i;
@@ -576,7 +576,7 @@ int main(int argc, char** argv)
 
             if (i == file_name_candidates.size())
             {
-                printf("Failed to load OpenDRIVE file %s. Tried:\n", player->header_.odrFilename.string.data());
+                printf("Failed to load OpenDRIVE file %s. Tried:\n", player->GetHeader().odrFilename.string.data());
                 for (int j = 0; j < static_cast<int>(file_name_candidates.size()); j++)
                 {
                     printf("   %s\n", file_name_candidates[static_cast<unsigned int>(j)].c_str());
@@ -590,7 +590,7 @@ int main(int argc, char** argv)
         roadmanager::OpenDrive* odrManager    = roadmanager::Position::GetOpenDrive();
         osg::ArgumentParser     arguments(&argc, argv);
 
-        viewer_ = new viewer::Viewer(odrManager, player->header_.modelFilename.string.data(), NULL, argv[0], arguments, &opt);
+        viewer_ = new viewer::Viewer(odrManager, player->GetHeader().modelFilename.string.data(), NULL, argv[0], arguments, &opt);
 
         if (viewer_ == nullptr)
         {
@@ -1005,7 +1005,7 @@ int main(int argc, char** argv)
                             snprintf(info_str_buf,
                                      sizeof(info_str_buf),
                                      "%.3fs entity[%d]: %s (%d) NO INFO",
-                                     player->scenarioState.sim_time,
+                                     player->scenarioState_.sim_time,
                                      viewer_->currentCarInFocus_,
                                      sc->name.c_str(),
                                      sc->id);
@@ -1043,11 +1043,11 @@ int main(int argc, char** argv)
                         snprintf(info_str_buf,
                                  sizeof(info_str_buf),
                                  "%.3fs entity[%d]: %s (%d) %.2fs %.2fkm/h %.2fm (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f ",
-                                 player->scenarioState.sim_time,
+                                 player->scenarioState_.sim_time,
                                  viewer_->currentCarInFocus_,
                                  name.c_str(),
                                  scenarioEntity[static_cast<unsigned int>(index)].id,
-                                 player->scenarioState.sim_time,
+                                 player->scenarioState_.sim_time,
                                  3.6 * player->GetSpeed(scenarioEntity[static_cast<unsigned int>(index)].id),
                                  player->GetOdaMeter(scenarioEntity[static_cast<unsigned int>(index)].id),
                                  player->GetRoadId(scenarioEntity[static_cast<unsigned int>(index)].id),

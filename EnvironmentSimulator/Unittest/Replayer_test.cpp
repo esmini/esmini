@@ -70,40 +70,40 @@ TEST(TestReplayer, WithOneObject)
     std::unique_ptr<scenarioengine::Replay> replayer_ = std::make_unique<scenarioengine::Replay>(fileName);
 
     ASSERT_EQ(replayer_->pkgs_.size(), 21);  // header not stored, 1 scenario end pkg added
-    ASSERT_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(1));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 2);
+    ASSERT_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(1));
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 2);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(2));
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, 1.1220000000000001);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 2.0);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, 1.1220000000000001);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 2.0);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(4));
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(4));
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 4.0);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(4));
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 4.0);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(5));
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(5));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 4.0);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(5));
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 4.0);
 }
 
 TEST(TestReplayer, WithTwoObject)
@@ -163,63 +163,63 @@ TEST(TestReplayer, WithTwoObject)
     std::unique_ptr<scenarioengine::Replay> replayer_ = std::make_unique<scenarioengine::Replay>(fileName);
 
     ASSERT_EQ(replayer_->pkgs_.size(), 35);  // header not stored, 1 scenario end pkg added
-    ASSERT_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(1));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 2);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 2);
+    ASSERT_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(1));
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 2);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 2);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(2));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 2);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 2);
     ASSERT_DOUBLE_EQ(replayer_->GetTimeFromCnt(2), 1.1220000000000001);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 2.0);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[1].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[1].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[1].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[1].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[1].id), 2.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 2.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[1].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[1].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[1].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[1].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[1].id), 2.0);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(4));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 2);
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(4));
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 4.0);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[1].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[1].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[1].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[1].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[1].id), 4.0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 2);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(4));
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 4.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[1].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[1].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[1].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[1].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[1].id), 4.0);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(5));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 2);
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(5));
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 4.0);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[1].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[1].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[1].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[1].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[1].id), 4.0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 2);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(5));
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 4.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[1].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[1].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[1].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[1].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[1].id), 4.0);
 }
 
 TEST(TestReplayer, WithTwoObjectAndAdd)
@@ -279,57 +279,57 @@ TEST(TestReplayer, WithTwoObjectAndAdd)
     std::unique_ptr<scenarioengine::Replay> replayer_ = std::make_unique<scenarioengine::Replay>(fileName);
     ASSERT_EQ(replayer_->pkgs_.size(), 51);  // header not stored.
 
-    ASSERT_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(1));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 2);
+    ASSERT_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(1));
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 2);
     ASSERT_DOUBLE_EQ(replayer_->GetTimeFromCnt(2), 1.122);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(2));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(2));
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 2.0);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[1].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[1].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[1].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[1].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[1].id), 2.0);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[2].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[2].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[2].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[2].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[2].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[2].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[2].id), 2.0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(2));
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 2.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[1].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[1].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[1].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[1].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[1].id), 2.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[2].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[2].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[2].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[2].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[2].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[2].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[2].id), 2.0);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(3));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);  // obj deleted
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(3));
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].id, 0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[1].id, 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[2].id, 2);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[2].active, false);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 3.0);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[1].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[1].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[1].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[1].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[1].id), 3.0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);  // obj deleted
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(3));
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].id, 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[1].id, 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[2].id, 2);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[2].active, false);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 3.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[1].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[1].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[1].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[1].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[1].id), 3.0);
 }
 
 TEST(TestReplayer, WithTwoObjectAndDelete)
@@ -390,57 +390,57 @@ TEST(TestReplayer, WithTwoObjectAndDelete)
     ASSERT_EQ(replayer_->pkgs_.size(), 51);  // header not stored.
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(4));
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(4));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);  // obj added
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].id, 0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[1].id, 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[2].id, 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 4.0);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[1].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[1].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[1].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[1].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[1].id), 4.0);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[2].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[2].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[2].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[2].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[2].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[2].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[2].id), 4.0);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(4));
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);  // obj added
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].id, 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[1].id, 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[2].id, 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 4.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[1].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[1].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[1].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[1].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[1].id), 4.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[2].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[2].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[2].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[2].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[2].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[2].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[2].id), 4.0);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(5));
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(5));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 4.0);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[1].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[1].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[1].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[1].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[1].id), 4.0);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[2].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[2].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[2].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[2].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[2].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[2].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[2].id), 4.0);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(5));
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 4.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[1].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[1].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[1].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[1].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[1].id), 4.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[2].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[2].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[2].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[2].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[2].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[2].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[2].id), 4.0);
 }
 
 TEST(TestDat2csv, WithTwoObjectAddAndDelete)
@@ -582,29 +582,29 @@ TEST(TestReplayer, RepeatedObjectState)
     std::unique_ptr<scenarioengine::Replay> replayer_ = std::make_unique<scenarioengine::Replay>(fileName);
     ASSERT_EQ(replayer_->pkgs_.size(), 7);  // header not stored, last time added
 
-    ASSERT_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(1));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 2);
+    ASSERT_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(1));
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 2);
     ASSERT_DOUBLE_EQ(replayer_->GetTimeFromCnt(1), 0.033000000000000002);
 
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 1.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 1.0);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(2));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
     EXPECT_NEAR(replayer_->GetTimeFromCnt(2), 5.4779999999999998, 1E-3);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), 2);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 4);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 5);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 1.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), 2);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 4);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 5);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 6);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 1.0);
 }
 
 TEST(TestReplayer, SimpleScenario)
@@ -626,61 +626,61 @@ TEST(TestReplayer, SimpleScenario)
     ASSERT_EQ(replayer_->pkgs_.size(), 3171);
 
     replayer_->GoToTime(2.0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 2.00, 1E-3);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 2.48064172555961);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelAngle(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[0].id), 5.026893138885498);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 2.00, 1E-3);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 2.48064172555961);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelAngle(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState_.obj_states[0].id), 5.026893138885498);
     std::string name;
-    replayer_->GetName(replayer_->scenarioState.obj_states[0].id, name);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[0].id, name);
     EXPECT_EQ(name, "Car");
 
     replayer_->GoToTime(8.0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 8.0, 1E-3);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 13.888889000000001);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[0].id), 5.949242115020752);
-    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 8.0, 1E-3);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 13.888889000000001);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState_.obj_states[0].id), 5.949242115020752);
+    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState_.obj_states[0].id), 0);
 
     replayer_->GoToTime(15.0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 15.0, 1E-3);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 13.888889000000001);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[0].id), 0.98368740081787109);
-    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 15.0, 1E-3);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 13.888889000000001);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState_.obj_states[0].id), 0.98368740081787109);
+    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState_.obj_states[0].id), 0);
 
     // going back in time
     replayer_->GoToTime(13.0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 13.0, 1E-3);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 13.888889000000001);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[0].id), 3.3000152111053467);
-    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 13.0, 1E-3);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 13.888889000000001);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState_.obj_states[0].id), 3.3000152111053467);
+    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState_.obj_states[0].id), 0);
 
     replayer_->GoToTime(7.0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 7.0, 1E-3);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 13.862463334428035);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[0].id), 3.9691176414489746);
-    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 7.0, 1E-3);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 13.862463334428035);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState_.obj_states[0].id), 3.9691176414489746);
+    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState_.obj_states[0].id), 0);
 
     replayer_->GoToTime(4.0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 4.0, 1E-3);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 8.150334905687135);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[0].id), 3.7510917186737061);
-    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 4.0, 1E-3);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 8.150334905687135);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState_.obj_states[0].id), 3.7510917186737061);
+    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState_.obj_states[0].id), 0);
 
     delete replayer_;
 }
@@ -703,49 +703,49 @@ TEST(TestReplayer, SpeedChangeScenario)
     scenarioengine::Replay* replayer_ = new scenarioengine::Replay("new_sim.dat");
     ASSERT_EQ(replayer_->pkgs_.size(), 3212);
 
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
     replayer_->GoToTime(18);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 18.0, 1E-3);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 113.66666721531664);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5349999999999999);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 0.0);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_EQ(replayer_->GetObjCategory(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 18.0, 1E-3);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 113.66666721531664);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5349999999999999);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 0.0);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->GetObjCategory(replayer_->scenarioState_.obj_states[0].id), 0);
 
     replayer_->GoToTime(19.5);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 19.5, 1E-3);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 113.66666721531664);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5349999999999999);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 0.0);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_EQ(replayer_->GetObjCategory(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 19.5, 1E-3);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 113.66666721531664);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5349999999999999);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 0.0);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->GetObjCategory(replayer_->scenarioState_.obj_states[0].id), 0);
 
     replayer_->GoToTime(21);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 21.0, 1E-3);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 113.90702692004841);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5349999999999999);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 0.69052735824166378);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_EQ(replayer_->GetObjCategory(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 21.0, 1E-3);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 113.90702692004841);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5349999999999999);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 0.69052735824166378);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->GetObjCategory(replayer_->scenarioState_.obj_states[0].id), 0);
 
     delete replayer_;
 }
@@ -781,52 +781,52 @@ TEST(TestReplayer, TwoSimpleScenarioMerge)
     ASSERT_EQ(replayer_->pkgs_.size(), 5836);
 
     replayer_->GoToTime(2.0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 2);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 2.00, 1E-3);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].id, 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 2.48064172555961);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelAngle(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[0].id), 5.026893138885498);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 2);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 2.00, 1E-3);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].id, 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 2.48064172555961);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelAngle(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState_.obj_states[0].id), 5.026893138885498);
     std::string name;
-    replayer_->GetName(replayer_->scenarioState.obj_states[0].id, name);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[0].id, name);
     EXPECT_EQ(name, "Car");
-    ASSERT_EQ(replayer_->scenarioState.obj_states[1].id, 10);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[1].id), 1.9845132778764569);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelAngle(replayer_->scenarioState.obj_states[1].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[1].id), 4.0215144157409668);
-    replayer_->GetName(replayer_->scenarioState.obj_states[1].id, name);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[1].id, 10);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[1].id), 1.9845132778764569);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelAngle(replayer_->scenarioState_.obj_states[1].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState_.obj_states[1].id), 4.0215144157409668);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[1].id, name);
     EXPECT_EQ(name, "Car");
 
     replayer_->GoToTime(8.0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 2);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 8.0, 1E-3);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].id, 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 13.888889000000001);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[0].id), 5.949242115020752);
-    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[1].id, 10);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[1].id), 11.111110999999999);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[1].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[1].id), 2.24611496925354);
-    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState.obj_states[1].id), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 2);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 8.0, 1E-3);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].id, 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 13.888889000000001);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState_.obj_states[0].id), 5.949242115020752);
+    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[1].id, 10);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[1].id), 11.111110999999999);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[1].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState_.obj_states[1].id), 2.24611496925354);
+    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState_.obj_states[1].id), 1);
 
     replayer_->GoToTime(15.0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 2);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 15.0, 1E-3);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].id, 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 13.888889000000001);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[0].id), 0.98368740081787109);
-    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[1].id, 10);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[1].id), 3.472222150060575);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[1].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState.obj_states[1].id), 0.25884237885475159);
-    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState.obj_states[1].id), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 2);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 15.0, 1E-3);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].id, 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 13.888889000000001);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState_.obj_states[0].id), 0.98368740081787109);
+    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[1].id, 10);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[1].id), 3.472222150060575);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[1].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetWheelRot(replayer_->scenarioState_.obj_states[1].id), 0.25884237885475159);
+    ASSERT_EQ(replayer_->GetScaleMode(replayer_->scenarioState_.obj_states[1].id), 1);
 }
 
 TEST(TestReplayer, ShowRestart)
@@ -851,116 +851,116 @@ TEST(TestReplayer, ShowRestart)
     scenarioengine::Replay* replayer_ = new scenarioengine::Replay("new_sim.dat");
     ASSERT_EQ(replayer_->pkgs_.size(), 10429);
 
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 10);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 10.0);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_EQ(replayer_->GetObjCategory(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 10);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 10.0);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_EQ(replayer_->GetObjCategory(replayer_->scenarioState_.obj_states[0].id), 0);
 
     std::string name;
-    replayer_->GetName(replayer_->scenarioState.obj_states[0].id, name);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[0].id, name);
     EXPECT_EQ(name, "Ego");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 10.0, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5, 1E-3);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5, 1E-3);
 
-    replayer_->GetName(replayer_->scenarioState.obj_states[1].id, name);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[1].id, name);
     EXPECT_EQ(name, "Target");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 10.0, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), -4.5, 1E-3);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), -4.5, 1E-3);
 
-    replayer_->GetName(replayer_->scenarioState.obj_states[2].id, name);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[2].id, name);
     EXPECT_EQ(name, "Ego_ghost");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[2].id), 10.0, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[2].id), -1.5, 1E-3);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[2].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[2].id), -1.5, 1E-3);
 
     // with show restart
     replayer_->SetShowRestart(true);
     replayer_->GetRestartTimes();
 
-    ASSERT_EQ(replayer_->restartTimes.size(), 2);
-    ASSERT_EQ(replayer_->restartTimes[0].restart_index_, 2161);
-    ASSERT_EQ(replayer_->restartTimes[0].next_index_, 2528);
-    ASSERT_DOUBLE_EQ(replayer_->restartTimes[0].restart_time_, 2.009999955072999);
-    ASSERT_DOUBLE_EQ(replayer_->restartTimes[0].next_time_, 2.0199999548494829);
-    ASSERT_EQ(replayer_->restartTimes[1].restart_index_, 8065);
-    ASSERT_EQ(replayer_->restartTimes[1].next_index_, 8432);
-    ASSERT_DOUBLE_EQ(replayer_->restartTimes[1].restart_time_, 8.00999982096255);
-    ASSERT_DOUBLE_EQ(replayer_->restartTimes[1].next_time_, 8.019999820739022);
+    ASSERT_EQ(replayer_->restartTimes_.size(), 2);
+    ASSERT_EQ(replayer_->restartTimes_[0].restart_index_, 2161);
+    ASSERT_EQ(replayer_->restartTimes_[0].next_index_, 2528);
+    ASSERT_DOUBLE_EQ(replayer_->restartTimes_[0].restart_time_, 2.009999955072999);
+    ASSERT_DOUBLE_EQ(replayer_->restartTimes_[0].next_time_, 2.0199999548494829);
+    ASSERT_EQ(replayer_->restartTimes_[1].restart_index_, 8065);
+    ASSERT_EQ(replayer_->restartTimes_[1].next_index_, 8432);
+    ASSERT_DOUBLE_EQ(replayer_->restartTimes_[1].restart_time_, 8.00999982096255);
+    ASSERT_DOUBLE_EQ(replayer_->restartTimes_[1].next_time_, 8.019999820739022);
 
-    replayer_->GoToTime(replayer_->restartTimes[0].restart_time_);  // frame first restart triggered
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->restartTimes[0].restart_time_);
-    replayer_->GetName(replayer_->scenarioState.obj_states[0].id, name);
+    replayer_->GoToTime(replayer_->restartTimes_[0].restart_time_);  // frame first restart triggered
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->restartTimes_[0].restart_time_);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[0].id, name);
     EXPECT_EQ(name, "Ego");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 10.0, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5, 1E-3);
-    replayer_->GetName(replayer_->scenarioState.obj_states[1].id, name);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5, 1E-3);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[1].id, name);
     EXPECT_EQ(name, "Target");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 50.199, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), -4.5, 1E-3);
-    replayer_->GetName(replayer_->scenarioState.obj_states[2].id, name);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 50.199, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), -4.5, 1E-3);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[2].id, name);
     EXPECT_EQ(name, "Ego_ghost");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[2].id), 60.099, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[2].id), -1.5, 1E-3);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[2].id), 60.099, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[2].id), -1.5, 1E-3);
 
-    replayer_->GoToTime(replayer_->restartTimes[0].next_time_);  // shall go first restart started frame
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, -0.93000004515051837);
-    replayer_->GetName(replayer_->scenarioState.obj_states[0].id, name);
+    replayer_->GoToTime(replayer_->restartTimes_[0].next_time_);  // shall go first restart started frame
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, -0.93000004515051837);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[0].id, name);
     EXPECT_EQ(name, "Ego");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 10.0, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5, 1E-3);
-    replayer_->GetName(replayer_->scenarioState.obj_states[1].id, name);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5, 1E-3);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[1].id, name);
     EXPECT_EQ(name, "Target");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 50.399, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), -4.5, 1E-3);
-    replayer_->GetName(replayer_->scenarioState.obj_states[2].id, name);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 50.399, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), -4.5, 1E-3);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[2].id, name);
     EXPECT_EQ(name, "Ego_ghost");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[2].id), 10.000, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[2].id), -1.5, 1E-3);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[2].id), 10.000, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[2].id), -1.5, 1E-3);
 
     // check reverse from first restart start time
 
-    replayer_->GoToTime(replayer_->scenarioState.sim_time - 0.05);  // going back from first restart started frame
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->restartTimes[0].restart_time_);  // shall go to first restart triggered time
-    replayer_->GetName(replayer_->scenarioState.obj_states[0].id, name);
+    replayer_->GoToTime(replayer_->scenarioState_.sim_time - 0.05);  // going back from first restart started frame
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->restartTimes_[0].restart_time_);  // shall go to first restart triggered time
+    replayer_->GetName(replayer_->scenarioState_.obj_states[0].id, name);
     EXPECT_EQ(name, "Ego");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 10.0, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5, 1E-3);
-    replayer_->GetName(replayer_->scenarioState.obj_states[1].id, name);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5, 1E-3);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[1].id, name);
     EXPECT_EQ(name, "Target");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 50.199, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), -4.5, 1E-3);
-    replayer_->GetName(replayer_->scenarioState.obj_states[2].id, name);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 50.199, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), -4.5, 1E-3);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[2].id, name);
     EXPECT_EQ(name, "Ego_ghost");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[2].id), 60.099, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[2].id), -1.5, 1E-3);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[2].id), 60.099, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[2].id), -1.5, 1E-3);
 
-    replayer_->GoToTime(replayer_->scenarioState.sim_time + 0.05);  // go forward to test second restart
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, -0.93000004515051837);
+    replayer_->GoToTime(replayer_->scenarioState_.sim_time + 0.05);  // go forward to test second restart
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, -0.93000004515051837);
 
     // check second restart
-    replayer_->GoToTime(replayer_->restartTimes[1].restart_time_);  // frame second restart triggered
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->restartTimes[1].restart_time_);
+    replayer_->GoToTime(replayer_->restartTimes_[1].restart_time_);  // frame second restart triggered
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->restartTimes_[1].restart_time_);
 
-    replayer_->GoToTime(replayer_->restartTimes[1].next_time_);  // shall go second restart started frame
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, 5.0699998207390324);
+    replayer_->GoToTime(replayer_->restartTimes_[1].next_time_);  // shall go second restart started frame
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, 5.0699998207390324);
 
     // check reverse from first restart start time
-    replayer_->GoToTime(replayer_->scenarioState.sim_time - 0.05);                                  // shall go second restart frame
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->restartTimes[1].restart_time_);  // shall go to second restart triggered time
+    replayer_->GoToTime(replayer_->scenarioState_.sim_time - 0.05);                                   // shall go second restart frame
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->restartTimes_[1].restart_time_);  // shall go to second restart triggered time
     delete replayer_;
 }
 
@@ -986,96 +986,96 @@ TEST(TestReplayer, NotShowRestart)
     scenarioengine::Replay* replayer_ = new scenarioengine::Replay("new_sim.dat");
     ASSERT_EQ(replayer_->pkgs_.size(), 10429);
 
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
-    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 10);
-    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5);
-    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState.obj_states[0].id), 0);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 10.0);
-    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState.obj_states[0].id), 1);
-    ASSERT_EQ(replayer_->GetObjCategory(replayer_->scenarioState.obj_states[0].id), 0);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
+    ASSERT_DOUBLE_EQ(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 10);
+    ASSERT_DOUBLE_EQ(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5);
+    ASSERT_DOUBLE_EQ(replayer_->GetZ(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetH(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetR(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetP(replayer_->scenarioState_.obj_states[0].id), 0);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 10.0);
+    ASSERT_EQ(replayer_->GetCtrlType(replayer_->scenarioState_.obj_states[0].id), 1);
+    ASSERT_EQ(replayer_->GetObjCategory(replayer_->scenarioState_.obj_states[0].id), 0);
 
     std::string name;
-    replayer_->GetName(replayer_->scenarioState.obj_states[0].id, name);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[0].id, name);
     EXPECT_EQ(name, "Ego");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 10.0, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5, 1E-3);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5, 1E-3);
 
-    replayer_->GetName(replayer_->scenarioState.obj_states[1].id, name);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[1].id, name);
     EXPECT_EQ(name, "Target");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 10.0, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), -4.5, 1E-3);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), -4.5, 1E-3);
 
-    replayer_->GetName(replayer_->scenarioState.obj_states[2].id, name);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[2].id, name);
     EXPECT_EQ(name, "Ego_ghost");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[2].id), 10.0, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[2].id), -1.5, 1E-3);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[2].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[2].id), -1.5, 1E-3);
 
     // with no show restart
     replayer_->SetShowRestart(false);
     replayer_->GetRestartTimes();
 
-    replayer_->GoToTime(replayer_->restartTimes[0].restart_time_);  // first restart triggered frame
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    replayer_->GetName(replayer_->scenarioState.obj_states[0].id, name);
+    replayer_->GoToTime(replayer_->restartTimes_[0].restart_time_);  // first restart triggered frame
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[0].id, name);
     EXPECT_EQ(name, "Ego");
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->restartTimes[0].restart_time_);
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 10.0, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5, 1E-3);
-    replayer_->GetName(replayer_->scenarioState.obj_states[1].id, name);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->restartTimes_[0].restart_time_);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5, 1E-3);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[1].id, name);
     EXPECT_EQ(name, "Target");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 50.199, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), -4.5, 1E-3);
-    replayer_->GetName(replayer_->scenarioState.obj_states[2].id, name);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 50.199, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), -4.5, 1E-3);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[2].id, name);
     EXPECT_EQ(name, "Ego_ghost");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[2].id), 60.099, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[2].id), -1.5, 1E-3);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[2].id), 60.099, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[2].id), -1.5, 1E-3);
 
-    replayer_->GoToTime(replayer_->restartTimes[0].next_time_);  // shall go next frame from restart triggered frame
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->restartTimes[0].next_time_);
-    replayer_->GetName(replayer_->scenarioState.obj_states[0].id, name);
+    replayer_->GoToTime(replayer_->restartTimes_[0].next_time_);  // shall go next frame from restart triggered frame
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->restartTimes_[0].next_time_);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[0].id, name);
     EXPECT_EQ(name, "Ego");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 10.0, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5, 1E-3);
-    replayer_->GetName(replayer_->scenarioState.obj_states[1].id, name);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5, 1E-3);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[1].id, name);
     EXPECT_EQ(name, "Target");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 50.399, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), -4.5, 1E-3);
-    replayer_->GetName(replayer_->scenarioState.obj_states[2].id, name);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 50.399, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), -4.5, 1E-3);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[2].id, name);
     EXPECT_EQ(name, "Ego_ghost");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[2].id), 23.724, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[2].id), -1.5, 1E-3);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[2].id), 23.724, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[2].id), -1.5, 1E-3);
 
     // check going back from first restart started time
-    replayer_->GoToTime(replayer_->scenarioState.sim_time - 0.05);  // going back first restart frame
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    replayer_->GetName(replayer_->scenarioState.obj_states[0].id, name);
+    replayer_->GoToTime(replayer_->scenarioState_.sim_time - 0.05);  // going back first restart frame
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[0].id, name);
     EXPECT_EQ(name, "Ego");
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, 1.9699999548494829);  // shall go requested time
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[0].id), 10.0, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[0].id), -1.5, 1E-3);
-    replayer_->GetName(replayer_->scenarioState.obj_states[1].id, name);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, 1.9699999548494829);  // shall go requested time
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[0].id), 10.0, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[0].id), -1.5, 1E-3);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[1].id, name);
     EXPECT_EQ(name, "Target");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[1].id), 50.399999096989632, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[1].id), -4.5, 1E-3);
-    replayer_->GetName(replayer_->scenarioState.obj_states[2].id, name);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[1].id), 50.399999096989632, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[1].id), -4.5, 1E-3);
+    replayer_->GetName(replayer_->scenarioState_.obj_states[2].id, name);
     EXPECT_EQ(name, "Ego_ghost");
-    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState.obj_states[2].id), 23.166686680659474, 1E-3);
-    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState.obj_states[2].id), -1.5, 1E-3);
+    EXPECT_NEAR(replayer_->GetX(replayer_->scenarioState_.obj_states[2].id), 23.166686680659474, 1E-3);
+    EXPECT_NEAR(replayer_->GetY(replayer_->scenarioState_.obj_states[2].id), -1.5, 1E-3);
 
     // check second restart
-    replayer_->GoToTime(replayer_->restartTimes[1].restart_time_);  // second restart frame
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 3);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->restartTimes[1].restart_time_);
+    replayer_->GoToTime(replayer_->restartTimes_[1].restart_time_);  // second restart frame
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 3);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->restartTimes_[1].restart_time_);
 
-    replayer_->GoToTime(replayer_->restartTimes[1].next_time_);  // shall go next frame
-    ASSERT_DOUBLE_EQ(replayer_->scenarioState.sim_time, replayer_->restartTimes[1].next_time_);
+    replayer_->GoToTime(replayer_->restartTimes_[1].next_time_);  // shall go next frame
+    ASSERT_DOUBLE_EQ(replayer_->scenarioState_.sim_time, replayer_->restartTimes_[1].next_time_);
 
     delete replayer_;
 }
@@ -1098,22 +1098,22 @@ TEST(TestReplayer, StopAtEachTimeFrame)
     scenarioengine::Replay* replayer_ = new scenarioengine::Replay("new_sim.dat");
     ASSERT_EQ(replayer_->pkgs_.size(), 342);
 
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 18);
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 18);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
     replayer_->GoToTime(0.0);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 0.0, 1E-3);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 0.0, 1E-3);
 
     replayer_->GoToTime(0.5);
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 0.5, 1E-3);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 0.5, 1E-3);
 
     replayer_->GoToTime(3, true);  // go through each frame
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 1, 1E-3);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 1, 1E-3);
 
     replayer_->GoToTime(1.5, true);  // go through each frame
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 1.5, 1E-3);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 1.5, 1E-3);
 
     replayer_->GoToTime(3, true);  // go through each frame
-    EXPECT_NEAR(replayer_->scenarioState.sim_time, 2.0, 1E-3);
+    EXPECT_NEAR(replayer_->scenarioState_.sim_time, 2.0, 1E-3);
 
     delete replayer_;
 }
@@ -1454,21 +1454,21 @@ TEST(TestLightStateInReplayer, SimpleTest)
     Object::VehicleLightActionStatus light_state[Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS];
 
     ASSERT_EQ(replayer_->pkgs_.size(), 23);
-    ASSERT_EQ(replayer_->scenarioState.sim_time, replayer_->GetTimeFromCnt(1));
-    ASSERT_EQ(replayer_->scenarioState.obj_states.size(), 1);
-    ASSERT_EQ(replayer_->scenarioState.obj_states[0].pkgs.size(), 3);
+    ASSERT_EQ(replayer_->scenarioState_.sim_time, replayer_->GetTimeFromCnt(1));
+    ASSERT_EQ(replayer_->scenarioState_.obj_states.size(), 1);
+    ASSERT_EQ(replayer_->scenarioState_.obj_states[0].pkgs.size(), 3);
     ASSERT_DOUBLE_EQ(replayer_->GetTimeFromCnt(2), 1.1220000000000001);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(2));
-    datLogger::Pos pos = replayer_->GetPos(replayer_->scenarioState.obj_states[0].id);
+    datLogger::Pos pos = replayer_->GetPos(replayer_->scenarioState_.obj_states[0].id);
     ASSERT_DOUBLE_EQ(pos.x, 1);
     ASSERT_DOUBLE_EQ(pos.y, 2);
     ASSERT_DOUBLE_EQ(pos.z, 3);
     ASSERT_DOUBLE_EQ(pos.h, 4);
     ASSERT_DOUBLE_EQ(pos.r, 5);
     ASSERT_DOUBLE_EQ(pos.p, 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 2.0);
-    replayer_->GetRgbValues(replayer_->scenarioState.obj_states[0].id, light_state);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 2.0);
+    replayer_->GetRgbValues(replayer_->scenarioState_.obj_states[0].id, light_state);
     EXPECT_NEAR(light_state[5].diffuseRgb[0], diffuseRgb[0], 1E-2);
     EXPECT_NEAR(light_state[5].diffuseRgb[1], diffuseRgb[1], 1E-2);
     EXPECT_NEAR(light_state[5].diffuseRgb[2], diffuseRgb[2], 1E-2);
@@ -1477,24 +1477,24 @@ TEST(TestLightStateInReplayer, SimpleTest)
     EXPECT_NEAR(light_state[5].emissionRgb[2], emissionRgb[2], 1E-2);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(4));
-    datLogger::Pos pos1 = replayer_->GetPos(replayer_->scenarioState.obj_states[0].id);
+    datLogger::Pos pos1 = replayer_->GetPos(replayer_->scenarioState_.obj_states[0].id);
     ASSERT_DOUBLE_EQ(pos1.x, 1);
     ASSERT_DOUBLE_EQ(pos1.y, 2);
     ASSERT_DOUBLE_EQ(pos1.z, 3);
     ASSERT_DOUBLE_EQ(pos1.h, 4);
     ASSERT_DOUBLE_EQ(pos1.r, 5);
     ASSERT_DOUBLE_EQ(pos1.p, 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 4.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 4.0);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(5));
-    datLogger::Pos pos2 = replayer_->GetPos(replayer_->scenarioState.obj_states[0].id);
+    datLogger::Pos pos2 = replayer_->GetPos(replayer_->scenarioState_.obj_states[0].id);
     ASSERT_DOUBLE_EQ(pos2.x, 1);
     ASSERT_DOUBLE_EQ(pos2.y, 2);
     ASSERT_DOUBLE_EQ(pos2.z, 3);
     ASSERT_DOUBLE_EQ(pos2.h, 6);
     ASSERT_DOUBLE_EQ(pos2.r, 5);
     ASSERT_DOUBLE_EQ(pos2.p, 6);
-    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState.obj_states[0].id), 4.0);
+    ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 4.0);
 }
 
 int main(int argc, char** argv)
