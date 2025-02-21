@@ -88,6 +88,8 @@ Options:
       Show OSI road points. Toggle key 'y'
   --osi_receiver_ip [IP address]  (default if value omitted: 127.0.0.1)
       IP address where to send OSI UDP packages
+  --osi_log_static_data_always
+      Include static data in all frames (not only first)
   --param_dist <filename>
       Run variations of the scenario according to specified parameter distribution file
   --param_permutation <index>

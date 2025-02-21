@@ -323,7 +323,9 @@ void ScenarioPlayer::ScenarioPostFrame()
 
             if ((GetCounter() - 1) % osi_freq_ == 0)
             {
-                osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
+                osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_,
+                                                  false,
+                                                  SE_Env::Inst().GetOptions().GetOptionSet("osi_log_static_data_always"));
             }
 
             osiReporter->UpdateOSITrafficCommand();
@@ -1266,6 +1268,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
     opt.AddOption("osi_points", "Show OSI road points. Toggle key 'y'");
     opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address", "127.0.0.1");
+    opt.AddOption("osi_log_static_data_always", "Include static data in all frames (not only first)");
 #endif
     opt.AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
     opt.AddOption("param_permutation", "Run specific permutation of parameter distribution, index in range (0 .. NumberOfPermutations-1)", "index");
