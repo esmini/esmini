@@ -68,8 +68,6 @@ namespace scenarioengine
         void   GetReplaysFromDirectory(const std::string dir, const std::string sce);
         size_t GetNumberOfScenarios();
 
-        int CreateMergedDatfile(const std::string filename);
-
         // vector and method for record and read pkg
         std::vector<datLogger::CommonPkg> pkgs_;
         ScenarioState                     scenarioState_;
@@ -105,11 +103,9 @@ namespace scenarioengine
         void GoToDeltaTime(double dt, bool stopAtEachFrame = false);
         void GoToStart();
         void GoToEnd();
-        bool IsObjAvailableInCache(int Id);  // check in cache
         bool IsObjAvailableActive(int id) const;
-        void UpdateObjStatus(int id, bool status);
+
         void CheckObjAvailabilityForward();
-        void CheckObjAvailabilityBackward();
 
         // method to handle private members
         void   SetStartTime(double time);
@@ -182,6 +178,10 @@ namespace scenarioengine
         int    FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
         bool   IsValidPocket(id_t id);
         void   BuildData();
+        void   UpdateObjStatus(int id, bool status);
+        void   CheckObjAvailabilityBackward();
+        bool   IsObjAvailableInCache(int Id);  // check in cache
+        int    CreateMergedDatfile(const std::string filename);
         void   AddObjState(size_t objId);  // add the object state for given object id from the current object state
         void   DeleteObjState(int objId);
         bool   IsObjectDeletePkg(size_t index) const;
