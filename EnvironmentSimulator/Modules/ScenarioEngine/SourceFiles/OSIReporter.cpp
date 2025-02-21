@@ -351,7 +351,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
     {
         UpdateOSIDynamicGroundTruth(objectState);
 
-        if (GetCounter() > 0 && logStaticGt && !static_gt_set)
+        if (GetCounter() > 0 && logStaticGt)
         {
             osi_static_gt_loaded_ = SetOSIStaticExternalData();
         }
