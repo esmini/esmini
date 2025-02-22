@@ -571,117 +571,117 @@ void Replay::CheckObjAvailabilityBackward()
 
 int Replay::GoToTime(double t, bool stopAtEachFrame)
 {
-    if ((t > stopTime_) || IsEqualDouble(t, stopTime_))  // go to stop time
+    if (t > stopTime_)  // go to stop time
     {
         t = stopTime_;
     }
-    else if ((t < startTime_) || IsEqualDouble(t, startTime_))  // go to start time
+    else if (t < startTime_)  // go to start time
     {
         t = startTime_;
     }
 
-    bool timeLapsed = false;
-    if (IsEqualDouble(t, scenarioState_.sim_time))
-    {
-        return 0;  // no update to cache
-    }
-    else
+    if (!IsEqualDouble(t, scenarioState_.sim_time))
     {
         if (scenarioState_.sim_time < t)
         {
-            while (!timeLapsed)
+            GoForwardTime(t, stopAtEachFrame);
+        }
+        else
+        {
+            GoBackwardTime(t, stopAtEachFrame);
+        }
+    }
+    return 0;
+}
+
+int scenarioengine::Replay::GoForwardTime(double t, bool stopAtEachFrame)
+{
+    while (true)
+    {
+        double       previousTime  = time_;
+        unsigned int previousIndex = index_;
+
+        GoToNextFrame();
+
+        if ((time_ > t + SMALL_NUMBER) || (stopAtEachFrame && time_ - scenarioState_.sim_time > deltaTime_))
+        {  // Gone past requested time or stop at each frame AND the time difference exceeds deltaTime_.
+            time_  = previousTime;
+            index_ = previousIndex;
+            if (stopAtEachFrame && time_ - scenarioState_.sim_time > deltaTime_)
             {
-                double       pervious_time_  = time_;
-                unsigned int pervious_index_ = index_;
-                GoToNextFrame();
-                if (time_ > t + SMALL_NUMBER)  // gone past requested time
+                scenarioState_.sim_time += deltaTime_;
+            }
+            else
+            {
+                scenarioState_.sim_time = t;
+            }
+            return 0;
+        }
+
+        CheckObjAvailabilityForward();
+        UpdateCache();
+
+        if (stopAtEachFrame || (time_ + SMALL_NUMBER < previousTime && show_restart_) || IsEqualDouble(t, time_))
+        {  // stop at each frame or requested time reached or restart
+            return 0;
+        }
+    }
+}
+
+int scenarioengine::Replay::GoBackwardTime(double t, bool stopAtEachFrame)
+{
+    bool timeLapsed = false;
+    while (!timeLapsed)
+    {
+        GoToPreviousFrame();
+
+        if (!restartTimes_.empty())
+        {
+            for (const auto& restartTime : restartTimes_)
+            {
+                if ((restartTime.next_index_ == index_) && (!show_restart_))  // go to restarted time from restart finished next time
                 {
-                    time_                   = pervious_time_;
-                    index_                  = pervious_index_;
-                    scenarioState_.sim_time = t;  // sim time should be given time
+                    index_ = restartTime.restart_index_;  // jump, skip all time frames belong during restart
+                    time_  = restartTime.restart_time_;
                     break;
                 }
-                else if (stopAtEachFrame)  // stop at each min time frame also(might be some time frame might not written so each frame might not have
-                                           // time)
-                {
-                    if (time_ - scenarioState_.sim_time > deltaTime_)
-                    {
-                        time_  = pervious_time_;
-                        index_ = pervious_index_;
-                        scenarioState_.sim_time += deltaTime_;
-                        break;
-                    }
-                    else
-                    {
-                        timeLapsed = true;
-                    }
-                }
-                else if ((time_ + SMALL_NUMBER < pervious_time_ &&
-                          show_restart_) ||          // next time less than pervious time. break only when show restart
-                         (IsEqualDouble(t, time_)))  // requested time reached
+                else if (restartTime.restart_index_ == index_ && show_restart_)  // go to restarted time from restart first time
                 {
                     timeLapsed = true;
+                    break;
                 }
-
-                CheckObjAvailabilityForward();
-                UpdateCache();
             }
         }
-        if (scenarioState_.sim_time > t)
+
+        double       pervious_time_  = time_;
+        unsigned int pervious_index_ = index_;
+        if (stopAtEachFrame)  // stop at each min time frame also(might be some time frame might not written so each frame might not have
+                              // time)
         {
-            while (!timeLapsed)
+            if (scenarioState_.sim_time - time_ > deltaTime_)
             {
-                GoToPreviousFrame();
-
-                if (restartTimes_.size() > 0)
-                {
-                    for (size_t j = 0; j < restartTimes_.size(); j++)
-                    {
-                        if ((restartTimes_[j].next_index_ == index_) && (!show_restart_))  // go to restarted time from restart finished next time
-                        {
-                            index_ = restartTimes_[j].restart_index_;  // jump, skip all time frames belong during restart
-                            time_  = restartTimes_[j].restart_time_;
-                            break;
-                        }
-                        else if ((restartTimes_[j].restart_index_ == index_) && (show_restart_))  // go to restarted time from restart first time
-                        {
-                            timeLapsed = true;
-                            break;
-                        }
-                    }
-                }
-
-                double       pervious_time_  = time_;
-                unsigned int pervious_index_ = index_;
-                if (stopAtEachFrame)  // stop at each min time frame also(might be some time frame might not written so each frame might not have
-                                      // time)
-                {
-                    if (scenarioState_.sim_time - time_ > deltaTime_)
-                    {
-                        time_  = pervious_time_;
-                        index_ = pervious_index_;
-                        scenarioState_.sim_time += deltaTime_;
-                        break;
-                    }
-                    else
-                    {
-                        timeLapsed = true;
-                    }
-                }
-                else if ((IsEqualDouble(t, time_)) ||  // requested time equal to next time
-                         (time_ < t + SMALL_NUMBER))   // gone past requested time
-                {
-                    timeLapsed = true;
-                }
-
-                UpdateCache();
-                CheckObjAvailabilityBackward();
-
-                if (time_ < t + SMALL_NUMBER)  // gone past requested time, sim time should be given time
-                {
-                    scenarioState_.sim_time = t;
-                }
+                time_  = pervious_time_;
+                index_ = pervious_index_;
+                scenarioState_.sim_time += deltaTime_;  // check + and -
+                break;
             }
+            else
+            {
+                timeLapsed = true;
+            }
+        }
+        else if ((IsEqualDouble(t, time_)) ||  // requested time equal to next time
+                 (time_ < t + SMALL_NUMBER))   // gone past requested time
+        {
+            timeLapsed = true;
+        }
+
+        UpdateCache();
+        CheckObjAvailabilityBackward();
+
+        if (time_ < t + SMALL_NUMBER)  // gone past requested time, sim time should be given time
+        {
+            scenarioState_.sim_time = t;
         }
     }
     return 0;

@@ -194,6 +194,8 @@ namespace scenarioengine
         double GetDoubleFromPkg(datLogger::CommonPkg* pkg);
         int    GetIntFromScenarioState(int obj_id, datLogger::PackageId id);
         double GetDoubleFromScenarioState(int obj_id, datLogger::PackageId id);
+        int    GoForwardTime(double time_frame, bool stopAtEachFrame = false);
+        int    GoBackwardTime(double time_frame, bool stopAtEachFrame = false);
     };
 
 }  // namespace scenarioengine

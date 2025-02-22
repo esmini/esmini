@@ -757,6 +757,23 @@ void DatLogger::DeleteObjState(int objId)
     }
 }
 
+datLogger::DatLogger::~DatLogger()
+{
+    if (IsFileOpen())
+    {
+        WriteTime(simTimeTemp);
+        std::cout << "last time distrctor" << simTimeTemp << std::endl;
+        CommonPkg pkg;
+        pkg.hdr.id           = static_cast<int>(PackageId::END_OF_SCENARIO);
+        pkg.hdr.content_size = 0;
+        pkg.content.resize(pkg.hdr.content_size);
+        writePackage(pkg);
+
+        data_file_.flush();
+        data_file_.close();
+    }
+}
+
 int DatLogger::init(std::string fileName, int ver, std::string odrName, std::string modelName)
 {
     data_file_.open(fileName, std::ios::binary);

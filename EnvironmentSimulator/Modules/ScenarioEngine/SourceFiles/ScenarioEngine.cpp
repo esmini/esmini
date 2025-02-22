@@ -128,7 +128,6 @@ ScenarioEngine::~ScenarioEngine()
     scenarioReader = 0;
     LOG_INFO("Closing");
     TxtLogger::Inst().Stop();
-    scenarioGateway.setSimTime(getSimulationTime());
 }
 
 void ScenarioEngine::UpdateGhostMode()

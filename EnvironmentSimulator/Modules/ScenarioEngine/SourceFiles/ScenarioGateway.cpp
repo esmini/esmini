@@ -295,7 +295,6 @@ ScenarioGateway::~ScenarioGateway()
     objectState_.clear();
     if (datLogger != nullptr)
     {
-        datLogger->simTimeTemp = getSimTime();  // to do . check the last write this time is valid to use
         delete datLogger;
     }
 }
@@ -1048,16 +1047,6 @@ int ScenarioGateway::updateObjectLightState(int id, Object::VehicleLightActionSt
     obj_state->dirty_ |= Object::DirtyBit::LIGHT_STATE;
 
     return 0;
-}
-
-void scenarioengine::ScenarioGateway::setSimTime(double simTime)
-{
-    simulationTime_ = simTime;
-}
-
-double scenarioengine::ScenarioGateway::getSimTime() const
-{
-    return simulationTime_;
 }
 
 int ScenarioGateway::setObjectPositionMode(int id, int type, int mode)

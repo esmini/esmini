@@ -310,26 +310,24 @@ namespace scenarioengine
                          double                            s,
                          Object::VehicleLightActionStatus *light_state);
 
-        int    updateObjectPos(int id, double timestamp, roadmanager::Position *pos);
-        int    updateObjectRoadPos(int id, double timestamp, id_t roadId, double lateralOffset, double s);
-        int    updateObjectLanePos(int id, double timestamp, id_t roadId, int laneId, double offset, double s);
-        int    updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r);
-        int    updateObjectWorldPosMode(int id, double timestamp, double x, double y, double z, double h, double p, double r, int mode);
-        int    updateObjectWorldPosXYH(int id, double timestamp, double x, double y, double h);
-        int    updateObjectWorldPosXYHMode(int id, double timestamp, double x, double y, double h, int mode);
-        int    updateObjectSpeed(int id, double timestamp, double speed);
-        int    updateObjectVel(int id, double timestamp, double x_vel, double y_vel, double z_vel);
-        int    updateObjectAcc(int id, double timestamp, double x_acc, double y_acc, double z_acc);
-        int    updateObjectAngularVel(int id, double timestamp, double h_rate, double p_rate, double r_rate);
-        int    updateObjectAngularAcc(int id, double timestamp, double h_acc, double p_acc, double r_acc);
-        int    updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
-        int    updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
-        int    updateObjectVisibilityMask(int id, int visibilityMask);
-        int    updateObjectControllerType(int id, int controllerType);
-        int    updateObjectWheelData(int id, std::vector<WheelData> wheel_data);
-        int    updateObjectLightState(int id, Object::VehicleLightActionStatus *light_state);
-        void   setSimTime(double simTime);
-        double getSimTime() const;
+        int updateObjectPos(int id, double timestamp, roadmanager::Position *pos);
+        int updateObjectRoadPos(int id, double timestamp, id_t roadId, double lateralOffset, double s);
+        int updateObjectLanePos(int id, double timestamp, id_t roadId, int laneId, double offset, double s);
+        int updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r);
+        int updateObjectWorldPosMode(int id, double timestamp, double x, double y, double z, double h, double p, double r, int mode);
+        int updateObjectWorldPosXYH(int id, double timestamp, double x, double y, double h);
+        int updateObjectWorldPosXYHMode(int id, double timestamp, double x, double y, double h, int mode);
+        int updateObjectSpeed(int id, double timestamp, double speed);
+        int updateObjectVel(int id, double timestamp, double x_vel, double y_vel, double z_vel);
+        int updateObjectAcc(int id, double timestamp, double x_acc, double y_acc, double z_acc);
+        int updateObjectAngularVel(int id, double timestamp, double h_rate, double p_rate, double r_rate);
+        int updateObjectAngularAcc(int id, double timestamp, double h_acc, double p_acc, double r_acc);
+        int updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
+        int updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
+        int updateObjectVisibilityMask(int id, int visibilityMask);
+        int updateObjectControllerType(int id, int controllerType);
+        int updateObjectWheelData(int id, std::vector<WheelData> wheel_data);
+        int updateObjectLightState(int id, Object::VehicleLightActionStatus *light_state);
 
         /**
         Specify if and how position object will align to the road. The setting is done for individual components:

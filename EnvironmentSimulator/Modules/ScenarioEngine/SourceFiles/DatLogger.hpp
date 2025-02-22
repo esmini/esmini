@@ -257,21 +257,7 @@ namespace datLogger
 
     public:
         DatLogger() = default;
-        ~DatLogger()
-        {
-            if (IsFileOpen())
-            {
-                WriteTime(simTimeTemp);
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::END_OF_SCENARIO);
-                pkg.hdr.content_size = 0;
-                pkg.content.resize(pkg.hdr.content_size);
-                writePackage(pkg);
-
-                data_file_.flush();
-                data_file_.close();
-            }
-        }
+        ~DatLogger();
 
         bool   isFirstEntry  = true;
         bool   notFirstEnd   = false;
