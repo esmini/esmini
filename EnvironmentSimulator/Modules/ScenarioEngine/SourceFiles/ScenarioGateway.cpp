@@ -1171,8 +1171,8 @@ int ScenarioGateway::WriteStatesToFile()
         // Write status to file - for later replay
         for (size_t i = 0; i < objectState_.size(); i++)
         {
-            int objId              = objectState_[i]->state_.info.id;
-            datLogger->simTimeTemp = objectState_[i]->state_.info.timeStamp;
+            int objId               = objectState_[i]->state_.info.id;
+            datLogger->simTimeTemp_ = objectState_[i]->state_.info.timeStamp;
             datLogger->AddObject(objId);
             datLogger->WriteModelId(objId, objectState_[i]->state_.info.model_id);
             datLogger->WriteObjPos(objId,
@@ -1269,10 +1269,10 @@ int ScenarioGateway::WriteStatesToFile()
                 }
             }
             datLogger->WriteLightState(objId, lightState_);
-            datLogger->ObjIdPkgAdded = false;
+            datLogger->ObjIdPkgAdded_ = false;
         }
-        datLogger->deleteObject();
-        datLogger->TimePkgAdded = false;
+        datLogger->DeleteObject();
+        datLogger->TimePkgAdded_ = false;
     }
     return 0;
 }
@@ -1289,7 +1289,7 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
                 return -1;
             }
 
-            if (datLogger->init(filename, ver, odr_filename, model_filename) != 0)
+            if (datLogger->Init(filename, ver, odr_filename, model_filename) != 0)
             {
                 delete datLogger;
                 datLogger = nullptr;

@@ -5,6 +5,7 @@
 #include <cstring>
 #include <chrono>
 #include <cmath>
+#include <functional>  // For std::function
 
 #include "DatLogger.hpp"
 #include "CommonMini.hpp"
@@ -13,35 +14,63 @@
 
 using namespace datLogger;
 
+template <typename T>
+int DatLogger::WriteObjectData(int obj_id, T value, PackageId package_id, std::function<bool(ObjState&, T)> updateState)
+{
+    if (IsFileOpen())
+    {
+        for (auto& objState : completeObjectState_.obj_states)
+        {
+            if (objState.obj_id_.obj_id == obj_id)
+            {
+                objState.active = true;
+                if (!updateState(objState, value))  // Let the lambda handle the state comparison and update
+                {
+                    WriteManPkg(obj_id);
+
+                    // create pkg
+                    CommonPkg pkg;
+                    pkg.hdr.id           = static_cast<id_t>(package_id);
+                    pkg.hdr.content_size = sizeof(value);
+                    pkg.content.resize(pkg.hdr.content_size);
+                    std::memcpy(pkg.content.data(), &value, sizeof(value));
+                    writePackage(pkg);
+                }
+                break;
+            }
+        }
+    }
+    return 0;
+}
+
 void DatLogger::WriteManPkg(int obj_id)
 {
-    if (!TimePkgAdded)
+    if (!TimePkgAdded_)
     {
-        WriteTime(simTimeTemp);
-        TimePkgAdded = true;
+        WriteTime(simTimeTemp_);
+        TimePkgAdded_ = true;
     }
-    if (!ObjIdPkgAdded)
+    if (!ObjIdPkgAdded_)
     {
         WriteObjId(obj_id);
-        ObjIdPkgAdded = true;
+        ObjIdPkgAdded_ = true;
     }
 }
 
 bool DatLogger::IsObjIdAddPkgWritten(int id)
 {
-    bool status = false;
-    for (size_t i = 0; i < objIdAdded_.size(); i++)
+    for (const auto& objId : objIdAdded_)
     {
-        if (objIdAdded_[i].id == id)
+        if (objId.id == id)
         {
-            if (objIdAdded_[i].status == true)
+            if (objId.status == true)
             {
-                status = true;
+                return true;
                 break;
             }
         }
     }
-    return status;
+    return false;
 }
 
 void DatLogger::SetObjIdAddPkgWritten(int id, bool status)
@@ -56,238 +85,159 @@ void DatLogger::SetObjIdAddPkgWritten(int id, bool status)
     }
 }
 
+bool datLogger::DatLogger::IsFileOpen()
+{
+    return data_file_.is_open();
+}
+
 int DatLogger::WriteObjSpeed(int obj_id, double speed)
 {
-    for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-    {
-        if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-        {
-            continue;
-        }
-        completeObjectState.obj_states[i].active = true;
-        if (!IsEqualDouble(completeObjectState.obj_states[i].speed_.speed_, speed))
-        {
-            WriteManPkg(obj_id);
-
-            // create pkg
-            CommonPkg pkg;
-            pkg.hdr.id           = static_cast<int>(PackageId::SPEED);
-            pkg.hdr.content_size = sizeof(speed);
-            pkg.content.resize(pkg.hdr.content_size);
-            std::memcpy(pkg.content.data(), &speed, sizeof(speed));
-            writePackage(pkg);
-            completeObjectState.obj_states[i].speed_.speed_ = speed;
-            break;
-        }
-    }
+    WriteObjectData<double>(obj_id,
+                            speed,
+                            PackageId::SPEED,
+                            [](ObjState& objState, double value) -> bool
+                            {
+                                if (!IsEqualDouble(objState.speed_.speed_, value))
+                                {
+                                    objState.speed_.speed_ = value;
+                                    return false;  // Indicates that the state was updated
+                                }
+                                return true;  // Indicates that the state was unchanged
+                            });
     return 0;
 }
 
 int DatLogger::WriteModelId(int obj_id, int model_id)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (completeObjectState.obj_states[i].modelId_.model_id != model_id)
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::MODEL_ID);
-                pkg.hdr.content_size = sizeof(model_id);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &model_id, sizeof(model_id));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].modelId_.model_id = model_id;
-                break;
-            }
-        }
-    }
+    WriteObjectData<int>(obj_id,
+                         model_id,
+                         PackageId::MODEL_ID,
+                         [](ObjState& objState, int value) -> bool
+                         {
+                             if (objState.modelId_.model_id != value)
+                             {                                        // Replace with the actual state field
+                                 objState.modelId_.model_id = value;  // Update the state
+                                 return false;                        // Indicates that the state was updated
+                             }
+                             return true;  // Indicates that the state was unchanged
+                         });
     return 0;
 }
 
 int DatLogger::WriteObjType(int obj_id, int obj_type)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (completeObjectState.obj_states[i].objType_.obj_type != obj_type)
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::OBJ_TYPE);
-                pkg.hdr.content_size = sizeof(obj_type);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &obj_type, sizeof(obj_type));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].objType_.obj_type = obj_type;
-                break;
-            }
-        }
-    }
+    WriteObjectData<int>(obj_id,
+                         obj_type,
+                         PackageId::OBJ_TYPE,
+                         [](ObjState& objState, int value) -> bool
+                         {
+                             if (objState.objType_.obj_type != value)
+                             {                                        // Replace with the actual state field
+                                 objState.objType_.obj_type = value;  // Update the state
+                                 return false;                        // Indicates that the state was updated
+                             }
+                             return true;  // Indicates that the state was unchanged
+                         });
     return 0;
 }
 
 int DatLogger::WriteObjCategory(int obj_id, int obj_category)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (completeObjectState.obj_states[i].objCategory_.obj_category != obj_category)
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::OBJ_CATEGORY);
-                pkg.hdr.content_size = sizeof(obj_category);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &obj_category, sizeof(obj_category));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].objCategory_.obj_category = obj_category;
-                break;
-            }
-        }
-    }
+    WriteObjectData<int>(obj_id,
+                         obj_category,
+                         PackageId::OBJ_CATEGORY,
+                         [](ObjState& objState, int value) -> bool
+                         {
+                             if (objState.objCategory_.obj_category != value)
+                             {                                                // Replace with the actual state field
+                                 objState.objCategory_.obj_category = value;  // Update the state
+                                 return false;                                // Indicates that the state was updated
+                             }
+                             return true;  // Indicates that the state was unchanged
+                         });
     return 0;
 }
 
 int DatLogger::WriteCtrlType(int obj_id, int ctrl_type)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (completeObjectState.obj_states[i].ctrlType_.ctrl_type != ctrl_type)
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::CTRL_TYPE);
-                pkg.hdr.content_size = sizeof(ctrl_type);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &ctrl_type, sizeof(ctrl_type));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].ctrlType_.ctrl_type = ctrl_type;
-                break;
-            }
-        }
-    }
+    WriteObjectData<int>(obj_id,
+                         ctrl_type,
+                         PackageId::CTRL_TYPE,
+                         [](ObjState& objState, int value) -> bool
+                         {
+                             if (objState.ctrlType_.ctrl_type != value)
+                             {                                          // Replace with the actual state field
+                                 objState.ctrlType_.ctrl_type = value;  // Update the state
+                                 return false;                          // Indicates that the state was updated
+                             }
+                             return true;  // Indicates that the state was unchanged
+                         });
     return 0;
 }
 
 int DatLogger::WriteWheelAngle(int obj_id, double angle)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (!IsEqualDouble(completeObjectState.obj_states[i].wheelAngle_.wheel_angle, angle))
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::WHEEL_ANGLE);
-                pkg.hdr.content_size = sizeof(angle);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &angle, sizeof(angle));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].wheelAngle_.wheel_angle = angle;
-                break;
-            }
-        }
-    }
+    WriteObjectData<double>(obj_id,
+                            angle,
+                            PackageId::WHEEL_ANGLE,
+                            [](ObjState& objState, double value) -> bool
+                            {
+                                if (!IsEqualDouble(objState.wheelAngle_.wheel_angle, value))
+                                {
+                                    objState.wheelAngle_.wheel_angle = value;
+                                    return false;  // Indicates that the state was updated
+                                }
+                                return true;  // Indicates that the state was unchanged
+                            });
     return 0;
 }
 
 int DatLogger::WriteWheelRot(int obj_id, double rot)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (!IsEqualDouble(completeObjectState.obj_states[i].wheelRot_.wheel_rot, rot))
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::WHEEL_ROT);
-                pkg.hdr.content_size = sizeof(rot);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &rot, sizeof(rot));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].wheelRot_.wheel_rot = rot;
-                break;
-            }
-        }
-    }
+    WriteObjectData<double>(obj_id,
+                            rot,
+                            PackageId::WHEEL_ROT,
+                            [](ObjState& objState, double value) -> bool
+                            {
+                                if (!IsEqualDouble(objState.wheelRot_.wheel_rot, value))
+                                {
+                                    objState.wheelRot_.wheel_rot = value;
+                                    return false;  // Indicates that the state was updated
+                                }
+                                return true;  // Indicates that the state was unchanged
+                            });
     return 0;
 }
 
 int DatLogger::WriteBB(int obj_id, float x, float y, float z, float length, float width, float height)
 {
-    if (data_file_.is_open())
+    if (IsFileOpen())
     {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
+        for (auto& objState : completeObjectState_.obj_states)
         {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
+            if (objState.obj_id_.obj_id == obj_id)
             {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (completeObjectState.obj_states[i].boundingBox_.x != x || completeObjectState.obj_states[i].boundingBox_.y != y ||
-                completeObjectState.obj_states[i].boundingBox_.z != z || completeObjectState.obj_states[i].boundingBox_.height != height ||
-                completeObjectState.obj_states[i].boundingBox_.length != length || completeObjectState.obj_states[i].boundingBox_.width != width)
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg   pkg;
-                BoundingBox bb;
-                bb.height            = height;
-                bb.length            = length;
-                bb.width             = width;
-                bb.x                 = x;
-                bb.y                 = y;
-                bb.z                 = z;
-                pkg.hdr.id           = static_cast<int>(PackageId::BOUNDING_BOX);
-                pkg.hdr.content_size = sizeof(bb);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &bb, sizeof(bb));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].boundingBox_ = bb;
+                objState.active = true;
+                if (objState.boundingBox_.x != x || objState.boundingBox_.y != y || objState.boundingBox_.z != z ||
+                    objState.boundingBox_.height != height || objState.boundingBox_.length != length || objState.boundingBox_.width != width)
+                {
+                    WriteManPkg(obj_id);
+                    // create pkg
+                    CommonPkg   pkg;
+                    BoundingBox bb;
+                    bb.height            = height;
+                    bb.length            = length;
+                    bb.width             = width;
+                    bb.x                 = x;
+                    bb.y                 = y;
+                    bb.z                 = z;
+                    pkg.hdr.id           = static_cast<int>(PackageId::BOUNDING_BOX);
+                    pkg.hdr.content_size = sizeof(bb);
+                    pkg.content.resize(pkg.hdr.content_size);
+                    std::memcpy(pkg.content.data(), &bb, sizeof(bb));
+                    writePackage(pkg);
+                    objState.boundingBox_ = bb;
+                }
                 break;
             }
         }
@@ -297,59 +247,35 @@ int DatLogger::WriteBB(int obj_id, float x, float y, float z, float length, floa
 
 int DatLogger::WriteScaleMode(int obj_id, int mode)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (completeObjectState.obj_states[i].scaleMode_.scale_mode != mode)
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::SCALE_MODE);
-                pkg.hdr.content_size = sizeof(mode);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &mode, sizeof(mode));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].scaleMode_.scale_mode = mode;
-                break;
-            }
-        }
-    }
+    WriteObjectData<int>(obj_id,
+                         mode,
+                         PackageId::SCALE_MODE,
+                         [](ObjState& objState, int value) -> bool
+                         {
+                             if (objState.scaleMode_.scale_mode != value)
+                             {                                            // Replace with the actual state field
+                                 objState.scaleMode_.scale_mode = value;  // Update the state
+                                 return false;                            // Indicates that the state was updated
+                             }
+                             return true;  // Indicates that the state was unchanged
+                         });
     return 0;
 }
 
 int DatLogger::WriteVisiblityMask(int obj_id, int mask)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (completeObjectState.obj_states[i].visibilityMask_.visibility_mask != mask)
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::VISIBILITY_MASK);
-                pkg.hdr.content_size = sizeof(mask);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &mask, sizeof(mask));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].visibilityMask_.visibility_mask = mask;
-                break;
-            }
-        }
-    }
+    WriteObjectData<int>(obj_id,
+                         mask,
+                         PackageId::VISIBILITY_MASK,
+                         [](ObjState& objState, int value) -> bool
+                         {
+                             if (objState.visibilityMask_.visibility_mask != value)
+                             {                                                      // Replace with the actual state field
+                                 objState.visibilityMask_.visibility_mask = value;  // Update the state
+                                 return false;                                      // Indicates that the state was updated
+                             }
+                             return true;  // Indicates that the state was unchanged
+                         });
     return 0;
 }
 
@@ -357,7 +283,7 @@ int DatLogger::WriteTime(double t)
 {
     if (data_file_.is_open())
     {
-        if (!IsEqualDouble(completeObjectState.time.time, t))
+        if (!IsEqualDouble(completeObjectState_.time.time, t))
         {
             // create pkg
             CommonPkg pkg;
@@ -366,7 +292,7 @@ int DatLogger::WriteTime(double t)
             pkg.content.resize(pkg.hdr.content_size);
             std::memcpy(pkg.content.data(), &t, sizeof(t));
             writePackage(pkg);
-            completeObjectState.time.time = t;
+            completeObjectState_.time.time = t;
         }
     }
 
@@ -387,27 +313,24 @@ void DatLogger::WriteStringPkg(std::string name, PackageId pkg_id)
 
 int DatLogger::WriteName(int obj_id, std::string name)
 {
-    if (data_file_.is_open())
+    if (IsFileOpen())
     {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
+        for (auto& objState : completeObjectState_.obj_states)
         {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
+            if (objState.obj_id_.obj_id == obj_id)
             {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (completeObjectState.obj_states[i].name_.compare(name) != 0)
-            {
-                WriteManPkg(obj_id);
-                // write name
-                WriteStringPkg(name, PackageId::NAME);
-
-                completeObjectState.obj_states[i].name_ = name;
+                objState.active = true;
+                if (objState.name_.compare(name) != 0)
+                {
+                    WriteManPkg(obj_id);
+                    // write name
+                    WriteStringPkg(name, PackageId::NAME);
+                    objState.name_ = name;
+                }
                 break;
             }
         }
     }
-
     return 0;
 }
 
@@ -437,28 +360,28 @@ int DatLogger::WriteObjId(int obj_id)
 
 int DatLogger::AddObject(int obj_id)
 {
-    if (completeObjectState.obj_states.size() == 0)  // first time
+    if (completeObjectState_.obj_states.size() == 0)  // first time
     {
         ObjState objState_;
         objState_.obj_id_.obj_id = obj_id;
-        completeObjectState.obj_states.push_back(objState_);
+        completeObjectState_.obj_states.push_back(objState_);
         ObjIdAdded objIdAdded;
         objIdAdded.id = obj_id;
         objIdAdded_.push_back(objIdAdded);
     }
     else
     {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
+        for (size_t i = 0; i < completeObjectState_.obj_states.size(); i++)
         {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id == obj_id)
+            if (completeObjectState_.obj_states[i].obj_id_.obj_id == obj_id)
             {
                 break;  // object already available in cache
             }
-            if (i == completeObjectState.obj_states.size() - 1)  // reached last iteration so add object in cache
+            if (i == completeObjectState_.obj_states.size() - 1)  // reached last iteration so add object in cache
             {
                 ObjState objState_;
                 objState_.obj_id_.obj_id = obj_id;
-                completeObjectState.obj_states.push_back(objState_);
+                completeObjectState_.obj_states.push_back(objState_);
                 ObjIdAdded objIdAdded;
                 objIdAdded.id = obj_id;
                 objIdAdded_.push_back(objIdAdded);
@@ -469,28 +392,28 @@ int DatLogger::AddObject(int obj_id)
     return 0;
 }
 
-int DatLogger::deleteObject()
+int DatLogger::DeleteObject()
 {
-    for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
+    for (size_t i = 0; i < completeObjectState_.obj_states.size(); i++)
     {
-        if (completeObjectState.obj_states[i].active == false)
+        if (completeObjectState_.obj_states[i].active == false)
         {
-            if (!TimePkgAdded)
+            if (!TimePkgAdded_)
             {
-                WriteTime(simTimeTemp);
+                WriteTime(simTimeTemp_);
             }
-            WriteObjId(completeObjectState.obj_states[i].obj_id_.obj_id);
+            WriteObjId(completeObjectState_.obj_states[i].obj_id_.obj_id);
             CommonPkg pkg;
             pkg.hdr.id           = static_cast<int>(PackageId::OBJ_DELETED);
             pkg.hdr.content_size = 0;
             pkg.content.resize(pkg.hdr.content_size);
             writePackage(pkg);
-            SetObjIdAddPkgWritten(completeObjectState.obj_states[i].obj_id_.obj_id, false);
-            completeObjectState.obj_states.erase(completeObjectState.obj_states.begin() + static_cast<int>(i));
+            SetObjIdAddPkgWritten(completeObjectState_.obj_states[i].obj_id_.obj_id, false);
+            completeObjectState_.obj_states.erase(completeObjectState_.obj_states.begin() + static_cast<int>(i));
         }
         else
         {
-            completeObjectState.obj_states[i].active = false;  // reset for next time frame
+            completeObjectState_.obj_states[i].active = false;  // reset for next time frame
         }
     }
     return 0;
@@ -498,40 +421,34 @@ int DatLogger::deleteObject()
 
 int DatLogger::WriteObjPos(int obj_id, double x, double y, double z, double h, double p, double r)
 {
-    if (data_file_.is_open())
+    if (IsFileOpen())
     {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
+        for (auto& objState : completeObjectState_.obj_states)
         {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
+            if (objState.obj_id_.obj_id == obj_id)
             {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (completeObjectState.obj_states[i].pos_.h != h || completeObjectState.obj_states[i].pos_.p != p ||
-                completeObjectState.obj_states[i].pos_.r != r || completeObjectState.obj_states[i].pos_.x != x ||
-                completeObjectState.obj_states[i].pos_.y != y || completeObjectState.obj_states[i].pos_.z != z)
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                Pos       pos_;
-                pos_.x = x;
-                pos_.y = y;
-                pos_.z = z;
-                pos_.h = h;
-                pos_.p = p;
-                pos_.r = r;
+                objState.active = true;
+                if (!IsEqualDouble(objState.pos_.x, x) || !IsEqualDouble(objState.pos_.y, y) || !IsEqualDouble(objState.pos_.z, z) ||
+                    !IsEqualDouble(objState.pos_.h, h) || !IsEqualDouble(objState.pos_.p, p) || !IsEqualDouble(objState.pos_.r, r))
+                {
+                    WriteManPkg(obj_id);
+                    // create pkg
+                    CommonPkg pkg;
+                    Pos       pos_;
+                    pos_.x = x;
+                    pos_.y = y;
+                    pos_.z = z;
+                    pos_.h = h;
+                    pos_.p = p;
+                    pos_.r = r;
 
-                pkg.hdr.id           = static_cast<int>(PackageId::POSITIONS);
-                pkg.hdr.content_size = sizeof(pos_);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &pos_, sizeof(pos_));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].pos_ = pos_;
-                break;
-            }
-            else
-            {
+                    pkg.hdr.id           = static_cast<int>(PackageId::POSITIONS);
+                    pkg.hdr.content_size = sizeof(pos_);
+                    pkg.content.resize(pkg.hdr.content_size);
+                    std::memcpy(pkg.content.data(), &pos_, sizeof(pos_));
+                    writePackage(pkg);
+                    objState.pos_ = pos_;
+                }
                 break;
             }
         }
@@ -541,146 +458,86 @@ int DatLogger::WriteObjPos(int obj_id, double x, double y, double z, double h, d
 
 int DatLogger::WriteRoadId(int obj_id, id_t road_id)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (completeObjectState.obj_states[i].roadId_.road_id != road_id)
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<id_t>(PackageId::ROAD_ID);
-                pkg.hdr.content_size = sizeof(road_id);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &road_id, sizeof(road_id));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].roadId_.road_id = road_id;
-                break;
-            }
-        }
-    }
+    WriteObjectData<id_t>(obj_id,
+                          road_id,
+                          PackageId::ROAD_ID,
+                          [](ObjState& objState, id_t value) -> bool
+                          {
+                              if (objState.roadId_.road_id != value)
+                              {                                      // Replace with the actual state field
+                                  objState.roadId_.road_id = value;  // Update the state
+                                  return false;                      // Indicates that the state was updated
+                              }
+                              return true;  // Indicates that the state was unchanged
+                          });
     return 0;
 }
 
 int DatLogger::WriteLaneId(int obj_id, int lane_id)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (completeObjectState.obj_states[i].laneId_.lane_id != lane_id)
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::LANE_ID);
-                pkg.hdr.content_size = sizeof(lane_id);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &lane_id, sizeof(lane_id));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].laneId_.lane_id = lane_id;
-                break;
-            }
-        }
-    }
+    WriteObjectData<int>(obj_id,
+                         lane_id,
+                         PackageId::LANE_ID,
+                         [](ObjState& objState, int value) -> bool
+                         {
+                             if (objState.laneId_.lane_id != value)
+                             {                                      // Replace with the actual state field
+                                 objState.laneId_.lane_id = value;  // Update the state
+                                 return false;                      // Indicates that the state was updated
+                             }
+                             return true;  // Indicates that the state was unchanged
+                         });
     return 0;
 }
 
 int DatLogger::WritePosOffset(int obj_id, double offset)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (!IsEqualDouble(completeObjectState.obj_states[i].posOffset_.offset, offset))
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::POS_OFFSET);
-                pkg.hdr.content_size = sizeof(offset);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &offset, sizeof(offset));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].posOffset_.offset = offset;
-                break;
-            }
-        }
-    }
+    WriteObjectData<double>(obj_id,
+                            offset,
+                            PackageId::POS_OFFSET,
+                            [](ObjState& objState, double value) -> bool
+                            {
+                                if (!IsEqualDouble(objState.posOffset_.offset, value))
+                                {
+                                    objState.posOffset_.offset = value;
+                                    return false;  // Indicates that the state was updated
+                                }
+                                return true;  // Indicates that the state was unchanged
+                            });
     return 0;
 }
 
 int DatLogger::WritePosT(int obj_id, double t)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (!IsEqualDouble(completeObjectState.obj_states[i].posT.t, t))
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::POS_T);
-                pkg.hdr.content_size = sizeof(t);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &t, sizeof(t));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].posT.t = t;
-                break;
-            }
-        }
-    }
+    WriteObjectData<double>(obj_id,
+                            t,
+                            PackageId::POS_T,
+                            [](ObjState& objState, double value) -> bool
+                            {
+                                if (!IsEqualDouble(objState.posT.t, value))
+                                {
+                                    objState.posT.t = value;
+                                    return false;  // Indicates that the state was updated
+                                }
+                                return true;  // Indicates that the state was unchanged
+                            });
     return 0;
 }
 
 int DatLogger::WritePosS(int obj_id, double s)
 {
-    if (data_file_.is_open())
-    {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
-        {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
-            {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            if (!IsEqualDouble(completeObjectState.obj_states[i].posS.s, s))
-            {
-                WriteManPkg(obj_id);
-                // create pkg
-                CommonPkg pkg;
-                pkg.hdr.id           = static_cast<int>(PackageId::POS_S);
-                pkg.hdr.content_size = sizeof(s);
-                pkg.content.resize(pkg.hdr.content_size);
-                std::memcpy(pkg.content.data(), &s, sizeof(s));
-                writePackage(pkg);
-                completeObjectState.obj_states[i].posS.s = s;
-                break;
-            }
-        }
-    }
+    WriteObjectData<double>(obj_id,
+                            s,
+                            PackageId::POS_S,
+                            [](ObjState& objState, double value) -> bool
+                            {
+                                if (!IsEqualDouble(objState.posS.s, value))
+                                {
+                                    objState.posS.s = value;
+                                    return false;  // Indicates that the state was updated
+                                }
+                                return true;  // Indicates that the state was unchanged
+                            });
     return 0;
 }
 
@@ -696,33 +553,32 @@ bool IsEqualRgb(const LightRGB& rgb1, const LightRGB& rgb2)
 
 void DatLogger::WriteLightState(int obj_id, LightState rgb_data)
 {
-    if (data_file_.is_open())
+    if (IsFileOpen())
     {
-        for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)
+        for (auto& objState : completeObjectState_.obj_states)
         {
-            if (completeObjectState.obj_states[i].obj_id_.obj_id != obj_id)
+            if (objState.obj_id_.obj_id == obj_id)
             {
-                continue;
-            }
-            completeObjectState.obj_states[i].active = true;
-            const size_t numLights                   = sizeof(rgb_data) / sizeof(datLogger::LightRGB);
-            for (size_t j = 0; j < numLights; ++j)
-            {
-                LightRGB* lightNew = reinterpret_cast<datLogger::LightRGB*>(&rgb_data) + j;
-                LightRGB* lightOld = reinterpret_cast<datLogger::LightRGB*>(&completeObjectState.obj_states[i].lightStates_) + j;
-                if (lightNew->red != lightOld->red || lightNew->green != lightOld->green || lightNew->blue != lightOld->blue ||
-                    lightNew->intensity != lightOld->intensity)
+                objState.active        = true;
+                const size_t numLights = sizeof(rgb_data) / sizeof(datLogger::LightRGB);
+                for (size_t i = 0; i < numLights; ++i)
                 {
-                    WriteManPkg(obj_id);
-                    // create pkg
-                    CommonPkg pkg;
-                    pkg.hdr.id           = static_cast<int>(PackageId::LIGHT_STATES);
-                    pkg.hdr.content_size = sizeof(rgb_data);
-                    pkg.content.resize(pkg.hdr.content_size);
-                    std::memcpy(pkg.content.data(), &rgb_data, sizeof(rgb_data));
-                    writePackage(pkg);
-                    completeObjectState.obj_states[i].lightStates_ = rgb_data;
-                    break;
+                    LightRGB* lightNew = reinterpret_cast<datLogger::LightRGB*>(&rgb_data) + i;
+                    LightRGB* lightOld = reinterpret_cast<datLogger::LightRGB*>(&objState.lightStates_) + i;
+                    if (lightNew->red != lightOld->red || lightNew->green != lightOld->green || lightNew->blue != lightOld->blue ||
+                        lightNew->intensity != lightOld->intensity)
+                    {
+                        WriteManPkg(obj_id);
+                        // create pkg
+                        CommonPkg pkg;
+                        pkg.hdr.id           = static_cast<int>(PackageId::LIGHT_STATES);
+                        pkg.hdr.content_size = sizeof(rgb_data);
+                        pkg.content.resize(pkg.hdr.content_size);
+                        std::memcpy(pkg.content.data(), &rgb_data, sizeof(rgb_data));
+                        writePackage(pkg);
+                        objState.lightStates_ = rgb_data;
+                        break;
+                    }
                 }
             }
         }
@@ -748,11 +604,11 @@ void DatLogger::writePackage(CommonPkg package)
 
 void DatLogger::DeleteObjState(int objId)
 {
-    for (size_t i = 0; i < completeObjectState.obj_states.size(); i++)  // loop current state object id to find the object id
+    for (size_t i = 0; i < completeObjectState_.obj_states.size(); i++)  // loop current state object id to find the object id
     {
-        if (completeObjectState.obj_states[i].obj_id_.obj_id == objId)  // found object id
-        {                                                               // delete now
-            completeObjectState.obj_states.erase(completeObjectState.obj_states.begin() + static_cast<int>(i));
+        if (completeObjectState_.obj_states[i].obj_id_.obj_id == objId)  // found object id
+        {                                                                // delete now
+            completeObjectState_.obj_states.erase(completeObjectState_.obj_states.begin() + static_cast<int>(i));
         }
     }
 }
@@ -761,8 +617,7 @@ datLogger::DatLogger::~DatLogger()
 {
     if (IsFileOpen())
     {
-        WriteTime(simTimeTemp);
-        std::cout << "last time distrctor" << simTimeTemp << std::endl;
+        WriteTime(simTimeTemp_);
         CommonPkg pkg;
         pkg.hdr.id           = static_cast<int>(PackageId::END_OF_SCENARIO);
         pkg.hdr.content_size = 0;
@@ -774,7 +629,7 @@ datLogger::DatLogger::~DatLogger()
     }
 }
 
-int DatLogger::init(std::string fileName, int ver, std::string odrName, std::string modelName)
+int DatLogger::Init(std::string fileName, int ver, std::string odrName, std::string modelName)
 {
     data_file_.open(fileName, std::ios::binary);
     if (data_file_.fail())

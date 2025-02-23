@@ -259,29 +259,24 @@ namespace datLogger
         DatLogger() = default;
         ~DatLogger();
 
-        bool   isFirstEntry  = true;
-        bool   notFirstEnd   = false;
-        bool   TimePkgAdded  = false;
-        bool   ObjIdPkgAdded = false;
-        double simTimeTemp   = SMALL_NUMBER;  // keeps track of time of simulation
+        bool   TimePkgAdded_  = false;
+        bool   ObjIdPkgAdded_ = false;
+        double simTimeTemp_   = SMALL_NUMBER;  // keeps track of time of simulation
 
-        CompleteObjectState     completeObjectState;
+        CompleteObjectState     completeObjectState_;
         std::vector<ObjIdAdded> objIdAdded_;
 
-        int  init(std::string fileName, int ver, std::string odrName, std::string modelName);
+        int  Init(std::string fileName, int ver, std::string odrName, std::string modelName);
         void DeleteObjState(int objId);
 
         void writePackage(CommonPkg package);  // will just write package
         void WriteStringPkg(std::string name, PackageId pkg_id);
         void WriteManPkg(int obj_id);
         int  AddObject(int obj_id);
-        int  deleteObject();
+        int  DeleteObject();
         bool IsObjIdAddPkgWritten(int id);
         void SetObjIdAddPkgWritten(int id, bool status);
-        bool IsFileOpen()
-        {
-            return data_file_.is_open();
-        }
+        bool IsFileOpen();
 
         int WriteObjSpeed(int obj_id, double speed);
         int WriteTime(double t);
@@ -304,6 +299,8 @@ namespace datLogger
         int  WritePosT(int obj_id, double t);
         int  WritePosS(int obj_id, double s);
         void WriteLightState(int obj_id, LightState rgb_data);
+        template <typename T>
+        int WriteObjectData(int obj_id, T value, PackageId package_id, std::function<bool(ObjState&, T)> updateState);
 
         std::string pkgIdTostring(PackageId id);
     };

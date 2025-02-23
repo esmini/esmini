@@ -23,7 +23,7 @@ TEST(TestReplayer, WithOneObject)
 
     DatLogger* logger = new DatLogger;
 
-    logger->init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, version_, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -43,7 +43,7 @@ TEST(TestReplayer, WithOneObject)
         {
             h = 6.0;
         }
-        logger->simTimeTemp = current_time;
+        logger->simTimeTemp_ = current_time;
         for (int j = 0; j < no_of_obj; j++)
         {
             if (i == 2 && j == 2)
@@ -54,15 +54,15 @@ TEST(TestReplayer, WithOneObject)
             logger->AddObject(object_id);
             logger->WriteObjPos(object_id, x, y, z, h, p, r);
             logger->WriteObjSpeed(object_id, speed);
-            logger->ObjIdPkgAdded = false;
+            logger->ObjIdPkgAdded_ = false;
         }
         if (i != 3)
         {
             speed += 1.0;
         }
         current_time += 1.089;
-        logger->deleteObject();
-        logger->TimePkgAdded = false;
+        logger->DeleteObject();
+        logger->TimePkgAdded_ = false;
     }
 
     delete logger;
@@ -115,7 +115,7 @@ TEST(TestReplayer, WithTwoObject)
 
     DatLogger* logger = new DatLogger;
 
-    logger->init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, version_, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -136,7 +136,7 @@ TEST(TestReplayer, WithTwoObject)
         {
             h = 6.0;
         }
-        logger->simTimeTemp = current_time;
+        logger->simTimeTemp_ = current_time;
         for (int j = 0; j < no_of_obj; j++)
         {
             if (i == 2 && j == 2)
@@ -147,15 +147,15 @@ TEST(TestReplayer, WithTwoObject)
             logger->AddObject(object_id);
             logger->WriteObjPos(object_id, x, y, z, h, p, r);
             logger->WriteObjSpeed(object_id, speed);
-            logger->ObjIdPkgAdded = false;
+            logger->ObjIdPkgAdded_ = false;
         }
         if (i != 3)
         {
             speed += 1.0;
         }
         current_time += 1.089;
-        logger->deleteObject();
-        logger->TimePkgAdded = false;
+        logger->DeleteObject();
+        logger->TimePkgAdded_ = false;
     }
 
     delete logger;
@@ -231,7 +231,7 @@ TEST(TestReplayer, WithTwoObjectAndAdd)
 
     DatLogger* logger = new DatLogger;
 
-    logger->init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, version_, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -252,7 +252,7 @@ TEST(TestReplayer, WithTwoObjectAndAdd)
         {
             h = 6.0;
         }
-        logger->simTimeTemp = current_time;
+        logger->simTimeTemp_ = current_time;
         for (int j = 0; j < no_of_obj; j++)
         {
             if (i == 2 && j == 2)
@@ -263,15 +263,15 @@ TEST(TestReplayer, WithTwoObjectAndAdd)
             logger->AddObject(object_id);
             logger->WriteObjPos(object_id, x, y, z, h, p, r);
             logger->WriteObjSpeed(object_id, speed);
-            logger->ObjIdPkgAdded = false;
+            logger->ObjIdPkgAdded_ = false;
         }
         if (i != 3)
         {
             speed += 1.0;
         }
         current_time += 1.089;
-        logger->deleteObject();
-        logger->TimePkgAdded = false;
+        logger->DeleteObject();
+        logger->TimePkgAdded_ = false;
     }
 
     delete logger;
@@ -341,7 +341,7 @@ TEST(TestReplayer, WithTwoObjectAndDelete)
 
     DatLogger* logger = new DatLogger;
 
-    logger->init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, version_, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -362,7 +362,7 @@ TEST(TestReplayer, WithTwoObjectAndDelete)
         {
             h = 6.0;
         }
-        logger->simTimeTemp = current_time;
+        logger->simTimeTemp_ = current_time;
         for (int j = 0; j < no_of_obj; j++)
         {
             if (i == 2 && j == 2)
@@ -373,15 +373,15 @@ TEST(TestReplayer, WithTwoObjectAndDelete)
             logger->AddObject(object_id);
             logger->WriteObjPos(object_id, x, y, z, h, p, r);
             logger->WriteObjSpeed(object_id, speed);
-            logger->ObjIdPkgAdded = false;
+            logger->ObjIdPkgAdded_ = false;
         }
         if (i != 3)
         {
             speed += 1.0;
         }
         current_time += 1.089;
-        logger->deleteObject();
-        logger->TimePkgAdded = false;
+        logger->DeleteObject();
+        logger->TimePkgAdded_ = false;
     }
 
     delete logger;
@@ -452,7 +452,7 @@ TEST(TestDat2csv, WithTwoObjectAddAndDelete)
 
     DatLogger* logger = new DatLogger;
 
-    logger->init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, version_, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -473,7 +473,7 @@ TEST(TestDat2csv, WithTwoObjectAddAndDelete)
         {
             h = 6.0;
         }
-        logger->simTimeTemp = current_time;
+        logger->simTimeTemp_ = current_time;
         for (int j = 0; j < no_of_obj; j++)
         {
             if (i == 2 && j == 2)
@@ -484,15 +484,15 @@ TEST(TestDat2csv, WithTwoObjectAddAndDelete)
             logger->AddObject(object_id);
             logger->WriteObjPos(object_id, x, y, z, h, p, r);
             logger->WriteObjSpeed(object_id, speed);
-            logger->ObjIdPkgAdded = false;
+            logger->ObjIdPkgAdded_ = false;
         }
         if (i != 3)
         {
             speed += 1.0;
         }
         current_time += 1.089;
-        logger->deleteObject();
-        logger->TimePkgAdded = false;
+        logger->DeleteObject();
+        logger->TimePkgAdded_ = false;
     }
 
     delete logger;
@@ -547,7 +547,7 @@ TEST(TestReplayer, RepeatedObjectState)
 
     DatLogger* logger = new DatLogger;
 
-    logger->init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, version_, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -563,18 +563,18 @@ TEST(TestReplayer, RepeatedObjectState)
 
     for (int i = 0; i < total_time; i++)
     {
-        logger->simTimeTemp = current_time;
+        logger->simTimeTemp_ = current_time;
         for (int j = 0; j < no_of_obj; j++)
         {
             int object_id = j;
             logger->AddObject(object_id);
             logger->WriteObjPos(object_id, x, y, z, h, p, r);
             logger->WriteObjSpeed(object_id, speed);
-            logger->ObjIdPkgAdded = false;
+            logger->ObjIdPkgAdded_ = false;
         }
         current_time += 1.089;
-        logger->deleteObject();
-        logger->TimePkgAdded = false;
+        logger->DeleteObject();
+        logger->TimePkgAdded_ = false;
     }
 
     delete logger;
@@ -1367,7 +1367,7 @@ TEST(TestLightStateInReplayer, SimpleTest)
 
     DatLogger* logger = new DatLogger;
 
-    logger->init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, version_, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -1428,7 +1428,7 @@ TEST(TestLightStateInReplayer, SimpleTest)
             lightState_.brake_lights.green     = rgb_value.blue;
             lightState_.brake_lights.intensity = rgb_value.intensity;
         }
-        logger->simTimeTemp = current_time;
+        logger->simTimeTemp_ = current_time;
         for (int j = 0; j < no_of_obj; j++)
         {
             int object_id = j;
@@ -1436,15 +1436,15 @@ TEST(TestLightStateInReplayer, SimpleTest)
             logger->WriteObjPos(object_id, x, y, z, h, p, r);
             logger->WriteObjSpeed(object_id, speed);
             logger->WriteLightState(object_id, lightState_);
-            logger->ObjIdPkgAdded = false;
+            logger->ObjIdPkgAdded_ = false;
         }
         if (i != 3)
         {
             speed += 1.0;
         }
         current_time += 1.089;
-        logger->deleteObject();
-        logger->TimePkgAdded = false;
+        logger->DeleteObject();
+        logger->TimePkgAdded_ = false;
     }
 
     delete logger;

@@ -50,7 +50,7 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false), sh
         SetStopEntries();
     }
     // initiate the cache with first time frame
-    InitiateStates();
+    InitiateCache();
 }
 
 Replay::Replay(const std::string directory, const std::string scenario, std::string create_datfile)
@@ -108,7 +108,7 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         SetStopEntries();
     }
     // initiate the cache with first time frame
-    InitiateStates();
+    InitiateCache();
 
     if (!create_datfile.empty())
     {
@@ -182,7 +182,7 @@ Replay::~Replay()
 
 void Replay::GoToStart()
 {
-    InitiateStates();
+    InitiateCache();
 }
 
 void Replay::GoToEnd()
@@ -516,7 +516,7 @@ void Replay::UpdateCache()
     }
 }
 
-void Replay::UpdateObjStatus(int id, bool status)
+void Replay::UpdateObjStatusInCache(int id, bool status)
 {
     for (auto& obj : scenarioState_.obj_states)  // Iterate by reference
     {                                            // loop current state object id to find the object id
@@ -532,20 +532,13 @@ void Replay::CheckObjAvailabilityForward()
     // check all obj status in current time frame
     for (const auto index : GetNumberOfObjectsAtTime())
     {
-        int obj_id = GetIntContent(index);
+        // Add the object's state to the cache. This also initializes the object's state if it's new.
+        AddObjStateInCache(index);
         if (IsObjectDeletePkg(index + 1))
         {
-            UpdateObjStatus(obj_id, false);  // obj not active in cache
-            continue;
-        }
-        else if (IsObjIdAddPkg(index + 1))
-        {
-            if (IsObjAvailableInCache(obj_id))  // make sure same obj deleted before adding the same object
-            {
-                DeleteObjState(obj_id);  // make sure same obj deleted before adding the same object
-            }
-            AddObjState(index);  // obj added in cache. this will also initiate this obj
-            continue;
+            // If the object is marked for deletion, update its status in the cache to inactive.
+            // We do NOT delete the object from the cache to preserve its state for reverse playback.
+            UpdateObjStatusInCache(GetIntContent(index), false);
         }
     }
 }
@@ -558,15 +551,35 @@ void Replay::CheckObjAvailabilityBackward()
         int obj_id = GetIntContent(index);
         if (IsObjectDeletePkg(index + 1))
         {
-            UpdateObjStatus(obj_id, true);  // obj added in cache with same state as when its deleted
-            continue;
+            // obj added in cache with same state as when its deleted
+            UpdateObjStatusInCache(obj_id, true);
         }
         else if (IsObjIdAddPkg(index + 1) && !IsEqualDouble(time_, startTime_))  // ignore first time frame
         {
-            UpdateObjStatus(obj_id, false);
-            continue;
+            UpdateObjStatusInCache(obj_id, false);
         }
     }
+}
+
+bool Replay::HandleRestartTimes()
+{
+    if (!restartTimes_.empty())
+    {
+        for (const auto& restartTime : restartTimes_)
+        {
+            if ((restartTime.next_index_ == index_) && (!show_restart_))  // go to restarted time from restart finished next time
+            {
+                index_ = restartTime.restart_index_;  // jump, skip all time frames belong during restart
+                time_  = restartTime.restart_time_;
+                return false;  // Time lapsed is false
+            }
+            else if (restartTime.restart_index_ == index_ && show_restart_)  // go to restarted time from restart first time
+            {
+                return true;  // Time lapsed is true
+            }
+        }
+    }
+    return false;  // Time lapsed is false if no restart time is handled.
 }
 
 int Replay::GoToTime(double t, bool stopAtEachFrame)
@@ -633,47 +646,23 @@ int scenarioengine::Replay::GoBackwardTime(double t, bool stopAtEachFrame)
     bool timeLapsed = false;
     while (!timeLapsed)
     {
+        if (scenarioState_.sim_time < time_)
+        {
+            CheckObjAvailabilityBackward();
+        }
+
+        double       previousTime  = time_;
+        unsigned int previousIndex = index_;
         GoToPreviousFrame();
 
-        if (!restartTimes_.empty())
-        {
-            for (const auto& restartTime : restartTimes_)
-            {
-                if ((restartTime.next_index_ == index_) && (!show_restart_))  // go to restarted time from restart finished next time
-                {
-                    index_ = restartTime.restart_index_;  // jump, skip all time frames belong during restart
-                    time_  = restartTime.restart_time_;
-                    break;
-                }
-                else if (restartTime.restart_index_ == index_ && show_restart_)  // go to restarted time from restart first time
-                {
-                    timeLapsed = true;
-                    break;
-                }
-            }
-        }
+        timeLapsed = HandleRestartTimes();
 
-        double       pervious_time_  = time_;
-        unsigned int pervious_index_ = index_;
-        if (stopAtEachFrame)  // stop at each min time frame also(might be some time frame might not written so each frame might not have
-                              // time)
-        {
-            if (scenarioState_.sim_time - time_ > deltaTime_)
-            {
-                time_  = pervious_time_;
-                index_ = pervious_index_;
-                scenarioState_.sim_time += deltaTime_;  // check + and -
-                break;
-            }
-            else
-            {
-                timeLapsed = true;
-            }
-        }
-        else if ((IsEqualDouble(t, time_)) ||  // requested time equal to next time
-                 (time_ < t + SMALL_NUMBER))   // gone past requested time
-        {
-            timeLapsed = true;
+        if (stopAtEachFrame && scenarioState_.sim_time - time_ > deltaTime_)
+        {  // stop at each frame AND the time difference exceeds deltaTime_.
+            time_  = previousTime;
+            index_ = previousIndex;
+            scenarioState_.sim_time += deltaTime_;
+            break;
         }
 
         UpdateCache();
@@ -681,7 +670,15 @@ int scenarioengine::Replay::GoBackwardTime(double t, bool stopAtEachFrame)
 
         if (time_ < t + SMALL_NUMBER)  // gone past requested time, sim time should be given time
         {
+            time_                   = previousTime;
+            index_                  = previousIndex;
             scenarioState_.sim_time = t;
+            break;
+        }
+
+        if (stopAtEachFrame || IsEqualDouble(t, time_))  // ran till requested time
+        {
+            timeLapsed = true;
         }
     }
     return 0;
@@ -718,21 +715,31 @@ double Replay::GetTimeFromCnt(int count)
     return timeTemp;
 }
 
-void Replay::AddObjState(size_t idx)
+void Replay::AddObjStateInCache(size_t idx)
 {
     ObjectStateWithObjId stateObjId;
     if (!IsObjIdPkg(idx))
     {
         LOG_ERROR_AND_QUIT(" Initialization error->Stop replay ");
     }
-    stateObjId.id     = GetIntContent(idx);
+
+    stateObjId.id = GetIntContent(idx);
+    if (IsObjAvailableActive(stateObjId.id))
+    {
+        return;  // object already active in cache
+    }
+    if (IsObjAvailableInCache(stateObjId.id))
+    {
+        // make sure same obj deleted before adding the same object(object re-added)
+        DeleteObjStateInCache(stateObjId.id);
+    }
+
     stateObjId.active = true;
     size_t pkgCount   = GetPkgCntBtwObj(idx);
-
     for (size_t i = idx + 1; i < pkgCount + idx + 1; i++)
     {  // GetPkgCntBtwObj will return count of package
 
-        if (IsObjIdAddPkg(i) || IsObjectDeletePkg(i))
+        if (IsObjIdAddPkg(i))
         {
             continue;  // skip packages.
         }
@@ -743,7 +750,7 @@ void Replay::AddObjState(size_t idx)
     scenarioState_.obj_states.push_back(stateObjId);
 }
 
-void Replay::DeleteObjState(int objId)
+void Replay::DeleteObjStateInCache(int objId)
 {
     for (size_t i = 0; i < scenarioState_.obj_states.size(); i++)  // loop current state object id to find the object id
     {
@@ -755,7 +762,7 @@ void Replay::DeleteObjState(int objId)
     }
 }
 
-void Replay::InitiateStates()
+void Replay::InitiateCache()
 {
     // reset the timings
     scenarioState_.obj_states.clear();
@@ -767,7 +774,7 @@ void Replay::InitiateStates()
 
     for (const auto index : objIdIndices)
     {
-        AddObjState(index);
+        AddObjStateInCache(index);
     }
 }
 
@@ -1323,7 +1330,7 @@ int Replay::CreateMergedDatfile(const std::string filename)
                 return -1;
             }
 
-            if (datLogger_->init(filename, header_.version, header_.odrFilename.string.data(), header_.modelFilename.string.data()) != 0)
+            if (datLogger_->Init(filename, header_.version, header_.odrFilename.string.data(), header_.modelFilename.string.data()) != 0)
             {
                 delete datLogger_;
                 datLogger_ = nullptr;

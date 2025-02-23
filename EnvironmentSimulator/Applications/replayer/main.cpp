@@ -339,7 +339,7 @@ int ParseEntities(Replay* player)
         player->UpdateCache();
     }
     // reset the cache
-    player->InitiateStates();
+    player->InitiateCache();
     player->ExtractRestartTimes();  // get restart times now so shall be available for replay time
 #ifdef _USE_OSG
     double width = 1.75;

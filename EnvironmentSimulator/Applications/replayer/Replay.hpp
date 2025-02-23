@@ -80,7 +80,7 @@ namespace scenarioengine
         std::vector<RestartTimes>         restartTimes_;
 
         // method for cache
-        void InitiateStates();
+        void InitiateCache();
         void UpdateCache();
 
         /**
@@ -178,12 +178,12 @@ namespace scenarioengine
         int    FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
         bool   IsValidPocket(id_t id);
         void   BuildData();
-        void   UpdateObjStatus(int id, bool status);
+        void   UpdateObjStatusInCache(int id, bool status);
         void   CheckObjAvailabilityBackward();
         bool   IsObjAvailableInCache(int Id);  // check in cache
         int    CreateMergedDatfile(const std::string filename);
-        void   AddObjState(size_t objId);  // add the object state for given object id from the current object state
-        void   DeleteObjState(int objId);
+        void   AddObjStateInCache(size_t objId);  // add the object state for given object id from the current object state
+        void   DeleteObjStateInCache(int objId);
         bool   IsObjectDeletePkg(size_t index) const;
         bool   IsObjIdAddPkg(size_t index) const;
         bool   IsObjIdPkg(size_t index) const;
@@ -196,6 +196,7 @@ namespace scenarioengine
         double GetDoubleFromScenarioState(int obj_id, datLogger::PackageId id);
         int    GoForwardTime(double time_frame, bool stopAtEachFrame = false);
         int    GoBackwardTime(double time_frame, bool stopAtEachFrame = false);
+        bool   HandleRestartTimes();  // handle restart times, return when to stop
     };
 
 }  // namespace scenarioengine
