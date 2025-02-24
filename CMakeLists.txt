@@ -253,7 +253,6 @@ set(YAML_LIBRARIES
     yaml)
 
 add_subdirectory(externals/spdlog)
-add_subdirectory(externals/yaml)
 
 if(LINUX)
     # add link lib for missing filesystem functions in case gcc 7.5 is used

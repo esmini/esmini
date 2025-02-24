@@ -242,7 +242,7 @@ void RemoveOptionAndArguments(int& argc, char**& argv, const char* option, unsig
                 end_index--;
 
                 // and shift the rest of the arguments
-                for (unsigned int k = i; k < argc; k++)
+                for (int k = i; k < argc; k++)
                 {
                     argv[k] = argv[k + 1];
                 }
