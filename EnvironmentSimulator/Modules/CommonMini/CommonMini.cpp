@@ -195,38 +195,108 @@ std::string ControlDomain2Str(unsigned int domains)
 
 void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& prefixArgs)
 {
-    int    newArgc = argc + prefixArgs.size();
-    char** newArgv = new char*[newArgc + 1];  // +1 for the null terminator
+    unsigned int newArgc = static_cast<unsigned int>(argc + prefixArgs.size());
+    char**       newArgv = new char*[newArgc];
 
     int i;
     // firstly, copy the original arguments before the appendIndex
     for (i = 0; i < appendIndex; ++i)
     {
         newArgv[i] = new char[std::strlen(argv[i]) + 1];
-        std::strcpy(newArgv[i], argv[i]);
+        StrCopy(newArgv[i], argv[i], std::strlen(argv[i]) + 1);
     }
     // secondly, copy the prefix arguments
     for (const auto& arg : prefixArgs)
     {
         newArgv[i] = new char[arg.length() + 1];
-        std::strcpy(newArgv[i], arg.c_str());
+        StrCopy(newArgv[i], arg.c_str(), arg.length() + 1);
         ++i;
     }
     // thirdly, copy the original arguments from the appendIndex
     for (int j = appendIndex; j < argc; ++j)
     {
         newArgv[i] = new char[std::strlen(argv[j]) + 1];
-        std::strcpy(newArgv[i], argv[j]);
+        StrCopy(newArgv[i], argv[j], std::strlen(argv[j]) + 1);
         ++i;
     }
-    newArgv[newArgc] = nullptr;  // null terminate the array
-    argc             = newArgc;
-    argv             = newArgv;
+    argc = newArgc;
+    argv = newArgv;
 
     std::cout << "New argc: " << newArgc << std::endl;
     for (int k = 0; k < argc; ++k)
     {
         std::cout << "New argv[" << k << "]: " << argv[k] << std::endl;
+    }
+}
+
+void RemoveOptionAndArguments(int& argc, char**& argv, const char* option, unsigned int n_arguments, unsigned int start_index, unsigned int end_index)
+{
+    for (unsigned int i = start_index; i < end_index; i++)
+    {
+        if (strcmp(argv[i], option) == 0)
+        {
+            for (unsigned int j = 0; j < n_arguments + 1 && i < end_index; j++)  // +1 to include option itself
+            {
+                delete argv[i];
+                argc--;
+                end_index--;
+
+                // and shift the rest of the arguments
+                for (unsigned int k = i; k < argc; k++)
+                {
+                    argv[k] = argv[k + 1];
+                }
+            }
+        }
+    }
+}
+
+void PostProcessArgs(int& argc, char**& argv)
+{
+    // ignore any window argument prior to any headless argument
+
+    // first, find positions of last occurance of relevant options
+    int last_headless_index = -1;
+    int last_window_index   = -1;
+    int last_osc_index      = -1;
+    int last_osc_str_index  = -1;
+
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "--headless") == 0)
+        {
+            last_headless_index = i;
+        }
+        else if (strcmp(argv[i], "--window") == 0)
+        {
+            last_window_index = i;
+        }
+        else if (strcmp(argv[i], "--osc") == 0)
+        {
+            last_osc_index = i;
+        }
+        else if (strcmp(argv[i], "--osc_str") == 0)
+        {
+            last_osc_str_index = i;
+        }
+    }
+
+    // remove any window arguments prior to headless argument
+    if (last_window_index > -1 && last_window_index < last_headless_index)
+    {
+        RemoveOptionAndArguments(argc, argv, "--window", 4, 0, last_headless_index);
+    }
+
+    // remove any osc arguments prior to osc_str argument
+    if (last_osc_index > -1 && last_osc_index < last_osc_str_index)
+    {
+        RemoveOptionAndArguments(argc, argv, "--osc", 1, 0, last_osc_str_index);
+    }
+
+    // remove any osc_str arguments prior to osc argument
+    if (last_osc_str_index > -1 && last_osc_str_index < last_osc_index)
+    {
+        RemoveOptionAndArguments(argc, argv, "--osc_str", 1, 0, last_osc_index);
     }
 }
 

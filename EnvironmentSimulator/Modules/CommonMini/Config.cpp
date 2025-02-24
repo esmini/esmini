@@ -4,6 +4,15 @@
 #include "logger.hpp"
 #include "DefaultPathFinder.hpp"
 #include "Defines.hpp"
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
 
 namespace esmini::common
 {
@@ -32,10 +41,11 @@ namespace esmini::common
     std::string Config::MakeDefaultConfigFilePath() const
     {
         esmini::common::DefaultPathFinder pathFinder;
-        std::string                       defaultPath = pathFinder.GetDefaultPath();
-        defaultPath                                   = defaultPath.substr(0, defaultPath.find_last_of("//"));
-        std::string defaultFilePath                   = fmt::format("{}/{}", defaultPath, DEFAULT_CONFIG_FILE);
+        fs::path                          defaultPath(pathFinder.GetDefaultPath());
+        std::string                       defaultFilePath = (defaultPath.parent_path() / ".." / DEFAULT_CONFIG_FILE).string();
+
         LOG_INFO("Default config file path: {}", defaultFilePath);
+
         return defaultFilePath;
     }
 

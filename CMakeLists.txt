@@ -96,16 +96,6 @@ set(CMAKE_BUILD_TYPE
     CACHE STRING
           "build mode")
 
-set(RYML_INSTALL
-    OFF
-    CACHE BOOL
-          "Disable RYML installation.")
-
-set(RYML_STANDALONE
-    OFF
-    CACHE BOOL
-          "Use RYML in standalone mode.")
-
 # ############################### Setting project rules ############################################################
 
 set_property(
@@ -245,10 +235,7 @@ if(NOT
       "test/OSC-NCAP-scenarios/.git"
    OR NOT
       EXISTS
-      "externals/spdlog/.git"
-   OR NOT
-      EXISTS
-      "externals/ryml/ext/c4core.git")
+      "externals/spdlog/.git")
     execute_process(
         COMMAND git submodule update --init --recursive
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -262,12 +249,11 @@ set(SPDLOG_BUILD_PIC
     ON)
 set(SPDLOG_LIBRARIES
     spdlog)
-set(RYML_LIBRARIES
-    ryml)
+set(YAML_LIBRARIES
+    yaml)
 
 add_subdirectory(externals/spdlog)
-
-add_subdirectory(externals/ryml)
+add_subdirectory(externals/yaml)
 
 if(LINUX)
     # add link lib for missing filesystem functions in case gcc 7.5 is used
@@ -285,6 +271,10 @@ set(EXTERNALS_PUGIXML_PATH
           "")
 set(EXTERNALS_EXPR_PATH
     ${EXTERNALS_EXPR_PATH}
+    CACHE INTERNAL
+          "")
+set(EXTERNALS_YAML_PATH
+    ${EXTERNALS_YAML_PATH}
     CACHE INTERNAL
           "")
 

@@ -1245,6 +1245,8 @@ void ScenarioPlayer::HandleConfigurations()
     // since the config file(s) from arguments are already parsed and appended to the arguments.
     // We just want to keep the application name at first index, after it we low priority configs
     AppendArgcArgv(argc_, argv_, 1, allConfigs);
+
+    PostProcessArgs(argc_, argv_);
 }
 
 int ScenarioPlayer::Init()

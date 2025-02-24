@@ -39,14 +39,13 @@ add_library(
 target_include_directories(
     ${TARGET}
     PRIVATE project_options
-            SYSTEM
-    PUBLIC ${EXTERNALS_SPDLOG_INCLUDES}
-           ${EXTERNALS_RYML_INCLUDES})
+    PUBLIC ${EXTERNALS_YAML_INCLUDES}
+           ${EXTERNALS_SPDLOG_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
-    PRIVATE ${SPDLOG_LIBRARIES}
-            ${RYML_LIBRARIES})
+    PUBLIC ${SPDLOG_LIBRARIES}
+           ${YAML_LIBRARIES})
 
 if(NOT
    MSVC)
