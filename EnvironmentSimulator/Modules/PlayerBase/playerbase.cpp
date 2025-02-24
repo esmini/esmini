@@ -25,7 +25,6 @@
 #include "logger.hpp"
 #include "Defines.hpp"
 
-
 #ifdef _USE_OSG
 #include "viewer.hpp"
 #endif
@@ -1201,7 +1200,6 @@ void ScenarioPlayer::PrintUsage()
     viewer::Viewer::PrintUsage();
 #endif
 }
-
 
 int ScenarioPlayer::Init()
 {

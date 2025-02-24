@@ -247,7 +247,6 @@ void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
     LOG_INFO("Options after parsing: {}", allArgvs);
 }
 
-
 void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& prefixArgs)
 {
     int    newArgc = argc + prefixArgs.size();
