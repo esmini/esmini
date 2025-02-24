@@ -18,7 +18,8 @@ set(SOURCES
     logger.cpp
     Config.cpp
     ConfigParser.cpp
-    DefaultPathFinder.cpp)
+    DefaultPathFinder.cpp
+    ${EXTERNALS_YAML_PATH}/yaml.cpp)
 
 set(INCLUDES
     CommonMini.hpp
@@ -26,7 +27,8 @@ set(INCLUDES
     logger.hpp
     Config.hpp
     ConfigParser.hpp
-    DefaultPathFinder.hpp)
+    DefaultPathFinder.hpp
+    ${EXTERNALS_YAML_PATH}/yaml.hpp)
 
 # ############################### Creating library ###################################################################
 
@@ -39,14 +41,12 @@ add_library(
 target_include_directories(
     ${TARGET}
     PRIVATE project_options
-            SYSTEM
-    PUBLIC ${EXTERNALS_SPDLOG_INCLUDES}
-           ${EXTERNALS_RYML_INCLUDES})
+    PUBLIC ${EXTERNALS_YAML_INCLUDES}
+           ${EXTERNALS_SPDLOG_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
-    PRIVATE ${SPDLOG_LIBRARIES}
-            ${RYML_LIBRARIES})
+    PUBLIC ${SPDLOG_LIBRARIES})
 
 if(NOT
    MSVC)
