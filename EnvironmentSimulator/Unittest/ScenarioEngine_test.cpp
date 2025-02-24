@@ -934,19 +934,21 @@ TEST(OptionsTest, TestOptionHandling)
     // define arguments
     opt.AddOption("osc_file", "Scenario file", "filename");
     opt.AddOption("odr_file", "Roadnetwork file", "filename", "default_road.xodr");
-    opt.AddOption("option2", "Some value", "value");
+    opt.AddOption("option2", "Some value", "value", "", false, false);
     opt.AddOption("option3", "Some rate", "rate", "55");
-    opt.AddOption("option4", "Some temp", "temp");
+    opt.AddOption("option4", "Some temp");
     opt.AddOption("option5", "Some speed", "speed");
     opt.AddOption("window", "Visualize the scenario");
     // opt.PrintUsage();
 
     // set arguments
-    std::array<const char*, 12> args = {"my_app",
+    std::array<const char*, 14> args = {"my_app",
                                         "--osc_file",
                                         "my_scenario.xosc",
                                         "--odr_file",
-                                        "my_road.xodr",
+                                        "my_road_first.xodr",
+                                        "--odr_file",
+                                        "my_road_second.xodr",
                                         "--window",
                                         "--option2",
                                         "option2Value",
@@ -956,18 +958,18 @@ TEST(OptionsTest, TestOptionHandling)
                                         "--option4"};
     int                         argc = static_cast<int>(args.size());
 
-    ASSERT_EQ(opt.ParseArgs(argc, args.data()), -1);
+    ASSERT_EQ(opt.ParseArgs(argc, args.data()), 0);
 
     ASSERT_EQ(opt.GetOptionSet("no_arg"), false);
     ASSERT_EQ(opt.GetOptionSet("osc_file"), true);
     ASSERT_EQ(opt.GetOptionSet("window"), true);
     ASSERT_EQ(opt.GetOptionSet("option2"), true);
     ASSERT_EQ(opt.GetOptionSet("option3"), true);
-    ASSERT_EQ(opt.GetOptionSet("option4"), false);
+    ASSERT_EQ(opt.GetOptionSet("option4"), true);
     ASSERT_EQ(opt.GetOptionSet("option5"), false);
     ASSERT_EQ(opt.GetOptionArg("window"), "");
     ASSERT_EQ(opt.GetOptionArg("osc_file"), "my_scenario.xosc");
-    ASSERT_EQ(opt.GetOptionArg("odr_file"), "my_road.xodr");
+    ASSERT_EQ(opt.GetOptionArg("odr_file"), "my_road_second.xodr");
     ASSERT_EQ(opt.GetOptionArg("option2"), "option2Value");
     ASSERT_EQ(opt.GetOptionArg("option2", 1), "option2Value2");
     ASSERT_EQ(opt.GetOptionArg("option3"), "55");

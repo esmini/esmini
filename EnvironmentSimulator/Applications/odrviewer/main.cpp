@@ -31,6 +31,7 @@
 #include "CommonMini.hpp"
 #include "helpText.hpp"
 #include "logger.hpp"
+#include "Defines.hpp"
 
 #define ROAD_MIN_LENGTH 30.0
 #define SIGN(X)         ((X < 0) ? -1 : 1)
@@ -385,6 +386,7 @@ int main(int argc, char **argv)
     opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many .tga files will be created");
+    opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, true, false);
     opt.AddOption("custom_fixed_camera",
                   "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)",
                   "position and optional orientation");
@@ -422,6 +424,8 @@ int main(int argc, char **argv)
     opt.AddOption("traffic_rule", "Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)", "rule (right/left)");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
+
+    HandleConfigurations("odrviewer", argc, argv);
 
     if (opt.ParseArgs(argc, argv) != 0)
     {
