@@ -49,6 +49,14 @@ public:
         StoryBoardElement::Transition transition;
     } TrafficCommandStateChange;
 
+    typedef enum
+    {
+        DEFAULT,
+        API,
+        API_AND_LOG,
+        LOG
+    } OSIStaticUpdateMode;
+
     /**
     Creates and opens osi file
     @param filename Optional filename, including path. Set to 0 to use default.
@@ -61,7 +69,7 @@ public:
     /**
     Writes GroundTruth in the OSI file
     */
-    bool WriteOSIFile();
+    bool WriteOSIFile(const std::string& ground_truth, unsigned int size);
     /**
     Flush (force write) the OSI file
     */
@@ -77,7 +85,7 @@ public:
     /**
     Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
     */
-    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, bool refetchStaticGt = false);
+    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, int updateMode);
     /**
     Fills up the osi message with  static GroundTruth
     */
