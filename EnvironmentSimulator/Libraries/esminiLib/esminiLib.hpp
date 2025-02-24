@@ -336,6 +336,13 @@ typedef enum
     REL_DIST_EUCLIDIAN    = 4
 } SE_RelativeDistanceType;
 
+typedef enum
+{
+    DEFAULT     = 0,
+    API         = 1,
+    API_AND_LOG = 2
+} SE_OSIStaticReportMode;  // Must match roadmanager::OSIStaticReportMode
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -1431,36 +1438,31 @@ extern "C"
 
     /**
             Enforce flushing OSI file (save all buffered data to file)
+            Normally not necessary, since data is flushed automatically at file closure
             @return 0
     */
     SE_DLL_API void SE_FlushOSIFile();
 
     /**
-            The SE_ClearOSIGroundTruth clears the certain groundtruth data
-            This function should only be used together with SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth
+     *      Setting the OSI report mode of the static ground truth data. Default is applied if function not used.
+     *      @param mode DEFAULT=Static data in API and log first frame only, API=Static data always in API but only logged first frame and
+     API_AND_LOG=Static data always in API and logged.
             @return 0
     */
-    SE_DLL_API int SE_ClearOSIGroundTruth();
+    SE_DLL_API void SE_SetOSIStaticReportMode(SE_OSIStaticReportMode mode);
 
     /**
-            The SE_UpdateOSIGroundTruth function calls SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth and updates OSI Groundtruth
-            @param refetchStaticGt Optional flag, whether to include static ground truth in OSI data structure or not
+     *      Excluding ghost vehicle from dynamic ground truth (default is to include)
             @return 0
     */
-    SE_DLL_API int SE_UpdateOSIGroundTruth(bool refetchStaticGt = false);
+    SE_DLL_API void SE_ExcludeGhostFromGroundTruth();
 
     /**
-            The SE_UpdateOSIStaticGroundTruth function updates OSI static Groundtruth
+     *      The SE_SetOSIFrequency function sets the frequency of OSI data updates
+     *      @param frequency Frequency of OSI data updates
             @return 0
-    */
-    SE_DLL_API int SE_UpdateOSIStaticGroundTruth();
-
-    /**
-            The SE_UpdateOSIDynamicGroundTruth function updates OSI dynamic Groundtruth
-            @param reportGhost Optional flag, if we should include ghost vehicle info in the osi messages
-            @return 0
-    */
-    SE_DLL_API int SE_UpdateOSIDynamicGroundTruth(bool reportGhost = true);
+     */
+    SE_DLL_API int SE_SetOSIFrequency(int frequency);
 
     /**
             @return 0
@@ -1468,13 +1470,15 @@ extern "C"
     SE_DLL_API int SE_UpdateOSITrafficCommand();
 
     /**
-            The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
+            The SE_GetOSIGroundTruth function updates the OSI ground truth and returns a char array containing the osi GroundTruth serialized to a
+       string
             @return osi3::GroundTruth*
     */
     SE_DLL_API const char *SE_GetOSIGroundTruth(int *size);
 
     /**
-            Get a pointer to the internal OSI data structure, useful for direct access to OSI data in a C/C++ environment
+            The SE_GetOSIGroundTruthRaw function updates the OSI ground truth and returns a pointer to the internal OSI data structure,
+            useful for direct access to OSI data in a C/C++ environment
             @return osi3::GroundTruth*
     */
     SE_DLL_API const char *SE_GetOSIGroundTruthRaw();

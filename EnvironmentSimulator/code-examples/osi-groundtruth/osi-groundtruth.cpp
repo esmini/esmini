@@ -12,18 +12,14 @@ int main(int argc, char* argv[])
     const osi3::GroundTruth* gt;
 
     SE_EnableOSIFile(0);  // 0 or "" will result in default filename, ground_truth.osi
+    SE_SetOSIStaticReportMode(SE_OSIStaticReportMode::DEFAULT);
 
     SE_Init("../resources/xosc/cut-in_simple.xosc", 0, 1, 0, 0);
 
-    // You could now retrieve the initial state of all objects before stepping the scenario
-
-    // Initial update of complete Ground Truth, including static things
-    SE_UpdateOSIGroundTruth(false);
-
-    // Fetch initial OSI struct
+    // Fetch initial OSI struct, this will also update the OSI data
     gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
-    // Lane boundaries (static road info only available in first OSI frame
+    // Lane boundaries (static road info only available in first OSI frame)
     printf("lane boundaries: %d\n", gt->lane_boundary_size());
     for (int j = 0; j < gt->lane_boundary_size(); j++)
     {
@@ -41,20 +37,16 @@ int main(int argc, char* argv[])
 
     for (int i = 0; i < 4; i++)
     {
-        SE_StepDT(0.01f);
-
-        // Further updates will only affect dynamic OSI stuff
-        SE_UpdateOSIGroundTruth(false);
-
-        // Fetch OSI struct
-        gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+        SE_StepDT(0.01f);  // ground truth will be automatically updated each step if we have either an OSIFile or fetched a pointer to the
+                           // osi3::GroundTruth struct
 
         // Print timestamp
         printf("Frame %d timestamp: %.2f\n",
                i + 1,
                static_cast<double>(gt->timestamp().seconds()) + 1E-9 * static_cast<double>(gt->timestamp().nanos()));
 
-        // Static content such as lane boundaries should be 0 at this point
+        // Static content such as lane boundaries should be 0 at this point (we have SE_OSIStaticReportMode::DEFAULT, change to API or API_AND_LOG to
+        // get static data)
         printf("lane boundaries: %d\n", gt->lane_boundary_size());
 
         // Road markings, e.g. zebra lines

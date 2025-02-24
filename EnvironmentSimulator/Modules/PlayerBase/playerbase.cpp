@@ -58,7 +58,6 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     launch_server        = false;
     fixed_timestep_      = -1.0;
     osi_receiver_addr    = "";
-    osi_freq_            = 0;
     osi_updated_         = false;
     CSV_Log              = NULL;
     osiReporter          = NULL;
@@ -317,14 +316,11 @@ void ScenarioPlayer::ScenarioPostFrame()
     if (NEAR_NUMBERS(scenarioEngine->getSimulationTime(), scenarioEngine->GetTrueTime()))
     {
         // Update OSI info
-        if (osi_freq_ > 0)
+        if (osiReporter->GetOSIFrequency() > 0)
         {
             osiReporter->ReportSensors(sensor);
 
-            if ((GetCounter() - 1) % osi_freq_ == 0)
-            {
-                osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-            }
+            osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
 
             osiReporter->UpdateOSITrafficCommand();
         }
@@ -1261,11 +1257,16 @@ int ScenarioPlayer::Init()
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
 #ifdef _USE_OSI
+    opt.AddOption("osi_exclude_ghost", "Excludes ghost from osi dynamic osi ground truth");
     opt.AddOption("osi_file", "Save osi trace file", "filename", DEFAULT_OSI_TRACE_FILENAME);
     opt.AddOption("osi_freq", "Decrease OSI file entries, e.g. --osi_freq 2 -> OSI written every two simulation steps", "frequency");
     opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
     opt.AddOption("osi_points", "Show OSI road points. Toggle key 'y'");
     opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address", "127.0.0.1");
+    opt.AddOption("osi_static_reporting",
+                  "Decide how the static data should be reported, 0=Default (first frame), 1=API (expose on API) 2=API_AND_LOG (Always log)",
+                  "mode",
+                  "0");
 #endif
     opt.AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
     opt.AddOption("param_permutation", "Run specific permutation of parameter distribution, index in range (0 .. NumberOfPermutations-1)", "index");
@@ -1639,16 +1640,22 @@ int ScenarioPlayer::Init()
 
 #ifdef _USE_OSI
     osiReporter = new OSIReporter(scenarioEngine);
+    osiReporter->SetCounterPtr(&frame_counter_);
     osiReporter->SetStationaryModelReference(scenarioEngine->getSceneGraphFilename());
     scenarioEngine->storyBoard.SetOSIReporter(osiReporter);
 
     if (opt.GetOptionSet("osi_receiver_ip"))
     {
         osiReporter->OpenSocket(opt.GetOptionArg("osi_receiver_ip"));
-        if (osi_freq_ == 0)
+        if (osiReporter->GetOSIFrequency() == 0)
         {
-            osi_freq_ = 1;
+            osiReporter->SetOSIFrequency(1);
         }
+    }
+
+    if (opt.GetOptionSet("osi_exclude_ghost"))
+    {
+        osiReporter->ExcludeGhost();
     }
 
     std::string osi_filename;
@@ -1656,9 +1663,9 @@ int ScenarioPlayer::Init()
     if (opt.GetOptionSet("osi_file"))
     {
         osi_filename = opt.GetOptionArg("osi_file");
-        if (osi_freq_ == 0)
+        if (osiReporter->GetOSIFrequency() == 0)
         {
-            osi_freq_ = 1;
+            osiReporter->SetOSIFrequency(1);
         }
     }
 
@@ -1675,13 +1682,14 @@ int ScenarioPlayer::Init()
 
     if ((arg_str = opt.GetOptionArg("osi_freq")) != "")
     {
-        if (!osiReporter->IsFileOpen())
-        {
-            LOG_ERROR("Specifying osi frequency without --osi_file on is not possible");
-            return -1;
-        }
-        osi_freq_ = atoi(arg_str.c_str());
+        osiReporter->SetOSIFrequency(atoi(arg_str.c_str()));
         LOG_INFO("Run simulation decoupled from realtime, with fixed timestep: {:.2f}", GetFixedTimestep());
+    }
+
+    if ((arg_str = opt.GetOptionArg("osi_static_reporting")) != "")
+    {
+        osiReporter->SetOSIStaticReportMode(static_cast<OSIReporter::OSIStaticReportMode>(atoi(arg_str.c_str())));
+        LOG_INFO("OSI static data reporting mode: {}", arg_str);
     }
 #endif  // _USE_OSI
 

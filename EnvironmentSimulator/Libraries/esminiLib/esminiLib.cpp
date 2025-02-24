@@ -1553,11 +1553,37 @@ extern "C"
         return 0;
     }
 
+    SE_DLL_API void SE_SetOSIStaticReportMode(SE_OSIStaticReportMode mode)
+    {
+#ifdef _USE_OSI
+        if (player != nullptr)
+        {
+            if (player->osiReporter->GetOSIFrequency() == 0)
+            {
+                player->osiReporter->SetOSIFrequency(1);
+            }
+            player->osiReporter->SetOSIStaticReportMode(static_cast<OSIReporter::OSIStaticReportMode>(mode));
+        }
+        else
+        {
+            SE_Env::Inst().GetOptions().SetOptionValue("osi_static_reporting", std::to_string(mode));
+        }
+#else
+        (void)mode;
+#endif  // _USE_OSI
+        return;
+    }
+
     SE_DLL_API const char *SE_GetOSIGroundTruth(int *size)
     {
 #ifdef _USE_OSI
         if (player != nullptr)
         {
+            if (player->osiReporter->GetOSIFrequency() == 0)
+            {
+                player->osiReporter->SetOSIFrequency(1);
+            }
+            player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
             return player->osiReporter->GetOSIGroundTruth(size);
         }
 
@@ -1573,6 +1599,11 @@ extern "C"
 #ifdef _USE_OSI
         if (player != nullptr)
         {
+            if (player->osiReporter->GetOSIFrequency() == 0)
+            {
+                player->osiReporter->SetOSIFrequency(1);
+            }
+            player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
             return player->osiReporter->GetOSIGroundTruthRaw();
         }
 #endif  // _USE_OSI
@@ -1676,54 +1707,35 @@ extern "C"
         return;
     }
 
-    SE_DLL_API int SE_ClearOSIGroundTruth()
+    SE_DLL_API void SE_ExcludeGhostFromGroundTruth()
     {
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            return player->osiReporter->ClearOSIGroundTruth();
+            player->osiReporter->ExcludeGhost();
+        }
+        else
+        {
+            SE_Env::Inst().GetOptions().SetOptionValue("osi_exclude_ghost", "");
         }
 #endif  // _USE_OSI
-
-        return 0;
+        return;
     }
 
-    SE_DLL_API int SE_UpdateOSIGroundTruth(bool refetchStaticGt)
+    SE_DLL_API int SE_SetOSIFrequency(int frequency)
     {
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_, refetchStaticGt);
+            player->osiReporter->SetOSIFrequency(frequency);
+        }
+        else
+        {
+            SE_Env::Inst().GetOptions().SetOptionValue("osi_freq", std::to_string(frequency));
         }
 #else
-        (void)refetchStaticGt;
+        (void)frequency;
 #endif  // _USE_OSI
-        return 0;
-    }
-
-    SE_DLL_API int SE_UpdateOSIStaticGroundTruth()
-    {
-#ifdef _USE_OSI
-        if (player != nullptr)
-        {
-            return player->osiReporter->UpdateOSIStaticGroundTruth(player->scenarioGateway->objectState_);
-        }
-#endif  // _USE_OSI
-
-        return 0;
-    }
-
-    SE_DLL_API int SE_UpdateOSIDynamicGroundTruth(bool reportGhost)
-    {
-#ifdef _USE_OSI
-        if (player != nullptr)
-        {
-            return player->osiReporter->UpdateOSIDynamicGroundTruth(player->scenarioGateway->objectState_, reportGhost);
-        }
-#else
-        (void)reportGhost;
-#endif  // _USE_OSI
-
         return 0;
     }
 
