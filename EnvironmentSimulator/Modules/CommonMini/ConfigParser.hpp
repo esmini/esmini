@@ -1,8 +1,6 @@
 #pragma once
 
-#include <ryml.hpp>
-#include <ryml_std.hpp>
-// #include <unordered_map>
+#include "yaml.hpp"
 #include <vector>
 #include <string>
 
@@ -29,7 +27,7 @@ namespace esmini::common
         void ParseYamlFile(const std::string& filename);
         // Function to recursively parse the YAML node and populate the map
         // void ParseNode(const ryml::NodeRef& node, const std::string& prefix);
-        void ParseNode(ryml::NodeRef node, ryml::csubstr parent);
+        void ParseNode(TINY_YAML::Node& node, std::string parent);
 
         // Logs all applications config map
         // void LogAllAppsConfig() const;
