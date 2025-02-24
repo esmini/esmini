@@ -31,7 +31,6 @@ extern "C" std::string GetLibraryPath()
     {
         throw std::runtime_error("Failed to get library path.");
     }
-    std::cout << "lib path from within the lib: " << path << std::endl;
     std::string strPath(path);
     return strPath;
 
@@ -65,13 +64,12 @@ namespace esmini::common
             {
                 throw std::runtime_error("Failed to get executable path on Windows");
             }
-            std::cout << "Application path: " << std::string(buffer) << std::endl;
 
             const auto path = GetLibraryPath();
             if (path.empty())
+            {
                 std::cout << "unable to find the path func" << std::endl;
-            else
-                std::cout << "Library path str: " << path << std::endl;
+            }
 #elif defined(__linux__)
             ssize_t length = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
             if (length == -1)
@@ -79,8 +77,6 @@ namespace esmini::common
                 throw std::runtime_error("Failed to get executable path on Linux");
             }
             buffer[length] = '\0';  // Null-terminate the string
-
-            std::cout << "Application path: " << std::string(buffer) << std::endl;
 
             std::string libraryPath = GetLibraryPath();
             std::cout << "Library path: " << libraryPath << std::endl;
@@ -91,10 +87,8 @@ namespace esmini::common
             {
                 throw std::runtime_error("Buffer size too small for executable path on macOS");
             }
-            std::cout << "Application path: " << std::string(buffer) << std::endl;
 
             std::string libraryPath = GetLibraryPath();
-            std::cout << "Library path: " << libraryPath << std::endl;
 #else
             throw std::runtime_error("Unsupported platform");
 #endif
