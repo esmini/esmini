@@ -4,6 +4,15 @@
 #include "logger.hpp"
 #include "DefaultPathFinder.hpp"
 #include "Defines.hpp"
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
 
 namespace esmini::common
 {
@@ -17,10 +26,6 @@ namespace esmini::common
             const auto valueVec = SplitString(envConfigFile.value(), ',');
             configFilePaths_.insert(configFilePaths_.end(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
         }
-        else
-        {
-            std::cout << "Environment variable ESMINI_CONFIG_FILE not set" << std::endl;
-        }
     }
 
     std::vector<std::string> Config::GetConfig() const
@@ -32,10 +37,9 @@ namespace esmini::common
     std::string Config::MakeDefaultConfigFilePath() const
     {
         esmini::common::DefaultPathFinder pathFinder;
-        std::string                       defaultPath = pathFinder.GetDefaultPath();
-        defaultPath                                   = defaultPath.substr(0, defaultPath.find_last_of("//"));
-        std::string defaultFilePath                   = fmt::format("{}/{}", defaultPath, DEFAULT_CONFIG_FILE);
-        LOG_INFO("Default config file path: {}", defaultFilePath);
+        fs::path                          defaultPath(pathFinder.GetDefaultPath());
+        std::string                       defaultFilePath = (defaultPath.parent_path() / ".." / DEFAULT_CONFIG_FILE).string();
+
         return defaultFilePath;
     }
 
@@ -51,5 +55,10 @@ namespace esmini::common
             LOG_DEBUG("Environment variable: {} not set", variableName);
             return std::nullopt;
         }
+    }
+
+    const std::vector<std::string>& Config::GetFilePaths() const
+    {
+        return configFilePaths_;
     }
 }  // namespace esmini::common

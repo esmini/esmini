@@ -14,7 +14,7 @@ using namespace scenarioengine;
 TEST(CustomCameraTest, TestCustomCameraVariants)
 {
     const char* args[] =
-        {"esmini", "--osc", "../../../resources/xosc/cut-in_cr.xosc", "--window", "60", "60", "800", "600", "--headless", "--disable_stdout"};
+        {"esmini", "--osc", "../../../resources/xosc/cut-in_cr.xosc", "--headless", "--window", "60", "60", "800", "600", "--disable_stdout"};
     int             argc   = sizeof(args) / sizeof(char*);
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
 
@@ -442,12 +442,12 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
     const char*     args[] = {"esmini",
                               "--osc",
                               "../../../EnvironmentSimulator/Unittest/xosc/acc_with_interactive_steering.xosc",
+                              "--headless",
                               "--window",
                               "60",
                               "60",
                               "800",
                               "600",
-                              "--headless",
                               "--disable_stdout"};
     int             argc   = sizeof(args) / sizeof(char*);
     double          dt     = 0.1f;
