@@ -292,8 +292,8 @@ private:
 
 // Useful operations
 
-// Appends Argc and Argv with the arguments
-/***
+/**
+ * Appends Argc and Argv with the arguments
  * @param argc: Number of arguments, that application already has
  * @param argv: Argument list that application already has
  * @param appendIndex: Index until which original arguments should be kept, after which new arguments will be added. Once new arguments are added,
@@ -301,6 +301,13 @@ private:
  * @param dataToAppend: Vector of strings to append, new arguments which needs to be added
  */
 void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& dataToAppend);
+
+/**
+ * Perform final argument check, resolving conflicts and prioritizations
+ * @param argc: Number of arguments, that application already has
+ * @param argv: Argument list that application already has
+ */
+void PostProcessArgs(int& argc, char**& argv);
 
 /**
         Get model filename from model_id.

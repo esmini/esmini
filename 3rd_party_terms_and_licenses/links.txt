@@ -62,3 +62,6 @@ https://github.com/gabime/spdlog
 
 fmt
 https://github.com/fmtlib/fmt
+
+Tiny_Yaml
+https://github.com/Mohido/Tiny_Yaml

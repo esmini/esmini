@@ -76,6 +76,8 @@ macro(set_project_external_paths)
         ${EXTERNALS_PATH}/implot)
     set(EXTERNALS_SPDLOG_PATH
         ${EXTERNALS_PATH}/spdlog)
+    set(EXTERNALS_YAML_PATH
+        ${EXTERNALS_PATH}/yaml)
     set(MODELS_PATH
         ${RESOURCES_PATH}/models)
 

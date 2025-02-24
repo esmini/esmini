@@ -1,0 +1,9 @@
+esmini:
+  window: 60 60 800 400
+  osc: ./resources/xosc/cut-in.xosc
+
+replayer:
+  window: 60 60 800 400
+  res_path: ./resources
+  file: sim.dat
+

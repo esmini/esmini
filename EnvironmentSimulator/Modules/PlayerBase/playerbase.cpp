@@ -27,6 +27,16 @@
 #include "Defines.hpp"
 #include "ConfigParser.hpp"
 
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
+
 #ifdef _USE_OSG
 #include "viewer.hpp"
 #endif
@@ -1206,10 +1216,17 @@ void ScenarioPlayer::PrintUsage()
 void ScenarioPlayer::HandleConfigurations()
 {
     // parse default config file and environment variable config files
-    esmini::common::Config config("esmini");
-    const auto             defaultAndEnvironmentConfigs = config.GetConfig();
-    std::cout << "Default & Environment File Configs size: " << defaultAndEnvironmentConfigs.size() << std::endl;
-    std::vector<std::string> allConfigs{std::move(defaultAndEnvironmentConfigs)};
+    esmini::common::Config   config("esmini");
+    std::vector<std::string> allConfigs;
+    if (!fs::exists(config.GetFilePaths()[0]))
+    {
+        LOG_INFO("Ignoring missing default config: {}", config.GetFilePaths()[0]);
+    }
+    else
+    {
+        const auto defaultAndEnvironmentConfigs = config.GetConfig();
+        allConfigs                              = std::move(defaultAndEnvironmentConfigs);
+    }
 
     // there is a possibility that the config file path is already set in options, maybe through the api call
     SE_Options& opt = SE_Env::Inst().GetOptions();
@@ -1225,10 +1242,8 @@ void ScenarioPlayer::HandleConfigurations()
     std::string configFilePathOption = fmt::format("--{}", CONFIG_FILE_OPTION_NAME);
     for (int i = 1; i < argc_; ++i)
     {
-        // std::cout << "argv[" << i << "]: " << argv_[i] << std::endl;
         if (strcmp(configFilePathOption.c_str(), argv_[i]) == 0)  // && i < static_cast<unsigned int>(argc_ - 1) && strncmp(argv_[i + 1], "--", 2)
         {
-            std::cout << "config_file_path: " << argv_[i + 1] << std::endl;
             // now we can parse config file here
             esmini::common::ConfigParser configParser("esmini", {argv_[i + 1]});
             auto                         configs = configParser.Parse();
@@ -1236,6 +1251,8 @@ void ScenarioPlayer::HandleConfigurations()
             for (int j = i; j < argc_ - 2; ++j)
             {
                 argv_[j] = argv_[j + 2];
+                delete argv_[j + 2];
+                argv_[j + 2] = nullptr;
             }
             argc_ -= 2;
             AppendArgcArgv(argc_, argv_, i, configs);
@@ -1245,6 +1262,8 @@ void ScenarioPlayer::HandleConfigurations()
     // since the config file(s) from arguments are already parsed and appended to the arguments.
     // We just want to keep the application name at first index, after it we low priority configs
     AppendArgcArgv(argc_, argv_, 1, allConfigs);
+
+    PostProcessArgs(argc_, argv_);
 }
 
 int ScenarioPlayer::Init()

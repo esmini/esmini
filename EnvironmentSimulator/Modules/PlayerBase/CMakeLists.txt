@@ -62,16 +62,14 @@ target_include_directories(
            ${EXTERNALS_OSI_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_IMPLOT_INCLUDES}
-           ${EXTERNALS_SPDLOG_INCLUDES}
-           ${EXTERNALS_RYML_INCLUDES})
+           ${EXTERNALS_YAML_INCLUDES}
+           ${EXTERNALS_SPDLOG_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
     PRIVATE project_options)
 
-target_link_libraries(
-    ${TARGET}
-    PRIVATE ${RYML_LIBRARIES})
+target_link_libraries(${TARGET})
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})

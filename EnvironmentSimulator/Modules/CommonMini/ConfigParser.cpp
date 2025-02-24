@@ -6,6 +6,16 @@
 
 #include <iostream>
 
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
+
 namespace esmini::common
 {
     ConfigParser::ConfigParser(const std::string& applicationName, const std::vector<std::string>& configFilePaths)
@@ -101,28 +111,19 @@ namespace esmini::common
 
     //---------------------------------------------------------------------------------------------------------------------
 
-    void ConfigParser::ParseNode(ryml::NodeRef node, ryml::csubstr parent)
+    void ConfigParser::ParseNode(TINY_YAML::Node& node, std::string parent)
     {
-        auto getkey = [](ryml::NodeRef node) { return node.has_key() ? node.key() : ryml::csubstr{}; };
-        auto getval = [](ryml::NodeRef node) { return node.has_val() ? node.val() : ryml::csubstr{}; };
-        if (!node.has_children())
+        if (node.getSize() == 0)  // no children
         {
-            auto key = getkey(node);
-            auto val = getval(node);
-            // std::cout << "key: " << getkey(node) << " parent: " << parent << " value: " << getval(node) << std::endl;
-            if (key.empty() && !parent.empty())
-            {
-                key = parent;
-            }
-            // std::cout << "key: " << key << " value: " << val << std::endl;
-            PutValue({parent.begin(), parent.end()}, {key.begin(), key.end()}, {val.begin(), val.end()});
+            std::string key   = node.getID();
+            std::string value = node.getData<std::string>();
+            PutValue(parent, key, value);
         }
         else
         {
-            std::string src = ryml::emitrs<std::string>(node);
-            for (ryml::NodeRef n : node.children())
+            for (auto& child : node.getChildren())
             {
-                ParseNode(n, parent.empty() ? getkey(n) : parent);
+                ParseNode(*child.second, node.getID());
             }
         }
     }
@@ -131,53 +132,39 @@ namespace esmini::common
 
     void ConfigParser::ParseYamlFile(const std::string& filename)
     {
-        std::ifstream file(filename, std::ios::ate);
-        if (!file)
+        TINY_YAML::Yaml yaml = TINY_YAML::Yaml(filename);
+
+        for (auto& node : yaml.getNodes())
         {
-            LOG_ERROR("Failed to open YAML file: {}", filename);
-            return;
+            ParseNode(*node.second, "");
         }
-
-        std::streamsize size = file.tellg();
-        file.seekg(0, std::ios::beg);
-        std::vector<char> yaml_data(size + 1, '\0');  // Null-terminated
-        file.read(yaml_data.data(), size);
-        ryml::Tree tree = ryml::parse_in_place(ryml::to_substr(yaml_data));
-
-        ParseNode(tree.rootref(), "");
     }
 
     //---------------------------------------------------------------------------------------------------------------------
 
     std::vector<std::string> ConfigParser::Parse()
     {
-        try
+        for (unsigned int i = 0; i < configFilePaths_.size(); i++)
         {
-            for (const std::string& configFilePath : configFilePaths_)
+            if (fs::exists(configFilePaths_[i]))
             {
-                LOG_INFO("Parsing config file: {}", configFilePath);
-                ParseYamlFile(configFilePath);
+                try
+                {
+                    ParseYamlFile(configFilePaths_[i]);
+                }
+                catch (const std::exception& e)
+                {
+                    LOG_ERROR("Failed to load config {}: {}", configFilePaths_[i], e.what());
+                }
+                LOG_INFO("Loaded config: {}", configFilePaths_[i]);
+            }
+            else
+            {
+                LOG_ERROR("Failed to locate config: {}", configFilePaths_[i]);
             }
         }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Error parsing YAML file: " << e.what() << std::endl;
-        }
-        // LogAllAppsConfig();
-        LogConfig();
+
         return configs_;
     }
 
-    //---------------------------------------------------------------------------------------------------------------------
-
-    // const ConfigMap& ConfigParser::GetApplicationConfig(const std::string& application) const
-    // {
-    //     auto it = appsConfig_.find(application);
-    //     if (it != appsConfig_.end())
-    //     {
-    //         LogOneAppConfig(application);
-    //         return it->second;
-    //     }
-    //     return ConfigMap();
-    // }
 }  // namespace esmini::common

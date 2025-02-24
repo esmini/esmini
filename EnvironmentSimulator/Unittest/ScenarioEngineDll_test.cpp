@@ -3983,7 +3983,7 @@ TEST(APITest, TestFetchImage)
     }
 
     const char* args[] =
-        {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--window", "60", "60", "800", "400", "--aa_mode", "4", "--headless"};
+        {"--osc", "../../../resources/xosc/cut-in_simple.xosc", "--headless", "--window", "60", "60", "800", "400", "--aa_mode", "4"};
 
     SE_SaveImagesToRAM(true);
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
