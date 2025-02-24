@@ -12,6 +12,9 @@
 
 #include "logger.hpp"
 
+#include "Config.hpp"
+#include "ConfigParser.hpp"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <cmath>
@@ -192,6 +195,58 @@ std::string ControlDomain2Str(unsigned int domains)
 
     return str;
 }
+
+void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
+{
+    std::cout << "HandleConfigurations called appName: " << appName << std::endl;
+    // parse default config file and environment variable config files
+    esmini::common::Config config(appName);
+    const auto             defaultAndEnvironmentConfigs = config.GetConfig();
+    LOG_DEBUG("Size of options present in Default & Environment Config Files: {}", defaultAndEnvironmentConfigs.size());
+    std::vector<std::string> allConfigs{std::move(defaultAndEnvironmentConfigs)};
+
+    // there is a possibility that the config file path is already set in options, maybe through the api call
+    SE_Options& opt = SE_Env::Inst().GetOptions();
+    for (const auto& configFileName : opt.GetOptionArgs(CONFIG_FILE_OPTION_NAME))
+    {
+        std::cout << "config_file_path: " << configFileName << std::endl;
+        esmini::common::ConfigParser configParser(appName, {configFileName});
+        auto                         configs = configParser.Parse();
+        allConfigs.insert(allConfigs.end(), std::make_move_iterator(configs.begin()), std::make_move_iterator(configs.end()));
+    }
+
+    // parse config file path(s) from the arguments, if present. And append the configs to the arguments
+    std::string configFilePathOption = fmt::format("--{}", CONFIG_FILE_OPTION_NAME);
+    for (int i = 1; i < argc; ++i)
+    {
+        if (strcmp(configFilePathOption.c_str(), argv[i]) == 0)  // && i < static_cast<unsigned int>(argc_ - 1) && strncmp(argv_[i + 1], "--", 2)
+        {
+            std::cout << "config_file_path: " << argv[i + 1] << std::endl;
+            // now we can parse config file here
+            esmini::common::ConfigParser configParser(appName, {argv[i + 1]});
+            auto                         configs = configParser.Parse();
+            // we need to wipe out the config file path from the arguments, so that they wont be consumed again
+            for (int j = i; j < argc - 2; ++j)
+            {
+                argv[j] = argv[j + 2];
+            }
+            argc -= 2;
+            AppendArgcArgv(argc, argv, i, configs);
+        }
+    }
+
+    // since the config file(s) from arguments are already parsed and appended to the arguments.
+    // We just want to keep the application name at first index, after it we low priority configs
+    AppendArgcArgv(argc, argv, 1, allConfigs);
+
+    std::string allArgvs;
+    for (int i = 0; i < argc; ++i)
+    {
+        allArgvs = fmt::format("{} {}", allArgvs, argv[i]);
+    }
+    LOG_INFO("Options after parsing: {}", allArgvs);
+}
+
 
 void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& prefixArgs)
 {

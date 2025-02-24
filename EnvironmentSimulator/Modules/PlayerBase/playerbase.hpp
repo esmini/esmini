@@ -85,7 +85,6 @@ namespace scenarioengine
         ScenarioPlayer(int argc, char *argv[]);
         ~ScenarioPlayer();
         int  Init();
-        void HandleConfigurations();
         void PrintUsage();
         bool IsQuitRequested()
         {

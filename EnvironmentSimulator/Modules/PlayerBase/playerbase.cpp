@@ -23,9 +23,8 @@
 #include "helpText.hpp"
 #include "OSCParameterDistribution.hpp"
 #include "logger.hpp"
-#include "Config.hpp"
 #include "Defines.hpp"
-#include "ConfigParser.hpp"
+
 
 #ifdef _USE_OSG
 #include "viewer.hpp"
@@ -1203,55 +1202,6 @@ void ScenarioPlayer::PrintUsage()
 #endif
 }
 
-void ScenarioPlayer::HandleConfigurations()
-{
-    // parse default config file and environment variable config files
-    esmini::common::Config config("esmini");
-    const auto             defaultAndEnvironmentConfigs = config.GetConfig();
-    LOG_DEBUG("Size of options present in Default & Environment Config Files: {}", defaultAndEnvironmentConfigs.size());
-    std::vector<std::string> allConfigs{std::move(defaultAndEnvironmentConfigs)};
-
-    // there is a possibility that the config file path is already set in options, maybe through the api call
-    SE_Options& opt = SE_Env::Inst().GetOptions();
-    for (const auto& configFileName : opt.GetOptionArgs(CONFIG_FILE_OPTION_NAME))
-    {
-        std::cout << "config_file_path: " << configFileName << std::endl;
-        esmini::common::ConfigParser configParser("esmini", {configFileName});
-        auto                         configs = configParser.Parse();
-        allConfigs.insert(allConfigs.end(), std::make_move_iterator(configs.begin()), std::make_move_iterator(configs.end()));
-    }
-
-    // parse config file path(s) from the arguments, if present. And append the configs to the arguments
-    std::string configFilePathOption = fmt::format("--{}", CONFIG_FILE_OPTION_NAME);
-    for (int i = 1; i < argc_; ++i)
-    {
-        if (strcmp(configFilePathOption.c_str(), argv_[i]) == 0)  // && i < static_cast<unsigned int>(argc_ - 1) && strncmp(argv_[i + 1], "--", 2)
-        {
-            std::cout << "config_file_path: " << argv_[i + 1] << std::endl;
-            // now we can parse config file here
-            esmini::common::ConfigParser configParser("esmini", {argv_[i + 1]});
-            auto                         configs = configParser.Parse();
-            // we need to wipe out the config file path from the arguments, so that they wont be consumed again
-            for (int j = i; j < argc_ - 2; ++j)
-            {
-                argv_[j] = argv_[j + 2];
-            }
-            argc_ -= 2;
-            AppendArgcArgv(argc_, argv_, i, configs);
-        }
-    }
-
-    // since the config file(s) from arguments are already parsed and appended to the arguments.
-    // We just want to keep the application name at first index, after it we low priority configs
-    AppendArgcArgv(argc_, argv_, 1, allConfigs);
-
-    std::string allArgvs;
-    for (int i = 0; i < argc_; ++i)
-    {
-        allArgvs = fmt::format("{} {}", allArgvs, argv_[i]);
-    }
-    LOG_INFO("Options after parsing: {}", allArgvs);
-}
 
 int ScenarioPlayer::Init()
 {
@@ -1343,7 +1293,7 @@ int ScenarioPlayer::Init()
     exe_path_ = argv_[0];
     SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths
 
-    HandleConfigurations();
+    HandleConfigurations("esmini", argc_, argv_);
 
     if (opt.ParseArgs(argc_, argv_) != 0)
     {

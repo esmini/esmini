@@ -30,6 +30,7 @@
 #include "helpText.hpp"
 #include "collision.hpp"
 #include "logger.hpp"
+#include "Defines.hpp"
 
 #include <signal.h>
 
@@ -386,6 +387,7 @@ int main(int argc, char** argv)
                   true);
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
     opt.AddOption("collision", "Detect collisions and optionally pauses the replay <pause/continue> (pause is default)", "mode", "pause");
+    opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, true, false);
     opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
     opt.AddOption("custom_fixed_camera",
                   "Additional custom fixed camera position <x,y,z>[,h,p] (multiple occurrences supported)",
@@ -416,6 +418,8 @@ int main(int argc, char** argv)
     opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
     opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
+
+    HandleConfigurations("replayer", argc, argv);
 
     if (opt.ParseArgs(argc, argv) != 0 || argc < 2)
     {

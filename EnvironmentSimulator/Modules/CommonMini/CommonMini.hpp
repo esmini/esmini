@@ -289,6 +289,8 @@ private:
 
 // Useful operations
 
+void HandleConfigurations(const std::string& appName, int& argc, char**& argv);
+
 // Appends Argc and Argv with the arguments
 /***
  * @param argc: Number of arguments, that application already has
