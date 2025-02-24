@@ -363,6 +363,7 @@ namespace viewer
         void                                         UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
         void                                         AddLights(osg::ref_ptr<osg::Group> group, bool AddLights);
         void                                         UpdateLight(Object::VehicleLightActionStatus* list);
+        void UpdateLightMaterial(Object::VehicleLightType lightType, const osg::Vec4d& diffuseRgb, const osg::Vec4d& emissionRgb);
     };
 
     class VisibilityCallback : public osg::NodeCallback
@@ -591,7 +592,7 @@ namespace viewer
         }
 
         void Frame(double time);
-        bool ShowLights = false;
+        bool ShowLights_ = false;
 
     private:
         bool                                         CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);

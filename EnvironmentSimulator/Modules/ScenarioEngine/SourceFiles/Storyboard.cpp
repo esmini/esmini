@@ -247,11 +247,12 @@ void Event::Start(double simTime)
                                 {
                                     if (static_cast<int>(pa2->GetDomains()) == (static_cast<int>(ControlDomains::DOMAIN_LIGHT)))
                                     {
-                                        if (pa2->type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
-                                            pa->type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION)
+                                        LightStateAction* action2 = static_cast<LightStateAction*>(pa2);
+                                        LightStateAction* action1 = static_cast<LightStateAction*>(pa);
+                                        if (action2->action_type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
+                                            action1->action_type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION)
                                         {
-                                            LightStateAction* action2 = static_cast<LightStateAction*>(pa2);
-                                            if (action2->GetLightType() == (static_cast<LightStateAction*>(pa))->GetLightType())
+                                            if (action2->GetLightType() == action1->GetLightType())
                                             {
                                                 // LightType overlap, at least one light type in common. Terminate old action.
                                                 LOG_WARN("Stopping object {} {} on conflicting {} light(s)",

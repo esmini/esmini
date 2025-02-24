@@ -2104,6 +2104,80 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('8.000, 0, car_white, -17.070, 2.532, 0.000, 1.571, 0.000, 0.000, 0.000, 0.000, 3.484', csv, re.MULTILINE))
         self.assertTrue(re.search('8.000, 1, car_red, -29.070, 17.530, 0.000, 1.570, 0.000, 0.000, 0.000, 0.000, 5.703', csv, re.MULTILINE))
 
+    def test_light_conflict(self):
+        # This test case checks ligths conflicts
+
+        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test_conflict_lights.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.01")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*test_conflict_lights.xosc', log)  is not None)
+        self.assertTrue(re.search('.2.010.* brakeLightsOnActionCondition: true, delay: 0.00, 2.0100 > 2.0000, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.2.010.* brakeLightsOnActionCondition: true, delay: 0.00, 2.0100 > 2.0000, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.2.010.* brakeLightsOnAction initState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('.3.010.* brakeLightsOffActionCondition: true, delay: 0.00, 3.0100 > 3.0000, edge: rising', log)  is not None)
+        self.assertTrue(re.search('.3.010.* brakeLightsOffActionEvent standbyState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('.3.010.* Stopping object Ego brakeLightsOnAction on conflicting light_brake light.*', log)  is not None)
+        self.assertTrue(re.search('.3.010.* brakeLightsOnAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.5.010.* LightStateActionStory runningState -> endTransition -> completeState', log)  is not None)
+
+    def test_cplusplus_and_python_csv_generation(self):
+        # This test case checks pyhton generated csv and c++ generated csv are the same
+        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ESMINI_ARGS)
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*add_delete_entity.xosc', log)  is not None)
+
+        # use python to generate csv
+        csv = generate_csv()
+        self.assertTrue(re.search('^3.020, 0, Car1, 68.722, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.020, 1, Car2, 90.194, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
+        self.assertTrue(re.search('^7.010, 0, Car1, 146.306, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
+        self.assertTrue(re.search('^7.010, 1, Car2, 167.778, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
+        self.assertTrue(re.search('^7.010, 0, Car1, 146.306, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
+        self.assertTrue(re.search('^15.880, 0, Car1, 499.889, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
+        self.assertTrue(re.search('^15.890, 0, Car1, 500.000, -1.535, 0.000, 0.000, 0.000, 0.000, 0.0', csv, re.MULTILINE))
+
+        # use c++ to generate csv
+        log = run_dat2csv('--file sim.dat --time_mode min_step')
+        with open('sim' + '.csv', "r") as csv1:
+            csv1 = csv1.read()
+        self.assertTrue(re.search('^3.020, 0, Car1, 68.722, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv1, re.MULTILINE))
+        self.assertTrue(re.search('^3.020, 1, Car2, 90.194, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv1, re.MULTILINE))
+        self.assertTrue(re.search('^7.010, 0, Car1, 146.306, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv1, re.MULTILINE))
+        self.assertTrue(re.search('^7.010, 1, Car2, 167.778, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv1, re.MULTILINE))
+        self.assertTrue(re.search('^7.010, 0, Car1, 146.306, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv1, re.MULTILINE))
+        self.assertTrue(re.search('^15.880, 0, Car1, 499.889, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv1, re.MULTILINE))
+        self.assertTrue(re.search('^15.890, 0, Car1, 500.000, -1.535, 0.000, 0.000, 0.000, 0.000, 0.0', csv1, re.MULTILINE))
+
+        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart.xosc'), COMMON_ESMINI_ARGS)
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*ghost_restart.xosc', log)  is not None)
+
+        # use python to generate csv
+        csv = generate_csv()
+        self.assertTrue(re.search('^-0.500, 0, Ego, 50.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^-0.500, 1, Ego_ghost, 50.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^1.010, 1, Ego_ghost, 65.100, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 5.444', csv, re.MULTILINE))
+        self.assertTrue(re.search('^1.020, 1, Ego_ghost, 65.121, -10.607, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 0.880', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.000, 0, Ego, 69.847, -9.937, 0.000, 0.222, 0.000, 0.000, 10.000, 0.009, 0.566', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.000, 1, Ego_ghost, 74.770, -8.892, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 3.747', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 0, Ego, 99.647, -8.042, 0.000, 6.283, 0.000, 0.000, 10.000, 0.014, 4.598', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 1, Ego_ghost, 104.691, -8.000, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 1.497', csv, re.MULTILINE))
+
+        # use c++ to generate csv
+        log = run_dat2csv('--file sim.dat --time_mode min_step')
+        with open(os.path.splitext('sim')[0] + '.csv', "r") as csv2:
+             csv2 = csv2.read()
+        self.assertTrue(re.search('^-0.500, 0, Ego, 50.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv2, re.MULTILINE))
+        self.assertTrue(re.search('^-0.500, 1, Ego_ghost, 50.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv2, re.MULTILINE))
+        self.assertTrue(re.search('^1.010, 1, Ego_ghost, 65.100, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 5.444', csv2, re.MULTILINE))
+        self.assertTrue(re.search('^1.020, 1, Ego_ghost, 65.121, -10.607, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 0.880', csv2, re.MULTILINE))
+        self.assertTrue(re.search('^2.000, 0, Ego, 69.847, -9.937, 0.000, 0.222, 0.000, 0.000, 10.000, 0.009, 0.566', csv2, re.MULTILINE))
+        self.assertTrue(re.search('^2.000, 1, Ego_ghost, 74.770, -8.892, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 3.747', csv2, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 0, Ego, 99.647, -8.042, 0.000, 6.283, 0.000, 0.000, 10.000, 0.014, 4.598', csv2, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 1, Ego_ghost, 104.691, -8.000, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 1.497', csv2, re.MULTILINE))
+
 if __name__ == "__main__":
     # execute only if run as a script
 

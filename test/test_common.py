@@ -108,6 +108,39 @@ def run_replayer(replayer_arguments = None):
 
     assert False, 'No log file'
 
+def run_dat2csv(dat2csv_arguments = None):
+
+    if os.path.exists(LOG_FILENAME):
+        os.remove(LOG_FILENAME)
+    if os.path.exists(STDOUT_FILENAME):
+        os.remove(STDOUT_FILENAME)
+
+    app = os.path.join(ESMINI_PATH,'bin','dat2csv')
+    return_code = None
+    args = [app] + dat2csv_arguments.split()
+    with open(STDOUT_FILENAME, "w") as f:
+        process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)), stdout=f, env=env)
+
+        elapsed = 0
+        while elapsed < TIMEOUT and return_code is None:
+            return_code = process.poll()
+            # watch dog
+            if return_code is None:
+                time.sleep(1)
+                elapsed += 1
+
+        if return_code is None:
+            print('timeout ({}s). Terminating dat2csv convert.'.format(TIMEOUT))
+            process.kill()
+            assert False, 'Timeout'
+
+    with open(STDOUT_FILENAME, 'r') as logfile:
+        log = logfile.read()
+        assert return_code == 0, log
+        return log
+
+    assert False, 'No log file'
+
 def generate_csv(filename=DAT_FILENAME, mode_ = "original", time_step_ = 0.05):
 
     # Below is one/the old way of converting dat to csv. Keeping the lines for reference.

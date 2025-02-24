@@ -966,14 +966,22 @@ std::string LightTypeInd2Str(int index)
 
 void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool showLights)
 {
+    // Early exit if the group is invalid
+    if (!group)
+    {
+        LOG_WARN("Invalid group provided to AddLights - skipping light addition.");
+        return;
+    }
     for (int j = 0; j < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; j++)
     {
         std::string lightName = LightTypeInd2Str(j);
+
+        // Skip fog lights and warning lights as they are combinations of other lights
         if (lightName == LightTypeInd2Str(Object::VehicleLightType::FOG_LIGHTS) ||
             lightName == LightTypeInd2Str(Object::VehicleLightType::WARNING_LIGHTS))
-        {  // fog light is combination of front and back fog lights same for waring and indicator light
+        {
             light_material_.push_back(nullptr);
-            break;
+            continue;
         }
 
         // Find light node
@@ -981,38 +989,36 @@ void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool showLights)
         FindNamedGeode           fnn(lightName, nodes);
         group->accept(fnn);
 
-        if (!nodes.empty())
-        {
-            osg::ref_ptr<osg::Group> groupNew;
-            for (size_t i = 0; i < nodes.size(); i++)
-            {
-                groupNew = nodes[i];
-                if (groupNew != NULL)
-                {
-                    groupNew                       = static_cast<osg::Group*>(groupNew->getChild(0));
-                    osg::ref_ptr<osg::Geode> geode = static_cast<osg::Geode*>(groupNew->getChild(0));
-                    // LOG("light material name %s in vehicle model", geode->getName().c_str());
-                    // osg::Material *mat = static_cast<osg::Material*>(geode->getOrCreateStateSet()->getAttribute( osg::StateAttribute::MATERIAL ));
-                    if (geode->getName().c_str() == (lightName + "-material"))
-                    {  // material name in model is lightType_m
-                        light_material_.push_back(geode);
-                        geode->setNodeMask(NodeMask::NODE_MASK_LIGHTS_STATE);
-                    }
-                    else
-                    {  // no visualization
-                        light_material_.push_back(nullptr);
-                        LOG_WARN("Missing light material {} in vehicle model {} - ignoring visualization", lightName, group->getName());
-                    }
-                }
-            }
-        }
-        else
+        if (nodes.empty())
         {
             light_material_.push_back(nullptr);
             if (showLights)
             {
-                LOG_WARN_ONCE("Missing light materials node itself in vehicle model {} - ignoring visualization", group->getName());
+                LOG_WARN("Missing light materials node itself in vehicle model {} - ignoring visualization", group->getName());
             }
+            continue;
+        }
+
+        // Process each found node
+        bool materialFound = false;
+        for (size_t i = 0; i < nodes.size(); i++)
+        {
+            osg::ref_ptr<osg::Group> groupNew = static_cast<osg::Group*>(nodes[i]->getChild(0));
+            osg::ref_ptr<osg::Geode> geode    = static_cast<osg::Geode*>(groupNew->getChild(0));
+
+            if (geode->getName() == (lightName + "-material"))
+            {
+                light_material_.push_back(geode);
+                geode->setNodeMask(NodeMask::NODE_MASK_LIGHTS_STATE);
+                materialFound = true;
+                break;  // Stop searching once the correct material is found
+            }
+        }
+
+        if (!materialFound)
+        {
+            light_material_.push_back(nullptr);
+            LOG_WARN("Missing light material {} in vehicle model {} - ignoring visualization", lightName, group->getName());
         }
     }
 }
@@ -1208,80 +1214,51 @@ void EntityModel::SetRotation(double h, double p, double r)
 
 void CarModel::UpdateLight(Object::VehicleLightActionStatus* list)
 {
-    for (unsigned i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)
+    for (unsigned int i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)
     {
-        if (list[i].type != Object::VehicleLightType::UNDEFINED)
+        if (list[i].type == Object::VehicleLightType::UNDEFINED)
         {
-            osg::Vec4d diffuseRgb(list[i].diffuseRgb[0], list[i].diffuseRgb[1], list[i].diffuseRgb[2], 1.0);
-            osg::Vec4d emissionRgb(list[i].emissionRgb[0], list[i].emissionRgb[1], list[i].emissionRgb[2], 1.0);
-
-            osg::Material* mat = nullptr;
-            if (list[i].type == Object::VehicleLightType::WARNING_LIGHTS)
-            {
-                if (light_material_[Object::VehicleLightType::INDICATOR_LEFT] != nullptr)
-                {
-                    mat = static_cast<osg::Material*>(light_material_[Object::VehicleLightType::INDICATOR_LEFT]->getOrCreateStateSet()->getAttribute(
-                        osg::StateAttribute::MATERIAL));
-                    mat->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
-                    mat->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
-                }
-                else
-                {
-                    LOG_WARN_ONCE("Missing light node - {} - ignoring visualization", LightTypeInd2Str(Object::VehicleLightType::INDICATOR_LEFT));
-                }
-                if (light_material_[Object::VehicleLightType::INDICATOR_RIGHT] != nullptr)
-                {
-                    mat = static_cast<osg::Material*>(light_material_[Object::VehicleLightType::INDICATOR_RIGHT]->getOrCreateStateSet()->getAttribute(
-                        osg::StateAttribute::MATERIAL));
-                    mat->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
-                    mat->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
-                }
-                else
-                {
-                    LOG_WARN_ONCE("Missing light node - {} - ignoring visualization", LightTypeInd2Str(Object::VehicleLightType::INDICATOR_RIGHT));
-                }
-            }
-            else if (list[i].type == Object::VehicleLightType::FOG_LIGHTS)
-            {
-                if (light_material_[Object::VehicleLightType::FOG_LIGHTS_FRONT] != nullptr)
-                {
-                    mat =
-                        static_cast<osg::Material*>(light_material_[Object::VehicleLightType::FOG_LIGHTS_FRONT]->getOrCreateStateSet()->getAttribute(
-                            osg::StateAttribute::MATERIAL));
-                    mat->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
-                    mat->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
-                }
-                else
-                {
-                    LOG_WARN_ONCE("Missing light node - {} - ignoring visualization", LightTypeInd2Str(Object::VehicleLightType::FOG_LIGHTS_FRONT));
-                }
-                if (light_material_[Object::VehicleLightType::FOG_LIGHTS_REAR] != nullptr)
-                {
-                    mat = static_cast<osg::Material*>(light_material_[Object::VehicleLightType::FOG_LIGHTS_REAR]->getOrCreateStateSet()->getAttribute(
-                        osg::StateAttribute::MATERIAL));
-                    mat->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
-                    mat->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
-                }
-                else
-                {
-                    LOG_WARN_ONCE("Missing light node - {} - ignoring visualization", LightTypeInd2Str(Object::VehicleLightType::FOG_LIGHTS_REAR));
-                }
-            }
-            else
-            {
-                if (light_material_[i] != nullptr)
-                {
-                    mat = static_cast<osg::Material*>(
-                        light_material_[list[i].type]->getOrCreateStateSet()->getAttribute(osg::StateAttribute::MATERIAL));
-                    mat->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
-                    mat->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
-                }
-                else
-                {
-                    LOG_WARN_ONCE("Missing light node - {} - ignoring visualization", LightTypeInd2Str(static_cast<Object::VehicleLightType>(i)));
-                }
-            }
+            continue;  // Skip undefined light types
         }
+
+        // Create OSG color vectors from the light status
+        osg::Vec4d diffuseRgb(list[i].diffuseRgb[0], list[i].diffuseRgb[1], list[i].diffuseRgb[2], 1.0);
+        osg::Vec4d emissionRgb(list[i].emissionRgb[0], list[i].emissionRgb[1], list[i].emissionRgb[2], 1.0);
+
+        // Handle special light types (e.g., warning lights and fog lights)
+        if (list[i].type == Object::VehicleLightType::WARNING_LIGHTS)
+        {
+            UpdateLightMaterial(Object::VehicleLightType::INDICATOR_LEFT, diffuseRgb, emissionRgb);
+            UpdateLightMaterial(Object::VehicleLightType::INDICATOR_RIGHT, diffuseRgb, emissionRgb);
+        }
+        else if (list[i].type == Object::VehicleLightType::FOG_LIGHTS)
+        {
+            UpdateLightMaterial(Object::VehicleLightType::FOG_LIGHTS_FRONT, diffuseRgb, emissionRgb);
+            UpdateLightMaterial(Object::VehicleLightType::FOG_LIGHTS_REAR, diffuseRgb, emissionRgb);
+        }
+        else
+        {
+            UpdateLightMaterial(static_cast<Object::VehicleLightType>(i), diffuseRgb, emissionRgb);
+        }
+    }
+}
+
+void CarModel::UpdateLightMaterial(Object::VehicleLightType lightType, const osg::Vec4d& diffuseRgb, const osg::Vec4d& emissionRgb)
+{
+    if (light_material_[lightType] != nullptr)
+    {
+        osg::Material* material =
+            static_cast<osg::Material*>(light_material_[lightType]->getOrCreateStateSet()->getAttribute(osg::StateAttribute::MATERIAL));
+
+        if (material)
+        {
+            material->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
+            material->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
+        }
+    }
+    else
+    {
+        LOG_WARN_ONCE("Missing light node - {} - ignoring visualization", LightTypeInd2Str(lightType));
     }
 }
 
@@ -2406,7 +2383,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     EntityModel* emodel;
     if (type == EntityModel::EntityType::VEHICLE)
     {
-        emodel = new CarModel(this, group, root_origin2odr_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name, ShowLights);
+        emodel = new CarModel(this, group, root_origin2odr_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name, ShowLights_);
     }
     else if (type == EntityModel::EntityType::MOVING)
     {

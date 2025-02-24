@@ -4905,7 +4905,6 @@ TEST(TestLightStateAction, BrakeLightActionTest)
     SE_Close();
 }
 #endif
-
 #ifdef _USE_OSI
 TEST(TestLightStateAction, AdvancedLightStateActionTest)
 {
@@ -5524,9 +5523,9 @@ TEST(TestLightStateAction, AdvancedLightStateActionTest)
     EXPECT_EQ(lightList.colorName, 11);
     EXPECT_DOUBLE_EQ(lightList.intensity, 6000);
     EXPECT_EQ(lightList.lightMode, 1);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.53779999978542326);  // check this and below two values are correct
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.40197499970495698);
-    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2], 0.21181999959230419);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[0] + lightList.emissionRgb[0], 0.69999999999999996);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[1] + lightList.emissionRgb[1], 0.625);
+    EXPECT_DOUBLE_EQ(lightList.diffuseRgb[2] + lightList.emissionRgb[2], 0.52000000000000002);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[0], 0.5);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[1], 0.35);
     EXPECT_DOUBLE_EQ(lightList.baseRgb[2], 0.14);

@@ -419,11 +419,8 @@ void ScenarioPlayer::ViewerFrame(bool init)
                 if (entity->IsVehicle())
                 {
                     viewer::CarModel* car = static_cast<viewer::CarModel*>(entity);
-                    car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
-                    // if (opt.GetOptionSet("lights") ||
-                    //     this->scenarioEngine->scenarioReader->lightStatusOn)  // update material details only when right action or show lights
-                    // {
-                    if (this->scenarioEngine->scenarioReader->lightStatusOn)  // update material details only when right action or show lights
+
+                    if (this->scenarioEngine->scenarioReader->lightStatusOn)  // update material details only when right action
                     {
                         car->UpdateLight(obj->vehicleLightActionStatusList);
                     }
@@ -740,7 +737,7 @@ int ScenarioPlayer::InitViewer()
     {
         viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_LIGHTS_STATE);
     }
-    viewer_->ShowLights = opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->lightStatusOn;  // set flag for viewer
+    viewer_->ShowLights_ = opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->lightStatusOn;  // set flag for viewer
 
     if (opt.GetOptionSet("hide_route_waypoints"))
     {
@@ -1132,56 +1129,68 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
     {
         obj->SetVisibilityMask(obj->visibilityMask_ &= ~(Object::Visibility::SENSORS));
     }
-
-    // if (opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->lightStatusOn)  // fetch material details only right action or show
-    // lights
-    if (this->scenarioEngine->scenarioReader->lightStatusOn)  // fetch material details only right action or show lights
+    if (this->scenarioEngine->scenarioReader->lightStatusOn)  // Fetch material details only if the light status is on
     {
         for (size_t i = 0; i < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; i++)
         {
             if (obj->vehicleLightActionStatusList[i].type == Object::VehicleLightType::UNDEFINED)
             {
-                Object::VehicleLightType lightName = static_cast<Object::VehicleLightType>(i);
+                Object::VehicleLightType lightType = static_cast<Object::VehicleLightType>(i);
+
+                // Handle combined light types (e.g., fog lights, warning lights)
+                if (lightType == Object::VehicleLightType::FOG_LIGHTS)
+                {
+                    lightType = Object::VehicleLightType::FOG_LIGHTS_REAR;  // Use rear fog light as the base
+                }
+                else if (lightType == Object::VehicleLightType::WARNING_LIGHTS)
+                {
+                    lightType = Object::VehicleLightType::INDICATOR_LEFT;  // Use left indicator as the base
+                }
+
+                // Find the corresponding material in the model
                 for (size_t j = 0; j < model->light_material_.size(); j++)
                 {
                     if (model->light_material_[j] != nullptr)
                     {
-                        if ((lightName == Object::VehicleLightType::FOG_LIGHTS))
-                        {  // fog light is combination of front and back fog lights same for waring and indicator light
-                            lightName = Object::VehicleLightType::FOG_LIGHTS_REAR;
-                        }
-                        else if (lightName == Object::VehicleLightType::WARNING_LIGHTS)
+                        std::string materialName = model->light_material_[j]->getOrCreateStateSet()->getName();
+                        if (obj->LightType2Str(lightType) == materialName)
                         {
-                            lightName = Object::VehicleLightType::INDICATOR_LEFT;
-                        }
-                        if (obj->LightType2Str(lightName) == model->light_material_[j]->getOrCreateStateSet()->getName().c_str())
-                        {
-                            osg::Material* mat = static_cast<osg::Material*>(
+                            // Extract material properties
+                            osg::Material* material = static_cast<osg::Material*>(
                                 model->light_material_[j]->getOrCreateStateSet()->getAttribute(osg::StateAttribute::MATERIAL));
-                            const osg::Vec4& dCol = mat->getDiffuseFrontAndBack() ? mat->getDiffuse(osg::Material::FRONT_AND_BACK)
-                                                                                  : mat->getDiffuse(osg::Material::FRONT);
-                            const osg::Vec4& eCol = mat->getEmissionFrontAndBack() ? mat->getEmission(osg::Material::FRONT_AND_BACK)
-                                                                                   : mat->getDiffuse(osg::Material::FRONT);
 
-                            obj->vehicleLightActionStatusList[i].baseRgb[0] = dCol.r();
-                            obj->vehicleLightActionStatusList[i].baseRgb[1] = dCol.g();
-                            obj->vehicleLightActionStatusList[i].baseRgb[2] = dCol.b();
+                            if (material)
+                            {
+                                // Get diffuse and emission colors
+                                const osg::Vec4& diffuseColor = material->getDiffuseFrontAndBack()
+                                                                    ? material->getDiffuse(osg::Material::FRONT_AND_BACK)
+                                                                    : material->getDiffuse(osg::Material::FRONT);
 
-                            obj->vehicleLightActionStatusList[i].diffuseRgb[0]  = dCol.r();
-                            obj->vehicleLightActionStatusList[i].diffuseRgb[1]  = dCol.g();
-                            obj->vehicleLightActionStatusList[i].diffuseRgb[2]  = dCol.b();
-                            obj->vehicleLightActionStatusList[i].emissionRgb[0] = eCol.r();
-                            obj->vehicleLightActionStatusList[i].emissionRgb[1] = eCol.g();
-                            obj->vehicleLightActionStatusList[i].emissionRgb[2] = eCol.b();
+                                const osg::Vec4& emissionColor = material->getEmissionFrontAndBack()
+                                                                     ? material->getEmission(osg::Material::FRONT_AND_BACK)
+                                                                     : material->getEmission(osg::Material::FRONT);
 
-                            break;
+                                // Update light status with material colors
+                                obj->vehicleLightActionStatusList[i].baseRgb[0] = diffuseColor.r();
+                                obj->vehicleLightActionStatusList[i].baseRgb[1] = diffuseColor.g();
+                                obj->vehicleLightActionStatusList[i].baseRgb[2] = diffuseColor.b();
+
+                                obj->vehicleLightActionStatusList[i].diffuseRgb[0] = diffuseColor.r();
+                                obj->vehicleLightActionStatusList[i].diffuseRgb[1] = diffuseColor.g();
+                                obj->vehicleLightActionStatusList[i].diffuseRgb[2] = diffuseColor.b();
+
+                                obj->vehicleLightActionStatusList[i].emissionRgb[0] = emissionColor.r();
+                                obj->vehicleLightActionStatusList[i].emissionRgb[1] = emissionColor.g();
+                                obj->vehicleLightActionStatusList[i].emissionRgb[2] = emissionColor.b();
+
+                                break;  // Exit inner loop once the material is found
+                            }
                         }
                     }
                 }
             }
         }
     }
-
     viewer_->entities_.back()->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
 }
 #endif
