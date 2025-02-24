@@ -325,6 +325,14 @@ typedef enum
     SE_GHOST_TRAIL_TIME_PAST   = -4,  // given time > last timestamp in trajectory, snapped to end of trajectory
 } SE_GhostTrailReturnCode;            // mirror roadmanager::GhostTrailReturnCode
 
+typedef enum
+{
+    DEFAULT = 0,
+    API = 1,
+    API_AND_LOG = 2,
+    LOG = 3
+} SE_OSIStaticLogMode
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -1417,7 +1425,7 @@ extern "C"
             @param refetchStaticGt Optional flag, whether to include static ground truth in OSI data structure or not
             @return 0
     */
-    SE_DLL_API int SE_UpdateOSIGroundTruth(bool refetchStaticGt = false);
+    SE_DLL_API int SE_UpdateOSIGroundTruth(SE_OSIStaticLogMode mode = SE_OSIStaticLogMode::DEFAULT);
 
     /**
             The SE_UpdateOSIStaticGroundTruth function updates OSI static Groundtruth

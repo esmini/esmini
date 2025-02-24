@@ -43,8 +43,12 @@ static struct
 
 typedef struct
 {
-    std::string  ground_truth;
-    unsigned int size;
+    std::string  dynamic_ground_truth;
+    unsigned int dynamic_size;
+    std::string  static_ground_truth;
+    unsigned int static_size;
+    std::string  combined_ground_truth;
+    unsigned int combined_size;
 } OSIGroundTruth;
 
 typedef struct
@@ -78,7 +82,9 @@ static struct
 
 static struct
 {
-    osi3::GroundTruth    *gt;
+    osi3::GroundTruth    *dynamic_gt;
+    osi3::GroundTruth    *static_gt;
+    osi3::GroundTruth    *combined_gt;
     osi3::SensorView     *sv;
     osi3::TrafficCommand *tc;
 } obj_osi_external;
@@ -98,7 +104,9 @@ OSIReporter::OSIReporter(ScenarioEngine *scenarioengine)
     scenario_engine_ = scenarioengine;
 
     obj_osi_internal.gt = new osi3::GroundTruth();
-    obj_osi_external.gt = new osi3::GroundTruth();
+    obj_osi_external.dynamic_gt = new osi3::GroundTruth();
+    obj_osi_external.static_gt = new osi3::GroundTruth();
+    obj_osi_external.combined_gt = new osi3::GroundTruth();
     obj_osi_external.sv = new osi3::SensorView();
     obj_osi_external.tc = new osi3::TrafficCommand();
 
@@ -132,10 +140,22 @@ OSIReporter::~OSIReporter()
         delete obj_osi_internal.gt;
     }
 
-    if (obj_osi_external.gt)
+    if (obj_osi_external.dynamic_gt)
     {
-        obj_osi_external.gt->Clear();
-        delete obj_osi_external.gt;
+        obj_osi_external.dynamic_gt->Clear();
+        delete obj_osi_external.dynamic_gt;
+    }
+
+    if (obj_osi_external.static_gt)
+    {
+        obj_osi_external.static_gt->Clear();
+        delete obj_osi_external.static_gt;
+    }
+    
+    if (obj_osi_external.combined_gt)
+    {
+        obj_osi_external.combined_gt->Clear();
+        delete obj_osi_external.combined_gt;
     }
 
     if (obj_osi_internal.sd)
@@ -159,7 +179,8 @@ OSIReporter::~OSIReporter()
     obj_osi_internal.ln.clear();
     obj_osi_internal.lnb.clear();
 
-    osiGroundTruth.size    = 0;
+    osiGroundTruth.dynamic_size    = 0;
+    osiGroundTruth.static_size    = 0;
     osiRoadLane.size       = 0;
     osiTrafficCommand.size = 0;
 
@@ -242,7 +263,7 @@ void OSIReporter::CloseOSIFile()
     osi_file.close();
 }
 
-bool OSIReporter::WriteOSIFile()
+bool OSIReporter::WriteOSIFile(const std::string& ground_truth, unsigned int size)
 {
     if (!osi_file.good())
     {
@@ -250,16 +271,10 @@ bool OSIReporter::WriteOSIFile()
     }
 
     // write to file, first size of message
-    osi_file.write(reinterpret_cast<char *>(&osiGroundTruth.size), sizeof(osiGroundTruth.size));
+    osi_file.write(reinterpret_cast<char *>(&size), sizeof(size));
 
     // write to file, actual message - the groundtruth object including timestamp and moving objects
-    osi_file.write(osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size);
-
-    // write to file, first size of message
-    // osi_file.write(reinterpret_cast<char *>(&osiTrafficCommand.size), sizeof(osiTrafficCommand.size));
-
-    // write to file, actual message - the groundtruth object including timestamp and moving objects
-    // osi_file.write(osiTrafficCommand.traffic_command.c_str(), osiTrafficCommand.size);
+    osi_file.write(ground_truth.c_str(), size);
 
     if (!osi_file.good())
     {
@@ -280,116 +295,119 @@ void OSIReporter::FlushOSIFile()
 int OSIReporter::SetOSIStaticExternalData()
 {
     // Set version
-    obj_osi_external.gt->mutable_version()->CopyFrom(*obj_osi_internal.gt->mutable_version());
+    obj_osi_external.static_gt->mutable_version()->CopyFrom(*obj_osi_internal.gt->mutable_version());
 
     // Set road data
-    obj_osi_external.gt->mutable_stationary_object()->CopyFrom(*obj_osi_internal.gt->mutable_stationary_object());
-    obj_osi_external.gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
-    obj_osi_external.gt->mutable_lane_boundary()->CopyFrom(*obj_osi_internal.gt->mutable_lane_boundary());
-    obj_osi_external.gt->mutable_traffic_sign()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_sign());
-    obj_osi_external.gt->mutable_traffic_light()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_light());
-    obj_osi_external.gt->mutable_road_marking()->CopyFrom(*obj_osi_internal.gt->mutable_road_marking());
+    obj_osi_external.static_gt->mutable_stationary_object()->CopyFrom(*obj_osi_internal.gt->mutable_stationary_object());
+    obj_osi_external.static_gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
+    obj_osi_external.static_gt->mutable_lane_boundary()->CopyFrom(*obj_osi_internal.gt->mutable_lane_boundary());
+    obj_osi_external.static_gt->mutable_traffic_sign()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_sign());
+    obj_osi_external.static_gt->mutable_traffic_light()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_light());
+    obj_osi_external.static_gt->mutable_road_marking()->CopyFrom(*obj_osi_internal.gt->mutable_road_marking());
 
     // Set strings
-    obj_osi_external.gt->set_model_reference(*obj_osi_internal.gt->mutable_model_reference());
-    obj_osi_external.gt->set_map_reference(*obj_osi_internal.gt->mutable_map_reference());
-    obj_osi_external.gt->set_proj_string(*obj_osi_internal.gt->mutable_proj_string());
+    obj_osi_external.static_gt->set_model_reference(*obj_osi_internal.gt->mutable_model_reference());
+    obj_osi_external.static_gt->set_map_reference(*obj_osi_internal.gt->mutable_map_reference());
+    obj_osi_external.static_gt->set_proj_string(*obj_osi_internal.gt->mutable_proj_string());
 
     return 0;
 }
 
 int OSIReporter::ClearOSIGroundTruth()
 {
-    obj_osi_external.gt->clear_moving_object();
-    obj_osi_external.gt->clear_stationary_object();
-    obj_osi_external.gt->clear_lane();
-    obj_osi_external.gt->clear_lane_boundary();
-    obj_osi_external.gt->clear_traffic_light();
-    obj_osi_external.gt->clear_traffic_sign();
-    obj_osi_external.gt->clear_road_marking();
-    obj_osi_external.gt->clear_map_reference();
-    obj_osi_external.gt->clear_proj_string();
-    obj_osi_external.gt->clear_model_reference();
-    obj_osi_external.gt->clear_version();
+    obj_osi_external.dynamic_gt->clear_moving_object();
+    obj_osi_external.static_gt->clear_stationary_object();
+    obj_osi_external.static_gt->clear_lane();
+    obj_osi_external.static_gt->clear_lane_boundary();
+    obj_osi_external.static_gt->clear_traffic_light();
+    obj_osi_external.static_gt->clear_traffic_sign();
+    obj_osi_external.static_gt->clear_road_marking();
+    obj_osi_external.static_gt->clear_map_reference();
+    obj_osi_external.static_gt->clear_proj_string();
+    obj_osi_external.static_gt->clear_model_reference();
+    obj_osi_external.static_gt->clear_version();
 
     return 0;
 }
 
-int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, bool refetchStaticGt)
+int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, int updateMode)
 {
-    // osi_static_gt_loaded == 0 means its loaded, then static_gt_set == true as it is already set
-    bool static_gt_set = (osi_static_gt_loaded_ == 0) ? true : false;
     if (GetUpdated() == true)
     {
-        // We want static data but its not been set, dont return
-        if (refetchStaticGt && !static_gt_set)
-        {
-            // Don't return
-        }
-        else
-        {
-            // already updated within this scenario frame, skip
-            return 0;
-        }
+        return 0;
     }
-
-    // We dont want to refetch data but it is set, so we clear it
-    if (!refetchStaticGt && static_gt_set)
-    {
-        ClearOSIGroundTruth();
-        osi_static_gt_loaded_ = -1;
-    }
-
-    // Always load on first frame
+    auto mode = static_cast<OSIStaticUpdateMode>(updateMode);
     if (GetCounter() == 0)
     {
-        osi_static_gt_loaded_ = UpdateOSIStaticGroundTruth(objectState);
-    }
-
-    // Update, serialize and write dynamic gt only if the GT not updated before in this frame
-    if (GetUpdated() == false)
-    {
+        UpdateOSIStaticGroundTruth(objectState);
         UpdateOSIDynamicGroundTruth(objectState);
+        obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.static_gt);
+        obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
 
-        if ((GetUDPClientStatus() == 0 || IsFileOpen()))
+        std::string ground_truth = {};
+        unsigned int size = 0;
+        if (mode == API_AND_LOG || mode == LOG)
         {
-            obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
-            osiGroundTruth.size = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
+            obj_osi_external.combined_gt->SerializeToString(&ground_truth);
+            size = ground_truth.size();
         }
-
         if (IsFileOpen())
         {
-            WriteOSIFile();
+            WriteOSIFile(ground_truth, size);
         }
+        obj_osi_external.combined_gt->Clear();
     }
-
-    // We want to get static gt data
-    if (GetCounter() > 0 && refetchStaticGt)
+    else
     {
-        if (!static_gt_set)
+        std::string ground_truth = {};
+        unsigned int size = 0;
+        switch (mode)
         {
-            osi_static_gt_loaded_ = SetOSIStaticExternalData();
-        }
-        // Clear the static data now when it has been reported once
-        if (GetUDPClientStatus() == 0)
-        {
-            obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
-            osiGroundTruth.size = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
+            case DEFAULT:
+                UpdateOSIDynamicGroundTruth(objectState);
+                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
+                break;
+            case API:
+                UpdateOSIDynamicGroundTruth(objectState);
+                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.static_gt);
+                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
+
+                break;
+            case API_AND_LOG:
+                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.static_gt);
+                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
+                
+                obj_osi_external.combined_gt->SerializeToString(&ground_truth);
+                size = ground_truth.size();
+                if (IsFileOpen())
+                {
+                    WriteOSIFile(ground_truth, size);
+                }
+                break;
+            case LOG:
+                obj_osi_external.static_gt->SerializeToString(&ground_truth);
+                size = ground_truth.size();
+                if (IsFileOpen())
+                {
+                    WriteOSIFile(ground_truth, size);
+                }
+                break;
         }
     }
 
     if (GetUDPClientStatus() == 0)
     {
+        
         // send over udp - split large OSI messages in multiple transmissions
         unsigned int sentDataBytes = 0;
 
-        for (osi_udp_buf.counter = 1; sentDataBytes < osiGroundTruth.size; osi_udp_buf.counter++)
+        for (osi_udp_buf.counter = 1; sentDataBytes < osiGroundTruth.combined_size; osi_udp_buf.counter++)
         {
-            osi_udp_buf.datasize = MIN(osiGroundTruth.size - sentDataBytes, OSI_MAX_UDP_DATA_SIZE);
-            memcpy(osi_udp_buf.data, &osiGroundTruth.ground_truth.c_str()[sentDataBytes], osi_udp_buf.datasize);
+            osi_udp_buf.datasize = MIN(osiGroundTruth.combined_size - sentDataBytes, OSI_MAX_UDP_DATA_SIZE);
+            memcpy(osi_udp_buf.data, &osiGroundTruth.combined_ground_truth.c_str()[sentDataBytes], osi_udp_buf.datasize);
             int packSize = static_cast<int>(sizeof(osi_udp_buf)) - static_cast<int>((OSI_MAX_UDP_DATA_SIZE - osi_udp_buf.datasize));
 
-            if (sentDataBytes + osi_udp_buf.datasize >= osiGroundTruth.size)
+            if (sentDataBytes + osi_udp_buf.datasize >= osiGroundTruth.combined_size)
             {
                 // Last package indicated by negative counter number
                 osi_udp_buf.counter = -osi_udp_buf.counter;
@@ -404,7 +422,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
                 wprintf(L"send failed with error: %d\n", WSAGetLastError());
 #endif
                 // Give up
-                sentDataBytes = osiGroundTruth.size;
+                sentDataBytes = osiGroundTruth.combined_size;
             }
             else
             {
@@ -527,8 +545,8 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
         }
     }
 
-    obj_osi_external.gt->mutable_timestamp()->CopyFrom(*obj_osi_internal.gt->mutable_timestamp());
-    obj_osi_external.gt->mutable_moving_object()->CopyFrom(*obj_osi_internal.gt->mutable_moving_object());
+    obj_osi_external.dynamic_gt->mutable_timestamp()->CopyFrom(*obj_osi_internal.gt->mutable_timestamp());
+    obj_osi_external.dynamic_gt->mutable_moving_object()->CopyFrom(*obj_osi_internal.gt->mutable_moving_object());
 
     return 0;
 }
@@ -2647,16 +2665,21 @@ const char *OSIReporter::GetOSIGroundTruth(int *size)
     if (!(GetUDPClientStatus() == 0 || IsFileOpen()))
     {
         // Data has not been serialized
-        obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
-        osiGroundTruth.size = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
+        obj_osi_external.combined_gt->SerializeToString(&osiGroundTruth.combined_ground_truth);
+        osiGroundTruth.combined_size = static_cast<unsigned int>(obj_osi_external.combined_gt->ByteSizeLong());
     }
-    *size = static_cast<int>(osiGroundTruth.size);
-    return osiGroundTruth.ground_truth.data();
+    *size = static_cast<int>(osiGroundTruth.combined_size);
+    return osiGroundTruth.combined_ground_truth.data();
 }
 
-const char *OSIReporter::GetOSIGroundTruthRaw()
+const char* OSIReporter::GetOSIGroundTruthRaw()
 {
-    return reinterpret_cast<char *>(obj_osi_external.gt);
+    // static std::string merged_data;  // Static to persist after function returns
+    // osi3::GroundTruth merged_gt;
+    // merged_gt.MergeFrom(*obj_osi_external.dynamic_gt);
+    // // merged_gt.MergeFrom(*obj_osi_external.static_gt);
+    // merged_gt.SerializeToString(&merged_data); 
+    return reinterpret_cast<char*>(obj_osi_external.combined_gt);  // Safe because `std::string` owns memory
 }
 
 const char *OSIReporter::GetOSITrafficCommandRaw()
