@@ -915,6 +915,7 @@ public:
 
 private:
     std::unordered_map<std::string, SE_Option> option_;
+    std::vector<SE_Option *>          optionOrder_;  // To maintain the order of insertion of options, to print in help
     std::string                                app_name_;
     std::vector<std::string>                   originalArgs_;
     std::vector<std::string>                   unknown_args_;

@@ -198,7 +198,7 @@ std::string ControlDomain2Str(unsigned int domains)
 
 void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
 {
-    std::cout << "HandleConfigurations called appName: " << appName << std::endl;
+    // std::cout << "HandleConfigurations called appName: " << appName << std::endl;
     // parse default config file and environment variable config files
     esmini::common::Config config(appName);
     const auto             defaultAndEnvironmentConfigs = config.GetConfig();
@@ -1893,7 +1893,11 @@ void SE_Options::AddOption(std::string opt_str,
     else
     {
         SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply, shouldHaveOnlyOneValue);
-        option_.insert(std::make_pair(opt_str, opt));
+        const auto [itr, success] = option_.insert(std::make_pair(opt_str, opt));
+        if( success)
+        {
+            optionOrder_.push_back(&itr->second);
+        }
     }
 }
 
@@ -1901,14 +1905,14 @@ void SE_Options::PrintUsage()
 {
     printf("\nUsage: %s [options]\n", app_name_.c_str());
     printf("Options: \n");
-    for (const auto& [key, option] : option_)
+    for (const auto& option : optionOrder_)
     {
-        [[maybe_unused]] const auto& unused_key = key;
-        option.Usage();
+        option->Usage();
     }
-    // for (size_t i = 0; i < option_.size(); i++)
+    // for (const auto& [key, option] : option_)
     // {
-    //     option_[i].Usage();
+    //     [[maybe_unused]] const auto& unused_key = key;
+    //     option.Usage();
     // }
     printf("\n");
 }
