@@ -1165,104 +1165,106 @@ void ScenarioGateway::removeObject(std::string name)
 
 int ScenarioGateway::WriteStatesToFile()
 {
-    // std::cout << "Inside write-->" << std::endl;
     if (datLogger != nullptr && datLogger->IsFileOpen())
     {
-        // Write status to file - for later replay
-        for (size_t i = 0; i < objectState_.size(); i++)
+        const double RGB_MAX_VALUE = 255.0;
+        for (const auto& objectState : objectState_)
         {
-            int objId               = objectState_[i]->state_.info.id;
-            datLogger->simTimeTemp_ = objectState_[i]->state_.info.timeStamp;
+            const auto& state       = objectState->state_;
+            int         objId       = state.info.id;
+            datLogger->simTimeTemp_ = state.info.timeStamp;
             datLogger->AddObject(objId);
-            datLogger->WriteModelId(objId, objectState_[i]->state_.info.model_id);
-            datLogger->WriteObjPos(objId,
-                                   objectState_[i]->state_.pos.GetX(),
-                                   objectState_[i]->state_.pos.GetY(),
-                                   objectState_[i]->state_.pos.GetZ(),
-                                   objectState_[i]->state_.pos.GetH(),
-                                   objectState_[i]->state_.pos.GetP(),
-                                   objectState_[i]->state_.pos.GetR());
-            datLogger->WriteObjSpeed(objectState_[i]->state_.info.id, objectState_[i]->state_.info.speed);
-            datLogger->WriteObjCategory(objId, objectState_[i]->state_.info.obj_category);
-            datLogger->WriteObjType(objId, objectState_[i]->state_.info.obj_type);
-            datLogger->WriteCtrlType(objId, objectState_[i]->state_.info.ctrl_type);
-            datLogger->WriteWheelAngle(objId,
-                                       objectState_[i]->state_.info.wheel_data.size() > 0 ? objectState_[i]->state_.info.wheel_data[0].h : 0.0);
-            datLogger->WriteWheelRot(objId, objectState_[i]->state_.info.wheel_data.size() > 0 ? objectState_[i]->state_.info.wheel_data[0].p : 0.0);
+            datLogger->WriteModelId(objId, state.info.model_id);
+            datLogger->WriteObjPos(objId, state.pos.GetX(), state.pos.GetY(), state.pos.GetZ(), state.pos.GetH(), state.pos.GetP(), state.pos.GetR());
+            datLogger->WriteObjSpeed(objId, state.info.speed);
+            datLogger->WriteObjCategory(objId, state.info.obj_category);
+            datLogger->WriteObjType(objId, state.info.obj_type);
+            datLogger->WriteCtrlType(objId, state.info.ctrl_type);
+            // Write wheel data if available
+            if (!state.info.wheel_data.empty())
+            {
+                datLogger->WriteWheelAngle(objId, state.info.wheel_data[0].h);
+                datLogger->WriteWheelRot(objId, state.info.wheel_data[0].p);
+            }
+            else
+            {
+                datLogger->WriteWheelAngle(objId, 0.0);
+                datLogger->WriteWheelRot(objId, 0.0);
+            }
             datLogger->WriteBB(objId,
-                               objectState_[i]->state_.info.boundingbox.center_.x_,
-                               objectState_[i]->state_.info.boundingbox.center_.y_,
-                               objectState_[i]->state_.info.boundingbox.center_.z_,
-                               objectState_[i]->state_.info.boundingbox.dimensions_.length_,
-                               objectState_[i]->state_.info.boundingbox.dimensions_.width_,
-                               objectState_[i]->state_.info.boundingbox.dimensions_.height_);
-            datLogger->WriteScaleMode(objId, objectState_[i]->state_.info.scaleMode);
-            datLogger->WriteVisiblityMask(objId, objectState_[i]->state_.info.visibilityMask);
-            datLogger->WriteName(objId, objectState_[i]->state_.info.name);
-            datLogger->WriteRoadId(objId, objectState_[i]->state_.pos.GetTrackId());
-            datLogger->WriteLaneId(objId, objectState_[i]->state_.pos.GetLaneId());
-            datLogger->WritePosOffset(objId, objectState_[i]->state_.pos.GetOffset());
-            datLogger->WritePosT(objId, objectState_[i]->state_.pos.GetT());
-            datLogger->WritePosS(objId, objectState_[i]->state_.pos.GetS());
+                               state.info.boundingbox.center_.x_,
+                               state.info.boundingbox.center_.y_,
+                               state.info.boundingbox.center_.z_,
+                               state.info.boundingbox.dimensions_.length_,
+                               state.info.boundingbox.dimensions_.width_,
+                               state.info.boundingbox.dimensions_.height_);
+            datLogger->WriteScaleMode(objId, state.info.scaleMode);
+            datLogger->WriteVisiblityMask(objId, state.info.visibilityMask);
+            datLogger->WriteName(objId, state.info.name);
+            datLogger->WriteRoadId(objId, state.pos.GetTrackId());
+            datLogger->WriteLaneId(objId, state.pos.GetLaneId());
+            datLogger->WritePosOffset(objId, state.pos.GetOffset());
+            datLogger->WritePosT(objId, state.pos.GetT());
+            datLogger->WritePosS(objId, state.pos.GetS());
 
-            double                rgb_[4];
             datLogger::LightState lightState_;
             for (int j = 0; j < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; j++)
             {
-                datLogger::LightRGB rgb_value;
-                rgb_[0] = objectState_[i]->state_.info.light_state[j].diffuseRgb[0] + objectState_[i]->state_.info.light_state[j].emissionRgb[0];
-                rgb_[1] = objectState_[i]->state_.info.light_state[j].diffuseRgb[1] + objectState_[i]->state_.info.light_state[j].emissionRgb[1];
-                rgb_[2] = objectState_[i]->state_.info.light_state[j].diffuseRgb[2] + objectState_[i]->state_.info.light_state[j].emissionRgb[2];
-                rgb_[3] = objectState_[i]->state_.info.light_state[j].emissionRgb[0] / rgb_[0];
+                const auto& light  = state.info.light_state[j];
+                double      rgb[4] = {
+                    light.diffuseRgb[0] + light.emissionRgb[0],
+                    light.diffuseRgb[1] + light.emissionRgb[1],
+                    light.diffuseRgb[2] + light.emissionRgb[2],
+                    light.emissionRgb[0] / (rgb[0] + SMALL_NUMBER)  // Avoid division by zero
+                };
 
                 // Convert doubles [0:1] into bytes (unsigned chars) [0:255]
                 // ensure range [0:1]
-                rgb_value.red       = static_cast<unsigned char>(MIN(MAX(rgb_[0], 0.0), 255.0) * 255.0);
-                rgb_value.green     = static_cast<unsigned char>(MIN(MAX(rgb_[1], 0.0), 255.0) * 255.0);
-                rgb_value.blue      = static_cast<unsigned char>(MIN(MAX(rgb_[2], 0.0), 255.0) * 255.0);
-                rgb_value.intensity = static_cast<unsigned char>(MIN(MAX(rgb_[3], 0.0), 255.0) * 255.0);
-                // printf("Obj[%d]Light[%d]RGB[%d]: %.2f -> %.2f -> %d\n", static_cast<int>(i), j, (j * 4) + k, rgb_[k], adjusted_value,
+                datLogger::LightRGB rgbValue = {static_cast<unsigned char>(MIN(MAX(rgb[0], 0.0), RGB_MAX_VALUE) * RGB_MAX_VALUE),
+                                                static_cast<unsigned char>(MIN(MAX(rgb[1], 0.0), RGB_MAX_VALUE) * RGB_MAX_VALUE),
+                                                static_cast<unsigned char>(MIN(MAX(rgb[2], 0.0), RGB_MAX_VALUE) * RGB_MAX_VALUE),
+                                                static_cast<unsigned char>(MIN(MAX(rgb[2], 0.0), RGB_MAX_VALUE) * RGB_MAX_VALUE)};
 
                 switch (static_cast<Object::VehicleLightType>(j))
                 {
                     case Object::VehicleLightType::DAY_TIME_RUNNING_LIGHTS:
-                        lightState_.day_time_running_lights = rgb_value;
+                        lightState_.day_time_running_lights = rgbValue;
                         break;
                     case Object::VehicleLightType::LOW_BEAM:
-                        lightState_.low_beam = rgb_value;
+                        lightState_.low_beam = rgbValue;
                         break;
                     case Object::VehicleLightType::HIGH_BEAM:
-                        lightState_.high_beam = rgb_value;
+                        lightState_.high_beam = rgbValue;
                         break;
                     case Object::VehicleLightType::FOG_LIGHTS_FRONT:
-                        lightState_.fog_lights_front = rgb_value;
+                        lightState_.fog_lights_front = rgbValue;
                         break;
                     case Object::VehicleLightType::FOG_LIGHTS_REAR:
-                        lightState_.fog_lights_rear = rgb_value;
+                        lightState_.fog_lights_rear = rgbValue;
                         break;
                     case Object::VehicleLightType::BRAKE_LIGHTS:
-                        lightState_.brake_lights = rgb_value;
+                        lightState_.brake_lights = rgbValue;
                         break;
                     case Object::VehicleLightType::INDICATOR_LEFT:
-                        lightState_.indicator_left = rgb_value;
+                        lightState_.indicator_left = rgbValue;
                         break;
                     case Object::VehicleLightType::INDICATOR_RIGHT:
-                        lightState_.indicator_right = rgb_value;
+                        lightState_.indicator_right = rgbValue;
                         break;
                     case Object::VehicleLightType::REVERSING_LIGHTS:
-                        lightState_.reversing_lights = rgb_value;
+                        lightState_.reversing_lights = rgbValue;
                         break;
                     case Object::VehicleLightType::LICENSE_PLATER_ILLUMINATION:
-                        lightState_.license_plater_illumination = rgb_value;
+                        lightState_.license_plater_illumination = rgbValue;
                         break;
                     case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
-                        lightState_.special_purpose_lights = rgb_value;
+                        lightState_.special_purpose_lights = rgbValue;
                         break;
                     case Object::VehicleLightType::FOG_LIGHTS:
-                        lightState_.fog_lights = rgb_value;
+                        lightState_.fog_lights = rgbValue;
                         break;
                     case Object::VehicleLightType::WARNING_LIGHTS:
-                        lightState_.warning_lights = rgb_value;
+                        lightState_.warning_lights = rgbValue;
                         break;
                     default:
                         break;
