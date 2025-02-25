@@ -111,7 +111,7 @@ namespace esmini::common
         }
         else
         {
-            for (auto& child : node.GetChildren())
+            for (auto& child : node.getChildren())
             {
                 ParseNode(*child.second, node.getID());
             }
@@ -124,7 +124,7 @@ namespace esmini::common
     {
         TINY_YAML::Yaml yaml = TINY_YAML::Yaml(filename);
 
-        for (auto& node : yaml.GetNodes())
+        for (auto& node : yaml.getNodes())
         {
             ParseNode(*node.second, "");
         }
