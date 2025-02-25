@@ -42,15 +42,6 @@ namespace scenarioengine
         Object *object1;
     } CollisionPair;
 
-    struct PairHash
-    {
-        template <typename T1, typename T2>
-        std::size_t operator()(const std::pair<T1, T2>& pair) const
-        {
-            return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
-        }
-    };
-
     class ScenarioEngine
     {
     public:
@@ -88,9 +79,9 @@ namespace scenarioengine
         void EraseCleanParams();
         void EraseCleanVariables();
         void GetIdxsFromIds(const int id_1, const int id_2, int &idx_1, int &idx_2);
-        bool CheckTeleported(const std::pair<int, int> pair);
-        int  GetDistance(int id_1, int id_2, roadmanager::RelativeDistanceType dist_type, double& distance, double& timestamp);
-        void UpdateDistance(const std::pair<int, int> ids, Object* obj_1, Object* obj_2, roadmanager::RelativeDistanceType dist_type);
+        // bool CheckTeleported(const std::pair<int, int> pair);
+        void UpdateDistance(Object* obj_1, Object* obj_2, roadmanager::RelativeDistanceType dist_type, const uint64_t &key, const uint64_t &rev_key);
+        int GetDistance(Object* object_1, Object* object_2, roadmanager::RelativeDistanceType dist_type, double& distance, double& timestamp);
         bool GetDisableControllersFlag()
         {
             return disable_controllers_;
@@ -183,21 +174,35 @@ namespace scenarioengine
         Object         *ghost_;
         
         // Distance map
-        struct Measurement
+        struct DistanceMeasurement 
         {
-            double distance_;
-            double timestamp_;
+            double distance_ = 1e6;
+            double timestamp_ = 0.0;
         };
 
-        struct Distance
+        struct DistanceThresholds
         {
-            std::array<Object*, 2> objects_;
-            std::unordered_map<roadmanager::RelativeDistanceType, Measurement> distance_;
-            double next_update_;
+            const double out_of_range_ = 920.0;
+            const double euclidian_ = 420.0;
+            const double longitudinal_ = 200.0;
+            const double lateral_ = 5.0;
         };
 
-        std::unordered_map<std::pair<int, int>, Distance, PairHash> object_distance_map_;
-
+        struct DistanceEntry 
+        {
+            std::array<DistanceMeasurement, static_cast<size_t>(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN) + 1> measurement_;
+            double next_update_ = 0.0;
+        };
+        
+        // std::unordered_map<std::pair<int, int>, Distance, PairHash> object_distance_map_;
+        inline uint64_t GenerateKey(int id1, int id2) const 
+        {
+            return (static_cast<uint64_t>(id1) << 32) | static_cast<uint32_t>(id2);
+        }
+        
+        std::unordered_map<uint64_t, DistanceEntry> object_distance_map_;
+        DistanceThresholds distance_thresholds_ = {};
+        
         // execution control flags
         unsigned int frame_nr_;
         int          init_status_;

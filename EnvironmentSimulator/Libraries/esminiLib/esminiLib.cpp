@@ -2184,10 +2184,22 @@ extern "C"
     SE_DLL_API int SE_SimpleGetDistanceToObject(int object_a_id, int object_b_id, SE_RelativeDistanceType dist_type, double &distance, double &timestamp)
     {
         bool obj_found = false;
+        
+        Object *obj_a = nullptr;
+        if (getObjectById(object_a_id, obj_a) == -1)
+        {
+            return -1;
+        }
+
+        Object *obj_b = nullptr;
+        if (getObjectById(object_b_id, obj_b) == -1)
+        {
+            return -1;
+        }
 
         roadmanager::RelativeDistanceType dist_type_converted = static_cast<roadmanager::RelativeDistanceType>(dist_type);
 
-        auto ret = player->scenarioEngine->GetDistance(object_a_id, object_b_id, dist_type_converted, distance, timestamp);
+        auto ret = player->scenarioEngine->GetDistance(obj_a, obj_b, dist_type_converted, distance, timestamp);
 
         if (ret == 0)
         {
