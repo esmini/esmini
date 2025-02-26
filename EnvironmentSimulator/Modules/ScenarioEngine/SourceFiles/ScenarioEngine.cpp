@@ -1377,8 +1377,8 @@ void ScenarioEngine::UpdateDistance(Object* obj_1, Object* obj_2, roadmanager::R
     auto [rev_it, rev_inserted] = object_distance_map_.try_emplace(rev_key, DistanceEntry{});
     auto& rev_distance_entry = rev_it->second;
 
-    auto& euclidian_measurement = distance_entry.measurement_[static_cast<size_t>(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN)];
-    if (euclidian_measurement.distance_ == 1e6 || euclidian_measurement.distance_ > distance_thresholds_.euclidian_)
+    auto& measurement = distance_entry.measurement_[static_cast<size_t>(dist_type)];
+    if (measurement.distance_ > 420.0)
     {
         dist_type = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN;
     }
@@ -1387,50 +1387,30 @@ void ScenarioEngine::UpdateDistance(Object* obj_1, Object* obj_2, roadmanager::R
     obj_1->pos_.Distance(&obj_2->pos_, roadmanager::CoordinateSystem::CS_ENTITY, dist_type, dist);
     double abs_dist = std::abs(dist);
     double next_update = simulationTime_;
-
-    auto& measurement = distance_entry.measurement_[static_cast<size_t>(dist_type)];
-
-    switch (dist_type)
+    if (roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN == dist_type)
     {
-        case roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN:
-            if (abs_dist > distance_thresholds_.out_of_range_)
-            {
-                next_update = simulationTime_ + 10.0;
-            }
-            else if (abs_dist > distance_thresholds_.euclidian_)
-            {
-                next_update = simulationTime_ + 3.0;
-            }
-            break;
-        case roadmanager::RelativeDistanceType::REL_DIST_LATERAL:
-            if (abs_dist > distance_thresholds_.lateral_)
-            {
-                next_update = simulationTime_ + 1.0;
-                euclidian_measurement.distance_ = 1e6; // Reset so we check next loop
-            }
-            break;
-        case roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL:
-            if (abs_dist > distance_thresholds_.longitudinal_)
-            {
-                next_update = simulationTime_ + 1.0;
-                euclidian_measurement.distance_ = 1e6; // Reset so we check next loop
-            }
-            break;
-        case roadmanager::RelativeDistanceType::REL_DIST_UNDEFINED:
-            break;
+        if (abs_dist > 1000.0)
+        {
+            next_update = simulationTime_ + 10.0;
+        }
+        else if (abs_dist > 420.0)
+        {
+            next_update = simulationTime_ + 3.0;
+        }
     }
-
     // Only update if distance actually changed
     if (measurement.distance_ != dist) 
     {
-        measurement = {dist, simulationTime_};
+        measurement.distance_ = dist;
+        measurement.timestamp_ = simulationTime_;
         distance_entry.next_update_ = next_update;
     }
 
     if (dist_type == roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN) 
     {
         auto& rev_measurement = rev_distance_entry.measurement_[static_cast<size_t>(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN)];
-        rev_measurement = {-dist, simulationTime_};
+        rev_measurement.distance_ = -dist;
+        rev_measurement.timestamp_ = simulationTime_;
         rev_distance_entry.next_update_ = next_update;
     }
 }
@@ -1447,15 +1427,22 @@ int ScenarioEngine::GetDistance(Object* object_1, Object* object_2, roadmanager:
     }
 
     auto it = object_distance_map_.find(key);
-    if (it == object_distance_map_.end() || (simulationTime_ > it->second.next_update_))
+    bool needs_update = (it == object_distance_map_.end() || simulationTime_ > it->second.next_update_ || object_1->reset_ || object_2->reset_);
+    if (needs_update)
     {
         UpdateDistance(object_1, object_2, dist_type, key, rev_key);
         it = object_distance_map_.find(key);
+
     }
 
-    auto& distanceData = it->second.measurement_[static_cast<size_t>(dist_type)];
-    distance = distanceData.distance_;
-    timestamp = distanceData.timestamp_;
+    if (it == object_distance_map_.end())
+    {
+        return -1;
+    }
+
+    auto& measurement = it->second.measurement_[static_cast<size_t>(dist_type)];
+    distance = measurement.distance_;
+    timestamp = measurement.timestamp_;
 
     return 0;
 }

@@ -176,16 +176,8 @@ namespace scenarioengine
         // Distance map
         struct DistanceMeasurement 
         {
-            double distance_ = 1e6;
+            double distance_ = 10000.0;
             double timestamp_ = 0.0;
-        };
-
-        struct DistanceThresholds
-        {
-            const double out_of_range_ = 920.0;
-            const double euclidian_ = 420.0;
-            const double longitudinal_ = 200.0;
-            const double lateral_ = 5.0;
         };
 
         struct DistanceEntry 
@@ -201,7 +193,6 @@ namespace scenarioengine
         }
         
         std::unordered_map<uint64_t, DistanceEntry> object_distance_map_;
-        DistanceThresholds distance_thresholds_ = {};
         
         // execution control flags
         unsigned int frame_nr_;

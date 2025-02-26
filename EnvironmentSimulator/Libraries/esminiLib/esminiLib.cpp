@@ -2199,12 +2199,7 @@ extern "C"
 
         roadmanager::RelativeDistanceType dist_type_converted = static_cast<roadmanager::RelativeDistanceType>(dist_type);
 
-        auto ret = player->scenarioEngine->GetDistance(obj_a, obj_b, dist_type_converted, distance, timestamp);
-
-        if (ret == 0)
-        {
-            obj_found = true;
-        }
+        obj_found = (player->scenarioEngine->GetDistance(obj_a, obj_b, dist_type_converted, distance, timestamp) == 0);
 
         return obj_found ? 0 : -2;
     }
