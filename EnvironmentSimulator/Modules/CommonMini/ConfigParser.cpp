@@ -6,6 +6,16 @@
 
 #include <iostream>
 
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
+
 namespace esmini::common
 {
     ConfigParser::ConfigParser(const std::string& applicationName, const std::vector<std::string>& configFilePaths)
@@ -134,33 +144,27 @@ namespace esmini::common
 
     std::vector<std::string> ConfigParser::Parse()
     {
-        try
+        for (unsigned int i = 0; i < configFilePaths_.size(); i++)
         {
-            for (const std::string& configFilePath : configFilePaths_)
+            if (fs::exists(configFilePaths_[i]))
             {
-                LOG_INFO("Parsing config file: {}", configFilePath);
-                ParseYamlFile(configFilePath);
+                try
+                {
+                    ParseYamlFile(configFilePaths_[i]);
+                }
+                catch (const std::exception& e)
+                {
+                    LOG_ERROR("Failed to load config {}: {}", configFilePaths_[i], e.what());
+                }
+                LOG_INFO("Loaded config: {}", configFilePaths_[i]);
+            }
+            else
+            {
+                LOG_ERROR("Failed to locate config: {}", configFilePaths_[i]);
             }
         }
-        catch (const std::exception& e)
-        {
-            std::cerr << "Error parsing YAML file: " << e.what() << std::endl;
-        }
-        // LogAllAppsConfig();
-        LogConfig();
+
         return configs_;
     }
 
-    //---------------------------------------------------------------------------------------------------------------------
-
-    // const ConfigMap& ConfigParser::GetApplicationConfig(const std::string& application) const
-    // {
-    //     auto it = appsConfig_.find(application);
-    //     if (it != appsConfig_.end())
-    //     {
-    //         LogOneAppConfig(application);
-    //         return it->second;
-    //     }
-    //     return ConfigMap();
-    // }
 }  // namespace esmini::common

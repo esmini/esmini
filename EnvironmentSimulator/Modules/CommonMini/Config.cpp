@@ -26,10 +26,6 @@ namespace esmini::common
             const auto valueVec = SplitString(envConfigFile.value(), ',');
             configFilePaths_.insert(configFilePaths_.end(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
         }
-        else
-        {
-            std::cout << "Environment variable ESMINI_CONFIG_FILE not set" << std::endl;
-        }
     }
 
     std::vector<std::string> Config::GetConfig() const
@@ -43,8 +39,6 @@ namespace esmini::common
         esmini::common::DefaultPathFinder pathFinder;
         fs::path                          defaultPath(pathFinder.GetDefaultPath());
         std::string                       defaultFilePath = (defaultPath.parent_path() / ".." / DEFAULT_CONFIG_FILE).string();
-
-        LOG_INFO("Default config file path: {}", defaultFilePath);
 
         return defaultFilePath;
     }
@@ -61,5 +55,10 @@ namespace esmini::common
             LOG_DEBUG("Environment variable: {} not set", variableName);
             return std::nullopt;
         }
+    }
+
+    const std::vector<std::string>& Config::GetFilePaths() const
+    {
+        return configFilePaths_;
     }
 }  // namespace esmini::common
