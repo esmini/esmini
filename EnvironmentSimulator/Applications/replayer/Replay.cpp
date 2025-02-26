@@ -302,11 +302,15 @@ int Replay::RecordPkgs(const std::string& fileName)
             {
                 double t = *reinterpret_cast<double*>(pkgs_[pkgs_.size() - 1].content.data());
 
-                if (!(t < 0) || !IsEqualDouble(deltaTime_, LARGE_NUMBER))  // dont include till ghost reaches 0.0 time
+                if (t > 0)  // dont include till ghost reaches 0.0 time
                 {
-                    if (!std::isnan(previousTime_))
+                    if (std::isnan(previousTime_))
                     {
-                        if (fabs(t - previousTime_) < deltaTime_)
+                        previousTime_ = t;
+                    }
+                    else if (t > previousTime_)
+                    {
+                        if (fabs(t - previousTime_) < deltaTime_ && fabs(t - previousTime_) > SMALL_NUMBER)
                         {
                             deltaTime_ = fabs(t - previousTime_);
                         }
@@ -356,7 +360,7 @@ size_t Replay::GetPkgCntBtwObj(size_t idx)
 {
     for (size_t i = idx + 1; i < pkgs_.size(); i++)  // start looking from next package
     {
-        if (IsTimePkg(i) || IsObjIdPkg(i))  // stop looking if time or obj id package found
+        if (IsTimePkg(i) || IsObjIdPkg(i) || IsEndOfScenarioPkg(i))  // stop looking if time or obj id package found
         {
             return i - idx - 1;
         }
@@ -615,9 +619,10 @@ int scenarioengine::Replay::GoForwardTime(double t, bool stopAtEachFrame)
         unsigned int previousIndex = index_;
 
         GoToNextFrame();
-
-        if ((time_ > t + SMALL_NUMBER) || (stopAtEachFrame && time_ - scenarioState_.sim_time > deltaTime_))
-        {  // Gone past requested time or stop at each frame AND the time difference exceeds deltaTime_.
+        double time_diff = time_ - scenarioState_.sim_time;
+        if ((time_ > t + SMALL_NUMBER) || (stopAtEachFrame && time_diff > deltaTime_ && !IsEqualDouble(time_diff, deltaTime_)))
+        {  // Gone past requested time or stop at each frame AND the time difference exceeds deltaTime_ and also make sure time diff is not 6 decimal
+           // greater.
             time_  = previousTime;
             index_ = previousIndex;
             if (stopAtEachFrame && time_ - scenarioState_.sim_time > deltaTime_)
@@ -791,6 +796,11 @@ bool scenarioengine::Replay::IsObjIdAddPkg(size_t index) const
 bool scenarioengine::Replay::IsObjIdPkg(size_t index) const
 {
     return static_cast<datLogger::PackageId>(pkgs_[index].hdr.id) == datLogger::PackageId::OBJ_ID;
+}
+
+bool scenarioengine::Replay::IsEndOfScenarioPkg(size_t index) const
+{
+    return static_cast<datLogger::PackageId>(pkgs_[index].hdr.id) == datLogger::PackageId::END_OF_SCENARIO;
 }
 
 bool scenarioengine::Replay::IsTimePkg(size_t index) const

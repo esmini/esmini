@@ -319,13 +319,13 @@ class DATFile():
                 t = PkgTime.from_buffer_copy(time_buffer)
                 pkg.content = t
                 self.pkgs.append(pkg)
-                if not (t.time < 0) or not abs(self.delta_time - 1e+10) < 1e-6:
-                    if not math.isnan(previousTime_):
-                        if abs(t.time - previousTime_) < self.delta_time:
+                if (t.time > 0):
+                    if math.isnan(previousTime_):
+                        previousTime_ = t.time
+                    elif (t.time > previousTime_): #skip all restart times
+                        if abs(t.time - previousTime_) < self.delta_time and abs(t.time - previousTime_) > 1e-6:
                             self.delta_time = abs(t.time - previousTime_)
-
-                    previousTime_ = t.time
-
+                        previousTime_ = t.time
             elif header.id == PkgId.OBJ_ID.value:
                 obj_id_buffer = self.file.read(header.content_size)
                 obj_id = PkgObjId.from_buffer_copy(obj_id_buffer)
@@ -531,9 +531,9 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
             mode_ = Mode.MIN_STEP
         elif mode == "min_step_mixed":
             mode_ = Mode.MIN_STEP_MIXED
-        elif mode == "time_step":
+        elif mode == "custom_time_step":
             mode_ = Mode.CUSTOM_TIME_STEP
-        elif mode == "time_step_mixed":
+        elif mode == "custom_time_step_mixed":
             mode_ = Mode.CUSTOM_TIME_STEP_MIXED
 
         if( mode_ == Mode.ORIGINAL):
@@ -587,9 +587,9 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
                 self.updateCache()
         else:
             perviousTimeToMove = 1e-6
+            perviousSimTime = 1e-6
             stopAtEachFrame = False
             while(True):
-
                 if mode_ == Mode.MIN_STEP or mode_ == Mode.MIN_STEP_MIXED:
                     timeToMove = self.CompleteObjectState_.time + self.delta_time
                 else:
@@ -601,7 +601,13 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
                 if mode_ == Mode.CUSTOM_TIME_STEP_MIXED or mode_ == Mode.MIN_STEP_MIXED:
                     stopAtEachFrame = True
                     if ((self.IsEqual(perviousTimeToMove, self.CompleteObjectState_.time)) is not True and self.IsEqual(self.CompleteObjectState_.time, self.start_time) is not True): # use pervious time till it reaches, ignore start time
-                        timeToMove = perviousTimeToMove
+                        if perviousSimTime > self.CompleteObjectState_.time: #restart happened, reached time to move
+                            if mode_ == Mode.MIN_STEP_MIXED:
+                                timeToMove = self.CompleteObjectState_.time + self.delta_time
+                            else:
+                                timeToMove = self.CompleteObjectState_.time + step_time
+                        else:
+                            timeToMove = perviousTimeToMove
 
                 for state in self.CompleteObjectState_.objectState_:
                     if state.obj_active is True: # only write for active objects. may be it deleted
@@ -647,9 +653,9 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
                         fcsv.write(data + '\n')
                 if self.IsEqual(self.CompleteObjectState_.time, self.stop_time):
                     break
+                perviousSimTime = self.CompleteObjectState_.time
                 self.MoveToTime(timeToMove, stopAtEachFrame)
                 perviousTimeToMove = timeToMove
-
         fcsv.close()
 
     def moveToNextTime(self):

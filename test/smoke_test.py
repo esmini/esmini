@@ -1036,7 +1036,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^.0.400.* event_road_position_rel_heading_0_-1_4 standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
-        csv = generate_csv(mode_ = "time_step", time_step_ = 0.01)
+        csv = generate_csv(mode_ = "min_step", time_step_ = 0.01)
 
         self.assertTrue(re.search('^0.000, 0, car_0_-1, 55.000, -1.750, 0.000, 3.142, 0.000, (0.000|6.283), 0.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^0.000, 1, car_0_1, 55.000, 1.750, 0.000, 3.142, 0.000, (0.000|6.283), 0.000, 0.000, 0.000', csv, re.MULTILINE))
@@ -1766,7 +1766,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.20.100.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
 
         # Check vehicle key positions
-        csv = generate_csv(mode_ = "time_step", time_step_ = 0.1)
+        csv = generate_csv(mode_ = "min_step", time_step_ = 0.1)
 
         self.assertTrue(re.search('^2.600, 0, Ego, 59.000, -1.535, 0.000, 0.000, 0.000, 0.000, 15.000, 0.000, 4.614', csv, re.MULTILINE))
         self.assertTrue(re.search('^3.200, 0, Ego, 68.000, -2.081, 0.000, 6.157, 0.000, 0.000, 15.000, -0.062, 5.196', csv, re.MULTILINE))
@@ -1935,7 +1935,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.10.100.* StopCondition: true, delay: 0.00, 10.1000 > 10.0000, edge: none', log)  is not None)
 
         # Check vehicle key positions
-        csv = generate_csv(mode_ = "time_step", time_step_ = 0.1)
+        csv = generate_csv(mode_ = "min_step", time_step_ = 0.1)
         self.assertTrue(re.search('0.000, 0, bicycle1, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('0.000, 1, scooter1, -15.000, 4.000, 0.000, 3.142, 0.000, 0.000, -10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('0.000, 2, car_white, -30.000, 8.000, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
@@ -2120,63 +2120,48 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.3.010.* brakeLightsOnAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.5.010.* LightStateActionStory runningState -> endTransition -> completeState', log)  is not None)
 
-    def test_cplusplus_and_python_csv_generation(self):
-        # This test case checks pyhton generated csv and c++ generated csv are the same
-        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ESMINI_ARGS)
 
-        # Check some initialization steps
-        self.assertTrue(re.search('Loading .*add_delete_entity.xosc', log)  is not None)
+    def test_csv_generation_for_all_modes(self):
+        # List of modes to test
+        choices = ["original", "min_step", "min_step_mixed", "custom_time_step", "custom_time_step_mixed"]
+        # choices = ["min_step_mixed"]
 
-        # use python to generate csv
-        csv = generate_csv()
-        self.assertTrue(re.search('^3.020, 0, Car1, 68.722, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.020, 1, Car2, 90.194, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
-        self.assertTrue(re.search('^7.010, 0, Car1, 146.306, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
-        self.assertTrue(re.search('^7.010, 1, Car2, 167.778, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
-        self.assertTrue(re.search('^7.010, 0, Car1, 146.306, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
-        self.assertTrue(re.search('^15.880, 0, Car1, 499.889, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
-        self.assertTrue(re.search('^15.890, 0, Car1, 500.000, -1.535, 0.000, 0.000, 0.000, 0.000, 0.0', csv, re.MULTILINE))
+        # Test for each mode
+        for mode in choices:
+            with self.subTest(mode=mode):  # Use subTest to isolate each mode's test
+                # Run scenario and check initialization steps
+                log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ESMINI_ARGS)
+                self.assertTrue(re.search('Loading .*add_delete_entity.xosc', log) is not None)
 
-        # use c++ to generate csv
-        log = run_dat2csv('--file sim.dat --time_mode min_step')
-        with open('sim' + '.csv', "r") as csv1:
-            csv1 = csv1.read()
-        self.assertTrue(re.search('^3.020, 0, Car1, 68.722, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv1, re.MULTILINE))
-        self.assertTrue(re.search('^3.020, 1, Car2, 90.194, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv1, re.MULTILINE))
-        self.assertTrue(re.search('^7.010, 0, Car1, 146.306, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv1, re.MULTILINE))
-        self.assertTrue(re.search('^7.010, 1, Car2, 167.778, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv1, re.MULTILINE))
-        self.assertTrue(re.search('^7.010, 0, Car1, 146.306, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv1, re.MULTILINE))
-        self.assertTrue(re.search('^15.880, 0, Car1, 499.889, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv1, re.MULTILINE))
-        self.assertTrue(re.search('^15.890, 0, Car1, 500.000, -1.535, 0.000, 0.000, 0.000, 0.000, 0.0', csv1, re.MULTILINE))
+                # Use Python to generate CSV
+                python_csv = generate_csv(mode_=mode)
 
-        log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart.xosc'), COMMON_ESMINI_ARGS)
+                # Use C++ to generate CSV
+                log = run_dat2csv(f'--file sim.dat --time_mode {mode}')
+                cpp_csv_file = 'sim.csv'
+                with open(cpp_csv_file, "r") as cpp_csv_file:
+                    cpp_csv = cpp_csv_file.read()
 
-        # Check some initialization steps
-        self.assertTrue(re.search('Loading .*ghost_restart.xosc', log)  is not None)
+                # Compare the entire CSV content
+                self.assertEqual(python_csv, cpp_csv, f"CSV mismatch for mode: {mode} in add_delete_entity scenario")
 
-        # use python to generate csv
-        csv = generate_csv()
-        self.assertTrue(re.search('^-0.500, 0, Ego, 50.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^-0.500, 1, Ego_ghost, 50.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^1.010, 1, Ego_ghost, 65.100, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 5.444', csv, re.MULTILINE))
-        self.assertTrue(re.search('^1.020, 1, Ego_ghost, 65.121, -10.607, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 0.880', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.000, 0, Ego, 69.847, -9.937, 0.000, 0.222, 0.000, 0.000, 10.000, 0.009, 0.566', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.000, 1, Ego_ghost, 74.770, -8.892, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 3.747', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.000, 0, Ego, 99.647, -8.042, 0.000, 6.283, 0.000, 0.000, 10.000, 0.014, 4.598', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.000, 1, Ego_ghost, 104.691, -8.000, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 1.497', csv, re.MULTILINE))
+                # Run the second scenario
+                log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart.xosc'), COMMON_ESMINI_ARGS)
+                self.assertTrue(re.search('Loading .*ghost_restart.xosc', log) is not None)
 
-        # use c++ to generate csv
-        log = run_dat2csv('--file sim.dat --time_mode min_step')
-        with open(os.path.splitext('sim')[0] + '.csv', "r") as csv2:
-             csv2 = csv2.read()
-        self.assertTrue(re.search('^-0.500, 0, Ego, 50.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv2, re.MULTILINE))
-        self.assertTrue(re.search('^-0.500, 1, Ego_ghost, 50.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv2, re.MULTILINE))
-        self.assertTrue(re.search('^1.010, 1, Ego_ghost, 65.100, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 5.444', csv2, re.MULTILINE))
-        self.assertTrue(re.search('^1.020, 1, Ego_ghost, 65.121, -10.607, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 0.880', csv2, re.MULTILINE))
-        self.assertTrue(re.search('^2.000, 0, Ego, 69.847, -9.937, 0.000, 0.222, 0.000, 0.000, 10.000, 0.009, 0.566', csv2, re.MULTILINE))
-        self.assertTrue(re.search('^2.000, 1, Ego_ghost, 74.770, -8.892, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 3.747', csv2, re.MULTILINE))
-        self.assertTrue(re.search('^5.000, 0, Ego, 99.647, -8.042, 0.000, 6.283, 0.000, 0.000, 10.000, 0.014, 4.598', csv2, re.MULTILINE))
-        self.assertTrue(re.search('^5.000, 1, Ego_ghost, 104.691, -8.000, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 1.497', csv2, re.MULTILINE))
+                # Use Python to generate CSV for the second scenario
+                python_csv = generate_csv(mode_=mode, time_step_ = 0.1)
+
+                # # Use C++ to generate CSV for the second scenario
+                log = run_dat2csv(f'--file sim.dat --time_mode {mode} --time_step 0.1')
+                cpp_csv_file = os.path.splitext('sim')[0] + '.csv'
+                with open(cpp_csv_file, "r") as cpp_csv_file:
+                    cpp_csv = cpp_csv_file.read()
+
+                # Compare the entire CSV content for the second scenario
+                self.assertEqual(python_csv, cpp_csv, f"CSV mismatch for mode: {mode} in ghost_restart scenario")
+
+
 
 if __name__ == "__main__":
     # execute only if run as a script

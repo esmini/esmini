@@ -47,4 +47,5 @@ private:
     std::ofstream                           file_;
     std::unique_ptr<scenarioengine::Replay> player_;
     void                                    PrintData(int id);
+    double                                  perviousSimTime_;
 };

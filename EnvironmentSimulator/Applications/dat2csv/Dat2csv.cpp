@@ -164,10 +164,12 @@ void Dat2csv::CreateCSV()
         }
         else
         {
-            delta_time = step_time_;
+            delta_time          = step_time_;
+            player_->deltaTime_ = delta_time;  // make sure move to forward function takes correct delta time
         }
         while (true)
         {
+            perviousSimTime_ = player_->GetTime();
             for (const auto obj : player_->scenarioState_.obj_states)
             {
                 if (obj.active)
@@ -189,14 +191,25 @@ void Dat2csv::CreateCSV()
             {
                 if (log_mode_ == log_mode::MIN_STEP || log_mode_ == log_mode::CUSTOM_TIME_STEP)
                 {
-                    player_->GoToTime(player_->GetTime() + delta_time);  // continue
+                    double dt = player_->GetTime() + delta_time;
+                    if (std::fabs(dt) < SMALL_NUMBER)
+                    {
+                        // If so, return 1E-6
+                        dt = SMALL_NUMBER;
+                    }
+                    player_->GoToTime(dt);  // continue
                 }
                 else
                 {
-                    if (IsEqualDouble(player_->GetTime(), requestedTime) || IsEqualDouble(player_->GetTime(), player_->GetStartTime()))
+                    if ((fabs(player_->GetTime() - requestedTime) < SMALL_NUMBER) || IsEqualDouble(player_->GetTime(), player_->GetStartTime()))
                     {  // first time frame or until reach requested time frame reached, dont move to next time frame
                         requestedTime = player_->GetTime() + delta_time;
+
                         player_->GoToTime(player_->GetTime() + delta_time, true);  // continue
+                        if (perviousSimTime_ > player_->GetTime())
+                        {
+                            requestedTime = player_->GetTime();  // restarted, change the requested time accordingly
+                        }
                     }
                     else
                     {
@@ -218,7 +231,6 @@ void Dat2csv::CreateCSV()
                 // next time
                 player_->SetTime(timeTemp);
                 player_->SetIndex(index);
-                index++;
 
                 player_->CheckObjAvailabilityForward();
                 player_->UpdateCache();
@@ -231,6 +243,7 @@ void Dat2csv::CreateCSV()
                     }
                 }
             }
+            index++;
         }
     }
     file_.close();

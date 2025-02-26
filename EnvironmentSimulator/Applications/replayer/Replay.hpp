@@ -188,6 +188,7 @@ namespace scenarioengine
         bool   IsObjIdAddPkg(size_t index) const;
         bool   IsObjIdPkg(size_t index) const;
         bool   IsTimePkg(size_t index) const;
+        bool   IsEndOfScenarioPkg(size_t index) const;
         double GetDoubleContent(size_t index);
         int    GetIntContent(size_t index);
         int    GetIntFromPkg(datLogger::CommonPkg* pkg);
