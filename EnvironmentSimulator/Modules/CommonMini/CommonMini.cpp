@@ -221,12 +221,6 @@ void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<
     }
     argc = newArgc;
     argv = newArgv;
-
-    std::cout << "New argc: " << newArgc << std::endl;
-    for (int k = 0; k < argc; ++k)
-    {
-        std::cout << "New argv[" << k << "]: " << argv[k] << std::endl;
-    }
 }
 
 void RemoveOptionAndArguments(int& argc, char**& argv, const char* option, unsigned int n_arguments, unsigned int start_index, unsigned int end_index)
@@ -236,9 +230,10 @@ void RemoveOptionAndArguments(int& argc, char**& argv, const char* option, unsig
         if (strcmp(argv[i], option) == 0)
         {
             int new_argc = argc;
-            for (unsigned int j = 0; i + j < argc && j < n_arguments + 1; j++)  // +1 to include option itself
+            for (unsigned int j = 0; i + j < static_cast<unsigned int>(argc) && j < n_arguments + 1; j++)  // +1 to include option itself
             {
                 delete argv[i + j];
+                argv[i + j] = nullptr;
                 new_argc--;
                 end_index--;
             }

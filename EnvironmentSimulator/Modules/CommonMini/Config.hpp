@@ -15,9 +15,10 @@ namespace esmini::common
         // Get the config for the application
         std::vector<std::string> GetConfig() const;
 
-        Config()                      = delete;
-        Config(Config const&)         = delete;
-        void operator=(Config const&) = delete;
+        Config()                                                 = delete;
+        Config(Config const&)                                    = delete;
+        void                            operator=(Config const&) = delete;
+        const std::vector<std::string>& GetFilePaths() const;
 
         // private interface
     private:
