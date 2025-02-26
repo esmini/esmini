@@ -1348,91 +1348,80 @@ void ScenarioEngine::GetIdxsFromIds(const int id_1, const int id_2, int& idx_1, 
     return;
 }
 
-// bool ScenarioEngine::CheckTeleported(const std::pair<int, int> pair)
-// {
-//     for (const auto& obj : object_distance_map_[pair].objects_)
-//     {
-//         auto events = obj->getEvents();
-//         for (const auto& event : events)
-//         {
-//             for (const auto& action : event->action_)
-//             {
-//                 if (action->action_type_ == scenarioengine::OSCPrivateAction::ActionType::TELEPORT &&
-//                     event->GetCurrentState() == scenarioengine::StoryBoardElement::State::COMPLETE)
-//                 {
-//                     return true;
-//                 }
-//             }
-//         }
-//     }
-//     return false;
-// }
-
-
-void ScenarioEngine::UpdateDistance(Object* obj_1, Object* obj_2, roadmanager::RelativeDistanceType dist_type, const uint64_t &key, const uint64_t &rev_key)
+void ScenarioEngine::UpdateDistance(Object*                           obj_1,
+                                    Object*                           obj_2,
+                                    roadmanager::RelativeDistanceType dist_type,
+                                    const uint64_t&                   key,
+                                    const uint64_t&                   rev_key,
+                                    const double                      tracking_limit)
 {
-    auto [it, inserted] = object_distance_map_.try_emplace(key, DistanceEntry{});
+    auto [it, inserted]  = object_distance_map_.try_emplace(key, DistanceEntry{});
     auto& distance_entry = it->second;
 
     auto [rev_it, rev_inserted] = object_distance_map_.try_emplace(rev_key, DistanceEntry{});
-    auto& rev_distance_entry = rev_it->second;
+    auto& rev_distance_entry    = rev_it->second;
 
     auto& measurement = distance_entry.measurement_[static_cast<size_t>(dist_type)];
-    if (measurement.distance_ > 420.0)
+    if (measurement.distance_ > tracking_limit)
     {
-        dist_type = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN;
+        dist_type = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS;
     }
 
     double dist = 0.0;
     obj_1->pos_.Distance(&obj_2->pos_, roadmanager::CoordinateSystem::CS_ENTITY, dist_type, dist);
-    double abs_dist = std::abs(dist);
+    double abs_dist    = std::abs(dist);
     double next_update = simulationTime_;
-    if (roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN == dist_type)
+    if (roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS == dist_type)
     {
         if (abs_dist > 1000.0)
         {
             next_update = simulationTime_ + 10.0;
         }
-        else if (abs_dist > 420.0)
+        else if (abs_dist > tracking_limit)
         {
             next_update = simulationTime_ + 3.0;
         }
     }
     // Only update if distance actually changed
-    if (measurement.distance_ != dist) 
+    if (measurement.distance_ != dist)
     {
-        measurement.distance_ = dist;
-        measurement.timestamp_ = simulationTime_;
+        measurement.distance_       = dist;
+        measurement.timestamp_      = simulationTime_;
         distance_entry.next_update_ = next_update;
     }
 
-    if (dist_type == roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN) 
+    if (dist_type == roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS)
     {
-        auto& rev_measurement = rev_distance_entry.measurement_[static_cast<size_t>(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN)];
-        rev_measurement.distance_ = -dist;
+        auto& rev_measurement      = rev_distance_entry.measurement_[static_cast<size_t>(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS)];
+        rev_measurement.distance_  = dist;
         rev_measurement.timestamp_ = simulationTime_;
         rev_distance_entry.next_update_ = next_update;
     }
 }
 
-int ScenarioEngine::GetDistance(Object* object_1, Object* object_2, roadmanager::RelativeDistanceType dist_type, double& distance, double& timestamp) {
-    uint64_t key = GenerateKey(object_1->GetId(), object_2->GetId());
+int ScenarioEngine::GetDistance(Object*                           object_1,
+                                Object*                           object_2,
+                                roadmanager::RelativeDistanceType dist_type,
+                                const double                      tracking_limit,
+                                double&                           distance,
+                                double&                           timestamp)
+{
+    uint64_t key     = GenerateKey(object_1->GetId(), object_2->GetId());
     uint64_t rev_key = GenerateKey(object_2->GetId(), object_1->GetId());
 
-    if (!object_1->IsActive() || !object_2->IsActive()) 
+    if (!object_1->IsActive() || !object_2->IsActive())
     {
         object_distance_map_.erase(key);
         object_distance_map_.erase(rev_key);
         return -1;
     }
 
-    auto it = object_distance_map_.find(key);
+    auto it           = object_distance_map_.find(key);
     bool needs_update = (it == object_distance_map_.end() || simulationTime_ > it->second.next_update_ || object_1->reset_ || object_2->reset_);
     if (needs_update)
     {
-        UpdateDistance(object_1, object_2, dist_type, key, rev_key);
+        UpdateDistance(object_1, object_2, dist_type, key, rev_key, tracking_limit);
         it = object_distance_map_.find(key);
-
     }
 
     if (it == object_distance_map_.end())
@@ -1441,8 +1430,8 @@ int ScenarioEngine::GetDistance(Object* object_1, Object* object_2, roadmanager:
     }
 
     auto& measurement = it->second.measurement_[static_cast<size_t>(dist_type)];
-    distance = measurement.distance_;
-    timestamp = measurement.timestamp_;
+    distance          = measurement.distance_;
+    timestamp         = measurement.timestamp_;
 
     return 0;
 }

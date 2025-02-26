@@ -2180,11 +2180,16 @@ extern "C"
 
         return obj_found ? 0 : -2;
     }
-    
-    SE_DLL_API int SE_SimpleGetDistanceToObject(int object_a_id, int object_b_id, SE_RelativeDistanceType dist_type, double &distance, double &timestamp)
+
+    SE_DLL_API int SE_SimpleGetDistanceToObject(const int               object_a_id,
+                                                const int               object_b_id,
+                                                SE_RelativeDistanceType dist_type,
+                                                const double            tracking_limit,
+                                                double                 &distance,
+                                                double                 &timestamp)
     {
         bool obj_found = false;
-        
+
         Object *obj_a = nullptr;
         if (getObjectById(object_a_id, obj_a) == -1)
         {
@@ -2199,7 +2204,7 @@ extern "C"
 
         roadmanager::RelativeDistanceType dist_type_converted = static_cast<roadmanager::RelativeDistanceType>(dist_type);
 
-        obj_found = (player->scenarioEngine->GetDistance(obj_a, obj_b, dist_type_converted, distance, timestamp) == 0);
+        obj_found = (player->scenarioEngine->GetDistance(obj_a, obj_b, dist_type_converted, tracking_limit, distance, timestamp) == 0);
 
         return obj_found ? 0 : -2;
     }

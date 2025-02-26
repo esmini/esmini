@@ -327,11 +327,11 @@ typedef enum
 
 typedef enum
 {
-    REL_DIST_UNDEFINED = 0,
-    REL_DIST_LATERAL = 1,
+    REL_DIST_UNDEFINED    = 0,
+    REL_DIST_LATERAL      = 1,
     REL_DIST_LONGITUDINAL = 2,
-    REL_DIST_CARTESIAN = 3,
-    REL_DIST_EUCLIDIAN = 4
+    REL_DIST_CARTESIAN    = 3,
+    REL_DIST_EUCLIDIAN    = 4
 } SE_RelativeDistanceType;
 
 #ifdef __cplusplus
@@ -1272,7 +1272,12 @@ extern "C"
             @param timestamp reference to a variable returning the timestamp of the distance
             @return 0 if successful, -2 if route between positions can't be found, -1 if some other error
     */
-    SE_DLL_API int SE_SimpleGetDistanceToObject(int object_a_id, int object_b_id, SE_RelativeDistanceType dist_type, double &distance, double &timestamp);
+    SE_DLL_API int SE_SimpleGetDistanceToObject(const int               object_a_id,
+                                                const int               object_b_id,
+                                                SE_RelativeDistanceType dist_type,
+                                                const double            tracking_limit,
+                                                double                 &distance,
+                                                double                 &timestamp);
 
     /**
             Create an ideal object sensor and attach to specified vehicle

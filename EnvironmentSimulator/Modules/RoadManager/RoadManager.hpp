@@ -2925,7 +2925,9 @@ namespace roadmanager
         REL_DIST_LATERAL,
         REL_DIST_LONGITUDINAL,
         REL_DIST_CARTESIAN,
-        REL_DIST_EUCLIDIAN
+        REL_DIST_EUCLIDIAN,
+        REL_DIST_EUCLIDIAN_ABS,
+        ENUM_SIZE
     };
 
     // Forward declarations

@@ -79,9 +79,18 @@ namespace scenarioengine
         void EraseCleanParams();
         void EraseCleanVariables();
         void GetIdxsFromIds(const int id_1, const int id_2, int &idx_1, int &idx_2);
-        // bool CheckTeleported(const std::pair<int, int> pair);
-        void UpdateDistance(Object* obj_1, Object* obj_2, roadmanager::RelativeDistanceType dist_type, const uint64_t &key, const uint64_t &rev_key);
-        int GetDistance(Object* object_1, Object* object_2, roadmanager::RelativeDistanceType dist_type, double& distance, double& timestamp);
+        void UpdateDistance(Object                           *obj_1,
+                            Object                           *obj_2,
+                            roadmanager::RelativeDistanceType dist_type,
+                            const uint64_t                   &key,
+                            const uint64_t                   &rev_key,
+                            const double                      tracking_limit);
+        int  GetDistance(Object                           *object_1,
+                         Object                           *object_2,
+                         roadmanager::RelativeDistanceType dist_type,
+                         const double                      tracking_limit,
+                         double                           &distance,
+                         double                           &timestamp);
         bool GetDisableControllersFlag()
         {
             return disable_controllers_;
@@ -160,7 +169,6 @@ namespace scenarioengine
         StoryBoard storyBoard;
 
     private:
-
         // OpenSCENARIO parameters
         Catalogs                catalogs;
         RoadNetwork             roadNetwork;
@@ -172,28 +180,27 @@ namespace scenarioengine
         Vehicle         sumotemplate;
         ScenarioGateway scenarioGateway;
         Object         *ghost_;
-        
+
         // Distance map
-        struct DistanceMeasurement 
+        struct DistanceMeasurement
         {
-            double distance_ = 10000.0;
+            double distance_  = 10000.0;
             double timestamp_ = 0.0;
         };
 
-        struct DistanceEntry 
+        struct DistanceEntry
         {
-            std::array<DistanceMeasurement, static_cast<size_t>(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN) + 1> measurement_;
-            double next_update_ = 0.0;
+            std::array<DistanceMeasurement, static_cast<size_t>(roadmanager::RelativeDistanceType::ENUM_SIZE)> measurement_;
+            double                                                                                             next_update_ = 0.0;
         };
-        
-        // std::unordered_map<std::pair<int, int>, Distance, PairHash> object_distance_map_;
-        inline uint64_t GenerateKey(int id1, int id2) const 
+
+        inline uint64_t GenerateKey(int id1, int id2) const
         {
             return (static_cast<uint64_t>(id1) << 32) | static_cast<uint32_t>(id2);
         }
-        
+
         std::unordered_map<uint64_t, DistanceEntry> object_distance_map_;
-        
+
         // execution control flags
         unsigned int frame_nr_;
         int          init_status_;
