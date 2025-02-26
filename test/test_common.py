@@ -11,6 +11,7 @@ from dat import *
 
 LOG_FILENAME = 'log.txt'
 DAT_FILENAME = 'sim.dat'
+CSV_FILENAME = 'sim.csv'
 STDOUT_FILENAME = 'stdout.txt'
 TIMEOUT = 40
 
@@ -110,8 +111,8 @@ def run_replayer(replayer_arguments = None):
 
 def run_dat2csv(dat2csv_arguments = None):
 
-    if os.path.exists(LOG_FILENAME):
-        os.remove(LOG_FILENAME)
+    if os.path.exists(CSV_FILENAME):
+        os.remove(CSV_FILENAME)
     if os.path.exists(STDOUT_FILENAME):
         os.remove(STDOUT_FILENAME)
 
@@ -141,15 +142,10 @@ def run_dat2csv(dat2csv_arguments = None):
 
     assert False, 'No log file'
 
-def generate_csv(filename=DAT_FILENAME, mode_ = "original", time_step_ = 0.05):
-
-    # Below is one/the old way of converting dat to csv. Keeping the lines for reference.
-    # args = [os.path.join(ESMINI_PATH,'bin','dat2csv'), DAT_FILENAME]
-    # process = subprocess.run(args, cwd=os.path.dirname(os.path.realpath(__file__)))
-
+def generate_csv(filename=DAT_FILENAME, mode_ = "original", time_step_ = 0.05, extended = False, file_refs = False):
     # Below is the Python way of converting dat to csv
     dat = DATFile(filename)
-    dat.save_csv(mode = mode_, step_time = time_step_)
+    dat.save_csv(mode = mode_, step_time = time_step_, extended = extended, include_file_refs = file_refs)
 
     with open(os.path.splitext(filename)[0] + '.csv', "r") as f:
         return f.read()

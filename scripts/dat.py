@@ -570,7 +570,7 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
                                     self.CompleteObjectState_.time,
                                     state.obj_id.id,
                                     state.name,
-                                    state.pos.x,
+                                   state.pos.x,
                                     state.pos.y,
                                     state.pos.z,
                                     state.pos.h,
@@ -612,7 +612,7 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
                 for state in self.CompleteObjectState_.objectState_:
                     if state.obj_active is True: # only write for active objects. may be it deleted
                         if extended:
-                            data = '{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}'.format(
+                            data = '{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, '.format(
                                     self.CompleteObjectState_.time,
                                     state.obj_id.id,
                                     state.name,
@@ -634,7 +634,7 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
                             light_state = PkgLightStates()
                             light_state = state.light_states
                             for i in range(len(PkgLightStates._fields_)):
-                                data += '#{:02X}{:02X}{:02X}-{:02X},'.format(
+                                data += '#{:02X}{:02X}{:02X}-{:02X}, '.format(
                                         light_state[i].red, light_state[i].green, light_state[i].blue, light_state[i].intensity)
                         else:
                             data = '{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}'.format(

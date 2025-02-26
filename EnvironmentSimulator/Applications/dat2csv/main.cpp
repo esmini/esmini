@@ -64,11 +64,13 @@ int main(int argc, char** argv)
 
     if (opt.GetOptionSet("extended"))
     {
+        std::cout << "added extended" << std::endl;
         dat_to_csv->SetLogExtended(true);
     }
 
     if (opt.GetOptionSet("file_refs"))
     {
+        std::cout << "Including file references" << std::endl;
         dat_to_csv->SetIncludeRefs(true);
     }
 
