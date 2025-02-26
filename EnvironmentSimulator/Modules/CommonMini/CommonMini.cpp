@@ -235,18 +235,21 @@ void RemoveOptionAndArguments(int& argc, char**& argv, const char* option, unsig
     {
         if (strcmp(argv[i], option) == 0)
         {
-            for (unsigned int j = 0; j < n_arguments + 1 && i < end_index; j++)  // +1 to include option itself
+            int new_argc = argc;
+            for (unsigned int j = 0; i + j < argc && j < n_arguments + 1; j++)  // +1 to include option itself
             {
-                delete argv[i];
-                argc--;
+                delete argv[i + j];
+                new_argc--;
                 end_index--;
-
-                // and shift the rest of the arguments
-                for (int k = i; k < argc; k++)
-                {
-                    argv[k] = argv[k + 1];
-                }
             }
+
+            // and shift the remaining the arguments
+            for (unsigned int k = i; k < argc - (n_arguments + 1); k++)
+            {
+                argv[k] = argv[k + n_arguments + 1];
+            }
+
+            argc = new_argc;
         }
     }
 }
