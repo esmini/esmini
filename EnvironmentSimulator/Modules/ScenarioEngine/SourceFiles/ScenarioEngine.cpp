@@ -1355,11 +1355,13 @@ void ScenarioEngine::UpdateDistance(Object*                           obj_1,
                                     const uint64_t&                   rev_key,
                                     const double                      tracking_limit)
 {
-    auto [it, inserted]  = object_distance_map_.try_emplace(key, DistanceEntry{});
+    auto [it, inserted] = object_distance_map_.try_emplace(key, DistanceEntry{});
+    (void)inserted;
     auto& distance_entry = it->second;
 
     auto [rev_it, rev_inserted] = object_distance_map_.try_emplace(rev_key, DistanceEntry{});
-    auto& rev_distance_entry    = rev_it->second;
+    (void)rev_inserted;
+    auto& rev_distance_entry = rev_it->second;
 
     auto& measurement = distance_entry.measurement_[static_cast<size_t>(dist_type)];
     if (measurement.distance_ > tracking_limit)
