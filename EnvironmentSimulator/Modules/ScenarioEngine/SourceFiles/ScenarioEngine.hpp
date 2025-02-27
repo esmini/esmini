@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <math.h>
+#include <array>
 
 #include "Catalogs.hpp"
 #include "Entities.hpp"
