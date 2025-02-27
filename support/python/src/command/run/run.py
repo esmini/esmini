@@ -5,6 +5,7 @@ import glob
 import os
 import sys
 import formatter
+import subprocess
 from utils import print_commands, subprocess_popen
 from globals import (
     SEPARATOR,
@@ -14,6 +15,9 @@ from globals import (
     ESMINI_CMAKE_FORMAT_INCLUDES,
     ESMINI_CMAKE_FORMAT_EXTENSION,
     ESMINI_DIRECTORY_ROOT,
+    ESMINI_BLACK_FORMAT_INCLUDES,
+    ESMINI_BLACK_FORMAT_EXTENSION,
+    ESMINI_BLACK_FORMAT_FILES_INCLUDES,
 )
 
 if sys.platform == "win32":
@@ -144,6 +148,29 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
                     all_files = all_files + collect
 
         return all_files
+
+    @staticmethod
+    def get_files_for_black_format():
+        """get_files_for_black_format sets all desired files to be formatted by black-format
+
+        Return
+        ------
+            all_files (list): all files that are generated based on the given request
+
+        """
+        files_to_format = []
+        for directory in ESMINI_BLACK_FORMAT_INCLUDES:
+            if not os.path.exists(directory):
+                print(f"Directory does not exist: {directory}")
+                continue
+            for root, _, files in os.walk(directory):
+                for file in files:
+                    if any(file.endswith(ext) for ext in ESMINI_BLACK_FORMAT_EXTENSION):
+                        if file in ESMINI_BLACK_FORMAT_FILES_INCLUDES:
+                            file_path = os.path.join(root, file)
+                            files_to_format.append(file_path)
+
+        return files_to_format
 
     @staticmethod
     def check_dot_clang_format_file():
@@ -364,13 +391,15 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         os.chdir(ESMINI_DIRECTORY_ROOT)
 
         Run.check_dot_black_format_file()
-        is_black_done = os.system(
-            "black . --config=" + os.path.join(ESMINI_DIRECTORY_ROOT, ".black-format")
-        )
-        if is_black_done == 0:
-            print(formatter.format_green("BLACK FORMATING DONE"))
-        else:
-            raise ValueError(formatter.format_red("BLACK FORMATING FAILED"))
+        files = Run.get_files_for_black_format()
+        for file in files:
+            subprocess.run(["black", file], capture_output=True, check=True)
+            print(
+                formatter.format_green("Formatted: ")
+                + os.path.dirname(file)
+                + "/"
+                + formatter.format_green(os.path.basename(file))
+            )
         print("─" * SEPARATOR)
         os.chdir(root_dir)
 
@@ -382,16 +411,34 @@ class Run:  # pylint: disable=too-many-instance-attributes, too-many-public-meth
         os.chdir(ESMINI_DIRECTORY_ROOT)
 
         Run.check_dot_black_format_file()
-        is_black_done = os.system(
-            "black . --config="
-            + os.path.join(ESMINI_DIRECTORY_ROOT, ".black-format")
-            + " --check"
-        )
-        if is_black_done == 0:
-            print(formatter.format_green("BLACK FORMATING CHECK DONE"))
-        else:
-            raise ValueError(formatter.format_red("BLACK FORMATING CHECK FAILED"))
+        files = Run.get_files_for_black_format()
+        counter = 0
+        for file in files:
+            _, stderr = subprocess_popen(
+                ["black", "--check", file]
+            )
+
+            if "would be left unchanged" in stderr:
+                print(
+                    formatter.format_green("Already Formatted: ")
+                    + os.path.dirname(file)
+                    + "/"
+                    + formatter.format_green(os.path.basename(file))
+                )
+            elif "would reformat" in stderr:
+                counter = counter + 1
+                print(
+                    formatter.format_red("Requires Formatting:")
+                    + os.path.dirname(file)
+                    + "/"
+                    + formatter.format_green(os.path.basename(file))
+                )
+
         print("─" * SEPARATOR)
+        if counter > 0:
+            raise ValueError(
+                "Format your code with cmake-format. Unformatted files are detected. Check the log."
+            )
         os.chdir(root_dir)
 
     def run_format(self):

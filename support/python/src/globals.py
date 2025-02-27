@@ -152,6 +152,11 @@ ESMINI_CLANG_FORMAT_INCLUDES = [ESMINI_DIRECTORY_ENVIRONMENT_SIMULATOR]
 ESMINI_CLANG_FORMAT_EXCLUDES = []
 ESMINI_CLANG_FORMAT_EXTENSION = [".cpp", ".c", ".hpp", ".h"]
 
+ESMINI_BLACK_FORMAT_INCLUDES = [
+    os.path.join(ESMINI_DIRECTORY_ROOT, "scripts")]
+ESMINI_BLACK_FORMAT_EXTENSION = [".py"]
+ESMINI_BLACK_FORMAT_FILES_INCLUDES = ["dat2csv.py", "dat.py"]
+
 ########################################################## OTHERS ############################################################
 
 SEPARATOR = 80
