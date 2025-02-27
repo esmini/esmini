@@ -4,7 +4,7 @@ if __name__ == "__main__":
     # Create the parser
     parser = argparse.ArgumentParser(description="Read and print .dat file")
 
-    parser.add_argument("filename", help="dat filename")
+    parser.add_argument("--file", "-f", help="dat filename")
     parser.add_argument(
         "--extended", "-e", action="store_true", help="add road coordinates"
     )
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # Execute the parse_args() method
     args = parser.parse_args()
 
-    dat = DATFile(args.filename)
+    dat = DATFile(args.file)
     dat.save_csv(
         extended=True if args.extended else False,
         include_file_refs=True if args.file_refs else False,
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     )
     print(
         "Created "
-        + os.path.splitext(args.filename)[0]
+        + os.path.splitext(args.file)[0]
         + ".csv. "
         + ("Included" if args.file_refs else "Excluded")
         + " odr and 3D model references."

@@ -253,7 +253,7 @@ int Replay::RecordPkgs(const std::string& fileName)
     file_Read_.open(fileName, std::ifstream::binary);
     if (file_Read_.fail())
     {
-        LOG_ERROR("Cannot open file: {}", fileName);
+        LOG_ERROR_AND_QUIT("Cannot open file: {}", fileName);
     }
 
     if (file_Read_.is_open())

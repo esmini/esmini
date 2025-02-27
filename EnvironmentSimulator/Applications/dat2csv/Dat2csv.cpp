@@ -29,14 +29,7 @@ Dat2csv::Dat2csv(std::string filename) : log_mode_(log_mode::ORIGINAL), step_tim
     }
 
     // Create replayer object for parsing the binary data file
-    try
-    {
-        player_ = std::make_unique<scenarioengine::Replay>(filename);
-    }
-    catch (const std::exception& e)
-    {
-        LOG_ERROR_AND_QUIT("{}", e.what());
-    }
+    player_ = std::make_unique<scenarioengine::Replay>(filename);
 }
 
 Dat2csv::~Dat2csv()
@@ -71,7 +64,7 @@ void Dat2csv::PrintData(int obj_id)
     {
         snprintf(line,
                  MAX_LINE_LEN,
-                 "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %d, %d, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, ",
+                 "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %d, %d, %.5f, %.3f, %.3f, %.3f, %.3f, %.3f, ",
                  player_->scenarioState_.sim_time,
                  obj_id,
                  name.c_str(),

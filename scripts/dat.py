@@ -582,7 +582,7 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
                         state.obj_active is True
                     ):  # only write for active objects. may be it deleted
                         if extended:
-                            data = "{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, ".format(
+                            data = "{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.5f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, ".format(
                                 self.CompleteObjectState_.time,
                                 state.obj_id.id,
                                 state.name,
