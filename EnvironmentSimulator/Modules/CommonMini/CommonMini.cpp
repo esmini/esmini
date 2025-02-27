@@ -199,6 +199,8 @@ std::string ControlDomain2Str(unsigned int domains)
 void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
 {
     // std::cout << "HandleConfigurations called appName: " << appName << std::endl;
+    LOG_INFO("Arguments before handling configurations");
+    LogArgv(argc, argv);
     // parse default config file and environment variable config files
     esmini::common::Config config(appName);
     const auto             defaultAndEnvironmentConfigs = config.GetConfig();
@@ -209,7 +211,6 @@ void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
     SE_Options& opt = SE_Env::Inst().GetOptions();
     for (const auto& configFileName : opt.GetOptionArgs(CONFIG_FILE_OPTION_NAME))
     {
-        std::cout << "config_file_path: " << configFileName << std::endl;
         esmini::common::ConfigParser configParser(appName, {configFileName});
         auto                         configs = configParser.Parse();
         allConfigs.insert(allConfigs.end(), std::make_move_iterator(configs.begin()), std::make_move_iterator(configs.end()));
@@ -219,9 +220,8 @@ void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
     std::string configFilePathOption = fmt::format("--{}", CONFIG_FILE_OPTION_NAME);
     for (int i = 1; i < argc; ++i)
     {
-        if (strcmp(configFilePathOption.c_str(), argv[i]) == 0)  // && i < static_cast<unsigned int>(argc_ - 1) && strncmp(argv_[i + 1], "--", 2)
+        if (strcmp(configFilePathOption.c_str(), argv[i]) == 0 && i < static_cast<unsigned int>(argc - 1) && strncmp(argv[i + 1], "--", 2))
         {
-            std::cout << "config_file_path: " << argv[i + 1] << std::endl;
             // now we can parse config file here
             esmini::common::ConfigParser configParser(appName, {argv[i + 1]});
             auto                         configs = configParser.Parse();
@@ -234,21 +234,28 @@ void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
             AppendArgcArgv(argc, argv, i, configs);
         }
     }
-
+    LOG_INFO("Arguments after options evaluation");
+    LogArgv(argc, argv);
     // since the config file(s) from arguments are already parsed and appended to the arguments.
     // We just want to keep the application name at first index, after it we low priority configs
     AppendArgcArgv(argc, argv, 1, allConfigs);
+    LOG_INFO("Arguments after handling all configurations");
+    LogArgv(argc, argv);
+}
 
+void LogArgv(int argc, char** argv)
+{
     std::string allArgvs;
     for (int i = 0; i < argc; ++i)
     {
         allArgvs = fmt::format("{} {}", allArgvs, argv[i]);
     }
-    LOG_INFO("Options after parsing: {}", allArgvs);
+    LOG_INFO("Argv: {}", allArgvs);
 }
 
 void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& prefixArgs)
 {
+    int previousArgc = argc;
     int    newArgc = argc + prefixArgs.size();
     char** newArgv = new char*[newArgc + 1];  // +1 for the null terminator
 
@@ -273,15 +280,17 @@ void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<
         std::strcpy(newArgv[i], argv[j]);
         ++i;
     }
+
     newArgv[newArgc] = nullptr;  // null terminate the array
+
+    for (int j = 0; j < previousArgc; ++j)
+    {
+        delete[] argv[j];
+    }
+    delete[] argv;
+
     argc             = newArgc;
     argv             = newArgv;
-
-    // std::cout << "New argc: " << newArgc << std::endl;
-    // for (int k = 0; k < argc; ++k)
-    // {
-    //     std::cout << "New argv[" << k << "]: " << argv[k] << std::endl;
-    // }
 }
 
 bool FileExists(const char* fileName)
@@ -1970,15 +1979,20 @@ std::string SE_Options::GetOptionArg(std::string opt, int index)
     {
         return "";
     }
+    if (!option->opt_arg_.empty())
+    {
+        if(index > -1 && static_cast<unsigned int>(index) < option->arg_value_.size())
+        {
+            return option->arg_value_[static_cast<unsigned int>(index)];
+        }
+        else if(! option->arg_value_.empty())
+        {
+            // last value is used in case index is not in bounds
+            return option->arg_value_[ option->arg_value_.size() - 1];
+        }
+    }
+    return "";
 
-    if (!(option->opt_arg_.empty()) && static_cast<unsigned int>(index) < option->arg_value_.size())
-    {
-        return option->arg_value_[static_cast<unsigned int>(index)];
-    }
-    else
-    {
-        return "";
-    }
 }
 
 static constexpr std::array<const char*, 10> OSG_ARGS = {"--clear-color",
@@ -2020,7 +2034,10 @@ int SE_Options::SetOptionValue(std::string opt, std::string value, bool add, boo
     {
         if (!option->opt_arg_.empty())
         {
-            if (!add || option->shouldHaveOnlyOneValue_)
+            // we will not check shouldHaveOnlyOneValue_ in this case, because there is more probability that this function is called
+            // from API before the Init is called. In that case shouldHaveOnlyOneValue_ will always be false, which might not be the case
+            // for some options
+            if (!add)
             {
                 option->arg_value_.clear();
             }
@@ -2186,6 +2203,7 @@ bool SE_Options::HasUnknownArgs()
 
 void SE_Options::Reset()
 {
+    optionOrder_.clear();
     for (auto& [key, option] : option_)
     {
         [[maybe_unused]] const auto& unused_key = key;
@@ -2203,7 +2221,6 @@ void SE_Options::Reset()
     //         option_[i].set_ = false;
     //     }
     // }
-
     originalArgs_.clear();
 }
 

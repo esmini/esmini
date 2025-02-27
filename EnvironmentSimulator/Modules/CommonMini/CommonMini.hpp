@@ -304,6 +304,9 @@ void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<
 /**
         Get model filename from model_id.
 */
+
+void LogArgv(int argc, char** argv);
+
 std::string GetModelFilenameById(int model_id);
 
 /**
@@ -891,7 +894,7 @@ public:
     void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");
     bool        GetOptionSet(std::string opt);
     bool        IsOptionArgumentSet(std::string opt);
-    std::string GetOptionArg(std::string opt, int index = 0);
+    std::string GetOptionArg(std::string opt, int index = -1);
     // returns all the values set for the option
     std::vector<std::string> GetOptionArgs(std::string opt);
     int                      ParseArgs(int argc, const char* const argv[]);

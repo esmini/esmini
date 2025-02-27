@@ -3,6 +3,16 @@
 #include "CommonMini.hpp"
 #include "esminiLib.hpp"
 
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
+
 struct Coordinate2D
 {
     double x;
@@ -356,6 +366,120 @@ TEST(ProgramOptions, TestMixOfPersistedAndNonPersisted)
     value = SE_GetOptionValue("logfile_path");
     std::string logFilePath(value);
     ASSERT_EQ(logFilePath, "my_test_error.txt");
+}
+
+TEST(ProgramOptions, FindsDefaultConfigFile)
+{
+    // just check if the default config file is present at esmini root folder
+    fs::directory_entry entry{"../../../config.yml"};
+    EXPECT_TRUE(entry.exists());
+
+}
+
+TEST(ProgramOptions, LastOptionOverrides)
+{
+    std::string optionName = "osc";
+    std::string optionValue("../../../resources/xosc/cut-in_simple.xosc");
+    const char* args[]    = {"--osc", "../../../resources/xosc/acc-test.xosc", "--osc", optionValue.c_str()};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    const char* value = SE_GetOptionValue(optionName.c_str());
+    ASSERT_NE(value, nullptr);
+    EXPECT_EQ(value, optionValue);
+    SE_Close();
+}
+
+
+TEST(ProgramOptions, CommandPromptOverridesApi)
+{
+    std::string optionName = "osc";
+    std::string optionValue("../../../resources/xosc/cut-in.xosc");
+    SE_SetOptionValue(optionName.c_str(), "../../../resources/xosc/cut-in_simple.xosc");
+    SE_Init(optionValue.c_str(), 0, 0, 0, 0);
+    const char* value = SE_GetOptionValue(optionName.c_str());
+    ASSERT_NE(value, nullptr);
+    EXPECT_EQ(value, optionValue);
+    SE_Close();
+}
+
+
+TEST(ProgramOptions, LastFileOptionsOverride)
+{
+    std::string firstConfigFileName = "config1.yml";
+    std::string secondConfigFileName = "config2.yml";
+    {
+        // create first config file
+        std::ofstream file(firstConfigFileName);
+        if (!file)
+        {
+            std::cerr << "Failed to create file: " << firstConfigFileName << std::endl;
+            return;
+        }
+        // Write YAML content
+        file << "esmini: \n";
+        // file << "  window: 60 60 800 400\n";
+        file << "  logfile_path: log1.txt\n";
+        file << "  osc: ../../../resources/xosc/cut-in.xosc\n";
+        file << "replayer:\n";
+        file << "  file: sim1.dat";
+        file.close();
+    }
+
+    // // investigation
+    // SE_SetOptionValue("config_file_path", "config1.yml");
+    // SE_SetOptionValue("config_file_path", "config2.yml");
+    // // SE_Init("../../../resources/xosc/cut-in.xosc", 0, 0, 0, 0);
+    // const char* args[] = {"--osc", "../../../resources/xosc/cut-in.xosc"};
+    // ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    // SE_Close();
+
+    {
+        // create second config file
+        std::ofstream file(secondConfigFileName);
+        if (!file)
+        {
+            std::cerr << "Failed to create file: " << secondConfigFileName << std::endl;
+            return;
+        }
+        // Write YAML content
+        file << "esmini: \n";
+        //file << "  window: 60 60 800 400\n";
+        file << "  logfile_path: log2.txt\n";
+        file << "  osc: ../../../resources/xosc/cut-in_simple.xosc\n";
+        file << "replayer:\n";
+        file << "  file: sim2.dat";
+        file.close();
+    }
+
+    {
+        // firstly we will put config1.yml and then config2.yml - and check if the options from config2.yml are taken
+        const char* args[] = {"--config_file_path", firstConfigFileName.c_str(), "--config_file_path", secondConfigFileName.c_str()};
+        // const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+        ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+        const char* value = SE_GetOptionValue("logfile_path");
+        ASSERT_NE(value, nullptr);
+        std::string expectedValue = "log2.txt";
+        EXPECT_EQ(value, expectedValue);
+        value = SE_GetOptionValue("osc");
+        ASSERT_NE(value, nullptr);
+        expectedValue = "../../../resources/xosc/cut-in_simple.xosc";
+        EXPECT_EQ(value, expectedValue);
+        SE_Close();
+    }
+
+    {
+        // secondly we will put config2.yml and then config1.yml - and check if the options from config1.yml are taken
+        const char* args[] = {"--config_file_path", secondConfigFileName.c_str(), "--config_file_path", firstConfigFileName.c_str()};
+        ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+        const char* value = SE_GetOptionValue("logfile_path");
+        ASSERT_NE(value, nullptr);
+        std::string expectedValue = "log1.txt";
+        EXPECT_EQ(value, expectedValue);
+        value = SE_GetOptionValue("osc");
+        ASSERT_NE(value, nullptr);
+        expectedValue = "../../../resources/xosc/cut-in.xosc";
+        EXPECT_EQ(value, expectedValue);
+        SE_Close();
+    }
 }
 
 TEST(LinearAlgebra, TestAngleBetweenVectors)

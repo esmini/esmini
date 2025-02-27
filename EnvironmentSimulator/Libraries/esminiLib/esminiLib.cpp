@@ -69,7 +69,8 @@ static void resetScenario(void)
     }
     if (argv_)
     {
-        for (int i = 0; i < static_cast<int>(args_v.size()); i++)
+        // for (int i = 0; i < static_cast<int>(args_v.size()); i++)
+        for (int i = 0; i < argc_; i++)
         {
             free(argv_[i]);
         }
@@ -496,7 +497,7 @@ extern "C"
 
     SE_DLL_API int SE_SetOptionValue(const char *name, const char *value)
     {
-        return SE_Env::Inst().GetOptions().SetOptionValue(name, value);
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, value, true);
     }
 
     SE_DLL_API int SE_SetOptionPersistent(const char *name)
@@ -506,7 +507,7 @@ extern "C"
 
     SE_DLL_API int SE_SetOptionValuePersistent(const char *name, const char *value)
     {
-        return SE_Env::Inst().GetOptions().SetOptionValue(name, value, false, true);
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, value, true, true);
     }
 
     SE_DLL_API const char *SE_GetOptionValue(const char *name)

@@ -14,7 +14,7 @@ namespace esmini::common
         if (const auto envConfigFile = GetEnvironmentVariable("ESMINI_CONFIG_FILE"); envConfigFile.has_value())
         {
             LOG_INFO("Found environment variable ESMINI_CONFIG_FILE: {}", envConfigFile.value());
-            const auto valueVec = SplitString(envConfigFile.value(), ',');
+            const auto valueVec = SplitString(envConfigFile.value(), ','); // : also add for linux
             configFilePaths_.insert(configFilePaths_.end(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
         }
         else
@@ -23,11 +23,16 @@ namespace esmini::common
         }
     }
 
+    //---------------------------------------------------------------------------------------------------------------------
+
     std::vector<std::string> Config::GetConfig() const
     {
         esmini::common::ConfigParser parser(applicationName_, configFilePaths_);
+        
         return parser.Parse();
     }
+
+    //---------------------------------------------------------------------------------------------------------------------
 
     std::string Config::MakeDefaultConfigFilePath() const
     {
@@ -38,6 +43,8 @@ namespace esmini::common
         LOG_INFO("Default config file path: {}", defaultFilePath);
         return defaultFilePath;
     }
+
+    //---------------------------------------------------------------------------------------------------------------------
 
     std::optional<std::string> Config::GetEnvironmentVariable(const std::string& variableName) const
     {
