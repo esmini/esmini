@@ -120,7 +120,8 @@ def run_dat2csv(dat2csv_arguments = None):
     return_code = None
     args = [app] + dat2csv_arguments.split()
     with open(STDOUT_FILENAME, "w") as f:
-        process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)), stdout=f, env=env)
+        # process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)), stdout=f, env=env)
+        process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)), env=env)
 
         elapsed = 0
         while elapsed < TIMEOUT and return_code is None:

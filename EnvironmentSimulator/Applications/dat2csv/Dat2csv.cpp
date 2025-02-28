@@ -62,6 +62,7 @@ void Dat2csv::PrintData(int obj_id)
     }
     else
     {
+        std::cout << "pos offset: " << std::fixed << std::setprecision(5) << player_->GetPosOffset(obj_id) << std::endl;
         snprintf(line,
                  MAX_LINE_LEN,
                  "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %d, %d, %.5f, %.3f, %.3f, %.3f, %.3f, %.3f, ",
