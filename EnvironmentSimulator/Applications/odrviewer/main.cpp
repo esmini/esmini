@@ -168,7 +168,7 @@ int SpawnCar(viewer::Viewer *viewer, const roadmanager::Road *road, const roadma
     car_->id = static_cast<int>(cars.size());
     UpdateCarPose(car_);
 
-    LOG_DEBUG("Adding car %d of model {} to road id {} s {:.2f} lane id {}), ", cars.size(), carModelID, road->GetId(), s, lane->GetId());
+    LOG_DEBUG("Adding car {} of model {} to road id {} s {:.2f} lane id {}), ", cars.size(), carModelID, road->GetId(), s, lane->GetId());
     cars.push_back(car_);
 
     if (first_car_in_focus == -1 && lane->GetId() < 0)
