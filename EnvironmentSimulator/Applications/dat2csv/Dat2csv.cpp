@@ -39,6 +39,7 @@ Dat2csv::~Dat2csv()
 void Dat2csv::PrintData(int obj_id)
 {
     static char line[MAX_LINE_LEN];
+    static char line1[MAX_LINE_LEN];
     std::string name;
     player_->GetName(obj_id, name);
     if (!extended_)
@@ -62,10 +63,11 @@ void Dat2csv::PrintData(int obj_id)
     }
     else
     {
-        std::cout << "pos offset: " << std::fixed << std::setprecision(5) << player_->GetPosOffset(obj_id) << std::endl;
+        snprintf(line1, MAX_LINE_LEN, "%.5f", player_->GetPosOffset(obj_id)), printf("offset: %s\n", line1);
+
         snprintf(line,
                  MAX_LINE_LEN,
-                 "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %d, %d, %.5f, %.3f, %.3f, %.3f, %.3f, %.3f, ",
+                 "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %d, %d, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, ",
                  player_->scenarioState_.sim_time,
                  obj_id,
                  name.c_str(),

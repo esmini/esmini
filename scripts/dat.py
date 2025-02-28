@@ -548,7 +548,7 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
     ):
 
         # print("processing mode:", mode)
-        csvfile = os.path.splitext(self.filename)[0] + ".csv"
+        csvfile = os.path.splitext(self.filename)[0] + "_py.csv"
         try:
             fcsv = open(csvfile, "w")
         except OSError:
@@ -584,8 +584,8 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
                         if extended:
                             # Print only state.pos_offset.pos_offset
                             dataOffset = "{:.5f}".format(state.pos_offset.pos_offset)
-                            print("pos offsetPy: ", dataOffset)
-                            data = "{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.5f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, ".format(
+                            print("offsetPy:", dataOffset)
+                            data = "{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, ".format(
                                 self.CompleteObjectState_.time,
                                 state.obj_id.id,
                                 state.name,
@@ -672,7 +672,7 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
                         state.obj_active is True
                     ):  # only write for active objects. may be it deleted
                         if extended:
-                            data = "{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.5f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, ".format(
+                            data = "{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, ".format(
                                 self.CompleteObjectState_.time,
                                 state.obj_id.id,
                                 state.name,
