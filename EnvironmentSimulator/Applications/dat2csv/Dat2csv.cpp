@@ -39,7 +39,6 @@ Dat2csv::~Dat2csv()
 void Dat2csv::PrintData(int obj_id)
 {
     static char line[MAX_LINE_LEN];
-    static char line1[MAX_LINE_LEN];
     std::string name;
     player_->GetName(obj_id, name);
     if (!extended_)
