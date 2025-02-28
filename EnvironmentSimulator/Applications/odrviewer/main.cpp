@@ -50,7 +50,8 @@ static struct
     bool step  = true;
 } run_state;
 
-roadmanager::Road::RoadRule rule = roadmanager::Road::RoadRule::ROAD_RULE_UNDEFINED;
+roadmanager::Road::RoadRule rule                   = roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC;
+bool                        enforcing_traffic_rule = false;
 
 double deltaSimTime;  // external - used by Viewer::RubberBandCamera
 
@@ -193,7 +194,7 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
         double             average_distance = 100.0 / density;
 
         roadmanager::Road::RoadRule rrule = road->GetRule();
-        if (rule != roadmanager::Road::RoadRule::ROAD_RULE_UNDEFINED)
+        if (enforcing_traffic_rule && rule != rrule)
         {
             // Enforce specified rule
             rrule = rule;
@@ -345,7 +346,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
     double ds        = new_speed * dt;  // right lane is < 0 in road dir;
 
     roadmanager::Road::RoadRule rrule = odrManager->GetRoadById(car->pos.GetTrackId())->GetRule();
-    if (rule != roadmanager::Road::RoadRule::ROAD_RULE_UNDEFINED)
+    if (rule != rrule)
     {
         // Enforce specified rule
         rrule = rule;
@@ -384,7 +385,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 
             // Ensure car is oriented along lane driving direction
             rrule = road->GetRule();
-            if (rule != roadmanager::Road::RoadRule::ROAD_RULE_UNDEFINED)
+            if (rule != rrule)
             {
                 // Enforce specified rule
                 rrule = rule;
@@ -588,12 +589,14 @@ int main(int argc, char **argv)
     {
         if (opt.GetOptionArg("traffic_rule") == "left")
         {
-            rule = roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC;
+            rule                   = roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC;
+            enforcing_traffic_rule = true;
             LOG_INFO("Enforce left hand traffic");
         }
         else if (opt.GetOptionArg("traffic_rule") == "right")
         {
-            rule = roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC;
+            rule                   = roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC;
+            enforcing_traffic_rule = true;
             LOG_INFO("Enforce right hand traffic");
         }
     }

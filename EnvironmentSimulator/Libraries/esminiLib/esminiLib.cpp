@@ -246,6 +246,8 @@ static void CopyRoadInfo(SE_RoadInfo *r_data, roadmanager::RoadProbeInfo *s_data
         r_data->laneOffset   = static_cast<float>(s_data->road_lane_info.laneOffset);
         r_data->s            = static_cast<float>(s_data->road_lane_info.s);
         r_data->t            = static_cast<float>(s_data->road_lane_info.t);
+        r_data->road_type    = static_cast<int>(s_data->road_lane_info.road_type);
+        r_data->road_rule    = static_cast<int>(s_data->road_lane_info.road_rule);
     }
 }
 

@@ -91,13 +91,15 @@ typedef struct
     float road_roll;      // road roll (camber) at target point
     float trail_heading;  // trail heading (only when used for trail lookups, else equals road_heading)
     float curvature;      // road curvature at steering target point
-    float speed_limit;    // speed limit given by OpenDRIVE type entry
+    float speed_limit;    // speed limit given by OpenDRIVE speed max entry in m/s
     id_t  roadId;         // target position, road ID
     id_t  junctionId;     // target position, junction ID (SE_ID_UNDEFINED if not in a junction)
     int   laneId;         // target position, lane ID
     float laneOffset;     // target position, lane offset (lateral distance from lane center)
     float s;              // target position, s (longitudinal distance along reference line)
     float t;              // target position, t (lateral distance from reference line)
+    int   road_type;      // road type given by OpenDRIVE type entry, maps to roadmanager::Road::RoadType
+    int   road_rule;      // road rule given by OpenDRIVE rule entry, maps to roadmanager::Road::RoadRule
 } SE_RoadInfo;
 // asciidoc end::SE_RoadInfo_struct[]
 

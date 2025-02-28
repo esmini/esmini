@@ -415,31 +415,90 @@ std::vector<Position> LaneIndependentRouter::GetWaypoints(std::vector<Node> path
 double RoadCalculations::CalcAverageSpeed(Road *road)
 {
     unsigned int roadTypeCount = road->GetNumberOfRoadTypes();
+    double       default_speed = 19.444;
     if (roadTypeCount == 0)
     {
         // Assume road is rural
-        LOG_WARN("Warning: Road {} has no road types (and speed limit)", road->GetId());
+        LOG_WARN("Warning: Road {} has no road types (and speed limit). Returning default speed {} m/s", road->GetId(), default_speed);
 
-        return roadTypeToSpeed[Road::RoadType::ROADTYPE_RURAL];
+        return default_speed;
     }
 
     double totalSpeed = 0;
     for (unsigned int i = 0; i < roadTypeCount; i++)
     {
-        if (road->GetRoadType(i)->speed_ > SMALL_NUMBER)
+        switch (road->GetRoadType(i)->road_type_)
         {
-            totalSpeed += road->GetRoadType(i)->speed_;
-        }
-        else
-        {
-            bool hasDefinedSpeedForRoadType = roadTypeToSpeed.find(road->GetRoadType(i)->road_type_) != roadTypeToSpeed.end();
-            if (hasDefinedSpeedForRoadType)
+            case Road::RoadType::ROADTYPE_PEDESTRIAN:
+            case Road::RoadType::ROADTYPE_BICYCLE:
             {
-                totalSpeed += roadTypeToSpeed[road->GetRoadType(i)->road_type_];
+                if (road->GetRoadType(i)->speed_ > SMALL_NUMBER)
+                {
+                    totalSpeed += road->GetRoadType(i)->speed_;
+                }
+                else
+                {
+                    totalSpeed += 1.389;
+                }
+                break;
             }
-            else
+            case Road::RoadType::ROADTYPE_LOWSPEED:
+            case Road::RoadType::ROADTYPE_TOWNPLAYSTREET:
+            case Road::RoadType::ROADTYPE_TOWNPRIVATE:
             {
-                LOG_ERROR("Error: Road {} has undefined road type", road->GetId());
+                if (road->GetRoadType(i)->speed_ > SMALL_NUMBER)
+                {
+                    totalSpeed += road->GetRoadType(i)->speed_;
+                }
+                else
+                {
+                    totalSpeed += 8.333;
+                }
+                break;
+            }
+            case Road::RoadType::ROADTYPE_TOWN:
+            case Road::RoadType::ROADTYPE_TOWNLOCAL:
+            {
+                if (road->GetRoadType(i)->speed_ > SMALL_NUMBER)
+                {
+                    totalSpeed += road->GetRoadType(i)->speed_;
+                }
+                else
+                {
+                    totalSpeed += 13.888;
+                }
+                break;
+            }
+            case Road::RoadType::ROADTYPE_RURAL:
+            case Road::RoadType::ROADTYPE_UNKNOWN:
+            {
+                if (road->GetRoadType(i)->speed_ > SMALL_NUMBER)
+                {
+                    totalSpeed += road->GetRoadType(i)->speed_;
+                }
+                else
+                {
+                    totalSpeed += 19.444;
+                }
+                break;
+            }
+            case Road::RoadType::ROADTYPE_MOTORWAY:
+            {
+                if (road->GetRoadType(i)->speed_ > SMALL_NUMBER)
+                {
+                    totalSpeed += road->GetRoadType(i)->speed_;
+                }
+                else
+                {
+                    totalSpeed += 25.0;
+                }
+                break;
+            }
+            default:
+            {
+                LOG_WARN("Warning: Road {} has undefined road type. Setting default speed {} m/s", road->GetId(), default_speed);
+                totalSpeed += default_speed;
+                break;
             }
         }
     }

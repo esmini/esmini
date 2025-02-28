@@ -2119,7 +2119,13 @@ namespace roadmanager
             ROADTYPE_TOWN,
             ROADTYPE_LOWSPEED,
             ROADTYPE_PEDESTRIAN,
-            ROADTYPE_BICYCLE
+            ROADTYPE_BICYCLE,
+            ROADTYPE_TOWNARTERIAL,
+            ROADTYPE_TOWNCOLLECTOR,
+            ROADTYPE_TOWNEXPRESSWAY,
+            ROADTYPE_TOWNLOCAL,
+            ROADTYPE_TOWNPLAYSTREET,
+            ROADTYPE_TOWNPRIVATE
         };
 
         struct RoadTypeEntry
@@ -2134,7 +2140,6 @@ namespace roadmanager
         {
             RIGHT_HAND_TRAFFIC,
             LEFT_HAND_TRAFFIC,
-            ROAD_RULE_UNDEFINED
         };
 
         Road(id_t id, std::string id_str, std::string name, RoadRule rule = RoadRule::RIGHT_HAND_TRAFFIC)
@@ -2227,6 +2232,7 @@ namespace roadmanager
         Lane::LaneType  GetLaneTypeByS(double s, int lane_id) const;
         Lane::Material *GetLaneMaterialByS(double s, int lane_id) const;
         double          GetSpeedByS(double s) const;
+        RoadType        GetRoadTypeByS(double s) const;
         bool            GetZAndPitchByS(double s, double *z, double *z_prim, double *z_primPrim, double *pitch, idx_t *index) const;
         bool            UpdateZAndRollBySAndT(double s, double t, double *z, double *roadSuperElevationPrim, double *roll, idx_t *index);
         unsigned int    GetNumberOfLaneSections() const
@@ -2877,20 +2883,22 @@ namespace roadmanager
 
     typedef struct
     {
-        double pos[3];       // position, in global coordinate system
-        double heading;      // road heading at steering target point
-        double pitch;        // road pitch (inclination) at steering target point
-        double roll;         // road roll (camber) at steering target point
-        double width;        // lane width
-        double curvature;    // road curvature at steering target point
-        double speed_limit;  // speed limit given by OpenDRIVE type entry
-        id_t   roadId;       // road ID
-        id_t   junctionId;   // junction ID (-1 if not in a junction)
-        int    laneId;       // lane ID
-        double laneOffset;   // lane offset (lateral distance from lane center)
-        double s;            // s (longitudinal distance along reference line)
-        double t;            // t (lateral distance from reference line)
-        double friction;     // lane material friction
+        double         pos[3];       // position, in global coordinate system
+        double         heading;      // road heading at steering target point
+        double         pitch;        // road pitch (inclination) at steering target point
+        double         roll;         // road roll (camber) at steering target point
+        double         width;        // lane width
+        double         curvature;    // road curvature at steering target point
+        double         speed_limit;  // speed limit given by OpenDRIVE type entry
+        Road::RoadType road_type;
+        Road::RoadRule road_rule;
+        id_t           roadId;      // road ID
+        id_t           junctionId;  // junction ID (-1 if not in a junction)
+        int            laneId;      // lane ID
+        double         laneOffset;  // lane offset (lateral distance from lane center)
+        double         s;           // s (longitudinal distance along reference line)
+        double         t;           // t (lateral distance from reference line)
+        double         friction;    // lane material friction
     } RoadLaneInfo;
 
     typedef struct

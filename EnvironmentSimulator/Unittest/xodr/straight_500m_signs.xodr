@@ -1,16 +1,49 @@
 <?xml version="1.0" ?>
 <OpenDRIVE>
-	<header revMajor="1" revMinor="4" name="" version="1.00" date="Tue Jun 30 14:55:47 2020" north="0.0000000000000000e+00" south="0.0000000000000000e+00" east="0.0000000000000000e+00" west="0.0000000000000000e+00"/>
-	<road name="" length="5.0000000000000000e+02" id="1" junction="-1">
+	<header revMajor="1" revMinor="8" name="" version="1.00" date="Tue Jun 30 14:55:47 2020" north="0.0000000000000000e+00" south="0.0000000000000000e+00" east="0.0000000000000000e+00" west="0.0000000000000000e+00"/>
+	<road name="" rule="LHT" length="5.0000000000000000e+02" id="1" junction="-1">
 		<link/>
-		<type s="0.0" type="rural">
-			<speed unit="km/h" max="50"/>
+		<type s="200.0" type="unknown">
+			<speed unit="m/s" max="10"/>
 		</type>
-		<type s="100.0" type="town">
+		<type s="225.0" type="rural">
+			<speed unit="mph" max="20"/>
+		</type>
+		<type s="250.0" type="motorway">
 			<speed unit="km/h" max="30"/>
 		</type>
-		<type s="200.0" type="town">
+		<type s="275.0" type="town">
+			<speed unit="km/h" max="40"/>
+		</type>
+		<type s="300.0" type="lowSpeed">
 			<speed unit="km/h" max="50"/>
+		</type>
+		<type s="325.0" type="pedestrian">
+			<speed unit="km/h" max="60"/>
+		</type>
+		<type s="350.0" type="bicycle">
+			<speed unit="km/h" max="70"/>
+		</type>
+		<type s="375.0" type="townArterial">
+			<speed unit="km/h" max="80"/>
+		</type>
+		<type s="400.0" type="townCollector">
+			<speed unit="km/h" max="90"/>
+		</type>
+		<type s="425.0" type="townExpressway">
+			<speed unit="km/h" max="100"/>
+		</type>
+		<type s="450.0" type="townLocal">
+			<speed unit="km/h" max="110"/>
+		</type>
+		<type s="475.0" type="townPlayStreet">
+			<speed unit="km/h" max="120"/>
+		</type>
+		<type s="500.0" type="townPrivate">
+			<speed unit="km/h" max="130"/>
+		</type>
+		<type s="525.0" type="rural">
+			<speed unit="km/h" max="90"/>
 		</type>
 		<planView>
 			<geometry s="0.0000000000000000e+00" x="0.0000000000000000e+00" y="0.0000000000000000e+00" hdg="0.0000000000000000e+00" length="5.0000000000000000e+02">
@@ -27,10 +60,6 @@
 					<lane id="3" type="border" level="false">
 						<link/>
 						<width sOffset="0.0000000000000000e+00" a="6.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
-						<userData code="viStyleDef">
-							<style sOffset="0.000000" laneStyle="hide_pav." mapping="auto"/>
-							<fillet pos="none" style="none" id="0"/>
-						</userData>
 					</lane>
 					<lane id="2" type="border" level="false">
 						<link/>
@@ -61,11 +90,11 @@
 							<type name="broken" width="1.2000000000000000e-01">
 								<line length="4.0000000000000000e+00" space="8.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
 							</type>
+							<userData code="viStyleDef">
+								<style sOffset="0.000000" laneStyle="standard" mapping="auto"/>
+								<fillet pos="none" style="none" id="0"/>
+							</userData>
 						</roadMark>
-						<userData code="viStyleDef">
-							<style sOffset="0.000000" laneStyle="standard" mapping="auto"/>
-							<fillet pos="none" style="none" id="0"/>
-						</userData>
 					</lane>
 				</center>
 				<right>
@@ -106,8 +135,8 @@
 			<object type="pole" name="pole" id="2" s="100.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 		</objects>
 		<signals>
-			<signal s="100.0" t="3.57" id="1" name="speed_30_0" dynamic="no" orientation="+" zOffset="1.7" type="c" country="se" subtype="31" value="3" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
-			<signal s="100.0" t="-3.57" id="2" name="speed_30_1" dynamic="no" orientation="+" zOffset="1.7" type="c" country="se" subtype="31" value="3" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="100.0" t="3.57" id="1" name="speed_30_0" dynamic="no" orientation="+" zOffset="1.7" type="c" country="SE" subtype="31" value="3" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="100.0" t="-3.57" id="2" name="speed_30_1" dynamic="no" orientation="+" zOffset="1.7" type="c" country="SE" subtype="31" value="3" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
 		</signals>
 		<surface/>
 	</road>

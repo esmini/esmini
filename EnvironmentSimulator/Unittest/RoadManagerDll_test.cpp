@@ -297,6 +297,55 @@ TEST(TestProbe, TestSimpleProbe)
     RM_Close();
 }
 
+TEST(TestProbe, TestSimpleRoadTypes)
+{
+    const char* odr_file = "../../../EnvironmentSimulator/Unittest/xodr/straight_500m_signs.xodr";
+
+    ASSERT_EQ(RM_Init(odr_file), 0);
+
+    int pos_handle = RM_CreatePosition();
+
+    EXPECT_EQ(pos_handle, 0);
+
+    RM_SetLanePosition(pos_handle, 1, -1, 0.0, 0.0, false);
+    RM_RoadProbeInfo info;
+    const float      tolerance = 1e-3f;
+    float            distance  = 200.0f;
+
+    RM_GetProbeInfo(pos_handle, 100.0f, &info, 0, true);
+    EXPECT_EQ(info.road_lane_info.road_rule, 1);
+    EXPECT_NEAR(info.road_lane_info.speed_limit, 10.0f, 1e-3f);
+
+    for (int i = 0; i < 14; i++)
+    {
+        RM_GetProbeInfo(pos_handle, distance, &info, 0, true);
+        EXPECT_EQ(info.road_lane_info.road_rule, 1);
+        if (i == 0)  // m/s entry
+        {
+            EXPECT_EQ(info.road_lane_info.road_type, i);
+            EXPECT_NEAR(info.road_lane_info.speed_limit, 10.0f, tolerance);
+        }
+        else if (i == 1)  // mph entry
+        {
+            EXPECT_EQ(info.road_lane_info.road_type, i);
+            EXPECT_NEAR(info.road_lane_info.speed_limit, 20.0f * 0.44704f, tolerance);
+        }
+        else if (i == 13)
+        {
+            EXPECT_EQ(info.road_lane_info.road_type, 12);
+            EXPECT_NEAR(info.road_lane_info.speed_limit, 130.0f / 3.6f, tolerance);
+        }
+        else
+        {
+            EXPECT_EQ(info.road_lane_info.road_type, i);
+            EXPECT_NEAR(info.road_lane_info.speed_limit, static_cast<float>((i + 1) * 10) / 3.6f, tolerance);
+        }
+        distance += 25.0f;
+    }
+
+    RM_Close();
+}
+
 TEST(TestLaneType, TestDetailedLaneType)
 {
     const char* odr_file = "../../../EnvironmentSimulator/Unittest/xodr/mw_100m.xodr";

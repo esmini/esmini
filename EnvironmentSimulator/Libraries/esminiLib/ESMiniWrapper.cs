@@ -79,6 +79,8 @@ namespace ESMini
         public float laneOffset;       // target position, lane offset (lateral distance from lane center)
         public float s;                // target position, s (longitudinal distance along reference line)
         public float t;                // target position, t (lateral distance from reference line)
+        public int road_type;          // road type given by OpenDRIVE type entry, maps to roadmanager::Road::RoadType
+        public int road_rule;          // road rule given by OpenDRIVE rule entry, maps to roadmanager::Road::RoadRule
     };
 
     [StructLayout(LayoutKind.Sequential)]

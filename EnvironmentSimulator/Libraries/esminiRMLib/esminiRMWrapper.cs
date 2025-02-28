@@ -69,6 +69,8 @@ namespace OpenDRIVE
         public float laneOffset;       // lane offset (lateral distance from lane center)
         public float s;                // s (longitudinal distance along reference line)
         public float t;                // t (lateral distance from reference line)
+        public int road_type;          // road type given by OpenDRIVE type entry, maps to roadmanager::Road::RoadType
+        public int road_rule;          // road rule given by OpenDRIVE rule entry, maps to roadmanager::Road::RoadRule
     };
 
     [StructLayout(LayoutKind.Sequential)]
