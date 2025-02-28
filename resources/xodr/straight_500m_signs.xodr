@@ -1,16 +1,31 @@
 <?xml version="1.0" ?>
 <OpenDRIVE>
 	<header revMajor="1" revMinor="4" name="" version="1.00" date="Tue Jun 30 14:55:47 2020" north="0.0000000000000000e+00" south="0.0000000000000000e+00" east="0.0000000000000000e+00" west="0.0000000000000000e+00"/>
-	<road name="" length="5.0000000000000000e+02" id="1" junction="-1">
+	<road name="" rule="RHT" length="5.0000000000000000e+02" id="1" junction="-1">
 		<link/>
-		<type s="0.0" type="rural">
-			<speed unit="km/h" max="50"/>
+		<type s="0.0" type="unknown">
+			<speed unit="km/h" max="10"/>
 		</type>
-		<type s="100.0" type="town">
+		<type s="50.0" type="rural">
+			<speed unit="km/h" max="20"/>
+		</type>
+		<type s="100.0" type="motorway">
 			<speed unit="km/h" max="30"/>
 		</type>
-		<type s="200.0" type="town">
+		<type s="150.0" type="town">
+			<speed unit="km/h" max="40"/>
+		</type>
+		<type s="200.0" type="lowSpeed">
 			<speed unit="km/h" max="50"/>
+		</type>
+		<type s="250.0" type="pedestrian">
+			<speed unit="km/h" max="60"/>
+		</type>
+		<type s="300.0" type="bicycle">
+			<speed unit="km/h" max="70"/>
+		</type>
+		<type s="350.0" type="footway">
+			<speed unit="km/h" max="80"/>
 		</type>
 		<planView>
 			<geometry s="0.0000000000000000e+00" x="0.0000000000000000e+00" y="0.0000000000000000e+00" hdg="0.0000000000000000e+00" length="5.0000000000000000e+02">

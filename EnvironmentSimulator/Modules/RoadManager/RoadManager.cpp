@@ -1630,6 +1630,21 @@ double Road::GetSpeedByS(double s) const
     return 0;
 }
 
+Road::RoadType* Road::GetRoadTypeByS(double s) const
+{
+    if (type_.size() > 0)
+    {
+        size_t i;
+        for (i = 0; i < type_.size() - 1 && s > type_[i + 1]->s_; i++)
+            ;
+
+        return &type_[i]->road_type_;
+    }
+    
+    // No type entries, fall back to a speed based on nr of lanes
+    return nullptr;
+}
+
 Lane::Material* Road::GetLaneMaterialByS(double s, int lane_id) const
 {
     LaneSection* lsec = GetLaneSectionByS(s, 0);

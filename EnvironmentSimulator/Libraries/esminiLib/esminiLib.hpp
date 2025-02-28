@@ -26,6 +26,24 @@ typedef uint32_t id_t;
 #define SE_IDX_UNDEFINED   0xffffffff
 #define SE_PARAM_NAME_SIZE 32
 
+typedef enum
+{
+    ROADTYPE_UNKNOWN,
+    ROADTYPE_RURAL,
+    ROADTYPE_MOTORWAY,
+    ROADTYPE_TOWN,
+    ROADTYPE_LOWSPEED,
+    ROADTYPE_PEDESTRIAN,
+    ROADTYPE_BICYCLE
+} SE_RoadType;
+
+typedef enum
+{
+    RIGHT_HAND_TRAFFIC,
+    LEFT_HAND_TRAFFIC,
+    ROAD_RULE_UNDEFINED
+} SE_RoadRule;
+
 typedef struct
 {
     int   id;              // Automatically generated unique object id
@@ -91,7 +109,9 @@ typedef struct
     float road_roll;      // road roll (camber) at target point
     float trail_heading;  // trail heading (only when used for trail lookups, else equals road_heading)
     float curvature;      // road curvature at steering target point
-    float speed_limit;    // speed limit given by OpenDRIVE type entry
+    float speed_limit;    // speed limit given by OpenDRIVE speed max entry
+    SE_RoadType road_type; // road type given by OpenDRIVE type entry
+    SE_RoadRule road_rule; // road rule given by OpenDRIVE rule entry
     id_t  roadId;         // target position, road ID
     id_t  junctionId;     // target position, junction ID (SE_ID_UNDEFINED if not in a junction)
     int   laneId;         // target position, lane ID

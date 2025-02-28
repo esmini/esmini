@@ -262,6 +262,14 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
     roadmanager::Position::ReturnCode retval =
         pos->GetProbeInfo(lookahead_distance, &s_data, static_cast<roadmanager::Position::LookAheadMode>(lookAheadMode));
 
+    auto odr = roadmanager::Position::GetOpenDrive();
+    roadmanager::Road *road = odr->GetRoadById(s_data.road_lane_info.roadId);
+    roadmanager::Road::RoadType *road_type = road->GetRoadTypeByS(s_data.road_lane_info.s);
+    if (road_type != nullptr)
+    {
+        r_data->road_type = static_cast<SE_RoadType>(*road_type);
+    }
+
     if (retval != roadmanager::Position::ReturnCode::ERROR_GENERIC)
     {
         CopyRoadInfo(r_data, &s_data);
