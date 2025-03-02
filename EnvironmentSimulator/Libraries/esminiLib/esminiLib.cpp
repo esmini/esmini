@@ -69,8 +69,7 @@ static void resetScenario(void)
     }
     if (argv_)
     {
-        // for (int i = 0; i < static_cast<int>(args_v.size()); i++)
-        for (int i = 0; i < argc_; i++)
+        for (int i = 0; i < static_cast<int>(args_v.size()); i++)
         {
             free(argv_[i]);
         }

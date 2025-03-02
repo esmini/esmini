@@ -3,6 +3,8 @@
 #include "CommonMini.hpp"
 #include "esminiLib.hpp"
 
+#include <stdio.h>
+
 #if __has_include(<filesystem>)
 #include <filesystem>
 namespace fs = std::filesystem;
@@ -406,49 +408,26 @@ TEST(ProgramOptions, LastFileOptionsOverride)
 {
     std::string firstConfigFileName = "config1.yml";
     std::string secondConfigFileName = "config2.yml";
-    {
-        // create first config file
-        std::ofstream file(firstConfigFileName);
-        if (!file)
-        {
-            std::cerr << "Failed to create file: " << firstConfigFileName << std::endl;
-            return;
-        }
-        // Write YAML content
-        file << "esmini: \n";
-        // file << "  window: 60 60 800 400\n";
-        file << "  logfile_path: log1.txt\n";
-        file << "  osc: ../../../resources/xosc/cut-in.xosc\n";
-        file << "replayer:\n";
-        file << "  file: sim1.dat";
-        file.close();
-    }
 
-    // // investigation
-    // SE_SetOptionValue("config_file_path", "config1.yml");
-    // SE_SetOptionValue("config_file_path", "config2.yml");
-    // // SE_Init("../../../resources/xosc/cut-in.xosc", 0, 0, 0, 0);
-    // const char* args[] = {"--osc", "../../../resources/xosc/cut-in.xosc"};
-    // ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-    // SE_Close();
+    // create first config file
+    std::ofstream file1(firstConfigFileName);
+    EXPECT_TRUE(file1.is_open());
+    file1 << "esmini: \n";
+    file1 << "  logfile_path: log1.txt\n";
+    file1 << "  osc: ../../../resources/xosc/cut-in.xosc\n";
+    file1 << "replayer:\n";
+    file1 << "  file: sim1.dat";
+    file1.close();
 
-    {
-        // create second config file
-        std::ofstream file(secondConfigFileName);
-        if (!file)
-        {
-            std::cerr << "Failed to create file: " << secondConfigFileName << std::endl;
-            return;
-        }
-        // Write YAML content
-        file << "esmini: \n";
-        //file << "  window: 60 60 800 400\n";
-        file << "  logfile_path: log2.txt\n";
-        file << "  osc: ../../../resources/xosc/cut-in_simple.xosc\n";
-        file << "replayer:\n";
-        file << "  file: sim2.dat";
-        file.close();
-    }
+    // create second config file
+    std::ofstream file2(secondConfigFileName);
+    EXPECT_TRUE(file2.is_open());
+    file2 << "esmini: \n";
+    file2 << "  logfile_path: log2.txt\n";
+    file2 << "  osc: ../../../resources/xosc/cut-in_simple.xosc\n";
+    file2 << "replayer:\n";
+    file2 << "  file: sim2.dat";
+    file2.close();
 
     {
         // firstly we will put config1.yml and then config2.yml - and check if the options from config2.yml are taken
@@ -465,7 +444,6 @@ TEST(ProgramOptions, LastFileOptionsOverride)
         EXPECT_EQ(value, expectedValue);
         SE_Close();
     }
-
     {
         // secondly we will put config2.yml and then config1.yml - and check if the options from config1.yml are taken
         const char* args[] = {"--config_file_path", secondConfigFileName.c_str(), "--config_file_path", firstConfigFileName.c_str()};
@@ -480,6 +458,13 @@ TEST(ProgramOptions, LastFileOptionsOverride)
         EXPECT_EQ(value, expectedValue);
         SE_Close();
     }
+
+    // Delete the file
+    int result = std::remove(file1);
+    EXPECT_EQ(result, 0);
+
+    result = std::remove(file2);
+    EXPECT_EQ(result, 0)
 }
 
 TEST(LinearAlgebra, TestAngleBetweenVectors)
