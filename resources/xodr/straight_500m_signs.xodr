@@ -1,0 +1,146 @@
+<?xml version="1.0" ?>
+<OpenDRIVE>
+	<header revMajor="1" revMinor="4" name="" version="1.00" date="Tue Jun 30 14:55:47 2020" north="0.0000000000000000e+00" south="0.0000000000000000e+00" east="0.0000000000000000e+00" west="0.0000000000000000e+00"/>
+	<road name="" length="5.0000000000000000e+02" id="1" junction="-1">
+		<link/>
+		<type s="0.0" type="rural">
+			<speed unit="km/h" max="50"/>
+		</type>
+		<type s="100.0" type="town">
+			<speed unit="km/h" max="30"/>
+		</type>
+		<type s="200.0" type="town">
+			<speed unit="km/h" max="50"/>
+		</type>
+		<planView>
+			<geometry s="0.0000000000000000e+00" x="0.0000000000000000e+00" y="0.0000000000000000e+00" hdg="0.0000000000000000e+00" length="5.0000000000000000e+02">
+				<line/>
+			</geometry>
+		</planView>
+		<elevationProfile>
+			<elevation s="0.0000000000000000e+00" a="0.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+		</elevationProfile>
+		<lateralProfile/>
+		<lanes>
+			<laneSection s="0.0000000000000000e+00">
+				<left>
+					<lane id="3" type="border" level="false">
+						<link/>
+						<width sOffset="0.0000000000000000e+00" a="6.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+						<userData code="viStyleDef">
+							<style sOffset="0.000000" laneStyle="hide_pav." mapping="auto"/>
+							<fillet pos="none" style="none" id="0"/>
+						</userData>
+					</lane>
+					<lane id="2" type="border" level="false">
+						<link/>
+						<width sOffset="0.0000000000000000e+00" a="1.6799999999999999e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+						<userData code="viStyleDef">
+							<style sOffset="0.000000" laneStyle="bo_std2grass" mapping="auto"/>
+							<fillet pos="none" style="none" id="0"/>
+						</userData>
+					</lane>
+					<lane id="1" type="driving" level="false">
+						<link/>
+						<width sOffset="0.0000000000000000e+00" a="3.0699999999999998e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+						<roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+							<type name="solid" width="1.2000000000000000e-01">
+								<line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="1.2000000000000000e-01"/>
+							</type>
+						</roadMark>
+						<userData code="viStyleDef">
+							<style sOffset="0.000000" laneStyle="standard" mapping="auto"/>
+							<fillet pos="none" style="none" id="0"/>
+						</userData>
+					</lane>
+				</left>
+				<center>
+					<lane id="0" type="driving" level="false">
+						<link/>
+						<roadMark sOffset="0.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
+							<type name="broken" width="1.2000000000000000e-01">
+								<line length="4.0000000000000000e+00" space="8.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+							</type>
+						</roadMark>
+						<userData code="viStyleDef">
+							<style sOffset="0.000000" laneStyle="standard" mapping="auto"/>
+							<fillet pos="none" style="none" id="0"/>
+						</userData>
+					</lane>
+				</center>
+				<right>
+					<lane id="-1" type="driving" level="false">
+						<link/>
+						<width sOffset="0.0000000000000000e+00" a="3.0699999999999998e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+						<roadMark sOffset="0.0000000000000000e+00" type="solid" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="none" height="1.9999999552965164e-02">
+							<type name="solid" width="1.2000000000000000e-01">
+								<line length="0.0000000000000000e+00" space="0.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="no passing" width="1.2000000000000000e-01"/>
+							</type>
+						</roadMark>
+						<userData code="viStyleDef">
+							<style sOffset="0.000000" laneStyle="standard" mapping="auto"/>
+							<fillet pos="none" style="none" id="0"/>
+						</userData>
+					</lane>
+					<lane id="-2" type="border" level="false">
+						<link/>
+						<width sOffset="0.0000000000000000e+00" a="1.6799999999999999e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+						<userData code="viStyleDef">
+							<style sOffset="0.000000" laneStyle="bo_std2grass" mapping="auto"/>
+							<fillet pos="none" style="none" id="0"/>
+						</userData>
+					</lane>
+					<lane id="-3" type="border" level="false">
+						<link/>
+						<width sOffset="0.0000000000000000e+00" a="6.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+						<userData code="viStyleDef">
+							<style sOffset="0.000000" laneStyle="hide_pav." mapping="auto"/>
+							<fillet pos="none" style="none" id="0"/>
+						</userData>
+					</lane>
+				</right>
+			</laneSection>
+		</lanes>
+		<objects>
+			<object type="pole" name="pole" id="0" s="0.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0">
+                <validity fromLane="-3" toLane="3" />
+            </object>
+			<object type="pole" name="pole" id="1" s="0.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="2" s="100.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="3" s="100.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="4" s="200.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="5" s="200.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="1" s="350.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="6" s="500.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="7" s="500.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="8" s="80.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="9" s="80.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+		</objects>
+		<signals>
+			<signal s="0.0" t="3.57" id="0" name="speed_50_0_0" dynamic="no" orientation="+" zOffset="1.7" type="c" country="se" subtype="31" value="5" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61">
+                <validity fromLane="-3" toLane="-1" />
+                <validity fromLane="1" toLane="3" />
+            </signal>
+			<signal s="0.0" t="-3.57" id="1" name="speed_50_1" dynamic="no" orientation="+" zOffset="1.7" type="c" country="se" subtype="31" value="5" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="100.0" t="3.57" id="2" name="speed_30_0" dynamic="no" orientation="+" zOffset="1.7" type="c" country="se" subtype="31" value="3" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="100.0" t="-3.57" id="3" name="speed_30_1" dynamic="no" orientation="+" zOffset="1.7" type="c" country="se" subtype="31" value="3" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="100.0" t="3.57" id="4" name="speed_50_2" dynamic="no" orientation="-" zOffset="1.7" type="c" country="se" subtype="31" value="5" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="100.0" t="-3.57" id="5" name="speed_50_3" dynamic="no" orientation="-" zOffset="1.7" type="c" country="se" subtype="31" value="5" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="200.0" t="3.57" id="6" name="speed_50_4" dynamic="no" orientation="+" zOffset="1.7" type="274" country="de" subtype="" value="50" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="200.0" t="-3.57" id="7" name="speed_50_5" dynamic="no" orientation="+" zOffset="1.7" type="274" country="de" subtype="" value="50" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="200.0" t="3.57" id="8" name="speed_30_2" dynamic="no" orientation="-" zOffset="1.7" type="274" country="de" subtype="" value="30" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="200.0" t="-3.57" id="9" name="speed_30_3" dynamic="no" orientation="-" zOffset="1.7" type="274" country="de" subtype="" value="30" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61">
+                <validity fromLane="-3" toLane="-2" />
+                <validity fromLane="1" toLane="2" />
+                <validity fromLane="3" toLane="3" />
+            </signal>
+            <!-- If OSI is not important or to insert a sign which is not represented in the system, just specify the file name, excluding ".osgb" as the name -->
+			<signal s="350.0" t="-3.57" id="1" name="de_274-50" dynamic="no" orientation="+" zOffset="1.7" type="" country="" subtype="" value="0.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61"/>
+			<signal s="500.0" t="3.57" id="10" name="speed_50_6" dynamic="no" orientation="-" zOffset="1.7" type="274" country="de" subtype="" value="50" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61" />
+			<signal s="500.0" t="-3.57" id="11" name="speed_50_7" dynamic="no" orientation="-" zOffset="1.7" type="274" country="de" subtype="" value="50" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="80.0" t="-3.57" id="12" name="construction_zone_s0" dynamic="no" orientation="+" zOffset="1.7" type="a" country="se" subtype="20" value="1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="80.0" t="3.57" id="13" name="construction_zone_s1" dynamic="no" orientation="+" zOffset="1.7" type="123" country="de" subtype="" value="-1.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+		</signals>
+		<surface/>
+	</road>
+</OpenDRIVE>
