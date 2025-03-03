@@ -468,7 +468,7 @@ extern "C"
 
     SE_DLL_API int SE_SetOptionValue(const char *name, const char *value)
     {
-        return SE_Env::Inst().GetOptions().SetOptionValue(name, value);
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, value, true);
     }
 
     SE_DLL_API int SE_SetOptionPersistent(const char *name)
@@ -478,7 +478,7 @@ extern "C"
 
     SE_DLL_API int SE_SetOptionValuePersistent(const char *name, const char *value)
     {
-        return SE_Env::Inst().GetOptions().SetOptionValue(name, value, false, true);
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, value, true, true);
     }
 
     SE_DLL_API const char *SE_GetOptionValue(const char *name)
@@ -490,6 +490,15 @@ extern "C"
         static std::string val;
         val = SE_Env::Inst().GetOptions().GetOptionArg(name);
         return val.c_str();
+    }
+
+    SE_DLL_API int SE_GetOptionValuesCount(const char *name)
+    {
+        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))
+        {
+            return 0;
+        }
+        return static_cast<int>(SE_Env::Inst().GetOptions().GetOptionArgs(name).size());
     }
 
     SE_DLL_API bool SE_GetOptionSet(const char *name)

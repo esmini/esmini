@@ -29,8 +29,10 @@
 #include "CommonMini.hpp"
 #include "logger.hpp"
 #include "RoadManager.hpp"
+#include "CommonMini.hpp"
 #include "helpText.hpp"
 #include "viewer.hpp"
+#include "Config.hpp"
 
 static const double stepSize            = 0.01;
 static const double maxStepSize         = 0.1;
@@ -405,6 +407,7 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
 
 int main(int argc, char **argv)
 {
+    std::string arg_str;
     SE_Options &opt = SE_Env::Inst().GetOptions();
     opt.Reset();
 
@@ -419,6 +422,7 @@ int main(int argc, char **argv)
     opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many .tga files will be created");
+    opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, true, false);
     opt.AddOption("custom_fixed_camera",
                   "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)",
                   "position and optional orientation");
@@ -446,7 +450,7 @@ int main(int argc, char **argv)
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
     opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
     opt.AddOption("osi_points", "Show OSI road points. Toggle key 'y'");
-    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path");
+    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path", "", false, false);
     opt.AddOption("pause", "Pause simulation after initialization. Press 'space' to start.");
     opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
@@ -458,13 +462,16 @@ int main(int argc, char **argv)
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
 
-    if (opt.ParseArgs(argc, argv) != 0)
+    int                    argc_;
+    char                 **argv_;
+    esmini::common::Config config("odrviewer", argc, argv);
+    std::tie(argc_, argv_) = config.Load();
+
+    if (opt.ParseArgs(argc_, argv_) != 0)
     {
         opt.PrintUsage();
         return -1;
     }
-
-    std::string arg_str;
 
     if (opt.GetOptionSet("disable_log"))
     {
@@ -617,8 +624,8 @@ int main(int argc, char **argv)
         }
         roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
 
-        osg::ArgumentParser arguments(&argc, argv);
-        viewer::Viewer     *viewer = new viewer::Viewer(odrManager, modelFilename.c_str(), NULL, argv[0], arguments, &opt);
+        osg::ArgumentParser arguments(&argc_, argv_);
+        viewer::Viewer     *viewer = new viewer::Viewer(odrManager, modelFilename.c_str(), NULL, argv_[0], arguments, &opt);
 
         viewer->SetWindowTitleFromArgs(args);
         viewer->RegisterKeyEventCallback(FetchKeyEvent, nullptr);

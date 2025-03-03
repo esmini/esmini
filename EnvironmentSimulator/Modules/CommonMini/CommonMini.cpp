@@ -12,6 +12,9 @@
 
 #include "logger.hpp"
 
+#include "Config.hpp"
+#include "ConfigParser.hpp"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <cmath>
@@ -35,7 +38,6 @@
 #endif
 
 #include "CommonMini.hpp"
-#include "Defines.hpp"
 #include "ConfigParser.hpp"
 
 // #define DEBUG_TRACE
@@ -191,111 +193,6 @@ std::string ControlDomain2Str(unsigned int domains)
     }
 
     return str;
-}
-
-void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& prefixArgs)
-{
-    unsigned int newArgc = static_cast<unsigned int>(argc + prefixArgs.size());
-    char**       newArgv = new char*[newArgc];
-
-    int i;
-    // firstly, copy the original arguments before the appendIndex
-    for (i = 0; i < appendIndex; ++i)
-    {
-        newArgv[i] = new char[std::strlen(argv[i]) + 1];
-        StrCopy(newArgv[i], argv[i], std::strlen(argv[i]) + 1);
-    }
-    // secondly, copy the prefix arguments
-    for (const auto& arg : prefixArgs)
-    {
-        newArgv[i] = new char[arg.length() + 1];
-        StrCopy(newArgv[i], arg.c_str(), arg.length() + 1);
-        ++i;
-    }
-    // thirdly, copy the original arguments from the appendIndex
-    for (int j = appendIndex; j < argc; ++j)
-    {
-        newArgv[i] = new char[std::strlen(argv[j]) + 1];
-        StrCopy(newArgv[i], argv[j], std::strlen(argv[j]) + 1);
-        ++i;
-    }
-    argc = newArgc;
-    argv = newArgv;
-}
-
-void RemoveOptionAndArguments(int& argc, char**& argv, const char* option, unsigned int n_arguments, unsigned int start_index, unsigned int end_index)
-{
-    for (unsigned int i = start_index; i < end_index; i++)
-    {
-        if (strcmp(argv[i], option) == 0)
-        {
-            int new_argc = argc;
-            for (unsigned int j = 0; i + j < static_cast<unsigned int>(argc) && j < n_arguments + 1; j++)  // +1 to include option itself
-            {
-                delete argv[i + j];
-                argv[i + j] = nullptr;
-                new_argc--;
-                end_index--;
-            }
-
-            // and shift the remaining the arguments
-            for (unsigned int k = i; k < argc - (n_arguments + 1); k++)
-            {
-                argv[k] = argv[k + n_arguments + 1];
-            }
-
-            argc = new_argc;
-        }
-    }
-}
-
-void PostProcessArgs(int& argc, char**& argv)
-{
-    // ignore any window argument prior to any headless argument
-
-    // first, find positions of last occurance of relevant options
-    int last_headless_index = -1;
-    int last_window_index   = -1;
-    int last_osc_index      = -1;
-    int last_osc_str_index  = -1;
-
-    for (int i = 0; i < argc; i++)
-    {
-        if (strcmp(argv[i], "--headless") == 0)
-        {
-            last_headless_index = i;
-        }
-        else if (strcmp(argv[i], "--window") == 0)
-        {
-            last_window_index = i;
-        }
-        else if (strcmp(argv[i], "--osc") == 0)
-        {
-            last_osc_index = i;
-        }
-        else if (strcmp(argv[i], "--osc_str") == 0)
-        {
-            last_osc_str_index = i;
-        }
-    }
-
-    // remove any window arguments prior to headless argument
-    if (last_window_index > -1 && last_window_index < last_headless_index)
-    {
-        RemoveOptionAndArguments(argc, argv, "--window", 4, 0, last_headless_index);
-    }
-
-    // remove any osc arguments prior to osc_str argument
-    if (last_osc_index > -1 && last_osc_index < last_osc_str_index)
-    {
-        RemoveOptionAndArguments(argc, argv, "--osc", 1, 0, last_osc_str_index);
-    }
-
-    // remove any osc_str arguments prior to osc argument
-    if (last_osc_str_index > -1 && last_osc_str_index < last_osc_index)
-    {
-        RemoveOptionAndArguments(argc, argv, "--osc_str", 1, 0, last_osc_index);
-    }
 }
 
 bool FileExists(const char* fileName)
@@ -1874,7 +1771,11 @@ void SE_Options::AddOption(std::string opt_str,
     else
     {
         SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply, shouldHaveOnlyOneValue);
-        option_.insert(std::make_pair(opt_str, opt));
+        const auto [itr, success] = option_.insert(std::make_pair(opt_str, opt));
+        if (success)
+        {
+            optionOrder_.push_back(&itr->second);
+        }
     }
 }
 
@@ -1882,15 +1783,10 @@ void SE_Options::PrintUsage()
 {
     printf("\nUsage: %s [options]\n", app_name_.c_str());
     printf("Options: \n");
-    for (const auto& [key, option] : option_)
+    for (const auto& option : optionOrder_)
     {
-        [[maybe_unused]] const auto& unused_key = key;
-        option.Usage();
+        option->Usage();
     }
-    // for (size_t i = 0; i < option_.size(); i++)
-    // {
-    //     option_[i].Usage();
-    // }
     printf("\n");
 }
 
@@ -1997,11 +1893,16 @@ int SE_Options::SetOptionValue(std::string opt, std::string value, bool add, boo
     {
         if (!option->opt_arg_.empty())
         {
-            if (!add || option->shouldHaveOnlyOneValue_)
+            // we will not check shouldHaveOnlyOneValue_ in this case, because there is more probability that this function is called
+            // from API before the Init is called. In that case shouldHaveOnlyOneValue_ will always be false, which might not be the case
+            // for some options
+            if (!add)
             {
                 option->arg_value_.clear();
             }
-            option->arg_value_.push_back(value);
+            // option->arg_value_.push_back(value);
+            //  we want to insert the value at the beginning of the vector so that the last value is the one that is used i.e. higher priority
+            option->arg_value_.insert(option->arg_value_.begin(), value);
         }
         else
         {
@@ -2082,7 +1983,8 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
                     {
                         option->arg_value_.clear();
                     }
-                    option->arg_value_.push_back(args[i + 1]);
+                    option->arg_value_.insert(option->arg_value_.begin(), args[i + 1]);
+                    // option->arg_value_.push_back(args[i + 1]);
                     i++;
                 }
                 else if (!option->default_value_.empty())
@@ -2136,14 +2038,6 @@ SE_Option* SE_Options::GetOption(std::string opt)
         return &itr->second;
     }
     return nullptr;
-    // for (size_t i = 0; i < option_.size(); i++)
-    // {
-    //     if (opt == option_[i].opt_str_)
-    //     {
-    //         return &option_[i];
-    //     }
-    // }
-    // return 0;
 }
 
 bool SE_Options::IsInOriginalArgs(std::string opt)
@@ -2163,6 +2057,7 @@ bool SE_Options::HasUnknownArgs()
 
 void SE_Options::Reset()
 {
+    optionOrder_.clear();
     for (auto& [key, option] : option_)
     {
         [[maybe_unused]] const auto& unused_key = key;
@@ -2172,14 +2067,6 @@ void SE_Options::Reset()
             option.set_ = false;
         }
     }
-    // for (size_t i = 0; i < option_.size(); i++)
-    // {
-    //     if (!option_[i].persistent_)
-    //     {
-    //         option_[i].arg_value_.clear();
-    //         option_[i].set_ = false;
-    //     }
-    // }
 
     originalArgs_.clear();
 }
