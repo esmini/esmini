@@ -292,6 +292,8 @@ private:
 
 // Useful operations
 
+void HandleConfigurations(const std::string& appName, int& argc, char**& argv);
+
 /**
  * Appends Argc and Argv with the arguments
  * @param argc: Number of arguments, that application already has
@@ -308,6 +310,8 @@ void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<
  * @param argv: Argument list that application already has
  */
 void PostProcessArgs(int& argc, char**& argv);
+
+void LogArgv(int argc, char** argv);
 
 /**
         Get model filename from model_id.
@@ -925,6 +929,7 @@ public:
 
 private:
     std::unordered_map<std::string, SE_Option> option_;
+    std::vector<SE_Option*>                    optionOrder_;  // To maintain the order of insertion of options, to print in help
     std::string                                app_name_;
     std::vector<std::string>                   originalArgs_;
     std::vector<std::string>                   unknown_args_;

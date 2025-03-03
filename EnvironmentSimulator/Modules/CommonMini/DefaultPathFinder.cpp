@@ -1,5 +1,7 @@
 #include "DefaultPathFinder.hpp"
 
+#include "logger.hpp"
+
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
 #elif defined(__APPLE__)
@@ -23,14 +25,17 @@ extern "C" std::string GetLibraryPath()
     // Get the handle of the current module (library)
     if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS, (LPCTSTR)GetLibraryPath, &hModule))
     {
-        throw std::runtime_error("Failed to get library handle.");
+        LOG_ERROR("Failed to get library handle.");
+        return "";
     }
 
     // Get the full path of the library
     if (GetModuleFileName(hModule, path, MAX_PATH) == 0)
     {
-        throw std::runtime_error("Failed to get library path.");
+        LOG_ERROR("Failed to get library path.");
+        return "";
     }
+    LOG_DEBUG("Library path: {}", path);
     std::string strPath(path);
     return strPath;
 
@@ -64,11 +69,15 @@ namespace esmini::common
             {
                 throw std::runtime_error("Failed to get executable path on Windows");
             }
-
+            LOG_DEBUG("Application path: {}", std::string(buffer));
             const auto path = GetLibraryPath();
             if (path.empty())
             {
-                std::cout << "unable to find the path func" << std::endl;
+                LOG_INFO("Unable to find the path func");
+            }
+            else
+            {
+                LOG_DEBUG("Library path: {}", path);
             }
 #elif defined(__linux__)
             ssize_t length = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
@@ -78,8 +87,11 @@ namespace esmini::common
             }
             buffer[length] = '\0';  // Null-terminate the string
 
+            LOG_DEBUG("Application path: {}", std::string(buffer));
+
             std::string libraryPath = GetLibraryPath();
-            std::cout << "Library path: " << libraryPath << std::endl;
+            LOG_DEBUG("Library path: {}", libraryPath);
+
 #elif defined(__APPLE__)
 
             uint32_t size = sizeof(buffer);
@@ -87,8 +99,9 @@ namespace esmini::common
             {
                 throw std::runtime_error("Buffer size too small for executable path on macOS");
             }
-
+            LOG_DEBUG("Application path: {}", std::string(buffer));
             std::string libraryPath = GetLibraryPath();
+            LOG_DEBUG("Library path: {}", libraryPath);
 #else
             throw std::runtime_error("Unsupported platform");
 #endif
@@ -97,7 +110,7 @@ namespace esmini::common
         }
         catch (const std::exception& e)
         {
-            std::cerr << "Error: " << e.what() << std::endl;
+            LOG_ERROR("Error while getting default path: {}", e.what());
         }
         return "";
     }

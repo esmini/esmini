@@ -33,6 +33,7 @@
 #include "RoadManager.hpp"
 #include "Replay.hpp"
 #include "logger.hpp"
+#include "Defines.hpp"
 
 #include <signal.h>
 
@@ -369,16 +370,34 @@ int GetGhostIdx()
     return -1;  // No ghost
 }
 
+void RemoveInternalArgv(int argcInternal, char** argvInternal)
+{
+    for (int i = 0; i < argcInternal; i++)
+    {
+        delete[] argvInternal[i];
+    }
+    delete[] argvInternal;
+}
+
 int main(int argc, char** argv)
 {
     std::unique_ptr<Replay> player;
     double                  simTime = 0;
     std::string             arg_str;
 
+    int    argcInternal = argc;
+    char** argvInternal;
+    argvInternal = new char*[argcInternal];
+    for (int i = 0; i < argcInternal; i++)
+    {
+        argvInternal[i] = new char[strlen(argv[i]) + 1];
+        StrCopy(argvInternal[i], argv[i], strlen(argv[i]) + 1);
+    }
+
     // Setup signal handler to catch Ctrl-C
     signal(SIGINT, signal_handler);
 
-    SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
+    SE_Env::Inst().AddPath(DirNameOf(argvInternal[0]));  // Add location of exe file to search paths
 
     // use common options parser to manage the program arguments
     SE_Options& opt = SE_Env::Inst().GetOptions();
@@ -395,6 +414,7 @@ int main(int argc, char** argv)
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
 #endif  // _USE_OSG
     opt.AddOption("collision", "Detect collisions and optionally pauses the replay <pause/continue> (pause is default)", "mode", "pause");
+    opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, true, false);
 #ifdef _USE_OSG
     opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
     opt.AddOption("custom_fixed_camera",
@@ -415,13 +435,13 @@ int main(int argc, char** argv)
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
 #endif  // _USEOSG
-    opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", REPLAYER_LOG_FILENAME, false);
+    opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", REPLAYER_LOG_FILENAME, true);
 #ifdef _USE_OSG
     opt.AddOption("no_ghost", "Remove ghost entities");
     opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
 #endif  // _USEOSG
-    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path");
+    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path", "", false, false);
     opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
 #ifdef _USE_OSG
     opt.AddOption("remove_object", "Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.", "id");
@@ -443,12 +463,15 @@ int main(int argc, char** argv)
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
 #endif  // _USEOSG
 
-    if (opt.ParseArgs(argc, argv) != 0)
+    HandleConfigurations("replayer", argcInternal, argvInternal);
+
+    if (opt.ParseArgs(argcInternal, argvInternal) != 0 || argc < 2)
     {
         opt.PrintUsage();
 #ifdef _USE_OSG
         viewer::Viewer::PrintUsage();
 #endif  // _USE_OSG
+        RemoveInternalArgv(argcInternal, argvInternal);
         return -1;
     }
 
@@ -466,6 +489,7 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
         viewer::Viewer::PrintUsage();
 #endif  // _USE_OSG
+        RemoveInternalArgv(argcInternal, argvInternal);
         return -1;
     }
 
@@ -504,6 +528,7 @@ int main(int argc, char** argv)
             if (!save_merged.empty())
             {
                 LOG_INFO("Merged data saved in {}", save_merged);
+                RemoveInternalArgv(argcInternal, argvInternal);
                 return 0;
             }
         }
@@ -512,6 +537,7 @@ int main(int argc, char** argv)
             if (!save_merged.empty())
             {
                 LOG_ERROR("\"--saved_merged\" works only in combination with \"--dir\" argument, combining multiple dat files");
+                RemoveInternalArgv(argcInternal, argvInternal);
                 return -1;
             }
             player = std::make_unique<Replay>(opt.GetOptionArg("file"), true);
@@ -520,6 +546,7 @@ int main(int argc, char** argv)
     catch (const std::exception& e)
     {
         LOG_ERROR("Exception: ", e.what());
+        RemoveInternalArgv(argcInternal, argvInternal);
         return -1;
     }
 
@@ -585,6 +612,7 @@ int main(int argc, char** argv)
         if (viewer_ == nullptr)
         {
             printf("Failed to create viewer");
+            RemoveInternalArgv(argcInternal, argvInternal);
             return -1;
         }
 
@@ -650,6 +678,7 @@ int main(int argc, char** argv)
                 }
                 else
                 {
+                    RemoveInternalArgv(argcInternal, argvInternal);
                     LOG_ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
                 }
                 viewer_->SetCameraMode(-1);  // activate last camera which is the one just added
@@ -689,6 +718,7 @@ int main(int argc, char** argv)
                 }
                 else
                 {
+                    RemoveInternalArgv(argcInternal, argvInternal);
                     LOG_ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
                 }
                 viewer_->SetCameraMode(-1);  // activate last camera which is the one just added
@@ -705,6 +735,7 @@ int main(int argc, char** argv)
                 const auto splitted = SplitString(arg_str, ',');
                 if (splitted.size() != 4)
                 {
+                    RemoveInternalArgv(argcInternal, argvInternal);
                     LOG_ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
                 }
                 viewer_->AddCustomFixedTopCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]));
@@ -720,6 +751,7 @@ int main(int argc, char** argv)
             int mask = strtoi(arg_str);
             if (mask < 0 || mask > 3)
             {
+                RemoveInternalArgv(argcInternal, argvInternal);
                 LOG_ERROR_AND_QUIT("Invalid on-screen info mode {}. Valid range is 0-3", mask);
             }
             viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO | viewer::NodeMask::NODE_MASK_INFO_PER_OBJ,
@@ -741,6 +773,7 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
             viewer::Viewer::PrintUsage();
 #endif  // _USE_OSG
+            RemoveInternalArgv(argcInternal, argvInternal);
             return -1;
         }
 
@@ -847,6 +880,7 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
             delete viewer_;
 #endif  // _USE_OSG
+            RemoveInternalArgv(argcInternal, argvInternal);
             return -1;
         }
 
@@ -1152,14 +1186,16 @@ int main(int argc, char** argv)
     }
     catch (std::logic_error& e)
     {
+        RemoveInternalArgv(argcInternal, argvInternal);
         printf("%s\n", e.what());
         return 2;
     }
     catch (std::runtime_error& e)
     {
+        RemoveInternalArgv(argcInternal, argvInternal);
         printf("%s\n", e.what());
         return 3;
     }
-
+    RemoveInternalArgv(argcInternal, argvInternal);
     return 0;
 }

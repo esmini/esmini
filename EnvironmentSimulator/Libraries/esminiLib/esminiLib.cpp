@@ -468,7 +468,7 @@ extern "C"
 
     SE_DLL_API int SE_SetOptionValue(const char *name, const char *value)
     {
-        return SE_Env::Inst().GetOptions().SetOptionValue(name, value);
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, value, true);
     }
 
     SE_DLL_API int SE_SetOptionPersistent(const char *name)
@@ -478,7 +478,7 @@ extern "C"
 
     SE_DLL_API int SE_SetOptionValuePersistent(const char *name, const char *value)
     {
-        return SE_Env::Inst().GetOptions().SetOptionValue(name, value, false, true);
+        return SE_Env::Inst().GetOptions().SetOptionValue(name, value, true, true);
     }
 
     SE_DLL_API const char *SE_GetOptionValue(const char *name)

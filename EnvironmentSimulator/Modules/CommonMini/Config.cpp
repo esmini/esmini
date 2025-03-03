@@ -23,7 +23,11 @@ namespace esmini::common
         if (const auto envConfigFile = GetEnvironmentVariable("ESMINI_CONFIG_FILE"); envConfigFile.has_value())
         {
             LOG_INFO("Found environment variable ESMINI_CONFIG_FILE: {}", envConfigFile.value());
-            const auto valueVec = SplitString(envConfigFile.value(), ',');
+#ifdef _WIN32
+            const auto valueVec = SplitString(envConfigFile.value(), ';');
+#else
+            const auto valueVec = SplitString(envConfigFile.value(), ':');
+#endif
             configFilePaths_.insert(configFilePaths_.end(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
         }
     }

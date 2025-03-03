@@ -12,6 +12,9 @@
 
 #include "logger.hpp"
 
+#include "Config.hpp"
+#include "ConfigParser.hpp"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <cmath>
@@ -21,6 +24,16 @@
 #include <sstream>
 #include <locale>
 #include <array>
+
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
 
 // UDP network includes
 #ifndef _WIN32
@@ -193,10 +206,74 @@ std::string ControlDomain2Str(unsigned int domains)
     return str;
 }
 
+void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
+{
+    // parse default config file and environment variable config files
+    esmini::common::Config config(appName);
+
+    std::vector<std::string> allConfigs;
+    if (!fs::exists(config.GetFilePaths()[0]))
+    {
+        LOG_INFO("Ignoring missing default config: {}", config.GetFilePaths()[0]);
+    }
+    else
+    {
+        const auto defaultAndEnvironmentConfigs = config.GetConfig();
+        allConfigs                              = std::move(defaultAndEnvironmentConfigs);
+    }
+
+    // there is a possibility that the config file path is already set in options, maybe through the api call
+    SE_Options& opt = SE_Env::Inst().GetOptions();
+    for (const auto& configFileName : opt.GetOptionArgs(CONFIG_FILE_OPTION_NAME))
+    {
+        esmini::common::ConfigParser configParser(appName, {configFileName});
+        auto                         configs = configParser.Parse();
+        allConfigs.insert(allConfigs.end(), std::make_move_iterator(configs.begin()), std::make_move_iterator(configs.end()));
+    }
+
+    // parse config file path(s) from the arguments, if present. And append the configs to the arguments
+    std::string configFilePathOption = fmt::format("--{}", CONFIG_FILE_OPTION_NAME);
+    for (int i = 1; i < argc; ++i)
+    {
+        if (strcmp(configFilePathOption.c_str(), argv[i]) == 0)
+        {
+            // now we can parse config file here
+            esmini::common::ConfigParser configParser(appName, {argv[i + 1]});
+            auto                         configs = configParser.Parse();
+            // we need to wipe out the config file path from the arguments, so that they wont be consumed again
+            for (int j = i; j < argc - 2; ++j)
+            {
+                argv[j] = argv[j + 2];
+                delete argv[j + 2];
+                argv[j + 2] = nullptr;
+            }
+            argc -= 2;
+            AppendArgcArgv(argc, argv, i, configs);
+        }
+    }
+
+    // since the config file(s) from arguments are already parsed and appended to the arguments.
+    // We just want to keep the application name at first index, after it we low priority configs
+    AppendArgcArgv(argc, argv, 1, allConfigs);
+
+    PostProcessArgs(argc, argv);
+}
+
+void LogArgv(int argc, char** argv)
+{
+    std::string allArgvs;
+    for (int i = 0; i < argc; ++i)
+    {
+        allArgvs = fmt::format("{} {}", allArgvs, argv[i]);
+    }
+    LOG_INFO("Argv: {}", allArgvs);
+}
+
 void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& prefixArgs)
 {
-    unsigned int newArgc = static_cast<unsigned int>(argc + prefixArgs.size());
-    char**       newArgv = new char*[newArgc];
+    int          previousArgc = argc;
+    unsigned int newArgc      = static_cast<unsigned int>(argc + prefixArgs.size());
+    char**       newArgv      = new char*[newArgc];
 
     int i;
     // firstly, copy the original arguments before the appendIndex
@@ -219,6 +296,14 @@ void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<
         StrCopy(newArgv[i], argv[j], std::strlen(argv[j]) + 1);
         ++i;
     }
+    newArgv[newArgc] = nullptr;  // null terminate the array
+
+    for (int j = 0; j < previousArgc; ++j)
+    {
+        delete[] argv[j];
+    }
+    delete[] argv;
+
     argc = newArgc;
     argv = newArgv;
 }
@@ -1874,7 +1959,11 @@ void SE_Options::AddOption(std::string opt_str,
     else
     {
         SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply, shouldHaveOnlyOneValue);
-        option_.insert(std::make_pair(opt_str, opt));
+        const auto [itr, success] = option_.insert(std::make_pair(opt_str, opt));
+        if (success)
+        {
+            optionOrder_.push_back(&itr->second);
+        }
     }
 }
 
@@ -1882,15 +1971,10 @@ void SE_Options::PrintUsage()
 {
     printf("\nUsage: %s [options]\n", app_name_.c_str());
     printf("Options: \n");
-    for (const auto& [key, option] : option_)
+    for (const auto& option : optionOrder_)
     {
-        [[maybe_unused]] const auto& unused_key = key;
-        option.Usage();
+        option->Usage();
     }
-    // for (size_t i = 0; i < option_.size(); i++)
-    // {
-    //     option_[i].Usage();
-    // }
     printf("\n");
 }
 
@@ -1997,11 +2081,16 @@ int SE_Options::SetOptionValue(std::string opt, std::string value, bool add, boo
     {
         if (!option->opt_arg_.empty())
         {
-            if (!add || option->shouldHaveOnlyOneValue_)
+            // we will not check shouldHaveOnlyOneValue_ in this case, because there is more probability that this function is called
+            // from API before the Init is called. In that case shouldHaveOnlyOneValue_ will always be false, which might not be the case
+            // for some options
+            if (!add)
             {
                 option->arg_value_.clear();
             }
-            option->arg_value_.push_back(value);
+            // option->arg_value_.push_back(value);
+            //  we want to insert the value at the beginning of the vector so that the last value is the one that is used i.e. higher priority
+            option->arg_value_.insert(option->arg_value_.begin(), value);
         }
         else
         {
@@ -2163,6 +2252,7 @@ bool SE_Options::HasUnknownArgs()
 
 void SE_Options::Reset()
 {
+    optionOrder_.clear();
     for (auto& [key, option] : option_)
     {
         [[maybe_unused]] const auto& unused_key = key;
@@ -2172,14 +2262,6 @@ void SE_Options::Reset()
             option.set_ = false;
         }
     }
-    // for (size_t i = 0; i < option_.size(); i++)
-    // {
-    //     if (!option_[i].persistent_)
-    //     {
-    //         option_[i].arg_value_.clear();
-    //         option_[i].set_ = false;
-    //     }
-    // }
 
     originalArgs_.clear();
 }
