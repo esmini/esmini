@@ -75,7 +75,7 @@ jobs:
       - uses: ./.github/actions/generate_offset_run_number
 
       - name: Cache
-        uses: actions/cache@v4.0.2
+        uses: actions/cache@v4
         with:
           path: |
             externals/googletest
@@ -169,7 +169,7 @@ jobs:
       - uses: ./.github/actions/setup_tools_shared
 
       - name: Cache
-        uses: actions/cache@v4.0.2
+        uses: actions/cache@v4
         with:
           path: |
             externals/googletest
