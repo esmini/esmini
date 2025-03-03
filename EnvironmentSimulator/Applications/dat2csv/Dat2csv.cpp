@@ -64,7 +64,7 @@ void Dat2csv::PrintData(int obj_id)
     {
         snprintf(line,
                  MAX_LINE_LEN,
-                 "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %d, %d, %.5f, %.3f, %.3f, %.3f, %.3f, %.3f, ",
+                 "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %d, %d, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, ",
                  player_->scenarioState_.sim_time,
                  obj_id,
                  name.c_str(),
