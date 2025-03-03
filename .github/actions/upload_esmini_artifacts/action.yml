@@ -24,8 +24,6 @@ runs:
         EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp
         EnvironmentSimulator/Libraries/esminiLib/ESMiniWrapper.cs
         version.txt
-        test/sim.csv
-        test/sim_py.csv
         | tar -p -C esmini -x
 
     - name: Make scripts and binaries runnable for Release - Unix

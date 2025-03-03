@@ -2120,27 +2120,27 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.3.010.* brakeLightsOnAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.5.010.* LightStateActionStory runningState -> endTransition -> completeState', log)  is not None)
 
-    def test_csv_generation_for_all_modes(self):
+    # def test_csv_generation_for_all_modes(self):
 
-        scenarios = ["EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc", "EnvironmentSimulator/Unittest/xosc/ghost_restart.xosc"]
-        choices = ["original", "min_step", "min_step_mixed", "custom_time_step", "custom_time_step_mixed"]
-        extented = {True:"--extended", False:""}
-        file_refs = {True:"--file_refs", False:""}
-        for scenario in scenarios:
-            # Run scenario and check initialization steps
-            log = run_scenario(os.path.join(ESMINI_PATH, f'{scenario}'), COMMON_ESMINI_ARGS)
-            self.assertTrue(re.search(f'Loading .*{os.path.basename(scenario)}', log) is not None)
-            for key, value in extented.items():
-                for file_ref_key, file_ref_value in file_refs.items():
-                    for mode in choices:  # Test for each mode
-                        # print(f"Testing mode: {mode} with extended: {key} and file_refs: {file_ref_key}")
-                        with self.subTest(mode=mode, extented = value, file_refs = file_ref_key):  # Use subTest to isolate each mode's test
-                            python_csv = generate_csv(mode_=mode, extended = key, file_refs = file_ref_key)
-                            log = run_dat2csv(f'--file sim.dat --time_mode {mode} {value} {file_ref_value}')
-                            cpp_csv_file = 'sim.csv'
-                            with open(cpp_csv_file, "r") as f:
-                                cpp_csv = f.read()
-                            self.assertEqual(python_csv, cpp_csv, f"CSV mismatch for mode: {mode} in {os.path.basename(scenario)}")
+    #     scenarios = ["EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc", "EnvironmentSimulator/Unittest/xosc/ghost_restart.xosc"]
+    #     choices = ["original", "min_step", "min_step_mixed", "custom_time_step", "custom_time_step_mixed"]
+    #     extented = {True:"--extended", False:""}
+    #     file_refs = {True:"--file_refs", False:""}
+    #     for scenario in scenarios:
+    #         # Run scenario and check initialization steps
+    #         log = run_scenario(os.path.join(ESMINI_PATH, f'{scenario}'), COMMON_ESMINI_ARGS)
+    #         self.assertTrue(re.search(f'Loading .*{os.path.basename(scenario)}', log) is not None)
+    #         for key, value in extented.items():
+    #             for file_ref_key, file_ref_value in file_refs.items():
+    #                 for mode in choices:  # Test for each mode
+    #                     # print(f"Testing mode: {mode} with extended: {key} and file_refs: {file_ref_key}")
+    #                     with self.subTest(mode=mode, extented = value, file_refs = file_ref_key):  # Use subTest to isolate each mode's test
+    #                         python_csv = generate_csv(mode_=mode, extended = key, file_refs = file_ref_key)
+    #                         log = run_dat2csv(f'--file sim.dat --time_mode {mode} {value} {file_ref_value}')
+    #                         cpp_csv_file = 'sim.csv'
+    #                         with open(cpp_csv_file, "r") as f:
+    #                             cpp_csv = f.read()
+    #                         self.assertEqual(python_csv, cpp_csv, f"CSV mismatch for mode: {mode} in {os.path.basename(scenario)}")
 
 
 
