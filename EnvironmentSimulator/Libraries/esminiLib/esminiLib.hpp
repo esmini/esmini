@@ -461,6 +461,13 @@ extern "C"
     SE_DLL_API const char *SE_GetOptionValue(const char *name);
 
     /**
+   Get option values count. Some options can have multiple values, this function returns the number of values present for the option.
+   @param name the name of the option whose values count to fetch
+   @return values count of the option
+   */
+    SE_DLL_API int SE_GetOptionValuesCount(const char *name);
+
+    /**
      Get option set status
      @param name is the name of the option whose value is fetch
      @return Returns true if the option is set otherwise false

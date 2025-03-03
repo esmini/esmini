@@ -25,33 +25,21 @@ namespace esmini::common
     private:
         // Function to parse the YAML file
         void ParseYamlFile(const std::string& filename);
+
         // Function to recursively parse the YAML node and populate the map
         // void ParseNode(const ryml::NodeRef& node, const std::string& prefix);
         void ParseNode(TINY_YAML::Node& node, std::string parent);
-
-        // Logs all applications config map
-        // void LogAllAppsConfig() const;
-
-        // Logs one application config map
-        // void LogOneAppConfig(const std::string& app) const;
-
-        // Logs the config for the application
-        void LogConfig() const;
 
         // Function to store the app wise value in the map
         void PutValue(const std::string& app, const std::string& key, const std::string& value);
 
         // private data members
     private:
-        // config file path
+        // config file(s) path(s)
         std::vector<std::string> configFilePaths_;
-
-        // map to store application wise config
-        // ApplicationsConfigMap appsConfig_;
-
         // application name for which we are parsing the config file i.e. esmini, replayer etc.
         std::string applicationName_;
-        // container to store the config for application
+        // container to store the config for the application
         std::vector<std::string> configs_;
     };
 }  // namespace esmini::common

@@ -33,6 +33,7 @@
 #include "RoadManager.hpp"
 #include "Replay.hpp"
 #include "logger.hpp"
+#include "Config.hpp"
 
 #include <signal.h>
 
@@ -395,6 +396,7 @@ int main(int argc, char** argv)
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
 #endif  // _USE_OSG
     opt.AddOption("collision", "Detect collisions and optionally pauses the replay <pause/continue> (pause is default)", "mode", "pause");
+    opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, true, false);
 #ifdef _USE_OSG
     opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
     opt.AddOption("custom_fixed_camera",
@@ -415,13 +417,13 @@ int main(int argc, char** argv)
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
 #endif  // _USEOSG
-    opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", REPLAYER_LOG_FILENAME, false);
+    opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", REPLAYER_LOG_FILENAME, true);
 #ifdef _USE_OSG
     opt.AddOption("no_ghost", "Remove ghost entities");
     opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
 #endif  // _USEOSG
-    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path");
+    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path", "", false, false);
     opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
 #ifdef _USE_OSG
     opt.AddOption("remove_object", "Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.", "id");
@@ -443,7 +445,12 @@ int main(int argc, char** argv)
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
 #endif  // _USEOSG
 
-    if (opt.ParseArgs(argc, argv) != 0)
+    int                    argc_;
+    char**                 argv_;
+    esmini::common::Config config("replayer", argc, argv);
+    std::tie(argc_, argv_) = config.Load();
+
+    if (opt.ParseArgs(argc_, argv_) != 0 || argc_ < 2)
     {
         opt.PrintUsage();
 #ifdef _USE_OSG
@@ -452,6 +459,9 @@ int main(int argc, char** argv)
         return -1;
     }
 
+    std::string strAllSetOptions = opt.GetSetOptionsAsStr();
+    LOG_INFO("replayer options: {}", strAllSetOptions);
+
     TxtLogger::Inst().LogTimeOnly();
     TxtLogger::Inst().SetLoggerTime(&simTime);
 
@@ -459,7 +469,7 @@ int main(int argc, char** argv)
     LOG_INFO("Compiled with USE_OSG=FALSE, limited functionality available");
 #endif  // _USE_OSG
 
-    if (opt.GetOptionArg("file").empty() || argc < 2 || opt.GetOptionSet("help"))
+    if (opt.GetOptionArg("file").empty() || argc_ < 2 || opt.GetOptionSet("help"))
     {
         printf("Missing required file argument\n");
         opt.PrintUsage();
@@ -579,8 +589,8 @@ int main(int argc, char** argv)
         char                    info_str_buf[256];
         double                  targetSimTime = simTime;
         roadmanager::OpenDrive* odrManager    = roadmanager::Position::GetOpenDrive();
-        osg::ArgumentParser     arguments(&argc, argv);
-        viewer_ = new viewer::Viewer(odrManager, player->header_.model_filename, NULL, argv[0], arguments, &opt);
+        osg::ArgumentParser     arguments(&argc_, argv_);
+        viewer_ = new viewer::Viewer(odrManager, player->header_.model_filename, NULL, argv_[0], arguments, &opt);
 
         if (viewer_ == nullptr)
         {
@@ -727,7 +737,7 @@ int main(int argc, char** argv)
         }
 
         viewer_->RegisterKeyEventCallback(ReportKeyEvent, player.get());
-        viewer_->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));
+        viewer_->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv_[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));
 
         __int64 now           = 0;
         __int64 lastTimeStamp = 0;
@@ -1160,6 +1170,5 @@ int main(int argc, char** argv)
         printf("%s\n", e.what());
         return 3;
     }
-
     return 0;
 }

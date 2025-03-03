@@ -2,6 +2,7 @@
 
 #include "CommonMini.hpp"
 #include "esminiLib.hpp"
+#include "Config.hpp"
 
 struct Coordinate2D
 {
@@ -201,163 +202,6 @@ TEST(MatrixOperations, TestMatrixInvert)
     EXPECT_NEAR(m3[2][2], 1.0, 1E-5);
 }
 
-TEST(ProgramOptions, TestNonPersisted)
-{
-    std::string paramName  = "density";
-    std::string paramValue = "10";
-    const char* args[]     = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
-    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-    SE_SetOptionValue(paramName.c_str(), paramValue.c_str());
-    const char* value = SE_GetOptionValue(paramName.c_str());
-    ASSERT_NE(value, nullptr);
-    std::string strValue(value);
-    EXPECT_EQ(strValue, paramValue);
-    SE_Close();
-
-    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-    value = SE_GetOptionValue(paramName.c_str());
-    ASSERT_EQ(value, nullptr);
-    SE_Close();
-}
-
-TEST(ProgramOptions, TestPersisted)
-{
-    std::string paramValue = "10";
-    std::string paramName  = "density";
-    const char* args[]     = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
-    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-    SE_SetOptionValuePersistent(paramName.c_str(), paramValue.c_str());
-    const char* value = SE_GetOptionValue(paramName.c_str());
-    ASSERT_NE(value, nullptr);
-    std::string optionValue(value);
-    EXPECT_EQ(optionValue, paramValue);
-    SE_Close();
-
-    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-    optionValue = SE_GetOptionValue(paramName.c_str());
-    EXPECT_EQ(optionValue, paramValue);
-    // make it non-persistent for cleanup
-    SE_SetOptionValue(paramName.c_str(), paramValue.c_str());
-    SE_Close();
-}
-
-TEST(ProgramOptions, TestAutoApply)
-{
-    std::string param  = "logfile_path";
-    const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
-    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-    const char* value = SE_GetOptionValue(param.c_str());
-    ASSERT_NE(value, nullptr);
-    std::string optionValue(value);
-    EXPECT_EQ(optionValue, LOG_FILENAME);
-    SE_Close();
-}
-
-TEST(ProgramOptions, TestAutoNotAppliedWhenSetEmpty)
-{
-    std::string paramName = "logfile_path";
-    SE_SetOptionValue(paramName.c_str(), "");
-    const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
-    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-    const char* value = SE_GetOptionValue(paramName.c_str());
-    std::string optionValue(value);
-    ASSERT_EQ(optionValue, "");
-    SE_Close();
-}
-
-TEST(ProgramOptions, TestDefaultValueSetIfMentionedOnly)
-{
-    std::string paramName = "record";
-    const char* args[]    = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
-    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-    const char* value = SE_GetOptionValue(paramName.c_str());
-    ASSERT_EQ(value, nullptr);
-    SE_Close();
-
-    SE_SetOption(paramName.c_str());
-    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
-    value = SE_GetOptionValue(paramName.c_str());
-    ASSERT_NE(value, nullptr);
-    std::string optionValue(value);
-    EXPECT_EQ(optionValue, DAT_FILENAME);
-    SE_Close();
-}
-
-TEST(ProgramOptions, TestMixOfPersistedAndNonPersisted)
-{
-    double elapsed_time = 0;
-    SE_SetLogFilePath("my_test.txt");
-    SE_SetOptionPersistent("log_append");
-    SE_SetOption("osi_file");
-    SE_SetOptionValue("log_level", "info");
-    SE_SetOptionValue("fixed_timestep", "0.01");
-    SE_Init("../../../resources/xosc/cut-in.xosc", 0, 0, 0, 0);
-
-    while (SE_GetQuitFlag() == 0)
-    {
-        if (elapsed_time > 3.0)
-        {
-            const char* value = SE_GetOptionValue("logfile_path");
-            std::string optionValue(value);
-            ASSERT_EQ(optionValue, "my_test.txt");
-            SE_SetOptionPersistent("log_meta_data");
-            break;
-        }
-        SE_Step();
-        elapsed_time += 0.5;
-    }
-    SE_Close();
-
-    const char* value = SE_GetOptionValue("logfile_path");
-    std::string optionValue(value);
-    ASSERT_EQ(optionValue, "my_test.txt");
-
-    // check log_meta_data if its set
-    bool isSet = SE_GetOptionSet("log_meta_data");
-    EXPECT_TRUE(isSet);
-
-    isSet = SE_GetOptionSet("log_append");
-    EXPECT_TRUE(isSet);
-
-    isSet = SE_GetOptionSet("log_level");
-    EXPECT_FALSE(isSet);
-
-    isSet = SE_GetOptionSet("osi_file");
-    EXPECT_FALSE(isSet);
-
-    isSet = SE_GetOptionSet("fixed_timestep");
-    EXPECT_FALSE(isSet);
-
-    value = SE_GetOptionValue("log_level");
-    ASSERT_EQ(value, nullptr);
-
-    // check log file path
-
-    SE_SetLogFilePath("my_test_error.txt");
-    // SE_SetOptionValuePersistent("log_level", "error");
-    SE_SetOptionPersistent("osi_file");  // Works
-    SE_Init("../../../resources/xosc/cut-in.xosc", 0, 0, 0, 0);
-
-    value = SE_GetOptionValue("logfile_path");
-    std::string val1(value);
-    ASSERT_EQ(val1, "my_test_error.txt");
-    elapsed_time = 0;
-    while (SE_GetQuitFlag() == 0)
-    {
-        if (elapsed_time > 3.0)
-        {
-            break;
-        }
-        elapsed_time += 0.5;
-        SE_Step();
-    }
-    SE_Close();
-
-    value = SE_GetOptionValue("logfile_path");
-    std::string logFilePath(value);
-    ASSERT_EQ(logFilePath, "my_test_error.txt");
-}
-
 TEST(LinearAlgebra, TestAngleBetweenVectors)
 {
     double v1[2] = {1.0, 0.0};
@@ -387,6 +231,54 @@ TEST(LinearAlgebra, TestAngleBetweenVectors)
     v2[0] = 1.0;
     v2[1] = -0.6;
     EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), 2.798, 1E-3);
+}
+
+TEST(ProgramOptions, TestConfigOptionPostprocessing)
+{
+    {
+        const char*            args[] = {"esmini", "--osc", "../../../resources/xosc/cut-in_simple.xosc", "--osc_str", "osc_str_value"};
+        esmini::common::Config config("esmini", sizeof(args) / sizeof(char*), const_cast<char**>(args));
+        auto [argc, argv] = config.Load();
+        EXPECT_EQ(argc, 3);
+        EXPECT_EQ(strcmp(argv[0], "esmini"), 0);
+        EXPECT_EQ(strcmp(argv[1], "--osc_str"), 0);
+        EXPECT_EQ(strcmp(argv[2], "osc_str_value"), 0);
+    }
+    {
+        const char*            args[] = {"esmini", "--osc_str", "osc_str_value", "--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+        esmini::common::Config config("esmini", sizeof(args) / sizeof(char*), const_cast<char**>(args));
+        auto [argc, argv] = config.Load();
+        EXPECT_EQ(argc, 3);
+        EXPECT_EQ(strcmp(argv[0], "esmini"), 0);
+        EXPECT_EQ(strcmp(argv[1], "--osc"), 0);
+        EXPECT_EQ(strcmp(argv[2], "../../../resources/xosc/cut-in_simple.xosc"), 0);
+    }
+    {
+        const char* args[] = {"esmini", "--window", "60", "60", "800", "400", "--headless", "--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+        esmini::common::Config config("esmini", sizeof(args) / sizeof(char*), const_cast<char**>(args));
+        auto [argc, argv] = config.Load();
+        EXPECT_EQ(argc, 4);
+        EXPECT_EQ(strcmp(argv[0], "esmini"), 0);
+        EXPECT_EQ(strcmp(argv[1], "--headless"), 0);
+        EXPECT_EQ(strcmp(argv[2], "--osc"), 0);
+        EXPECT_EQ(strcmp(argv[3], "../../../resources/xosc/cut-in_simple.xosc"), 0);
+    }
+    {
+        // this is special case where we dont want to remove window argument if its found after headless
+        const char* args[] = {"esmini", "--headless", "--window", "60", "60", "800", "400", "--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+        esmini::common::Config config("esmini", sizeof(args) / sizeof(char*), const_cast<char**>(args));
+        auto [argc, argv] = config.Load();
+        EXPECT_EQ(argc, 9);
+        EXPECT_EQ(strcmp(argv[0], "esmini"), 0);
+        EXPECT_EQ(strcmp(argv[1], "--headless"), 0);
+        EXPECT_EQ(strcmp(argv[2], "--window"), 0);
+        EXPECT_EQ(strcmp(argv[3], "60"), 0);
+        EXPECT_EQ(strcmp(argv[4], "60"), 0);
+        EXPECT_EQ(strcmp(argv[5], "800"), 0);
+        EXPECT_EQ(strcmp(argv[6], "400"), 0);
+        EXPECT_EQ(strcmp(argv[7], "--osc"), 0);
+        EXPECT_EQ(strcmp(argv[8], "../../../resources/xosc/cut-in_simple.xosc"), 0);
+    }
 }
 
 int main(int argc, char** argv)

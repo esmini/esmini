@@ -72,6 +72,9 @@ using idx_t = uint32_t;
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
 #define LOGICAL_OR(X, Y)              ((X || Y) && !(X && Y))
 
+const std::string CONFIG_FILE_OPTION_NAME = "config_file_path";
+const std::string DEFAULT_CONFIG_FILE     = "config.yml";
+
 // Time functions
 __int64 SE_getSystemTime();
 void    SE_sleep(unsigned int msec);
@@ -292,22 +295,8 @@ private:
 
 // Useful operations
 
-/**
- * Appends Argc and Argv with the arguments
- * @param argc: Number of arguments, that application already has
- * @param argv: Argument list that application already has
- * @param appendIndex: Index until which original arguments should be kept, after which new arguments will be added. Once new arguments are added,
- *  remaining original arguments will be added at the last
- * @param dataToAppend: Vector of strings to append, new arguments which needs to be added
- */
-void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& dataToAppend);
-
-/**
- * Perform final argument check, resolving conflicts and prioritizations
- * @param argc: Number of arguments, that application already has
- * @param argv: Argument list that application already has
- */
-void PostProcessArgs(int& argc, char**& argv);
+// Function to get the executable's/library's disk path
+std::string GetDefaultPath();
 
 /**
         Get model filename from model_id.
@@ -729,6 +718,11 @@ private:
     bool flag;
 };
 
+// Converts string to bool pair, first is set if value is bool and second is value of conversion
+// caller should check first before using second. This function will take:
+// true, True, TRUE as true
+// false, False, FALSE as false
+std::pair<bool, bool>    StrToBool(const std::string& val);
 std::vector<std::string> SplitString(const std::string& str, char delimiter);
 std::string              DirNameOf(const std::string& fname);
 std::string              FileNameOf(const std::string& fname);
@@ -862,23 +856,23 @@ public:
     bool                     set_;
     std::vector<std::string> arg_value_;
     std::string              default_value_;
-    bool                     persistent_             = false;
-    bool                     autoApply_              = false;
-    bool                     shouldHaveOnlyOneValue_ = false;
+    bool                     persistent_          = false;
+    bool                     autoApply_           = false;
+    bool                     isSingleValueOption_ = false;
 
     SE_Option(std::string opt_str,
               std::string opt_desc,
-              std::string opt_arg                = "",
-              std::string default_value          = "",
-              bool        autoApply              = false,
-              bool        shouldHaveOnlyOneValue = false)
+              std::string opt_arg             = "",
+              std::string default_value       = "",
+              bool        autoApply           = false,
+              bool        isSingleValueOption = false)
         : opt_str_(opt_str),
           opt_desc_(opt_desc),
           opt_arg_(opt_arg),
           set_(false),
           default_value_(default_value),
           autoApply_(autoApply),
-          shouldHaveOnlyOneValue_(shouldHaveOnlyOneValue)
+          isSingleValueOption_(isSingleValueOption)
     {
     }
 
@@ -892,10 +886,10 @@ class SE_Options
 public:
     void AddOption(std::string opt_str,
                    std::string opt_desc,
-                   std::string opt_arg                = "",
-                   std::string opt_arg_default_value  = "",
-                   bool        autoApply              = false,
-                   bool        shouldHaveOnlyOneValue = true);
+                   std::string opt_arg               = "",
+                   std::string opt_arg_default_value = "",
+                   bool        autoApply             = false,
+                   bool        isSingleValueOption   = true);
 
     void        PrintUsage();
     void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");
@@ -922,9 +916,11 @@ public:
     // clears only value(s) of the option and let the other flags as they are
     int                                               ClearOption(const std::string& opt);
     const std::unordered_map<std::string, SE_Option>& GetAllOptions() const;
+    std::string                                       GetSetOptionsAsStr();
 
 private:
     std::unordered_map<std::string, SE_Option> option_;
+    std::vector<SE_Option*>                    optionOrder_;  // To maintain the order of insertion of options, to print in help
     std::string                                app_name_;
     std::vector<std::string>                   originalArgs_;
     std::vector<std::string>                   unknown_args_;

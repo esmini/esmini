@@ -18,7 +18,6 @@ set(SOURCES
     logger.cpp
     Config.cpp
     ConfigParser.cpp
-    DefaultPathFinder.cpp
     ${EXTERNALS_YAML_PATH}/yaml.cpp)
 
 set(INCLUDES
@@ -27,7 +26,6 @@ set(INCLUDES
     logger.hpp
     Config.hpp
     ConfigParser.hpp
-    DefaultPathFinder.hpp
     ${EXTERNALS_YAML_PATH}/yaml.hpp)
 
 # ############################### Creating library ###################################################################

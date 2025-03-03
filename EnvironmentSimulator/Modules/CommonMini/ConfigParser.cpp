@@ -2,7 +2,6 @@
 
 #include "CommonMini.hpp"
 #include "logger.hpp"
-#include "Defines.hpp"
 
 #include <iostream>
 
@@ -26,68 +25,6 @@ namespace esmini::common
 
     //---------------------------------------------------------------------------------------------------------------------
 
-    // void ConfigParser::PutValue(const std::string& app, const std::string& key, const std::string& value)
-    // {
-    //     ConfigMap& configMap = appsConfig_[app];
-    //     const auto valueVec  = SplitString(value, ' ');
-    //     auto&      configVec = configMap[key];
-    //     configVec.push_back(fmt::format("--{}", key));
-    //     configVec.insert(configVec.end(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
-    // }
-
-    //---------------------------------------------------------------------------------------------------------------------
-
-    // void ConfigParser::LogAllAppsConfig() const
-    // {
-    //     for (const auto& [app, configMap] : appsConfig_)
-    //     {
-    //         std::cout << std::endl << "Application: " << app << std::endl;
-    //         for (const auto& [key, value] : configMap)
-    //         {
-    //             std::cout << key << " : " << std::endl;
-    //             for (const auto& val : value)
-    //             {
-    //                 std::cout << val << " " << std::endl;
-    //             }
-    //         }
-    //     }
-    // }
-
-    //---------------------------------------------------------------------------------------------------------------------
-
-    // void ConfigParser::LogOneAppConfig(const std::string& app) const
-    // {
-    //     if (const auto& it = appsConfig_.find(app); it == appsConfig_.end())
-    //     {
-    //         std::cout << "Config for application: " << app << " not found" << std::endl;
-    //         return;
-    //     }
-    //     else
-    //     {
-    //         std::cout << std::endl << "Application: " << app << std::endl;
-    //         for (const auto& [key, value] : it->second)
-    //         {
-    //             std::cout << key << " : " << std::endl;
-    //             for (const auto& val : value)
-    //             {
-    //                 std::cout << val << " " << std::endl;
-    //             }
-    //         }
-    //     }
-    // }
-
-    //---------------------------------------------------------------------------------------------------------------------
-
-    void ConfigParser::LogConfig() const
-    {
-        for (const auto& config : configs_)
-        {
-            std::cout << config << std::endl;
-        }
-    }
-
-    //---------------------------------------------------------------------------------------------------------------------
-
     void ConfigParser::PutValue(const std::string& app, const std::string& key, const std::string& value)
     {
         if (app == applicationName_)
@@ -103,9 +40,29 @@ namespace esmini::common
                 return;
             }
 
-            configs_.push_back(fmt::format("--{}", key));
             const auto valueVec = SplitString(value, ' ');
-            configs_.insert(configs_.end(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
+            if (valueVec.size() == 1)
+            {
+                // this can be boolean value
+                if (auto [isBool, boolValue] = StrToBool(valueVec[0]); isBool)
+                {
+                    // in case of boolean value, we need to add only the key to be in sync with the command line arguments
+                    if (boolValue)
+                    {
+                        configs_.push_back(fmt::format("--{}", key));
+                    }
+                }
+                else
+                {
+                    configs_.push_back(fmt::format("--{}", key));
+                    configs_.push_back(valueVec[0]);
+                }
+            }
+            else
+            {
+                configs_.push_back(fmt::format("--{}", key));
+                configs_.insert(configs_.end(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
+            }
         }
     }
 

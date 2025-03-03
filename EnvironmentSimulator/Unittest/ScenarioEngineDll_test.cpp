@@ -11,9 +11,23 @@
 #include "CommonMini.hpp"
 #include "esminiLib.hpp"
 #include "RoadManager.hpp"
+#include "Config.hpp"
+#include "esminiLib.hpp"
+
 #include <vector>
 #include <stdexcept>
 #include <fstream>
+#include <stdio.h>
+
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -255,6 +269,426 @@ TEST(LoggerTests, check_log_append)
     EXPECT_TRUE(found);
 
     fclose(file);
+}
+
+TEST(ProgramOptions, TestNonPersisted)
+{
+    std::string paramName  = "density";
+    std::string paramValue = "10";
+    const char* args[]     = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    SE_SetOptionValue(paramName.c_str(), paramValue.c_str());
+    const char* value = SE_GetOptionValue(paramName.c_str());
+    ASSERT_NE(value, nullptr);
+    std::string strValue(value);
+    EXPECT_EQ(strValue, paramValue);
+    SE_Close();
+
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    value = SE_GetOptionValue(paramName.c_str());
+    ASSERT_EQ(value, nullptr);
+    SE_Close();
+}
+
+TEST(ProgramOptions, TestPersisted)
+{
+    std::string paramValue = "10";
+    std::string paramName  = "density";
+    const char* args[]     = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    SE_SetOptionValuePersistent(paramName.c_str(), paramValue.c_str());
+    const char* value = SE_GetOptionValue(paramName.c_str());
+    ASSERT_NE(value, nullptr);
+    std::string optionValue(value);
+    EXPECT_EQ(optionValue, paramValue);
+    SE_Close();
+
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    optionValue = SE_GetOptionValue(paramName.c_str());
+    EXPECT_EQ(optionValue, paramValue);
+    // make it non-persistent for cleanup
+    SE_SetOptionValue(paramName.c_str(), paramValue.c_str());
+    SE_Close();
+}
+
+TEST(ProgramOptions, TestAutoApply)
+{
+    std::string param  = "logfile_path";
+    const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    const char* value = SE_GetOptionValue(param.c_str());
+    ASSERT_NE(value, nullptr);
+    std::string optionValue(value);
+    EXPECT_EQ(optionValue, LOG_FILENAME);
+    SE_Close();
+}
+
+TEST(ProgramOptions, TestAutoNotAppliedWhenSetEmpty)
+{
+    std::string paramName = "logfile_path";
+    SE_SetOptionValue(paramName.c_str(), "");
+    const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    const char* value = SE_GetOptionValue(paramName.c_str());
+    std::string optionValue(value);
+    ASSERT_EQ(optionValue, "");
+    SE_Close();
+}
+
+TEST(ProgramOptions, TestDefaultValueSetIfMentionedOnly)
+{
+    std::string paramName = "record";
+    const char* args[]    = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    const char* value = SE_GetOptionValue(paramName.c_str());
+    ASSERT_EQ(value, nullptr);
+    SE_Close();
+
+    SE_SetOption(paramName.c_str());
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    value = SE_GetOptionValue(paramName.c_str());
+    ASSERT_NE(value, nullptr);
+    std::string optionValue(value);
+    EXPECT_EQ(optionValue, DAT_FILENAME);
+    SE_Close();
+}
+
+TEST(ProgramOptions, TestMixOfPersistedAndNonPersisted)
+{
+    double elapsed_time = 0;
+    SE_SetLogFilePath("my_test.txt");
+    SE_SetOptionPersistent("log_append");
+    SE_SetOption("osi_file");
+    SE_SetOptionValue("log_level", "info");
+    SE_SetOptionValue("fixed_timestep", "0.01");
+    SE_Init("../../../resources/xosc/cut-in.xosc", 0, 0, 0, 0);
+
+    while (SE_GetQuitFlag() == 0)
+    {
+        if (elapsed_time > 3.0)
+        {
+            const char* value = SE_GetOptionValue("logfile_path");
+            std::string optionValue(value);
+            ASSERT_EQ(optionValue, "my_test.txt");
+            SE_SetOptionPersistent("log_meta_data");
+            break;
+        }
+        SE_Step();
+        elapsed_time += 0.5;
+    }
+    SE_Close();
+
+    const char* value = SE_GetOptionValue("logfile_path");
+    std::string optionValue(value);
+    ASSERT_EQ(optionValue, "my_test.txt");
+
+    // check log_meta_data if its set
+    bool isSet = SE_GetOptionSet("log_meta_data");
+    EXPECT_TRUE(isSet);
+
+    isSet = SE_GetOptionSet("log_append");
+    EXPECT_TRUE(isSet);
+
+    isSet = SE_GetOptionSet("log_level");
+    EXPECT_FALSE(isSet);
+
+    isSet = SE_GetOptionSet("osi_file");
+    EXPECT_FALSE(isSet);
+
+    isSet = SE_GetOptionSet("fixed_timestep");
+    EXPECT_FALSE(isSet);
+
+    value = SE_GetOptionValue("log_level");
+    ASSERT_EQ(value, nullptr);
+
+    SE_SetLogFilePath("my_test_error.txt");
+    SE_SetOptionPersistent("osi_file");
+    SE_Init("../../../resources/xosc/cut-in.xosc", 0, 0, 0, 0);
+
+    value = SE_GetOptionValue("logfile_path");
+    std::string val1(value);
+    ASSERT_EQ(val1, "my_test_error.txt");
+    elapsed_time = 0;
+    while (SE_GetQuitFlag() == 0)
+    {
+        if (elapsed_time > 3.0)
+        {
+            break;
+        }
+        elapsed_time += 0.5;
+        SE_Step();
+    }
+    // cleanup the persisted options
+    SE_SetOption("log_append");
+    SE_SetOption("log_meta_data");
+    SE_SetOption("osi_file");
+    SE_SetOption("logfile_path");
+    SE_Close();
+
+    isSet = SE_GetOptionSet("logfile_path");
+    EXPECT_FALSE(isSet);
+
+    isSet = SE_GetOptionSet("log_meta_data");
+    EXPECT_FALSE(isSet);
+
+    isSet = SE_GetOptionSet("log_append");
+    EXPECT_FALSE(isSet);
+
+    isSet = SE_GetOptionSet("log_level");
+    EXPECT_FALSE(isSet);
+
+    isSet = SE_GetOptionSet("osi_file");
+    EXPECT_FALSE(isSet);
+}
+
+TEST(ProgramOptions, LastOptionOverrides)
+{
+    std::string optionName = "osc";
+    std::string optionValue("../../../resources/xosc/cut-in_simple.xosc");
+    const char* args[] = {"--osc", "../../../resources/xosc/acc-test.xosc", "--osc", optionValue.c_str()};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    const char* value = SE_GetOptionValue(optionName.c_str());
+    ASSERT_NE(value, nullptr);
+    EXPECT_EQ(value, optionValue);
+    SE_Close();
+}
+
+TEST(ProgramOptions, CommandPromptOverridesApi)
+{
+    std::string optionName = "osc";
+    std::string optionValue("../../../resources/xosc/cut-in.xosc");
+    SE_SetOptionValue(optionName.c_str(), "../../../resources/xosc/cut-in_simple.xosc");
+    SE_Init(optionValue.c_str(), 0, 0, 0, 0);
+    const char* value = SE_GetOptionValue(optionName.c_str());
+    ASSERT_NE(value, nullptr);
+    EXPECT_EQ(value, optionValue);
+    SE_Close();
+}
+
+TEST(ProgramOptions, LastFileOptionsOverride)
+{
+    std::string firstConfigFileName  = "config1.yml";
+    std::string secondConfigFileName = "config2.yml";
+
+    // create first config file
+    std::ofstream file1(firstConfigFileName);
+    EXPECT_TRUE(file1.is_open());
+    file1 << "esmini: \n";
+    file1 << "  logfile_path: log1.txt\n";
+    file1 << "  osc: ../../../resources/xosc/cut-in.xosc\n";
+    file1 << "replayer:\n";
+    file1 << "  file: sim1.dat";
+    file1.close();
+
+    // create second config file
+    std::ofstream file2(secondConfigFileName);
+    EXPECT_TRUE(file2.is_open());
+    file2 << "esmini: \n";
+    file2 << "  logfile_path: log2.txt\n";
+    file2 << "  osc: ../../../resources/xosc/cut-in_simple.xosc\n";
+    file2 << "replayer:\n";
+    file2 << "  file: sim2.dat";
+    file2.close();
+
+    {
+        // firstly we will put config1.yml and then config2.yml - and check if the options from config2.yml are taken
+        const char* args[] = {"--config_file_path", firstConfigFileName.c_str(), "--config_file_path", secondConfigFileName.c_str()};
+        ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+        const char* value = SE_GetOptionValue("logfile_path");
+        ASSERT_NE(value, nullptr);
+        std::string expectedValue = "log2.txt";
+        EXPECT_EQ(value, expectedValue);
+        value = SE_GetOptionValue("osc");
+        ASSERT_NE(value, nullptr);
+        expectedValue = "../../../resources/xosc/cut-in_simple.xosc";
+        EXPECT_EQ(value, expectedValue);
+        SE_Close();
+    }
+    {
+        // secondly we will put config2.yml and then config1.yml - and check if the options from config1.yml are taken
+        const char* args[] = {"--config_file_path", secondConfigFileName.c_str(), "--config_file_path", firstConfigFileName.c_str()};
+        ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+        const char* value = SE_GetOptionValue("logfile_path");
+        ASSERT_NE(value, nullptr);
+        std::string expectedValue = "log1.txt";
+        EXPECT_EQ(value, expectedValue);
+        value = SE_GetOptionValue("osc");
+        ASSERT_NE(value, nullptr);
+        expectedValue = "../../../resources/xosc/cut-in.xosc";
+        EXPECT_EQ(value, expectedValue);
+        SE_Close();
+    }
+
+    const char* value = SE_GetOptionValue("logfile_path");
+    ASSERT_EQ(value, nullptr);
+
+    // Delete the files
+    int result = std::remove(firstConfigFileName.c_str());
+    EXPECT_EQ(result, 0);
+
+    result = std::remove(secondConfigFileName.c_str());
+    EXPECT_EQ(result, 0);
+}
+
+TEST(ProgramOptions, MultipleOptionValuesHandled)
+{
+    std::string firstConfigFileName  = "config1.yml";
+    std::string secondConfigFileName = "config2.yml";
+
+    // create first config file
+    std::ofstream file1(firstConfigFileName);
+    EXPECT_TRUE(file1.is_open());
+    file1 << "esmini: \n";
+    file1 << "  logfile_path: log1.txt\n";
+    file1 << "  path: a.txt\n";
+    file1 << "  osc: ../../../resources/xosc/cut-in.xosc\n";
+    file1 << "replayer:\n";
+    file1 << "  file: sim1.dat";
+    file1.close();
+
+    // create second config file
+    std::ofstream file2(secondConfigFileName);
+    EXPECT_TRUE(file2.is_open());
+    file2 << "esmini: \n";
+    file2 << "  logfile_path: log2.txt\n";
+    file2 << "  osc: ../../../resources/xosc/cut-in_simple.xosc\n";
+    file2 << "  path: b.txt\n";
+    file2 << "replayer:\n";
+    file2 << "  file: sim2.dat";
+    file2.close();
+
+    // firstly we will put config1.yml and then config2.yml - and check if the options from config2.yml are taken
+    const char* args[] = {"--config_file_path", firstConfigFileName.c_str(), "--config_file_path", secondConfigFileName.c_str()};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+
+    const char* value = SE_GetOptionValue("logfile_path");
+    ASSERT_NE(value, nullptr);
+    std::string expectedValue = "log2.txt";
+    EXPECT_EQ(value, expectedValue);
+    EXPECT_EQ(SE_GetOptionValuesCount("logfile_path"), 1);
+
+    value = SE_GetOptionValue("osc");
+    ASSERT_NE(value, nullptr);
+    expectedValue = "../../../resources/xosc/cut-in_simple.xosc";
+    EXPECT_EQ(value, expectedValue);
+    EXPECT_EQ(SE_GetOptionValuesCount("osc"), 1);
+
+    value = SE_GetOptionValue("path");
+    ASSERT_NE(value, nullptr);
+    expectedValue = "b.txt";
+    EXPECT_EQ(value, expectedValue);
+    EXPECT_EQ(SE_GetOptionValuesCount("path"), 2);
+    SE_Close();
+
+    value = SE_GetOptionValue("logfile_path");
+    ASSERT_EQ(value, nullptr);
+
+    // Delete the file
+    int result = std::remove(firstConfigFileName.c_str());
+    EXPECT_EQ(result, 0);
+
+    result = std::remove(secondConfigFileName.c_str());
+    EXPECT_EQ(result, 0);
+}
+
+TEST(ProgramOptions, PicksValueFromAppendIndexAsWell)
+{
+    std::string firstConfigFileName  = "config1.yml";
+    std::string secondConfigFileName = "config2.yml";
+
+    // create first config file
+    std::ofstream file1(firstConfigFileName);
+    EXPECT_TRUE(file1.is_open());
+    file1 << "esmini: \n";
+    file1 << "  logfile_path: log1.txt\n";
+    file1 << "  path: a.txt\n";
+    file1 << "  osc: ../../../resources/xosc/cut-in.xosc\n";
+    file1 << "replayer:\n";
+    file1 << "  file: sim1.dat";
+    file1.close();
+
+    // create second config file
+    std::ofstream file2(secondConfigFileName);
+    EXPECT_TRUE(file2.is_open());
+    file2 << "esmini: \n";
+    file2 << "  osc: ../../../resources/xosc/cut-in_simple.xosc\n";
+    file2 << "  path: b.txt\n";
+    file2 << "replayer:\n";
+    file2 << "  file: sim2.dat";
+    file2.close();
+
+    const char* args[] = {"--config_file_path", firstConfigFileName.c_str(), "--config_file_path", secondConfigFileName.c_str()};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+
+    const char* value = SE_GetOptionValue("logfile_path");
+    ASSERT_NE(value, nullptr);
+    std::string expectedValue = "log1.txt";
+    EXPECT_EQ(value, expectedValue);
+    EXPECT_EQ(SE_GetOptionValuesCount("logfile_path"), 1);
+
+    value = SE_GetOptionValue("osc");
+    ASSERT_NE(value, nullptr);
+    expectedValue = "../../../resources/xosc/cut-in_simple.xosc";
+    EXPECT_EQ(value, expectedValue);
+    EXPECT_EQ(SE_GetOptionValuesCount("osc"), 1);
+
+    value = SE_GetOptionValue("path");
+    ASSERT_NE(value, nullptr);
+    expectedValue = "b.txt";
+    EXPECT_EQ(value, expectedValue);
+    EXPECT_EQ(SE_GetOptionValuesCount("path"), 2);
+    SE_Close();
+
+    value = SE_GetOptionValue("logfile_path");
+    ASSERT_EQ(value, nullptr);
+
+    // Delete the file
+    int result = std::remove(firstConfigFileName.c_str());
+    EXPECT_EQ(result, 0);
+
+    result = std::remove(secondConfigFileName.c_str());
+    EXPECT_EQ(result, 0);
+}
+
+TEST(ProgramOptions, ParsesBoolValues)
+{
+    std::string firstConfigFileName  = "config1.yml";
+    std::string secondConfigFileName = "config2.yml";
+
+    // create first config file
+    std::ofstream file1(firstConfigFileName);
+    EXPECT_TRUE(file1.is_open());
+    file1 << "esmini: \n";
+    file1 << "  log_append: false\n";
+    file1 << "  osc: ../../../resources/xosc/cut-in.xosc\n";
+    file1 << "replayer:\n";
+    file1 << "  file: sim1.dat";
+    file1.close();
+
+    // create second config file
+    std::ofstream file2(secondConfigFileName);
+    EXPECT_TRUE(file2.is_open());
+    file2 << "esmini: \n";
+    file2 << "  osc: ../../../resources/xosc/cut-in_simple.xosc\n";
+    file2 << "  disable_stdout: true\n";
+    file2 << "replayer:\n";
+    file2 << "  file: sim2.dat";
+    file2.close();
+
+    const char* args[] = {"--config_file_path", firstConfigFileName.c_str(), "--config_file_path", secondConfigFileName.c_str()};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+
+    EXPECT_FALSE(SE_GetOptionSet("log_append"));
+    EXPECT_TRUE(SE_GetOptionSet("disable_stdout"));
+
+    SE_Close();
+
+    // Delete the file
+    int result = std::remove(firstConfigFileName.c_str());
+    EXPECT_EQ(result, 0);
+
+    result = std::remove(secondConfigFileName.c_str());
+    EXPECT_EQ(result, 0);
 }
 
 // OSI tests
@@ -4506,6 +4940,9 @@ TEST(ParamDistTest, TestRunAll)
         "log_11_of_12.txt",
         "log_12_of_12.txt",
     };
+
+    const char* value = SE_GetOptionValue("logfile_path");
+    ASSERT_EQ(value, nullptr);
 
     // Fetch timestamp of any old run
     struct stat fileStatus;
