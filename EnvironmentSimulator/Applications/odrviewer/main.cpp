@@ -368,14 +368,32 @@ void updateCar(roadmanager::OpenDrive *odrManager, Car *car, double dt)
     }
 }
 
+void RemoveInternalArgv(int argcInternal, char **argvInternal)
+{
+    for (int i = 0; i < argcInternal; i++)
+    {
+        delete[] argvInternal[i];
+    }
+    delete[] argvInternal;
+}
+
 int main(int argc, char **argv)
 {
     static char str_buf[128];
 
+    int    argcInternal = argc;
+    char **argvInternal;
+    argvInternal = new char *[argcInternal];
+    for (int i = 0; i < argcInternal; i++)
+    {
+        argvInternal[i] = new char[strlen(argv[i]) + 1];
+        std::strcpy(argvInternal[i], argv[i]);
+    }
+
     SE_Options &opt = SE_Env::Inst().GetOptions();
     opt.Reset();
 
-    SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
+    SE_Env::Inst().AddPath(DirNameOf(argvInternal[0]));  // Add location of exe file to search paths
 
     std::vector<std::string> args;
     for (int i = 0; i < argc; i++)
@@ -414,7 +432,7 @@ int main(int argc, char **argv)
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
     opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
     opt.AddOption("osi_points", "Show OSI road points. Toggle key 'y'");
-    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path");
+    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path", "", false, false);
     opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");
     opt.AddOption("seed", "Specify seed number for random generator", "number");
@@ -425,16 +443,18 @@ int main(int argc, char **argv)
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
 
-    HandleConfigurations("odrviewer", argc, argv);
+    HandleConfigurations("odrviewer", argcInternal, argvInternal);
 
-    if (opt.ParseArgs(argc, argv) != 0)
+    if (opt.ParseArgs(argcInternal, argvInternal) != 0)
     {
+        RemoveInternalArgv(argcInternal, argvInternal);
         opt.PrintUsage();
         return -1;
     }
 
     if (opt.GetOptionSet("version"))
     {
+        RemoveInternalArgv(argcInternal, argvInternal);
         return 0;
     }
 
@@ -442,6 +462,7 @@ int main(int argc, char **argv)
     {
         opt.PrintUsage();
         viewer::Viewer::PrintUsage();
+        RemoveInternalArgv(argcInternal, argvInternal);
         return 0;
     }
 
@@ -518,6 +539,7 @@ int main(int argc, char **argv)
         printf("Missing required argument --odr\n");
         opt.PrintUsage();
         viewer::Viewer::PrintUsage();
+        RemoveInternalArgv(argcInternal, argvInternal);
         return -1;
     }
 
@@ -564,12 +586,13 @@ int main(int argc, char **argv)
         if (!roadmanager::Position::LoadOpenDrive(odrFilename.c_str()))
         {
             printf("Failed to load ODR %s\n", odrFilename.c_str());
+            RemoveInternalArgv(argcInternal, argvInternal);
             return -1;
         }
         roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
 
-        osg::ArgumentParser arguments(&argc, argv);
-        viewer::Viewer     *viewer = new viewer::Viewer(odrManager, modelFilename.c_str(), NULL, argv[0], arguments, &opt);
+        osg::ArgumentParser arguments(&argcInternal, argvInternal);
+        viewer::Viewer     *viewer = new viewer::Viewer(odrManager, modelFilename.c_str(), NULL, argvInternal[0], arguments, &opt);
 
         viewer->SetWindowTitleFromArgs(args);
         viewer->RegisterKeyEventCallback(FetchKeyEvent, nullptr);
@@ -635,6 +658,7 @@ int main(int argc, char **argv)
                 }
                 else
                 {
+                    RemoveInternalArgv(argcInternal, argvInternal);
                     LOG_ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
                 }
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
@@ -651,6 +675,7 @@ int main(int argc, char **argv)
                 const auto splitted = SplitString(arg_str, ',');
                 if (splitted.size() != 4)
                 {
+                    RemoveInternalArgv(argcInternal, argvInternal);
                     LOG_ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
                 }
                 viewer->AddCustomFixedTopCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]));
@@ -673,6 +698,7 @@ int main(int argc, char **argv)
 
         if (SetupCars(odrManager, viewer) == -1)
         {
+            RemoveInternalArgv(argcInternal, argvInternal);
             return 4;
         }
         LOG_INFO("{} cars added", static_cast<int>(cars.size()));
@@ -761,11 +787,13 @@ int main(int argc, char **argv)
     catch (std::logic_error &e)
     {
         printf("%s\n", e.what());
+        RemoveInternalArgv(argcInternal, argvInternal);
         return 2;
     }
     catch (std::runtime_error &e)
     {
         printf("%s\n", e.what());
+        RemoveInternalArgv(argcInternal, argvInternal);
         return 3;
     }
 
@@ -773,5 +801,6 @@ int main(int argc, char **argv)
     {
         delete (cars[i]);
     }
+    RemoveInternalArgv(argcInternal, argvInternal);
     return 0;
 }

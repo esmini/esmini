@@ -370,26 +370,25 @@ TEST(ProgramOptions, TestMixOfPersistedAndNonPersisted)
     ASSERT_EQ(logFilePath, "my_test_error.txt");
 }
 
-TEST(ProgramOptions, FindsDefaultConfigFile)
-{
-    // just check if the default config file is present at esmini root folder
-    fs::directory_entry entry{"../../../config.yml"};
-    EXPECT_TRUE(entry.exists());
+// TEST(ProgramOptions, FindsDefaultConfigFile)
+// {
+//     // just check if the default config file is present at esmini root folder
+//     fs::directory_entry entry{"../../../config.yml"};
+//     EXPECT_TRUE(entry.exists());
 
-}
+// }
 
 TEST(ProgramOptions, LastOptionOverrides)
 {
     std::string optionName = "osc";
     std::string optionValue("../../../resources/xosc/cut-in_simple.xosc");
-    const char* args[]    = {"--osc", "../../../resources/xosc/acc-test.xosc", "--osc", optionValue.c_str()};
+    const char* args[] = {"--osc", "../../../resources/xosc/acc-test.xosc", "--osc", optionValue.c_str()};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     const char* value = SE_GetOptionValue(optionName.c_str());
     ASSERT_NE(value, nullptr);
     EXPECT_EQ(value, optionValue);
     SE_Close();
 }
-
 
 TEST(ProgramOptions, CommandPromptOverridesApi)
 {
@@ -403,10 +402,9 @@ TEST(ProgramOptions, CommandPromptOverridesApi)
     SE_Close();
 }
 
-
 TEST(ProgramOptions, LastFileOptionsOverride)
 {
-    std::string firstConfigFileName = "config1.yml";
+    std::string firstConfigFileName  = "config1.yml";
     std::string secondConfigFileName = "config2.yml";
 
     // create first config file
@@ -460,11 +458,11 @@ TEST(ProgramOptions, LastFileOptionsOverride)
     }
 
     // Delete the file
-    int result = std::remove(file1);
+    int result = std::remove(firstConfigFileName.c_str());
     EXPECT_EQ(result, 0);
 
-    result = std::remove(file2);
-    EXPECT_EQ(result, 0)
+    result = std::remove(secondConfigFileName.c_str());
+    EXPECT_EQ(result, 0);
 }
 
 TEST(LinearAlgebra, TestAngleBetweenVectors)

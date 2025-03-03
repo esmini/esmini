@@ -359,6 +359,15 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
     }
 }
 
+void RemoveInternalArgv(int argcInternal, char** argvInternal)
+{
+    for (int i = 0; i < argcInternal; i++)
+    {
+        delete[] argvInternal[i];
+    }
+    delete[] argvInternal;
+}
+
 int main(int argc, char** argv)
 {
     roadmanager::OpenDrive* odrManager;
@@ -369,10 +378,19 @@ int main(int argc, char** argv)
     static char             info_str_buf[256];
     std::string             arg_str;
 
+    int    argcInternal = argc;
+    char** argvInternal;
+    argvInternal = new char*[argcInternal];
+    for (int i = 0; i < argcInternal; i++)
+    {
+        argvInternal[i] = new char[strlen(argv[i]) + 1];
+        std::strcpy(argvInternal[i], argv[i]);
+    }
+
     // Setup signal handler to catch Ctrl-C
     signal(SIGINT, signal_handler);
 
-    SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
+    SE_Env::Inst().AddPath(DirNameOf(argvInternal[0]));  // Add location of exe file to search paths
 
     // use common options parser to manage the program arguments
     SE_Options& opt = SE_Env::Inst().GetOptions();
@@ -401,11 +419,11 @@ int main(int argc, char** argv)
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
-    opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", REPLAYER_LOG_FILENAME, false);
+    opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", REPLAYER_LOG_FILENAME, true);
     opt.AddOption("no_ghost", "Remove ghost entities");
     opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
-    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path");
+    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path", "", false, false);
     opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
     opt.AddOption("remove_object", "Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.", "id");
     opt.AddOption("repeat", "loop scenario");
@@ -419,14 +437,15 @@ int main(int argc, char** argv)
     opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
 
-    HandleConfigurations("replayer", argc, argv);
+    HandleConfigurations("replayer", argcInternal, argvInternal);
 
-    if (opt.ParseArgs(argc, argv) != 0 || argc < 2)
+    if (opt.ParseArgs(argcInternal, argvInternal) != 0 || argc < 2)
     {
         opt.PrintUsage();
 #ifdef _USE_OSG
         viewer::Viewer::PrintUsage();
 #endif
+        RemoveInternalArgv(argcInternal, argvInternal);
         return -1;
     }
 
@@ -439,6 +458,7 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
         viewer::Viewer::PrintUsage();
 #endif
+        RemoveInternalArgv(argcInternal, argvInternal);
         return -1;
     }
 
@@ -477,6 +497,7 @@ int main(int argc, char** argv)
             if (!save_merged.empty())
             {
                 LOG_INFO("Merged data saved in {}", save_merged);
+                RemoveInternalArgv(argcInternal, argvInternal);
                 return 0;
             }
         }
@@ -485,6 +506,7 @@ int main(int argc, char** argv)
             if (!save_merged.empty())
             {
                 LOG_ERROR("\"--saved_merged\" works only in combination with \"--dir\" argument, combining multiple dat files");
+                RemoveInternalArgv(argcInternal, argvInternal);
                 return -1;
             }
             player = std::make_unique<Replay>(opt.GetOptionArg("file"), true);
@@ -493,6 +515,7 @@ int main(int argc, char** argv)
     catch (const std::exception& e)
     {
         LOG_ERROR("Exception: ", e.what());
+        RemoveInternalArgv(argcInternal, argvInternal);
         return -1;
     }
 
@@ -550,13 +573,14 @@ int main(int argc, char** argv)
 
         odrManager = roadmanager::Position::GetOpenDrive();
 
-        osg::ArgumentParser arguments(&argc, argv);
+        osg::ArgumentParser arguments(&argcInternal, argvInternal);
 
-        viewer = new viewer::Viewer(odrManager, player->header_.model_filename, NULL, argv[0], arguments, &opt);
+        viewer = new viewer::Viewer(odrManager, player->header_.model_filename, NULL, argvInternal[0], arguments, &opt);
 
         if (viewer == nullptr)
         {
             printf("Failed to create viewer");
+            RemoveInternalArgv(argcInternal, argvInternal);
             return -1;
         }
 
@@ -622,6 +646,7 @@ int main(int argc, char** argv)
                 }
                 else
                 {
+                    RemoveInternalArgv(argcInternal, argvInternal);
                     LOG_ERROR_AND_QUIT("Expected custom_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
                 }
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
@@ -661,6 +686,7 @@ int main(int argc, char** argv)
                 }
                 else
                 {
+                    RemoveInternalArgv(argcInternal, argvInternal);
                     LOG_ERROR_AND_QUIT("Expected custom_fixed_camera <x,y,z>[,h,p]. Got {} values instead of 3 or 5.", splitted.size());
                 }
                 viewer->SetCameraMode(-1);  // activate last camera which is the one just added
@@ -677,6 +703,7 @@ int main(int argc, char** argv)
                 const auto splitted = SplitString(arg_str, ',');
                 if (splitted.size() != 4)
                 {
+                    RemoveInternalArgv(argcInternal, argvInternal);
                     LOG_ERROR_AND_QUIT("Expected custom_fixed_top_camera <x,y,z,rot>. Got {} values instead of 4", splitted.size());
                 }
                 viewer->AddCustomFixedTopCamera(strtod(splitted[0]), strtod(splitted[1]), strtod(splitted[2]), strtod(splitted[3]));
@@ -692,6 +719,7 @@ int main(int argc, char** argv)
             int mask = strtoi(arg_str);
             if (mask < 0 || mask > 3)
             {
+                RemoveInternalArgv(argcInternal, argvInternal);
                 LOG_ERROR_AND_QUIT("Invalid on-screen info mode {}. Valid range is 0-3", mask);
             }
             viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO | viewer::NodeMask::NODE_MASK_INFO_PER_OBJ,
@@ -707,9 +735,10 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
             viewer::Viewer::PrintUsage();
 #endif
+            RemoveInternalArgv(argcInternal, argvInternal);
             return -1;
         }
-        viewer->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));
+        viewer->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argvInternal[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));
 
         __int64 now           = 0;
         __int64 lastTimeStamp = 0;
@@ -793,6 +822,7 @@ int main(int argc, char** argv)
 
         if (ParseEntities(viewer, player.get()) != 0)
         {
+            RemoveInternalArgv(argcInternal, argvInternal);
             delete viewer;
             return -1;
         }
@@ -1093,14 +1123,16 @@ int main(int argc, char** argv)
     }
     catch (std::logic_error& e)
     {
+        RemoveInternalArgv(argcInternal, argvInternal);
         printf("%s\n", e.what());
         return 2;
     }
     catch (std::runtime_error& e)
     {
+        RemoveInternalArgv(argcInternal, argvInternal);
         printf("%s\n", e.what());
         return 3;
     }
-
+    RemoveInternalArgv(argcInternal, argvInternal);
     return 0;
 }

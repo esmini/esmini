@@ -894,7 +894,7 @@ public:
     void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");
     bool        GetOptionSet(std::string opt);
     bool        IsOptionArgumentSet(std::string opt);
-    std::string GetOptionArg(std::string opt, int index = -1);
+    std::string GetOptionArg(std::string opt, int index = 0);
     // returns all the values set for the option
     std::vector<std::string> GetOptionArgs(std::string opt);
     int                      ParseArgs(int argc, const char* const argv[]);

@@ -55,7 +55,7 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
       state_(PlayerState::PLAYER_STATE_PLAYING)
 {
     argv_ = new char*[argc];
-    for(int i = 0; i < argc; i++)
+    for (int i = 0; i < argc; i++)
     {
         argv_[i] = new char[strlen(argv[i]) + 1];
         std::strcpy(argv_[i], argv[i]);

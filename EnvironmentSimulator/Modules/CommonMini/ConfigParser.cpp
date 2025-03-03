@@ -153,7 +153,7 @@ namespace esmini::common
     {
         try
         {
-            for (const std::string& configFilePath : configFilePaths_) // go with index
+            for (const std::string& configFilePath : configFilePaths_)  // go with index
             {
                 LOG_INFO("Parsing config file: {}", configFilePath);
                 ParseYamlFile(configFilePath);

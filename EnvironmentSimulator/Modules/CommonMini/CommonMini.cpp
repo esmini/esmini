@@ -255,9 +255,9 @@ void LogArgv(int argc, char** argv)
 
 void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& prefixArgs)
 {
-    int previousArgc = argc;
-    int    newArgc = argc + prefixArgs.size();
-    char** newArgv = new char*[newArgc + 1];  // +1 for the null terminator
+    int    previousArgc = argc;
+    int    newArgc      = argc + prefixArgs.size();
+    char** newArgv      = new char*[newArgc + 1];  // +1 for the null terminator
 
     int i;
     // firstly, copy the original arguments before the appendIndex
@@ -289,8 +289,8 @@ void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<
     }
     delete[] argv;
 
-    argc             = newArgc;
-    argv             = newArgv;
+    argc = newArgc;
+    argv = newArgv;
 }
 
 bool FileExists(const char* fileName)
@@ -1974,25 +1974,19 @@ std::vector<std::string> SE_Options::GetOptionArgs(std::string opt)
 std::string SE_Options::GetOptionArg(std::string opt, int index)
 {
     SE_Option* option = GetOption(opt);
-
     if (option == nullptr)
     {
         return "";
     }
-    if (!option->opt_arg_.empty())
-    {
-        if(index > -1 && static_cast<unsigned int>(index) < option->arg_value_.size())
-        {
-            return option->arg_value_[static_cast<unsigned int>(index)];
-        }
-        else if(! option->arg_value_.empty())
-        {
-            // last value is used in case index is not in bounds
-            return option->arg_value_[ option->arg_value_.size() - 1];
-        }
-    }
-    return "";
 
+    if (!(option->opt_arg_.empty()) && static_cast<unsigned int>(index) < option->arg_value_.size())
+    {
+        return option->arg_value_[static_cast<unsigned int>(index)];
+    }
+    else
+    {
+        return "";
+    }
 }
 
 static constexpr std::array<const char*, 10> OSG_ARGS = {"--clear-color",
@@ -2041,7 +2035,9 @@ int SE_Options::SetOptionValue(std::string opt, std::string value, bool add, boo
             {
                 option->arg_value_.clear();
             }
-            option->arg_value_.push_back(value);
+            // option->arg_value_.push_back(value);
+            //  we want to insert the value at the beginning of the vector so that the last value is the one that is used i.e. higher priority
+            option->arg_value_.insert(option->arg_value_.begin(), value);
         }
         else
         {
