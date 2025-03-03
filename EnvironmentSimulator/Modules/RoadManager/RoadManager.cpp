@@ -1620,7 +1620,7 @@ double Road::GetSpeedByS(double s) const
     if (type_.size() > 0)
     {
         size_t i;
-        for (i = 0; i < type_.size() - 1 && s > type_[i + 1]->s_; i++)
+        for (i = 0; i < type_.size() - 1 && s >= type_[i + 1]->s_; i++)
             ;
 
         return type_[i]->speed_;
@@ -1630,19 +1630,19 @@ double Road::GetSpeedByS(double s) const
     return 0;
 }
 
-Road::RoadType* Road::GetRoadTypeByS(double s) const
+Road::RoadType Road::GetRoadTypeByS(double s) const
 {
     if (type_.size() > 0)
     {
         size_t i;
-        for (i = 0; i < type_.size() - 1 && s > type_[i + 1]->s_; i++)
+        for (i = 0; i < type_.size() - 1 && s >= type_[i + 1]->s_; i++)
             ;
 
-        return &type_[i]->road_type_;
+        return type_[i]->road_type_;
     }
-    
-    // No type entries, fall back to a speed based on nr of lanes
-    return nullptr;
+
+    // No type entries, fall back to default road definition
+    return Road::RoadType::ROADTYPE_UNKNOWN;
 }
 
 Lane::Material* Road::GetLaneMaterialByS(double s, int lane_id) const
@@ -3367,16 +3367,36 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
             {
                 r_type->road_type_ = Road::RoadType::ROADTYPE_BICYCLE;
             }
-            else if (type == "")
+            else if (type == "townArterial")
             {
-                LOG_WARN("Missing road type - setting default (rural)");
-                r_type->road_type_ = Road::RoadType::ROADTYPE_RURAL;
+                r_type->road_type_ = Road::RoadType::ROADTYPE_TOWNARTERIAL;
+            }
+            else if (type == "townCollector")
+            {
+                r_type->road_type_ = Road::RoadType::ROADTYPE_TOWNCOLLECTOR;
+            }
+            else if (type == "townExpressway")
+            {
+                r_type->road_type_ = Road::RoadType::ROADTYPE_TOWNEXPRESSWAY;
+            }
+            else if (type == "townLocal")
+            {
+                r_type->road_type_ = Road::RoadType::ROADTYPE_TOWNLOCAL;
+            }
+            else if (type == "townPlayStreet")
+            {
+                r_type->road_type_ = Road::RoadType::ROADTYPE_TOWNPLAYSTREET;
+            }
+            else if (type == "townPrivate")
+            {
+                r_type->road_type_ = Road::RoadType::ROADTYPE_TOWNPRIVATE;
             }
             else
             {
-                LOG_WARN("Unsupported road type: {} - assuming rural", type.c_str());
-                r_type->road_type_ = Road::RoadType::ROADTYPE_RURAL;
+                LOG_WARN("Unsupported road type: {} - setting default (unknown)", type.c_str());
+                r_type->road_type_ = Road::RoadType::ROADTYPE_UNKNOWN;
             }
+            // Lägg in lite mer 1.8
 
             r_type->s_ = atof(type_node.attribute("s").value());
 
@@ -10566,6 +10586,8 @@ int Position::GetRoadLaneInfo(RoadLaneInfo* data) const
     {
         data->width       = road->GetLaneWidthByS(GetS(), GetLaneId());
         data->speed_limit = road->GetSpeedByS(GetS());
+        data->road_type   = road->GetRoadTypeByS(GetS());
+        data->road_rule   = road->GetRule();
         Lane::Material* m = road->GetLaneMaterialByS(GetS(), GetLaneId());
         if (m != nullptr)
         {

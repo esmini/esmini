@@ -240,6 +240,8 @@ static void CopyRoadInfo(SE_RoadInfo *r_data, roadmanager::RoadProbeInfo *s_data
         r_data->road_pitch   = static_cast<float>(s_data->road_lane_info.pitch);
         r_data->road_roll    = static_cast<float>(s_data->road_lane_info.roll);
         r_data->speed_limit  = static_cast<float>(s_data->road_lane_info.speed_limit);
+        r_data->road_type    = static_cast<int>(s_data->road_lane_info.road_type);
+        r_data->road_rule    = static_cast<int>(s_data->road_lane_info.road_rule);
         r_data->junctionId   = s_data->road_lane_info.junctionId;
         r_data->roadId       = s_data->road_lane_info.roadId;
         r_data->laneId       = s_data->road_lane_info.laneId;
@@ -261,14 +263,6 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
     roadmanager::Position            *pos = &player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
     roadmanager::Position::ReturnCode retval =
         pos->GetProbeInfo(lookahead_distance, &s_data, static_cast<roadmanager::Position::LookAheadMode>(lookAheadMode));
-
-    auto odr = roadmanager::Position::GetOpenDrive();
-    roadmanager::Road *road = odr->GetRoadById(s_data.road_lane_info.roadId);
-    roadmanager::Road::RoadType *road_type = road->GetRoadTypeByS(s_data.road_lane_info.s);
-    if (road_type != nullptr)
-    {
-        r_data->road_type = static_cast<SE_RoadType>(*road_type);
-    }
 
     if (retval != roadmanager::Position::ReturnCode::ERROR_GENERIC)
     {
