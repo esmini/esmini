@@ -384,7 +384,7 @@ int main(int argc, char** argv)
     for (int i = 0; i < argcInternal; i++)
     {
         argvInternal[i] = new char[strlen(argv[i]) + 1];
-        std::strcpy(argvInternal[i], argv[i]);
+        StrCopy(argvInternal[i], argv[i], strlen(argv[i]) + 1);
     }
 
     // Setup signal handler to catch Ctrl-C

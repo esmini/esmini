@@ -264,20 +264,20 @@ void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<
     for (i = 0; i < appendIndex; ++i)
     {
         newArgv[i] = new char[std::strlen(argv[i]) + 1];
-        std::strcpy(newArgv[i], argv[i]);
+        StrCopy(newArgv[i], argv[i], std::strlen(argv[i]) + 1);
     }
     // secondly, copy the prefix arguments
     for (const auto& arg : prefixArgs)
     {
         newArgv[i] = new char[arg.length() + 1];
-        std::strcpy(newArgv[i], arg.c_str());
+        StrCopy(newArgv[i], arg.c_str(), arg.length() + 1);
         ++i;
     }
     // thirdly, copy the original arguments from the appendIndex
     for (int j = appendIndex; j < argc; ++j)
     {
         newArgv[i] = new char[std::strlen(argv[j]) + 1];
-        std::strcpy(newArgv[i], argv[j]);
+        StrCopy(newArgv[i], argv[j], std::strlen(argv[j]) + 1);
         ++i;
     }
 
