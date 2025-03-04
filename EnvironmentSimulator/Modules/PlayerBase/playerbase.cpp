@@ -49,11 +49,7 @@ void RegisterImageCallback(viewer::ImageCallbackFunc func, void* data)
 }
 #endif
 
-ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
-    : maxStepSize(0.1),
-      minStepSize(0.001),
-      argc_(argc),
-      state_(PlayerState::PLAYER_STATE_PLAYING)
+ScenarioPlayer::ScenarioPlayer(int argc, char* argv[]) : maxStepSize(0.1), minStepSize(0.001), argc_(argc), state_(PlayerState::PLAYER_STATE_PLAYING)
 {
     argv_ = new char*[argc];
     for (int i = 0; i < argc; i++)

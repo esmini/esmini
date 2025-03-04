@@ -236,7 +236,7 @@ void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
     std::string configFilePathOption = fmt::format("--{}", CONFIG_FILE_OPTION_NAME);
     for (int i = 1; i < argc; ++i)
     {
-        if (strcmp(configFilePathOption.c_str(), argv[i]) == 0 && i < argc - 1) // we protect against buffer overflow
+        if (strcmp(configFilePathOption.c_str(), argv[i]) == 0 && i < argc - 1)  // we protect against buffer overflow
         {
             // now we can parse config file here
             esmini::common::ConfigParser configParser(appName, {argv[i + 1]});
@@ -268,7 +268,7 @@ void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
 
 void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& prefixArgs)
 {
-    if( prefixArgs.empty() )
+    if (prefixArgs.empty())
     {
         return;
     }
