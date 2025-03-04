@@ -25,16 +25,6 @@
 #include <locale>
 #include <array>
 
-#if __has_include(<filesystem>)
-#include <filesystem>
-namespace fs = std::filesystem;
-#elif __has_include(<experimental/filesystem>)
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#error "Missing <filesystem> header"
-#endif
-
 // UDP network includes
 #ifndef _WIN32
 /* Assume that any non-Windows platform uses POSIX-style sockets instead. */
@@ -212,16 +202,8 @@ void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
 
     // parse default config file and environment variable config files
     esmini::common::Config config(appName);
-
-    if (!fs::exists(config.GetFilePaths()[0]))
-    {
-        LOG_INFO("Ignoring missing default config: {}", config.GetFilePaths()[0]);
-    }
-    else
-    {
-        const auto defaultAndEnvironmentConfigs = config.GetConfig();
-        allConfigs                              = std::move(defaultAndEnvironmentConfigs);
-    }
+    const auto             defaultAndEnvironmentConfigs = config.GetConfig();
+    allConfigs                                          = std::move(defaultAndEnvironmentConfigs);
 
     // there is a possibility that the config file path is already set in options, maybe through the api call
     SE_Options& opt = SE_Env::Inst().GetOptions();

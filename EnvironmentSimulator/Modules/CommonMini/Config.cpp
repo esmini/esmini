@@ -18,7 +18,15 @@ namespace esmini::common
 {
     Config::Config(const std::string& applicationName) : applicationName_(applicationName)
     {
-        configFilePaths_.push_back(MakeDefaultConfigFilePath());
+        auto defaultConfigPath = MakeDefaultConfigFilePath();
+        if (!fs::exists(defaultConfigPath))
+        {
+            LOG_INFO("Ignoring missing default config: {}", defaultConfigPath);
+        }
+        else
+        {
+            configFilePaths_.push_back(defaultConfigPath);
+        }
 
         if (const auto envConfigFile = GetEnvironmentVariable("ESMINI_CONFIG_FILE"); envConfigFile.has_value())
         {
@@ -58,10 +66,5 @@ namespace esmini::common
             LOG_DEBUG("Environment variable: {} not set", variableName);
             return std::nullopt;
         }
-    }
-
-    const std::vector<std::string>& Config::GetFilePaths() const
-    {
-        return configFilePaths_;
     }
 }  // namespace esmini::common
