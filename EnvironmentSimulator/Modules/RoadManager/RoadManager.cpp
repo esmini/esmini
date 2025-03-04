@@ -1620,7 +1620,7 @@ double Road::GetSpeedByS(double s) const
     if (type_.size() > 0)
     {
         size_t i;
-        for (i = 0; i < type_.size() - 1 && s >= type_[i + 1]->s_; i++)
+        for (i = 0; i < type_.size() - 1 && s > type_[i + 1]->s_ - SMALL_NUMBER; i++)
             ;
 
         return type_[i]->speed_;
@@ -1635,7 +1635,7 @@ Road::RoadType Road::GetRoadTypeByS(double s) const
     if (type_.size() > 0)
     {
         size_t i;
-        for (i = 0; i < type_.size() - 1 && s >= type_[i + 1]->s_; i++)
+        for (i = 0; i < type_.size() - 1 && s > type_[i + 1]->s_ - SMALL_NUMBER; i++)
             ;
 
         return type_[i]->road_type_;

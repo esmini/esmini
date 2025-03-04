@@ -96,21 +96,6 @@ namespace roadmanager
          * @return double ((m) or (s) or (nr of intersection) depending on routestrategy)
          */
         double CalcWeightWithPos(Node *previousNode, Position pos, Road *road, Position::RouteStrategy routeStrategy);
-
-    private:
-        /**
-         * @brief roadTypeToSpeed gives speed in (m/s) for a specific road type.
-         *        roadtype_unknown is assumed to be rural
-         */
-        std::unordered_map<Road::RoadType, double> roadTypeToSpeed = {
-            {Road::RoadType::ROADTYPE_BICYCLE, 1.389},
-            {Road::RoadType::ROADTYPE_PEDESTRIAN, 1.389},
-            {Road::RoadType::ROADTYPE_LOWSPEED, 8.333},
-            {Road::RoadType::ROADTYPE_TOWN, 13.888},
-            {Road::RoadType::ROADTYPE_RURAL, 19.444},
-            {Road::RoadType::ROADTYPE_MOTORWAY, 25},
-            {Road::RoadType::ROADTYPE_UNKNOWN, 19.444},
-        };
     };
     /**
      * @brief The lane independent pathfinder
