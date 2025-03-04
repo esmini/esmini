@@ -240,14 +240,14 @@ static void CopyRoadInfo(SE_RoadInfo *r_data, roadmanager::RoadProbeInfo *s_data
         r_data->road_pitch   = static_cast<float>(s_data->road_lane_info.pitch);
         r_data->road_roll    = static_cast<float>(s_data->road_lane_info.roll);
         r_data->speed_limit  = static_cast<float>(s_data->road_lane_info.speed_limit);
-        r_data->road_type    = static_cast<int>(s_data->road_lane_info.road_type);
-        r_data->road_rule    = static_cast<int>(s_data->road_lane_info.road_rule);
         r_data->junctionId   = s_data->road_lane_info.junctionId;
         r_data->roadId       = s_data->road_lane_info.roadId;
         r_data->laneId       = s_data->road_lane_info.laneId;
         r_data->laneOffset   = static_cast<float>(s_data->road_lane_info.laneOffset);
         r_data->s            = static_cast<float>(s_data->road_lane_info.s);
         r_data->t            = static_cast<float>(s_data->road_lane_info.t);
+        r_data->road_type    = static_cast<int>(s_data->road_lane_info.road_type);
+        r_data->road_rule    = static_cast<int>(s_data->road_lane_info.road_rule);
     }
 }
 
