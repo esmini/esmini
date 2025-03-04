@@ -1,16 +1,49 @@
 <?xml version="1.0" ?>
 <OpenDRIVE>
 	<header revMajor="1" revMinor="4" name="" version="1.00" date="Tue Jun 30 14:55:47 2020" north="0.0000000000000000e+00" south="0.0000000000000000e+00" east="0.0000000000000000e+00" west="0.0000000000000000e+00"/>
-	<road name="" length="5.0000000000000000e+02" id="1" junction="-1">
+	<road name="" rule="LHT" length="5.0000000000000000e+02" id="1" junction="-1">
 		<link/>
-		<type s="0.0" type="rural">
-			<speed unit="km/h" max="50"/>
+		<type s="200.0" type="unknown">
+			<speed unit="m/s" max="10"/>
 		</type>
-		<type s="100.0" type="town">
+		<type s="225.0" type="rural">
+			<speed unit="mph" max="20"/>
+		</type>
+		<type s="250.0" type="motorway">
 			<speed unit="km/h" max="30"/>
 		</type>
-		<type s="200.0" type="town">
+		<type s="275.0" type="town">
+			<speed unit="km/h" max="40"/>
+		</type>
+		<type s="300.0" type="lowSpeed">
 			<speed unit="km/h" max="50"/>
+		</type>
+		<type s="325.0" type="pedestrian">
+			<speed unit="km/h" max="60"/>
+		</type>
+		<type s="350.0" type="bicycle">
+			<speed unit="km/h" max="70"/>
+		</type>
+		<type s="375.0" type="townArterial">
+			<speed unit="km/h" max="80"/>
+		</type>
+		<type s="400.0" type="townCollector">
+			<speed unit="km/h" max="90"/>
+		</type>
+		<type s="425.0" type="townExpressway">
+			<speed unit="km/h" max="100"/>
+		</type>
+		<type s="450.0" type="townLocal">
+			<speed unit="km/h" max="110"/>
+		</type>
+		<type s="475.0" type="townPlayStreet">
+			<speed unit="km/h" max="120"/>
+		</type>
+		<type s="500.0" type="townPrivate">
+			<speed unit="km/h" max="130"/>
+		</type>
+		<type s="525.0" type="rural">
+			<speed unit="km/h" max="90"/>
 		</type>
 		<planView>
 			<geometry s="0.0000000000000000e+00" x="0.0000000000000000e+00" y="0.0000000000000000e+00" hdg="0.0000000000000000e+00" length="5.0000000000000000e+02">
