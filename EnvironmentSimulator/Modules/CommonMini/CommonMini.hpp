@@ -311,8 +311,6 @@ void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<
  */
 void PostProcessArgs(int& argc, char**& argv);
 
-void LogArgv(int argc, char** argv);
-
 /**
         Get model filename from model_id.
 */

@@ -53,7 +53,6 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     : maxStepSize(0.1),
       minStepSize(0.001),
       argc_(argc),
-      argv_(argv),
       state_(PlayerState::PLAYER_STATE_PLAYING)
 {
     argv_ = new char*[argc];

@@ -208,10 +208,11 @@ std::string ControlDomain2Str(unsigned int domains)
 
 void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
 {
+    std::vector<std::string> allConfigs;
+
     // parse default config file and environment variable config files
     esmini::common::Config config(appName);
 
-    std::vector<std::string> allConfigs;
     if (!fs::exists(config.GetFilePaths()[0]))
     {
         LOG_INFO("Ignoring missing default config: {}", config.GetFilePaths()[0]);
@@ -235,18 +236,24 @@ void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
     std::string configFilePathOption = fmt::format("--{}", CONFIG_FILE_OPTION_NAME);
     for (int i = 1; i < argc; ++i)
     {
-        if (strcmp(configFilePathOption.c_str(), argv[i]) == 0)
+        if (strcmp(configFilePathOption.c_str(), argv[i]) == 0 && i < argc - 1) // we protect against buffer overflow
         {
             // now we can parse config file here
             esmini::common::ConfigParser configParser(appName, {argv[i + 1]});
             auto                         configs = configParser.Parse();
+
             // we need to wipe out the config file path from the arguments, so that they wont be consumed again
+            // free memory of the two arguments and shift the rest of the arguments
+            delete argv[i];
+            delete argv[i + 1];
+
             for (int j = i; j < argc - 2; ++j)
             {
                 argv[j] = argv[j + 2];
-                delete argv[j + 2];
-                argv[j + 2] = nullptr;
             }
+            // indicate not in use
+            argv[argc - 2] = nullptr;
+            argv[argc - 1] = nullptr;
             argc -= 2;
             AppendArgcArgv(argc, argv, i, configs);
         }
@@ -259,18 +266,12 @@ void HandleConfigurations(const std::string& appName, int& argc, char**& argv)
     PostProcessArgs(argc, argv);
 }
 
-void LogArgv(int argc, char** argv)
-{
-    std::string allArgvs;
-    for (int i = 0; i < argc; ++i)
-    {
-        allArgvs = fmt::format("{} {}", allArgvs, argv[i]);
-    }
-    LOG_INFO("Argv: {}", allArgvs);
-}
-
 void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& prefixArgs)
 {
+    if( prefixArgs.empty() )
+    {
+        return;
+    }
     int          previousArgc = argc;
     unsigned int newArgc      = static_cast<unsigned int>(argc + prefixArgs.size());
     char**       newArgv      = new char*[newArgc];
@@ -296,7 +297,7 @@ void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<
         StrCopy(newArgv[i], argv[j], std::strlen(argv[j]) + 1);
         ++i;
     }
-    newArgv[newArgc] = nullptr;  // null terminate the array
+    // newArgv[newArgc] = nullptr;  // null terminate the array
 
     for (int j = 0; j < previousArgc; ++j)
     {

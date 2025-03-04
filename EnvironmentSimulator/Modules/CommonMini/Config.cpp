@@ -43,7 +43,6 @@ namespace esmini::common
         esmini::common::DefaultPathFinder pathFinder;
         fs::path                          defaultPath(pathFinder.GetDefaultPath());
         std::string                       defaultFilePath = (defaultPath.parent_path() / ".." / DEFAULT_CONFIG_FILE).string();
-
         return defaultFilePath;
     }
 
