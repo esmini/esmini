@@ -83,6 +83,7 @@
       "name": "ci-win64-2022",
       "generator": "Visual Studio 17 2022",
       "architecture": "x64",
+      "toolset": "v142",
       "hidden": true
     },
     {
