@@ -548,7 +548,7 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
     ):
 
         # print("processing mode:", mode)
-        csvfile = os.path.splitext(self.filename)[0] + "_py.csv"
+        csvfile = os.path.splitext(self.filename)[0] + ".csv"
         try:
             fcsv = open(csvfile, "w")
         except OSError:
