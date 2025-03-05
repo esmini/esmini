@@ -356,30 +356,34 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
     else
     {
         ClearOSIGroundTruth();
+        UpdateOSIDynamicGroundTruth(objectState);
         std::string ground_truth = {};
         unsigned int size = 0;
         switch (mode)
         {
-            UpdateOSIDynamicGroundTruth(objectState);
             case DEFAULT:
                 obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
-                break;
-            case API:
-                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.static_gt);
-                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
-                break;
-            case API_AND_LOG:
-                SetOSIStaticExternalData();
-                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.static_gt);
-                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
-                
                 obj_osi_external.combined_gt->SerializeToString(&ground_truth);
                 size = ground_truth.size();
-                if (IsFileOpen())
-                {
-                    WriteOSIFile(ground_truth, size);
-                }
                 break;
+            case API:
+                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
+                obj_osi_external.combined_gt->SerializeToString(&ground_truth);
+                size = ground_truth.size();
+
+                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.static_gt);
+                break;
+            case API_AND_LOG:
+                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.static_gt);
+                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
+                obj_osi_external.combined_gt->SerializeToString(&ground_truth);
+                size = ground_truth.size();
+                break;
+        }
+
+        if (IsFileOpen())
+        {
+            WriteOSIFile(ground_truth, size);
         }
     }
 
