@@ -119,8 +119,8 @@ namespace esmini::common
 
                 // we need to wipe out the config file path from the arguments, so that they wont be consumed again
                 // free memory of the two arguments and shift the rest of the arguments
-                delete argv_[i];
-                delete argv_[i + 1];
+                delete[] argv_[i];
+                delete[] argv_[i + 1];
 
                 for (int j = i; j < argc_ - 2; ++j)
                 {
@@ -242,7 +242,7 @@ namespace esmini::common
                 int new_argc = argc_;
                 for (unsigned int j = 0; i + j < static_cast<unsigned int>(argc_) && j < n_arguments + 1; j++)  // +1 to include option itself
                 {
-                    delete argv_[i + j];
+                    delete[] argv_[i + j];
                     argv_[i + j] = nullptr;
                     new_argc--;
                     end_index--;
