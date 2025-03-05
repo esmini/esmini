@@ -3,6 +3,7 @@ import subprocess
 import time
 import re
 import sys
+import psutil
 
 ESMINI_PATH = os.pardir
 
@@ -124,3 +125,68 @@ def generate_csv(filename=DAT_FILENAME):
         return f.read()
 
     assert False, 'No csv file'
+
+def run_scenario_and_get_time(osc_filename = None, esmini_arguments = None, xosc_str = None, application = None, ignoreReturnCode = False):
+
+    if os.path.exists(LOG_FILENAME):
+        os.remove(LOG_FILENAME)
+    if os.path.exists(STDOUT_FILENAME):
+        os.remove(STDOUT_FILENAME)
+
+    if application is None:
+        app = os.path.join(ESMINI_PATH,'bin','esmini')
+    else:
+        app = os.path.join(ESMINI_PATH, application)
+
+    if osc_filename is not None:
+        args = [app, '--osc', osc_filename] + esmini_arguments.split()
+        #print('running: {}'.format(' '.join(args)))
+    else:
+        args = [app] + esmini_arguments.split()
+        if xosc_str is not None:
+            args +=  ['--osc_str', xosc_str]
+
+    return_code = None
+    start_time = time.time()
+    with open(STDOUT_FILENAME, "w") as f:
+        process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)),
+                            stdout=f, env=env)
+        # Initialize variables to store CPU times
+        user_time, system_time = 0.0, 0.0
+
+        elapsed = 0
+        while elapsed < TIMEOUT and return_code is None:
+            try:
+                # Get CPU times for the process
+                cpu_time = psutil.Process(process.pid).cpu_times()
+                user_time = cpu_time.user  # Time spent in user mode
+                system_time = cpu_time.system  # Time spent in kernel mode
+            except psutil.NoSuchProcess:
+                # Process has terminated, exit the loop
+                break
+
+            return_code = process.poll()
+
+            # watch dog
+            if return_code is None:
+                time.sleep(1)
+                elapsed += 1
+
+        if return_code is None:
+            print('timeout ({}s). Terminating scenario ({}).'.format(TIMEOUT, os.path.basename(osc_filename)))
+            process.kill()
+            assert False, 'Timeout'
+
+    # Record the end time
+    end_time = time.time()
+
+    # Calculate wall-clock time
+    wall_clock_time = end_time - start_time
+
+    if not ignoreReturnCode:
+        assert return_code == 0
+
+    with open(LOG_FILENAME, 'r') as logfile:
+        return logfile.read(), wall_clock_time, user_time, system_time
+
+    assert False, 'No log file'
