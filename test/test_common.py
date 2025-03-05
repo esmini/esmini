@@ -116,7 +116,7 @@ def generate_csv(filename=DAT_FILENAME, mode_ = "original", time_step_ = 0.05, e
     dat = DATFile(filename)
     dat.save_csv(mode = mode_, step_time = time_step_, extended = extended, include_file_refs = file_refs)
 
-    with open(os.path.splitext(filename)[0] + '_py.csv', "r") as f:
+    with open(os.path.splitext(filename)[0] + '.csv', "r") as f:
         return f.read()
 
     assert False, 'No csv file'
