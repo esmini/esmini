@@ -323,7 +323,7 @@ void ScenarioPlayer::ScenarioPostFrame()
 
             if ((GetCounter() - 1) % osi_freq_ == 0)
             {
-                osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
+                osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_, 0);
             }
 
             osiReporter->UpdateOSITrafficCommand();

@@ -1298,7 +1298,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api)
     EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
 
     SE_StepDT(0.01f);
-    SE_UpdateOSIGroundTruth(true);
+    SE_UpdateOSIGroundTruth();
 
     EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 7);
     EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
@@ -1325,7 +1325,7 @@ TEST(GroundTruthTests, check_update_gt_twice_same_frame)
 
     SE_StepDT(0.01f);
 
-    SE_UpdateOSIGroundTruth(true);
+    SE_UpdateOSIGroundTruth();
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
@@ -1337,7 +1337,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
     const osi3::GroundTruth* osi_gt_ptr;
 
     ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
-    SE_UpdateOSIGroundTruth(true);
+    SE_UpdateOSIGroundTruth();
 
     osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
@@ -1345,7 +1345,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
     EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
 
     SE_StepDT(0.01f);
-    SE_UpdateOSIGroundTruth(true);
+    SE_UpdateOSIGroundTruth();
 
     EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 7);
     EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);

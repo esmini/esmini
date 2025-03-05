@@ -331,7 +331,7 @@ typedef enum
     API = 1,
     API_AND_LOG = 2,
     LOG = 3
-} SE_OSIStaticLogMode
+} SE_OSIStaticLogMode;
 
 #ifdef __cplusplus
 extern "C"
