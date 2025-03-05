@@ -47,7 +47,7 @@ namespace esmini::common
          * Perform final argument check, resolving conflicts and prioritization
          */
         void PostProcessArgs();
-
+        // Some arguments can't co-exist with others, this function will be called to remove such arguments
         void RemoveOptionAndArguments(const char* option, unsigned int n_arguments, unsigned int start_index, unsigned int end_index);
 
         // private data members

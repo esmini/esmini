@@ -131,6 +131,7 @@ namespace esmini::common
                 argv_[argc_ - 1] = nullptr;
                 argc_ -= 2;
                 AppendArgcArgv(i, configs);
+                --i;  // to recheck the same index, as we have shifted the arguments. Since we start i with 1 so its safe to decrement in this case
             }
         }
 
