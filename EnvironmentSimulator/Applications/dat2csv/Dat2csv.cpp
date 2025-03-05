@@ -118,6 +118,47 @@ void Dat2csv::PrintHeader()
     }
 }
 
+void Dat2csv::CreateCSVOriginal()
+{
+    unsigned int index = 0;
+    for (auto pkg : player_->pkgs_)
+    {
+        if (pkg.hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES))
+        {
+            double timeTemp = *reinterpret_cast<double*>(pkg.content.data());
+
+            // next time
+            player_->SetTime(timeTemp);
+            player_->SetIndex(index);
+
+            player_->CheckObjAvailabilityForward();
+            player_->UpdateCache();
+            player_->scenarioState_.sim_time = timeTemp;
+            for (const auto obj : player_->scenarioState_.obj_states)
+            {
+                if (obj.active)
+                {
+                    PrintData(obj.id);
+                }
+            }
+        }
+        index++;
+    }
+}
+
+double Dat2csv::GetReplayerStepTime()
+{
+    if (log_mode_ == log_mode::MIN_STEP || log_mode_ == log_mode::MIN_STEP_MIXED)
+    {
+        return player_->deltaTime_;
+    }
+    else
+    {
+        player_->deltaTime_ = step_time_;  // make sure move to forward function takes correct delta time
+        return step_time_;
+    }
+}
+
 void Dat2csv::SetLogExtended(bool option)
 {
     extended_ = option;
@@ -142,20 +183,15 @@ void Dat2csv::CreateCSV()
 {
     PrintHeader();
     PrintRow();
-    if (log_mode_ == log_mode::MIN_STEP || log_mode_ == log_mode::MIN_STEP_MIXED || log_mode_ == log_mode::CUSTOM_TIME_STEP ||
-        log_mode_ == log_mode::CUSTOM_TIME_STEP_MIXED)
+    if (log_mode_ == log_mode::ORIGINAL)
+    {  // default setting, write time stamps available only in dat file
+        CreateCSVOriginal();
+    }
+    else
     {
-        double requestedTime = SMALL_NUMBER;
-        double delta_time    = SMALL_NUMBER;
-        if (log_mode_ == log_mode::MIN_STEP || log_mode_ == log_mode::MIN_STEP_MIXED)
-        {
-            delta_time = player_->deltaTime_;
-        }
-        else
-        {
-            delta_time          = step_time_;
-            player_->deltaTime_ = delta_time;  // make sure move to forward function takes correct delta time
-        }
+        double requestedTime      = SMALL_NUMBER;
+        double replayer_step_time = GetReplayerStepTime();
+
         while (true)
         {
             perviousSimTime_ = player_->GetTime();
@@ -171,7 +207,7 @@ void Dat2csv::CreateCSV()
             {
                 break;  // reached end of file
             }
-            else if (delta_time < SMALL_NUMBER)
+            else if (replayer_step_time < SMALL_NUMBER)
             {
                 LOG_WARN("Warning: Unexpected delta time zero found! Can't process remaining part of the file");
                 break;
@@ -180,7 +216,7 @@ void Dat2csv::CreateCSV()
             {
                 if (log_mode_ == log_mode::MIN_STEP || log_mode_ == log_mode::CUSTOM_TIME_STEP)
                 {
-                    double dt = player_->GetTime() + delta_time;
+                    double dt = player_->GetTime() + replayer_step_time;
                     if (std::fabs(dt) < SMALL_NUMBER)
                     {
                         // If so, return 1E-6
@@ -192,9 +228,9 @@ void Dat2csv::CreateCSV()
                 {
                     if ((fabs(player_->GetTime() - requestedTime) < SMALL_NUMBER) || IsEqualDouble(player_->GetTime(), player_->GetStartTime()))
                     {  // first time frame or until reach requested time frame reached, dont move to next time frame
-                        requestedTime = player_->GetTime() + delta_time;
+                        requestedTime = player_->GetTime() + replayer_step_time;
 
-                        player_->GoToTime(player_->GetTime() + delta_time, true);  // continue
+                        player_->GoToTime(player_->GetTime() + replayer_step_time, true);  // continue
                         if (perviousSimTime_ > player_->GetTime())
                         {
                             requestedTime = player_->GetTime();  // restarted, change the requested time accordingly
@@ -208,32 +244,6 @@ void Dat2csv::CreateCSV()
             }
         }
     }
-    else if (log_mode_ == log_mode::ORIGINAL)
-    {  // default setting, write time stamps available only in dat file
-        unsigned int index = 0;
-        for (auto pkg : player_->pkgs_)
-        {
-            if (pkg.hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES))
-            {
-                double timeTemp = *reinterpret_cast<double*>(pkg.content.data());
 
-                // next time
-                player_->SetTime(timeTemp);
-                player_->SetIndex(index);
-
-                player_->CheckObjAvailabilityForward();
-                player_->UpdateCache();
-                player_->scenarioState_.sim_time = timeTemp;
-                for (const auto obj : player_->scenarioState_.obj_states)
-                {
-                    if (obj.active)
-                    {
-                        PrintData(obj.id);
-                    }
-                }
-            }
-            index++;
-        }
-    }
     file_.close();
 }
