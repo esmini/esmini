@@ -289,6 +289,7 @@ class DATFile:
         self.time = self.start_time
         self.CompleteObjectState_ = CompleteObjectState()
         self.InitiateStates()
+        self.fcsv = None
 
         if self.version.value != VERSION:
             print(
@@ -297,6 +298,14 @@ class DATFile:
                 )
             )
             exit(-1)
+
+        # print("processing mode:", mode)
+        csvfile = os.path.splitext(self.filename)[0] + ".csv"
+        try:
+            self.fcsv = open(csvfile, "w")
+        except OSError:
+            print("ERROR: Could not open file {} for writing".format(csvfile))
+            raise
 
     def fill_time_details(self):
         for pkg in self.pkgs:
@@ -536,33 +545,62 @@ class DATFile:
         # print("object id added->", objectState_.obj_id.id)
 
     def get_labels_line_extended(self):
-        return "time, id, name, x, y, z, h, p, r, roadId, laneId, offset, t, s, \
-speed, wheel_angle, wheel_rot, day_light, low_beam, high_beam, fog_light_front, fog_light_rear, brake_light, \
+        return "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot, \
+roadId, laneId, offset, t, s, day_light, low_beam, high_beam, fog_light_front, fog_light_rear, brake_light, \
 ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_light, warning_light"
 
     def get_labels_line(self):
         return "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot"
 
+    def PrintData(self, extended=False):
+        for state in self.CompleteObjectState_.objectState_:
+            if state.obj_active is True:
+                # only write for active objects. may be it deleted
+                data = "{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}".format(
+                    self.CompleteObjectState_.time,
+                    state.obj_id.id,
+                    state.name,
+                    state.pos.x,
+                    state.pos.y,
+                    state.pos.z,
+                    state.pos.h,
+                    state.pos.p,
+                    state.pos.r,
+                    state.speed.speed,
+                    state.wheel_angle.wheel_angle,
+                    state.wheel_rot.wheel_rot,
+                )
+                if extended:
+                    data += ", {}, {}, {:.3f}, {:.3f}, {:.3f}, ".format(
+                        state.road_id.road_id,
+                        state.lane_id.lane_id,
+                        state.pos_offset.pos_offset,
+                        state.pos_T.pos_T,
+                        state.pos_S.pos_s,
+                    )
+                    light_state = PkgLightStates()
+                    light_state = state.light_states
+                    for i in range(len(PkgLightStates._fields_)):
+                        data += "#{:02X}{:02X}{:02X}-{:02X}, ".format(
+                            light_state[i].red,
+                            light_state[i].green,
+                            light_state[i].blue,
+                            light_state[i].intensity,
+                        )
+                self.fcsv.write(data + "\n")
+
     def save_csv(
         self, include_file_refs=False, extended=False, mode="original", step_time=0.05
     ):
 
-        # print("processing mode:", mode)
-        csvfile = os.path.splitext(self.filename)[0] + ".csv"
-        try:
-            fcsv = open(csvfile, "w")
-        except OSError:
-            print("ERROR: Could not open file {} for writing".format(csvfile))
-            raise
-
         # Save column headings / value types
         if include_file_refs:
-            fcsv.write(self.get_header_line() + "\n")
+            self.fcsv.write(self.get_header_line() + "\n")
 
         if extended:
-            fcsv.write(self.get_labels_line_extended() + "\n")
+            self.fcsv.write(self.get_labels_line_extended() + "\n")
         else:
-            fcsv.write(self.get_labels_line() + "\n")
+            self.fcsv.write(self.get_labels_line() + "\n")
 
         if mode == "original":
             mode_ = Mode.ORIGINAL
@@ -577,56 +615,7 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
 
         if mode_ == Mode.ORIGINAL:
             while True:
-                for state in self.CompleteObjectState_.objectState_:
-                    if (
-                        state.obj_active is True
-                    ):  # only write for active objects. may be it deleted
-                        if extended:
-                            data = "{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, ".format(
-                                self.CompleteObjectState_.time,
-                                state.obj_id.id,
-                                state.name,
-                                state.pos.x,
-                                state.pos.y,
-                                state.pos.z,
-                                state.pos.h,
-                                state.pos.p,
-                                state.pos.r,
-                                state.road_id.road_id,
-                                state.lane_id.lane_id,
-                                state.pos_offset.pos_offset,
-                                state.pos_T.pos_T,
-                                state.pos_S.pos_s,
-                                state.speed.speed,
-                                state.wheel_angle.wheel_angle,
-                                state.wheel_rot.wheel_rot,
-                            )
-                            light_state = PkgLightStates()
-                            light_state = state.light_states
-                            for i in range(len(PkgLightStates._fields_)):
-                                data += "#{:02X}{:02X}{:02X}-{:02X}, ".format(
-                                    light_state[i].red,
-                                    light_state[i].green,
-                                    light_state[i].blue,
-                                    light_state[i].intensity,
-                                )
-
-                        else:
-                            data = "{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}".format(
-                                self.CompleteObjectState_.time,
-                                state.obj_id.id,
-                                state.name,
-                                state.pos.x,
-                                state.pos.y,
-                                state.pos.z,
-                                state.pos.h,
-                                state.pos.p,
-                                state.pos.r,
-                                state.speed.speed,
-                                state.wheel_angle.wheel_angle,
-                                state.wheel_rot.wheel_rot,
-                            )
-                        fcsv.write(data + "\n")
+                self.PrintData(extended)
                 if abs(self.CompleteObjectState_.time - self.stop_time) < 1e-6:
                     break
                 self.moveToNextTime()
@@ -663,63 +652,13 @@ ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_ligh
                                 timeToMove = self.CompleteObjectState_.time + step_time
                         else:
                             timeToMove = perviousTimeToMove
-
-                for state in self.CompleteObjectState_.objectState_:
-                    if (
-                        state.obj_active is True
-                    ):  # only write for active objects. may be it deleted
-                        if extended:
-                            data = "{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, ".format(
-                                self.CompleteObjectState_.time,
-                                state.obj_id.id,
-                                state.name,
-                                state.pos.x,
-                                state.pos.y,
-                                state.pos.z,
-                                state.pos.h,
-                                state.pos.p,
-                                state.pos.r,
-                                state.road_id.road_id,
-                                state.lane_id.lane_id,
-                                state.pos_offset.pos_offset,
-                                state.pos_T.pos_T,
-                                state.pos_S.pos_s,
-                                state.speed.speed,
-                                state.wheel_angle.wheel_angle,
-                                state.wheel_rot.wheel_rot,
-                            )
-
-                            light_state = PkgLightStates()
-                            light_state = state.light_states
-                            for i in range(len(PkgLightStates._fields_)):
-                                data += "#{:02X}{:02X}{:02X}-{:02X}, ".format(
-                                    light_state[i].red,
-                                    light_state[i].green,
-                                    light_state[i].blue,
-                                    light_state[i].intensity,
-                                )
-                        else:
-                            data = "{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}".format(
-                                self.CompleteObjectState_.time,
-                                state.obj_id.id,
-                                state.name,
-                                state.pos.x,
-                                state.pos.y,
-                                state.pos.z,
-                                state.pos.h,
-                                state.pos.p,
-                                state.pos.r,
-                                state.speed.speed,
-                                state.wheel_angle.wheel_angle,
-                                state.wheel_rot.wheel_rot,
-                            )
-                        fcsv.write(data + "\n")
+                self.PrintData(extended)
                 if self.IsEqual(self.CompleteObjectState_.time, self.stop_time):
                     break
                 perviousSimTime = self.CompleteObjectState_.time
                 self.MoveToTime(timeToMove, stopAtEachFrame)
                 perviousTimeToMove = timeToMove
-        fcsv.close()
+        self.fcsv.close()
 
     def moveToNextTime(self):
         for i in range(self.index + 1, len(self.pkgs)):

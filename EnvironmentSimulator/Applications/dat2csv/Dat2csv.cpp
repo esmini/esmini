@@ -38,50 +38,36 @@ Dat2csv::~Dat2csv()
 
 void Dat2csv::PrintData(int obj_id)
 {
-    static char line[MAX_LINE_LEN];
+    char        line[MAX_LINE_LEN];
     std::string name;
     player_->GetName(obj_id, name);
-    if (!extended_)
+    snprintf(line,
+             MAX_LINE_LEN,
+             "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f",
+             player_->scenarioState_.sim_time,
+             obj_id,
+             name.c_str(),
+             player_->GetX(obj_id),
+             player_->GetY(obj_id),
+             player_->GetZ(obj_id),
+             player_->GetH(obj_id),
+             player_->GetP(obj_id),
+             player_->GetR(obj_id),
+             player_->GetSpeed(obj_id),
+             player_->GetWheelAngle(obj_id),
+             player_->GetWheelRot(obj_id));
+    file_ << line;
+    if (extended_)
     {
         snprintf(line,
                  MAX_LINE_LEN,
-                 "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
-                 player_->scenarioState_.sim_time,
-                 obj_id,
-                 name.c_str(),
-                 player_->GetX(obj_id),
-                 player_->GetY(obj_id),
-                 player_->GetZ(obj_id),
-                 player_->GetH(obj_id),
-                 player_->GetP(obj_id),
-                 player_->GetR(obj_id),
-                 player_->GetSpeed(obj_id),
-                 player_->GetWheelAngle(obj_id),
-                 player_->GetWheelRot(obj_id));
-        file_ << line;
-    }
-    else
-    {
-        snprintf(line,
-                 MAX_LINE_LEN,
-                 "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %d, %d, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, ",
-                 player_->scenarioState_.sim_time,
-                 obj_id,
-                 name.c_str(),
-                 player_->GetX(obj_id),
-                 player_->GetY(obj_id),
-                 player_->GetZ(obj_id),
-                 player_->GetH(obj_id),
-                 player_->GetP(obj_id),
-                 player_->GetR(obj_id),
+                 ", %.d, %.d, %.3f, %.3f, %.3f, ",
                  player_->GetRoadId(obj_id),
                  player_->GetLaneId(obj_id),
                  player_->GetPosOffset(obj_id),
                  player_->GetPosT(obj_id),
-                 player_->GetPosS(obj_id),
-                 player_->GetSpeed(obj_id),
-                 player_->GetWheelAngle(obj_id),
-                 player_->GetWheelRot(obj_id));
+                 player_->GetPosS(obj_id));
+
         file_ << line;
         datLogger::LightState lightState_;
         player_->GetLightStates(obj_id, lightState_);
@@ -94,7 +80,40 @@ void Dat2csv::PrintData(int obj_id)
             snprintf(line, MAX_LINE_LEN, "#%.02X%.02X%.02X-%.02X, ", light->red, light->green, light->blue, light->intensity);
             file_ << line;
         }
-        snprintf(line, MAX_LINE_LEN, "\n");
+    }
+    snprintf(line, MAX_LINE_LEN, "\n");
+    file_ << line;
+}
+
+void Dat2csv::PrintRow()
+{
+    char line[MAX_LINE_LEN];
+    snprintf(line, MAX_LINE_LEN, "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot");
+    file_ << line;
+    if (extended_)
+    {
+        snprintf(
+            line,
+            MAX_LINE_LEN,
+            ", roadId, laneId, offset, t, s, day_light, low_beam, high_beam, fog_light_front, fog_light_rear, brake_light, ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_light, warning_light");
+        file_ << line;
+    }
+    snprintf(line, MAX_LINE_LEN, "\n");
+    file_ << line;
+}
+
+void Dat2csv::PrintHeader()
+{
+    char line[MAX_LINE_LEN];
+    if (include_refs_)
+    {
+        // First output header and CSV labels
+        snprintf(line,
+                 MAX_LINE_LEN,
+                 "Version: %d, OpenDRIVE: %s, 3DModel: %s\n",
+                 player_->GetHeader().version,
+                 player_->GetHeader().odrFilename.string.data(),
+                 player_->GetHeader().modelFilename.string.data());
         file_ << line;
     }
 }
@@ -121,31 +140,8 @@ void Dat2csv::SetStepTime(double t)
 
 void Dat2csv::CreateCSV()
 {
-    static char line[MAX_LINE_LEN];
-    if (include_refs_)
-    {
-        // First output header and CSV labels
-        snprintf(line,
-                 MAX_LINE_LEN,
-                 "Version: %d, OpenDRIVE: %s, 3DModel: %s\n",
-                 player_->GetHeader().version,
-                 player_->GetHeader().odrFilename.string.data(),
-                 player_->GetHeader().modelFilename.string.data());
-        file_ << line;
-    }
-    if (!extended_)
-    {
-        snprintf(line, MAX_LINE_LEN, "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot\n");
-        file_ << line;
-    }
-    else
-    {
-        snprintf(
-            line,
-            MAX_LINE_LEN,
-            "time, id, name, x, y, z, h, p, r, roadId, laneId, offset, t, s, speed, wheel_angle, wheel_rot, day_light, low_beam, high_beam, fog_light_front, fog_light_rear, brake_light, ind_left, ind_right, reversing_light, license_plate, special_pur_light, fog_light, warning_light\n");
-        file_ << line;
-    }
+    PrintHeader();
+    PrintRow();
     if (log_mode_ == log_mode::MIN_STEP || log_mode_ == log_mode::MIN_STEP_MIXED || log_mode_ == log_mode::CUSTOM_TIME_STEP ||
         log_mode_ == log_mode::CUSTOM_TIME_STEP_MIXED)
     {
