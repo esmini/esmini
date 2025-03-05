@@ -24,7 +24,6 @@
 #include "OSCParameterDistribution.hpp"
 #include "logger.hpp"
 #include "Config.hpp"
-#include "Defines.hpp"
 #include "ConfigParser.hpp"
 
 #ifdef _USE_OSG
@@ -49,15 +48,13 @@ void RegisterImageCallback(viewer::ImageCallbackFunc func, void* data)
 }
 #endif
 
-ScenarioPlayer::ScenarioPlayer(int argc, char* argv[]) : maxStepSize(0.1), minStepSize(0.001), argc_(argc), state_(PlayerState::PLAYER_STATE_PLAYING)
+ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
+    : maxStepSize(0.1),
+      minStepSize(0.001),
+      argc_(argc),
+      argv_(argv),
+      state_(PlayerState::PLAYER_STATE_PLAYING)
 {
-    argv_ = new char*[argc];
-    for (int i = 0; i < argc; i++)
-    {
-        argv_[i] = new char[strlen(argv[i]) + 1];
-        StrCopy(argv_[i], argv[i], strlen(argv[i]) + 1);
-    }
-
     quit_request         = false;
     threads              = false;
     launch_server        = false;
@@ -86,12 +83,6 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[]) : maxStepSize(0.1), minSt
 
 ScenarioPlayer::~ScenarioPlayer()
 {
-    for (int i = 0; i < argc_; ++i)
-    {
-        delete[] argv_[i];
-    }
-    delete[] argv_;
-
     if (launch_server)
     {
         StopServer();
@@ -1309,7 +1300,8 @@ int ScenarioPlayer::Init()
     exe_path_ = argv_[0];
     SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths
 
-    HandleConfigurations("esmini", argc_, argv_);
+    esmini::common::Config config("esmini", argc_, argv_);
+    std::tie(argc_, argv_) = config.Load();
 
     if (opt.ParseArgs(argc_, argv_) != 0)
     {

@@ -72,6 +72,10 @@ using idx_t = uint32_t;
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
 #define LOGICAL_OR(X, Y)              ((X || Y) && !(X && Y))
 
+const std::string CONFIG_FILE_OPTION_NAME = "config_file_path";
+
+const std::string DEFAULT_CONFIG_FILE = "config.yml";
+
 // Time functions
 __int64 SE_getSystemTime();
 void    SE_sleep(unsigned int msec);
@@ -291,25 +295,6 @@ private:
 };
 
 // Useful operations
-
-void HandleConfigurations(const std::string& appName, int& argc, char**& argv);
-
-/**
- * Appends Argc and Argv with the arguments
- * @param argc: Number of arguments, that application already has
- * @param argv: Argument list that application already has
- * @param appendIndex: Index until which original arguments should be kept, after which new arguments will be added. Once new arguments are added,
- *  remaining original arguments will be added at the last
- * @param dataToAppend: Vector of strings to append, new arguments which needs to be added
- */
-void AppendArgcArgv(int& argc, char**& argv, int appendIndex, const std::vector<std::string>& dataToAppend);
-
-/**
- * Perform final argument check, resolving conflicts and prioritizations
- * @param argc: Number of arguments, that application already has
- * @param argv: Argument list that application already has
- */
-void PostProcessArgs(int& argc, char**& argv);
 
 /**
         Get model filename from model_id.

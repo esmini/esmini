@@ -10,10 +10,15 @@ namespace esmini::common
     {
     public:
         // constructor
-        Config(const std::string& applicationName);
+        Config(const std::string& applicationName, int argc, char** argv);
 
-        // Get the config for the application
-        std::vector<std::string> GetConfig() const;
+        // destructor
+        ~Config();
+
+        // Will parse all the applicable config files and append them to argv_.
+        // Returns the references to updated argc_ and argv_, so that user of these arguments can consume them and effectively reduce their size.
+        // Remaining argv_ will be deleted by this class on destruction.
+        std::pair<int&, char**&> Load();
 
         Config()                      = delete;
         Config(Config const&)         = delete;
@@ -25,6 +30,25 @@ namespace esmini::common
         std::optional<std::string> GetEnvironmentVariable(const std::string& variableName) const;
         // Make default config file path
         std::string MakeDefaultConfigFilePath() const;
+        // Loads default and environment config files into configFilePaths_
+        void LoadDefaultAndEnvironmentConfigFiles();
+        // Parses the config files and appends the arguments to argv_
+        void ParseAndProcessConfigs();
+
+        /**
+         * Appends Argc and Argv with the arguments
+         * @param appendIndex: Index until which original arguments should be kept, after which new arguments will be added. Once new arguments are
+         * added, remaining original arguments will be added at the last
+         * @param dataToAppend: Vector of strings to append, new arguments which needs to be added
+         */
+        void AppendArgcArgv(int appendIndex, const std::vector<std::string>& dataToAppend);
+
+        /**
+         * Perform final argument check, resolving conflicts and prioritization
+         */
+        void PostProcessArgs();
+
+        void RemoveOptionAndArguments(const char* option, unsigned int n_arguments, unsigned int start_index, unsigned int end_index);
 
         // private data members
     private:
@@ -32,5 +56,9 @@ namespace esmini::common
         std::vector<std::string> configFilePaths_;
         // Application for which we are parsing the config file i.e. esmini, replayer etc.
         std::string applicationName_;
+        // Argument count
+        int argc_;
+        // Argument list
+        char** argv_;
     };
 }  // namespace esmini::common
