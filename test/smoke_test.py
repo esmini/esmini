@@ -2112,7 +2112,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search("Couldn't locate OpenSCENARIO file dummy_filename.xosc", log)  is not None)
 
     def test_light_conflict(self):
-        # This test case checks ligths conflicts
+        # This test case checks ligths conflicts and stop the conflict lights
 
         log = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test_conflict_lights.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.01")
 
@@ -2128,11 +2128,12 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.5.010.* LightStateActionStory runningState -> endTransition -> completeState', log)  is not None)
 
     def test_csv_generation_for_all_modes(self):
-
+        # This test case check dat to csv genration between python and c++ application for all possible mode, extended and file_refs options
         scenarios = ["EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc", "EnvironmentSimulator/Unittest/xosc/ghost_restart.xosc"]
         choices = ["original", "min_step", "min_step_mixed", "custom_time_step", "custom_time_step_mixed"]
         extented = {True:"--extended", False:""}
         file_refs = {True:"--file_refs", False:""}
+
         for scenario in scenarios:
             # Run scenario and check initialization steps
             log = run_scenario(os.path.join(ESMINI_PATH, f'{scenario}'), COMMON_ESMINI_ARGS)
