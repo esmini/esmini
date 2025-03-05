@@ -49,5 +49,7 @@ private:
     void                                    PrintData(int id);
     void                                    PrintRow();
     void                                    PrintHeader();
+    void                                    CreateCSVOriginal();
+    double                                  GetReplayerStepTime();
     double                                  perviousSimTime_;
 };
