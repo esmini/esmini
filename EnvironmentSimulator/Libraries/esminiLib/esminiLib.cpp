@@ -498,7 +498,7 @@ extern "C"
         {
             return 0;
         }
-        return SE_Env::Inst().GetOptions().GetOptionArgs(name).size();
+        return static_cast<int>(SE_Env::Inst().GetOptions().GetOptionArgs(name).size());
     }
 
     SE_DLL_API bool SE_GetOptionSet(const char *name)
