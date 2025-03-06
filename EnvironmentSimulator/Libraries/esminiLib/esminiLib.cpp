@@ -492,6 +492,15 @@ extern "C"
         return val.c_str();
     }
 
+    SE_DLL_API int SE_GetOptionValuesCount(const char *name)
+    {
+        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))
+        {
+            return 0;
+        }
+        return SE_Env::Inst().GetOptions().GetOptionArgs(name).size();
+    }
+
     SE_DLL_API bool SE_GetOptionSet(const char *name)
     {
         return SE_Env::Inst().GetOptions().IsOptionArgumentSet(name);

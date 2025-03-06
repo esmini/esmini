@@ -1983,7 +1983,8 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
                     {
                         option->arg_value_.clear();
                     }
-                    option->arg_value_.push_back(args[i + 1]);
+                    option->arg_value_.insert(option->arg_value_.begin(), args[i + 1]);
+                    // option->arg_value_.push_back(args[i + 1]);
                     i++;
                 }
                 else if (!option->default_value_.empty())
@@ -2037,14 +2038,6 @@ SE_Option* SE_Options::GetOption(std::string opt)
         return &itr->second;
     }
     return nullptr;
-    // for (size_t i = 0; i < option_.size(); i++)
-    // {
-    //     if (opt == option_[i].opt_str_)
-    //     {
-    //         return &option_[i];
-    //     }
-    // }
-    // return 0;
 }
 
 bool SE_Options::IsInOriginalArgs(std::string opt)
