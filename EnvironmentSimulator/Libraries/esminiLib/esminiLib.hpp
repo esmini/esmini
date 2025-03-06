@@ -338,10 +338,9 @@ typedef enum
 
 typedef enum 
 {
-    DEFAULT = 0,
-    API = 1,
-    API_AND_LOG = 2,
-    LOG         = 3
+    DEFAULT     = 0,
+    API         = 1,
+    API_AND_LOG = 2
 } SE_OSIStaticLogMode;
 
 #ifdef __cplusplus
@@ -1442,7 +1441,14 @@ extern "C"
             @return 0
     */
     SE_DLL_API void SE_FlushOSIFile();
-
+    
+    /**
+            The SE_ClearOSIGroundTruth clears the certain groundtruth data
+            This function should only be used together with SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth
+            @return 0
+    */
+    SE_DLL_API int SE_ClearOSIGroundTruth();
+    
     /**
             The SE_UpdateOSIGroundTruth function calls SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth and updates OSI Groundtruth
             @param refetchStaticGt Optional flag, whether to include static ground truth in OSI data structure or not
@@ -1467,6 +1473,12 @@ extern "C"
             @return 0
     */
     SE_DLL_API int SE_UpdateOSITrafficCommand();
+    
+    /**
+            The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
+            @return osi3::GroundTruth*
+    */
+    SE_DLL_API void SE_CombineOSIGroundTruth();
 
     /**
             The SE_GetOSIGroundTruth function returns a char array containing the osi GroundTruth serialized to a string
