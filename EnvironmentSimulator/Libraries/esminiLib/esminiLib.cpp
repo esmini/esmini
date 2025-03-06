@@ -1676,18 +1676,6 @@ extern "C"
         return;
     }
 
-    SE_DLL_API int SE_ClearOSIGroundTruth()
-    {
-#ifdef _USE_OSI
-        if (player != nullptr)
-        {
-            return player->osiReporter->ClearOSIGroundTruth();
-        }
-#endif  // _USE_OSI
-
-        return 0;
-    }
-
     SE_DLL_API int SE_UpdateOSIGroundTruth(SE_OSIStaticLogMode mode)
     {
 #ifdef _USE_OSI

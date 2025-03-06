@@ -43,12 +43,8 @@ static struct
 
 typedef struct
 {
-    std::string  dynamic_ground_truth;
-    unsigned int dynamic_size;
-    std::string  static_ground_truth;
-    unsigned int static_size;
-    std::string  combined_ground_truth;
-    unsigned int combined_size;
+    std::string  ground_truth;
+    unsigned int size;
 } OSIGroundTruth;
 
 typedef struct
@@ -72,7 +68,8 @@ typedef struct
 static struct
 {
     osi3::SensorData                 *sd;
-    osi3::GroundTruth                *gt;
+    osi3::GroundTruth                *static_gt;
+    osi3::GroundTruth                *dynamic_gt;
     osi3::StationaryObject           *sobj;
     osi3::TrafficSign                *ts;
     osi3::MovingObject               *mobj;
@@ -82,9 +79,7 @@ static struct
 
 static struct
 {
-    osi3::GroundTruth    *dynamic_gt;
-    osi3::GroundTruth    *static_gt;
-    osi3::GroundTruth    *combined_gt;
+    osi3::GroundTruth    *gt;
     osi3::SensorView     *sv;
     osi3::TrafficCommand *tc;
 } obj_osi_external;
@@ -103,22 +98,21 @@ OSIReporter::OSIReporter(ScenarioEngine *scenarioengine)
     udp_client_      = nullptr;
     scenario_engine_ = scenarioengine;
 
-    obj_osi_internal.gt = new osi3::GroundTruth();
-    obj_osi_external.dynamic_gt = new osi3::GroundTruth();
-    obj_osi_external.static_gt = new osi3::GroundTruth();
-    obj_osi_external.combined_gt = new osi3::GroundTruth();
-    obj_osi_external.sv = new osi3::SensorView();
-    obj_osi_external.tc = new osi3::TrafficCommand();
+    obj_osi_internal.static_gt  = new osi3::GroundTruth();
+    obj_osi_internal.dynamic_gt = new osi3::GroundTruth();
+    obj_osi_external.gt         = new osi3::GroundTruth();
+    obj_osi_external.sv         = new osi3::SensorView();
+    obj_osi_external.tc         = new osi3::TrafficCommand();
 
     // Read version number of the OSI code base
     auto current_osi_version = osi3::InterfaceVersion::descriptor()->file()->options().GetExtension(osi3::current_interface_version);
 
-    obj_osi_internal.gt->mutable_version()->set_version_major(current_osi_version.version_major());
-    obj_osi_internal.gt->mutable_version()->set_version_minor(current_osi_version.version_minor());
-    obj_osi_internal.gt->mutable_version()->set_version_patch(current_osi_version.version_patch());
+    obj_osi_internal.static_gt->mutable_version()->set_version_major(current_osi_version.version_major());
+    obj_osi_internal.static_gt->mutable_version()->set_version_minor(current_osi_version.version_minor());
+    obj_osi_internal.static_gt->mutable_version()->set_version_patch(current_osi_version.version_patch());
 
-    obj_osi_internal.gt->mutable_timestamp()->set_seconds(0);
-    obj_osi_internal.gt->mutable_timestamp()->set_nanos(0);
+    obj_osi_internal.dynamic_gt->mutable_timestamp()->set_seconds(0);
+    obj_osi_internal.dynamic_gt->mutable_timestamp()->set_nanos(0);
 
     obj_osi_external.tc->mutable_timestamp()->set_seconds(0);
     obj_osi_external.tc->mutable_timestamp()->set_nanos(0);
@@ -134,28 +128,22 @@ OSIReporter::OSIReporter(ScenarioEngine *scenarioengine)
 
 OSIReporter::~OSIReporter()
 {
-    if (obj_osi_internal.gt)
+    if (obj_osi_internal.static_gt)
     {
-        obj_osi_internal.gt->Clear();
-        delete obj_osi_internal.gt;
+        obj_osi_internal.static_gt->Clear();
+        delete obj_osi_internal.static_gt;
     }
 
-    if (obj_osi_external.dynamic_gt)
+    if (obj_osi_internal.dynamic_gt)
     {
-        obj_osi_external.dynamic_gt->Clear();
-        delete obj_osi_external.dynamic_gt;
+        obj_osi_internal.dynamic_gt->Clear();
+        delete obj_osi_internal.dynamic_gt;
     }
 
-    if (obj_osi_external.static_gt)
+    if (obj_osi_external.gt)
     {
-        obj_osi_external.static_gt->Clear();
-        delete obj_osi_external.static_gt;
-    }
-    
-    if (obj_osi_external.combined_gt)
-    {
-        obj_osi_external.combined_gt->Clear();
-        delete obj_osi_external.combined_gt;
+        obj_osi_external.gt->Clear();
+        delete obj_osi_external.gt;
     }
 
     if (obj_osi_internal.sd)
@@ -179,8 +167,7 @@ OSIReporter::~OSIReporter()
     obj_osi_internal.ln.clear();
     obj_osi_internal.lnb.clear();
 
-    osiGroundTruth.dynamic_size    = 0;
-    osiGroundTruth.static_size    = 0;
+    osiGroundTruth.size    = 0;
     osiRoadLane.size       = 0;
     osiTrafficCommand.size = 0;
 
@@ -263,7 +250,7 @@ void OSIReporter::CloseOSIFile()
     osi_file.close();
 }
 
-bool OSIReporter::WriteOSIFile(const std::string& ground_truth, unsigned int size)
+bool OSIReporter::WriteOSIFile()
 {
     if (!osi_file.good())
     {
@@ -271,10 +258,10 @@ bool OSIReporter::WriteOSIFile(const std::string& ground_truth, unsigned int siz
     }
 
     // write to file, first size of message
-    osi_file.write(reinterpret_cast<char *>(&size), sizeof(size));
+    osi_file.write(reinterpret_cast<char *>(&osiGroundTruth.size), sizeof(osiGroundTruth.size));
 
     // write to file, actual message - the groundtruth object including timestamp and moving objects
-    osi_file.write(ground_truth.c_str(), size);
+    osi_file.write(osiGroundTruth.ground_truth.c_str(), osiGroundTruth.size);
 
     if (!osi_file.good())
     {
@@ -292,44 +279,6 @@ void OSIReporter::FlushOSIFile()
     }
 }
 
-int OSIReporter::SetOSIStaticExternalData()
-{
-    // Set version
-    obj_osi_external.static_gt->mutable_version()->CopyFrom(*obj_osi_internal.gt->mutable_version());
-
-    // Set road data
-    obj_osi_external.static_gt->mutable_stationary_object()->CopyFrom(*obj_osi_internal.gt->mutable_stationary_object());
-    obj_osi_external.static_gt->mutable_lane()->CopyFrom(*obj_osi_internal.gt->mutable_lane());
-    obj_osi_external.static_gt->mutable_lane_boundary()->CopyFrom(*obj_osi_internal.gt->mutable_lane_boundary());
-    obj_osi_external.static_gt->mutable_traffic_sign()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_sign());
-    obj_osi_external.static_gt->mutable_traffic_light()->CopyFrom(*obj_osi_internal.gt->mutable_traffic_light());
-    obj_osi_external.static_gt->mutable_road_marking()->CopyFrom(*obj_osi_internal.gt->mutable_road_marking());
-
-    // Set strings
-    obj_osi_external.static_gt->set_model_reference(*obj_osi_internal.gt->mutable_model_reference());
-    obj_osi_external.static_gt->set_map_reference(*obj_osi_internal.gt->mutable_map_reference());
-    obj_osi_external.static_gt->set_proj_string(*obj_osi_internal.gt->mutable_proj_string());
-
-    return 0;
-}
-
-int OSIReporter::ClearOSIGroundTruth()
-{
-    obj_osi_external.combined_gt->clear_moving_object();
-    obj_osi_external.combined_gt->clear_stationary_object();
-    obj_osi_external.combined_gt->clear_lane();
-    obj_osi_external.combined_gt->clear_lane_boundary();
-    obj_osi_external.combined_gt->clear_traffic_light();
-    obj_osi_external.combined_gt->clear_traffic_sign();
-    obj_osi_external.combined_gt->clear_road_marking();
-    obj_osi_external.combined_gt->clear_map_reference();
-    obj_osi_external.combined_gt->clear_proj_string();
-    obj_osi_external.combined_gt->clear_model_reference();
-    obj_osi_external.combined_gt->clear_version();
-
-    return 0;
-}
-
 int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, int updateMode)
 {
     if (GetUpdated() == true)
@@ -337,61 +286,53 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
         return 0;
     }
     auto mode = static_cast<OSIStaticUpdateMode>(updateMode);
+
+    osiGroundTruth.ground_truth.clear();
+    osiGroundTruth.size = 0;
     if (GetCounter() == 0)
     {
         UpdateOSIStaticGroundTruth(objectState);
         UpdateOSIDynamicGroundTruth(objectState);
-        obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.static_gt);
-        obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
+        obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
+        obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
 
         if (IsFileOpen())
         {
-            std::string ground_truth = {};
-            unsigned int size = 0;
-            obj_osi_external.combined_gt->SerializeToString(&ground_truth);
-            size = ground_truth.size();
-            WriteOSIFile(ground_truth, size);
+            obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+            osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
+            WriteOSIFile();
         }
     }
     else
     {
-        ClearOSIGroundTruth();
         UpdateOSIDynamicGroundTruth(objectState);
-        std::string ground_truth = {};
-        unsigned int size = 0;
+        obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
         switch (mode)
         {
             case DEFAULT:
-                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
-
                 if (IsFileOpen())
                 {
-                    obj_osi_external.combined_gt->SerializeToString(&ground_truth);
-                    size = ground_truth.size();
-                    WriteOSIFile(ground_truth, size);
+                    obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
+                    WriteOSIFile();
                 }
                 break;
             case API:
-                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
-
                 if (IsFileOpen())
                 {
-                    obj_osi_external.combined_gt->SerializeToString(&ground_truth);
-                    size = ground_truth.size();
-                    WriteOSIFile(ground_truth, size);
+                    obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
+                    WriteOSIFile();
                 }
-
-                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.static_gt);
+                obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
                 break;
             case API_AND_LOG:
-                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.static_gt);
-                obj_osi_external.combined_gt->MergeFrom(*obj_osi_external.dynamic_gt);
-
+                obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
                 if (IsFileOpen())
                 {
-                    obj_osi_external.combined_gt->SerializeToString(&ground_truth);
-                    size = ground_truth.size();
-                    WriteOSIFile(ground_truth, size);
+                    obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
+                    WriteOSIFile();
                 }
                 break;
         }
@@ -399,17 +340,16 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
 
     if (GetUDPClientStatus() == 0)
     {
-        
         // send over udp - split large OSI messages in multiple transmissions
         unsigned int sentDataBytes = 0;
 
-        for (osi_udp_buf.counter = 1; sentDataBytes < osiGroundTruth.combined_size; osi_udp_buf.counter++)
+        for (osi_udp_buf.counter = 1; sentDataBytes < osiGroundTruth.size; osi_udp_buf.counter++)
         {
-            osi_udp_buf.datasize = MIN(osiGroundTruth.combined_size - sentDataBytes, OSI_MAX_UDP_DATA_SIZE);
-            memcpy(osi_udp_buf.data, &osiGroundTruth.combined_ground_truth.c_str()[sentDataBytes], osi_udp_buf.datasize);
+            osi_udp_buf.datasize = MIN(osiGroundTruth.size - sentDataBytes, OSI_MAX_UDP_DATA_SIZE);
+            memcpy(osi_udp_buf.data, &osiGroundTruth.ground_truth.c_str()[sentDataBytes], osi_udp_buf.datasize);
             int packSize = static_cast<int>(sizeof(osi_udp_buf)) - static_cast<int>((OSI_MAX_UDP_DATA_SIZE - osi_udp_buf.datasize));
 
-            if (sentDataBytes + osi_udp_buf.datasize >= osiGroundTruth.combined_size)
+            if (sentDataBytes + osi_udp_buf.datasize >= osiGroundTruth.size)
             {
                 // Last package indicated by negative counter number
                 osi_udp_buf.counter = -osi_udp_buf.counter;
@@ -424,7 +364,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
                 wprintf(L"send failed with error: %d\n", WSAGetLastError());
 #endif
                 // Give up
-                sentDataBytes = osiGroundTruth.combined_size;
+                sentDataBytes = osiGroundTruth.size;
             }
             else
             {
@@ -489,40 +429,40 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
     {
         proj_string_delimiter = ";";
     }
-    obj_osi_internal.gt->set_proj_string(
+    obj_osi_internal.static_gt->set_proj_string(
         (opendrive->GetGeoReferenceOriginalString() + proj_string_delimiter + opendrive->GetGeoOffsetOriginalString()).c_str());
-    obj_osi_internal.gt->set_map_reference(opendrive->GetGeoReferenceAsString());
-    obj_osi_internal.gt->set_model_reference(stationary_model_reference);
+    obj_osi_internal.static_gt->set_map_reference(opendrive->GetGeoReferenceAsString());
+    obj_osi_internal.static_gt->set_model_reference(stationary_model_reference);
 
     // Map the external groundtruth data to the internal data
-    SetOSIStaticExternalData();
+    // SetOSIStaticExternalData();
 
     return 0;
 }
 
 int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, bool reportGhost)
 {
-    obj_osi_internal.gt->clear_moving_object();
-    obj_osi_internal.gt->clear_timestamp();
+    obj_osi_internal.dynamic_gt->clear_moving_object();
+    obj_osi_internal.dynamic_gt->clear_timestamp();
 
     if (IsTimeStampSetExplicit())
     {
         // use excplicit timestamp
-        obj_osi_internal.gt->mutable_timestamp()->set_seconds(static_cast<int64_t>((nanosec_ / 1000000000)));
-        obj_osi_internal.gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>((nanosec_ % 1000000000)));
+        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_seconds(static_cast<int64_t>((nanosec_ / 1000000000)));
+        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>((nanosec_ % 1000000000)));
     }
     else if (objectState.size() > 0)
     {
         // use timstamp from object state
-        obj_osi_internal.gt->mutable_timestamp()->set_seconds(static_cast<int64_t>(objectState[0]->state_.info.timeStamp));
-        obj_osi_internal.gt->mutable_timestamp()->set_nanos(
+        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_seconds(static_cast<int64_t>(objectState[0]->state_.info.timeStamp));
+        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_nanos(
             static_cast<uint32_t>(((objectState[0]->state_.info.timeStamp - floor(objectState[0]->state_.info.timeStamp)) * 1e9)));
     }
     else
     {
         // report time = 0
-        obj_osi_internal.gt->mutable_timestamp()->set_seconds(static_cast<int64_t>(0));
-        obj_osi_internal.gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>(0));
+        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_seconds(static_cast<int64_t>(0));
+        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>(0));
     }
 
     for (size_t i = 0; i < objectState.size(); i++)
@@ -547,8 +487,8 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
         }
     }
 
-    obj_osi_external.dynamic_gt->mutable_timestamp()->CopyFrom(*obj_osi_internal.gt->mutable_timestamp());
-    obj_osi_external.dynamic_gt->mutable_moving_object()->CopyFrom(*obj_osi_internal.gt->mutable_moving_object());
+    // obj_osi_external.dynamic_gt->mutable_timestamp()->CopyFrom(*obj_osi_internal.gt->mutable_timestamp());
+    // obj_osi_external.dynamic_gt->mutable_moving_object()->CopyFrom(*obj_osi_internal.gt->mutable_moving_object());
 
     return 0;
 }
@@ -579,10 +519,10 @@ int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObjec
 {
     (void)road_id;
     // Create OSI Stationary Object
-    obj_osi_internal.sobj = obj_osi_internal.gt->add_stationary_object();
+    obj_osi_internal.sobj = obj_osi_internal.static_gt->add_stationary_object();
 
     // Set OSI Stationary Object Mutable ID
-    int sobj_size = obj_osi_internal.gt->mutable_stationary_object()->size();
+    int sobj_size = obj_osi_internal.static_gt->mutable_stationary_object()->size();
     obj_osi_internal.sobj->mutable_id()->set_value(static_cast<unsigned int>(sobj_size - 1));
 
     // Set OSI Stationary Object Type and Classification
@@ -689,10 +629,10 @@ int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObjec
 int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
 {
     // Create OSI Stationary Object
-    obj_osi_internal.sobj = obj_osi_internal.gt->add_stationary_object();
+    obj_osi_internal.sobj = obj_osi_internal.static_gt->add_stationary_object();
 
     // Set OSI Stationary Object Mutable ID
-    int sobj_size = obj_osi_internal.gt->mutable_stationary_object()->size();
+    int sobj_size = obj_osi_internal.static_gt->mutable_stationary_object()->size();
     obj_osi_internal.sobj->mutable_id()->set_value(static_cast<unsigned int>(sobj_size - 1));
 
     // Set OSI Stationary Object Type and Classification
@@ -779,7 +719,7 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
 int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 {
     // Create OSI Moving object
-    obj_osi_internal.mobj = obj_osi_internal.gt->add_moving_object();
+    obj_osi_internal.mobj = obj_osi_internal.dynamic_gt->add_moving_object();
 
     // Set OSI Moving Object Mutable ID
     obj_osi_internal.mobj->mutable_id()->set_value(static_cast<unsigned int>(objectState->state_.info.id));
@@ -1128,7 +1068,7 @@ int OSIReporter::UpdateOSIIntersection()
         else if (junction->IsOsiIntersection())
         {
             // genereric data for the junction
-            osi_lane = obj_osi_internal.gt->add_lane();
+            osi_lane = obj_osi_internal.static_gt->add_lane();
             osi_lane->mutable_id()->set_value(junction->GetGlobalId());
             osi_lane->mutable_classification()->set_type(osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION);
 
@@ -1478,16 +1418,16 @@ int OSIReporter::UpdateOSIIntersection()
     // Lets Update the antecessor and successor lanes of the lanes that are not intersections
     // Get all the intersection lanes, this lanes have the predecessor and successor lanes information
     std::vector<osi3::Lane *> IntersectionLanes;
-    for (int i = 0; i < obj_osi_internal.gt->lane_size(); ++i)
+    for (int i = 0; i < obj_osi_internal.static_gt->lane_size(); ++i)
     {
-        if (obj_osi_internal.gt->lane(i).classification().type() == osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION)
+        if (obj_osi_internal.static_gt->lane(i).classification().type() == osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION)
         {
-            IntersectionLanes.push_back(obj_osi_internal.gt->mutable_lane(i));
+            IntersectionLanes.push_back(obj_osi_internal.static_gt->mutable_lane(i));
         }
     }
 
     // For each lane in OSI groundTruth
-    for (int i = 0; i < obj_osi_internal.gt->lane_size(); ++i)
+    for (int i = 0; i < obj_osi_internal.static_gt->lane_size(); ++i)
     {
         // Check if the lane is in the intersection
         for (unsigned int j = 0; j < IntersectionLanes.size(); ++j)
@@ -1498,13 +1438,13 @@ int OSIReporter::UpdateOSIIntersection()
                 if (IntersectionLanes[j]->classification().lane_pairing()[k].has_antecessor_lane_id())
                 {
                     // It lane is in predecesor of the intersection
-                    if (obj_osi_internal.gt->lane(i).id().value() ==
+                    if (obj_osi_internal.static_gt->lane(i).id().value() ==
                         IntersectionLanes[j]->classification().lane_pairing()[k].antecessor_lane_id().value())
                     {
                         // then we add the intersection ID to the successor of the lane
-                        if (obj_osi_internal.gt->mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+                        if (obj_osi_internal.static_gt->mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
                         {
-                            obj_osi_internal.gt->mutable_lane(i)
+                            obj_osi_internal.static_gt->mutable_lane(i)
                                 ->mutable_classification()
                                 ->add_lane_pairing()
                                 ->mutable_successor_lane_id()
@@ -1517,13 +1457,13 @@ int OSIReporter::UpdateOSIIntersection()
                 if (IntersectionLanes[j]->classification().lane_pairing()[k].has_successor_lane_id())
                 {
                     // It lane is in successor of the intersection
-                    if (obj_osi_internal.gt->lane(i).id().value() ==
+                    if (obj_osi_internal.static_gt->lane(i).id().value() ==
                         IntersectionLanes[j]->classification().lane_pairing()[k].successor_lane_id().value())
                     {
                         // then we add the intersection ID to the predecessor of the lane
-                        if (obj_osi_internal.gt->mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
+                        if (obj_osi_internal.static_gt->mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
                         {
-                            obj_osi_internal.gt->mutable_lane(i)
+                            obj_osi_internal.static_gt->mutable_lane(i)
                                 ->mutable_classification()
                                 ->add_lane_pairing()
                                 ->mutable_antecessor_lane_id()
@@ -1637,7 +1577,7 @@ int OSIReporter::UpdateOSILaneBoundary()
                                 }
                                 if (!osi_laneboundary)
                                 {
-                                    osi_laneboundary = obj_osi_internal.gt->add_lane_boundary();
+                                    osi_laneboundary = obj_osi_internal.static_gt->add_lane_boundary();
 
                                     // update id
                                     osi_laneboundary->mutable_id()->set_value(line_id);
@@ -1758,7 +1698,7 @@ int OSIReporter::UpdateOSILaneBoundary()
                     }
                     if (!osi_laneboundary)
                     {
-                        osi_laneboundary = obj_osi_internal.gt->add_lane_boundary();
+                        osi_laneboundary = obj_osi_internal.static_gt->add_lane_boundary();
 
                         // update id
                         osi_laneboundary->mutable_id()->set_value(boundary_id);
@@ -1830,7 +1770,7 @@ int OSIReporter::UpdateOSIRoadLane()
                     int   lane_id        = lane->GetId();
 
                     // LANE ID
-                    osi3::Lane *osi_lane = obj_osi_internal.gt->add_lane();
+                    osi3::Lane *osi_lane = obj_osi_internal.static_gt->add_lane();
                     osi_lane->mutable_id()->set_value(lane_global_id);
 
                     // CLASSIFICATION TYPE
@@ -2364,19 +2304,19 @@ int OSIReporter::UpdateOSIRoadLane()
                             }
                         }
 
-                        for (int l = 0; l < obj_osi_internal.gt->lane_size(); ++l)
+                        for (int l = 0; l < obj_osi_internal.static_gt->lane_size(); ++l)
                         {
                             lane_pairing = nullptr;
 
                             if (predecessorRoad && predecessor_lane_section && link_predecessor && driving_lane_predecessor &&
-                                driving_lane_predecessor->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
+                                driving_lane_predecessor->GetGlobalId() == obj_osi_internal.static_gt->lane(l).id().value())
                             {
                                 // find first empty pairing slot for successor lane
-                                for (int m = 0; m < obj_osi_internal.gt->lane(l).classification().lane_pairing_size(); ++m)
+                                for (int m = 0; m < obj_osi_internal.static_gt->lane(l).classification().lane_pairing_size(); ++m)
                                 {
-                                    if (!obj_osi_internal.gt->lane(l).classification().lane_pairing(m).has_successor_lane_id())
+                                    if (!obj_osi_internal.static_gt->lane(l).classification().lane_pairing(m).has_successor_lane_id())
                                     {
-                                        lane_pairing = obj_osi_internal.gt->mutable_lane(l)->mutable_classification()->mutable_lane_pairing(m);
+                                        lane_pairing = obj_osi_internal.static_gt->mutable_lane(l)->mutable_classification()->mutable_lane_pairing(m);
                                         break;
                                     }
                                 }
@@ -2384,7 +2324,7 @@ int OSIReporter::UpdateOSIRoadLane()
                                 if (lane_pairing == nullptr)
                                 {
                                     // create a new lane pairing entry
-                                    lane_pairing = obj_osi_internal.gt->mutable_lane(l)->mutable_classification()->add_lane_pairing();
+                                    lane_pairing = obj_osi_internal.static_gt->mutable_lane(l)->mutable_classification()->add_lane_pairing();
                                 }
 
                                 if ((road->GetLink(roadmanager::LinkType::PREDECESSOR) != 0))
@@ -2394,14 +2334,14 @@ int OSIReporter::UpdateOSIRoadLane()
                             }
 
                             if (successorRoad && successor_lane_section && link_successor && driving_lane_successor &&
-                                driving_lane_successor->GetGlobalId() == obj_osi_internal.gt->lane(l).id().value())
+                                driving_lane_successor->GetGlobalId() == obj_osi_internal.static_gt->lane(l).id().value())
                             {
                                 // find first empty pairing slot for successor lane
-                                for (int m = 0; m < obj_osi_internal.gt->lane(l).classification().lane_pairing_size(); ++m)
+                                for (int m = 0; m < obj_osi_internal.static_gt->lane(l).classification().lane_pairing_size(); ++m)
                                 {
-                                    if (!obj_osi_internal.gt->lane(l).classification().lane_pairing(m).has_antecessor_lane_id())
+                                    if (!obj_osi_internal.static_gt->lane(l).classification().lane_pairing(m).has_antecessor_lane_id())
                                     {
-                                        lane_pairing = obj_osi_internal.gt->mutable_lane(l)->mutable_classification()->mutable_lane_pairing(m);
+                                        lane_pairing = obj_osi_internal.static_gt->mutable_lane(l)->mutable_classification()->mutable_lane_pairing(m);
                                         break;
                                     }
                                 }
@@ -2409,7 +2349,7 @@ int OSIReporter::UpdateOSIRoadLane()
                                 if (lane_pairing == nullptr)
                                 {
                                     // create a new lane pairing entry
-                                    lane_pairing = obj_osi_internal.gt->mutable_lane(l)->mutable_classification()->add_lane_pairing();
+                                    lane_pairing = obj_osi_internal.static_gt->mutable_lane(l)->mutable_classification()->add_lane_pairing();
                                 }
 
                                 if ((road->GetLink(roadmanager::LinkType::SUCCESSOR) != 0))
@@ -2447,7 +2387,7 @@ int OSIReporter::UpdateTrafficSignals()
                 // Is Traffic Light
                 if (signal->IsDynamic())
                 {
-                    osi3::TrafficLight *trafficLight = obj_osi_internal.gt->add_traffic_light();
+                    osi3::TrafficLight *trafficLight = obj_osi_internal.static_gt->add_traffic_light();
                     trafficLight->mutable_id()->set_value(static_cast<unsigned int>(signal->GetId()));
                     trafficLight->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
                     trafficLight->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
@@ -2464,7 +2404,7 @@ int OSIReporter::UpdateTrafficSignals()
                 else
                 {
                     // Traffic Sign
-                    osi3::TrafficSign *trafficSign = obj_osi_internal.gt->add_traffic_sign();
+                    osi3::TrafficSign *trafficSign = obj_osi_internal.static_gt->add_traffic_sign();
                     // Set ID, Value, Text
                     trafficSign->mutable_id()->set_value(static_cast<unsigned int>(signal->GetId()));
                     trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value(signal->GetValue());
@@ -2667,21 +2607,16 @@ const char *OSIReporter::GetOSIGroundTruth(int *size)
     if (!(GetUDPClientStatus() == 0 || IsFileOpen()))
     {
         // Data has not been serialized
-        obj_osi_external.combined_gt->SerializeToString(&osiGroundTruth.combined_ground_truth);
-        osiGroundTruth.combined_size = static_cast<unsigned int>(obj_osi_external.combined_gt->ByteSizeLong());
+        obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+        osiGroundTruth.size = static_cast<unsigned int>(obj_osi_external.gt->ByteSizeLong());
     }
-    *size = static_cast<int>(osiGroundTruth.combined_size);
-    return osiGroundTruth.combined_ground_truth.data();
+    *size = static_cast<int>(osiGroundTruth.size);
+    return osiGroundTruth.ground_truth.data();
 }
 
-const char* OSIReporter::GetOSIGroundTruthRaw()
+const char *OSIReporter::GetOSIGroundTruthRaw()
 {
-    // static std::string merged_data;  // Static to persist after function returns
-    // osi3::GroundTruth merged_gt;
-    // merged_gt.MergeFrom(*obj_osi_external.dynamic_gt);
-    // // merged_gt.MergeFrom(*obj_osi_external.static_gt);
-    // merged_gt.SerializeToString(&merged_data); 
-    return reinterpret_cast<char*>(obj_osi_external.combined_gt);  // Safe because `std::string` owns memory
+    return reinterpret_cast<char *>(obj_osi_external.gt);
 }
 
 const char *OSIReporter::GetOSITrafficCommandRaw()

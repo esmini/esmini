@@ -1281,6 +1281,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api)
 {
     const osi3::GroundTruth* osi_gt_ptr;
     struct stat              fileStatus;
+    SE_OSIStaticLogMode      mode = SE_OSIStaticLogMode::API;
 
     SE_EnableOSIFile("gt_static_dynamic.osi");
     ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
@@ -1298,7 +1299,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api)
     EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
 
     SE_StepDT(0.01f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(mode);
 
     EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 7);
     EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
@@ -1335,9 +1336,10 @@ TEST(GroundTruthTests, check_update_gt_twice_same_frame)
 TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
 {
     const osi3::GroundTruth* osi_gt_ptr;
+    SE_OSIStaticLogMode      mode = SE_OSIStaticLogMode::API;
 
     ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(mode);
 
     osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
@@ -1345,7 +1347,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
     EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
 
     SE_StepDT(0.01f);
-    SE_UpdateOSIGroundTruth();
+    SE_UpdateOSIGroundTruth(mode);
 
     EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 7);
     EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);

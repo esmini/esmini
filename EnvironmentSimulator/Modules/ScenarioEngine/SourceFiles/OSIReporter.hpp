@@ -54,7 +54,6 @@ public:
         DEFAULT,
         API,
         API_AND_LOG,
-        LOG
     } OSIStaticUpdateMode;
 
     /**
@@ -69,23 +68,15 @@ public:
     /**
     Writes GroundTruth in the OSI file
     */
-    bool WriteOSIFile(const std::string& ground_truth, unsigned int size);
+    bool WriteOSIFile();
     /**
     Flush (force write) the OSI file
     */
     void FlushOSIFile();
     /**
-    Clears groundtruth osi
-    */
-    int ClearOSIGroundTruth();
-    /**
-    Copies the content of the OSI internal data struct to OSI external data struct
-     */
-    int SetOSIStaticExternalData();
-    /**
     Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
     */
-    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, int updateMode);
+    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, int updateMode = 0);
     /**
     Fills up the osi message with  static GroundTruth
     */
