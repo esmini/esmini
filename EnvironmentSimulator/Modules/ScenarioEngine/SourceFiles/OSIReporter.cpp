@@ -279,6 +279,23 @@ void OSIReporter::FlushOSIFile()
     }
 }
 
+int OSIReporter::ClearOSIGroundTruth()
+{
+    obj_osi_internal.dynamic_gt->clear_moving_object();
+    obj_osi_internal.static_gt->clear_stationary_object();
+    obj_osi_internal.static_gt->clear_lane();
+    obj_osi_internal.static_gt->clear_lane_boundary();
+    obj_osi_internal.static_gt->clear_traffic_light();
+    obj_osi_internal.static_gt->clear_traffic_sign();
+    obj_osi_internal.static_gt->clear_road_marking();
+    obj_osi_internal.static_gt->clear_map_reference();
+    obj_osi_internal.static_gt->clear_proj_string();
+    obj_osi_internal.static_gt->clear_model_reference();
+    obj_osi_internal.static_gt->clear_version();
+
+    return 0;
+}
+
 int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, int updateMode)
 {
     if (GetUpdated() == true)
@@ -316,6 +333,11 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
                     osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
                     WriteOSIFile();
                 }
+                else if (GetUDPClientStatus() == 0)
+                {
+                    obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
+                }
                 break;
             case API:
                 if (IsFileOpen())
@@ -323,6 +345,11 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
                     obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
                     osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
                     WriteOSIFile();
+                }
+                else if (GetUDPClientStatus() == 0)
+                {
+                    obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
                 }
                 obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
                 break;
@@ -333,6 +360,11 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
                     obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
                     osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
                     WriteOSIFile();
+                }
+                else if (GetUDPClientStatus() == 0)
+                {
+                    obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
                 }
                 break;
         }
@@ -2612,6 +2644,12 @@ const char *OSIReporter::GetOSIGroundTruth(int *size)
     }
     *size = static_cast<int>(osiGroundTruth.size);
     return osiGroundTruth.ground_truth.data();
+}
+
+void OSIReporter::CombineOSIGroundTruth()
+{
+    obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
+    obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
 }
 
 const char *OSIReporter::GetOSIGroundTruthRaw()

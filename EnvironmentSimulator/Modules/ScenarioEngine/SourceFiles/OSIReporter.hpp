@@ -74,6 +74,10 @@ public:
     */
     void FlushOSIFile();
     /**
+    Clears groundtruth osi
+    */
+    int ClearOSIGroundTruth();
+    /**
     Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
     */
     int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, int updateMode = 0);
@@ -140,6 +144,7 @@ public:
     int CreateSensorViewFromSensorData(const osi3::SensorData& sd);
 
     const char*       GetOSIGroundTruth(int* size);
+    void              CombineOSIGroundTruth();
     const char*       GetOSIGroundTruthRaw();
     const char*       GetOSITrafficCommandRaw();
     const char*       GetOSIRoadLane(const std::vector<std::unique_ptr<ObjectState>>& objectState, int* size, int object_id);
