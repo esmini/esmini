@@ -1684,7 +1684,7 @@ extern "C"
             return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_, static_cast<int>(mode));
         }
 #else
-        (void)refetchStaticGt;
+        (void)mode;
 #endif  // _USE_OSI
         return 0;
     }
