@@ -1348,12 +1348,12 @@ void ScenarioEngine::GetIdxsFromIds(const int id_1, const int id_2, int& idx_1, 
     return;
 }
 
-void ScenarioEngine::UpdateDistance(Object*                           obj_1,
-                                    Object*                           obj_2,
-                                    roadmanager::RelativeDistanceType dist_type,
-                                    const uint64_t&                   key,
-                                    const uint64_t&                   rev_key,
-                                    const double                      tracking_limit)
+void ScenarioEngine::UpdateDistance(Object*                            obj_1,
+                                    Object*                            obj_2,
+                                    roadmanager::RelativeDistanceType& dist_type,
+                                    const uint64_t&                    key,
+                                    const uint64_t&                    rev_key,
+                                    const double                       tracking_limit)
 {
     auto [it, inserted] = object_distance_map_.try_emplace(key, DistanceEntry{});
     (void)inserted;
@@ -1363,42 +1363,31 @@ void ScenarioEngine::UpdateDistance(Object*                           obj_1,
     (void)rev_inserted;
     auto& rev_distance_entry = rev_it->second;
 
-    auto& measurement = distance_entry.measurement_[static_cast<size_t>(dist_type)];
-    if (measurement.distance_ > tracking_limit)
+    if (distance_entry.measurement_[static_cast<size_t>(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS)].distance_ > tracking_limit)
     {
         dist_type = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS;
     }
+    auto& measurement = distance_entry.measurement_[static_cast<size_t>(dist_type)];
 
     double dist = 0.0;
     obj_1->pos_.Distance(&obj_2->pos_, roadmanager::CoordinateSystem::CS_ENTITY, dist_type, dist);
-    double abs_dist    = std::abs(dist);
     double next_update = simulationTime_;
     if (roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS == dist_type)
     {
-        if (abs_dist > 1000.0)
-        {
-            next_update = simulationTime_ + 10.0;
-        }
-        else if (abs_dist > tracking_limit)
+        if (dist > tracking_limit)
         {
             next_update = simulationTime_ + 3.0;
         }
-    }
-    // Only update if distance actually changed
-    if (measurement.distance_ != dist)
-    {
-        measurement.distance_       = dist;
-        measurement.timestamp_      = simulationTime_;
-        distance_entry.next_update_ = next_update;
-    }
 
-    if (dist_type == roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS)
-    {
-        auto& rev_measurement      = rev_distance_entry.measurement_[static_cast<size_t>(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS)];
-        rev_measurement.distance_  = dist;
-        rev_measurement.timestamp_ = simulationTime_;
+        auto& rev_measurement           = rev_distance_entry.measurement_[static_cast<size_t>(dist_type)];
+        rev_measurement.distance_       = dist;
+        rev_measurement.timestamp_      = simulationTime_;
         rev_distance_entry.next_update_ = next_update;
     }
+
+    measurement.distance_       = dist;
+    measurement.timestamp_      = simulationTime_;
+    distance_entry.next_update_ = next_update;
 }
 
 int ScenarioEngine::GetDistance(Object*                           object_1,
@@ -1408,6 +1397,13 @@ int ScenarioEngine::GetDistance(Object*                           object_1,
                                 double&                           distance,
                                 double&                           timestamp)
 {
+    double squared_distance = (object_1->pos_.GetX() - object_2->pos_.GetX()) * (object_1->pos_.GetX() - object_2->pos_.GetX()) +
+                              (object_1->pos_.GetY() - object_2->pos_.GetY()) * (object_1->pos_.GetY() - object_2->pos_.GetY());
+    if (squared_distance > 2.5e5)  // 500 * 500m
+    {
+        return -1;
+    }
+
     uint64_t key     = GenerateKey(object_1->GetId(), object_2->GetId());
     uint64_t rev_key = GenerateKey(object_2->GetId(), object_1->GetId());
 
