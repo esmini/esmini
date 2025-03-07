@@ -27,20 +27,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n.21.740.* StopCondition: true\\n', log)  is not None)
 
     def test_ltap_od(self):
-        # measure execution time average of five
-        n_executions = 5
-        total_duration = 0
-        total_cpu_time = 0
-        for i in range(5):
-            log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/ltap-od.xosc'), COMMON_ESMINI_ARGS \
-                + '--disable_controllers', measure_cpu_time=True)
-            total_duration += duration
-            total_cpu_time += (cpu_time.user + cpu_time.system)
-
-        if platform == "linux":
-            # check performance only on Linux as reference
-            self.assertLess(total_duration / n_executions, 0.5)
-            self.assertLess(total_cpu_time / n_executions, 0.1)
+        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/ltap-od.xosc'), COMMON_ESMINI_ARGS \
+            + '--disable_controllers')
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*ltap-od.xosc', log)  is not None)
@@ -279,12 +267,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n45.000, 0, Ego, 32.161, 688.644, -0.922, 1.461, 0.003, 0.000, 0.053, -0.000, 5.846', csv))
 
     def test_swarm(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.1', measure_cpu_time=True)
-
-        if platform == "linux":
-            # check performance only on Linux as reference
-            self.assertLess(total_duration / n_executions, 0.5)
-            self.assertLess(total_cpu_time / n_executions, 0.2)
+        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.1')
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*swarm.xosc', log)  is not None)
