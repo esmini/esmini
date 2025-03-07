@@ -4413,7 +4413,7 @@ TEST(RoadmanagerTest, TestSimpleGetDistance)
     ret = SE_SimpleGetDistanceToObject(0, 2, SE_RelativeDistanceType::REL_DIST_LATERAL, 200.0, distance, timestamp);
     EXPECT_EQ(ret, -2);
 
-    ret = SE_SimpleGetDistanceToObject(0, 3, SE_RelativeDistanceType::REL_DIST_EUCLIDIAN, 200.0, distance, timestamp);
+    ret = SE_SimpleGetDistanceToObject(0, 3, SE_RelativeDistanceType::REL_DIST_LONGITUDINAL, 200.0, distance, timestamp);
     EXPECT_EQ(ret, -2);
 
     SE_StepDT(0.1f);

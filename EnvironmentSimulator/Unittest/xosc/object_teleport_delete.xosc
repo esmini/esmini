@@ -173,15 +173,7 @@
                   </Event>
                </Maneuver>
             </ManeuverGroup>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="TeleportActStart" delay="0" conditionEdge="risingOrFalling">
-                     <ByValueCondition>
-                        <SimulationTimeCondition value="0" rule="greaterOrEqual"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
+            <StartTrigger/>
          </Act>
       </Story>
       <StopTrigger>
