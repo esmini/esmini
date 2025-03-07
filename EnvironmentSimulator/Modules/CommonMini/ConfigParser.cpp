@@ -60,6 +60,7 @@ namespace esmini::common
             }
             else
             {
+                configs_.push_back(fmt::format("--{}", key));
                 configs_.insert(configs_.end(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
             }
         }
