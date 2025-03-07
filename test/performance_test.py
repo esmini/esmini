@@ -1,128 +1,200 @@
-import re
 import unittest
+import sys
 import argparse
+import os
+import glob
 from test_common import *
-import matplotlib.pyplot as plt
 
-class TestSuite(unittest.TestCase):
-    def test_performance(self):
-        applications = ['esmini_releases/esmini_2.32.1/esmini/bin/esmini', 'esmini_releases/esmini_2.34.1/esmini/bin/esmini', 'esmini_releases/esmini_2.35.0/esmini/bin/esmini', 'esmini_releases/esmini_2.39.0/esmini/bin/esmini', 'esmini_releases/esmini_2.45.0/esmini/bin/esmini']
-        wall_clock_time = []
-        user_time = []
-        system_time = []
-        cpu_time = []
-        for app in applications:
-            log, wc_time, u_time, s_time = run_scenario_and_get_time(esmini_arguments='--osc ../resources/xosc/ltap-od_dspace_updated.xosc ' + '--headless --fixed_timestep 0.01 --disable_controllers', application=app)
-            wall_clock_time.append(wc_time)
-            user_time.append(u_time)
-            system_time.append(s_time)
-            cpu_time.append(u_time + s_time)
-            # Check some initialization steps
-            self.assertTrue(re.search('Loading .*ltap-od', log)  is not None)
+ESMINI_PATH = '../'
+COMMON_ESMINI_ARGS = '--headless --fixed_timestep 0.01 --record sim.dat '
+TOLERANCE = 0.4
+directories = []
+scenarios = []
+time_vals = []
 
-        print(f"\n----------------------------------------------------------------------------------------------------------------->")
-        for app in applications:
-            print(f"Application: {app}")
-            print(f"Wall clock time: {wall_clock_time[applications.index(app)]:.8f} seconds")
-            print(f"User time: {user_time[applications.index(app)]:.8f} seconds")
-            print(f"System time: {system_time[applications.index(app)]:.8f} seconds")
+class TestSuiteBase(unittest.TestCase):
 
-        for idx in range(len(applications)):
-            print(f"----------------------------------------------------------------------------------------------------------------->")
-            print(f"Wall clock time difference between {applications[idx]} and {applications[idx-1]}: {wall_clock_time[idx] - wall_clock_time[idx-1]:.8f} seconds")
-            print(f"User time difference between {applications[idx]} and {applications[idx-1]}: {user_time[idx] - user_time[idx-1]:.8f} seconds")
-            print(f"System time difference between {applications[idx]} and {applications[idx-1]}: {system_time[idx] - system_time[idx-1]:.8f} seconds")
+    def median(self, list):
 
-        fig, axs = plt.subplots(3, 1, figsize=(10, 15))
+        size = len(list)
 
-        # Extracting version numbers from application paths
-        app_versions = [re.search(r'esmini_(\d+\.\d+\.\d+)', app).group(1) for app in applications]
-        # Subplot for Application vs User Time
-        axs[0].plot(app_versions, user_time, marker='o', linestyle='-', color='b')
-        axs[0].set_ylabel('User Time (seconds)')
-        axs[0].set_title('Application vs User Time')
-        axs[0].tick_params(axis='x', rotation=45)
-        axs[0].grid(True)
+        if size == 0:
+            return 0
 
-        # Subplot for Application vs System Time
-        axs[1].plot(app_versions, system_time, marker='o', linestyle='-', color='g')
-        axs[1].set_ylabel('System Time (seconds)')
-        axs[1].set_title('Application vs System Time')
-        axs[1].tick_params(axis='x', rotation=45)
-        axs[1].grid(True)
+        if size % 2:
+            # odd number of elements
+            return list[int(size/2)]
+        else:
+            # even number of elements
+            return (list[int(size/2 - 1)] + list[int(size/2)]) / 2
 
-        # Subplot for Application vs CPU Time
-        axs[2].plot(app_versions, cpu_time, marker='o', linestyle='-', color='r')
-        axs[2].set_ylabel('CPU Time (User Time + System Time)(seconds)')
-        axs[2].set_title('Application vs CPU Time')
-        axs[2].tick_params(axis='x', rotation=45)
-        axs[2].grid(True)
+    def run_repeat(self, scenario, args, ref_cpu_time, n_runs, plot=False):
 
-        plt.tight_layout()
+        if n_runs < 1:
+            self.assertFalse, "No runs specified"
+            return
+
+        time_vals_run = []
+        remove_dirs = []
+
+        for i, dir in enumerate(directories):
+
+            exec = None if dir is None else os.path.join(dir, "bin/esmini")
+            total_duration = 0
+            total_cpu_user = 0
+            total_cpu_system = 0
+            total_cpu_total = 0
+            result_cpu_user = []
+            result_cpu_system = []
+            result_cpu_total = []
+
+            failure = False
+            for j in range(n_runs):
+                try:
+                    log, duration, cpu_time = run_scenario(scenario, args, application=exec, measure_cpu_time=True)
+                except:
+                    print('\nFailure - check', exec, file=sys.stderr)
+                    remove_dirs.append(dir)
+                    failure = True
+                    break
+                total_duration += duration
+                total_cpu_user += cpu_time.user
+                total_cpu_system += cpu_time.system
+                total_cpu_total += (cpu_time.user + cpu_time.system)
+                result_cpu_user.append(cpu_time.user)
+                result_cpu_system.append(cpu_time.system)
+                result_cpu_total.append(cpu_time.user + cpu_time.system)
+
+            if failure:
+                continue
+            average_duration = total_duration / n_runs
+            average_cpu_user = total_cpu_user / n_runs
+            average_cpu_system = total_cpu_system / n_runs
+            average_cpu_total = total_cpu_total / n_runs
+
+            result_cpu_user.sort()
+            result_cpu_system.sort()
+            result_cpu_total.sort()
+
+            median_cpu_user = self.median(result_cpu_user)
+            median_cpu_system = self.median(result_cpu_system)
+            median_cpu_total = self.median(result_cpu_total)
+
+            if ref_cpu_time > 0:
+                self.assertLess(median_cpu_total, ref_cpu_time * (1 + TOLERANCE))
+
+            print('\n{} {} {:.3f} ({:.3f}) / {:.3f}, {:.3f} / {:.3f}, {:.3f} / {:.3f}, {:.3f}, {} '.format(
+                os.path.realpath(exec).replace(os.path.sep, '/'),
+                os.path.basename(scenario),
+                median_cpu_total, ref_cpu_time, average_cpu_total, median_cpu_user, average_cpu_user, median_cpu_system, average_cpu_system, average_duration, n_runs),
+                flush=True, end='')
+
+            time_vals_run.append(median_cpu_total)
+
+        for d in remove_dirs:
+            directories.remove(d)
+        print('')
+        time_vals.append(time_vals_run)
+        return 0
+
+class TestSuitePresetScenarios(TestSuiteBase):
+
+    def test_perf_cut_in(self):
+        scenario = 'resources/xosc/cut-in.xosc'
+        scenarios.append(scenario)
+        self.run_repeat(os.path.join(ESMINI_PATH, scenario), COMMON_ESMINI_ARGS + '--disable_controllers --fixed_timestep 0.001', 0.19, 40 if args.runs < 0 else args.runs)
+
+    def test_perf_ltap_od(self):
+        scenario = 'resources/xosc/ltap-od.xosc'
+        scenarios.append(scenario)
+        self.run_repeat(os.path.join(ESMINI_PATH, scenario), COMMON_ESMINI_ARGS + '--disable_controllers --fixed_timestep 0.001', 0.15, 40 if args.runs < 0 else args.runs)
+
+    def test_perf_swarm(self):
+        scenario = 'resources/xosc/swarm.xosc'
+        scenarios.append(scenario)
+        self.run_repeat(os.path.join(ESMINI_PATH, scenario), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.1', 1.35, 10 if args.runs < 0 else args.runs)
+
+class TestSuiteSpecifiedScenarios(TestSuiteBase):
+
+    def test_scenario_list(self):
+        for s in scenarios:
+            self.run_repeat(os.path.join(ESMINI_PATH, s), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.05 --disable_controllers ', -1, args.runs)
+
+def expand_wildcards(args):
+    expanded_files = []
+    for arg in args:
+        files = glob.glob(arg)
+        if files:
+            expanded_files.extend(files)  # Add found files to the list
+        else:
+            # If no files match the argument, treat it as a literal argument
+            expanded_files.append(arg)
+    return expanded_files
+
+def Plot():
+    dirs = [os.path.basename(os.path.normpath(d).replace(os.path.sep, '/')) for d in directories]
+    labels = [os.path.basename(s) for s in scenarios]
+
+    for i, time_val in enumerate(time_vals):
+        plt.plot(dirs, time_val, label=labels[i], marker='o')
+
+    plt.ylabel('CPU time (seconds)')
+    plt.title('esmini performance')
+    plt.tick_params(axis='x', rotation=45)
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    # Save the plot as an image
+    plt.savefig("esmini_performance.png")  # Saves as PNG by default
+
+    if args.show_plot == True:
         plt.show()
-
-    def test_performance_advanced(self):
-        applications = ['esmini_releases/esmini_2.32.1/esmini/bin/esmini', 'esmini_releases/esmini_2.34.1/esmini/bin/esmini', 'esmini_releases/esmini_2.35.0/esmini/bin/esmini', 'esmini_releases/esmini_2.39.0/esmini/bin/esmini', 'esmini_releases/esmini_2.45.0/esmini/bin/esmini']
-        num_iterations = 100
-        all_wc_times = {app: [] for app in applications}
-        all_user_times = {app: [] for app in applications}
-        all_system_times = {app: [] for app in applications}
-        all_cpu_times = {app: [] for app in applications}
-
-        for app in applications:
-            for _ in range(num_iterations):
-                log, wc_time, u_time, s_time = run_scenario_and_get_time(esmini_arguments='--osc ../resources/xosc/ltap-od_dspace_updated.xosc ' + '--headless --fixed_timestep 0.01 --disable_controllers', application=app)
-                all_wc_times[app].append(wc_time)
-                all_user_times[app].append(u_time)
-                all_system_times[app].append(s_time)
-                all_cpu_times[app].append(u_time + s_time)
-                self.assertTrue(re.search('Loading .*ltap-od', log) is not None)
-
-        fig, axs = plt.subplots(3, 1, figsize=(12, 18))
-
-        app_versions = [re.search(r'esmini_(\d+\.\d+\.\d+)', app).group(1) for app in applications]
-
-        # Plot User Time
-        for app, user_times in all_user_times.items():
-            axs[0].plot(range(1, num_iterations + 1), user_times, marker='o', label=app)
-        axs[0].set_ylabel('User Time (seconds)')
-        axs[0].set_title('User Time vs Iteration')
-        axs[0].legend()
-        axs[0].grid(True)
-
-        # Plot System Time
-        for app, system_times in all_system_times.items():
-            axs[1].plot(range(1, num_iterations + 1), system_times, marker='o', label=app)
-        axs[1].set_ylabel('System Time (seconds)')
-        axs[1].set_title('System Time vs Iteration')
-        axs[1].legend()
-        axs[1].grid(True)
-
-        # Plot CPU Time
-        for app, cpu_times in all_cpu_times.items():
-            axs[2].plot(range(1, num_iterations + 1), cpu_times, marker='o', label=app)
-        axs[2].set_ylabel('CPU Time (User + System)(seconds)')
-        axs[2].set_title('CPU Time vs Iteration')
-        axs[2].legend()
-        axs[2].grid(True)
-
-        plt.tight_layout()
-        plt.show()
-
 
 if __name__ == "__main__":
     # execute only if run as a script
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--timeout", type=int, default=40, help="timeout per testcase")
+    parser.add_argument("-d", "--directories", nargs="+", type=str, help="list of esmini root directories")
+    parser.add_argument("-s", "--scenarios", nargs="+", type=str, help="list of scenarios (if missing default suite is run)")
+    parser.add_argument("-r", "--runs", type=int, help="number of runs (overrides default settings per test)", default=20)
+    parser.add_argument("-p", "--show_plot", nargs="?", const=True, default=None, help="enforce show plot (otherwise only with -s)")
+    parser.add_argument("--disable_plot", action="store_true", default=False, help="disable plot (not even store file)")
     parser.add_argument("testcase", nargs="?", help="run only this testcase")
     args = parser.parse_args()
 
-    print("timeout:", args.timeout, file=sys.stderr)
+    if args.directories is None:
+        directories.append(os.path.realpath('../'))  # default path
+
+    if args.directories is not None:
+        directories += [os.path.realpath(d) for d in expand_wildcards(args.directories)]
+
+    if args.scenarios is not None:
+        scenarios += [os.path.realpath(s) for s in expand_wildcards(args.scenarios)]
+
+    print("timeout:", args.timeout, flush=True)
+    print("tolerance: {:.2f} ({:.0f}%)".format(TOLERANCE, 100 * TOLERANCE), flush=True)
+    if len(scenarios) > 0:
+        print('runs:', args.runs, flush=True)
+
+    print("executable scenario ... cpu_total median (ref) / average, cpu_user median / average, cpu_system median / average, duration average, n_runs", flush=True)
+
     set_timeout(args.timeout)
 
-    if args.testcase:
-        # Add test case name as argument to run only that test case
-        unittest.main(argv=['ignored', '-v', 'TestSuite.' + args.testcase])
+    if not args.disable_plot:
+        import matplotlib.pyplot as plt
+        unittest.addModuleCleanup(Plot)
+        if args.show_plot is None:
+            args.show_plot = True if args.scenarios else False
+
+    if args.scenarios:
+        # run specified scenarios
+        unittest.main(argv=['', 'TestSuiteSpecifiedScenarios'], verbosity=2)
+    elif args.testcase:
+        # run specified test cases from the preset selection
+        unittest.main(argv=['', 'TestSuitePresetScenarios.' + args.testcase], verbosity=2)
     else:
-        unittest.main(argv=[''], verbosity=2)
+        # run complete preset selection
+        unittest.main(argv=['', 'TestSuitePresetScenarios'], verbosity=2)
+
+
