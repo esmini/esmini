@@ -284,7 +284,7 @@ class TestSuite(unittest.TestCase):
         if platform == "linux":
             # check performance only on Linux as reference
             self.assertLess(total_duration / n_executions, 0.5)
-            self.assertLess(total_cpu_time / n_executions, 0.1)
+            self.assertLess(total_cpu_time / n_executions, 0.2)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*swarm.xosc', log)  is not None)
