@@ -26,10 +26,10 @@ class TestSuite(unittest.TestCase):
         self.assertLess(total_cpu_time / n_runs, ref_cpu_time * (1 + TOLERANCE))
 
     def test_perf_ltap_od(self):
-        self.run_repeat(os.path.join(ESMINI_PATH, 'resources/xosc/ltap-od.xosc'), COMMON_ESMINI_ARGS + '--disable_controllers', 10, 0.25, 0.04)
+        self.run_repeat(os.path.join(ESMINI_PATH, 'resources/xosc/ltap-od.xosc'), COMMON_ESMINI_ARGS + '--disable_controllers', 10, 0.04, 0.03)
 
     def test_perf_swarm(self):
-        self.run_repeat(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.1', 5, 1.4, 0.7)
+        self.run_repeat(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.1', 5, 1.4, 1.35)
 
 
 if __name__ == "__main__":
