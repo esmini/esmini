@@ -716,6 +716,11 @@ private:
     bool flag;
 };
 
+// Converts string to bool pair, first is set if value is bool and second is value of conversion
+// caller should check first before using second. As this function will take:
+// true, True, TRUE as true
+// false, False, FALSE as false
+std::pair<bool, bool>    StrToBool(const std::string& val);
 std::vector<std::string> SplitString(const std::string& str, char delimiter);
 std::string              DirNameOf(const std::string& fname);
 std::string              FileNameOf(const std::string& fname);

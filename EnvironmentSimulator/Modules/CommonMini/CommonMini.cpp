@@ -763,6 +763,19 @@ double SE_getSimTimeStep(__int64& time_stamp, double min_time_step, double max_t
     return dt;
 }
 
+std::pair<bool, bool> StrToBool(const std::string& val)
+{
+    if ("true" == val || "True" == val || "TRUE" == val)
+    {
+        return {true, true};
+    }
+    if ("false" == val || "False" == val || "FALSE" == val)
+    {
+        return {true, false};
+    }
+    return {false, false};
+}
+
 std::vector<std::string> SplitString(const std::string& str, char delimiter)
 {
     if (str.empty())
