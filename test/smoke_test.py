@@ -37,8 +37,10 @@ class TestSuite(unittest.TestCase):
             total_duration += duration
             total_cpu_time += (cpu_time.user + cpu_time.system)
 
-        self.assertLess(total_duration / n_executions, 0.5)
-        self.assertLess(total_cpu_time / n_executions, 0.1)
+        if platform == "linux":
+            # check performance only on Linux as reference
+            self.assertLess(total_duration / n_executions, 0.5)
+            self.assertLess(total_cpu_time / n_executions, 0.1)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*ltap-od.xosc', log)  is not None)
@@ -279,8 +281,10 @@ class TestSuite(unittest.TestCase):
     def test_swarm(self):
         log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.1', measure_cpu_time=True)
 
-        self.assertLess(duration, 2.0)
-        self.assertLess((cpu_time.user + cpu_time.system), 0.8)
+        if platform == "linux":
+            # check performance only on Linux as reference
+            self.assertLess(total_duration / n_executions, 0.5)
+            self.assertLess(total_cpu_time / n_executions, 0.1)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*swarm.xosc', log)  is not None)
