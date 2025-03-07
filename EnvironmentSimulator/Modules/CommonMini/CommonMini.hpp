@@ -73,8 +73,7 @@ using idx_t = uint32_t;
 #define LOGICAL_OR(X, Y)              ((X || Y) && !(X && Y))
 
 const std::string CONFIG_FILE_OPTION_NAME = "config_file_path";
-
-const std::string DEFAULT_CONFIG_FILE = "config.yml";
+const std::string DEFAULT_CONFIG_FILE     = "config.yml";
 
 // Time functions
 __int64 SE_getSystemTime();
@@ -716,6 +715,11 @@ private:
     bool flag;
 };
 
+// Converts string to bool pair, first is set if value is bool and second is value of conversion
+// caller should check first before using second. This function will take:
+// true, True, TRUE as true
+// false, False, FALSE as false
+std::pair<bool, bool>    StrToBool(const std::string& val);
 std::vector<std::string> SplitString(const std::string& str, char delimiter);
 std::string              DirNameOf(const std::string& fname);
 std::string              FileNameOf(const std::string& fname);
@@ -849,23 +853,23 @@ public:
     bool                     set_;
     std::vector<std::string> arg_value_;
     std::string              default_value_;
-    bool                     persistent_             = false;
-    bool                     autoApply_              = false;
-    bool                     shouldHaveOnlyOneValue_ = false;
+    bool                     persistent_          = false;
+    bool                     autoApply_           = false;
+    bool                     isSingleValueOption_ = false;
 
     SE_Option(std::string opt_str,
               std::string opt_desc,
-              std::string opt_arg                = "",
-              std::string default_value          = "",
-              bool        autoApply              = false,
-              bool        shouldHaveOnlyOneValue = false)
+              std::string opt_arg             = "",
+              std::string default_value       = "",
+              bool        autoApply           = false,
+              bool        isSingleValueOption = false)
         : opt_str_(opt_str),
           opt_desc_(opt_desc),
           opt_arg_(opt_arg),
           set_(false),
           default_value_(default_value),
           autoApply_(autoApply),
-          shouldHaveOnlyOneValue_(shouldHaveOnlyOneValue)
+          isSingleValueOption_(isSingleValueOption)
     {
     }
 
@@ -879,10 +883,10 @@ class SE_Options
 public:
     void AddOption(std::string opt_str,
                    std::string opt_desc,
-                   std::string opt_arg                = "",
-                   std::string opt_arg_default_value  = "",
-                   bool        autoApply              = false,
-                   bool        shouldHaveOnlyOneValue = true);
+                   std::string opt_arg               = "",
+                   std::string opt_arg_default_value = "",
+                   bool        autoApply             = false,
+                   bool        isSingleValueOption   = true);
 
     void        PrintUsage();
     void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");
