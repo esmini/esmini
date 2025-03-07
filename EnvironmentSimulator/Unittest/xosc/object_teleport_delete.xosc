@@ -3,7 +3,7 @@
 <!-- direction. One of them overtaking the other causing a critical situation.          -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="0"
+               revMinor="1"
                date="2021-02-22T10:00:00"
                description="Critical situation at crest"
                author="esmini-team"/>
@@ -119,42 +119,33 @@
             </Private>
          </Actions>
       </Init>
-      <Story name="Lane change story">
-         <Act name="Lane change act">
+      <Story name="Delete entity story">
+         <Act name="Delete entity act">
             <ManeuverGroup maximumExecutionCount="1" name="Delete entity">
                <Actors selectTriggeringEntities="false">
                   <EntityRef entityRef="Target1"/>
                </Actors>
                <Maneuver name="DeleteCar1Maneuver">
                   <Event name="DeleteCar1Event" priority="parallel">
-                        <Action name="DeleteCar1Action">
-                           <GlobalAction>
-                              <EntityAction entityRef="Target1">
-                                    <DeleteEntityAction/>
-                              </EntityAction>
-                           </GlobalAction>
-                        </Action>
-                        <StartTrigger>
-                           <ConditionGroup>
-                              <Condition name="DeleteCar1Event1Condition" delay="0" conditionEdge="none">
-                                    <ByValueCondition>
-                                       <SimulationTimeCondition value="0.1" rule="greaterOrEqual"/>
-                                    </ByValueCondition>
-                              </Condition>
-                           </ConditionGroup>
-                        </StartTrigger>
+                     <Action name="DeleteCar1Action">
+                        <GlobalAction>
+                           <EntityAction entityRef="Target1">
+                                 <DeleteEntityAction/>
+                           </EntityAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="DeleteCar1Event1Condition" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="0.1" rule="greaterOrEqual"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
                   </Event>
                </Maneuver>
             </ManeuverGroup>
-            <StartTrigger>
-               <ConditionGroup>
-                  <Condition name="CutInActStart" delay="0" conditionEdge="risingOrFalling">
-                     <ByValueCondition>
-                        <SimulationTimeCondition value="0" rule="greaterThan"/>
-                     </ByValueCondition>
-                  </Condition>
-               </ConditionGroup>
-            </StartTrigger>
             <ManeuverGroup maximumExecutionCount="1" name="TeleportCar3">
                <Actors selectTriggeringEntities="false">
                   <EntityRef entityRef="Target3"/>
@@ -186,7 +177,7 @@
                <ConditionGroup>
                   <Condition name="TeleportActStart" delay="0" conditionEdge="risingOrFalling">
                      <ByValueCondition>
-                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                        <SimulationTimeCondition value="0" rule="greaterOrEqual"/>
                      </ByValueCondition>
                   </Condition>
                </ConditionGroup>
