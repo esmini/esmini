@@ -443,7 +443,7 @@ extern "C"
     SE_DLL_API const char *SE_GetOptionValue(const char *name);
 
     /**
-   Get option values count
+   Get option values count. Some options can have multiple values, this function returns the number of values present for the option.
    @param name the name of the option whose values count to fetch
    @return values count of the option
    */

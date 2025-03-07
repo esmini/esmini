@@ -29,7 +29,6 @@
 #include "CommonMini.hpp"
 #include "logger.hpp"
 #include "RoadManager.hpp"
-#include "CommonMini.hpp"
 #include "helpText.hpp"
 #include "viewer.hpp"
 #include "Config.hpp"

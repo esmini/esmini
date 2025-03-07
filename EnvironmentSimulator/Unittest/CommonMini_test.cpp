@@ -2,6 +2,7 @@
 
 #include "CommonMini.hpp"
 #include "esminiLib.hpp"
+#include "Config.hpp"
 
 struct Coordinate2D
 {
@@ -230,6 +231,54 @@ TEST(LinearAlgebra, TestAngleBetweenVectors)
     v2[0] = 1.0;
     v2[1] = -0.6;
     EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), 2.798, 1E-3);
+}
+
+TEST(ProgramOptions, TestConfigOptionPostprocessing)
+{
+    {
+        const char*            args[] = {"esmini", "--osc", "../../../resources/xosc/cut-in_simple.xosc", "--osc_str", "osc_str_value"};
+        esmini::common::Config config("esmini", sizeof(args) / sizeof(char*), const_cast<char**>(args));
+        auto [argc, argv] = config.Load();
+        EXPECT_EQ(argc, 3);
+        EXPECT_EQ(strcmp(argv[0], "esmini"), 0);
+        EXPECT_EQ(strcmp(argv[1], "--osc_str"), 0);
+        EXPECT_EQ(strcmp(argv[2], "osc_str_value"), 0);
+    }
+    {
+        const char*            args[] = {"esmini", "--osc_str", "osc_str_value", "--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+        esmini::common::Config config("esmini", sizeof(args) / sizeof(char*), const_cast<char**>(args));
+        auto [argc, argv] = config.Load();
+        EXPECT_EQ(argc, 3);
+        EXPECT_EQ(strcmp(argv[0], "esmini"), 0);
+        EXPECT_EQ(strcmp(argv[1], "--osc"), 0);
+        EXPECT_EQ(strcmp(argv[2], "../../../resources/xosc/cut-in_simple.xosc"), 0);
+    }
+    {
+        const char* args[] = {"esmini", "--window", "60", "60", "800", "400", "--headless", "--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+        esmini::common::Config config("esmini", sizeof(args) / sizeof(char*), const_cast<char**>(args));
+        auto [argc, argv] = config.Load();
+        EXPECT_EQ(argc, 4);
+        EXPECT_EQ(strcmp(argv[0], "esmini"), 0);
+        EXPECT_EQ(strcmp(argv[1], "--headless"), 0);
+        EXPECT_EQ(strcmp(argv[2], "--osc"), 0);
+        EXPECT_EQ(strcmp(argv[3], "../../../resources/xosc/cut-in_simple.xosc"), 0);
+    }
+    {
+        // this is special case where we dont want to remove window argument if its found after headless
+        const char* args[] = {"esmini", "--headless", "--window", "60", "60", "800", "400", "--osc", "../../../resources/xosc/cut-in_simple.xosc"};
+        esmini::common::Config config("esmini", sizeof(args) / sizeof(char*), const_cast<char**>(args));
+        auto [argc, argv] = config.Load();
+        EXPECT_EQ(argc, 9);
+        EXPECT_EQ(strcmp(argv[0], "esmini"), 0);
+        EXPECT_EQ(strcmp(argv[1], "--headless"), 0);
+        EXPECT_EQ(strcmp(argv[2], "--window"), 0);
+        EXPECT_EQ(strcmp(argv[3], "60"), 0);
+        EXPECT_EQ(strcmp(argv[4], "60"), 0);
+        EXPECT_EQ(strcmp(argv[5], "800"), 0);
+        EXPECT_EQ(strcmp(argv[6], "400"), 0);
+        EXPECT_EQ(strcmp(argv[7], "--osc"), 0);
+        EXPECT_EQ(strcmp(argv[8], "../../../resources/xosc/cut-in_simple.xosc"), 0);
+    }
 }
 
 int main(int argc, char** argv)

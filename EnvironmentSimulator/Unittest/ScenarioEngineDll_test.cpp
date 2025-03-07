@@ -422,11 +422,23 @@ TEST(ProgramOptions, TestMixOfPersistedAndNonPersisted)
     SE_SetOption("log_append");
     SE_SetOption("log_meta_data");
     SE_SetOption("osi_file");
+    SE_SetOption("logfile_path");
     SE_Close();
 
-    value = SE_GetOptionValue("logfile_path");
-    std::string logFilePath(value);
-    ASSERT_EQ(logFilePath, "my_test_error.txt");
+    isSet = SE_GetOptionSet("logfile_path");
+    EXPECT_FALSE(isSet);
+
+    isSet = SE_GetOptionSet("log_meta_data");
+    EXPECT_FALSE(isSet);
+
+    isSet = SE_GetOptionSet("log_append");
+    EXPECT_FALSE(isSet);
+
+    isSet = SE_GetOptionSet("log_level");
+    EXPECT_FALSE(isSet);
+
+    isSet = SE_GetOptionSet("osi_file");
+    EXPECT_FALSE(isSet);
 }
 
 TEST(ProgramOptions, LastOptionOverrides)
@@ -507,60 +519,15 @@ TEST(ProgramOptions, LastFileOptionsOverride)
         SE_Close();
     }
 
-    // Delete the file
+    const char* value = SE_GetOptionValue("logfile_path");
+    ASSERT_EQ(value, nullptr);
+
+    // Delete the files
     int result = std::remove(firstConfigFileName.c_str());
     EXPECT_EQ(result, 0);
 
     result = std::remove(secondConfigFileName.c_str());
     EXPECT_EQ(result, 0);
-}
-
-TEST(ProgramOptions, TestConfigOptionPostprocessing)
-{
-    {
-        const char*            args[] = {"esmini", "--osc", "../../../resources/xosc/cut-in_simple.xosc", "--osc_str", "osc_str_value"};
-        esmini::common::Config config("esmini", sizeof(args) / sizeof(char*), const_cast<char**>(args));
-        auto [argc, argv] = config.Load();
-        EXPECT_EQ(argc, 3);
-        EXPECT_EQ(strcmp(argv[0], "esmini"), 0);
-        EXPECT_EQ(strcmp(argv[1], "--osc_str"), 0);
-        EXPECT_EQ(strcmp(argv[2], "osc_str_value"), 0);
-    }
-    {
-        const char*            args[] = {"esmini", "--osc_str", "osc_str_value", "--osc", "../../../resources/xosc/cut-in_simple.xosc"};
-        esmini::common::Config config("esmini", sizeof(args) / sizeof(char*), const_cast<char**>(args));
-        auto [argc, argv] = config.Load();
-        EXPECT_EQ(argc, 3);
-        EXPECT_EQ(strcmp(argv[0], "esmini"), 0);
-        EXPECT_EQ(strcmp(argv[1], "--osc"), 0);
-        EXPECT_EQ(strcmp(argv[2], "../../../resources/xosc/cut-in_simple.xosc"), 0);
-    }
-    {
-        const char* args[] = {"esmini", "--window", "60", "60", "800", "400", "--headless", "--osc", "../../../resources/xosc/cut-in_simple.xosc"};
-        esmini::common::Config config("esmini", sizeof(args) / sizeof(char*), const_cast<char**>(args));
-        auto [argc, argv] = config.Load();
-        EXPECT_EQ(argc, 4);
-        EXPECT_EQ(strcmp(argv[0], "esmini"), 0);
-        EXPECT_EQ(strcmp(argv[1], "--headless"), 0);
-        EXPECT_EQ(strcmp(argv[2], "--osc"), 0);
-        EXPECT_EQ(strcmp(argv[3], "../../../resources/xosc/cut-in_simple.xosc"), 0);
-    }
-    {
-        // this is special case where we dont want to remove window argument if its found after headless
-        const char* args[] = {"esmini", "--headless", "--window", "60", "60", "800", "400", "--osc", "../../../resources/xosc/cut-in_simple.xosc"};
-        esmini::common::Config config("esmini", sizeof(args) / sizeof(char*), const_cast<char**>(args));
-        auto [argc, argv] = config.Load();
-        EXPECT_EQ(argc, 9);
-        EXPECT_EQ(strcmp(argv[0], "esmini"), 0);
-        EXPECT_EQ(strcmp(argv[1], "--headless"), 0);
-        EXPECT_EQ(strcmp(argv[2], "--window"), 0);
-        EXPECT_EQ(strcmp(argv[3], "60"), 0);
-        EXPECT_EQ(strcmp(argv[4], "60"), 0);
-        EXPECT_EQ(strcmp(argv[5], "800"), 0);
-        EXPECT_EQ(strcmp(argv[6], "400"), 0);
-        EXPECT_EQ(strcmp(argv[7], "--osc"), 0);
-        EXPECT_EQ(strcmp(argv[8], "../../../resources/xosc/cut-in_simple.xosc"), 0);
-    }
 }
 
 TEST(ProgramOptions, MultipleOptionValuesHandled)
@@ -612,6 +579,9 @@ TEST(ProgramOptions, MultipleOptionValuesHandled)
     EXPECT_EQ(value, expectedValue);
     EXPECT_EQ(SE_GetOptionValuesCount("path"), 2);
     SE_Close();
+
+    value = SE_GetOptionValue("logfile_path");
+    ASSERT_EQ(value, nullptr);
 
     // Delete the file
     int result = std::remove(firstConfigFileName.c_str());
@@ -667,6 +637,50 @@ TEST(ProgramOptions, PicksValueFromAppendIndexAsWell)
     expectedValue = "b.txt";
     EXPECT_EQ(value, expectedValue);
     EXPECT_EQ(SE_GetOptionValuesCount("path"), 2);
+    SE_Close();
+
+    value = SE_GetOptionValue("logfile_path");
+    ASSERT_EQ(value, nullptr);
+
+    // Delete the file
+    int result = std::remove(firstConfigFileName.c_str());
+    EXPECT_EQ(result, 0);
+
+    result = std::remove(secondConfigFileName.c_str());
+    EXPECT_EQ(result, 0);
+}
+
+TEST(ProgramOptions, ParsesBoolValues)
+{
+    std::string firstConfigFileName  = "config1.yml";
+    std::string secondConfigFileName = "config2.yml";
+
+    // create first config file
+    std::ofstream file1(firstConfigFileName);
+    EXPECT_TRUE(file1.is_open());
+    file1 << "esmini: \n";
+    file1 << "  log_append: false\n";
+    file1 << "  osc: ../../../resources/xosc/cut-in.xosc\n";
+    file1 << "replayer:\n";
+    file1 << "  file: sim1.dat";
+    file1.close();
+
+    // create second config file
+    std::ofstream file2(secondConfigFileName);
+    EXPECT_TRUE(file2.is_open());
+    file2 << "esmini: \n";
+    file2 << "  osc: ../../../resources/xosc/cut-in_simple.xosc\n";
+    file2 << "  disable_stdout: true\n";
+    file2 << "replayer:\n";
+    file2 << "  file: sim2.dat";
+    file2.close();
+
+    const char* args[] = {"--config_file_path", firstConfigFileName.c_str(), "--config_file_path", secondConfigFileName.c_str()};
+    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+
+    EXPECT_FALSE(SE_GetOptionSet("log_append"));
+    EXPECT_TRUE(SE_GetOptionSet("disable_stdout"));
+
     SE_Close();
 
     // Delete the file
@@ -4862,6 +4876,9 @@ TEST(ParamDistTest, TestRunAll)
         "log_11_of_12.txt",
         "log_12_of_12.txt",
     };
+
+    const char* value = SE_GetOptionValue("logfile_path");
+    ASSERT_EQ(value, nullptr);
 
     // Fetch timestamp of any old run
     struct stat fileStatus;
