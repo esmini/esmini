@@ -124,7 +124,6 @@ if [[ "$skipOpenGLTests" == false ]]; then
     if ! ${PYTHON} smoke_test.py "-t $timeout"; then
         exit_with_msg "smoke test failed"
     fi
-
 fi
 
 echo $'\n'Run ALKS test suite:
@@ -137,4 +136,13 @@ echo $'\n'Run NCAP test suite:
 
 if ! ${PYTHON} ncap_suite.py -t $timeout; then
     exit_with_msg "ncap_suite test failed"
+fi
+
+if [[ "$buildConfiguration" == "Release" ]]; then
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        echo $'\n'Run performance test:
+        if ! ${PYTHON} performance_test.py "-t $timeout" "--disable_plot"; then
+            exit_with_msg "performance test failed"
+        fi
+    fi
 fi

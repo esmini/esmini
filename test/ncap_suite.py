@@ -15,7 +15,7 @@ class TestSuite(unittest.TestCase):
 
     def test_AEB_C2C_2023_NCAP_AEB_C2C_CCR_2023(self):
 
-        log = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_C2C_2023/NCAP_AEB_C2C_CCR_2023.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_C2C_2023/NCAP_AEB_C2C_CCR_2023.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_C2C_CCR_2023', log)  is not None)
@@ -34,7 +34,7 @@ class TestSuite(unittest.TestCase):
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CBFA_2023(self):
 
-        log = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CBFA_2023.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CBFA_2023.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CBFA_2023', log)  is not None)
@@ -58,7 +58,7 @@ class TestSuite(unittest.TestCase):
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CBLA_2023(self):
 
-        log = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CBLA_2023.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CBLA_2023.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CBLA_2023', log)  is not None)
@@ -81,7 +81,7 @@ class TestSuite(unittest.TestCase):
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CBNAO_2023(self):
 
-        log = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CBNAO_2023.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CBNAO_2023.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CBNAO_2023', log)  is not None)
@@ -105,7 +105,7 @@ class TestSuite(unittest.TestCase):
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CBNA_2023(self):
 
-        log = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CBNA_2023.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CBNA_2023.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CBNA_2023', log)  is not None)
@@ -128,7 +128,7 @@ class TestSuite(unittest.TestCase):
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CPNA_2023(self):
 
-        log = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CPNA_2023.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CPNA_2023.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPNA_2023', log)  is not None)
@@ -148,7 +148,7 @@ class TestSuite(unittest.TestCase):
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CPNCO_2023(self):
 
-        log = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CPNCO_2023.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CPNCO_2023.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPNCO_2023', log)  is not None)
@@ -170,7 +170,7 @@ class TestSuite(unittest.TestCase):
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CPTA_2023(self):
 
-        log = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CPTA_2023.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CPTA_2023.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPTA_2023', log)  is not None)

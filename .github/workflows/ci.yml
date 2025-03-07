@@ -161,7 +161,7 @@ jobs:
         if: runner.os != 'Windows'
         uses: coactions/setup-xvfb@v1.0.1
         with:
-          run: ./scripts/run_tests.sh
+          run: ./scripts/run_tests.sh ${{ matrix.configuration }} false
 
       - name: Run Tests - Windows
         if: runner.os == 'Windows'
@@ -169,7 +169,7 @@ jobs:
           GALLIUM_DRIVER: softpipe
           MESA_GL_VERSION_OVERRIDE: 4.5
         shell: bash
-        run: ./scripts/run_tests.sh ${{ matrix.configuration }}
+        run: ./scripts/run_tests.sh ${{ matrix.configuration }} false
 
       - uses: ./.github/actions/upload_esmini_artifacts
         if: matrix.configuration == 'Release'
