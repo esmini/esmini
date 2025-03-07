@@ -14,7 +14,7 @@ ALKS_PREFIX = './OSC-ALKS-scenarios/Scenarios/'
 class TestSuite(unittest.TestCase):
 
     def test_ALKS_Scenario_4_1_1_FreeDriving(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.1_1_FreeDriving_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.1_1_FreeDriving_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.1_1', log)  is not None)
@@ -27,7 +27,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n70.000, 0, Ego, 928.843, 434.766, 0.000, 0.737, 0.000, 0.000, 16.667, -0.013, 3.245', csv))
 
     def test_ALKS_Scenario_4_1_2_SwervingLeadVehicle(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.1_2_SwervingLeadVehicle_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.1_2_SwervingLeadVehicle_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.1_2', log)  is not None)
@@ -40,7 +40,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n22.150, 1, LeadVehicle, 412.500, -7.047, 0.000, 6.256, 0.000, 0.000, 16.667, -0.001, 5.470', csv))
 
     def test_ALKS_Scenario_4_1_3_SideVehicle(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.1_3_SideVehicle_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.1_3_SideVehicle_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.1_3', log)  is not None)
@@ -58,7 +58,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n230.000, 1, SideVehicle, 3400.939, 1185.297, 0.000, 0.000, 0.000, 0.000, 16.667, 0.000, 0.789', csv))
 
     def test_ALKS_Scenario_4_2_1_FullyBlockingTarget(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.2_1_FullyBlockingTarget_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.2_1_FullyBlockingTarget_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.2_1', log)  is not None)
@@ -69,7 +69,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n37.000, 0, Ego, 492.973, -8.000, 0.000, 0.000, 0.000, 0.000, 0.079, 0.000, 3.256', csv))
 
     def test_ALKS_Scenario_4_2_2_PartiallyBlockingTarget(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.2_2_PartiallyBlockingTarget_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.2_2_PartiallyBlockingTarget_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.2_2', log)  is not None)
@@ -84,7 +84,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n35.000, 0, Ego, 492.654, -8.000, 0.000, 0.000, 0.000, 0.000, 0.275, 0.000, 2.372', csv))
 
     def test_ALKS_Scenario_4_2_3_CrossingPedestrian(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.2_3_CrossingPedestrian_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.2_3_CrossingPedestrian_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.2_3', log)  is not None)
@@ -103,7 +103,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n32.500, 1, TargetBlocking, 500.000, -3.833, 0.000, 1.570, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
 
     def test_ALKS_Scenario_4_2_4_MultipleBlockingTargets(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.2_4_MultipleBlockingTargets_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.2_4_MultipleBlockingTargets_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.2_4', log)  is not None)
@@ -117,7 +117,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n34.500, 0, Ego, 492.490, -8.000, 0.000, 0.000, 0.000, 0.000, 0.376, 0.000, 1.918', csv))
 
     def test_ALKS_Scenario_4_3_1_FollowLeadVehicleComfortable(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.3_1_FollowLeadVehicleComfortable_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.3_1_FollowLeadVehicleComfortable_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.3_1', log)  is not None)
@@ -135,7 +135,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n54.400, 1, LeadVehicle, 908.708, -8.000, 0.000, 0.000, 0.000, 0.000, 11.667, 0.000, 3.406', csv))
 
     def test_ALKS_Scenario_4_3_2_FollowLeadVehicleEmergencyBrake(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.3_2_FollowLeadVehicleEmergencyBrake_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.3_2_FollowLeadVehicleEmergencyBrake_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.3_2', log)  is not None)
@@ -153,7 +153,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n18.800, 1, LeadVehicle, 223.741, -8.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.231', csv))
 
     def test_ALKS_Scenario_4_4_1_CutInNoCollision(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.4_1_CutInNoCollision_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.4_1_CutInNoCollision_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.4_1', log)  is not None)
@@ -171,7 +171,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n13.500, 1, CutInVehicle, 240.307, -8.000, 0.000, 0.000, 0.000, 0.000, 11.111, 0.000, 1.315', csv))
 
     def test_ALKS_Scenario_4_4_2_CutInUnavoidableCollision(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.4_2_CutInUnavoidableCollision_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.4_2_CutInUnavoidableCollision_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.4_2', log)  is not None)
@@ -191,7 +191,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n11.000, 1, CutInVehicle, 192.401, -8.000, 0.000, 0.000, 0.000, 0.000, 11.111, -0.129, 3.631', csv))
 
     def test_ALKS_Scenario_4_5_1_CutOutFullyBlocking(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.5_1_CutOutFullyBlocking_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.5_1_CutOutFullyBlocking_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.5_1', log)  is not None)
@@ -210,7 +210,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n30.000, 2, LeadVehicle, 543.168, -4.500, 0.000, 0.000, 0.000, 0.000, 16.667, 0.000, 2.288', csv))
 
     def test_ALKS_Scenario_4_5_2_CutOutMultipleBlockingTargets(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.5_2_CutOutMultipleBlockingTargets_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.5_2_CutOutMultipleBlockingTargets_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.5_2', log)  is not None)
@@ -230,7 +230,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n32.000, 3, LeadVehicle, 576.501, -4.500, 0.000, 0.000, 0.000, 0.000, 16.667, 0.000, 3.279', csv))
 
     def test_ALKS_Scenario_4_6_1_ForwardDetectionRange(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.6_1_ForwardDetectionRange_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.6_1_ForwardDetectionRange_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.6_1', log)  is not None)
@@ -241,7 +241,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n29.500.*, 1, TargetBlocking, 500.00.*, -13.25.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*, 0.00.*,.*', csv))
 
     def test_ALKS_Scenario_4_6_2_LateralDetectionRange(self):
-        log = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.6_2_LateralDetectionRange_TEMPLATE.xosc'), COMMON_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ALKS_PREFIX + 'ALKS_Scenario_4.6_2_LateralDetectionRange_TEMPLATE.xosc'), COMMON_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('.*Loading .*ALKS_Scenario_4.6_2', log)  is not None)
