@@ -1263,14 +1263,16 @@ extern "C"
     SE_DLL_API int SE_GetDistanceToObject(int object_a_id, int object_b_id, bool free_space, SE_PositionDiff *pos_diff);
 
     /**
-            Find out the delta between two objects, e.g. distance (long and lat) and delta laneId
-            search range is 1000 meters
+            Optimized method to find the relative distance between two objects in the entities local coordinate system.
+            The method discards any object >500m away, will have a reduced tracking frequency (3s) for objects >tracking limit and avoids redundant
+       calculations.
             @param object_a_id Id of the object from which to measure
             @param object_b_id Id of the object to which the distance is measured
             @param dist_type Enum specifying what distance to measure
             @param distance reference to a variable returning the distance
-            @param timestamp reference to a variable returning the timestamp of the distance
-            @return 0 if successful, -2 if route between positions can't be found, -1 if some other error
+            @param timestamp reference to a variable returning the timestamp of the distance sample
+            @return 0 if successful, -1 if the distance measurement failed and -2 if the objects are out of bounds (>500m) or didn't update the
+       current sample.
     */
     SE_DLL_API int SE_SimpleGetDistanceToObject(const int               object_a_id,
                                                 const int               object_b_id,

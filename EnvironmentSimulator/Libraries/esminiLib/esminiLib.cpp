@@ -2188,8 +2188,6 @@ extern "C"
                                                 double                 &distance,
                                                 double                 &timestamp)
     {
-        bool obj_found = false;
-
         Object *obj_a = nullptr;
         if (getObjectById(object_a_id, obj_a) == -1)
         {
@@ -2202,11 +2200,14 @@ extern "C"
             return -1;
         }
 
-        roadmanager::RelativeDistanceType dist_type_converted = static_cast<roadmanager::RelativeDistanceType>(dist_type);
+        int obj_found = player->scenarioEngine->GetDistance(obj_a,
+                                                            obj_b,
+                                                            static_cast<roadmanager::RelativeDistanceType>(dist_type),
+                                                            tracking_limit,
+                                                            distance,
+                                                            timestamp);
 
-        obj_found = (player->scenarioEngine->GetDistance(obj_a, obj_b, dist_type_converted, tracking_limit, distance, timestamp) == 0);
-
-        return obj_found ? 0 : -2;
+        return obj_found;
     }
 
     void objCallbackFn(ObjectStateStruct *state, void *my_data)

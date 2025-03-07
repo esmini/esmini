@@ -80,7 +80,7 @@ namespace scenarioengine
         void EraseCleanParams();
         void EraseCleanVariables();
         void GetIdxsFromIds(const int id_1, const int id_2, int &idx_1, int &idx_2);
-        void UpdateDistance(Object                            *obj_1,
+        int  UpdateDistance(Object                            *obj_1,
                             Object                            *obj_2,
                             roadmanager::RelativeDistanceType &dist_type,
                             const uint64_t                    &key,

@@ -1348,12 +1348,12 @@ void ScenarioEngine::GetIdxsFromIds(const int id_1, const int id_2, int& idx_1, 
     return;
 }
 
-void ScenarioEngine::UpdateDistance(Object*                            obj_1,
-                                    Object*                            obj_2,
-                                    roadmanager::RelativeDistanceType& dist_type,
-                                    const uint64_t&                    key,
-                                    const uint64_t&                    rev_key,
-                                    const double                       tracking_limit)
+int ScenarioEngine::UpdateDistance(Object*                            obj_1,
+                                   Object*                            obj_2,
+                                   roadmanager::RelativeDistanceType& dist_type,
+                                   const uint64_t&                    key,
+                                   const uint64_t&                    rev_key,
+                                   const double                       tracking_limit)
 {
     auto [it, inserted] = object_distance_map_.try_emplace(key, DistanceEntry{});
     (void)inserted;
@@ -1363,31 +1363,42 @@ void ScenarioEngine::UpdateDistance(Object*                            obj_1,
     (void)rev_inserted;
     auto& rev_distance_entry = rev_it->second;
 
-    if (distance_entry.measurement_[static_cast<size_t>(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS)].distance_ > tracking_limit)
+    size_t idx_euclidian_abs = static_cast<size_t>(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS);
+    auto&  euclidian_entry   = distance_entry.measurement_[idx_euclidian_abs];
+    if (euclidian_entry.distance_ > 10000.0 - SMALL_NUMBER)  // DistanceEntry init value
     {
-        dist_type = roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS;
+        double squared_distance = (obj_1->pos_.GetX() - obj_2->pos_.GetX()) * (obj_1->pos_.GetX() - obj_2->pos_.GetX()) +
+                                  (obj_1->pos_.GetY() - obj_2->pos_.GetY()) * (obj_1->pos_.GetY() - obj_2->pos_.GetY());
+        if (squared_distance > 2.5e5)  // 500 * 500m
+        {
+            euclidian_entry.distance_   = squared_distance;
+            euclidian_entry.timestamp_  = simulationTime_;
+            distance_entry.next_update_ = simulationTime_ + 3.0;
+
+            auto& rev_measurement           = rev_distance_entry.measurement_[idx_euclidian_abs];
+            rev_measurement.distance_       = squared_distance;
+            rev_measurement.timestamp_      = simulationTime_;
+            rev_distance_entry.next_update_ = simulationTime_ + 3.0;
+
+            return -2;
+        }
     }
+
     auto& measurement = distance_entry.measurement_[static_cast<size_t>(dist_type)];
 
     double dist = 0.0;
     obj_1->pos_.Distance(&obj_2->pos_, roadmanager::CoordinateSystem::CS_ENTITY, dist_type, dist);
     double next_update = simulationTime_;
-    if (roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS == dist_type)
+    if (dist > tracking_limit)
     {
-        if (dist > tracking_limit)
-        {
-            next_update = simulationTime_ + 3.0;
-        }
-
-        auto& rev_measurement           = rev_distance_entry.measurement_[static_cast<size_t>(dist_type)];
-        rev_measurement.distance_       = dist;
-        rev_measurement.timestamp_      = simulationTime_;
-        rev_distance_entry.next_update_ = next_update;
+        next_update = simulationTime_ + 3.0;
     }
 
     measurement.distance_       = dist;
     measurement.timestamp_      = simulationTime_;
     distance_entry.next_update_ = next_update;
+
+    return 0;
 }
 
 int ScenarioEngine::GetDistance(Object*                           object_1,
@@ -1397,13 +1408,6 @@ int ScenarioEngine::GetDistance(Object*                           object_1,
                                 double&                           distance,
                                 double&                           timestamp)
 {
-    double squared_distance = (object_1->pos_.GetX() - object_2->pos_.GetX()) * (object_1->pos_.GetX() - object_2->pos_.GetX()) +
-                              (object_1->pos_.GetY() - object_2->pos_.GetY()) * (object_1->pos_.GetY() - object_2->pos_.GetY());
-    if (squared_distance > 2.5e5)  // 500 * 500m
-    {
-        return -1;
-    }
-
     uint64_t key     = GenerateKey(object_1->GetId(), object_2->GetId());
     uint64_t rev_key = GenerateKey(object_2->GetId(), object_1->GetId());
 
@@ -1414,12 +1418,13 @@ int ScenarioEngine::GetDistance(Object*                           object_1,
         return -1;
     }
 
+    int  dist_updated = -2;
     auto it           = object_distance_map_.find(key);
     bool needs_update = (it == object_distance_map_.end() || simulationTime_ > it->second.next_update_ || object_1->reset_ || object_2->reset_);
     if (needs_update)
     {
-        UpdateDistance(object_1, object_2, dist_type, key, rev_key, tracking_limit);
-        it = object_distance_map_.find(key);
+        dist_updated = UpdateDistance(object_1, object_2, dist_type, key, rev_key, tracking_limit);
+        it           = object_distance_map_.find(key);
     }
 
     if (it == object_distance_map_.end())
@@ -1431,5 +1436,5 @@ int ScenarioEngine::GetDistance(Object*                           object_1,
     distance          = measurement.distance_;
     timestamp         = measurement.timestamp_;
 
-    return 0;
+    return dist_updated;
 }
