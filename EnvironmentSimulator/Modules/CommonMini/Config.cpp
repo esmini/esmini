@@ -49,7 +49,7 @@ namespace esmini::common
             configFilePaths_.push_back(defaultConfigPath);
         }
 
-        if (const auto envConfigFile = GetEnvironmentVariable("ESMINI_CONFIG_FILE"); envConfigFile.has_value())
+        if (const auto envConfigFile = GetEnvironmentVariableValue("ESMINI_CONFIG_FILE"); envConfigFile.has_value())
         {
             LOG_INFO("Found environment variable ESMINI_CONFIG_FILE: {}", envConfigFile.value());
 #ifdef _WIN32
@@ -63,7 +63,7 @@ namespace esmini::common
 
     std::pair<int&, char**&> Config::Load()
     {
-        ParseAndProcessConfigs();
+        ParseAndProcessConfigFiles();
         return std::make_pair(std::ref(argc_), std::ref(argv_));
     }
 
@@ -75,7 +75,7 @@ namespace esmini::common
         return defaultFilePath;
     }
 
-    std::optional<std::string> Config::GetEnvironmentVariable(const std::string& variableName) const
+    std::optional<std::string> Config::GetEnvironmentVariableValue(const std::string& variableName) const
     {
         const char* env_var = std::getenv(variableName.c_str());
         if (env_var != nullptr)
@@ -89,7 +89,7 @@ namespace esmini::common
         }
     }
 
-    void Config::ParseAndProcessConfigs()
+    void Config::ParseAndProcessConfigFiles()
     {
         std::vector<std::string> allConfigs;
 
@@ -131,7 +131,7 @@ namespace esmini::common
                 argv_[argc_ - 1] = nullptr;
                 argc_ -= 2;
                 AppendArgcArgv(i, configs);
-                --i;  // to recheck the same index, as we have shifted the arguments. Since we start i with 1 so its safe to decrement in this case
+                --i;  // to recheck the same index, as we have shifted the arguments (since we start i with 1 so its safe to decrement in this case)
             }
         }
 

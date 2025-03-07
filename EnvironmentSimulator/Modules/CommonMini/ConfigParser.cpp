@@ -25,16 +25,6 @@ namespace esmini::common
 
     //---------------------------------------------------------------------------------------------------------------------
 
-    void ConfigParser::LogConfig() const
-    {
-        for (const auto& config : configs_)
-        {
-            std::cout << config << std::endl;
-        }
-    }
-
-    //---------------------------------------------------------------------------------------------------------------------
-
     void ConfigParser::PutValue(const std::string& app, const std::string& key, const std::string& value)
     {
         if (app == applicationName_)
@@ -56,6 +46,7 @@ namespace esmini::common
                 // this can be boolean value
                 if (auto [isBool, boolValue] = StrToBool(valueVec[0]); isBool)
                 {
+                    // in case of boolean value, we need to add only the key to be in sync with the command line arguments
                     if (boolValue)
                     {
                         configs_.push_back(fmt::format("--{}", key));

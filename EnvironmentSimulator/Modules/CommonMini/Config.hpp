@@ -27,13 +27,13 @@ namespace esmini::common
         // private interface
     private:
         //  Read environment variables
-        std::optional<std::string> GetEnvironmentVariable(const std::string& variableName) const;
+        std::optional<std::string> GetEnvironmentVariableValue(const std::string& variableName) const;
         // Make default config file path
         std::string MakeDefaultConfigFilePath() const;
         // Loads default and environment config files into configFilePaths_
         void LoadDefaultAndEnvironmentConfigFiles();
         // Parses the config files and appends the arguments to argv_
-        void ParseAndProcessConfigs();
+        void ParseAndProcessConfigFiles();
 
         /**
          * Appends Argc and Argv with the arguments
