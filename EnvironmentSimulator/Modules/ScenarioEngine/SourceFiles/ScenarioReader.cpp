@@ -2161,10 +2161,10 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
             {
                 if (paramChild.name() == std::string("SetAction"))
                 {
-                    ParameterSetAction *paramSetAction = new ParameterSetAction(action);
+                    ParameterSetAction *paramSetAction = new ParameterSetAction(parent);
 
-                    // give user a message about depricated action.. use variable instead...
-                    LOG_WARN("Parameter SetAction depricated from OSC 1.2. Please use Variable SetAction instead. Accepting for this time.");
+                    // give user a message about deprecated action.. use variable instead...
+                    LOG_WARN("Parameter SetAction deprecated from OSC 1.2. Please use Variable SetAction instead. Accepting for this time.");
 
                     paramSetAction->name_       = parameters.ReadAttribute(actionChild, "parameterRef");
                     paramSetAction->value_      = parameters.ReadAttribute(paramChild, "value");
