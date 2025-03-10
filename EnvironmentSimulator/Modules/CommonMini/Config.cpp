@@ -2,7 +2,6 @@
 
 #include "ConfigParser.hpp"
 #include "logger.hpp"
-#include "DefaultPathFinder.hpp"
 #include "CommonMini.hpp"
 #if __has_include(<filesystem>)
 #include <filesystem>
@@ -69,9 +68,8 @@ namespace esmini::common
 
     std::string Config::MakeDefaultConfigFilePath() const
     {
-        esmini::common::DefaultPathFinder pathFinder;
-        fs::path                          defaultPath(pathFinder.GetDefaultPath());
-        std::string                       defaultFilePath = (defaultPath.parent_path() / ".." / DEFAULT_CONFIG_FILE).string();
+        fs::path    defaultPath(GetDefaultPath());
+        std::string defaultFilePath = (defaultPath.parent_path() / ".." / DEFAULT_CONFIG_FILE).string();
         return defaultFilePath;
     }
 

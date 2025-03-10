@@ -18,7 +18,6 @@ set(SOURCES
     logger.cpp
     Config.cpp
     ConfigParser.cpp
-    DefaultPathFinder.cpp
     ${EXTERNALS_YAML_PATH}/yaml.cpp)
 
 set(INCLUDES
@@ -27,7 +26,6 @@ set(INCLUDES
     logger.hpp
     Config.hpp
     ConfigParser.hpp
-    DefaultPathFinder.hpp
     ${EXTERNALS_YAML_PATH}/yaml.hpp)
 
 # ############################### Creating library ###################################################################
@@ -47,19 +45,6 @@ target_include_directories(
 target_link_libraries(
     ${TARGET}
     PUBLIC ${SPDLOG_LIBRARIES})
-
-if(NOT
-   MSVC)
-    target_link_libraries(
-        ${TARGET}
-        PRIVATE dl)
-endif(
-    NOT
-    MSVC)
-
-install(
-    TARGETS ${TARGET}
-    DESTINATION "${INSTALL_PATH}")
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})

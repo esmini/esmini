@@ -295,6 +295,9 @@ private:
 
 // Useful operations
 
+// Function to get the executable's/library's disk path
+std::string GetDefaultPath();
+
 /**
         Get model filename from model_id.
 */
