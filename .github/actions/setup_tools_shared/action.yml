@@ -8,9 +8,9 @@ runs:
     - if: runner.os == 'Linux'
       shell: bash
       run: sudo apt-get update -q
-        && sudo apt-get install -q -y gcc-7 g++-7
-        && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 200
-        && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 200
+        && sudo apt-get install -q -y gcc-9 g++-9
+        && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 200
+        && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 200
 
     - uses: actions/setup-python@v5.1.1
       with:
