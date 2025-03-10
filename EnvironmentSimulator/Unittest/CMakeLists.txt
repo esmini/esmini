@@ -141,3 +141,18 @@ unittest(
     ${SUMO_LIBRARIES}
     ${SPDLOG_LIBRARIES}
     ${SOCK_LIB})
+
+
+# ############################### Creating executable (Benchmark_test) #######################################
+
+set(Benchmark_sources
+    Benchmark_test.cpp
+    ${UNITTEST_COMMON_SRC})
+
+unittest(
+    Benchmark_test
+    "${Benchmark_sources}"
+    esminiLib
+    CommonMini
+    ${BENCHMARK_LIBRARIES}
+    Shlwapi.lib)

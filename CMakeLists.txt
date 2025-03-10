@@ -274,6 +274,8 @@ set(EXTERNALS_EXPR_PATH
     CACHE INTERNAL
           "")
 
+set(BENCHMARK_LIBRARIES ${EXTERNALS_BENCHMARK_LIBRARY_PATH}/benchmark.lib)
+
 # ############################### Compiling targets ##################################################################
 
 add_subdirectory(EnvironmentSimulator)

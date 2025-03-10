@@ -38,7 +38,8 @@ macro(
                ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_OSG_INCLUDES}
                ${EXTERNALS_DIRENT_INCLUDES}
-               ${EXTERNALS_PUGIXML_PATH})
+               ${EXTERNALS_PUGIXML_PATH}
+               ${EXTERNALS_BENCHMARK_INCLUDES})
 
     target_link_libraries(
         ${TARGET}
@@ -47,6 +48,7 @@ macro(
 
     disable_static_analysis(${TARGET})
     disable_iwyu(${TARGET})
+    target_compile_definitions(${TARGET} PUBLIC BENCHMARK_STATIC_DEFINE)
 
     set_folder(
         ${TARGET}

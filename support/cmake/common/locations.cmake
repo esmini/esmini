@@ -73,6 +73,8 @@ macro(set_project_external_paths)
         ${EXTERNALS_PATH}/implot)
     set(EXTERNALS_SPDLOG_PATH
         ${EXTERNALS_PATH}/spdlog)
+    set(EXTERNALS_BENCHMARK_PATH
+        ${EXTERNALS_PATH}/benchmark)
     set(MODELS_PATH
         ${RESOURCES_PATH}/models)
 
@@ -129,6 +131,8 @@ macro(set_project_os_specific_paths)
                 ${EXTERNALS_GOOGLETEST_PATH}/v10)
             set(EXTERNALS_IMPLOT_OS_SPECIFIC_PATH
                 ${EXTERNALS_IMPLOT_PATH}/v10)
+            set(EXTERNALS_BENCHMARK_OS_SPECIFIC_PATH
+                ${EXTERNALS_BENCHMARK_PATH}/v10)
             set(SOCK_LIB
                 Ws2_32.lib)
             set(TIME_LIB
@@ -168,7 +172,8 @@ macro(set_project_includes)
         ${EXTERNALS_SPDLOG_PATH}/include)
     # ${EXTERNALS_SPDLOG_PATH}/spdlog/cfg ${EXTERNALS_SPDLOG_PATH}/spdlog/fmt ${EXTERNALS_SPDLOG_PATH}/spdlog/fmt/bundled
     # ${EXTERNALS_SPDLOG_PATH}/spdlog/sinks)
-
+    set(EXTERNALS_BENCHMARK_INCLUDES
+        ${EXTERNALS_BENCHMARK_OS_SPECIFIC_PATH}/include)
 endmacro()
 
 # ############################### Setting project library paths ####################################################
@@ -197,5 +202,8 @@ macro(set_project_library_paths)
 
     set(EXTERNALS_IMPLOT_LIBRARY_PATH
         ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}/lib)
+
+    set(EXTERNALS_BENCHMARK_LIBRARY_PATH
+        ${EXTERNALS_BENCHMARK_OS_SPECIFIC_PATH}/lib)
 
 endmacro()
