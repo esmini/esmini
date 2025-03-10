@@ -83,6 +83,7 @@
       "name": "ci-win64-2022",
       "generator": "Visual Studio 17 2022",
       "architecture": "x64",
+      "toolset": "v142",
       "hidden": true
     },
     {
@@ -149,7 +150,7 @@
     {
       "name": "ci-windows-test",
       "inherits": [
-        "ci-windows-2019",
+        "ci-windows-2022",
         "test-win_unix"
       ]
     },
