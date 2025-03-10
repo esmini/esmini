@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Ego car driving in a curve approaching a crest. Two cars approaching from opposite -->
+<!-- direction. One of them overtaking the other causing a critical situation.          -->
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="1"
+               date="2021-02-22T10:00:00"
+               description="Critical situation at crest"
+               author="esmini-team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="EgoStartS" parameterType="double" value="165"/>
+      <ParameterDeclaration name="TargetVehicle1" parameterType="string" value="car_blue"/>
+      <ParameterDeclaration name="TargetVehicle2" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="TargetVehicle3" parameterType="string" value="car_yellow"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_3000m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$EgoVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target1">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle1"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target2">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle2"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target3">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle3"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="$EgoStartS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="15"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target1">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="1" offset="0" s="350"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="15"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target2">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="685" >
+                            <Orientation type="relative" h="3.1415" />
+                        </LanePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target3">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="1" offset="0" s="2500"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Delete entity story">
+         <Act name="Delete entity act">
+            <ManeuverGroup maximumExecutionCount="1" name="Delete entity">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Target1"/>
+               </Actors>
+               <Maneuver name="DeleteCar1Maneuver">
+                  <Event name="DeleteCar1Event" priority="parallel">
+                     <Action name="DeleteCar1Action">
+                        <GlobalAction>
+                           <EntityAction entityRef="Target1">
+                                 <DeleteEntityAction/>
+                           </EntityAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="DeleteCar1Event1Condition" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="0.1" rule="greaterOrEqual"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="TeleportCar3">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Target3"/>
+               </Actors>
+               <Maneuver name="TeleportCar3Maneuver">
+                  <Event name="TelepartCar3Event" priority="parallel">
+                        <Action name="TeleportCar3Action">
+                           <PrivateAction>
+                              <TeleportAction>
+                                 <Position>
+                                    <LanePosition roadId="1" laneId="1" offset="0" s="250"/>
+                                 </Position>
+                              </TeleportAction>
+                           </PrivateAction>
+                        </Action>
+                        <StartTrigger>
+                           <ConditionGroup>
+                              <Condition name="TeleportCar3Event1Condition" delay="0" conditionEdge="none">
+                                    <ByValueCondition>
+                                       <SimulationTimeCondition value="0.2" rule="greaterOrEqual"/>
+                                    </ByValueCondition>
+                              </Condition>
+                           </ConditionGroup>
+                        </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger/>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StopTrigger" delay="0" conditionEdge="none">
+                <ByEntityCondition>
+                   <TriggeringEntities triggeringEntitiesRule="any">
+                      <EntityRef entityRef="Ego"/>
+                   </TriggeringEntities>
+                   <EntityCondition>
+                      <ReachPositionCondition tolerance="1.0">
+                         <Position>
+                            <LanePosition roadId="1" laneId="-1" s="550.0"/>
+                         </Position>
+                      </ReachPositionCondition>
+                   </EntityCondition>
+                </ByEntityCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

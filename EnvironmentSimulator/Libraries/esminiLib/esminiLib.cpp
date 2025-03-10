@@ -2183,6 +2183,35 @@ extern "C"
         return obj_found ? 0 : -2;
     }
 
+    SE_DLL_API int SE_SimpleGetDistanceToObject(const int               object_a_id,
+                                                const int               object_b_id,
+                                                SE_RelativeDistanceType dist_type,
+                                                const double            tracking_limit,
+                                                double                 &distance,
+                                                double                 &timestamp)
+    {
+        Object *obj_a = nullptr;
+        if (getObjectById(object_a_id, obj_a) == -1)
+        {
+            return -1;
+        }
+
+        Object *obj_b = nullptr;
+        if (getObjectById(object_b_id, obj_b) == -1)
+        {
+            return -1;
+        }
+
+        int obj_found = player->scenarioEngine->GetDistance(obj_a,
+                                                            obj_b,
+                                                            static_cast<roadmanager::RelativeDistanceType>(dist_type),
+                                                            tracking_limit,
+                                                            distance,
+                                                            timestamp);
+
+        return obj_found;
+    }
+
     void objCallbackFn(ObjectStateStruct *state, void *my_data)
     {
         for (size_t i = 0; i < objCallback.size(); i++)

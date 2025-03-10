@@ -302,14 +302,15 @@ void ControllerNaturalDriver::FilterSurroundingVehicles()
             continue;
         }
 
-        double relative_distance;
-        object_->pos_.Distance(&obj->pos_,
-                               roadmanager::CoordinateSystem::CS_ENTITY,
-                               roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN,
-                               relative_distance,
-                               lookahead_dist_);
+        double relative_distance, timestamp;
+        auto   ret = scenario_engine_->GetDistance(object_,
+                                                 obj,
+                                                 roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN,
+                                                 lookahead_dist_ * 2,
+                                                 relative_distance,
+                                                 timestamp);
 
-        if (relative_distance <= lookahead_dist_)
+        if (ret == 0 && relative_distance <= lookahead_dist_ && relative_distance >= -lookahead_dist_)
         {
             vehicles_in_radius_.push_back(obj);
         }
