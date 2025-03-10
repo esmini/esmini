@@ -1,88 +1,7 @@
 import random
 import xml.etree.ElementTree as ET
 
-def get_lanesection_ids(lane_element):
-    """
-    Extracts the IDs of lanes of specific types (e.g., "driving", "offRamp", "onRamp") 
-    from the given lane section element.
-
-    This function searches for lane elements within the "left" and "right" subsections 
-    of a "laneSection" in the provided XML structure. It collects the IDs of lanes 
-    that match specific types.
-
-    Parameters:
-        lane_element (Element): An XML element representing a lane section, expected 
-                                to contain "left" and "right" subsections with lane 
-                                definitions.
-
-    Returns:
-        list[int]: A list of integers representing the IDs of lanes that are of type 
-                "driving", "offRamp", or "onRamp". If no lanes of these types are 
-                found, an empty list is returned.
-    """
-    lane_ids = []
-    for side in ["left", "right"]:
-        element = lane_element.find(f"laneSection/{side}")
-        if element is not None:
-            for lane in element.findall("lane"):
-                if lane.get("type") in ["driving", "offRamp", "onRamp"]:
-                    lane_ids.append(int(lane.get("id")))
-
-    return lane_ids
-    
-def parse_road(roadfile: str) -> dict:
-    """
-    Parses an OpenDRIVE road network file to extract road information and compute 
-    road statistics.
-
-    This function reads an OpenDRIVE-compatible XML file, identifies road elements, 
-    and calculates the total road length and the cumulative length of drivable lanes. 
-    It also collects detailed information about each road's length and associated lane IDs.
-
-    Parameters:
-        roadfile (str): Path to the OpenDRIVE XML file containing road data.
-
-    Returns:
-        dict: A dictionary containing:
-              - "total_road_length" (float): The cumulative length of all roads.
-              - "drivable_lanes_length" (float): The cumulative length of all drivable lanes.
-              - Additional keys for each road ID with values as dictionaries containing:
-                - "length" (float): The length of the road.
-                - "lane_ids" (list[int]): The IDs of drivable lanes on the road.
-
-              Example:
-              {
-                  "total_road_length": 500.0,
-                  "drivable_lanes_length": 1500.0,
-                  1: {
-                      "length": 500.0,
-                      "lane_ids": [1, 2, 3]
-                  }
-              }
-    """
-    road_dict = { "total_road_length" : 0.0 ,
-        "drivable_lanes_length" : 0.0 }
-
-    tree = ET.parse(roadfile)
-    root = tree.getroot()
-    road_elem = root.findall('road')
-    if road_elem is None:
-        print("No road in file")
-        return
-   
-    for element in road_elem:
-        road_id = int(element.get("id"))
-        if int(element.get("junction")) == 1:
-                continue # Skip junctions to avoid overlapping traffic
-        lanes = get_lanesection_ids(element.find("lanes"))
-        road_dict[road_id] = {
-            "length":  float(element.get("length")),
-            "lane_ids": lanes
-        }
-        road_dict["total_road_length"] += road_dict[road_id]["length"]
-        road_dict["drivable_lanes_length"] += road_dict[road_id]["length"] * len(lanes)
-
-    return road_dict
+from road_helpers import parse_road
 
 def get_vehicle_types(catalog_path) -> list:
     """
@@ -116,7 +35,7 @@ def get_vehicle_types(catalog_path) -> list:
     vehicle_data = []
     for vehicle in vehicles:
         name = vehicle.get("name")
-        veh_type = vehicle.get("vehicleCategory") 
+        veh_type = vehicle.get("vehicleCategory")
         dimensions = vehicle.find(".//BoundingBox/Dimensions")
         if veh_type == "car" and "trailer" not in name and dimensions is not None:
             length = dimensions.get("length")
@@ -161,7 +80,7 @@ def get_vehicle_positions(roadfile, ego_pos: tuple, density: float, catalog_path
     """
     positions = {}
     ego_s, _, ego_lid, ego_rid = ego_pos
-    road_dict = parse_road(roadfile)
+    _, road_dict = parse_road(roadfile)
     vehicles = get_vehicle_types(catalog_path)
     
     car_factor = density # cars/100m
