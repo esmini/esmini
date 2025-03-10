@@ -56,6 +56,8 @@ static int execute_scenario(int argc, char* argv[])
         {
             return -1;
         }
+        // Decorate window border with application name and arguments
+        player->viewer_->SetWindowTitleFromArgs(opt.GetOriginalArgs());
 
         if (opt.GetOptionSet("return_nr_permutations"))
         {

@@ -67,6 +67,7 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     scenarioEngine       = nullptr;
     osiReporter          = nullptr;
     viewer_              = nullptr;
+    use_external_viewer  = false;
     player_server_       = nullptr;
 
 #ifdef _USE_OSG
@@ -653,11 +654,13 @@ int ScenarioPlayer::AddCustomLightSource(double x, double y, double z, double in
 
 void ScenarioPlayer::CloseViewer()
 {
-    if (viewer_ != nullptr)
+    if (!use_external_viewer)
     {
         delete viewer_;
-        viewer_ = nullptr;
     }
+    viewer_             = nullptr;
+    use_external_viewer = false;
+
     viewerState_ = ScenarioPlayer::ViewerState::VIEWER_STATE_DONE;
 }
 
@@ -673,12 +676,16 @@ int ScenarioPlayer::InitViewer()
 
     // Create viewer
     osg::ArgumentParser arguments(&arg_count, args.data());
-    viewer_ = new viewer::Viewer(roadmanager::Position::GetOpenDrive(),
-                                 scenarioEngine->getSceneGraphFilename().c_str(),
-                                 scenarioEngine->getScenarioFilename().c_str(),
-                                 exe_path_.c_str(),
-                                 arguments,
-                                 &opt);
+    if (viewer_ == nullptr)
+    {
+        viewer_ = new viewer::Viewer(roadmanager::Position::GetOpenDrive(),
+                                     scenarioEngine->getSceneGraphFilename().c_str(),
+                                     scenarioEngine->getScenarioFilename().c_str(),
+                                     exe_path_.c_str(),
+                                     arguments,
+                                     &opt);
+        viewer_->Realize();
+    }
 
     if (viewer_->osgViewer_ == 0)
     {
@@ -992,7 +999,7 @@ int ScenarioPlayer::InitViewer()
     }
 
     // Decorate window border with application name and arguments
-    viewer_->SetWindowTitleFromArgs(opt.GetOriginalArgs());
+    // viewer_->SetWindowTitleFromArgs(opt.GetOriginalArgs());
     viewer_->RegisterKeyEventCallback(ReportKeyEvent, this);
 
     viewerState_ = ViewerState::VIEWER_STATE_STARTED;
@@ -1202,6 +1209,12 @@ void ScenarioPlayer::PrintUsage()
 #ifdef _USE_OSG
     viewer::Viewer::PrintUsage();
 #endif
+}
+
+void ScenarioPlayer::RegisterExternalViewer(viewer::Viewer* viewer)
+{
+    viewer_             = viewer;
+    use_external_viewer = true;
 }
 
 int ScenarioPlayer::Init()

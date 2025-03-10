@@ -38,6 +38,8 @@ macro(set_project_internal_paths)
         ${MODULES_PATH}/ScenarioEngine)
     set(VIEWER_BASE_PATH
         ${MODULES_PATH}/ViewerBase)
+    set(STUDIO_VIEWER_BASE_PATH
+        ${MODULES_PATH}/StudioViewerBase)
 
     set(ESMINI_RM_LIB_PATH
         ${LIBRARIES_PATH}/esminiRMLib)
@@ -166,6 +168,8 @@ macro(set_project_includes)
         ${EXTERNALS_IMPLOT_OS_SPECIFIC_PATH}/include/glfw)
     set(EXTERNALS_SPDLOG_INCLUDES
         ${EXTERNALS_SPDLOG_PATH}/include)
+    set(EXTERNALS_JSON_INCLUDES
+        ${EXTERNALS_PATH}/nlohmann)
     # ${EXTERNALS_SPDLOG_PATH}/spdlog/cfg ${EXTERNALS_SPDLOG_PATH}/spdlog/fmt ${EXTERNALS_SPDLOG_PATH}/spdlog/fmt/bundled
     # ${EXTERNALS_SPDLOG_PATH}/spdlog/sinks)
 

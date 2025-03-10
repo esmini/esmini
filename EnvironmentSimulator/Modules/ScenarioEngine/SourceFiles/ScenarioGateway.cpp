@@ -1130,6 +1130,7 @@ void ScenarioGateway::WriteStatesToFile()
             datState.pos.s      = static_cast<float>(objectState_[i]->state_.pos.GetS());
             data_file_.write(reinterpret_cast<char*>(&datState), sizeof(datState));
         }
+        data_file_.flush();
     }
 }
 

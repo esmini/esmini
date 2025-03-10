@@ -622,7 +622,7 @@ int main(int argc, char **argv)
 
         osg::ArgumentParser arguments(&argc, argv);
         viewer::Viewer     *viewer = new viewer::Viewer(odrManager, modelFilename.c_str(), NULL, argv[0], arguments, &opt);
-
+        viewer->Realize();
         viewer->SetWindowTitleFromArgs(args);
         viewer->RegisterKeyEventCallback(FetchKeyEvent, nullptr);
 

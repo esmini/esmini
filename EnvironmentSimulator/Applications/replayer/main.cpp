@@ -588,6 +588,8 @@ int main(int argc, char** argv)
             return -1;
         }
 
+        viewer_->Realize();
+
         if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
         {
             if (arg_str == "orbit")

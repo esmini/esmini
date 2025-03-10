@@ -1304,7 +1304,9 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
                const char*             scenarioFilename,
                const char*             exe_path,
                osg::ArgumentParser     arguments,
-               SE_Options*             opt)
+               SE_Options*             opt,
+               bool                    register_event_handlers,
+               bool                    register_camera_manipulator)
 {
     (void)scenarioFilename;
     odrManager_             = odrManager;
@@ -1401,8 +1403,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
         }
     }
 
-    osgViewer::GraphicsWindow* gw = dynamic_cast<osgViewer::GraphicsWindow*>(gc.get());
-    if (!opt->GetOptionSet("headless") && gw == nullptr)
+    gw_ = dynamic_cast<osgViewer::GraphicsWindow*>(gc.get());
+    if (!opt->GetOptionSet("headless") && gw_ == nullptr)
     {
         LOG_ERROR("Failed to create viewer window {} {} {} {}. Try --headless option to run without window",
                   winDim_.x,
@@ -1601,36 +1603,42 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     }
 
     osgViewer_->setSceneData(rootnode_);
+    if (register_event_handlers)
+    {
+        osgViewer_->addEventHandler(new ViewerEventHandler(this));
 
-    osgViewer_->addEventHandler(new ViewerEventHandler(this));
+        // add the window size toggle handler
+        osgViewer_->addEventHandler(new osgViewer::WindowSizeHandler);
 
-    // add the window size toggle handler
-    osgViewer_->addEventHandler(new osgViewer::WindowSizeHandler);
-
-    // add the stats handler
-    osgViewer_->addEventHandler(new osgViewer::StatsHandler);
+        // add the stats handler
+        osgViewer_->addEventHandler(new osgViewer::StatsHandler);
 
 #if 1
-    // add the thread model handler
-    osgViewer_->addEventHandler(new osgViewer::ThreadingHandler);
+        // add the thread model handler
+        osgViewer_->addEventHandler(new osgViewer::ThreadingHandler);
 #else
-    // If we see problem with chrashes when manipulating graphic nodes or states, in spite of
-    // trying to use callback mechanisms, then locking to single thread might be a solution.
+        // If we see problem with chrashes when manipulating graphic nodes or states, in spite of
+        // trying to use callback mechanisms, then locking to single thread might be a solution.
 
-    // Hard code single thread model. Can't get setDataVariance(DYNAMIC)
-    // to work with some state changes. And callbacks for all possible
-    // nodes would be too much overhead. Solve when needed.
-    osgViewer_->setThreadingModel(osgViewer::ViewerBase::SingleThreaded);
+        // Hard code single thread model. Can't get setDataVariance(DYNAMIC)
+        // to work with some state changes. And callbacks for all possible
+        // nodes would be too much overhead. Solve when needed.
+        osgViewer_->setThreadingModel(osgViewer::ViewerBase::SingleThreaded);
 #endif
 
-    // add the help handler
-    osgViewer_->addEventHandler(new osgViewer::HelpHandler(arguments.getApplicationUsage()));
+        // add the help handler
+        osgViewer_->addEventHandler(new osgViewer::HelpHandler(arguments.getApplicationUsage()));
 
-    // add the record camera path handler
-    osgViewer_->addEventHandler(new osgViewer::RecordCameraPathHandler);
+        // add the record camera path handler
+        osgViewer_->addEventHandler(new osgViewer::RecordCameraPathHandler);
 
-    // add the LOD Scale handler
-    osgViewer_->addEventHandler(new osgViewer::LODScaleHandler);
+        // add the LOD Scale handler
+        osgViewer_->addEventHandler(new osgViewer::LODScaleHandler);
+    }
+    else
+    {
+        osgViewer_->setThreadingModel(osgViewer::ViewerBase::SingleThreaded);
+    }
 
     osgViewer_->setReleaseContextAtEndOfFrameHint(false);
 
@@ -1694,6 +1702,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     rubberbandManipulator_ = new osgGA::RubberbandManipulator(static_cast<unsigned int>(camMode_), origin_, time_);
     SetCameraTrackNode(envGroup_, true);
 
+    if (register_camera_manipulator)
     {
         osg::ref_ptr<osgGA::KeySwitchMatrixManipulator> keyswitchManipulator = new osgGA::KeySwitchMatrixManipulator;
 
@@ -1711,7 +1720,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     }
 
     // add the state manipulator
-    osgViewer_->addEventHandler(new osgGA::StateSetManipulator(camera->getOrCreateStateSet()));
+    if (register_event_handlers)
+        osgViewer_->addEventHandler(new osgGA::StateSetManipulator(camera->getOrCreateStateSet()));
 
     // Light
     osgViewer_->setLightingMode(osg::View::LightingMode::SKY_LIGHT);
@@ -1756,7 +1766,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     rootnode_->addChild(infoTextCamera);
 
     fetch_image_ = new FetchImage(this);
-    if (opt->GetOptionSet("osg_screenshot_event_handler"))
+    if (register_event_handlers && opt->GetOptionSet("osg_screenshot_event_handler"))
     {
         osg_screenshot_event_handler_ = true;
         osgViewer_->addEventHandler(new osgViewer::ScreenCaptureHandler);
@@ -1766,6 +1776,11 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     initialThreadingModel_ = osgViewer_->getThreadingModel();
 
+    osgViewer_->realize();
+}
+
+void Viewer::Realize()
+{
     osgViewer_->realize();
 }
 
@@ -2298,7 +2313,7 @@ void Viewer::RemoveCar(int index)
     {
         // No more objects to follow, switch camera model
         currentCarInFocus_ = -1;
-        (static_cast<osgGA::KeySwitchMatrixManipulator*>(osgViewer_->getCameraManipulator()))->selectMatrixManipulator(5);
+        // (static_cast<osgGA::KeySwitchMatrixManipulator*>(osgViewer_->getCameraManipulator()))->selectMatrixManipulator(5);
     }
 }
 
