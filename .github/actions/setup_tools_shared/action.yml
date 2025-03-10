@@ -24,10 +24,6 @@ runs:
     - uses: jwlawson/actions-setup-cmake@v2.0.2
       if: runner.os != 'macOS'
 
-    - name: Setup VS Dev Environment - Windows
-      if: runner.os == 'Windows'
-      uses: seanmiddleditch/gha-setup-vsdevenv@v4
-
     - name: Install OSG dependencies - Ubuntu
       if: runner.os == 'Linux'
       shell: bash
