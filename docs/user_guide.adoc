@@ -115,7 +115,11 @@ Example: +
 image::odrviewer.png[]
 
 === Scripts
-esmini comes with a collection of scripts for various purposes, like preprocessing of scenario files and plotting or conversion of simulation output files. The scripts are located in the `scripts` folder. A few examples:
+esmini comes with a collection of scripts for various purposes, like preprocessing of scenario files and plotting or conversion of simulation output files. The scripts are located in the `scripts` folder.
+
+The bash scripts (.sh) can be run in any Linux command line. In Windows you can run from Git Bash. Python scripts (*.py) is run
+
+A few examples:
 
 *odrplot*:: Simple 2D plot of OpenDRIVE road lanes with indicated road IDs, in a two step process. +
 Prerequisites: Python + https://matplotlib.org/[matplotlib] +
@@ -2844,6 +2848,92 @@ pass:[*] String ID support was introduced in v2.37.15. By v2.39.0 internal repre
 The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
 
 == Command reference
+
+=== About options
+
+esmini, replayer and odrviewer can be controlled and configured by options. Also any input file is specified as an option. Available options are listed in subsequent sections each application respectively.
+
+Options can be specified in three ways:
+
+1. From command line as application arguments, for example: `esmini --osc my_scenario.xosc --disable_stdout`
+2. By API function SE_SetOption(), see <<Program Options>>
+3. In config file, see more info below
+
+==== Config file
+
+Config files is basically a container for option presets. It can be used to apply common settings for esmini applications. For example, if you often use a specific window size, e.g. --window 60 60 800 400, then you can put it in a config file.
+
+Settings in config files can be overridden, both by other config files or by options specified on command line. All options are parsed in order of appearance. Some options supports multiple values, e.g. `path` (search path for assets), while others can have only one value, e.g. `logfiLe_path`. For single value options, the last parsed value wins.
+
+esmini comes with a default `config.yml` located in esmini root folder. It contains just a few settings, e.g. default window position and size (60 60 800 400) and default scenario file (cut-in.xosc). Launching esmini, from esmini root as:
+
+`./esmini`
+
+will then show cut-in scenario in a 800x400 window.
+
+Exact content of the config.yml will vary over time, but initial version looks like this:
+
+[source]
+----
+esmini:
+  window: 60 60 800 400
+  osc: ./resources/xosc/cut-in.xosc
+
+replayer:
+  window: 60 60 800 400
+  res_path: ./resources
+  file: sim.dat
+----
+
+If you want another size of the window you have at least three options:
+
+1. Edit the config.yml
+2. Provide the `window` option values at command line, example:
+  `./esmini --window 50 100 1400 500`
+3. Create a custom config file, e.g. my_config.yml, including your preferred values
+
+Example of my_config.yml:
+
+[source]
+----
+esmini:
+  window: 50 100 1400 500
+  logfile_path: my_log.txt
+----
+
+Any number of config files can be specified as an option (`config_file_path`), either in another config file or at command line.
+
+Example how to incorporate a custom config file on top of the default one:
+
+`./esmini --config_file_path my_config.yml`
+
+You can also add an entry in the default `config.yml`, example:
+
+[source]
+----
+esmini:
+  window: 50 100 1400 500
+  logfile_path: my_log.txt
+  config_file_path: my_config.yml
+----
+
+Now, running:
+
+`./bin/esmini`
+
+will load `cut-in.xosc`, using the one specified in default config. Window will be `50 100 1400 500` as specified in my_config, overriding the values in the default config.yml. The log file will be named my_log.txt as specified in my_config, overriding esmini default log file path.
+
+==== Precedence
+As mentioned, options that supports multiple values will store and access values according to order of appearance. Example:
+
+`--path /tmp/my_car_models` `--path /tmp/kalles_car_models`
+
+esmini will look in `kalles_car_models` first, and only if referred model is not found there it will continue looking in `my_car_models`.
+
+Illustrative example:
+
+image::options.png[]
+
 === esmini
 ==== Launch commands
 [source]
