@@ -46,19 +46,6 @@ target_link_libraries(
     ${TARGET}
     PUBLIC ${SPDLOG_LIBRARIES})
 
-if(NOT
-   MSVC)
-    target_link_libraries(
-        ${TARGET}
-        PRIVATE dl)
-endif(
-    NOT
-    MSVC)
-
-install(
-    TARGETS ${TARGET}
-    DESTINATION "${INSTALL_PATH}")
-
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})
 enable_fpic(${TARGET})
