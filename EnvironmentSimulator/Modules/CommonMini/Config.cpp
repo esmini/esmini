@@ -68,8 +68,8 @@ namespace esmini::common
 
     std::string Config::MakeDefaultConfigFilePath() const
     {
-        fs::path                          defaultPath(GetDefaultPath());
-        std::string                       defaultFilePath = (defaultPath.parent_path() / ".." / DEFAULT_CONFIG_FILE).string();
+        fs::path    defaultPath(GetDefaultPath());
+        std::string defaultFilePath = (defaultPath.parent_path() / ".." / DEFAULT_CONFIG_FILE).string();
         return defaultFilePath;
     }
 
