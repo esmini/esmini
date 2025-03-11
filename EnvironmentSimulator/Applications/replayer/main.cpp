@@ -459,6 +459,9 @@ int main(int argc, char** argv)
         return -1;
     }
 
+    std::string strAllSetOptions = opt.GetSetOptionsAsStr();
+    LOG_INFO("replayer options: {}", strAllSetOptions);
+
     TxtLogger::Inst().LogTimeOnly();
     TxtLogger::Inst().SetLoggerTime(&simTime);
 
@@ -466,7 +469,7 @@ int main(int argc, char** argv)
     LOG_INFO("Compiled with USE_OSG=FALSE, limited functionality available");
 #endif  // _USE_OSG
 
-    if (opt.GetOptionArg("file").empty() || argc < 2 || opt.GetOptionSet("help"))
+    if (opt.GetOptionArg("file").empty() || argc_ < 2 || opt.GetOptionSet("help"))
     {
         printf("Missing required file argument\n");
         opt.PrintUsage();

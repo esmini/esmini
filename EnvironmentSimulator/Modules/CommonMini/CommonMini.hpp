@@ -916,6 +916,7 @@ public:
     // clears only value(s) of the option and let the other flags as they are
     int                                               ClearOption(const std::string& opt);
     const std::unordered_map<std::string, SE_Option>& GetAllOptions() const;
+    std::string                                       GetSetOptionsAsStr();
 
 private:
     std::unordered_map<std::string, SE_Option> option_;

@@ -413,10 +413,6 @@ int main(int argc, char **argv)
 
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
-    std::vector<std::string> args;
-    for (int i = 0; i < argc; i++)
-        args.push_back(argv[i]);
-
     // use an ArgumentParser object to manage the program arguments.
     opt.AddOption("help", "Show this help message");
     opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
@@ -467,11 +463,20 @@ int main(int argc, char **argv)
     esmini::common::Config config("odrviewer", argc, argv);
     std::tie(argc_, argv_) = config.Load();
 
+    std::vector<std::string> args;
+    for (int i = 0; i < argc_; i++)
+    {
+        args.push_back(argv_[i]);
+    }
+
     if (opt.ParseArgs(argc_, argv_) != 0)
     {
         opt.PrintUsage();
         return -1;
     }
+
+    std::string strAllSetOptions = opt.GetSetOptionsAsStr();
+    LOG_INFO("odrviewer options: {}", strAllSetOptions);
 
     if (opt.GetOptionSet("disable_log"))
     {
