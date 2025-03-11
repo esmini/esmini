@@ -2861,7 +2861,7 @@ Options can be specified in three ways:
 
 ==== Config file
 
-Config files is basically a container for option presets. It can be used to apply common settings for esmini applications. For example, if you often use a specific window size, e.g. --window 60 60 800 400, then you can put it in a config file.
+Config file is basically a container for option presets. It can be used to apply common settings for esmini applications. For example, if you often use a specific window size, e.g. --window 60 60 800 400, then you can put it in a config file.
 
 Settings in config files can be overridden, both by other config files or by options specified on command line. All options are parsed in order of appearance. Some options supports multiple values, e.g. `path` (search path for assets), while others can have only one value, e.g. `logfiLe_path`. For single value options, the last parsed value wins.
 
@@ -2922,6 +2922,10 @@ Now, running:
 `./bin/esmini`
 
 will load `cut-in.xosc`, using the one specified in default config. Window will be `50 100 1400 500` as specified in my_config, overriding the values in the default config.yml. The log file will be named my_log.txt as specified in my_config, overriding esmini default log file path.
+
+Config file path can be specified in environment variable `ESMINI_CONFIG_FILE`. If valid path is provided in the environment variable then this config file will be parsed for options. Multiple config file paths can be given in the environment varibale, which can be separated by `;` (Windows) or `:` (Linux/Mac). This option can come in handy, in case when there is a need to run esmini in docker or similar environment.
+
+Default config file is always parsed first, then the ones specified in the environment variable, and finally the ones specified on command line.
 
 ==== Precedence
 As mentioned, options that supports multiple values will store and access values according to order of appearance. Example:
