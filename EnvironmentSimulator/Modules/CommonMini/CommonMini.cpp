@@ -2008,6 +2008,28 @@ const std::unordered_map<std::string, SE_Option>& SE_Options::GetAllOptions() co
     return option_;
 }
 
+std::string SE_Options::GetSetOptionsAsStr()
+{
+    std::string strAllSetOptions;
+    for (const auto& pair : GetAllOptions())
+    {
+        if (pair.second.set_)
+        {
+            std::string currentOptionValue;
+            if (!pair.second.arg_value_.empty())
+            {
+                for (auto itr = pair.second.arg_value_.begin(); itr != pair.second.arg_value_.end(); ++itr)
+                {
+                    currentOptionValue = fmt::format("{} {}", currentOptionValue, *itr);
+                }
+            }
+
+            strAllSetOptions = fmt::format("{}--{}{} ", strAllSetOptions, pair.second.opt_str_, currentOptionValue);
+        }
+    }
+    return strAllSetOptions;
+}
+
 int SE_Options::ParseArgs(int argc, const char* const argv[])
 {
     std::vector<const char*> args = {argv, std::next(argv, argc)};

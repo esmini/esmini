@@ -1309,23 +1309,7 @@ int ScenarioPlayer::Init()
         return -2;
     }
 
-    std::string strAllSetOptions;
-    for (const auto& pair : opt.GetAllOptions())
-    {
-        if (pair.second.set_)
-        {
-            std::string currentOptionValue;
-            if (!pair.second.arg_value_.empty())
-            {
-                for (auto itr = pair.second.arg_value_.begin(); itr != pair.second.arg_value_.end(); ++itr)
-                {
-                    currentOptionValue = fmt::format("{} {}", currentOptionValue, *itr);
-                }
-            }
-
-            strAllSetOptions = fmt::format("{}--{}{} ", strAllSetOptions, pair.second.opt_str_, currentOptionValue);
-        }
-    }
+    std::string strAllSetOptions = opt.GetSetOptionsAsStr();
 
     std::string logFilePathOptionValue = TxtLogger::Inst().CreateLogFilePath();
     if (opt.IsOptionArgumentSet("param_dist"))
