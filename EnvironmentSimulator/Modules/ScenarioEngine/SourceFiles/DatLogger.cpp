@@ -115,7 +115,7 @@ int DatLogger::WriteModelId(int obj_id, int model_id)
                          [](ObjState& objState, int value) -> bool
                          {
                              if (objState.modelId_.model_id != value)
-                             {                                        // Replace with the actual state field
+                             {
                                  objState.modelId_.model_id = value;  // Update the state
                                  return false;                        // Indicates that the state was updated
                              }
@@ -132,7 +132,7 @@ int DatLogger::WriteObjType(int obj_id, int obj_type)
                          [](ObjState& objState, int value) -> bool
                          {
                              if (objState.objType_.obj_type != value)
-                             {                                        // Replace with the actual state field
+                             {
                                  objState.objType_.obj_type = value;  // Update the state
                                  return false;                        // Indicates that the state was updated
                              }
@@ -149,7 +149,7 @@ int DatLogger::WriteObjCategory(int obj_id, int obj_category)
                          [](ObjState& objState, int value) -> bool
                          {
                              if (objState.objCategory_.obj_category != value)
-                             {                                                // Replace with the actual state field
+                             {
                                  objState.objCategory_.obj_category = value;  // Update the state
                                  return false;                                // Indicates that the state was updated
                              }
@@ -166,7 +166,7 @@ int DatLogger::WriteCtrlType(int obj_id, int ctrl_type)
                          [](ObjState& objState, int value) -> bool
                          {
                              if (objState.ctrlType_.ctrl_type != value)
-                             {                                          // Replace with the actual state field
+                             {
                                  objState.ctrlType_.ctrl_type = value;  // Update the state
                                  return false;                          // Indicates that the state was updated
                              }
@@ -253,7 +253,7 @@ int DatLogger::WriteScaleMode(int obj_id, int mode)
                          [](ObjState& objState, int value) -> bool
                          {
                              if (objState.scaleMode_.scale_mode != value)
-                             {                                            // Replace with the actual state field
+                             {
                                  objState.scaleMode_.scale_mode = value;  // Update the state
                                  return false;                            // Indicates that the state was updated
                              }
@@ -270,7 +270,7 @@ int DatLogger::WriteVisiblityMask(int obj_id, int mask)
                          [](ObjState& objState, int value) -> bool
                          {
                              if (objState.visibilityMask_.visibility_mask != value)
-                             {                                                      // Replace with the actual state field
+                             {
                                  objState.visibilityMask_.visibility_mask = value;  // Update the state
                                  return false;                                      // Indicates that the state was updated
                              }
@@ -464,7 +464,7 @@ int DatLogger::WriteRoadId(int obj_id, id_t road_id)
                           [](ObjState& objState, id_t value) -> bool
                           {
                               if (objState.roadId_.road_id != value)
-                              {                                      // Replace with the actual state field
+                              {
                                   objState.roadId_.road_id = value;  // Update the state
                                   return false;                      // Indicates that the state was updated
                               }
@@ -481,7 +481,7 @@ int DatLogger::WriteLaneId(int obj_id, int lane_id)
                          [](ObjState& objState, int value) -> bool
                          {
                              if (objState.laneId_.lane_id != value)
-                             {                                      // Replace with the actual state field
+                             {
                                  objState.laneId_.lane_id = value;  // Update the state
                                  return false;                      // Indicates that the state was updated
                              }
