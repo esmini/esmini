@@ -1210,13 +1210,13 @@ void ScenarioPlayer::PrintUsage()
     viewer::Viewer::PrintUsage();
 #endif
 }
-
+#ifdef _USE_OSG
 void ScenarioPlayer::RegisterExternalViewer(viewer::Viewer* viewer)
 {
     viewer_             = viewer;
     use_external_viewer = true;
 }
-
+#endif
 int ScenarioPlayer::Init()
 {
     std::string arg_str;

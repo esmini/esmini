@@ -232,8 +232,9 @@ int run(int argc, char** argv)
 
                 int arg_count = static_cast<int>(args.size());
                 player        = std::make_unique<ScenarioPlayer>(arg_count, (char**)args.data());
-
+#ifdef _USE_OSG
                 player->RegisterExternalViewer(g_viewer.get());
+#endif
                 if (player->Init() != 0)
                 {
                     printf("Failed to init ScenarioPlayer!\n");

@@ -84,8 +84,9 @@ namespace scenarioengine
 
         ScenarioPlayer(int argc, char *argv[]);
         ~ScenarioPlayer();
+#ifdef _USE_OSG
         void RegisterExternalViewer(viewer::Viewer *viewer);
-
+#endif
         /**
         Initialize the player for the specified scenario and road network
         @return -1 on failure, 0 on success
