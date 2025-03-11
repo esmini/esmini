@@ -92,9 +92,11 @@ set_folder(
 set_folder(
     esmini-dyn
     ${ApplicationsFolder})
-set_folder(
-    scenariostudio
-    ${ApplicationsFolder})
+if(USE_OSG)
+    set_folder(
+        scenariostudio
+        ${ApplicationsFolder})
+endif(USE_OSG)
 set_folder(
     dat2csv
     ${ApplicationsFolder})
