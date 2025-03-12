@@ -414,7 +414,7 @@ int main(int argc, char **argv)
     SE_Env::Inst().AddPath(DirNameOf(argv[0]));  // Add location of exe file to search paths
 
     // use an ArgumentParser object to manage the program arguments.
-    opt.AddOption("help", "Show this help message");
+    opt.AddOption("help", "Show this help message (-h works as well)");
     opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename");
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many .tga files will be created");
@@ -458,6 +458,11 @@ int main(int argc, char **argv)
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
 
+    if (int ret = OnRequestShowHelpOrVersion(argc, argv, opt); ret > 0)
+    {
+        return ret;
+    }
+
     int                    argc_;
     char                 **argv_;
     esmini::common::Config config("odrviewer", argc, argv);
@@ -494,19 +499,6 @@ int main(int argc, char **argv)
     TxtLogger::Inst().SetLogFilePath(TxtLogger::Inst().CreateLogFilePath());
     TxtLogger::Inst().LogTimeOnly();
     TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
-
-    if (opt.GetOptionSet("version"))
-    {
-        TxtLogger::Inst().LogVersion();
-        return 0;
-    }
-
-    if (opt.GetOptionSet("help"))
-    {
-        opt.PrintUsage();
-        viewer::Viewer::PrintUsage();
-        return 0;
-    }
 
     static char str_buf[128];
 
@@ -569,7 +561,7 @@ int main(int argc, char **argv)
     {
         printf("Missing required argument --odr\n");
         opt.PrintUsage();
-        viewer::Viewer::PrintUsage();
+        PrintOSGUsage();
         return -1;
     }
 

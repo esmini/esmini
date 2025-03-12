@@ -1239,6 +1239,41 @@ int SE_Env::AddPath(std::string path)
     return 0;
 }
 
+int OnRequestShowHelpOrVersion(int argc, char** argv, SE_Options& opt)
+{
+    if (argc == 2)  // handle special cases, not requiring player to be created
+    {
+        if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)
+        {
+            opt.PrintUsage();
+#ifdef _USE_OSG
+            PrintOSGUsage();
+#endif  // _USE_OSG
+            return 1;
+        }
+        else if (strcmp(argv[1], "--version") == 0)
+        {
+            TxtLogger::Inst().LogVersion();
+            return 2;
+        }
+    }
+    return 0;
+}
+
+void PrintOSGUsage()
+{
+    // Inform about a few OSG options
+    printf("Additional OSG graphics options:\n");
+    printf("  --clear-color <color>                      Set the background color of the viewer in the form \"r,g,b[,a]\"\n");
+    printf("  --screen <num>                             Set the screen to use when multiple screens are present\n");
+    printf("  --window <x y w h>                         Set the position x, y and size w, h of the viewer window. -1 -1 -1 -1 for fullscreen.\n");
+    printf(
+        "  --borderless-window <x y w h>	             Set the position x, y and size w, h of a borderless viewer window. -1 -1 -1 -1 for fullscreen.\n");
+    printf("  --SingleThreaded                           Run application and all graphics tasks in one single thread.\n");
+    printf("  --lodScale <LOD scalefactor>               Adjust Level Of Detail 1=default >1 decrease fidelity <1 increase fidelity\n");
+    printf("\n");
+}
+
 std::string GetDefaultPath()
 {
 #if defined(_WIN32)

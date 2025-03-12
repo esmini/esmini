@@ -294,6 +294,13 @@ private:
 };
 
 // Useful operations
+class SE_Options;  // forward declaration
+// if user has requested for help menu or version information then print it and return 1 for help, 2 for version
+// else return 0
+int OnRequestShowHelpOrVersion(int argc, char** argv, SE_Options& opt);
+
+// Displays OSG options on the command prompt
+void PrintOSGUsage();
 
 // Function to get the executable's/library's disk path
 std::string GetDefaultPath();

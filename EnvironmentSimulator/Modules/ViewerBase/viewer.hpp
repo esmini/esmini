@@ -472,13 +472,12 @@ namespace viewer
                osg::ArgumentParser     arguments,
                SE_Options*             opt = 0);
         ~Viewer();
-        static void PrintUsage();
-        void        AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos);
-        void        AddCustomCamera(double x, double y, double z, bool fixed_pos);
-        void        AddCustomFixedTopCamera(double x, double y, double z, double rot);
-        int         GetCameraPosAndRot(osg::Vec3& pos, osg::Vec3& rot);
-        int         GetCameraRelativePos(osg::Vec3& pos);
-        int         AddCustomLightSource(double x, double y, double z, double intensity);
+        void AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos);
+        void AddCustomCamera(double x, double y, double z, bool fixed_pos);
+        void AddCustomFixedTopCamera(double x, double y, double z, double rot);
+        int  GetCameraPosAndRot(osg::Vec3& pos, osg::Vec3& rot);
+        int  GetCameraRelativePos(osg::Vec3& pos);
+        int  AddCustomLightSource(double x, double y, double z, double intensity);
 
         /**
          * Set mode of the esmini camera model

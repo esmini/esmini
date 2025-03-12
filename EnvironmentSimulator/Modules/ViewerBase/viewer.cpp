@@ -1797,20 +1797,6 @@ Viewer::~Viewer()
     entities_.clear();
 }
 
-void Viewer::PrintUsage()
-{
-    // Inform about a few OSG options
-    printf("Additional OSG graphics options:\n");
-    printf("  --clear-color <color>                      Set the background color of the viewer in the form \"r,g,b[,a]\"\n");
-    printf("  --screen <num>                             Set the screen to use when multiple screens are present\n");
-    printf("  --window <x y w h>                         Set the position x, y and size w, h of the viewer window. -1 -1 -1 -1 for fullscreen.\n");
-    printf(
-        "  --borderless-window <x y w h>	             Set the position x, y and size w, h of a borderless viewer window. -1 -1 -1 -1 for fullscreen.\n");
-    printf("  --SingleThreaded                           Run application and all graphics tasks in one single thread.\n");
-    printf("  --lodScale <LOD scalefactor>               Adjust Level Of Detail 1=default >1 decrease fidelity <1 increase fidelity\n");
-    printf("\n");
-}
-
 void Viewer::AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos)
 {
     osgGA::RubberbandManipulator::CustomCamera cam(osg::Vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)),

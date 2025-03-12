@@ -1198,7 +1198,7 @@ void ScenarioPlayer::PrintUsage()
 {
     SE_Env::Inst().GetOptions().PrintUsage();
 #ifdef _USE_OSG
-    viewer::Viewer::PrintUsage();
+    PrintOSGUsage();
 #endif
 }
 
@@ -1241,7 +1241,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
     opt.AddOption("ground_plane", "Add a large flat ground surface");
     opt.AddOption("headless", "Run without viewer window");
-    opt.AddOption("help", "Show this help message");
+    opt.AddOption("help", "Show this help message (-h works as well)");
     opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization. Toggle key 'R'");
     opt.AddOption("hide_trajectories", "Hide trajectories from start. Toggle key 'n'");
     opt.AddOption("ignore_odr_offset", "Ignore any offset specified in the OpenDRIVE file header");
@@ -1298,6 +1298,11 @@ int ScenarioPlayer::Init()
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
 
+    if (int ret = OnRequestShowHelpOrVersion(argc_, argv_, opt); ret > 0)
+    {
+        return ret;
+    }
+
     exe_path_ = argv_[0];
     SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths
 
@@ -1317,12 +1322,6 @@ int ScenarioPlayer::Init()
     {
         // deferring the creation of log file as name of it will be changed afterwards due to permutation distribution
         opt.ClearOption("logfile_path");
-    }
-
-    if (opt.GetOptionSet("help"))
-    {
-        PrintUsage();
-        return -2;
     }
 
     TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
@@ -1345,12 +1344,6 @@ int ScenarioPlayer::Init()
             std::unordered_set<std::string> logSkipModules(splitted.begin(), splitted.end());
             TxtLogger::Inst().SetLogSkipModules(logSkipModules);
         }
-    }
-
-    if (opt.GetOptionSet("version"))
-    {
-        TxtLogger::Inst().LogVersion();
-        return -2;
     }
 
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();

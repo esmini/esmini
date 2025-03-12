@@ -87,7 +87,7 @@ namespace scenarioengine
 
         /**
         Initialize the player for the specified scenario and road network
-        @return -1 on failure, 0 on success
+        @return 0 on success, -1 on failure, -2 argument parse error, 1 help requested, 2 version requested
         */
         int  Init();
         void PrintUsage();
