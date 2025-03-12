@@ -336,7 +336,7 @@ typedef enum
     REL_DIST_EUCLIDIAN    = 4
 } SE_RelativeDistanceType;
 
-typedef enum 
+typedef enum
 {
     DEFAULT     = 0,
     API         = 1,
