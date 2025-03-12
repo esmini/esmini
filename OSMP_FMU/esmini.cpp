@@ -250,13 +250,6 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
     return fmi2Error;
   }
 
-  // Handle OSI SensorView output
-  if (SE_UpdateOSIGroundTruth(SE_OSIStaticLogMode::API) != 0)
-  {
-    std::cerr <<"Failed update OSI Ground Truth" << std::endl;
-    return fmi2Error;
-  }
-
   const auto* se_osi_ground_truth = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw()); //Fetch OSI struct
 
   osi3::SensorView currentOut;
