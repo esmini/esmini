@@ -145,7 +145,7 @@ namespace esmini::common
     {
         for (const auto& file : loadedConfigFiles_)
         {
-            std::string nativePath = fs::canonical(fs::path(file)).c_str();
+            std::string nativePath{fs::canonical(fs::path(file)).u8string()};
             LOG_INFO("Loaded config: {} ({})", nativePath, file);
         }
     }
