@@ -3,6 +3,7 @@
 #include <string>
 #include <optional>
 #include <vector>
+#include <unordered_map>
 
 namespace esmini::common
 {
@@ -19,6 +20,9 @@ namespace esmini::common
         // Returns the references to updated argc_ and argv_, so that user of these arguments can consume them and effectively reduce their size.
         // Remaining argv_ will be deleted by this class on destruction.
         std::pair<int&, char**&> Load();
+
+        // Logs loaded file names, so user can see which config files are successfully loaded
+        void LogLoadedConfigFiles() const;
 
         Config()                      = delete;
         Config(Config const&)         = delete;
@@ -52,8 +56,10 @@ namespace esmini::common
 
         // private data members
     private:
-        // Config file paths
+        // Config file paths like default config file, environment variable config file etc.
         std::vector<std::string> configFilePaths_;
+        // canonical and relative paths of config files, which are successfully loaded
+        std::unordered_map<std::string, std::string> loadedConfigFiles_;
         // Application for which we are parsing the config file i.e. esmini, replayer etc.
         std::string applicationName_;
         // Argument count

@@ -17,10 +17,27 @@ namespace fs = std::experimental::filesystem;
 
 namespace esmini::common
 {
-    ConfigParser::ConfigParser(const std::string& applicationName, const std::vector<std::string>& configFilePaths)
+    ConfigParser::ConfigParser(const std::string&                            applicationName,
+                               const std::vector<std::string>&               configFilePaths,
+                               std::unordered_map<std::string, std::string>& loadedConfigFiles)
         : applicationName_(applicationName),
-          configFilePaths_(configFilePaths)
+          configFilePaths_(configFilePaths),
+          loadedConfigFiles_(loadedConfigFiles)
     {
+    }
+
+    //---------------------------------------------------------------------------------------------------------------------
+
+    bool ConfigParser::IsFaulty() const
+    {
+        return faulty_;
+    }
+
+    //---------------------------------------------------------------------------------------------------------------------
+
+    std::string ConfigParser::GetParsingErrorMsg() const
+    {
+        return parsingErrorMsg_;
     }
 
     //---------------------------------------------------------------------------------------------------------------------
@@ -34,9 +51,7 @@ namespace esmini::common
             // exactly in the place where the reference was found, so the order of the configs_ is preserved
             if (key == CONFIG_FILE_OPTION_NAME && !value.empty())
             {
-                ConfigParser anotherFileParser(applicationName_, {value});
-                const auto   anotherConfigs = anotherFileParser.Parse();
-                configs_.insert(configs_.end(), std::make_move_iterator(anotherConfigs.begin()), std::make_move_iterator(anotherConfigs.end()));
+                ParseYamlFile(value);
                 return;
             }
 
@@ -49,19 +64,19 @@ namespace esmini::common
                     // in case of boolean value, we need to add only the key to be in sync with the command line arguments
                     if (boolValue)
                     {
-                        configs_.push_back(fmt::format("--{}", key));
+                        configs_.insert(configs_.begin(), fmt::format("--{}", key));
                     }
                 }
                 else
                 {
-                    configs_.push_back(fmt::format("--{}", key));
-                    configs_.push_back(valueVec[0]);
+                    configs_.insert(configs_.begin(), valueVec[0]);
+                    configs_.insert(configs_.begin(), fmt::format("--{}", key));
                 }
             }
             else
             {
-                configs_.push_back(fmt::format("--{}", key));
-                configs_.insert(configs_.end(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
+                configs_.insert(configs_.begin(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
+                configs_.insert(configs_.begin(), fmt::format("--{}", key));
             }
         }
     }
@@ -70,6 +85,11 @@ namespace esmini::common
 
     void ConfigParser::ParseNode(TINY_YAML::Node& node, std::string parent)
     {
+        if (faulty_)
+        {
+            return;
+        }
+
         if (node.getSize() == 0)  // no children
         {
             std::string key   = node.getID();
@@ -89,11 +109,41 @@ namespace esmini::common
 
     void ConfigParser::ParseYamlFile(const std::string& filename)
     {
-        TINY_YAML::Yaml yaml = TINY_YAML::Yaml(filename);
-
-        for (auto& node : yaml.getNodes())
+        if (faulty_)
         {
-            ParseNode(*node.second, "");
+            return;
+        }
+
+        if (!fs::exists(filename))
+        {
+            faulty_          = true;
+            parsingErrorMsg_ = fmt::format("Failed to locate config: {}", filename);
+            return;
+        }
+
+        std::string canonicalPath{fs::canonical(fs::path(filename)).u8string()};
+        if (loadedConfigFiles_.find(canonicalPath) != loadedConfigFiles_.end())
+        {
+            faulty_          = true;
+            parsingErrorMsg_ = fmt::format("There seems to be circular dependency on config file: {} ({})", canonicalPath, filename);
+            return;
+        }
+        loadedConfigFiles_[canonicalPath] = filename;
+
+        try
+        {
+            TINY_YAML::Yaml yaml = TINY_YAML::Yaml(filename);
+            for (auto& node : yaml.getNodes())
+            {
+                ParseNode(*node.second, "");
+            }
+        }
+        catch (const std::exception& e)
+        {
+            loadedConfigFiles_.erase(canonicalPath);  // its not needed since we are exiting but just in case we decide not to exit down the road
+            faulty_          = true;
+            parsingErrorMsg_ = e.what();
+            return;
         }
     }
 
@@ -101,26 +151,10 @@ namespace esmini::common
 
     std::vector<std::string> ConfigParser::Parse()
     {
-        for (unsigned int i = 0; i < configFilePaths_.size(); i++)
+        for (auto rItr = configFilePaths_.rbegin(); rItr != configFilePaths_.rend(); ++rItr)
         {
-            if (fs::exists(configFilePaths_[i]))
-            {
-                try
-                {
-                    ParseYamlFile(configFilePaths_[i]);
-                }
-                catch (const std::exception& e)
-                {
-                    LOG_ERROR("Failed to load config {}: {}", configFilePaths_[i], e.what());
-                }
-                LOG_INFO("Loaded config: {}", configFilePaths_[i]);
-            }
-            else
-            {
-                LOG_ERROR("Failed to locate config: {}", configFilePaths_[i]);
-            }
+            ParseYamlFile(*rItr);
         }
-
         return configs_;
     }
 

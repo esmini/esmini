@@ -100,29 +100,27 @@ namespace TINY_YAML {
 
 	bool Node::append(std::shared_ptr<Node> node) {
 		std::string& nid = node->getID();
-		auto it = this->m_children.find(nid);
-		if (it != this->m_children.end()) {
-			// key already exists, overwrite its value
-            it->second = node;
+		if (this->m_children.find(nid) != this->m_children.end()) {
+			return false;
 		}
-		else {
-			this->m_children.insert({ nid, node });
-		}
+		this->m_children.insert({ nid, node });
 		return true;
 	}
 
 
 	/////////////////////////////// YAML CLASS METHODS ///////////////////////////////
 	Yaml::Yaml(const std::string& filepath) {
-		if (!load(filepath))
-			throw std::runtime_error("ERROR: Yaml Parser Object failed during parsing the given file!");
+        if (!load(filepath))
+        {
+            error_message.insert(0, "ERROR: Failed loading " + filepath + ". ");
+			throw std::runtime_error(error_message.c_str());
+		}
 	}
 
 
 	Yaml::~Yaml() {
 		this->m_roots.clear();
 	}
-
 
 	bool Yaml::load(const std::string& filepath) {
 		/*Variables*/
@@ -133,7 +131,7 @@ namespace TINY_YAML {
 
 		/*Check the yaml file*/
 		if (!file.is_open()) {
-			std::cerr << filepath << " cannot be opened" << std::endl;
+			error_message.insert(0, filepath + " cannot be opened. ");
 			file.close();
 			return false;
 		}
@@ -193,7 +191,7 @@ namespace TINY_YAML {
 			}
 
 			if(fstQuotePos != std::string::npos && lstQuotePos == std::string::npos){
-				std::cerr << "ERROR: unclosed quote found. Please close the quote and reparse." << std::endl;
+                            error_message.insert(0, "Unclosed quote found. ");
 				faulty = true; break;
 			}
 
@@ -219,7 +217,16 @@ namespace TINY_YAML {
 
 			/* Layer up. (Current line has less indentation than the previous parent = does not belong to it)*/
 			while (parentsStack.size() != 0 && parentsStack.top().second >= firstCharPos) {
+				if (parentsStack.top().first->getChildren().size() == 0) {
+					error_message.insert(0, "Node (layer up) \"" + parentsStack.top().first->getID() + "\" missing value or children. ");
+					faulty = true;
+					break;
+				}
 				parentsStack.pop();
+			}
+
+			if (faulty) {
+				break;
 			}
 
 			/* List of nodes/items */
@@ -232,7 +239,16 @@ namespace TINY_YAML {
 
 					/* Since the virtual nodes indentation = dashpos, we have to consider the dashpos now*/
 					while (parentsStack.size() != 0 && parentsStack.top().second >= dashPos) {
+                        if (parentsStack.top().first->getChildren().size() == 0) {
+                            error_message.insert(0, "Node (virtual nodes) \"" + parentsStack.top().first->getID() + "\" missing value or children. ");
+                            faulty = true;
+							break;
+                        }
 						parentsStack.pop();
+					}
+
+					if (faulty) {
+						break;
 					}
 
 					/*Create the virtual pnode*/
@@ -262,7 +278,7 @@ namespace TINY_YAML {
 
 			/*If the current node is a parent node with children nodes*/
 			if (colonPos == lastCharPos && colonPos != std::string::npos) {
-				pnode = std::make_shared<Node>(Node(nodeID, std::make_shared<std::string>("")));  // add empty string to avoid lookup crash
+				pnode = std::make_shared<Node>(Node(nodeID, nullptr));
 
 				if (parentsStack.size() == 0 && this->m_roots.find(nodeID) == this->m_roots.end()){ // If the node is at root level, we add it to the root
 					this->m_roots.insert({ nodeID, pnode });
@@ -283,32 +299,40 @@ namespace TINY_YAML {
 				std::string value = lineContent.substr(colonPos + 1, lastCharPos - colonPos); // value extraction.
 				value.erase(0, value.find_first_not_of(" \t\f\v\n\r"));
 
-				if(parentsStack.size() == 0){	// Insert at root level
-					auto it = this->m_roots.find(nodeID);
-					if (it != m_roots.end()) {
-						// key already exists under root, replace its value
-						it->second->setData(std::make_shared<std::string>(value));
-					}
-					else {
-						/*Build pnode*/
-						pnode = std::make_shared<Node>(Node(nodeID, std::make_shared<std::string>(value)));
+				/*Build pnode*/
+				pnode = std::make_shared<Node>(Node(nodeID, std::make_shared<std::string>(value)));
+
+				if (parentsStack.size() == 0) {	// Insert at root level
+					if (this->m_roots.find(nodeID) == this->m_roots.end()) {
 						this->m_roots.insert({ nodeID, pnode });
 					}
-				}
-				else {
-					/*Build pnode*/
-					pnode = std::make_shared<Node>(Node(nodeID, std::make_shared<std::string>(value)));
-
-					if (!parentsStack.top().first->append(pnode)) {	// Insert at parent level
+					else
+					{
+						error_message.insert(0, "Duplicate (root) key \"" + nodeID + "\" found. ");
 						faulty = true;
 						break;
 					}
-				}
+                }
+                else if (!parentsStack.top().first->append(pnode)) { // Insert at parent level
+					error_message.insert(0, "Duplicate (parent) key \"" + nodeID + "\" found. ");
+                    faulty = true;
+                    break;
+                }
 			}
 		}
 
+		// check for empty parents
+		while (faulty == false && parentsStack.size() != 0) {
+			if (parentsStack.top().first->getChildren().size() == 0 && !parentsStack.top().third) {
+                error_message.insert(0, "Parent node (final check) \"" + parentsStack.top().first->getID() + "\" missing children. ");
+				faulty = true;
+				break;
+			}
+			parentsStack.pop();
+		}
+
 		if (faulty) {
-			std::cerr << "Yaml Parser: Error: Failed to parse file, invalid yaml syntax at line: " << line << std::endl;
+            error_message.insert(0, "Stopped at line " + std::to_string(line) + ": ");
 			file.close();
 			this->m_roots.clear();
 			return false;

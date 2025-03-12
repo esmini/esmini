@@ -1221,15 +1221,21 @@ int ScenarioPlayer::Init()
                   true);
     opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename", "log.csv");
     opt.AddOption("collision", "Enable global collision detection, potentially reducing performance");
-    opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, true, false);
-    opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
+    opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, false, false);
+    opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p]", "position", "", false, false);
     opt.AddOption("custom_fixed_camera",
-                  "Additional custom fixed camera position <x,y,z>[,h,p] (multiple occurrences supported)",
-                  "position and optional orientation");
-    opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot> (multiple occurrences supported)", "position and rotation");
+                  "Additional custom fixed camera position <x,y,z>[,h,p]",
+                  "position and optional orientation",
+                  "",
+                  false,
+                  false);
+    opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot>", "position and rotation", "", false, false);
     opt.AddOption("custom_light",
-                  "Additional custom light source <x,y,z,intensity> intensity range 0..1 (multiple occurrences supported)",
-                  "position and intensity");
+                  "Additional custom light source <x,y,z,intensity> intensity range 0..1",
+                  "position and intensity",
+                  "",
+                  false,
+                  false);
     opt.AddOption("disable_controllers", "Disable controllers");
     opt.AddOption("disable_pline_interpolation", "Do not apply orientation interpolation of polyline trajectories");
     opt.AddOption("disable_log", "Prevent logfile from being created");
@@ -1274,7 +1280,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("param_dist", "Run variations of the scenario according to specified parameter distribution file", "filename");
     opt.AddOption("param_permutation", "Run specific permutation of parameter distribution, index in range (0 .. NumberOfPermutations-1)", "index");
     opt.AddOption("pause", "Pause simulation after initialization");
-    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path", "", false, false);
+    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files.", "path", "", false, false);
     opt.AddOption("player_server", "Launch UDP server for action/command injection");
 #ifdef _USE_IMPLOT
     opt.AddOption("plot", "Show window with line-plots of interesting data. Modes: asynchronous, synchronous", "mode", "asynchronous");
@@ -1314,6 +1320,7 @@ int ScenarioPlayer::Init()
         PrintUsage();
         return -2;
     }
+    config.LogLoadedConfigFiles();
 
     std::string strAllSetOptions = opt.GetSetOptionsAsStr();
 

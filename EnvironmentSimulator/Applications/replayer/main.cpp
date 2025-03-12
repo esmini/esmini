@@ -398,11 +398,14 @@ int main(int argc, char** argv)
     opt.AddOption("collision", "Detect collisions and optionally pauses the replay <pause/continue> (pause is default)", "mode", "pause");
     opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, true, false);
 #ifdef _USE_OSG
-    opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
+    opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p]", "position", "", false, false);
     opt.AddOption("custom_fixed_camera",
-                  "Additional custom fixed camera position <x,y,z>[,h,p] (multiple occurrences supported)",
-                  "position and optional orientation");
-    opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot> (multiple occurrences supported)", "position and rotation");
+                  "Additional custom fixed camera position <x,y,z>[,h,p]",
+                  "position and optional orientation",
+                  "",
+                  false,
+                  false);
+    opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot>", "position and rotation", "", false, false);
 #endif  // _USE_OSG
     opt.AddOption("dir",
                   "Directory containing replays to overlay, pair with \"file\" argument, where \"file\" is .dat filename match substring",
@@ -423,7 +426,7 @@ int main(int argc, char** argv)
     opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
 #endif  // _USEOSG
-    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path", "", false, false);
+    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files.", "path", "", false, false);
     opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
 #ifdef _USE_OSG
     opt.AddOption("remove_object", "Remove object(s). Multiple ids separated by comma, e.g. 2,3,4.", "id");
@@ -454,7 +457,15 @@ int main(int argc, char** argv)
     int                    argc_;
     char**                 argv_;
     esmini::common::Config config("replayer", argc, argv);
-    std::tie(argc_, argv_) = config.Load();
+    try
+    {
+        std::tie(argc_, argv_) = config.Load();
+    }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR("Exception: {}", e.what());
+        return -1;
+    }
 
     if (opt.ParseArgs(argc_, argv_) != 0 || argc_ < 2)
     {
@@ -464,6 +475,8 @@ int main(int argc, char** argv)
 #endif  // _USE_OSG
         return -1;
     }
+
+    config.LogLoadedConfigFiles();
 
     std::string strAllSetOptions = opt.GetSetOptionsAsStr();
     LOG_INFO("replayer options: {}", strAllSetOptions);

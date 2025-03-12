@@ -92,20 +92,27 @@ namespace esmini::common
         std::vector<std::string> allConfigs;
 
         // parse default config file and environment variable config files
-        esmini::common::ConfigParser parser(applicationName_, configFilePaths_);
+        esmini::common::ConfigParser parser(applicationName_, configFilePaths_, loadedConfigFiles_);
         allConfigs = parser.Parse();
-
+        if (parser.IsFaulty())
+        {
+            LOG_ERROR_AND_QUIT(parser.GetParsingErrorMsg());
+        }
         // there is a possibility that the config file path is already set in options, maybe through the api call
         // so we need to parse those config files as well. Since, order of appearance matters, so we will reverse iterate
         SE_Options& opt             = SE_Env::Inst().GetOptions();
-        const auto& configFilePaths = opt.GetOptionArgs(CONFIG_FILE_OPTION_NAME);
+        auto        configFilePaths = opt.GetOptionArgs(CONFIG_FILE_OPTION_NAME);
         for (auto rItr = configFilePaths.rbegin(); rItr != configFilePaths.rend(); ++rItr)
         {
-            esmini::common::ConfigParser configParser(applicationName_, {*rItr});
+            esmini::common::ConfigParser configParser(applicationName_, {*rItr}, loadedConfigFiles_);
             auto                         configs = configParser.Parse();
+            if (configParser.IsFaulty())
+            {
+                LOG_ERROR_AND_QUIT(configParser.GetParsingErrorMsg());
+            }
             allConfigs.insert(allConfigs.end(), std::make_move_iterator(configs.begin()), std::make_move_iterator(configs.end()));
         }
-
+        opt.UnsetOption(CONFIG_FILE_OPTION_NAME);
         // parse config file path(s) from the arguments, if present. And append the configs to the arguments
         std::string configFilePathOption = fmt::format("--{}", CONFIG_FILE_OPTION_NAME);
         for (int i = 1; i < argc_; ++i)
@@ -113,8 +120,12 @@ namespace esmini::common
             if (strcmp(configFilePathOption.c_str(), argv_[i]) == 0 && i < argc_ - 1)  // we protect against buffer overflow
             {
                 // now we can parse config file here
-                esmini::common::ConfigParser configParser(applicationName_, {argv_[i + 1]});
+                esmini::common::ConfigParser configParser(applicationName_, {argv_[i + 1]}, loadedConfigFiles_);
                 auto                         configs = configParser.Parse();
+                if (configParser.IsFaulty())
+                {
+                    LOG_ERROR_AND_QUIT(configParser.GetParsingErrorMsg());
+                }
 
                 // we need to wipe out the config file path from the arguments, so that they wont be consumed again
                 // free memory of the two arguments and shift the rest of the arguments
@@ -139,6 +150,14 @@ namespace esmini::common
         AppendArgcArgv(1, allConfigs);
         // perform final argument check, resolving conflicts and prioritization
         PostProcessArgs();
+    }
+
+    void Config::LogLoadedConfigFiles() const
+    {
+        for (const auto& [canonicalPath, relativePath] : loadedConfigFiles_)
+        {
+            LOG_INFO("Loaded config file: {} ({})", canonicalPath, relativePath);
+        }
     }
 
     void Config::PostProcessArgs()

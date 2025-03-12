@@ -173,6 +173,7 @@ namespace TINY_YAML {
 
 	class Yaml {
 		std::unordered_map<std::string, std::shared_ptr<Node>> m_roots;			// The root nodes in the file.
+		std::string error_message;  // container for any error message
 	public:
 		Yaml(const std::string& filepath);
 		~Yaml();
@@ -189,7 +190,12 @@ namespace TINY_YAML {
 		}
 
 		Node& operator[](const std::string& identifier) {
-			return *m_roots[identifier];
+			Node& node = *m_roots[identifier];
+			if (std::addressof(node) == 0)
+			{
+				throw std::runtime_error("Failed to locate key: " + identifier);
+			}
+            return node;
 		}
 
 		const std::unordered_map<std::string, std::shared_ptr<Node>>& getNodes() const {

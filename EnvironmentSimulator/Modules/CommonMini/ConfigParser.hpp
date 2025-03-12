@@ -6,21 +6,17 @@
 
 namespace esmini::common
 {
-    // using ConfigMap             = std::unordered_map<std::string, std::vector<std::string>>;
-    // using ApplicationsConfigMap = std::unordered_map<std::string, ConfigMap>;
-
     class ConfigParser
     {
     public:
         // constructor
-        ConfigParser(const std::string& applicationName, const std::vector<std::string>& configFilePath);
+        ConfigParser(const std::string&                            applicationName,
+                     const std::vector<std::string>&               configFilePath,
+                     std::unordered_map<std::string, std::string>& loadedConfigFiles);
 
-        // parses the config file
         std::vector<std::string> Parse();
-
-        // returns config map of a particular application
-        // const ConfigMap& GetApplicationConfig(const std::string& application) const;
-
+        bool                     IsFaulty() const;
+        std::string              GetParsingErrorMsg() const;
         // private functions
     private:
         // Function to parse the YAML file
@@ -41,5 +37,11 @@ namespace esmini::common
         std::string applicationName_;
         // container to store the config for the application
         std::vector<std::string> configs_;
+        // canonical and relative paths of config files, which are successfully loaded
+        std::unordered_map<std::string, std::string>& loadedConfigFiles_;
+        // parsing status
+        bool faulty_ = false;
+        // error message
+        std::string parsingErrorMsg_;
     };
 }  // namespace esmini::common
