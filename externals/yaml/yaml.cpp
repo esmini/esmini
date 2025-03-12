@@ -100,9 +100,14 @@ namespace TINY_YAML {
 
 	bool Node::append(std::shared_ptr<Node> node) {
 		std::string& nid = node->getID();
-		if (this->m_children.find(nid) != this->m_children.end())
-			return false;
-		this->m_children.insert({ nid, node });
+		auto it = this->m_children.find(nid);
+		if (it != this->m_children.end()) {
+			// key already exists, overwrite its value
+            it->second = node;
+		}
+		else {
+			this->m_children.insert({ nid, node });
+		}
 		return true;
 	}
 
@@ -257,7 +262,7 @@ namespace TINY_YAML {
 
 			/*If the current node is a parent node with children nodes*/
 			if (colonPos == lastCharPos && colonPos != std::string::npos) {
-				pnode = std::make_shared<Node>(Node(nodeID, nullptr));
+				pnode = std::make_shared<Node>(Node(nodeID, std::make_shared<std::string>("")));  // add empty string to avoid lookup crash
 
 				if (parentsStack.size() == 0 && this->m_roots.find(nodeID) == this->m_roots.end()){ // If the node is at root level, we add it to the root
 					this->m_roots.insert({ nodeID, pnode });
@@ -278,18 +283,28 @@ namespace TINY_YAML {
 				std::string value = lineContent.substr(colonPos + 1, lastCharPos - colonPos); // value extraction.
 				value.erase(0, value.find_first_not_of(" \t\f\v\n\r"));
 
-				/*Build pnode*/
-				pnode = std::make_shared<Node>(Node(nodeID, std::make_shared<std::string>(value)));
-
-				if(parentsStack.size() == 0 && this->m_roots.find(nodeID) == this->m_roots.end()){	// Insert at root level
+				if(parentsStack.size() == 0){	// Insert at root level
+					auto it = this->m_roots.find(nodeID);
+					if (it != m_roots.end()) {
+						// key already exists under root, replace its value
+						it->second->setData(std::make_shared<std::string>(value));
+					}
+					else {
+						/*Build pnode*/
+						pnode = std::make_shared<Node>(Node(nodeID, std::make_shared<std::string>(value)));
 						this->m_roots.insert({ nodeID, pnode });
+					}
 				}
-				else if (parentsStack.size() != 0  && !parentsStack.top().first->append(pnode)) {	// Insert at parent level
-					faulty = true;
-					break;
+				else {
+					/*Build pnode*/
+					pnode = std::make_shared<Node>(Node(nodeID, std::make_shared<std::string>(value)));
+
+					if (!parentsStack.top().first->append(pnode)) {	// Insert at parent level
+						faulty = true;
+						break;
+					}
 				}
 			}
-
 		}
 
 		if (faulty) {
