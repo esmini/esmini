@@ -143,6 +143,10 @@ namespace scenarioengine
 #endif
         void AddOSIDetection(int object_index);
         void SteeringSensorSetVisible(int object_index, bool value);
+        void SetOSIFreq(int frequency)
+        {
+            osi_freq_ = frequency;
+        }
         void SetFixedTimestep(double timestep)
         {
             fixed_timestep_ = timestep;

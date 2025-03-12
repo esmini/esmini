@@ -12,18 +12,16 @@ int main(int argc, char* argv[])
     const osi3::GroundTruth* gt;
 
     SE_EnableOSIFile(0);  // 0 or "" will result in default filename, ground_truth.osi
+    SE_SetOSIReportMode(SE_OSIStaticLogMode::DEFAULT);
 
     SE_Init("../resources/xosc/cut-in_simple.xosc", 0, 1, 0, 0);
 
     // You could now retrieve the initial state of all objects before stepping the scenario
 
-    // Initial update of complete Ground Truth, including static things
-    SE_UpdateOSIGroundTruth(SE_OSIStaticLogMode::DEFAULT);
-
     // Fetch initial OSI struct
     gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
-    // Lane boundaries (static road info only available in first OSI frame
+    // Lane boundaries (static road info only available in first OSI frame)
     printf("lane boundaries: %d\n", gt->lane_boundary_size());
     for (int j = 0; j < gt->lane_boundary_size(); j++)
     {
@@ -42,8 +40,6 @@ int main(int argc, char* argv[])
     for (int i = 0; i < 4; i++)
     {
         SE_StepDT(0.01f);
-        // Further updates will only affect dynamic OSI stuff
-        SE_UpdateOSIGroundTruth(SE_OSIStaticLogMode::DEFAULT);
 
         // Fetch OSI struct
         gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());

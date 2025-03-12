@@ -77,10 +77,21 @@ public:
     Clears groundtruth osi
     */
     int ClearOSIGroundTruth();
+
+    void SetOSIReportMode(int mode)
+    {
+        if (mode > 2)
+        {
+            LOG_WARN("Invalid OSI report mode, setting to default");
+            mode = 0;
+        }
+        static_update_mode_ = static_cast<OSIStaticUpdateMode>(mode);
+    }
+
     /**
     Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
     */
-    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, int updateMode = 0);
+    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
     /**
     Fills up the osi message with  static GroundTruth
     */
@@ -88,7 +99,7 @@ public:
     /**
     Fills up the osi message with dynamic GroundTruth
     */
-    int UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, bool reportGhost = true);
+    int UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
     /**
     Fills up the osi message with Stationary Object from the OpenDRIVE description
     */
@@ -126,6 +137,11 @@ public:
     */
     int UpdateOSITrafficCommand();
 
+    void ReportGhost(bool report_ghost)
+    {
+        report_ghost_ = report_ghost;
+    }
+
     std::vector<TrafficCommandStateChange> traffic_command_state_changes_;
 
     void RegisterTrafficCommandStateChange(OSCPrivateAction* action, StoryBoardElement::State state, StoryBoardElement::Transition transition)
@@ -144,7 +160,6 @@ public:
     int CreateSensorViewFromSensorData(const osi3::SensorData& sd);
 
     const char*       GetOSIGroundTruth(int* size);
-    void              CombineOSIGroundTruth();
     const char*       GetOSIGroundTruthRaw();
     const char*       GetOSITrafficCommandRaw();
     const char*       GetOSIRoadLane(const std::vector<std::unique_ptr<ObjectState>>& objectState, int* size, int object_id);
@@ -210,4 +225,6 @@ private:
     bool                   osi_file_written_      = false;
     int                    osi_static_gt_loaded_  = -1;
     int                    osi_dynamic_gt_loaded_ = -1;
+    bool                   report_ghost_          = true;
+    OSIStaticUpdateMode    static_update_mode_    = DEFAULT;
 };

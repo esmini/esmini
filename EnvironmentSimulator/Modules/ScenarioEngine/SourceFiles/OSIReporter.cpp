@@ -279,31 +279,12 @@ void OSIReporter::FlushOSIFile()
     }
 }
 
-int OSIReporter::ClearOSIGroundTruth()
+int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)
 {
-    obj_osi_internal.dynamic_gt->clear_moving_object();
-    obj_osi_internal.static_gt->clear_stationary_object();
-    obj_osi_internal.static_gt->clear_lane();
-    obj_osi_internal.static_gt->clear_lane_boundary();
-    obj_osi_internal.static_gt->clear_traffic_light();
-    obj_osi_internal.static_gt->clear_traffic_sign();
-    obj_osi_internal.static_gt->clear_road_marking();
-    obj_osi_internal.static_gt->clear_map_reference();
-    obj_osi_internal.static_gt->clear_proj_string();
-    obj_osi_internal.static_gt->clear_model_reference();
-    obj_osi_internal.static_gt->clear_version();
-
-    return 0;
-}
-
-int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, int updateMode)
-{
-    if (GetUpdated() == true)
+    if (GetUpdated())
     {
         return 0;
     }
-    auto mode = static_cast<OSIStaticUpdateMode>(updateMode);
-
     osiGroundTruth.ground_truth.clear();
     osiGroundTruth.size = 0;
     if (GetCounter() == 0)
@@ -313,61 +294,50 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
         obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
         obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
 
-        if (IsFileOpen())
+        if (IsFileOpen() || GetUDPClientStatus() == 0)
         {
             obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
             osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
-            WriteOSIFile();
         }
     }
     else
     {
         UpdateOSIDynamicGroundTruth(objectState);
         obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
-        switch (mode)
+        switch (static_update_mode_)
         {
-            case DEFAULT:
-                if (IsFileOpen())
+            case DEFAULT:  // Only log and transmit dynamic ground truth
+                if (IsFileOpen() || GetUDPClientStatus() == 0)
                 {
-                    obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
-                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
-                    WriteOSIFile();
-                }
-                else if (GetUDPClientStatus() == 0)
-                {
-                    obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+                    obj_osi_internal.dynamic_gt->SerializeToString(&osiGroundTruth.ground_truth);
                     osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
                 }
                 break;
-            case API:
-                if (IsFileOpen())
+            case API:  // Log dynamic ground truth, serialize and transmit combined ground truth
+                if (IsFileOpen() || GetUDPClientStatus() == 0)
                 {
-                    obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
-                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
-                    WriteOSIFile();
-                }
-                else if (GetUDPClientStatus() == 0)
-                {
-                    obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
+                    obj_osi_internal.dynamic_gt->SerializeToString(&osiGroundTruth.ground_truth);
                     osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
                 }
+
                 obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
                 break;
-            case API_AND_LOG:
+            case API_AND_LOG:  // Log combined ground truth, serialze and transmit combined ground truth
+                if (IsFileOpen() || GetUDPClientStatus() == 0)
+                {
+                    obj_osi_internal.static_gt->SerializeToString(&osiGroundTruth.ground_truth);
+                    obj_osi_internal.dynamic_gt->AppendToString(&osiGroundTruth.ground_truth);
+                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
+                }
+
                 obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
-                if (IsFileOpen())
-                {
-                    obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
-                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
-                    WriteOSIFile();
-                }
-                else if (GetUDPClientStatus() == 0)
-                {
-                    obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
-                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
-                }
                 break;
         }
+    }
+
+    if (IsFileOpen())
+    {
+        WriteOSIFile();
     }
 
     if (GetUDPClientStatus() == 0)
@@ -466,13 +436,10 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
     obj_osi_internal.static_gt->set_map_reference(opendrive->GetGeoReferenceAsString());
     obj_osi_internal.static_gt->set_model_reference(stationary_model_reference);
 
-    // Map the external groundtruth data to the internal data
-    // SetOSIStaticExternalData();
-
     return 0;
 }
 
-int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, bool reportGhost)
+int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)
 {
     obj_osi_internal.dynamic_gt->clear_moving_object();
     obj_osi_internal.dynamic_gt->clear_timestamp();
@@ -502,7 +469,7 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
         if (objectState[i]->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE) ||
             objectState[i]->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
         {
-            if (objectState[i]->state_.info.ctrl_type != Controller::Type::GHOST_RESERVED_TYPE || reportGhost)
+            if (objectState[i]->state_.info.ctrl_type != Controller::Type::GHOST_RESERVED_TYPE || report_ghost_)
             {
                 // All non-ghost objects are always updated. Ghosts only on request.
                 UpdateOSIMovingObject(objectState[i].get());
@@ -518,9 +485,6 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
                      objectState[i]->state_.info.obj_type);
         }
     }
-
-    // obj_osi_external.dynamic_gt->mutable_timestamp()->CopyFrom(*obj_osi_internal.gt->mutable_timestamp());
-    // obj_osi_external.dynamic_gt->mutable_moving_object()->CopyFrom(*obj_osi_internal.gt->mutable_moving_object());
 
     return 0;
 }
@@ -549,6 +513,8 @@ int OSIReporter::UpdateOSIHostVehicleData(ObjectState *objectState)
 
 int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObject *object)
 {
+    osi3::StationaryObject so;
+    obj_osi_internal.static_gt->mutable_stationary_object();
     (void)road_id;
     // Create OSI Stationary Object
     obj_osi_internal.sobj = obj_osi_internal.static_gt->add_stationary_object();
@@ -2644,12 +2610,6 @@ const char *OSIReporter::GetOSIGroundTruth(int *size)
     }
     *size = static_cast<int>(osiGroundTruth.size);
     return osiGroundTruth.ground_truth.data();
-}
-
-void OSIReporter::CombineOSIGroundTruth()
-{
-    obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
-    obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
 }
 
 const char *OSIReporter::GetOSIGroundTruthRaw()
