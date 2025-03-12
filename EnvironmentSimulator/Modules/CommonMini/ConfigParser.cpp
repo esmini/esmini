@@ -17,9 +17,9 @@ namespace fs = std::experimental::filesystem;
 
 namespace esmini::common
 {
-    ConfigParser::ConfigParser(const std::string&              applicationName,
-                               const std::vector<std::string>& configFilePaths,
-                               std::vector<std::string>&       loadedConfigFiles)
+    ConfigParser::ConfigParser(const std::string&                            applicationName,
+                               const std::vector<std::string>&               configFilePaths,
+                               std::unordered_map<std::string, std::string>& loadedConfigFiles)
         : applicationName_(applicationName),
           configFilePaths_(configFilePaths),
           loadedConfigFiles_(loadedConfigFiles)
@@ -108,6 +108,19 @@ namespace esmini::common
         {
             if (fs::exists(configFilePaths_[i]))
             {
+                std::string canonicalPath{fs::canonical(fs::path(configFilePaths_[i])).u8string()};
+                if (loadedConfigFiles_.find(canonicalPath) != loadedConfigFiles_.end())
+                {
+                    LOG_ERROR("There seems to be circular dependency, skipping already loaded config file {} ({})",
+                              canonicalPath,
+                              configFilePaths_[i]);
+                    continue;
+                }
+                else
+                {
+                    loadedConfigFiles_[canonicalPath] = configFilePaths_[i];
+                }
+
                 try
                 {
                     ParseYamlFile(configFilePaths_[i]);
@@ -116,7 +129,6 @@ namespace esmini::common
                 {
                     LOG_ERROR("Failed to load config {}: {}", configFilePaths_[i], e.what());
                 }
-                loadedConfigFiles_.push_back(configFilePaths_[i]);
             }
             else
             {

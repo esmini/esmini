@@ -143,10 +143,10 @@ namespace esmini::common
 
     void Config::LogLoadedConfigFiles() const
     {
-        for (const auto& file : loadedConfigFiles_)
+        for (const auto& [canonicalPath, relativePath] : loadedConfigFiles_)
         {
-            std::string nativePath{fs::canonical(fs::path(file)).u8string()};
-            LOG_INFO("Loaded config: {} ({})", nativePath, file);
+            // std::string nativePath{fs::canonical(fs::path(file)).u8string()};
+            LOG_INFO("Loaded config files: {} ({})", canonicalPath, relativePath);
         }
     }
 

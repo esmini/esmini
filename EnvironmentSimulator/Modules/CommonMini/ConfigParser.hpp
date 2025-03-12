@@ -13,7 +13,9 @@ namespace esmini::common
     {
     public:
         // constructor
-        ConfigParser(const std::string& applicationName, const std::vector<std::string>& configFilePath, std::vector<std::string>& loadedConfigFiles);
+        ConfigParser(const std::string&                            applicationName,
+                     const std::vector<std::string>&               configFilePath,
+                     std::unordered_map<std::string, std::string>& loadedConfigFiles);
 
         std::vector<std::string> Parse();
 
@@ -40,7 +42,7 @@ namespace esmini::common
         std::string applicationName_;
         // container to store the config for the application
         std::vector<std::string> configs_;
-        // Name of config files, which are successfully loaded
-        std::vector<std::string>& loadedConfigFiles_;
+        // canonical and relative paths of config files, which are successfully loaded
+        std::unordered_map<std::string, std::string>& loadedConfigFiles_;
     };
 }  // namespace esmini::common
