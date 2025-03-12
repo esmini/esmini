@@ -412,7 +412,7 @@ int main(int argc, char** argv)
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
 #endif  // _USEOSG
     opt.AddOption("headless", "Run without viewer window");
-    opt.AddOption("help", "Show this help message");
+    opt.AddOption("help", "Show this help message (-h works as well)");
 #ifdef _USE_OSG
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
@@ -444,6 +444,12 @@ int main(int argc, char** argv)
     opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
 #endif  // _USEOSG
+    opt.AddOption("version", "Show version and quit");
+
+    if (int ret = OnRequestShowHelpOrVersion(argc, argv, opt); ret > 0)
+    {
+        return ret;
+    }
 
     int                    argc_;
     char**                 argv_;
@@ -454,7 +460,7 @@ int main(int argc, char** argv)
     {
         opt.PrintUsage();
 #ifdef _USE_OSG
-        viewer::Viewer::PrintUsage();
+        PrintOSGUsage();
 #endif  // _USE_OSG
         return -1;
     }
@@ -469,12 +475,12 @@ int main(int argc, char** argv)
     LOG_INFO("Compiled with USE_OSG=FALSE, limited functionality available");
 #endif  // _USE_OSG
 
-    if (opt.GetOptionArg("file").empty() || argc_ < 2 || opt.GetOptionSet("help"))
+    if (opt.GetOptionArg("file").empty() || argc_ < 2)
     {
         printf("Missing required file argument\n");
         opt.PrintUsage();
 #ifdef _USE_OSG
-        viewer::Viewer::PrintUsage();
+        PrintOSGUsage();
 #endif  // _USE_OSG
         return -1;
     }
@@ -749,7 +755,7 @@ int main(int argc, char** argv)
             opt.PrintUnknownArgs("Unrecognized arguments:");
             opt.PrintUsage();
 #ifdef _USE_OSG
-            viewer::Viewer::PrintUsage();
+            PrintOSGUsage();
 #endif  // _USE_OSG
             return -1;
         }
