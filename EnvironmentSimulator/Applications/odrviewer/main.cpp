@@ -479,6 +479,8 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    config.LogLoadedConfigFiles();
+
     std::string strAllSetOptions = opt.GetSetOptionsAsStr();
     LOG_INFO("odrviewer options: {}", strAllSetOptions);
 

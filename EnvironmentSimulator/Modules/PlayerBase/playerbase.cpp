@@ -1225,7 +1225,7 @@ int ScenarioPlayer::Init()
                   true);
     opt.AddOption("csv_logger", "Log data for each vehicle in ASCII csv format", "csv_filename", "log.csv");
     opt.AddOption("collision", "Enable global collision detection, potentially reducing performance");
-    opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, true, false);
+    opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, false, false);
     opt.AddOption("custom_camera", "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)", "position");
     opt.AddOption("custom_fixed_camera",
                   "Additional custom fixed camera position <x,y,z>[,h,p] (multiple occurrences supported)",
@@ -1313,6 +1313,7 @@ int ScenarioPlayer::Init()
         PrintUsage();
         return -2;
     }
+    config.LogLoadedConfigFiles();
 
     std::string strAllSetOptions = opt.GetSetOptionsAsStr();
 

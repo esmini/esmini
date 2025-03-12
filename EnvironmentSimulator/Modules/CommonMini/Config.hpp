@@ -20,6 +20,9 @@ namespace esmini::common
         // Remaining argv_ will be deleted by this class on destruction.
         std::pair<int&, char**&> Load();
 
+        // Logs loaded file names, so user can see which config files are successfully loaded
+        void LogLoadedConfigFiles() const;
+
         Config()                      = delete;
         Config(Config const&)         = delete;
         void operator=(Config const&) = delete;
@@ -52,8 +55,10 @@ namespace esmini::common
 
         // private data members
     private:
-        // Config file paths
+        // Config file paths like default config file, environment variable config file etc.
         std::vector<std::string> configFilePaths_;
+        // Name of config files, which are successfully loaded
+        std::vector<std::string> loadedConfigFiles_;
         // Application for which we are parsing the config file i.e. esmini, replayer etc.
         std::string applicationName_;
         // Argument count

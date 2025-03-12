@@ -17,9 +17,12 @@ namespace fs = std::experimental::filesystem;
 
 namespace esmini::common
 {
-    ConfigParser::ConfigParser(const std::string& applicationName, const std::vector<std::string>& configFilePaths)
+    ConfigParser::ConfigParser(const std::string&              applicationName,
+                               const std::vector<std::string>& configFilePaths,
+                               std::vector<std::string>&       loadedConfigFiles)
         : applicationName_(applicationName),
-          configFilePaths_(configFilePaths)
+          configFilePaths_(configFilePaths),
+          loadedConfigFiles_(loadedConfigFiles)
     {
     }
 
@@ -34,7 +37,7 @@ namespace esmini::common
             // exactly in the place where the reference was found, so the order of the configs_ is preserved
             if (key == CONFIG_FILE_OPTION_NAME && !value.empty())
             {
-                ConfigParser anotherFileParser(applicationName_, {value});
+                ConfigParser anotherFileParser(applicationName_, {value}, loadedConfigFiles_);
                 const auto   anotherConfigs = anotherFileParser.Parse();
                 configs_.insert(configs_.end(), std::make_move_iterator(anotherConfigs.begin()), std::make_move_iterator(anotherConfigs.end()));
                 return;
@@ -113,7 +116,7 @@ namespace esmini::common
                 {
                     LOG_ERROR("Failed to load config {}: {}", configFilePaths_[i], e.what());
                 }
-                LOG_INFO("Loaded config: {}", configFilePaths_[i]);
+                loadedConfigFiles_.push_back(configFilePaths_[i]);
             }
             else
             {

@@ -92,7 +92,7 @@ namespace esmini::common
         std::vector<std::string> allConfigs;
 
         // parse default config file and environment variable config files
-        esmini::common::ConfigParser parser(applicationName_, configFilePaths_);
+        esmini::common::ConfigParser parser(applicationName_, configFilePaths_, loadedConfigFiles_);
         allConfigs = parser.Parse();
 
         // there is a possibility that the config file path is already set in options, maybe through the api call
@@ -101,7 +101,7 @@ namespace esmini::common
         const auto& configFilePaths = opt.GetOptionArgs(CONFIG_FILE_OPTION_NAME);
         for (auto rItr = configFilePaths.rbegin(); rItr != configFilePaths.rend(); ++rItr)
         {
-            esmini::common::ConfigParser configParser(applicationName_, {*rItr});
+            esmini::common::ConfigParser configParser(applicationName_, {*rItr}, loadedConfigFiles_);
             auto                         configs = configParser.Parse();
             allConfigs.insert(allConfigs.end(), std::make_move_iterator(configs.begin()), std::make_move_iterator(configs.end()));
         }
@@ -113,7 +113,7 @@ namespace esmini::common
             if (strcmp(configFilePathOption.c_str(), argv_[i]) == 0 && i < argc_ - 1)  // we protect against buffer overflow
             {
                 // now we can parse config file here
-                esmini::common::ConfigParser configParser(applicationName_, {argv_[i + 1]});
+                esmini::common::ConfigParser configParser(applicationName_, {argv_[i + 1]}, loadedConfigFiles_);
                 auto                         configs = configParser.Parse();
 
                 // we need to wipe out the config file path from the arguments, so that they wont be consumed again
@@ -139,6 +139,14 @@ namespace esmini::common
         AppendArgcArgv(1, allConfigs);
         // perform final argument check, resolving conflicts and prioritization
         PostProcessArgs();
+    }
+
+    void Config::LogLoadedConfigFiles() const
+    {
+        for (const auto& file : loadedConfigFiles_)
+        {
+            LOG_INFO("Loaded config: {} ({})", fs::canonical(file).c_str(), file);
+        }
     }
 
     void Config::PostProcessArgs()
