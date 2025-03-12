@@ -323,7 +323,7 @@ void ScenarioPlayer::ScenarioPostFrame()
 
             if ((GetCounter() - 1) % osi_freq_ == 0)
             {
-                osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_, 0);
+                osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
             }
 
             osiReporter->UpdateOSITrafficCommand();
@@ -1263,6 +1263,10 @@ int ScenarioPlayer::Init()
 #ifdef _USE_OSI
     opt.AddOption("osi_file", "Save osi trace file", "filename", DEFAULT_OSI_TRACE_FILENAME);
     opt.AddOption("osi_freq", "Decrease OSI file entries, e.g. --osi_freq 2 -> OSI written every two simulation steps", "frequency");
+    opt.AddOption("osi_static_logging",
+                  "Decide how the static data should be reported, 0=Default (first frame), 1=API (expose on API) 2=API_AND_LOG (Always log)",
+                  "mode",
+                  "0");
     opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
     opt.AddOption("osi_points", "Show OSI road points. Toggle key 'y'");
     opt.AddOption("osi_receiver_ip", "IP address where to send OSI UDP packages", "IP address", "127.0.0.1");
@@ -1682,6 +1686,17 @@ int ScenarioPlayer::Init()
         }
         osi_freq_ = atoi(arg_str.c_str());
         LOG_INFO("Run simulation decoupled from realtime, with fixed timestep: {:.2f}", GetFixedTimestep());
+    }
+
+    if ((arg_str = opt.GetOptionArg("osi_static_logging")) != "")
+    {
+        if (!osiReporter->IsFileOpen())
+        {
+            LOG_ERROR("Specifying osi static data logging without --osi_file on is not possible");
+            return -1;
+        }
+        osiReporter->SetOSIReportMode(atoi(arg_str.c_str()));
+        LOG_INFO("OSI static data logging mode: {}", arg_str);
     }
 #endif  // _USE_OSI
 
