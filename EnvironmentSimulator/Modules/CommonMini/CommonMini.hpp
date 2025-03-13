@@ -663,6 +663,37 @@ void SwapByteOrder(unsigned char* buf, int data_type_size, int buf_size);
 
 bool IsNumber(const std::string& str, int max_digits = -1);
 
+/**
+ * Checks if a given string conforms to the ISO 8601 combined date and time representation format.
+ * Specifically, the format is: YYYY-MM-DDTHH:MM:SS.mmm+ZZZZ or YYYY-MM-DDTHH:MM:SS.mmm-ZZZZ.
+ */
+bool IsValidDateTimeFormat(const std::string& dateTimeString);
+
+/**
+ * Make (use IsValidDateTimeFormat funtion)sure that the given string is a valid date and time string in the ISO 8601 combined date and time
+ * representation format. Extracts the number of seconds since midnight from a string in the ISO 8601 combined date and time representation format.
+ * Specifically, the format is: YYYY-MM-DDTHH:MM:SS.mmm+ZZZZ or YYYY-MM-DDTHH:MM:SS.mmm-ZZZZ.
+ */
+uint32_t GetSecondsSinceMidnight(const std::string& dateTimeString);
+
+/**
+ * Make (use IsValidDateTimeFormat funtion)sure that the given string is a valid date and time string in the ISO 8601 combined date and time
+ * representation format. Extracts the number of seconds that have elapsed since January 1, 1970 (midnight UTC/GMT [1]), not counting leap seconds [2]
+ * Specifically, the format is: YYYY-MM-DDTHH:MM:SS.mmm+ZZZZ or YYYY-MM-DDTHH:MM:SS.mmm-ZZZZ.
+ */
+int64_t GetEpochTimeFromString(const std::string& dateTimeStr);
+
+/**
+ * Converts a time in seconds to a sun intensity factor.
+ * The sun intensity factor is calculated based on the time of day, where 0 seconds corresponds to midnight (00:00:00)
+ * and 86400 seconds corresponds to the end of the day (23:59:59).
+ * The function uses a sine function to model the sun's intensity throughout the day.
+ *
+ * @param seconds The time in seconds since midnight (00:00:00).
+ * @return The sun intensity factor, which ranges from 0.0 to 1.0.
+ */
+double GetSecondsToFactor(int seconds);
+
 #if (defined WINVER && WINVER == _WIN32_WINNT_WIN7)
 #else
 #include <thread>

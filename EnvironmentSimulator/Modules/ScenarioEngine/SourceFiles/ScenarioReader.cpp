@@ -2148,6 +2148,7 @@ int ScenarioReader::ParseTransitionDynamics(pugi::xml_node node, OSCPrivateActio
 
 OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode, Event *parent)
 {
+    LOG_INFO("Parse global Action");
     OSCGlobalAction *action = 0;
 
     if (actionNode.first_child() == 0)
@@ -2319,9 +2320,29 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
         else if (actionChild.name() == std::string("EnvironmentAction"))
         {
             EnvironmentAction *envAction = new EnvironmentAction(parent);
-            ParseOSCEnvironment(actionChild.child("Environment"), &envAction->new_environment_);
+            for (pugi::xml_node envChild = actionChild.first_child(); envChild; envChild = envChild.next_sibling())
+            {
+                if (envChild.name() == std::string("Environment"))
+                {
+                    ParseOSCEnvironment(envChild, envAction->new_environment_);
+                }
+                else if (envChild.name() == std::string("CatalogReference"))
+                {
+                    Entry *entry = ResolveCatalogReference(envChild);
+                    if (entry == nullptr)
+                    {
+                        LOG_WARN("Ignoring CatalogReference in environment, Failed to resolve catalog reference");
+                        continue;
+                    }
+                    ParseOSCEnvironment(entry->GetNode(), envAction->new_environment_);
+                }
+                else
+                {
+                    LOG_WARN("Unsupported EnvironmentAction {}", envChild.name());
+                }
+            }
             envAction->SetEnvironment(environment_);
-            LOG_INFO("Parsing OSC Environment with node %s", actionChild.name());
+            LOG_INFO("Parsing OSC Environment with node {}", actionChild.name());
 
             action = envAction;
         }
@@ -4841,44 +4862,58 @@ int ScenarioReader::parseStoryBoard(StoryBoard &storyBoard)
     return 0;
 }
 
-static int selectCloudState(scenarioengine::CloudState &state, const std::string &cloudStateStr)
+static void SelectCloudState(scenarioengine::CloudState &state, const std::string &cloudStateStr)
 {
     // Helper function for parseOSCEnvironment
     using scenarioengine::CloudState;
     std::map<std::string, CloudState> stateMap{
-        {"cloudless", CloudState::CLOUDLESS},
-        {"sunne", CloudState::SUNNY},
-        {"serene", CloudState::SERENE},
-        {"slightly_cloudy", CloudState::SLIGHTLY_CLOUDY},
-        {"light_cloudy", CloudState::LIGHT_CLOUDY},
         {"cloudy", CloudState::CLOUDY},
-        {"heavily_cloudy", CloudState::HEAVILY_CLOUDY},
-        {"almost_overcast", CloudState::ALMOST_OVERCAST},
+        {"free", CloudState::FREE},
         {"overcast", CloudState::OVERCAST},
-        {"sky_not_visible", CloudState::SKY_NOT_VISIBLE},
+        {"rainy", CloudState::RAINY},
+        {"skyOff", CloudState::SKYOFF},
     };
 
     auto it = stateMap.find(cloudStateStr);
     if (it == stateMap.end())
     {
-        LOG_WARN("Not valid cloud state name:%s", cloudStateStr.c_str());
-        return -1;
+        LOG_WARN("Not valid cloud state name:{}, Set to other", cloudStateStr);
+        state = CloudState::OTHER;
     }
-
-    state = stateMap[cloudStateStr];
-    return 1;
+    else
+    {
+        state = stateMap[cloudStateStr];
+    }
 }
 
-void ScenarioReader::ParseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvironment *env)
+void ScenarioReader::ParseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvironment &env)
 {
     for (pugi::xml_node envChild : xml_node.children())
     {
         std::string envChildName(envChild.name());
-        if (envChildName == "TimeOfDay")
+        if (envChildName == "ParameterDeclarations")
         {
-            bool        animation = (parameters.ReadAttribute(envChild, "animation") == "True") ? true : false;
-            std::string tod       = parameters.ReadAttribute(envChild, "dateTime");
-            env->SetTimeOfDay(animation, tod);
+            parameters.addParameterDeclarations(envChild);
+        }
+        else if (envChildName == "TimeOfDay")
+        {
+            bool animation = (parameters.ReadAttribute(envChild, "animation") == "true") ? true : false;
+            LOG_INFO("TimeOfDay animation: {}", animation);
+            if (const auto &val = parameters.ReadAttribute(envChild, "dateTime"); !val.empty())
+            {
+                if (IsValidDateTimeFormat(val))
+                {
+                    env.SetTimeOfDay(TimeOfDay{animation, val});
+                }
+                else
+                {
+                    LOG_WARN("Ignorning TimeOfDay in envirnoment, attribute {} is not in valid format", envChildName);
+                }
+            }
+            else
+            {
+                LOG_WARN("Ignorning TimeOfDay in envirnoment, attribute {} is empty or missing", envChildName);
+            }
         }
         else if (envChildName == "Weather")
         {
@@ -4887,26 +4922,41 @@ void ScenarioReader::ParseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                 std::string weatherAttrName(weatherAttr.name());
                 if (weatherAttrName == "atmosphericPressure")
                 {
-                    std::string atmosphericPressure = parameters.ReadAttribute(envChild, "atmosphericPressure");
-                    env->SetAtmosphericPressure(std::stof(atmosphericPressure));
+                    if (const auto &val = parameters.ReadAttribute(envChild, "atmosphericPressure"); !val.empty())
+                    {
+                        env.SetAtmosphericPressure(std::stod(val));
+                    }
                 }
                 else if (weatherAttrName == "cloudState")
                 {
-                    std::string                cloudStateStr = parameters.ReadAttribute(envChild, "cloudState");
-                    scenarioengine::CloudState cloudState;
-                    if (selectCloudState(cloudState, cloudStateStr) > 0)
+                    if (const auto &val = parameters.ReadAttribute(envChild, "cloudState"); !val.empty())
                     {
-                        env->SetCloudState(cloudState);
+                        if (GetVersionMajor() == 1 && GetVersionMinor() <= 1)
+                        {
+                            LOG_WARN("cloudState is deprecated in v1.2. Use fractionalCloudCover instead, Accepting it anyway.");
+                        }
+                        scenarioengine::CloudState cloudState;
+                        SelectCloudState(cloudState, val);
+                        env.SetCloudState(cloudState);
+                    }
+                }
+                else if (weatherAttrName == "fractionalCloudCover")
+                {
+                    if (const auto &val = parameters.ReadAttribute(envChild, "fractionalCloudCover"); !val.empty())
+                    {
+                        env.SetFractionalCloudState(val);
                     }
                 }
                 else if (weatherAttrName == "temperature")
                 {
-                    std::string temperature = parameters.ReadAttribute(envChild, "temperature");
-                    env->SetTemperature(std::stof(temperature));
+                    if (const auto &val = parameters.ReadAttribute(envChild, "temperature"); !val.empty())
+                    {
+                        env.SetTemperature(std::stod(val));
+                    }
                 }
                 else
                 {
-                    LOG_WARN("Not valid weather property name:%s", weatherAttrName.c_str());
+                    LOG_WARN("Not valid weather property name:{}", weatherAttrName);
                 }
             }
 
@@ -4915,31 +4965,52 @@ void ScenarioReader::ParseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                 std::string weatherChildName(weatherChild.name());
                 if (weatherChildName == "Sun")
                 {
-                    std::string azimuth   = parameters.ReadAttribute(weatherChild, "azimuth");
-                    std::string elevation = parameters.ReadAttribute(weatherChild, "elevation");
-                    std::string intensity = parameters.ReadAttribute(weatherChild, "intensity");
+                    std::string azimuth        = parameters.ReadAttribute(weatherChild, "azimuth");
+                    std::string elevation      = parameters.ReadAttribute(weatherChild, "elevation");
+                    std::string intensityStr   = parameters.ReadAttribute(weatherChild, "intensity");
+                    std::string illuminanceStr = parameters.ReadAttribute(weatherChild, "illuminance");
 
-                    env->SetSun(std::stof(azimuth), std::stof(elevation), std::stof(intensity));
+                    if (azimuth.empty() || elevation.empty())
+                    {
+                        LOG_WARN("Ignorning Sun, attribute azimuth or elevation missing");
+                        continue;
+                    }
+                    if (!intensityStr.empty())
+                    {
+                        env.SetSun(Sun{std::stod(azimuth), std::stod(elevation), std::stod(intensityStr)});
+                    }
+                    else if (!illuminanceStr.empty())
+                    {
+                        env.SetSun(Sun{std::stod(azimuth), std::stod(elevation), std::stod(illuminanceStr)});
+                    }
+                    else
+                    {
+                        env.SetSun(Sun{std::stod(azimuth), std::stod(elevation), std::nullopt});
+                    }
                 }
                 else if (weatherChildName == "Fog")
                 {
                     std::string visualRange = parameters.ReadAttribute(weatherChild, "visualRange");
+                    if (visualRange.empty())
+                    {
+                        LOG_WARN("Ignorning Fog in wheather, mandatory attribute visualRange missing");
+                        continue;
+                    }
                     if (weatherChild.child("BoundingBox") != NULL)
                     {
                         OSCBoundingBox bb;
                         ParseOSCBoundingBox(bb, weatherChild);
-                        env->SetFog(std::stof(visualRange), bb);
+                        env.SetFog(Fog{std::stod(visualRange), bb});
                     }
                     else
                     {
-                        env->SetFog(std::stof(visualRange));
+                        env.SetFog(std::stod(visualRange));
                     }
                 }
                 else if (weatherChildName == "Precipitation")
                 {
-                    std::string                       precipIntensity = parameters.ReadAttribute(weatherChild, "precipitationIntensity");
-                    std::string                       precipTypeStr   = parameters.ReadAttribute(weatherChild, "precipitationType");
-                    scenarioengine::PrecipitationType precipType      = scenarioengine::PrecipitationType::DRY;
+                    std::string                       precipTypeStr = parameters.ReadAttribute(weatherChild, "precipitationType");
+                    scenarioengine::PrecipitationType precipType    = scenarioengine::PrecipitationType::DRY;
                     if (precipTypeStr == "dry")
                     {
                         precipType = scenarioengine::PrecipitationType::DRY;
@@ -4952,28 +5023,60 @@ void ScenarioReader::ParseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                     {
                         precipType = scenarioengine::PrecipitationType::SNOW;
                     }
-                    env->SetPrecipitation(std::stof(precipIntensity), precipType);
+                    else
+                    {
+                        LOG_WARN("Ignorning Precipitation in wheather, mandatory attribute precipitationType missing");
+                        continue;
+                    }
+
+                    if (const auto &intensity = parameters.ReadAttribute(weatherChild, "intensity"); !intensity.empty())
+                    {
+                        if (GetVersionMajor() == 1 && GetVersionMinor() <= 0)
+                        {
+                            LOG_WARN("In Precipitation, intensity is deprecated in v1.1. Use precipitationIntensity instead, Accepting it anyway.");
+                        }
+                        env.SetPrecipitation(Precipitation{std::stod(intensity), precipType});
+                    }
+                    else if (const auto &val = parameters.ReadAttribute(weatherChild, "precipitationIntensity"); !val.empty())
+                    {
+                        env.SetPrecipitation(Precipitation{std::stod(val), precipType});
+                    }
+                    else
+                    {
+                        env.SetPrecipitation(Precipitation{std::nullopt, precipType});
+                    }
                 }
                 else if (weatherChildName == "Wind")
                 {
                     std::string direction = parameters.ReadAttribute(weatherChild, "direction");
                     std::string speed     = parameters.ReadAttribute(weatherChild, "speed");
-                    env->SetWind(std::stof(direction), std::stof(speed));
+                    if (direction.empty() || speed.empty())
+                    {
+                        LOG_WARN("Ignorning Wind in wheather, mandatory attribute direction or speed missing");
+                        continue;
+                    }
+                    env.SetWind(Wind{std::stod(direction), std::stod(speed)});
                 }
                 else
                 {
-                    LOG_WARN("Not valid weather property name:%s", weatherChildName.c_str());
+                    LOG_WARN("Not valid weather property name:{}", weatherChildName);
                 }
             }
         }
         else if (envChildName == "RoadCondition")
         {
             std::string friction = parameters.ReadAttribute(envChild, "frictionScaleFactor");
-            env->SetRoadCondition(std::stof(friction));
+            if (friction.empty())
+            {
+                LOG_WARN("Ignorning {} in Envirnoment, mandatory attribute frictionScaleFactor missing", envChildName);
+                continue;
+            }
+            env.SetRoadCondition(std::stod(friction));
         }
         else
         {
-            LOG_WARN("Not valid environment attribute name:%s", envChildName.c_str());
+            LOG_WARN("Not valid environment attribute name:{}", envChildName);
         }
     }
+    parameters.RestoreParameterDeclarations();
 }

@@ -441,7 +441,8 @@ namespace viewer
         // Weather stuff
         osg::ref_ptr<osg::PositionAttitudeTransform> weatherGroup_;  // parent for all OSC Environment related stuff
         osg::ref_ptr<osg::PositionAttitudeTransform> fogBoundingBox_;
-        int                                          CreateWeatherGroup(scenarioengine::OSCEnvironment* environment);
+        int                                          CreateWeatherGroup(scenarioengine::OSCEnvironment& environment);
+        void                                         UpdateFrictonScaleFactorInMaterial(const double factor);
 
         std::string                   exe_path_;
         std::vector<KeyEventCallback> callback_;
@@ -582,7 +583,9 @@ namespace viewer
             return osg_screenshot_event_handler_;
         }
 
-        void Frame(double time);
+        void   Frame(double time);
+        void   SetFrictionScaleFactor(const double factor);
+        double GetFrictionScaleFactor() const;
 
     private:
         bool                                         CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
@@ -599,10 +602,8 @@ namespace viewer
                                                                 bool                                       decoration,
                                                                 int                                        screenNum,
                                                                 bool                                       headless);
-        int                                          CreateFogBoundingBox(osg::PositionAttitudeTransform* parent);
-        int                                          CreateFog(double range);
-        int                                          UpdateTimeOfDay(double intensity);
-        void                                         SetSunLight(float sunIntensity);
+        void                                         CreateFog(const double range);
+        void SetSkyColour(const double sunIntensityFactor, const double fogVishualRangeFoctor, const double ClodinessFactor);
 
         int                                   AddGroundSurface();
         bool                                  keyUp_;
@@ -616,6 +617,7 @@ namespace viewer
         osgViewer::ViewerBase::ThreadingModel initialThreadingModel_;
         bool                                  stand_in_model_;
         double                                time_;
+        double                                frictionScaleFactor_ = 1.0;
 
         struct
         {

@@ -24,6 +24,7 @@
 
 #define PARAMPOLY3_STEPS 100
 #define FRICTION_DEFAULT 1.0
+#define FRICTION_MAX     5.0
 
 namespace roadmanager
 {
