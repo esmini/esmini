@@ -143,10 +143,6 @@ namespace scenarioengine
 #endif
         void AddOSIDetection(int object_index);
         void SteeringSensorSetVisible(int object_index, bool value);
-        void SetOSIFreq(int frequency)
-        {
-            osi_freq_ = frequency;
-        }
         void SetFixedTimestep(double timestep)
         {
             fixed_timestep_ = timestep;
@@ -154,10 +150,6 @@ namespace scenarioengine
         double GetFixedTimestep()
         {
             return fixed_timestep_;
-        }
-        int GetOSIFreq()
-        {
-            return osi_freq_;
         }
         void        RegisterObjCallback(int id, ObjCallbackFunc func, void *data);
         void        UpdateCSV_Log();
@@ -270,7 +262,6 @@ namespace scenarioengine
         bool        launch_server;
         bool        disable_controllers_;
         double      fixed_timestep_;
-        int         osi_freq_;
         int         frame_counter_;
         std::string osi_receiver_addr;
         bool        osi_updated_;

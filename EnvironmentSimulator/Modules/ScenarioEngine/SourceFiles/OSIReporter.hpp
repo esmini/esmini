@@ -49,12 +49,12 @@ public:
         StoryBoardElement::Transition transition;
     } TrafficCommandStateChange;
 
-    typedef enum
+    enum class OSIStaticReportMode
     {
         DEFAULT,
         API,
         API_AND_LOG,
-    } OSIStaticUpdateMode;
+    };
 
     /**
     Creates and opens osi file
@@ -74,20 +74,9 @@ public:
     */
     void FlushOSIFile();
     /**
-    Clears groundtruth osi
+    Decide how the static data should be handled during each frame
     */
-    int ClearOSIGroundTruth();
-
-    void SetOSIReportMode(int mode)
-    {
-        if (mode > 2)
-        {
-            LOG_WARN("Invalid OSI report mode, setting to default");
-            mode = 0;
-        }
-        static_update_mode_ = static_cast<OSIStaticUpdateMode>(mode);
-    }
-
+    void SetOSIStaticReportMode(OSIStaticReportMode mode);
     /**
     Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
     */
@@ -171,6 +160,8 @@ public:
     idx_t             GetLaneIdxfromIdOSI(id_t lane_id);
     osi3::Lane*       GetOSILaneFromGlobalId(id_t lane_global_id);
     SE_SOCKET         OpenSocket(std::string ipaddr);
+    void              SerializeDynamicData();
+    void              SerializeDynamicAndStaticData();
     int               GetUDPClientStatus()
     {
         return (udp_client_ ? udp_client_->GetStatus() : -1);
@@ -180,11 +171,6 @@ public:
         return osi_file.is_open();
     }
     void ReportSensors(std::vector<ObjectSensor*> sensor);
-
-    void IncrementCounter()
-    {
-        osi_update_counter_++;
-    }
 
     void SetUpdated(bool value)
     {
@@ -196,9 +182,24 @@ public:
         return osi_updated_;
     }
 
+    void SetCounterPtr(int* counter)
+    {
+        osi_update_counter_ = counter;
+    }
+
     int GetCounter()
     {
-        return osi_update_counter_;
+        return osi_update_counter_ == nullptr ? -1 : *osi_update_counter_;
+    }
+
+    void SetOSIFrequency(int freq)
+    {
+        osi_freq_ = freq;
+    }
+
+    int GetOSIFrequency()
+    {
+        return osi_freq_;
     }
 
     /**
@@ -217,14 +218,14 @@ private:
     ScenarioEngine*        scenario_engine_;
     unsigned long long int nanosec_;
     std::ofstream          osi_file;
-    int                    osi_update_counter_;
+    int*                   osi_update_counter_ = nullptr;
+    int                    counter_offset_     = 0;
+    int                    osi_freq_           = 0;
     std::string            stationary_model_reference;
     void                   CreateMovingObjectFromSensorData(const osi3::SensorData& sd, int obj_nr);
     void                   CreateLaneBoundaryFromSensordata(const osi3::SensorData& sd, int lane_boundary_nr);
-    bool                   osi_updated_           = false;
-    bool                   osi_file_written_      = false;
-    int                    osi_static_gt_loaded_  = -1;
-    int                    osi_dynamic_gt_loaded_ = -1;
-    bool                   report_ghost_          = true;
-    OSIStaticUpdateMode    static_update_mode_    = DEFAULT;
+    bool                   osi_updated_        = false;
+    bool                   osi_initialized_    = false;
+    bool                   report_ghost_       = true;
+    OSIStaticReportMode    static_update_mode_ = OSIStaticReportMode::DEFAULT;
 };

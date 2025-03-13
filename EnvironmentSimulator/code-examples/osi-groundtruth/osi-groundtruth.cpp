@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
     const osi3::GroundTruth* gt;
 
     SE_EnableOSIFile(0);  // 0 or "" will result in default filename, ground_truth.osi
-    SE_SetOSIReportMode(SE_OSIStaticLogMode::DEFAULT);
+    SE_SetOSIStaticReportMode(SE_OSIStaticReportMode::DEFAULT);
 
     SE_Init("../resources/xosc/cut-in_simple.xosc", 0, 1, 0, 0);
 

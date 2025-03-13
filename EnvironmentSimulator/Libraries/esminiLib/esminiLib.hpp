@@ -341,7 +341,7 @@ typedef enum
     DEFAULT     = 0,
     API         = 1,
     API_AND_LOG = 2
-} SE_OSIStaticLogMode;
+} SE_OSIStaticReportMode;  // Must match roadmanager::OSIStaticReportMode
 
 #ifdef __cplusplus
 extern "C"
@@ -1444,15 +1444,15 @@ extern "C"
     SE_DLL_API void SE_FlushOSIFile();
 
     /**
-            The SE_ClearOSIGroundTruth clears the certain groundtruth data
-            This function should only be used together with SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth
+     *      Setting the OSI report mode of the static ground truth data. Default is applied if function not used.
+     *      @param mode DEFAULT=Static data in API and log first frame only, API=Static data always in API but only logged first frame and
+     API_AND_LOG=Static data always in API and logged.
             @return 0
     */
-
-    SE_DLL_API void SE_SetOSIReportMode(SE_OSIStaticLogMode mode = SE_OSIStaticLogMode::DEFAULT);
+    SE_DLL_API void SE_SetOSIStaticReportMode(SE_OSIStaticReportMode mode);
 
     /**
-     *      Setting whether the dynamic ground truth shall include the ghost vehicle or not (applicable when using a controller which has a ghost
+     *      Setting whether the dynamic ground truth shall include the ghost vehicle or not (only applicable when using a controller which has a ghost
      vehicle)
             @param includeGhost Flag to include ghost vehicle in dynamic ground truth (default is true)
             @return 0
@@ -1464,7 +1464,6 @@ extern "C"
      *      @param frequency Frequency of OSI data updates
             @return 0
      */
-
     SE_DLL_API int SE_SetOSIFrequency(int frequency);
 
     /**

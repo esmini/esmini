@@ -120,9 +120,6 @@ OSIReporter::OSIReporter(ScenarioEngine *scenarioengine)
     // Sensor Data
     obj_osi_internal.sd = new osi3::SensorData();
 
-    // Counter for OSI update
-    osi_update_counter_ = 0;
-
     nanosec_ = 0xffffffffffffffff;  // indicate not set
 }
 
@@ -278,59 +275,64 @@ void OSIReporter::FlushOSIFile()
         osi_file.flush();
     }
 }
+void OSIReporter::SetOSIStaticReportMode(OSIStaticReportMode mode)
+{
+    static_update_mode_ = mode;
+}
 
 int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)
 {
-    if (GetUpdated())
+    if (osi_initialized_ && (GetUpdated() || (GetCounter() - counter_offset_) % osi_freq_ != 0))
     {
         return 0;
     }
     osiGroundTruth.ground_truth.clear();
     osiGroundTruth.size = 0;
-    if (GetCounter() == 0)
+    if (!osi_initialized_)
     {
         UpdateOSIStaticGroundTruth(objectState);
         UpdateOSIDynamicGroundTruth(objectState);
-        obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
-        obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
 
         if (IsFileOpen() || GetUDPClientStatus() == 0)
         {
-            obj_osi_external.gt->SerializeToString(&osiGroundTruth.ground_truth);
-            osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
+            SerializeDynamicAndStaticData();
         }
+        // Merge for API
+        obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
+        obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
+
+        counter_offset_  = GetCounter();
+        osi_initialized_ = true;
     }
     else
     {
+        // We always want to update the dynamic ground truth
         UpdateOSIDynamicGroundTruth(objectState);
         obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
+
         switch (static_update_mode_)
         {
-            case DEFAULT:  // Only log and transmit dynamic ground truth
+            case OSIStaticReportMode::DEFAULT:  // Only log and transmit dynamic ground truth
                 if (IsFileOpen() || GetUDPClientStatus() == 0)
                 {
-                    obj_osi_internal.dynamic_gt->SerializeToString(&osiGroundTruth.ground_truth);
-                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
+                    SerializeDynamicData();
                 }
                 break;
-            case API:  // Log dynamic ground truth, serialize and transmit combined ground truth
+            case OSIStaticReportMode::API:  // Log dynamic ground truth, serialize and transmit combined ground truth
                 if (IsFileOpen() || GetUDPClientStatus() == 0)
                 {
-                    obj_osi_internal.dynamic_gt->SerializeToString(&osiGroundTruth.ground_truth);
-                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
+                    SerializeDynamicData();
                 }
 
-                obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
+                obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);  // Merge for API
                 break;
-            case API_AND_LOG:  // Log combined ground truth, serialze and transmit combined ground truth
+            case OSIStaticReportMode::API_AND_LOG:  // Log combined ground truth, serialze and transmit combined ground truth
                 if (IsFileOpen() || GetUDPClientStatus() == 0)
                 {
-                    obj_osi_internal.static_gt->SerializeToString(&osiGroundTruth.ground_truth);
-                    obj_osi_internal.dynamic_gt->AppendToString(&osiGroundTruth.ground_truth);
-                    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
+                    SerializeDynamicAndStaticData();
                 }
 
-                obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);
+                obj_osi_external.gt->MergeFrom(*obj_osi_internal.static_gt);  // Merge for API
                 break;
         }
     }
@@ -375,10 +377,22 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
         }
     }
 
-    IncrementCounter();
     SetUpdated(true);
 
     return 0;
+}
+
+void OSIReporter::SerializeDynamicData()
+{
+    obj_osi_internal.dynamic_gt->SerializeToString(&osiGroundTruth.ground_truth);
+    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
+}
+
+void OSIReporter::SerializeDynamicAndStaticData()
+{
+    obj_osi_internal.static_gt->SerializeToString(&osiGroundTruth.ground_truth);
+    obj_osi_internal.dynamic_gt->AppendToString(&osiGroundTruth.ground_truth);
+    osiGroundTruth.size = static_cast<unsigned int>(osiGroundTruth.ground_truth.size());
 }
 
 int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)

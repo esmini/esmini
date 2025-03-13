@@ -1553,16 +1553,16 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API void SE_SetOSIReportMode(SE_OSIStaticLogMode mode)
+    SE_DLL_API void SE_SetOSIStaticReportMode(SE_OSIStaticReportMode mode)
     {
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            player->osiReporter->SetOSIReportMode(static_cast<int>(mode));
+            player->osiReporter->SetOSIStaticReportMode(static_cast<OSIReporter::OSIStaticReportMode>(mode));
         }
         else
         {
-            SE_Env::Inst().GetOptions().SetOptionValue("osi_static_reporting", std::to_string(static_cast<int>(mode)));
+            SE_Env::Inst().GetOptions().SetOptionValue("osi_static_reporting", std::to_string(mode));
         }
 #else
         (void)mode;
@@ -1575,9 +1575,9 @@ extern "C"
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            if (player->GetOSIFreq() == 0)
+            if (player->osiReporter->GetOSIFrequency() == 0)
             {
-                player->SetOSIFreq(1);
+                player->osiReporter->SetOSIFrequency(1);
             }
             player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
             return player->osiReporter->GetOSIGroundTruth(size);
@@ -1595,9 +1595,9 @@ extern "C"
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            if (player->GetOSIFreq() == 0)
+            if (player->osiReporter->GetOSIFrequency() == 0)
             {
-                player->SetOSIFreq(1);
+                player->osiReporter->SetOSIFrequency(1);
             }
             player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
             return player->osiReporter->GetOSIGroundTruthRaw();
@@ -1721,7 +1721,7 @@ extern "C"
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            player->SetOSIFreq(frequency);
+            player->osiReporter->SetOSIFrequency(frequency);
         }
         else
         {
