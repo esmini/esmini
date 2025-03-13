@@ -243,7 +243,7 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
     normal_log("OSMP","No TrafficUpdate received.");
   }
 
-  SE_SetOSIReportMode(SE_OSIStaticLogMode::API);
+  SE_SetOSIReportMode(SE_OSIStaticReportMode::API);
 
   // Run simulation step
   if (SE_StepDT((float)communicationStepSize) != 0)
