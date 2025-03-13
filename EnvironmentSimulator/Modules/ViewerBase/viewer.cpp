@@ -30,6 +30,8 @@
 #include <osgUtil/SmoothingVisitor>
 #include <osgUtil/Tessellator>  // to tessellate multiple contours
 #include <osgUtil/Optimizer>    // to flatten transform nodes
+#include <osg/Fog>
+#include "OSCEnvironment.hpp"
 
 #define SHADOW_SCALE                       1.20
 #define SHADOW_MODEL_FILEPATH              "shadow_face.osgb"
@@ -49,6 +51,17 @@
 #define PERSP_FOV                          30.0
 #define ORTHO_FOV                          1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
+
+float  color_green[3]      = {0.2f, 0.6f, 0.3f};
+float  color_gray[3]       = {0.7f, 0.7f, 0.7f};
+float  color_dark_gray[3]  = {0.5f, 0.5f, 0.5f};
+float  color_light_gray[3] = {0.7f, 0.7f, 0.7f};
+float  color_red[3]        = {0.8f, 0.3f, 0.3f};
+float  color_black[3]      = {0.2f, 0.2f, 0.2f};
+float  color_blue[3]       = {0.25f, 0.38f, 0.7f};
+float  color_yellow[3]     = {0.75f, 0.7f, 0.4f};
+float  color_white[3]      = {1.0f, 1.0f, 0.9f};
+double color_background[3] = {0.5f, 0.75f, 1.0f};
 
 // cppcheck-suppress unknownMacro
 // The following macros are defined by the framework or plugin system and are correctly expanded during compilation.
@@ -1435,7 +1448,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     if (!clear_color)
     {
         // Default background color
-        camera->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 1.0f));
+        // camera->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 1.0f)); currrnt code, check if it is needed
+        camera->setClearColor(osg::Vec4(color_background[0], color_background[1], color_background[2], 1.0f));
     }
     else
     {
@@ -1723,11 +1737,11 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     // Light
     osgViewer_->setLightingMode(osg::View::LightingMode::SKY_LIGHT);
     osg::Light* light = osgViewer_->getLight();
-    light->setPosition(osg::Vec4(-7500.0 + origin_[0], 5000.0 + origin_[1], 10000.0, 1.0));
+    light->setPosition(osg::Vec4(-7500., 5000., 10000., 1.0));
     light->setDirection(osg::Vec3(7.5, -5., -10.));
     float ambient = 0.4f;
-    light->setAmbient(osg::Vec4(ambient, ambient, 0.9f * ambient, 1.0f));
-    light->setDiffuse(osg::Vec4(0.8f, 0.8f, 0.7f, 1.0f));
+    light->setAmbient(osg::Vec4(ambient, ambient, 0.9 * ambient, 1));
+    light->setDiffuse(osg::Vec4(0.8, 0.8, 0.7, 1));
 
     // Overlay text
     float font_size = 12.0f;
@@ -1774,6 +1788,95 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     initialThreadingModel_ = osgViewer_->getThreadingModel();
 
     osgViewer_->realize();
+}
+
+int Viewer::CreateFog(double range)
+{
+    osg::ref_ptr<osg::Fog> fog = new osg::Fog;
+    fog->setMode(osg::Fog::EXP);
+    fog->setDensity(1 / range);
+    fog->setStart(static_cast<float>(-range));
+    fog->setEnd(static_cast<float>(range));
+    fog->setColor(osg::Vec4(0.6f, 0.6f, 0.6f, 1.0f));
+    rootnode_->getOrCreateStateSet()->setAttributeAndModes(fog.get());
+
+    return 0;
+}
+
+int Viewer::CreateFogBoundingBox(osg::PositionAttitudeTransform* parent)
+{
+    fogBoundingBox_ = new osg::PositionAttitudeTransform;
+    fogBoundingBox_->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
+
+    osg::ref_ptr<osg::ShapeDrawable> box = new osg::ShapeDrawable;
+    //	box->setShape(new osg::Box(osg::Vec3(0, 0, 0), 20, 30, 40));   // center(x, y, z), x, y, z
+    box->setShape(new osg::Box());
+    box->setColor(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0f));
+
+    osg::ref_ptr<osg::Geode> boxGeode = new osg::Geode;
+    boxGeode->addDrawable(box.get());
+    fogBoundingBox_->addChild(boxGeode.get());
+    fogBoundingBox_->setScale(osg::Vec3(10, 20, 30));
+    fogBoundingBox_->setPosition(osg::Vec3(0, 0, 15));
+
+    // Draw wireframe
+    osg::PolygonMode* polygonMode = new osg::PolygonMode;
+    polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+    osg::ref_ptr<osg::StateSet> stateset = fogBoundingBox_->getOrCreateStateSet();  // Get the StateSet of the group
+    stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+    stateset->setDataVariance(osg::Object::DYNAMIC);
+
+    parent->addChild(fogBoundingBox_.get());
+
+    return 0;
+}
+
+int Viewer::UpdateTimeOfDay(double intensity)
+{
+    osgViewer_->getCamera()->setClearColor(
+        osg::Vec4(intensity * color_background[0], intensity * color_background[1], intensity * color_background[2], 0.0f));
+
+    osg::Light* light = osgViewer_->getLight();
+    light->setAmbient(osg::Vec4(0.4, 0.4, 0.9 * 0.4, 1));
+    light->setDiffuse(osg::Vec4(0.2, 0.8, 0.7, 1));
+
+    osgViewer_->getCamera()->setClearColor(osg::Vec4(0.5f, 0.1f, 1.0f, 0.0f));
+
+    return 0;
+}
+
+void Viewer::SetSunLight(float sunIntensity)
+{
+    sunIntensity      = sunIntensity / 10000;
+    osg::Light* light = osgViewer_->getLight();
+    light->setDiffuse(osg::Vec4(0.9 * sunIntensity - 0.1, 0.9 * sunIntensity - 0.1, 0.8 * sunIntensity - 0.1, 1));
+
+    float r = 0.5 * sunIntensity;
+    float g = 0.75 * sunIntensity;
+    float b = 0.8 * sunIntensity + 0.2;
+
+    osgViewer_->getCamera()->setClearColor(osg::Vec4(r, g, b, 0.0f));
+}
+
+int Viewer::CreateWeatherGroup(scenarioengine::OSCEnvironment* environment)
+{
+    weatherGroup_ = new osg::PositionAttitudeTransform;
+    // CreateFogBoundingBox(weatherGroup_);
+    if (environment->IsFog())
+    {
+        scenarioengine::Fog* fog = environment->GetFog();
+        CreateFog(fog->visibility_range);
+    }
+
+    if (environment->IsSun())
+    {
+        scenarioengine::Sun* sun = environment->GetSun();
+        SetSunLight(sun->intensity);
+    }
+
+    rootnode_->addChild(weatherGroup_);
+
+    return 0;
 }
 
 Viewer::~Viewer()

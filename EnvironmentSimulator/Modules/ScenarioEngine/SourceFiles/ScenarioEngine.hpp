@@ -24,6 +24,7 @@
 #include "ScenarioGateway.hpp"
 #include "ScenarioReader.hpp"
 #include "RoadNetwork.hpp"
+#include "OSCEnvironment.hpp"
 
 namespace scenarioengine
 {
@@ -49,6 +50,7 @@ namespace scenarioengine
         Entities                   entities_;
         std::vector<CollisionPair> collision_pair_;
         std::vector<OSCAction *>  *injected_actions_;
+        OSCEnvironment             environment;
 
         ScenarioEngine(std::string oscFilename, bool disable_controllers = false);
         ScenarioEngine(const pugi::xml_document &xml_doc, bool disable_controllers = false);
