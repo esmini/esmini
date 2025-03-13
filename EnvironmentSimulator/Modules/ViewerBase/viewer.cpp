@@ -1790,93 +1790,79 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osgViewer_->realize();
 }
 
-int Viewer::CreateFog(double range)
+void Viewer::CreateFog(const double range)
 {
     osg::ref_ptr<osg::Fog> fog = new osg::Fog;
     fog->setMode(osg::Fog::EXP);
     fog->setDensity(1 / range);
     fog->setStart(static_cast<float>(-range));
     fog->setEnd(static_cast<float>(range));
-    fog->setColor(osg::Vec4(0.6f, 0.6f, 0.6f, 1.0f));
+    fog->setColor(osg::Vec4(0.1f, 0.1f, 0.1f, 1.0f));
     rootnode_->getOrCreateStateSet()->setAttributeAndModes(fog.get());
-
-    return 0;
 }
 
-int Viewer::CreateFogBoundingBox(osg::PositionAttitudeTransform* parent)
+void viewer::Viewer::SetSkyColour(const double sunIntensityFactor, const double fogVishualRangeFoctor, const double ClodinessFactor)
 {
-    fogBoundingBox_ = new osg::PositionAttitudeTransform;
-    fogBoundingBox_->getOrCreateStateSet()->setMode(GL_RESCALE_NORMAL, osg::StateAttribute::ON);
-
-    osg::ref_ptr<osg::ShapeDrawable> box = new osg::ShapeDrawable;
-    //	box->setShape(new osg::Box(osg::Vec3(0, 0, 0), 20, 30, 40));   // center(x, y, z), x, y, z
-    box->setShape(new osg::Box());
-    box->setColor(osg::Vec4(0.0f, 0.0f, 1.0f, 1.0f));
-
-    osg::ref_ptr<osg::Geode> boxGeode = new osg::Geode;
-    boxGeode->addDrawable(box.get());
-    fogBoundingBox_->addChild(boxGeode.get());
-    fogBoundingBox_->setScale(osg::Vec3(10, 20, 30));
-    fogBoundingBox_->setPosition(osg::Vec3(0, 0, 15));
-
-    // Draw wireframe
-    osg::PolygonMode* polygonMode = new osg::PolygonMode;
-    polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-    osg::ref_ptr<osg::StateSet> stateset = fogBoundingBox_->getOrCreateStateSet();  // Get the StateSet of the group
-    stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-    stateset->setDataVariance(osg::Object::DYNAMIC);
-
-    parent->addChild(fogBoundingBox_.get());
-
-    return 0;
-}
-
-int Viewer::UpdateTimeOfDay(double intensity)
-{
-    osgViewer_->getCamera()->setClearColor(
-        osg::Vec4(intensity * color_background[0], intensity * color_background[1], intensity * color_background[2], 0.0f));
-
+    // LOG_INFO("SetSkyColour: sunIntensityFactor: {}, fogVishualRangeFoctor: {}, ClodinessFactor: {}", sunIntensityFactor, fogVishualRangeFoctor,
+    // ClodinessFactor);
+    double FogAndCloudFactor = CLAMP(0.0, 1.0, fogVishualRangeFoctor + ClodinessFactor);
+    // LOG_INFO("SetSkyColour: FogAndCloudFactor: {}", FogAndCloudFactor);
     osg::Light* light = osgViewer_->getLight();
-    light->setAmbient(osg::Vec4(0.4, 0.4, 0.9 * 0.4, 1));
-    light->setDiffuse(osg::Vec4(0.2, 0.8, 0.7, 1));
-
-    osgViewer_->getCamera()->setClearColor(osg::Vec4(0.5f, 0.1f, 1.0f, 0.0f));
-
-    return 0;
-}
-
-void Viewer::SetSunLight(float sunIntensity)
-{
-    sunIntensity      = sunIntensity / 10000;
-    osg::Light* light = osgViewer_->getLight();
-    light->setDiffuse(osg::Vec4(0.9 * sunIntensity - 0.1, 0.9 * sunIntensity - 0.1, 0.8 * sunIntensity - 0.1, 1));
-
-    float r = 0.5 * sunIntensity;
-    float g = 0.75 * sunIntensity;
-    float b = 0.8 * sunIntensity + 0.2;
-
+    light->setDiffuse(osg::Vec4(0.9 * sunIntensityFactor - 0.1, 0.9 * sunIntensityFactor - 0.1, 0.8 * sunIntensityFactor - 0.1, 1));
+    float r = sunIntensityFactor * ((1 - FogAndCloudFactor) * color_background[0] + (FogAndCloudFactor * color_dark_gray[0]));
+    float g = sunIntensityFactor * ((1 - FogAndCloudFactor) * color_background[1] + (FogAndCloudFactor * color_dark_gray[1]));
+    float b = sunIntensityFactor * ((1 - FogAndCloudFactor) * color_background[2] + (FogAndCloudFactor * color_dark_gray[2]));
+    // LOG_INFO("SetSkyColour: r: {}, g: {}, b: {}", r, g, b);
     osgViewer_->getCamera()->setClearColor(osg::Vec4(r, g, b, 0.0f));
 }
 
-int Viewer::CreateWeatherGroup(scenarioengine::OSCEnvironment* environment)
+int Viewer::CreateWeatherGroup(scenarioengine::OSCEnvironment& environment)
 {
+    LOG_INFO("updated environment in viewer");
+    environment.SetEnvironmentUpdatedInViewer(true);
     weatherGroup_ = new osg::PositionAttitudeTransform;
-    // CreateFogBoundingBox(weatherGroup_);
-    if (environment->IsFog())
+    if (environment.IsFogSet())
     {
-        scenarioengine::Fog* fog = environment->GetFog();
-        CreateFog(fog->visibility_range);
+        CreateFog(environment.GetFog().visibility_range);
     }
 
-    if (environment->IsSun())
+    SetSkyColour(environment.GetSunIntensityFactor(), environment.GetFogVisibilityRangeFactor(), environment.GetFractionalCloudStateFactor());
+    if (environment.IsRoadConditionSet())
     {
-        scenarioengine::Sun* sun = environment->GetSun();
-        SetSunLight(sun->intensity);
+        UpdateFrictonScaleFactorInMaterial(environment.GetRoadCondition().frictionscalefactor);
     }
 
     rootnode_->addChild(weatherGroup_);
 
     return 0;
+}
+
+void viewer::Viewer::UpdateFrictonScaleFactorInMaterial(const double factor)
+{
+    for (auto materialList : roadGeom->GetRoadMaterialList())
+    {
+        osg::Vec4 new_color = roadGeom->color_asphalt_->at(0);
+        double    friction  = std::isnan(materialList.friction) ? 1 * factor : materialList.friction * factor;
+        if (friction < FRICTION_DEFAULT - SMALL_NUMBER)  // low friction, make it blueish
+        {
+            double factor = (1.0 - friction) / FRICTION_DEFAULT;
+            new_color[0] -= 0.75 * factor;
+            new_color[1] -= 0.75 * factor;
+            new_color[2] += factor;
+        }
+        else if (friction > FRICTION_DEFAULT + SMALL_NUMBER)  // high friction, make it redish
+        {
+            double factor = (MIN(friction, FRICTION_MAX) - FRICTION_DEFAULT) / (FRICTION_MAX - FRICTION_DEFAULT);
+            new_color[0] += factor;
+            new_color[1] -= 0.75 * factor;
+            new_color[2] -= 0.75 * factor;
+        }
+        new_color[0] = CLAMP(0.0, 1.0, new_color[0]);
+        new_color[1] = CLAMP(0.0, 1.0, new_color[1]);
+        new_color[2] = CLAMP(0.0, 1.0, new_color[2]);
+        materialList.material->setAmbient(osg::Material::FRONT_AND_BACK, new_color);
+        materialList.material->setDiffuse(osg::Material::FRONT_AND_BACK, new_color);
+    }
 }
 
 Viewer::~Viewer()
@@ -3871,6 +3857,16 @@ void Viewer::Frame(double time)
     {
         frameCounter_++;
     }
+}
+
+void Viewer::SetFrictionScaleFactor(const double factor)
+{
+    frictionScaleFactor_ = factor;
+}
+
+double Viewer::GetFrictionScaleFactor() const
+{
+    return frictionScaleFactor_;
 }
 
 bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)

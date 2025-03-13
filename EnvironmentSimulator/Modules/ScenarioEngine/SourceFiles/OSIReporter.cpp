@@ -279,7 +279,7 @@ void OSIReporter::SetOSIStaticReportMode(OSIStaticReportMode mode)
     static_update_mode_ = mode;
 }
 
-int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, OSCEnvironment *environment)
+int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, OSCEnvironment &environment)
 {
     if (osi_initialized_ && (GetUpdated() || (GetCounter() - counter_offset_) % osi_freq_ != 0))
     {
@@ -506,7 +506,7 @@ void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &
     }
 }
 
-int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState,  OSCEnvironment* environment)
+int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, OSCEnvironment &environment)
 {
     obj_osi_internal.dynamic_gt->clear_moving_object();
     obj_osi_internal.dynamic_gt->clear_timestamp();
@@ -2979,158 +2979,273 @@ void OSIReporter::SetStationaryModelReference(std::string model_reference)
     }
 }
 
-int OSIReporter::UpdateEnvironment(OSCEnvironment *environment)
+void OSIReporter::UpdateEnvironment(const OSCEnvironment &environment)
 {
-    if (environment->IsEnvironment())
+    if (environment.IsEnvironment())
     {
-        obj_osi_external.gt->clear_environmental_conditions();
-        if (environment->IsAtmosphericPressure())
+        obj_osi_internal.dynamic_gt->clear_environmental_conditions();
+        if (environment.IsWeatherSet())
         {
-            obj_osi_external.gt->mutable_environmental_conditions()->set_atmospheric_pressure(environment->GetAtmosphericPressure());
+            UpdateEnvironmentWeather(environment);
         }
-        if (environment->IsTemperature())
+        if (environment.IsTimeOfDaySet())
         {
-            obj_osi_external.gt->mutable_environmental_conditions()->set_temperature(environment->GetTemperature());
-        }
-        if (environment->IsSun())
-        {
-            Sun *sun = environment->GetSun();
-            if (sun->intensity > 10000)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
-                    osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL9);
-            }
-            else if (sun->intensity > 1000)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
-                    osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL8);
-            }
-            else if (sun->intensity > 400)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
-                    osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL7);
-            }
-            else if (sun->intensity > 20)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
-                    osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL6);
-            }
-            else if (sun->intensity > 10)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
-                    osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL5);
-            }
-            else if (sun->intensity > 3)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
-                    osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL4);
-            }
-            else if (sun->intensity > 1)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
-                    osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL3);
-            }
-            else if (sun->intensity > 0.01)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
-                    osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL2);
-            }
-            else if (sun->intensity > 0)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
-                    osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL1);
-            }
-            else
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_ambient_illumination(
-                    osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_OTHER);
-            }
-        }
-        if (environment->IsFog())
-        {
-            Fog *fog = environment->GetFog();
-            if (fog->visibility_range > 40000)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_EXCELLENT_VISIBILITY);
-            }
-            else if (fog->visibility_range > 10000)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_GOOD_VISIBILITY);
-            }
-            else if (fog->visibility_range > 4000)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_MODERATE_VISIBILITY);
-            }
-            else if (fog->visibility_range > 2000)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_POOR_VISIBILITY);
-            }
-            else if (fog->visibility_range > 1000)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_MIST);
-            }
-            else if (fog->visibility_range > 200)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_LIGHT);
-            }
-            else if (fog->visibility_range > 50)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_THICK);
-            }
-            else if (fog->visibility_range > 0)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_DENSE);
-            }
-            else
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_OTHER);
-            }
-        }
-        if (environment->IsPrecipitation())
-        {
-            Precipitation *precipitation = environment->GetPrecipitation();
-            if (precipitation->precipitationintensity > 149)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(
-                    osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_EXTREME);
-            }
-            else if (precipitation->precipitationintensity > 34)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(
-                    osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_VERY_HEAVY);
-            }
-            else if (precipitation->precipitationintensity > 8.1)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(
-                    osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_HEAVY);
-            }
-            else if (precipitation->precipitationintensity > 1.9)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(
-                    osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_MODERATE);
-            }
-            else if (precipitation->precipitationintensity > 0.5)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(
-                    osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_LIGHT);
-            }
-            else if (precipitation->precipitationintensity > 0.1)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(
-                    osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_VERY_LIGHT);
-            }
-            else if (precipitation->precipitationintensity > 0)
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(
-                    osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_NONE);
-            }
-            else
-            {
-                obj_osi_external.gt->mutable_environmental_conditions()->set_precipitation(
-                    osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_OTHER);
-            }
+            UpdateEnvironmentTimeOfDay(environment);
         }
     }
+}
 
-    return 0;
+void OSIReporter::UpdateEnvironmentWeather(const OSCEnvironment &environment)
+{
+    if (environment.IsAtmosphericPressureSet())
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_atmospheric_pressure(environment.GetAtmosphericPressure());
+    }
+    if (environment.IsTemperatureSet())
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_temperature(environment.GetTemperature());
+    }
+    if (environment.IsFractionalCloudStateSet())
+    {
+        UpdateEnvironmentFractionalCloudState(environment);
+    }
+    if (environment.IsSunSet())
+    {
+        UpdateEnvironmentSun(environment);
+    }
+    if (environment.IsFogSet())
+    {
+        scenarioengine::Fog fog = environment.GetFog();
+        UpdateEnvironmentFog(fog.visibility_range);
+    }
+    if (environment.IsPrecipitationIntensitySet())
+    {
+        UpdateEnvironmentPrecipitation(environment.GetPrecipitationIntensity());
+    }
+    if (environment.IsWindSet())
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_wind()->set_origin_direction(environment.GetWind().direction);
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_wind()->set_speed(environment.GetWind().speed);
+    }
+}
+
+void OSIReporter::UpdateEnvironmentFractionalCloudState(const OSCEnvironment &environment)
+{
+    if (environment.GetFractionalCloudState() == "zeroOktas")
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+            osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_ZERO_OKTAS);
+    }
+    else if (environment.GetFractionalCloudState() == "oneOktas")
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+            osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_ONE_OKTAS);
+    }
+    else if (environment.GetFractionalCloudState() == "twoOktas")
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+            osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_TWO_OKTAS);
+    }
+    else if (environment.GetFractionalCloudState() == "threeOktas")
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+            osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_THREE_OKTAS);
+    }
+    else if (environment.GetFractionalCloudState() == "fourOktas")
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+            osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_FOUR_OKTAS);
+    }
+    else if (environment.GetFractionalCloudState() == "fiveOktas")
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+            osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_FIVE_OKTAS);
+    }
+    else if (environment.GetFractionalCloudState() == "sixOktas")
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+            osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_SIX_OKTAS);
+    }
+    else if (environment.GetFractionalCloudState() == "sevenOktas")
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+            osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_SEVEN_OKTAS);
+    }
+    else if (environment.GetFractionalCloudState() == "eightOktas")
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+            osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_EIGHT_OKTAS);
+    }
+    else if (environment.GetFractionalCloudState() == "nineOktas")
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+            osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_SKY_OBSCURED);
+    }
+    else
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_clouds()->set_fractional_cloud_cover(
+            osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_OTHER);
+    }
+}
+
+void OSIReporter::UpdateEnvironmentSun(const OSCEnvironment &environment)
+{
+    obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_sun()->set_elevation(environment.GetSun().elevation);
+    obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_sun()->set_azimuth(environment.GetSun().azimuth);
+    if (environment.IsSunIntensitySet())
+    {
+        double intensity = environment.GetSunIntensity();
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_sun()->set_intensity(intensity);
+        if (intensity > 10000)
+        {
+            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+                osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL9);
+        }
+        else if (intensity > 1000)
+        {
+            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+                osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL8);
+        }
+        else if (intensity > 400)
+        {
+            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+                osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL7);
+        }
+        else if (intensity > 20)
+        {
+            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+                osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL6);
+        }
+        else if (intensity > 10)
+        {
+            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+                osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL5);
+        }
+        else if (intensity > 3)
+        {
+            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+                osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL4);
+        }
+        else if (intensity > 1)
+        {
+            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+                osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL3);
+        }
+        else if (intensity > 0.01)
+        {
+            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+                osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL2);
+        }
+        else if (intensity > 0)
+        {
+            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+                osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL1);
+        }
+        else
+        {
+            obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_ambient_illumination(
+                osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_OTHER);
+        }
+    }
+}
+
+void OSIReporter::UpdateEnvironmentTimeOfDay(const OSCEnvironment &environment)
+{
+    obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_time_of_day()->set_seconds_since_midnight(
+        GetSecondsSinceMidnight(environment.GetTimeOfDay().datetime));
+    if (!environment.GetTimeOfDay().animation)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_unix_timestamp(
+            GetEpochTimeFromString(environment.GetTimeOfDay().datetime));
+    }
+    else
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_unix_timestamp(
+            GetEpochTimeFromString(environment.GetTimeOfDay().datetime) +
+            obj_osi_internal.dynamic_gt->mutable_timestamp()->seconds());  // plus simulation time, nanosec is wrong
+    }
+}
+
+void OSIReporter::UpdateEnvironmentFog(const double visibility_range)
+{
+    if (visibility_range > 40000)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_EXCELLENT_VISIBILITY);
+    }
+    else if (visibility_range > 10000)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_GOOD_VISIBILITY);
+    }
+    else if (visibility_range > 4000)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_MODERATE_VISIBILITY);
+    }
+    else if (visibility_range > 2000)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_POOR_VISIBILITY);
+    }
+    else if (visibility_range > 1000)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_MIST);
+    }
+    else if (visibility_range > 200)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_LIGHT);
+    }
+    else if (visibility_range > 50)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_THICK);
+    }
+    else if (visibility_range > 0)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_DENSE);
+    }
+    else
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_OTHER);
+    }
+}
+
+void OSIReporter::UpdateEnvironmentPrecipitation(const double precipitationintensity)
+{
+    if (precipitationintensity > 149)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
+            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_EXTREME);
+    }
+    else if (precipitationintensity > 34)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
+            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_VERY_HEAVY);
+    }
+    else if (precipitationintensity > 8.1)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
+            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_HEAVY);
+    }
+    else if (precipitationintensity > 1.9)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
+            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_MODERATE);
+    }
+    else if (precipitationintensity > 0.5)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
+            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_LIGHT);
+    }
+    else if (precipitationintensity > 0.1)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
+            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_VERY_LIGHT);
+    }
+    else if (precipitationintensity > 0)
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
+            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_NONE);
+    }
+    else
+    {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
+            osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_OTHER);
+    }
 }

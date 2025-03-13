@@ -995,12 +995,16 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 
                     roadmanager::RoadLaneInfo info;
                     wp.GetRoadLaneInfo(&info);
-                    wheel.friction_coefficient = info.friction;
+                    wheel.friction_coefficient = environment.IsRoadConditionSet() && !std::isnan(info.friction)
+                                                     ? environment.GetRoadCondition().frictionscalefactor * info.friction
+                                                     : info.friction;
                 }
                 else
                 {
                     // same friction everywhere
-                    wheel.friction_coefficient = friction_global;
+                    wheel.friction_coefficient = environment.IsRoadConditionSet() && !std::isnan(friction_global)
+                                                     ? environment.GetRoadCondition().frictionscalefactor * friction_global
+                                                     : friction_global;
                 }
             }
             scenarioGateway.updateObjectWheelData(obj->id_, wheel_data);
