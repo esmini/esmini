@@ -1140,8 +1140,8 @@ void ScenarioEngine::SetupGhost(Object* object)
 
         for (size_t j = 0; j < story->act_.size(); j++)
         {
-            Act* act = story->act_[j];
-            ReplaceObjectInTrigger(act->start_trigger_, object, ghost, -ghost->GetHeadstartTime());
+            Act* act               = story->act_[j];
+            bool ghostIsActorInAct = false;
             for (size_t k = 0; k < act->maneuverGroup_.size(); k++)
             {
                 ManeuverGroup* mg = act->maneuverGroup_[k];
@@ -1158,8 +1158,8 @@ void ScenarioEngine::SetupGhost(Object* object)
                     Maneuver* maneuver = act->maneuverGroup_[k]->maneuver_[l];
                     for (size_t m = 0; m < maneuver->event_.size(); m++)
                     {
-                        Event* event        = maneuver->event_[m];
-                        bool   ghostIsActor = false;
+                        Event* event               = maneuver->event_[m];
+                        bool   ghostIsActorInEvent = false;
                         for (size_t n = 0; n < event->action_.size(); n++)
                         {
                             OSCAction* action = event->action_[n];
@@ -1171,7 +1171,9 @@ void ScenarioEngine::SetupGhost(Object* object)
                                 {
                                     // If at least one of the event actions is of relevant subset of action types
                                     // then move the action to the ghost object instance, and also make needed
-                                    // changes to the event trigger
+                                    // changes to the event trigger (such as offsetting the start time).
+                                    // Similarly, we also make sure that the Act containing a ghost object also
+                                    // transfers its triggers to the ghost object.
                                     if (pa->action_type_ == OSCPrivateAction::ActionType::LONG_SPEED ||
                                         pa->action_type_ == OSCPrivateAction::ActionType::LONG_SPEED_PROFILE ||
                                         pa->action_type_ == OSCPrivateAction::ActionType::LAT_LANE_CHANGE ||
@@ -1184,18 +1186,23 @@ void ScenarioEngine::SetupGhost(Object* object)
                                     {
                                         // Replace object
                                         pa->ReplaceObjectRefs(object, ghost);
-                                        ghostIsActor = true;
+                                        ghostIsActorInEvent = true;
+                                        ghostIsActorInAct   = true;
                                     }
                                 }
                             }
                         }
-                        if (ghostIsActor)
+                        if (ghostIsActorInEvent)
                         {
                             ReplaceObjectInTrigger(event->start_trigger_, object, ghost, -ghost->GetHeadstartTime(), event);
                         }
                         ghost->addEvent(event);
                     }
                 }
+            }
+            if (ghostIsActorInAct)
+            {
+                ReplaceObjectInTrigger(act->start_trigger_, object, ghost, -ghost->GetHeadstartTime());
             }
         }
     }
