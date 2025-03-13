@@ -308,13 +308,13 @@ namespace TINY_YAML {
 					}
 					else
 					{
-						error_message.insert(0, "Duplicate (root) key \"" + value + "\" found. ");
+						error_message.insert(0, "Duplicate (root) key \"" + nodeID + "\" found. ");
 						faulty = true;
 						break;
 					}
                 }
                 else if (!parentsStack.top().first->append(pnode)) { // Insert at parent level
-					error_message.insert(0, "Duplicate (parent) key \"" + value + "\" found. ");
+					error_message.insert(0, "Duplicate (parent) key \"" + nodeID + "\" found. ");
                     faulty = true;
                     break;
                 }

@@ -94,7 +94,10 @@ namespace esmini::common
         // parse default config file and environment variable config files
         esmini::common::ConfigParser parser(applicationName_, configFilePaths_, loadedConfigFiles_);
         allConfigs = parser.Parse();
-
+        if (parser.IsFaulty())
+        {
+            LOG_ERROR_AND_QUIT(parser.GetParsingErrorMsg());
+        }
         // there is a possibility that the config file path is already set in options, maybe through the api call
         // so we need to parse those config files as well. Since, order of appearance matters, so we will reverse iterate
         SE_Options& opt             = SE_Env::Inst().GetOptions();
@@ -102,15 +105,12 @@ namespace esmini::common
         for (auto rItr = configFilePaths.rbegin(); rItr != configFilePaths.rend(); ++rItr)
         {
             esmini::common::ConfigParser configParser(applicationName_, {*rItr}, loadedConfigFiles_);
-            try
+            auto                         configs = configParser.Parse();
+            if (configParser.IsFaulty())
             {
-                auto configs = configParser.Parse();
-                allConfigs.insert(allConfigs.end(), std::make_move_iterator(configs.begin()), std::make_move_iterator(configs.end()));
+                LOG_ERROR_AND_QUIT(configParser.GetParsingErrorMsg());
             }
-            catch (const std::exception& e)
-            {
-                LOG_ERROR("{}", e.what());
-            }
+            allConfigs.insert(allConfigs.end(), std::make_move_iterator(configs.begin()), std::make_move_iterator(configs.end()));
         }
 
         // parse config file path(s) from the arguments, if present. And append the configs to the arguments
@@ -122,6 +122,10 @@ namespace esmini::common
                 // now we can parse config file here
                 esmini::common::ConfigParser configParser(applicationName_, {argv_[i + 1]}, loadedConfigFiles_);
                 auto                         configs = configParser.Parse();
+                if (configParser.IsFaulty())
+                {
+                    LOG_ERROR_AND_QUIT(configParser.GetParsingErrorMsg());
+                }
 
                 // we need to wipe out the config file path from the arguments, so that they wont be consumed again
                 // free memory of the two arguments and shift the rest of the arguments
@@ -152,7 +156,6 @@ namespace esmini::common
     {
         for (const auto& [canonicalPath, relativePath] : loadedConfigFiles_)
         {
-            // std::string nativePath{fs::canonical(fs::path(file)).u8string()};
             LOG_INFO("Loaded config file: {} ({})", canonicalPath, relativePath);
         }
     }
