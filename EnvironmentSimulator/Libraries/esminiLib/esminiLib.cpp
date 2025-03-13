@@ -1703,18 +1703,6 @@ extern "C"
         return;
     }
 
-    //     SE_DLL_API int SE_ClearOSIGroundTruth()
-    //     {
-    // #ifdef _USE_OSI
-    //         if (player != nullptr)
-    //         {
-    //             return player->osiReporter->ClearOSIGroundTruth();
-    //         }
-    // #endif  // _USE_OSI
-
-    //         return 0;
-    //     }
-
     SE_DLL_API void SE_GhostInGroundTruth(bool reportGhost)
     {
 #ifdef _USE_OSI
@@ -1726,19 +1714,6 @@ extern "C"
         (void)reportGhost;
 #endif  // _USE_OSI
         return;
-    }
-
-    SE_DLL_API int SE_UpdateOSIGroundTruth()
-    {
-#ifdef _USE_OSI
-        if (player != nullptr)
-        {
-            return player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
-        }
-#else
-        (void)mode;
-#endif  // _USE_OSI
-        return 0;
     }
 
     SE_DLL_API int SE_SetOSIFrequency(int frequency)
@@ -1757,30 +1732,6 @@ extern "C"
 #endif  // _USE_OSI
         return 0;
     }
-
-    //     SE_DLL_API int SE_UpdateOSIStaticGroundTruth()
-    //     {
-    // #ifdef _USE_OSI
-    //         if (player != nullptr)
-    //         {
-    //             return player->osiReporter->UpdateOSIStaticGroundTruth(player->scenarioGateway->objectState_);
-    //         }
-    // #endif  // _USE_OSI
-
-    //         return 0;
-    //     }
-
-    //     SE_DLL_API int SE_UpdateOSIDynamicGroundTruth()
-    //     {
-    // #ifdef _USE_OSI
-    //         if (player != nullptr)
-    //         {
-    //             return player->osiReporter->UpdateOSIDynamicGroundTruth(player->scenarioGateway->objectState_);
-    //         }
-    // #endif  // _USE_OSI
-
-    //         return 0;
-    //     }
 
     SE_DLL_API int SE_UpdateOSITrafficCommand()
     {
