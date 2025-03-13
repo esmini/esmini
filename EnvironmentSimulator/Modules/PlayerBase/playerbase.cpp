@@ -322,7 +322,7 @@ void ScenarioPlayer::ScenarioPostFrame()
         {
             osiReporter->ReportSensors(sensor);
 
-            osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
+            osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_, scenarioEngine->environment);
 
             osiReporter->UpdateOSITrafficCommand();
         }
@@ -338,6 +338,12 @@ void ScenarioPlayer::ViewerFrame(bool init)
     if (viewer_ == nullptr)
     {
         return;
+    }
+
+    if (scenarioEngine->environment.IsEnvironment() && !scenarioEngine->environment.IsEnvironmentUpdatedInViewer())
+    {
+        scenarioEngine->environment.SetEnvironmentUpdatedInViewer(true);
+        viewer_->CreateWeatherGroup(scenarioEngine->environment);
     }
 
     mutex.Lock();

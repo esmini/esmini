@@ -22,11 +22,18 @@
 
 class RoadGeom
 {
+    typedef struct
+    {
+        osg::ref_ptr<osg::Material> material;
+        double                      friction;
+    } FrictionDetails;  // could be multiple of these per lane
+
 public:
     osg::ref_ptr<osg::Group>                        root_;
     osg::ref_ptr<osg::Group>                        rm_group_;
     std::map<uint32_t, osg::ref_ptr<osg::Material>> std_materials_;
     std::map<uint32_t, osg::ref_ptr<osg::Material>> fade_materials_;
+    osg::ref_ptr<osg::Vec4Array> color_asphalt_ = new osg::Vec4Array;
 
     RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin);
 
@@ -37,9 +44,13 @@ public:
                                                  double                              fade);
     osg::ref_ptr<osg::Material>  GetOrCreateMaterial(const std::string& basename, osg::Vec4 color);
     osg::ref_ptr<osg::Texture2D> ReadTexture(std::string filename);
+    void                         AddRoadMaterialInList(osg::ref_ptr<osg::Material> material, double friction);
+    std::vector<FrictionDetails> GetRoadMaterialList();
+    const osg::Vec4              GetFrictionColor(const double friction);
 
 private:
     unsigned int number_of_materials = 0;
+    std::vector<FrictionDetails> material_friction_list_;
 };
 
 #endif  // ROADGEOM_HPP_

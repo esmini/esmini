@@ -4,12 +4,15 @@
     <ParameterDeclarations>
         <ParameterDeclaration name="RoadName" parameterType="string" value="../../../resources/xodr/straight_500m.xodr"/>
         <ParameterDeclaration name="RoadId" parameterType="int" value="1"/>
-        <ParameterDeclaration name="SimulationEndTime" parameterType="double" value="1.04"/>
+        <ParameterDeclaration name="SimulationEndTime" parameterType="double" value="10.00"/>
     </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
             <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
         </VehicleCatalog>
+        <EnvironmentCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Environments"/>
+        </EnvironmentCatalog>
     </CatalogLocations>
     <RoadNetwork>
         <LogicFile filepath="$RoadName"/>
@@ -50,26 +53,12 @@
                     <Actors selectTriggeringEntities="false">
                         <EntityRef entityRef="Ego"/>
                     </Actors>
-                    <Maneuver name="envman_weather">
+                    <Maneuver name="envman_weather_spring">
                         <Event name="fog" priority="override" maximumExecutionCount="1">
-                            <Action name="envaction">
+                            <Action name="spring">
                                 <GlobalAction>
                                     <EnvironmentAction>
-                                        <Environment name="weather">
-                                            <ParameterDeclarations>
-                                                <ParameterDeclaration name="SunIntensity" parameterType="double" value="10000"/>
-                                                <ParameterDeclaration name="FogVisualRange" parameterType="double" value="6000"/>
-                                                <ParameterDeclaration name="AnimationStatus" parameterType="boolean" value="true"/>
-                                            </ParameterDeclarations>
-                                            <TimeOfDay animation="$AnimationStatus" dateTime="2023-11-15T10:30:00.123+00:00"/>
-                                            <Weather cloudState="free" temperature="300" atmosphericPressure="10000">
-                                                <Sun azimuth="0.4" intensity="$SunIntensity" elevation="0.3"/>
-                                                <Fog visualRange="$FogVisualRange"/>
-                                                <Precipitation precipitationType="snow" precipitationIntensity="10.0"/>
-                                                <Wind direction="3.1415" speed="10"/>
-                                            </Weather>
-                                            <RoadCondition frictionScaleFactor="0.9"/>
-                                        </Environment>
+                                        <CatalogReference catalogName="EnvironmentCatalog" entryName="spring"/>
                                     </EnvironmentAction>
                                 </GlobalAction>
                             </Action>
@@ -77,21 +66,19 @@
                                 <ConditionGroup>
                                     <Condition name="s" delay="0" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="0.01" rule="greaterOrEqual"/>
+                                            <SimulationTimeCondition value="2.0" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
                     </Maneuver>
-                    <Maneuver name="envman_TimeOfDay">
+                    <Maneuver name="envman_weather_summer">
                         <Event name="fog" priority="override" maximumExecutionCount="1">
-                            <Action name="envaction">
+                            <Action name="summer">
                                 <GlobalAction>
                                     <EnvironmentAction>
-                                        <Environment name="weather2">
-                                            <Weather fractionalCloudCover="oneOktas"/>
-                                        </Environment>
+                                        <CatalogReference catalogName="EnvironmentCatalog" entryName="summer"/>
                                     </EnvironmentAction>
                                 </GlobalAction>
                             </Action>
@@ -99,7 +86,47 @@
                                 <ConditionGroup>
                                     <Condition name="s" delay="0" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="1.01" rule="greaterOrEqual"/>
+                                            <SimulationTimeCondition value="4.01" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                    <Maneuver name="envman_weather_autumn">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
+                            <Action name="autumn">
+                                <GlobalAction>
+                                    <EnvironmentAction>
+                                        <CatalogReference catalogName="EnvironmentCatalog" entryName="autumn"/>
+                                    </EnvironmentAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="s" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="6.01" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                    <Maneuver name="envman_weather_winter">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
+                            <Action name="winter">
+                                <GlobalAction>
+                                    <EnvironmentAction>
+                                        <CatalogReference catalogName="EnvironmentCatalog" entryName="winter"/>
+                                    </EnvironmentAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="s" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="8.01" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>

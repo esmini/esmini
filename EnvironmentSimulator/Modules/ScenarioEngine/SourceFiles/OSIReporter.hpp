@@ -80,7 +80,7 @@ public:
     /**
     Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
     */
-    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
+    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, OSCEnvironment& environment);
     /**
     Fills up the osi message with  static GroundTruth
     */
@@ -88,7 +88,7 @@ public:
     /**
     Fills up the osi message with dynamic GroundTruth
     */
-    int UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
+    int UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, OSCEnvironment& environment);
     /**
     Fills up the osi message with Stationary Object from the OpenDRIVE description
     */
@@ -135,6 +135,41 @@ public:
         report_ghost_ = false;
         LOG_INFO("Excluding ghost from ground truth");
     }
+
+    /**
+    Fills the Environment_condition
+    */
+    void UpdateEnvironment(const OSCEnvironment& environment);
+
+    /**
+    Fills the Weather_condition
+    */
+    void UpdateEnvironmentWeather(const OSCEnvironment& environment);
+
+    /**
+    Fills the fractional cloud state
+    */
+    void UpdateEnvironmentFractionalCloudState(const OSCEnvironment& environment);
+
+    /**
+    Fills the Sun
+    */
+    void UpdateEnvironmentSun(const OSCEnvironment& environment);
+
+    /**
+    Fills the TimeOfDay
+    */
+    void UpdateEnvironmentTimeOfDay(const OSCEnvironment& environment);
+
+    /**
+    Fills the Fog
+    */
+    void UpdateEnvironmentFog(const double visibility_range);
+
+    /**
+    Fills the precipitation
+    */
+    void UpdateEnvironmentPrecipitation(const double precipitation_intensity);
 
     std::vector<TrafficCommandStateChange> traffic_command_state_changes_;
 

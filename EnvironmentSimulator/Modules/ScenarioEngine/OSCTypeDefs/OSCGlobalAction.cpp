@@ -49,13 +49,20 @@ void EnvironmentAction::Start(double simTime)
 	OSCAction::Start(simTime);
 }
 
-void EnvironmentAction::Step(double, double dt)
+void EnvironmentAction::Start(double simTime)
 {
+    environment_->UpdateEnvironment(new_environment_);
+    OSCAction::Start(simTime);
+}
+
+void EnvironmentAction::Step(double simTime, double dt)
+{
+    (void)simTime;
+    (void)dt;
     OSCAction::Stop();
 }
 
-
-void ParameterSetAction::Start(double simTime, double dt)
+void ParameterSetAction::Start(double simTime)
 {
     LOG_INFO("Set parameter {} = {}", name_, value_);
     parameters_->setParameterValueByString(name_, value_);

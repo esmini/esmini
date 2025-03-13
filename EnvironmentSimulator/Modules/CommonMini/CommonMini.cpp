@@ -24,6 +24,10 @@
 #include <sstream>
 #include <locale>
 #include <array>
+#include <regex>
+#include <chrono>
+#include <iomanip>
+#include <string>
 
 // UDP network includes
 #ifndef _WIN32
@@ -39,6 +43,7 @@
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
+#include <timezoneapi.h>
 #elif defined(__APPLE__)
 #include <mach-o/dyld.h>
 #include <dlfcn.h>
@@ -705,6 +710,192 @@ bool IsNumber(const std::string& str, int max_digits)
     return true;
 }
 
+bool IsValidDateTimeFormat(const std::string& dateTimeString)
+{
+    std::regex pattern(R"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2})");
+    if (!std::regex_match(dateTimeString, pattern))
+    {
+        return false;  // Invalid format
+    }
+
+    std::tm           timeStruct = {};
+    std::stringstream ss(dateTimeString);
+    ss >> std::get_time(&timeStruct, "%Y-%m-%dT%H:%M:%S");
+
+    if (ss.fail())
+    {
+        return false;  // Failed to parse time
+    }
+
+    // Check for valid date/time components
+    if (timeStruct.tm_year < 0 || timeStruct.tm_year > 20000 || timeStruct.tm_mon < 0 || timeStruct.tm_mon > 11 || timeStruct.tm_mday < 1 ||
+        timeStruct.tm_mday > 31 || timeStruct.tm_hour < 0 || timeStruct.tm_hour > 23 || timeStruct.tm_min < 0 || timeStruct.tm_min > 59 ||
+        timeStruct.tm_sec < 0 || timeStruct.tm_sec > 59)
+    {
+        return false;  // Invalid date/time values
+    }
+
+    // Basic month day validation
+    if (timeStruct.tm_mon == 1 && timeStruct.tm_mday > 29)
+        return false;
+    if ((timeStruct.tm_mon == 3 || timeStruct.tm_mon == 5 || timeStruct.tm_mon == 8 || timeStruct.tm_mon == 10) && timeStruct.tm_mday > 30)
+        return false;
+
+    // Check Leap year for february
+    if (timeStruct.tm_mon == 1 && timeStruct.tm_mday == 29)
+    {
+        int year = timeStruct.tm_year + 1900;
+        if (year % 4 != 0)
+            return false;
+        if (year % 100 == 0 && year % 400 != 0)
+            return false;
+    }
+
+    // Check milliseconds
+    std::string millisecondsStr = dateTimeString.substr(20, 3);
+    try
+    {
+        int milliseconds = std::stoi(millisecondsStr);
+        if (milliseconds < 0 || milliseconds > 999)
+        {
+            return false;
+        }
+    }
+    catch (const std::invalid_argument& e)
+    {
+        return false;  // Invalid milliseconds
+    }
+
+    // Check timezone offset
+    std::string timezoneStr = dateTimeString.substr(23);
+    std::regex  timezonePattern(R"([+-]\d{2}:\d{2})");
+    if (!std::regex_match(timezoneStr, timezonePattern))
+        return false;
+
+    return true;  // Valid date and time
+}
+
+uint32_t GetSecondsSinceMidnight(const std::string& dateTimeString)
+{
+    std::tm           timeStruct = {};
+    std::stringstream ss(dateTimeString);
+
+    ss >> timeStruct.tm_year;
+    if (ss.peek() == '-')
+        ss.ignore();
+    ss >> timeStruct.tm_mon;
+    if (ss.peek() == '-')
+        ss.ignore();
+    ss >> timeStruct.tm_mday;
+    if (ss.peek() == 'T')
+        ss.ignore();
+    ss >> timeStruct.tm_hour;
+    if (ss.peek() == ':')
+        ss.ignore();
+    ss >> timeStruct.tm_min;
+    if (ss.peek() == ':')
+        ss.ignore();
+    ss >> timeStruct.tm_sec;
+
+    uint32_t seconds = static_cast<uint32_t>(timeStruct.tm_hour * 3600 + timeStruct.tm_min * 60 + timeStruct.tm_sec);
+
+    double milliseconds = 0.0;
+    if (ss.peek() == '.')
+    {
+        ss.ignore() >> milliseconds;
+    }
+    int  tz_hour = 0, tz_min = 0;
+    char sign      = '+';
+    char delimiter = ':';
+    if (ss >> sign >> tz_hour >> delimiter >> tz_min)
+    {
+        int offset = (tz_hour * 3600 + tz_min * 60) * (sign == '+' ? 1 : -1);
+        seconds += offset;
+    }
+
+    return seconds;
+}
+
+namespace
+{
+    time_t portable_timegm(struct tm* tm)
+    {
+#ifdef _WIN32
+        // Windows implementation using _mkgmtime
+        return _mkgmtime(tm);
+#else
+        // Unix implementation
+        time_t ret;
+        char*  tz;
+
+        tz = getenv("TZ");
+        setenv("TZ", "", 1);
+        tzset();
+        ret = mktime(tm);
+        if (tz)
+            setenv("TZ", tz, 1);
+        else
+            unsetenv("TZ");
+        tzset();
+        return ret;
+#endif
+    }
+}  // namespace
+
+int64_t GetEpochTimeFromString(const std::string& datetime)
+{
+    std::tm tm           = {};
+    double  milliseconds = 0.0;
+    int     tz_hour = 0, tz_min = 0;
+    char    sign      = '+';
+    char    delimiter = ':';
+
+    std::istringstream ss(datetime);
+    ss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
+
+    if (ss.peek() == '.')
+    {
+        ss.ignore() >> milliseconds;
+    }
+
+    // Convert to epoch time (treating tm as UTC)
+    tm.tm_isdst      = -1;  // Let system determine DST
+    std::time_t time = portable_timegm(&tm);
+
+    // Apply the timezone offset from the string
+    if (ss >> sign >> tz_hour >> delimiter >> tz_min)
+    {
+        int offset = (tz_hour * 3600 + tz_min * 60) * (sign == '+' ? 1 : -1);
+        time -= offset;  // Subtract because converting to UTC
+    }
+
+    auto tp = std::chrono::system_clock::from_time_t(time);
+
+    return std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch()).count();
+}
+
+double GetSecondsToFactor(int seconds)
+{
+    // There are 24 * 60 * 60 seconds in a day
+    constexpr int secondsInDay = 86400;
+
+    // Normalize the seconds to a range of 0 to 2*pi (one full cycle)
+    double normalizedTime = (static_cast<double>(seconds) / secondsInDay) * 2.0 * M_PI;
+
+    // Shift the phase so that the peak (factor 1) is at noon (12 * 3600 seconds)
+    // Noon corresponds to the middle of the day, so we shift by pi
+    double noonInRadians    = (12.0 * 3600.0 / secondsInDay) * 2.0 * M_PI;
+    double phaseShiftedTime = normalizedTime - noonInRadians;
+
+    // Use the cosine function to create the sinusoidal shape.
+    // cos(0) = 1, which we want at noon.
+    // cos(pi) = -1, which we want at midnight (after shifting).
+    // Take the absolute value and then scale and shift to get a range of 0 to 1.
+    double factor = 0.5 * (std::cos(phaseShiftedTime) + 1.0);
+
+    return factor;
+}
+
 int strtoi(std::string s)
 {
     return atoi(s.c_str());
@@ -755,6 +946,7 @@ void SE_sleep(unsigned int msec)
 #else
 
 #include <chrono>
+#include "CommonMini.hpp"
 
 using namespace std::chrono;
 

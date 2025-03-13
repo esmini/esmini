@@ -28,8 +28,8 @@
 #include <osgDB/Registry>
 #include <osgDB/WriteFile>
 #include <osgUtil/SmoothingVisitor>
-#include <osgUtil/Tessellator> // to tessellate multiple contours
-#include <osgUtil/Optimizer>   // to flatten transform nodes
+#include <osgUtil/Tessellator>  // to tessellate multiple contours
+#include <osgUtil/Optimizer>    // to flatten transform nodes
 #include <osg/Fog>
 #include "OSCEnvironment.hpp"
 
@@ -52,34 +52,20 @@
 #define ORTHO_FOV                          1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
-#define SHADOW_SCALE 1.20
-#define SHADOW_MODEL_FILEPATH "shadow_face.osgb"
-#define ARROW_MODEL_FILEPATH "arrow.osgb"
-#define LOD_DIST 3000
-#define LOD_DIST_ROAD_FEATURES 500
-#define LOD_SCALE_DEFAULT 1.0
-#define DEFAULT_AA_MULTISAMPLES 4
-#define OSI_LINE_WIDTH 2.0f
-#define TRAIL_WIDTH 2
-#define TRAIL_DOT_SIZE 10
-#define TRAIL_DOT3D_SIZE 0.2
-#define TRAILDOT3D 1
-#define PERSP_FOV 30.0
-#define ORTHO_FOV 1.0
+float color_green[3]      = {0.2f, 0.6f, 0.3f};
+float color_gray[3]       = {0.7f, 0.7f, 0.7f};
+float color_dark_gray[3]  = {0.5f, 0.5f, 0.5f};
+float color_light_gray[3] = {0.7f, 0.7f, 0.7f};
+float color_red[3]        = {0.8f, 0.3f, 0.3f};
+float color_black[3]      = {0.2f, 0.2f, 0.2f};
+float color_blue[3]       = {0.25f, 0.38f, 0.7f};
+float color_yellow[3]     = {0.75f, 0.7f, 0.4f};
+float color_white[3]      = {1.0f, 1.0f, 0.9f};
+float color_background[3] = {0.5f, 0.75f, 1.0f};
 
-double color_green[3] = { 0.25, 0.6, 0.3 };
-double color_gray[3] = { 0.7, 0.7, 0.7 };
-double color_dark_gray[3] = { 0.5, 0.5, 0.5 };
-double color_light_gray[3] = { 0.7, 0.7, 0.7 };
-double color_red[3] = { 0.73, 0.26, 0.26 };
-double color_black[3] = { 0.2, 0.2, 0.2 };
-double color_blue[3] = { 0.25, 0.38, 0.7 };
-double color_yellow[3] = { 0.75, 0.7, 0.4 };
-double color_white[3] = { 0.90, 0.90, 0.85 };
-double color_background[3] = { 0.5f, 0.75f, 1.0f };
-
-//USE_OSGPLUGIN(fbx)
-//USE_OSGPLUGIN(obj)
+// cppcheck-suppress unknownMacro
+// The following macros are defined by the framework or plugin system and are correctly expanded during compilation.
+// Cppcheck cannot resolve them during static analysis, so this warning is false positive.
 USE_OSGPLUGIN(osg2)
 USE_OSGPLUGIN(jpeg)
 USE_SERIALIZER_WRAPPER_LIBRARY(osg)
@@ -1462,7 +1448,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     if (!clear_color)
     {
         // Default background color
-        camera->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 1.0f));
+        // camera->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 1.0f)); currrnt code, check if it is needed
+        camera->setClearColor(osg::Vec4(color_background[0], color_background[1], color_background[2], 1.0f));
     }
     else
     {
@@ -1714,8 +1701,9 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     if (!clearColorSet)
     {
-        camera->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 1.0f));
-        clearColorSet = true;
+        camera->setClearColor(osg::Vec4(color_background[0], color_background[1], color_background[2], 1.0f));
+        clearColorSet          = true;
+        defulatClearColorUsed_ = true;
     }
 
     // Setup the camera models
@@ -1764,11 +1752,11 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     // Light
     osgViewer_->setLightingMode(osg::View::LightingMode::SKY_LIGHT);
     osg::Light* light = osgViewer_->getLight();
-    light->setPosition(osg::Vec4(-7500.0 + origin_[0], 5000.0 + origin_[1], 10000.0, 1.0));
+    light->setPosition(osg::Vec4(-7500., 5000., 10000., 1.0));
     light->setDirection(osg::Vec3(7.5, -5., -10.));
     float ambient = 0.4f;
-    light->setAmbient(osg::Vec4(ambient, ambient, 0.9f * ambient, 1.0f));
-    light->setDiffuse(osg::Vec4(0.8f, 0.8f, 0.7f, 1.0f));
+    light->setAmbient(osg::Vec4(ambient, ambient, 0.9 * ambient, 1));
+    light->setDiffuse(osg::Vec4(0.8, 0.8, 0.7, 1));
 
     // Overlay text
     float font_size = 12.0f;
@@ -1815,6 +1803,59 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     initialThreadingModel_ = osgViewer_->getThreadingModel();
 
     osgViewer_->realize();
+}
+
+void Viewer::CreateFog(const double range)
+{
+    osg::ref_ptr<osg::Fog> fog = new osg::Fog;
+    fog->setMode(osg::Fog::EXP);
+    fog->setDensity(1 / range);
+    fog->setStart(static_cast<float>(-range));
+    fog->setEnd(static_cast<float>(range));
+    fog->setColor(osg::Vec4(0.1f, 0.1f, 0.1f, 1.0f));
+    rootnode_->getOrCreateStateSet()->setAttributeAndModes(fog.get());
+}
+
+void viewer::Viewer::SetSkyColour(const double sunIntensityFactor, const double fogVishualRangeFoctor, const double ClodinessFactor)
+{
+    double      FogAndCloudFactor = CLAMP(0.0, 1.0, fogVishualRangeFoctor + ClodinessFactor);
+    osg::Light* light             = osgViewer_->getLight();
+    light->setDiffuse(osg::Vec4(0.9 * sunIntensityFactor - 0.1, 0.9 * sunIntensityFactor - 0.1, 0.8 * sunIntensityFactor - 0.1, 1));
+    float r = sunIntensityFactor * ((1 - FogAndCloudFactor) * color_background[0] + (FogAndCloudFactor * color_dark_gray[0]));
+    float g = sunIntensityFactor * ((1 - FogAndCloudFactor) * color_background[1] + (FogAndCloudFactor * color_dark_gray[1]));
+    float b = sunIntensityFactor * ((1 - FogAndCloudFactor) * color_background[2] + (FogAndCloudFactor * color_dark_gray[2]));
+    osgViewer_->getCamera()->setClearColor(osg::Vec4(r, g, b, 0.0f));
+}
+
+void Viewer::CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment)
+{
+    weatherGroup_ = new osg::PositionAttitudeTransform;
+    if (environment.IsFogSet())
+    {
+        CreateFog(environment.GetFog().visibility_range);
+    }
+    if (defulatClearColorUsed_)  // no --clear-color option
+    {
+        SetSkyColour(environment.GetSunIntensityFactor(), environment.GetFogVisibilityRangeFactor(), environment.GetFractionalCloudStateFactor());
+    }
+
+    if (environment.IsRoadConditionSet())
+    {
+        UpdateFrictonScaleFactorInMaterial(environment.GetRoadCondition().frictionscalefactor);
+    }
+
+    rootnode_->addChild(weatherGroup_);
+}
+
+void viewer::Viewer::UpdateFrictonScaleFactorInMaterial(const double factor)
+{
+    for (auto materialList : roadGeom->GetRoadMaterialList())
+    {
+        double    friction       = std::isnan(materialList.friction) ? 1 * factor : materialList.friction * factor;
+        osg::Vec4 friction_color = roadGeom->GetFrictionColor(friction);
+        materialList.material->setAmbient(osg::Material::FRONT_AND_BACK, friction_color);
+        materialList.material->setDiffuse(osg::Material::FRONT_AND_BACK, friction_color);
+    }
 }
 
 Viewer::~Viewer()
@@ -3895,6 +3936,16 @@ void Viewer::Frame(double time)
     {
         frameCounter_++;
     }
+}
+
+void Viewer::SetFrictionScaleFactor(const double factor)
+{
+    frictionScaleFactor_ = factor;
+}
+
+double Viewer::GetFrictionScaleFactor() const
+{
+    return frictionScaleFactor_;
 }
 
 bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)

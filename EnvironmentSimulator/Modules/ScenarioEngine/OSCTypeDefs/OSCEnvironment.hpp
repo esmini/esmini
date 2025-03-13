@@ -10,40 +10,62 @@
  * https://sites.google.com/view/simulationscenarios
  */
 #pragma once
+#include <optional>
 #include "OSCBoundingBox.hpp"
 #include "OSCProperties.hpp"
+#include "logger.hpp"
 
 namespace scenarioengine
 {
+    /*
+    constants
+    */
+    double const OSCAtmosphericMin   = 80000.0;   // Pa
+    double const OSCAtmosphericMax   = 120000.0;  // Pa
+    double const OSCTemperatureMin   = 170.0;     // kelvin
+    double const OSCTemperatureMax   = 340.0;     // kelvin
+    double const OSCSunAzimuthMin    = 0.0;       // rad
+    double const OSCSunAzimuthMax    = 2 * M_PI;  // rad
+    double const OSCSunElevationMin  = -M_PI;     // rad
+    double const OSCSunElevationMax  = M_PI;      // rad
+    double const OSCWindDirectionMin = 0.0;       // rad
+    double const OSCWindDirectionMax = 2 * M_PI;  // rad
+    double const OSCSunIntensityMax  = 100000.0;  // lux
+    double const OSCSunIntensityMin  = 0.0;       // lux
 
     /*
     Class PrecipitationType
     Represents the different types of precipitations
     */
-    typedef enum
+    enum class PrecipitationType
     {
         DRY,
         RAIN,
         SNOW
-    } PrecipitationType;
+    };
 
     /*
     Class CloudState
     Represents the different types of cloud states, note: implemented for future 1.2 enumerations with 1.1 included
     */
-    typedef enum
+    enum class CloudState
     {
-        CLOUDLESS, // osc <=1.1 free
-        SUNNY,
-        SERENE,
-        SLIGHTLY_CLOUDY,
-        LIGHT_CLOUDY, // osc <=1.1 cloudy
         CLOUDY,
-        HEAVILY_CLOUDY, // osc <=1.1 rainy
-        ALMOST_OVERCAST,
-        OVERCAST, // osc <=1.1 overcast
-        SKY_NOT_VISIBLE // osc <=1.1 sky off
-    } CloudState;
+        FREE,
+        OVERCAST,
+        RAINY,
+        SKYOFF,
+        OTHER
+    };
+
+    enum class WetnessType
+    {
+        DRY,
+        MOSIT,
+        WETWITHPUDDLES,
+        LOWFLOODED,
+        HIGHFLOODED
+    };
 
     /*
     Class Fog
@@ -55,7 +77,7 @@ namespace scenarioengine
     typedef struct
     {
         float visibility_range;
-        OSCBoundingBox boundingbox;
+        std::optional<OSCBoundingBox> boundingbox;
     } Fog;
 
     /*
@@ -68,31 +90,31 @@ namespace scenarioengine
     */
     typedef struct
     {
-        double azimuth;
-        double elevation;
-        double intensity;
+        double                azimuth;
+        double                elevation;
+        std::optional<double> intensity;
     } Sun;
 
     /*
     Class Precipitation
     Represents the state of rain/snow
 
-    precipitationintensity 	    double 	 	        intensity of precipitation
-    precipitationtype     	    PrecipitationType   type of precipitation
+    precipitationintensity 	    double 	 	        intensity of precipitation, NOT IMPLEMENTED YET
+    precipitationtype     	    PrecipitationType   type of precipitation, NOT IMPLEMENTED YET
 
     */
     typedef struct
     {
-        double precipitationintensity;
-        PrecipitationType precipitationtype;
+        std::optional<double> precipitationintensity;
+        PrecipitationType     precipitationtype;
     } Precipitation;
 
     /*
     Class Wind
     Represents the state of the wind
 
-    direction 	    double      direction of the wind in the x/y plane
-    speed           double     	speed of the wind
+    direction 	    double      direction of the wind in the x/y plane, NOT IMPLEMENTED YET
+    speed           double     	speed of the wind, NOT IMPLEMENTED YET, NOT IMPLEMENTED YET
 
     */
     typedef struct
@@ -105,121 +127,109 @@ namespace scenarioengine
     Class TimeOfDay
     Represents the state of the wind
 
-    animation 	    double      if an animation should be used
-    speed           dateTime  	NOT IMPLEMENTED YET
+    animation 	    True      if an animation should be used, NOT IMPLEMENTED YET
+    speed           dateTime  NOT IMPLEMENTED YET
 
     */
     typedef struct
     {
-        bool animation;
+        bool        animation;
         std::string datetime;
     } TimeOfDay;
-
 
     /*
     Class RoadCondition
     Represents the state of the wind
 
     frictionscalefactor 	    double      the friction scale factor
-    properties                  Properties  additional properties of the RoadCondition
+    wetness                     wetness      the wetness of the road (optional) NOT IMPLEMENTED YET
+    properties                  Properties  additional properties of the RoadCondition (optional) NOT IMPLEMENTED YET
 
     */
     typedef struct
     {
-        double frictionscalefactor;
-        OSCProperties properties;
+        double                       frictionscalefactor;
+        std::optional<WetnessType>   wetness;
+        std::optional<OSCProperties> properties;
     } RoadCondition;
-
 
     /*
     Class OSCEnvironment
     Defines the full environment of OpenSCENARIO
 
     */
+
     class OSCEnvironment
     {
-        public:
-            OSCEnvironment() :
-                pressureset_(false),
-                temperatureset_(false),
-                cloudstateset_(false),
-                fogset_(false),
-                windset_(false),
-                precipitationset_(false),
-                sunset_(false),
-                roadconditionset_(false),
-                timeofdayset_(false)
-            {}
+    public:
+        OSCEnvironment()  = default;
+        ~OSCEnvironment() = default;
 
-            ~OSCEnvironment() {}
+        void      SetTimeOfDay(const TimeOfDay& timeofday);
+        TimeOfDay GetTimeOfDay() const;
+        bool      IsTimeOfDaySet() const;
 
-            void SetAtmosphericPressure(double atmosphericpressure) {atmosphericpressure_ = atmosphericpressure; pressureset_ = true;}
-            bool IsAtmosphericPressure() {return pressureset_;}
-            double GetAtmosphericPressure();
+        void   SetAtmosphericPressure(double atmosphericpressure);
+        double GetAtmosphericPressure() const;
+        bool   IsAtmosphericPressureSet() const;
 
-            void SetTemperature(double temperature) {temperature_ = temperature; temperatureset_ = true;}
-            bool IsTemperature() {return temperatureset_;}
-            double GetTemperature();
+        void   SetTemperature(double temperature);
+        double GetTemperature() const;
+        bool   IsTemperatureSet() const;
 
-            void SetCloudState(CloudState cloudstate) {cloudstate_ = cloudstate; cloudstateset_ = true;}
-            void SetCloudState(CloudState* new_cloudstate) {cloudstate_ = *new_cloudstate; cloudstateset_ = true;}
-            bool IsCloudState() {return cloudstateset_;}
-            CloudState GetCloudState();
+        void        SetCloudState(CloudState cloudstate);
+        void        SetFractionalCloudState(const std::string& fractionalcloudStateStr);
+        std::string GetFractionalCloudState() const;
+        bool        IsFractionalCloudStateSet() const;
+        double      GetFractionalCloudStateFactor() const;
 
-            void SetFog(double visualrange) {fog_.visibility_range = (float)visualrange; fogset_ = true;}
-            void SetFog(double visualrange, OSCBoundingBox bb) {fog_.visibility_range = (float)visualrange; fog_.boundingbox = bb; fogset_ = true;}
-            void SetFog(Fog* new_fog) {fog_ = *new_fog; fogset_ = true;}
-            bool IsFog() {return fogset_;}
-            Fog *GetFog();
+        void   SetSun(const Sun& sun);
+        Sun    GetSun() const;
+        bool   IsSunSet() const;
+        bool   IsSunIntensitySet() const;
+        double GetSunIntensity() const;
+        double GetSunIntensityFactor() const;
 
-            void SetWind(double direction, double speed) {wind_.direction = direction; wind_.speed = speed; windset_ = true; }
-            void SetWind(Wind* new_wind) {wind_ = *new_wind; windset_ = true;}
-            bool IsWind() {return windset_;}
-            Wind *GetWind();
+        void   SetFog(const Fog& fog);
+        void   SetFog(const double visualrange);
+        Fog    GetFog() const;
+        double GetFogVisibilityRangeFactor() const;
+        bool   IsFogSet() const;
+        bool   IsFogBoundingBoxSet() const;
 
-            void SetPrecipitation(double intensity, PrecipitationType type) {precipitation_.precipitationintensity = intensity; precipitation_.precipitationtype = type; precipitationset_ = true;}
-            void SetPrecipitation(Precipitation *new_precipitation) {precipitation_ = *new_precipitation; precipitationset_ = true;}
-            bool IsPrecipitation() {return precipitationset_;}
-            Precipitation *GetPrecipitation();
+        void          SetPrecipitation(const Precipitation& precipitation);
+        Precipitation GetPrecipitation() const;
+        bool          IsPrecipitationSet() const;
+        bool          IsPrecipitationIntensitySet() const;
+        double        GetPrecipitationIntensity() const;
 
-            void SetSun(double azimuth, double elevation, double intensity) {sun_.azimuth = azimuth; sun_.elevation = elevation; sun_.intensity = intensity; sunset_ = true;}
-            void SetSun(Sun *new_sun) {sun_ = *new_sun; sunset_ = true;}
-            bool IsSun() {return sunset_;}
-            Sun *GetSun();
+        void SetWind(const Wind& wind);
+        Wind GetWind() const;
+        bool IsWindSet() const;
 
-            void SetTimeOfDay(bool animation, std::string tod) {timeofday_.animation = animation; timeofday_.datetime = tod; timeofdayset_ = true;}
-            void SetTimeOfDay(TimeOfDay *new_timeofday) {timeofday_ = *new_timeofday;timeofdayset_ = true;}
-            bool IsTimeOfDay() {return timeofdayset_;}
-            TimeOfDay *GetTimeOfDay();
+        bool IsWeatherSet() const;
 
-            void SetRoadCondition(double friction) {roadcondition_.frictionscalefactor = friction; roadconditionset_ = true;}
-            void SetRoadCondition(RoadCondition *new_roadcondition) {roadcondition_ = *new_roadcondition; roadconditionset_ = true;}
-            bool IsRoadCondition() {return roadconditionset_;}
-            RoadCondition *GetRoadCondition();
+        void          SetRoadCondition(const RoadCondition& roadcondition);
+        void          SetRoadCondition(const double friction);
+        RoadCondition GetRoadCondition() const;
+        bool          IsRoadConditionSet() const;
 
-            void UpdateEnvironment(OSCEnvironment *new_environment);
-            bool IsEnvironment();
+        void UpdateEnvironment(const OSCEnvironment& new_environment);
+        bool IsEnvironment() const;
+        bool IsEnvironmentUpdatedInViewer() const;
+        void SetEnvironmentUpdatedInViewer(const bool isEnvironmentUpdatedInViewer);
 
-        private:
-            double atmosphericpressure_;
-            bool pressureset_;
-            double temperature_;
-            bool temperatureset_;
-            CloudState cloudstate_;
-            bool cloudstateset_;
-            Fog fog_;
-            bool fogset_;
-            Wind wind_;
-            bool windset_;
-            Precipitation precipitation_;
-            bool precipitationset_;
-            Sun sun_;
-            bool sunset_;
-            RoadCondition roadcondition_;
-            bool roadconditionset_;
-            TimeOfDay timeofday_;
-            bool timeofdayset_;
-
+    private:
+        std::optional<TimeOfDay>     timeofday_;
+        std::optional<double>        atmosphericpressure_;
+        std::optional<double>        temperature_;
+        std::optional<std::string>   fractionalcloudstate_;
+        std::optional<Sun>           sun_;
+        std::optional<Fog>           fog_;
+        std::optional<Precipitation> precipitation_;
+        std::optional<Wind>          wind_;
+        std::optional<RoadCondition> roadcondition_;
+        bool                         isEnvironmentUpdatedInViewer_ = false;
     };
 
-};
+}  // namespace scenarioengine
