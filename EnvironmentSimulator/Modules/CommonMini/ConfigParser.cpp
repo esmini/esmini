@@ -121,18 +121,11 @@ namespace esmini::common
                     loadedConfigFiles_[canonicalPath] = configFilePaths_[i];
                 }
 
-                try
-                {
-                    ParseYamlFile(configFilePaths_[i]);
-                }
-                catch (const std::exception& e)
-                {
-                    LOG_ERROR("Failed to load config {}: {}", configFilePaths_[i], e.what());
-                }
+                ParseYamlFile(configFilePaths_[i]);
             }
             else
             {
-                LOG_ERROR("Failed to locate config: {}", configFilePaths_[i]);
+                throw std::runtime_error("Failed to locate config: " + configFilePaths_[i]);
             }
         }
 

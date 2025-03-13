@@ -1293,7 +1293,7 @@ std::string GetDefaultPath()
         LOG_ERROR("Failed to get Executable/Library path.");
         return "";
     }
-    LOG_INFO("Executable/Library path: {}", path);
+    LOG_DEBUG("Executable/Library path: {}", path);
     std::string strPath(path);
     return strPath;
 
@@ -1308,7 +1308,7 @@ std::string GetDefaultPath()
         return "";
     }
     std::string path(dl_info.dli_fname);
-    LOG_INFO("Executable/Library path: {}", path);
+    LOG_DEBUG("Executable/Library path: {}", path);
     return path;
 
 #endif

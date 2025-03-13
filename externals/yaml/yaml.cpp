@@ -112,7 +112,7 @@ namespace TINY_YAML {
 	Yaml::Yaml(const std::string& filepath) {
         if (!load(filepath))
         {
-            error_message += "ERROR: Failed parsing " + filepath;
+            error_message.insert(0, "ERROR: Failed loading " + filepath + ". ");
 			throw std::runtime_error(error_message.c_str());
 		}
 	}
@@ -131,7 +131,7 @@ namespace TINY_YAML {
 
 		/*Check the yaml file*/
 		if (!file.is_open()) {
-			error_message += filepath + " cannot be opened";
+			error_message.insert(0, filepath + " cannot be opened. ");
 			file.close();
 			return false;
 		}
@@ -191,8 +191,7 @@ namespace TINY_YAML {
 			}
 
 			if(fstQuotePos != std::string::npos && lstQuotePos == std::string::npos){
-                            error_message += "ERROR: unclosed quote found at line " + std::to_string(line) +
-                                             ". Please close the quote and reparse.";
+                            error_message.insert(0, "Unclosed quote found. ");
 				faulty = true; break;
 			}
 
@@ -219,7 +218,7 @@ namespace TINY_YAML {
 			/* Layer up. (Current line has less indentation than the previous parent = does not belong to it)*/
 			while (parentsStack.size() != 0 && parentsStack.top().second >= firstCharPos) {
 				if (parentsStack.top().first->getChildren().size() == 0) {
-					error_message += "Parent node (layer up) \"" + parentsStack.top().first->getID() + "\" missing children \n";
+					error_message.insert(0, "Node (layer up) \"" + parentsStack.top().first->getID() + "\" missing value or children. ");
 					faulty = true;
 					break;
 				}
@@ -241,7 +240,7 @@ namespace TINY_YAML {
 					/* Since the virtual nodes indentation = dashpos, we have to consider the dashpos now*/
 					while (parentsStack.size() != 0 && parentsStack.top().second >= dashPos) {
                         if (parentsStack.top().first->getChildren().size() == 0) {
-                            error_message += "Parent node (virtual nodes) \"" + parentsStack.top().first->getID() + "\" missing children \n";
+                            error_message.insert(0, "Node (virtual nodes) \"" + parentsStack.top().first->getID() + "\" missing value or children. ");
                             faulty = true;
 							break;
                         }
@@ -309,13 +308,13 @@ namespace TINY_YAML {
 					}
 					else
 					{
-						std::cerr << "Duplicate (root) key \"" << value << "\" found at line: " << line << std::endl;
+						error_message.insert(0, "Duplicate (root) key \"" + value + "\" found. ");
 						faulty = true;
 						break;
 					}
                 }
                 else if (!parentsStack.top().first->append(pnode)) { // Insert at parent level
-					std::cerr << "Duplicate (parent) key \"" << value << "\" found at line: " << line << std::endl;
+					error_message.insert(0, "Duplicate (parent) key \"" + value + "\" found. ");
                     faulty = true;
                     break;
                 }
@@ -325,7 +324,7 @@ namespace TINY_YAML {
 		// check for empty parents
 		while (faulty == false && parentsStack.size() != 0) {
 			if (parentsStack.top().first->getChildren().size() == 0 && !parentsStack.top().third) {
-				error_message += "Parent node (final check) \"" + parentsStack.top().first->getID() + "\" missing children\n";
+                error_message.insert(0, "Parent node (final check) \"" + parentsStack.top().first->getID() + "\" missing children. ");
 				faulty = true;
 				break;
 			}
@@ -333,7 +332,7 @@ namespace TINY_YAML {
 		}
 
 		if (faulty) {
-			error_message += "Yaml Parser: Error: Failed to parse file, invalid yaml syntax at line: " + std::to_string(line) + "\n";
+            error_message.insert(0, "Stopped at line " + std::to_string(line) + ": ");
 			file.close();
 			this->m_roots.clear();
 			return false;

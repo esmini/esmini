@@ -102,8 +102,15 @@ namespace esmini::common
         for (auto rItr = configFilePaths.rbegin(); rItr != configFilePaths.rend(); ++rItr)
         {
             esmini::common::ConfigParser configParser(applicationName_, {*rItr}, loadedConfigFiles_);
-            auto                         configs = configParser.Parse();
-            allConfigs.insert(allConfigs.end(), std::make_move_iterator(configs.begin()), std::make_move_iterator(configs.end()));
+            try
+            {
+                auto configs = configParser.Parse();
+                allConfigs.insert(allConfigs.end(), std::make_move_iterator(configs.begin()), std::make_move_iterator(configs.end()));
+            }
+            catch (const std::exception& e)
+            {
+                LOG_ERROR("{}", e.what());
+            }
         }
 
         // parse config file path(s) from the arguments, if present. And append the configs to the arguments
@@ -146,7 +153,7 @@ namespace esmini::common
         for (const auto& [canonicalPath, relativePath] : loadedConfigFiles_)
         {
             // std::string nativePath{fs::canonical(fs::path(file)).u8string()};
-            LOG_INFO("Loaded config files: {} ({})", canonicalPath, relativePath);
+            LOG_INFO("Loaded config file: {} ({})", canonicalPath, relativePath);
         }
     }
 
