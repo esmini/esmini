@@ -18,6 +18,7 @@
 #include "Parameters.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
+#include "OSCEnvironment.hpp"
 #include "OSCAABBTree.hpp"
 #include <vector>
 #include "OSCUtils.hpp"
@@ -292,6 +293,44 @@ namespace scenarioengine
         void print()
         {
         }
+    };
+
+    class EnvironmentAction : public OSCGlobalAction
+    {
+    public:
+        OSCEnvironment new_environment_;
+
+        EnvironmentAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::ENVIRONMENT, parent){};
+
+        EnvironmentAction(const EnvironmentAction& action, StoryBoardElement* parent) : OSCGlobalAction(ActionType::ENVIRONMENT, parent)
+        {
+            new_environment_ = action.new_environment_;
+        }
+
+        OSCGlobalAction* Copy()
+        {
+            EnvironmentAction* new_action = new EnvironmentAction(*this);
+            return new_action;
+        }
+
+        std::string Type2Str()
+        {
+            return "EnvironmentAction";
+        };
+
+        void Start(double simTime);
+        void Step(double simTime, double dt);
+        void SetEnvironment(OSCEnvironment* environment)
+        {
+            environment_ = environment;
+        }
+        void print()
+        {
+            LOG_INFO("EnvironmentAction");
+        }
+
+    private:
+        OSCEnvironment* environment_;
     };
 
     class ScenarioReader;

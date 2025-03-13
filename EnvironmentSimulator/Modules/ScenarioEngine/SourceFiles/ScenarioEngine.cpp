@@ -54,7 +54,7 @@ void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
     simulationTime_      = 0;
     trueTime_            = 0;
     frame_nr_            = 0;
-    scenarioReader       = new ScenarioReader(&entities_, &catalogs, disable_controllers);
+    scenarioReader       = new ScenarioReader(&entities_, &catalogs, &environment, disable_controllers);
     injected_actions_    = nullptr;
     ghost_               = nullptr;
     SE_Env::Inst().SetGhostMode(GhostMode::NORMAL);

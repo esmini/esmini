@@ -60,6 +60,7 @@ namespace viewer
         NODE_MASK_TRAJECTORY_LINES = (1 << 12),
         NODE_MASK_ROUTE_WAYPOINTS  = (1 << 13),
         NODE_MASK_SIGN             = (1 << 14),
+        NODE_MASK_WEATHER          = (1 << 15),
     } NodeMask;
 
     osg::Vec4 ODR2OSGColor(roadmanager::RoadMarkColor color);
@@ -437,6 +438,11 @@ namespace viewer
         osg::ref_ptr<osg::MatrixTransform>          env_origin2odr_;   // transform the environment to the OpenDRIVE origin
         osg::ref_ptr<osg::MatrixTransform>          root_origin2odr_;  // transform objects to the OpenDRIVE origin
 
+        // Weather stuff
+        osg::ref_ptr<osg::PositionAttitudeTransform> weatherGroup_;  // parent for all OSC Environment related stuff
+        osg::ref_ptr<osg::PositionAttitudeTransform> fogBoundingBox_;
+        int                                          CreateWeatherGroup(scenarioengine::OSCEnvironment* environment);
+
         std::string                   exe_path_;
         std::vector<KeyEventCallback> callback_;
         ImageCallback                 imgCallback_;
@@ -593,6 +599,10 @@ namespace viewer
                                                                 bool                                       decoration,
                                                                 int                                        screenNum,
                                                                 bool                                       headless);
+        int                                          CreateFogBoundingBox(osg::PositionAttitudeTransform* parent);
+        int                                          CreateFog(double range);
+        int                                          UpdateTimeOfDay(double intensity);
+        void                                         SetSunLight(float sunIntensity);
 
         int                                   AddGroundSurface();
         bool                                  keyUp_;

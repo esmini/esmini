@@ -42,6 +42,19 @@ using std::vector;
 
 int SwarmTrafficAction::counter_ = 0;
 
+void EnvironmentAction::Start(double simTime)
+{
+    environment_->UpdateEnvironment(&new_environment_);
+    OSCAction::Start(simTime);
+}
+
+void EnvironmentAction::Step(double simTime, double dt)
+{
+    (void)simTime;
+    (void)dt;
+    OSCAction::Stop();
+}
+
 void ParameterSetAction::Start(double simTime)
 {
     LOG_INFO("Set parameter {} = {}", name_, value_);

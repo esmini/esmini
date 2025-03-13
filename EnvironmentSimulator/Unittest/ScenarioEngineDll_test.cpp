@@ -3474,6 +3474,27 @@ TEST(TestOsiReporter, AssignRoleTest)
     SE_Close();
 }
 
+TEST(EnvironmentTest, OSIForEnvironment)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/environment_test.xosc";
+
+    EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+    SE_StepDT(0.01f);
+    SE_StepDT(0.01f);
+    SE_UpdateOSIGroundTruth();
+    osi3::GroundTruth osi_gt;
+    int               sv_size = 0;
+    const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
+    osi_gt.ParseFromArray(gt, sv_size);
+    EXPECT_EQ(osi_gt.mutable_environmental_conditions()->atmospheric_pressure(), 10000);
+    EXPECT_EQ(osi_gt.mutable_environmental_conditions()->fog(), osi3::EnvironmentalConditions_Fog_FOG_MODERATE_VISIBILITY);
+    EXPECT_EQ(osi_gt.mutable_environmental_conditions()->temperature(), 300);
+    EXPECT_EQ(osi_gt.mutable_environmental_conditions()->ambient_illumination(),
+              osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL8);
+    EXPECT_EQ(osi_gt.mutable_environmental_conditions()->precipitation(), osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_HEAVY);
+    SE_Close();
+}
+
 #endif  // _USE_OSI
 
 TEST(ParameterTest, GetTypedParameterValues)
