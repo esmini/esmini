@@ -453,6 +453,55 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
     return 0;
 }
 
+void OSIReporter::CropOSIDynamicGroundTruth(const int id, const double radius)
+{
+    if (osi_crop_.empty())
+    {
+        osi_crop_.emplace_back(std::make_pair(id, radius));
+    }
+    else
+    {
+        for (size_t i = 0; i < osi_crop_.size(); i++)
+        {
+            if (osi_crop_[i].first == id)
+            {
+                if (radius > SMALL_NUMBER)
+                {
+                    osi_crop_[i].second = radius;
+                }
+                else
+                {
+                    osi_crop_.erase(osi_crop_.begin() + static_cast<int>(i));
+                    LOG_INFO("CropGroundTruth: Removed crop for id %d", id);
+                }
+                return;
+            }
+        }
+        osi_crop_.emplace_back(std::make_pair(id, radius));
+    }
+}
+
+void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &obj)
+{
+    if (obj->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE) ||
+        obj->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
+    {
+        if (obj->state_.info.ctrl_type != Controller::Type::GHOST_RESERVED_TYPE || report_ghost_)
+        {
+            UpdateOSIMovingObject(obj.get());
+            // All non-ghost objects are always updated. Ghosts only on request.
+        }
+        else if (obj->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
+        {
+            // do nothing
+        }
+        else
+        {
+            LOG_WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object", obj->state_.info.obj_type);
+        }
+    }
+}
+
 int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)
 {
     obj_osi_internal.dynamic_gt->clear_moving_object();
@@ -478,25 +527,71 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
         obj_osi_internal.dynamic_gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>(0));
     }
 
-    for (size_t i = 0; i < objectState.size(); i++)
+    // Set OSI Moving Object Position
+    // As OSI defines the origin of the object coordinates in the center of the bounding box and esmini (as OpenSCENARIO)
+    // at the center of the rear axle, the position needs to be transformed.
+    // For the transformation the orientation of the object has to be taken into account.
+    for (const auto &obj : objectState)
     {
-        if (objectState[i]->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE) ||
-            objectState[i]->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
+        obj->state_.pos.SetOsiXYZ(obj->state_.info.boundingbox.center_.x_,
+                                  obj->state_.info.boundingbox.center_.y_,
+                                  obj->state_.info.boundingbox.center_.z_);
+    }
+
+    if (osi_crop_.empty())
+    {
+        for (const auto &obj : objectState)
         {
-            if (objectState[i]->state_.info.ctrl_type != Controller::Type::GHOST_RESERVED_TYPE || report_ghost_)
+            CheckDynamicTypeAndUpdate(obj);
+        }
+    }
+    else
+    {
+        std::unordered_set<int> ids_added;
+        for (const auto &crop : osi_crop_)
+        {
+            ObjectState *crop_obj = nullptr;
+            for (const auto &obj : objectState)
             {
-                // All non-ghost objects are always updated. Ghosts only on request.
-                UpdateOSIMovingObject(objectState[i].get());
+                if (obj->state_.info.id == crop.first)  // Find the crop ObjectState
+                {
+                    crop_obj = obj.get();
+                    break;
+                }
             }
-        }
-        else if (objectState[i]->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
-        {
-            // do nothing
-        }
-        else
-        {
-            LOG_WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object",
-                     objectState[i]->state_.info.obj_type);
+
+            if (crop_obj == nullptr)
+            {
+                LOG_WARN("Warning: Object with id {} not found in the scenario, and hence no OSI update around this object", crop.first);
+                continue;
+            }
+
+            for (const auto &obj : objectState)
+            {
+                bool update = false;
+                if (crop_obj->state_.info.id == obj->state_.info.id)  // Update the crop object itself
+                {
+                    update = true;
+                }
+                else
+                {
+                    // Check OSI relative distance
+                    double rel_dist = pow(crop_obj->state_.pos.GetOsiX() - obj->state_.pos.GetOsiX(), 2) +
+                                      pow(crop_obj->state_.pos.GetOsiY() - obj->state_.pos.GetOsiY(), 2) +
+                                      pow(crop_obj->state_.pos.GetOsiZ() - obj->state_.pos.GetOsiZ(), 2);
+
+                    if (rel_dist < crop.second * crop.second)  // Update the object if it is within the crop distance
+                    {
+                        update = true;
+                    }
+                }
+
+                if (update && !ids_added.count(obj->state_.info.id))  // Update only once
+                {
+                    ids_added.insert(obj->state_.info.id);
+                    CheckDynamicTypeAndUpdate(obj);
+                }
+            }
         }
     }
 
@@ -879,24 +974,10 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_width(objectState->state_.info.boundingbox.dimensions_.width_);
     obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_length(objectState->state_.info.boundingbox.dimensions_.length_);
 
-    // Set OSI Moving Object Position
-    // As OSI defines the origin of the object coordinates in the center of the bounding box and esmini (as OpenSCENARIO)
-    // at the center of the rear axle, the position needs to be transformed.
-    // For the transformation the orientation of the object has to be taken into account.
-    double x_rel, y_rel, z_rel;
-    RotateVec3d(objectState->state_.pos.GetH(),
-                objectState->state_.pos.GetP(),
-                objectState->state_.pos.GetR(),
-                objectState->state_.info.boundingbox.center_.x_,
-                objectState->state_.info.boundingbox.center_.y_,
-                objectState->state_.info.boundingbox.center_.z_,
-                x_rel,
-                y_rel,
-                z_rel);
-
-    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetX() + x_rel);
-    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetY() + y_rel);
-    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetZ() + z_rel);
+    // OSI XYZ is center of BB, have been calculated in SetOsiXYZ
+    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_x(objectState->state_.pos.GetOsiX());
+    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_y(objectState->state_.pos.GetOsiY());
+    obj_osi_internal.mobj->mutable_base()->mutable_position()->set_z(objectState->state_.pos.GetOsiZ());
 
     // Set OSI Moving Object Orientation
     obj_osi_internal.mobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetR()));

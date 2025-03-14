@@ -6427,6 +6427,9 @@ void Position::Init()
     snapToLaneTypes_        = Lane::LaneType::LANE_TYPE_ANY_DRIVING;
     status_                 = 0;
     lockOnLane_             = false;
+    osi_x_                  = 0.0;
+    osi_y_                  = 0.0;
+    osi_z_                  = 0.0;
 
     z_road_              = 0.0;
     track_idx_           = IDX_UNDEFINED;

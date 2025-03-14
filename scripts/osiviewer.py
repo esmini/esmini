@@ -43,6 +43,7 @@ class BBObject:
         self.width = width
         self.height = height
         self.kf = []
+        self.render = True
         self.patch = None
         self.ref_point = None
         self.ax = axes
@@ -50,8 +51,8 @@ class BBObject:
         self.draw()
         self.update(x, y, h, v)
 
-    def add_keyframe(self, timestamp, x, y, h, v):
-        self.kf.append((timestamp, x, y, h, v))
+    def add_keyframe(self, timestamp, x, y, h, v, i):
+        self.kf.append((timestamp, x, y, h, v, i))
 
     def draw(self):
         # reference point at center of the bounding box
@@ -63,12 +64,15 @@ class BBObject:
         self.ax.add_patch(self.ref_point)
         self.ref_point.set_transform(self.transform + self.ax.transData)
 
+
     def update(self, x, y, h, v):
         self.x = x
         self.y = y
         self.h = h
         self.v = v
         self.transform.clear().rotate_deg(np.rad2deg(self.h)).translate(self.x, self.y)
+        self.patch.set_visible(self.render)
+        self.ref_point.set_visible(self.render)
 
     def set_time(self, time, interpolate=True):
         i=0
@@ -101,8 +105,14 @@ class BBObject:
             v[3] = np.mod(angels[0] + w*(angels[1] - angels[0]), 2 * np.pi)
         else:
             v = self.kf[i]
-        self.update(*v[1:])
         self.current_idx = i
+
+        # Keyframes store valid indices to render in pos [-1] (end), if found idx doesn't have a valid index, don't render
+        self.render = True
+        if self.current_idx != self.kf[self.current_idx][-1]:
+            self.render = False
+
+        self.update(*v[1:-1])
 
 class BBObjects:
     def __init__(self):
@@ -120,6 +130,7 @@ class BBObjects:
     def set_time(self, current_time, interpolate=True):
         for bb in self.bb_objects:
             bb.set_time(current_time, interpolate)
+
 
 class View:
     def __init__(self, gt, filename):
@@ -146,6 +157,7 @@ class View:
         self.picked = False
         self.bb_objects = BBObjects()
         self.nr_objects = len(self.gt.moving_object)
+        self.slider_idx = 0
 
         # create the figure canvas and axis
         px = 1/plt.rcParams['figure.dpi']  # pixel size in inches
@@ -422,6 +434,7 @@ class View:
         self.time_slider.set_val(val)
 
     def set_time(self, val):
+        self.slider_idx
         self.current_time = val
         self.bb_objects.set_time(self.current_time, self.checks.get_status()[1])
         self.update_follow_text()
@@ -778,6 +791,7 @@ class OSIFile:
             print('ERROR: Could not open file {} for reading'.format(self.filename))
             exit(-1)
 
+        ctr = 0        
         while self.read_next_message():
             timestamp = self.gt.timestamp.seconds + self.gt.timestamp.nanos * 1e-9
             if self.view is None:
@@ -785,6 +799,8 @@ class OSIFile:
                 self.first_timestamp = timestamp
                 self.view = View(self.gt, self.filename)
             if len(self.gt.moving_object) > 0:
+                if len(self.gt.moving_object) > self.view.nr_objects:
+                    self.view.nr_objects = len(self.gt.moving_object)
                 # retrieve timestamp
                 timestamp = self.gt.timestamp.seconds + self.gt.timestamp.nanos * 1e-9 - self.first_timestamp
                 for obj in self.gt.moving_object:
@@ -795,7 +811,23 @@ class OSIFile:
                             bb = BBObject(obj.id.value, obj.base.position.x, obj.base.position.y, obj.base.orientation.yaw, v, obj.base.dimension.length, obj.base.dimension.width, self.view.ax)
                             self.view.add_bb_object(bb)
                         # add keyframe
-                        bb.add_keyframe(timestamp, obj.base.position.x, obj.base.position.y, obj.base.orientation.yaw, v)
+                        bb.add_keyframe(timestamp, obj.base.position.x, obj.base.position.y, obj.base.orientation.yaw, v, ctr)
+            ctr += 1
+        
+        # Fill in the missing keyframes for each object
+        for bb in self.view.bb_objects.bb_objects:
+            if not bb.kf:
+                continue  # Skip if the object has no keyframes
+
+            last_known_kf = bb.kf[0]  # Start with the first known keyframe
+            existing_indices = {kf[-1] for kf in bb.kf}  # Extract known indices
+
+            for i in range(ctr):
+                if i not in existing_indices:
+                    bb.kf.insert(i, last_known_kf)  # Duplicate last known keyframe at missing index
+                else:
+                    last_known_kf = bb.kf[i]  # Found a known keyframe, update last known
+
         if self.view is not None:
             self.view.set_last_timestamp(timestamp)
 

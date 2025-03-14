@@ -3554,6 +3554,19 @@ namespace roadmanager
         */
         double GetZ() const;
 
+        double GetOsiX() const
+        {
+            return osi_x_;
+        }
+        double GetOsiY() const
+        {
+            return osi_y_;
+        }
+        double GetOsiZ() const
+        {
+            return osi_z_;
+        }
+
         /**
         Retrieve the world coordinate Z-value relative to road surface
         */
@@ -3710,6 +3723,14 @@ namespace roadmanager
         void SetT(double t)
         {
             t_ = t;
+        }
+        void SetOsiXYZ(double x_offset, double y_offset, double z_offset)
+        {
+            double x_rel, y_rel, z_rel;
+            RotateVec3d(this->GetH(), this->GetP(), this->GetR(), x_offset, y_offset, z_offset, x_rel, y_rel, z_rel);
+            osi_x_ = this->GetX() + x_rel;
+            osi_y_ = this->GetY() + y_rel;
+            osi_z_ = this->GetZ() + z_rel;
         }
         void SetX(double x)
         {
@@ -4105,6 +4126,9 @@ namespace roadmanager
         double z_roadPrim_;              // the road vertical slope (dz/ds)
         double z_roadPrimPrim_;          // rate of change of the road slope, like the vertical curvature
         double roadSuperElevationPrim_;  // rate of change of the road superelevation/lateral inclination
+        double osi_x_;
+        double osi_y_;
+        double osi_z_;
 
         // keep track for fast incremental updates of the position
         idx_t track_idx_;            // road index

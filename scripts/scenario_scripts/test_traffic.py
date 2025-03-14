@@ -95,7 +95,7 @@ class Scenario(ScenarioGenerator):
         # Iterate over all vehicle positions, and create targets with suitable parameters and positions
         for i in range(1, len(vehicles)):
             targetname = f"Target{i}"
-            target_set_speed = 20 # m/s
+            target_set_speed = 20
             man_group = xosc.ManeuverGroup(f"{targetname}_man_group")
             entities.add_scenario_object(
                     targetname, xosc.CatalogReference("VehicleCatalog", vehicles[i]["catalog_name"]),
@@ -103,7 +103,7 @@ class Scenario(ScenarioGenerator):
                 )
             noise_pc = random.uniform(0.8, 1.2)
             entities.scenario_objects[i].controller[0].add_parameter_assignment("DesiredDistance", 5 * noise_pc)
-            entities.scenario_objects[i].controller[0].add_parameter_assignment("DesiredSpeed", target_set_speed * noise_pc) # Takes kph
+            entities.scenario_objects[i].controller[0].add_parameter_assignment("DesiredSpeed", target_set_speed * noise_pc)
             entities.scenario_objects[i].controller[0].add_parameter_assignment("LaneChangeDuration", 3 * noise_pc)
             entities.scenario_objects[i].controller[0].add_parameter_assignment("LookAheadDistance", 115 * noise_pc)
             entities.scenario_objects[i].controller[0].add_parameter_assignment("MaxDec", -5.0 * noise_pc)

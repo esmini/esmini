@@ -125,6 +125,10 @@ public:
     Fills the Traffic Commands (scenario events)
     */
     int UpdateOSITrafficCommand();
+    /**
+    Crops the dynamic groundtruth around an object
+    */
+    void CropOSIDynamicGroundTruth(const int id, const double radius);
 
     void ExcludeGhost()
     {
@@ -157,6 +161,7 @@ public:
     void              GetOSILaneBoundaryIds(const std::vector<std::unique_ptr<ObjectState>>& objectState, std::vector<id_t>& ids, int object_id);
     const char*       GetOSISensorDataRaw();
     osi3::SensorView* GetSensorView();
+    void              CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState>& objectState);
     bool              IsCentralOSILane(int lane_idx);
     idx_t             GetLaneIdxfromIdOSI(id_t lane_id);
     osi3::Lane*       GetOSILaneFromGlobalId(id_t lane_global_id);
@@ -215,18 +220,19 @@ public:
     }
 
 private:
-    UDPClient*             udp_client_;
-    ScenarioEngine*        scenario_engine_;
-    unsigned long long int nanosec_;
-    std::ofstream          osi_file;
-    int*                   osi_update_counter_ = nullptr;
-    int                    counter_offset_     = 0;
-    int                    osi_freq_           = 0;
-    std::string            stationary_model_reference;
-    void                   CreateMovingObjectFromSensorData(const osi3::SensorData& sd, int obj_nr);
-    void                   CreateLaneBoundaryFromSensordata(const osi3::SensorData& sd, int lane_boundary_nr);
-    bool                   osi_updated_        = false;
-    bool                   osi_initialized_    = false;
-    bool                   report_ghost_       = true;
-    OSIStaticReportMode    static_update_mode_ = OSIStaticReportMode::DEFAULT;
+    UDPClient*                          udp_client_;
+    ScenarioEngine*                     scenario_engine_;
+    unsigned long long int              nanosec_;
+    std::ofstream                       osi_file;
+    int*                                osi_update_counter_ = nullptr;
+    int                                 counter_offset_     = 0;
+    int                                 osi_freq_           = 0;
+    std::string                         stationary_model_reference;
+    void                                CreateMovingObjectFromSensorData(const osi3::SensorData& sd, int obj_nr);
+    void                                CreateLaneBoundaryFromSensordata(const osi3::SensorData& sd, int lane_boundary_nr);
+    bool                                osi_updated_        = false;
+    bool                                osi_initialized_    = false;
+    bool                                report_ghost_       = true;
+    OSIStaticReportMode                 static_update_mode_ = OSIStaticReportMode::DEFAULT;
+    std::vector<std::pair<int, double>> osi_crop_           = {};  // id, radius
 };

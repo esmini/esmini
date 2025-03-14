@@ -1323,6 +1323,69 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
     SE_Close();
 }
 
+TEST(GroundTruthTests, osi_ground_truth_crop_bad_id)
+{
+    const osi3::GroundTruth* osi_gt_ptr;
+
+    ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
+    SE_CropOSIDynamicGroundTruth(3, 100.0);  // Id doesn't exist in scenario
+
+    osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 0);
+
+    SE_Close();
+}
+
+TEST(GroundTruthTests, osi_ground_truth_crop)
+{
+    const osi3::GroundTruth* osi_gt_ptr;
+
+    ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
+    SE_CropOSIDynamicGroundTruth(0, 30.0);
+
+    osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_CropOSIDynamicGroundTruth(0, 5.0);
+    SE_StepDT(0.01f);
+
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 1);
+
+    SE_CropOSIDynamicGroundTruth(0, 0.0);
+    SE_StepDT(0.01f);
+
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_Close();
+}
+
+TEST(GroundTruthTests, osi_ground_truth_crop_multiple_objects)
+{
+    const osi3::GroundTruth* osi_gt_ptr;
+
+    ASSERT_EQ(SE_Init("../../../resources/xosc/lane_change_crest.xosc", 0, 0, 0, 0), 0);
+    SE_CropOSIDynamicGroundTruth(0, 30.0);
+    SE_CropOSIDynamicGroundTruth(1, 30.0);
+
+    osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 3);
+
+    SE_CropOSIDynamicGroundTruth(0, 0.0);
+    SE_StepDT(0.01f);
+
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_CropOSIDynamicGroundTruth(1, 0.0);
+    SE_StepDT(0.01f);
+
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 3);
+
+    SE_Close();
+}
+
 TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 {
     int               sv_size = 0;

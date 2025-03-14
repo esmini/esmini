@@ -2386,7 +2386,7 @@ The desired lane for the controller vehicle is set with a parameter (named "Rout
 
 The model is fully parameterized to suit the desired need of each simulation. For all properties see `NaturalDriver` in https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc[Controllers/ControllerCatalog.xosc].
 
-Example usage can be found in https://github.com/esmini/esmini/blob/master/scripts/scenario_scripts/generate_traffic.py
+Example usage can be found in https://github.com/esmini/esmini/blob/master/scripts/scenario_scripts/test_traffic.py
 
 Demo (running scenario https://github.com/esmini/esmini/blob/master/resources/xosc/highway_driver.xosc):
 
@@ -3594,6 +3594,29 @@ OSI data can be retrieved in three ways:
 
 Call `SE_EnableOSIFile(filename)` in order to create a OSI tracefile. Specify custom filename or set 0 or "" to use default filename (currently "ground_truth.osi").
 
+===== OSI settings
+
+The following settings are available for OSI via API:
+
+* `SE_SetOSIFrequency(int frequency)` +
+  how frequent the OSI data shall be updated (*default* 1, i.e. every frame)
+* `SE_SetOSIStaticReportMode(SE_OSIStaticReportMode mode)` +
+  how to report and log static objects in OSI (*default* is to report and log only once)
+* `SE_ExcludeGhostFromGroundTruth()` +
+  exclude ghost object from OSI groundtruth (*default* is to include ghost)
+* `SE_CropOSIDynamicGroundTruth(int id, double radius)` +
+  crop dynamic OSI groundtruth around an entity (*default* is to include all)
+
+See https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[esminiLib.hpp] for more API details.
+
+Corresponding functions are available via command line arguments:
+
+- `--osi_freq <frequency>`
+- `--osi_static_reporting_mode <mode>`
+- `--osi_exclude_ghost`
+
+See <<_esmini>>, or run: `esmini --help`, for full option description.
+
 ===== OSI via UDP
 
 By launch argument `--osi_receiver_ip <ip addr>` you can have esmini sending OSI packeges in UDP frames. The socket port is hardcoded but can of course be changed in the code (OSI_OUT_PORT in https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.cpp)[OSIReporter.cpp]).
@@ -3607,39 +3630,29 @@ Fetch OSI data by either one of the API calls:
 - `SE_GetOSIGroundTruthRaw()`
 - `SE_GetOSIGroundTruth(int* size)`
 
-The "raw" version will simply return a pointer to the already existing OSI data structure. No additional data copying will be performed. This is the preferered option if:
+The "raw" version will simply return a pointer to the already existing OSI data structure, no additional data copying will be performed. The "raw" option is the preferered option if the application is coded in C++, making the Protobuf data structures fully compatible.
 
-1. The application is coded in C++, making the Protobuf data structures fully compatible
-2. The data is read before next call to `SE_UpdateOSIGroundTruth(bool refetchStaticGt)`, which will update the data
-
-See code example: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/osi-groundtrut[osi-groundtruth], also covered in User guide - Hello world tutorial https://esmini.github.io/#_osi_groundtruth[OSI groundtruth].
+See code example: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/osi-groundtruth[osi-groundtruth], also covered in User guide - Hello world tutorial https://esmini.github.io/#_osi_groundtruth[OSI groundtruth].
 
 The second function will fetch the OSI data serialized into a string. This will be a true copy and also generic format which can be parsed in any environment, independent of OS and programming language. The backside is additional resources needed for the copying and serialization.
 
-See code examples in ScenarioEngineDLL test cases, e.g: https://github.com/esmini/esmini/blob/7d1249dc65883cb9eebb4a611ea401434b2b0e49/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp#L741-L786[receive_GroundTruth].
+See code examples in ScenarioEngineDLL test cases, e.g: https://github.com/esmini/esmini/blob/d3bd16ea0aaf11b04929bc8c9d9191922000c383/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp#L953-L997[receive_GroundTruth].
 
 [Note]
 ====
 **Note:**
 
-`SE_UpdateOSIGroundTruth(bool refetchStaticGt)` needs to be called after each `SE_Step*` in order to prepare and populate OSI data. This function will also save the OSI frame to file and send over UDP, if requested. Only after this preparation the `SE_GetOSIGroundTruth*` functions will get updated OSI data.
+OSI groundtruth reported via the API always contains both static and dynamic objects in the first frame. By default subsequent frames will only contain dynamic objects. The same data is also stored in the OSI log file, given that the log file is enabled.
 
-An exception is when OSI file or UDP receiver is specified by corresponding launch arguments `--osi_file [filename]` and `--osi_receiver_ip <ip addr>`. Then, OSI groundtruth will automatically be updated by esmini according to specified multiplier `--osi_freq <number>`. For example, `--osi_freq 3` will update OSI every third step.
+However, the behavior can be configured as follows:
 
-The purpose of this explicit OSI update control is to support use cases where esmini is running at much higher frequency than needed for OSI data (e.g. for vehicle dynamics purposes). To optimize performance, OSI update can then be skipped most frames and only run when needed.
+The dynamic objects are reported every frame. How the static objects are reported and logged can be controlled by `SE_SetOSIStaticReportMode` function. The available options are according to the enum `SE_OSIStaticReportMode`:
 
-The bool argument `refetchStaticGt` affects the data received from the next `SE_GetOSIGroundTruth*` functions as follows:
+- `SE_OSIStaticReportMode::DEFAULT` - Report and log static objects only once
+- `SE_OSIStaticReportMode::API` - Report static objects in every frame, but only once in the log file
+- `SE_OSIStaticReportMode::API_AND_LOG` - Report and log static objects every frame
 
-- `SE_UpdateOSIGroundTruth(false)`: OSI groundtruth will not contain static data, except the first frame (after `SE_Init()` and before first call to `SE_Step*`) which always does.
-- `SE_UpdateOSIGroundTruth(true)`: OSI groundtruth will contain static data, and the static data is assumed to be constant throughout the simulation.
-
-`refetchStaticGt = false` is default and should be good for most use cases.
-
-OSI log file is not affected by the `refetchStaticGt` flag. It will always contain static data and only in first frame.
-
-Also, just for information: If OSI frequency option is set, the SE_Step* function will internally update OSI in accordance with `SE_UpdateOSIGroundTruth(false)`, as described above. For example, setting osi_freq to 1, will update OSI each frame. Hence, there is no need to call `SE_UpdateOSIGroundTruth*`, unless static data is desired.
-
-BTW: Any additional explicit calls to `SE_UpdateOSIGroundTruth*` in the same frame will be ignored. Which means that the programmer does not have to worry about additional performance penalty introduced by multiple calls to this function.
+OSI groundtruth will be up to date automatically after each `SE_Step*` depending on the OSI frequency, which can be changed to facilitate use-cases where esmini is running at much higher frequency than needed for OSI data (e.g. for vehicle dynamics purposes). To optimize performance, OSI update can then be skipped most frames and only run when needed. For example: `SE_SetOSIFrequency(20);` will update OSI data only every 20th frame.
 ====
 
 ==== Program Options

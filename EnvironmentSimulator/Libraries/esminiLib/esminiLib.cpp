@@ -1739,6 +1739,19 @@ extern "C"
         return 0;
     }
 
+    SE_DLL_API void SE_CropOSIDynamicGroundTruth(int id, double radius)
+    {
+#ifdef _USE_OSI
+        if (player != nullptr)
+        {
+            player->osiReporter->CropOSIDynamicGroundTruth(id, radius);
+        }
+#else
+        (void)id;
+        (void)radius;
+#endif  // _USE_OSI
+    }
+
     SE_DLL_API int SE_UpdateOSITrafficCommand()
     {
 #ifdef _USE_OSI

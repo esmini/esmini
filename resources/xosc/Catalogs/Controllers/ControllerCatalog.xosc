@@ -163,8 +163,8 @@
             <ParameterDeclarations>
                 <!-- Desired distance to keep to target in front, rough freespace (IDM "s0") -->
                 <ParameterDeclaration name="DesiredDistance" parameterType="double" value="5"/>
-                <!-- Desired speed that the vehicle  wants to keep (IDM "v0") [kph] -->
-                <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="50"/>
+                <!-- Desired speed that the vehicle  wants to keep (IDM "v0") [m/s] -->
+                <ParameterDeclaration name="DesiredSpeed" parameterType="double" value="13.89"/>
                 <!-- Duration of the lane change -->
                 <ParameterDeclaration name="LaneChangeDuration" parameterType="double" value="3"/>
                 <!-- How far the vehicle should look ahead (and behind) for other vehicles -->

@@ -1442,13 +1442,20 @@ extern "C"
             @return 0
     */
     SE_DLL_API void SE_FlushOSIFile();
+    /**
+     *      The SE_CropGroundTruth will limit the area of the dynamic groundtruth data to a circle with the specified radius around the given object
+     * id Using the method repeatedly with different object ids will crop the groundtruth data around all objects specified Setting the radius to 0
+     * will remove the cropping
+     *      @return 0
+     */
+    SE_DLL_API void SE_CropOSIDynamicGroundTruth(int id, double radius);
 
     /**
      *      Setting the OSI report mode of the static ground truth data. Default is applied if function not used.
      *      @param mode DEFAULT=Static data in API and log first frame only, API=Static data always in API but only logged first frame and
-     API_AND_LOG=Static data always in API and logged.
-            @return 0
-    */
+     * API_AND_LOG=Static data always in API and logged.
+     *     @return 0
+     */
     SE_DLL_API void SE_SetOSIStaticReportMode(SE_OSIStaticReportMode mode);
 
     /**
