@@ -1435,6 +1435,8 @@ extern "C"
     */
     SE_DLL_API void SE_FlushOSIFile();
 
+    SE_DLL_API void SE_CropGroundTruth(int id, double radius);
+
     /**
             The SE_ClearOSIGroundTruth clears the certain groundtruth data
             This function should only be used together with SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth

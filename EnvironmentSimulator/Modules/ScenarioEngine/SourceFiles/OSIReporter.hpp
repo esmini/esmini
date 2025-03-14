@@ -123,6 +123,11 @@ public:
     */
     int UpdateOSITrafficCommand();
 
+    void CropGroundTruth(const int id, const double radius)
+    {
+        osi_crop_ = {id, radius};
+    }
+
     std::vector<TrafficCommandStateChange> traffic_command_state_changes_;
 
     void RegisterTrafficCommandStateChange(OSCPrivateAction* action, StoryBoardElement::State state, StoryBoardElement::Transition transition)
@@ -206,4 +211,5 @@ private:
     bool                   osi_file_written_      = false;
     int                    osi_static_gt_loaded_  = -1;
     int                    osi_dynamic_gt_loaded_ = -1;
+    std::pair<int, double> osi_crop_             = {-1, 0.0};
 };
