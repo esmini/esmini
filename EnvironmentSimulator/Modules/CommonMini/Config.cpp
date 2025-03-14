@@ -101,7 +101,7 @@ namespace esmini::common
         // there is a possibility that the config file path is already set in options, maybe through the api call
         // so we need to parse those config files as well. Since, order of appearance matters, so we will reverse iterate
         SE_Options& opt             = SE_Env::Inst().GetOptions();
-        const auto& configFilePaths = opt.GetOptionArgs(CONFIG_FILE_OPTION_NAME);
+        auto        configFilePaths = opt.GetOptionArgs(CONFIG_FILE_OPTION_NAME);
         for (auto rItr = configFilePaths.rbegin(); rItr != configFilePaths.rend(); ++rItr)
         {
             esmini::common::ConfigParser configParser(applicationName_, {*rItr}, loadedConfigFiles_);
@@ -112,7 +112,7 @@ namespace esmini::common
             }
             allConfigs.insert(allConfigs.end(), std::make_move_iterator(configs.begin()), std::make_move_iterator(configs.end()));
         }
-
+        opt.UnsetOption(CONFIG_FILE_OPTION_NAME);
         // parse config file path(s) from the arguments, if present. And append the configs to the arguments
         std::string configFilePathOption = fmt::format("--{}", CONFIG_FILE_OPTION_NAME);
         for (int i = 1; i < argc_; ++i)
