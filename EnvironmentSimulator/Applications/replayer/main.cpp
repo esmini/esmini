@@ -454,7 +454,15 @@ int main(int argc, char** argv)
     int                    argc_;
     char**                 argv_;
     esmini::common::Config config("replayer", argc, argv);
-    std::tie(argc_, argv_) = config.Load();
+    try
+    {
+        std::tie(argc_, argv_) = config.Load();
+    }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR("Exception: {}", e.what());
+        return -1;
+    }
 
     if (opt.ParseArgs(argc_, argv_) != 0 || argc_ < 2)
     {

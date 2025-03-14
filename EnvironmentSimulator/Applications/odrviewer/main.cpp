@@ -465,7 +465,15 @@ int main(int argc, char **argv)
     int                    argc_;
     char                 **argv_;
     esmini::common::Config config("odrviewer", argc, argv);
-    std::tie(argc_, argv_) = config.Load();
+    try
+    {
+        std::tie(argc_, argv_) = config.Load();
+    }
+    catch (const std::exception &e)
+    {
+        LOG_ERROR("Exception: {}", e.what());
+        return -1;
+    }
 
     std::vector<std::string> args;
     for (int i = 0; i < argc_; i++)
