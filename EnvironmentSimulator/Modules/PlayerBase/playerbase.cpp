@@ -1257,6 +1257,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
 #ifdef _USE_OSI
+    opt.AddOption("osi_exclude_ghost", "Excludes ghost from osi dynamic osi ground truth");
     opt.AddOption("osi_file", "Save osi trace file", "filename", DEFAULT_OSI_TRACE_FILENAME);
     opt.AddOption("osi_freq", "Decrease OSI file entries, e.g. --osi_freq 2 -> OSI written every two simulation steps", "frequency");
     opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
@@ -1650,6 +1651,11 @@ int ScenarioPlayer::Init()
         {
             osiReporter->SetOSIFrequency(1);
         }
+    }
+
+    if (opt.GetOptionSet("osi_exclude_ghost"))
+    {
+        osiReporter->ExcludeGhost();
     }
 
     std::string osi_filename;

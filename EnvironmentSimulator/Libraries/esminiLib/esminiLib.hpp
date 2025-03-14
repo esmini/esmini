@@ -1452,12 +1452,10 @@ extern "C"
     SE_DLL_API void SE_SetOSIStaticReportMode(SE_OSIStaticReportMode mode);
 
     /**
-     *      Setting whether the dynamic ground truth shall include the ghost vehicle or not (only applicable when using a controller which has a ghost
-     vehicle)
-            @param includeGhost Flag to include ghost vehicle in dynamic ground truth (default is true)
+     *      Excluding ghost vehicle from dynamic ground truth (default is to include)
             @return 0
     */
-    SE_DLL_API void SE_GhostInGroundTruth(bool includeGhost);
+    SE_DLL_API void SE_ExcludeGhostFromGroundTruth();
 
     /**
      *      The SE_SetOSIFrequency function sets the frequency of OSI data updates

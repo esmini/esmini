@@ -1558,6 +1558,10 @@ extern "C"
 #ifdef _USE_OSI
         if (player != nullptr)
         {
+            if (player->osiReporter->GetOSIFrequency() == 0)
+            {
+                player->osiReporter->SetOSIFrequency(1);
+            }
             player->osiReporter->SetOSIStaticReportMode(static_cast<OSIReporter::OSIStaticReportMode>(mode));
         }
         else
@@ -1703,15 +1707,17 @@ extern "C"
         return;
     }
 
-    SE_DLL_API void SE_GhostInGroundTruth(bool reportGhost)
+    SE_DLL_API void SE_ExcludeGhostFromGroundTruth()
     {
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            player->osiReporter->ReportGhost(reportGhost);
+            player->osiReporter->ExcludeGhost();
         }
-#else
-        (void)reportGhost;
+        else
+        {
+            SE_Env::Inst().GetOptions().SetOptionValue("osi_exclude_ghost", "");
+        }
 #endif  // _USE_OSI
         return;
     }

@@ -126,9 +126,10 @@ public:
     */
     int UpdateOSITrafficCommand();
 
-    void ReportGhost(bool report_ghost)
+    void ExcludeGhost()
     {
-        report_ghost_ = report_ghost;
+        report_ghost_ = false;
+        LOG_INFO("Excluding ghost from ground truth");
     }
 
     std::vector<TrafficCommandStateChange> traffic_command_state_changes_;
