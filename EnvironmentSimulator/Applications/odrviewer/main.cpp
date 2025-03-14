@@ -418,10 +418,8 @@ int main(int argc, char **argv)
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many .tga files will be created");
     opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, true, false);
-    opt.AddOption("custom_fixed_camera",
-                  "Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)",
-                  "position and optional orientation");
-    opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot> (multiple occurrences supported)", "position and rotation");
+    opt.AddOption("custom_fixed_camera", "Additional custom camera position <x,y,z>[,h,p]", "position and optional orientation", "", false, false);
+    opt.AddOption("custom_fixed_top_camera", "Additional custom top camera <x,y,z,rot>", "position and rotation", "", false, false);
     opt.AddOption("density", "density (cars / 100 m)", "density", std::to_string(density));
     opt.AddOption("enforce_generate_model", "Generate road 3D model even if --model is specified");
     opt.AddOption("disable_log", "Prevent logfile from being created");
@@ -445,7 +443,7 @@ int main(int argc, char **argv)
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
     opt.AddOption("osi_lines", "Show OSI road lines. Toggle key 'u'");
     opt.AddOption("osi_points", "Show OSI road points. Toggle key 'y'");
-    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported", "path", "", false, false);
+    opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files.", "path", "", false, false);
     opt.AddOption("pause", "Pause simulation after initialization. Press 'space' to start.");
     opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
     opt.AddOption("save_generated_model", "Save generated 3D model (n/a when a scenegraph is loaded)");

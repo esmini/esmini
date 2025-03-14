@@ -79,6 +79,8 @@ static const char* entityModelsFilesFallbackList_[] = {
     "truck_trailer.osgb",
 };
 
+const std::string mandatoryIndicator = "...";
+
 const char* esmini_git_tag(void)
 {
     return ESMINI_GIT_TAG;
@@ -1826,13 +1828,14 @@ void SE_Mutex::Unlock()
 
 void SE_Option::Usage() const
 {
+    std::string showMandatoryStr = isSingleValueOption_ ? "" : "...";
     if (!default_value_.empty())
     {
-        printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? ('[' + opt_arg_ + ']').c_str() : "");
+        printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? ('[' + opt_arg_ + ']' + showMandatoryStr).c_str() : "");
     }
     else
     {
-        printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? ('<' + opt_arg_ + '>').c_str() : "");
+        printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? ('<' + opt_arg_ + '>' + showMandatoryStr).c_str() : "");
     }
 
     if (autoApply_)
@@ -2095,21 +2098,32 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
             option->set_ = true;
             if (option->opt_arg_ != "")
             {
-                if (i < static_cast<unsigned int>(argc - 1) && strncmp(args[i + 1], "--", 2))
+                bool settingSuccess = false;
+                do
                 {
-                    if (option->isSingleValueOption_)
+                    if (i < static_cast<unsigned int>(argc - 1) && strncmp(args[i + 1], "--", 2))
                     {
-                        option->arg_value_.clear();
+                        settingSuccess = true;
+                        if (option->isSingleValueOption_)
+                        {
+                            option->arg_value_.clear();
+                        }
+                        //  we want to insert the value at the beginning of the vector to give last entry priority
+                        option->arg_value_.insert(option->arg_value_.begin(), args[i + 1]);
+                        i++;
                     }
-                    //  we want to insert the value at the beginning of the vector to give last entry priority
-                    option->arg_value_.insert(option->arg_value_.begin(), args[i + 1]);
-                    i++;
-                }
-                else if (!option->default_value_.empty())
+                    else
+                    {
+                        break;
+                    }
+                } while (true);
+
+                if (!settingSuccess && !option->default_value_.empty())
                 {
+                    settingSuccess = true;
                     option->arg_value_.push_back(option->default_value_);
                 }
-                else
+                if (!settingSuccess)
                 {
                     LOG_ERROR("Argument parser error: Missing option {} argument", option->opt_str_);
                     option->set_ = false;
