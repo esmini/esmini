@@ -53,7 +53,7 @@ class TestSuiteBase(unittest.TestCase):
                 try:
                     log, duration, cpu_time = run_scenario(scenario, args, application=exec, measure_cpu_time=True)
                 except:
-                    print('\nFailure - check', exec, file=sys.stderr)
+                    print('\nFailure - check', exec, file=sys.stderr, flush=True)
                     remove_dirs.append(dir)
                     failure = True
                     break
@@ -93,7 +93,7 @@ class TestSuiteBase(unittest.TestCase):
 
         for d in remove_dirs:
             directories.remove(d)
-        print('')
+        print('', flush=True)
         time_vals.append(time_vals_run)
         return 0
 
