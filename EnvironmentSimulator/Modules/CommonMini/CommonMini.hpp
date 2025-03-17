@@ -729,8 +729,11 @@ private:
 // caller should check first before using second. This function will take:
 // true, True, TRUE as true
 // false, False, FALSE as false
-std::pair<bool, bool>    StrToBool(const std::string& val);
+std::pair<bool, bool> StrToBool(const std::string& val);
+// Splits string with delimiter
 std::vector<std::string> SplitString(const std::string& str, char delimiter);
+// Splits string with delimiter, but ignores delimiter inside quotes
+std::vector<std::string> SplitQuotedString(const std::string& str, char delim);
 std::string              DirNameOf(const std::string& fname);
 std::string              FileNameOf(const std::string& fname);
 bool                     IsDirectoryName(const std::string& string);

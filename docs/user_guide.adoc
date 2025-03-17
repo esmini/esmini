@@ -2851,7 +2851,7 @@ The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is
 
 === About options
 
-esmini, replayer and odrviewer can be controlled and configured by options. Also any input file is specified as an option. Available options are listed in subsequent sections each application respectively.
+esmini, replayer and odrviewer can be controlled and configured by options. Also any input file is specified as an option. Available options are listed in subsequent sections each application respectively. Certain options, such as 'path', support multiple values, denoted by '...' in the command help. Values can be specified sequentially, e.g., --path /tmp/models /tmp/kalles_models.
 
 Options can be specified in three ways:
 
@@ -2861,13 +2861,13 @@ Options can be specified in three ways:
 
 ==== Config file
 
-Config file is basically a container for option presets. It can be used to apply common settings for esmini applications. For example, if you often use a specific window size, e.g. --window 60 60 800 400, then you can put it in a config file.
+Config file is basically a container for option presets. It can be used to apply common settings for esmini applications. For example, if you often use a specific window size, e.g. --window 60 60 800 400, then you can put it in a config file. Configuration file is structured with the application name as the root, followed by option-value pairs. Custom configuration file can be named and placed as needed.
 
 Settings in config files can be overridden, both by other config files or by options specified on command line. All options are parsed in order of appearance. Some options supports multiple values, e.g. `path` (search path for assets), while others can have only one value, e.g. `logfiLe_path`. For single value options, the last parsed value wins.
 
-esmini comes with a default `config.yml` located in esmini root folder. It contains just a few settings, e.g. default window position and size (60 60 800 400) and default scenario file (cut-in.xosc). Launching esmini, from esmini root as:
+esmini from version [] comes with a default `config.yml` located in esmini root folder. It contains just a few settings, e.g. default window position and size (60 60 800 400). Launching esmini, from esmini root as:
 
-`./esmini`
+`./bin/esmini --osc ./resources/xosc/cut-in.xosc`
 
 will then show cut-in scenario in a 800x400 window.
 
@@ -2877,13 +2877,16 @@ Exact content of the config.yml will vary over time, but initial version looks l
 ----
 esmini:
   window: 60 60 800 400
-  osc: ./resources/xosc/cut-in.xosc
 
 replayer:
   window: 60 60 800 400
   res_path: ./resources
   file: sim.dat
+
+odrviewer:
+  window: 60 60 800 400
 ----
+
 
 If you want another size of the window you have at least three options:
 
@@ -2899,6 +2902,16 @@ Example of my_config.yml:
 esmini:
   window: 50 100 1400 500
   logfile_path: my_log.txt
+----
+
+Similarly, the scenario file can also be made part of default config file by adding `osc: ./resources/xosc/cut-in.xosc` to the config.yml. Or you can add it your custom config file above, like following:
+
+[source]
+----
+esmini:
+  window: 50 100 1400 500
+  logfile_path: my_log.txt
+  osc: ./resources/xosc/cut-in.xosc
 ----
 
 Any number of config files can be specified as an option (`config_file_path`), either in another config file or at command line.
@@ -2923,7 +2936,7 @@ Now, running:
 
 will load `cut-in.xosc`, using the one specified in default config. Window will be `50 100 1400 500` as specified in my_config, overriding the values in the default config.yml. The log file will be named my_log.txt as specified in my_config, overriding esmini default log file path.
 
-Config file path can be specified in environment variable `ESMINI_CONFIG_FILE`. If valid path is provided in the environment variable then this config file will be parsed for options. Multiple config file paths can be given in the environment varibale, which can be separated by `;` (Windows) or `:` (Linux/Mac). This option can come in handy, in case when there is a need to run esmini in docker or similar environment.
+Custom configuration file paths can be defined in the ESMINI_CONFIG_FILE environment variable. Multiple paths, delimited by ';' (Windows) or ':' (Linux/macOS), are permitted, which is particularly useful in Docker or similar environments.
 
 Default config file is always parsed first, then the ones specified in the environment variable, and finally the ones specified on command line.
 
@@ -2938,9 +2951,8 @@ Illustrative example:
 
 image::options.png[]
 
-Some options can have multiple values, e.g. path (for example when you want esmini to search for models in multiple locations). This is indicated by '...' after the option argument in the command help. Moreover, these options can now be specified like, e.g. `--path /tmp/models /tmp/kalles_models`.
 
-
+Mutual exclusion exists among some options, such as 'headless' and 'window'. 'headless' overrides any preceding 'window' arguments. Conversely, 'window' following 'headless' results in an invisible snapshot window. For 'osc' and 'osc_str', the last specified option prevails.
 
 === esmini
 ==== Launch commands

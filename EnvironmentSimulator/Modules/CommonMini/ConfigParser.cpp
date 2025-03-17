@@ -55,7 +55,7 @@ namespace esmini::common
                 return;
             }
 
-            const auto valueVec = SplitString(value, ' ');
+            const auto valueVec = SplitQuotedString(value, ' ');
             if (valueVec.size() == 1)
             {
                 // this can be boolean value
