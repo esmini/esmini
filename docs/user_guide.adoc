@@ -2938,6 +2938,10 @@ Illustrative example:
 
 image::options.png[]
 
+Some options can have multiple values, e.g. path (for example when you want esmini to search for models in multiple locations). This is indicated by '...' after the option argument in the command help. Moreover, these options can now be specified like, e.g. `--path /tmp/models /tmp/kalles_models`.
+
+
+
 === esmini
 ==== Launch commands
 [source]

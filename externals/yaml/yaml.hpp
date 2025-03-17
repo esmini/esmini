@@ -80,6 +80,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <iostream>
 
 namespace TINY_YAML {
@@ -91,7 +92,7 @@ namespace TINY_YAML {
 	private:
 		std::string m_identifier;														// name of the node
 		std::shared_ptr<void> m_data;													// Contains the data of the node
-		std::unordered_map<std::string, std::shared_ptr<Node>> m_children;				// Holds data to the children nodes
+		std::vector<std::pair<std::string, std::shared_ptr<Node>>> m_children;			// Holds data to the children nodes
 
 	public:
 		/// <summary>
@@ -150,11 +151,21 @@ namespace TINY_YAML {
 		/// <summary>
 		///
 		/// </summary>
-		Node& operator[](const std::string& identifier) {
-			return *m_children[identifier];
+
+		Node& operator[](const std::string& identifier)
+		{
+			for (const auto& it : m_children)
+			{
+				if (it.first == identifier)
+				{
+					return *it.second;
+				}
+			}
+			throw std::runtime_error("Failed to locate key: " + identifier);
 		}
 
-		const std::unordered_map<std::string, std::shared_ptr<Node>>& getChildren() const {
+		const std::vector< std::pair<std::string, std::shared_ptr<Node>>>& getChildren() const
+		{
 			return m_children;
 		}
 
@@ -172,7 +183,7 @@ namespace TINY_YAML {
 
 
 	class Yaml {
-		std::unordered_map<std::string, std::shared_ptr<Node>> m_roots;			// The root nodes in the file.
+		std::vector< std::pair< std::string, std::shared_ptr<Node>>> m_roots;			// The root nodes in the file.
 		std::string error_message;  // container for any error message
 	public:
 		Yaml(const std::string& filepath);
@@ -189,17 +200,33 @@ namespace TINY_YAML {
 			return os;
 		}
 
-		Node& operator[](const std::string& identifier) {
-			Node& node = *m_roots[identifier];
-			if (std::addressof(node) == 0)
+		Node& operator[](const std::string& identifier)
+		{
+			for (const auto& it : m_roots)
 			{
-				throw std::runtime_error("Failed to locate key: " + identifier);
+				if (it.first == identifier)
+				{
+					return *it.second;
+				}
 			}
-            return node;
+			throw std::runtime_error("Failed to locate key: " + identifier);
 		}
 
-		const std::unordered_map<std::string, std::shared_ptr<Node>>& getNodes() const {
+		const std::vector< std::pair<std::string, std::shared_ptr<Node>>>& getNodes() const
+		{
 			return m_roots;
+		}
+	private:
+		bool DoesNodeExist(const std::string& identifier)
+		{
+			for (const auto& it : m_roots)
+			{
+				if (it.first == identifier)
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 	};
 

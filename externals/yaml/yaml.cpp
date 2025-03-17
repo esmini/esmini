@@ -97,17 +97,20 @@ namespace TINY_YAML {
 		return this->m_identifier;
 	}
 
-
-	bool Node::append(std::shared_ptr<Node> node) {
+	bool Node::append(std::shared_ptr<Node> node)
+	{
 		std::string& nid = node->getID();
-		if (this->m_children.find(nid) != this->m_children.end()) {
-			return false;
+
+		for(auto& it : m_children)
+		{
+			if( it.first == nid)
+			{
+				return false;
+			}
 		}
-		this->m_children.insert({ nid, node });
+		m_children.push_back(std::make_pair(nid, node));
 		return true;
 	}
-
-
 	/////////////////////////////// YAML CLASS METHODS ///////////////////////////////
 	Yaml::Yaml(const std::string& filepath) {
         if (!load(filepath))
@@ -280,10 +283,11 @@ namespace TINY_YAML {
 			if (colonPos == lastCharPos && colonPos != std::string::npos) {
 				pnode = std::make_shared<Node>(Node(nodeID, nullptr));
 
-				if (parentsStack.size() == 0 && this->m_roots.find(nodeID) == this->m_roots.end()){ // If the node is at root level, we add it to the root
-					this->m_roots.insert({ nodeID, pnode });
+				bool doesNodeExist = DoesNodeExist(nodeID);
+				if (parentsStack.size() == 0 && !doesNodeExist){ // If the node is at root level, we add it to the root
+					this->m_roots.push_back(std::make_pair(nodeID, pnode));
 				}
-				else if(parentsStack.size() == 0 && this->m_roots.find(nodeID) != this->m_roots.end()) { // If it is at root level and it exists already, we return false
+				else if(parentsStack.size() == 0 && doesNodeExist) { // If it is at root level and it exists already, we return false
 					faulty = true; break;
 				}
 				else if (parentsStack.size() != 0 && !parentsStack.top().first->append(pnode)) { // If it is not at root level and it is failed to attach the current node to the current parent
@@ -303,8 +307,9 @@ namespace TINY_YAML {
 				pnode = std::make_shared<Node>(Node(nodeID, std::make_shared<std::string>(value)));
 
 				if (parentsStack.size() == 0) {	// Insert at root level
-					if (this->m_roots.find(nodeID) == this->m_roots.end()) {
-						this->m_roots.insert({ nodeID, pnode });
+					if (!DoesNodeExist( nodeID))
+					{
+						this->m_roots.push_back(std::make_pair(nodeID, pnode));
 					}
 					else
 					{

@@ -79,8 +79,6 @@ static const char* entityModelsFilesFallbackList_[] = {
     "truck_trailer.osgb",
 };
 
-const std::string mandatoryIndicator = "...";
-
 const char* esmini_git_tag(void)
 {
     return ESMINI_GIT_TAG;

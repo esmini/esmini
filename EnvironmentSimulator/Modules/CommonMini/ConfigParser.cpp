@@ -64,19 +64,19 @@ namespace esmini::common
                     // in case of boolean value, we need to add only the key to be in sync with the command line arguments
                     if (boolValue)
                     {
-                        configs_.insert(configs_.begin(), fmt::format("--{}", key));
+                        configs_.emplace_back(fmt::format("--{}", key));
                     }
                 }
                 else
                 {
-                    configs_.insert(configs_.begin(), valueVec[0]);
-                    configs_.insert(configs_.begin(), fmt::format("--{}", key));
+                    configs_.emplace_back(fmt::format("--{}", key));
+                    configs_.emplace_back(valueVec[0]);
                 }
             }
             else
             {
-                configs_.insert(configs_.begin(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
-                configs_.insert(configs_.begin(), fmt::format("--{}", key));
+                configs_.emplace_back(fmt::format("--{}", key));
+                configs_.insert(configs_.end(), std::make_move_iterator(valueVec.begin()), std::make_move_iterator(valueVec.end()));
             }
         }
     }
@@ -151,9 +151,9 @@ namespace esmini::common
 
     std::vector<std::string> ConfigParser::Parse()
     {
-        for (auto rItr = configFilePaths_.rbegin(); rItr != configFilePaths_.rend(); ++rItr)
+        for (const auto& file : configFilePaths_)
         {
-            ParseYamlFile(*rItr);
+            ParseYamlFile(file);
         }
         return configs_;
     }
