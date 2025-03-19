@@ -11,7 +11,7 @@
 #include "Dat2csv.hpp"
 #include "Replay.hpp"
 
-using namespace datLogger;
+using namespace dat;
 using namespace scenarioengine;
 
 TEST(TestReplayer, WithOneObject)
@@ -19,11 +19,10 @@ TEST(TestReplayer, WithOneObject)
     std::string fileName    = "sim.dat";
     std::string odrFileName = "e6mini.xodr";
     std::string model_Name  = "e6mini.osgb";
-    int         version_    = 2;
 
     DatLogger* logger = new DatLogger;
 
-    logger->Init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -111,11 +110,10 @@ TEST(TestReplayer, WithTwoObject)
     std::string fileName    = "sim.dat";
     std::string odrFileName = "e6mini.xodr";
     std::string model_Name  = "e6mini.osgb";
-    int         version_    = 2;
 
     DatLogger* logger = new DatLogger;
 
-    logger->Init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -227,11 +225,10 @@ TEST(TestReplayer, WithTwoObjectAndAdd)
     std::string fileName    = "sim.dat";
     std::string odrFileName = "e6mini.xodr";
     std::string model_Name  = "e6mini.osgb";
-    int         version_    = 2;
 
     DatLogger* logger = new DatLogger;
 
-    logger->Init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -337,11 +334,10 @@ TEST(TestReplayer, WithTwoObjectAndDelete)
     std::string fileName    = "sim.dat";
     std::string odrFileName = "e6mini.xodr";
     std::string model_Name  = "e6mini.osgb";
-    int         version_    = 2;
 
     DatLogger* logger = new DatLogger;
 
-    logger->Init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -448,11 +444,10 @@ TEST(TestDat2csv, WithTwoObjectAddAndDelete)
     std::string fileName    = "sim.dat";
     std::string odrFileName = "e6mini.xodr";
     std::string model_Name  = "e6mini.osgb";
-    int         version_    = 2;
 
     DatLogger* logger = new DatLogger;
 
-    logger->Init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -543,11 +538,10 @@ TEST(TestReplayer, RepeatedObjectState)
     std::string fileName    = "sim.dat";
     std::string odrFileName = "e6mini.xodr";
     std::string model_Name  = "e6mini.osgb";
-    int         version_    = 2;
 
     DatLogger* logger = new DatLogger;
 
-    logger->Init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -1363,11 +1357,10 @@ TEST(TestLightStateInReplayer, SimpleTest)
     std::string fileName    = "sim.dat";
     std::string odrFileName = "e6mini.xodr";
     std::string model_Name  = "e6mini.osgb";
-    int         version_    = 2;
 
     DatLogger* logger = new DatLogger;
 
-    logger->Init(fileName, version_, odrFileName, model_Name);
+    logger->Init(fileName, odrFileName, model_Name);
 
     double x     = 1.0;
     double y     = 2.0;
@@ -1380,7 +1373,7 @@ TEST(TestLightStateInReplayer, SimpleTest)
     double diffuseRgb[3]  = {0.4, 0.0, 0.0};
     double emissionRgb[3] = {0.0, 0.0, 0.0};
 
-    datLogger::LightState lightState_;
+    dat::LightState lightState_;
 
     double rgb_[4];
     rgb_[0] = diffuseRgb[0] + emissionRgb[0];
@@ -1389,7 +1382,7 @@ TEST(TestLightStateInReplayer, SimpleTest)
     rgb_[3] = emissionRgb[0] / rgb_[0];
 
     // convert
-    datLogger::LightRGB rgb_value;
+    dat::LightRGB rgb_value;
     rgb_value.red       = static_cast<unsigned char>(MIN(MAX(rgb_[0], 0.0), 255.0) * 255.0);
     rgb_value.green     = static_cast<unsigned char>(MIN(MAX(rgb_[1], 0.0), 255.0) * 255.0);
     rgb_value.blue      = static_cast<unsigned char>(MIN(MAX(rgb_[2], 0.0), 255.0) * 255.0);
@@ -1460,7 +1453,7 @@ TEST(TestLightStateInReplayer, SimpleTest)
     ASSERT_DOUBLE_EQ(replayer_->GetTimeFromCnt(2), 1.1220000000000001);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(2));
-    datLogger::Pos pos = replayer_->GetPos(replayer_->scenarioState_.obj_states[0].id);
+    dat::Pos pos = replayer_->GetPos(replayer_->scenarioState_.obj_states[0].id);
     ASSERT_DOUBLE_EQ(pos.x, 1);
     ASSERT_DOUBLE_EQ(pos.y, 2);
     ASSERT_DOUBLE_EQ(pos.z, 3);
@@ -1477,7 +1470,7 @@ TEST(TestLightStateInReplayer, SimpleTest)
     EXPECT_NEAR(light_state[5].emissionRgb[2], emissionRgb[2], 1E-2);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(4));
-    datLogger::Pos pos1 = replayer_->GetPos(replayer_->scenarioState_.obj_states[0].id);
+    dat::Pos pos1 = replayer_->GetPos(replayer_->scenarioState_.obj_states[0].id);
     ASSERT_DOUBLE_EQ(pos1.x, 1);
     ASSERT_DOUBLE_EQ(pos1.y, 2);
     ASSERT_DOUBLE_EQ(pos1.z, 3);
@@ -1487,7 +1480,7 @@ TEST(TestLightStateInReplayer, SimpleTest)
     ASSERT_DOUBLE_EQ(replayer_->GetSpeed(replayer_->scenarioState_.obj_states[0].id), 4.0);
 
     replayer_->GoToTime(replayer_->GetTimeFromCnt(5));
-    datLogger::Pos pos2 = replayer_->GetPos(replayer_->scenarioState_.obj_states[0].id);
+    dat::Pos pos2 = replayer_->GetPos(replayer_->scenarioState_.obj_states[0].id);
     ASSERT_DOUBLE_EQ(pos2.x, 1);
     ASSERT_DOUBLE_EQ(pos2.y, 2);
     ASSERT_DOUBLE_EQ(pos2.z, 3);

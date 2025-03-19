@@ -71,6 +71,7 @@ using idx_t = uint32_t;
 #define GHOST_TRAIL_SAMPLE_TIME       0.2
 #define LOGICAL_OR(X, Y)              ((X || Y) && !(X && Y))
 #define MAX_INTENSITY_LUM             (12E+3)
+#define DAT_FILE_FORMAT_VERSION       2
 
 // Time functions
 __int64 SE_getSystemTime();

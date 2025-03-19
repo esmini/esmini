@@ -12,7 +12,7 @@
 
 #define NUMBER_OF_VEHICLE_LIGHTS (13)
 
-using namespace datLogger;
+using namespace dat;
 
 template <typename T>
 int DatLogger::WriteObjectData(int obj_id, T value, PackageId package_id, std::function<bool(ObjState&, T)> updateState)
@@ -85,7 +85,7 @@ void DatLogger::SetObjIdAddPkgWritten(int id, bool status)
     }
 }
 
-bool datLogger::DatLogger::IsFileOpen()
+bool dat::DatLogger::IsFileOpen()
 {
     return data_file_.is_open();
 }
@@ -560,11 +560,11 @@ void DatLogger::WriteLightState(int obj_id, LightState rgb_data)
             if (objState.obj_id_.obj_id == obj_id)
             {
                 objState.active        = true;
-                const size_t numLights = sizeof(rgb_data) / sizeof(datLogger::LightRGB);
+                const size_t numLights = sizeof(rgb_data) / sizeof(dat::LightRGB);
                 for (size_t i = 0; i < numLights; ++i)
                 {
-                    LightRGB* lightNew = reinterpret_cast<datLogger::LightRGB*>(&rgb_data) + i;
-                    LightRGB* lightOld = reinterpret_cast<datLogger::LightRGB*>(&objState.lightStates_) + i;
+                    LightRGB* lightNew = reinterpret_cast<dat::LightRGB*>(&rgb_data) + i;
+                    LightRGB* lightOld = reinterpret_cast<dat::LightRGB*>(&objState.lightStates_) + i;
                     if (lightNew->red != lightOld->red || lightNew->green != lightOld->green || lightNew->blue != lightOld->blue ||
                         lightNew->intensity != lightOld->intensity)
                     {
@@ -613,7 +613,7 @@ void DatLogger::DeleteObjState(int objId)
     }
 }
 
-datLogger::DatLogger::~DatLogger()
+dat::DatLogger::~DatLogger()
 {
     if (IsFileOpen())
     {
@@ -629,17 +629,17 @@ datLogger::DatLogger::~DatLogger()
     }
 }
 
-int DatLogger::Init(std::string fileName, int ver, std::string odrName, std::string modelName)
+int DatLogger::Init(const std::string& fileName, const std::string& odrName, const std::string& modelName)
 {
     data_file_.open(fileName, std::ios::binary);
     if (data_file_.fail())
     {
-        std::printf("Cannot open file: %s", fileName.c_str());
+        LOG_WARN("Cannot open file: {}", fileName);
         return -1;
     }
 
     DatHdr datHdr;
-    datHdr.version          = ver;
+    datHdr.version          = DAT_FILE_FORMAT_VERSION;
     datHdr.odrFilename.size = static_cast<unsigned int>(odrName.size() + 1);
     datHdr.odrFilename.string.resize(datHdr.odrFilename.size);
     datHdr.modelFilename.size = static_cast<unsigned int>(modelName.size() + 1);

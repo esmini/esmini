@@ -62,22 +62,22 @@ namespace scenarioengine
         ~Replay();
 
         // vectors and methods to handle multiple files
-        std::vector<std::pair<std::pair<std::string, bool>, std::vector<datLogger::CommonPkg>>> scenarioData;
-        std::vector<int>                                                                        objectIds;
-        void   AdjustObjectId(std::vector<std::vector<int>>& objectIds);
+        std::vector<std::pair<std::pair<std::string, bool>, std::vector<dat::CommonPkg>>> scenarioData;
+        std::vector<int>                                                                  objectIds;
+        void                                                                              AdjustObjectId(std::vector<std::vector<int>>& objectIds);
         void   GetReplaysFromDirectory(const std::string dir, const std::string sce);
         size_t GetNumberOfScenarios();
 
         // vector and method for record and read pkg
-        std::vector<datLogger::CommonPkg> pkgs_;
-        ScenarioState                     scenarioState_;
-        int                               RecordPkgs(const std::string& fileName);  // check package can be recorded or not
-        std::vector<size_t>               GetNumberOfObjectsAtTime();               // till next time forward
-        size_t                            GetPkgCntBtwObj(size_t idx);              // till next time forward
-        datLogger::PackageId              ReadPkgHdr(char* package);
-        double                            GetTimeFromCnt(int count);  // give time for the time
-        void                              ExtractRestartTimes();
-        std::vector<RestartTimes>         restartTimes_;
+        std::vector<dat::CommonPkg> pkgs_;
+        ScenarioState               scenarioState_;
+        int                         RecordPkgs(const std::string& fileName);  // check package can be recorded or not
+        std::vector<size_t>         GetNumberOfObjectsAtTime();               // till next time forward
+        size_t                      GetPkgCntBtwObj(size_t idx);              // till next time forward
+        dat::PackageId              ReadPkgHdr(char* package);
+        double                      GetTimeFromCnt(int count);  // give time for the time
+        void                        ExtractRestartTimes();
+        std::vector<RestartTimes>   restartTimes_;
 
         // method for cache
         void InitiateCache();
@@ -112,20 +112,20 @@ namespace scenarioengine
         void   SetStopTime(double time);
         double GetStartTime();
 
-        double                GetStopTime();
-        double                GetTime();
-        int                   GetIndex();
-        void                  SetTime(double t);
-        void                  SetIndex(unsigned int index);
-        void                  SetRepeat(bool repeat);
-        void                  UpdateOdaMeter(int obj_id, double value);
-        void                  SetShowRestart(bool showRestart);
-        void                  SetStopEntries();
-        double                deltaTime_ = LARGE_NUMBER;
-        datLogger::LightState perviousLightState;
-        datLogger::LightState defaultLightState;
-        bool                  show_lights     = false;
-        bool                  IsLightPkgFound = false;
+        double          GetStopTime();
+        double          GetTime();
+        int             GetIndex();
+        void            SetTime(double t);
+        void            SetIndex(unsigned int index);
+        void            SetRepeat(bool repeat);
+        void            UpdateOdaMeter(int obj_id, double value);
+        void            SetShowRestart(bool showRestart);
+        void            SetStopEntries();
+        double          deltaTime_ = LARGE_NUMBER;
+        dat::LightState perviousLightState;
+        dat::LightState defaultLightState;
+        bool            show_lights     = false;
+        bool            IsLightPkgFound = false;
         // method to read data from cache
         int                     GetModelID(int obj_id);
         int                     GetCtrlType(int obj_id);
@@ -133,7 +133,7 @@ namespace scenarioengine
         int                     GetBB(int obj_id, OSCBoundingBox& bb);
         int                     GetScaleMode(int obj_id);
         int                     GetVisibility(int obj_id);
-        datLogger::Pos          GetPos(int obj_id);
+        dat::Pos                GetPos(int obj_id);
         double                  GetX(int obj_id);
         double                  GetY(int obj_id);
         double                  GetZ(int obj_id);
@@ -152,10 +152,10 @@ namespace scenarioengine
         int                     GetName(int obj_id, std::string& name);
         double                  GetOdaMeter(int obj_id);
         void                    GetRgbValues(int obj_id, Object::VehicleLightActionStatus* light_state);
-        void                    GetLightStates(int obj_id, datLogger::LightState& light_states_);
+        void                    GetLightStates(int obj_id, dat::LightState& light_states_);
 
-        const datLogger::DatHdr           GetHeader() const;
-        std::vector<datLogger::CommonPkg> GetPkgs();
+        const dat::DatHdr           GetHeader() const;
+        std::vector<dat::CommonPkg> GetPkgs();
 
     private:
         std::ifstream            file_;
@@ -172,8 +172,8 @@ namespace scenarioengine
         bool                     IsRestart_    = false;
         double                   previousTime_ = std::nan("");
 
-        datLogger::DatLogger* datLogger_ = nullptr;
-        datLogger::DatHdr     header_;
+        dat::DatLogger datLogger_;
+        dat::DatHdr    header_;
 
         int    FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
         bool   IsValidPocket(id_t id);
@@ -191,10 +191,10 @@ namespace scenarioengine
         bool   IsEndOfScenarioPkg(size_t index) const;
         double GetDoubleContent(size_t index);
         int    GetIntContent(size_t index);
-        int    GetIntFromPkg(datLogger::CommonPkg* pkg);
-        double GetDoubleFromPkg(datLogger::CommonPkg* pkg);
-        int    GetIntFromScenarioState(int obj_id, datLogger::PackageId id);
-        double GetDoubleFromScenarioState(int obj_id, datLogger::PackageId id);
+        int    GetIntFromPkg(dat::CommonPkg* pkg);
+        double GetDoubleFromPkg(dat::CommonPkg* pkg);
+        int    GetIntFromScenarioState(int obj_id, dat::PackageId id);
+        double GetDoubleFromScenarioState(int obj_id, dat::PackageId id);
         int    GoForwardTime(double time_frame, bool stopAtEachFrame = false);
         int    GoBackwardTime(double time_frame, bool stopAtEachFrame = false);
         bool   HandleRestartTimes();  // handle restart times, return when to stop

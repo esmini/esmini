@@ -18,7 +18,7 @@
 #include "CommonMini.hpp"
 #include "Entities.hpp"
 
-namespace datLogger
+namespace dat
 {
     enum class PackageId
     {
@@ -266,7 +266,7 @@ namespace datLogger
         CompleteObjectState     completeObjectState_;
         std::vector<ObjIdAdded> objIdAdded_;
 
-        int  Init(std::string fileName, int ver, std::string odrName, std::string modelName);
+        int  Init(const std::string& fileName, const std::string& odrName, const std::string& modelName);
         void DeleteObjState(int objId);
 
         void writePackage(CommonPkg package);  // will just write package
@@ -305,4 +305,4 @@ namespace datLogger
         std::string pkgIdTostring(PackageId id);
     };
 
-}  // namespace datLogger
+}  // namespace dat

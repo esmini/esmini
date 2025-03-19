@@ -69,13 +69,13 @@ void Dat2csv::PrintData(int obj_id)
                  player_->GetPosS(obj_id));
 
         file_ << line;
-        datLogger::LightState lightState_;
+        dat::LightState lightState_;
         player_->GetLightStates(obj_id, lightState_);
-        const size_t numLights = sizeof(lightState_) / sizeof(datLogger::LightRGB);
+        const size_t numLights = sizeof(lightState_) / sizeof(dat::LightRGB);
         std::string  light_state_string;
         for (size_t k = 0; k < numLights; ++k)
         {
-            datLogger::LightRGB* light = reinterpret_cast<datLogger::LightRGB*>(&lightState_) + k;
+            dat::LightRGB* light = reinterpret_cast<dat::LightRGB*>(&lightState_) + k;
             // Format each color component using std::stringstream:
             snprintf(line, MAX_LINE_LEN, "#%.02X%.02X%.02X-%.02X, ", light->red, light->green, light->blue, light->intensity);
             file_ << line;
@@ -123,7 +123,7 @@ void Dat2csv::CreateCSVOriginal()
     unsigned int index = 0;
     for (auto pkg : player_->pkgs_)
     {
-        if (pkg.hdr.id == static_cast<int>(datLogger::PackageId::TIME_SERIES))
+        if (pkg.hdr.id == static_cast<int>(dat::PackageId::TIME_SERIES))
         {
             double timeTemp = *reinterpret_cast<double*>(pkg.content.data());
 
@@ -134,7 +134,7 @@ void Dat2csv::CreateCSVOriginal()
             player_->CheckObjAvailabilityForward();
             player_->UpdateCache();
             player_->scenarioState_.sim_time = timeTemp;
-            for (const auto obj : player_->scenarioState_.obj_states)
+            for (const auto& obj : player_->scenarioState_.obj_states)
             {
                 if (obj.active)
                 {
@@ -195,7 +195,7 @@ void Dat2csv::CreateCSV()
         while (true)
         {
             perviousSimTime_ = player_->GetTime();
-            for (const auto obj : player_->scenarioState_.obj_states)
+            for (const auto& obj : player_->scenarioState_.obj_states)
             {
                 if (obj.active)
                 {

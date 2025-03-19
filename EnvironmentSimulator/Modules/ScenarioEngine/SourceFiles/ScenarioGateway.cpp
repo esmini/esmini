@@ -293,10 +293,6 @@ ScenarioGateway::ScenarioGateway()
 ScenarioGateway::~ScenarioGateway()
 {
     objectState_.clear();
-    if (datLogger != nullptr)
-    {
-        delete datLogger;
-    }
 }
 
 ObjectState* ScenarioGateway::getObjectStatePtrById(int id)
@@ -1165,49 +1161,49 @@ void ScenarioGateway::removeObject(std::string name)
 
 int ScenarioGateway::WriteStatesToFile()
 {
-    if (datLogger != nullptr && datLogger->IsFileOpen())
+    if (datLogger_.IsFileOpen())
     {
         const double RGB_MAX_VALUE = 255.0;
         for (const auto& objectState : objectState_)
         {
             const auto& state       = objectState->state_;
             int         objId       = state.info.id;
-            datLogger->simTimeTemp_ = state.info.timeStamp;
-            datLogger->AddObject(objId);
-            datLogger->WriteModelId(objId, state.info.model_id);
-            datLogger->WriteObjPos(objId, state.pos.GetX(), state.pos.GetY(), state.pos.GetZ(), state.pos.GetH(), state.pos.GetP(), state.pos.GetR());
-            datLogger->WriteObjSpeed(objId, state.info.speed);
-            datLogger->WriteObjCategory(objId, state.info.obj_category);
-            datLogger->WriteObjType(objId, state.info.obj_type);
-            datLogger->WriteCtrlType(objId, state.info.ctrl_type);
+            datLogger_.simTimeTemp_ = state.info.timeStamp;
+            datLogger_.AddObject(objId);
+            datLogger_.WriteModelId(objId, state.info.model_id);
+            datLogger_.WriteObjPos(objId, state.pos.GetX(), state.pos.GetY(), state.pos.GetZ(), state.pos.GetH(), state.pos.GetP(), state.pos.GetR());
+            datLogger_.WriteObjSpeed(objId, state.info.speed);
+            datLogger_.WriteObjCategory(objId, state.info.obj_category);
+            datLogger_.WriteObjType(objId, state.info.obj_type);
+            datLogger_.WriteCtrlType(objId, state.info.ctrl_type);
             // Write wheel data if available
             if (!state.info.wheel_data.empty())
             {
-                datLogger->WriteWheelAngle(objId, state.info.wheel_data[0].h);
-                datLogger->WriteWheelRot(objId, state.info.wheel_data[0].p);
+                datLogger_.WriteWheelAngle(objId, state.info.wheel_data[0].h);
+                datLogger_.WriteWheelRot(objId, state.info.wheel_data[0].p);
             }
             else
             {
-                datLogger->WriteWheelAngle(objId, 0.0);
-                datLogger->WriteWheelRot(objId, 0.0);
+                datLogger_.WriteWheelAngle(objId, 0.0);
+                datLogger_.WriteWheelRot(objId, 0.0);
             }
-            datLogger->WriteBB(objId,
+            datLogger_.WriteBB(objId,
                                state.info.boundingbox.center_.x_,
                                state.info.boundingbox.center_.y_,
                                state.info.boundingbox.center_.z_,
                                state.info.boundingbox.dimensions_.length_,
                                state.info.boundingbox.dimensions_.width_,
                                state.info.boundingbox.dimensions_.height_);
-            datLogger->WriteScaleMode(objId, state.info.scaleMode);
-            datLogger->WriteVisiblityMask(objId, state.info.visibilityMask);
-            datLogger->WriteName(objId, state.info.name);
-            datLogger->WriteRoadId(objId, state.pos.GetTrackId());
-            datLogger->WriteLaneId(objId, state.pos.GetLaneId());
-            datLogger->WritePosOffset(objId, state.pos.GetOffset());
-            datLogger->WritePosT(objId, state.pos.GetT());
-            datLogger->WritePosS(objId, state.pos.GetS());
+            datLogger_.WriteScaleMode(objId, state.info.scaleMode);
+            datLogger_.WriteVisiblityMask(objId, state.info.visibilityMask);
+            datLogger_.WriteName(objId, state.info.name);
+            datLogger_.WriteRoadId(objId, state.pos.GetTrackId());
+            datLogger_.WriteLaneId(objId, state.pos.GetLaneId());
+            datLogger_.WritePosOffset(objId, state.pos.GetOffset());
+            datLogger_.WritePosT(objId, state.pos.GetT());
+            datLogger_.WritePosS(objId, state.pos.GetS());
 
-            datLogger::LightState lightState_;
+            dat::LightState lightState_;
             for (int j = 0; j < Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS; j++)
             {
                 const auto& light  = state.info.light_state[j];
@@ -1220,10 +1216,10 @@ int ScenarioGateway::WriteStatesToFile()
 
                 // Convert doubles [0:1] into bytes (unsigned chars) [0:255]
                 // ensure range [0:1]
-                datLogger::LightRGB rgbValue = {static_cast<unsigned char>(MIN(MAX(rgb[0], 0.0), RGB_MAX_VALUE) * RGB_MAX_VALUE),
-                                                static_cast<unsigned char>(MIN(MAX(rgb[1], 0.0), RGB_MAX_VALUE) * RGB_MAX_VALUE),
-                                                static_cast<unsigned char>(MIN(MAX(rgb[2], 0.0), RGB_MAX_VALUE) * RGB_MAX_VALUE),
-                                                static_cast<unsigned char>(MIN(MAX(rgb[2], 0.0), RGB_MAX_VALUE) * RGB_MAX_VALUE)};
+                dat::LightRGB rgbValue = {static_cast<unsigned char>(MIN(MAX(rgb[0], 0.0), RGB_MAX_VALUE) * RGB_MAX_VALUE),
+                                          static_cast<unsigned char>(MIN(MAX(rgb[1], 0.0), RGB_MAX_VALUE) * RGB_MAX_VALUE),
+                                          static_cast<unsigned char>(MIN(MAX(rgb[2], 0.0), RGB_MAX_VALUE) * RGB_MAX_VALUE),
+                                          static_cast<unsigned char>(MIN(MAX(rgb[2], 0.0), RGB_MAX_VALUE) * RGB_MAX_VALUE)};
 
                 switch (static_cast<Object::VehicleLightType>(j))
                 {
@@ -1270,34 +1266,21 @@ int ScenarioGateway::WriteStatesToFile()
                         break;
                 }
             }
-            datLogger->WriteLightState(objId, lightState_);
-            datLogger->ObjIdPkgAdded_ = false;
+            datLogger_.WriteLightState(objId, lightState_);
+            datLogger_.ObjIdPkgAdded_ = false;
         }
-        datLogger->DeleteObject();
-        datLogger->TimePkgAdded_ = false;
+        datLogger_.DeleteObject();
+        datLogger_.TimePkgAdded_ = false;
     }
     return 0;
 }
 
-int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename, std::string model_filename)
+int ScenarioGateway::RecordToFile(const std::string& filename, const std::string& odr_filename, const std::string& model_filename)
 {
-    if (!filename.empty())
+    if (filename.empty())
     {
-        int ver = DAT_FILE_FORMAT_VERSION;
-        if (datLogger == nullptr)
-        {
-            if ((datLogger = new datLogger::DatLogger()) == nullptr)
-            {
-                return -1;
-            }
-
-            if (datLogger->Init(filename, ver, odr_filename, model_filename) != 0)
-            {
-                delete datLogger;
-                datLogger = nullptr;
-                return -1;
-            }
-        }
+        LOG_ERROR("Filename is empty");
+        return -1;
     }
-    return 0;
+    return datLogger_.Init(filename, odr_filename, model_filename);
 }
