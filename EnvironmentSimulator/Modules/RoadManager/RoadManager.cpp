@@ -2710,7 +2710,7 @@ int Road::GetConnectedLaneIdAtS(int lane_id, double s_start, double s_target) co
     return connected_lane_id;
 }
 
-bool Road::IsDirectlyConnected(Road* road, LinkType link_type, ContactPointType* contact_point, int fromLaneId) const
+bool Road::IsDirectlyConnected(const Road* road, LinkType link_type, ContactPointType* contact_point, int fromLaneId) const
 {
     if (road == nullptr)
     {
@@ -2770,17 +2770,17 @@ bool Road::IsDirectlyConnected(Road* road, LinkType link_type, ContactPointType*
     return false;
 }
 
-bool Road::IsSuccessor(Road* road, ContactPointType* contact_point, int fromLaneId) const
+bool Road::IsSuccessor(const Road* road, ContactPointType* contact_point, int fromLaneId) const
 {
     return IsDirectlyConnected(road, LinkType::SUCCESSOR, contact_point, fromLaneId) != 0;
 }
 
-bool Road::IsPredecessor(Road* road, ContactPointType* contact_point, int fromLaneId) const
+bool Road::IsPredecessor(const Road* road, ContactPointType* contact_point, int fromLaneId) const
 {
     return IsDirectlyConnected(road, LinkType::PREDECESSOR, contact_point, fromLaneId) != 0;
 }
 
-bool Road::IsDirectlyConnected(Road* road, double* curvature, int fromLaneId) const
+bool Road::IsDirectlyConnected(const Road* road, double* curvature, int fromLaneId) const
 {
     ContactPointType contact_point;
 
@@ -6445,6 +6445,9 @@ void Position::Init()
     SetModeDefault(PosModeType::SET);
     SetModeDefault(PosModeType::UPDATE);
     SetModeDefault(PosModeType::INIT);
+
+    route_waypoint_s_   = 0.0;
+    route_waypoint_dir_ = 0;
 }
 
 Position::Position()
@@ -6563,6 +6566,8 @@ void Position::CopyLocation(const Position& from)
     roadmark_idx_           = from.roadmark_idx_;
     roadSuperElevationPrim_ = from.roadSuperElevationPrim_;
     routeStrategy_          = from.routeStrategy_;
+    route_waypoint_s_       = from.route_waypoint_s_;
+    route_waypoint_dir_     = from.route_waypoint_dir_;
 }
 
 void Position::Duplicate(const Position& from)
@@ -8257,7 +8262,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
     }
 
     // Set position exact on reference line
-    ReturnCode retvalue = SetTrackPosMode(roadMin->GetId(), closestS, 0.0, 0, true, false);  // skip z, h, p, r
+    ReturnCode retvalue = SetTrackPosMode(roadMin->GetId(), closestS, 0.0, 0, true);  // skip z, h, p, r
 
     double xCenterLine = x_;
     double yCenterLine = y_;
@@ -8272,7 +8277,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
     }
     else
     {
-        SetTrackPosMode(roadMin->GetId(), closestS, latOffset, 0, false, false);  // skip z, h, p, r
+        SetTrackPosMode(roadMin->GetId(), closestS, latOffset, 0, false);  // skip z, h, p, r
     }
 
     static id_t rid = 0;
@@ -8539,12 +8544,12 @@ Position::ReturnCode Position::SetLongitudinalTrackPos(id_t track_id, double s)
     return ReturnCode::OK;
 }
 
-Position::ReturnCode Position::SetTrackPos(id_t track_id, double s, double t, bool UpdateXY, bool updateRoute)
+Position::ReturnCode Position::SetTrackPos(id_t track_id, double s, double t, bool UpdateXY)
 {
-    return SetTrackPosMode(track_id, s, t, GetMode(PosModeType::UPDATE), UpdateXY, updateRoute);
+    return SetTrackPosMode(track_id, s, t, GetMode(PosModeType::UPDATE), UpdateXY);
 }
 
-Position::ReturnCode Position::SetTrackPosMode(id_t track_id, double s, double t, int mode, bool UpdateXY, bool updateRoute)
+Position::ReturnCode Position::SetTrackPosMode(id_t track_id, double s, double t, int mode, bool UpdateXY)
 {
     ReturnCode retval_long = SetLongitudinalTrackPos(track_id, s);
 
@@ -8563,11 +8568,6 @@ Position::ReturnCode Position::SetTrackPosMode(id_t track_id, double s, double t
     }
 
     EvaluateZHPR(mode);
-
-    if (updateRoute)
-    {
-        CalcRoutePosition();  // sync route info
-    }
 
     return retval_long;
 }
@@ -9187,15 +9187,6 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
         }
     }
 
-    if (updateRoute && route_ && route_->IsValid())
-    {
-        if (!route_->OnRoute())
-        {
-            // Check if new position is on route
-            CalcRoutePosition();
-        }
-    }
-
     return ret_val;
 }
 
@@ -9269,7 +9260,6 @@ Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double
 
     Lane2Track();
     Track2XYZ(mode);
-    CalcRoutePosition();  // sync route info
 
     return retvalue;
 }
@@ -9591,7 +9581,6 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
     }
 
     EvaluateZHPR(mode);
-    CalcRoutePosition();  // sync route info
 
     return 0;
 }
@@ -10257,6 +10246,8 @@ double Position::getRelativeDistance(double targetX, double targetY, double& x, 
 
 int Position::CalcRoutePosition()
 {
+    int retval = -1;
+
     if (route_ == 0 || !route_->IsValid())
     {
         return -1;
@@ -10264,7 +10255,7 @@ int Position::CalcRoutePosition()
 
     if (static_cast<int>(route_->SetTrackS(GetTrackId(), GetS())) >= 0)
     {
-        return 0;  // on route
+        retval = 0;
     }
     else
     {
@@ -10286,8 +10277,10 @@ int Position::CalcRoutePosition()
             route_->SetTrackS(pos_tmp.GetTrackId(), pos_tmp.GetS(), false);
         }
 
-        return -1;  // indicate not on route
+        retval = -1;  // indicate not on route
     }
+
+    return retval;
 }
 
 int Position::SetRoute(Route* route)
@@ -11020,7 +11013,7 @@ int Position::SetRouteLanePosition(Route* route, double path_s, int lane_id, dou
     int dir = 1;
     if (SE_Env::Inst().GetOptions().GetOptionSet("align_routepositions"))
     {
-        dir = route->GetWayPointDirection(route->waypoint_idx_);
+        dir = route->GetWaypoint()->GetRouteWaypointDir();
     }
 
     SetLanePos(route->GetTrackId(), SIGN(dir) * lane_id, route->GetTrackS(), SIGN(dir) * lane_offset);
@@ -11036,7 +11029,7 @@ int Position::SetRouteRoadPosition(Route* route, double path_s, double t)
     int dir = 1;
     if (SE_Env::Inst().GetOptions().GetOptionSet("align_routepositions"))
     {
-        dir = route->GetWayPointDirection(route->waypoint_idx_);
+        dir = route->GetWaypoint()->GetRouteWaypointDir();
     }
 
     SetTrackPos(route->GetTrackId(), route->GetTrackS(), SIGN(dir) * t);
@@ -13155,51 +13148,104 @@ void Position::EvaluateRelation(bool release)
     }
 }
 
-int Route::AddWaypoint(const Position& wp_pos)
+int Route::AddWaypointInternal(Position& wp, bool scenario_wp, bool route_found)
+{
+    if (all_waypoints_.size() == 0)
+    {
+        // first waypoint, no direction can be calculated yet
+        all_waypoints_.push_back(wp);
+
+        if (scenario_wp == false)
+        {
+            LOG_WARN("Route::AddWaypoint Enforce store first wp as scenario wp");
+        }
+        scenario_waypoints_.push_back(wp);
+
+        if (route_found == false)
+        {
+            LOG_WARN("Route::AddWaypoint Enforce store first wp as minimal wp");
+        }
+        minimal_waypoints_.push_back(wp);
+    }
+    else
+    {
+        if (all_waypoints_.size() == 1)
+        {
+            // now we have the second waypoint and hence we can calculate the direction at first wp
+            CalculcateWPDirWrtWP(all_waypoints_[0], wp, false);
+            scenario_waypoints_[0].SetRouteWaypointDir(all_waypoints_[0].GetRouteWaypointDir());
+            minimal_waypoints_[0].SetRouteWaypointDir(all_waypoints_[0].GetRouteWaypointDir());
+        }
+
+        // now we can calculate direction of the new waypoint
+        CalculcateWPDirWrtWP(wp, all_waypoints_.back(), true);
+
+        all_waypoints_.push_back(wp);
+
+        if (scenario_wp)
+        {
+            scenario_waypoints_.push_back(wp);
+        }
+
+        if (route_found)  // criteria for adding an OpenSCENARIO waypoint
+        {
+            minimal_waypoints_.push_back(wp);
+        }
+        else
+        {
+            LOG_WARN("Route::AddWaypoint Skip waypoint for scenario routes since path not found");
+        }
+    }
+
+    LOG_INFO("Added route waypoint {}, {:.2f}: road_id {} lane_id {} s {:.2f} ({})",
+             all_waypoints_.size() - 1,
+             wp.GetRouteWaypointS(),
+             wp.GetTrackId(),
+             wp.GetLaneId(),
+             wp.GetS(),
+             scenario_wp ? "scenario" : "intermediate");
+
+    return 0;
+}
+
+int Route::AddWaypoint(Position& wp_pos)
 {
     int retval = 0;
 
     if (minimal_waypoints_.size() > 0)
     {
-        // Keep only one consecutive waypoint per road
-        // Keep first specified waypoint for first road
-        // then, for following roads, keep the last waypoint.
-
-        if (wp_pos.GetTrackId() == minimal_waypoints_.back().GetTrackId())
+        if (minimal_waypoints_.size() > 1)
         {
-            if (minimal_waypoints_.size() == 1)
+            // first avoid consecutive waypoints on the same road
+            // keep first waypoint, then last wp for each road
+            if ((minimal_waypoints_.size() == 2 && minimal_waypoints_[0].GetTrackId() == minimal_waypoints_[1].GetTrackId()) ||
+                wp_pos.GetTrackId() == minimal_waypoints_.back().GetTrackId())
             {
-                // Ignore
-                LOG_INFO("Ignoring additional waypoint for road {} (s {:.2f})", wp_pos.GetTrackId(), wp_pos.GetS());
-                all_waypoints_.push_back(wp_pos);
-                // If the path only has one waypoint, we still need to update the distance in case all the waypoints
-                // are on the same road, otherwise the path will be of length 0 and cannot be used by the user. We
-                // don't sum the distance here, as the distance is calculated from the first waypoint and the user
-                // might add more than 2 waypoints on the same road.
-                std::unique_ptr<RoadPath> path = std::make_unique<RoadPath>(&minimal_waypoints_.back(), &wp_pos);
-                double                    dist = 0;
-                retval                         = path->Calculate(dist, false);
-                if (retval >= 0)
-                {
-                    length_ = dist;
-                }
-
-                return -1;
-            }
-            else  // at least two road-unique waypoints
-            {
-                // Keep this, remove previous
                 LOG_INFO("Removing previous waypoint for same road {} (at s {:.2f})",
                          minimal_waypoints_.back().GetTrackId(),
                          minimal_waypoints_.back().GetS());
+
                 minimal_waypoints_.pop_back();
+                length_ = minimal_waypoints_.back().GetRouteWaypointS();
+
+                if (scenario_waypoints_.size() > 1)
+                {
+                    scenario_waypoints_.pop_back();
+                }
             }
         }
 
         // Check that there is a valid path from previous waypoint
         std::unique_ptr<RoadPath> path = std::make_unique<RoadPath>(&minimal_waypoints_.back(), &wp_pos);
         double                    dist = 0;
-        retval                         = path->Calculate(dist, false);
+
+        // if first waypoint heading is not set explicitly, then set according to driving direction
+        if (minimal_waypoints_.size() == 1 && (minimal_waypoints_[0].GetMode(Position::PosModeType::INIT) & Position::PosMode::H_SET) == 0)
+        {
+            minimal_waypoints_[0].SetHeading(minimal_waypoints_[0].GetDrivingDirection());
+        }
+        retval = path->Calculate(dist, false);
+
         if (retval == 0)
         {
             // Path is found by tracing previous nodes
@@ -13220,6 +13266,7 @@ int Route::AddWaypoint(const Position& wp_pos)
             if (nodes.size() > 1)
             {
                 // Add internal waypoints, one for each road along the path
+                double length_mid_acc_ = length_;
                 for (unsigned int i = static_cast<unsigned int>(nodes.size() - 1); i >= 1; i--)
                 {
                     // Find out lane ID of the connecting road and add the waypoint at 1/3 of the road length
@@ -13228,25 +13275,26 @@ int Route::AddWaypoint(const Position& wp_pos)
                     connected_pos
                         .MoveAlongS(nodes[i - 1]->fromRoad->GetLength() * 0.33, 0.0, 0.0, false, Position::MoveDirectionMode::ROAD_DIRECTION, false);
 
-                    if (connected_pos.GetLaneId() < 0)
+                    double mid_dist = 0.0;
+                    if (all_waypoints_.back().Distance(&connected_pos,
+                                                       CoordinateSystem::CS_ROAD,
+                                                       RelativeDistanceType::REL_DIST_LONGITUDINAL,
+                                                       mid_dist,
+                                                       LARGE_NUMBER) == 0)
                     {
-                        connected_pos.SetHeadingRelative(0.0);
+                        length_mid_acc_ += fabs(mid_dist);
+                        connected_pos.SetRouteWaypointS(length_mid_acc_);
+                        AddWaypointInternal(connected_pos, false, retval == 0);
                     }
                     else
                     {
-                        connected_pos.SetHeadingRelative(M_PI);
+                        LOG_ERROR_AND_QUIT("Invalid waypoint roadId {}", wp_pos.GetTrackId());
                     }
-
-                    all_waypoints_.push_back(connected_pos);
-                    minimal_waypoints_.push_back(connected_pos);
-                    LOG_INFO("Route::AddWaypoint Added intermediate waypoint {} roadId {} laneId {}",
-                             minimal_waypoints_.size() - 1,
-                             connected_pos.GetTrackId(),
-                             nodes[i - 1]->fromLaneId);
                 }
             }
 
             length_ += fabs(dist);
+            wp_pos.SetRouteWaypointS(length_);
         }
         else if (retval < 0)
         {
@@ -13257,30 +13305,12 @@ int Route::AddWaypoint(const Position& wp_pos)
     {
         // First waypoint, make it the current position
         currentPos_ = wp_pos;
+        currentPos_.SetRouteWaypointS(0.0);
     }
+
     if (retval >= -1)
     {
-        // Add waypoint defined by scenario
-        scenario_waypoints_.push_back(wp_pos);
-
-        // Add all waypoints including invalid road ID (retval == -2 indicates invalid road ID)
-        all_waypoints_.push_back(wp_pos);
-
-        LOG_INFO("Route::AddWaypoint Added waypoint {}: {}, {}, {:.2f}",
-                 all_waypoints_.size() - 1,
-                 wp_pos.GetTrackId(),
-                 wp_pos.GetLaneId(),
-                 wp_pos.GetS());
-
-        if (retval == 0)
-        {
-            // For OpenSCENARIO routes, add only waypoints to which a path has been found
-            minimal_waypoints_.push_back(wp_pos);
-        }
-        else
-        {
-            LOG_WARN("Route::AddWaypoint Skip waypoint for scenario routes since path not found");
-        }
+        AddWaypointInternal(wp_pos, true, retval == 0);
     }
     else
     {
@@ -13289,6 +13319,121 @@ int Route::AddWaypoint(const Position& wp_pos)
                   wp_pos.GetTrackId(),
                   wp_pos.GetLaneId(),
                   wp_pos.GetS());
+    }
+
+    return 0;
+}
+
+int Route::CalculcateWPDirWrtWP(Position& wp, const Position& wp_ref, bool successor)
+{
+    const Road& road0 = *Position::GetOpenDrive()->GetRoadById(wp_ref.GetTrackId());
+    const Road& road1 = *Position::GetOpenDrive()->GetRoadById(wp.GetTrackId());
+
+    if (road0.GetId() == road1.GetId())
+    {
+        // same road, compare values to find out order
+        if ((successor && wp.GetS() > wp_ref.GetS()) || (!successor && wp.GetS() < wp_ref.GetS()))
+        {
+            // new waypoint is after the previous one
+            wp.SetRouteWaypointDir(1);
+        }
+        else
+        {
+            // new waypoint is before the previous one
+            wp.SetRouteWaypointDir(-1);
+        }
+    }
+    else
+    {
+        if (road1.IsPredecessor(&road0))
+        {
+            if (successor)
+            {
+                // route comes from start of the road
+                wp.SetRouteWaypointDir(1);
+            }
+            else
+            {
+                // route comes from end of the road
+                wp.SetRouteWaypointDir(-1);
+            }
+        }
+        else if (road1.IsSuccessor(&road0))
+        {
+            if (successor)
+            {
+                // route comes from end of the road
+                wp.SetRouteWaypointDir(-1);
+            }
+            else
+            {
+                // route comes from end of the road
+                wp.SetRouteWaypointDir(1);
+            }
+        }
+        else
+        {
+            LOG_ERROR("Invalid waypoint (roadId {}), can't find direction wrt previous wp (rid {})", road1.GetId(), road0.GetId());
+        }
+    }
+    return 0;
+}
+
+int Route::ReplaceMinimalWaypoints(std::initializer_list<Position> wps)
+{
+    if (wps.size() < 2)
+    {
+        return -1;
+    }
+
+    minimal_waypoints_.clear();
+    minimal_waypoints_.assign(wps);
+
+    CalculcateWPDirWrtWP(minimal_waypoints_[0], minimal_waypoints_[1], false);
+
+    double    route_s       = 0.0;
+    Road*     road_current  = Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[0].GetTrackId());
+    Road*     road_previous = nullptr;
+    Position* wp_current    = &minimal_waypoints_[0];
+    Position* wp_previous   = nullptr;
+
+    for (unsigned int i = 0; i < minimal_waypoints_.size(); i++)
+    {
+        if (i == 0)
+        {
+            wp_current->SetRouteWaypointS(0.0);
+        }
+        else
+        {
+            wp_previous   = wp_current;
+            wp_current    = &minimal_waypoints_[i];
+            road_previous = road_current;
+            road_current  = Position::GetOpenDrive()->GetRoadById(wp_current->GetTrackId());
+
+            CalculcateWPDirWrtWP(*wp_current, *wp_previous, true);
+
+            // calculate s contribution from previous road, after previous waypoint
+            if (wp_previous->GetRouteWaypointDir() == -1)
+            {
+                route_s += wp_previous->GetS();
+            }
+            else
+            {
+                route_s += road_previous->GetLength() - wp_previous->GetS();
+            }
+
+            // calculate s contribution from current road, up to current waypoint
+            if (wp_current->GetRouteWaypointDir() == -1)
+            {
+                route_s += road_current->GetLength() - wp_current->GetS();
+            }
+            else
+            {
+                route_s += wp_current->GetS();
+            }
+
+            wp_current->SetRouteWaypointS(route_s);
+        }
     }
 
     return 0;
@@ -13306,13 +13451,12 @@ void Route::CheckValid()
 Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
 {
     // Loop over waypoints - look for current track ID and sum the distance (route s) up to current position
-    double dist = 0;
     double local_s;
     struct
     {
         idx_t                wp_index;
         double               dist_to_wp;
-        double               dist_along_route_at_wp;
+        double               dist_along_route;
         Position::ReturnCode retval;
         double               s;
     } info_for_closest_wp = {IDX_UNDEFINED, LARGE_NUMBER, 0.0, Position::ReturnCode::ERROR_NOT_ON_ROUTE, 0.0};
@@ -13328,37 +13472,12 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
 
     for (unsigned int i = 0; i < minimal_waypoints_.size(); i++)
     {
-        int route_direction = GetWayPointDirection(i);
-
-        if (route_direction == 0)
+        if (minimal_waypoints_[i].GetTrackId() == trackId)
         {
-            LOG_ERROR("Unexpected lack of connection in route at waypoint {}", i);
-            return Position::ReturnCode::ERROR_GENERIC;
-        }
-
-        // Add length of intermediate waypoint road
-        dist += Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength();
-
-        if (i == 0)
-        {
-            // Subtract initial s-value for the first waypoint
-            if (route_direction > 0)  // route in waypoint road direction
-            {
-                dist -= minimal_waypoints_[0].GetS();
-                dist = MAX(dist, 0.0);
-            }
-            else
-            {
-                // route in opposite road direction - remaining distance equals waypoint s-value
-                dist = minimal_waypoints_[0].GetS();
-            }
-        }
-
-        if (trackId == minimal_waypoints_[i].GetTrackId())
-        {
-            Position set_pos(trackId, s, 0.0);
-            double   distance_to_waypoint = LARGE_NUMBER;
-            minimal_waypoints_[i].Distance(&set_pos, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_EUCLIDIAN, distance_to_waypoint);
+            const Position& wp = minimal_waypoints_[i];
+            Position        set_pos(trackId, s, 0.0);
+            double          distance_to_waypoint = LARGE_NUMBER;
+            wp.Distance(&set_pos, CoordinateSystem::CS_ENTITY, RelativeDistanceType::REL_DIST_EUCLIDIAN, distance_to_waypoint);
 
             if (fabs(distance_to_waypoint) > info_for_closest_wp.dist_to_wp - SMALL_NUMBER)
             {
@@ -13366,32 +13485,30 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
                 continue;
             }
 
+            int wp_dir = minimal_waypoints_[i].GetRouteWaypointDir();
+
             info_for_closest_wp.s          = s;
             info_for_closest_wp.wp_index   = i;
             info_for_closest_wp.dist_to_wp = fabs(distance_to_waypoint);
 
-            // current position is at the road of this waypoint - i.e. along the route
-            // remove remaming s from road
-            if (route_direction > 0)
+            if (wp_dir > 0)
             {
-                info_for_closest_wp.dist_along_route_at_wp =
-                    dist - (Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength() - s);
+                info_for_closest_wp.dist_along_route = wp.GetRouteWaypointS() + s - wp.GetS();
             }
             else
             {
-                info_for_closest_wp.dist_along_route_at_wp = dist - s;
+                info_for_closest_wp.dist_along_route = wp.GetRouteWaypointS() + wp.GetS() - s;
             }
 
-            // need to adjust s value, on first or last wp?
-            // also check if out of route bounds
+            // passed first or last wp?
             info_for_closest_wp.retval = Position::ReturnCode::OK;
             bool out_of_bounds         = false;
             if (info_for_closest_wp.wp_index == 0)
             {
-                if ((route_direction > 0 && s < minimal_waypoints_[i].GetS()) || (route_direction < 0 && s > minimal_waypoints_[i].GetS()))
+                if ((wp_dir > 0 && s < wp.GetS()) || (wp_dir < 0 && s > wp.GetS()))
                 {
                     // reached the beginning of the route
-                    info_for_closest_wp.s = minimal_waypoints_[i].GetS();
+                    info_for_closest_wp.s = wp.GetS();
                     if (all_waypoints_[0].GetTrackId() == trackId)
                     {
                         // reached the beginning of the route
@@ -13401,7 +13518,7 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
             }
             else if (info_for_closest_wp.wp_index == minimal_waypoints_.size() - 1)
             {
-                if ((route_direction > 0 && s > minimal_waypoints_[i].GetS()) || (route_direction < 0 && s < minimal_waypoints_[i].GetS()))
+                if ((wp_dir > 0 && s > wp.GetS()) || (wp_dir < 0 && s < wp.GetS()))
                 {
                     info_for_closest_wp.s = minimal_waypoints_[i].GetS();
                     if (all_waypoints_.back().GetTrackId() == trackId)
@@ -13428,7 +13545,7 @@ Position::ReturnCode Route::SetTrackS(id_t trackId, double s, bool update_state)
 
     if (info_for_closest_wp.wp_index != IDX_UNDEFINED)
     {
-        path_s_       = CLAMP(info_for_closest_wp.dist_along_route_at_wp, 0.0, GetLength());
+        path_s_       = CLAMP(info_for_closest_wp.dist_along_route, 0.0, GetLength());
         local_s       = info_for_closest_wp.s;
         waypoint_idx_ = info_for_closest_wp.wp_index;
 
@@ -13495,7 +13612,7 @@ Position::ReturnCode Route::MovePathDS(double ds, double* remaining_dist, bool u
     }
 
     // Consider route direction
-    ds *= GetWayPointDirection(waypoint_idx_);
+    ds *= GetWaypoint()->GetRouteWaypointDir();
 
     return SetPathS(GetPathS() + ds, remaining_dist, update_state);
 }
@@ -13503,9 +13620,33 @@ Position::ReturnCode Route::MovePathDS(double ds, double* remaining_dist, bool u
 Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool update_state)
 {
     // Loop over waypoints - until reaching s meters
-    double               dist    = 0;
     double               local_s = 0.0;
     Position::ReturnCode retval  = Position::ReturnCode::OK;
+
+    if (s > GetLength() || s < 0.0)
+    {
+        if (remaining_dist)
+        {
+            *remaining_dist = s < 0.0 ? -s : s - GetLength();
+        }
+
+        retval = Position::ReturnCode::ERROR_END_OF_ROUTE;
+
+        if (update_state)
+        {
+            LOG_INFO("{}{} moved out of route at roadId={}, s={:.2f} (SetPathS())",
+                     getObjName().empty() ? "Position " : "Entity ",
+                     getObjName().empty() ? "" : getObjName(),
+                     GetWaypoint(waypoint_idx_)->GetTrackId(),
+                     local_s);
+            on_route_ = false;
+        }
+
+        if (!OnRoute())
+        {
+            return retval;
+        }
+    }
 
     if (minimal_waypoints_.size() == 0)
     {
@@ -13515,137 +13656,86 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
         return Position::ReturnCode::OK;
     }
 
-    for (unsigned int i = 0; i < minimal_waypoints_.size(); i++)
+    const Position* wp     = nullptr;
+    int             wp_dir = 0;
+    unsigned int    i      = 0;
+
+    while (i < minimal_waypoints_.size() && s > minimal_waypoints_[i].GetRouteWaypointS() - SMALL_NUMBER)
     {
-        int route_direction = GetWayPointDirection(i);
+        i++;
+    }
 
-        if (route_direction == 0)
+    if (i > 0)
+    {
+        i--;  // snap to waypoint before current s-value
+    }
+
+    // Found waypoint
+    wp     = &minimal_waypoints_[i];
+    wp_dir = wp->GetRouteWaypointDir();
+    if (wp_dir == 0)
+    {
+        LOG_ERROR("Unexpected lack of connection in route at waypoint {}", i);
+        return Position::ReturnCode::ERROR_GENERIC;
+    }
+
+    if (wp != nullptr)
+    {
+        const Road* road = Position::GetOpenDrive()->GetRoadById(wp->GetTrackId());
+        waypoint_idx_    = i;
+
+        // position is along the route between waypoint i and i + 1, find out on which road
+        double ds = s - wp->GetRouteWaypointS();
+
+        // check if delta s reaches beyond the road of wp(i)
+        if ((waypoint_idx_ < minimal_waypoints_.size() - 1 &&
+             (wp->GetRouteWaypointDir() == 1 && wp->GetS() + ds > road->GetLength() + SMALL_NUMBER)) ||
+            (wp->GetRouteWaypointDir() == -1 && wp->GetS() < ds + SMALL_NUMBER))
         {
-            LOG_ERROR("Unexpected lack of connection in route at waypoint {}", i);
-            return Position::ReturnCode::ERROR_GENERIC;
-        }
-
-        // Add length of intermediate waypoint road
-        dist += Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength();
-
-        if (i == 0)
-        {
-            // Subtract initial s-value for the first waypoint
-            if (route_direction > 0)  // route in waypoint road direction
+            // move to next road
+            const Position& next_wp   = minimal_waypoints_[waypoint_idx_ + 1];
+            const Road*     next_road = Position::GetOpenDrive()->GetRoadById(next_wp.GetTrackId());
+            local_s                   = wp->GetRouteWaypointDir() < 0 ? ds - wp->GetS() : wp->GetS() + ds - road->GetLength();
+            if (next_wp.GetRouteWaypointDir() < 0)
             {
-                dist -= minimal_waypoints_[0].GetS();
+                // reverse direction
+                local_s = next_road->GetLength() - local_s;
+            }
+            road = next_road;
+            currentPos_.SetLanePos(next_road->GetId(), next_wp.GetLaneId(), local_s, 0.0);
+        }
+        else
+        {
+            if (wp->GetRouteWaypointDir() == 1)
+            {
+                local_s = wp->GetS() + ds;
             }
             else
             {
-                // route in opposite road direction - remaining distance equals waypoint s-value
-                dist = minimal_waypoints_[0].GetS();
+                local_s = wp->GetS() - ds;
             }
+            currentPos_.SetLanePos(road->GetId(), wp->GetLaneId(), local_s, 0.0);
         }
 
-        if (s < dist)
+        if (local_s < 0.0 || local_s > road->GetLength())
         {
-            // current position is at the road of this waypoint - i.e. along the route
-            // remove remaming s from road
-            if (route_direction > 0)
-            {
-                local_s = s - (dist - Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength());
-            }
-            else
-            {
-                local_s = dist - s;
-            }
-
-            if (s > GetLength() || s < 0.0)
-            {
-                if (remaining_dist)
-                {
-                    *remaining_dist = s < 0.0 ? -s : s - GetLength();
-                }
-
-                retval = Position::ReturnCode::ERROR_END_OF_ROUTE;
-
-                if (!OnRoute())
-                {
-                    return retval;
-                }
-            }
-
-            if (!OnRoute())
-            {
-                if (update_state)
-                {
-                    LOG_INFO("{}{}on route at roadId={}, s={:.2f}",
-                             getObjName().empty() ? "Position " : "Entity ",
-                             getObjName().empty() ? "" : getObjName(),
-                             minimal_waypoints_[i].GetTrackId(),
-                             local_s);
-                    on_route_ = true;
-                }
-            }
-            else if (retval == Position::ReturnCode::ERROR_END_OF_ROUTE)
-            {
-                if (update_state)
-                {
-                    LOG_INFO("{}{} moved out of route at roadId={}, s={:.2f} (SetPathS())",
-                             getObjName().empty() ? "Position " : "Entity ",
-                             getObjName().empty() ? "" : getObjName(),
-                             GetWaypoint(waypoint_idx_)->GetTrackId(),
-                             local_s);
-                    on_route_ = false;
-                }
-            }
-
-            waypoint_idx_ = i;
-
-            currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(waypoint_idx_)->GetLaneId(), local_s, 0.0);
-
-            if (retval == Position::ReturnCode::ERROR_END_OF_ROUTE)
-            {
-                waypoint_idx_ = IDX_UNDEFINED;
-                if (s < 0)
-                {
-                    path_s_ = 0.0;
-                }
-                else
-                {
-                    path_s_ = GetLength();
-                }
-            }
-            else
-            {
-                path_s_ = s;
-            }
-            return retval;
+            LOG_ERROR("Unexpected: local_s {} out of range [0:{}] for wp {} road_id {}", local_s, road->GetLength(), i, road->GetId());
         }
-        else if (i == minimal_waypoints_.size() - 1)
+
+        if (!OnRoute())
         {
-            if (!OnRoute())
+            if (update_state)
             {
-                return Position::ReturnCode::ERROR_NOT_ON_ROUTE;
+                LOG_INFO("{}{}on route at roadId={}, s={:.2f}",
+                         getObjName().empty() ? "Position " : "Entity ",
+                         getObjName().empty() ? "" : getObjName(),
+                         GetWaypoint(waypoint_idx_)->GetTrackId(),
+                         local_s);
+                on_route_ = true;
             }
-
-            // Past end of route
-            if (route_direction > 0)
-            {
-                local_s = Position::GetOpenDrive()->GetRoadById(minimal_waypoints_[i].GetTrackId())->GetLength();
-                path_s_ = GetLength();
-            }
-            else
-            {
-                local_s = 0.0;
-                path_s_ = 0.0;
-            }
-
-            currentPos_.SetLanePos(GetWaypoint(waypoint_idx_)->GetTrackId(), GetWaypoint(i)->GetLaneId(), local_s, 0.0);
-
-            if (remaining_dist)
-            {
-                *remaining_dist = s < 0.0 ? -s : s - GetLength();
-            }
-            LOG_ERROR("Entity {} moved passed route at roadId={}, s={:.2f}", getObjName(), minimal_waypoints_[i].GetTrackId(), local_s);
-            waypoint_idx_ = IDX_UNDEFINED;
-            return Position::ReturnCode::ERROR_END_OF_ROUTE;
         }
+
+        return retval;
     }
 
     return Position::ReturnCode::ERROR_GENERIC;  // not expected
@@ -13728,74 +13818,6 @@ Road* Route::GetRoadAtOtherEndOfConnectingRoad(Road* incoming_road) const
     }
 
     return junction->GetRoadAtOtherEndOfConnectingRoad(connecting_road, incoming_road);
-}
-
-int Route::GetWayPointDirection(idx_t index)
-{
-    if (minimal_waypoints_.size() == 0 || index == IDX_UNDEFINED || index >= minimal_waypoints_.size())
-    {
-        LOG_ERROR("Waypoint index {} out of range ({})", index, minimal_waypoints_.size());
-        return 0;
-    }
-
-    OpenDrive* od   = minimal_waypoints_[index].GetOpenDrive();
-    Road*      road = od->GetRoadById(minimal_waypoints_[index].GetTrackId());
-    if (road == nullptr)
-    {
-        LOG_ERROR("Waypoint {} invalid road id {}!", index, minimal_waypoints_[index].GetTrackId());
-        return 0;
-    }
-
-    int       direction = 0;
-    Position* pos2      = nullptr;
-
-    // Looking in the direction of heading
-    direction = minimal_waypoints_[index].GetHRelative() > M_PI_2 && minimal_waypoints_[index].GetHRelative() < 3 * M_PI_2 ? -1 : 1;
-
-    if (index < minimal_waypoints_.size() - 1)
-    {
-        // Not at last waypoint, so look at next waypoint for direction
-        pos2 = GetWaypoint(index + 1);
-        if ((direction == 1 && road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId()))) ||
-            (direction == -1 && road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId()))))
-        {
-            // Expected case, route direction aligned with waypoint headings
-            return direction;
-        }
-        else
-        {
-            LOG_DEBUG("Relative heading not aligned with route direction");
-            return -1 * direction;
-        }
-    }
-    else if (index > 0)
-    {
-        // At last waypoint, so look at previous waypoint
-        pos2 = GetWaypoint(index - 1);
-
-        if ((direction == -1 && road->IsSuccessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId()))) ||
-            (direction == 1 && road->IsPredecessor(Position::GetOpenDrive()->GetRoadById(pos2->GetTrackId()))))
-        {
-            // Expected case, route direction aligned with waypoint headings
-            return direction;
-        }
-        else
-        {
-            LOG_DEBUG("Relative heading not aligned with route direction");
-            return -1 * direction;
-        }
-    }
-
-    // At first and only (minimal) waypoint, so try to find another waypoint for direction
-    if (all_waypoints_.size() > 1 && (road->GetId() == all_waypoints_[1].GetTrackId()))
-    {
-        return direction;
-    }
-    else
-    {
-        LOG_WARN("Only one waypoint, no direction");
-        return 0;
-    }
 }
 
 void Route::setName(std::string name)

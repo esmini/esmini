@@ -3923,8 +3923,7 @@ TEST(APITest, TestGetRoute)
 
     EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
 
-    int num_of_points = SE_GetNumberOfRoutePoints(0);
-    EXPECT_EQ(num_of_points, 4);
+    EXPECT_EQ(SE_GetNumberOfRoutePoints(0), 4);
 
     SE_RouteInfo route_info;
     SE_GetRoutePoint(0, 0, &route_info);

@@ -583,7 +583,11 @@ void AcquirePositionAction::Start(double simTime)
     route_->setName("AcquirePositionRoute");
     route_->setObjName(object_->GetName());
 
-    route_->AddWaypoint(object_->pos_);
+    // find route from current position and considering current heading direction
+    roadmanager::Position start_wp(object_->pos_);
+    start_wp.SetHeadingRelative(fabs(GetAngleInIntervalMinusPIPlusPI(object_->pos_.GetHRelative())) > M_PI_2 ? M_PI : 0.0);
+    start_wp.SetModeBits(roadmanager::Position::PosModeType::INIT, roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::H_SET);
+    route_->AddWaypoint(start_wp);
     route_->AddWaypoint(target_position_);
 
     object_->pos_.SetRoute(route_);

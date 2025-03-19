@@ -32,7 +32,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*ltap-od.xosc', log)  is not None)
-        self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 1 roadId 15 laneId -1', log)  is not None)
+        self.assertTrue(re.search('.*Added route waypoint 1, 209.10: road_id 15 lane_id -1 s 4.91 \\(intermediate\\)', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('\\n.5.500.* Synchronize masterTimeToDest \\(0.003\\) reached within this timestep \\(0.010\\)', log)  is not None)
@@ -162,11 +162,20 @@ class TestSuite(unittest.TestCase):
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*routing-test.xosc', log)  is not None)
-        self.assertTrue(re.search('.*Route::AddWaypoint Added waypoint 6: 261, 1, 50.00', log)  is not None)
-        self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 7 roadId 260 laneId -1', log)  is not None)
-        self.assertTrue(re.search('.*Route::AddWaypoint Added intermediate waypoint 11 roadId 220 laneId -1', log)  is not None)
-        self.assertTrue(re.search('.*Route::AddWaypoint Added waypoint 12: 222, -1, 20.00', log)  is not None)
-        self.assertTrue(re.search('\\n.*25.46.* Route::AddWaypoint Added intermediate waypoint 3 roadId 280 laneId -1', log)  is not None)
+
+        # Route waypoints
+        self.assertTrue(re.search('.*Added route waypoint 0, 0.00: road_id 242 lane_id 1 s 100.00 \\(scenario\\)', log)  is not None)
+        self.assertTrue(re.search('.*Added route waypoint 3, 304.03: road_id 209 lane_id 1 s 35.97 \\(intermediate\\)', log)  is not None)
+        self.assertTrue(re.search('.*Added route waypoint 6, 525.70: road_id 261 lane_id 1 s 50.00 \\(scenario\\)', log)  is not None)
+        self.assertTrue(re.search('.*Added route waypoint 8, 629.37: road_id 266 lane_id -1 s 35.97 \\(intermediate\\)', log)  is not None)
+        self.assertTrue(re.search('.*Added route waypoint 12, 1057.34: road_id 222 lane_id -1 s 20.00 \\(scenario\\)', log)  is not None)
+        self.assertTrue(re.search('.*Added route waypoint 14, 1260.70: road_id 214 lane_id -1 s 5.35 \\(intermediate\\)', log)  is not None)
+        self.assertTrue(re.search('.*Added route waypoint 15, 1291.57: road_id 197 lane_id -1 s 20.00 \\(scenario\\)', log)  is not None)
+
+        # AcquirePosition waypoints
+        self.assertTrue(re.search('\\n\\[25.460\\] \\[info\\] Added route waypoint 0, 0.00: road_id 197 lane_id -1 s 18.48 \\(scenario\\)', log)  is not None)
+        self.assertTrue(re.search('\\n\\[25.460\\] \\[info\\] Added route waypoint 4, 468.77: road_id 283 lane_id 1 s 70.70 \\(intermediate\\)', log)  is not None)
+        self.assertTrue(re.search('\\n\\[25.460\\] \\[info\\] Added route waypoint 7, 706.17: road_id 242 lane_id -1 s 40.00 \\(scenario\\)', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('\\n.*25.46.* AquirePosition condition: true, delay: 0.00, distance 1.5. < tolerance \\(2.00\\), edge: rising', log)  is not None)
@@ -481,9 +490,9 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*route_lane_change.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('Route::AddWaypoint Added waypoint 0: 2, -1, 100.00', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('Route::AddWaypoint Added intermediate waypoint 1 roadId 15 laneId -1', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('Route::AddWaypoint Added waypoint 2: 1, -1, 5.00', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.*Added route waypoint 0, 0.00: road_id 2 lane_id -1 s 100.00 \\(scenario\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.*Added route waypoint 1, 209.10: road_id 15 lane_id -1 s 4.91 \\(intermediate\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.*Added route waypoint 2, 224.06: road_id 1 lane_id -1 s 5.00 \\(scenario\\)', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('.0.000.* Pos\\(22.11, 6.78, 0.00\\) Rot\\(4.89, 0.00, 0.00\\) roadId 2 laneId -1 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('.31.300.* LaneChangeCondition6: true$', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('.35.300.* QuitCondition: true, delay: 3.00, LaneChangeEvent6, COMPLETE / END_TRANSITION == END_TRANSITION, edge: rising', log, re.MULTILINE)  is not None)

@@ -145,7 +145,7 @@
             <ConditionGroup>
                 <Condition name="stop_simulation_time_trigger" delay="0.0" conditionEdge="none">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="13.0" rule="greaterThan"/>
+                        <SimulationTimeCondition value="120.0" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

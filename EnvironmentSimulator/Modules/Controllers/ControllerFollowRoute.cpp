@@ -183,9 +183,7 @@ void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, ro
                 return;
             }
 
-            object_->pos_.GetRoute()->minimal_waypoints_.clear();
-            object_->pos_.GetRoute()->minimal_waypoints_ = {vehiclePos, waypoints_[static_cast<unsigned int>(currentWaypointIndex_)]};
-            object_->pos_.CalcRoutePosition();               // Reset route object according to new route waypoints and current position
+            object_->pos_.GetRoute()->ReplaceMinimalWaypoints({vehiclePos, waypoints_[static_cast<unsigned int>(currentWaypointIndex_)]});
             object_->SetDirtyBits(Object::DirtyBit::ROUTE);  // Set dirty bit to notify that route has changed
 
             return;
@@ -250,9 +248,7 @@ void ControllerFollowRoute::CalculateWaypoints()
     {
         waypoints_ = router.GetWaypoints(pathToGoal, startPos, targetPos);
 
-        object_->pos_.GetRoute()->minimal_waypoints_.clear();
-        object_->pos_.GetRoute()->minimal_waypoints_ = {waypoints_[0], waypoints_[1]};
-        object_->pos_.CalcRoutePosition();               // Reset route object according to new route waypoints and current position
+        object_->pos_.GetRoute()->ReplaceMinimalWaypoints({waypoints_[0], waypoints_[1]});
         object_->SetDirtyBits(Object::DirtyBit::ROUTE);  // Set dirty bit to notify that route has changed
         pathCalculated_ = true;
     }

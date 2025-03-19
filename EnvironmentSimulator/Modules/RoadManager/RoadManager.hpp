@@ -2327,7 +2327,7 @@ namespace roadmanager
                 @param fromLaneId If not zero, a connection from this lane must exist on specified road
                 @return true if connection exist, else false
         */
-        bool IsDirectlyConnected(Road *road, LinkType link_type, ContactPointType *contact_point, int fromLaneId = 0) const;
+        bool IsDirectlyConnected(const Road *road, LinkType link_type, ContactPointType *contact_point, int fromLaneId = 0) const;
 
         /**
                 Check if specified road is directly connected, at least in one end of current one (this)
@@ -2336,7 +2336,7 @@ namespace roadmanager
                 @param fromLaneId If not zero, a connection from this lane must exist on specified road
                 @return true if connection exist, else false
         */
-        bool IsDirectlyConnected(Road *road, double *curvature = 0, int fromLaneId = 0) const;
+        bool IsDirectlyConnected(const Road *road, double *curvature = 0, int fromLaneId = 0) const;
 
         /**
                 Check if specified road is directly connected as successor to current one (this)
@@ -2345,7 +2345,7 @@ namespace roadmanager
                 @param fromLaneId If not zero, a connection from this lane must exist on specified road
                 @return true if connection exist, else false
         */
-        bool IsSuccessor(Road *road, ContactPointType *contact_point = 0, int fromLaneId = 0) const;
+        bool IsSuccessor(const Road *road, ContactPointType *contact_point = 0, int fromLaneId = 0) const;
 
         /**
                 Check if specified road is directly connected as predecessor to current one (this)
@@ -2354,7 +2354,7 @@ namespace roadmanager
                 @param fromLaneId If not zero, a connection from this lane must exist on specified road
                 @return true if connection exist, else false
         */
-        bool IsPredecessor(Road *road, ContactPointType *contact_point = 0, int fromLaneId = 0) const;
+        bool IsPredecessor(const Road *road, ContactPointType *contact_point = 0, int fromLaneId = 0) const;
 
         /**
                 Get width of road
@@ -3114,7 +3114,7 @@ namespace roadmanager
         @param updateRoute update route position, find closest point along route
         @return Non zero return value indicates error of some kind
         */
-        ReturnCode SetTrackPos(id_t track_id, double s, double t, bool UpdateXY = true, bool updateRoute = true);
+        ReturnCode SetTrackPos(id_t track_id, double s, double t, bool UpdateXY = true);
 
         /**
         Specify position by lane coordinate (road_id, s, t) with specified mode
@@ -3125,7 +3125,7 @@ namespace roadmanager
         @param updateXY update world coordinates x, y... as well - or not
         @return Non zero return value indicates error of some kind
         */
-        ReturnCode SetTrackPosMode(id_t track_id, double s, double t, int mode, bool UpdateXY = true, bool updateRoute = true);
+        ReturnCode SetTrackPosMode(id_t track_id, double s, double t, int mode, bool UpdateXY = true);
         void       ForceLaneId(int lane_id);
 
         /**
@@ -3271,8 +3271,9 @@ namespace roadmanager
 
         void EvaluateRelation(bool release = false);
 
-        int          SetRoute(Route *route);
-        int          CalcRoutePosition();
+        int SetRoute(Route *route);
+        int CalcRoutePosition();
+
         const Route *GetRoute() const
         {
             return route_;
@@ -3977,6 +3978,27 @@ namespace roadmanager
             routeStrategy_ = rs;
         }
 
+        double GetRouteWaypointS() const
+        {
+            return route_waypoint_s_;
+        }
+
+        void SetRouteWaypointS(double s)
+        {
+            route_waypoint_s_ = s;
+        }
+
+        int GetRouteWaypointDir() const
+        {
+            return route_waypoint_dir_;
+        }
+
+        void SetRouteWaypointDir(int dir)
+        {
+            route_waypoint_dir_ = dir;
+            SetHeadingRelative(dir < 0 ? M_PI : 0.0);
+        }
+
         void SetDirectionMode(DirectionMode direction_mode)
         {
             direction_mode_ = direction_mode;
@@ -4098,6 +4120,8 @@ namespace roadmanager
 
         // RouteStrategy for a position, used for waypoints
         RouteStrategy routeStrategy_ = RouteStrategy::SHORTEST;
+        double        route_waypoint_s_;    // when used as a route waypoint, this is the s-value along the route
+        int           route_waypoint_dir_;  // direction of the route, in terms of road direction, at the waypoint
 
         // Store roads overlapping position, updated by XYZ2TrackPos()
         std::vector<id_t> overlapping_roads;  // road ids overlapping position evaluated by XYZ2TrackPos()
@@ -4116,14 +4140,17 @@ namespace roadmanager
         @param position A regular position created with road, lane or world coordinates
         @return Non zero return value indicates error of some kind
         */
-        int AddWaypoint(const Position &position);
+        int AddWaypoint(Position &position);
 
         /**
-        Return Direction of route versus road direction
-        @param index Index of the waypoint
-        @return 1 if route is aligned with road direction, else -1
+        Calculate direction of waypoint relative road s axis given a reference waypoint for route direction
+        @param wp Waypoint position object to update
+        @param wp_ref Reference waypoint position to define route direction
+        @param successor True if wp is a successor to wp_ref, false if wp is a predecessor
         */
-        int GetWayPointDirection(idx_t index);
+        int CalculcateWPDirWrtWP(Position &wp, const Position &wp_ref, bool successor);
+
+        int ReplaceMinimalWaypoints(std::initializer_list<Position> wps);
 
         void        setName(std::string name);
         std::string getName() const;
@@ -4223,6 +4250,16 @@ namespace roadmanager
         double                length_       = 0.0;
         idx_t                 waypoint_idx_ = IDX_UNDEFINED;
         bool                  on_route_     = false;
+
+    private:
+        /**
+        Add waypoint and calculate various vaues for later lookup
+        @param wp Waypoint position object
+        @param scenario_wp True for waypoints explicitly specified in the scenario
+        @param route_found Connected to previous waypoint on lane level (no need for lane changes)
+        @return 0 if successful, -1 on error
+        */
+        int AddWaypointInternal(Position &wp, bool scenario_wp, bool route_found);
     };
 
     // A Road Path is a linked list of road links (road connections or junctions)
