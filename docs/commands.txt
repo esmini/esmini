@@ -16,14 +16,16 @@ Options:
       Log data for each vehicle in ASCII csv format
   --collision
       Enable global collision detection, potentially reducing performance
-  --custom_camera <position>
-      Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)
-  --custom_fixed_camera <position and optional orientation>
-      Additional custom fixed camera position <x,y,z>[,h,p] (multiple occurrences supported)
-  --custom_fixed_top_camera <position and rotation>
-      Additional custom top camera <x,y,z,rot> (multiple occurrences supported)
-  --custom_light <position and intensity>
-      Additional custom light source <x,y,z,intensity> intensity range 0..1 (multiple occurrences supported)
+  --config_file_path [path]...  (default if value omitted: config.yml)
+      Configuration file path/filename, e.g. "../my_config.txt"
+  --custom_camera <position>...
+      Additional custom camera position <x,y,z>[,h,p]
+  --custom_fixed_camera <position and optional orientation>...
+      Additional custom fixed camera position <x,y,z>[,h,p]
+  --custom_fixed_top_camera <position and rotation>...
+      Additional custom top camera <x,y,z,rot>
+  --custom_light <position and intensity>...
+      Additional custom light source <x,y,z,intensity> intensity range 0..1
   --disable_controllers
       Disable controllers
   --disable_pline_interpolation
@@ -47,7 +49,7 @@ Options:
   --headless
       Run without viewer window
   --help
-      Show this help message
+      Show this help message (-h works as well)
   --hide_route_waypoints
       Disable route waypoint visualization. Toggle key 'R'
   --hide_trajectories
@@ -78,28 +80,16 @@ Options:
       OpenSCENARIO XML string
   --osg_screenshot_event_handler
       Revert to OSG default jpg images ('c'/'C' keys handler)
-  --osi_file [filename]  (default if value omitted: ground_truth.osi)
-      Save osi trace file
-  --osi_freq <frequency>
-      Decrease OSI file entries, e.g. --osi_freq 2 -> OSI written every two simulation steps
-  --osi_lines
-      Show OSI road lines. Toggle key 'u'
-  --osi_points
-      Show OSI road points. Toggle key 'y'
-  --osi_receiver_ip [IP address]  (default if value omitted: 127.0.0.1)
-      IP address where to send OSI UDP packages
   --param_dist <filename>
       Run variations of the scenario according to specified parameter distribution file
   --param_permutation <index>
       Run specific permutation of parameter distribution, index in range (0 .. NumberOfPermutations-1)
   --pause
       Pause simulation after initialization
-  --path <path>
-      Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported
+  --path <path>...
+      Search path prefix for assets, e.g. OpenDRIVE files.
   --player_server
       Launch UDP server for action/command injection
-  --plot [mode]  (default if value omitted: asynchronous)
-      Show window with line-plots of interesting data. Modes: asynchronous, synchronous
   --record [filename]  (default if value omitted: sim.dat)
       Record position data into a file for later replay
   --road_features [mode]  (default if value omitted: on)

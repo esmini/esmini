@@ -2849,11 +2849,20 @@ The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is
 
 == Command reference
 
-=== About options
+=== About options and config files
 
-esmini, replayer and odrviewer can be controlled and configured by options. Also any input file is specified as an option. Available options are listed in subsequent sections each application respectively. Certain options, such as 'path', support multiple values, denoted by '...' in the command help. Values can be specified sequentially, e.g., --path /tmp/models /tmp/kalles_models.
+esmini, replayer and odrviewer can be controlled and configured by options. Even the input file (e.g. OpenSCENARIO file) is specified as an option.
 
-Options can be specified in three ways:
+Available options are listed later in this section, grouped by application.
+
+Certain options, such as `path`, supports multiple values, denoted by '...' in the command help. For those options the values can be specified sequentially. Example: +
+`--path /tmp/models /tmp/kalles_models`
+
+Other options supports only one value. For those options the last parsed occurrence wins. Example: +
+`--logfile_path my_log.txt --logfile_path kalles_log.txt` +
+will create 'kalles_log.txt'
+
+Options can be specified three ways:
 
 1. From command line as application arguments, for example: `esmini --osc my_scenario.xosc --disable_stdout`
 2. By API function SE_SetOption(), see <<Program Options>>
@@ -2861,11 +2870,11 @@ Options can be specified in three ways:
 
 ==== Config file
 
-Config file is basically a container for option presets. It can be used to apply common settings for esmini applications. For example, if you often use a specific window size, e.g. --window 60 60 800 400, then you can put it in a config file. Configuration file is structured with the application name as the root, followed by option-value pairs. Custom configuration file can be named and placed as needed.
+The config file is basically a container for option presets. It can be used to apply common settings for esmini applications. For example, if you often use a specific window size, e.g. --window 60 60 800 400, then you can put it in a config file. Configuration file is structured with the application name as the root, followed by option-value pairs. Custom configuration file can be named and placed as needed.
 
-Settings in config files can be overridden, both by other config files or by options specified on command line. All options are parsed in order of appearance. Some options supports multiple values, e.g. `path` (search path for assets), while others can have only one value, e.g. `logfiLe_path`. For single value options, the last parsed value wins.
+Settings in config files can be overridden, both by other config files or by options specified on command line. Option files are parsed in order of appearance, last parsed option occurrence wins.
 
-esmini from version [] comes with a default `config.yml` located in esmini root folder. It contains just a few settings, e.g. default window position and size (60 60 800 400). Launching esmini, from esmini root as:
+From version 2.46.0 esmini comes with a default `config.yml` located in esmini root folder. It contains just a few settings, e.g. default window position and size (60 60 800 400). Launching esmini from esmini root folder as:
 
 `./bin/esmini --osc ./resources/xosc/cut-in.xosc`
 
@@ -2914,7 +2923,7 @@ esmini:
   osc: ./resources/xosc/cut-in.xosc
 ----
 
-Any number of config files can be specified as an option (`config_file_path`), either in another config file or at command line.
+Any number of config files can be specified as an option (`config_file_path`), either from another config file or at command line.
 
 Example how to incorporate a custom config file on top of the default one:
 
@@ -2940,6 +2949,45 @@ Custom configuration file paths can be defined in the ESMINI_CONFIG_FILE environ
 
 Default config file is always parsed first, then the ones specified in the environment variable, and finally the ones specified on command line.
 
+[Note]
+====
+**Note:**
+
+The default 'config.yml' is applied automatically, while other config files needs to be specified explicitly.
+
+Hence, although legit to add any setting to the default 'config.yml' file, it's recommended to separate basic common settings from temporary ones.
+
+For example, create a 'my_settings.yml' for temporary preferences while putting permanent settings into 'config.yml'.
+
+`./bin/esmini --osc ./resources/xosc/cut-in.xosc` +
+will apply basic settings only, while +
+
+`./bin/esmini --osc ./resources/xosc/cut-in.xosc --config_file_path my_settings.yml` +
+will also apply additional settings from the custom file.
+
+This strategy avoids unexpected forgotten settings from a previous session being applied automatically.
+====
+
+==== Whitespace support
+
+In option values any space will result in separation in multiple arguments.
+
+Bad example:
+```
+esmini:
+  path: ./resources/my scenarios /tmp
+```
+`./resources/my`, `scenarios`, `/tmp` is added as separate search paths. Probably not intended.
+
+If space is needed, e.g. for file or directory paths, just enclose in quotes "".
+
+Good example:
+```
+esmini:
+  path: "./resources/my scenarios" /tmp
+```
+`./resources/my scenarios`, `/tmp` is added as separate search paths
+
 ==== Precedence
 As mentioned, options that supports multiple values will store and access values according to order of appearance. Example:
 
@@ -2951,8 +2999,113 @@ Illustrative example:
 
 image::options.png[]
 
+==== Mutual exclusion
+Dependencies exists among some options. Examples:
 
-Mutual exclusion exists among some options, such as 'headless' and 'window'. 'headless' overrides any preceding 'window' arguments. Conversely, 'window' following 'headless' results in an invisible snapshot window. For 'osc' and 'osc_str', the last specified option prevails.
+===== 'headless' and 'window'
+
+'headless' overrides any preceding 'window' arguments, no rendering will happen. Conversely, 'window' following 'headless' results in an invisible window for off-screen rendering (e.g. saving images to file or grab pixels via API).
+
+Examples:
+
+`./bin/esmini --window 60 60 800 400 --headless --fixed_timestep 0.05 --osc ./resources/xosc/cut-in.xosc` +
+no window will be created and no rendering performed, execution will be fast.
+
+`./bin/esmini --headless --window 60 60 800 400 --fixed_timestep 0.05 --osc ./resources/xosc/cut-in.xosc` +
+off-screen window will be created and rendered to, execution will be slower.
+
+===== 'osc' and 'osc_str'
+The last specified option prevails.
+
+==== Config file usage example 1: Easy replaying
+
+===== Without config
+
+The typical procedure to create and replay a scenario recording (DAT file) is as follows:
+
+Create DAT file: +
+`./bin/esmini --headless --fixed_timestep 0.05 --record sim.dat --osc ./resources/xosc/cut-in.xosc`
+
+Play DAT file: +
+`./bin/replayer --window 60 60 800 400 --res_path ./resources --file sim.dat`
+
+====== With config
+
+Create `cfg_dat.yml` in esmini root as:
+
+```
+esmini:
+  headless: true
+  record: sim.dat
+  fixed_timestep: 0.05
+
+replayer:
+  window: 60 60 800 400
+  res_path: ./resources
+  file: sim.dat
+```
+
+Create DAT file: +
+`./bin/esmini --config_file_path ./cfg_dat.yml --osc ./resources/xosc/cut-in.xosc`
+
+Play DAT file: +
+`./bin/replayer --config_file_path ./cfg_dat.yml`
+
+==== Config file usage example 2: Easy video creation
+
+===== Without config
+
+The typical procedure to create a video clip from a scenario is as follows:
+
+Create image files: +
+`./bin/esmini --headless --window 0 0 1920 1080 --fixed_timestep 0.016667 --screen_capture --osc ./resources/xosc/cut-in.xosc`
+
+A series of TGA images (screen_shot_00000.tga, screen_shot_00001.tga ...) is created in current folder. Resolution in this case is 1920x1080 (HD). Timestep 0.016668 correlates to 60 fps.
+
+There are many ways to convert the images into a video clip. Example using ffmpeg:
+
+`ffmpeg -f image2 -framerate 60 -i screen_shot_%5d.tga -c:v libx264 -vf format=yuv420p -crf 15 out.mp4`
+
+See <<Create video clip of a scenario>> for more info on ffmpeg.
+
+====== With config
+
+It's a bit tricky to remember resolution and timestep settings for esmini. Now you can create config files for favorite settings. For example:
+
+Create `cfg_hd.yml` in esmini root as:
+
+```
+esmini:
+  headless: true
+  window: 0 0 1920 1080
+  fixed_timestep: 0.016667
+  capture_screen: true
+```
+and `cfg_sd.yml` as:
+
+```
+esmini:
+  headless: true
+  window: 0 0 720 480
+  fixed_timestep: 0.033333
+  capture_screen: true
+```
+
+Create images for HD/60fps: +
+`./bin/esmini --config_file_path ./cfg_hd.yml --osc ./resources/xosc/cut-in.xosc`
+
+and SD/30fps: +
+`./bin/esmini --config_file_path ./cfg_sd.yml --osc ./resources/xosc/cut-in.xosc`
+
+You still need to supply corresponding `framerate` argument to ffmpeg: +
+
+`ffmpeg -f image2 -framerate 60 -i screen_shot_%5d.tga -c:v libx264 -vf format=yuv420p -crf 15 out.mp4`
+
+and
+
+`ffmpeg -f image2 -framerate 30 -i screen_shot_%5d.tga -c:v libx264 -vf format=yuv420p -crf 15 out.mp4`
+
+respectively.
 
 === esmini
 ==== Launch commands

@@ -2,7 +2,7 @@ replayer is a simple application for re-playing .dat files recorded by esmini.
 
 Application is launched from command line (or batch file).
 
-Usage: replayer [options]
+Usage:  [options]
 Options:
   --file <filename>
       Simulation recording data file (.dat)
@@ -14,12 +14,14 @@ Options:
       Continuous screen capture. Warning: Many jpeg files will be created
   --collision [mode]  (default if value omitted: pause)
       Detect collisions and optionally pauses the replay <pause/continue> (pause is default)
-  --custom_camera <position>
-      Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)
-  --custom_fixed_camera <position and optional orientation>
-      Additional custom fixed camera position <x,y,z>[,h,p] (multiple occurrences supported)
-  --custom_fixed_top_camera <position and rotation>
-      Additional custom top camera <x,y,z,rot> (multiple occurrences supported)
+  --config_file_path [path]...  (default if option or value omitted: config.yml)
+      Configuration file path/filename, e.g. "../my_config.txt"
+  --custom_camera <position>...
+      Additional custom camera position <x,y,z>[,h,p]
+  --custom_fixed_camera <position and optional orientation>...
+      Additional custom fixed camera position <x,y,z>[,h,p]
+  --custom_fixed_top_camera <position and rotation>...
+      Additional custom top camera <x,y,z,rot>
   --dir <path>
       Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
   --ground_plane
@@ -28,11 +30,13 @@ Options:
       Do not apply textures on any generated road model (set colors instead as for missing textures)
   --headless
       Run without viewer window
+  --help
+      Show this help message (-h works as well)
   --hide_trajectories
       Hide trajectories from start (toggle with key 'n')
   --info_text [mode]  (default if option or value omitted: 1)
       Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'
-  --logfile_path [path]  (default if value omitted: replayer_log.txt)
+  --logfile_path [path]  (default if option or value omitted: replayer_log.txt)
       Logfile path/filename, e.g. "../my_log.txt"
   --no_ghost
       Remove ghost entities
@@ -40,8 +44,8 @@ Options:
       Remove only ghost model, show trajectory (toggle with key 'g')
   --osg_screenshot_event_handler
       Revert to OSG default jpg images ('c'/'C' keys handler)
-  --path <path>
-      Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported
+  --path <path>...
+      Search path prefix for assets, e.g. OpenDRIVE files.
   --quit_at_end
       Quit application when reaching end of scenario
   --remove_object <id>
@@ -66,6 +70,8 @@ Options:
       Entity visualization: "model"(default)/"boundingbox"/"both"
   --use_signs_in_external_model
       When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE
+  --version
+      Show version and quit
 
 Additional OSG graphics options:
   --clear-color <color>                      Set the background color of the viewer in the form "r,g,b[,a]"

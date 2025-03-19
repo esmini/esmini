@@ -7,17 +7,19 @@ Application is launched from command line (or batch file).
 Usage: odrviewer [options]
 Options:
   --help
-      Show this help message
+      Show this help message (-h works as well)
   --odr <odr_filename>
       OpenDRIVE filename (required)
   --aa_mode [mode]  (default if value omitted: 4)
       Anti-alias mode=number of multisamples (subsamples, 0=off)
   --capture_screen
       Continuous screen capture. Warning: Many .tga files will be created
-  --custom_fixed_camera <position and optional orientation>
-      Additional custom camera position <x,y,z>[,h,p] (multiple occurrences supported)
-  --custom_fixed_top_camera <position and rotation>
-      Additional custom top camera <x,y,z,rot> (multiple occurrences supported)
+  --config_file_path [path]...  (default if option or value omitted: config.yml)
+      Configuration file path/filename, e.g. "../my_config.txt"
+  --custom_fixed_camera <position and optional orientation>...
+      Additional custom camera position <x,y,z>[,h,p]
+  --custom_fixed_top_camera <position and rotation>...
+      Additional custom top camera <x,y,z,rot>
   --density [density]  (default if value omitted: 1.000000)
       density (cars / 100 m)
   --enforce_generate_model
@@ -60,8 +62,8 @@ Options:
       Show OSI road lines. Toggle key 'u'
   --osi_points
       Show OSI road points. Toggle key 'y'
-  --path <path>
-      Search path prefix for assets, e.g. OpenDRIVE files. Multiple occurrences of option supported
+  --path <path>...
+      Search path prefix for assets, e.g. OpenDRIVE files.
   --pause
       Pause simulation after initialization. Press 'space' to start.
   --road_features [mode]  (default if value omitted: on)
