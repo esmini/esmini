@@ -769,8 +769,8 @@ int main(int argc, char** argv)
             opt.PrintUsage();
 #ifdef _USE_OSG
             PrintOSGUsage();
-#endif  // _USE_OSG
-            return -1;
+#endif                  // _USE_OSG
+            return -1;  // we harmonize all applications to quit on unknown arguments
         }
 
         if (opt.GetOptionSet("time_scale"))

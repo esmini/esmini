@@ -1269,23 +1269,24 @@ int SE_Env::AddPath(std::string path)
 
 int OnRequestShowHelpOrVersion(int argc, char** argv, SE_Options& opt)
 {
-    if (argc == 2)  // handle special cases, not requiring player to be created
+    int retVal = 0;
+    for (int i = 1; i < argc; ++i)
     {
-        if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)
+        if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
         {
             opt.PrintUsage();
 #ifdef _USE_OSG
             PrintOSGUsage();
 #endif  // _USE_OSG
-            return 1;
+            retVal += 1;
         }
-        else if (strcmp(argv[1], "--version") == 0)
+        else if (strcmp(argv[i], "--version") == 0)
         {
             TxtLogger::Inst().LogVersion();
-            return 2;
+            retVal += 2;
         }
     }
-    return 0;
+    return retVal;
 }
 
 void PrintOSGUsage()
@@ -2045,8 +2046,6 @@ int SE_Options::UnsetOption(const std::string& opt)
 {
     SE_Option* option = GetOption(opt);
 
-    // check that the option exists and that it's a pure option, without arguments
-    // if (option != nullptr && option->opt_arg_.empty())
     if (option != nullptr)
     {
         option->set_        = false;

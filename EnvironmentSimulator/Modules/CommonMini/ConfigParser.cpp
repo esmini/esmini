@@ -15,11 +15,14 @@ namespace fs = std::experimental::filesystem;
 #error "Missing <filesystem> header"
 #endif
 
+static size_t loadedFilesCount   = 0;
+const size_t  LOADED_FILES_LIMIT = 100;
+
 namespace esmini::common
 {
-    ConfigParser::ConfigParser(const std::string&                            applicationName,
-                               const std::vector<std::string>&               configFilePaths,
-                               std::unordered_map<std::string, std::string>& loadedConfigFiles)
+    ConfigParser::ConfigParser(const std::string&                                applicationName,
+                               const std::vector<std::string>&                   configFilePaths,
+                               std::vector<std::pair<std::string, std::string>>& loadedConfigFiles)
         : applicationName_(applicationName),
           configFilePaths_(configFilePaths),
           loadedConfigFiles_(loadedConfigFiles)
@@ -107,29 +110,37 @@ namespace esmini::common
 
     //---------------------------------------------------------------------------------------------------------------------
 
-    void ConfigParser::ParseYamlFile(const std::string& filename)
+    void ConfigParser::DoSanityChecksOnConfigFile(const std::string& filename)
     {
-        if (faulty_)
-        {
-            return;
-        }
-
         if (!fs::exists(filename))
         {
             faulty_          = true;
             parsingErrorMsg_ = fmt::format("Failed to locate config: {}", filename);
             return;
         }
-
-        std::string canonicalPath{fs::canonical(fs::path(filename)).u8string()};
-        if (loadedConfigFiles_.find(canonicalPath) != loadedConfigFiles_.end())
+        if (fs::is_directory(fs::status(filename)))
         {
             faulty_          = true;
-            parsingErrorMsg_ = fmt::format("There seems to be circular dependency on config file: {} ({})", canonicalPath, filename);
+            parsingErrorMsg_ = fmt::format("Given path {} is a directory, config file path is expected instead.", filename);
             return;
         }
-        loadedConfigFiles_[canonicalPath] = filename;
+        if (++loadedFilesCount > LOADED_FILES_LIMIT)
+        {
+            faulty_          = true;
+            parsingErrorMsg_ = fmt::format("Too many config files loaded (100). Possible circular dependency.");
+            return;
+        }
+    }
 
+    void ConfigParser::ParseYamlFile(const std::string& filename)
+    {
+        DoSanityChecksOnConfigFile(filename);
+        if (faulty_)
+        {
+            return;
+        }
+        std::string canonicalPath{fs::canonical(fs::path(filename)).u8string()};
+        loadedConfigFiles_.emplace_back(std::make_pair(canonicalPath, filename));
         try
         {
             TINY_YAML::Yaml yaml = TINY_YAML::Yaml(filename);
@@ -140,7 +151,7 @@ namespace esmini::common
         }
         catch (const std::exception& e)
         {
-            loadedConfigFiles_.erase(canonicalPath);  // its not needed since we are exiting but just in case we decide not to exit down the road
+            loadedConfigFiles_.pop_back();  // its not needed since we are exiting but just in case we decide not to exit down the road
             faulty_          = true;
             parsingErrorMsg_ = e.what();
             return;

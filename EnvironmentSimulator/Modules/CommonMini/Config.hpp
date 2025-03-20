@@ -59,7 +59,7 @@ namespace esmini::common
         // Config file paths like default config file, environment variable config file etc.
         std::vector<std::string> configFilePaths_;
         // canonical and relative paths of config files, which are successfully loaded
-        std::unordered_map<std::string, std::string> loadedConfigFiles_;
+        std::vector<std::pair<std::string, std::string>> loadedConfigFiles_;
         // Application for which we are parsing the config file i.e. esmini, replayer etc.
         std::string applicationName_;
         // Argument count

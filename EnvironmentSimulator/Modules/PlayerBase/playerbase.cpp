@@ -1804,6 +1804,7 @@ int ScenarioPlayer::Init()
     {
         opt.PrintUnknownArgs("Unrecognized arguments:");
         PrintUsage();
+        return -1;  // we harmonize all applications to quit on unknown arguments
     }
 
     Frame(0.0);

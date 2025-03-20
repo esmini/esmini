@@ -728,6 +728,7 @@ int main(int argc, char **argv)
         {
             opt.PrintUnknownArgs("Unrecognized arguments:");
             opt.PrintUsage();
+            return -1;  // we harmonize all applications to quit on unknown arguments
         }
 
         LOG_INFO("osi_features: lines {} points {}",
