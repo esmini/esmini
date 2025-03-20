@@ -15,9 +15,9 @@
 using namespace dat;
 
 template <typename T>
-void DatLogger::WriteObjectData(int obj_id, T value, PackageId package_id)
+void DatLogger::WriteObjectData(ObjState& objState, T value, PackageId package_id)
 {
-    WriteMandatoryPkg(obj_id);
+    WriteMandatoryPkg(objState);
     // create pkg
     CommonPkg pkg;
     pkg.hdr.id           = static_cast<id_t>(package_id);
@@ -27,7 +27,7 @@ void DatLogger::WriteObjectData(int obj_id, T value, PackageId package_id)
     writePackage(pkg);
 }
 
-void DatLogger::WriteMandatoryPkg(int obj_id)
+void DatLogger::WriteMandatoryPkg(ObjState& objState)
 {
     if (!TimePkgAdded_)
     {
@@ -36,36 +36,9 @@ void DatLogger::WriteMandatoryPkg(int obj_id)
     }
     if (!ObjIdPkgAdded_)
     {
-        WriteObjId(obj_id);
+        objState.active_ = true;
+        WriteObjId(objState);
         ObjIdPkgAdded_ = true;
-    }
-}
-
-bool DatLogger::IsObjIdAddPkgWritten(int id)
-{
-    for (const auto& objId : objIdAdded_)
-    {
-        if (objId.id == id)
-        {
-            if (objId.status == true)
-            {
-                return true;
-                break;
-            }
-        }
-    }
-    return false;
-}
-
-void DatLogger::SetObjIdAddPkgWritten(int id, bool status)
-{
-    for (size_t i = 0; i < objIdAdded_.size(); i++)
-    {
-        if (objIdAdded_[i].id == id)
-        {
-            objIdAdded_[i].status = status;
-            break;
-        }
     }
 }
 
@@ -74,30 +47,26 @@ bool dat::DatLogger::IsFileOpen()
     return data_file_.is_open();
 }
 
-void DatLogger::WriteObjSpeed(int obj_id, double speed)
+void DatLogger::WriteObjSpeed(int objId, double speed)
 {
-    if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
+    if (auto it = completeObjectState_.obj_states_.find(objId); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (!IsEqualDouble(objState.speed_, speed))
+        if (!IsEqualDouble(it->second.speed_, speed))
         {
-            objState.speed_ = speed;
-            WriteObjectData<double>(obj_id, speed, PackageId::SPEED);
+            it->second.speed_ = speed;
+            WriteObjectData<double>(it->second, speed, PackageId::SPEED);
         }
     }
 }
 
-void DatLogger::WriteModelId(int obj_id, int model_id)
+void DatLogger::WriteModelId(int objId, int model_id)
 {
-    if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
+    if (auto it = completeObjectState_.obj_states_.find(objId); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (objState.modelId_ != model_id)
+        if (it->second.modelId_ != model_id)
         {
-            objState.modelId_ = model_id;
-            WriteObjectData<int>(obj_id, model_id, PackageId::MODEL_ID);
+            it->second.modelId_ = model_id;
+            WriteObjectData<int>(it->second, model_id, PackageId::MODEL_ID);
         }
     }
 }
@@ -106,12 +75,10 @@ void DatLogger::WriteObjType(int obj_id, int obj_type)
 {
     if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (objState.objType_ != obj_type)
+        if (it->second.objType_ != obj_type)
         {
-            objState.objType_ = obj_type;
-            WriteObjectData<int>(obj_id, obj_type, PackageId::OBJ_TYPE);
+            it->second.objType_ = obj_type;
+            WriteObjectData<int>(it->second, obj_type, PackageId::OBJ_TYPE);
         }
     }
 }
@@ -120,12 +87,10 @@ void DatLogger::WriteObjCategory(int obj_id, int objCategory)
 {
     if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (objState.objCategory_ != objCategory)
+        if (it->second.objCategory_ != objCategory)
         {
-            objState.objCategory_ = objCategory;
-            WriteObjectData<int>(obj_id, objCategory, PackageId::OBJ_CATEGORY);
+            it->second.objCategory_ = objCategory;
+            WriteObjectData<int>(it->second, objCategory, PackageId::OBJ_CATEGORY);
         }
     }
 }
@@ -134,12 +99,10 @@ void DatLogger::WriteCtrlType(int obj_id, int ctrl_type)
 {
     if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (objState.ctrlType_ != ctrl_type)
+        if (it->second.ctrlType_ != ctrl_type)
         {
-            objState.ctrlType_ = ctrl_type;
-            WriteObjectData<int>(obj_id, ctrl_type, PackageId::CTRL_TYPE);
+            it->second.ctrlType_ = ctrl_type;
+            WriteObjectData<int>(it->second, ctrl_type, PackageId::CTRL_TYPE);
         }
     }
 }
@@ -153,7 +116,7 @@ void DatLogger::WriteWheelAngle(int obj_id, double angle)
         if (!IsEqualDouble(objState.wheelAngle_, angle))
         {
             objState.wheelAngle_ = angle;
-            WriteObjectData<double>(obj_id, angle, PackageId::WHEEL_ANGLE);
+            WriteObjectData<double>(it->second, angle, PackageId::WHEEL_ANGLE);
         }
     }
 }
@@ -162,26 +125,24 @@ void DatLogger::WriteWheelRot(int obj_id, double rot)
 {
     if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (!IsEqualDouble(objState.wheelRot_, rot))
+        if (!IsEqualDouble(it->second.wheelRot_, rot))
         {
-            objState.wheelRot_ = rot;
-            WriteObjectData<double>(obj_id, rot, PackageId::WHEEL_ROT);
+            it->second.wheelRot_ = rot;
+            WriteObjectData<double>(it->second, rot, PackageId::WHEEL_ROT);
         }
     }
 }
 
-void DatLogger::WriteBB(int obj_id, float x, float y, float z, float length, float width, float height)
+void DatLogger::WriteBB(int objId, float x, float y, float z, float length, float width, float height)
 {
-    if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
+    if (auto it = completeObjectState_.obj_states_.find(objId); it != completeObjectState_.obj_states_.end())
     {
         auto& objState   = it->second;
         objState.active_ = true;
         if (objState.boundingBox_.x != x || objState.boundingBox_.y != y || objState.boundingBox_.z != z || objState.boundingBox_.height != height ||
             objState.boundingBox_.length != length || objState.boundingBox_.width != width)
         {
-            WriteMandatoryPkg(obj_id);
+            WriteMandatoryPkg(it->second);
             // create pkg
             CommonPkg   pkg;
             BoundingBox bb;
@@ -205,12 +166,10 @@ void DatLogger::WriteScaleMode(int obj_id, int mode)
 {
     if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (objState.scaleMode_ != mode)
+        if (it->second.scaleMode_ != mode)
         {
-            objState.scaleMode_ = mode;
-            WriteObjectData<int>(obj_id, mode, PackageId::SCALE_MODE);
+            it->second.scaleMode_ = mode;
+            WriteObjectData<int>(it->second, mode, PackageId::SCALE_MODE);
         }
     }
 }
@@ -219,12 +178,10 @@ void DatLogger::WriteVisiblityMask(int obj_id, int mask)
 {
     if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (objState.visibilityMask_ != mask)
+        if (it->second.visibilityMask_ != mask)
         {
-            objState.visibilityMask_ = mask;
-            WriteObjectData<int>(obj_id, mask, PackageId::VISIBILITY_MASK);
+            it->second.visibilityMask_ = mask;
+            WriteObjectData<int>(it->second, mask, PackageId::VISIBILITY_MASK);
         }
     }
 }
@@ -257,39 +214,39 @@ void DatLogger::WriteStringPkg(std::string name, PackageId pkg_id)
     CountPkg(pkg_id);
 }
 
-void DatLogger::WriteName(int obj_id, std::string name)
+void DatLogger::WriteName(int objId, std::string name)
 {
-    if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
+    if (auto it = completeObjectState_.obj_states_.find(objId); it != completeObjectState_.obj_states_.end())
     {
         auto& objState   = it->second;
         objState.active_ = true;
         if (objState.name_.compare(name) != 0)
         {
             objState.name_ = name;
-            WriteMandatoryPkg(obj_id);
+            WriteMandatoryPkg(it->second);
             // write name
             WriteStringPkg(name, PackageId::NAME);
         }
     }
 }
 
-void DatLogger::WriteObjId(int obj_id)
+void DatLogger::WriteObjId(ObjState& objState)
 {
     // create pkg
     CommonPkg pkg;
     pkg.hdr.id           = static_cast<int>(PackageId::OBJ_ID);
-    pkg.hdr.content_size = sizeof(obj_id);
+    pkg.hdr.content_size = sizeof(objState.objId_);
     pkg.content.resize(pkg.hdr.content_size);
-    std::memcpy(pkg.content.data(), &obj_id, sizeof(obj_id));
+    std::memcpy(pkg.content.data(), &objState.objId_, sizeof(objState.objId_));
     writePackage(pkg);
-    if (!IsObjIdAddPkgWritten(obj_id))
+    if (!objState.objWritten_)
     {
+        objState.objWritten_ = true;
         CommonPkg pkg1;
         pkg1.hdr.id           = static_cast<int>(PackageId::OBJ_ADDED);
         pkg1.hdr.content_size = 0;
         pkg1.content.resize(static_cast<size_t>(pkg1.hdr.content_size));
         writePackage(pkg1);
-        SetObjIdAddPkgWritten(obj_id, true);
     }
 }
 
@@ -300,9 +257,6 @@ void DatLogger::AddObject(int objId)
         ObjState objState_;
         objState_.objId_                        = objId;
         completeObjectState_.obj_states_[objId] = objState_;
-        ObjIdAdded objIdAdded;
-        objIdAdded.id = objId;
-        objIdAdded_.push_back(objIdAdded);
     }
 }
 
@@ -316,13 +270,12 @@ void DatLogger::DeleteObject()
             {
                 WriteTime(simTimeTemp_);
             }
-            WriteObjId(it->second.objId_);
+            WriteObjId(it->second);
             CommonPkg pkg;
             pkg.hdr.id           = static_cast<int>(PackageId::OBJ_DELETED);
             pkg.hdr.content_size = 0;
             pkg.content.resize(pkg.hdr.content_size);
             writePackage(pkg);
-            SetObjIdAddPkgWritten(it->second.objId_, false);
             it = completeObjectState_.obj_states_.erase(it);
         }
         else
@@ -333,16 +286,16 @@ void DatLogger::DeleteObject()
     }
 }
 
-void DatLogger::WriteObjPos(int obj_id, double x, double y, double z, double h, double p, double r)
+void DatLogger::WriteObjPos(int objId, double x, double y, double z, double h, double p, double r)
 {
-    if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
+    if (auto it = completeObjectState_.obj_states_.find(objId); it != completeObjectState_.obj_states_.end())
     {
         auto& objState   = it->second;
         objState.active_ = true;
         if (!IsEqualDouble(objState.pos_.x, x) || !IsEqualDouble(objState.pos_.y, y) || !IsEqualDouble(objState.pos_.z, z) ||
             !IsEqualDouble(objState.pos_.h, h) || !IsEqualDouble(objState.pos_.p, p) || !IsEqualDouble(objState.pos_.r, r))
         {
-            WriteMandatoryPkg(obj_id);
+            WriteMandatoryPkg(it->second);
             // create pkg
             CommonPkg pkg;
             Pos       pos_;
@@ -363,30 +316,26 @@ void DatLogger::WriteObjPos(int obj_id, double x, double y, double z, double h, 
     }
 }
 
-void DatLogger::WriteRoadId(int obj_id, id_t road_id)
+void DatLogger::WriteRoadId(int objId, id_t road_id)
 {
-    if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
+    if (auto it = completeObjectState_.obj_states_.find(objId); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (objState.roadId_ != road_id)
+        if (it->second.roadId_ != road_id)
         {
-            objState.roadId_ = road_id;
-            WriteObjectData<unsigned int>(obj_id, road_id, PackageId::ROAD_ID);
+            it->second.roadId_ = road_id;
+            WriteObjectData<unsigned int>(it->second, road_id, PackageId::ROAD_ID);
         }
     }
 }
 
-void DatLogger::WriteLaneId(int obj_id, int lane_id)
+void DatLogger::WriteLaneId(int objId, int lane_id)
 {
-    if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
+    if (auto it = completeObjectState_.obj_states_.find(objId); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (objState.laneId_ != lane_id)
+        if (it->second.laneId_ != lane_id)
         {
-            objState.laneId_ = lane_id;
-            WriteObjectData<int>(obj_id, lane_id, PackageId::LANE_ID);
+            it->second.laneId_ = lane_id;
+            WriteObjectData<int>(it->second, lane_id, PackageId::LANE_ID);
         }
     }
 }
@@ -395,12 +344,10 @@ void DatLogger::WritePosOffset(int obj_id, double offset)
 {
     if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (objState.posOffset_ != offset)
+        if (it->second.posOffset_ != offset)
         {
-            objState.posOffset_ = offset;
-            WriteObjectData<double>(obj_id, offset, PackageId::POS_OFFSET);
+            it->second.posOffset_ = offset;
+            WriteObjectData<double>(it->second, offset, PackageId::POS_OFFSET);
         }
     }
 }
@@ -409,12 +356,10 @@ void DatLogger::WritePosT(int obj_id, double posT)
 {
     if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (objState.posT_ != posT)
+        if (it->second.posT_ != posT)
         {
-            objState.posT_ = posT;
-            WriteObjectData<double>(obj_id, posT, PackageId::POS_T);
+            it->second.posT_ = posT;
+            WriteObjectData<double>(it->second, posT, PackageId::POS_T);
         }
     }
 }
@@ -423,12 +368,10 @@ void DatLogger::WritePosS(int obj_id, double posS)
 {
     if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
     {
-        auto& objState   = it->second;
-        objState.active_ = true;
-        if (objState.posS_ != posS)
+        if (it->second.posS_ != posS)
         {
-            objState.posS_ = posS;
-            WriteObjectData<double>(obj_id, posS, PackageId::POS_S);
+            it->second.posS_ = posS;
+            WriteObjectData<double>(it->second, posS, PackageId::POS_S);
         }
     }
 }
@@ -439,13 +382,12 @@ bool IsEqualRgb(const LightRGB& rgb1, const LightRGB& rgb2)
     {
         return true;
     }
-
     return false;
 }
 
-void DatLogger::WriteLightState(int obj_id, LightState rgb_data)
+void DatLogger::WriteLightState(int objId, LightState rgb_data)
 {
-    if (auto it = completeObjectState_.obj_states_.find(obj_id); it != completeObjectState_.obj_states_.end())
+    if (auto it = completeObjectState_.obj_states_.find(objId); it != completeObjectState_.obj_states_.end())
     {
         auto& objState         = it->second;
         objState.active_       = true;
@@ -457,7 +399,7 @@ void DatLogger::WriteLightState(int obj_id, LightState rgb_data)
             if (lightNew->red != lightOld->red || lightNew->green != lightOld->green || lightNew->blue != lightOld->blue ||
                 lightNew->intensity != lightOld->intensity)
             {
-                WriteMandatoryPkg(obj_id);
+                WriteMandatoryPkg(it->second);
                 // create pkg
                 CommonPkg pkg;
                 pkg.hdr.id           = static_cast<int>(PackageId::LIGHT_STATES);

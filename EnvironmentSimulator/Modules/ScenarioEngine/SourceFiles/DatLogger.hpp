@@ -133,9 +133,10 @@ namespace dat
 
     struct ObjState
     {
-        int         objId_  = -1;
-        bool        active_ = false;
-        double      speed_  = SMALL_NUMBER;
+        int         objId_      = -1;
+        bool        active_     = false;
+        bool        objWritten_ = false;  // denotes object added pkg written or not
+        double      speed_      = SMALL_NUMBER;
         Pos         pos_;
         int         modelId_     = -1;
         int         objType_     = -1;
@@ -161,12 +162,6 @@ namespace dat
         std::unordered_map<int, ObjState> obj_states_;
     };
 
-    struct ObjIdAdded
-    {
-        int  id;
-        bool status = false;
-    };
-
     class DatLogger
     {
     private:
@@ -180,25 +175,22 @@ namespace dat
         bool   ObjIdPkgAdded_ = false;
         double simTimeTemp_   = SMALL_NUMBER;  // keeps track of time of simulation
 
-        CompleteObjectState     completeObjectState_;
-        std::vector<ObjIdAdded> objIdAdded_;
+        CompleteObjectState completeObjectState_;
 
         int  Init(const std::string& fileName, const std::string& odrName, const std::string& modelName);
         void DeleteObjState(int objId);
 
         void writePackage(CommonPkg package);  // will just write package
         void WriteStringPkg(std::string name, PackageId pkg_id);
-        void WriteMandatoryPkg(int obj_id);
+        void WriteMandatoryPkg(ObjState& objState);
         void AddObject(int obj_id);
         void DeleteObject();
-        bool IsObjIdAddPkgWritten(int id);
-        void SetObjIdAddPkgWritten(int id, bool status);
         bool IsFileOpen();
 
         void WriteObjSpeed(int obj_id, double speed);
         void WriteTime(double t);
         void WriteObjPos(int obj_id, double x, double y, double z, double h, double p, double r);
-        void WriteObjId(int obj_id);
+        void WriteObjId(ObjState& objState);
         void WriteModelId(int obj_id, int model_id);
         void WriteObjType(int obj_id, int obj_type);
         void WriteObjCategory(int obj_id, int obj_category);
@@ -217,7 +209,7 @@ namespace dat
         void WritePosS(int obj_id, double s);
         void WriteLightState(int obj_id, LightState rgb_data);
         template <typename T>
-        void WriteObjectData(int obj_id, T value, PackageId package_id);
+        void WriteObjectData(ObjState& objState, T value, PackageId package_id);
 
         std::string pkgIdTostring(PackageId id);
 
