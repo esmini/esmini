@@ -27,6 +27,7 @@
 #include <utility>
 #endif
 
+const double RGB_MAX_VALUE = 255.0;
 using namespace scenarioengine;
 
 ObjectState::ObjectState()
@@ -1163,7 +1164,6 @@ int ScenarioGateway::WriteStatesToFile()
 {
     if (datLogger_.IsFileOpen())
     {
-        const double RGB_MAX_VALUE = 255.0;
         for (const auto& objectState : objectState_)
         {
             const auto& state       = objectState->state_;

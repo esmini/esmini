@@ -70,84 +70,6 @@ namespace dat
         CommonString modelFilename;
     };
 
-    struct Time
-    {
-        double time = SMALL_NUMBER;
-    };
-
-    struct ObjId
-    {
-        int obj_id = -1;
-    };
-    struct ModelId
-    {
-        int model_id = -1;
-    };
-
-    struct ObjType
-    {
-        int obj_type = -1;
-    };
-
-    struct ObjCategory
-    {
-        int obj_category = -1;
-    };
-
-    struct CtrlType
-    {
-        int ctrl_type = -1;
-    };
-
-    struct WheelAngle
-    {
-        double wheel_angle = SMALL_NUMBER;
-    };
-
-    struct WheelRot
-    {
-        double wheel_rot = SMALL_NUMBER;
-    };
-
-    struct ScaleMode
-    {
-        int scale_mode = -1;
-    };
-    struct VisibilityMask
-    {
-        int visibility_mask = -1;
-    };
-
-    struct RoadId
-    {
-        id_t road_id = ID_UNDEFINED;
-    };
-
-    struct LaneId
-    {
-        int lane_id = -LARGE_NUMBER_INT;
-    };
-
-    struct PosOffset
-    {
-        double offset = SMALL_NUMBER;
-    };
-
-    struct PosT
-    {
-        double t = SMALL_NUMBER;
-    };
-
-    struct PosS
-    {
-        double s = SMALL_NUMBER;
-    };
-
-    struct Name
-    {
-        std::vector<char> string;
-    };
-
     struct Pos
     {
         double x = SMALL_NUMBER;
@@ -166,11 +88,6 @@ namespace dat
         float width  = 0.0;
         float length = 0.0;
         float height = 0.0;
-    };
-
-    struct Speed
-    {
-        double speed_ = SMALL_NUMBER;
     };
 
     struct Rgb_value
@@ -216,32 +133,32 @@ namespace dat
 
     struct ObjState
     {
-        ObjId          obj_id_;
-        bool           active = false;
-        Speed          speed_;
-        Pos            pos_;
-        ModelId        modelId_;
-        ObjType        objType_;
-        ObjCategory    objCategory_;
-        CtrlType       ctrlType_;
-        WheelAngle     wheelAngle_;
-        WheelRot       wheelRot_;
-        BoundingBox    boundingBox_;
-        ScaleMode      scaleMode_;
-        VisibilityMask visibilityMask_;
-        std::string    name_;
-        RoadId         roadId_;
-        LaneId         laneId_;
-        PosOffset      posOffset_;
-        PosT           posT;
-        PosS           posS;
-        LightState     lightStates_;
+        int         objId_  = -1;
+        bool        active_ = false;
+        double      speed_  = SMALL_NUMBER;
+        Pos         pos_;
+        int         modelId_     = -1;
+        int         objType_     = -1;
+        int         objCategory_ = -1;
+        int         ctrlType_    = -1;
+        double      wheelAngle_  = SMALL_NUMBER;
+        double      wheelRot_    = SMALL_NUMBER;
+        BoundingBox boundingBox_;
+        int         scaleMode_      = -1;
+        int         visibilityMask_ = -1;
+        std::string name_;
+        id_t        roadId_    = ID_UNDEFINED;
+        int         laneId_    = -LARGE_NUMBER_INT;
+        double      posOffset_ = SMALL_NUMBER;
+        double      posT_      = SMALL_NUMBER;
+        double      posS_      = SMALL_NUMBER;
+        LightState  lightStates_;
     };
 
     struct CompleteObjectState
     {
-        Time                  time;  // keeps track of time of last update of the object states
-        std::vector<ObjState> obj_states;
+        double                            time_ = SMALL_NUMBER;  // keeps track of time of last update of the object states
+        std::unordered_map<int, ObjState> obj_states_;
     };
 
     struct ObjIdAdded
@@ -271,38 +188,65 @@ namespace dat
 
         void writePackage(CommonPkg package);  // will just write package
         void WriteStringPkg(std::string name, PackageId pkg_id);
-        void WriteManPkg(int obj_id);
-        int  AddObject(int obj_id);
-        int  DeleteObject();
+        void WriteMandatoryPkg(int obj_id);
+        void AddObject(int obj_id);
+        void DeleteObject();
         bool IsObjIdAddPkgWritten(int id);
         void SetObjIdAddPkgWritten(int id, bool status);
         bool IsFileOpen();
 
-        int WriteObjSpeed(int obj_id, double speed);
-        int WriteTime(double t);
-        int WriteObjPos(int obj_id, double x, double y, double z, double h, double p, double r);
-        int WriteObjId(int obj_id);
-        int WriteModelId(int obj_id, int model_id);
-        int WriteObjType(int obj_id, int obj_type);
-        int WriteObjCategory(int obj_id, int obj_category);
-        int WriteCtrlType(int obj_id, int ctrl_type);
+        void WriteObjSpeed(int obj_id, double speed);
+        void WriteTime(double t);
+        void WriteObjPos(int obj_id, double x, double y, double z, double h, double p, double r);
+        void WriteObjId(int obj_id);
+        void WriteModelId(int obj_id, int model_id);
+        void WriteObjType(int obj_id, int obj_type);
+        void WriteObjCategory(int obj_id, int obj_category);
+        void WriteCtrlType(int obj_id, int ctrl_type);
 
-        int  WriteWheelAngle(int obj_id, double angle);
-        int  WriteWheelRot(int obj_id, double rot);
-        int  WriteBB(int obj_id, float x, float y, float z, float length, float width, float height);
-        int  WriteScaleMode(int obj_id, int mode);
-        int  WriteVisiblityMask(int obj_id, int mask);
-        int  WriteName(int obj_id, std::string name);
-        int  WriteRoadId(int obj_id, id_t road_id);
-        int  WriteLaneId(int obj_id, int lane_id);
-        int  WritePosOffset(int obj_id, double pos_offset);
-        int  WritePosT(int obj_id, double t);
-        int  WritePosS(int obj_id, double s);
+        void WriteWheelAngle(int obj_id, double angle);
+        void WriteWheelRot(int obj_id, double rot);
+        void WriteBB(int obj_id, float x, float y, float z, float length, float width, float height);
+        void WriteScaleMode(int obj_id, int mode);
+        void WriteVisiblityMask(int obj_id, int mask);
+        void WriteName(int obj_id, std::string name);
+        void WriteRoadId(int obj_id, id_t road_id);
+        void WriteLaneId(int obj_id, int lane_id);
+        void WritePosOffset(int obj_id, double pos_offset);
+        void WritePosT(int obj_id, double t);
+        void WritePosS(int obj_id, double s);
         void WriteLightState(int obj_id, LightState rgb_data);
         template <typename T>
-        int WriteObjectData(int obj_id, T value, PackageId package_id, std::function<bool(ObjState&, T)> updateState);
+        void WriteObjectData(int obj_id, T value, PackageId package_id);
 
         std::string pkgIdTostring(PackageId id);
+
+        void CountPkg(PackageId id);
+        void PrintPkgCount();
+        int  speedPkgCount          = 0;
+        int  posPkgCount            = 0;
+        int  timePkgCount           = 0;
+        int  objIdPkgCount          = 0;
+        int  modelIdPkgCount        = 0;
+        int  objTypePkgCount        = 0;
+        int  objCategoryPkgCount    = 0;
+        int  ctrlTypePkgCount       = 0;
+        int  wheelAnglePkgCount     = 0;
+        int  wheelRotPkgCount       = 0;
+        int  bbPkgCount             = 0;
+        int  scaleModePkgCount      = 0;
+        int  visibilityMaskPkgCount = 0;
+        int  namePkgCount           = 0;
+        int  roadIdPkgCount         = 0;
+        int  laneIdPkgCount         = 0;
+        int  posOffsetPkgCount      = 0;
+        int  posTPkgCount           = 0;
+        int  posSPkgCount           = 0;
+        int  lightStatePkgCount     = 0;
+        int  objDeletedPkgCount     = 0;
+        int  objAddedPkgCount       = 0;
+        int  endOfScenarioPkgCount  = 0;
+        int  headerPkgCount         = 0;
     };
 
 }  // namespace dat
