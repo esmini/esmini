@@ -159,9 +159,8 @@ jobs:
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
-        uses: coactions/setup-xvfb@v1.0.1
-        with:
-          run: ./scripts/run_tests.sh ${{ matrix.configuration }} false
+        # Use xvfb on Linux only
+        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh ${{ matrix.configuration }} false
 
       - name: Run Tests - Windows
         if: runner.os == 'Windows'
@@ -261,9 +260,8 @@ jobs:
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
-        uses: coactions/setup-xvfb@v1.0.1
-        with:
-          run: ./scripts/run_tests.sh ${{ matrix.configuration }} false
+        # Use xvfb on Linux only
+        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh ${{ matrix.configuration }} false
 
       - name: Run Tests - Windows
         if: runner.os == 'Windows'

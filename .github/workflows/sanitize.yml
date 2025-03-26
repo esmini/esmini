@@ -52,6 +52,5 @@ jobs:
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
 
       - name: Run Tests
-        uses: coactions/setup-xvfb@v1.0.1
-        with:
-          run: ./scripts/run_tests.sh ${{ matrix.configuration }} false 120  # extended timeout allowing for slow execution
+        # Use xvfb on Linux and extend timeout allowing for slow execution
+        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh ${{ matrix.configuration }} false 120
