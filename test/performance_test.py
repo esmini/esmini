@@ -197,7 +197,7 @@ def remove_identical_shared_prefixes_suffixes(strings):
     return result
 
 def Plot():
-    if len(executables) == len(time_vals):
+    if len(time_vals) > 0:
         execs = remove_identical_shared_prefixes_suffixes([os.path.normpath(e).replace(os.path.sep, '/') for e in executables])
         labels = [os.path.basename(s) for s in scenarios]
 

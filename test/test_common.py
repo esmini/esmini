@@ -79,7 +79,8 @@ def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, 
         assert return_code == 0
 
     with open(LOG_FILENAME, 'r') as logfile:
-        return logfile.read(), time.time() - start_time, cpu_times
+        log = logfile.read(), time.time() - start_time, cpu_times
+        return log
 
     assert False, 'No log file'
 
