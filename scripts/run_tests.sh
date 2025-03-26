@@ -3,9 +3,11 @@
 arg1=$1
 arg2=$2
 arg3=$3
+arg4=$4
 
 buildConfiguration="Release"
 skipOpenGLTests=false
+skipPerformanceTests=false
 timeout=40
 
 if ! [[ -z "$arg1" ]]; then
@@ -21,10 +23,14 @@ if ! [[ -z "$arg2" ]]; then
 fi
 
 if ! [[ -z "$arg3" ]]; then
-    timeout="$arg3"
+    skipPerformanceTests="$arg3"
 fi
 
-echo "$buildConfiguration - Skip OpenGL tests: $skipOpenGLTests"
+if ! [[ -z "$arg4" ]]; then
+    timeout="$arg4"
+fi
+
+echo "buildConfiguration: $buildConfiguration, timeout: $timeout, skipOpenGLTests: $skipOpenGLTests, skipPerformanceTests: $skipPerformanceTests"
 
 
 # Run from esmini root ddirectory: ./scripts/run_unittests.sh
@@ -138,7 +144,7 @@ if ! ${PYTHON} ncap_suite.py -t $timeout; then
     exit_with_msg "ncap_suite test failed"
 fi
 
-if [[ "$buildConfiguration" == "Release" ]]; then
+if  [[ "$skipPerformanceTests" == false ]] && [[ "$buildConfiguration" == "Release" ]]; then
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo $'\n'Run performance test:
         if ! ${PYTHON} performance_test.py "-t $timeout" "--disable_plot"; then
