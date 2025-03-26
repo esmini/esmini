@@ -1225,15 +1225,19 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
 
     // unique ports to prevent conflicts between CI images and runs
     unsigned short base_port = 61900;
+
 #ifdef _WIN32
-    base_port = 61902;
+    base_port = 61900;
 #elif defined __APPLE__
     base_port = 61904;
 #elif defined __linux__
-    base_port = 61906;
+    base_port = 61908;
 #endif
 #ifdef _DEBUG
-    base_port += static_cast<unsigned short>(1);
+    base_port = static_cast<unsigned short>(base_port + 2);
+#endif
+#ifdef _USE_OSG  // separate CI runs for slim vs full esmini, to avoid port conflicts
+    base_port = static_cast<unsigned short>(base_port + 1);
 #endif
 
     // Replace controllers
@@ -1333,16 +1337,19 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     ASSERT_EQ(se->entities_.object_.size(), 2);
 
     // unique ports to prevent conflicts between CI images and runs
-    unsigned short base_port = 61910;
+    unsigned short base_port = 61912;
 #ifdef _WIN32
-    base_port = 61914;
+    base_port = 61912;
 #elif defined __APPLE__
-    base_port = 61918;
+    base_port = 61916;
 #elif defined __linux__
-    base_port = 61922;
+    base_port = 61920;
 #endif
 #ifdef _DEBUG
-    base_port += static_cast<unsigned short>(2);
+    base_port = static_cast<unsigned short>(base_port + 2);
+#endif
+#ifdef _USE_OSG  // separate CI runs for slim vs full esmini, to avoid port conflicts
+    base_port = static_cast<unsigned short>(base_port + 1);
 #endif
 
     // Replace controllers

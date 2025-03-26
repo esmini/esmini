@@ -3636,7 +3636,7 @@ See code example: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator
 
 The second function will fetch the OSI data serialized into a string. This will be a true copy and also generic format which can be parsed in any environment, independent of OS and programming language. The backside is additional resources needed for the copying and serialization.
 
-See code examples in ScenarioEngineDLL test cases, e.g: https://github.com/esmini/esmini/blob/d3bd16ea0aaf11b04929bc8c9d9191922000c383/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp#L953-L997[receive_GroundTruth].
+See code examples in ScenarioEngineDLL test cases, e.g: https://github.com/esmini/esmini/blob/97d5f6216c53655545b5466400d00e98d99d25c2/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp#L933-L975[receive_GroundTruth].
 
 [Note]
 ====
