@@ -18,6 +18,7 @@
 
 #define MAX_DECELERATION                -8.0
 #define LONGITUDINAL_DISTANCE_THRESHOLD 0.1
+#define LATERAL_DISTANCE_THRESHOLD      0.01
 
 using namespace scenarioengine;
 
@@ -1920,6 +1921,240 @@ void LongDistanceAction::Step(double simTime, double)
 }
 
 void LongDistanceAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
+{
+    if (object_ == obj1)
+    {
+        object_ = obj2;
+    }
+
+    if (target_object_ == obj1)
+    {
+        target_object_ = obj2;
+    }
+}
+
+void LatDistanceAction::Start(double simTime)
+{
+    if (target_object_ == 0)
+    {
+        LOG_ERROR("Can't trig without set target object ");
+        return;
+    }
+
+    // Resolve displacement
+    if (displacement_ == DisplacementType::ANY)
+    {
+        LOG_INFO("LateralDistanceAction: Displacement not set, defaulting to leftToReferencedEntity");
+        displacement_ = DisplacementType::LEFT_TO_REFERENCED_ENTITY;
+    }
+
+    if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
+    {
+        // We want to be on the left side of the target object
+        distance_ = -abs(distance_);
+        sign_     = -1.0;
+    }
+    else if (displacement_ == DisplacementType::RIGHT_TO_REFERENCED_ENTITY)
+    {
+        // We want to be on the right side of the target object
+        distance_ = abs(distance_);
+        sign_     = 1.0;
+    }
+
+    if (freespace_)
+    {
+        // We only take the width of the cars into account if we are in freespace mode
+        double ego_width    = object_->boundingbox_.dimensions_.width_;
+        double target_width = target_object_->boundingbox_.dimensions_.width_;
+        distance_ += sign_ * (ego_width + target_width) / 2.0;
+    }
+
+    move_state_ = MoveState::INIT;
+
+    OSCAction::Start(simTime);
+}
+
+void LatDistanceAction::GetDesiredRoadPos(const double distance_error, roadmanager::Position& internal_pos)
+{
+    double shift_x = 0.0;
+    double shift_y = 0.0;
+    if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
+    {
+        // How much we need to move to reach the target distance in the direction of the road
+        shift_x = -std::sin(object_->pos_.GetRoadH()) * distance_error;
+        shift_y = std::cos(object_->pos_.GetRoadH()) * distance_error;
+    }
+    else
+    {
+        LOG_WARN("LateralDistanceAction: Unsupported coordinate system");
+    }
+
+    // Add the necessary shift to the current position
+    double target_x = object_->pos_.GetX() + shift_x;
+    double target_y = object_->pos_.GetY() + shift_y;
+    internal_pos.XYZ2TrackPos(target_x, target_y, object_->pos_.GetZ());
+}
+
+void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanager::Position& pos2, double& distance_error)
+{
+    // Find out current distance
+    if (roadmanager::CoordinateSystem::CS_ROAD != cs_)
+    {
+        LOG_WARN("LateralDistanceAction: Unsupported coordinate system");
+        return;
+    }
+
+    // double measured_distance;
+    roadmanager::PositionDiff pos_diff;
+    bool                      path_found = pos2.Delta(&pos1, pos_diff);  // pos1 is the actor, pos2 is the referenced object
+
+    if (!path_found)
+    {
+        LOG_ERROR("LateralDistanceAction: No path found between objects {} and {}", object_->GetId(), target_object_->GetId());
+        OSCAction::End();
+        return;
+    }
+
+    bool facing_forward = IsAngleForward(object_->pos_.GetHRelative());
+    distance_error      = 0.0;
+
+    // Both cars facing same direction, either along the driving direction or against it
+    if ((facing_forward && pos_diff.dDirection) || (!facing_forward && !pos_diff.dDirection))
+    {
+        distance_error = -(pos_diff.dt + distance_);
+    }
+    else  // The cars are facing opposite directions
+    {
+        distance_error = -(pos_diff.dt - distance_);
+    }
+}
+
+void LatDistanceAction::Step(double simTime, double dt)
+{
+    (void)simTime;
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
+    {
+        // lateral motion controlled elsewhere
+        return;
+    }
+
+    switch (move_state_)
+    {
+        case MoveState::INIT:
+        {
+            if (dynamics_.max_speed_ >= LARGE_NUMBER && dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
+            {
+                move_state_ = MoveState::MOVE_RIGID;
+            }
+            else
+            {
+                spring_.SetTension(0.4 * dynamics_.max_acceleration_);  // Adjust spring tension based on max acceleration
+                move_state_ = MoveState::MOVE_DYNAMIC;
+            }
+            old_x_ = object_->pos_.GetX();
+            old_y_ = object_->pos_.GetY();
+        }
+        break;
+        case MoveState::MOVE_RIGID:
+        {
+            double distance_error;
+            GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
+
+            roadmanager::Position desired_pos;
+            GetDesiredRoadPos(distance_error, desired_pos);
+            object_->pos_.SetLanePos(desired_pos.GetTrackId(), desired_pos.GetLaneId(), desired_pos.GetS(), desired_pos.GetOffset());
+            object_->SetSpeed(object_->GetSpeed());
+            if (!continuous_)
+            {
+                object_->pos_.SetHeading(atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_));
+
+                if (std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
+                {
+                    // Reached requested distance, quit action
+                    move_state_ = MoveState::INIT;
+                    OSCAction::End();
+                }
+            }
+            else
+            {
+                object_->pos_.SetHeading(atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_));
+            }
+            old_x_ = object_->pos_.GetX();
+            old_y_ = object_->pos_.GetY();
+            object_->SetDirtyBits(Object::DirtyBit::LATERAL);
+        }
+        break;
+        case (MoveState::MOVE_DYNAMIC):
+        {
+            // Find desired position
+            double distance_error;
+            GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
+
+            if (LARGE_NUMBER != dynamics_.max_acceleration_)
+            {
+                // Parameters
+                // For the spring values x and x0, we set the current distance error and target value to 0.0 since we have already calculated the
+                // distance error. Distance error is negated to ensure that the spring force acts in the correct direction
+                spring_.SetValue(-distance_error);
+                spring_.SetV(lat_vel_ - target_object_->pos_.GetVelLat());  // Speed difference in lateral direction
+                spring_.Update(dt);
+
+                // Clamp the change in acceleration (delta_accel) by jerk limits
+                double delta_accel =
+                    CLAMP(spring_.GetA() - acceleration_, -(dynamics_.max_acceleration_rate_ * dt), dynamics_.max_acceleration_rate_ * dt);
+
+                // Calculate the new acceleration after applying jerk limits
+                acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_acceleration_, dynamics_.max_acceleration_);
+
+                // Subtract small number to maintain some longitudinal velocity, avoid driving in wrong direction if lat speed is capped
+                lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, (std::min(dynamics_.max_speed_, object_->GetSpeed()) - SMALL_NUMBER));
+
+                if (!continuous_ && std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
+                {
+                    // Reached requested distance, quit action
+                    move_state_ = MoveState::INIT;
+                    OSCAction::End();
+                }
+            }
+            else
+            {
+                // Subtract small number to maintain some longitudinal velocity, avoid driving in wrong direction if lat speed is capped
+                lat_vel_ = SIGN(distance_error) * (std::min(dynamics_.max_speed_, object_->GetSpeed()) - SMALL_NUMBER);
+
+                double d_offset  = lat_vel_ * dt;
+                double new_error = distance_error - d_offset;
+                if (SIGN(new_error) != SIGN(distance_error))
+                {
+                    d_offset = distance_error;
+                    lat_vel_ = d_offset / dt;
+
+                    if (!continuous_)
+                    {
+                        OSCAction::End();
+                    }
+                }
+            }
+
+            double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
+
+            object_->MoveAlongS(long_vel * dt);
+            object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
+                                     object_->pos_.GetLaneId(),
+                                     object_->pos_.GetS(),
+                                     object_->pos_.GetOffset() + lat_vel_ * dt);
+
+            object_->pos_.SetHeading(atan2(object_->pos_.GetY() - old_y_, object_->pos_.GetX() - old_x_));
+
+            object_->SetSpeed(object_->GetSpeed());
+            object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED);
+
+            old_x_ = object_->pos_.GetX();
+            old_y_ = object_->pos_.GetY();
+        }
+    }
+}
+
+void LatDistanceAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 {
     if (object_ == obj1)
     {

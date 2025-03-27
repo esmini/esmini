@@ -252,6 +252,14 @@ public:
         return res;
     }
 
+    SE_Vector operator*(double const& s) const
+    {
+        SE_Vector res;
+        res.x_ = x_ * s;
+        res.y_ = y_ * s;
+        return res;
+    }
+
     SE_Vector& operator+=(SE_Vector const& p)
     {
         this->x_ += p.x_;
@@ -1111,6 +1119,9 @@ public:
 
 class DampedSpring
 {
+    /*
+        https://en.wikipedia.org/wiki/Mass-spring-damper_model
+    */
 public:
     // Custom damping factor, set 0 for no damping
     DampedSpring() : x_(0), x0_(0), t_(0), d_(0), v_(0), a_(0), critical_(false){};
@@ -1140,7 +1151,7 @@ public:
         a_ = -t_ * (x_ - x0_) - d_ * v_;
         v_ = v_ + a_ * timeStep;
         x_ = x_ + v_ * timeStep;
-    };
+    }
 
     void SetValue(double value)
     {

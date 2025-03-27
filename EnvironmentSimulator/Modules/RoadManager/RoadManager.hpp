@@ -3010,12 +3010,13 @@ namespace roadmanager
 
     typedef struct
     {
-        double ds;        // delta s (longitudinal distance)
-        double dt;        // delta t (lateral distance)
-        int    dLaneId;   // delta laneId (increasing left and decreasing to the right)
-        double dx;        // delta x (world coordinate system)
-        double dy;        // delta y (world coordinate system)
-        bool   dOppLane;  // true if the two position objects are in opposite sides of reference lane
+        double ds;          // delta s (longitudinal distance)
+        double dt;          // delta t (lateral distance)
+        int    dLaneId;     // delta laneId (increasing left and decreasing to the right)
+        double dx;          // delta x (world coordinate system)
+        double dy;          // delta y (world coordinate system)
+        bool   dOppLane;    // true if the two position objects are in opposite sides of reference lane
+        bool   dDirection;  // delta direction (are the two positions in the same direction or not)
     } PositionDiff;
 
     enum class CoordinateSystem
@@ -4406,7 +4407,7 @@ namespace roadmanager
         std::vector<PathNode *> unvisited_;
         const Position         *startPos_;
         const Position         *targetPos_;
-        int                     direction_;  // direction of path from starting pos. 0==not set, 1==forward, 2==backward
+        int                     direction_;  // direction of path from starting pos. 0==not set, 1==forward, -1==backward
         PathNode               *firstNode_;
 
         RoadPath(const Position *startPos, const Position *targetPos)

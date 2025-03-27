@@ -2054,6 +2054,31 @@ The center lane is indicated by thick red line and reference line is indicated b
 
 image::two_plus_one_road_features.jpg[]
 
+=== Lateral distance action logics
+The https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/LateralDistanceAction.html[LateralDistanceAction] can be used to enforce an entity to reach and optionally stay at a lateral distance from a given reference entity.
+esmini supports two coordinate systems for the lateral distance action:
+
+==== Road coordinate system
+The lateral distance is defined as a distance to the left or right of the given reference entities current lateral offset in the road coordinate system (i.e. the t-value).
+
+If desired, dynamic constraints can be applied to control how the actor reaches the specified lateral distance. These constraints are interpreted in the context of the road coordinate system, specifically the t-axis, which represents lateral movement. This includes how quickly the actor can move or accelerate laterally.
+
+The following logic applies for the actor to reach the desired lateral distance to the referenced entity:
+
+* No dynamic constraints: Lateral distance reached in one single simulation step.
+
+* maxSpeed constraint only: The actor will reach the maxSpeed with infinite acceleration and then continue at that speed until the lateral distance is reached.
+
+* maxAcceleration constraint: The actor follows a https://en.wikipedia.org/wiki/Mass-spring-damper_model[damped spring model], accelerating up to the specified maxAcceleration. If maxSpeed is also defined, the actor will not exceed it. If maxSpeed is not defined, the actor accelerates until reaching its current forward speed projected onto the road's t-axis. As the actor approaches the desired lateral distance, it will decelerate with the given maxAcceleration until it reaches the target distance.
+
+* maxDeceleration constraint: Not supported. Use maxAcceleration instead.
+
+Freespace calculations assume all vehicles share the same heading and only consider their widths for determining lateral relationships
+
+==== Entity coordinate system
+
+TBD
+
 == Controllers
 
 === Controller concept

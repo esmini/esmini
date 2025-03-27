@@ -2180,6 +2180,43 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^145.600, 0, Ego, 10.000, -1.535, 0.000, 0.000, 0.000, 0.000, 25.000, -0.050, 3.149', csv, re.MULTILINE))
         self.assertTrue(re.search('^175.000, 0, Ego, 598.465, 190.240, 0.000, 1.571, 0.000, 0.000, 25.000, 0.000, 4.565', csv, re.MULTILINE))
         self.assertTrue(re.search('^183.500, 0, Ego, 210.000, -1.535, 0.000, 0.000, 0.000, 0.000, 25.000, 0.000, 2.239', csv, re.MULTILINE))
+    
+    def test_lat_dist_road_coordinates(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/lat_dist_road_test.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*lat_dist_road_test.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('^.0.800.* RigidLeftLateralDistanceAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.200.* RigidRightLateralDistanceAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.800.* RigidLeftOppositeLateralDistanceAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.2.200.* RigidRightOppositeLateralDistanceAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.700.* MaxSpeedContinuousLateralDistanceAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.8.200.* Teleport4Event runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.13.300.* Teleport5Action runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.18.400.* MaxSpeedAndAccContinuousLateralDistanceAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('0.900, 0, Ego, 100.000, -1.500, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('0.900, 1, Target, 54.500, -0.500, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 0.291', csv, re.MULTILINE))
+        self.assertTrue(re.search('1.300, 0, Ego, 100.000, -1.500, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('1.300, 1, Target, 56.500, -2.500, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 6.005', csv, re.MULTILINE))
+        self.assertTrue(re.search('1.900, 0, Ego, 300.000, -1.500, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('1.900, 1, Target, 59.500, -0.500, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 2.010', csv, re.MULTILINE))
+        self.assertTrue(re.search('3.100, 0, Ego, 300.000, -1.500, 0.000, 3.140, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('3.100, 1, Target, 63.900, -3.700, 0.000, 5.356, 0.000, 0.000, 5.000, (-0.000|0.000), 0.303', csv, re.MULTILINE))
+        self.assertTrue(re.search('4.700, 0, Ego, 300.000, -1.500, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('4.700, 1, Target, 69.300, 1.500, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 4.311', csv, re.MULTILINE))
+        self.assertTrue(re.search('8.500, 0, Ego, 300.000, -1.500, 0.000, 3.140, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('8.500, 1, Target, 87.553, -3.318, 0.000, 6.231, 0.000, 0.000, 5.000, 0.215, 2.048', csv, re.MULTILINE))
+        self.assertTrue(re.search('13.300, 0, Ego, 300.000, -1.500, 0.000, 3.140, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('13.300, 1, Target, 111.040, 1.067, 0.000, 0.060, 0.000, 0.000, 5.000, -0.025, 1.504', csv, re.MULTILINE))
+        self.assertTrue(re.search('18.400, 0, Ego, 500.000, 1.500, 0.000, 3.142, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('18.400, 1, Target, 136.271, 4.302, 0.000, 0.027, 0.000, 0.000, 5.000, -0.012, 5.247', csv, re.MULTILINE))
+        self.assertTrue(re.search('24.000, 0, Ego, 500.000, 1.500, 0.000, 3.142, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('24.000, 1, Target, 163.038, -1.458, 0.000, 6.274, 0.000, 0.000, 5.000, 0.006, 3.565', csv, re.MULTILINE))
 
     def test_dual_controllers(self):
         # this test case verify that two controllers can operate in parallel, on separate domains

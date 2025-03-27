@@ -2829,6 +2829,81 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     }
                     action = action_lane;
                 }
+                else if (lateralChild.name() == std::string("LateralDistanceAction"))
+                {
+                    LatDistanceAction *action_dist = new LatDistanceAction(parent);
+
+                    pugi::xml_node dynamics_node = lateralChild.child("DynamicConstraints");
+                    if (dynamics_node != NULL)
+                    {
+                        parseDynamicConstraints(dynamics_node, action_dist->dynamics_, object);
+                    }
+
+                    std::string entity_ref = parameters.ReadAttribute(lateralChild, "entityRef");
+                    if (entity_ref.empty())
+                    {
+                        LOG_ERROR_AND_QUIT("LateralDistanceAction: Mandatory attribute entityRef is missing");
+                    }
+                    action_dist->target_object_ = ResolveObjectReference(entity_ref);
+
+                    std::string continuous = parameters.ReadAttribute(lateralChild, "continuous");
+                    if (continuous.empty())
+                    {
+                        LOG_ERROR_AND_QUIT("LateralDistanceAction: Mandatory attribute continuous is missing");
+                    }
+                    action_dist->continuous_ = (continuous == "true");
+
+                    std::string freespace = parameters.ReadAttribute(lateralChild, "freespace");
+                    if (freespace.empty())
+                    {
+                        LOG_ERROR_AND_QUIT("LateralDistanceAction: Mandatory attribute freespace is missing");
+                    }
+
+                    action_dist->freespace_ = (freespace == "true" || freespace == "1");
+
+                    std::string distance = parameters.ReadAttribute(lateralChild, "distance");
+                    if (!distance.empty())
+                    {
+                        action_dist->distance_ = strtod(distance);
+                    }
+
+                    std::string displacement = parameters.ReadAttribute(lateralChild, "displacement");
+                    if (GetVersionMajor() <= 1 && GetVersionMinor() >= 1)
+                    {
+                        if (displacement.empty())
+                        {
+                            LOG_WARN("displacement attribute missing, setting default 'any'");
+                            action_dist->displacement_ = LatDistanceAction::DisplacementType::ANY;
+                        }
+                        else if (displacement == "leftToReferencedEntity")
+                        {
+                            action_dist->displacement_ = LatDistanceAction::DisplacementType::LEFT_TO_REFERENCED_ENTITY;
+                        }
+                        else if (displacement == "rightToReferencedEntity")
+                        {
+                            action_dist->displacement_ = LatDistanceAction::DisplacementType::RIGHT_TO_REFERENCED_ENTITY;
+                        }
+                        else
+                        {
+                            LOG_ERROR_AND_QUIT("Unsupported displacement type: {}", displacement);
+                        }
+
+                        if (action_dist->distance_ < 0.0)
+                        {
+                            LOG_WARN(
+                                "Negative distance not supported in OSC version >= 1.1. Using absolute value. Use displacement to specify which lateral axis that applies.");
+                            action_dist->distance_ = abs(action_dist->distance_);
+                        }
+                    }
+                    else if (!displacement.empty())  // Is it supported in 1.1??
+                    {
+                        LOG_WARN("LateralDistanceAction displacement not supported in OSC version {}.{}", GetVersionMajor(), GetVersionMinor());
+                    }
+
+                    action_dist->cs_ = ParseCoordinateSystem(lateralChild, roadmanager::CoordinateSystem::CS_ENTITY);
+
+                    action = action_dist;
+                }
                 else
                 {
                     LOG_WARN("Unsupported element type: {}", lateralChild.name());

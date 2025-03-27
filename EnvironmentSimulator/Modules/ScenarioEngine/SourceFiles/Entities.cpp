@@ -1091,7 +1091,7 @@ int Object::Distance(Object*                           target,
             struct
             {
                 int                       return_value = -1;
-                roadmanager::PositionDiff pos_diff     = {LARGE_NUMBER, LARGE_NUMBER, 0, 0.0, 0.0, false};
+                roadmanager::PositionDiff pos_diff     = {LARGE_NUMBER, LARGE_NUMBER, 0, 0.0, 0.0, false, false};
             } candidate_info;
 
             // start measuring from frontmost towing vehicle

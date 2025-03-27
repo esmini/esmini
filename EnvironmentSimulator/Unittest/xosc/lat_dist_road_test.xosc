@@ -1,0 +1,432 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="1"
+               date="2020-05-12T10:00:00"
+               description="dummy"
+               author="esmini"/>
+   <ParameterDeclarations>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+    <RoadNetwork>
+      <LogicFile filepath="../xodr/oppositeLaneRoad.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <Vehicle name="car_white" vehicleCategory="car" model3d="../models/car_white.osgb">
+            <BoundingBox>
+               <Center x="1.4" y="0.0" z="0.9"/>
+               <Dimensions width="2.0" length="5.0" height="1.8"/>
+            </BoundingBox>
+            <Performance maxSpeed="69" maxDeceleration="30" maxAcceleration="10"/>
+            <Axles>
+               <FrontAxle maxSteering="30"
+                          wheelDiameter="0.8"
+                          trackWidth="1.68"
+                          positionX="2.98"
+                          positionZ="0.4"/>
+               <RearAxle maxSteering="30"
+                         wheelDiameter="0.8"
+                         trackWidth="1.68"
+                         positionX="0"
+                         positionZ="0.4"/>
+            </Axles>
+            <Properties>
+                <Property name="model_id" value="0"/>
+                <Property name="scaleMode" value="ModelToBB"/>  
+                <Property name="control" value="hybrid"/>
+            </Properties>
+         </Vehicle>
+      </ScenarioObject>
+      <ScenarioObject name="Target">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-1" offset="0" s="100">
+                           <Orientation type="relative" h="0.0"/>
+                        </LanePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="5"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-1" offset="0" s="50">
+                           <Orientation type="relative" h="0.0"/>
+                        </LanePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+	  <Story name="MyStory">
+         <Act name="LateralDistanceAct">
+            <ManeuverGroup maximumExecutionCount="1" name="TargetManueverGroup1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Target"/>
+               </Actors>
+               <Maneuver name="LateralDistanceRigidLeftManeuver">
+                  <Event name="LateralDistanceRigidLeftEvent" priority="overwrite">
+                     <Action name="RigidLeftLateralDistanceAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LateralDistanceAction continuous="false"
+                                                     coordinateSystem="road"
+                                                     entityRef="Ego"
+                                                     freespace="false"
+                                                     distance="1"
+                                                     displacement="leftToReferencedEntity">
+                              </LateralDistanceAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LateralDistanceCondition" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="0.5" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="LateralDistanceRigidRightManeuver">
+                  <Event name="LateralDistanceRigidRightEvent" priority="overwrite">
+                     <Action name="RigidRightLateralDistanceAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LateralDistanceAction continuous="false"
+                                                     coordinateSystem="road"
+                                                     entityRef="Ego"
+                                                     freespace="false"
+                                                     distance="1"
+                                                     displacement="rightToReferencedEntity">
+                              </LateralDistanceAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LateralDistanceCondition" delay="0.1" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="LateralDistanceRigidLeftManeuver" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="LateralDistanceRigidLeftOppositeManeuver">
+                  <Event name="LateralDistanceRigidLeftOppositeEvent" priority="overwrite">
+                     <Action name="RigidLeftOppositeLateralDistanceAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LateralDistanceAction continuous="false"
+                                                     coordinateSystem="road"
+                                                     entityRef="Ego"
+                                                     freespace="false"
+                                                     distance="1"
+                                                     displacement="leftToReferencedEntity">
+                              </LateralDistanceAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Teleported1Condition" delay="0.1" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="Teleport1Maneuver" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="LateralDistanceRigidRightOppositeManeuver">
+                  <Event name="LateralDistanceRigidRightOppositeEvent" priority="overwrite">
+                     <Action name="RigidRightOppositeLateralDistanceAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LateralDistanceAction continuous="true"
+                                                     coordinateSystem="road"
+                                                     entityRef="Ego"
+                                                     freespace="false"
+                                                     distance="1"
+                                                     displacement="rightToReferencedEntity">
+                              </LateralDistanceAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Teleported1Condition" delay="0.1" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="LateralDistanceRigidLeftOppositeManeuver" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="LateralDistanceMaxSpeedContinuousManeuver">
+                  <Event name="LateralDistanceMaxSpeedContinuousEvent" priority="overwrite">
+                     <Action name="MaxSpeedContinuousLateralDistanceAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LateralDistanceAction continuous="true"
+                                                     coordinateSystem="road"
+                                                     entityRef="Ego"
+                                                     freespace="true"
+                                                     distance="1"
+                                                     displacement="leftToReferencedEntity">
+                                <DynamicConstraints maxSpeed="4.0"/> 
+                              </LateralDistanceAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Teleported2Condition" delay="0.1" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="Teleport2Maneuver" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="LateralDistanceMaxSpeedAndAccContinuousManeuver">
+                  <Event name="LateralDistanceMaxSpeedAndAccContinuousEvent" priority="overwrite">
+                     <Action name="MaxSpeedAndAccContinuousLateralDistanceAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LateralDistanceAction continuous="true"
+                                                     coordinateSystem="road"
+                                                     entityRef="Ego"
+                                                     freespace="true"
+                                                     distance="1"
+                                                     displacement="rightToReferencedEntity">
+                                <DynamicConstraints maxSpeed="4.0" maxAcceleration="2.0" maxDeceleration="5.0"/> 
+                              </LateralDistanceAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Teleported3Condition" delay="1.5" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="Teleport3Maneuver" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="LateralDistanceMaxAccContinuousManeuver">
+                  <Event name="LateralDistanceMaxAccContinuousEvent" priority="overwrite">
+                     <Action name="MaxAccContinuousLateralDistanceAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LateralDistanceAction continuous="false"
+                                                     coordinateSystem="road"
+                                                     entityRef="Ego"
+                                                     freespace="true"
+                                                     distance="1"
+                                                     displacement="leftToReferencedEntity">
+                                <DynamicConstraints maxAcceleration="5.0" maxDeceleration="10.0"/> 
+                              </LateralDistanceAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Teleported5Condition" delay="5" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="Teleport5Maneuver" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="TargetManueverGroup1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="Teleport1Maneuver">
+                  <Event name="Teleport1Event" priority="overwrite">
+                     <Action name="Teleport1Action">
+                        <PrivateAction>
+                           <TeleportAction>
+                              <Position>
+                                 <LanePosition roadId="1" laneId="1" offset="0" s="100"/>
+                              </Position>
+                           </TeleportAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LateralDistanceRightCondition" delay="0.1" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="LateralDistanceRigidRightManeuver" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="Teleport2Maneuver">
+                  <Event name="Teleport2Event" priority="overwrite">
+                     <Action name="Teleport2Action">
+                        <PrivateAction>
+                           <TeleportAction>
+                              <Position>
+                                 <LanePosition roadId="1" laneId="1" offset="0" s="100">
+                                    <Orientation type="relative" h="3.14"/>
+                                 </LanePosition>
+                              </Position>
+                           </TeleportAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LateralDistanceRightCondition" delay="0.5" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="Teleport1Maneuver" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="Teleport3Maneuver">
+                  <Event name="Teleport3Event" priority="overwrite">
+                     <Action name="Teleport3Action">
+                        <PrivateAction>
+                           <TeleportAction>
+                              <Position>
+                                 <LanePosition roadId="1" laneId="1" offset="0" s="100">
+                                    <Orientation type="relative" h="0.0"/>
+                                 </LanePosition>
+                              </Position>
+                           </TeleportAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LateralDistanceRightCondition" delay="1.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="Teleport2Maneuver" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="Teleport4Maneuver">
+                  <Event name="Teleport4Event" priority="overwrite">
+                     <Action name="Teleport4Action">
+                        <PrivateAction>
+                           <TeleportAction>
+                              <Position>
+                                 <LanePosition roadId="1" laneId="1" offset="0" s="100">
+                                    <Orientation type="relative" h="3.14"/>
+                                 </LanePosition>
+                              </Position>
+                           </TeleportAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LateralDistanceRightCondition" delay="5.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="Teleport3Maneuver" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="Teleport5Maneuver">
+                  <Event name="Teleport5Event" priority="overwrite">
+                     <Action name="Teleport5Action">
+                        <PrivateAction>
+                           <TeleportAction>
+                              <Position>
+                                 <LanePosition roadId="2" laneId="1" offset="0" s="100">
+                                    <Orientation type="relative" h="0.0"/>
+                                 </LanePosition>
+                              </Position>
+                           </TeleportAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LateralDistanceRightCondition" delay="5.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="Teleport4Maneuver" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LatDistActStart" delay="0" conditionEdge="none">
+                        <ByValueCondition>
+                           <SimulationTimeCondition value="0" rule="greaterThan"/>
+                        </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>	  
+      </Story>
+		<StopTrigger>
+		  <ConditionGroup>
+			 <Condition name="StopCondition" delay="3" conditionEdge="rising">
+				<ByValueCondition>
+               <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="LateralDistanceMaxAccContinuousManeuver" state="endTransition"/>
+				</ByValueCondition>
+			 </Condition>
+		  </ConditionGroup>
+		</StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>
