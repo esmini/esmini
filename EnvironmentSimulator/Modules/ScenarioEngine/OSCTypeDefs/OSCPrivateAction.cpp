@@ -1932,6 +1932,177 @@ void LongDistanceAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
     }
 }
 
+void LatDistanceAction::Start(double simTime)
+{
+    sim_time_ = simTime;
+    if (target_object_ == 0)
+    {
+        LOG_ERROR("Can't trig without set target object ");
+        return;
+    }
+
+    // Resolve displacement
+    if (displacement_ == DisplacementType::ANY)
+    {
+        // Find out current displacement, and apply it
+        double distance;
+        if (freespace_)
+        {
+            double latDist  = 0;
+            double longDist = 0;
+            object_->FreeSpaceDistance(target_object_, &latDist, &longDist);
+            distance = longDist;
+        }
+        else
+        {
+            double x, y;
+            distance = object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
+
+            // Just interested in the x-axis component of the distance
+            distance = x;
+        }
+
+        if (distance < 0.0)
+        {
+            displacement_ = DisplacementType::LEADING;
+        }
+        else
+        {
+            displacement_ = DisplacementType::TRAILING;
+        }
+    }
+
+    OSCAction::Start(simTime);
+}
+
+void LatDistanceAction::Step(double simTime, double)
+{
+    if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
+    {
+        // longitudinal motion controlled elsewhere
+        return;
+    }
+
+    double dt = simTime - sim_time_;
+    sim_time_ = simTime;
+
+    // Find out current distance
+    double distance;
+    if (freespace_)
+    {
+        double latDist  = 0;
+        double longDist = 0;
+        object_->FreeSpaceDistance(target_object_, &latDist, &longDist);
+        distance = longDist;
+    }
+    else
+    {
+        object_->pos_.Distance(&target_object_->pos_, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, distance);
+    }
+
+    double speed_diff = object_->speed_ - target_object_->speed_;
+    double acc;
+    double jerk            = 0.0;
+    double spring_constant = 0.4;
+    double dc;
+    double requested_dist = 0;
+
+    if (dist_type_ == DistType::DISTANCE)
+    {
+        requested_dist = distance_;
+    }
+    if (dist_type_ == DistType::TIME_GAP)
+    {
+        // Convert requested time gap (seconds) to distance (m)
+        requested_dist = abs(target_object_->speed_) * distance_;
+    }
+
+    if (displacement_ == DisplacementType::TRAILING)
+    {
+        requested_dist = abs(requested_dist);
+    }
+    else if (displacement_ == DisplacementType::LEADING)
+    {
+        requested_dist = -abs(requested_dist);
+    }
+
+    double distance_diff = distance - requested_dist;
+
+    if (continuous_ == false && fabs(distance_diff) < LONGITUDINAL_DISTANCE_THRESHOLD)
+    {
+        // Reached requested distance, quit action
+        OSCAction::End();
+    }
+
+    if (dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
+    {
+        // Set position according to distance and copy speed of target vehicle
+        object_->pos_.MoveAlongS(distance_diff);
+        object_->SetSpeed(target_object_->speed_);
+    }
+    else
+    {
+        // Apply damped spring model with critical/optimal damping factor
+        // Adjust tension in spring in proportion to the max acceleration and max deceleration
+        double tension = distance_diff < 0.0 ? dynamics_.max_acceleration_ : dynamics_.max_deceleration_;
+
+        double spring_constant_adjusted = tension * spring_constant;
+        dc                              = 2 * sqrt(spring_constant_adjusted);
+        acc                             = distance_diff * spring_constant_adjusted - speed_diff * dc;
+        if (acc < 0.0)
+        {
+            jerk = -dynamics_.max_deceleration_rate_;
+            if (acc < -dynamics_.max_deceleration_)
+            {
+                acc = -dynamics_.max_deceleration_;
+            }
+        }
+        else
+        {
+            jerk = dynamics_.max_acceleration_rate_;
+            if (acc > dynamics_.max_acceleration_)
+            {
+                acc = dynamics_.max_acceleration_;
+            }
+        }
+
+        // Apply simple linear model for jerk
+        if (jerk < 0.0 && acc < acceleration_)
+        {
+            acc = MAX(acceleration_ + jerk * dt, acc);
+        }
+        else if (jerk > 0.0 && acc > acceleration_)
+        {
+            acc = MIN(acceleration_ + jerk * dt, acc);
+        }
+
+        acceleration_ = acc;
+        object_->SetSpeed(object_->GetSpeed() + acceleration_ * dt);
+
+        if (object_->GetSpeed() > dynamics_.max_speed_)
+        {
+            object_->SetSpeed(dynamics_.max_speed_);
+        }
+        else if (object_->GetSpeed() < -dynamics_.max_speed_)
+        {
+            object_->SetSpeed(-dynamics_.max_speed_);
+        }
+    }
+}
+
+void LatDistanceAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
+{
+    if (object_ == obj1)
+    {
+        object_ = obj2;
+    }
+
+    if (target_object_ == obj1)
+    {
+        target_object_ = obj2;
+    }
+}
+
 void TeleportAction::Start(double simTime)
 {
     OSCAction::Start(simTime);
