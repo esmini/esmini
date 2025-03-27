@@ -455,7 +455,7 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
 
 void OSIReporter::CropOSIDynamicGroundTruth(const int id, const double radius)
 {
-    if (osi_crop_.empty())
+    if (osi_crop_.empty() && radius > SMALL_NUMBER)
     {
         osi_crop_.emplace_back(std::make_pair(id, radius));
     }
@@ -477,8 +477,12 @@ void OSIReporter::CropOSIDynamicGroundTruth(const int id, const double radius)
                 return;
             }
         }
-        osi_crop_.emplace_back(std::make_pair(id, radius));
+        if (radius > SMALL_NUMBER)
+        {
+            osi_crop_.emplace_back(std::make_pair(id, radius));
+        }
     }
+    LOG_INFO("CropGroundTruth: Added crop for id %d with radius %.2f", id, radius);
 }
 
 void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &obj)

@@ -1266,6 +1266,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("osc_str", "OpenSCENARIO XML string", "string");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
 #ifdef _USE_OSI
+    opt.AddOption("osi_crop_dynamic", "Crop the dynamic osi data around the given object id with given radius", "id,radius", "", false, false);
     opt.AddOption("osi_exclude_ghost", "Excludes ghost from osi dynamic osi ground truth");
     opt.AddOption("osi_file", "Save osi trace file", "filename", DEFAULT_OSI_TRACE_FILENAME);
     opt.AddOption("osi_freq", "Decrease OSI file entries, e.g. --osi_freq 2 -> OSI written every two simulation steps", "frequency");
@@ -1640,6 +1641,26 @@ int ScenarioPlayer::Init()
         if (osiReporter->GetOSIFrequency() == 0)
         {
             osiReporter->SetOSIFrequency(1);
+        }
+    }
+
+    if (opt.GetOptionSet("osi_crop_dynamic") == true)
+    {
+        int counter = 0;
+
+        while ((arg_str = opt.GetOptionArg("osi_crop_dynamic", counter)) != "")
+        {
+            const auto splitted = SplitString(arg_str, ',');
+            if (splitted.size() == 2)
+            {
+                osiReporter->CropOSIDynamicGroundTruth(strtoi(splitted[0]), strtod(splitted[1]));
+            }
+            else
+            {
+                LOG_ERROR("Expected osi_crop <id,radius>. Got {} values instead of 2.", splitted.size());
+            }
+
+            counter++;
         }
     }
 

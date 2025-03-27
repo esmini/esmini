@@ -1755,6 +1755,10 @@ extern "C"
         {
             player->osiReporter->CropOSIDynamicGroundTruth(id, radius);
         }
+        else
+        {
+            SE_Env::Inst().GetOptions().SetOptionValue("osi_crop_dynamic", std::to_string(id) + "," + std::to_string(radius), true);
+        }
 #else
         (void)id;
         (void)radius;
