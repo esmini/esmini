@@ -522,6 +522,85 @@ namespace scenarioengine
     private:
         double acceleration_;
     };
+    
+    class LatDistanceAction : public OSCPrivateAction
+    {
+    public:
+        typedef enum
+        {
+            DISTANCE,
+            TIME_GAP,
+        } DistType;
+
+        typedef enum
+        {
+            NONE,
+            TRAILING,
+            LEADING,
+            ANY
+        } DisplacementType;
+
+        Object*                       target_object_;
+        double                        distance_;
+        DistType                      dist_type_;
+        double                        freespace_;
+        bool                          continuous_;
+        double                        sim_time_;
+        DisplacementType              displacement_;
+        DynamicConstraints            dynamics_;
+        roadmanager::CoordinateSystem cs_;
+
+        LatDistanceAction(StoryBoardElement* parent)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_DISTANCE, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)),
+              target_object_(0),
+              distance_(0),
+              dist_type_(DistType::DISTANCE),
+              freespace_(0),
+              sim_time_(0),
+              displacement_(DisplacementType::NONE),
+              cs_(roadmanager::CoordinateSystem::CS_ENTITY),
+              acceleration_(0)
+        {
+        }
+
+        LatDistanceAction(const LatDistanceAction& action)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_DISTANCE, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT))
+        {
+            SetName(action.GetName());
+            target_object_ = action.target_object_;
+            dynamics_      = action.dynamics_;
+            distance_      = action.distance_;
+            dist_type_     = action.dist_type_;
+            freespace_     = action.freespace_;
+            acceleration_  = action.acceleration_;
+            sim_time_      = action.sim_time_;
+            displacement_  = action.displacement_;
+            cs_            = action.cs_;
+        }
+
+        OSCPrivateAction* Copy()
+        {
+            LatDistanceAction* new_action = new LatDistanceAction(*this);
+            return new_action;
+        }
+
+        std::string Type2Str()
+        {
+            return "LateralDistanceAction";
+        };
+
+        void Start(double simTime);
+        void Step(double simTime, double dt);
+
+        void print()
+        {
+        }
+
+        void ReplaceObjectRefs(Object* obj1, Object* obj2);
+
+    private:
+        double acceleration_;
+    };
 
     class LatLaneChangeAction : public OSCPrivateAction
     {

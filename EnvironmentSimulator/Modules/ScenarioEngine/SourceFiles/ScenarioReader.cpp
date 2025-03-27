@@ -2829,6 +2829,83 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     }
                     action = action_lane;
                 }
+                else if (lateralChild.name() == std::string("LateralDistanceAction"))
+                {
+                    LatDistanceAction *action_dist = new LatDistanceAction(parent);
+
+                    pugi::xml_node dynamics_node = lateralChild.child("DynamicConstraints");
+                    if (dynamics_node != NULL)
+                    {
+                        parseDynamicConstraints(dynamics_node, action_dist->dynamics_, object);
+                    }
+
+                    action_dist->target_object_ = ResolveObjectReference(parameters.ReadAttribute(lateralChild, "entityRef"));
+                    if (lateralChild.attribute("distance"))
+                    {
+                        action_dist->dist_type_ = LatDistanceAction::DistType::DISTANCE;
+                        action_dist->distance_  = strtod(parameters.ReadAttribute(lateralChild, "distance"));
+                    }
+                    else if (lateralChild.attribute("timeGap"))
+                    {
+                        action_dist->dist_type_ = LatDistanceAction::DistType::TIME_GAP;
+                        action_dist->distance_  = strtod(parameters.ReadAttribute(lateralChild, "timeGap"));
+                    }
+                    else
+                    {
+                        LOG_INFO("Need distance or timeGap");
+                    }
+
+                    std::string continuous   = parameters.ReadAttribute(lateralChild, "continuous");
+                    action_dist->continuous_ = continuous == "true" ? true : false;
+
+                    std::string freespace = parameters.ReadAttribute(lateralChild, "freespace");
+                    if (freespace == "true" || freespace == "1")
+                        action_dist->freespace_ = true;
+                    else
+                        action_dist->freespace_ = false;
+
+                    std::string displacement = parameters.ReadAttribute(lateralChild, "displacement");
+                    if (GetVersionMajor() <= 1 && GetVersionMinor() >= 1)
+                    {
+                        if (displacement.empty())
+                        {
+                            LOG_WARN("displacement attribute missing, setting default trailingReferencedEntity");
+                            action_dist->displacement_ = LatDistanceAction::DisplacementType::TRAILING;
+                        }
+                        else if (displacement == "any")
+                        {
+                            action_dist->displacement_ = LatDistanceAction::DisplacementType::ANY;
+                        }
+                        else if (displacement == "trailingReferencedEntity")
+                        {
+                            action_dist->displacement_ = LatDistanceAction::DisplacementType::TRAILING;
+                        }
+                        else if (displacement == "leadingReferencedEntity")
+                        {
+                            action_dist->displacement_ = LatDistanceAction::DisplacementType::LEADING;
+                        }
+                        else
+                        {
+                            LOG_ERROR_AND_QUIT("Unsupported displacement type: {}", displacement);
+                        }
+
+                        if (action_dist->distance_ < 0.0)
+                        {
+                            // action_dist->displacement_ != LongDistanceAction::DisplacementType::NONE &&
+                            LOG_WARN(
+                                "Negative distance or timeGap not supported in OSC version >= 1.1. Using absolute value. Use displacement to specify leading or trailing behavior.");
+                            action_dist->distance_ = abs(action_dist->distance_);
+                        }
+                    }
+                    else if (!displacement.empty())
+                    {
+                        LOG_WARN("LongitudinalDistanceAction displacement not supported in OSC version {}.{}", GetVersionMajor(), GetVersionMinor());
+                    }
+
+                    action_dist->cs_ = ParseCoordinateSystem(lateralChild, roadmanager::CoordinateSystem::CS_ENTITY);
+
+                    action = action_dist;
+                }
                 else
                 {
                     LOG_WARN("Unsupported element type: {}", lateralChild.name());
