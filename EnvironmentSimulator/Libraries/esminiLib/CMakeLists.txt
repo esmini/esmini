@@ -122,7 +122,9 @@ install(
             ${TARGET_STATIC}
     DESTINATION "${INSTALL_PATH}")
 
-install(
-    TARGETS ${TARGET_SHARED}
-            ${TARGET_STATIC}
-    DESTINATION "${CODE_EXAMPLES_BIN_PATH}")
+if(BUILD_EXAMPLES)
+    install(
+        TARGETS ${TARGET_SHARED}
+                ${TARGET_STATIC}
+        DESTINATION "${CODE_EXAMPLES_BIN_PATH}")
+endif(BUILD_EXAMPLES)
