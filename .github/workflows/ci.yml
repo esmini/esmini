@@ -160,7 +160,7 @@ jobs:
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
         # Use xvfb on Linux only
-        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh ${{ matrix.configuration }} false
+        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
 
       - name: Run Tests - Windows
         if: runner.os == 'Windows'
@@ -168,7 +168,7 @@ jobs:
           GALLIUM_DRIVER: softpipe
           MESA_GL_VERSION_OVERRIDE: 4.5
         shell: bash
-        run: ./scripts/run_tests.sh ${{ matrix.configuration }} false
+        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
 
       - uses: ./.github/actions/upload_esmini_artifacts
         if: matrix.configuration == 'Release'
@@ -261,7 +261,7 @@ jobs:
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
         # Use xvfb on Linux only
-        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh ${{ matrix.configuration }} false
+        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
 
       - name: Run Tests - Windows
         if: runner.os == 'Windows'
@@ -269,7 +269,7 @@ jobs:
           GALLIUM_DRIVER: softpipe
           MESA_GL_VERSION_OVERRIDE: 4.5
         shell: bash
-        run: ./scripts/run_tests.sh ${{ matrix.configuration }} false
+        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
 
   release:
     needs: [test, test-no-external-modules]

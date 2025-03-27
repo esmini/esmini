@@ -1,37 +1,31 @@
 #!/bin/bash
 
-arg1=$1
-arg2=$2
-arg3=$3
-arg4=$4
-
-buildConfiguration="Release"
-skipOpenGLTests=false
-skipPerformanceTests=false
+build_type=Release
+add_performance_test=false
 timeout=40
 
-if ! [[ -z "$arg1" ]]; then
-    if [[ "$arg1" = "Debug" ]]; then
-        buildConfiguration="Debug"
-    fi
-fi
+help_and_exit () {
+    echo Usage: "$0" [options]
+    echo options:
+    echo "   -h, --help  this help"
+    echo "   -b, --build_type <Release|Debug> (default: "$build_type")"
+    echo "   -p, --add_performance_test (requires Release build type)"
+    echo "   -t, --timeout <SECONDS> (default: "$timeout")"
+    exit -1
+}
 
-if ! [[ -z "$arg2" ]]; then
-    if [[ "$arg2" = true ]]; then
-        skipOpenGLTests=true
-    fi
-fi
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -h|--help) help_and_exit ;;
+        -b|--build_type) build_type="$2"; shift ;;
+        -p|--add_performance_test) add_performance_test=true ;;
+        -t|--timeout) timeout="$2"; shift ;;
+        *) echo "Unknown parameter passed: $1"; exit -1 ;;
+    esac
+    shift
+done
 
-if ! [[ -z "$arg3" ]]; then
-    skipPerformanceTests="$arg3"
-fi
-
-if ! [[ -z "$arg4" ]]; then
-    timeout="$arg4"
-fi
-
-echo "buildConfiguration: $buildConfiguration, timeout: $timeout, skipOpenGLTests: $skipOpenGLTests, skipPerformanceTests: $skipPerformanceTests"
-
+echo "build_type: $build_type, timeout: $timeout, add_performance_test: $add_performance_test"
 
 # Run from esmini root ddirectory: ./scripts/run_unittests.sh
 
@@ -49,8 +43,8 @@ export UNIT_TEST_FOLDER=${workingDir}/build/EnvironmentSimulator/Unittest
 export SMOKE_TEST_FOLDER=${workingDir}/test
 
 if [[ "$OSTYPE" == "msys" ]]; then
-    export PATH=${PATH}";../Libraries/esminiLib/$buildConfiguration;../Libraries/esminiRMLib/$buildConfiguration"
-    export EXE_FOLDER="./$buildConfiguration"
+    export PATH=${PATH}";../Libraries/esminiLib/$build_type;../Libraries/esminiRMLib/$build_type"
+    export EXE_FOLDER="./$build_type"
     export PYTHON="python"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     export LD_LIBRARY_PATH=${workingDir}"/externals/OSI/linux/lib-dyn"
@@ -123,13 +117,10 @@ fi
 
 cd $SMOKE_TEST_FOLDER
 
-if [[ "$skipOpenGLTests" == false ]]; then
+echo $'\n'Run smoke tests:
 
-    echo $'\n'Run smoke tests:
-
-    if ! ${PYTHON} smoke_test.py "-t $timeout"; then
-        exit_with_msg "smoke test failed"
-    fi
+if ! ${PYTHON} smoke_test.py "-t $timeout"; then
+    exit_with_msg "smoke test failed"
 fi
 
 echo $'\n'Run ALKS test suite:
@@ -144,7 +135,7 @@ if ! ${PYTHON} ncap_suite.py -t $timeout; then
     exit_with_msg "ncap_suite test failed"
 fi
 
-if  [[ "$skipPerformanceTests" == false ]] && [[ "$buildConfiguration" == "Release" ]]; then
+if  [[ "$add_performance_test" == true ]] && [[ "$build_type" == "Release" ]]; then
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo $'\n'Run performance test:
         if ! ${PYTHON} performance_test.py "-t $timeout" "--disable_plot"; then
