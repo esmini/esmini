@@ -2840,49 +2840,36 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     }
 
                     action_dist->target_object_ = ResolveObjectReference(parameters.ReadAttribute(lateralChild, "entityRef"));
-                    if (lateralChild.attribute("distance"))
-                    {
-                        action_dist->dist_type_ = LatDistanceAction::DistType::DISTANCE;
-                        action_dist->distance_  = strtod(parameters.ReadAttribute(lateralChild, "distance"));
-                    }
-                    else if (lateralChild.attribute("timeGap"))
-                    {
-                        action_dist->dist_type_ = LatDistanceAction::DistType::TIME_GAP;
-                        action_dist->distance_  = strtod(parameters.ReadAttribute(lateralChild, "timeGap"));
-                    }
-                    else
-                    {
-                        LOG_INFO("Need distance or timeGap");
-                    }
 
                     std::string continuous   = parameters.ReadAttribute(lateralChild, "continuous");
-                    action_dist->continuous_ = continuous == "true" ? true : false;
+                    action_dist->continuous_ = (continuous == "true");
 
                     std::string freespace = parameters.ReadAttribute(lateralChild, "freespace");
-                    if (freespace == "true" || freespace == "1")
-                        action_dist->freespace_ = true;
-                    else
-                        action_dist->freespace_ = false;
+                    action_dist->freespace_ = (freespace == "true" || freespace == "1");
 
+                    std::string distance = parameters.ReadAttribute(lateralChild, "distance");
+                    if (distance.empty())
+                    {
+                        LOG_ERROR_AND_QUIT("Missing/invalid mandatory LateralDistanceAction attribute distance");
+                        return 0;
+                    }
+                    action_dist->distance_ = strtod(distance);
+                        
                     std::string displacement = parameters.ReadAttribute(lateralChild, "displacement");
                     if (GetVersionMajor() <= 1 && GetVersionMinor() >= 1)
                     {
                         if (displacement.empty())
                         {
-                            LOG_WARN("displacement attribute missing, setting default trailingReferencedEntity");
-                            action_dist->displacement_ = LatDistanceAction::DisplacementType::TRAILING;
-                        }
-                        else if (displacement == "any")
-                        {
+                            LOG_WARN("displacement attribute missing, setting default 'any'");
                             action_dist->displacement_ = LatDistanceAction::DisplacementType::ANY;
                         }
-                        else if (displacement == "trailingReferencedEntity")
+                        else if (displacement == "leftToReferencedEntity")
                         {
-                            action_dist->displacement_ = LatDistanceAction::DisplacementType::TRAILING;
+                            action_dist->displacement_ = LatDistanceAction::DisplacementType::LEFT_TO_REFERENCED_ENTITY;
                         }
-                        else if (displacement == "leadingReferencedEntity")
+                        else if (displacement == "rightToReferencedEntity")
                         {
-                            action_dist->displacement_ = LatDistanceAction::DisplacementType::LEADING;
+                            action_dist->displacement_ = LatDistanceAction::DisplacementType::RIGHT_TO_REFERENCED_ENTITY;
                         }
                         else
                         {
@@ -2891,15 +2878,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                         if (action_dist->distance_ < 0.0)
                         {
-                            // action_dist->displacement_ != LongDistanceAction::DisplacementType::NONE &&
                             LOG_WARN(
-                                "Negative distance or timeGap not supported in OSC version >= 1.1. Using absolute value. Use displacement to specify leading or trailing behavior.");
+                                "Negative distance not supported in OSC version >= 1.1. Using absolute value. Use displacement to specify which lateral axis that applies.");
                             action_dist->distance_ = abs(action_dist->distance_);
                         }
                     }
-                    else if (!displacement.empty())
+                    else if (!displacement.empty()) // Is it supported in 1.1??
                     {
-                        LOG_WARN("LongitudinalDistanceAction displacement not supported in OSC version {}.{}", GetVersionMajor(), GetVersionMinor());
+                        LOG_WARN("LateralDistanceAction displacement not supported in OSC version {}.{}", GetVersionMajor(), GetVersionMinor());
                     }
 
                     action_dist->cs_ = ParseCoordinateSystem(lateralChild, roadmanager::CoordinateSystem::CS_ENTITY);
