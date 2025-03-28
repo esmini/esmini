@@ -18,6 +18,7 @@
 
 #define MAX_DECELERATION                -8.0
 #define LONGITUDINAL_DISTANCE_THRESHOLD 0.1
+#define LATERAL_DISTANCE_THRESHOLD 0.1
 
 using namespace scenarioengine;
 
@@ -1951,7 +1952,7 @@ void LatDistanceAction::Start(double simTime)
             double latDist  = 0;
             double longDist = 0;
             object_->FreeSpaceDistance(target_object_, &latDist, &longDist);
-            distance = longDist;
+            distance = latDist;
         }
         else
         {
@@ -1959,17 +1960,10 @@ void LatDistanceAction::Start(double simTime)
             distance = object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
 
             // Just interested in the x-axis component of the distance
-            distance = x;
+            distance = y;
         }
 
-        if (distance < 0.0)
-        {
-            displacement_ = DisplacementType::LEADING;
-        }
-        else
-        {
-            displacement_ = DisplacementType::TRAILING;
-        }
+        (distance < 0.0) ? displacement_ = DisplacementType::RIGHT_TO_REFERENCED_ENTITY : displacement_ = DisplacementType::LEFT_TO_REFERENCED_ENTITY;
     }
 
     OSCAction::Start(simTime);
@@ -1979,7 +1973,7 @@ void LatDistanceAction::Step(double simTime, double)
 {
     if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
-        // longitudinal motion controlled elsewhere
+        // lateral motion controlled elsewhere
         return;
     }
 
@@ -1987,106 +1981,56 @@ void LatDistanceAction::Step(double simTime, double)
     sim_time_ = simTime;
 
     // Find out current distance
-    double distance;
+    double measured_distance;
     if (freespace_)
     {
         double latDist  = 0;
         double longDist = 0;
         object_->FreeSpaceDistance(target_object_, &latDist, &longDist);
-        distance = longDist;
+        measured_distance = latDist;
     }
     else
     {
-        object_->pos_.Distance(&target_object_->pos_, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, distance);
+        object_->pos_.Distance(&target_object_->pos_, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, measured_distance);
     }
 
-    double speed_diff = object_->speed_ - target_object_->speed_;
-    double acc;
-    double jerk            = 0.0;
-    double spring_constant = 0.4;
-    double dc;
     double requested_dist = 0;
 
     if (dist_type_ == DistType::DISTANCE)
     {
         requested_dist = distance_;
     }
-    if (dist_type_ == DistType::TIME_GAP)
-    {
-        // Convert requested time gap (seconds) to distance (m)
-        requested_dist = abs(target_object_->speed_) * distance_;
-    }
 
-    if (displacement_ == DisplacementType::TRAILING)
+    if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
     {
         requested_dist = abs(requested_dist);
     }
-    else if (displacement_ == DisplacementType::LEADING)
+    else if (displacement_ == DisplacementType::RIGHT_TO_REFERENCED_ENTITY)
     {
         requested_dist = -abs(requested_dist);
     }
 
-    double distance_diff = distance - requested_dist;
+    double distance_diff = 0;
+    if (!freespace_)
+        distance_diff = requested_dist + measured_distance;
+    // else
+    //     distance_diff = 
 
-    if (continuous_ == false && fabs(distance_diff) < LONGITUDINAL_DISTANCE_THRESHOLD)
+    if (continuous_ == false && fabs(distance_diff) < LATERAL_DISTANCE_THRESHOLD)
     {
-        // Reached requested distance, quit action
+        // Reached requested lateral distance, quit action
         OSCAction::End();
     }
 
     if (dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
     {
         // Set position according to distance and copy speed of target vehicle
-        object_->pos_.MoveAlongS(distance_diff);
-        object_->SetSpeed(target_object_->speed_);
+        object_->pos_.MoveAlongS(0, distance_diff, -1, true, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true);
+        // object_->SetSpeed(target_object_->speed_);
     }
     else
     {
         // Apply damped spring model with critical/optimal damping factor
-        // Adjust tension in spring in proportion to the max acceleration and max deceleration
-        double tension = distance_diff < 0.0 ? dynamics_.max_acceleration_ : dynamics_.max_deceleration_;
-
-        double spring_constant_adjusted = tension * spring_constant;
-        dc                              = 2 * sqrt(spring_constant_adjusted);
-        acc                             = distance_diff * spring_constant_adjusted - speed_diff * dc;
-        if (acc < 0.0)
-        {
-            jerk = -dynamics_.max_deceleration_rate_;
-            if (acc < -dynamics_.max_deceleration_)
-            {
-                acc = -dynamics_.max_deceleration_;
-            }
-        }
-        else
-        {
-            jerk = dynamics_.max_acceleration_rate_;
-            if (acc > dynamics_.max_acceleration_)
-            {
-                acc = dynamics_.max_acceleration_;
-            }
-        }
-
-        // Apply simple linear model for jerk
-        if (jerk < 0.0 && acc < acceleration_)
-        {
-            acc = MAX(acceleration_ + jerk * dt, acc);
-        }
-        else if (jerk > 0.0 && acc > acceleration_)
-        {
-            acc = MIN(acceleration_ + jerk * dt, acc);
-        }
-
-        acceleration_ = acc;
-        object_->SetSpeed(object_->GetSpeed() + acceleration_ * dt);
-
-        if (object_->GetSpeed() > dynamics_.max_speed_)
-        {
-            object_->SetSpeed(dynamics_.max_speed_);
-        }
-        else if (object_->GetSpeed() < -dynamics_.max_speed_)
-        {
-            object_->SetSpeed(-dynamics_.max_speed_);
-        }
     }
 }
 
