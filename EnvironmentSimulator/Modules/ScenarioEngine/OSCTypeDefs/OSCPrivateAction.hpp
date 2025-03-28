@@ -529,14 +529,13 @@ namespace scenarioengine
         typedef enum
         {
             DISTANCE,
-            TIME_GAP,
         } DistType;
 
         typedef enum
         {
-            NONE,
-            TRAILING,
-            LEADING,
+            NONE, // Needed?
+            LEFT_TO_REFERENCED_ENTITY,
+            RIGHT_TO_REFERENCED_ENTITY,
             ANY
         } DisplacementType;
 
