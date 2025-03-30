@@ -42,10 +42,9 @@ runs:
       run: curl.exe -L --output wglinfo64.exe --url https://github.com/gkv311/wglinfo/releases/download/22_03/wglinfo64.exe
 
     - name: Output glxinfo - Ubuntu
-      uses: coactions/setup-xvfb@v1.0.1
       if: runner.os == 'Linux'
-      with:
-        run: glxinfo
+      shell: bash
+      run: xvfb-run glxinfo
 
     - name: Output wglinfo - Windows
       if: runner.os == 'Windows'
@@ -53,3 +52,8 @@ runs:
       env:
         GALLIUM_DRIVER: llvmpipe
       run: wglinfo64
+
+    - name: Install cppcheck
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo apt-get install -q -y cppcheck

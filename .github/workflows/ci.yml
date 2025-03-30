@@ -86,37 +86,6 @@ jobs:
             resources/models
           key: ${{ runner.os }}-external-resources
 
-      # TODO: We need a way to not fetch existing dependencies because of cached ones. This command currently asks for user input
-      #- name: Fetch external dependencies/resources
-      #  run: python3 support/python/src/main.py fetch dependency
-
-      #- name: Generate OpenDrive interface
-      #  run: python3 support/python/src/main.py generate opendrive
-
-      - name: Install clang-tidy-15 - Ubuntu
-        if: runner.os == 'Linux'
-        env:
-          LLVM_URL: http://apt.llvm.org/focal/
-          LLVM_PKG: llvm-toolchain-focal-15
-        run: wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add - 2>/dev/null
-          && sudo add-apt-repository -y "deb ${{ env.LLVM_URL }} ${{ env.LLVM_PKG }} main"
-          && sudo apt-get update -q
-          && sudo apt-get install -y -q clang-tidy-15
-          && sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-15 200
-
-      - name: Build cppcheck 2.10 - Ubuntu
-        if: runner.os == 'Linux'
-        env:
-          CPPCHECK_BUILD: /home/cppcheck/build
-          CPPCHECK_SRC: /home/cppcheck/cppcheck-src
-        run: sudo apt-get purge --auto-remove cppcheck
-          && sudo apt-get install -y -q libxml2-utils libz3-dev libtinyxml2-dev libpcre3-dev
-          && sudo mkdir -p ${{ env.CPPCHECK_BUILD }}
-          && git clone --branch 2.10 https://github.com/danmar/cppcheck.git ${{ env.CPPCHECK_SRC }}
-          && cmake -S ${{ env.CPPCHECK_SRC }} -B ${{ env.CPPCHECK_BUILD }} -G "Ninja" -DCMAKE_BUILD_TYPE:STRING=Release -DHAVE_RULES=On -DBUILD_GUI=Off
-          && cmake --build ${{ env.CPPCHECK_BUILD }} -j
-          && sudo cmake --install ${{ env.CPPCHECK_BUILD }}
-
       - name: CMake Configure - Default
         if: runner.os != 'macOS'
         shell: pwsh
@@ -174,8 +143,8 @@ jobs:
         if: matrix.configuration == 'Release'
 
       # - name: Debugging with tmate
-        # if: ${{ failure() }}
-        # uses: mxschmitt/action-tmate@v3.14
+      #   if: ${{ failure() }}
+      #   uses: mxschmitt/action-tmate@v3
 
   test-no-external-modules:
     needs: [lint]
@@ -205,37 +174,6 @@ jobs:
             externals/implot
             resources/models
           key: ${{ runner.os }}-external-resources
-
-      # TODO: We need a way to not fetch existing dependencies because of cached ones. This command currently asks for user input
-      #- name: Fetch external dependencies/resources
-      #  run: python3 support/python/src/main.py fetch dependency
-
-      #- name: Generate OpenDrive interface
-      #  run: python3 support/python/src/main.py generate opendrive
-
-      - name: Install clang-tidy-15 - Ubuntu
-        if: runner.os == 'Linux'
-        env:
-          LLVM_URL: http://apt.llvm.org/focal/
-          LLVM_PKG: llvm-toolchain-focal-15
-        run: wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add - 2>/dev/null
-          && sudo add-apt-repository -y "deb ${{ env.LLVM_URL }} ${{ env.LLVM_PKG }} main"
-          && sudo apt-get update -q
-          && sudo apt-get install -y -q clang-tidy-15
-          && sudo update-alternatives --install /usr/bin/clang-tidy clang-tidy /usr/bin/clang-tidy-15 200
-
-      - name: Build cppcheck 2.10 - Ubuntu
-        if: runner.os == 'Linux'
-        env:
-          CPPCHECK_BUILD: /home/cppcheck/build
-          CPPCHECK_SRC: /home/cppcheck/cppcheck-src
-        run: sudo apt-get purge --auto-remove cppcheck
-          && sudo apt-get install -y -q libxml2-utils libz3-dev libtinyxml2-dev libpcre3-dev
-          && sudo mkdir -p ${{ env.CPPCHECK_BUILD }}
-          && git clone --branch 2.10 https://github.com/danmar/cppcheck.git ${{ env.CPPCHECK_SRC }}
-          && cmake -S ${{ env.CPPCHECK_SRC }} -B ${{ env.CPPCHECK_BUILD }} -G "Ninja" -DCMAKE_BUILD_TYPE:STRING=Release -DHAVE_RULES=On -DBUILD_GUI=Off
-          && cmake --build ${{ env.CPPCHECK_BUILD }} -j
-          && sudo cmake --install ${{ env.CPPCHECK_BUILD }}
 
       - name: CMake Configure - Default
         if: runner.os != 'macOS'

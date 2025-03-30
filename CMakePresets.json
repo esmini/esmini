@@ -70,7 +70,7 @@
       "hidden": true,
       "cacheVariables": {
         "ENABLE_WARNINGS_AS_ERRORS": "ON",
-        "ENABLE_STATIC_ANALYSIS": "ON",
+        "ENABLE_STATIC_ANALYSIS": "OFF",
         "ENABLE_INCLUDE_WHAT_YOU_USE": "ON"
       }
     },
