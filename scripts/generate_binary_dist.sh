@@ -161,6 +161,7 @@ docs/commands.txt \
 LICENSE \
 release_notes.md \
 version.txt \
+config.yml \
 bin/esmini?(.exe) \
 bin/odrviewer?(.exe) \
 bin/replayer?(.exe) \
