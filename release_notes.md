@@ -1,5 +1,51 @@
 ## esmini release notes
 
+### 2025-03-31 Version 2.46.0
+
+API changes:
+- Update OSI API, add extended options for static groundtruth data handling
+  - see [User guide - OSI data](https://esmini.github.io/#_osi_data) for detailed info
+- Extend RoadInfo structs with road type and road rule
+  - see example in [esminiLib.hpp](https://github.com/esmini/esmini/blob/a059a432144445b44f54befaa8a40af9d1f9a155/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L101-L102)
+  - corresponding changes in esminiRMlib and the C# wrappers
+
+Improvements and fixes:
+- Support specifying options in yaml config file
+  - see [User guide - About options and config files](https://esmini.github.io/#_about_options_and_config_files) for info and examples
+- OSI dynamic groundtruth can be cropped around one or multiple objects
+  - API, see [SE_CropOSIDynamicGroundTruth()](https://github.com/esmini/esmini/blob/a059a432144445b44f54befaa8a40af9d1f9a155/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1452-L1459)
+  - commandline, see `--osi_crop_dynamic` in [User guide - esmini reference](https://esmini.github.io/#_esmini)
+- Refactor route waypoint handling for readability and performance
+- Add devcontainer.json ([PR #670](https://github.com/esmini/esmini/pull/670))
+- Fix parameter actions to let their parent events terminate ([PR #678](https://github.com/esmini/esmini/pull/678))
+- Add efficient distance mapping function, [SE_SimpleGetDistanceToObject()](https://github.com/esmini/esmini/blob/a059a432144445b44f54befaa8a40af9d1f9a155/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1281-L1298)
+  - takes distance to target into account when to do updates
+  - avoids duplicate calculations
+  - used by the [NaturalDriver controller](https://esmini.github.io/#_naturaldrivercontroller)
+- Add slice road ([slice_xodr.py](https://github.com/esmini/esmini/blob/dev/scripts/scenario_scripts/slice_xodr.py)) and road utility ([road_helpers.py](https://github.com/esmini/esmini/blob/dev/scripts/scenario_scripts/road_helpers.py)) scripts
+- Fix ghost setup, only move triggers for acts including private actions ([PR #680](https://github.com/esmini/esmini/pull/680))
+- Reset condition states at event restart ([PR #683](https://github.com/esmini/esmini/issues/683))
+- Improve road parser error and warning messages
+  - more use of string ID, also check junction to junction connections
+- Fix issue when excluding replayer from build, still build osiviewer and dat2csv
+
+CI updates:
+- Add CI performance regression test suite
+  - the script [performance_test.py](https://github.com/esmini/esmini/blob/dev/test/performance_test.py) can be used for various performance checks
+- use standard builds for glxinfo and cppcheck
+
+Build config changes:
+- Use Ubuntu xvfb-run instead of setup-xvfb GitHub action
+- Bump to Ubuntu 22.04 gcc9 and Windows server 2022
+- Add some build options ([PR #673](https://github.com/esmini/esmini/pull/673))
+  - skip download external dependencies
+  - skip build examples
+  - skip build odrplot
+  - for all options, see [CMakeLists.txt](https://github.com/esmini/esmini/blob/dev/CMakeLists.txt)
+- bump cmake min version required (3.10)
+- sync static code analysis enable state with actual state
+
+
 ### 2025-02-21 Version 2.45.3
 
 Improvements and fixes:

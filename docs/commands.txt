@@ -80,6 +80,22 @@ Options:
       OpenSCENARIO XML string
   --osg_screenshot_event_handler
       Revert to OSG default jpg images ('c'/'C' keys handler)
+  --osi_crop_dynamic <id,radius>...
+      Crop the dynamic osi data around the given object id with given radius
+  --osi_exclude_ghost
+      Excludes ghost from osi dynamic osi ground truth
+  --osi_file [filename]  (default if value omitted: ground_truth.osi)
+      Save osi trace file
+  --osi_freq <frequency>
+      Decrease OSI file entries, e.g. --osi_freq 2 -> OSI written every two simulation steps
+  --osi_lines
+      Show OSI road lines. Toggle key 'u'
+  --osi_points
+      Show OSI road points. Toggle key 'y'
+  --osi_receiver_ip [IP address]  (default if value omitted: 127.0.0.1)
+      IP address where to send OSI UDP packages
+  --osi_static_reporting [mode]  (default if value omitted: 0)
+      Decide how the static data should be reported, 0=Default (first frame), 1=API (expose on API) 2=API_AND_LOG (Always log)
   --param_dist <filename>
       Run variations of the scenario according to specified parameter distribution file
   --param_permutation <index>
@@ -90,6 +106,8 @@ Options:
       Search path prefix for assets, e.g. OpenDRIVE files.
   --player_server
       Launch UDP server for action/command injection
+  --plot [mode]  (default if value omitted: asynchronous)
+      Show window with line-plots of interesting data. Modes: asynchronous, synchronous
   --record [filename]  (default if value omitted: sim.dat)
       Record position data into a file for later replay
   --road_features [mode]  (default if value omitted: on)
