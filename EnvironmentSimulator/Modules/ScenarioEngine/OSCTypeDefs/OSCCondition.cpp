@@ -275,6 +275,7 @@ bool EvalDone(bool result, TrigByEntity::TriggeringEntitiesRule rule)
 void OSCCondition::Reset()
 {
     history_.Reset();
+    cond_value_ = false;
 }
 
 bool OSCCondition::Evaluate(double sim_time)
