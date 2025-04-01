@@ -201,6 +201,7 @@ void ControllerUDPDriver::Step(double timeStep)
 
     if (receivedNrOfBytes > 0)
     {
+        // Message received, handle it
         lastMsg = msg;
 
         // printf("version %d objectId %d framenr %d inputMode %d/%s \n",
@@ -291,57 +292,64 @@ void ControllerUDPDriver::Step(double timeStep)
             LOG_ERROR("ControllerExternalDriverModel received {} bytes and unexpected input mode {}", retval, msg.header.inputMode);
         }
     }
-    else if (timeStep > SMALL_NUMBER &&
-             ((lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_H) && lastMsg.message.stateH.deadReckon == 1) ||
-              (lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH) && lastMsg.message.stateXYH.deadReckon == 1) ||
-              (lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR) && lastMsg.message.stateXYZHPR.deadReckon == 1)))
+
+    if (timeStep > SMALL_NUMBER)
     {
-        double speed = 0.0;
-        double h     = 0.0;
-
-        if (lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_H))
+        if (
+            // following states, apply dead reckoning always (when enabled)
+            (lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_H) && lastMsg.message.stateH.deadReckon) ||
+            // following states, only apply dead reckoning when no message has been received
+            (receivedNrOfBytes == 0 &&
+             ((lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH) && lastMsg.message.stateXYH.deadReckon) ||
+              (lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR) && lastMsg.message.stateXYH.deadReckon))))
         {
-            speed = lastMsg.message.stateH.speed;
-            h     = lastMsg.message.stateH.h;
+            // No message received, but dead reckoning enabled. Update position based on speed and heading
+            double speed = 0.0;
+            double h     = 0.0;
+
+            if (lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_H))
+            {
+                speed = lastMsg.message.stateH.speed;
+                h     = lastMsg.message.stateH.h;
+            }
+            else if (lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH))
+            {
+                speed = lastMsg.message.stateXYH.speed;
+                h     = lastMsg.message.stateXYH.h;
+            }
+            else if (lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR))
+            {
+                speed = lastMsg.message.stateXYZHPR.speed;
+                h     = lastMsg.message.stateXYZHPR.h;
+            }
+            else
+            {
+                LOG_ERROR_AND_QUIT("Unexpected msg type {}", lastMsg.header.inputMode);
+            }
+
+            double ds = speed * timeStep;
+            double dx = ds * cos(h);
+            double dy = ds * sin(h);
+
+            gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, object_->pos_.GetX() + dx, object_->pos_.GetY() + dy, vehicle_.heading_);
         }
-        else if (lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH))
+        else if (lastMsg.header.inputMode == static_cast<int>(InputMode::DRIVER_INPUT))
         {
-            speed = lastMsg.message.stateXYH.speed;
-            h     = lastMsg.message.stateXYH.h;
+            // In driver input mode the vehicle is updated continuously wrt latest input
+            vehicle_.DrivingControlAnalog(timeStep,
+                                          lastMsg.message.driverInput.throttle - lastMsg.message.driverInput.brake,
+                                          lastMsg.message.driverInput.steeringAngle);
+
+            // Register updated vehicle position
+            gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
+            gateway_->updateObjectSpeed(object_->id_, 0.0, vehicle_.speed_);
+            gateway_->updateObjectWheelAngle(object_->id_, 0.0, msg.message.driverInput.steeringAngle);
+
+            // Fetch Z and Pitch from OpenDRIVE position
+            roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
+            vehicle_.SetZ(pos->GetZ());
+            vehicle_.SetPitch(pos->GetP());
         }
-        else if (lastMsg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR))
-        {
-            speed = lastMsg.message.stateXYZHPR.speed;
-            h     = lastMsg.message.stateXYZHPR.h;
-        }
-        else
-        {
-            LOG_ERROR_AND_QUIT("Unexpected msg type {}", lastMsg.header.inputMode);
-        }
-
-        double ds = speed * timeStep;
-        double dx = ds * cos(h);
-        double dy = ds * sin(h);
-
-        gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, object_->pos_.GetX() + dx, object_->pos_.GetY() + dy, vehicle_.heading_);
-    }
-
-    if (lastMsg.header.inputMode == static_cast<int>(InputMode::DRIVER_INPUT))
-    {
-        // In driver input mode the vehicle is updated continuously wrt latest input
-        vehicle_.DrivingControlAnalog(timeStep,
-                                      lastMsg.message.driverInput.throttle - lastMsg.message.driverInput.brake,
-                                      lastMsg.message.driverInput.steeringAngle);
-
-        // Register updated vehicle position
-        gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
-        gateway_->updateObjectSpeed(object_->id_, 0.0, vehicle_.speed_);
-        gateway_->updateObjectWheelAngle(object_->id_, 0.0, msg.message.driverInput.steeringAngle);
-
-        // Fetch Z and Pitch from OpenDRIVE position
-        roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
-        vehicle_.SetZ(pos->GetZ());
-        vehicle_.SetPitch(pos->GetP());
     }
 
     Controller::Step(timeStep);

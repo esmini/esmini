@@ -47,6 +47,7 @@ import argparse
 from tkinter import *
 import tkinter.ttk as ttk
 from udp_osi_common import *
+import time
 
 DEFAULT_PORT = 53995
 
@@ -177,6 +178,8 @@ class Application(Frame):
     def __init__(self, master=None):
 
         Frame.__init__(self, master)
+        self.start_time = time.time()
+        self.package_counter = 0
 
         # Create the parser
         parser = argparse.ArgumentParser(description='UDP driver model')
@@ -386,13 +389,17 @@ class Application(Frame):
         self.master.minsize(self.master.winfo_width(), self.master.winfo_height())
 
     def updateContinuousMode(self):
+        self.start_time = time.time()
+        self.package_counter = 0
         if self.continuous.get():
             self.sendMessages()
 
     def sendMessages(self):
-
         for obj in self.object:
             obj.sendMessage()
+            self.package_counter += 1
+            elapsed_time = time.time() - self.start_time
+            # print("time {:.5f} count {} fps {:.0f}".format(elapsed_time, self.package_counter, self.package_counter/elapsed_time))
 
         if self.continuous.get():
             # Sleep for a while according to fps before next send
