@@ -252,6 +252,14 @@ public:
         return res;
     }
 
+    SE_Vector operator*(double const& s) const
+    {
+        SE_Vector res;
+        res.x_ = x_ * s;
+        res.y_ = y_ * s;
+        return res;
+    }
+
     SE_Vector& operator+=(SE_Vector const& p)
     {
         this->x_ += p.x_;
