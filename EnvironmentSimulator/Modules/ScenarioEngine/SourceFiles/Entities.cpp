@@ -600,6 +600,21 @@ double Object::PointCollision(double x, double y)
 
     return true;
 }
+// Subtract half-widths of both objects to get free space
+// return lateral_distance - (obj1.width / 2.0) - (obj2.width / 2.0);
+
+void Object::GetPosForFreespace(Object* target, double desired_freespace, double& x, double& y)
+{
+    double dx = this->pos_.GetX() - target->pos_.GetX();
+    double dy = this->pos_.GetY() - target->pos_.GetY();
+
+    double lat_x = -sin(this->pos_.GetH());
+    double lat_y = cos(this->pos_.GetH());
+
+    double lat_dist = dx * lat_x + dy * lat_y;
+
+    std::cout << "lat_dist: " << lat_dist << std::endl;
+}
 
 double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDist)
 {

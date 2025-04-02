@@ -299,6 +299,8 @@ namespace scenarioengine
         */
         double PointCollision(double x, double y);
 
+        void GetPosForFreespace(Object* target, double desired_freespace, double& x, double& y);
+
         /**
                 Measure the free-space distance to provided target object
                 based on closest distance between the bounding boxes
