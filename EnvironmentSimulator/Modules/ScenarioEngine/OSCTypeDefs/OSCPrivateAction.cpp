@@ -2010,13 +2010,19 @@ void LatDistanceAction::Step(double simTime, double)
         requested_dist = -abs(requested_dist);
     }
 
-    double distance_diff = 0;
+    double move_x = 0.0;
+    double move_y = 0.0;
     if (!freespace_)
-        distance_diff = requested_dist + measured_distance;
-    // else
-    //     distance_diff = 
-
-    if (continuous_ == false && fabs(distance_diff) < LATERAL_DISTANCE_THRESHOLD)
+    {
+        double distance_diff = requested_dist + measured_distance;
+        move_x = object_->pos_.GetX() - (std::sin(object_->pos_.GetH()) * distance_diff);
+        move_y = object_->pos_.GetY() + (std::cos(object_->pos_.GetH()) * distance_diff);
+    }
+    else
+    {
+        // distance_diff = requested_dist + measured_distance;
+    }
+    if (continuous_ == false && sqrt(pow(move_x, 2) + pow(move_y, 2)) < LATERAL_DISTANCE_THRESHOLD)
     {
         // Reached requested lateral distance, quit action
         OSCAction::End();
@@ -2025,8 +2031,10 @@ void LatDistanceAction::Step(double simTime, double)
     if (dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
     {
         // Set position according to distance and copy speed of target vehicle
-        object_->pos_.MoveAlongS(0, distance_diff, -1, true, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true);
-        // object_->SetSpeed(target_object_->speed_);
+        // object_->pos_.MoveAlongS(0, distance_diff, -1, true, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true);
+        double temp_speed = object_->GetSpeed();
+        object_->pos_.SetInertiaPos(move_x, move_y, object_->pos_.GetH());
+        object_->SetSpeed(temp_speed);
     }
     else
     {
