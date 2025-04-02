@@ -2010,17 +2010,18 @@ void LatDistanceAction::Step(double simTime, double)
         requested_dist = -abs(requested_dist);
     }
 
-    double move_y = 0.0;
+    double target_y = 0.0;
+    double distance_diff = 0.0;
     if (!freespace_)
     {
-        double distance_diff = requested_dist + measured_distance;
-        move_y = object_->pos_.GetY() + std::cos(object_->pos_.GetH()) * distance_diff;
+        distance_diff = requested_dist + measured_distance;
+        target_y = object_->pos_.GetY() + std::cos(object_->pos_.GetH()) * distance_diff;
     }
     else
     {
         // distance_diff = requested_dist + measured_distance;
     }
-    if (continuous_ == false && fabs(move_y) < LATERAL_DISTANCE_THRESHOLD)
+    if (continuous_ == false && fabs(distance_diff) < LATERAL_DISTANCE_THRESHOLD)
     {
         // Reached requested lateral distance, quit action
         OSCAction::End();
@@ -2029,14 +2030,34 @@ void LatDistanceAction::Step(double simTime, double)
     if (dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
     {
         // Set position according to distance and copy speed of target vehicle
-        // object_->pos_.MoveAlongS(0, distance_diff, -1, true, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true);
         double temp_speed = object_->GetSpeed();
-        object_->pos_.SetInertiaPos(object_->pos_.GetX(), move_y, object_->pos_.GetH());
+        object_->pos_.SetInertiaPos(object_->pos_.GetX(), target_y, object_->pos_.GetH());
         object_->SetSpeed(temp_speed);
     }
     else
-    {
-        // Apply damped spring model with critical/optimal damping factor
+    {   // Acc is m/s².
+        double d_pos = target_y - object_->pos_.GetY();
+
+        // Compute initial new position
+        double new_pos = object_->pos_.GetY() + target_y * dt;
+    
+        // Compute lateral speed based on new position
+        double computed_speed = abs((new_pos - object_->pos_.GetY()) / dt);
+    
+        // Cap speed if necessary
+        if (computed_speed > dynamics_.max_speed_) 
+        {
+            new_pos = object_->pos_.GetY() + (d_pos > 0 ? 1 : -1) * dynamics_.max_speed_ * dt;
+        }
+    
+        // If within threshold, snap to target_y
+        if (abs(object_->pos_.GetY() - target_y) < LATERAL_DISTANCE_THRESHOLD)
+        {
+            new_pos = target_y;
+        }
+        double temp_speed = object_->GetSpeed();
+        object_->pos_.SetInertiaPos(object_->pos_.GetX(), new_pos, object_->pos_.GetH()); 
+        object_->SetSpeed(temp_speed);
     }
 }
 
