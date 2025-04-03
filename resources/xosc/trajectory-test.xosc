@@ -141,7 +141,7 @@
                                                 </Shape>
                                             </Trajectory>
                                             <TimeReference>
-                                                <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
+                                                <None/>
                                             </TimeReference>
                                             <TrajectoryFollowingMode followingMode="position"/>
                                         </FollowTrajectoryAction>
