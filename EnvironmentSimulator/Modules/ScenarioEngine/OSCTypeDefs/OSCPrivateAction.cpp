@@ -2036,26 +2036,42 @@ void LatDistanceAction::Step(double simTime, double)
     }
     else
     {
-        // Compute initial new position
-        double new_pos = object_->pos_.GetY() + target_y * dt;
-    
-        // Compute lateral speed based on new position
-        double computed_speed = abs((new_pos - object_->pos_.GetY()) / dt);
-        // double computed_acc = (computed_speed - object_->pos_.GetVelY()) / dt;
-
         // Cap speed if necessary
         double car_lateral_speed = std::min(object_->GetSpeed(), dynamics_.max_speed_);
+
+        // Find position difference
         double delta_pos = target_y - object_->pos_.GetY();
-        new_pos = object_->pos_.GetY() + std::cos(object_->pos_.GetH()) * (delta_pos > 0 ? 1 : -1) * car_lateral_speed * dt;
-    
+
+        // Compute desired velocity
+        double desired_velocity = (delta_pos > 0 ? 1 : -1) * car_lateral_speed;
+
+        // Compute required acceleration
+        double required_acceleration = (desired_velocity - object_->pos_.GetVelLat()) / dt;
+
+        // Cap acceleration if necessary
+        if (required_acceleration > dynamics_.max_acceleration_) 
+        {
+            desired_velocity = object_->pos_.GetVelLat() + dynamics_.max_acceleration_ * dt;
+        } 
+        else if (required_acceleration < -dynamics_.max_deceleration_)
+        {
+            desired_velocity = object_->pos_.GetVelLat() - dynamics_.max_deceleration_ * dt;
+        }
+
+        // Compute new position
+        double new_pos = object_->pos_.GetY() + desired_velocity * dt;
+
         // If within threshold, snap to target_y
-        if (abs(object_->pos_.GetY() - target_y) < LATERAL_DISTANCE_THRESHOLD)
+        if (abs(object_->pos_.GetY() - target_y) < LATERAL_DISTANCE_THRESHOLD) 
         {
             new_pos = target_y;
         }
-        // double temp_speed = object_->GetSpeed();
-        object_->pos_.SetInertiaPos(object_->pos_.GetX(), new_pos, std::atan2(new_pos - object_->pos_.GetY(), object_->pos_.GetX())); 
-        object_->SetSpeed(object_->GetSpeed());
+
+        // Update object position
+        object_->pos_.SetInertiaPos(object_->pos_.GetX(), new_pos, object_->pos_.GetH());
+
+        // Store lateral velocity for next step
+        // object_->SetVel(object_->pos_.GetVelLong(), desired_velocity, 0.0);
     }
 }
 
