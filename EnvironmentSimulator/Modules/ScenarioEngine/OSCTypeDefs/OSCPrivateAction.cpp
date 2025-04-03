@@ -2035,29 +2035,27 @@ void LatDistanceAction::Step(double simTime, double)
         object_->SetSpeed(temp_speed);
     }
     else
-    {   // Acc is m/s².
-        double d_pos = target_y - object_->pos_.GetY();
-
+    {
         // Compute initial new position
         double new_pos = object_->pos_.GetY() + target_y * dt;
     
         // Compute lateral speed based on new position
         double computed_speed = abs((new_pos - object_->pos_.GetY()) / dt);
-    
+        // double computed_acc = (computed_speed - object_->pos_.GetVelY()) / dt;
+
         // Cap speed if necessary
-        if (computed_speed > dynamics_.max_speed_) 
-        {
-            new_pos = object_->pos_.GetY() + (d_pos > 0 ? 1 : -1) * dynamics_.max_speed_ * dt;
-        }
+        double car_lateral_speed = std::min(object_->GetSpeed(), dynamics_.max_speed_);
+        double delta_pos = target_y - object_->pos_.GetY();
+        new_pos = object_->pos_.GetY() + std::cos(object_->pos_.GetH()) * (delta_pos > 0 ? 1 : -1) * car_lateral_speed * dt;
     
         // If within threshold, snap to target_y
         if (abs(object_->pos_.GetY() - target_y) < LATERAL_DISTANCE_THRESHOLD)
         {
             new_pos = target_y;
         }
-        double temp_speed = object_->GetSpeed();
-        object_->pos_.SetInertiaPos(object_->pos_.GetX(), new_pos, object_->pos_.GetH()); 
-        object_->SetSpeed(temp_speed);
+        // double temp_speed = object_->GetSpeed();
+        object_->pos_.SetInertiaPos(object_->pos_.GetX(), new_pos, std::atan2(new_pos - object_->pos_.GetY(), object_->pos_.GetX())); 
+        object_->SetSpeed(object_->GetSpeed());
     }
 }
 
