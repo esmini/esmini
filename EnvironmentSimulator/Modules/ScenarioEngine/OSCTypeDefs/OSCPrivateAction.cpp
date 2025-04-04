@@ -2045,22 +2045,21 @@ void LatDistanceAction::Step(double simTime, double)
         double stopping_distance = object_->pos_.GetLatStoppingDistance(dynamics_.max_deceleration_);
 
         // Determine if braking is needed earlier
-        bool should_decelerate = (std::abs(delta_pos) <= stopping_distance); // || (move_direction != SIGN(current_velocity));
+        bool should_decelerate = (std::abs(delta_pos) <= stopping_distance);
 
         // Apply acceleration constraints
-        double desired_velocity;
         double required_acceleration;
         if (!should_decelerate) 
         {
-            desired_velocity = move_direction * std::min(object_->GetSpeed(), dynamics_.max_speed_);
-            required_acceleration = (desired_velocity - current_velocity) / dt;
-            required_acceleration = SIGN(required_acceleration) * std::min(std::abs(required_acceleration), dynamics_.max_acceleration_);
+            double desired_velocity = move_direction * std::min(object_->GetSpeed(), dynamics_.max_speed_);
+            double acceleration = (desired_velocity - current_velocity) / dt;
+            required_acceleration = SIGN(acceleration) * std::min(std::abs(acceleration), dynamics_.max_acceleration_);
         } 
         else 
         {
-            desired_velocity = 0.0; //move_direction * std::min(object_->GetSpeed(), dynamics_.max_speed_);
-            required_acceleration = (desired_velocity - current_velocity) / dt;
-            required_acceleration = SIGN(required_acceleration) * std::min(std::abs(required_acceleration), dynamics_.max_deceleration_);
+            double desired_velocity = 0.0; //move_direction * std::min(object_->GetSpeed(), dynamics_.max_speed_);
+            double deceleration = (desired_velocity - current_velocity) / dt;
+            required_acceleration = SIGN(deceleration) * std::min(std::abs(deceleration), dynamics_.max_deceleration_);
         }
 
         // Compute new velocity with constraints
