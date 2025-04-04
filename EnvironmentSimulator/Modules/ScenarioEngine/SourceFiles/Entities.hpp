@@ -261,6 +261,7 @@ namespace scenarioengine
             return type_;
         }
 
+        std::vector<SE_Vector> GetCorners();
 
         /**
                 Move current position along the road or route (if assigned)

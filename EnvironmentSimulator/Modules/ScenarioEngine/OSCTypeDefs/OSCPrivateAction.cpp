@@ -1982,17 +1982,7 @@ void LatDistanceAction::Step(double simTime, double)
 
     // Find out current distance
     double measured_distance;
-    if (freespace_)
-    {
-        double latDist  = 0;
-        double longDist = 0;
-        object_->FreeSpaceDistance(target_object_, &latDist, &longDist);
-        measured_distance = latDist;
-    }
-    else
-    {
-        object_->pos_.Distance(&target_object_->pos_, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, measured_distance);
-    }
+    object_->pos_.Distance(&target_object_->pos_, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, measured_distance);
 
     double requested_dist = 0;
 
@@ -2019,7 +2009,30 @@ void LatDistanceAction::Step(double simTime, double)
     }
     else
     {
-        // distance_diff = requested_dist + measured_distance;
+        auto ego_corners = object_->GetCorners();
+        auto target_corners = target_object_->GetCorners();
+
+        auto ego_lat_axis = SE_Vector(-std::sin(object_->pos_.GetH()), std::cos(object_->pos_.GetH()));
+
+        double ego_min = LARGE_NUMBER;
+        double ego_max = -LARGE_NUMBER;
+        double target_min = LARGE_NUMBER;
+        double target_max = -LARGE_NUMBER;
+
+        for (size_t i = 0; i < ego_corners.size(); ++i)
+        {
+            double ego_proj = (ego_corners[i] - SE_Vector(object_->pos_.GetX(), object_->pos_.GetY())).Dot(ego_lat_axis);
+            ego_min = std::min(ego_min, ego_proj);
+            ego_max = std::max(ego_max, ego_proj);
+
+            double target_proj = (target_corners[i] - SE_Vector(object_->pos_.GetX(), object_->pos_.GetY())).Dot(ego_lat_axis);
+            target_min = std::min(target_min, target_proj);
+            target_max = std::max(target_max, target_proj);
+        }
+
+        bool overlap = !(ego_max < target_min || target_max < ego_min);
+        double overlap_amount = std::min(ego_max, target_max) - std::max(ego_min, target_min);
+        double lateral_freespace = overlap ? 0.0 : std::max(target_min - ego_max, ego_min - target_max);
     }
     if (continuous_ == false && fabs(distance_diff) < LATERAL_DISTANCE_THRESHOLD)
     {
@@ -2077,7 +2090,7 @@ void LatDistanceAction::Step(double simTime, double)
         }
 
         // Update object position
-        object_->pos_.SetInertiaPos(object_->pos_.GetX(), new_pos, object_->pos_.GetH());
+        // object_->pos_.SetInertiaPos(object_->pos_.GetX(), new_pos, object_->pos_.GetH());
 
         // Store lateral velocity for next step
         object_->SetVel(object_->pos_.GetVelLong(), new_velocity, 0.0);
