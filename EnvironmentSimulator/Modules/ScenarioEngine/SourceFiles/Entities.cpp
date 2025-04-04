@@ -114,6 +114,23 @@ void Object::SetStandStill(bool state, double time)
     }
 }
 
+std::vector<SE_Vector> Object::GetCorners()
+{
+    SE_Vector bb_center(this->boundingbox_.center_.x_, this->boundingbox_.center_.y_);
+    SE_Vector bb_dim(this->boundingbox_.dimensions_.length_, this->boundingbox_.dimensions_.width_);
+
+    SE_Vector front_right =
+        SE_Vector(this->pos_.GetX(), this->pos_.GetY()) + SE_Vector(bb_center.x() + bb_dim.x() / 2.0, bb_center.y() - bb_dim.y() / 2.0).Rotate(this->pos_.GetH());
+    SE_Vector front_left =
+        SE_Vector(this->pos_.GetX(), this->pos_.GetY()) + SE_Vector(bb_center.x() + bb_dim.x() / 2.0, bb_center.y() + bb_dim.y() / 2.0).Rotate(this->pos_.GetH());
+    SE_Vector rear_left =
+        SE_Vector(this->pos_.GetX(), this->pos_.GetY()) + SE_Vector(bb_center.x() - bb_dim.x() / 2.0, bb_center.y() + bb_dim.y() / 2.0).Rotate(this->pos_.GetH());
+    SE_Vector rear_right =
+        SE_Vector(this->pos_.GetX(), this->pos_.GetY()) + SE_Vector(bb_center.x() - bb_dim.x() / 2.0, bb_center.y() - bb_dim.y() / 2.0).Rotate(this->pos_.GetH());
+
+        return {front_right, front_left, rear_left, rear_right};
+}
+
 Position::ReturnCode Object::MoveAlongS(double ds, bool actualDistance)
 {
     return pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance, Position::MoveDirectionMode::HEADING_DIRECTION, true);
