@@ -261,6 +261,7 @@ namespace scenarioengine
             return type_;
         }
 
+
         /**
                 Move current position along the road or route (if assigned)
                 @param ds Distance to move, negative will move backwards
@@ -298,8 +299,6 @@ namespace scenarioengine
                 @return true if bounding boxes overlap else false
         */
         double PointCollision(double x, double y);
-
-        void GetPosForFreespace(Object* target, double desired_freespace, double& x, double& y);
 
         /**
                 Measure the free-space distance to provided target object

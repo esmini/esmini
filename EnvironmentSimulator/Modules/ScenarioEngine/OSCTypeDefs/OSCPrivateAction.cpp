@@ -18,7 +18,7 @@
 
 #define MAX_DECELERATION                -8.0
 #define LONGITUDINAL_DISTANCE_THRESHOLD 0.1
-#define LATERAL_DISTANCE_THRESHOLD 0.1
+#define LATERAL_DISTANCE_THRESHOLD 0.01
 
 using namespace scenarioengine;
 
@@ -2036,42 +2036,52 @@ void LatDistanceAction::Step(double simTime, double)
     }
     else
     {
-        // Cap speed if necessary
-        double car_lateral_speed = std::min(object_->GetSpeed(), dynamics_.max_speed_);
-
         // Find position difference
         double delta_pos = target_y - object_->pos_.GetY();
+        double current_velocity = object_->pos_.GetVelLat();
+        double move_direction = (delta_pos > 0) ? 1.0 : -1.0;
 
-        // Compute desired velocity
-        double desired_velocity = (delta_pos > 0 ? 1 : -1) * car_lateral_speed;
+        // Compute stopping distance using smooth kinematics formula
+        double stopping_distance = object_->pos_.GetLatStoppingDistance(dynamics_.max_deceleration_);
 
-        // Compute required acceleration
-        double required_acceleration = (desired_velocity - object_->pos_.GetVelLat()) / dt;
+        // Determine if braking is needed earlier
+        bool should_decelerate = (std::abs(delta_pos) <= stopping_distance); // || (move_direction != SIGN(current_velocity));
 
-        // Cap acceleration if necessary
-        if (required_acceleration > dynamics_.max_acceleration_) 
+        // Apply acceleration constraints
+        double desired_velocity;
+        double required_acceleration;
+        if (!should_decelerate) 
         {
-            desired_velocity = object_->pos_.GetVelLat() + dynamics_.max_acceleration_ * dt;
+            desired_velocity = move_direction * std::min(object_->GetSpeed(), dynamics_.max_speed_);
+            required_acceleration = (desired_velocity - current_velocity) / dt;
+            required_acceleration = SIGN(required_acceleration) * std::min(std::abs(required_acceleration), dynamics_.max_acceleration_);
         } 
-        else if (required_acceleration < -dynamics_.max_deceleration_)
+        else 
         {
-            desired_velocity = object_->pos_.GetVelLat() - dynamics_.max_deceleration_ * dt;
+            desired_velocity = 0.0; //move_direction * std::min(object_->GetSpeed(), dynamics_.max_speed_);
+            required_acceleration = (desired_velocity - current_velocity) / dt;
+            required_acceleration = SIGN(required_acceleration) * std::min(std::abs(required_acceleration), dynamics_.max_deceleration_);
         }
 
-        // Compute new position
-        double new_pos = object_->pos_.GetY() + desired_velocity * dt;
+        // Compute new velocity with constraints
+        double new_velocity = current_velocity + required_acceleration * dt;
+        new_velocity = move_direction * std::min(std::abs(new_velocity), dynamics_.max_speed_);
 
-        // If within threshold, snap to target_y
-        if (abs(object_->pos_.GetY() - target_y) < LATERAL_DISTANCE_THRESHOLD) 
+        // Compute new position
+        double new_pos = object_->pos_.GetY() + new_velocity * dt;
+
+        // If within threshold, snap to target_y and stop completely
+        if (std::abs(delta_pos) < LATERAL_DISTANCE_THRESHOLD) 
         {
             new_pos = target_y;
+            new_velocity = 0.0;
         }
 
         // Update object position
         object_->pos_.SetInertiaPos(object_->pos_.GetX(), new_pos, object_->pos_.GetH());
 
         // Store lateral velocity for next step
-        // object_->SetVel(object_->pos_.GetVelLong(), desired_velocity, 0.0);
+        object_->SetVel(object_->pos_.GetVelLong(), new_velocity, 0.0);
     }
 }
 
