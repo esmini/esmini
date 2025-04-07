@@ -408,6 +408,12 @@ void FollowTrajectoryAction::End()
     {
         return;
     }
+
+    // remove trajectory from object, but double check the trajectory comes from this action
+    if (object_->pos_.GetTrajectory() == traj_)
+    {
+        object_->pos_.SetTrajectory(nullptr);
+    }
 }
 
 void FollowTrajectoryAction::Step(double simTime, double dt)
