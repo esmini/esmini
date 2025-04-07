@@ -1985,7 +1985,6 @@ void LatDistanceAction::Step(double simTime, double)
     object_->pos_.Distance(&target_object_->pos_, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, measured_distance);
 
     double requested_dist = 0;
-
     if (dist_type_ == DistType::DISTANCE)
     {
         requested_dist = distance_;
@@ -1994,10 +1993,18 @@ void LatDistanceAction::Step(double simTime, double)
     if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
     {
         requested_dist = abs(requested_dist);
+        if (SIGN(measured_distance) == 1)
+        {
+            measured_distance *= -1;
+        }
     }
     else if (displacement_ == DisplacementType::RIGHT_TO_REFERENCED_ENTITY)
     {
         requested_dist = -abs(requested_dist);
+        if (SIGN(measured_distance) == -1)
+        {
+            measured_distance *= -1;
+        }
     }
 
     double target_y = 0.0;
@@ -2009,30 +2016,11 @@ void LatDistanceAction::Step(double simTime, double)
     }
     else
     {
-        auto ego_corners = object_->GetCorners();
-        auto target_corners = target_object_->GetCorners();
+        double ego_width = object_->boundingbox_.dimensions_.width_;
+        double target_width = target_object_->boundingbox_.dimensions_.width_;
 
-        auto ego_lat_axis = SE_Vector(-std::sin(object_->pos_.GetH()), std::cos(object_->pos_.GetH()));
-
-        double ego_min = LARGE_NUMBER;
-        double ego_max = -LARGE_NUMBER;
-        double target_min = LARGE_NUMBER;
-        double target_max = -LARGE_NUMBER;
-
-        for (size_t i = 0; i < ego_corners.size(); ++i)
-        {
-            double ego_proj = (ego_corners[i] - SE_Vector(object_->pos_.GetX(), object_->pos_.GetY())).Dot(ego_lat_axis);
-            ego_min = std::min(ego_min, ego_proj);
-            ego_max = std::max(ego_max, ego_proj);
-
-            double target_proj = (target_corners[i] - SE_Vector(object_->pos_.GetX(), object_->pos_.GetY())).Dot(ego_lat_axis);
-            target_min = std::min(target_min, target_proj);
-            target_max = std::max(target_max, target_proj);
-        }
-
-        bool overlap = !(ego_max < target_min || target_max < ego_min);
-        double overlap_amount = std::min(ego_max, target_max) - std::max(ego_min, target_min);
-        double lateral_freespace = overlap ? 0.0 : std::max(target_min - ego_max, ego_min - target_max);
+        distance_diff = requested_dist + measured_distance + SIGN(requested_dist) * (ego_width + target_width) / 2.0;
+        target_y = object_->pos_.GetY() + std::cos(object_->pos_.GetH()) * distance_diff;
     }
     if (continuous_ == false && fabs(distance_diff) < LATERAL_DISTANCE_THRESHOLD)
     {
@@ -2090,7 +2078,7 @@ void LatDistanceAction::Step(double simTime, double)
         }
 
         // Update object position
-        // object_->pos_.SetInertiaPos(object_->pos_.GetX(), new_pos, object_->pos_.GetH());
+        object_->pos_.SetInertiaPos(object_->pos_.GetX(), new_pos, object_->pos_.GetH());
 
         // Store lateral velocity for next step
         object_->SetVel(object_->pos_.GetVelLong(), new_velocity, 0.0);
