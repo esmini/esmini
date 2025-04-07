@@ -1173,6 +1173,36 @@ extern "C"
     SE_DLL_API int SE_GetObjectCollision(int object_id, int index);
 
     /**
+           Get the angular velocity of the specified object
+           @param object_id Id of the object
+           @param x reference to a variable returning the velocity along global x-axis
+           @param y reference to a variable returning the velocity along global y-axis
+           @param z reference to a variable returning the velocity along global z-axis
+           @return 0 if successful.
+    */
+    SE_DLL_API int SE_GetObjectVelocityGlobalXYZ(int object_id, float *x, float *y, float *z);
+
+    /**
+            Get the angular velocity of the specified object
+            @param object_id Id of the object
+            @param h_rate The rate of the heading.
+            @param p_rate The rate of the pitch.
+            @param r_rate The rate of the roll.
+            @return 0 if successful.
+     */
+    SE_DLL_API int SE_GetObjectAngularVelocity(int object_id, float *h_rate, float *p_rate, float *r_rate);
+
+    /**
+            Get the angular velocity of the specified object
+            @param object_id Id of the object
+            @param h_acc The rate of the heading.
+            @param p_acc The rate of the pitch.
+            @param r_acc The rate of the roll.
+            @return 0 if successful.
+     */
+    SE_DLL_API int SE_GetObjectAngularAcceleration(int object_id, float *h_acc, float *p_acc, float *r_acc);
+
+    /**
             Get the acceleration magnitude of specified object
             @param object_id Id of the object
             @return the acceleration if successful, std::nanf if not
