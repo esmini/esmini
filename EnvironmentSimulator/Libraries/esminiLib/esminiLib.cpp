@@ -1921,6 +1921,60 @@ extern "C"
         return std::nanf("");
     }
 
+    SE_DLL_API int SE_GetObjectVelocityGlobalXYZ(int object_id, float *vel_x, float *vel_y, float *vel_z)
+    {
+        if (player == nullptr)
+        {
+            return -1;
+        }
+        Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+        if (obj == nullptr)
+        {
+            return -1;
+        }
+        *vel_x = static_cast<float>(obj->pos_.GetVelX());
+        *vel_y = static_cast<float>(obj->pos_.GetVelY());
+        *vel_z = static_cast<float>(obj->pos_.GetVelZ());
+        return 0;
+
+    }
+
+    SE_DLL_API int SE_GetObjectAngularVelocity(int object_id, float *h_rate, float *p_rate, float *r_rate)
+    {
+        if (player == nullptr)
+        {
+            return -1;
+        }
+
+        Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+        if (obj == nullptr)
+        {
+            return -1;
+        }
+        *h_rate = static_cast<float>(obj->pos_.GetHRate());
+        *p_rate = static_cast<float>(obj->pos_.GetPRate());
+        *r_rate = static_cast<float>(obj->pos_.GetRRate());
+        return 0;
+    }
+
+    SE_DLL_API int SE_GetObjectAngularAcceleration(int object_id, float *h_acc, float *p_acc, float *r_acc)
+    {
+        if (player == nullptr)
+        {
+            return -1;
+        }
+
+        Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+        if (obj == nullptr)
+        {
+            return -1;
+        }
+        *h_acc = static_cast<float>(obj->pos_.GetHAcc());
+        *p_acc = static_cast<float>(obj->pos_.GetPAcc());
+        *r_acc = static_cast<float>(obj->pos_.GetRAcc());
+        return 0;
+    }
+
     SE_DLL_API int SE_GetObjectAccelerationGlobalXYZ(int object_id, float *acc_x, float *acc_y, float *acc_z)
     {
         if (player != nullptr)
