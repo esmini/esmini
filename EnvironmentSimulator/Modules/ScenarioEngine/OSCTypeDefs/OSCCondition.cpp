@@ -1080,7 +1080,8 @@ bool TrigByCollision::CheckCondition(double sim_time)
             for (size_t j = 0; j < storyBoard_->entities_->object_.size(); j++)
             {
                 // Do not collide with ghosts.
-                if (storyBoard_->entities_->object_[j]->isGhost_) {
+                if (storyBoard_->entities_->object_[j]->isGhost_) 
+                {
                     continue;
                 }
                 if (storyBoard_->entities_->object_[j] != trigObj && storyBoard_->entities_->object_[j]->type_ == type_ &&
