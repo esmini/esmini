@@ -1834,28 +1834,29 @@ void LongDistanceAction::Step(double simTime, double)
 
     double speed_diff      = object_->speed_ - target_object_->speed_;
     double spring_constant = 0.4;
-    double requested_dist  = 0;
+    double dc;
+    double distance_ = 0;
 
     if (dist_type_ == DistType::DISTANCE)
     {
-        requested_dist = distance_;
+        distance_ = distance_;
     }
     if (dist_type_ == DistType::TIME_GAP)
     {
         // Convert requested time gap (seconds) to distance (m)
-        requested_dist = abs(target_object_->speed_) * distance_;
+        distance_ = abs(target_object_->speed_) * distance_;
     }
 
     if (displacement_ == DisplacementType::TRAILING)
     {
-        requested_dist = abs(requested_dist);
+        distance_ = abs(distance_);
     }
     else if (displacement_ == DisplacementType::LEADING)
     {
-        requested_dist = -abs(requested_dist);
+        distance_ = -abs(distance_);
     }
 
-    double distance_diff = distance - requested_dist;
+    double distance_diff = distance - distance_;
 
     if (continuous_ == false && fabs(distance_diff) < LONGITUDINAL_DISTANCE_THRESHOLD)
     {
@@ -1946,24 +1947,12 @@ void LatDistanceAction::Start(double simTime)
     if (displacement_ == DisplacementType::ANY)
     {
         // Find out current displacement, and apply it
-        double distance;
-        if (freespace_)
-        {
-            double latDist  = 0;
-            double longDist = 0;
-            object_->FreeSpaceDistance(target_object_, &latDist, &longDist);
-            distance = latDist;
-        }
-        else
-        {
-            double x, y;
-            distance = object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
+        double distance, x, y;
+        distance = object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
 
-            // Just interested in the x-axis component of the distance
-            distance = y;
-        }
-
-        (distance < 0.0) ? displacement_ = DisplacementType::RIGHT_TO_REFERENCED_ENTITY : displacement_ = DisplacementType::LEFT_TO_REFERENCED_ENTITY;
+        // Just interested in the x-axis component of the distance, if 0.0 we default to the right
+        distance = y;
+        (distance < 0.0) ? displacement_ = DisplacementType::LEFT_TO_REFERENCED_ENTITY : displacement_ = DisplacementType::RIGHT_TO_REFERENCED_ENTITY;
     }
 
     OSCAction::Start(simTime);
@@ -1984,104 +1973,110 @@ void LatDistanceAction::Step(double simTime, double)
     double measured_distance;
     object_->pos_.Distance(&target_object_->pos_, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, measured_distance);
 
-    double requested_dist = 0;
-    if (dist_type_ == DistType::DISTANCE)
-    {
-        requested_dist = distance_;
-    }
-
     if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
     {
-        requested_dist = abs(requested_dist);
-        if (SIGN(measured_distance) == 1)
-        {
-            measured_distance *= -1;
-        }
+        distance_ = abs(distance_);
     }
     else if (displacement_ == DisplacementType::RIGHT_TO_REFERENCED_ENTITY)
     {
-        requested_dist = -abs(requested_dist);
-        if (SIGN(measured_distance) == -1)
-        {
-            measured_distance *= -1;
-        }
+        distance_ = -abs(distance_);
     }
 
-    double target_y = 0.0;
     double distance_diff = 0.0;
     if (!freespace_)
     {
-        distance_diff = requested_dist + measured_distance;
-        target_y = object_->pos_.GetY() + std::cos(object_->pos_.GetH()) * distance_diff;
+        distance_diff = distance_ + measured_distance;
     }
     else
     {
         double ego_width = object_->boundingbox_.dimensions_.width_;
         double target_width = target_object_->boundingbox_.dimensions_.width_;
-
-        distance_diff = requested_dist + measured_distance + SIGN(requested_dist) * (ego_width + target_width) / 2.0;
-        target_y = object_->pos_.GetY() + std::cos(object_->pos_.GetH()) * distance_diff;
+        distance_diff = distance_ + measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0;
     }
+
     if (continuous_ == false && fabs(distance_diff) < LATERAL_DISTANCE_THRESHOLD)
     {
         // Reached requested lateral distance, quit action
         OSCAction::End();
     }
 
+    double shift_x = 0.0;
+    double shift_y = 0.0;
+    SE_Vector lat_axis = SE_Vector(-std::sin(object_->pos_.GetH()), std::cos(object_->pos_.GetH()));
+    if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
+    {
+        shift_x = lat_axis.x() * distance_diff;
+        shift_y = lat_axis.y() * distance_diff;
+    }
+    else if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
+    {
+        shift_x = -std::sin(object_->pos_.GetRoadH()) * distance_diff;
+        shift_y =  std::cos(object_->pos_.GetRoadH()) * distance_diff;
+    }
+    else
+    {
+        LOG_WARN("LatDistanceAction: Unsupported coordinate system");
+    }
+
+    double target_x = object_->pos_.GetX() + shift_x;
+    double target_y = object_->pos_.GetY() + shift_y;
+
     if (dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
     {
         // Set position according to distance and copy speed of target vehicle
         double temp_speed = object_->GetSpeed();
-        object_->pos_.SetInertiaPos(object_->pos_.GetX(), target_y, object_->pos_.GetH());
+        object_->pos_.SetInertiaPos(target_x, target_y, object_->pos_.GetH());
         object_->SetSpeed(temp_speed);
     }
     else
     {
-        // Find position difference
-        double delta_pos = target_y - object_->pos_.GetY();
-        double current_velocity = object_->pos_.GetVelLat();
-        double move_direction = (delta_pos > 0) ? 1.0 : -1.0;
-
-        // Compute stopping distance using smooth kinematics formula
-        double stopping_distance = object_->pos_.GetLatStoppingDistance(dynamics_.max_deceleration_);
+        SE_Vector delta_pos = SE_Vector(target_x - object_->pos_.GetX(), target_y - object_->pos_.GetY());
 
         // Determine if braking is needed earlier
-        bool should_decelerate = (std::abs(delta_pos) <= stopping_distance);
+        double lateral_distance = delta_pos.Dot(lat_axis);
+        double stopping_distance = object_->pos_.GetLatStoppingDistance(dynamics_.max_deceleration_);
+        bool should_decelerate = (std::abs(lateral_distance) <= stopping_distance);
 
         // Apply acceleration constraints
+        SE_Vector current_velocity(object_->pos_.GetVelX(), object_->pos_.GetVelY());
+        double lateral_velocity = current_velocity.Dot(lat_axis);
         double required_acceleration;
-        if (!should_decelerate) 
+        if (!should_decelerate)
         {
-            double desired_velocity = move_direction * std::min(object_->GetSpeed(), dynamics_.max_speed_);
-            double acceleration = (desired_velocity - current_velocity) / dt;
-            required_acceleration = SIGN(acceleration) * std::min(std::abs(acceleration), dynamics_.max_acceleration_);
+            double lateral_projection = delta_pos.Dot(lat_axis);
+            double desired_velocity = SIGN(lateral_projection) * std::min(std::abs(lateral_velocity) + dynamics_.max_acceleration_ * dt, std::min(object_->GetSpeed(), dynamics_.max_speed_));
+
+            // std::cout << "Desired velocity: " << desired_velocity << std::endl;
+            double acceleration = (desired_velocity - lateral_velocity) / dt;
+            required_acceleration = CLAMP(acceleration, -dynamics_.max_acceleration_, dynamics_.max_acceleration_);
         } 
         else 
         {
-            double desired_velocity = 0.0; //move_direction * std::min(object_->GetSpeed(), dynamics_.max_speed_);
-            double deceleration = (desired_velocity - current_velocity) / dt;
-            required_acceleration = SIGN(deceleration) * std::min(std::abs(deceleration), dynamics_.max_deceleration_);
+            double deceleration = (-lateral_velocity) / dt;
+            required_acceleration = CLAMP(deceleration, -dynamics_.max_deceleration_, dynamics_.max_deceleration_);
         }
 
         // Compute new velocity with constraints
-        double new_velocity = current_velocity + required_acceleration * dt;
-        new_velocity = move_direction * std::min(std::abs(new_velocity), dynamics_.max_speed_);
+        double new_velocity = lateral_velocity + required_acceleration * dt;
+        new_velocity = CLAMP(new_velocity, -dynamics_.max_speed_, dynamics_.max_speed_);
 
         // Compute new position
-        double new_pos = object_->pos_.GetY() + new_velocity * dt;
+        double new_x = object_->pos_.GetX() + lat_axis.x() * new_velocity * dt;
+        double new_y = object_->pos_.GetY() + lat_axis.y() * new_velocity * dt;
 
         // If within threshold, snap to target_y and stop completely
-        if (std::abs(delta_pos) < LATERAL_DISTANCE_THRESHOLD) 
+        if (delta_pos.GetLength() < LATERAL_DISTANCE_THRESHOLD) 
         {
-            new_pos = target_y;
+            new_x = target_x;
+            new_y = target_y;
             new_velocity = 0.0;
         }
 
         // Update object position
-        object_->pos_.SetInertiaPos(object_->pos_.GetX(), new_pos, object_->pos_.GetH());
+        object_->pos_.SetInertiaPos(new_x, new_y, object_->pos_.GetH());
 
         // Store lateral velocity for next step
-        object_->SetVel(object_->pos_.GetVelLong(), new_velocity, 0.0);
+        object_->SetSpeed(object_->GetSpeed());
     }
 }
 
