@@ -1935,8 +1935,8 @@ extern "C"
         *vel_x = static_cast<float>(obj->pos_.GetVelX());
         *vel_y = static_cast<float>(obj->pos_.GetVelY());
         *vel_z = static_cast<float>(obj->pos_.GetVelZ());
+        
         return 0;
-
     }
 
     SE_DLL_API int SE_GetObjectAngularVelocity(int object_id, float *h_rate, float *p_rate, float *r_rate)
