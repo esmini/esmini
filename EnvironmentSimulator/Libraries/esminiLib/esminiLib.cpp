@@ -1935,7 +1935,7 @@ extern "C"
         *vel_x = static_cast<float>(obj->pos_.GetVelX());
         *vel_y = static_cast<float>(obj->pos_.GetVelY());
         *vel_z = static_cast<float>(obj->pos_.GetVelZ());
-        
+
         return 0;
     }
 
