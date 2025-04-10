@@ -213,7 +213,6 @@ namespace scenarioengine
         void          SetRoadCondition(const double friction);
         RoadCondition GetRoadCondition() const;
         bool          IsRoadConditionSet() const;
-        double        GetRoadConditionFrictionScaleFactor() const;
 
         void UpdateEnvironment(const OSCEnvironment& new_environment);
         bool IsEnvironment() const;
