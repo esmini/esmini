@@ -51,7 +51,7 @@
                         <EntityRef entityRef="Ego"/>
                     </Actors>
                     <Maneuver name="envman_weather">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="envaction">
                                 <GlobalAction>
                                     <EnvironmentAction>
@@ -85,7 +85,7 @@
                         </Event>
                     </Maneuver>
                     <Maneuver name="envman_TimeOfDay">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="envaction">
                                 <GlobalAction>
                                     <EnvironmentAction>

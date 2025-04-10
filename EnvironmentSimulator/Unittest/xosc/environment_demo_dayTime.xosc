@@ -54,7 +54,7 @@
                         <EntityRef entityRef="Ego"/>
                     </Actors>
                     <Maneuver name="envman_weather_midnight">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="midnight">
                                 <GlobalAction>
                                     <EnvironmentAction>
@@ -76,7 +76,7 @@
                         </Event>
                     </Maneuver>
                     <Maneuver name="envman_weather_early_morning">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="early_morning">
                                 <GlobalAction>
                                     <EnvironmentAction>
@@ -98,7 +98,7 @@
                         </Event>
                     </Maneuver>
                     <Maneuver name="envman_weather_morning">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="morning">
                                 <GlobalAction>
                                     <EnvironmentAction>
@@ -120,7 +120,7 @@
                         </Event>
                     </Maneuver>
                     <Maneuver name="envman_weather_noon">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="noon">
                                 <GlobalAction>
                                     <EnvironmentAction>
@@ -142,7 +142,7 @@
                         </Event>
                     </Maneuver>
                     <Maneuver name="envman_weather_afternoon">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="afternoon">
                                 <GlobalAction>
                                     <EnvironmentAction>
@@ -164,7 +164,7 @@
                         </Event>
                     </Maneuver>
                     <Maneuver name="envman_weather_evening">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="evening">
                                 <GlobalAction>
                                     <EnvironmentAction>
@@ -186,7 +186,7 @@
                         </Event>
                     </Maneuver>
                     <Maneuver name="envman_weather_sunset">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="sunset">
                                 <GlobalAction>
                                     <EnvironmentAction>
@@ -208,7 +208,7 @@
                         </Event>
                     </Maneuver>
                     <Maneuver name="envman_weather_night">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="night">
                                 <GlobalAction>
                                     <EnvironmentAction>
@@ -230,7 +230,7 @@
                         </Event>
                     </Maneuver>
                     <Maneuver name="envman_weather_midnight2">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="midnight2">
                                 <GlobalAction>
                                     <EnvironmentAction>
