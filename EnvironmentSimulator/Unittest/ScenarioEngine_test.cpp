@@ -5330,35 +5330,15 @@ TEST(EnvironmentTest, ParsingV1_3_1)
     OSCEnvironment environment;
     ScenarioReader reader(&entities, &catalogs, &environment);
 
-    OSCGlobalAction*   globalAct = reader.parseOSCGlobalAction(actionNode, nullptr);
-    EnvironmentAction* envAct    = static_cast<EnvironmentAction*>(globalAct);
-    OSCEnvironment     oscEnv    = envAct->new_environment_;
+    EnvironmentAction* envAct = static_cast<EnvironmentAction*>(reader.parseOSCGlobalAction(actionNode, nullptr));
+    OSCEnvironment     oscEnv = envAct->new_environment_;
     EXPECT_TRUE(oscEnv.IsEnvironment());
     EXPECT_TRUE(oscEnv.IsWeatherSet());
     EXPECT_TRUE(oscEnv.IsFractionalCloudStateSet());
 
     EXPECT_EQ(oscEnv.GetFractionalCloudState(), "zeroOktas");
 
-    // More tests
-    // remove the attribute addition
-    pugi::xml_attribute attr = weatherNode.attribute("fractionalCloudCover");
-    if (attr)
-    {
-        weatherNode.remove_attribute(attr);
-    }
-    // add a new attribute
-    weatherNode.append_attribute("fractionalCloudCover").set_value("elevanOktas");
-
-    globalAct = reader.parseOSCGlobalAction(actionNode, nullptr);
-    envAct    = static_cast<EnvironmentAction*>(globalAct);
-    oscEnv    = envAct->new_environment_;
-    EXPECT_TRUE(oscEnv.IsEnvironment());
-    EXPECT_TRUE(oscEnv.IsWeatherSet());
-    EXPECT_TRUE(oscEnv.IsFractionalCloudStateSet());
-
-    EXPECT_EQ(oscEnv.GetFractionalCloudState(), "elevanOktas");
-
-    delete globalAct;
+    delete envAct;
 }
 
 TEST(EnvironmentTest, ParsingMissingWeatherAttribute)

@@ -44,14 +44,12 @@ int SwarmTrafficAction::counter_ = 0;
 
 void EnvironmentAction::Start(double simTime)
 {
-    LOG_INFO("-------------------------environment action start----------------------------");
     environment_->UpdateEnvironment(new_environment_);
     OSCAction::Start(simTime);
 }
 
 void EnvironmentAction::Step(double simTime, double dt)
 {
-    LOG_INFO("-------------------------environment action step----------------------------");
     (void)simTime;
     (void)dt;
     OSCAction::Stop();

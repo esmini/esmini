@@ -54,7 +54,7 @@
                         <EntityRef entityRef="Ego"/>
                     </Actors>
                     <Maneuver name="envman_weather_spring">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="spring">
                                 <GlobalAction>
                                     <EnvironmentAction>
@@ -74,7 +74,7 @@
                         </Event>
                     </Maneuver>
                     <Maneuver name="envman_weather_summer">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="summer">
                                 <GlobalAction>
                                     <EnvironmentAction>
@@ -94,7 +94,7 @@
                         </Event>
                     </Maneuver>
                     <Maneuver name="envman_weather_autumn">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="autumn">
                                 <GlobalAction>
                                     <EnvironmentAction>
@@ -114,7 +114,7 @@
                         </Event>
                     </Maneuver>
                     <Maneuver name="envman_weather_winter">
-                        <Event name="fog" priority="overwrite" maximumExecutionCount="1">
+                        <Event name="fog" priority="override" maximumExecutionCount="1">
                             <Action name="winter">
                                 <GlobalAction>
                                     <EnvironmentAction>

@@ -52,16 +52,16 @@
 #define ORTHO_FOV                          1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
-float  color_green[3]      = {0.2f, 0.6f, 0.3f};
-float  color_gray[3]       = {0.7f, 0.7f, 0.7f};
-float  color_dark_gray[3]  = {0.5f, 0.5f, 0.5f};
-float  color_light_gray[3] = {0.7f, 0.7f, 0.7f};
-float  color_red[3]        = {0.8f, 0.3f, 0.3f};
-float  color_black[3]      = {0.2f, 0.2f, 0.2f};
-float  color_blue[3]       = {0.25f, 0.38f, 0.7f};
-float  color_yellow[3]     = {0.75f, 0.7f, 0.4f};
-float  color_white[3]      = {1.0f, 1.0f, 0.9f};
-double color_background[3] = {0.5f, 0.75f, 1.0f};
+float color_green[3]      = {0.2f, 0.6f, 0.3f};
+float color_gray[3]       = {0.7f, 0.7f, 0.7f};
+float color_dark_gray[3]  = {0.5f, 0.5f, 0.5f};
+float color_light_gray[3] = {0.7f, 0.7f, 0.7f};
+float color_red[3]        = {0.8f, 0.3f, 0.3f};
+float color_black[3]      = {0.2f, 0.2f, 0.2f};
+float color_blue[3]       = {0.25f, 0.38f, 0.7f};
+float color_yellow[3]     = {0.75f, 0.7f, 0.4f};
+float color_white[3]      = {1.0f, 1.0f, 0.9f};
+float color_background[3] = {0.5f, 0.75f, 1.0f};
 
 // cppcheck-suppress unknownMacro
 // The following macros are defined by the framework or plugin system and are correctly expanded during compilation.
@@ -1687,8 +1687,9 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     if (!clearColorSet)
     {
-        camera->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 1.0f));
-        clearColorSet = true;
+        camera->setClearColor(osg::Vec4(color_background[0], color_background[1], color_background[2], 1.0f));
+        clearColorSet          = true;
+        defulatClearColorUsed_ = true;
     }
 
     // Setup the camera models
@@ -1803,30 +1804,28 @@ void Viewer::CreateFog(const double range)
 
 void viewer::Viewer::SetSkyColour(const double sunIntensityFactor, const double fogVishualRangeFoctor, const double ClodinessFactor)
 {
-    // LOG_INFO("SetSkyColour: sunIntensityFactor: {}, fogVishualRangeFoctor: {}, ClodinessFactor: {}", sunIntensityFactor, fogVishualRangeFoctor,
-    // ClodinessFactor);
-    double FogAndCloudFactor = CLAMP(0.0, 1.0, fogVishualRangeFoctor + ClodinessFactor);
-    // LOG_INFO("SetSkyColour: FogAndCloudFactor: {}", FogAndCloudFactor);
-    osg::Light* light = osgViewer_->getLight();
+    double      FogAndCloudFactor = CLAMP(0.0, 1.0, fogVishualRangeFoctor + ClodinessFactor);
+    osg::Light* light             = osgViewer_->getLight();
     light->setDiffuse(osg::Vec4(0.9 * sunIntensityFactor - 0.1, 0.9 * sunIntensityFactor - 0.1, 0.8 * sunIntensityFactor - 0.1, 1));
     float r = sunIntensityFactor * ((1 - FogAndCloudFactor) * color_background[0] + (FogAndCloudFactor * color_dark_gray[0]));
     float g = sunIntensityFactor * ((1 - FogAndCloudFactor) * color_background[1] + (FogAndCloudFactor * color_dark_gray[1]));
     float b = sunIntensityFactor * ((1 - FogAndCloudFactor) * color_background[2] + (FogAndCloudFactor * color_dark_gray[2]));
-    // LOG_INFO("SetSkyColour: r: {}, g: {}, b: {}", r, g, b);
     osgViewer_->getCamera()->setClearColor(osg::Vec4(r, g, b, 0.0f));
 }
 
 int Viewer::CreateWeatherGroup(scenarioengine::OSCEnvironment& environment)
 {
-    LOG_INFO("updated environment in viewer");
     environment.SetEnvironmentUpdatedInViewer(true);
     weatherGroup_ = new osg::PositionAttitudeTransform;
     if (environment.IsFogSet())
     {
         CreateFog(environment.GetFog().visibility_range);
     }
+    if (defulatClearColorUsed_)  // no --clear-color option
+    {
+        SetSkyColour(environment.GetSunIntensityFactor(), environment.GetFogVisibilityRangeFactor(), environment.GetFractionalCloudStateFactor());
+    }
 
-    SetSkyColour(environment.GetSunIntensityFactor(), environment.GetFogVisibilityRangeFactor(), environment.GetFractionalCloudStateFactor());
     if (environment.IsRoadConditionSet())
     {
         UpdateFrictonScaleFactorInMaterial(environment.GetRoadCondition().frictionscalefactor);

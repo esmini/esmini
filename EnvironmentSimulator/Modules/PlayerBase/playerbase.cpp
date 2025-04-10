@@ -340,9 +340,6 @@ void ScenarioPlayer::ViewerFrame(bool init)
         return;
     }
 
-    // Ask Environment for fog pos and dim
-    // Tell viewer to move and scale fog bounding box
-    // viewer_->UpdateFog(scenarioEngine->environment_->GetFogCenter...)
     if (scenarioEngine->environment.IsEnvironment() && !scenarioEngine->environment.IsEnvironmentUpdatedInViewer())
     {
         viewer_->CreateWeatherGroup(scenarioEngine->environment);
