@@ -860,7 +860,7 @@ double GetSecondsToFactor(int seconds)
     // Use the cosine function to create the sinusoidal shape.
     // cos(0) = 1, which we want at noon.
     // cos(pi) = -1, which we want at midnight (after shifting).
-    // We take the absolute value and then scale and shift to get a range of 0 to 1.
+    // Take the absolute value and then scale and shift to get a range of 0 to 1.
     double factor = 0.5 * (std::cos(phaseShiftedTime) + 1.0);
 
     return factor;

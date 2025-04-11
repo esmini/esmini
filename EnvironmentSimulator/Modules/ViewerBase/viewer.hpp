@@ -441,7 +441,7 @@ namespace viewer
         // Weather stuff
         osg::ref_ptr<osg::PositionAttitudeTransform> weatherGroup_;  // parent for all OSC Environment related stuff
         osg::ref_ptr<osg::PositionAttitudeTransform> fogBoundingBox_;
-        int                                          CreateWeatherGroup(scenarioengine::OSCEnvironment& environment);
+        void                                         CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment);
         void                                         UpdateFrictonScaleFactorInMaterial(const double factor);
 
         std::string                   exe_path_;

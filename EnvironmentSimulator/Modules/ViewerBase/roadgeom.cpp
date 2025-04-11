@@ -141,6 +141,29 @@ std::vector<RoadGeom::FrictionDetails> RoadGeom::GetRoadMaterialList()
     return material_friction_list_;
 }
 
+const osg::Vec4 RoadGeom::GetFrictionColor(const double friction)
+{
+    osg::Vec4 new_color = color_asphalt_->at(0);
+    if (friction < friction_default - SMALL_NUMBER)  // low friction, make it blueish
+    {
+        double factor = (1.0 - friction) / friction_default;
+        new_color[0] -= 0.75 * factor;
+        new_color[1] -= 0.75 * factor;
+        new_color[2] += factor;
+    }
+    else if (friction > friction_default + SMALL_NUMBER)  // high friction, make it redish
+    {
+        double factor = (MIN(friction, friction_max) - friction_default) / (friction_max - friction_default);
+        new_color[0] += factor;
+        new_color[1] -= 0.75 * factor;
+        new_color[2] -= 0.75 * factor;
+    }
+    new_color[0] = CLAMP(0.0, 1.0, new_color[0]);
+    new_color[1] = CLAMP(0.0, 1.0, new_color[1]);
+    new_color[2] = CLAMP(0.0, 1.0, new_color[2]);
+    return new_color;
+}
+
 void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array>        vertices,
                                osg::ref_ptr<osg::DrawElementsUInt> indices,
                                roadmanager::RoadMarkColor          color,
@@ -854,22 +877,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                         if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD))
                         {
                             osg::ref_ptr<osg::Material> materialAsphalt_ = new osg::Material;
-                            osg::Vec4                   new_color        = color_asphalt_->at(0);
-
-                            if (friction < friction_default - SMALL_NUMBER)  // low friction, make it blueish
-                            {
-                                double factor = (1.0 - friction) / friction_default;
-                                new_color[0] -= 0.75 * factor;
-                                new_color[1] -= 0.75 * factor;
-                                new_color[2] += factor;
-                            }
-                            else if (friction > friction_default + SMALL_NUMBER)  // high friction, make it redish
-                            {
-                                double factor = (MIN(friction, friction_max) - friction_default) / (friction_max - friction_default);
-                                new_color[0] += factor;
-                                new_color[1] -= 0.75 * factor;
-                                new_color[2] -= 0.75 * factor;
-                            }
+                            osg::Vec4                   new_color        = GetFrictionColor(friction);
 
                             osg::ref_ptr<osg::Material> materialAsphalt_ = GetOrCreateMaterial("Asphalt", new_color);
 

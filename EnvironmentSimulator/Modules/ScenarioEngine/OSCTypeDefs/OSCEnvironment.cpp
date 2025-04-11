@@ -257,7 +257,7 @@ double scenarioengine::OSCEnvironment::GetSunIntensityFactor() const
         // Normalize intensity to a factor between 0 and 1
         return (intensity - OSCSunIntensityMin) / (OSCSunIntensityMax - OSCSunIntensityMin);
     }
-    else if (IsTimeOfDaySet() && GetTimeOfDay().animation)
+    else if (IsTimeOfDaySet())
     {
         return GetSecondsToFactor(static_cast<int>(GetSecondsSinceMidnight(GetTimeOfDay().datetime)));
     }

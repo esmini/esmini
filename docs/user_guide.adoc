@@ -1431,6 +1431,57 @@ Example road: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Uni
 .Road with various friction segments, coefficient evaluated per wheel
 image::friction.jpg[]
 
+=== Environment Action
+This action is to dynamically control environmental conditions, It allows you to define and modify weather, road conditions, and time of day, creating realistic and varied testing environments.
+
+The EnvironmentAction is used within GlobalAction elements in your OpenSCENARIO file. You can define a new environment directly within the EnvironmentAction or reference a pre-defined environment from a catalog.
+
+Two ways to define EnvironmentAction:
+
+- **Directly in the OpenSCENARIO file**:
+You can define the environment directly within the EnvironmentAction element in your OpenSCENARIO file. This allows you to specify the desired weather, road conditions, and time of day for that specific scenario.
+
+[source,xml]
+----
+<GlobalAction>
+    <EnvironmentAction>
+        <Environment name="weather">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="AnimationStatus" parameterType="boolean" value="true"/>
+            </ParameterDeclarations>
+            <TimeOfDay animation="$AnimationStatus" dateTime="2023-11-15T10:30:00.123+00:00"/>
+            <Weather cloudState="free" temperature="300" atmosphericPressure="10000">
+                <Sun azimuth="0.4" intensity="10000" elevation="0.3"/>
+                <Fog visualRange="6000"/>
+                <Precipitation precipitationType="snow" precipitationIntensity="10.0"/>
+                <Wind direction="3.1415" speed="10"/>
+            </Weather>
+            <RoadCondition frictionScaleFactor="0.9"/>
+        </Environment>
+    </EnvironmentAction>
+</GlobalAction>
+----
+
+- **Using a Catalog**:
+You can create a catalog of predefined environments and reference them in your OpenSCENARIO file. This allows you to reuse the same environment settings across multiple scenarios, ensuring consistency and reducing redundancy.
+
+[source,xml]
+----
+<GlobalAction>
+    <EnvironmentAction>
+        <Environment name="weather">
+            <CatalogReference catalogName="WeatherCatalog" catalogVersion="summer"/>
+        </Environment>
+    </EnvironmentAction>
+</GlobalAction>
+----
+The catalog reference points to a specific environment defined in the WeatherCatalog which is placed in resources/xosc/Catalogs/Environments. The catalog can contain multiple environments, each with its own set of parameters.
+
+**NOTES**
+
+- TimeOfDay animation is not supported in the viewer. The viewer will only display the sky color corresponding to the set time of day. OSI will synchronize the time of day with the simulation time and update accordingly only for animation true.
+- Rain, Snow, wind cloud cover and precipitation not visualized in the viewer. The OSI will still populate those details, but the visual representation of those will not be shown.
+
 === SUMO integration
 
 https://eclipse.dev/sumo/[SUMO] is a great open source traffic simulation tool. It has been integrated with esmini, making it possible to run SUMO simulations in esmini, and even mix or co-simulate SUMO vehicles with OpenSCENARIO vehicles.

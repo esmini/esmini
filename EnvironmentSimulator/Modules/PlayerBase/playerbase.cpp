@@ -342,6 +342,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
 
     if (scenarioEngine->environment.IsEnvironment() && !scenarioEngine->environment.IsEnvironmentUpdatedInViewer())
     {
+        scenarioEngine->environment.SetEnvironmentUpdatedInViewer(true);
         viewer_->CreateWeatherGroup(scenarioEngine->environment);
     }
 
