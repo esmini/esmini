@@ -59,7 +59,7 @@
                                 <GlobalAction>
                                     <EnvironmentAction>
                                         <Environment name="weather">
-                                            <TimeOfDay animation="true" dateTime="2023-11-15T00:00:00.123+00:00"/>
+                                            <TimeOfDay animation="false" dateTime="2023-11-15T00:00:00.123+00:00"/>
                                         </Environment>
                                     </EnvironmentAction>
                                 </GlobalAction>
@@ -81,7 +81,7 @@
                                 <GlobalAction>
                                     <EnvironmentAction>
                                         <Environment name="weather">
-                                            <TimeOfDay animation="true" dateTime="2023-11-15T03:00:00.123+00:00"/>
+                                            <TimeOfDay animation="false" dateTime="2023-11-15T03:00:00.123+00:00"/>
                                         </Environment>
                                     </EnvironmentAction>
                                 </GlobalAction>
@@ -103,7 +103,7 @@
                                 <GlobalAction>
                                     <EnvironmentAction>
                                         <Environment name="weather">
-                                            <TimeOfDay animation="true" dateTime="2023-11-15T06:00:00.123+00:00"/>
+                                            <TimeOfDay animation="false" dateTime="2023-11-15T06:00:00.123+00:00"/>
                                         </Environment>
                                     </EnvironmentAction>
                                 </GlobalAction>

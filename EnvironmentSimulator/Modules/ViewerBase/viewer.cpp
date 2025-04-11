@@ -1813,9 +1813,8 @@ void viewer::Viewer::SetSkyColour(const double sunIntensityFactor, const double 
     osgViewer_->getCamera()->setClearColor(osg::Vec4(r, g, b, 0.0f));
 }
 
-int Viewer::CreateWeatherGroup(scenarioengine::OSCEnvironment& environment)
+void Viewer::CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment)
 {
-    environment.SetEnvironmentUpdatedInViewer(true);
     weatherGroup_ = new osg::PositionAttitudeTransform;
     if (environment.IsFogSet())
     {
@@ -1832,35 +1831,16 @@ int Viewer::CreateWeatherGroup(scenarioengine::OSCEnvironment& environment)
     }
 
     rootnode_->addChild(weatherGroup_);
-
-    return 0;
 }
 
 void viewer::Viewer::UpdateFrictonScaleFactorInMaterial(const double factor)
 {
     for (auto materialList : roadGeom->GetRoadMaterialList())
     {
-        osg::Vec4 new_color = roadGeom->color_asphalt_->at(0);
-        double    friction  = std::isnan(materialList.friction) ? 1 * factor : materialList.friction * factor;
-        if (friction < FRICTION_DEFAULT - SMALL_NUMBER)  // low friction, make it blueish
-        {
-            double factor = (1.0 - friction) / FRICTION_DEFAULT;
-            new_color[0] -= 0.75 * factor;
-            new_color[1] -= 0.75 * factor;
-            new_color[2] += factor;
-        }
-        else if (friction > FRICTION_DEFAULT + SMALL_NUMBER)  // high friction, make it redish
-        {
-            double factor = (MIN(friction, FRICTION_MAX) - FRICTION_DEFAULT) / (FRICTION_MAX - FRICTION_DEFAULT);
-            new_color[0] += factor;
-            new_color[1] -= 0.75 * factor;
-            new_color[2] -= 0.75 * factor;
-        }
-        new_color[0] = CLAMP(0.0, 1.0, new_color[0]);
-        new_color[1] = CLAMP(0.0, 1.0, new_color[1]);
-        new_color[2] = CLAMP(0.0, 1.0, new_color[2]);
-        materialList.material->setAmbient(osg::Material::FRONT_AND_BACK, new_color);
-        materialList.material->setDiffuse(osg::Material::FRONT_AND_BACK, new_color);
+        double    friction       = std::isnan(materialList.friction) ? 1 * factor : materialList.friction * factor;
+        osg::Vec4 friction_color = roadGeom->GetFrictionColor(friction);
+        materialList.material->setAmbient(osg::Material::FRONT_AND_BACK, friction_color);
+        materialList.material->setDiffuse(osg::Material::FRONT_AND_BACK, friction_color);
     }
 }
 
