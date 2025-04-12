@@ -31,13 +31,14 @@
 #     osgviewer ~/esmini/resources/models/car_white.osgb --window 60 60 800 400
 #     (possibly you need to change the path to your esmini root folder)
 
-OSG_VERSION=3.6.5
+# OSG_VERSION=OpenSceneGraph-3.6.5
+OSG_VERSION=4faa0766360ec8608d1d404ee72cae6620703fd4 # fix for Visual Studio 2022
 osg_root_dir=$(pwd)
 thirdparty=""
 build_examples=false  # set to true in order to build all examples (takes some time)
 z_exe_win="$PROGRAMFILES/7-Zip/7z"
-install_folder="../../osg"
-parallel_make_flag="-j 4"  # set to "" for cmake versions < 3.12
+install_folder="$osg_root_dir/osg"
+parallel_make_flag="-j"  # set to "" for cmake versions < 3.12
 
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
@@ -62,7 +63,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
 elif [[ "$OSTYPE" == "darwin"* ]]; then
 
-    curl --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_clang_mac.pkg.tgz" -o fbx202021_fbxsdk_clang_mac.pkg.tgz
+    curl --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_clang_mac.pkg.tgz" -O
     tar xzvf fbx202021_fbxsdk_clang_mac.pkg.tgz
     sudo installer -pkg fbx202021_fbxsdk_clang_macos.pkg -target /
 
@@ -79,13 +80,12 @@ elif [[ "$OSTYPE" == "msys" ]]; then
 
     if [ ! -d 3rdParty_x64 ]; then
         if [ ! -f 3rdParty_VS2017_v141_x64_V11_full.7z  ]; then
-            curl -L https://download.osgvisual.org/3rdParty_VS2017_v141_x64_V11_full.7z -o 3rdParty_VS2017_v141_x64_V11_full.7z
+            curl -L "https://www.dropbox.com/scl/fi/n01o3oshknnn6p0kj18e1/3rdParty_VS2017_v141_x64_V11_full.zip?rlkey=mf2rd8j306bu20lj1goqdgo6v&st=4wekh73w&dl=1" -O
         fi
-        "$z_exe_win" x 3rdParty_VS2017_v141_x64_V11_full.7z
+        "$z_exe_win" x 3rdParty_VS2017_v141_x64_V11_full.zip
     fi
-
     if [ ! -f fbx202021_fbxsdk_vs2017_win.exe ]; then
-        curl --user-agent  "Mozilla/5.0" -L https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_vs2017_win.exe -o fbx202021_fbxsdk_vs2017_win.exe
+        curl --user-agent  "Mozilla/5.0" -L https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_vs2017_win.exe -O
     fi
 
     if [ ! -d "$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/include" ]; then
@@ -100,27 +100,28 @@ elif [[ "$OSTYPE" == "msys" ]]; then
     fbx_lib_debug="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/debug/libfbxsdk-md.lib"
     fbx_xml_lib="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/release/libxml2-md.lib"
     fbx_zlib_lib="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/release/zlib-md.lib"
-    thirdparty="../../3rdParty_x64/x64"
+    thirdparty="$osg_root_dir/3rdParty_x64/x64"
+
+    GENERATOR=("Visual Studio 17 2022")
+    GENERATOR_TOOLSET="v143"
+    GENERATOR_ARGUMENTS="-A x64 -T ${GENERATOR_TOOLSET}"
 fi
 
 # OSG source
-git clone https://github.com/OpenSceneGraph/OpenSceneGraph
-cd OpenSceneGraph
-git checkout OpenSceneGraph-"$OSG_VERSION"
-
-# Apply fix for comment format not accepted by all platforms
-git checkout 63bb537132bab1f8b077838f7550e26405e5fa35 CMakeModules/FindFontconfig.cmake
-
-# Apply fix for Mac window handler
-git checkout 3994378a20948ebc4ed10b7cd33a6cc5393e7157 src/osgViewer/GraphicsWindowCocoa.mm
-
-mkdir build-dyn
-cd build-dyn
+if [ ! -d OpenSceneGraph ]; then
+    # use fork with a fix for Visual Studio 2022
+    git clone https://github.com/eknabevcc/OpenSceneGraph --branch osg_for_esmini 
+    cd OpenSceneGraph
+    git checkout "$OSG_VERSION"
+else
+    # osg seems already checked out, use it
+    cd OpenSceneGraph
+fi
 
 # Compile OSG with standard settings; dynamic linking and without examples
-cmake -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_INSTALL_PREFIX="$install_folder" -DFBX_XML2_LIBRARY="$fbx_xml_lib" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib" -DACTUAL_3RDPARTY_DIR=$thirdparty -DBUILD_OSG_EXAMPLES="$build_examples" ..
+cmake -B build-dyn -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_INSTALL_PREFIX="$install_folder" -DFBX_XML2_LIBRARY="$fbx_xml_lib" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib" -DACTUAL_3RDPARTY_DIR=$thirdparty -DBUILD_OSG_EXAMPLES="$build_examples" .
 
-cmake --build . --config Release --target install $parallel_make_flag
+cmake --build build-dyn --config Release --target install $parallel_make_flag
 
 if [[ "$OSTYPE" == "msys" ]]; then
     # Copy the 3rd party bin folder to the install folder
