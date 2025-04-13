@@ -2,6 +2,11 @@
 
 # This script will build OSG applications, including "osgviewer" and "osgconv" on linux
 #
+# Preparations:
+#   On Windows optionally specify Visual Studio compiler, set GENERATOR_ARGUMENTS variable below
+#     If GENERATOR_ARGUMENTS is not specified, default compiler will be used
+#   Check other settings below, e.g. "build_examples"
+#
 # Script steps:
 #   1. Fetch FBX SDK (headers and pre-compiled libraries)
 #   2. Extract FBX files. NOTE: User input is required "yes" to license and "n" to skip readme
@@ -11,13 +16,13 @@
 #
 # After the script is done:
 #   If desired the created osg folder can be moved, e.g to the home directory.
-#   To run the applications some paths need to be set accordingly:
+#   To run the applications some paths need to be set accordingly (check exact version numbers):
 #     Windows powershell:
 #       move osg $env:userprofile
-#       $env:path="$env:path;$env:userprofile/osg/bin;$env:userprofile/osg/bin/osgPlugins-3.6.5;$env:userprofile/osg/3rdParty_bin;$env:userprofile/osg/lib"
+#       $env:path="$env:path;$env:userprofile/osg/bin;$env:userprofile/osg/bin/osgPlugins-3.7.0;$env:userprofile/osg/3rdParty_bin;$env:userprofile/osg/lib"
 #     Windows cmd:
 #       move osg %userprofile%
-#       set path=%path%;%userprofile%/osg/bin;%userprofile%/osg/bin/osgPlugins-3.6.5;%userprofile%/osg/3rdParty_bin;%userprofile%/osg/lib
+#       set path=%path%;%userprofile%/osg/bin;%userprofile%/osg/bin/osgPlugins-3.7.0;%userprofile%/osg/3rdParty_bin;%userprofile%/osg/lib
 #     Linux:
 #       mv osg ~/
 #       export LD_LIBRARY_PATH="$HOME/osg/lib:$LD_LIBRARY_PATH"
@@ -31,8 +36,8 @@
 #     osgviewer ~/esmini/resources/models/car_white.osgb --window 60 60 800 400
 #     (possibly you need to change the path to your esmini root folder)
 
-# OSG_VERSION=OpenSceneGraph-3.6.5
-OSG_VERSION=4faa0766360ec8608d1d404ee72cae6620703fd4 # fix for Visual Studio 2022
+# settings
+OSG_VERSION=4faa0766360ec8608d1d404ee72cae6620703fd4 # fix for Visual Studio 2022, based on 3.7.0
 osg_root_dir=$(pwd)
 thirdparty=""
 build_examples=false  # set to true in order to build all examples (takes some time)
@@ -40,6 +45,7 @@ z_exe_win="$PROGRAMFILES/7-Zip/7z"
 install_folder="$osg_root_dir/osg"
 parallel_make_flag="-j"  # set to "" for cmake versions < 3.12
 
+# actions
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
     # [ ! -d fbxsdk ] && mkdir fbxsdk
@@ -80,9 +86,9 @@ elif [[ "$OSTYPE" == "msys" ]]; then
 
     if [ ! -d 3rdParty_x64 ]; then
         if [ ! -f 3rdParty_VS2017_v141_x64_V11_full.7z  ]; then
-            curl -L "https://www.dropbox.com/scl/fi/n01o3oshknnn6p0kj18e1/3rdParty_VS2017_v141_x64_V11_full.zip?rlkey=mf2rd8j306bu20lj1goqdgo6v&st=4wekh73w&dl=1" -O
+            curl -L "https://www.dropbox.com/scl/fi/fs54s1g2zbjbi6ou7zjt0/3rdParty_VS2017_v141_x64_V11_full.7z?rlkey=usiax6ry5xvclmye7sdypqwd9&st=fhfauw9e&dl=1" -O
         fi
-        "$z_exe_win" x 3rdParty_VS2017_v141_x64_V11_full.zip
+        "$z_exe_win" x 3rdParty_VS2017_v141_x64_V11_full.7z
     fi
     if [ ! -f fbx202021_fbxsdk_vs2017_win.exe ]; then
         curl --user-agent  "Mozilla/5.0" -L https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_vs2017_win.exe -O
@@ -102,15 +108,13 @@ elif [[ "$OSTYPE" == "msys" ]]; then
     fbx_zlib_lib="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/release/zlib-md.lib"
     thirdparty="$osg_root_dir/3rdParty_x64/x64"
 
-    GENERATOR=("Visual Studio 17 2022")
-    GENERATOR_TOOLSET="v143"
-    GENERATOR_ARGUMENTS="-A x64 -T ${GENERATOR_TOOLSET}"
+    # GENERATOR_ARGUMENTS=(-G "Visual Studio 17 2022" -T v143 -A x64)
 fi
 
 # OSG source
 if [ ! -d OpenSceneGraph ]; then
     # use fork with a fix for Visual Studio 2022
-    git clone https://github.com/eknabevcc/OpenSceneGraph --branch osg_for_esmini 
+    git clone https://github.com/eknabevcc/OpenSceneGraph --branch osg_for_esmini
     cd OpenSceneGraph
     git checkout "$OSG_VERSION"
 else
@@ -119,7 +123,7 @@ else
 fi
 
 # Compile OSG with standard settings; dynamic linking and without examples
-cmake -B build-dyn -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_INSTALL_PREFIX="$install_folder" -DFBX_XML2_LIBRARY="$fbx_xml_lib" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib" -DACTUAL_3RDPARTY_DIR=$thirdparty -DBUILD_OSG_EXAMPLES="$build_examples" .
+cmake -B build-dyn "${GENERATOR_ARGUMENTS[@]}" -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_INSTALL_PREFIX="$install_folder" -DFBX_XML2_LIBRARY="$fbx_xml_lib" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib" -DACTUAL_3RDPARTY_DIR=$thirdparty -DBUILD_OSG_EXAMPLES="$build_examples" .
 
 cmake --build build-dyn --config Release --target install $parallel_make_flag
 
