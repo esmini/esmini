@@ -1965,7 +1965,7 @@ void LatDistanceAction::Step(double simTime, double)
         // lateral motion controlled elsewhere
         return;
     }
-
+    std::cout << "Other obj speed " << target_object_->GetSpeed() << std::endl;
     double dt = simTime - sim_time_;
     sim_time_ = simTime;
 
@@ -2006,6 +2006,7 @@ void LatDistanceAction::Step(double simTime, double)
     double shift_x = 0.0;
     double shift_y = 0.0;
     SE_Vector lat_axis = SE_Vector(-std::sin(object_->pos_.GetH()), std::cos(object_->pos_.GetH()));
+    SE_Vector fwd_axis = SE_Vector(lat_axis.y(), -lat_axis.x());
     if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
     {
         // How much we need to move to reach the target distance in the direction of the vehicle
@@ -2084,20 +2085,44 @@ void LatDistanceAction::Step(double simTime, double)
         double new_velocity = lateral_velocity + required_acceleration * dt;
         new_velocity = CLAMP(new_velocity, -dynamics_.max_speed_, dynamics_.max_speed_); // limit the velocity to the max speed
 
+        double v_lat = new_velocity;
+
+        // Total intended speed (fixed)
+        double total_speed = object_->GetSpeed(); // This stays constant
+        double v_lat_sq = v_lat * v_lat;
+        
+        // Cap lateral if needed and compute corresponding longitudinal
+        if (v_lat_sq > dynamics_.max_speed_ * dynamics_.max_speed_) {
+            v_lat = SIGN(v_lat) * dynamics_.max_speed_;
+            v_lat_sq = v_lat * v_lat; // recalc for remaining speed
+        }
+        
+        // Now compute longitudinal velocity from remaining speed budget
+        double v_long = std::sqrt(std::max(0.0, total_speed * total_speed - v_lat_sq));
+        double dx = fwd_axis.x() * v_long + lat_axis.x() * v_lat;  // dx = movement in x-direction
+        double dy = fwd_axis.y() * v_long + lat_axis.y() * v_lat;  // dy = movement in y-direction
+
+
+        std::cout << "vlong "<< v_long << " vlat " << v_lat << "\n";
+
         // Apply the new velocity to the position
-        double new_x = object_->pos_.GetX() + lat_axis.x() * new_velocity * dt; 
-        double new_y = object_->pos_.GetY() + lat_axis.y() * new_velocity * dt;        
+        double new_x = object_->pos_.GetX() + dx * dt; 
+        double new_y = object_->pos_.GetY() + dy * dt;        
 
         // If within threshold, snap to target_y and stop completely
         std::cout << "Lateral distance: " << lateral_distance << "\n";
         std::cout << "Prev ateral distance: " << prev_lateral_distance_ << "\n";
 
         // Update object position
+        double ds = object_->pos_.DistanceToDS(dx);
+        std::cout << "ds " << ds << "\n";
+        object_->SetSpeed(object_->GetSpeed());
+        object_->pos_.MoveAlongS(v_long * dt, false);
         object_->pos_.SetInertiaPos(new_x, new_y, object_->pos_.GetH());
 
         // Store lateral velocity for next step
-        object_->SetSpeed(object_->GetSpeed());
         prev_lateral_distance_ = lateral_distance;
+        object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
     }
 }
 
