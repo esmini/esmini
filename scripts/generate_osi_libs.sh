@@ -35,7 +35,7 @@ PARALLEL_BUILDS=4
 if (( "$PARALLEL_BUILDS" < 2 )); then
     PARALLEL_ARG=""
 else
-    PARALLEL_ARG="$PARALLEL_ARG"
+    PARALLEL_ARG="$PARALLEL_BUILDS"
 fi
 
 if [ "$OSTYPE" == "msys" ]; then
@@ -76,12 +76,10 @@ else
     echo Unknown OSTYPE: $OSTYPE
 fi
 
-if [ ! -d $target_dir ]
-then
+if [ ! -d $target_dir ]; then
     mkdir $target_dir
 fi
-if [ ! -d $target_dir/include ]
-then
+if [ ! -d $target_dir/include ]; then
     mkdir $target_dir/include
 fi
 
@@ -96,8 +94,7 @@ osi_root_dir=$(pwd)
 echo ------------------------ Installing zlib ------------------------------------
 cd $osi_root_dir
 
-if [ ! -d zlib ]
-then
+if [ ! -d zlib ]; then
     git clone https://github.com/madler/zlib.git --depth 1 --branch v1.2.$ZIP_MIN_VERSION
     cd  zlib
     mkdir install
@@ -129,8 +126,7 @@ echo ------------------------ Installing OSI proto2cpp -------------------------
 
 cd $osi_root_dir
 
-if [ ! -d proto2cpp ]
-then
+if [ ! -d proto2cpp ]; then
     git clone https://github.com/OpenSimulationInterface/proto2cpp.git
 else
     echo proto2cpp folder already exists, continue with next step...
@@ -155,8 +151,7 @@ function build {
     echo ------------------------ Installing Protobuf $1 ------------------------------------
     cd $osi_root_dir
 
-    if [ ! -d protobuf$folder_postfix ]
-    then
+    if [ ! -d protobuf$folder_postfix ]; then
         git clone https://github.com/protocolbuffers/protobuf.git --depth 1 --branch v$PROTOBUF_VERSION protobuf$folder_postfix
         cd protobuf$folder_postfix
         mkdir build-code
@@ -207,8 +202,7 @@ function build {
 
     cd $osi_root_dir
 
-    if [ ! -d open-simulation-interface$folder_postfix ]
-    then
+    if [ ! -d open-simulation-interface$folder_postfix ]; then
         git clone https://github.com/OpenSimulationInterface/open-simulation-interface.git --depth 1 --branch v$OSI_VERSION open-simulation-interface$folder_postfix
         cd open-simulation-interface$folder_postfix
         sh ./convert-to-proto3.sh
@@ -271,7 +265,6 @@ function build {
 	if [[ "$OSTYPE" == "darwin"* ]] && [[ $variant == "debug" ]]; then
 	    continue
 	fi
-
         target_lib_dir=$target_lib_dir_root/$variant
         mkdir $target_lib_dir
 
