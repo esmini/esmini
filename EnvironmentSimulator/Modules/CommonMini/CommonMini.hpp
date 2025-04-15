@@ -707,8 +707,7 @@ public:
 
     inline void Wait()
     {
-#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
-#else
+#if !(defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
         std::unique_lock<std::mutex> lock(mtx);
         if (flag == true)
         {
