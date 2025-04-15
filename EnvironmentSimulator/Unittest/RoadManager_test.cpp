@@ -316,11 +316,11 @@ TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
     ASSERT_EQ(osi_points.GetNumOfOSIPoints(), 0);
 
     std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, true}};
-    std::vector<double>      s{0, -1, 2};
-    std::vector<double>      x{0, -1, 2};
-    std::vector<double>      y{0, -1, 2};
-    std::vector<double>      z{0, -1, 2};
-    std::vector<double>      h{0, -1, 2};
+    // std::vector<double>      s{0, -1, 2};
+    // std::vector<double>      x{0, -1, 2};
+    // std::vector<double>      y{0, -1, 2};
+    // std::vector<double>      z{0, -1, 2};
+    // std::vector<double>      h{0, -1, 2};
 
     OSIPoints osi_points_second = OSIPoints(osi_points_test_set);
     ASSERT_EQ(osi_points_second.GetNumOfOSIPoints(), 3);
@@ -2148,13 +2148,12 @@ TEST(ControllerTest, TestControllers)
         EXPECT_EQ(controller->GetControl(i)->signalId_, signalIds2[i]);
     }
 
-    JunctionController *jcontroller;
-    Junction           *junction = odr->GetJunctionByIdx(1);
+    Junction *junction = odr->GetJunctionByIdx(1);
     EXPECT_EQ(junction->GetNumberOfControllers(), 5);
     int controllerIds[] = {7, 9, 10, 8, 6};
     for (unsigned int i = 0; i < junction->GetNumberOfControllers(); i++)
     {
-        jcontroller = junction->GetJunctionControllerByIdx(i);
+        JunctionController *jcontroller = junction->GetJunctionControllerByIdx(i);
         EXPECT_EQ(jcontroller->id_, controllerIds[i]);
     }
 
@@ -2377,7 +2376,7 @@ class StarRoadTestFixture : public testing::Test
 {
 public:
     StarRoadTestFixture();
-    void Check(double a, double b, double c, double d, double e);
+    void Check(double x, double y, double h, double p_road, double p);
 
 protected:
     OpenDrive *odr;
@@ -2570,7 +2569,6 @@ TEST_F(MixedRoadsFixture, TestGetClosestLaneIdx)
     ASSERT_EQ(road->GetNumberOfLaneSections(), 2);
 
     double       offset       = 0.0;
-    double       s            = 0.0;
     LaneSection *lane_section = nullptr;
     idx_t        lane_idx     = IDX_UNDEFINED;
 
@@ -2579,7 +2577,7 @@ TEST_F(MixedRoadsFixture, TestGetClosestLaneIdx)
     for (int i = -1; i < 2; i++)
     {
         lane_section = road->GetLaneSectionByIdx(0);
-        s            = 5.0;
+        double s     = 5.0;
         lane_idx     = lane_section->GetClosestLaneIdx(s, 0.0, road->GetLaneOffset(s), i, offset, true);
         EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), i < 1 ? -1 : 0);
         EXPECT_NEAR(offset, i < 1 ? 1.5 : 0.0, 1e-3);

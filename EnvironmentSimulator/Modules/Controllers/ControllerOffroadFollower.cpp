@@ -126,10 +126,9 @@ int ControllerOffroadFollower::Activate(ControlActivationMode lat_activation_mod
         vehicle_.SetMaxAcc(object_->GetMaxAcceleration());
         vehicle_.SetMaxDec(object_->GetMaxDeceleration());
         vehicle_.SetSteeringRate(steering_rate_);
+        object_->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
+        object_->SetJunctionSelectorAngle(0.0);
     }
-
-    object_->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
-    object_->SetJunctionSelectorAngle(0.0);
 
     return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
 }

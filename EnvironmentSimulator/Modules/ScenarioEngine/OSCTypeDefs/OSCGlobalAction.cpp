@@ -200,7 +200,7 @@ void DeleteEntityAction::Step(double simTime, double dt)
     OSCAction::Stop();
 }
 
-void print_triangles(BBoxVec& vec, char const filename[])
+void print_triangles(const BBoxVec& vec, char const filename[])
 {
     std::ofstream file;
     file.open(filename);
@@ -215,7 +215,7 @@ void print_triangles(BBoxVec& vec, char const filename[])
     file.close();
 }
 
-void print_bbx(BBoxVec& vec, char const filename[])
+void print_bbx(const BBoxVec& vec, char const filename[])
 {
     std::ofstream file;
     file.open(filename);
@@ -228,7 +228,7 @@ void print_bbx(BBoxVec& vec, char const filename[])
     file.close();
 }
 
-void printTree(aabbTree::Tree& tree, char filename[])
+void printTree(aabbTree::Tree& tree, const char filename[])
 {
     std::ofstream file;
     file.open(filename);
@@ -504,7 +504,7 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions& sols,
     }
 
     unsigned int nCarsToSpawn = static_cast<unsigned int>(SE_Env::Inst().GetRand().GetNumberBetween(minN, maxN - 1));
-    if (nCarsToSpawn <= 0)
+    if (nCarsToSpawn == 0)
     {
         return;
     }
@@ -621,7 +621,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             Controller::InitArgs args;
             args.name       = "Swarm ACC controller";
-            args.type       = ControllerACC::GetTypeNameStatic();
+            args.type       = CONTROLLER_ACC_TYPE_NAME;
             args.entities   = entities_;
             args.gateway    = gateway_;
             args.parameters = 0;

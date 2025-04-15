@@ -42,21 +42,13 @@ namespace scenarioengine
         ControllerFollowRoute(InitArgs *args);
         ~ControllerFollowRoute();
 
-        static const char *GetTypeNameStatic()
+        virtual const char *GetTypeName()
         {
             return CONTROLLER_FOLLOW_ROUTE_TYPE_NAME;
         }
-        virtual const char *GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
-        {
-            return CONTROLLER_TYPE_FOLLOW_ROUTE;
-        }
         virtual int GetType()
         {
-            return GetTypeStatic();
+            return CONTROLLER_TYPE_FOLLOW_ROUTE;
         }
 
         void Init();
@@ -76,7 +68,7 @@ namespace scenarioengine
          *
          * @return double, (s)
          */
-        double GetLaneChangeTime()
+        double GetLaneChangeTime() const
         {
             return laneChangeTime_;
         };
@@ -85,7 +77,7 @@ namespace scenarioengine
          *
          * @return double, (m)
          */
-        double GetMinDistForCollision()
+        double GetMinDistForCollision() const
         {
             return minDistForCollision_;
         };

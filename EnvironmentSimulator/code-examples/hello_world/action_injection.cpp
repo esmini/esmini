@@ -16,7 +16,7 @@ int main(int argc, char **argv)
         }
         for (int i = 2; i < argc; i++)
         {
-            if (strcmp(argv[i], "--fixed_timestep") == 0 && i < argc - 1)
+            if (i < argc - 1 && strcmp(argv[i], "--fixed_timestep") == 0)
             {
                 dt = static_cast<float>(atof(argv[i + 1]));  // use any provided fixed timestep
             }

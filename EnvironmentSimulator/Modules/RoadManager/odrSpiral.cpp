@@ -172,7 +172,7 @@ static double p1evl(double x, double *coef, int n)
 
 static void fresnel(double xxa, double *ssa, double *cca)
 {
-    double f, g, cc, ss, c, s, t, u;
+    double cc, ss, t;
     double x, x2;
 
     x  = fabs(xxa);
@@ -191,19 +191,19 @@ static void fresnel(double xxa, double *ssa, double *cca)
     }
     else
     {
-        x2 = x * x;
-        t  = M_PI * x2;
-        u  = 1.0 / (t * t);
-        t  = 1.0 / t;
-        f  = 1.0 - u * polevl(u, fn, 9) / p1evl(u, fd, 10);
-        g  = t * polevl(u, gn, 10) / p1evl(u, gd, 11);
+        x2       = x * x;
+        t        = M_PI * x2;
+        double u = 1.0 / (t * t);
+        t        = 1.0 / t;
+        double f = 1.0 - u * polevl(u, fn, 9) / p1evl(u, fd, 10);
+        double g = t * polevl(u, gn, 10) / p1evl(u, gd, 11);
 
-        t  = M_PI * 0.5 * x2;
-        c  = cos(t);
-        s  = sin(t);
-        t  = M_PI * x;
-        cc = 0.5 + (f * s - g * c) / t;
-        ss = 0.5 - (f * c + g * s) / t;
+        t        = M_PI * 0.5 * x2;
+        double c = cos(t);
+        double s = sin(t);
+        t        = M_PI * x;
+        cc       = 0.5 + (f * s - g * c) / t;
+        ss       = 0.5 - (f * c + g * s) / t;
     }
 
     if (xxa < 0.0)

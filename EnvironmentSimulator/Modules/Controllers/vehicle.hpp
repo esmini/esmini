@@ -69,8 +69,8 @@ namespace vehicle
         {
             pitch_ = pitch;
         }
-        void   SetMaxSpeed(double speed);
-        double GetMaxSpeed()
+        void   SetMaxSpeed(double maxSpeed);
+        double GetMaxSpeed() const
         {
             return max_speed_;
         }
@@ -78,7 +78,7 @@ namespace vehicle
         {
             max_acc_ = acc;
         }
-        double GetMaxAcc()
+        double GetMaxAcc() const
         {
             return max_acc_;
         }
@@ -86,7 +86,7 @@ namespace vehicle
         {
             max_dec_ = dec;
         }
-        double GetMaxDec()
+        double GetMaxDec() const
         {
             return max_dec_;
         }
@@ -94,7 +94,7 @@ namespace vehicle
         {
             steering_rate_ = steering_rate;
         }
-        double GetSteeringRate()
+        double GetSteeringRate() const
         {
             return steering_rate_;
         }
@@ -102,7 +102,7 @@ namespace vehicle
         {
             steering_return_factor_ = steering_return_factor;
         }
-        double GetSteeringReturnFactor()
+        double GetSteeringReturnFactor() const
         {
             return steering_return_factor_;
         }
@@ -115,11 +115,11 @@ namespace vehicle
         {
             steering_scale_ = steering_scale;
         }
-        double GetSteeringScale()
+        double GetSteeringScale() const
         {
             return steering_scale_;
         }
-        bool GetThrottleDisabled()
+        bool GetThrottleDisabled() const
         {
             return steering_disabled_;
         }
@@ -127,7 +127,7 @@ namespace vehicle
         {
             throttle_disabled_ = value;
         }
-        bool GetSteeringDisabled()
+        bool GetSteeringDisabled() const
         {
             return steering_disabled_;
         }

@@ -104,9 +104,9 @@ namespace scenarioengine
         virtual bool        CheckCondition(double sim_time) = 0;
         void                Log(bool trig, bool full = false);
         virtual std::string GetAdditionalLogInfo() = 0;
-        bool                GetValue();
-        bool                CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge);
-        std::string         Edge2Str();
+        bool                GetValue() const;
+        bool                CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge) const;
+        std::string         Edge2Str() const;
         virtual void        Reset();
     };
 
@@ -325,7 +325,7 @@ namespace scenarioengine
         } RelativeDistanceType;
 
         Object*      object_;
-        Object::Type type_;
+        Object::Type objectType_;
         Rule         rule_;
         StoryBoard*  storyBoard_;
         typedef struct
@@ -336,7 +336,11 @@ namespace scenarioengine
         std::vector<CollisionPair> collision_pair_;
 
         bool CheckCondition(double sim_time);
-        TrigByCollision() : TrigByEntity(TrigByEntity::EntityConditionType::COLLISION), object_(0), type_(Object::Type::TYPE_NONE), storyBoard_(0)
+        TrigByCollision()
+            : TrigByEntity(TrigByEntity::EntityConditionType::COLLISION),
+              object_(0),
+              objectType_(Object::Type::TYPE_NONE),
+              storyBoard_(0)
         {
         }
         std::string GetAdditionalLogInfo() override;
@@ -565,9 +569,8 @@ namespace scenarioengine
     {
     public:
         Object*     object_;
-        std::string name_;
+        std::string parameterRef_;
         std::string value_;
-        Rule        rule_;
         Parameters* parameters_;
 
         bool CheckCondition(double sim_time);
@@ -581,9 +584,8 @@ namespace scenarioengine
     {
     public:
         Object*     object_;
-        std::string name_;
+        std::string variableRef_;
         std::string value_;
-        Rule        rule_;
         Parameters* variables_;
 
         bool CheckCondition(double sim_time);

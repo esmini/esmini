@@ -50,6 +50,9 @@
 #define ORTHO_FOV                          1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
+// cppcheck-suppress unknownMacro
+// The following macros are defined by the framework or plugin system and are correctly expanded during compilation.
+// Cppcheck cannot resolve them during static analysis, so this warning is false positive.
 USE_OSGPLUGIN(osg2)
 USE_OSGPLUGIN(jpeg)
 USE_SERIALIZER_WRAPPER_LIBRARY(osg)

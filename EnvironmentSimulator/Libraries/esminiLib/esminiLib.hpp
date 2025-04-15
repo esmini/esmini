@@ -1188,7 +1188,7 @@ extern "C"
            @param z reference to a variable returning the velocity along global z-axis
            @return 0 if successful.
     */
-    SE_DLL_API int SE_GetObjectVelocityGlobalXYZ(int object_id, float *x, float *y, float *z);
+    SE_DLL_API int SE_GetObjectVelocityGlobalXYZ(int object_id, float *vel_x, float *vel_y, float *vel_z);
 
     /**
             Get the angular velocity of the specified object

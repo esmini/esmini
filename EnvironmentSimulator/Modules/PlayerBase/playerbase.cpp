@@ -244,11 +244,11 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
 
 int ScenarioPlayer::Frame(bool server_mode)
 {
-    static __int64 time_stamp = 0;
-    double         dt;
+    double dt;
 
     if ((dt = GetFixedTimestep()) < 0.0)
     {
+        static __int64 time_stamp = 0;
         return Frame(SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize), server_mode);
     }
     else
@@ -1080,14 +1080,22 @@ void ScenarioPlayer::InitControllersPostPlayer()
     }
 }
 
-int ScenarioPlayer::AddObjectSensor(Object* obj, double x, double y, double z, double h, double near_dist, double far_dist, double fovH, int maxObj)
+int ScenarioPlayer::AddObjectSensor(Object* obj,
+                                    double  pos_x,
+                                    double  pos_y,
+                                    double  pos_z,
+                                    double  heading,
+                                    double  near_dist,
+                                    double  far_dist,
+                                    double  fovH,
+                                    int     maxObj)
 {
     if (obj == nullptr)
     {
         return -1;
     }
 
-    sensor.push_back(new ObjectSensor(&scenarioEngine->entities_, obj, x, y, z, h, near_dist, far_dist, fovH, maxObj));
+    sensor.push_back(new ObjectSensor(&scenarioEngine->entities_, obj, pos_x, pos_y, pos_z, heading, near_dist, far_dist, fovH, maxObj));
 
 #ifdef _USE_OSG
     if (viewer_)
@@ -1106,12 +1114,12 @@ int ScenarioPlayer::AddObjectSensor(Object* obj, double x, double y, double z, d
     return static_cast<int>(sensor.size()) - 1;
 }
 
-int ScenarioPlayer::GetNumberOfObjectSensors()
+int ScenarioPlayer::GetNumberOfObjectSensors() const
 {
     return static_cast<int>(sensor.size());
 }
 
-int ScenarioPlayer::GetNumberOfSensorsAttachedToObject(Object* obj)
+int ScenarioPlayer::GetNumberOfSensorsAttachedToObject(const Object* obj) const
 {
     if (obj == nullptr)
     {

@@ -27,25 +27,17 @@ namespace scenarioengine
     public:
         ControllerSumo(InitArgs* args);
 
-        static const char* GetTypeNameStatic()
+        virtual const char* GetTypeName()
         {
             return CONTROLLER_SUMO_TYPE_NAME;
         }
-        virtual const char* GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
+        virtual int GetType()
         {
             return CONTROLLER_TYPE_SUMO;
         }
-        virtual int GetType()
-        {
-            return GetTypeStatic();
-        }
 
         void Init();
-        void Step(double time);
+        void Step(double timeStep);
         int  Activate(ControlActivationMode lat_activation_mode,
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,

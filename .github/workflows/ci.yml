@@ -25,13 +25,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.7
 
-      - name: Install clang-format-15
-        if: runner.os == 'Linux'
-        run: wget https://apt.llvm.org/llvm.sh
-          && chmod +x llvm.sh
-          && sudo ./llvm.sh 15
-          && sudo apt-get install -y -q clang-format-15
-
       - name: Install Python3.8 and dependencies
         uses: actions/setup-python@v5.1.1
         with:
@@ -39,14 +32,54 @@ jobs:
           cache: 'pip'
       - run: pip install -r support/python/requirements.txt
 
+      - name: Make clang-format executable
+        run: chmod +x support/script/clang-format-runner.sh
+
       - name: Run clang-format lint
-        run: python3 support/python/src/main.py run format --clang_format_checker
+        run: pre-commit run clang-format --all-files
 
       - name: Run cmake-format lint
-        run: python3 support/python/src/main.py run format --cmake_format_checker
+        run: pre-commit run cmake-format --all-files
+
+      - name: Cache Cppcheck 2.17.1
+        uses: actions/cache@v4
+        id: cache-cppcheck
+        with:
+          path: ~/.local/cppcheck-2.17.1
+          key: cppcheck-2.17.1-${{ runner.os }}
+
+      - name: Install build dependencies for Cppcheck
+        if: steps.cache-cppcheck.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libpcre3-dev
+
+      - name: Build and install Cppcheck 2.17.1
+        if: steps.cache-cppcheck.outputs.cache-hit != 'true'
+        run: |
+          cd /tmp
+          wget https://github.com/danmar/cppcheck/archive/refs/tags/2.17.1.tar.gz
+          tar -xzf 2.17.1.tar.gz
+          cd cppcheck-2.17.1
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/.local/cppcheck-2.17.1 -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc)
+          make install
+
+      - name: Add Cppcheck to PATH
+        run: echo "$HOME/.local/cppcheck-2.17.1/bin" >> $GITHUB_PATH
+
+      - name: Verify Cppcheck version
+        run: |
+          cppcheck --version
+          which cppcheck
+
+      - name: Run cppcheck lint
+        run: pre-commit run cppcheck --all-files
 
       - name: Run black-format lint
-        run: python3 support/python/src/main.py run format --black_format_checker
+        run: pre-commit run black-format --all-files
 
       # TODO: OpenDrive generation currently has too many pylint issues
       #- name: Run pylint lint

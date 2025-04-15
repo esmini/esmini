@@ -58,23 +58,23 @@ namespace osgGA
             {
             }
 
-            bool GetFixPos()
+            bool GetFixPos() const
             {
                 return fixed_pos_;
             }
-            bool GetFixRot()
+            bool GetFixRot() const
             {
                 return fixed_rot_;
             }
-            bool GetOrtho()
+            bool GetOrtho() const
             {
                 return ortho_;
             }
-            osg::Vec3 GetPos()
+            osg::Vec3 GetPos() const
             {
                 return pos_;
             }
-            osg::Vec3 GetRot()
+            osg::Vec3 GetRot() const
             {
                 return rot_;
             }
@@ -166,7 +166,7 @@ namespace osgGA
 
         void setMode(unsigned int mode);
 
-        int getMode()
+        int getMode() const
         {
             return static_cast<int>(mode_);
         }
@@ -180,7 +180,7 @@ namespace osgGA
             customCamera_.push_back(customCamera);
         }
 
-        unsigned int GetNumberOfCameraModes()
+        unsigned int GetNumberOfCameraModes() const
         {
             return static_cast<unsigned int>(CAMERA_MODE::RB_NUM_MODES + customCamera_.size() - 1);
         }
@@ -193,7 +193,7 @@ namespace osgGA
         osg::Vec3d     origin_;
         ExplicitCenter explicitCenter_;
 
-        double GetCameraDistance();
+        double GetCameraDistance() const;
 
     protected:
         virtual ~RubberbandManipulator();

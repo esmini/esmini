@@ -48,21 +48,13 @@ namespace scenarioengine
     public:
         ControllerNaturalDriver(InitArgs* args);
 
-        static const char* GetTypeNameStatic()
+        const char* GetTypeName() override
         {
             return CONTROLLER_NATURAL_DRIVER_TYPE_NAME;
         }
-        const char* GetTypeName() override
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
-        {
-            return CONTROLLER_TYPE_NATURAL_DRIVER;
-        }
         int GetType() override
         {
-            return GetTypeStatic();
+            return CONTROLLER_TYPE_NATURAL_DRIVER;
         }
 
         void Init();
@@ -76,14 +68,14 @@ namespace scenarioengine
         bool   AdjacentLanesAvailable();
         void   FilterSurroundingVehicles();
         void   UpdateSurroundingVehicles();
-        void   FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
-        void   FindClosestBehind(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
+        void   FindClosestAhead(scenarioengine::Object* object, const roadmanager::PositionDiff& diff, VoIType type);
+        void   FindClosestBehind(scenarioengine::Object* object, const roadmanager::PositionDiff& diff, VoIType type);
         bool   CheckLaneChangePossible(const int lane_id);
         bool   AbortLaneChange() const;
         double EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds) const;
 
         ControllerNaturalDriver* GetOtherDriver(scenarioengine::Object* object) const;
-        void                     GetVehicleOfInterestType(int lane_id, VoIType& lead, VoIType& follow);
+        void                     GetVehicleOfInterestType(int lane_id, VoIType& lead, VoIType& follow) const;
         double                   GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead) const;
         double                   GetDesiredGap(double max_acceleration,
                                                double max_deceleration,

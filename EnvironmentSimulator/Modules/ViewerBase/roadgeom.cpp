@@ -189,9 +189,9 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array>        vertices,
     rm_group_->addChild(geode);
 }
 
-int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
+int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* group)
 {
-    (void)parent;
+    (void)group;
     for (unsigned int i = 0; i < lane->GetNumberOfRoadMarks(); i++)
     {
         roadmanager::LaneRoadMark* lane_roadmark = lane->GetLaneRoadMarkByIdx(static_cast<int>(i));
@@ -599,8 +599,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                         size_t l = 0;
                         for (; l < static_cast<unsigned int>(lsec->GetNumberOfLanes()); l++)
                         {
-                            lane                                            = lsec->GetLaneByIdx(static_cast<int>(l));
-                            std::vector<roadmanager::PointStruct> osiPoints = lane->GetOSIPoints()->GetPoints();
+                            lane = lsec->GetLaneByIdx(static_cast<int>(l));
 
                             // generate point at pivot s-value
                             double t = road->GetLaneOffset(s_value_candidates[k]) +
@@ -738,8 +737,6 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
             osg::ref_ptr<osg::Vec2Array> texcoordsAll = new osg::Vec2Array(nr_vertices);
 
             // Potential optimization: Swap loops, creating all vertices for same s-value for each step
-            int vertex_index_left_local      = 0;
-            int vertex_index_right_local     = 0;
             int vertex_index_left_local_next = 0;
             int vertex_idx_all               = 0;
 
@@ -752,8 +749,8 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                 lane                               = lsec->GetLaneByIdx(static_cast<int>(k));
                 roadmanager::Lane* laneForMaterial = nullptr;
 
-                vertex_index_left_local      = vertex_index_left_local_next;
-                vertex_index_right_local     = vertex_idx_all;
+                int vertex_index_left_local  = vertex_index_left_local_next;
+                int vertex_index_right_local = vertex_idx_all;
                 vertex_index_left_local_next = vertex_index_right_local;
 
                 for (size_t m = 0; m < geom_strips_list[k].size(); m++)  // loop over lane patches with constant friction
@@ -784,9 +781,9 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
 
                     for (size_t l = 0; l < n_points; l++)
                     {
-                        GeomPoint& gp = geom_points[gpi + l];
                         if (m == 0 || l > 0)
                         {
+                            GeomPoint& gp = geom_points[gpi + l];
                             (*verticesAll)[static_cast<unsigned int>(vertex_idx_all)].set(static_cast<float>(gp.x - origin_[0]),
                                                                                           static_cast<float>(gp.y - origin_[1]),
                                                                                           static_cast<float>(gp.z));

@@ -39,21 +39,13 @@ namespace scenarioengine
     public:
         ControllerLooming(InitArgs* args);
 
-        static const char* GetTypeNameStatic()
+        virtual const char* GetTypeName()
         {
             return CONTROLLER_LOOMING_TYPE_NAME;
         }
-        virtual const char* GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
-        {
-            return CONTROLLER_TYPE_LOOMING;
-        }
         virtual int GetType()
         {
-            return GetTypeStatic();
+            return CONTROLLER_TYPE_LOOMING;
         }
 
         void Init();
@@ -68,7 +60,7 @@ namespace scenarioengine
         }
         void Step(double timeStep);
         bool hasFarTan;
-        bool getHasFarTan()
+        bool getHasFarTan() const
         {
             return hasFarTan;
         }

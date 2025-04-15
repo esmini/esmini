@@ -735,8 +735,7 @@ int ScenarioEngine::parseScenario()
 
 int ScenarioEngine::defaultController(Object* obj, double dt)
 {
-    int    retval  = 0;
-    double steplen = obj->speed_ * dt;
+    int retval = 0;
 
     if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL))  // No action has updated longitudinal dimension
     {
@@ -745,7 +744,8 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
             Vehicle* tow_vehicle = static_cast<Vehicle*>(obj->TowVehicle());
             if (tow_vehicle == nullptr)
             {
-                retval = static_cast<int>(obj->MoveAlongS(steplen, true));
+                double steplen = obj->speed_ * dt;
+                retval         = static_cast<int>(obj->MoveAlongS(steplen, true));
                 if (retval == static_cast<int>(roadmanager::Position::ReturnCode::ERROR_GENERIC))
                 {
                     // Something went wrong, couldn't move vehicle forward. Stop.
@@ -1215,7 +1215,7 @@ void ScenarioEngine::SetupGhost(Object* object)
     }
 }
 // Reset events ongoing or finished by ghost
-void ScenarioEngine::ResetEvents()
+void ScenarioEngine::ResetEvents() const
 {
     for (size_t i = 0; i < storyBoard.story_.size(); i++)
     {
@@ -1375,7 +1375,6 @@ int ScenarioEngine::UpdateDistance(Object*                            obj_1,
 
     auto [rev_it, rev_inserted] = object_distance_map_.try_emplace(rev_key, DistanceEntry{});
     (void)rev_inserted;
-    auto& rev_distance_entry = rev_it->second;
 
     size_t idx_euclidian_abs = static_cast<size_t>(roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN_ABS);
     auto&  euclidian_entry   = distance_entry.measurement_[idx_euclidian_abs];
@@ -1385,10 +1384,10 @@ int ScenarioEngine::UpdateDistance(Object*                            obj_1,
                                   (obj_1->pos_.GetY() - obj_2->pos_.GetY()) * (obj_1->pos_.GetY() - obj_2->pos_.GetY());
         if (squared_distance > 2.5e5)  // 500 * 500m
         {
-            euclidian_entry.distance_   = squared_distance;
-            euclidian_entry.timestamp_  = simulationTime_;
-            distance_entry.next_update_ = simulationTime_ + 3.0;
-
+            euclidian_entry.distance_       = squared_distance;
+            euclidian_entry.timestamp_      = simulationTime_;
+            distance_entry.next_update_     = simulationTime_ + 3.0;
+            auto& rev_distance_entry        = rev_it->second;
             auto& rev_measurement           = rev_distance_entry.measurement_[idx_euclidian_abs];
             rev_measurement.distance_       = squared_distance;
             rev_measurement.timestamp_      = simulationTime_;

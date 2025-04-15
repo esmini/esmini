@@ -128,7 +128,7 @@ int Controller::Activate(ControlActivationMode lat_mode,
                                        static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT),
                                        static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM)};
 
-    ControlActivationMode modes[4] = {lat_mode, long_mode, light_mode, anim_mode};
+    const ControlActivationMode modes[4] = {lat_mode, long_mode, light_mode, anim_mode};
 
     for (unsigned int i = 0; i < 4; i++)
     {
@@ -192,27 +192,27 @@ std::string Controller::Mode2Str(ControlOperationMode mode)
     }
 }
 
-bool Controller::IsActiveOnDomainsOnly(unsigned int domainMask)
+bool Controller::IsActiveOnDomainsOnly(unsigned int domainMask) const
 {
     return (GetActiveDomains() == domainMask);
 }
 
-bool Controller::IsActiveOnDomains(unsigned int domainMask)
+bool Controller::IsActiveOnDomains(unsigned int domainMask) const
 {
     return (domainMask & GetActiveDomains()) == domainMask;
 }
 
-bool Controller::IsNotActiveOnDomains(unsigned int domainMask)
+bool Controller::IsNotActiveOnDomains(unsigned int domainMask) const
 {
     return (domainMask & GetActiveDomains()) == 0;
 }
 
-bool Controller::IsActiveOnAnyOfDomains(unsigned int domainMask)
+bool Controller::IsActiveOnAnyOfDomains(unsigned int domainMask) const
 {
     return (domainMask & GetActiveDomains()) != 0;
 }
 
-bool Controller::IsActive()
+bool Controller::IsActive() const
 {
     return GetActiveDomains() != static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
 }

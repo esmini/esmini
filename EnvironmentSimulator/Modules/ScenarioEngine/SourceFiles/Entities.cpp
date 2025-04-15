@@ -130,16 +130,13 @@ void Object::AssignController(Controller* controller)
 
 void Object::UnassignController(Controller* controller)
 {
-    for (auto ctrl : controllers_)
+    std::vector<Controller*>::iterator itr =
+        std::find_if(controllers_.begin(), controllers_.end(), [&controller](const Controller* ctrl) { return ctrl == controller; });
+    if (itr != controllers_.end())
     {
-        if (ctrl == controller)
-        {
-            ctrl->UnlinkObject();
-            ctrl->Deactivate();
-            break;
-        }
+        controller->UnlinkObject();
+        controller->Deactivate();
     }
-
     controllers_.erase(std::remove(controllers_.begin(), controllers_.end(), controller), controllers_.end());
 }
 
@@ -226,53 +223,47 @@ bool Object::IsControllerModeOnAnyOfDomains(ControlOperationMode mode, unsigned 
 
 scenarioengine::Controller* scenarioengine::Object::GetAssignedControllerOftype(Controller::Type type)
 {
-    for (auto ctrl : controllers_)
+    std::vector<Controller*>::iterator itr =
+        std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->GetType() == type; });
+    if (itr != controllers_.end())
     {
-        if (ctrl->GetType() == type)
-        {
-            return ctrl;
-        }
+        return *itr;
     }
-
     return nullptr;
 }
 
 bool scenarioengine::Object::IsAnyAssignedControllerOfType(Controller::Type type)
 {
-    for (auto ctrl : controllers_)
+    std::vector<Controller*>::iterator itr =
+        std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->GetType() == type; });
+    if (itr != controllers_.end())
     {
-        if (ctrl->GetType() == type)
-        {
-            return true;
-        }
+        return true;
     }
-
     return false;
 }
 
 bool Object::IsAnyActiveControllerOfType(Controller::Type type)
 {
-    for (auto ctrl : controllers_)
+    std::vector<Controller*>::iterator itr =
+        std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->IsActive() && ctrl->GetType() == type; });
+    if (itr != controllers_.end())
     {
-        if (ctrl->IsActive() && ctrl->GetType() == type)
-        {
-            return true;
-        }
+        return true;
     }
-
     return false;
 }
 
 scenarioengine::Controller* Object::GetControllerActiveOnDomain(ControlDomains domain)
 {
-    for (auto ctrl : controllers_)
+    std::vector<Controller*>::iterator itr =
+        std::find_if(controllers_.begin(),
+                     controllers_.end(),
+                     [&domain](Controller* ctrl) { return ctrl->IsActiveOnDomains(static_cast<unsigned int>(domain)); });
+    if (itr != controllers_.end())
     {
-        if (ctrl->IsActiveOnDomains(static_cast<unsigned int>(domain)))
-        {
-            return ctrl;
-        }
+        return *itr;
     }
-
     return nullptr;
 }
 
@@ -294,14 +285,12 @@ scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(Control
 
 scenarioengine::Controller* Object::GetController(std::string name)
 {
-    for (auto ctrl_tmp : controllers_)
+    std::vector<Controller*>::iterator itr =
+        std::find_if(controllers_.begin(), controllers_.end(), [&name](Controller* ctrl) { return ctrl->GetName() == name; });
+    if (itr != controllers_.end())
     {
-        if (ctrl_tmp->GetName() == name)
-        {
-            return ctrl_tmp;
-        }
+        return *itr;
     }
-
     return nullptr;
 }
 
@@ -479,7 +468,7 @@ bool Object::CollisionAndRelativeDistLatLong(Object* target, double* distLat, do
                 gap = true;
                 if (distLong == nullptr && distLat == nullptr)
                 {
-                    return !gap;
+                    return false;
                 }
                 else
                 {
@@ -1624,7 +1613,7 @@ void Entities::removeObject(Object* object, bool recursive)
     return;
 }
 
-bool Entities::nameExists(std::string name)
+bool Entities::nameExists(std::string name) const
 {
     for (size_t i = 0; i < object_.size(); i++)
     {
@@ -1636,7 +1625,7 @@ bool Entities::nameExists(std::string name)
     return false;
 }
 
-bool Entities::indexExists(int id)
+bool Entities::indexExists(int id) const
 {
     for (size_t i = 0; i < object_.size(); i++)
     {
@@ -1909,7 +1898,7 @@ Object* Object::TowVehicle()
                 if (vehicle->trailer_coupler_->tow_vehicle_->type_ == Object::Type::VEHICLE)
                 {
                     tow_vehicle = static_cast<Vehicle*>(vehicle->trailer_coupler_->tow_vehicle_);
-                    if (tow_vehicle != nullptr && tow_vehicle->trailer_hitch_ == nullptr)
+                    if (tow_vehicle->trailer_hitch_ == nullptr)
                     {
                         LOG_WARN_ONCE("Tow vehicle {} lacks hitch", tow_vehicle->GetName());
                         tow_vehicle = nullptr;
@@ -1936,7 +1925,7 @@ Object* Object::TrailerVehicle()
                 if (vehicle->trailer_hitch_->trailer_vehicle_->type_ == Object::Type::VEHICLE)
                 {
                     trailer_vehicle = static_cast<Vehicle*>(vehicle->trailer_hitch_->trailer_vehicle_);
-                    if (trailer_vehicle != nullptr && trailer_vehicle->trailer_coupler_ == nullptr)
+                    if (trailer_vehicle->trailer_coupler_ == nullptr)
                     {
                         LOG_WARN_ONCE("Trailer vehicle {} lacks coupler", trailer_vehicle->GetName());
                         trailer_vehicle = nullptr;

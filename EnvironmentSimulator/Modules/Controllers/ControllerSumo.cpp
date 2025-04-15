@@ -50,7 +50,6 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
     {
         LOG_ERROR("Failed to load SUMO config file {}", args->properties->file_.filepath_);
         throw std::invalid_argument(std::string("Cannot open file: ") + args->properties->file_.filepath_);
-        return;
     }
 
     std::vector<std::string> file_name_candidates;
@@ -71,7 +70,6 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
         // Give up
         LOG_ERROR("Failed to load SUMO net file {}", file_name_candidates[0]);
         throw std::invalid_argument(std::string("Cannot open file: ") + file_name_candidates[0]);
-        return;
     }
 
     pugi::xml_node location  = docsumo_.child("net").child("location");

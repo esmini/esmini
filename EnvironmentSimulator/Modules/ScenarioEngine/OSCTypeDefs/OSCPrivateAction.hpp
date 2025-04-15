@@ -91,7 +91,7 @@ namespace scenarioengine
             }
             void Reset();
 
-            double Evaluate(DynamicsShape shape = DynamicsShape::SHAPE_UNDEFINED);  // 0 = start_value, 1 = end_value
+            double Evaluate(DynamicsShape shape = DynamicsShape::SHAPE_UNDEFINED) const;  // 0 = start_value, 1 = end_value
             double EvaluatePrim();
             double EvaluateScaledPrim();
             double EvaluatePrimPeak();
@@ -99,34 +99,34 @@ namespace scenarioengine
             double GetTargetParamValByPrimPeak(double prim_peak);
             double GetTargetParamValByPrimPrimPeak(double prim_prim_peak);
 
-            double GetParamVal()
+            double GetParamVal() const
             {
                 return param_val_;
             }
             void   SetStartVal(double start_val);
-            double GetStartVal()
+            double GetStartVal() const
             {
                 return start_val_;
             }
             void   SetTargetVal(double target_val);
-            double GetTargetVal()
+            double GetTargetVal() const
             {
                 return target_val_;
             }
 
             void   SetParamTargetVal(double target_value);
-            double GetParamTargetVal()
+            double GetParamTargetVal() const
             {
                 return param_target_val_;
             }
             void   SetMaxRate(double max_rate);
             void   SetRate(double rate);
             void   UpdateRate();
-            double GetRate()
+            double GetRate() const
             {
                 return rate_;
             }
-            double GetScaleFactor()
+            double GetScaleFactor() const
             {
                 return scale_factor_;
             }
@@ -166,12 +166,12 @@ namespace scenarioengine
             return 0;
         };
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "OSCPrivateAction base class";
         };
 
-        unsigned int GetDomains()
+        unsigned int GetDomains() const
         {
             return domains_;
         }
@@ -283,7 +283,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "SpeedAction";
         };
@@ -382,6 +382,7 @@ namespace scenarioengine
             speed_          = action.speed_;
             acc_            = action.acc_;
             cur_index_      = action.cur_index_;
+            segment_        = action.segment_;
         }
 
         OSCPrivateAction* Copy()
@@ -390,7 +391,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "SpeedProfileAction";
         };
@@ -409,15 +410,15 @@ namespace scenarioengine
         {
             entry_.push_back(entry);
         }
-        double GetStartTime()
+        double GetStartTime() const
         {
             return start_time_;
         }
-        double GetElapsedTime()
+        double GetElapsedTime() const
         {
             return elapsed_;
         }
-        double GetSpeed()
+        double GetSpeed() const
         {
             return speed_;
         }
@@ -487,6 +488,7 @@ namespace scenarioengine
             sim_time_      = action.sim_time_;
             displacement_  = action.displacement_;
             cs_            = action.cs_;
+            continuous_    = action.continuous_;
         }
 
         OSCPrivateAction* Copy()
@@ -495,7 +497,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "LongitudinalDistanceAction";
         };
@@ -597,6 +599,7 @@ namespace scenarioengine
                 }
             }
             SetName(action.GetName());
+            internal_pos_ = action.internal_pos_;
         }
 
         OSCPrivateAction* Copy()
@@ -614,7 +617,7 @@ namespace scenarioengine
             }
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "LaneChangeAction";
         };
@@ -695,7 +698,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "LaneOffsetAction";
         };
@@ -810,7 +813,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "SynchronizeAction";
         };
@@ -818,13 +821,13 @@ namespace scenarioengine
         void Step(double simTime, double dt);
         void Start(double simTime);
 
-        const char* Mode2Str(SynchMode mode);
+        const char* Mode2Str(SynchMode mode) const;
 
     private:
         double CalcSpeedForLinearProfile(double v_final, double time, double dist);
         void   PrintStatus(const char* custom_msg);
         // const char* Mode2Str(SynchMode mode);
-        const char* SubMode2Str(SynchSubmode submode);
+        const char* SubMode2Str(SynchSubmode submode) const;
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2)
         {
@@ -874,7 +877,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "TeleportAction";
         };
@@ -891,7 +894,7 @@ namespace scenarioengine
     private:
         bool ghost_restart_;
 
-        bool IsGhostRestart()
+        bool IsGhostRestart() const
         {
             return ghost_restart_;
         }
@@ -920,7 +923,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "ConnectTrailerAction";
         };
@@ -957,7 +960,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "ConnectTrailerAction";
         };
@@ -1003,7 +1006,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "AssignRouteAction";
         };
@@ -1085,7 +1088,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "FollowTrajectoryAction";
         };
@@ -1130,7 +1133,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "AcquirePositionAction";
         };
@@ -1184,7 +1187,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "AssignControllerAction";
         };
@@ -1248,7 +1251,7 @@ namespace scenarioengine
 
         void Start(double simTime);
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "ActivateControllerAction";
         };
@@ -1293,7 +1296,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "VisibilityAction";
         };
@@ -1305,12 +1308,12 @@ namespace scenarioengine
     class OverrideControlAction : public OSCPrivateAction
     {
     public:
-        Object::OverrideType type_;
+        Object::OverrideType overrideType_;
 
         // assume both domains
         OverrideControlAction(double value, bool active, Object::OverrideType type, StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
-              type_(type)
+              overrideType_(type)
         {
             (void)value;
             (void)active;
@@ -1326,7 +1329,7 @@ namespace scenarioengine
                                static_cast<unsigned int>(ControlDomains::DOMAIN_NONE))
         {
             SetName(action.GetName());
-            type_              = action.type_;
+            overrideType_      = action.overrideType_;
             overrideActionList = action.overrideActionList;
         }
 
@@ -1343,7 +1346,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "OverrideControlAction";
         };

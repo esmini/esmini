@@ -109,12 +109,11 @@ static void ConvertArguments()
 {
     argc_ = static_cast<int>(args_v.size());
     argv_ = reinterpret_cast<char **>(malloc(args_v.size() * sizeof(char *)));
-    std::string argument_list;
+
     for (unsigned int i = 0; i < static_cast<unsigned int>(argc_); i++)
     {
         argv_[i] = reinterpret_cast<char *>(malloc((args_v[i].size() + 1) * sizeof(char)));
         StrCopy(argv_[i], args_v[i].c_str(), static_cast<unsigned int>(args_v[i].size()) + 1);
-        argument_list += std::string(" ") + argv_[i];
     }
 }
 
@@ -1059,11 +1058,10 @@ extern "C"
                                                SE_OSCBoundingBox bounding_box,
                                                int               scale_mode)
     {
-        int object_id = -1;
-
         // Add missing object
         if (player != nullptr)
         {
+            int         object_id = -1;
             std::string name;
             if (object_name == nullptr)
             {
@@ -1101,7 +1099,7 @@ extern "C"
                 vehicle->boundingbox_ = bb;
 
                 Controller::InitArgs args = {"", "", 0, 0, 0, 0};
-                args.type                 = ControllerExternal::GetTypeNameStatic();
+                args.type                 = CONTROLLER_EXTERNAL_TYPE_NAME;
                 Controller *ctrl          = InstantiateControllerExternal(&args);
                 if (ctrl != nullptr)
                 {
@@ -1498,10 +1496,10 @@ extern "C"
         return obj->pos_.GetInLaneType();
     }
 
-    SE_DLL_API int SE_GetOverrideActionStatus(int object_id, SE_OverrideActionList *list)
+    SE_DLL_API int SE_GetOverrideActionStatus(int objectId, SE_OverrideActionList *list)
     {
         Object *obj = nullptr;
-        if (getObjectById(object_id, obj) == -1)
+        if (getObjectById(objectId, obj) == -1)
         {
             printf("no obj\n");
             return -1;
@@ -1797,9 +1795,8 @@ extern "C"
         return 0;
 #else
         (void)nanoseconds;
-#endif  // _USE_OSI
-
         return -1;
+#endif  // _USE_OSI
     }
 
     SE_DLL_API void SE_LogMessage(const char *message)
@@ -2341,6 +2338,7 @@ extern "C"
         SE_ObjCallback cb;
         cb.id   = object_id;
         cb.func = fnPtr;
+        cb.data = nullptr;
         objCallback.push_back(cb);
         player->RegisterObjCallback(object_id, objCallbackFn, user_data);
     }
@@ -2525,6 +2523,11 @@ extern "C"
         if (handleSimpleVehicle)
         {
             delete ((vehicle::Vehicle *)handleSimpleVehicle);
+            // cppcheck-suppress uselessAssignmentPtrArg
+            // Assigning nullptr as a defensive pattern to make it clear the pointer is no longer valid after deletion.
+
+            // cppcheck-suppress unreadVariable
+            // The pointer is assigned nullptr purely for clarity; it's not used afterward, which is expected.
             handleSimpleVehicle = 0;
         }
     }
@@ -2683,8 +2686,8 @@ extern "C"
         return 0;
 #else
         (void)state;
-#endif
         return -1;
+#endif
     }
 
     SE_DLL_API int SE_SaveImagesToFile(int nrOfFrames)
@@ -2700,7 +2703,7 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API int SE_FetchImage(SE_Image *img)
+    SE_DLL_API int SE_FetchImage(SE_Image *image)
     {
 #ifdef _USE_OSG
         if (player)
@@ -2710,16 +2713,16 @@ extern "C"
             {
                 return -1;
             }
-            img->width       = offScrImg->width;
-            img->height      = offScrImg->height;
-            img->pixelSize   = offScrImg->pixelSize;
-            img->pixelFormat = offScrImg->pixelFormat;
-            img->data        = offScrImg->data;
+            image->width       = offScrImg->width;
+            image->height      = offScrImg->height;
+            image->pixelSize   = offScrImg->pixelSize;
+            image->pixelFormat = offScrImg->pixelFormat;
+            image->data        = offScrImg->data;
         }
 
         return 0;
 #else
-        (void)img;
+        (void)image;
         return -1;
 #endif
     }

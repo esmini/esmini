@@ -20,6 +20,7 @@
 #include "spdlog/fmt/fmt.h"
 
 #include <iostream>
+
 #if __has_include(<filesystem>)
 #include <filesystem>
 namespace fs = std::filesystem;

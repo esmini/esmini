@@ -42,13 +42,15 @@ Plot::Plot(ScenarioEngine* scenarioengine, bool synchronous)
     // Decide GL+GLSL versions
 #if defined(IMGUI_IMPL_OPENGL_ES2)
     // GL ES 2.0 + GLSL 100
-    const char* glsl_version = "#version 100";
+    // const char* glsl_version = "#version 100";
+    glsl_version = "#version 100";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
 #elif defined(__APPLE__)
     // GL 3.2 + GLSL 150
-    const char* glsl_version = "#version 150";
+    // const char* glsl_version = "#version 150";
+    glsl_version = "#version 150";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
@@ -101,7 +103,7 @@ void Plot::CleanUp()
     window = nullptr;
 }
 
-void Plot::updateData(std::vector<Object*>& objects, double time)
+void Plot::updateData(const std::vector<Object*>& objects, double time)
 {
     if (plot_objects_.size() < scenarioengine_->entities_.object_.size())
     {
@@ -205,14 +207,11 @@ void Plot::adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<
 void Plot::renderPlot(const char* name)  //, float window_w, float window_h)
 {
     // See how many boxes that has been checked (excl. time), used to scale lineplots
-    size_t lineplot_objects = 0;
-    for (const auto& selection : lineplot_selection_)
-    {
-        if (selection.first != PlotCategories::Time && selection.second)
-        {
-            lineplot_objects += 1;
-        }
-    }
+    size_t lineplot_objects =
+        static_cast<size_t>(std::count_if(lineplot_selection_.begin(),
+                                          lineplot_selection_.end(),
+                                          [](const auto& selection) { return selection.first != PlotCategories::Time && selection.second; }));
+
     ImGui::SetNextWindowSize(ImVec2(static_cast<float>(window_w), static_cast<float>(window_h)), ImGuiCond_Once);
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
     ImGui::Begin(name, nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar);
@@ -437,23 +436,23 @@ void Plot::PlotObject::updateData(Object* object, double time)
     plotData[PlotCategories::LaneID].push_back(static_cast<float>(object->pos_.GetLaneId()));
 }
 
-float Plot::PlotObject::getTimeMax()
+float Plot::PlotObject::getTimeMax() const
 {
     return time_max_;
 }
-float Plot::PlotObject::getMaxAcc()
+float Plot::PlotObject::getMaxAcc() const
 {
     return max_acc_;
 }
-float Plot::PlotObject::getMaxDecel()
+float Plot::PlotObject::getMaxDecel() const
 {
     return max_decel_;
 }
-float Plot::PlotObject::getMaxSpeed()
+float Plot::PlotObject::getMaxSpeed() const
 {
     return max_speed_;
 }
-std::string Plot::PlotObject::getName()
+std::string Plot::PlotObject::getName() const
 {
     return name_;
 }

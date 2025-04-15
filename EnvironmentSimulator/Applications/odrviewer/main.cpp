@@ -158,12 +158,14 @@ int SpawnCar(viewer::Viewer *viewer, const roadmanager::Road *road, const roadma
                                                  0,
                                                  EntityScaleMode::BB_TO_MODEL)) == 0)
     {
+        delete car_;
         return -1;
     }
     else
     {
         if (viewer->AddEntityModel(car_->model) != 0)
         {
+            delete car_;
             return -1;
         }
     }
@@ -318,12 +320,14 @@ int SetupCarsSpecial(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
                                                  0,
                                                  EntityScaleMode::BB_TO_MODEL)) == 0)
     {
+        delete car_;
         return -1;
     }
     else
     {
         if (viewer->AddEntityModel(car_->model) != 0)
         {
+            delete car_;
             return -1;
         }
     }
@@ -507,8 +511,6 @@ int main(int argc, char **argv)
     TxtLogger::Inst().SetLogFilePath(TxtLogger::Inst().CreateLogFilePath());
     TxtLogger::Inst().LogTimeOnly();
     TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
-
-    static char str_buf[128];
 
     if ((arg_str = opt.GetOptionArg("fixed_timestep")) != "")
     {
@@ -741,7 +743,6 @@ int main(int argc, char **argv)
         }
         LOG_INFO("{} cars added", static_cast<int>(cars.size()));
 
-        __int64 now            = 0;
         __int64 lastTimeStamp  = 0;
         __int64 firstTimeStamp = 0;
 
@@ -750,7 +751,7 @@ int main(int argc, char **argv)
         TxtLogger::Inst().SetLoggerTime(&system_time);
         while (!viewer->osgViewer_->done())
         {
-            now = SE_getSystemTime();
+            __int64 now = SE_getSystemTime();
             if (first_time)
             {
                 firstTimeStamp = now;
@@ -790,7 +791,8 @@ int main(int argc, char **argv)
             // Always update info text, since camera might jump between different entities also during pause
             if (static_cast<int>(cars.size()) > 0 && viewer->currentCarInFocus_ >= 0 && viewer->currentCarInFocus_ < static_cast<int>(cars.size()))
             {
-                Car *car = cars[static_cast<unsigned int>(viewer->currentCarInFocus_)];
+                Car        *car = cars[static_cast<unsigned int>(viewer->currentCarInFocus_)];
+                static char str_buf[128];
                 snprintf(str_buf,
                          sizeof(str_buf),
                          "entity[%d]: %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)",

@@ -2559,7 +2559,6 @@ Below are the steps to add new controller in esmini:
 . Create Instantiate method in the new controller. The name shall be unique eg InstantiateControllerLooming
 . In the new controller, Type name shall be unique eg, CONTROLLER_LOOMING_TYPE_NAME
 . Add controller type and it shall be unique in EnvironmentSimulator/Modules/Controllers/Controller.hpp
-. Make sure GetTypeStatic() and GetTypeNameStatic() and methods returns the unique type and type name values
 
 == OpenSceneGraph and 3D models
 
@@ -3718,56 +3717,31 @@ Master branch represent the latest released software. It should be in synch with
 
 `<branch name>` might be `master` or `dev`, or whatever branch to be restored.
 
-=== Formatting
+=== Formatting and code analysis
 
-From esmini v2.30.0 the CI will include formatting checks, in addition to static analysis and tests. The code styles are defined by following schemes:
+From esmini v2.30.0 the CI will include formatting checks, in addition to static analysis and tests.
+
+From v2.46.3, esmini utilizes https://pre-commit.com/[pre-commit hooks] for these checks. For details of previous implementation, see older versions of this document, e.g. https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/refs/tags/v2.46.2/index.html[v2.46.2].
+
+The code styles are defined by following schemes:
 
 [horizontal]
-*C++* :: https://github.com/esmini/esmini/blob/master/.clang-format[.clang-format]
-*Python* :: https://github.com/esmini/esmini/blob/master/.black-format[.black-format]
-*cmake* :: https://github.com/esmini/esmini/blob/master/.cmake-format[.cmake-format]
+*C++* :: https://github.com/esmini/esmini/blob/dev/.clang-format[.clang-format]
+*Python* :: https://github.com/esmini/esmini/blob/dev/.black-format[.black-format]
+*cmake* :: https://github.com/esmini/esmini/blob/dev/.cmake-format[.cmake-format]
+*cppcheck*:: https://github.com/esmini/esmini/blob/dev/.pre-commit-config.yaml[.pre-commit-config.yaml]
 
-To run formatting (both check and apply) locally, follow steps below:
 
-[discreet]
+esmini uses pre-commit hooks to automatically perform code formatting and static code analysis. To enable this functionality, install the pre-commit package:
+```
+pip install pre-commit
+```
+Then, run the following command to install the pre-commit hooks in esmini root folder. This sets up the pre-commit hooks, enabling automatic checks when making commits:
+```
+pre-commit install
+```
+
 ==== Dependencies
-===== clang-format
-esmini makes use of version 15, avoiding some known bugs in v14 +
-
-Windows: +
-Download and install LLVM-15.0.7-win64.exe found here: +
-https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.7
-
-Linux: +
-
-Check if clang-format version 15 is installed:
-
-`clang-format-15`
-
-If you get the following message:
-
-```
-Command 'clang-format-15' not found, but can be installed with:
-sudo apt install clang-format-15
-```
-
-then clang 15 must be installed.
-
-On Ubuntu systems prior to 22.04, first install llvm version 15:
-
-```
-wget https://apt.llvm.org/llvm.sh
-chmod +x llvm.sh
-sudo ./llvm.sh 15
-```
-Source: https://apt.llvm.org[apt.llvm.org]
-
-Then, clang v15 can be installed:
-```
-sudo apt install clang-format-15
-```
-
-see also: https://github.com/esmini/esmini/blob/dev/.github/workflows/ci.yml#L26[ci.yml]
 
 ===== Install dependent Python packages
 [source, txt]
@@ -3775,26 +3749,85 @@ see also: https://github.com/esmini/esmini/blob/dev/.github/workflows/ci.yml#L26
 pip install -r ./support/python/requirements.txt
 ----
 
-[discreet]
-==== Check format
+===== clang-format
+[horizontal]
+*Windows*:: Download and install https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.7/LLVM-15.0.7-win64.exe[LLVM-15.0.7-win64.exe]
+*Linux*:: ```sudo apt install clang-format```
+
+===== cppcheck
+[horizontal]
+*Windows*:: Download and install https://github.com/danmar/cppcheck/releases/download/2.17.1/cppcheck-2.17.1-x64-Setup.msi[cppcheck-2.17.1-x64-Setup.msi]
+*Linux*:: ```sudo apt install cppcheck```
+
+====== Cppcheck version in esmini CI/CD
+The CI/CD pipeline uses Cppcheck version 2.17 for static code analysis. If you require a different version of Cppcheck, perhaps due to specific dependencies, it is recommended to leverage the esmini CI/CD environment itself. To do this, create a fork of the esmini repository and run your static analysis within that environment simply by pushing your code changes. This ensures consistency with the CI/CD setup.
+
+====== Using a different Cppcheck version locally
+If you prefer to use a different version of Cppcheck locally or do not want to install version 2.17 system-wide, follow the instructions below.
+
+If you have a different version installed or don't want to install 2.17 system-wide, see steps below for your platform.
+
+====== For Linux and macOS
+
+Download Cppcheck 2.17.1 source from:
+
+https://github.com/danmar/cppcheck/archive/refs/tags/2.17.1.tar.gz
+
+Extract it to your home directory (for example, to ~/cppcheck-2.17.1).
+
+Build it:
 [source, txt]
 ----
-./support/python/src/main.py run format --clang_format_checker
-./support/python/src/main.py run format --cmake_format_checker
-./support/python/src/main.py run format --black_format_checker
+cd ~/cppcheck-2.17.1
+mkdir build
+cd build
+cmake ..
+cmake --build .
 ----
 
-==== Apply formatting
+To run pre-commit using this local build of Cppcheck 2.17, run the following from your esmini root folder:
 [source, txt]
 ----
-./support/python/src/main.py run format
+PATH="$HOME/cppcheck-2.17.1/build/bin:$PATH" pre-commit run cppcheck --all-files
 ----
-or specifics:
+
+This command temporarily uses your locally built Cppcheck 2.17 without changing your system default.
+
+====== For Windows
+
+Download the official Cppcheck 2.17 installer from:
+
+https://github.com/danmar/cppcheck/releases/download/2.17.1/cppcheck-2.17.1-x64-Setup.msi
+
+Make sure to install it to a separate directory than any previous Cppcheck version you want to keep.
+
+==== Manually apply specific format
+To run formatting locally, follow steps below.
+
 [source, txt]
 ----
-./support/python/src/main.py run format --clang_format
-./support/python/src/main.py run format --cmake_format
-./support/python/src/main.py run format --black_format
+pre-commit run clang-format --all-files
+pre-commit run cmake-format --all-files
+pre-commit run black --all-files
+----
+
+==== Manually analyse code
+[source, txt]
+----
+pre-commit run cppcheck --all-files
+----
+
+or formatting and code analysis can be done in one step by:
+----
+pre-commit run --all-files
+----
+
+==== Automatic formatting and code analysis
+pre-commit will automatically run on each commit on all staged files. Sometimes automatic application maybe not needed for instance work in progress etc. In that case, you can skip the pre-commit hook by using the `--no-verify` option when committing:
+
+[source, txt]
+----
+git commit -m "my commit message" --no-verify
 ----
 
 === Test

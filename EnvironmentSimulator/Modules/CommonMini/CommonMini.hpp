@@ -255,7 +255,7 @@ public:
         return *this;
     }
 
-    SE_Vector Rotate(double angle)
+    SE_Vector Rotate(double angle) const
     {
         SE_Vector res;
         res.x_ = x_ * cos(angle) - y_ * sin(angle);
@@ -604,7 +604,7 @@ void NormalizeVec2D(double x, double y, double& xn, double& yn);
 /**
         Find parallel line at specified offset (- means left, + right)
 */
-void OffsetVec2D(double x0, double y0, double x1, double y1, double offset, double& xo0, double& yo0, double& xo1, double& y01);
+void OffsetVec2D(double x0, double y0, double x1, double y1, double offset, double& xo0, double& yo0, double& xo1, double& yo1);
 
 /**
         Get Euler angles in local coordinates after rotation Z0 * Y * Z1 (heading, pitch, heading)
@@ -616,7 +616,7 @@ void ZYZ2EulerAngles(double z0, double y, double z1, double& h, double& p, doubl
 */
 void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r);
 
-int InvertMatrix3(const double m[3][3], double m_out[3][3]);
+int InvertMatrix3(const double m[3][3], double mi[3][3]);
 
 /**
         Get Euler angles for the orientation relative road surface orientation
@@ -737,8 +737,7 @@ public:
 
     inline void Wait()
     {
-#if (defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
-#else
+#if !(defined WINVER && WINVER == _WIN32_WINNT_WIN7 || __MINGW32__)
         std::unique_lock<std::mutex> lock(mtx);
         if (flag == true)
         {
@@ -794,9 +793,9 @@ public:
     typedef void (*FuncPtr)(const char*);
 
     static Logger& Inst();
-    void           Log(bool quit, bool trace, const char* func, const char* file, int line, const char* format, ...);
+    void           Log(bool quit, bool trace, const char* file, const char* func, int line, const char* format, ...);
     void           SetCallback(FuncPtr callback);
-    bool           IsCallbackSet();
+    bool           IsCallbackSet() const;
     void           SetTimePtr(double* timePtr)
     {
         time_ = timePtr;
@@ -804,7 +803,7 @@ public:
     void OpenLogfile(std::string filename);
     void CloseLogFile();
     void LogVersion();
-    bool IsFileOpen()
+    bool IsFileOpen() const
     {
         return file_.is_open();
     }
@@ -927,13 +926,13 @@ class SE_Options
 public:
     void AddOption(std::string opt_str,
                    std::string opt_desc,
-                   std::string opt_arg               = "",
-                   std::string opt_arg_default_value = "",
-                   bool        autoApply             = false,
-                   bool        isSingleValueOption   = true);
+                   std::string opt_arg             = "",
+                   std::string default_value       = "",
+                   bool        autoApply           = false,
+                   bool        isSingleValueOption = true);
 
     void        PrintUsage();
-    void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");
+    void        PrintUnknownArgs(std::string message = "Unrecognized arguments:") const;
     bool        GetOptionSet(std::string opt);
     bool        IsOptionArgumentSet(std::string opt);
     std::string GetOptionArg(std::string opt, int index = 0);
@@ -948,7 +947,7 @@ public:
     }
 
     bool IsInOriginalArgs(std::string opt);
-    bool HasUnknownArgs();
+    bool HasUnknownArgs() const;
     void Reset();
     int  ChangeOptionArg(std::string opt, std::string new_value, int index = 0);
     int  SetOptionValue(std::string opt, std::string value, bool add = false, bool persistent = false);
@@ -957,7 +956,7 @@ public:
     // clears only value(s) of the option and let the other flags as they are
     int                                               ClearOption(const std::string& opt);
     const std::unordered_map<std::string, SE_Option>& GetAllOptions() const;
-    std::string                                       GetSetOptionsAsStr();
+    std::string                                       GetSetOptionsAsStr() const;
 
 private:
     std::unordered_map<std::string, SE_Option> option_;
@@ -982,7 +981,7 @@ public:
     {
         start_time_ = SE_getSystemTime();
     }
-    double GetS()
+    double GetS() const
     {
         return 1E-3 * static_cast<double>((SE_getSystemTime() - start_time_));
     }
@@ -1011,7 +1010,7 @@ public:
     {
         start_time_ = 0;
     }
-    bool Started()
+    bool Started() const
     {
         return start_time_ > 0 ? true : false;
     }
@@ -1019,11 +1018,11 @@ public:
     {
         duration_ = duration;
     }
-    double Elapsed()
+    double Elapsed() const
     {
         return 1E-3 * static_cast<double>((SE_getSystemTime() - start_time_));
     }
-    double Remaining()
+    double Remaining() const
     {
         if (Expired())
         {
@@ -1034,7 +1033,7 @@ public:
             return duration_ - Elapsed();
         }
     }
-    bool Expired()
+    bool Expired() const
     {
         return Elapsed() > duration_ - SMALL_NUMBER;
     }
@@ -1061,7 +1060,7 @@ public:
         duration_   = 0;
     }
 
-    double Remaining(double timestamp_s)
+    double Remaining(double timestamp_s) const
     {
         if (Expired(timestamp_s))
         {
@@ -1077,15 +1076,15 @@ public:
     {
         return duration_ > SMALL_NUMBER;
     }
-    double Elapsed(double timestamp_s)
+    double Elapsed(double timestamp_s) const
     {
         return timestamp_s - start_time_;
     }
-    bool Expired(double timestamp_s)
+    bool Expired(double timestamp_s) const
     {
         return timestamp_s - start_time_ > duration_ - SMALL_NUMBER;
     }
-    double GetDuration()
+    double GetDuration() const
     {
         return duration_;
     }
@@ -1128,15 +1127,15 @@ public:
     {
         x_ = value;
     }
-    double GetValue()
+    double GetValue() const
     {
         return x_;
     }
-    double GetV()
+    double GetV() const
     {
         return v_;
     }
-    double GetA()
+    double GetA() const
     {
         return a_;
     }
@@ -1148,7 +1147,7 @@ public:
     {
         x0_ = targetValue;
     }
-    double GetTargetValue()
+    double GetTargetValue() const
     {
         return x0_;
     }
@@ -1200,6 +1199,10 @@ public:
     }
 
     // Get an integer in the range (min, max) NOTE: including max
+
+    // cppcheck-suppress functionConst
+    // This function is intentionally not marked as const because it calls gen_ (std::mt19937), which modifies internal state each time a number is
+    // generated. Although no visible state is changed, the Random Number Generator state must be advanced, so the function is not logically const.
     int GetNumberBetween(int min, int max)
     {
         if (max < min)
@@ -1209,18 +1212,22 @@ public:
 
         return std::uniform_int_distribution<>{min, max}(gen_);
     }
-
+    // cppcheck-suppress functionConst
+    // This function is intentionally not marked as const because it calls gen_ (std::mt19937), which modifies internal state each time a number is
+    // generated. Although no visible state is changed, the Random Number Generator state must be advanced, so the function is not logically const.
     double GetReal()  // returns a floating point number between 0 and 1
     {
         return std::uniform_real_distribution<>{}(gen_);
     }
-
+    // cppcheck-suppress functionConst
+    // This function is intentionally not marked as const because it calls gen_ (std::mt19937), which modifies internal state each time a number is
+    // generated. Although no visible state is changed, the Random Number Generator state must be advanced, so the function is not logically const.
     double GetRealBetween(double min, double max)
     {
         return std::uniform_real_distribution<>{min, max}(gen_);
     }
 
-    unsigned int GetSeed()
+    unsigned int GetSeed() const
     {
         return seed_;
     }
@@ -1256,11 +1263,11 @@ public:
     {
         osiTimeStamp_ = timestamp;
     }
-    unsigned long long GetOSITimeStamp()
+    unsigned long long GetOSITimeStamp() const
     {
         return osiTimeStamp_;
     }
-    bool IsOSITimeStampSet()
+    bool IsOSITimeStampSet() const
     {
         return osiTimeStamp_ != OSI_TIMESTAMP_UNDEFINED;
     }
@@ -1276,11 +1283,11 @@ public:
     {
         osiMaxLateralDeviation_ = maxLateralDeviation;
     }
-    double GetOSIMaxLongitudinalDistance()
+    double GetOSIMaxLongitudinalDistance() const
     {
         return osiMaxLongitudinalDistance_;
     }
-    double GetOSIMaxLateralDeviation()
+    double GetOSIMaxLateralDeviation() const
     {
         return osiMaxLateralDeviation_;
     }
@@ -1288,7 +1295,7 @@ public:
     {
         collisionDetection_ = enable;
     }
-    bool GetCollisionDetection()
+    bool GetCollisionDetection() const
     {
         return collisionDetection_;
     }
@@ -1301,7 +1308,7 @@ public:
     {
         paths_.clear();
     }
-    double GetSystemTime()
+    double GetSystemTime() const
     {
         return systemTime_.GetS();
     }
@@ -1322,7 +1329,7 @@ public:
             @param path Logfile path
     */
     // void        SetLogFilePath(std::string logFilePath);
-    std::string GetLogFilePath()
+    std::string GetLogFilePath() const
     {
         return logFilePath_;
     }
@@ -1343,7 +1350,7 @@ public:
             @param path Logfile path
     */
     void        SetDatFilePath(std::string datFilePath);
-    std::string GetDatFilePath()
+    std::string GetDatFilePath() const
     {
         return datFilePath_;
     }
@@ -1357,7 +1364,7 @@ public:
         saveImagesToRAM_ = state;
     }
 
-    bool GetSaveImagesToRAM()
+    bool GetSaveImagesToRAM() const
     {
         return saveImagesToRAM_;
     }
@@ -1373,7 +1380,7 @@ public:
         return rand_;
     }
 
-    GhostMode GetGhostMode()
+    GhostMode GetGhostMode() const
     {
         return ghost_mode_;
     }
@@ -1383,7 +1390,7 @@ public:
         ghost_mode_ = mode;
     }
 
-    double GetGhostHeadstart(void)
+    double GetGhostHeadstart(void) const
     {
         return ghost_headstart_;
     }

@@ -483,24 +483,25 @@ void OSIReporter::CropOSIDynamicGroundTruth(const int id, const double radius)
     LOG_INFO("CropGroundTruth: Added crop for entity id {} with radius {}", id, radius);
 }
 
-void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &obj)
+void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &objectState)
 {
-    if (obj->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE) ||
-        obj->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
+    if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE) ||
+        objectState->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
     {
-        if (obj->state_.info.ctrl_type != Controller::Type::GHOST_RESERVED_TYPE || report_ghost_)
+        if (objectState->state_.info.ctrl_type != Controller::Type::GHOST_RESERVED_TYPE || report_ghost_)
         {
-            UpdateOSIMovingObject(obj.get());
+            UpdateOSIMovingObject(objectState.get());
             // All non-ghost objects are always updated. Ghosts only on request.
         }
-    }
-    else if (obj->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
-    {
-        // do nothing
-    }
-    else
-    {
-        LOG_WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object", obj->state_.info.obj_type);
+        else if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
+        {
+            // do nothing
+        }
+        else
+        {
+            LOG_WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object",
+                     objectState->state_.info.obj_type);
+        }
     }
 }
 
@@ -553,16 +554,16 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
         for (const auto &crop : osi_crop_)
         {
             ObjectState *crop_obj = nullptr;
-            for (const auto &obj : objectState)
-            {
-                if (obj->state_.info.id == crop.first)  // Find the crop ObjectState
-                {
-                    crop_obj = obj.get();
-                    break;
-                }
-            }
 
-            if (crop_obj == nullptr)
+            std::vector<std::unique_ptr<ObjectState>>::const_iterator itr =
+                std::find_if(objectState.begin(),
+                             objectState.end(),
+                             [crop](const std::unique_ptr<ObjectState> &obj) { return obj->state_.info.id == crop.first; });
+            if (itr != objectState.end())
+            {
+                crop_obj = itr->get();
+            }
+            else
             {
                 LOG_WARN("Warning: Object with id {} not found in the scenario, and hence no OSI update around this object", crop.first);
                 continue;
@@ -1095,11 +1096,6 @@ int OSIReporter::UpdateOSIIntersection()
     osi3::Lane                    *osi_lane  = nullptr;
     for (unsigned int i = 0; i < opendrive->GetNumOfJunctions(); i++)
     {
-        std::vector<LaneLengthStruct> left_lane_lengths;
-        std::vector<LaneLengthStruct> right_lane_lengths;
-        std::vector<LaneLengthStruct> lane_lengths;
-        std::vector<LaneLengthStruct> tmp_lane_lengths;
-        std::set<id_t>                connected_roads;
         // add check if it is an intersection or an highway exit/entry
         junction = opendrive->GetJunctionByIdx(i);
 
@@ -1169,7 +1165,11 @@ int OSIReporter::UpdateOSIIntersection()
             osi_lane = obj_osi_internal.static_gt->add_lane();
             osi_lane->mutable_id()->set_value(junction->GetGlobalId());
             osi_lane->mutable_classification()->set_type(osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION);
-
+            std::vector<LaneLengthStruct> left_lane_lengths;
+            std::vector<LaneLengthStruct> right_lane_lengths;
+            std::vector<LaneLengthStruct> lane_lengths;
+            std::vector<LaneLengthStruct> tmp_lane_lengths;
+            std::set<id_t>                connected_roads;
             // check all connections in the junction
             for (unsigned int j = 0; j < junction->GetNumberOfConnections(); j++)
             {
@@ -2082,7 +2082,7 @@ int OSIReporter::UpdateOSIRoadLane()
                                     osi3::Identifier *left_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
                                     left_lane_bound_id->set_value(line_ids[jj]);
                                 }
-                                else if (lane_id > 0)
+                                else
                                 {
                                     osi3::Identifier *left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
                                     left_lane_bound_id->set_value(line_ids[jj]);
@@ -2111,8 +2111,8 @@ int OSIReporter::UpdateOSIRoadLane()
                         {
                             next_lane_id = lane_id + 1;
                         }
-                        else if (lane_id > 0)  // if lane is on the left, then it contains its left boundary. So I need to look into its right
-                                               // lane for the right boundary
+                        else  // if lane is on the left, then it contains its left boundary. So I need to look into its right
+                              // lane for the right boundary
                         {
                             next_lane_id = lane_id - 1;
                         }
@@ -2130,7 +2130,7 @@ int OSIReporter::UpdateOSIRoadLane()
                                         osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
                                         right_lane_bound_id->set_value(nextlane_line_ids[jj]);
                                     }
-                                    else if (lane_id > 0)
+                                    else
                                     {
                                         osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
                                         right_lane_bound_id->set_value(nextlane_line_ids[jj]);
@@ -2328,10 +2328,7 @@ int OSIReporter::UpdateOSIRoadLane()
                         predecessorLane = predecessor_lane_section->GetLaneById(lane->GetLink(roadmanager::LinkType::PREDECESSOR)->GetId());
                         if (predecessorLane)
                         {
-                            if (!lane_pairing)
-                            {
-                                lane_pairing = osi_lane->mutable_classification()->add_lane_pairing();
-                            }
+                            lane_pairing = osi_lane->mutable_classification()->add_lane_pairing();
                             lane_pairing->mutable_antecessor_lane_id()->set_value(predecessorLane->GetGlobalId());
                         }
                     }
@@ -2671,15 +2668,14 @@ void OSIReporter::CreateMovingObjectFromSensorData(const osi3::SensorData &sd, i
 
 void OSIReporter::CreateLaneBoundaryFromSensordata(const osi3::SensorData &sd, int lane_boundary_nr)
 {
-    osi3::DetectedLaneBoundary lane_boundary = sd.lane_boundary(lane_boundary_nr);
-    double                     x, y, z;
+    osi3::DetectedLaneBoundary lane_boundary     = sd.lane_boundary(lane_boundary_nr);
     osi3::LaneBoundary        *new_lane_boundary = obj_osi_external.sv->mutable_global_ground_truth()->add_lane_boundary();
 
     for (int i = 0; i < sd.lane_boundary(lane_boundary_nr).boundary_line_size(); i++)
     {
-        x = lane_boundary.boundary_line(i).position().x() + sd.mounting_position().position().x();
-        y = lane_boundary.boundary_line(i).position().y() + sd.mounting_position().position().y();
-        z = lane_boundary.boundary_line(i).position().z();
+        double x = lane_boundary.boundary_line(i).position().x() + sd.mounting_position().position().x();
+        double y = lane_boundary.boundary_line(i).position().y() + sd.mounting_position().position().y();
+        double z = lane_boundary.boundary_line(i).position().z();
 
         // Local2GlobalCoordinates(x, y,
         //     sd.mounting_position().position().x(),
@@ -2971,7 +2967,6 @@ int OSIReporter::SetOSITimeStampExplicit(unsigned long long nanoseconds)
 void OSIReporter::SetStationaryModelReference(std::string model_reference)
 {
     // Check registered paths for model3d
-    std::string model3d_abs_path;
     for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
     {
         std::string file_name_candidate = CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], model_reference);

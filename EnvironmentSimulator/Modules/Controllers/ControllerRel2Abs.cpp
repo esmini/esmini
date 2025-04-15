@@ -274,9 +274,9 @@ void ControllerRel2Abs::Step(double timeStep)
         double t0;
         double x_est;
         double y_est;
-        double errorDist  = 0;
-        double errorSpeed = 0;
-        double v_est      = 0;
+        double errorDist;
+        double errorSpeed;
+        double v_est;
 
         // Loop through data and find time closest to t (ideally do linear interpolation)
         for (unsigned int i = 0; i < data.time.size(); i++)
@@ -446,7 +446,7 @@ void ControllerRel2Abs::Step(double timeStep)
                             double currentDist = sa->lastDist_;
 
                             // decide suitable acceleration
-                            double currentAcc = 0;
+                            // double currentAcc = 0;
                             // Check for true linear movement, if ego moves non-linearly target can get non-linear movement in linear mode
                             // since acceleration updates each timestep
                             bool   linear  = true;
@@ -478,9 +478,9 @@ void ControllerRel2Abs::Step(double timeStep)
                                     }
                                 }
                                 lastAcc = tmp;
-                                currentAcc += tmp;
+                                // currentAcc += tmp;
                             }
-                            currentAcc /= static_cast<double>(speeds.size());
+                            // currentAcc /= static_cast<double>(speeds.size());
                             if (linear || lastAcc > 0.3)
                             {
                                 // if speeds increasing linearly / recently passed a minima with a fairly large current acc.

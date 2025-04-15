@@ -23,12 +23,12 @@ using namespace scenarioengine;
 #define WHEEL_RADIUS 0.35
 #define SLOPPY_SCALE 5.0  // Magic scale factor to achieve reasonable sloppiness in range 0..1
 
-double SinusoidalTransition::GetValue()
+double SinusoidalTransition::GetValue() const
 {
     return start_ + amplitude_ * (offset_ + cos(startAngle_ + factor_ * M_PI));
 }
 
-double SinusoidalTransition::GetHeading()
+double SinusoidalTransition::GetHeading() const
 {
     return -amplitude_ * sin(startAngle_ + factor_ * M_PI);
 }
@@ -42,6 +42,7 @@ Controller* scenarioengine::InstantiateControllerSloppyDriver(void* args)
 
 ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : Controller(args), sloppiness_(0.5), time_(0)
 {
+    type_name_ = "SloppyDriver";
     if (args->properties->ValueExists("sloppiness"))
     {
         sloppiness_ = strtod(args->properties->GetValueStr("sloppiness"));
@@ -75,7 +76,7 @@ void ControllerSloppyDriver::Step(double timeStep)
     currentSpeed_ = object_->GetSpeed();
 
     // Do modification to a local position object and then report to gateway
-    if (object_ && IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
+    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
     {
         if (speedTimer_.Expired(time_))
         {
@@ -119,7 +120,7 @@ void ControllerSloppyDriver::Step(double timeStep)
         }
     }
 
-    if (object_ && IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
+    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         if (lateralTimer_.Expired(time_))
         {

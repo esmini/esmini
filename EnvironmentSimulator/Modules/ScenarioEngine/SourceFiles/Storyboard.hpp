@@ -120,7 +120,7 @@ namespace scenarioengine
             return reinterpret_cast<std::vector<StoryBoardElement*>*>(&event_);
         }
 
-        void Print()
+        void Print() const
         {
             LOG_INFO("\tname = {}", GetName());
         };
@@ -161,7 +161,7 @@ namespace scenarioengine
             return 0;
         }
 
-        bool IsObjectActor(Object* object)
+        bool IsObjectActor(const Object* object) const
         {
             for (size_t i = 0; i < actor_.size(); i++)
             {
@@ -223,7 +223,7 @@ namespace scenarioengine
         }
 
         OSCParameterDeclarations parameter_declarations_;
-        void                     Print();
+        void                     Print() const;
 
         std::vector<StoryBoardElement*>* GetChildren() override
         {

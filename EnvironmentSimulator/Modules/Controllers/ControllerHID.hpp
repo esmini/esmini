@@ -87,7 +87,7 @@ namespace scenarioengine
         int  OpenHID(int device_id);
         void CloseHID();
         int  ReadHID(double& throttle, double& steering);
-        int  ParseHIDInputType(const std::string& axis, HID_INPUT& axis_type, int& sign);
+        int  ParseHIDInputType(const std::string& type_str, HID_INPUT& input, int& sign);
 
     private:
         vehicle::Vehicle vehicle_;

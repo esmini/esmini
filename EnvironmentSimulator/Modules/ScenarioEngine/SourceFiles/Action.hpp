@@ -80,13 +80,13 @@ namespace scenarioengine
         {
         }
 
-        std::string         BaseType2Str();
+        std::string         BaseType2Str() const;
         virtual std::string Type2Str()
         {
             return BaseType2Str();
         }
 
-        BaseType GetBaseType()
+        BaseType GetBaseType() const
         {
             if (action_type_ < ActionType::GLOBAL_ACTION_BASE_INDEX)
             {

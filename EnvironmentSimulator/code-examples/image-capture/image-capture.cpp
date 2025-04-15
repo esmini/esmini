@@ -6,11 +6,10 @@ void img_callback(SE_Image* img, void* data)
 {
     (void)data;
 
-    static int counter = 0;
-
     if (img != nullptr && img->data != nullptr)
     {
-        char filename[64];
+        char       filename[64];
+        static int counter = 0;
         snprintf(filename, 64, "snap_from_cb_%03d.tga", counter++);
         SE_WriteTGAImage(filename, img->width, img->height, img->data, img->pixelSize, img->pixelFormat, true);
     }

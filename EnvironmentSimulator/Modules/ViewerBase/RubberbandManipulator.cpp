@@ -53,7 +53,7 @@ RubberbandManipulator::RubberbandManipulator(unsigned int mode, osg::Vec3d origi
     explicitCenter_.Reset();
 }
 
-double osgGA::RubberbandManipulator::GetCameraDistance()
+double osgGA::RubberbandManipulator::GetCameraDistance() const
 {
     return cameraBaseDistance_ + zoom_distance_;
 }
@@ -79,7 +79,7 @@ RubberbandManipulator::CustomCamera* RubberbandManipulator::RubberbandManipulato
     }
     else if (index < 0)
     {
-        index = 0;
+        // index = 0;
         return 0;
     }
 
@@ -174,12 +174,10 @@ void RubberbandManipulator::getUsage(osg::ApplicationUsage& usage) const
 
 bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& us)
 {
-    static float lx0         = 0;
-    static float ly0         = 0;
-    static float ry0         = 0;
-    float        angleScale  = 30.0;
-    float        zoomScale   = 1.0;
-    float        scrollScale = 0.2f;
+    static float lx0        = 0;
+    static float ly0        = 0;
+    static float ry0        = 0;
+    float        angleScale = 30.0;
 
     if (ea.getEventType() & GUIEventAdapter::PUSH)
     {
@@ -230,6 +228,7 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& 
             }
             if (ea.getButtonMask() == GUIEventAdapter::RIGHT_MOUSE_BUTTON)
             {
+                float zoomScale = 1.0;
                 zoom_distance_ -= zoomScale * GetCameraDistance() * (ry0 - ea.getYnormalized());
                 if (GetCameraDistance() < 1)
                 {
@@ -237,7 +236,6 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& 
                 }
                 ry0 = ea.getYnormalized();
             }
-            break;
             return false;
 
         case (GUIEventAdapter::SCROLL):
@@ -260,6 +258,7 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& 
                     scroll = 1;
                     break;
             }
+            float scrollScale = 0.2f;
             zoom_distance_ -= scrollScale * cameraBaseDistance_ * scroll;
             return false;
         }

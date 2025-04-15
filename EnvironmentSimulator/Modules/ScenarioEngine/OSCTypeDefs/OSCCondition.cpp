@@ -196,12 +196,12 @@ void OSCCondition::Log(bool trig, bool full)
     }
 }
 
-bool OSCCondition::GetValue()
+bool OSCCondition::GetValue() const
 {
     return cond_value_;
 }
 
-bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge)
+bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge) const
 {
     if (edge == OSCCondition::ConditionEdge::NONE)
     {
@@ -236,7 +236,7 @@ bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::Condi
     return false;
 }
 
-std::string OSCCondition::Edge2Str()
+std::string OSCCondition::Edge2Str() const
 {
     if (edge_ == OSCCondition::ConditionEdge::FALLING)
     {
@@ -603,12 +603,12 @@ bool TrigByParameter::CheckCondition(double sim_time)
     (void)sim_time;
     bool result = false;
 
-    OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(name_);
+    OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(parameterRef_);
     if (pe == 0)
     {
         if (state_ < ConditionState::EVALUATED)  // print only once
         {
-            LOG_ERROR("Parameter {} not found", name_);
+            LOG_ERROR("Parameter {} not found", parameterRef_);
         }
         return result;
     }
@@ -639,8 +639,8 @@ bool TrigByParameter::CheckCondition(double sim_time)
 
 std::string TrigByParameter::GetAdditionalLogInfo()
 {
-    OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(name_);
-    return fmt::format("{} {} {} {}, edge: {}", name_, pe ? pe->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
+    OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(parameterRef_);
+    return fmt::format("{} {} {} {}, edge: {}", parameterRef_, pe ? pe->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByVariable::CheckCondition(double sim_time)
@@ -648,12 +648,12 @@ bool TrigByVariable::CheckCondition(double sim_time)
     (void)sim_time;
     bool result = false;
 
-    OSCParameterDeclarations::ParameterStruct* pe = variables_->getParameterEntry(name_);
+    OSCParameterDeclarations::ParameterStruct* pe = variables_->getParameterEntry(variableRef_);
     if (pe == 0)
     {
         if (state_ < ConditionState::EVALUATED)  // print only once
         {
-            LOG_WARN("Variable {} not found", name_);
+            LOG_WARN("Variable {} not found", variableRef_);
         }
         return result;
     }
@@ -684,8 +684,8 @@ bool TrigByVariable::CheckCondition(double sim_time)
 
 std::string TrigByVariable::GetAdditionalLogInfo()
 {
-    OSCParameterDeclarations::ParameterStruct* ve = variables_->getParameterEntry(name_);
-    return fmt::format("variable {} {} {} {}, edge: {}", name_, ve ? ve->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
+    OSCParameterDeclarations::ParameterStruct* ve = variables_->getParameterEntry(variableRef_);
+    return fmt::format("variable {} {} {} {}, edge: {}", variableRef_, ve ? ve->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByTimeHeadway::CheckCondition(double sim_time)
@@ -787,9 +787,6 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
 
         if (object_)
         {
-            double rel_vel[2] = {0.0, 0.0};
-            double proj_speed = 0.0;
-
             if (fabs(object_->pos_.GetVelX()) < SMALL_NUMBER && fabs(object_->pos_.GetVelY()) < SMALL_NUMBER)
             {
                 // object standing still, consider only speed of triggering entity
@@ -797,13 +794,14 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
             }
             else
             {
+                double rel_vel[2] = {0.0, 0.0};
                 // Calculate relative speed of triggering entity along object's velocity direction
-                proj_speed = ProjectPointOnVector2DSignedLength(trigObj->pos_.GetVelX(),
-                                                                trigObj->pos_.GetVelY(),
-                                                                object_->pos_.GetVelX(),
-                                                                object_->pos_.GetVelY(),
-                                                                rel_vel[0],
-                                                                rel_vel[1]);
+                double proj_speed = ProjectPointOnVector2DSignedLength(trigObj->pos_.GetVelX(),
+                                                                       trigObj->pos_.GetVelY(),
+                                                                       object_->pos_.GetVelX(),
+                                                                       object_->pos_.GetVelY(),
+                                                                       rel_vel[0],
+                                                                       rel_vel[1]);
 
                 // calculate trig object relative speed as projected velocity absolute difference considering
                 rel_speed = SIGN(trigObj->GetSpeed()) * SIGN(proj_speed) * (proj_speed - fabs(object_->GetSpeed()));
@@ -1074,7 +1072,7 @@ bool TrigByCollision::CheckCondition(double sim_time)
                 result = true;
             }
         }
-        if (type_ != Object::Type::TYPE_NONE)
+        if (objectType_ != Object::Type::TYPE_NONE)
         {
             // check all instances of specifed object type
             for (size_t j = 0; j < storyBoard_->entities_->object_.size(); j++)
@@ -1084,7 +1082,7 @@ bool TrigByCollision::CheckCondition(double sim_time)
                 {
                     continue;
                 }
-                if (storyBoard_->entities_->object_[j] != trigObj && storyBoard_->entities_->object_[j]->type_ == type_ &&
+                if (storyBoard_->entities_->object_[j] != trigObj && storyBoard_->entities_->object_[j]->type_ == objectType_ &&
                     storyBoard_->entities_->object_[j]->IsActive())
                 {
                     bool local_result = false;

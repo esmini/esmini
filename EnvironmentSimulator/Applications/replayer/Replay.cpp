@@ -52,7 +52,7 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
     while (!file_.eof())
     {
         ReplayEntry data;
-
+        data.odometer = 0.0;
         file_.read(reinterpret_cast<char*>(&data.state), sizeof(data.state));
 
         if (!file_.eof())
@@ -113,7 +113,7 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         while (!file_.eof())
         {
             ReplayEntry entry;
-
+            entry.odometer = 0.0;
             file_.read(reinterpret_cast<char*>(&entry.state), sizeof(entry.state));
 
             if (!file_.eof())
@@ -225,7 +225,7 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
     }
 }
 
-size_t Replay::GetNumberOfScenarios()
+size_t Replay::GetNumberOfScenarios() const
 {
     return scenarios_.size();
 }
@@ -275,11 +275,9 @@ void Replay::GoToTime(double time, bool stop_at_next_frame)
     }
     else
     {
-        size_t next_index = index_;
-
         if (time > time_)
         {
-            next_index = FindNextTimestamp();
+            size_t next_index = FindNextTimestamp();
             if (next_index > index_ && time > static_cast<double>(data_[next_index].state.info.timeStamp) &&
                 static_cast<double>(data_[next_index].state.info.timeStamp) <= GetStopTime())
             {
@@ -300,7 +298,7 @@ void Replay::GoToTime(double time, bool stop_at_next_frame)
         }
         else if (time < time_)
         {
-            next_index = FindPreviousTimestamp();
+            size_t next_index = FindPreviousTimestamp();
             if (next_index < index_ && time < static_cast<double>(data_[next_index].state.info.timeStamp))
             {
                 index_ = static_cast<unsigned int>(next_index);
@@ -379,7 +377,7 @@ int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
     return MIN(i, static_cast<int>(data_.size()) - 1);
 }
 
-unsigned int Replay::FindNextTimestamp(bool wrap)
+unsigned int Replay::FindNextTimestamp(bool wrap) const
 {
     unsigned int index = index_ + 1;
     for (; index < data_.size(); index++)
@@ -405,7 +403,7 @@ unsigned int Replay::FindNextTimestamp(bool wrap)
     return index;
 }
 
-unsigned int Replay::FindPreviousTimestamp(bool wrap)
+unsigned int Replay::FindPreviousTimestamp(bool wrap) const
 {
     int index = static_cast<int>(index_) - 1;
 
@@ -581,7 +579,7 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
     }
 }
 
-void Replay::CreateMergedDatfile(const std::string filename)
+void Replay::CreateMergedDatfile(const std::string filename) const
 {
     std::ofstream data_file_;
     data_file_.open(filename, std::ofstream::binary);
@@ -591,14 +589,14 @@ void Replay::CreateMergedDatfile(const std::string filename)
         exit(-1);
     }
 
-    data_file_.write(reinterpret_cast<char*>(&header_), sizeof(header_));
+    data_file_.write(reinterpret_cast<const char*>(&header_), sizeof(header_));
 
     if (data_file_.is_open())
     {
         // Write status to file - for later replay
         for (size_t i = 0; i < data_.size(); i++)
         {
-            data_file_.write(reinterpret_cast<char*>(&data_[i].state), sizeof(data_[i].state));
+            data_file_.write(reinterpret_cast<const char*>(&data_[i].state), sizeof(data_[i].state));
         }
     }
 }

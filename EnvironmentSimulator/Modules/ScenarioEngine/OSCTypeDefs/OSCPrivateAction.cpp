@@ -175,7 +175,7 @@ double OSCPrivateAction::TransitionDynamics::EvaluateScaledPrim()
     return EvaluatePrim() / AVOID_ZERO(scale_factor_);
 }
 
-double OSCPrivateAction::TransitionDynamics::Evaluate(DynamicsShape shape)
+double OSCPrivateAction::TransitionDynamics::Evaluate(DynamicsShape shape) const
 {
     if (shape == DynamicsShape::SHAPE_UNDEFINED)
     {
@@ -1433,7 +1433,7 @@ void LongSpeedProfileAction::Start(double simTime)
         AddSpeedSegment(vtx.t_, vtx.v_, k0, j);
 
         double j0 = j;
-        double j1 = 0.0, t2 = 0.0, v1 = 0.0, v2 = 0.0;
+        double j1 = 0.0, t2 = 0.0, v1, v2 = 0.0;
 
         // Find jerk at endpoint, where acceleration / k is zero
         if (vertex[0].k_ < 0)
@@ -1597,19 +1597,9 @@ void LongSpeedProfileAction::Start(double simTime)
                 m0  = m1;
                 k1  = vtx.k_;
                 m1  = vtx.m_;
+                j   = vtx.k_ - k0 < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
 
-                if (index < vertex.size() - 1)
-                {
-                    j = vtx.k_ - k0 < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
-                }
-
-                if (abs(k0 - k1) < SMALL_NUMBER)
-                {
-                    // no change in acceleration, skip jerk segment
-                    t3 = t0;
-                    v3 = v0;
-                }
-                else
+                if (abs(k0 - k1) >= SMALL_NUMBER)
                 {
                     // find time for next jerk
                     // https://www.wolframalpha.com/input?i=solve+b%3Dk*g%2Bn%2Cd%3Dl*j%2Bo%2Cd%3Db%2Bk*%28j-g%29%2Bm*%28j-g%29%5E2%2F2%2Cl%3Dk%2Bm*%28j-g%29+for+b%2Cd%2Cg%2Cj
@@ -1793,8 +1783,7 @@ void LongDistanceAction::Start(double simTime)
         else
         {
             double x, y;
-            distance = object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
-
+            object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
             // Just interested in the x-axis component of the distance
             distance = x;
         }
@@ -1837,12 +1826,9 @@ void LongDistanceAction::Step(double simTime, double)
         object_->pos_.Distance(&target_object_->pos_, cs_, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, distance);
     }
 
-    double speed_diff = object_->speed_ - target_object_->speed_;
-    double acc;
-    double jerk            = 0.0;
+    double speed_diff      = object_->speed_ - target_object_->speed_;
     double spring_constant = 0.4;
-    double dc;
-    double requested_dist = 0;
+    double requested_dist  = 0;
 
     if (dist_type_ == DistType::DISTANCE)
     {
@@ -1884,8 +1870,9 @@ void LongDistanceAction::Step(double simTime, double)
         double tension = distance_diff < 0.0 ? dynamics_.max_acceleration_ : dynamics_.max_deceleration_;
 
         double spring_constant_adjusted = tension * spring_constant;
-        dc                              = 2 * sqrt(spring_constant_adjusted);
-        acc                             = distance_diff * spring_constant_adjusted - speed_diff * dc;
+        double dc                       = 2 * sqrt(spring_constant_adjusted);
+        double acc                      = distance_diff * spring_constant_adjusted - speed_diff * dc;
+        double jerk;
         if (acc < 0.0)
         {
             jerk = -dynamics_.max_deceleration_rate_;
@@ -2109,7 +2096,7 @@ double SynchronizeAction::CalcSpeedForLinearProfile(double v_final, double time,
     return v0;
 }
 
-const char* SynchronizeAction::Mode2Str(SynchMode mode)
+const char* SynchronizeAction::Mode2Str(SynchMode mode) const
 {
     if (mode == SynchMode::MODE_NONE)
     {
@@ -2145,7 +2132,7 @@ const char* SynchronizeAction::Mode2Str(SynchMode mode)
     }
 }
 
-const char* SynchronizeAction::SubMode2Str(SynchSubmode submode)
+const char* SynchronizeAction::SubMode2Str(SynchSubmode submode) const
 {
     if (submode == SynchSubmode::SUBMODE_CONCAVE)
     {
@@ -2519,8 +2506,6 @@ void SynchronizeAction::Step(double simTime, double dt)
             double v0 = SIGN(object_->GetSpeed()) * abs(object_->pos_.GetVelS());
             double v1 = final_speed_->GetValue();
 
-            double signed_term = sqrt(2.0) * sqrt(2.0 * s * s - 2 * (v1 + v0) * t * s + (v1 * v1 + v0 * v0) * t * t);
-
             // Calculate both solutions from the quadratic equation
             double vx = 0;
             if (fabs(v1 - v0) < SMALL_NUMBER)
@@ -2532,23 +2517,24 @@ void SynchronizeAction::Step(double simTime, double dt)
             }
             else
             {
-                double x1  = -(signed_term + 2 * s - 2 * v1 * t) / (2 * (v1 - v0));
-                double x2  = -(-signed_term + 2 * s - 2 * v1 * t) / (2 * (v1 - v0));
-                double vx1 = (2 * s - signed_term) / (2 * t);
-                double vx2 = (2 * s + signed_term) / (2 * t);
-                double a1  = (vx1 - v0) / x1;
-                double a2  = (vx2 - v0) / x2;
+                double signed_term = sqrt(2.0) * sqrt(2.0 * s * s - 2 * (v1 + v0) * t * s + (v1 * v1 + v0 * v0) * t * t);
+                double x1          = -(signed_term + 2 * s - 2 * v1 * t) / (2 * (v1 - v0));
+                double x2          = -(-signed_term + 2 * s - 2 * v1 * t) / (2 * (v1 - v0));
 
                 // Choose solution, only one is found within the given time span [0:masterTimeToDest]
                 if (x1 > 0 && x1 < t)
                 {
-                    vx  = vx1;
-                    acc = a1;
+                    double vx1 = (2 * s - signed_term) / (2 * t);
+                    double a1  = (vx1 - v0) / x1;
+                    vx         = vx1;
+                    acc        = a1;
                 }
                 else if (x2 > 0 && x2 < t)
                 {
-                    vx  = vx2;
-                    acc = a2;
+                    double vx2 = (2 * s + signed_term) / (2 * t);
+                    double a2  = (vx2 - v0) / x2;
+                    vx         = vx2;
+                    acc        = a2;
                 }
                 else
                 {

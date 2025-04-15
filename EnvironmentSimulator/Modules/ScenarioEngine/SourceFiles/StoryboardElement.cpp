@@ -101,27 +101,26 @@ void StoryBoardElement::PropagateStateFromChildren()
 
 bool StoryBoardElement::AllChildrenComplete()
 {
-    for (auto child : *GetChildren())
+    std::vector<StoryBoardElement*>*                children = GetChildren();
+    std::vector<StoryBoardElement*>::const_iterator itr =
+        std::find_if(children->begin(), children->end(), [](StoryBoardElement* child) { return child->GetCurrentState() != State::COMPLETE; });
+    if (itr != children->end())
     {
-        if (child->GetCurrentState() != State::COMPLETE)
-        {
-            return false;
-        }
+        return false;
     }
-
     return true;
 }
 
 bool StoryBoardElement::AnyChildRunning()
 {
-    for (auto child : *GetChildren())
-    {
-        if (child->GetCurrentState() == State::RUNNING)
-        {
-            return true;
-        }
-    }
+    std::vector<StoryBoardElement*>*                children = GetChildren();
+    std::vector<StoryBoardElement*>::const_iterator itr =
+        std::find_if(children->begin(), children->end(), [](StoryBoardElement* child) { return child->GetCurrentState() == State::RUNNING; });
 
+    if (itr != children->end())
+    {
+        return true;
+    }
     return false;
 }
 

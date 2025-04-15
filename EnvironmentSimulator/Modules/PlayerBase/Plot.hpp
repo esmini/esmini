@@ -63,7 +63,7 @@ public:
         return !thread_.joinable();
     }
 
-    void        updateData(std::vector<Object*>& objects, double dt);
+    void        updateData(const std::vector<Object*>& objects, double time);
     void        renderPlot(const char* name);  //, float window_width, float window_height);
     void        adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<float>>& d, const size_t item);
     void        adjustSelectedObjectsPlotDataAxis(const PlotCategories& y_category);
@@ -81,11 +81,11 @@ private:
         void updateData(Object* object, double time);
 
         // Getters
-        float       getTimeMax();
-        float       getMaxAcc();
-        float       getMaxDecel();
-        float       getMaxSpeed();
-        std::string getName();
+        float       getTimeMax() const;
+        float       getMaxAcc() const;
+        float       getMaxDecel() const;
+        float       getMaxSpeed() const;
+        std::string getName() const;
 
         // Data
         std::unordered_map<PlotCategories, std::vector<float>> plotData{};

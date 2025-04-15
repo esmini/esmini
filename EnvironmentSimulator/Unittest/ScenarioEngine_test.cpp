@@ -1342,9 +1342,9 @@ TEST(JunctionTest, JunctionSelectorTest)
 {
     double dt = 0.01;
 
-    double angles[]    = {3 * M_PI_2, -M_PI_2, 0.0, M_PI_2};
-    int    roadIds[]   = {1, 1, 2, 3};
-    double durations[] = {2.5, 2.5, 2.6, 2.8};  // Make sure car gets gets out of the intersection
+    double       angles[]    = {3 * M_PI_2, -M_PI_2, 0.0, M_PI_2};
+    int          roadIds[]   = {1, 1, 2, 3};
+    const double durations[] = {2.5, 2.5, 2.6, 2.8};  // Make sure car gets gets out of the intersection
 
     for (int i = 0; i < static_cast<int>(sizeof(angles) / sizeof(double)); i++)
     {
@@ -1399,8 +1399,8 @@ TEST(JunctionTest, TestConnectivityTroughHeadToHeadJunctions)
 
 TEST(ConditionTest, CollisionTest)
 {
-    double dt           = 0.01;
-    double timestamps[] = {5.24, 5.25, 6.25, 6.26, 7.10, 8.78};
+    double       dt           = 0.01;
+    const double timestamps[] = {5.24, 5.25, 6.25, 6.26, 7.10, 8.78};
 
     ASSERT_EQ(SE_Env::Inst().GetCollisionDetection(), false);  // Should be disabled by default
 
@@ -1514,7 +1514,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     {
         scenarioengine::Controller::InitArgs args;
         args.name       = "UDPDriverModel Controller";
-        args.type       = ControllerUDPDriver::GetTypeNameStatic();
+        args.type       = CONTROLLER_UDP_DRIVER_TYPE_NAME;
         args.parameters = 0;
         args.gateway    = se->getScenarioGateway();
         args.properties = new OSCProperties();
@@ -1626,7 +1626,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     {
         scenarioengine::Controller::InitArgs args;
         args.name       = "UDPDriverModel Controller";
-        args.type       = ControllerUDPDriver::GetTypeNameStatic();
+        args.type       = CONTROLLER_UDP_DRIVER_TYPE_NAME;
         args.parameters = 0;
         args.gateway    = se->getScenarioGateway();
         args.properties = new OSCProperties();
@@ -2071,7 +2071,6 @@ TEST(SpeedProfileTest, TestSpeedProfileFirstEntryOffset)
 
     Object obj(Object::Type::VEHICLE);
     obj.SetSpeed(10.0);
-    double sim_time = 0.0, dt = 0.0;
 
     sp_action.following_mode_ = FollowingMode::POSITION;
     sp_action.dynamics_       = dynamics;
@@ -2090,7 +2089,6 @@ TEST(SpeedProfileTest, TestSpeedProfileFirstEntryOffset)
     // Evaluate at a time before first entry time, speed should interpolate towards first entry
     sp_action.Step(1.0);
     EXPECT_NEAR(sp_action.GetSpeed(), 7.30, 1E-5);
-    sim_time += dt;
 }
 
 TEST(SpeedProfileTest, TestSpeedProfileLinear)
@@ -2399,7 +2397,7 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
     // Set controller
     scenarioengine::Controller::InitArgs args;
     args.name       = "ALKS_R157SM_Controller";
-    args.type       = ControllerALKS_R157SM::GetTypeNameStatic();
+    args.type       = CONTROLLER_ALKS_R157SM_TYPE_NAME;
     args.parameters = 0;
     args.gateway    = se->getScenarioGateway();
     args.properties = new OSCProperties();
@@ -2490,30 +2488,14 @@ TEST(ControllerTest, ALKS_R157_TestR157RefDriverBrakeRate)
 
             if (state == 0 && se->getSimulationTime() > 2.0)
             {
-                if (i == 0)
-                {
-                    EXPECT_NEAR(obj->pos_.GetX(), 49.250, 1e-3);
-                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
-                }
-                else
-                {
-                    EXPECT_NEAR(obj->pos_.GetX(), 49.250, 1e-3);
-                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
-                }
+                EXPECT_NEAR(obj->pos_.GetX(), 49.250, 1e-3);
+                EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
                 state++;
             }
             else if (state == 1 && se->getSimulationTime() > 3.4)
             {
-                if (i == 0)
-                {
-                    EXPECT_NEAR(obj->pos_.GetX(), 70.322, 1e-3);
-                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
-                }
-                else
-                {
-                    EXPECT_NEAR(obj->pos_.GetX(), 70.322, 1e-3);
-                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
-                }
+                EXPECT_NEAR(obj->pos_.GetX(), 70.322, 1e-3);
+                EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
                 state++;
             }
             else if (state == 2 && se->getSimulationTime() > 5.0)
@@ -2786,10 +2768,10 @@ TEST(SpeedTest, TestChangeSpeedOverDistance)
     action.transition_.dimension_ = OSCPrivateAction::DynamicsDimension::DISTANCE;
     action.transition_.shape_     = OSCPrivateAction::DynamicsShape::LINEAR;
 
-    double v0[6]   = {5.0, -5.0, 0.0, -5.0, 5.0, 1.5};
-    double v1[6]   = {10.0, -10.0, 0.0, 5.0, -5.0, -0.5};
-    double dist[6] = {20.0, 20.0, 20.0, 20.0, 20.0, 1.25};
-    double time[6] = {2.66667, 2.66667, 0.0, 8.0, 8.0, 2.0};
+    double       v0[6]   = {5.0, -5.0, 0.0, -5.0, 5.0, 1.5};
+    const double v1[6]   = {10.0, -10.0, 0.0, 5.0, -5.0, -0.5};
+    double       dist[6] = {20.0, 20.0, 20.0, 20.0, 20.0, 1.25};
+    double       time[6] = {2.66667, 2.66667, 0.0, 8.0, 8.0, 2.0};
 
     for (unsigned int i = 0; i < static_cast<unsigned int>(sizeof(v0) / sizeof(double)); i++)
     {
@@ -2879,11 +2861,11 @@ TEST(ControllerTest, TestLoomingSimpleFarTan)
 
 static void clearanceFreeSpaceParamDeclCallback(void*)
 {
-    static int counter  = 0;
-    bool       value[2] = {true, false};
+    static int counter = 0;
 
     if (counter < 2)
     {
+        bool value[2] = {true, false};
         ScenarioReader::parameters.setParameterValue("FreeSpace", value[counter]);
     }
 
@@ -2918,11 +2900,6 @@ TEST(RelativeClearanceTest, TestRelativeClearanceFreeSpace)
         if (i == 1)
         {
             ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -3.000, 1E-3);
-            ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
-        }
-        if (i == 2)
-        {
-            ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -3.7222222, 1E-3);
             ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
         }
         delete se;
@@ -2967,11 +2944,11 @@ TEST(TwoPlusOneRoadTest, TestTwoPlusOneRoad)
 
 static void clearanceParamDeclCallback(void*)
 {
-    static int counter  = 0;
-    bool       value[2] = {false, true};
+    static int counter = 0;
 
     if (counter < 2)
     {
+        bool value[2] = {false, true};
         ScenarioReader::parameters.setParameterValue("OppositeLanes", value[counter]);
     }
 
@@ -3248,11 +3225,11 @@ TEST(ConditionTest, TestTTC)
 
 static void TTCAndLateralDistParamDeclCallback(void*)
 {
-    static int counter  = 0;
-    double     value[2] = {0.2, 5.0};
+    static int counter = 0;
 
     if (counter < 2)
     {
+        double value[2] = {0.2, 5.0};
         ScenarioReader::parameters.setParameterValue("LateralDist", value[counter]);
     }
 
@@ -4170,7 +4147,6 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
         se->step(0.1);
         se->prepareGroundTruth(0.0);
     }
-    state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 121.604, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 4.992, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
@@ -4183,7 +4159,6 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
         se->step(0.1);
         se->prepareGroundTruth(0.0);
     }
-    state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 121.802, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 3.987, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
@@ -4196,7 +4171,6 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
         se->step(0.1);
         se->prepareGroundTruth(0.0);
     }
-    state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 121.802, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 3.987, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
@@ -4209,7 +4183,6 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
         se->step(0.1);
         se->prepareGroundTruth(0.0);
     }
-    state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 123.581, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 1.751, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
@@ -4222,7 +4195,6 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
         se->step(0.1);
         se->prepareGroundTruth(0.0);
     }
-    state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 124.400, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 2.263, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
@@ -4235,7 +4207,6 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
         se->step(0.1);
         se->prepareGroundTruth(0.0);
     }
-    state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 124.424, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 4.313, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
@@ -4248,7 +4219,6 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
         se->step(0.1);
         se->prepareGroundTruth(0.0);
     }
-    state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 125.203, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 5.250, 1E-3);
     EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);

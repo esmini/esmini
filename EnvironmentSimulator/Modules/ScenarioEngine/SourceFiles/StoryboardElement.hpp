@@ -92,7 +92,7 @@ namespace scenarioengine
         };
 #endif  // _USE_OSI
 
-        State GetCurrentState()
+        State GetCurrentState() const
         {
             return state_;
         }
@@ -107,7 +107,7 @@ namespace scenarioengine
             transition_ = transition;
         }
 
-        Transition GetCurrentTransition()
+        Transition GetCurrentTransition() const
         {
             return transition_;
         }
@@ -139,14 +139,14 @@ namespace scenarioengine
 
         void        SetState(State state);  // perform state change via already set transition
         std::string state2str(State state);
-        std::string transition2str(StoryBoardElement::Transition state);
+        std::string transition2str(StoryBoardElement::Transition transition);
 
         bool AllChildrenComplete();
         bool AnyChildRunning();
 
         void PropagateStateFromChildren();
 
-        bool IsTriggable()
+        bool IsTriggable() const
         {
             return GetCurrentState() == State::STANDBY;
         }

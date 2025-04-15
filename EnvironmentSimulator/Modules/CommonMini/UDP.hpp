@@ -39,7 +39,7 @@ typedef int SE_SOCKET;
 class UDPBase
 {
 public:
-    int GetStatus()
+    int GetStatus() const
     {
         return sock_ == SE_INVALID_SOCKET ? -1 : 0;
     }  // -1 = NOK, 0 = OK
@@ -68,11 +68,11 @@ public:
     {
     }
     int            Receive(char* buf, unsigned int size);
-    unsigned short GetPort()
+    unsigned short GetPort() const
     {
         return port_;
     }
-    unsigned int GetTimeout()
+    unsigned int GetTimeout() const
     {
         return timeoutMs_;
     }
@@ -89,11 +89,11 @@ public:
     {
     }
     int            Send(char* buf, unsigned int size);
-    unsigned short GetPort()
+    unsigned short GetPort() const
     {
         return port_;
     }
-    std::string GetIPAddress()
+    std::string GetIPAddress() const
     {
         return ipAddress_;
     }

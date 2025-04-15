@@ -149,7 +149,7 @@ void Tree::build(BBoxVec &bboxes)
     __build(bboxes.begin(), bboxes.end());
 }
 
-bool Tree::empty()
+bool Tree::empty() const
 {
     return (!bbox && childeren.empty());
 }
@@ -343,12 +343,19 @@ void aabbTree::processCandidates(Candidates const &candidates, vector<ptTriangle
     {
         ptTriangle const tr1 = candidate.bbox1->triangle();
         ptTriangle const tr2 = candidate.bbox2->triangle();
-        if (tr1->collide(tr2))
+        if (tr1 && tr2)
         {
-            if (tr2->geometry())
-                solutions.push_back(tr2);
-            else
-                solutions.push_back(tr1);
+            // cppcheck-suppress nullPointer
+            // Suppress false positives: guaranteed non-null due to check above
+            if (tr1->collide(tr2))
+            {
+                // cppcheck-suppress nullPointer
+                // Suppress false positives: guaranteed non-null due to check above
+                if (tr2->geometry())
+                    solutions.push_back(tr2);
+                else
+                    solutions.push_back(tr1);
+            }
         }
     }
 }

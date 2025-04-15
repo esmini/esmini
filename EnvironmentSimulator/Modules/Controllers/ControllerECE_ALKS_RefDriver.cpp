@@ -91,7 +91,6 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
     double targetAS = 0.0;
 
     double dsFree     = 0.0;
-    double acc        = 0.0;
     double TTC        = 0.0;
     double lastOffset = 0.0;
 
@@ -415,6 +414,7 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
     currentSpeed_ = setSpeed_;  // only needed if there is no driver or AEB action
     if (egoV > 0)
     {
+        double acc;
         // the AEB has no reaction time, thus the AEB is directly braking with a jerk of 0.85G during 0.6sec
         if (aebBraking_)
         {

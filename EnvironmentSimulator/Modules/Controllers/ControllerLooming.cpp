@@ -47,9 +47,6 @@ ControllerLooming::ControllerLooming(InitArgs* args) : Controller(args)
 void ControllerLooming::Step(double timeStep)
 {
     // looming controller properties
-    double       k0                = 1.8;
-    double       k1                = 1.3;
-    double       k2                = 1.5;
     double const nearPointDistance = 10.0;
     double       farPointDistance  = 80.0;
 
@@ -58,11 +55,9 @@ void ControllerLooming::Step(double timeStep)
     double far_y     = 0.0;
     double far_tan_s = 0.0;
 
-    hasFarTan              = false;
-    int    road_counter    = -1;
-    int    laneSec_counter = -1;
-    bool   isIntersection  = false;
-    double dist            = 0.0;
+    hasFarTan             = false;
+    bool   isIntersection = false;
+    double dist           = 0.0;
 
     currentSpeed_ = object_->GetSpeed();
 
@@ -96,11 +91,12 @@ void ControllerLooming::Step(double timeStep)
             far_angle_prev[1] = GetAngleInIntervalMinusPIPlusPI(object_->pos_.GetHRoad() + M_PI_2);
         }
 
-        roadmanager::Road* roadTemp       = nullptr;
-        int                direction      = IsAngleForward(object_->pos_.GetHRelative());
-        int                direction_prev = direction;
-        roadmanager::Lane* lane           = nullptr;
-
+        roadmanager::Road* roadTemp        = nullptr;
+        int                direction       = IsAngleForward(object_->pos_.GetHRelative());
+        int                direction_prev  = direction;
+        roadmanager::Lane* lane            = nullptr;
+        int                laneSec_counter = -1;
+        int                road_counter    = -1;
         while (!hasFarTan && dist < farPointDistance)
         {
             roadmanager::LaneSection* lsec = nullptr;
@@ -164,7 +160,7 @@ void ControllerLooming::Step(double timeStep)
                     {
                         lane = lsec->GetLaneById(object_->pos_.GetLaneId());
                     }
-                    else if (laneSec_counter >= 0)
+                    else
                     {
                         lane = lsec->GetLaneById(
                             lane->GetLink(direction_prev == 1 ? roadmanager::LinkType::SUCCESSOR : roadmanager::LinkType::PREDECESSOR)->GetId());
@@ -398,8 +394,10 @@ void ControllerLooming::Step(double timeStep)
     {
         double nearAngleDot = (nearAngle - prevNearAngle) / timeStep;
         double farAngleDot  = (far_angle - prevFarAngle) / timeStep;
-
-        steering = k0 * nearAngle + k1 * nearAngleDot + k2 * farAngleDot;
+        double k0           = 1.8;
+        double k1           = 1.3;
+        double k2           = 1.5;
+        steering            = k0 * nearAngle + k1 * nearAngleDot + k2 * farAngleDot;
         // scale (90 degrees) and truncate
         steering = steering / M_PI_4;
         steering = CLAMP(steering, -1, 1);

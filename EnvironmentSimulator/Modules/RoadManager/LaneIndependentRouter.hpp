@@ -26,7 +26,7 @@ namespace roadmanager
         {
             LOG_INFO("road={}, cl={}, fl={}, w={}", road->GetId(), currentLaneId, fromLaneId, weight);
         }
-        bool operator==(const Node &rhs)
+        bool operator==(const Node &rhs) const
         {
             bool sameRoadId     = rhs.road->GetId() == road->GetId();
             bool sameLaneId     = rhs.currentLaneId == currentLaneId;
@@ -43,7 +43,7 @@ namespace roadmanager
     struct WeightCompare
     {
     public:
-        bool operator()(Node *a, Node *b)  // overloading both operators
+        bool operator()(Node *a, Node *b) const  // overloading both operators
         {
             if (a->weight == b->weight)  // sort after lanes if weight is same.
             {
@@ -198,7 +198,7 @@ namespace roadmanager
          * @return true
          * @return false
          */
-        bool IsPositionValid(Position pos);
+        bool IsPositionValid(Position pos) const;
         template <class Q>
         void clearQueue(Q &q)
         {

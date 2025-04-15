@@ -183,7 +183,8 @@ bool LaneIndependentRouter::FindGoal()
     {
         Node *currentNode = unvisited_.top();
         unvisited_.pop();
-        bool nodeIsVisited = std::find_if(visited_.begin(), visited_.end(), [currentNode](Node *n) { return *n == *currentNode; }) != visited_.end();
+        bool nodeIsVisited =
+            std::find_if(visited_.begin(), visited_.end(), [currentNode](const Node *n) { return *n == *currentNode; }) != visited_.end();
         if (nodeIsVisited)
         {
             delete currentNode;
@@ -213,7 +214,7 @@ bool LaneIndependentRouter::FindGoal()
     return false;
 }
 
-bool LaneIndependentRouter::IsPositionValid(Position pos)
+bool LaneIndependentRouter::IsPositionValid(Position pos) const
 {
     Road *road = odr_->GetRoadById(pos.GetTrackId());
     if (!road)
@@ -297,7 +298,7 @@ std::vector<Node> LaneIndependentRouter::CalculatePath(Position start, Position 
     // Get routestrategy from traget position
     routeStrategy_ = target.GetRouteStrategy();
 
-    ContactPointType contactPoint         = ContactPointType::CONTACT_POINT_UNDEFINED;
+    ContactPointType contactPoint         = ContactPointType::CONTACT_POINT_START;
     RoadLink        *nextElement          = nullptr;
     bool             isInForwardDirection = start.GetHRelative() < M_PI_2 || start.GetHRelative() > 3 * M_PI_2;
 
@@ -310,8 +311,7 @@ std::vector<Node> LaneIndependentRouter::CalculatePath(Position start, Position 
     else
     {
         // Opposite road direction
-        contactPoint = ContactPointType::CONTACT_POINT_START;
-        nextElement  = startRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
+        nextElement = startRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
     }
 
     // If start and end waypoint are on the same road and same lane,

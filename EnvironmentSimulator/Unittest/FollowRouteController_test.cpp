@@ -181,6 +181,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteNoPath)
     {
         delete se;
         GTEST_FAIL();
+        return;  // this will never hit
     }
 
     double dt = 0.1;
@@ -260,14 +261,15 @@ TEST_F(FollowRouteControllerTest, FollowRouteSetParameters)
         delete se;
         GTEST_FAIL();
     }
-
-    scenarioengine::ControllerFollowRoute *controller = static_cast<scenarioengine::ControllerFollowRoute *>(
-        se->entities_.object_[0]->GetAssignedControllerOftype(scenarioengine::Controller::Type::CONTROLLER_TYPE_FOLLOW_ROUTE));
-    ASSERT_NE(controller, nullptr);
-    ASSERT_NEAR(controller->GetMinDistForCollision(), 69, 0.01);
-    ASSERT_NEAR(controller->GetLaneChangeTime(), 420, 0.01);
-
-    delete se;
+    else
+    {
+        scenarioengine::ControllerFollowRoute *controller = static_cast<scenarioengine::ControllerFollowRoute *>(
+            se->entities_.object_[0]->GetAssignedControllerOftype(scenarioengine::Controller::Type::CONTROLLER_TYPE_FOLLOW_ROUTE));
+        ASSERT_NE(controller, nullptr);
+        ASSERT_NEAR(controller->GetMinDistForCollision(), 69, 0.01);
+        ASSERT_NEAR(controller->GetLaneChangeTime(), 420, 0.01);
+        delete se;
+    }
 }
 
 TEST_F(FollowRouteControllerTest, FollowRouteGhostStartingOnRoute)

@@ -95,7 +95,7 @@ namespace aabbTree
         {
             return urhc_;
         }
-        ptTriangle triangle()
+        ptTriangle triangle() const
         {
             return triangle_;
         }
@@ -132,7 +132,7 @@ namespace aabbTree
         ~Tree();
         void                  intersect(Tree const &tree, Candidates &candidates) const;
         void                  build(BBoxVec &bboxes);
-        bool                  empty();
+        bool                  empty() const;
         vector<ptTree> const &Children() const
         {
             return childeren;

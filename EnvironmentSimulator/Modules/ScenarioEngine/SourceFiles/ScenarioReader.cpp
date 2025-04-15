@@ -79,24 +79,24 @@ ScenarioReader::~ScenarioReader()
 void ScenarioReader::LoadControllers()
 {
     // Register all internal controllers. The user may register custom ones as well before reading the scenario.
-    RegisterController(ControllerSloppyDriver::GetTypeNameStatic(), InstantiateControllerSloppyDriver);
-    RegisterController(ControllerInteractive::GetTypeNameStatic(), InstantiateControllerInteractive);
-    RegisterController(ControllerFollowGhost::GetTypeNameStatic(), InstantiateControllerFollowGhost);
-    RegisterController(ControllerFollowRoute::GetTypeNameStatic(), InstantiateControllerFollowRoute);
+    RegisterController(CONTROLLER_SLOPPY_DRIVER_TYPE_NAME, InstantiateControllerSloppyDriver);
+    RegisterController(CONTROLLER_INTERACTIVE_TYPE_NAME, InstantiateControllerInteractive);
+    RegisterController(CONTROLLER_FOLLOW_GHOST_TYPE_NAME, InstantiateControllerFollowGhost);
+    RegisterController(CONTROLLER_FOLLOW_ROUTE_TYPE_NAME, InstantiateControllerFollowRoute);
 #ifdef _USE_SUMO
-    RegisterController(ControllerSumo::GetTypeNameStatic(), InstantiateControllerSumo);
+    RegisterController(CONTROLLER_SUMO_TYPE_NAME, InstantiateControllerSumo);
 #endif
-    RegisterController(ControllerExternal::GetTypeNameStatic(), InstantiateControllerExternal);
-    RegisterController(ControllerRel2Abs::GetTypeNameStatic(), InstantiateControllerRel2Abs);
-    RegisterController(ControllerACC::GetTypeNameStatic(), InstantiateControllerACC);
-    RegisterController(ControllerNaturalDriver::GetTypeNameStatic(), InstantiateNaturalDriver);
-    RegisterController(ControllerALKS::GetTypeNameStatic(), InstantiateControllerALKS);
-    RegisterController(ControllerUDPDriver::GetTypeNameStatic(), InstantiateControllerUDPDriver);
-    RegisterController(ControllerECE_ALKS_REF_DRIVER::GetTypeNameStatic(), InstantiateControllerECE_ALKS_REF_DRIVER);
-    RegisterController(ControllerALKS_R157SM::GetTypeNameStatic(), InstantiateControllerALKS_R157SM);
-    RegisterController(ControllerLooming::GetTypeNameStatic(), InstantiateControllerLooming);
-    RegisterController(ControllerOffroadFollower::GetTypeNameStatic(), InstantiateControllerOffroadFollower);
-    RegisterController(ControllerHID::GetTypeNameStatic(), InstantiateControllerHID);
+    RegisterController(CONTROLLER_EXTERNAL_TYPE_NAME, InstantiateControllerExternal);
+    RegisterController(CONTROLLER_REL2ABS_TYPE_NAME, InstantiateControllerRel2Abs);
+    RegisterController(CONTROLLER_ACC_TYPE_NAME, InstantiateControllerACC);
+    RegisterController(CONTROLLER_NATURAL_DRIVER_TYPE_NAME, InstantiateNaturalDriver);
+    RegisterController(CONTROLLER_ALKS_TYPE_NAME, InstantiateControllerALKS);
+    RegisterController(CONTROLLER_UDP_DRIVER_TYPE_NAME, InstantiateControllerUDPDriver);
+    RegisterController(CONTROLLER_ECE_ALKS_REF_DRIVER_TYPE_NAME, InstantiateControllerECE_ALKS_REF_DRIVER);
+    RegisterController(CONTROLLER_ALKS_R157SM_TYPE_NAME, InstantiateControllerALKS_R157SM);
+    RegisterController(CONTROLLER_LOOMING_TYPE_NAME, InstantiateControllerLooming);
+    RegisterController(CONTROLLER_OFFROAD_FOLLOWER_TYPE_NAME, InstantiateControllerOffroadFollower);
+    RegisterController(CONTROLLER_HID_TYPE_NAME, InstantiateControllerHID);
 }
 
 void ScenarioReader::UnloadControllers()
@@ -414,7 +414,7 @@ Vehicle *ScenarioReader::createRandomOSCVehicle(std::string name)
     return vehicle;
 }
 
-roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_node node, roadmanager::CoordinateSystem defaultValue)
+roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_node node, roadmanager::CoordinateSystem defaultValue) const
 {
     roadmanager::CoordinateSystem cs = defaultValue;
 
@@ -451,7 +451,7 @@ roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_no
     return cs;
 }
 
-roadmanager::RelativeDistanceType ScenarioReader::ParseRelativeDistanceType(pugi::xml_node node, roadmanager::RelativeDistanceType defaultValue)
+roadmanager::RelativeDistanceType ScenarioReader::ParseRelativeDistanceType(pugi::xml_node node, roadmanager::RelativeDistanceType defaultValue) const
 {
     roadmanager::RelativeDistanceType rdt = defaultValue;
 
@@ -572,6 +572,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         {
             delete vehicle;
             LOG_ERROR_AND_QUIT("Unrecognized entity scale mode: {}", scaleModeStr);
+            return {};  // This will never be reached, but just to make cppcheck happy
         }
     }
 
@@ -741,7 +742,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                             {
                                 LOG_ERROR_AND_QUIT("Error: Trailer {} not found", parameters.ReadAttribute(trailer_node, "entityRef"));
                             }
-                            if (object->type_ != Object::Type::VEHICLE)
+                            else if (object->type_ != Object::Type::VEHICLE)
                             {
                                 LOG_ERROR_AND_QUIT("Error: Trailer {} is not of Vehicle type", parameters.ReadAttribute(trailer_node, "entityRef"));
                             }
@@ -1053,13 +1054,13 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
     parameters.CreateRestorePoint();
 
     // Closed attribute not supported by roadmanager yet
-    std::string closed_str = parameters.ReadAttribute(routeNode, "closed");
-    bool        closed     = false;
-    (void)closed;
-    if (closed_str == "true" || closed_str == "1")
-    {
-        closed = true;
-    }
+    // std::string closed_str = parameters.ReadAttribute(routeNode, "closed");
+    // bool        closed     = false;
+    // (void)closed;
+    // if (closed_str == "true" || closed_str == "1")
+    // {
+    //     closed = true;
+    // }
 
     for (pugi::xml_node routeChild = routeNode.first_child(); routeChild; routeChild = routeChild.next_sibling())
     {
@@ -1080,10 +1081,6 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
             else if (routeStrategy == "fastest")
             {
                 rs = roadmanager::Position::RouteStrategy::FASTEST;
-            }
-            else
-            {  // If shortest or unknown
-                rs = roadmanager::Position::RouteStrategy::SHORTEST;
             }
 
             OSCPosition *pos = parseOSCPosition(routeChild.first_child());
@@ -2298,11 +2295,10 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 if (eaChild.name() == std::string("AddEntityAction"))
                 {
                     AddEntityAction *addEntityAction = new AddEntityAction(entity, parent);
-
-                    addEntityAction->pos_OSCPosition_.reset(parseOSCPosition(eaChild.child("Position")));
-                    addEntityAction->pos_ = addEntityAction->pos_OSCPosition_->GetRMPos();
+                    OSCPosition     *oscPosition     = parseOSCPosition(eaChild.child("Position"));
+                    addEntityAction->pos_            = new roadmanager::Position(*oscPosition->GetRMPos());
+                    delete oscPosition;
                     addEntityAction->SetEntities(entities_);
-
                     action = addEntityAction;
                 }
                 else if (eaChild.name() == std::string("DeleteEntityAction"))
@@ -2368,18 +2364,18 @@ OSCUserDefinedAction *ScenarioReader::parseOSCUserDefinedAction(pugi::xml_node a
     return action;
 }
 
-ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xml_node node, Event *parent)
+ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xml_node actionNode, Event *parent)
 {
     ControlActivationMode lat_mode   = ControlActivationMode::UNDEFINED;
     ControlActivationMode long_mode  = ControlActivationMode::UNDEFINED;
     ControlActivationMode light_mode = ControlActivationMode::UNDEFINED;
     ControlActivationMode anim_mode  = ControlActivationMode::UNDEFINED;
 
-    std::string lat_str   = parameters.ReadAttribute(node, "lateral");
-    std::string long_str  = parameters.ReadAttribute(node, "longitudinal");
-    std::string light_str = parameters.ReadAttribute(node, "lighting");
-    std::string anim_str  = parameters.ReadAttribute(node, "animation");
-    std::string name_str  = parameters.ReadAttribute(node, "controllerRef");
+    std::string lat_str   = parameters.ReadAttribute(actionNode, "lateral");
+    std::string long_str  = parameters.ReadAttribute(actionNode, "longitudinal");
+    std::string light_str = parameters.ReadAttribute(actionNode, "lighting");
+    std::string anim_str  = parameters.ReadAttribute(actionNode, "animation");
+    std::string name_str  = parameters.ReadAttribute(actionNode, "controllerRef");
 
     if (lat_str == "false")
     {
@@ -2449,7 +2445,7 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
         }
         else
         {
-            *values[i].variable = strtod(parameters.ReadAttribute(dynamics_node, values[i].label.c_str()));
+            *values[i].variable = strtod(parameters.ReadAttribute(dynamics_node, values[i].label));
 
             if (*values[i].variable < SMALL_NUMBER)
             {
@@ -3707,8 +3703,8 @@ void ScenarioReader::parseInit(Init &init)
         {
             Object *entityRef;
 
-            entityRef     = ResolveObjectReference(parameters.ReadAttribute(actionsChild, "entityRef"));
-            bool teleport = false;
+            entityRef = ResolveObjectReference(parameters.ReadAttribute(actionsChild, "entityRef"));
+
             if (entityRef != NULL)
             {
                 for (pugi::xml_node privateChild = actionsChild.first_child(); privateChild; privateChild = privateChild.next_sibling())
@@ -3718,21 +3714,19 @@ void ScenarioReader::parseInit(Init &init)
                     if (action != 0)
                     {
                         action->SetName("Init " + entityRef->name_ + " " + privateChild.first_child().name());
-
-                        if (action->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
-                        {
-                            teleport = true;
-                        }
-                        else if (teleport == false && action->action_type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
+                        // bool teleport = false;
+                        // if (action->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
+                        // {
+                        //     teleport = true;
+                        // }
+                        // else if (action->action_type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
+                        if (action->action_type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
                         {
                             LOG_WARN("WARNING: Controller activated before positioning (TeleportAction) the entity {}", entityRef->GetName());
                         }
 
                         init.private_action_.push_back(action);
-                        if (entityRef)
-                        {
-                            entityRef->initActions_.push_back(action);
-                        }
+                        entityRef->initActions_.push_back(action);
                     }
                 }
                 entities_->activateObject(entityRef);
@@ -4116,15 +4110,15 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             std::string type_str = parameters.ReadAttribute(by_type, "type");
                             if (type_str == "pedestrian")
                             {
-                                trigger->type_ = Object::Type::PEDESTRIAN;
+                                trigger->objectType_ = Object::Type::PEDESTRIAN;
                             }
                             else if (type_str == "vehicle")
                             {
-                                trigger->type_ = Object::Type::VEHICLE;
+                                trigger->objectType_ = Object::Type::VEHICLE;
                             }
                             else if (type_str == "miscellaneous")
                             {
-                                trigger->type_ = Object::Type::MISC_OBJECT;
+                                trigger->objectType_ = Object::Type::MISC_OBJECT;
                             }
                             else
                             {
@@ -4135,7 +4129,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                         {
                             pugi::xml_node target = condition_node.child("EntityRef");
                             trigger->object_      = ResolveObjectReference(parameters.ReadAttribute(target, "entityRef"));
-                            trigger->type_        = Object::Type::TYPE_NONE;
+                            trigger->objectType_  = Object::Type::TYPE_NONE;
                         }
                         trigger->storyBoard_ = story_board_;
 
@@ -4415,7 +4409,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                 else if (condition_type == "ParameterCondition")
                 {
                     TrigByParameter *trigger = new TrigByParameter;
-                    trigger->name_           = parameters.ReadAttribute(byValueChild, "parameterRef");
+                    trigger->parameterRef_   = parameters.ReadAttribute(byValueChild, "parameterRef");
                     trigger->value_          = parameters.ReadAttribute(byValueChild, "value");
                     trigger->rule_           = ParseRule(parameters.ReadAttribute(byValueChild, "rule"));
                     trigger->parameters_     = &parameters;
@@ -4424,7 +4418,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                 else if (condition_type == "VariableCondition")
                 {
                     TrigByVariable *trigger = new TrigByVariable;
-                    trigger->name_          = variables.ReadAttribute(byValueChild, "variableRef");
+                    trigger->variableRef_   = variables.ReadAttribute(byValueChild, "variableRef");
                     trigger->value_         = variables.ReadAttribute(byValueChild, "value");
                     trigger->rule_          = ParseRule(variables.ReadAttribute(byValueChild, "rule"));
                     trigger->variables_     = &variables;

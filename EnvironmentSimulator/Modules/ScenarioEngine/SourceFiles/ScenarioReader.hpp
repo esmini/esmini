@@ -73,7 +73,7 @@ namespace scenarioengine
         ScenarioReader(Entities* entities, Catalogs* catalogs, bool disable_controllers = false);
         ~ScenarioReader();
         int  loadOSCFile(const char* path);
-        int  loadOSCMem(const pugi::xml_document& xml_doch);
+        int  loadOSCMem(const pugi::xml_document& xml_doc);
         void SetGateway(ScenarioGateway* gateway)
         {
             gateway_ = gateway;
@@ -101,14 +101,14 @@ namespace scenarioengine
         roadmanager::Route*               parseOSCRoute(pugi::xml_node routeNode);
         roadmanager::RMTrajectory*        parseTrajectoryRef(pugi::xml_node trajNode);
         void                              ParseOSCProperties(OSCProperties& properties, pugi::xml_node& xml_node);
-        roadmanager::CoordinateSystem     ParseCoordinateSystem(pugi::xml_node node, roadmanager::CoordinateSystem defaultValue);
-        roadmanager::RelativeDistanceType ParseRelativeDistanceType(pugi::xml_node node, roadmanager::RelativeDistanceType defaultValue);
+        roadmanager::CoordinateSystem     ParseCoordinateSystem(pugi::xml_node node, roadmanager::CoordinateSystem defaultValue) const;
+        roadmanager::RelativeDistanceType ParseRelativeDistanceType(pugi::xml_node node, roadmanager::RelativeDistanceType defaultValue) const;
         void                              ParseOSCBoundingBox(OSCBoundingBox& boundingbox, pugi::xml_node& xml_node);
         Vehicle*                          parseOSCVehicle(pugi::xml_node vehicleNode);
         Pedestrian*                       parseOSCPedestrian(pugi::xml_node pedestrianNode);
         MiscObject*                       parseOSCMiscObject(pugi::xml_node miscObjectNode);
         Vehicle*                          createRandomOSCVehicle(std::string name);
-        Controller*                       parseOSCObjectController(pugi::xml_node vehicleNode);
+        Controller*                       parseOSCObjectController(pugi::xml_node controllerNode);
         void                              parseGlobalParameterDeclarations()
         {
             parameters.parseGlobalParameterDeclarations(osc_root_.child("ParameterDeclarations"));
@@ -140,7 +140,7 @@ namespace scenarioengine
         int  parseStoryBoard(StoryBoard& storyBoard);
         void parseOSCManeuver(Maneuver* maneuver, pugi::xml_node maneuverNode, ManeuverGroup* mGroup);
 
-        std::string getScenarioFilename()
+        std::string getScenarioFilename() const
         {
             return oscFilename_;
         }
@@ -157,15 +157,15 @@ namespace scenarioengine
         void LoadControllers();
         void UnloadControllers();
 
-        std::string GetDescription()
+        std::string GetDescription() const
         {
             return description_;
         }
-        int GetVersionMajor()
+        int GetVersionMajor() const
         {
             return versionMajor_;
         }
-        int GetVersionMinor()
+        int GetVersionMinor() const
         {
             return versionMinor_;
         }

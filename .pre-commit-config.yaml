@@ -1,0 +1,83 @@
+repos:
+  - repo: local
+    hooks:
+      - id: clang-format
+        name: ClangFormat
+        entry: ./support/script/clang-format-runner.sh -i
+        language: system
+        types_or: [c, c++]
+        exclude: ^externals/.*$
+        files: ^EnvironmentSimulator/
+
+      - id: cmake-format
+        name: CMakeFormat
+        entry: cmake-format
+        args: [--in-place]
+        language: python
+        types: [cmake]
+        files: ^(CMakeLists\.txt|[^/]+\.cmake|EnvironmentSimulator/.*(CMakeLists\.txt|\.cmake))$
+
+      - id: black-format
+        name: BlackFormat
+        entry: black --line-length 88 --target-version py36 --target-version py37 --target-version py38
+        language: system
+        types: [python]
+        files: \.py$
+        exclude: >
+          (?x)^(
+            build/
+            | externals/
+            | EnvironmentSimulator/
+            | Hello-World_coding-example/
+            | scripts/
+            | test/
+            | \.venv/
+            | globals\.py
+          )
+
+      - id: cppcheck
+        name: Cppcheck
+        entry: cppcheck
+        language: system
+        types_or: [c, c++]
+        exclude: ^externals/.*$
+        files: ^EnvironmentSimulator/
+        args:
+          - --quiet
+          - --inconclusive
+          - --error-exitcode=1
+          - --inline-suppr
+          - --enable=all
+          - --suppress=knownConditionTrueFalse # intentional for clarity, also cppcheck will not be able to detect some.
+          - --suppress=unusedStructMember # kept for alignment, external access.
+          - --suppress=unusedFunction # kept due to external calls, API compatibility.
+          - --suppress=preprocessorErrorDirective # kept; cppcheck doesn't fully support __has_include().
+          # Following warnings are suppressed based on esmini team’s decision due to their low priority.
+          - --suppress=missingOverride
+          - --suppress=uninitMemberVar
+          - --suppress=passedByValue
+          - --suppress=functionStatic
+          - --suppress=unmatchedSuppression
+          - --suppress=useInitializationList
+          - --suppress=unusedLabel
+          - --suppress=uninitStructMember
+          - --suppress=missingIncludeSystem
+          - --suppress=missingInclude
+          - --suppress=operatorEqVarError
+          - --suppress=noExplicitConstructor
+          - --suppress=noValidConfiguration
+          # Following warnings are from cppcheck 2.17 — will be picked up when esmini team decides.
+          - --suppress=constVariablePointer
+          - --suppress=normalCheckLevelMaxBranches
+          - --suppress=duplicateAssignExpression
+          - --suppress=returnByReference
+          - --suppress=uselessOverride
+          - --suppress=cstyleCast
+          - --suppress=checkersReport
+          - --suppress=truncLongCastAssignment
+          - --suppress=constParameterPointer
+          - --suppress=checkLevelNormal
+          - --suppress=constParameterReference
+          - --suppress=constParameterCallback
+          - --suppress=constVariableReference
+          - --suppress=suspiciousFloatingPointCast
