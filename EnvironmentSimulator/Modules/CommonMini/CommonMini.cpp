@@ -995,9 +995,9 @@ void NormalizeVec2D(double x, double y, double& xn, double& yn)
 
 void OffsetVec2D(double x0, double y0, double x1, double y1, double offset, double& xo0, double& yo0, double& xo1, double& yo1)
 {
-    double angle_line     = atan2(y1 - y0, x1 - x0);
-    double angle_offset   = angle_line + (offset < 0 ? M_PI_2 : -M_PI_2);  // perpendicular to line
-    double line_offset[2] = {fabs(offset) * cos(angle_offset), fabs(offset) * sin(angle_offset)};
+    double       angle_line     = atan2(y1 - y0, x1 - x0);
+    double       angle_offset   = angle_line + (offset < 0 ? M_PI_2 : -M_PI_2);  // perpendicular to line
+    const double line_offset[2] = {fabs(offset) * cos(angle_offset), fabs(offset) * sin(angle_offset)};
 
     xo0 = x0 + line_offset[0];
     yo0 = y0 + line_offset[1];

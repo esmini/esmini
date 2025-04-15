@@ -1342,9 +1342,9 @@ TEST(JunctionTest, JunctionSelectorTest)
 {
     double dt = 0.01;
 
-    double angles[]    = {3 * M_PI_2, -M_PI_2, 0.0, M_PI_2};
-    int    roadIds[]   = {1, 1, 2, 3};
-    double durations[] = {2.5, 2.5, 2.6, 2.8};  // Make sure car gets gets out of the intersection
+    double       angles[]    = {3 * M_PI_2, -M_PI_2, 0.0, M_PI_2};
+    int          roadIds[]   = {1, 1, 2, 3};
+    const double durations[] = {2.5, 2.5, 2.6, 2.8};  // Make sure car gets gets out of the intersection
 
     for (int i = 0; i < static_cast<int>(sizeof(angles) / sizeof(double)); i++)
     {
@@ -1399,8 +1399,8 @@ TEST(JunctionTest, TestConnectivityTroughHeadToHeadJunctions)
 
 TEST(ConditionTest, CollisionTest)
 {
-    double dt           = 0.01;
-    double timestamps[] = {5.24, 5.25, 6.25, 6.26, 7.10, 8.78};
+    double       dt           = 0.01;
+    const double timestamps[] = {5.24, 5.25, 6.25, 6.26, 7.10, 8.78};
 
     ASSERT_EQ(SE_Env::Inst().GetCollisionDetection(), false);  // Should be disabled by default
 
@@ -2786,10 +2786,10 @@ TEST(SpeedTest, TestChangeSpeedOverDistance)
     action.transition_.dimension_ = OSCPrivateAction::DynamicsDimension::DISTANCE;
     action.transition_.shape_     = OSCPrivateAction::DynamicsShape::LINEAR;
 
-    double v0[6]   = {5.0, -5.0, 0.0, -5.0, 5.0, 1.5};
-    double v1[6]   = {10.0, -10.0, 0.0, 5.0, -5.0, -0.5};
-    double dist[6] = {20.0, 20.0, 20.0, 20.0, 20.0, 1.25};
-    double time[6] = {2.66667, 2.66667, 0.0, 8.0, 8.0, 2.0};
+    double       v0[6]   = {5.0, -5.0, 0.0, -5.0, 5.0, 1.5};
+    const double v1[6]   = {10.0, -10.0, 0.0, 5.0, -5.0, -0.5};
+    double       dist[6] = {20.0, 20.0, 20.0, 20.0, 20.0, 1.25};
+    double       time[6] = {2.66667, 2.66667, 0.0, 8.0, 8.0, 2.0};
 
     for (unsigned int i = 0; i < static_cast<unsigned int>(sizeof(v0) / sizeof(double)); i++)
     {

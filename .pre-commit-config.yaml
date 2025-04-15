@@ -17,7 +17,7 @@ repos:
           - --error-exitcode=1
           - --inline-suppr
           - --enable=all
-          - --suppress=constVariable #1
+          #- --suppress=constVariable #1
           - --suppress=missingInclude #3
           - --suppress=variableScope #2
           - --suppress=unusedStructMember #1
