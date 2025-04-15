@@ -1532,18 +1532,6 @@ void SE_Env::SetDatFilePath(std::string datFilePath)
     }
 }
 
-void SE_Env::EnableOSIFile(std::string osiFilePath)
-{
-    osiFilePath_    = osiFilePath;
-    osiFileEnabled_ = true;
-}
-
-void SE_Env::DisableOSIFile()
-{
-    osiFilePath_    = "";
-    osiFileEnabled_ = false;
-}
-
 /*
  * Logger for all vehicles contained in the Entities vector.
  *

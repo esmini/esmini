@@ -174,8 +174,6 @@ OSIReporter::~OSIReporter()
     {
         osi_file.close();
     }
-
-    SE_Env::Inst().DisableOSIFile();
 }
 
 SE_SOCKET OSIReporter::OpenSocket(std::string ipaddr)

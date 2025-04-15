@@ -2138,22 +2138,29 @@ extern "C"
 
     SE_DLL_API void SE_DisableOSIFile()
     {
-        SE_Env::Inst().DisableOSIFile();
-
+        SE_Env::Inst().GetOptions().SetOptionValue("osi_file", "");
         if (player != nullptr)
         {
             player->SetOSIFileStatus(false);
+        }
+        else
+        {
+            LOG_WARN("SE_DisableOSIFile called before scenario initialized");
         }
     }
 
     SE_DLL_API void SE_EnableOSIFile(const char *filename)
     {
-        SE_Env::Inst().EnableOSIFile(filename == nullptr ? "" : filename);
-
+#ifdef _USE_OSI
+        SE_Env::Inst().GetOptions().SetOptionValue("osi_file", filename == nullptr ? "" : filename);
         if (player != nullptr)
         {
             player->SetOSIFileStatus(true, filename);
+            player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
         }
+#else
+        (void)filename;
+#endif  // _USE_OSI
     }
 
     SE_DLL_API void SE_FlushOSIFile()

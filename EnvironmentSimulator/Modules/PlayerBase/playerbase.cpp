@@ -1678,16 +1678,6 @@ int ScenarioPlayer::Init()
         {
             osiReporter->SetOSIFrequency(1);
         }
-    }
-
-    // Secondly check esmini environment variables
-    if (osi_filename.empty())
-    {
-        osi_filename = SE_Env::Inst().GetOSIFilePath();
-    }
-
-    if (!osi_filename.empty() || SE_Env::Inst().GetOSIFileEnabled())
-    {
         SetOSIFileStatus(true, osi_filename.c_str());
     }
 

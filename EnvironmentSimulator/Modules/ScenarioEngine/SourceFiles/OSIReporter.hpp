@@ -198,9 +198,15 @@ public:
         return osi_update_counter_ == nullptr ? -1 : *osi_update_counter_;
     }
 
+    void UpdateCounterOffset()
+    {
+        counter_offset_ = GetCounter() + 1;  // Add 1, since counter is incremented before next OSI update
+    }
+
     void SetOSIFrequency(int freq)
     {
         osi_freq_ = freq;
+        UpdateCounterOffset();
     }
 
     int GetOSIFrequency()

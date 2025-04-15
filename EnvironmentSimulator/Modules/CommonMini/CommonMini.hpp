@@ -1211,8 +1211,6 @@ public:
           osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION),
           logFilePath_(LOG_FILENAME),
           datFilePath_(""),
-          osiFilePath_(""),
-          osiFileEnabled_(false),
           collisionDetection_(false),
           saveImagesToRAM_(false),
           ghost_mode_(GhostMode::NORMAL),
@@ -1316,17 +1314,6 @@ public:
         return saveImagesToRAM_;
     }
 
-    void        EnableOSIFile(std::string osiFilePath);
-    void        DisableOSIFile();
-    std::string GetOSIFilePath()
-    {
-        return osiFilePath_;
-    }
-    bool GetOSIFileEnabled()
-    {
-        return osiFileEnabled_;
-    }
-
     std::string GetModelFilenameById(int model_id);
     void        ClearModelFilenames()
     {
@@ -1369,8 +1356,6 @@ private:
     double                     osiMaxLateralDeviation_;
     std::string                logFilePath_;
     std::string                datFilePath_;
-    std::string                osiFilePath_;
-    bool                       osiFileEnabled_;
     SE_SystemTime              systemTime_;
     SE_Rand                    rand_;
     bool                       collisionDetection_;

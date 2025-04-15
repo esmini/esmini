@@ -954,15 +954,16 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 
     SE_Init(Scenario_file, 0, 0, 0, 0);
     SE_SetOSIFrequency(1);
-    SE_EnableOSIFile("gt.osi");
+    SE_EnableOSIFile("gt.osi");  // OSI data updated and written to file
 
+    SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 0);  // so far, nothing has been saved
+    EXPECT_EQ(fileStatus.st_size, 84850);  // initial OSI size, including static content
 
     SE_StepDT(0.001f);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 84963);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 85735);  // slight growth due to only dynamic updates
 
     int road_lane_size;
 
@@ -974,12 +975,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 85975);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 86747);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 86988);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 87760);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -1649,6 +1650,47 @@ TEST(GroundTruthTests, check_frequency_explicit)
     fclose(file);
 }
 
+TEST(GroundTruthTests, check_frequency_change)
+{
+    const osi3::GroundTruth* osi_gt_ptr;
+    osi3::GroundTruth        osi_gt;
+    double                   seconds       = 0.0, obj_x, obj_y, obj_z;
+    double                   x_vals[]      = {51.400, 51.400, 51.800, 51.800, 52.200};
+    double                   time_stamps[] = {0.00, 0.00, 0.02, 0.02, 0.04};
+
+    SE_SetOSIFrequency(3);
+    ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
+
+    osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    for (int i = 0; i < 5; i++)
+    {
+        if (i == 1)
+        {
+            SE_SetOSIFrequency(2);
+        }
+        // Read OSI message, should be identical every two pair of frames - i/2 will result in 0, 0, 1, 1, 2, 2 and so on
+        EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+        seconds = static_cast<double>(osi_gt_ptr->timestamp().seconds()) + 1E-9 * static_cast<double>(osi_gt_ptr->timestamp().nanos());
+        EXPECT_NEAR(seconds, time_stamps[i], 1E-5);
+        obj_x = osi_gt_ptr->moving_object(0).base().position().x();
+        obj_y = osi_gt_ptr->moving_object(0).base().position().y();
+        obj_z = osi_gt_ptr->moving_object(0).base().position().z();
+        EXPECT_NEAR(obj_x, x_vals[i], 1E-5);
+        EXPECT_NEAR(obj_y, -1.535, 1E-5);
+        EXPECT_NEAR(obj_z, 0.75, 1E-5);
+        EXPECT_NEAR(osi_gt_ptr->moving_object(0).vehicle_attributes().bbcenter_to_rear().z(), -0.35, 1E-5);
+
+        if (i < 5)  // skip step of the last round
+        {
+            SE_StepDT(0.01f);
+        }
+    }
+
+    SE_DisableOSIFile();
+    SE_Close();
+}
+
 TEST(GroundTruthTests, check_teleport_not_affecting_vel_and_acc)
 {
     const osi3::GroundTruth* osi_gt_ptr;
@@ -1923,19 +1965,64 @@ TEST(TestGetAndSet, SetOSITimestampTest)
 
     std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
 
+    // No OSI related calls prior to Init
+    EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+
+    // Timestamp is set after SE_Init() and before first OSI related function call (which will trig populating OSI data)
+    SE_OSISetTimeStamp(1234567890);
+
+    osi_gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    // We expect the timestamp to be as set above
+    EXPECT_EQ(osi_gt->timestamp().seconds(), 1);
+    EXPECT_EQ(osi_gt->timestamp().nanos(), static_cast<unsigned int>(234567890));
+
+    SE_OSISetTimeStamp(1234543210);
+    SE_StepDT(0.001f);
+    EXPECT_EQ(osi_gt->timestamp().seconds(), 1);
+    EXPECT_EQ(osi_gt->timestamp().nanos(), static_cast<unsigned int>(234543210));
+
+    SE_StepDT(0.001f);
+    // Expect no change as timestamp has been set explicitly only once
+    EXPECT_EQ(osi_gt->timestamp().seconds(), 1);
+    EXPECT_EQ(osi_gt->timestamp().nanos(), static_cast<unsigned int>(234543210));
+
+    SE_OSISetTimeStamp(5234543229);
+    SE_StepDT(0.001f);
+    // Expect updated timestamp
+    EXPECT_EQ(osi_gt->timestamp().seconds(), 5);
+    EXPECT_EQ(osi_gt->timestamp().nanos(), static_cast<unsigned int>(234543229));
+
+    SE_Close();
+}
+
+TEST(TestGetAndSet, SetOSITimestampFirstIsZero)
+{
+    const osi3::GroundTruth* osi_gt;
+
+    std::string scenario_file = "../../../resources/xosc/cut-in.xosc";
+
+    // We set frequency prior to init, thus OSI content is updated during SE_Init
+    SE_SetOSIFrequency(1);
+
     EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
 
     int n_Objects = SE_GetNumberOfObjects();
     EXPECT_EQ(n_Objects, 2);
 
-    SE_StepDT(0.001f);
-
     osi_gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
-    EXPECT_EQ(osi_gt->moving_object().size(), 2);
+    SE_OSISetTimeStamp(1234567890);
 
-    double seconds = static_cast<double>(osi_gt->timestamp().seconds()) + 1E-9 * static_cast<double>(osi_gt->timestamp().nanos());
-    EXPECT_DOUBLE_EQ(seconds, 0.001);
+    // We expect the first timestamp to be 0.
+    EXPECT_EQ(osi_gt->timestamp().seconds(), 0);
+    EXPECT_EQ(osi_gt->timestamp().nanos(), static_cast<unsigned int>(0));
+
+    SE_StepDT(0.001f);
+
+    EXPECT_EQ(osi_gt->moving_object().size(), 2);
+    EXPECT_EQ(osi_gt->timestamp().seconds(), 1);
+    EXPECT_EQ(osi_gt->timestamp().nanos(), static_cast<unsigned int>(234567890));
 
     SE_OSISetTimeStamp(1234543210);
     SE_StepDT(0.001f);
