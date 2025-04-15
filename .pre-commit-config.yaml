@@ -21,7 +21,7 @@ repos:
           - --suppress=missingInclude #3
           - --suppress=variableScope #2
           - --suppress=unusedStructMember #1
-          - --suppress=duplicateBranch #1
+          #- --suppress=duplicateBranch #1
           - --suppress=duplInheritedMember #1
           - --suppress=missingOverride #2 ?
           - --suppress=functionConst #1

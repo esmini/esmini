@@ -8618,10 +8618,10 @@ std::string OpenDrive::ContactPointType2Str(ContactPointType type)
     {
         return "JUNCTION";
     }
-    else if (type == ContactPointType::CONTACT_POINT_UNDEFINED)
-    {
-        return "UNDEFINED";
-    }
+    // else if (type == ContactPointType::CONTACT_POINT_UNDEFINED)
+    // {
+    //     return "UNDEFINED";
+    // }
     else
     {
         return "UNDEFINED";

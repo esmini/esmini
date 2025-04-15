@@ -2490,30 +2490,14 @@ TEST(ControllerTest, ALKS_R157_TestR157RefDriverBrakeRate)
 
             if (state == 0 && se->getSimulationTime() > 2.0)
             {
-                if (i == 0)
-                {
-                    EXPECT_NEAR(obj->pos_.GetX(), 49.250, 1e-3);
-                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
-                }
-                else
-                {
-                    EXPECT_NEAR(obj->pos_.GetX(), 49.250, 1e-3);
-                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
-                }
+                EXPECT_NEAR(obj->pos_.GetX(), 49.250, 1e-3);
+                EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
                 state++;
             }
             else if (state == 1 && se->getSimulationTime() > 3.4)
             {
-                if (i == 0)
-                {
-                    EXPECT_NEAR(obj->pos_.GetX(), 70.322, 1e-3);
-                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
-                }
-                else
-                {
-                    EXPECT_NEAR(obj->pos_.GetX(), 70.322, 1e-3);
-                    EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
-                }
+                EXPECT_NEAR(obj->pos_.GetX(), 70.322, 1e-3);
+                EXPECT_NEAR(obj->pos_.GetY(), -1.535, 1e-3);
                 state++;
             }
             else if (state == 2 && se->getSimulationTime() > 5.0)
