@@ -9148,8 +9148,8 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
                         if (new_lane_id == 0 && GetSnapLaneTypes() != Lane::LaneType::LANE_TYPE_ANY)
                         {
                             LOG_ERROR("MoveAlongS Lane {} on road {} is or became zero width. Failed to move to a close lane with matching type 0x{}",
-                                      road->GetId(),
                                       old_lane_id,
+                                      road->GetId(),
                                       GetSnapLaneTypes());
                             ret_val = ReturnCode::ERROR_GENERIC;
                         }
