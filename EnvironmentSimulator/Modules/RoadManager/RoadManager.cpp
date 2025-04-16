@@ -3802,6 +3802,16 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                 // s_offset
                                 double s_offset = atof(roadMark.attribute("sOffset").value());
 
+                                double         roadMark_fade = 0.0;
+                                pugi::xml_node userData      = roadMark.child("userData");
+                                if (userData)
+                                {
+                                    if (!strcmp(userData.attribute("code").value(), "fade"))
+                                    {
+                                        roadMark_fade = CLAMP(atof(userData.attribute("value").value()), 0.0, 1.0);
+                                    }
+                                }
+
                                 // type
                                 LaneRoadMark::RoadMarkType roadMark_type = LaneRoadMark::NONE_TYPE;
                                 if (roadMark.attribute("type") == 0 || !strcmp(roadMark.attribute("type").value(), ""))
@@ -3940,7 +3950,8 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                                                                roadMark_material,
                                                                                roadMark_laneChange,
                                                                                roadMark_width,
-                                                                               roadMark_height);
+                                                                               roadMark_height,
+                                                                               roadMark_fade);
                                 lane->AddLaneRoadMark(lane_roadMark);
 
                                 // sub_type

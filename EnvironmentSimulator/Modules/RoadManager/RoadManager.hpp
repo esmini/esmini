@@ -722,7 +722,8 @@ namespace roadmanager
                      RoadMarkMaterial   material,
                      RoadMarkLaneChange lane_change,
                      double             width,
-                     double             height)
+                     double             height,
+                     double             fade = 0.0)
             : s_offset_(s_offset),
               type_(type),
               weight_(weight),
@@ -730,7 +731,8 @@ namespace roadmanager
               material_(material),
               lane_change_(lane_change),
               width_(width),
-              height_(height)
+              height_(height),
+              fade_(fade)
         {
         }
 
@@ -768,6 +770,10 @@ namespace roadmanager
         {
             return lane_change_;
         }
+        double GetFade() const
+        {
+            return fade_;
+        }
 
         unsigned int GetNumberOfRoadMarkTypes() const
         {
@@ -787,6 +793,7 @@ namespace roadmanager
         RoadMarkLaneChange                             lane_change_;
         double                                         width_;
         double                                         height_;
+        double                                         fade_;
         std::vector<std::shared_ptr<LaneRoadMarkType>> lane_roadMarkType_;
     };
 

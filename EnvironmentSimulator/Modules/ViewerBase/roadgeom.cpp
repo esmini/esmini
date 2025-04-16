@@ -86,18 +86,20 @@ osg::ref_ptr<osg::Texture2D> RoadGeom::ReadTexture(std::string filename)
     return tex;
 }
 
-void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_ptr<osg::DrawElementsUInt> indices, roadmanager::RoadMarkColor color)
+void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array>        vertices,
+                               osg::ref_ptr<osg::DrawElementsUInt> indices,
+                               roadmanager::RoadMarkColor          color,
+                               double                              fade)
 {
     osg::ref_ptr<osg::Vec4Array> color_array = new osg::Vec4Array;
     color_array->push_back(viewer::ODR2OSGColor(color));
+    color_array->back()[3] = 1.0 - fade;  // Set alpha value
 
     // Finally create and add geometry
     osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
     geom->setUseDisplayList(true);
     geom->setVertexArray(vertices.get());
     geom->addPrimitiveSet(indices.get());
-    geom->setColorArray(color_array.get());
-    geom->setColorBinding(osg::Geometry::BIND_OVERALL);
 
     // Use PolygonOffset feature to avoid z-fighting with road surface
     geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(-POLYGON_OFFSET_ROADMARKS, -SIGN(POLYGON_OFFSET_ROADMARKS)));
@@ -105,6 +107,26 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array> vertices, osg::ref_p
 
     osg::ref_ptr<osg::Geode> geode = new osg::Geode;
     geode->addDrawable(geom);
+
+    // create material with unique name
+    static int                  counter           = 0;
+    osg::ref_ptr<osg::Material> materialRoadmark_ = new osg::Material;
+    materialRoadmark_->setName((std::string("RoadMarkMaterial") + std::to_string(counter++).c_str()));
+    materialRoadmark_->setDiffuse(osg::Material::FRONT_AND_BACK, color_array->at(0));
+    materialRoadmark_->setAmbient(osg::Material::FRONT_AND_BACK, color_array->at(0));
+    materialRoadmark_->setAlpha(osg::Material::FRONT_AND_BACK, 1.0 - fade);
+    geode->getOrCreateStateSet()->setAttributeAndModes(materialRoadmark_.get());
+
+    // also embed color in geometry, e.g. for post processing in full stack simulations
+    geom->setColorArray(color_array.get());
+    geom->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+    if (fade > SMALL_NUMBER)
+    {
+        geom->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+        geom->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
+    }
+
     rm_group_->addChild(geode);
 }
 
@@ -155,7 +177,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                         osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
                         tx->setPosition(osg::Vec3(static_cast<float>(osi_point0.x - origin_[0]),
                                                   static_cast<float>(osi_point0.y - origin_[1]),
-                                                  static_cast<float>(osi_point0.z)));
+                                                  static_cast<float>(osi_point0.z + ROADMARK_Z_OFFSET)));
                         tx->addChild(dot);
                         rm_group_->addChild(tx);
                     }
@@ -313,7 +335,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                         if (osi_points[q].endpoint)
                         {
                             // create and add OSG geometry for the line sequence
-                            AddRoadMarkGeom(vertices, indices, lane_roadmarktypeline->GetColor());
+                            AddRoadMarkGeom(vertices, indices, lane_roadmarktypeline->GetColor(), lane_roadmark->GetFade());
                             startpoint = q + 1;
                         }
                     }

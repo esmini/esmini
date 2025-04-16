@@ -1,0 +1,100 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenDRIVE>
+    <header name="ref_point" revMajor="1" revMinor="8" date="2025-04-16 07:47:13.276443" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <road rule="RHT" id="0" junction="-1" length="150.0">
+        <link/>
+        <planView>
+            <geometry s="0" x="0" y="0" hdg="0" length="50">
+                <line/>
+            </geometry>
+            <geometry s="50" x="50.0" y="0.0" hdg="0" length="50.0">
+                <arc curvature="0.0314"/>
+            </geometry>
+            <geometry s="100.0" x="81.84712366024951" y="31.821773034690022" hdg="1.5699999999999998" length="50">
+                <line/>
+            </geometry>
+        </planView>
+        <elevationProfile/>
+        <lateralProfile/>
+        <lanes>
+            <laneSection s="0">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link/>
+                        <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="broken" weight="standard" color="yellow" height="0.02" width="0.2">
+                            <type name="broken" width="0.2">
+                                <line length="2" space="6" tOffset="0" width="0.15" sOffset="5"/>
+                            </type>
+                            <userData code="fade" value="0.0"/>
+                        </roadMark>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link/>
+                        <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </right>
+            </laneSection>
+            <laneSection s="50">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link/>
+                        <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="broken" weight="standard" color="yellow" height="0.02" width="0.2">
+                            <type name="broken" width="0.2">
+                                <line length="2" space="6" tOffset="0" width="0.15" sOffset="5"/>
+                            </type>
+                            <userData code="fade" value="0.7"/>
+                        </roadMark>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link/>
+                        <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </right>
+            </laneSection>
+            <laneSection s="100">
+                <left>
+                    <lane id="1" type="driving" level="false">
+                        <link/>
+                        <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level="false">
+                        <roadMark sOffset="0" type="broken" weight="standard" color="yellow" height="0.02" width="0.2">
+                            <type name="broken" width="0.2">
+                                <line length="2" space="6" tOffset="0" width="0.15" sOffset="5"/>
+                            </type>
+                            <userData code="fade" value="0.0"/>
+                        </roadMark>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level="false">
+                        <link/>
+                        <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+    </road>
+</OpenDRIVE>
