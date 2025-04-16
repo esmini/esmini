@@ -257,10 +257,9 @@ namespace viewer
         osg::ref_ptr<osg::Group>                     bbGroup_;
 
         std::unique_ptr<Trajectory> trajectory_;
-        static const EntityType     entity_type_ = EntityType::ENTITY;
         virtual EntityType          GetType()
         {
-            return entity_type_;
+            return EntityType::ENTITY;
         }
 
         /* Returns true if type is or inherits from MOVING */
@@ -306,15 +305,14 @@ namespace viewer
     class MovingModel : public EntityModel
     {
     public:
-        PointSensor*            road_sensor_;
-        PointSensor*            lane_sensor_;
-        PointSensor*            route_sensor_;
-        PointSensor*            trail_sensor_;
-        PointSensor*            steering_sensor_;
-        static const EntityType entity_type_ = EntityType::MOVING;
-        virtual EntityType      GetType()
+        PointSensor*       road_sensor_;
+        PointSensor*       lane_sensor_;
+        PointSensor*       route_sensor_;
+        PointSensor*       trail_sensor_;
+        PointSensor*       steering_sensor_;
+        virtual EntityType GetType() override
         {
-            return entity_type_;
+            return EntityType::MOVING;
         }
 
         MovingModel(Viewer*                  viewer,
@@ -339,10 +337,9 @@ namespace viewer
         std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> rear_wheel_;
         double                                                    wheel_angle_;
         double                                                    wheel_rot_;
-        static const EntityType                                   entity_type_ = EntityType::VEHICLE;
-        virtual EntityType                                        GetType()
+        virtual EntityType                                        GetType() override
         {
-            return entity_type_;
+            return EntityType::VEHICLE;
         }
 
         CarModel(Viewer*                  viewer,
@@ -487,7 +484,7 @@ namespace viewer
         int  GetNumberOfCameraModes();
         void UpdateCameraFOV();
         void SetVehicleInFocus(int idx);
-        int  GetEntityInFocus()
+        int  GetEntityInFocus() const
         {
             return currentCarInFocus_;
         }
@@ -525,19 +522,19 @@ namespace viewer
         {
             keyRight_ = pressed;
         }
-        bool getKeyUp()
+        bool getKeyUp() const
         {
             return keyUp_;
         }
-        bool getKeyDown()
+        bool getKeyDown() const
         {
             return keyDown_;
         }
-        bool getKeyLeft()
+        bool getKeyLeft() const
         {
             return keyLeft_;
         }
-        bool getKeyRight()
+        bool getKeyRight() const
         {
             return keyRight_;
         }
@@ -545,7 +542,7 @@ namespace viewer
         {
             quit_request_ = value;
         }
-        bool GetQuitRequest()
+        bool GetQuitRequest() const
         {
             return quit_request_;
         }
@@ -572,14 +569,14 @@ namespace viewer
                                  double                       dotsize = 0);
 
         void SaveImagesToFile(int nrOfFrames);
-        int  GetSaveImagesToFile()
+        int  GetSaveImagesToFile() const
         {
             return saveImagesToFile_;
         }
         bool IsOffScreenRequested();
         void UpdateOffScreenStatus();         // Update off-screen activation based on needed or not
         void SetOffScreenActive(bool state);  // true = Activate esmini offscreen, false = Activate osg screen capture handling
-        bool GetOSGScreenShotHandlerActive()
+        bool GetOSGScreenShotHandlerActive() const
         {
             return osg_screenshot_event_handler_;
         }

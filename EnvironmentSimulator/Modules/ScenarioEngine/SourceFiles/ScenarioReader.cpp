@@ -412,7 +412,7 @@ Vehicle *ScenarioReader::createRandomOSCVehicle(std::string name)
     return vehicle;
 }
 
-roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_node node, roadmanager::CoordinateSystem defaultValue)
+roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_node node, roadmanager::CoordinateSystem defaultValue) const
 {
     roadmanager::CoordinateSystem cs = defaultValue;
 
@@ -449,7 +449,7 @@ roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_no
     return cs;
 }
 
-roadmanager::RelativeDistanceType ScenarioReader::ParseRelativeDistanceType(pugi::xml_node node, roadmanager::RelativeDistanceType defaultValue)
+roadmanager::RelativeDistanceType ScenarioReader::ParseRelativeDistanceType(pugi::xml_node node, roadmanager::RelativeDistanceType defaultValue) const
 {
     roadmanager::RelativeDistanceType rdt = defaultValue;
 

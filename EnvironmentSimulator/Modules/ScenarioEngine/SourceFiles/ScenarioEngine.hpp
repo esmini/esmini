@@ -92,19 +92,19 @@ namespace scenarioengine
                          const double                      tracking_limit,
                          double                           *distance,
                          double                           *timestamp);
-        bool GetDisableControllersFlag()
+        bool GetDisableControllersFlag() const
         {
             return disable_controllers_;
         }
-        std::string getScenarioFilename()
+        std::string getScenarioFilename() const
         {
             return scenarioReader->getScenarioFilename();
         }
-        std::string getSceneGraphFilename()
+        std::string getSceneGraphFilename() const
         {
             return roadNetwork.sceneGraphFile.filepath;
         }
-        std::string getOdrFilename()
+        std::string getOdrFilename() const
         {
             return roadNetwork.logicFile.filepath;
         }
@@ -118,7 +118,7 @@ namespace scenarioengine
         {
             return simulationTime_;
         }
-        bool GetQuitFlag()
+        bool GetQuitFlag() const
         {
             return storyBoard.GetCurrentState() == StoryBoard::State::COMPLETE;
         }
@@ -140,7 +140,7 @@ namespace scenarioengine
         {
             trueTime_ = time;
         }
-        double GetTrueTime()
+        double GetTrueTime() const
         {
             return trueTime_;
         }
@@ -151,7 +151,7 @@ namespace scenarioengine
         void CreateGhostTeleport(Object *obj1, Object *obj2, Event *event);
 
         void UpdateGhostMode();
-        int  GetInitStatus()
+        int  GetInitStatus() const
         {
             return init_status_;
         }

@@ -92,7 +92,7 @@ namespace scenarioengine
         };
 #endif  // _USE_OSI
 
-        State GetCurrentState()
+        State GetCurrentState() const
         {
             return state_;
         }
@@ -107,7 +107,7 @@ namespace scenarioengine
             transition_ = transition;
         }
 
-        Transition GetCurrentTransition()
+        Transition GetCurrentTransition() const
         {
             return transition_;
         }

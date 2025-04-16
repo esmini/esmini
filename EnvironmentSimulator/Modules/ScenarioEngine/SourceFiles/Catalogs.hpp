@@ -73,7 +73,7 @@ namespace scenarioengine
             }
         }
 
-        CatalogType GetType()
+        CatalogType GetType() const
         {
             return type_;
         }

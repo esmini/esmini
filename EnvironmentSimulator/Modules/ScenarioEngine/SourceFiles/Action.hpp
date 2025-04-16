@@ -86,7 +86,7 @@ namespace scenarioengine
             return BaseType2Str();
         }
 
-        BaseType GetBaseType()
+        BaseType GetBaseType() const
         {
             if (action_type_ < ActionType::GLOBAL_ACTION_BASE_INDEX)
             {

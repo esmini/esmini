@@ -180,7 +180,7 @@ namespace scenarioengine
         ObjectState(const ObjectState &)            = default;
         ObjectState &operator=(const ObjectState &) = default;
 
-        ObjectStateStruct getStruct()
+        ObjectStateStruct getStruct() const
         {
             return state_;
         }
@@ -349,11 +349,11 @@ namespace scenarioengine
 
         void removeObject(int id);
         void removeObject(std::string name);
-        int  getNumberOfObjects()
+        int  getNumberOfObjects() const
         {
             return static_cast<int>(objectState_.size());
         }
-        ObjectState getObjectStateByIdx(int idx)
+        ObjectState getObjectStateByIdx(int idx) const
         {
             return *objectState_[static_cast<unsigned int>(idx)];
         }

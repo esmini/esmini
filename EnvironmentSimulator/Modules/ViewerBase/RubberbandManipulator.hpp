@@ -58,23 +58,23 @@ namespace osgGA
             {
             }
 
-            bool GetFixPos()
+            bool GetFixPos() const
             {
                 return fixed_pos_;
             }
-            bool GetFixRot()
+            bool GetFixRot() const
             {
                 return fixed_rot_;
             }
-            bool GetOrtho()
+            bool GetOrtho() const
             {
                 return ortho_;
             }
-            osg::Vec3 GetPos()
+            osg::Vec3 GetPos() const
             {
                 return pos_;
             }
-            osg::Vec3 GetRot()
+            osg::Vec3 GetRot() const
             {
                 return rot_;
             }
