@@ -230,7 +230,7 @@ namespace STGeometry
             if (!(xmin <= x && x <= xmax && ymin <= y && y <= ymax))
                 solsIter = sols.erase(solsIter);
             else
-                solsIter++;
+                ++solsIter;
         }
     }
 
