@@ -45,7 +45,7 @@ namespace scenarioengine
         }
 
         void Init();
-        void Step(double time);
+        void Step(double timeStep);
         int  Activate(ControlActivationMode lat_activation_mode,
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,

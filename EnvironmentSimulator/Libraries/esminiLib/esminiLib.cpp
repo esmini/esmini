@@ -1498,10 +1498,10 @@ extern "C"
         return obj->pos_.GetInLaneType();
     }
 
-    SE_DLL_API int SE_GetOverrideActionStatus(int object_id, SE_OverrideActionList *list)
+    SE_DLL_API int SE_GetOverrideActionStatus(int objectId, SE_OverrideActionList *list)
     {
         Object *obj = nullptr;
-        if (getObjectById(object_id, obj) == -1)
+        if (getObjectById(objectId, obj) == -1)
         {
             printf("no obj\n");
             return -1;
@@ -2700,7 +2700,7 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API int SE_FetchImage(SE_Image *img)
+    SE_DLL_API int SE_FetchImage(SE_Image *image)
     {
 #ifdef _USE_OSG
         if (player)
@@ -2710,16 +2710,16 @@ extern "C"
             {
                 return -1;
             }
-            img->width       = offScrImg->width;
-            img->height      = offScrImg->height;
-            img->pixelSize   = offScrImg->pixelSize;
-            img->pixelFormat = offScrImg->pixelFormat;
-            img->data        = offScrImg->data;
+            image->width       = offScrImg->width;
+            image->height      = offScrImg->height;
+            image->pixelSize   = offScrImg->pixelSize;
+            image->pixelFormat = offScrImg->pixelFormat;
+            image->data        = offScrImg->data;
         }
 
         return 0;
 #else
-        (void)img;
+        (void)image;
         return -1;
 #endif
     }

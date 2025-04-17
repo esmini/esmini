@@ -8648,23 +8648,23 @@ std::string OpenDrive::ElementType2Str(RoadLink::ElementType type)
     }
 }
 
-std::string OpenDrive::LinkType2Str(LinkType type)
+std::string OpenDrive::LinkType2Str(LinkType linkType)
 {
-    if (type == LinkType::PREDECESSOR)
+    if (linkType == LinkType::PREDECESSOR)
     {
         return "PREDECESSOR";
     }
-    else if (type == LinkType::SUCCESSOR)
+    else if (linkType == LinkType::SUCCESSOR)
     {
         return "SUCCESSOR";
     }
-    else if (type == LinkType::NONE)
+    else if (linkType == LinkType::NONE)
     {
         return "NONE";
     }
     else
     {
-        return std::string("Unknown link type: " + type);
+        return std::string("Unknown link type: " + linkType);
     }
 }
 
@@ -12814,14 +12814,14 @@ double Position::GetTrajectoryS() const
     return trajectory_ ? trajectory_->GetS() : 0.0;
 }
 
-int Position::SetTrajectoryS(double s, bool update)
+int Position::SetTrajectoryS(double trajectory_s, bool update)
 {
     if (!trajectory_)
     {
         return -1;
     }
 
-    trajectory_->SetS(s, update);
+    trajectory_->SetS(trajectory_s, update);
 
     if (update)
     {
@@ -13212,7 +13212,7 @@ int Route::AddWaypointInternal(Position& wp, bool scenario_wp, bool route_found)
     return 0;
 }
 
-int Route::AddWaypoint(Position& wp_pos)
+int Route::AddWaypoint(Position& position)
 {
     int retval = 0;
 
@@ -13223,7 +13223,7 @@ int Route::AddWaypoint(Position& wp_pos)
             // first avoid consecutive waypoints on the same road
             // keep first waypoint, then last wp for each road
             if ((minimal_waypoints_.size() == 2 && minimal_waypoints_[0].GetTrackId() == minimal_waypoints_[1].GetTrackId()) ||
-                wp_pos.GetTrackId() == minimal_waypoints_.back().GetTrackId())
+                position.GetTrackId() == minimal_waypoints_.back().GetTrackId())
             {
                 LOG_INFO("Removing previous waypoint for same road {} (at s {:.2f})",
                          minimal_waypoints_.back().GetTrackId(),
@@ -13240,7 +13240,7 @@ int Route::AddWaypoint(Position& wp_pos)
         }
 
         // Check that there is a valid path from previous waypoint
-        std::unique_ptr<RoadPath> path = std::make_unique<RoadPath>(&minimal_waypoints_.back(), &wp_pos);
+        std::unique_ptr<RoadPath> path = std::make_unique<RoadPath>(&minimal_waypoints_.back(), &position);
         double                    dist = 0;
 
         // if first waypoint heading is not set explicitly, then set according to driving direction
@@ -13292,13 +13292,13 @@ int Route::AddWaypoint(Position& wp_pos)
                     }
                     else
                     {
-                        LOG_ERROR_AND_QUIT("Invalid waypoint roadId {}", wp_pos.GetTrackId());
+                        LOG_ERROR_AND_QUIT("Invalid waypoint roadId {}", position.GetTrackId());
                     }
                 }
             }
 
             length_ += fabs(dist);
-            wp_pos.SetRouteWaypointS(length_);
+            position.SetRouteWaypointS(length_);
         }
         else if (retval < 0)
         {
@@ -13308,21 +13308,21 @@ int Route::AddWaypoint(Position& wp_pos)
     else
     {
         // First waypoint, make it the current position
-        currentPos_ = wp_pos;
+        currentPos_ = position;
         currentPos_.SetRouteWaypointS(0.0);
     }
 
     if (retval >= -1)
     {
-        AddWaypointInternal(wp_pos, true, retval == 0);
+        AddWaypointInternal(position, true, retval == 0);
     }
     else
     {
         LOG_ERROR("Route::AddWaypoint Failed to add waypoint {}: {}, {}, {:.2f}",
                   minimal_waypoints_.size() - 1,
-                  wp_pos.GetTrackId(),
-                  wp_pos.GetLaneId(),
-                  wp_pos.GetS());
+                  position.GetTrackId(),
+                  position.GetLaneId(),
+                  position.GetS());
     }
 
     return 0;

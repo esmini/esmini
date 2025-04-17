@@ -92,9 +92,9 @@ namespace roadmanager
         {
             return p_scale_;
         }
-        double Evaluate(double s) const;
-        double EvaluatePrim(double s) const;
-        double EvaluatePrimPrim(double s) const;
+        double Evaluate(double p) const;
+        double EvaluatePrim(double p) const;
+        double EvaluatePrimPrim(double p) const;
 
     private:
         double a_;
@@ -953,7 +953,7 @@ namespace roadmanager
         }
         void AddLaneWidth(LaneWidth *lane_width);
         void AddLaneRoadMark(LaneRoadMark *lane_roadMark);
-        void AddLaneMaterial(Lane::Material *material);
+        void AddLaneMaterial(Lane::Material *lane_material);
 
         // Get Functions
         unsigned int GetNumberOfRoadMarks() const
@@ -1499,7 +1499,7 @@ namespace roadmanager
                int         osi_type,
                std::string type,
                std::string subtype,
-               std::string value_str_,
+               std::string value_str,
                std::string unit,
                double      height,
                double      width,
@@ -2230,7 +2230,7 @@ namespace roadmanager
         double GetCenterOffset(double s, int lane_id) const;
 
         int             GetLaneInfoByS(double    s,
-                                       idx_t     start_lane_link_idx,
+                                       idx_t     start_lane_section_idx,
                                        int       start_lane_id,
                                        LaneInfo &lane_info,
                                        int       laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING) const;
@@ -2314,7 +2314,7 @@ namespace roadmanager
         unsigned int GetNumberOfDrivingLanes(double s) const;
         Lane        *GetDrivingLaneByIdx(double s, idx_t idx) const;
         Lane        *GetDrivingLaneSideByIdx(double s, int side, idx_t idx) const;
-        Lane        *GetDrivingLaneById(double s, int idx) const;
+        Lane        *GetDrivingLaneById(double s, int id) const;
         unsigned int GetNumberOfDrivingLanesSide(double s, int side) const;  // side = -1 right, 1 left
 
         /**
@@ -2792,7 +2792,7 @@ namespace roadmanager
         int                CheckJunctionConnection(Junction *junction, Connection *connection);
         static std::string ContactPointType2Str(ContactPointType type);
         static std::string ElementType2Str(RoadLink::ElementType type);
-        static std::string LinkType2Str(LinkType link_type);
+        static std::string LinkType2Str(LinkType linkType);
 
         unsigned int GetNumberOfControllers() const
         {
@@ -3100,7 +3100,7 @@ namespace roadmanager
         ~Position();
 
         // Duplicate the position from other position object
-        void Duplicate(const Position &other);
+        void Duplicate(const Position &from);
 
         // Copy only location data from other position object
         void CopyLocation(const Position &from);
@@ -3225,10 +3225,10 @@ namespace roadmanager
         void SetHeadingRoad(double heading, bool evaluate = true);
         void SetRoll(double roll, bool evaluate = true);
         void SetRollRelative(double roll, bool evaluate = true);
-        void SetRollRoad(double heading, bool evaluate = true);
-        void SetPitch(double roll, bool evaluate = true);
+        void SetRollRoad(double roll, bool evaluate = true);
+        void SetPitch(double pitch, bool evaluate = true);
         void SetPitchRelative(double pitch, bool evaluate = true);
-        void SetPitchRoad(double heading, bool evaluate = true);
+        void SetPitchRoad(double pitch, bool evaluate = true);
         void SetZ(double z);
         void SetZRelative(double z);
 
@@ -3237,7 +3237,7 @@ namespace roadmanager
         @param mode Bitmask combining values from roadmanager::PosMode enum
         example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295
         */
-        void EvaluateZHPR(int align_mode_mask);
+        void EvaluateZHPR(int mode);
 
         /**
         Call this to resolve orientation alignment wrt road, using current SET mode
@@ -3256,16 +3256,16 @@ namespace roadmanager
         @param along_route If true only roads along currently assigned route, if any, are considered
         @return Non zero return value indicates error of some kind
         */
-        ReturnCode XYZ2TrackPos(double x,
-                                double y,
-                                double z,
-                                int    pos_mode                = PosMode::UNDEFINED,
+        ReturnCode XYZ2TrackPos(double x3,
+                                double y3,
+                                double z3,
+                                int    mode                    = PosMode::UNDEFINED,
                                 bool   connectedOnly           = false,
                                 id_t   roadId                  = ID_UNDEFINED,
                                 bool   check_overlapping_roads = false,
                                 bool   along_route             = false);
 
-        int TeleportTo(Position *pos);
+        int TeleportTo(Position *position);
 
         ReturnCode MoveToConnectingRoad(RoadLink *road_link, ContactPointType &contact_point_type, double junctionSelectorAngle = -1.0);
 
@@ -3354,7 +3354,7 @@ namespace roadmanager
         @param trajectory_s Distance from start of the trajectory
         @return Non zero return value indicates error of some kind
         */
-        int SetTrajectoryS(double trajectory_s, bool evaluate = true);
+        int SetTrajectoryS(double trajectory_s, bool update = true);
 
         int SetTrajectoryPosByTime(double time);
 
@@ -3368,7 +3368,7 @@ namespace roadmanager
         @param trajectory_t Lateral distance from trajectory at current s-value
         @return Non zero return value indicates error of some kind
         */
-        int SetTrajectoryT(double trajectory_t, bool evaluate = true);
+        int SetTrajectoryT(double trajectory_t, bool update = true);
 
         /**
         Retrieve the T-value of the current trajectory position
@@ -4575,7 +4575,7 @@ namespace roadmanager
     class ClothoidShape : public Shape
     {
     public:
-        ClothoidShape(roadmanager::Position pos, double curv, double curvDot, double len, double tStart, double tEnd);
+        ClothoidShape(roadmanager::Position pos, double curv, double curvPrime, double len, double tStart, double tEnd);
 
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
         int    Evaluate(double p, TrajectoryParamType ptype);
@@ -4699,7 +4699,7 @@ namespace roadmanager
         void   AddKnots(std::vector<double> knots);
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
         int    Evaluate(double p, TrajectoryParamType ptype);
-        int    EvaluateInternal(double s, TrajVertex &pos);
+        int    EvaluateInternal(double t, TrajVertex &pos);
         double EvaluateTrueHeading(double s);
 
         unsigned int              order_;
@@ -4720,7 +4720,7 @@ namespace roadmanager
         Shape *Copy();
 
     private:
-        double CoxDeBoor(double x, idx_t i, idx_t p, const std::vector<double> &t);
+        double CoxDeBoor(double x, idx_t i, idx_t k, const std::vector<double> &t);
         double length_ = 0.0;
     };
 

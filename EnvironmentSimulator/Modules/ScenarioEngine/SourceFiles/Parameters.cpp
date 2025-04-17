@@ -23,14 +23,14 @@ void Parameters::addParameterDeclarations(pugi::xml_node xml_node)
     parseParameterDeclarations(xml_node, &parameterDeclarations_);
 }
 
-void Parameters::parseGlobalParameterDeclarations(pugi::xml_node node)
+void Parameters::parseGlobalParameterDeclarations(pugi::xml_node osc_root)
 {
     if (parameterDeclarations_.Parameter.size() != 0)
     {
         LOG_INFO("ParameterDeclarations contains parameters with modified values, all parameters and variables will be re-evaluated");
     }
 
-    parseParameterDeclarations(node, &parameterDeclarations_);
+    parseParameterDeclarations(osc_root, &parameterDeclarations_);
 }
 
 void Parameters::CreateRestorePoint()

@@ -321,7 +321,7 @@ namespace scenarioengine
         double FreeSpaceDistancePoint(double x, double y, double* latDist, double* longDist);
 
         int FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, double* longDist, roadmanager::CoordinateSystem cs);
-        int FreeSpaceDistanceObjectRoadLane(Object* target, roadmanager::PositionDiff* diff, roadmanager::CoordinateSystem cs);
+        int FreeSpaceDistanceObjectRoadLane(Object* target, roadmanager::PositionDiff* posDiff, roadmanager::CoordinateSystem cs);
 
         /**
         Measure the distance to provided target object

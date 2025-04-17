@@ -2373,7 +2373,7 @@ class StarRoadTestFixture : public testing::Test
 {
 public:
     StarRoadTestFixture();
-    void Check(double a, double b, double c, double d, double e);
+    void Check(double x, double y, double h, double p_road, double p);
 
 protected:
     OpenDrive *odr;

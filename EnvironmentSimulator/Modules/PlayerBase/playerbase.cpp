@@ -1041,14 +1041,22 @@ void ScenarioPlayer::InitControllersPostPlayer()
     }
 }
 
-int ScenarioPlayer::AddObjectSensor(Object* obj, double x, double y, double z, double h, double near_dist, double far_dist, double fovH, int maxObj)
+int ScenarioPlayer::AddObjectSensor(Object* obj,
+                                    double  pos_x,
+                                    double  pos_y,
+                                    double  pos_z,
+                                    double  heading,
+                                    double  near_dist,
+                                    double  far_dist,
+                                    double  fovH,
+                                    int     maxObj)
 {
     if (obj == nullptr)
     {
         return -1;
     }
 
-    sensor.push_back(new ObjectSensor(&scenarioEngine->entities_, obj, x, y, z, h, near_dist, far_dist, fovH, maxObj));
+    sensor.push_back(new ObjectSensor(&scenarioEngine->entities_, obj, pos_x, pos_y, pos_z, heading, near_dist, far_dist, fovH, maxObj));
 
 #ifdef _USE_OSG
     if (viewer_)

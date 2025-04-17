@@ -483,24 +483,25 @@ void OSIReporter::CropOSIDynamicGroundTruth(const int id, const double radius)
     LOG_INFO("CropGroundTruth: Added crop for entity id {} with radius {}", id, radius);
 }
 
-void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &obj)
+void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &objectState)
 {
-    if (obj->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE) ||
-        obj->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
+    if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE) ||
+        objectState->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
     {
-        if (obj->state_.info.ctrl_type != Controller::Type::GHOST_RESERVED_TYPE || report_ghost_)
+        if (objectState->state_.info.ctrl_type != Controller::Type::GHOST_RESERVED_TYPE || report_ghost_)
         {
-            UpdateOSIMovingObject(obj.get());
+            UpdateOSIMovingObject(objectState.get());
             // All non-ghost objects are always updated. Ghosts only on request.
         }
-    }
-    else if (obj->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
-    {
-        // do nothing
-    }
-    else
-    {
-        LOG_WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object", obj->state_.info.obj_type);
+        else if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
+        {
+            // do nothing
+        }
+        else
+        {
+            LOG_WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object",
+                     objectState->state_.info.obj_type);
+        }
     }
 }
 

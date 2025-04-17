@@ -22,12 +22,12 @@ repos:
           - --suppress=variableScope #2
           - --suppress=unusedStructMember #1
           #- --suppress=duplicateBranch #1
-          - --suppress=duplInheritedMember #1 --
+          - --suppress=duplInheritedMember #1 -- having test case failure
           - --suppress=missingOverride #2 ?
-          #- --suppress=functionConst #1
+          - --suppress=functionConst #1
           - --suppress=uninitMemberVar #2
           - --suppress=passedByValue #2
-          - --suppress=funcArgNamesDifferent #1
+          #- --suppress=funcArgNamesDifferent #1
           - --suppress=functionStatic #2 ?
           - --suppress=redundantInitialization  #1
           - --suppress=oppositeInnerCondition #2

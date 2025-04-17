@@ -93,7 +93,7 @@ namespace scenarioengine
                 ScenarioType action          = ScenarioType::None;  // set if lane change in or out from ego lane detected
             };
 
-            Model(ModelType type, double reaction_time, double max_dec_, double max_range_);
+            Model(ModelType type, double reaction_time, double max_dec, double max_range);
             virtual ~Model() = default;
 
             void SetVehicle(Vehicle* vehicle)
@@ -169,7 +169,7 @@ namespace scenarioengine
             }
 
             // Returns new speed
-            double Step(double dt);
+            double Step(double timeStep);
 
             // Scan traffic and select object to focus on, if any
             int Detect();
@@ -585,7 +585,7 @@ namespace scenarioengine
                        double bl,
                        double margin_dist,
                        double margin_safe_dist);
-            double CFS(double dist, double speed_rear, double speed_lead, double rt, double br_min, double br_max, double ar);
+            double CFS(double dist, double speed_rear, double speed_lead, double rt, double br_min, double br_max, double acc);
 
             double min_jerk_;
             double br_min_;

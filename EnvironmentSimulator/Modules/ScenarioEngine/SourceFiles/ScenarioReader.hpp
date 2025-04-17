@@ -73,7 +73,7 @@ namespace scenarioengine
         ScenarioReader(Entities* entities, Catalogs* catalogs, bool disable_controllers = false);
         ~ScenarioReader();
         int  loadOSCFile(const char* path);
-        int  loadOSCMem(const pugi::xml_document& xml_doch);
+        int  loadOSCMem(const pugi::xml_document& xml_doc);
         void SetGateway(ScenarioGateway* gateway)
         {
             gateway_ = gateway;
@@ -108,7 +108,7 @@ namespace scenarioengine
         Pedestrian*                       parseOSCPedestrian(pugi::xml_node pedestrianNode);
         MiscObject*                       parseOSCMiscObject(pugi::xml_node miscObjectNode);
         Vehicle*                          createRandomOSCVehicle(std::string name);
-        Controller*                       parseOSCObjectController(pugi::xml_node vehicleNode);
+        Controller*                       parseOSCObjectController(pugi::xml_node controllerNode);
         void                              parseGlobalParameterDeclarations()
         {
             parameters.parseGlobalParameterDeclarations(osc_root_.child("ParameterDeclarations"));

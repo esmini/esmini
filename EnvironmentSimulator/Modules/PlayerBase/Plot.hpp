@@ -63,7 +63,7 @@ public:
         return !thread_.joinable();
     }
 
-    void        updateData(std::vector<Object*>& objects, double dt);
+    void        updateData(std::vector<Object*>& objects, double time);
     void        renderPlot(const char* name);  //, float window_width, float window_height);
     void        adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<float>>& d, const size_t item);
     void        adjustSelectedObjectsPlotDataAxis(const PlotCategories& y_category);

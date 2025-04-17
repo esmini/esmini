@@ -130,9 +130,9 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array>        vertices,
     rm_group_->addChild(geode);
 }
 
-int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
+int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* group)
 {
-    (void)parent;
+    (void)group;
     for (unsigned int i = 0; i < lane->GetNumberOfRoadMarks(); i++)
     {
         roadmanager::LaneRoadMark* lane_roadmark = lane->GetLaneRoadMarkByIdx(static_cast<int>(i));

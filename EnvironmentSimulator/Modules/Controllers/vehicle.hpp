@@ -69,7 +69,7 @@ namespace vehicle
         {
             pitch_ = pitch;
         }
-        void   SetMaxSpeed(double speed);
+        void   SetMaxSpeed(double maxSpeed);
         double GetMaxSpeed()
         {
             return max_speed_;

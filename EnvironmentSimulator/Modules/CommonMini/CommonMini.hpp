@@ -574,7 +574,7 @@ void NormalizeVec2D(double x, double y, double& xn, double& yn);
 /**
         Find parallel line at specified offset (- means left, + right)
 */
-void OffsetVec2D(double x0, double y0, double x1, double y1, double offset, double& xo0, double& yo0, double& xo1, double& y01);
+void OffsetVec2D(double x0, double y0, double x1, double y1, double offset, double& xo0, double& yo0, double& xo1, double& yo1);
 
 /**
         Get Euler angles in local coordinates after rotation Z0 * Y * Z1 (heading, pitch, heading)
@@ -586,7 +586,7 @@ void ZYZ2EulerAngles(double z0, double y, double z1, double& h, double& p, doubl
 */
 void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r);
 
-int InvertMatrix3(const double m[3][3], double m_out[3][3]);
+int InvertMatrix3(const double m[3][3], double mi[3][3]);
 
 /**
         Get Euler angles for the orientation relative road surface orientation
@@ -896,10 +896,10 @@ class SE_Options
 public:
     void AddOption(std::string opt_str,
                    std::string opt_desc,
-                   std::string opt_arg               = "",
-                   std::string opt_arg_default_value = "",
-                   bool        autoApply             = false,
-                   bool        isSingleValueOption   = true);
+                   std::string opt_arg             = "",
+                   std::string default_value       = "",
+                   bool        autoApply           = false,
+                   bool        isSingleValueOption = true);
 
     void        PrintUsage();
     void        PrintUnknownArgs(std::string message = "Unrecognized arguments:");

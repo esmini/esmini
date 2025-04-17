@@ -2366,18 +2366,18 @@ OSCUserDefinedAction *ScenarioReader::parseOSCUserDefinedAction(pugi::xml_node a
     return action;
 }
 
-ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xml_node node, Event *parent)
+ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xml_node actionNode, Event *parent)
 {
     ControlActivationMode lat_mode   = ControlActivationMode::UNDEFINED;
     ControlActivationMode long_mode  = ControlActivationMode::UNDEFINED;
     ControlActivationMode light_mode = ControlActivationMode::UNDEFINED;
     ControlActivationMode anim_mode  = ControlActivationMode::UNDEFINED;
 
-    std::string lat_str   = parameters.ReadAttribute(node, "lateral");
-    std::string long_str  = parameters.ReadAttribute(node, "longitudinal");
-    std::string light_str = parameters.ReadAttribute(node, "lighting");
-    std::string anim_str  = parameters.ReadAttribute(node, "animation");
-    std::string name_str  = parameters.ReadAttribute(node, "controllerRef");
+    std::string lat_str   = parameters.ReadAttribute(actionNode, "lateral");
+    std::string long_str  = parameters.ReadAttribute(actionNode, "longitudinal");
+    std::string light_str = parameters.ReadAttribute(actionNode, "lighting");
+    std::string anim_str  = parameters.ReadAttribute(actionNode, "animation");
+    std::string name_str  = parameters.ReadAttribute(actionNode, "controllerRef");
 
     if (lat_str == "false")
     {
