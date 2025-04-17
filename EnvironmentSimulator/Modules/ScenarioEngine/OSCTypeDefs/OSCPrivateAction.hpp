@@ -528,6 +528,13 @@ namespace scenarioengine
     public:
         typedef enum
         {
+            INIT,
+            MOVE_RIGID,
+            MOVE_DYNAMIC
+        } MoveState;
+
+        typedef enum
+        {
             DISTANCE,
         } DistType;
 
@@ -599,7 +606,8 @@ namespace scenarioengine
 
     private:
         double acceleration_;
-        double   prev_lateral_distance_ = 0.0;
+        MoveState move_state_;
+        double init_heading_;
         bool latched_to_target_ = false;
     };
 
