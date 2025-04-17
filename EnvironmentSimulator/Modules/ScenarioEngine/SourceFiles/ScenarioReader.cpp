@@ -1079,10 +1079,6 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
             {
                 rs = roadmanager::Position::RouteStrategy::FASTEST;
             }
-            else
-            {  // If shortest or unknown
-                rs = roadmanager::Position::RouteStrategy::SHORTEST;
-            }
 
             OSCPosition *pos = parseOSCPosition(routeChild.first_child());
             if (pos != nullptr)

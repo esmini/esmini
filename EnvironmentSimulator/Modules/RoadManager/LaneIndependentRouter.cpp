@@ -297,7 +297,7 @@ std::vector<Node> LaneIndependentRouter::CalculatePath(Position start, Position 
     // Get routestrategy from traget position
     routeStrategy_ = target.GetRouteStrategy();
 
-    ContactPointType contactPoint         = ContactPointType::CONTACT_POINT_UNDEFINED;
+    ContactPointType contactPoint         = ContactPointType::CONTACT_POINT_START;
     RoadLink        *nextElement          = nullptr;
     bool             isInForwardDirection = start.GetHRelative() < M_PI_2 || start.GetHRelative() > 3 * M_PI_2;
 
@@ -310,8 +310,7 @@ std::vector<Node> LaneIndependentRouter::CalculatePath(Position start, Position 
     else
     {
         // Opposite road direction
-        contactPoint = ContactPointType::CONTACT_POINT_START;
-        nextElement  = startRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
+        nextElement = startRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
     }
 
     // If start and end waypoint are on the same road and same lane,

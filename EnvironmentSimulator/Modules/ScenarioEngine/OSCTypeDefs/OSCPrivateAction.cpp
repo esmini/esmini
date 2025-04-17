@@ -968,8 +968,8 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 
     double ds = object_->pos_.DistanceToDS(SIGN(object_->speed_) * delta_long);  // find correspondning delta s along road reference line
 
-    roadmanager::Position::ReturnCode retval = roadmanager::Position::ReturnCode::OK;
-    retval = object_->pos_.MoveAlongS(ds, 0.0, -1.0, false, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true);
+    roadmanager::Position::ReturnCode retval =
+        object_->pos_.MoveAlongS(ds, 0.0, -1.0, false, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true);
     internal_pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset());
 
     if (object_->pos_.GetRoute())

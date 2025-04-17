@@ -1407,7 +1407,7 @@ unsigned int Road::GetLaneSectionIdxByS(double s, idx_t start_at) const
     }
 
     LaneSection* lane_section = lane_section_[start_at];
-    unsigned int i            = start_at;
+    unsigned int i;
 
     if (s < lane_section->GetS() && start_at != IDX_UNDEFINED)
     {
@@ -5264,13 +5264,12 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
 
     for (i = 0; i < (bothDirections ? 2 : 1); i++)
     {
-        ContactPointType contact_point = ContactPointType::CONTACT_POINT_UNDEFINED;
+        ContactPointType contact_point = ContactPointType::CONTACT_POINT_START;
         if (bothDirections)
         {
             if (i == 0)
             {
-                contact_point = ContactPointType::CONTACT_POINT_START;
-                link          = pivotRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
+                link = pivotRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
             }
             else
             {
@@ -5290,8 +5289,7 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
             else
             {
                 // Opposite road direction
-                contact_point = ContactPointType::CONTACT_POINT_START;
-                link          = pivotRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
+                link = pivotRoad->GetLink(LinkType::PREDECESSOR);  // Find link to previous road or junction
             }
         }
 
@@ -9212,9 +9210,9 @@ Position::ReturnCode Position::SetLanePos(id_t track_id, int lane_id, double s, 
 Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double s, double offset, int mode, idx_t lane_section_idx)
 {
     offset_             = offset;
-    ReturnCode retvalue = ReturnCode::OK;
+    ReturnCode retvalue = SetLongitudinalTrackPos(track_id, s);
 
-    if ((retvalue = SetLongitudinalTrackPos(track_id, s)) == ReturnCode::ERROR_GENERIC)
+    if (retvalue == ReturnCode::ERROR_GENERIC)
     {
         lane_id_ = lane_id;
         offset_  = offset;
@@ -12922,14 +12920,12 @@ int Position::UpdateTrajectoryPos()
 
 Position::ReturnCode Position::SetRouteS(double route_s)
 {
-    Position::ReturnCode retval = Position::ReturnCode::OK;
-
     if (!(GetRoute() && GetRoute()->IsValid()))
     {
         return ReturnCode::ERROR_GENERIC;
     }
 
-    retval = route_->SetPathS(route_s);
+    Position::ReturnCode retval = route_->SetPathS(route_s);
     if (retval < ReturnCode::OK && retval != ReturnCode::ERROR_END_OF_ROUTE)
     {
         return retval;
