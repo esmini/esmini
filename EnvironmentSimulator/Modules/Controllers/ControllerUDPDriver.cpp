@@ -367,8 +367,8 @@ int ControllerUDPDriver::Activate(ControlActivationMode lat_activation_mode,
             port_ = basePort_ + object_->GetId();
         }
 
-        if (udpServer_ == nullptr ||                                    // not created yet
-            (udpServer_ != nullptr && udpServer_->GetPort() != port_))  // port nr changed. Need to recreate the socket.
+        if (udpServer_ == nullptr ||         // not created yet
+            udpServer_->GetPort() != port_)  // port nr changed. Need to recreate the socket.
         {
             // Close socket in case the controller is assigned again with different port
             if (udpServer_ != nullptr)
