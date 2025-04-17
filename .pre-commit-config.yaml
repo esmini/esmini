@@ -48,7 +48,6 @@ repos:
           - --suppress=unusedLabel #3
           - --suppress=uninitStructMember #2
           - --suppress=noCopyConstructor #1
-          - --suppress=noOperatorEq #1 ?
           - --suppress=uselessAssignmentPtrArg #1 ?
           - --suppress=useStlAlgorithm #3
           - --suppress=missingMemberCopy #1
@@ -62,9 +61,10 @@ repos:
           - --suppress=missingIncludeSystem #3
           - --suppress=oppositeExpression #3 ?
           - --suppress=invalidPrintfArgType_sint #2
-          - --suppress=doubleFree #1
+          #- --suppress=doubleFree #1
           - --suppress=unusedVariable #2
           - --suppress=syntaxError #1
+          - --suppress=noOperatorEq #1 ?
           - --suppress=redundantAssignment #1
           - --suppress=unknownMacro #1
           - --suppress=duplicateExpression #1
