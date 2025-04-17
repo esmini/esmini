@@ -33,7 +33,7 @@ repos:
           - --suppress=nullPointerRedundantCheck #2
           - --suppress=deallocret #2
           - --suppress=knownConditionTrueFalse #2
-          - --suppress=nullPointer #1
+          #- --suppress=nullPointer #1
           - --suppress=unmatchedSuppression #2 ?
           - --suppress=constParameter #2
           - --suppress=useInitializationList #3
