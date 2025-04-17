@@ -1971,6 +1971,52 @@ void LatDistanceAction::Start(double simTime)
     OSCAction::Start(simTime);
 }
 
+void LatDistanceAction::GetDesiredXYPos(const SE_Vector lat_axis, const double distance_error, double &target_x, double &target_y)
+{
+    double shift_x = 0.0;
+    double shift_y = 0.0;
+    if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
+    {
+        // How much we need to move to reach the target distance in the direction of the vehicle
+        shift_x = lat_axis.x() * distance_error;
+        shift_y = lat_axis.y() * distance_error;
+    }
+    else if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
+    {
+        // How much we need to move to reach the target distance in the direction of the road
+        shift_x = -std::sin(object_->pos_.GetRoadH()) * distance_error;
+        shift_y =  std::cos(object_->pos_.GetRoadH()) * distance_error;
+    }
+    else
+    {
+        LOG_WARN("LatDistanceAction: Unsupported coordinate system");
+    }
+
+    // Add the necessary shift to the current position
+    target_x = object_->pos_.GetX() + shift_x;
+    target_y = object_->pos_.GetY() + shift_y;
+}
+
+void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanager::Position& pos2, double& distance_error)
+{
+    // Find out current distance
+    double measured_distance;
+    pos1.Distance(&pos2, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, measured_distance);
+    std::cout << "measured_distance: " << measured_distance << std::endl;
+    distance_error = 0.0;
+    if (!freespace_)
+    {
+        // How much we need to move to reach the target distance
+        distance_error = distance_ + measured_distance;
+    }
+    else
+    {
+        double ego_width = object_->boundingbox_.dimensions_.width_;
+        double target_width = target_object_->boundingbox_.dimensions_.width_;
+        distance_error = distance_ + measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0; // Taking into account the width of both vehicles
+    }
+}
+
 void LatDistanceAction::Step(double simTime, double)
 {
     if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
@@ -1995,22 +2041,8 @@ void LatDistanceAction::Step(double simTime, double)
         break;
         case MoveState::MOVE_RIGID:
         {
-            // Find out current distance
-            double measured_distance;
-            object_->pos_.Distance(&target_object_->pos_, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, measured_distance);
-
-            double distance_error = 0.0;
-            if (!freespace_)
-            {
-                // How much we need to move to reach the target distance
-                distance_error = distance_ + measured_distance;
-            }
-            else
-            {
-                double ego_width = object_->boundingbox_.dimensions_.width_;
-                double target_width = target_object_->boundingbox_.dimensions_.width_;
-                distance_error = distance_ + measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0; // Taking into account the width of both vehicles
-            }
+            double distance_error;
+            GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
 
             if (continuous_ == false && fabs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
             {
@@ -2019,29 +2051,9 @@ void LatDistanceAction::Step(double simTime, double)
                 OSCAction::End();
             }
 
-            double shift_x = 0.0;
-            double shift_y = 0.0;
             SE_Vector lat_axis = SE_Vector(-std::sin(object_->pos_.GetH()), std::cos(object_->pos_.GetH()));
-            if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
-            {
-                // How much we need to move to reach the target distance in the direction of the vehicle
-                shift_x = lat_axis.x() * distance_error;
-                shift_y = lat_axis.y() * distance_error;
-            }
-            else if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
-            {
-                // How much we need to move to reach the target distance in the direction of the road
-                shift_x = -std::sin(object_->pos_.GetRoadH()) * distance_error;
-                shift_y =  std::cos(object_->pos_.GetRoadH()) * distance_error;
-            }
-            else
-            {
-                LOG_WARN("LatDistanceAction: Unsupported coordinate system");
-            }
-
-            // Add the necessary shift to the current position
-            double target_x = object_->pos_.GetX() + shift_x;
-            double target_y = object_->pos_.GetY() + shift_y;
+            double target_x, target_y;
+            GetDesiredXYPos(lat_axis, distance_error, target_x, target_y);
 
             // Set position according to distance and copy speed of target vehicle
             double temp_speed = object_->GetSpeed();
@@ -2051,73 +2063,33 @@ void LatDistanceAction::Step(double simTime, double)
         break;
         case (MoveState::MOVE_DYNAMIC):
         {
-            object_->pos_.SetHeading(init_heading_, false);
-            double measured_distance;
-            object_->pos_.Distance(&target_object_->pos_, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, measured_distance);
-
-            double distance_error = 0.0;
-            if (!freespace_)
-            {
-                // How much we need to move to reach the target distance
-                distance_error = distance_ + measured_distance;
-            }
-            else
-            {
-                double ego_width = object_->boundingbox_.dimensions_.width_;
-                double target_width = target_object_->boundingbox_.dimensions_.width_;
-                distance_error = distance_ + measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0; // Taking into account the width of both vehicles
-            }
-
-            double shift_x = 0.0;
-            double shift_y = 0.0;
-            SE_Vector lat_axis = SE_Vector(-std::sin(init_heading_), std::cos(init_heading_));
-            SE_Vector fwd_axis = SE_Vector(lat_axis.y(), -lat_axis.x());
-            if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
-            {
-                // How much we need to move to reach the target distance in the direction of the vehicle
-                shift_x = lat_axis.x() * distance_error;
-                shift_y = lat_axis.y() * distance_error;
-            }
-            else if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
-            {
-                // How much we need to move to reach the target distance in the direction of the road
-                shift_x = -std::sin(object_->pos_.GetRoadH()) * distance_error;
-                shift_y =  std::cos(object_->pos_.GetRoadH()) * distance_error;
-            }
-            else
-            {
-                LOG_WARN("LatDistanceAction: Unsupported coordinate system");
-            }
-
-            // Add the necessary shift to the current position
-            double target_x = object_->pos_.GetX() + shift_x;
-            double target_y = object_->pos_.GetY() + shift_y;
-
             const double lateral_snap_threshold = 0.05; // threshold for snapping to target
             const double velocity_snap_threshold = 0.01; // threshold for snapping to target velocity
+
+            object_->pos_.SetHeading(init_heading_, false); // Maintain heading from start of action
+            double distance_error;
+            GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
+
+            SE_Vector lat_axis = SE_Vector(-std::sin(init_heading_), std::cos(init_heading_));
+            SE_Vector fwd_axis = SE_Vector(lat_axis.y(), -lat_axis.x());
+
+            double target_x, target_y;
+            GetDesiredXYPos(lat_axis, distance_error, target_x, target_y);
+
             SE_Vector delta_pos = SE_Vector(target_x - object_->pos_.GetX(), target_y - object_->pos_.GetY());
             double lateral_distance = delta_pos.Dot(lat_axis); // projected distance on the vehicles lateral axis, this gives us the distance to the target line in the direction of the vehicle
             double stopping_distance = object_->pos_.GetLatStoppingDistance(dynamics_.max_deceleration_); // stopping distance in the direction of the vehicle
             bool should_decelerate = (std::abs(lateral_distance) <= stopping_distance); // if the distance to the target line is less than the stopping distance, we should decelerate
 
-            // Apply acceleration constraints
-            SE_Vector current_velocity(object_->pos_.GetVelX(), object_->pos_.GetVelY());
-            double lateral_velocity = current_velocity.Dot(lat_axis); // projected velocity on the vehicles lateral axis, this gives us the lateral velocity of the vehicle
-
-            if (std::abs(lateral_distance) < lateral_snap_threshold && std::abs(lateral_velocity) < velocity_snap_threshold)
+            if (std::abs(lateral_distance) < LATERAL_DISTANCE_THRESHOLD)
             {
-                if (latched_to_target_ && std::abs(lateral_distance) > lateral_snap_threshold / 2.0)
-                {
-                    latched_to_target_ = false;
-                }
-                else
-                {
-                    latched_to_target_ = true;
-                    object_->pos_.SetInertiaPos(target_x, target_y, object_->pos_.GetH());
-                    object_->SetSpeed(object_->GetSpeed());
-                    return;
-                }
+                object_->pos_.SetInertiaPos(target_x, target_y, target_object_->pos_.GetH());
+                object_->SetSpeed(object_->GetSpeed());
+                object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED);
+                return;
             }
+
+            double lateral_velocity = object_->pos_.GetVelLat(); // projected velocity on the vehicles lateral axis, this gives us the lateral velocity of the vehicle
             double required_acceleration;
             if (!should_decelerate) // We are not ready to decelerate, thus we accelerate
             {
@@ -2126,10 +2098,6 @@ void LatDistanceAction::Step(double simTime, double)
                 double vel_max_acc = std::abs(lateral_velocity) + dynamics_.max_acceleration_ * dt;
                 double vel_max_target = std::abs(target_object_->pos_.GetVelLat());
                 double desired_velocity = SIGN(lateral_distance) * std::min({vel_max_acc, object_->GetSpeed(), dynamics_.max_speed_});
-                // if (vel_max_target > 0.0 && vel_max_target < std::abs(desired_velocity))
-                // {
-                //     desired_velocity = SIGN(lateral_distance) * vel_max_target;
-                // }
                 double acceleration = (desired_velocity - lateral_velocity) / dt; // acceleration needed to reach the desired velocity
                 required_acceleration = CLAMP(acceleration, -dynamics_.max_acceleration_, dynamics_.max_acceleration_); // limit the acceleration to the max acceleration
             } 
@@ -2164,18 +2132,11 @@ void LatDistanceAction::Step(double simTime, double)
 
             // Update object position
             // double ds = object_->pos_.DistanceToDS(dx); // Shall I use it?
-            object_->SetSpeed(object_->GetSpeed());
             object_->pos_.MoveAlongS(v_long * dt, false);
-            if (std::abs(lateral_distance) > LATERAL_DISTANCE_THRESHOLD)
-            {
-                object_->pos_.SetInertiaPos(new_x, new_y, std::atan2(dy, dx));
-            }
-            else
-            {
-                object_->pos_.SetHeadingRelativeRoadDirection(0.0);
-            }
-            // Store lateral velocity for next step
+            object_->pos_.SetInertiaPos(new_x, new_y, std::atan2(dy, dx));
+            object_->SetSpeed(object_->GetSpeed());
             object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+            // Store lateral velocity for next step
         }
     }
 }
