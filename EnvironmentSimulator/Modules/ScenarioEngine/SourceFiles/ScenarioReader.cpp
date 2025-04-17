@@ -4114,15 +4114,15 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             std::string type_str = parameters.ReadAttribute(by_type, "type");
                             if (type_str == "pedestrian")
                             {
-                                trigger->type_ = Object::Type::PEDESTRIAN;
+                                trigger->objectType_ = Object::Type::PEDESTRIAN;
                             }
                             else if (type_str == "vehicle")
                             {
-                                trigger->type_ = Object::Type::VEHICLE;
+                                trigger->objectType_ = Object::Type::VEHICLE;
                             }
                             else if (type_str == "miscellaneous")
                             {
-                                trigger->type_ = Object::Type::MISC_OBJECT;
+                                trigger->objectType_ = Object::Type::MISC_OBJECT;
                             }
                             else
                             {
@@ -4133,7 +4133,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                         {
                             pugi::xml_node target = condition_node.child("EntityRef");
                             trigger->object_      = ResolveObjectReference(parameters.ReadAttribute(target, "entityRef"));
-                            trigger->type_        = Object::Type::TYPE_NONE;
+                            trigger->objectType_  = Object::Type::TYPE_NONE;
                         }
                         trigger->storyBoard_ = story_board_;
 
@@ -4413,7 +4413,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                 else if (condition_type == "ParameterCondition")
                 {
                     TrigByParameter *trigger = new TrigByParameter;
-                    trigger->name_           = parameters.ReadAttribute(byValueChild, "parameterRef");
+                    trigger->parameterRef_   = parameters.ReadAttribute(byValueChild, "parameterRef");
                     trigger->value_          = parameters.ReadAttribute(byValueChild, "value");
                     trigger->rule_           = ParseRule(parameters.ReadAttribute(byValueChild, "rule"));
                     trigger->parameters_     = &parameters;
@@ -4422,7 +4422,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                 else if (condition_type == "VariableCondition")
                 {
                     TrigByVariable *trigger = new TrigByVariable;
-                    trigger->name_          = variables.ReadAttribute(byValueChild, "variableRef");
+                    trigger->variableRef_   = variables.ReadAttribute(byValueChild, "variableRef");
                     trigger->value_         = variables.ReadAttribute(byValueChild, "value");
                     trigger->rule_          = ParseRule(variables.ReadAttribute(byValueChild, "rule"));
                     trigger->variables_     = &variables;

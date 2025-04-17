@@ -603,12 +603,12 @@ bool TrigByParameter::CheckCondition(double sim_time)
     (void)sim_time;
     bool result = false;
 
-    OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(name_);
+    OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(parameterRef_);
     if (pe == 0)
     {
         if (state_ < ConditionState::EVALUATED)  // print only once
         {
-            LOG_ERROR("Parameter {} not found", name_);
+            LOG_ERROR("Parameter {} not found", parameterRef_);
         }
         return result;
     }
@@ -639,8 +639,8 @@ bool TrigByParameter::CheckCondition(double sim_time)
 
 std::string TrigByParameter::GetAdditionalLogInfo()
 {
-    OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(name_);
-    return fmt::format("{} {} {} {}, edge: {}", name_, pe ? pe->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
+    OSCParameterDeclarations::ParameterStruct* pe = parameters_->getParameterEntry(parameterRef_);
+    return fmt::format("{} {} {} {}, edge: {}", parameterRef_, pe ? pe->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByVariable::CheckCondition(double sim_time)
@@ -648,12 +648,12 @@ bool TrigByVariable::CheckCondition(double sim_time)
     (void)sim_time;
     bool result = false;
 
-    OSCParameterDeclarations::ParameterStruct* pe = variables_->getParameterEntry(name_);
+    OSCParameterDeclarations::ParameterStruct* pe = variables_->getParameterEntry(variableRef_);
     if (pe == 0)
     {
         if (state_ < ConditionState::EVALUATED)  // print only once
         {
-            LOG_WARN("Variable {} not found", name_);
+            LOG_WARN("Variable {} not found", variableRef_);
         }
         return result;
     }
@@ -684,8 +684,8 @@ bool TrigByVariable::CheckCondition(double sim_time)
 
 std::string TrigByVariable::GetAdditionalLogInfo()
 {
-    OSCParameterDeclarations::ParameterStruct* ve = variables_->getParameterEntry(name_);
-    return fmt::format("variable {} {} {} {}, edge: {}", name_, ve ? ve->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
+    OSCParameterDeclarations::ParameterStruct* ve = variables_->getParameterEntry(variableRef_);
+    return fmt::format("variable {} {} {} {}, edge: {}", variableRef_, ve ? ve->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
 }
 
 bool TrigByTimeHeadway::CheckCondition(double sim_time)
@@ -1074,7 +1074,7 @@ bool TrigByCollision::CheckCondition(double sim_time)
                 result = true;
             }
         }
-        if (type_ != Object::Type::TYPE_NONE)
+        if (objectType_ != Object::Type::TYPE_NONE)
         {
             // check all instances of specifed object type
             for (size_t j = 0; j < storyBoard_->entities_->object_.size(); j++)

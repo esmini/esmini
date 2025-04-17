@@ -70,8 +70,9 @@ Controller* scenarioengine::InstantiateControllerALKS_R157SM(void* args)
     return new ControllerALKS_R157SM(initArgs);
 }
 
-ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args), model_(0), entities_(0)
+ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args), model_(0)
 {
+    entities_ = 0;
     if (args && args->properties)
     {
         if (args->properties->GetValueStr("model") == "Regulation")

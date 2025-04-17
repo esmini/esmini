@@ -22,7 +22,7 @@ repos:
           - --suppress=variableScope #2
           - --suppress=unusedStructMember #1
           #- --suppress=duplicateBranch #1
-          - --suppress=duplInheritedMember #1 -- having test case failure
+          #- --suppress=duplInheritedMember #1
           - --suppress=missingOverride #2 ?
           - --suppress=functionConst #1
           - --suppress=uninitMemberVar #2

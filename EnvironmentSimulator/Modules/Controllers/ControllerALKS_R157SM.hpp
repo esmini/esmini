@@ -598,8 +598,7 @@ namespace scenarioengine
             double pfs_;
         };
 
-        Model*    model_;
-        Entities* entities_;
+        Model* model_;
 
         ControllerALKS_R157SM(InitArgs* args);
         ~ControllerALKS_R157SM();

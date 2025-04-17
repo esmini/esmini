@@ -833,11 +833,12 @@ namespace scenarioengine
             ROADMARK      = 16
         } Category;
 
-        double      mass_;
-        std::string name_;
+        double mass_;
+        // std::string name_;
 
-        MiscObject() : Object(Object::Type::MISC_OBJECT), mass_(0.0), name_("")
+        MiscObject() : Object(Object::Type::MISC_OBJECT), mass_(0.0)
         {
+            name_                        = "";
             performance_.maxAcceleration = 0.0;
             performance_.maxDeceleration = 0.0;
             performance_.maxSpeed        = 0.0;

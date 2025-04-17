@@ -42,6 +42,7 @@ Controller* scenarioengine::InstantiateControllerSloppyDriver(void* args)
 
 ControllerSloppyDriver::ControllerSloppyDriver(InitArgs* args) : Controller(args), sloppiness_(0.5), time_(0)
 {
+    type_name_ = "SloppyDriver";
     if (args->properties->ValueExists("sloppiness"))
     {
         sloppiness_ = strtod(args->properties->GetValueStr("sloppiness"));
