@@ -602,6 +602,9 @@ namespace scenarioengine
         {
         }
 
+        void GetDistanceError(roadmanager::Position& pos1, roadmanager::Position& pos2, double& distance_error);
+        void GetDesiredXYPos(const SE_Vector lat_axis, const double distance_error, double &target_x, double &target_y);
+
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
 
     private:
