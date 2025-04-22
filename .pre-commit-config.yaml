@@ -41,7 +41,7 @@ repos:
           - --suppress=preprocessorErrorDirective #2 ?
           - --suppress=deallocuse #2 ?
           - --suppress=stlcstrParam #2
-          - --suppress=redundantCondition #1
+          #- --suppress=redundantCondition #1
           - --suppress=multiCondition #3
           - --suppress=duplicateBreak #2
           - --suppress=uninitvar #2
