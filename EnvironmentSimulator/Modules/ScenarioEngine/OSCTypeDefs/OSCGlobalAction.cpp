@@ -504,7 +504,7 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions& sols,
     }
 
     unsigned int nCarsToSpawn = static_cast<unsigned int>(SE_Env::Inst().GetRand().GetNumberBetween(minN, maxN - 1));
-    if (nCarsToSpawn <= 0)
+    if (nCarsToSpawn == 0)
     {
         return;
     }
