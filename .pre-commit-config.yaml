@@ -67,7 +67,7 @@ repos:
           - --suppress=noOperatorEq #1 ?
           #- --suppress=redundantAssignment #1
           - --suppress=unknownMacro #1
-          - --suppress=duplicateExpression #1
+          #- --suppress=duplicateExpression #1
           - --suppress=operatorEqVarError #2 ?
           - --suppress=selfAssignment #1
           - --suppress=unusedFunction #1

@@ -5002,8 +5002,7 @@ bool Junction::IsOsiIntersection() const
     {
         return false;  // direct junction has no area -> no free lane boundaries
     }
-    else if (connection_.size() > 0 && connection_[0]->GetIncomingRoad() && connection_[0]->GetIncomingRoad() &&
-             connection_[0]->GetIncomingRoad()->GetRoadType(0) != 0)
+    else if (!connection_.empty() && connection_[0]->GetIncomingRoad() && connection_[0]->GetIncomingRoad()->GetRoadType(0) != 0)
     {
         // check if the first road is of type highway, then assumes it is not a intersection
         if (connection_[0]->GetIncomingRoad()->GetRoadType(0)->road_type_ == Road::RoadType::ROADTYPE_MOTORWAY)
