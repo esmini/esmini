@@ -763,7 +763,7 @@ public:
     typedef void (*FuncPtr)(const char*);
 
     static Logger& Inst();
-    void           Log(bool quit, bool trace, const char* func, const char* file, int line, const char* format, ...);
+    void           Log(bool quit, bool trace, const char* file, const char* func, int line, const char* format, ...);
     void           SetCallback(FuncPtr callback);
     bool           IsCallbackSet();
     void           SetTimePtr(double* timePtr)

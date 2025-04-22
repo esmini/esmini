@@ -54,7 +54,7 @@ repos:
           #- --suppress=memleak #1
           #- --suppress=postfixOperator #1
           - --suppress=shadowFunction #2
-          - --suppress=funcArgOrderDifferent #1
+          #- --suppress=funcArgOrderDifferent #1
           - --suppress=functionConst #1
           #- --suppress=arrayIndexThenCheck #1
           #- --suppress=unsignedLessThanZero #1
