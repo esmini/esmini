@@ -63,7 +63,7 @@ repos:
           - --suppress=invalidPrintfArgType_sint #2
           #- --suppress=doubleFree #1
           - --suppress=unusedVariable #2
-          - --suppress=syntaxError #1
+          #- --suppress=syntaxError #1
           - --suppress=noOperatorEq #1 ?
           #- --suppress=redundantAssignment #1
           - --suppress=unknownMacro #1

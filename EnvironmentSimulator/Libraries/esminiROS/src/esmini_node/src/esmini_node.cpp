@@ -1,4 +1,4 @@
-#include <esmini_node.h>
+#include <esmini_node.hpp>
 
 ESMiniNode::ESMiniNode(int argc, char *argv[]) : nh_("~")
 {
