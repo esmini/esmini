@@ -1794,8 +1794,7 @@ void LongDistanceAction::Start(double simTime)
         else
         {
             double x, y;
-            distance = object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
-
+            object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
             // Just interested in the x-axis component of the distance
             distance = x;
         }

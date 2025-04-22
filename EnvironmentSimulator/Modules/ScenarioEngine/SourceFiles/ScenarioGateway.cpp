@@ -1100,7 +1100,6 @@ void ScenarioGateway::WriteStatesToFile()
 
             datState.info.boundingbox = objectState_[i]->state_.info.boundingbox;
             datState.info.ctrl_type   = objectState_[i]->state_.info.ctrl_type;
-            datState.info.ctrl_type   = objectState_[i]->state_.info.ctrl_type;
             datState.info.id          = objectState_[i]->state_.info.id;
             datState.info.model_id    = objectState_[i]->state_.info.model_id;
             memcpy(datState.info.name, objectState_[i]->state_.info.name, sizeof(datState.info.name));

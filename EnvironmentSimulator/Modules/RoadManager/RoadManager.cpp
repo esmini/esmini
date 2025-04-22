@@ -6569,7 +6569,6 @@ void Position::CopyLocation(const Position& from)
     z_road_                 = from.z_road_;
     z_roadPrim_             = from.z_roadPrim_;
     z_roadPrimPrim_         = from.z_roadPrimPrim_;
-    z_relative_             = from.z_relative_;
     h_offset_               = from.h_offset_;
     lane_section_idx_       = from.lane_section_idx_;
     osi_point_idx_          = from.osi_point_idx_;
