@@ -603,14 +603,13 @@ namespace scenarioengine
         }
 
         void GetDistanceError(roadmanager::Position& pos1, roadmanager::Position& pos2, double& distance_error);
-        void GetDesiredXYPos(const SE_Vector lat_axis, const double distance_error, double &target_x, double &target_y);
+        void GetDesiredRoadPos(const SE_Vector lat_axis, const double distance_error, roadmanager::Position& internal_pos);
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
 
     private:
         double acceleration_;
         MoveState move_state_;
-        double init_heading_;
         bool in_deceleration_phase_ = false;
         double desired_velocity_ = 0.0;
     };
