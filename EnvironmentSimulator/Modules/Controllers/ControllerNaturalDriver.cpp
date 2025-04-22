@@ -359,8 +359,10 @@ double ControllerNaturalDriver::GetAcceleration(scenarioengine::Object* follow, 
         roadmanager::PositionDiff diff = {};
         follow->pos_.Delta(&lead->pos_, diff, false, lookahead_dist_);
         double freespace = EstimateFreespace(follow, lead, diff.ds);
-        (freespace == 0) ? freespace = SMALL_NUMBER : freespace = freespace;
-
+        if (freespace == 0)
+        {
+            freespace = SMALL_NUMBER;
+        }
         acceleration -= max_acceleration_ * std::pow(desired_gap / freespace, 2);
     }
 

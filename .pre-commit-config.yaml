@@ -69,7 +69,7 @@ repos:
           - --suppress=unknownMacro #1
           #- --suppress=duplicateExpression #1
           - --suppress=operatorEqVarError #2 ?
-          - --suppress=selfAssignment #1
+          #- --suppress=selfAssignment #1
           - --suppress=unusedFunction #1
           - --suppress=unreadVariable #1
           - --suppress=hicpp-signed-bitwise #2
