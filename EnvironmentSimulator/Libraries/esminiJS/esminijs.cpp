@@ -55,10 +55,10 @@ namespace esmini
         std::cout << "config:" << _config << std::endl;
 
         std::vector<ScenarioObjectState> objects_sts;
-        int                              retval          = 0;
-        int                              numberofObjects = 0;
-        double                           dt              = 0;
-        int64_t                          time_stamp      = 0;
+        int                              retval = 0;
+        int                              numberofObjects;
+        double                           dt;
+        int64_t                          time_stamp = 0;
         while (retval == 0 && _config.max_loop > 0)
         {
             if (_config.dt == 0)

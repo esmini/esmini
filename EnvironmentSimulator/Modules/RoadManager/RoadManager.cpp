@@ -619,8 +619,8 @@ void Arc::Print() const
 
 void Arc::EvaluateDS(double ds, double* x, double* y, double* h) const
 {
-    double x_local = 0.0;
-    double y_local = 0.0;
+    double x_local;
+    double y_local;
 
     if (abs(curvature_) < SMALL_NUMBER)  // line
     {
@@ -2818,7 +2818,7 @@ double Road::GetWidth(double s, int side, int laneTypeMask) const
     double       offset0 = 0;
     double       offset1 = 0;
     unsigned int i       = 0;
-    int          index   = 0;
+    int          index;
 
     for (; i < GetNumberOfLaneSections() - 1; i++)
     {
@@ -5232,8 +5232,8 @@ bool RoadPath::CheckRoad(Road* checkRoad, RoadPath::PathNode* srcNode, Road* fro
 
 int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
 {
-    OpenDrive* odr         = startPos_->GetOpenDrive();
-    RoadLink*  link        = 0;
+    OpenDrive* odr = startPos_->GetOpenDrive();
+    RoadLink*  link;
     Junction*  junction    = 0;
     Road*      startRoad   = odr->GetRoadById(startPos_->GetTrackId());
     Road*      targetRoad  = odr->GetRoadById(targetPos_->GetTrackId());
@@ -5571,7 +5571,7 @@ bool OpenDrive::IsIndirectlyConnected(id_t road1_id, id_t road2_id, id_t*& conne
 {
     Road*     road1 = GetRoadById(road1_id);
     Road*     road2 = GetRoadById(road2_id);
-    RoadLink* link  = 0;
+    RoadLink* link;
 
     LinkType link_type[2] = {SUCCESSOR, PREDECESSOR};
 
@@ -9279,9 +9279,9 @@ Position::ReturnCode Position::SetLaneBoundaryPos(id_t track_id, int lane_id, do
     offset_                 = offset;
     int        old_lane_id  = lane_id_;
     id_t       old_track_id = track_id_;
-    ReturnCode retval;
+    ReturnCode retval       = SetLongitudinalTrackPos(track_id, s);
 
-    if ((retval = SetLongitudinalTrackPos(track_id, s)) < ReturnCode::OK)
+    if (retval < ReturnCode::OK)
     {
         lane_id_ = lane_id;
         offset_  = offset;
@@ -13247,7 +13247,7 @@ int Route::AddWaypoint(Position& position)
         if (retval == 0)
         {
             // Path is found by tracing previous nodes
-            RoadPath::PathNode*              previous = 0;
+            RoadPath::PathNode*              previous;
             std::vector<RoadPath::PathNode*> nodes;
 
             if (path->visited_.size() > 0)

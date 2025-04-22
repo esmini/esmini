@@ -2071,7 +2071,6 @@ TEST(SpeedProfileTest, TestSpeedProfileFirstEntryOffset)
 
     Object obj(Object::Type::VEHICLE);
     obj.SetSpeed(10.0);
-    double sim_time = 0.0, dt = 0.0;
 
     sp_action.following_mode_ = FollowingMode::POSITION;
     sp_action.dynamics_       = dynamics;
@@ -2090,7 +2089,6 @@ TEST(SpeedProfileTest, TestSpeedProfileFirstEntryOffset)
     // Evaluate at a time before first entry time, speed should interpolate towards first entry
     sp_action.Step(1.0);
     EXPECT_NEAR(sp_action.GetSpeed(), 7.30, 1E-5);
-    sim_time += dt;
 }
 
 TEST(SpeedProfileTest, TestSpeedProfileLinear)

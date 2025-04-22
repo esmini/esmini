@@ -22,8 +22,8 @@ int main(int argc, char* argv[])
     const float  duration           = 35.0f;
     bool         ghostMode[3]       = {false, true, true};
 
-    void*                  vehicleHandle = 0;
-    SE_SimpleVehicleState  vehicleState  = {0, 0, 0, 0, 0, 0, 0, 0};
+    void*                  vehicleHandle;
+    SE_SimpleVehicleState  vehicleState = {0, 0, 0, 0, 0, 0, 0, 0};
     SE_ScenarioObjectState objectState;
     SE_RoadInfo            roadInfo;
 

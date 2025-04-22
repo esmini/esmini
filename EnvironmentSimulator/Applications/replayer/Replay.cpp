@@ -275,11 +275,9 @@ void Replay::GoToTime(double time, bool stop_at_next_frame)
     }
     else
     {
-        size_t next_index = index_;
-
         if (time > time_)
         {
-            next_index = FindNextTimestamp();
+            size_t next_index = FindNextTimestamp();
             if (next_index > index_ && time > static_cast<double>(data_[next_index].state.info.timeStamp) &&
                 static_cast<double>(data_[next_index].state.info.timeStamp) <= GetStopTime())
             {
@@ -300,7 +298,7 @@ void Replay::GoToTime(double time, bool stop_at_next_frame)
         }
         else if (time < time_)
         {
-            next_index = FindPreviousTimestamp();
+            size_t next_index = FindPreviousTimestamp();
             if (next_index < index_ && time < static_cast<double>(data_[next_index].state.info.timeStamp))
             {
                 index_ = static_cast<unsigned int>(next_index);

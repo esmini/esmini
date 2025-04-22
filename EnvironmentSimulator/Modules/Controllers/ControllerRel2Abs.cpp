@@ -274,9 +274,9 @@ void ControllerRel2Abs::Step(double timeStep)
         double t0;
         double x_est;
         double y_est;
-        double errorDist  = 0;
-        double errorSpeed = 0;
-        double v_est      = 0;
+        double errorDist;
+        double errorSpeed;
+        double v_est;
 
         // Loop through data and find time closest to t (ideally do linear interpolation)
         for (unsigned int i = 0; i < data.time.size(); i++)

@@ -1051,13 +1051,13 @@ roadmanager::Route *ScenarioReader::parseOSCRoute(pugi::xml_node routeNode)
     parameters.CreateRestorePoint();
 
     // Closed attribute not supported by roadmanager yet
-    std::string closed_str = parameters.ReadAttribute(routeNode, "closed");
-    bool        closed     = false;
-    (void)closed;
-    if (closed_str == "true" || closed_str == "1")
-    {
-        closed = true;
-    }
+    // std::string closed_str = parameters.ReadAttribute(routeNode, "closed");
+    // bool        closed     = false;
+    // (void)closed;
+    // if (closed_str == "true" || closed_str == "1")
+    // {
+    //     closed = true;
+    // }
 
     for (pugi::xml_node routeChild = routeNode.first_child(); routeChild; routeChild = routeChild.next_sibling())
     {

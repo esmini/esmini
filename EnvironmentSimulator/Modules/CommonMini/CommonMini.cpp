@@ -865,16 +865,6 @@ bool IsDirectoryName(const std::string& string)
 
 std::string FileNameExtOf(const std::string& fname)
 {
-    size_t start_pos = fname.find_last_of("\\/");
-    if (start_pos != std::string::npos)
-    {
-        start_pos++;
-    }
-    else
-    {
-        start_pos = 0;
-    }
-
     size_t end_pos = fname.find_last_of(".");
     if (end_pos != std::string::npos)
     {

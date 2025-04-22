@@ -316,11 +316,11 @@ TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
     ASSERT_EQ(osi_points.GetNumOfOSIPoints(), 0);
 
     std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, true}};
-    std::vector<double>      s{0, -1, 2};
-    std::vector<double>      x{0, -1, 2};
-    std::vector<double>      y{0, -1, 2};
-    std::vector<double>      z{0, -1, 2};
-    std::vector<double>      h{0, -1, 2};
+    // std::vector<double>      s{0, -1, 2};
+    // std::vector<double>      x{0, -1, 2};
+    // std::vector<double>      y{0, -1, 2};
+    // std::vector<double>      z{0, -1, 2};
+    // std::vector<double>      h{0, -1, 2};
 
     OSIPoints osi_points_second = OSIPoints(osi_points_test_set);
     ASSERT_EQ(osi_points_second.GetNumOfOSIPoints(), 3);
@@ -2565,8 +2565,8 @@ TEST_F(MixedRoadsFixture, TestGetClosestLaneIdx)
 
     ASSERT_EQ(road->GetNumberOfLaneSections(), 2);
 
-    double       offset       = 0.0;
-    double       s            = 0.0;
+    double       offset = 0.0;
+    double       s;
     LaneSection *lane_section = nullptr;
     idx_t        lane_idx     = IDX_UNDEFINED;
 

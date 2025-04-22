@@ -1434,7 +1434,7 @@ void LongSpeedProfileAction::Start(double simTime)
         AddSpeedSegment(vtx.t_, vtx.v_, k0, j);
 
         double j0 = j;
-        double j1 = 0.0, t2 = 0.0, v1 = 0.0, v2 = 0.0;
+        double j1 = 0.0, t2 = 0.0, v1, v2 = 0.0;
 
         // Find jerk at endpoint, where acceleration / k is zero
         if (vertex[0].k_ < 0)
@@ -1839,7 +1839,7 @@ void LongDistanceAction::Step(double simTime, double)
 
     double speed_diff = object_->speed_ - target_object_->speed_;
     double acc;
-    double jerk            = 0.0;
+    double jerk;
     double spring_constant = 0.4;
     double dc;
     double requested_dist = 0;

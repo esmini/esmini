@@ -70,8 +70,8 @@ repos:
           #- --suppress=duplicateExpression #1
           - --suppress=operatorEqVarError #2 ?
           #- --suppress=selfAssignment #1
-          - --suppress=unusedFunction #1
-          - --suppress=unreadVariable #1
+          - --suppress=unusedFunction #1 --we will keep it
+          #- --suppress=unreadVariable #1
           - --suppress=hicpp-signed-bitwise #2
           - --suppress=noExplicitConstructor #2
         language: system

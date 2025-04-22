@@ -109,12 +109,11 @@ static void ConvertArguments()
 {
     argc_ = static_cast<int>(args_v.size());
     argv_ = reinterpret_cast<char **>(malloc(args_v.size() * sizeof(char *)));
-    std::string argument_list;
+
     for (unsigned int i = 0; i < static_cast<unsigned int>(argc_); i++)
     {
         argv_[i] = reinterpret_cast<char *>(malloc((args_v[i].size() + 1) * sizeof(char)));
         StrCopy(argv_[i], args_v[i].c_str(), static_cast<unsigned int>(args_v[i].size()) + 1);
-        argument_list += std::string(" ") + argv_[i];
     }
 }
 
@@ -2526,6 +2525,7 @@ extern "C"
         {
             delete ((vehicle::Vehicle *)handleSimpleVehicle);
             // cppcheck-suppress uselessAssignmentPtrArg
+            // cppcheck-suppress unreadVariable
             handleSimpleVehicle = 0;
         }
     }
