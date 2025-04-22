@@ -611,7 +611,8 @@ namespace scenarioengine
         double acceleration_;
         MoveState move_state_;
         double init_heading_;
-        bool latched_to_target_ = false;
+        bool in_deceleration_phase_ = false;
+        double desired_velocity_ = 0.0;
     };
 
     class LatLaneChangeAction : public OSCPrivateAction
