@@ -56,7 +56,7 @@ repos:
           - --suppress=shadowFunction #2
           - --suppress=funcArgOrderDifferent #1
           - --suppress=functionConst #1
-          - --suppress=arrayIndexThenCheck #1
+          #- --suppress=arrayIndexThenCheck #1
           #- --suppress=unsignedLessThanZero #1
           - --suppress=missingIncludeSystem #3
           - --suppress=oppositeExpression #3 ?
