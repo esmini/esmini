@@ -20,7 +20,7 @@ repos:
           #- --suppress=constVariable #1
           - --suppress=missingInclude #3
           - --suppress=variableScope #2
-          - --suppress=unusedStructMember #1
+          - --suppress=unusedStructMember #1 #we will keep it
           #- --suppress=duplicateBranch #1
           #- --suppress=duplInheritedMember #1
           - --suppress=missingOverride #2 ?
@@ -66,11 +66,11 @@ repos:
           #- --suppress=syntaxError #1
           - --suppress=noOperatorEq #1 ?
           #- --suppress=redundantAssignment #1
-          - --suppress=unknownMacro #1
+          #- --suppress=unknownMacro #1
           #- --suppress=duplicateExpression #1
           - --suppress=operatorEqVarError #2 ?
           #- --suppress=selfAssignment #1
-          - --suppress=unusedFunction #1 --we will keep it
+          - --suppress=unusedFunction #1 #we will keep it
           #- --suppress=unreadVariable #1
           - --suppress=hicpp-signed-bitwise #2
           - --suppress=noExplicitConstructor #2
