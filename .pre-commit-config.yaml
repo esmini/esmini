@@ -74,7 +74,7 @@ repos:
           #- --suppress=noOperatorEq #1 ?
           - --suppress=functionConst #1
           - --suppress=missingMemberCopy #1
-          - --suppress=noCopyConstructor #1
+          #- --suppress=noCopyConstructor #1
         language: system
         types_or: [c, c++]
         exclude: ^externals/.*$

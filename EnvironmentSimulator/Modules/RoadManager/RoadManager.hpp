@@ -4619,6 +4619,23 @@ namespace roadmanager
                 }
             }
 
+            Segment(const Segment &other)
+            {
+                if (other.posStart_ != nullptr)
+                {
+                    posStart_ = new Position(*other.posStart_);
+                }
+                else
+                {
+                    posStart_ = nullptr;
+                }
+                posEnd_    = other.posEnd_;
+                curvStart_ = other.curvStart_;
+                curvEnd_   = other.curvEnd_;
+                length_    = other.length_;
+                h_offset_  = other.h_offset_;
+                time_      = other.time_;
+            }
             Segment &operator=(const Segment &) = delete;
 
             Position *posStart_;
