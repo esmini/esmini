@@ -382,6 +382,7 @@ namespace scenarioengine
             speed_          = action.speed_;
             acc_            = action.acc_;
             cur_index_      = action.cur_index_;
+            segment_        = action.segment_;
         }
 
         OSCPrivateAction* Copy()
@@ -487,6 +488,7 @@ namespace scenarioengine
             sim_time_      = action.sim_time_;
             displacement_  = action.displacement_;
             cs_            = action.cs_;
+            continuous_    = action.continuous_;
         }
 
         OSCPrivateAction* Copy()
@@ -597,6 +599,7 @@ namespace scenarioengine
                 }
             }
             SetName(action.GetName());
+            internal_pos_ = action.internal_pos_;
         }
 
         OSCPrivateAction* Copy()

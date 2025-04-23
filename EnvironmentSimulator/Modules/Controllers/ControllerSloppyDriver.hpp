@@ -110,8 +110,6 @@ namespace scenarioengine
         double             tFuzz0;
         double             tFuzzTarget;
         double             currentH_;
-
-        // const char* type_name_ = "SloppyDriver";
     };
 
     Controller* InstantiateControllerSloppyDriver(void* args);
