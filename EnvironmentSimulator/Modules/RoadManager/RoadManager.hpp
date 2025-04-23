@@ -4621,14 +4621,7 @@ namespace roadmanager
 
             Segment(const Segment &other)
             {
-                if (other.posStart_ != nullptr)
-                {
-                    posStart_ = new Position(*other.posStart_);
-                }
-                else
-                {
-                    posStart_ = nullptr;
-                }
+                posStart_  = other.posStart_;
                 posEnd_    = other.posEnd_;
                 curvStart_ = other.curvStart_;
                 curvEnd_   = other.curvEnd_;
