@@ -16,6 +16,7 @@ repos:
           - --inconclusive
           - --error-exitcode=1
           - --inline-suppr
+          - -D__has_include(x)=1 # we let cppcheck know that __has_include exists, since cppcheck does not support it
           - --enable=all
           #- --suppress=constVariable #1
           - --suppress=missingInclude #3
@@ -37,7 +38,7 @@ repos:
           - --suppress=unmatchedSuppression #2 ?
           - --suppress=constParameter #2
           - --suppress=useInitializationList #3
-          - --suppress=noValidConfiguration #1
+          #- --suppress=noValidConfiguration #1
           - --suppress=preprocessorErrorDirective #2 ?
           - --suppress=deallocuse #2 ?
           - --suppress=stlcstrParam #2
