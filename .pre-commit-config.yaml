@@ -48,15 +48,12 @@ repos:
           - --suppress=uninitvar #2
           - --suppress=unusedLabel #3
           - --suppress=uninitStructMember #2
-          - --suppress=noCopyConstructor #1
           #- --suppress=uselessAssignmentPtrArg #1 ?
           - --suppress=useStlAlgorithm #3
-          - --suppress=missingMemberCopy #1
           #- --suppress=memleak #1
           #- --suppress=postfixOperator #1
           - --suppress=shadowFunction #2
           #- --suppress=funcArgOrderDifferent #1
-          - --suppress=functionConst #1
           #- --suppress=arrayIndexThenCheck #1
           #- --suppress=unsignedLessThanZero #1
           - --suppress=missingIncludeSystem #3
@@ -65,7 +62,6 @@ repos:
           #- --suppress=doubleFree #1
           - --suppress=unusedVariable #2
           #- --suppress=syntaxError #1
-          - --suppress=noOperatorEq #1 ?
           #- --suppress=redundantAssignment #1
           #- --suppress=unknownMacro #1
           #- --suppress=duplicateExpression #1
@@ -75,6 +71,10 @@ repos:
           #- --suppress=unreadVariable #1
           - --suppress=hicpp-signed-bitwise #2
           - --suppress=noExplicitConstructor #2
+          #- --suppress=noOperatorEq #1 ?
+          - --suppress=functionConst #1
+          - --suppress=missingMemberCopy #1
+          - --suppress=noCopyConstructor #1
         language: system
         types_or: [c, c++]
         exclude: ^externals/.*$

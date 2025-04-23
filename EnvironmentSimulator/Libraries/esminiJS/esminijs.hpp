@@ -75,6 +75,9 @@ namespace esmini
         // get object state use second and frame
         std::vector<ScenarioObjectState> get_object_state_by_second(const int second, const int fps = 30);
 
+        OpenScenario(const OpenScenario&)            = delete;
+        OpenScenario& operator=(const OpenScenario&) = delete;
+
     private:
         std::string                      xosc_file;
         OpenScenarioConfig               config;
