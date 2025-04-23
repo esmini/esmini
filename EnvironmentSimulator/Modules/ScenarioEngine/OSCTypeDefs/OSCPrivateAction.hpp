@@ -564,8 +564,7 @@ namespace scenarioengine
               freespace_(0),
               sim_time_(0),
               displacement_(DisplacementType::NONE),
-              cs_(roadmanager::CoordinateSystem::CS_ENTITY),
-              acceleration_(0)
+              cs_(roadmanager::CoordinateSystem::CS_ENTITY)
         {
         }
 
@@ -578,7 +577,6 @@ namespace scenarioengine
             distance_      = action.distance_;
             dist_type_     = action.dist_type_;
             freespace_     = action.freespace_;
-            acceleration_  = action.acceleration_;
             sim_time_      = action.sim_time_;
             displacement_  = action.displacement_;
             cs_            = action.cs_;
@@ -608,10 +606,8 @@ namespace scenarioengine
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
 
     private:
-        double acceleration_;
         MoveState move_state_;
-        bool in_deceleration_phase_ = false;
-        double desired_velocity_ = 0.0;
+        double lat_vel_ = 0.0;
     };
 
     class LatLaneChangeAction : public OSCPrivateAction
