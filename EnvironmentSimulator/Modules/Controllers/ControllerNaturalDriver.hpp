@@ -83,7 +83,7 @@ namespace scenarioengine
         double EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds) const;
 
         ControllerNaturalDriver* GetOtherDriver(scenarioengine::Object* object) const;
-        void                     GetVehicleOfInterestType(int lane_id, VoIType& lead, VoIType& follow);
+        void                     GetVehicleOfInterestType(int lane_id, VoIType& lead, VoIType& follow) const;
         double                   GetAcceleration(scenarioengine::Object* follow, scenarioengine::Object* lead) const;
         double                   GetDesiredGap(double max_acceleration,
                                                double max_deceleration,

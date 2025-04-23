@@ -57,7 +57,7 @@ namespace scenarioengine
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
         void ReportKeyEvent(int key, bool down);
-        bool UseGhost()
+        bool UseGhost() const
         {
             return useGhost_;
         }

@@ -80,7 +80,7 @@ namespace scenarioengine
         {
         }
 
-        std::string         BaseType2Str();
+        std::string         BaseType2Str() const;
         virtual std::string Type2Str()
         {
             return BaseType2Str();

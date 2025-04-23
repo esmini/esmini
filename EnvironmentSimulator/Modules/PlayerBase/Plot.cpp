@@ -439,23 +439,23 @@ void Plot::PlotObject::updateData(Object* object, double time)
     plotData[PlotCategories::LaneID].push_back(static_cast<float>(object->pos_.GetLaneId()));
 }
 
-float Plot::PlotObject::getTimeMax()
+float Plot::PlotObject::getTimeMax() const
 {
     return time_max_;
 }
-float Plot::PlotObject::getMaxAcc()
+float Plot::PlotObject::getMaxAcc() const
 {
     return max_acc_;
 }
-float Plot::PlotObject::getMaxDecel()
+float Plot::PlotObject::getMaxDecel() const
 {
     return max_decel_;
 }
-float Plot::PlotObject::getMaxSpeed()
+float Plot::PlotObject::getMaxSpeed() const
 {
     return max_speed_;
 }
-std::string Plot::PlotObject::getName()
+std::string Plot::PlotObject::getName() const
 {
     return name_;
 }

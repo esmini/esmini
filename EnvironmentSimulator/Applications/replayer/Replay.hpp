@@ -44,30 +44,30 @@ namespace scenarioengine
         void                  GoToTime(double time, bool stop_at_next_frame = false);
         void                  GoToDeltaTime(double dt, bool stop_at_next_frame = false);
         void                  GetReplaysFromDirectory(const std::string dir, const std::string sce);
-        size_t                GetNumberOfScenarios();
+        size_t                GetNumberOfScenarios() const;
         void                  GoToStart();
         void                  GoToEnd();
         int                   GoToNextFrame();
         void                  GoToPreviousFrame();
         unsigned int          FindNextTimestamp(bool wrap = false);
-        unsigned int          FindPreviousTimestamp(bool wrap = false);
+        unsigned int          FindPreviousTimestamp(bool wrap = false) const;
         ReplayEntry*          GetEntry(int id);
         ObjectStateStructDat* GetState(int id);
         void                  SetStartTime(double time);
         void                  SetStopTime(double time);
-        double                GetStartTime()
+        double                GetStartTime() const
         {
             return startTime_;
         }
-        double GetStopTime()
+        double GetStopTime() const
         {
             return stopTime_;
         }
-        double GetTime()
+        double GetTime() const
         {
             return time_;
         }
-        int GetIndex()
+        int GetIndex() const
         {
             return static_cast<int>(index_);
         }

@@ -278,7 +278,7 @@ ObjectState* ScenarioGateway::getObjectStatePtrById(int id)
     return 0;
 }
 
-int ScenarioGateway::getObjectStateById(int id, ObjectState& objectState)
+int ScenarioGateway::getObjectStateById(int id, ObjectState& objectState) const
 {
     for (size_t i = 0; i < objectState_.size(); i++)
     {

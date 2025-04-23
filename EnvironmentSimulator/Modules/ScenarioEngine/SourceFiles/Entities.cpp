@@ -1624,7 +1624,7 @@ void Entities::removeObject(Object* object, bool recursive)
     return;
 }
 
-bool Entities::nameExists(std::string name)
+bool Entities::nameExists(std::string name) const
 {
     for (size_t i = 0; i < object_.size(); i++)
     {
@@ -1636,7 +1636,7 @@ bool Entities::nameExists(std::string name)
     return false;
 }
 
-bool Entities::indexExists(int id)
+bool Entities::indexExists(int id) const
 {
     for (size_t i = 0; i < object_.size(); i++)
     {

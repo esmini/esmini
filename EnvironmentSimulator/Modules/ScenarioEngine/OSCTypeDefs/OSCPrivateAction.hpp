@@ -91,7 +91,7 @@ namespace scenarioengine
             }
             void Reset();
 
-            double Evaluate(DynamicsShape shape = DynamicsShape::SHAPE_UNDEFINED);  // 0 = start_value, 1 = end_value
+            double Evaluate(DynamicsShape shape = DynamicsShape::SHAPE_UNDEFINED) const;  // 0 = start_value, 1 = end_value
             double EvaluatePrim();
             double EvaluateScaledPrim();
             double EvaluatePrimPeak();
@@ -99,34 +99,34 @@ namespace scenarioengine
             double GetTargetParamValByPrimPeak(double prim_peak);
             double GetTargetParamValByPrimPrimPeak(double prim_prim_peak);
 
-            double GetParamVal()
+            double GetParamVal() const
             {
                 return param_val_;
             }
             void   SetStartVal(double start_val);
-            double GetStartVal()
+            double GetStartVal() const
             {
                 return start_val_;
             }
             void   SetTargetVal(double target_val);
-            double GetTargetVal()
+            double GetTargetVal() const
             {
                 return target_val_;
             }
 
             void   SetParamTargetVal(double target_value);
-            double GetParamTargetVal()
+            double GetParamTargetVal() const
             {
                 return param_target_val_;
             }
             void   SetMaxRate(double max_rate);
             void   SetRate(double rate);
             void   UpdateRate();
-            double GetRate()
+            double GetRate() const
             {
                 return rate_;
             }
-            double GetScaleFactor()
+            double GetScaleFactor() const
             {
                 return scale_factor_;
             }

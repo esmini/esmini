@@ -175,7 +175,7 @@ double OSCPrivateAction::TransitionDynamics::EvaluateScaledPrim()
     return EvaluatePrim() / AVOID_ZERO(scale_factor_);
 }
 
-double OSCPrivateAction::TransitionDynamics::Evaluate(DynamicsShape shape)
+double OSCPrivateAction::TransitionDynamics::Evaluate(DynamicsShape shape) const
 {
     if (shape == DynamicsShape::SHAPE_UNDEFINED)
     {

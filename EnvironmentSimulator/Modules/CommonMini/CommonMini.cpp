@@ -1372,7 +1372,7 @@ Logger::~Logger()
     callback_ = 0;
 }
 
-bool Logger::IsCallbackSet()
+bool Logger::IsCallbackSet() const
 {
     return callback_ != 0;
 }
@@ -1894,7 +1894,7 @@ void SE_Options::PrintUsage()
     printf("\n");
 }
 
-void SE_Options::PrintUnknownArgs(std::string message)
+void SE_Options::PrintUnknownArgs(std::string message) const
 {
     printf("\n%s\n", message.c_str());
     for (const auto& arg : unknown_args_)
@@ -2050,7 +2050,7 @@ const std::unordered_map<std::string, SE_Option>& SE_Options::GetAllOptions() co
     return option_;
 }
 
-std::string SE_Options::GetSetOptionsAsStr()
+std::string SE_Options::GetSetOptionsAsStr() const
 {
     std::string strAllSetOptions;
     for (const auto& pair : GetAllOptions())
@@ -2185,7 +2185,7 @@ bool SE_Options::IsInOriginalArgs(std::string opt)
     return false;
 }
 
-bool SE_Options::HasUnknownArgs()
+bool SE_Options::HasUnknownArgs() const
 {
     return !unknown_args_.empty();
 }

@@ -146,7 +146,7 @@ namespace scenarioengine
 
         void PropagateStateFromChildren();
 
-        bool IsTriggable()
+        bool IsTriggable() const
         {
             return GetCurrentState() == State::STANDBY;
         }

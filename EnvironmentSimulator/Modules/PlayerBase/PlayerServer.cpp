@@ -81,7 +81,7 @@ namespace scenarioengine
         action_.erase(action_.begin() + index);
     }
 
-    int PlayerServer::NumberOfActions()
+    int PlayerServer::NumberOfActions() const
     {
         return static_cast<int>(action_.size());
     }
@@ -231,7 +231,7 @@ namespace scenarioengine
         AddAction(a);
     }
 
-    bool PlayerServer::InjectedActionOngoing(int action_type)
+    bool PlayerServer::InjectedActionOngoing(int action_type) const
     {
         if (action_type < 0)
         {

@@ -91,7 +91,7 @@ namespace scenarioengine
         */
         int  Init();
         void PrintUsage();
-        bool IsQuitRequested()
+        bool IsQuitRequested() const
         {
             return quit_request;
         }
@@ -129,14 +129,14 @@ namespace scenarioengine
         Retrieve the total number of ideal sensors attached to any objects
         @return -1 on failure, else the number of sensors
         */
-        int GetNumberOfObjectSensors();
+        int GetNumberOfObjectSensors() const;
 
         /**
         Retrieve the number of ideal sensors attached to an object
         @param obj Pointer to the object
         @return -1 on failure, else the number of sensors attached to the object
         */
-        int GetNumberOfSensorsAttachedToObject(Object *obj);
+        int GetNumberOfSensorsAttachedToObject(Object *obj) const;
 
 #ifdef _USE_OSG
         void InitVehicleModel(Object *obj, viewer::CarModel *model);
@@ -147,7 +147,7 @@ namespace scenarioengine
         {
             fixed_timestep_ = timestep;
         }
-        double GetFixedTimestep()
+        double GetFixedTimestep() const
         {
             return fixed_timestep_;
         }
@@ -185,15 +185,15 @@ namespace scenarioengine
         {
             state_ = state;
         }
-        PlayerState GetState()
+        PlayerState GetState() const
         {
             return state_;
         }
-        bool IsPaused()
+        bool IsPaused() const
         {
             return GetState() == PlayerState::PLAYER_STATE_PAUSE;
         }
-        int GetCounter()
+        int GetCounter() const
         {
             return frame_counter_;
         }

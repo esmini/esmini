@@ -183,7 +183,7 @@ public:
         osi_updated_ = value;
     }
 
-    bool GetUpdated()
+    bool GetUpdated() const
     {
         return osi_updated_;
     }
@@ -193,7 +193,7 @@ public:
         osi_update_counter_ = counter;
     }
 
-    int GetCounter()
+    int GetCounter() const
     {
         return osi_update_counter_ == nullptr ? -1 : *osi_update_counter_;
     }
@@ -209,7 +209,7 @@ public:
         UpdateCounterOffset();
     }
 
-    int GetOSIFrequency()
+    int GetOSIFrequency() const
     {
         return osi_freq_;
     }

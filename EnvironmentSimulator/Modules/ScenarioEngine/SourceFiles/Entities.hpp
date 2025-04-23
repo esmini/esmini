@@ -230,33 +230,33 @@ namespace scenarioengine
         {
         }
         void SetEndOfRoad(bool state, double time = 0.0);
-        bool IsEndOfRoad()
+        bool IsEndOfRoad() const
         {
             return end_of_road_timestamp_ > SMALL_NUMBER;
         }
-        double GetEndOfRoadTimestamp()
+        double GetEndOfRoadTimestamp() const
         {
             return end_of_road_timestamp_;
         }
         void SetOffRoad(bool state, double time = 0.0);
-        bool IsOffRoad()
+        bool IsOffRoad() const
         {
             return off_road_timestamp_ > SMALL_NUMBER;
         }
-        double GetOffRoadTimestamp()
+        double GetOffRoadTimestamp() const
         {
             return off_road_timestamp_;
         }
         void SetStandStill(bool state, double time = 0.0);
-        bool IsStandStill()
+        bool IsStandStill() const
         {
             return stand_still_timestamp_ > SMALL_NUMBER;
         }
-        bool IsActive()
+        bool IsActive() const
         {
             return is_active_;
         }
-        Type GetType()
+        Type GetType() const
         {
             return type_;
         }
@@ -273,7 +273,7 @@ namespace scenarioengine
             Returns the timestamp from which the entity has not moved.
                 @return The timestamp in seconds.
         */
-        double GetStandStillTimestamp()
+        double GetStandStillTimestamp() const
         {
             return stand_still_timestamp_;
         }
@@ -386,7 +386,7 @@ namespace scenarioengine
             speed_ = speed;
             SetDirtyBits(Object::DirtyBit::SPEED);
         }
-        double GetSpeed()
+        double GetSpeed() const
         {
             return speed_;
         }
@@ -409,14 +409,14 @@ namespace scenarioengine
         bool             IsAnyActiveControllerOfType(Controller::Type type);
         Controller*      GetControllerActiveOnDomain(ControlDomains domain);
         Controller::Type GetControllerTypeActiveOnDomain(ControlDomains domain);
-        unsigned int     GetNrOfAssignedControllers()
+        unsigned int     GetNrOfAssignedControllers() const
         {
             return static_cast<unsigned int>(controllers_.size());
         }
 
         Controller* GetController(std::string name);
 
-        int GetId()
+        int GetId() const
         {
             return id_;
         }
@@ -424,7 +424,7 @@ namespace scenarioengine
         {
             headstart_time_ = headstartTime;
         }
-        double GetHeadstartTime()
+        double GetHeadstartTime() const
         {
             return headstart_time_;
         }
@@ -437,7 +437,7 @@ namespace scenarioengine
             return ghost_;
         }
         void SetVisibilityMask(int mask);
-        bool IsGhost()
+        bool IsGhost() const
         {
             return isGhost_;
         }
@@ -457,7 +457,7 @@ namespace scenarioengine
         {
             performance_.maxAcceleration = maxAcceleration;
         }
-        double GetMaxAcceleration()
+        double GetMaxAcceleration() const
         {
             return performance_.maxAcceleration;
         }
@@ -465,7 +465,7 @@ namespace scenarioengine
         {
             performance_.maxDeceleration = maxDeceleration;
         }
-        double GetMaxDeceleration()
+        double GetMaxDeceleration() const
         {
             return performance_.maxDeceleration;
         }
@@ -473,15 +473,15 @@ namespace scenarioengine
         {
             performance_.maxSpeed = maxSpeed;
         }
-        double GetMaxSpeed()
+        double GetMaxSpeed() const
         {
             return performance_.maxSpeed;
         }
-        std::string GetName()
+        std::string GetName() const
         {
             return name_;
         }
-        std::string GetTypeName()
+        std::string GetTypeName() const
         {
             return typeName_;
         }
@@ -489,7 +489,7 @@ namespace scenarioengine
         {
             return FileNameOf(model3d_);
         }
-        std::string GetModelFilePath()
+        std::string GetModelFilePath() const
         {
             return model3d_;
         }
@@ -507,7 +507,7 @@ namespace scenarioengine
         Get current strategy how to choose way in next junction
         @return JunctionStrategyType: Use specified angle (SetJunctionSelectorAngle*) or randomize. See roadmanager::Junction::JunctionStrategyType.
         */
-        roadmanager::Junction::JunctionStrategyType GetJunctionSelectorStrategy()
+        roadmanager::Junction::JunctionStrategyType GetJunctionSelectorStrategy() const
         {
             return junctionSelectorStrategy_;
         }
@@ -523,7 +523,7 @@ namespace scenarioengine
         */
         void SetJunctionSelectorAngleRandom();
 
-        double GetJunctionSelectorAngle()
+        double GetJunctionSelectorAngle() const
         {
             return nextJunctionSelectorAngle_;
         }
@@ -545,7 +545,7 @@ namespace scenarioengine
             return objectEvents_;
         }
 
-        bool CheckDirtyBits(int bits)
+        bool CheckDirtyBits(int bits) const
         {
             return bool(dirty_ & bits);
         }
@@ -560,7 +560,7 @@ namespace scenarioengine
             dirty_ = bitmask;
         }
 
-        int GetDirtyBitMask()
+        int GetDirtyBitMask() const
         {
             return dirty_;
         }
@@ -954,8 +954,8 @@ namespace scenarioengine
         void    removeObject(std::string name, bool recursive = true);
         void    removeObject(Object* object, bool recursive = true);
         int     getNewId();
-        bool    indexExists(int id);
-        bool    nameExists(std::string name);
+        bool    indexExists(int id) const;
+        bool    nameExists(std::string name) const;
         Object* GetObjectByName(std::string name);
         Object* GetObjectById(int id);
         int     GetObjectIdxById(int id);

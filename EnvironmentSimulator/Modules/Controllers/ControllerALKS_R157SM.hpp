@@ -100,19 +100,19 @@ namespace scenarioengine
             {
                 veh_ = vehicle;
             }
-            double GetReactionTime()
+            double GetReactionTime() const
             {
                 return rt_;
             }
-            double GetReactionTimeCounter()
+            double GetReactionTimeCounter() const
             {
                 return rt_counter_;
             }
-            double GetMaxDec()
+            double GetMaxDec() const
             {
                 return max_dec_;
             }
-            double GetMaxRange()
+            double GetMaxRange() const
             {
                 return max_range_;
             }
@@ -136,18 +136,18 @@ namespace scenarioengine
             {
                 return ModelTypeName[type];
             }
-            ModelType GetModelType()
+            ModelType GetModelType() const
             {
                 return type_;
             }
             void      SetModelMode(ModelMode mode, bool log = true);
-            ModelMode GetModelMode()
+            ModelMode GetModelMode() const
             {
                 return model_mode_;
             }
             void         SetScenarioEngine(ScenarioEngine* scenario_engine);
             void         SetScenarioType(ScenarioType type);
-            ScenarioType GetScenarioType()
+            ScenarioType GetScenarioType() const
             {
                 return scenario_type_;
             }
@@ -155,7 +155,7 @@ namespace scenarioengine
             {
                 full_stop_ = full_stop;
             }
-            bool GetFullStop()
+            bool GetFullStop() const
             {
                 return full_stop_;
             }
@@ -163,7 +163,7 @@ namespace scenarioengine
             {
                 always_trig_on_scenario_ = value;
             }
-            bool GetAlwaysTrigOnScenario()
+            bool GetAlwaysTrigOnScenario() const
             {
                 return always_trig_on_scenario_;
             }
@@ -200,7 +200,7 @@ namespace scenarioengine
                 return ModelType2Str(type_);
             }
 
-            int GetLogLevel()
+            int GetLogLevel() const
             {
                 return log_level_;
             }
@@ -377,7 +377,7 @@ namespace scenarioengine
 
                 virtual ~LateralDistTrigger() = default;
 
-                bool Active()
+                bool Active() const
                 {
                     return active_;
                 }
@@ -397,7 +397,7 @@ namespace scenarioengine
                 {
                     return model_ ? model_->GetModelName() : "";
                 }
-                int GetLogLevel()
+                int GetLogLevel() const
                 {
                     return model_ ? model_->GetLogLevel() : 0;
                 }
@@ -453,7 +453,7 @@ namespace scenarioengine
             double ReactCritical() override;
             double MinDist() override;
             void   SetPhase(Phase phase);
-            Phase  GetPhase()
+            Phase  GetPhase() const
             {
                 return phase_;
             }
@@ -532,7 +532,7 @@ namespace scenarioengine
             {
                 pedestrian_risk_eval_time_ = value;
             }
-            double GetPedestrianRiskEvaluationTime()
+            double GetPedestrianRiskEvaluationTime() const
             {
                 return pedestrian_risk_eval_time_;
             }

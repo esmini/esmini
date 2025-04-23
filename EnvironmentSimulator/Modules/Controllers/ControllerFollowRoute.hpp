@@ -76,7 +76,7 @@ namespace scenarioengine
          *
          * @return double, (s)
          */
-        double GetLaneChangeTime()
+        double GetLaneChangeTime() const
         {
             return laneChangeTime_;
         };
@@ -85,7 +85,7 @@ namespace scenarioengine
          *
          * @return double, (m)
          */
-        double GetMinDistForCollision()
+        double GetMinDistForCollision() const
         {
             return minDistForCollision_;
         };

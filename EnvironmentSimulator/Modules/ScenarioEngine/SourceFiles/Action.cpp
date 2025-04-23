@@ -17,7 +17,7 @@ using namespace scenarioengine;
 
 unsigned int OSCAction::n_actions_ = 0;
 
-std::string OSCAction::BaseType2Str()
+std::string OSCAction::BaseType2Str() const
 {
     BaseType base_type = GetBaseType();
     if (base_type == BaseType::GLOBAL)

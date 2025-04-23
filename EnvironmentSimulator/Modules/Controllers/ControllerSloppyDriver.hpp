@@ -50,7 +50,7 @@ namespace scenarioengine
         double factor_;
 
         double GetValue();
-        double GetFactor()
+        double GetFactor() const
         {
             return factor_;
         }

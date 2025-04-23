@@ -192,27 +192,27 @@ std::string Controller::Mode2Str(ControlOperationMode mode)
     }
 }
 
-bool Controller::IsActiveOnDomainsOnly(unsigned int domainMask)
+bool Controller::IsActiveOnDomainsOnly(unsigned int domainMask) const
 {
     return (GetActiveDomains() == domainMask);
 }
 
-bool Controller::IsActiveOnDomains(unsigned int domainMask)
+bool Controller::IsActiveOnDomains(unsigned int domainMask) const
 {
     return (domainMask & GetActiveDomains()) == domainMask;
 }
 
-bool Controller::IsNotActiveOnDomains(unsigned int domainMask)
+bool Controller::IsNotActiveOnDomains(unsigned int domainMask) const
 {
     return (domainMask & GetActiveDomains()) == 0;
 }
 
-bool Controller::IsActiveOnAnyOfDomains(unsigned int domainMask)
+bool Controller::IsActiveOnAnyOfDomains(unsigned int domainMask) const
 {
     return (domainMask & GetActiveDomains()) != 0;
 }
 
-bool Controller::IsActive()
+bool Controller::IsActive() const
 {
     return GetActiveDomains() != static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
 }

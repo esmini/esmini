@@ -225,7 +225,7 @@ void Replay::GetReplaysFromDirectory(const std::string dir, const std::string sc
     }
 }
 
-size_t Replay::GetNumberOfScenarios()
+size_t Replay::GetNumberOfScenarios() const
 {
     return scenarios_.size();
 }
@@ -403,7 +403,7 @@ unsigned int Replay::FindNextTimestamp(bool wrap)
     return index;
 }
 
-unsigned int Replay::FindPreviousTimestamp(bool wrap)
+unsigned int Replay::FindPreviousTimestamp(bool wrap) const
 {
     int index = static_cast<int>(index_) - 1;
 

@@ -68,7 +68,7 @@ namespace scenarioengine
         }
         void Step(double timeStep);
         bool hasFarTan;
-        bool getHasFarTan()
+        bool getHasFarTan() const
         {
             return hasFarTan;
         }

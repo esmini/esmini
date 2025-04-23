@@ -37,7 +37,7 @@ namespace scenarioengine
         std::vector<Property> property_;
         File                  file_;  // Should be no more than one?
 
-        bool ValueExists(std::string key)
+        bool ValueExists(std::string key) const
         {
             for (size_t i = 0; i < property_.size(); i++)
             {
@@ -49,7 +49,7 @@ namespace scenarioengine
             return false;
         }
 
-        std::string GetValueStr(std::string key)
+        std::string GetValueStr(std::string key) const
         {
             for (size_t i = 0; i < property_.size(); i++)
             {

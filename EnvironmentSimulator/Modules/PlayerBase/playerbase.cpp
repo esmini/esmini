@@ -1075,12 +1075,12 @@ int ScenarioPlayer::AddObjectSensor(Object* obj,
     return static_cast<int>(sensor.size()) - 1;
 }
 
-int ScenarioPlayer::GetNumberOfObjectSensors()
+int ScenarioPlayer::GetNumberOfObjectSensors() const
 {
     return static_cast<int>(sensor.size());
 }
 
-int ScenarioPlayer::GetNumberOfSensorsAttachedToObject(Object* obj)
+int ScenarioPlayer::GetNumberOfSensorsAttachedToObject(Object* obj) const
 {
     if (obj == nullptr)
     {

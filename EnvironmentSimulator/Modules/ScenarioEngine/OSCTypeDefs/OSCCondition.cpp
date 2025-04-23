@@ -196,12 +196,12 @@ void OSCCondition::Log(bool trig, bool full)
     }
 }
 
-bool OSCCondition::GetValue()
+bool OSCCondition::GetValue() const
 {
     return cond_value_;
 }
 
-bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge)
+bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge) const
 {
     if (edge == OSCCondition::ConditionEdge::NONE)
     {
@@ -236,7 +236,7 @@ bool OSCCondition::CheckEdge(bool new_value, bool old_value, OSCCondition::Condi
     return false;
 }
 
-std::string OSCCondition::Edge2Str()
+std::string OSCCondition::Edge2Str() const
 {
     if (edge_ == OSCCondition::ConditionEdge::FALLING)
     {

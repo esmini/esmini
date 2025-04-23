@@ -223,7 +223,7 @@ namespace scenarioengine
         }
 
         OSCParameterDeclarations parameter_declarations_;
-        void                     Print();
+        void                     Print() const;
 
         std::vector<StoryBoardElement*>* GetChildren() override
         {

@@ -81,11 +81,11 @@ private:
         void updateData(Object* object, double time);
 
         // Getters
-        float       getTimeMax();
-        float       getMaxAcc();
-        float       getMaxDecel();
-        float       getMaxSpeed();
-        std::string getName();
+        float       getTimeMax() const;
+        float       getMaxAcc() const;
+        float       getMaxDecel() const;
+        float       getMaxSpeed() const;
+        std::string getName() const;
 
         // Data
         std::unordered_map<PlotCategories, std::vector<float>> plotData{};

@@ -362,7 +362,7 @@ namespace scenarioengine
             return objectState_[static_cast<unsigned int>(idx)].get();
         }
         ObjectState *getObjectStatePtrById(int id);
-        int          getObjectStateById(int id, ObjectState &objectState);
+        int          getObjectStateById(int id, ObjectState &objectState) const;
         void         WriteStatesToFile();
         int          RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
 

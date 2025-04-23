@@ -149,7 +149,7 @@ void Tree::build(BBoxVec &bboxes)
     __build(bboxes.begin(), bboxes.end());
 }
 
-bool Tree::empty()
+bool Tree::empty() const
 {
     return (!bbox && childeren.empty());
 }

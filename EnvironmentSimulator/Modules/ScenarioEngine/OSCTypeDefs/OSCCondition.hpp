@@ -104,9 +104,9 @@ namespace scenarioengine
         virtual bool        CheckCondition(double sim_time) = 0;
         void                Log(bool trig, bool full = false);
         virtual std::string GetAdditionalLogInfo() = 0;
-        bool                GetValue();
-        bool                CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge);
-        std::string         Edge2Str();
+        bool                GetValue() const;
+        bool                CheckEdge(bool new_value, bool old_value, OSCCondition::ConditionEdge edge) const;
+        std::string         Edge2Str() const;
         virtual void        Reset();
     };
 

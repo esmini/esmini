@@ -1208,7 +1208,7 @@ void ScenarioEngine::SetupGhost(Object* object)
     }
 }
 // Reset events ongoing or finished by ghost
-void ScenarioEngine::ResetEvents()
+void ScenarioEngine::ResetEvents() const
 {
     for (size_t i = 0; i < storyBoard.story_.size(); i++)
     {

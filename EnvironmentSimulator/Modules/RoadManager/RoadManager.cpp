@@ -1352,7 +1352,7 @@ void Lane::Print() const
     }
 }
 
-bool Lane::IsCenter()
+bool Lane::IsCenter() const
 {
     if (GetId() == 0)
     {
@@ -1363,7 +1363,7 @@ bool Lane::IsCenter()
         return false;
     }
 }
-bool Lane::IsType(Lane::LaneType type)
+bool Lane::IsType(Lane::LaneType type) const
 {
     if (GetId() == 0)
     {
@@ -1373,7 +1373,7 @@ bool Lane::IsType(Lane::LaneType type)
     return bool(type_ & type);
 }
 
-bool Lane::IsDriving()
+bool Lane::IsDriving() const
 {
     if (GetId() == 0)
     {
@@ -2194,7 +2194,7 @@ RoadLink::RoadLink(LinkType type, pugi::xml_node node)
     }
 }
 
-bool RoadLink::operator==(RoadLink& rhs)
+bool RoadLink::operator==(RoadLink& rhs) const
 {
     return (rhs.type_ == type_ && rhs.element_type_ == element_type_ && rhs.element_id_ == element_id_ &&
             rhs.contact_point_type_ == contact_point_type_);
@@ -2997,7 +2997,7 @@ bool Road::GetZAndPitchByS(double s, double* z, double* z_prim, double* z_primPr
     return false;
 }
 
-bool Road::UpdateZAndRollBySAndT(double s, double t, double* z, double* roadSuperElevationPrim, double* roll, idx_t* index)
+bool Road::UpdateZAndRollBySAndT(double s, double t, double* z, double* roadSuperElevationPrim, double* roll, idx_t* index) const
 {
     if (GetNumberOfSuperElevations() > 0)
     {
@@ -5734,7 +5734,7 @@ int OpenDrive::CheckConnectedRoad(Road* road, RoadLink* link, ContactPointType e
     return 0;
 }
 
-int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connection)
+int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connection) const
 {
     if (junction == 0)
     {
@@ -6146,7 +6146,7 @@ void OpenDrive::GlobalFriction::Set(double friction)
     }
 }
 
-double OpenDrive::GlobalFriction::Get()
+double OpenDrive::GlobalFriction::Get() const
 {
     return friction_;
 }
@@ -13882,22 +13882,22 @@ void RMTrajectory::Freeze(FollowingMode following_mode, double current_speed, Po
     }
 }
 
-double RMTrajectory::GetTime()
+double RMTrajectory::GetTime() const
 {
     return shape_ ? shape_->current_val_.time : 0.0;
 }
 
-double RMTrajectory::GetSpeed()
+double RMTrajectory::GetSpeed() const
 {
     return shape_ ? shape_->current_val_.speed : 0.0;
 }
 
-int RMTrajectory::GetPosMode()
+int RMTrajectory::GetPosMode() const
 {
     return shape_ ? shape_->current_val_.pos_mode : 0;
 }
 
-double RMTrajectory::GetS()
+double RMTrajectory::GetS() const
 {
     return shape_ ? shape_->current_val_.s : 0.0;
 }
@@ -13924,7 +13924,7 @@ double RMTrajectory::GetDuration()
     return shape_->GetDuration();
 }
 
-double RMTrajectory::GetHTrue()
+double RMTrajectory::GetHTrue() const
 {
     return shape_ ? shape_->current_val_.h_true : 0.0;
 }
@@ -13934,7 +13934,7 @@ bool RMTrajectory::IsHSetExplicitly()
     return shape_->IsHSetExplicitly();
 }
 
-double RMTrajectory::GetH()
+double RMTrajectory::GetH() const
 {
     return shape_ ? shape_->current_val_.h : 0.0;
 }

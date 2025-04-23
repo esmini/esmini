@@ -74,7 +74,7 @@ namespace scenarioengine
 
         void ReplaceObjectInTrigger(Trigger *trigger, Object *obj1, Object *obj2, double timeOffset, Event *event = 0);
         void SetupGhost(Object *object);
-        void ResetEvents();
+        void ResetEvents() const;
         int  DetectCollisions();
         void ParseGlobalDeclarations();
         void EraseCleanParams();

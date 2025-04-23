@@ -414,7 +414,7 @@ void ControllerNaturalDriver::ReportKeyEvent(int key, bool down)
     (void)down;
 }
 
-void ControllerNaturalDriver::GetVehicleOfInterestType(int lane_id, VoIType& lead, VoIType& follow)
+void ControllerNaturalDriver::GetVehicleOfInterestType(int lane_id, VoIType& lead, VoIType& follow) const
 {
     if (lane_id == lane_ids_available_[0])
     {

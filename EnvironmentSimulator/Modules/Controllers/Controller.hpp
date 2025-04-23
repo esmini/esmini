@@ -120,12 +120,12 @@ namespace scenarioengine
         // Base class Step function should be called from derived classes
         virtual void Step(double timeStep);
 
-        bool Active()
+        bool Active() const
         {
             return (active_domains_ != static_cast<unsigned int>(ControlDomains::DOMAIN_NONE));
         };
 
-        std::string GetName()
+        std::string GetName() const
         {
             return name_;
         }
@@ -135,17 +135,17 @@ namespace scenarioengine
             name_ = name;
         }
 
-        unsigned int GetOperatingDomains()
+        unsigned int GetOperatingDomains() const
         {
             return operating_domains_;
         }
 
-        unsigned int GetActiveDomains()
+        unsigned int GetActiveDomains() const
         {
             return active_domains_;
         }
 
-        ControlOperationMode GetMode()
+        ControlOperationMode GetMode() const
         {
             return mode_;
         }
@@ -155,11 +155,11 @@ namespace scenarioengine
             return object_;
         }
 
-        bool    IsActiveOnDomainsOnly(unsigned int domainMask);
-        bool    IsActiveOnDomains(unsigned int domainMask);
-        bool    IsNotActiveOnDomains(unsigned int domainMask);
-        bool    IsActiveOnAnyOfDomains(unsigned int domainMask);
-        bool    IsActive();
+        bool    IsActiveOnDomainsOnly(unsigned int domainMask) const;
+        bool    IsActiveOnDomains(unsigned int domainMask) const;
+        bool    IsNotActiveOnDomains(unsigned int domainMask) const;
+        bool    IsActiveOnAnyOfDomains(unsigned int domainMask) const;
+        bool    IsActive() const;
         Object* GetLinkedObject()
         {
             return object_;
