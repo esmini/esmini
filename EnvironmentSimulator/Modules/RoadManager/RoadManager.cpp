@@ -10363,13 +10363,22 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
         diff.dLaneId = laneIdB - adjustedLaneIdA;
         if (SIGN(laneIdB) != SIGN(adjustedLaneIdA))
         {
-            // lanes are on opposite side of reference lane
+            // current and target lanes are on opposite side of reference lane
             // reduce delta by one to disregard the reference lane
             diff.dLaneId  = (abs(diff.dLaneId) - 1) * SIGN(diff.dLaneId);
             diff.dOppLane = true;
         }
 
-        diff.dt = tB - (abs(GetT()) * SIGN(adjustedLaneIdA));
+        if (SIGN(adjustedLaneIdA) == SIGN(GetLaneId()))
+        {
+            // roads at current and target location are oriented the same way wrt driving direction
+            diff.dt = tB - GetT();
+        }
+        else
+        {
+            // road at target location is opposite direction, switch sign of t for the relative distance
+            diff.dt = tB + GetT();
+        }
         diff.ds = dist;
 
         std::string roadIds;
