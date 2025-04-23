@@ -2084,18 +2084,18 @@ void LatDistanceAction::Step(double simTime, double)
             double distance_error;
             GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
             
-            // TODO: Cap acceleration
+            // Cap acceleration if given
             double acc = LARGE_NUMBER;
             if (LARGE_NUMBER != dynamics_.max_acceleration_)
             {
                 acc = abs(dynamics_.max_acceleration_);
             }
 
-            double lat_stop_dist = 0.0;
-            if (LARGE_NUMBER != dynamics_.max_deceleration_)
+            // Cap deceleration if given
+            if (LARGE_NUMBER != dynamics_.max_deceleration_ && abs(distance_error) <= object_->pos_.GetLatStoppingDistance(dynamics_.max_deceleration_))
             {
-                acc =  -abs(dynamics_.max_deceleration_);
-                object_->pos_.GetLatStoppingDistance(dynamics_.max_deceleration_);
+                // We are close to the target, so we need to stop
+                acc = -abs(dynamics_.max_deceleration_);
             }
 
             // Cap speed if needed
@@ -2106,7 +2106,8 @@ void LatDistanceAction::Step(double simTime, double)
             }
             else
             {
-                lat_vel_ = SIGN(distance_error) * std::min(abs(object_->GetSpeed()), abs(lat_vel_ + acc * dt));
+                double speed_after_acc = abs(lat_vel_) + acc * dt;
+                lat_vel_ = SIGN(distance_error) * std::min(abs(object_->GetSpeed()), speed_after_acc);
             }
 
             // Don't overshoot
