@@ -2001,9 +2001,13 @@ void LatDistanceAction::GetDesiredRoadPos(const SE_Vector lat_axis, const double
 void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanager::Position& pos2, double& distance_error)
 {
     // Find out current distance
+    if (roadmanager::CoordinateSystem::CS_ROAD != cs_)
+    {
+        LOG_WARN("LatDistanceAction: Unsupported coordinate system");
+        return;
+    }
+
     double measured_distance;
-    // roadmanager::PositionDiff pos_diff;
-    // pos2.Delta(&pos1, pos_diff);
     pos2.Distance(&pos1, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, measured_distance);
     distance_error = 0.0;
     if (!freespace_)
@@ -2015,7 +2019,7 @@ void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanage
     {
         double ego_width = object_->boundingbox_.dimensions_.width_;
         double target_width = target_object_->boundingbox_.dimensions_.width_;
-        distance_error = distance_ + measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0; // Taking into account the width of both vehicles
+        distance_error = distance_ - measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0; // Taking into account the width of both vehicles
     }
 }
 
@@ -2076,23 +2080,59 @@ void LatDistanceAction::Step(double simTime, double)
         break;
         case (MoveState::MOVE_DYNAMIC):
         {
+            // Find desired position
             double distance_error;
             GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
             
-            SE_Vector lat_axis = {-sin(object_->pos_.GetH()), cos(object_->pos_.GetH())};
-            roadmanager::Position internal_pos;
-            GetDesiredRoadPos(lat_axis, distance_error, internal_pos);
-            std::cout << "Distance error " << distance_error << std::endl;
-            double lat_vel = SIGN(distance_error) * std::min({dynamics_.max_speed_, object_->GetSpeed()});
-            if (std::abs(lat_vel * dt) > std::abs(distance_error))
+            // TODO: Cap acceleration
+            double acc = LARGE_NUMBER;
+            if (LARGE_NUMBER != dynamics_.max_acceleration_)
             {
-                // Don't overshoot
-                lat_vel = SIGN(distance_error) * std::abs(distance_error) / dt; // Don't overshoot
+                acc = abs(dynamics_.max_acceleration_);
             }
-            double d_offset = lat_vel * dt;
+
+            double lat_stop_dist = 0.0;
+            if (LARGE_NUMBER != dynamics_.max_deceleration_)
+            {
+                acc =  -abs(dynamics_.max_deceleration_);
+                object_->pos_.GetLatStoppingDistance(dynamics_.max_deceleration_);
+            }
+
+            // Cap speed if needed
+            if (dynamics_.max_speed_ != LARGE_NUMBER)
+            {
+                double speed_after_acc = abs(lat_vel_) + acc * dt;
+                lat_vel_ = SIGN(distance_error) * std::min({dynamics_.max_speed_, object_->GetSpeed(), speed_after_acc});
+            }
+            else
+            {
+                lat_vel_ = SIGN(distance_error) * std::min(abs(object_->GetSpeed()), abs(lat_vel_ + acc * dt));
+            }
+
+            // Don't overshoot
+            bool destination_reached = false;
+            if (abs(lat_vel_ * dt) > abs(distance_error))
+            {
+                lat_vel_ = SIGN(distance_error) * abs(distance_error) / dt;
+                destination_reached = true;
+                
+                if (!continuous_)
+                {
+                    // We are done, quit action
+                    move_state_ = MoveState::INIT;
+                    OSCAction::End();
+                }
+            }
+
+            // Apply the position
+            double d_offset = lat_vel_ * dt;
             object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset() + d_offset);
             // object_->pos_.SetHeading(std::atan2(object_->pos_.GetY(), object_->pos_.GetX()));
             object_->SetSpeed(object_->GetSpeed());
+            if (destination_reached)
+            {
+                lat_vel_ = 0.0;
+            }
         }
     }
 }
