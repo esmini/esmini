@@ -2088,37 +2088,35 @@ void LatDistanceAction::Step(double simTime, double)
             GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
             // Cap acceleration if given
             double acc = LARGE_NUMBER;
+            double dec = LARGE_NUMBER;
             if (LARGE_NUMBER != dynamics_.max_acceleration_)
             {
                 acc = abs(dynamics_.max_acceleration_);
             }
+            if (LARGE_NUMBER != dynamics_.max_deceleration_)
+            {
+                dec = abs(dynamics_.max_deceleration_);
+            }
             acc *= -SIGN(distance_error);
-            // Cap deceleration if given
-            // if (LARGE_NUMBER != dynamics_.max_deceleration_)
-            // {
-            //     double lat_stopping_distance = lat_vel_ * lat_vel_ / (2.0 * abs(dynamics_.max_deceleration_));
-            //     if (abs(distance_error) <= lat_stopping_distance)
-            //     {
-            //         // We are close to the target, so we need to stop
-            //         double required_dec = abs(distance_error) / (dt * dt);
-            //         acc = -std::min(required_dec, abs(dynamics_.max_deceleration_));
-            //     }
-            // }
 
-            // Cap speed if needed
-            // if (LARGE_NUMBER != dynamics_.max_speed_)
-            // {
-            double speed_after_acc = lat_vel_ + acc * dt;
+            double speed_after_acc;
+            if (deceleration_phase)
+            {
+                speed_after_acc = lat_vel_ + SIGN(acc) * dec * dt;
+            }
+            else
+            {
+                speed_after_acc = lat_vel_ + acc * dt;
+            }
+
             lat_vel_ = ABS_LIMIT(speed_after_acc, std::min(dynamics_.max_speed_, object_->GetSpeed()));
 
-            // Apply the position
             double d_offset = lat_vel_ * dt;
 
             double new_error = distance_error + d_offset; 
             if (SIGN(new_error) != SIGN(distance_error))
             {
-                d_offset = -distance_error;
-                lat_vel_ = 0.0;
+                deceleration_phase = !deceleration_phase;
             }
             std::cout << "New error: " << new_error << std::endl;
             std::cout << "Distance error: " << distance_error << std::endl;
@@ -2130,11 +2128,6 @@ void LatDistanceAction::Step(double simTime, double)
             object_->pos_.MoveAlongS(object_->GetSpeed() * dt);
             object_->SetSpeed(object_->GetSpeed());
             object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
-            if (destination_reached_)
-            {
-                lat_vel_ = 0.0;
-                move_state_ = MoveState::INIT;
-            }
         }
     }
 }
