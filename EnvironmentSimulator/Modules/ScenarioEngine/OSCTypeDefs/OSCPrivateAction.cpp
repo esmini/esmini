@@ -18,7 +18,7 @@
 
 #define MAX_DECELERATION                -8.0
 #define LONGITUDINAL_DISTANCE_THRESHOLD 0.1
-#define LATERAL_DISTANCE_THRESHOLD 0.1
+#define LATERAL_DISTANCE_THRESHOLD 0.01
 
 using namespace scenarioengine;
 
@@ -2007,19 +2007,21 @@ void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanage
         return;
     }
 
-    double measured_distance;
-    pos2.Distance(&pos1, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, measured_distance);
+    // double measured_distance;
+    double measured_distance = pos1.GetT() - pos2.GetT();
+    // pos1.Distance(&pos2, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, measured_distance);
+    std::cout << "Measured distance: " << measured_distance << std::endl;
     distance_error = 0.0;
     if (!freespace_)
     {
         // How much we need to move to reach the target distance
-        distance_error = distance_ - measured_distance;
+        distance_error = measured_distance - distance_;
     }
     else
     {
         double ego_width = object_->boundingbox_.dimensions_.width_;
         double target_width = target_object_->boundingbox_.dimensions_.width_;
-        distance_error = distance_ - measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0; // Taking into account the width of both vehicles
+        distance_error = measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0 - distance_; // Taking into account the width of both vehicles
     }
 }
 
@@ -2045,6 +2047,7 @@ void LatDistanceAction::Step(double simTime, double)
             else
             {
                 move_state_ = MoveState::MOVE_DYNAMIC;
+                destination_reached_ = false;
             }
         }
         break;
@@ -2083,56 +2086,54 @@ void LatDistanceAction::Step(double simTime, double)
             // Find desired position
             double distance_error;
             GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
-            
             // Cap acceleration if given
             double acc = LARGE_NUMBER;
             if (LARGE_NUMBER != dynamics_.max_acceleration_)
             {
                 acc = abs(dynamics_.max_acceleration_);
             }
-
+            acc *= -SIGN(distance_error);
             // Cap deceleration if given
-            if (LARGE_NUMBER != dynamics_.max_deceleration_ && abs(distance_error) <= object_->pos_.GetLatStoppingDistance(dynamics_.max_deceleration_))
-            {
-                // We are close to the target, so we need to stop
-                acc = -abs(dynamics_.max_deceleration_);
-            }
+            // if (LARGE_NUMBER != dynamics_.max_deceleration_)
+            // {
+            //     double lat_stopping_distance = lat_vel_ * lat_vel_ / (2.0 * abs(dynamics_.max_deceleration_));
+            //     if (abs(distance_error) <= lat_stopping_distance)
+            //     {
+            //         // We are close to the target, so we need to stop
+            //         double required_dec = abs(distance_error) / (dt * dt);
+            //         acc = -std::min(required_dec, abs(dynamics_.max_deceleration_));
+            //     }
+            // }
 
             // Cap speed if needed
-            if (dynamics_.max_speed_ != LARGE_NUMBER)
-            {
-                double speed_after_acc = abs(lat_vel_) + acc * dt;
-                lat_vel_ = SIGN(distance_error) * std::min({dynamics_.max_speed_, object_->GetSpeed(), speed_after_acc});
-            }
-            else
-            {
-                double speed_after_acc = abs(lat_vel_) + acc * dt;
-                lat_vel_ = SIGN(distance_error) * std::min(abs(object_->GetSpeed()), speed_after_acc);
-            }
-
-            // Don't overshoot
-            bool destination_reached = false;
-            if (abs(lat_vel_ * dt) > abs(distance_error))
-            {
-                lat_vel_ = SIGN(distance_error) * abs(distance_error) / dt;
-                destination_reached = true;
-                
-                if (!continuous_)
-                {
-                    // We are done, quit action
-                    move_state_ = MoveState::INIT;
-                    OSCAction::End();
-                }
-            }
+            // if (LARGE_NUMBER != dynamics_.max_speed_)
+            // {
+            double speed_after_acc = lat_vel_ + acc * dt;
+            lat_vel_ = ABS_LIMIT(speed_after_acc, std::min(dynamics_.max_speed_, object_->GetSpeed()));
 
             // Apply the position
             double d_offset = lat_vel_ * dt;
+
+            double new_error = distance_error + d_offset; 
+            if (SIGN(new_error) != SIGN(distance_error))
+            {
+                d_offset = -distance_error;
+                lat_vel_ = 0.0;
+            }
+            std::cout << "New error: " << new_error << std::endl;
+            std::cout << "Distance error: " << distance_error << std::endl;
+            std::cout << "Acceleration: " << acc << std::endl;
+            std::cout << "Lat vel: " << lat_vel_ << std::endl;
+            std::cout << "d_offset: " << d_offset << std::endl;
+            // double vel_long = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
             object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset() + d_offset);
-            // object_->pos_.SetHeading(std::atan2(object_->pos_.GetY(), object_->pos_.GetX()));
+            object_->pos_.MoveAlongS(object_->GetSpeed() * dt);
             object_->SetSpeed(object_->GetSpeed());
-            if (destination_reached)
+            object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+            if (destination_reached_)
             {
                 lat_vel_ = 0.0;
+                move_state_ = MoveState::INIT;
             }
         }
     }
