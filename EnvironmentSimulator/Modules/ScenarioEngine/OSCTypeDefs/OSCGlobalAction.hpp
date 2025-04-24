@@ -200,9 +200,10 @@ namespace scenarioengine
     class AddEntityAction : public OSCGlobalAction
     {
     public:
-        Object*                entity_;
-        roadmanager::Position* pos_;
-        Entities*              entities_;
+        Object*                      entity_;
+        std::shared_ptr<OSCPosition> pos_OSCPosition_;
+        roadmanager::Position*       pos_;
+        Entities*                    entities_;
 
         AddEntityAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::ADD_ENTITY, parent), entity_(nullptr), pos_(0), entities_(nullptr){};
 
@@ -214,9 +215,10 @@ namespace scenarioengine
 
         AddEntityAction(const AddEntityAction& action) : OSCGlobalAction(ActionType::ADD_ENTITY, action.parent_)
         {
-            entity_   = action.entity_;
-            entities_ = action.entities_;
-            pos_      = action.pos_;
+            entity_          = action.entity_;
+            pos_OSCPosition_ = action.pos_OSCPosition_;
+            entities_        = action.entities_;
+            pos_             = action.pos_;
         }
 
         OSCGlobalAction* Copy()

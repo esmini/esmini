@@ -4621,6 +4621,7 @@ namespace roadmanager
 
             Segment(const Segment &other)
             {
+                // cppcheck-suppress copyCtorPointerCopying
                 posStart_  = other.posStart_;
                 posEnd_    = other.posEnd_;
                 curvStart_ = other.curvStart_;

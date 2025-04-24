@@ -2292,9 +2292,9 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 if (eaChild.name() == std::string("AddEntityAction"))
                 {
                     AddEntityAction *addEntityAction = new AddEntityAction(entity, parent);
-                    addEntityAction->pos_            = parseOSCPosition(eaChild.child("Position"))->GetRMPos();
+                    addEntityAction->pos_OSCPosition_.reset(parseOSCPosition(eaChild.child("Position")));
+                    addEntityAction->pos_ = addEntityAction->pos_OSCPosition_->GetRMPos();
                     addEntityAction->SetEntities(entities_);
-
                     action = addEntityAction;
                 }
                 else if (eaChild.name() == std::string("DeleteEntityAction"))
