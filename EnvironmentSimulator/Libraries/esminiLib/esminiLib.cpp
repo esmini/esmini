@@ -570,14 +570,15 @@ extern "C"
         }
         else  // Viewer bit set, create a window for on and/or off-screen rendering
         {
-            static char winArg[64];
-            snprintf(winArg, sizeof(winArg), "--window %d %d %d %d", winDim.x, winDim.y, winDim.w, winDim.h);
-            AddArgument(winArg, true);
-
+            // headless option needs to be set before the window specification
             if (use_viewer & 2)  // off_screen
             {
                 AddArgument("--headless");
             }
+
+            static char winArg[64];
+            snprintf(winArg, sizeof(winArg), "--window %d %d %d %d", winDim.x, winDim.y, winDim.w, winDim.h);
+            AddArgument(winArg, true);
 
             if (use_viewer & 4)  // capture-to-file
             {
