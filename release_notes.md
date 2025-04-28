@@ -1,5 +1,30 @@
 ## esmini release notes
 
+### 2025-04-28 Version 2.46.1
+
+Improvements and fixes:
+- Fix dead-reckoning for udp ctrl state_h mode ([issue #672](https://github.com/esmini/esmini/issues/672))
+- Remove trajectory after end of action ([issue #682](https://github.com/esmini/esmini/issues/682))
+- Do not collide with ghosts ([issue #687](https://github.com/esmini/esmini/issues/687)) ([PR #688](https://github.com/esmini/esmini/pull/688))
+- Add API to get velocity and angular velocity and acceleration ([PR #689](https://github.com/esmini/esmini/pull/689))
+- Add support for roadmark wear by material alpha
+  - add userData fade attribute to OpenDRIVE lane marking (example in [fade_roadmarks.xodr](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xodr/fade_roadmarks.xodr))
+  - add corresponding alpha to roadmark in 3D model
+- Fix osg build scripts [compile_osg_apps.sh](https://github.com/esmini/esmini/blob/dev/scripts/compile_osg_apps.sh) and [generate_osg_libs.sh](https://github.com/esmini/esmini/blob/dev/scripts/generate_osg_libs.sh) config for VS 2022
+  - also fix broken link to osg 3rd party windows dependency pack
+- Fix mixed up print parameters ([issue #694](https://github.com/esmini/esmini/issues/694))
+- Improve OSI frequency option handling, any change valid from next step
+- Add info on OSI timestamps, see [User guide - OSI timestamps](https://esmini.github.io/#_osi_timestamps)
+- Fix lateral distance condition to be non sensitive to road driving direction
+  - previous implementation assumes staying in lanes according to driving direction
+  - new implementation allows for passing reference line, e.g. during an overtake.
+- Fix broken headless window in examples ([issue #699](https://github.com/esmini/esmini/issues/699))
+  - window needs to be specified after any headless option
+- Always update triggers for ghost acts ([PR #680](https://github.com/esmini/esmini/pull/680))
+  - update act trigger even if ghost not involved in events
+  - needed for non entity actions such as ParameterSetAction
+- Fix unnecessary OSI terminal printouts
+
 ### 2025-03-31 Version 2.46.0
 
 API changes:
