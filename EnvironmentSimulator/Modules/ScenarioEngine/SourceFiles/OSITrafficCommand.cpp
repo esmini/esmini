@@ -74,7 +74,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
             }
             else
             {
-                LOG_ERROR("OSITrafficCmd: Unrecognized shape type: {}", a->transition_.shape_);
+                LOG_WARN("OSITrafficCmd: Unrecognized shape type: {}", a->transition_.shape_);
                 ta->mutable_lane_change_action()->set_dynamics_shape(osi3::TrafficAction_DynamicsShape_DYNAMICS_SHAPE_UNSPECIFIED);
             }
 
@@ -136,7 +136,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
             }
             else
             {
-                LOG_ERROR("Unrecognized shape type: {}", a->transition_.shape_);
+                LOG_WARN("Unrecognized shape type: {}", a->transition_.shape_);
                 ta->mutable_speed_action()->set_dynamics_shape(osi3::TrafficAction_DynamicsShape_DYNAMICS_SHAPE_UNSPECIFIED);
             }
 
@@ -177,7 +177,7 @@ int ReportTrafficCommand(osi3::TrafficCommand *tc, OSCPrivateAction *action, dou
 
         default:
 
-            LOG_ERROR("OSITrafficCommand: Unsupported type {} of action {}", action->action_type_, action->GetName());
+            LOG_WARN("OSITrafficCommand: Unsupported type {} of action {}", action->action_type_, action->GetName());
     }
 
     return 0;

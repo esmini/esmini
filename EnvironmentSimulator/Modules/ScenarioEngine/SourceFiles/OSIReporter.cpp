@@ -493,14 +493,14 @@ void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &
             UpdateOSIMovingObject(obj.get());
             // All non-ghost objects are always updated. Ghosts only on request.
         }
-        else if (obj->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
-        {
-            // do nothing
-        }
-        else
-        {
-            LOG_WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object", obj->state_.info.obj_type);
-        }
+    }
+    else if (obj->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
+    {
+        // do nothing
+    }
+    else
+    {
+        LOG_WARN("Warning: Object type {} is not supported in OSIReporter, and hence no OSI update for this object", obj->state_.info.obj_type);
     }
 }
 
