@@ -3,11 +3,18 @@ repos:
     hooks:
       - id: clang-format
         name: ClangFormat
-        entry: clang-format -i #--style=file --assume-filename=.clang-format
+        entry: clang-format -i
         language: system
         types_or: [c, c++]
         exclude: ^externals/.*$
         files: ^EnvironmentSimulator/
+
+      - id: cmake-format
+        name: CMakeFormat
+        entry: cmake-format -i
+        language: system
+        files: \.(cmake|CMakeLists\.txt)$
+        exclude: ^externals/
 
       - id: cppcheck
         name: Cppcheck
@@ -18,59 +25,59 @@ repos:
           - --inline-suppr
           - -D__has_include(x)=1 # we let cppcheck know that __has_include exists, since cppcheck does not support it
           - --enable=all
-          #- --suppress=constVariable #1
           - --suppress=missingInclude #3
           - --suppress=variableScope #2
-          - --suppress=unusedStructMember #1 #we will keep it
-          #- --suppress=duplicateBranch #1
-          #- --suppress=duplInheritedMember #1
-          - --suppress=missingOverride #2 ?
+          - --suppress=missingOverride #2
           - --suppress=uninitMemberVar #2
           - --suppress=passedByValue #2
-          #- --suppress=funcArgNamesDifferent #1
-          - --suppress=functionStatic #2 ?
-          #- --suppress=redundantInitialization  #1
+          - --suppress=functionStatic #2
           - --suppress=oppositeInnerCondition #2
           - --suppress=nullPointerRedundantCheck #2
           - --suppress=deallocret #2
           - --suppress=knownConditionTrueFalse #2
-          #- --suppress=nullPointer #1
-          - --suppress=unmatchedSuppression #2 ?
+          - --suppress=unmatchedSuppression #2
           - --suppress=constParameter #2
           - --suppress=useInitializationList #3
-          #- --suppress=noValidConfiguration #1
           - --suppress=preprocessorErrorDirective #2 ?
-          - --suppress=deallocuse #2 ?
+          - --suppress=deallocuse #2
           - --suppress=stlcstrParam #2
-          #- --suppress=redundantCondition #1
           - --suppress=multiCondition #3
           - --suppress=duplicateBreak #2
           - --suppress=uninitvar #2
           - --suppress=unusedLabel #3
           - --suppress=uninitStructMember #2
-          #- --suppress=uselessAssignmentPtrArg #1 ?
           - --suppress=useStlAlgorithm #3
+          - --suppress=shadowFunction #2
+          - --suppress=missingIncludeSystem #3
+          - --suppress=oppositeExpression #3
+          - --suppress=invalidPrintfArgType_sint #2
+          - --suppress=unusedVariable #2
+          - --suppress=operatorEqVarError #2
+          - --suppress=hicpp-signed-bitwise #2
+          - --suppress=noExplicitConstructor #2
+          - --suppress=unusedStructMember #1 #we will keep it
+          - --suppress=unusedFunction #1 #we will keep it
+          #- --suppress=constVariable #1
+          #- --suppress=duplicateBranch #1
+          #- --suppress=duplInheritedMember #1
+          #- --suppress=funcArgNamesDifferent #1
+          #- --suppress=redundantInitialization  #1
+          #- --suppress=nullPointer #1
+          #- --suppress=noValidConfiguration #1
+          #- --suppress=redundantCondition #1
+          #- --suppress=uselessAssignmentPtrArg #1
           #- --suppress=memleak #1
           #- --suppress=postfixOperator #1
-          - --suppress=shadowFunction #2
           #- --suppress=funcArgOrderDifferent #1
           #- --suppress=arrayIndexThenCheck #1
           #- --suppress=unsignedLessThanZero #1
-          - --suppress=missingIncludeSystem #3
-          - --suppress=oppositeExpression #3 ?
-          - --suppress=invalidPrintfArgType_sint #2
           #- --suppress=doubleFree #1
-          - --suppress=unusedVariable #2
           #- --suppress=syntaxError #1
           #- --suppress=redundantAssignment #1
           #- --suppress=unknownMacro #1
           #- --suppress=duplicateExpression #1
-          - --suppress=operatorEqVarError #2 ?
           #- --suppress=selfAssignment #1
-          - --suppress=unusedFunction #1 #we will keep it
           #- --suppress=unreadVariable #1
-          - --suppress=hicpp-signed-bitwise #2
-          - --suppress=noExplicitConstructor #2
           #- --suppress=noOperatorEq #1 ?
           #- --suppress=functionConst #1
           #- --suppress=missingMemberCopy #1
