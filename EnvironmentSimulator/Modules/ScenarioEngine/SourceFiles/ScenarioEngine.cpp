@@ -148,6 +148,24 @@ void ScenarioEngine::UpdateGhostMode()
 
 int ScenarioEngine::step(double deltaSimTime)
 {
+    // This timestep calculation is due to the Ghost vehicle
+    // If both times are equal, it is a normal scenario, or no Ghost teleportation is ongoing -> Step as usual
+    // Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
+    // Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from
+    // there
+
+    simulationTime_ += deltaSimTime;
+    if (simulationTime_ < 0.0 && simulationTime_ > -SMALL_NUMBER)
+    {
+        // Avoid -0.000
+        simulationTime_ = 0.0;
+    }
+
+    if (simulationTime_ > trueTime_)
+    {
+        trueTime_ = simulationTime_;
+    }
+
     UpdateGhostMode();
 
     if (frame_nr_ == 0)
@@ -283,24 +301,6 @@ int ScenarioEngine::step(double deltaSimTime)
                 action->Step(simulationTime_, deltaSimTime);
             }
         }
-    }
-
-    // This timestep calculation is due to the Ghost vehicle
-    // If both times are equal, it is a normal scenario, or no Ghost teleportation is ongoing -> Step as usual
-    // Else if we can take a step, and still not reach the point of teleportation -> Step only simulationTime (That the Ghost runs on)
-    // Else, the only thing left is that the next step will take us above the point of teleportation -> Step to that point instead and go on from
-    // there
-
-    simulationTime_ += deltaSimTime;
-    if (simulationTime_ < 0.0 && simulationTime_ > -SMALL_NUMBER)
-    {
-        // Avoid -0.000
-        simulationTime_ = 0.0;
-    }
-
-    if (simulationTime_ > trueTime_)
-    {
-        trueTime_ = simulationTime_;
     }
 
     for (size_t i = 0; i < entities_.object_.size(); i++)
