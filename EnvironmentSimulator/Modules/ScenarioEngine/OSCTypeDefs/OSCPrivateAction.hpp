@@ -608,9 +608,8 @@ namespace scenarioengine
     private:
         MoveState move_state_;
         double lat_vel_ = 0.0;
-        double backup_lat_vel_ = 0.0;
-        bool lat_vel_stored_ = false;
         bool deceleration_phase = false;
+        double move_sign = 1.0;
         bool destination_reached_ = false;
 
         // PI-stuff

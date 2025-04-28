@@ -2086,48 +2086,69 @@ void LatDistanceAction::Step(double simTime, double)
             // Find desired position
             double distance_error;
             GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
+
             // Cap acceleration if given
             double acc = LARGE_NUMBER;
-            double dec = LARGE_NUMBER;
             if (LARGE_NUMBER != dynamics_.max_acceleration_)
             {
                 acc = abs(dynamics_.max_acceleration_);
             }
-            if (LARGE_NUMBER != dynamics_.max_deceleration_)
-            {
-                dec = abs(dynamics_.max_deceleration_);
-            }
+
+            // Maybe we can normalize the acceleration so it diminishes as we get closer to the target
+            // But we only flip sign on acc if we are on the other side of the target, so that needs to be fixed
             acc *= -SIGN(distance_error);
 
-            double speed_after_acc;
-            if (deceleration_phase)
+            bool start_braking = (lat_vel_ * lat_vel_ / (2.0 * abs(dynamics_.max_acceleration_))) > abs(distance_error);
+            if (start_braking && !deceleration_phase)
             {
-                speed_after_acc = lat_vel_ + SIGN(acc) * dec * dt;
+                // We are going to brake, so we need to set the acceleration to the negative value
+                move_sign = -SIGN(acc);
+                deceleration_phase = true;
             }
-            else
+            else if (!deceleration_phase)
             {
-                speed_after_acc = lat_vel_ + acc * dt;
+                // We are not going to brake, so we need to set the acceleration to the positive value
+                move_sign = SIGN(acc);
+            }
+
+            acc = move_sign * abs(acc);
+
+            double norm_error = 1.0;
+            if (abs(distance_error) < 0.01 && !deceleration_phase)
+            {
+                // Reached requested distance, quit action
+                norm_error = (1.0 - 1.0 / (1.0 + abs(distance_error))) / 10.0;
+            }
+
+            double speed_after_acc = lat_vel_ + acc * norm_error * dt;
+
+            if (SIGN(speed_after_acc) != SIGN(lat_vel_))
+            {
+                // Predict if next speed will make us move in different direction, if so we have finished decelerating
+                move_sign = -SIGN(acc);
+                deceleration_phase = false;
             }
 
             lat_vel_ = ABS_LIMIT(speed_after_acc, std::min(dynamics_.max_speed_, object_->GetSpeed()));
 
             double d_offset = lat_vel_ * dt;
 
-            double new_error = distance_error + d_offset; 
-            if (SIGN(new_error) != SIGN(distance_error))
-            {
-                deceleration_phase = !deceleration_phase;
-            }
-            std::cout << "New error: " << new_error << std::endl;
+            std::cout << "Time: " << sim_time_ << std::endl;
+            std::cout << "spped_after_acc: " << speed_after_acc << std::endl;
+            std::cout << "dynamics_.max_speed_: " << dynamics_.max_speed_ << std::endl;
+            std::cout << "object_->GetSpeed(): " << object_->GetSpeed() << std::endl;
+            std::cout << "Lat vel: " << lat_vel_ << std::endl;
             std::cout << "Distance error: " << distance_error << std::endl;
             std::cout << "Acceleration: " << acc << std::endl;
-            std::cout << "Lat vel: " << lat_vel_ << std::endl;
             std::cout << "d_offset: " << d_offset << std::endl;
+            std::cout << "Deceleration phase: " << deceleration_phase << std::endl;
+            std::cout << std::endl;
             // double vel_long = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
             object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset() + d_offset);
             object_->pos_.MoveAlongS(object_->GetSpeed() * dt);
             object_->SetSpeed(object_->GetSpeed());
             object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+
         }
     }
 }
