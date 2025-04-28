@@ -3291,10 +3291,9 @@ namespace roadmanager
         }
         void CopyRoute(const Position &position);
 
-        RMTrajectory *GetTrajectory() const
-        {
-            return trajectory_;
-        }
+        RMTrajectory *GetTrajectory() const;
+
+        void DeleteTrajectory();
 
         void SetTrajectory(RMTrajectory *trajectory);
 
@@ -4576,7 +4575,7 @@ namespace roadmanager
     {
     public:
         ClothoidShape(roadmanager::Position pos, double curv, double curvPrime, double len, double tStart, double tEnd);
-
+        ~ClothoidShape() = default;
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
         int    Evaluate(double p, TrajectoryParamType ptype);
         int    EvaluateInternal(double s, TrajVertex &pos);
@@ -4621,14 +4620,29 @@ namespace roadmanager
 
             Segment(const Segment &other)
             {
-                // cppcheck-suppress copyCtorPointerCopying
-                posStart_  = other.posStart_;
+                if (other.posStart_ != nullptr)
+                {
+                    posStart_ = new Position(*other.posStart_);
+                }
+                else
+                {
+                    posStart_ = nullptr;
+                }
                 posEnd_    = other.posEnd_;
                 curvStart_ = other.curvStart_;
                 curvEnd_   = other.curvEnd_;
                 length_    = other.length_;
                 h_offset_  = other.h_offset_;
                 time_      = other.time_;
+            }
+            ~Segment()
+            {
+                if (posStart_ != nullptr)
+                {
+                    posStart_->DeleteTrajectory();
+                    delete posStart_;
+                    posStart_ = nullptr;
+                }
             }
             Segment &operator=(const Segment &) = delete;
 

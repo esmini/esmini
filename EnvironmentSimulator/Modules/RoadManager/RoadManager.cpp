@@ -10319,6 +10319,20 @@ void Position::CopyRoute(const Position& position)
     }
 }
 
+RMTrajectory* Position::GetTrajectory() const
+{
+    return trajectory_;
+}
+
+void Position::DeleteTrajectory()
+{
+    if (trajectory_)
+    {
+        delete trajectory_;
+        trajectory_ = nullptr;
+    }
+}
+
 void Position::SetTrajectory(RMTrajectory* trajectory)
 {
     trajectory_ = trajectory;
@@ -11946,18 +11960,7 @@ bool PolyLineShape::IsHSetExplicitly()
 
 ClothoidSplineShape::~ClothoidSplineShape()
 {
-    for (size_t i = 0; i < segments_.size(); i++)
-    {
-        if (segments_[i].posStart_ != nullptr)
-        {
-            if (segments_[i].posStart_->GetTrajectory() != nullptr)
-            {
-                segments_[i].posStart_->GetTrajectory();
-            }
-            delete segments_[i].posStart_;
-            segments_[i].posStart_ = nullptr;
-        }
-    }
+    segments_.clear();
 }
 
 void ClothoidSplineShape::AddSegment(Position* posStart, double curvStart, double curvEnd, double length, double h_offset, double time)
@@ -12639,7 +12642,6 @@ ClothoidShape::ClothoidShape(roadmanager::Position pos, double curv, double curv
     t_start_ = tStart;
     t_end_   = tEnd;
 }
-
 void ClothoidShape::CalculatePolyLine()
 {
     // Create polyline representation
