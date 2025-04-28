@@ -1151,6 +1151,7 @@ void ScenarioEngine::SetupGhost(Object* object)
                     {
                         // Replace actor
                         mg->actor_[l]->object_ = ghost;
+                        ghostIsActorInAct      = true;
                     }
                 }
                 for (size_t l = 0; l < act->maneuverGroup_[k]->maneuver_.size(); l++)
@@ -1187,7 +1188,6 @@ void ScenarioEngine::SetupGhost(Object* object)
                                         // Replace object
                                         pa->ReplaceObjectRefs(object, ghost);
                                         ghostIsActorInEvent = true;
-                                        ghostIsActorInAct   = true;
                                     }
                                 }
                             }
