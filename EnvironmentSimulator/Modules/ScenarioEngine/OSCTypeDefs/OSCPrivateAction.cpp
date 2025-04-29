@@ -2098,7 +2098,7 @@ void LatDistanceAction::Step(double simTime, double)
             // But we only flip sign on acc if we are on the other side of the target, so that needs to be fixed
             acc *= -SIGN(distance_error);
 
-            bool start_braking = (lat_vel_ * lat_vel_ / (2.0 * abs(dynamics_.max_acceleration_))) > abs(distance_error);
+            bool start_braking = ((lat_vel_ * lat_vel_) / (2.0 * abs(dynamics_.max_acceleration_))) > abs(distance_error);
             if (start_braking && !deceleration_phase)
             {
                 // We are going to brake, so we need to set the acceleration to the negative value
@@ -2114,22 +2114,37 @@ void LatDistanceAction::Step(double simTime, double)
             acc = move_sign * abs(acc);
 
             double norm_error = 1.0;
-            if (abs(distance_error) < 0.01 && !deceleration_phase)
+            if (abs(distance_error) < 0.1 && lat_vel_ < 0.1)
             {
                 // Reached requested distance, quit action
-                norm_error = (1.0 - 1.0 / (1.0 + abs(distance_error))) / 10.0;
+                norm_error = (1.0 - 1.0 / (1.0 + abs(distance_error))) / 5.0;
+                norm_error = CLAMP(norm_error, 0.0, 1.0); 
+
+                if (abs(distance_error) < 0.05)
+                {
+                    norm_error *= 0.2; // Become super gentle close to target
+                }
+            }
+            else
+            {
+                norm_error = 1.0;
             }
 
             double speed_after_acc = lat_vel_ + acc * norm_error * dt;
 
-            if (SIGN(speed_after_acc) != SIGN(lat_vel_))
+            if (SIGN(speed_after_acc) != SIGN(lat_vel_) && abs(lat_vel_) < 0.1)
             {
                 // Predict if next speed will make us move in different direction, if so we have finished decelerating
-                move_sign = -SIGN(acc);
+                move_sign = -move_sign;
                 deceleration_phase = false;
             }
 
             lat_vel_ = ABS_LIMIT(speed_after_acc, std::min(dynamics_.max_speed_, object_->GetSpeed()));
+
+            if (abs(lat_vel_) < 0.01)
+            {
+                lat_vel_ = 0.0;
+            }
 
             double d_offset = lat_vel_ * dt;
 
