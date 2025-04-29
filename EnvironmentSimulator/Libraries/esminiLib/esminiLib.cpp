@@ -1790,14 +1790,11 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_OSISetTimeStamp(unsigned long long int nanoseconds)
+    SE_DLL_API int SE_OSISetTimeStamp(unsigned long long nanoseconds)
     {
 #ifdef _USE_OSI
-        if (player != nullptr)
-        {
-            player->osiReporter->SetOSITimeStampExplicit(nanoseconds);
-            return 0;
-        }
+        SE_Env::Inst().SetOSITimeStamp(nanoseconds);
+        return 0;
 #else
         (void)nanoseconds;
 #endif  // _USE_OSI

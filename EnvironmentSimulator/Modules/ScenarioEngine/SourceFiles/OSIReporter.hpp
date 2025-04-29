@@ -219,16 +219,11 @@ public:
     @param nanoseconds Nano (1e-9) seconds since 1970-01-01 (epoch time)
     @return 0 if successful, -1 if not
     */
-    int  SetOSITimeStampExplicit(unsigned long long int nanoseconds);
-    bool IsTimeStampSetExplicit()
-    {
-        return nanosec_ != 0xffffffffffffffff;
-    }
+    int SetOSITimeStampExplicit(unsigned long long nanoseconds);
 
 private:
     UDPClient*                          udp_client_;
     ScenarioEngine*                     scenario_engine_;
-    unsigned long long int              nanosec_;
     std::ofstream                       osi_file;
     int*                                osi_update_counter_ = nullptr;
     int                                 counter_offset_     = 0;

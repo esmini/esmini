@@ -119,8 +119,6 @@ OSIReporter::OSIReporter(ScenarioEngine *scenarioengine)
 
     // Sensor Data
     obj_osi_internal.sd = new osi3::SensorData();
-
-    nanosec_ = 0xffffffffffffffff;  // indicate not set
 }
 
 OSIReporter::~OSIReporter()
@@ -174,6 +172,8 @@ OSIReporter::~OSIReporter()
     {
         osi_file.close();
     }
+
+    SE_Env::Inst().ResetOSITimeStamp();
 }
 
 SE_SOCKET OSIReporter::OpenSocket(std::string ipaddr)
@@ -509,11 +509,11 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
     obj_osi_internal.dynamic_gt->clear_moving_object();
     obj_osi_internal.dynamic_gt->clear_timestamp();
 
-    if (IsTimeStampSetExplicit())
+    if (SE_Env::Inst().IsOSITimeStampSet())
     {
         // use excplicit timestamp
-        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_seconds(static_cast<int64_t>((nanosec_ / 1000000000)));
-        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>((nanosec_ % 1000000000)));
+        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_seconds(static_cast<int64_t>((SE_Env::Inst().GetOSITimeStamp() / 1000000000)));
+        obj_osi_internal.dynamic_gt->mutable_timestamp()->set_nanos(static_cast<uint32_t>((SE_Env::Inst().GetOSITimeStamp() % 1000000000)));
     }
     else if (objectState.size() > 0)
     {
@@ -2959,12 +2959,12 @@ osi3::SensorView *OSIReporter::GetSensorView()
     return obj_osi_external.sv;
 }
 
-int OSIReporter::SetOSITimeStampExplicit(unsigned long long int nanoseconds)
+int OSIReporter::SetOSITimeStampExplicit(unsigned long long nanoseconds)
 {
-    nanosec_ = nanoseconds;
-
+    SE_Env::Inst().SetOSITimeStamp(nanoseconds);
     return 0;
 }
+
 void OSIReporter::SetStationaryModelReference(std::string model_reference)
 {
     // Check registered paths for model3d

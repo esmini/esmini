@@ -1577,7 +1577,7 @@ extern "C"
             @param nanoseconds Nano seconds (1e-9 s)
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_OSISetTimeStamp(unsigned long long int nanoseconds);
+    SE_DLL_API int SE_OSISetTimeStamp(unsigned long long nanoseconds);
 
     // End of OSI interface
 

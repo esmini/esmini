@@ -65,6 +65,7 @@ using idx_t = uint32_t;
 #define IS_IN_SPAN(x, y, z)           ((x) >= (y) && (x) <= (z))
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION     0.05
+#define OSI_TIMESTAMP_UNDEFINED       0xffffffffffffffff
 #define LOG_FILENAME                  "log.txt"
 #define ODRVIEWER_LOG_FILENAME        "odrviewer_log.txt"
 #define REPLAYER_LOG_FILENAME         "replayer_log.txt"
@@ -1214,12 +1215,29 @@ public:
           collisionDetection_(false),
           saveImagesToRAM_(false),
           ghost_mode_(GhostMode::NORMAL),
-          ghost_headstart_(0.0)
+          ghost_headstart_(0.0),
+          osiTimeStamp_(OSI_TIMESTAMP_UNDEFINED)
     {
     }
 
     static SE_Env& Inst();
 
+    void SetOSITimeStamp(unsigned long long timestamp)
+    {
+        osiTimeStamp_ = timestamp;
+    }
+    unsigned long long GetOSITimeStamp()
+    {
+        return osiTimeStamp_;
+    }
+    bool IsOSITimeStampSet()
+    {
+        return osiTimeStamp_ != OSI_TIMESTAMP_UNDEFINED;
+    }
+    void ResetOSITimeStamp()
+    {
+        osiTimeStamp_ = OSI_TIMESTAMP_UNDEFINED;
+    }
     void SetOSIMaxLongitudinalDistance(double maxLongitudinalDistance)
     {
         osiMaxLongitudinalDistance_ = maxLongitudinalDistance;
@@ -1364,6 +1382,7 @@ private:
     GhostMode                  ghost_mode_;
     double                     ghost_headstart_;
     SE_Options                 opt;
+    unsigned long long         osiTimeStamp_;
 };
 
 /**
