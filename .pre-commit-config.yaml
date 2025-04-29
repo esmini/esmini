@@ -11,10 +11,11 @@ repos:
 
       - id: cmake-format
         name: CMakeFormat
-        entry: cmake-format -i
-        language: system
-        files: \.(cmake|CMakeLists\.txt)$
-        exclude: ^externals/
+        entry: cmake-format
+        args: [--in-place]
+        language: python
+        types: [cmake]
+        files: ^EnvironmentSimulator/
 
       - id: black
         name: BlackFormat
@@ -104,12 +105,3 @@ repos:
           #- --suppress=functionConst #1
           #- --suppress=missingMemberCopy #1
           #- --suppress=noCopyConstructor #1
-
-
-      #- id: clang-tidy
-      #  name: ClangTidy
-      #  entry: clang-tidy -p=build
-      #  language: system
-      #  types_or: [c, c++]
-      #  args: ['--checks=*,-llvm-header-guard, -llvmlibc-implementation-in-namespace, -readability-identifier-*, -clang-diagnostic-unused-command-line-argument', '--warnings-as-errors=*']
-      #  exclude: ^externals/.*$
