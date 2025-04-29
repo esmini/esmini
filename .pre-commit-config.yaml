@@ -16,6 +16,25 @@ repos:
         files: \.(cmake|CMakeLists\.txt)$
         exclude: ^externals/
 
+      - id: black
+        name: BlackFormat
+        entry: black --config .black-format
+        language: system
+        types: [python]
+        files: \.py$
+        exclude: >
+          (?x)^(
+            build/
+            | externals/
+            | EnvironmentSimulator/
+            | Hello-World_coding-example/
+            | scripts/
+            | test/
+            | .venv/
+            | globals\.py
+          )
+
+
       - id: cppcheck
         name: Cppcheck
         entry: cppcheck
