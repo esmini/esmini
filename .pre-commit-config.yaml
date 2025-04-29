@@ -18,7 +18,7 @@ repos:
 
       - id: black
         name: BlackFormat
-        entry: black --config .black-format
+        entry: black --line-length 88 --target-version py36 --target-version py37 --target-version py38
         language: system
         types: [python]
         files: \.py$
@@ -30,14 +30,17 @@ repos:
             | Hello-World_coding-example/
             | scripts/
             | test/
-            | .venv/
+            | \.venv/
             | globals\.py
           )
-
 
       - id: cppcheck
         name: Cppcheck
         entry: cppcheck
+        language: system
+        types_or: [c, c++]
+        exclude: ^externals/.*$
+        files: ^EnvironmentSimulator/
         args:
           - --inconclusive
           - --error-exitcode=1
@@ -101,10 +104,7 @@ repos:
           #- --suppress=functionConst #1
           #- --suppress=missingMemberCopy #1
           #- --suppress=noCopyConstructor #1
-        language: system
-        types_or: [c, c++]
-        exclude: ^externals/.*$
-        files: ^EnvironmentSimulator/
+
 
       #- id: clang-tidy
       #  name: ClangTidy
