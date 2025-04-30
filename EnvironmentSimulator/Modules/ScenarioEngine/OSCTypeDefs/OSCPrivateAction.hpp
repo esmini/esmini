@@ -608,15 +608,7 @@ namespace scenarioengine
     private:
         MoveState move_state_;
         double lat_vel_ = 0.0;
-        bool deceleration_phase = false;
-        double move_sign = 1.0;
-        bool destination_reached_ = false;
-
-        // PI-stuff
-        double integral_error_ = 0.0;
-        const double kp = 1.0;  // Proportional gain (tune this!)
-        const double ki = 0.5;  // Integral gain (tune this too!)
-        const double max_integral = 1.0;  // Anti-windup
+        double acceleration_ = 0.0;
     };
 
     class LatLaneChangeAction : public OSCPrivateAction
