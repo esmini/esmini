@@ -46,7 +46,7 @@ jobs:
         run: pre-commit run cmake-format --all-files
 
       - name: Run black-format lint
-        run: python3 support/python/src/main.py run format --black_format_checker
+        run: pre-commit run black-format --all-files
 
       # TODO: OpenDrive generation currently has too many pylint issues
       #- name: Run pylint lint
