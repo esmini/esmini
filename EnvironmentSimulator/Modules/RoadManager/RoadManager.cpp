@@ -10153,7 +10153,7 @@ void Position::PrintInertialPos() const
 
 void Position::Print() const
 {
-    LOG_INFO("Pos({:.2f}, {:.2f}, {:.2f}) Rot({:.2f}, {:.2f}, {:.2f}) roadId {} laneId {} offset {:.2f} t {:.2f}",
+    LOG_INFO("Pos({:.2f}, {:.2f}, {:.2f}) Rot({:.2f}, {:.2f}, {:.2f}) roadId {} laneId {} s {:.2f} offset {:.2f} t {:.2f}",
              GetX(),
              GetY(),
              GetZ(),
@@ -10162,6 +10162,7 @@ void Position::Print() const
              GetR(),
              GetTrackId(),
              GetLaneId(),
+             GetS(),
              GetOffset(),
              GetT());
 }

@@ -196,8 +196,8 @@ class TestSuite(unittest.TestCase):
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*acc-test.xosc', log)  is not None)
-        self.assertTrue(re.search('.*Ego New position:.*$\\n^.*Pos\\(20.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
-        self.assertTrue(re.search('.*Target New position:.*$\\n^.*Pos\\(100.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
+        self.assertTrue(re.search('.*Ego New position:.*$\\n^.*Pos\\(20.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 s 20.00 offset 0.00 t -1.53', log, re.MULTILINE))
+        self.assertTrue(re.search('.*Target New position:.*$\\n^.*Pos\\(100.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 s 100.00 offset 0.00 t -1.53', log, re.MULTILINE))
 
         # Check some scenario events
         self.assertTrue(re.search('^.5.010.* LaneChange1Condition: true, delay: 0.00, 5.0100 > 5.0000, edge: rising', log, re.MULTILINE))
@@ -231,16 +231,16 @@ class TestSuite(unittest.TestCase):
 
         # Check entities are placed where they should be
         self.assertTrue(re.search('Loading .*highway_driver.xosc', log)  is not None)
-        self.assertTrue(re.search('.*Ego New position:.*$\\n^.*Pos\\(8.38, 99.96, -0.14\\) Rot\\(1.57, 0.00, 0.00\\) roadId 0 laneId -3 offset 0.00 t -8.00', log, re.MULTILINE))
-        self.assertTrue(re.search('.*Target1 New position:.*$\\n^.*Pos\\(8.72, 159.94, -0.27\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -3 offset 0.00 t -8.00', log, re.MULTILINE))
-        self.assertTrue(re.search('.*Target2 New position:.*$\\n^.*Pos\\(5.45, 199.96, -0.35\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -2 offset 0.00 t -4.42', log, re.MULTILINE))
-        self.assertTrue(re.search('.*Target3 New position:.*$\\n^.*Pos\\(12.42, 159.92, -0.27\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -4 offset 0.00 t -11.70', log, re.MULTILINE))
-        self.assertTrue(re.search('.*Target4 New position:.*$\\n^.*Pos\\(9.21, 219.92, -0.38\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -3 offset 0.00 t -8.00', log, re.MULTILINE))
-        self.assertTrue(re.search('.*Target5 New position:.*$\\n^.*Pos\\(13.35, 259.85, -0.45\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -4 offset 0.00 t -11.70', log, re.MULTILINE))
-        self.assertTrue(re.search('.*Target6 New position:.*$\\n^.*Pos\\(9.91, 279.88, -0.49\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -3 offset 0.00 t -8.00', log, re.MULTILINE))
-        self.assertTrue(re.search('.*Target7 New position:.*$\\n^.*Pos\\(29.67, 698.65, -0.95\\) Rot\\(1.46, 0.00, 0.00\\) roadId 0 laneId -2 offset 0.00 t -4.42', log, re.MULTILINE))
-        self.assertTrue(re.search('.*Target8 New position:.*$\\n^.*Pos\\(33.23, 698.25, -0.95\\) Rot\\(1.46, 0.00, 0.00\\) roadId 0 laneId -3 offset 0.00 t -8.00', log, re.MULTILINE))
-        self.assertTrue(re.search('.*Target9 New position:.*$\\n^.*Pos\\(36.90, 697.84, -0.95\\) Rot\\(1.46, 0.00, 0.00\\) roadId 0 laneId -4 offset 0.00 t -11.70', log, re.MULTILINE))
+        self.assertTrue(re.search('.*Ego New position:.*$\\n^.*Pos\\(8.38, 99.96, -0.14\\) Rot\\(1.57, 0.00, 0.00\\) roadId 0 laneId -3 s 100.00 offset 0.00 t -8.00', log, re.MULTILINE))
+        self.assertTrue(re.search('.*Target1 New position:.*$\\n^.*Pos\\(8.72, 159.94, -0.27\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -3 s 160.00 offset 0.00 t -8.00', log, re.MULTILINE))
+        self.assertTrue(re.search('.*Target2 New position:.*$\\n^.*Pos\\(5.45, 199.96, -0.35\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -2 s 200.00 offset 0.00 t -4.42', log, re.MULTILINE))
+        self.assertTrue(re.search('.*Target3 New position:.*$\\n^.*Pos\\(12.42, 159.92, -0.27\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -4 s 160.00 offset 0.00 t -11.70', log, re.MULTILINE))
+        self.assertTrue(re.search('.*Target4 New position:.*$\\n^.*Pos\\(9.21, 219.92, -0.38\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -3 s 220.00 offset 0.00 t -8.00', log, re.MULTILINE))
+        self.assertTrue(re.search('.*Target5 New position:.*$\\n^.*Pos\\(13.35, 259.85, -0.45\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -4 s 260.00 offset 0.00 t -11.70', log, re.MULTILINE))
+        self.assertTrue(re.search('.*Target6 New position:.*$\\n^.*Pos\\(9.91, 279.88, -0.49\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -3 s 280.00 offset 0.00 t -8.00', log, re.MULTILINE))
+        self.assertTrue(re.search('.*Target7 New position:.*$\\n^.*Pos\\(29.67, 698.65, -0.95\\) Rot\\(1.46, 0.00, 0.00\\) roadId 0 laneId -2 s 700.00 offset 0.00 t -4.42', log, re.MULTILINE))
+        self.assertTrue(re.search('.*Target8 New position:.*$\\n^.*Pos\\(33.23, 698.25, -0.95\\) Rot\\(1.46, 0.00, 0.00\\) roadId 0 laneId -3 s 700.00 offset 0.00 t -8.00', log, re.MULTILINE))
+        self.assertTrue(re.search('.*Target9 New position:.*$\\n^.*Pos\\(36.90, 697.84, -0.95\\) Rot\\(1.46, 0.00, 0.00\\) roadId 0 laneId -4 s 700.00 offset 0.00 t -11.70', log, re.MULTILINE))
 
         # Check all lane changes occur as expected
         self.assertTrue(re.search('^.0.000.* LaneChangeAction_0 initState -> startTransition -> runningState', log, re.MULTILINE))
@@ -281,7 +281,7 @@ class TestSuite(unittest.TestCase):
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*swarm.xosc', log)  is not None)
         self.assertTrue(re.search('Using specified seed 0', log)  is not None)
-        self.assertTrue(re.search('^.0.00.*Ego New position:.*$\\n^.*Pos\\(10.20, 299.87, -0.53\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -3 offset 0.00 t -8.00', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*Ego New position:.*$\\n^.*Pos\\(10.20, 299.87, -0.53\\) Rot\\(1.56, 0.00, 0.00\\) roadId 0 laneId -3 s 300.00 offset 0.00 t -8.00', log, re.MULTILINE))
         self.assertTrue(re.search('^.0.00.*Init Ego TeleportAction initState -> startTransition -> runningState', log, re.MULTILINE))
         self.assertTrue(re.search('^.0.00.*Init Ego LongitudinalAction runningState -> endTransition -> completeState', log, re.MULTILINE))
 
@@ -320,7 +320,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*conflicting-domains.xosc', log))
-        self.assertTrue(re.search('^.0.00.*Ego New position:.*$\\n^.*Pos\\(20.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*Ego New position:.*$\\n^.*Pos\\(20.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -1 s 20.00 offset 0.00 t -1.53', log, re.MULTILINE))
         self.assertTrue(re.search('^.0.00.*Init Ego TeleportAction initState -> startTransition -> runningState', log, re.MULTILINE))
         self.assertTrue(re.search('^.0.00.*Init Ego LongitudinalAction initState -> startTransition -> runningState', log, re.MULTILINE))
         self.assertTrue(re.search('^.0.00.*TeleportAction runningState -> endTransition -> completeState', log, re.MULTILINE))
@@ -493,7 +493,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.*Added route waypoint 0, 0.00: road_id 2 lane_id -1 s 100.00 \\(scenario\\)', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('.*Added route waypoint 1, 209.10: road_id 15 lane_id -1 s 4.91 \\(intermediate\\)', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('.*Added route waypoint 2, 224.06: road_id 1 lane_id -1 s 5.00 \\(scenario\\)', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('.0.000.* Pos\\(22.11, 6.78, 0.00\\) Rot\\(4.89, 0.00, 0.00\\) roadId 2 laneId -1 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('.0.000.* Pos\\(22.11, 6.78, 0.00\\) Rot\\(4.89, 0.00, 0.00\\) roadId 2 laneId -1 s 302.00 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('.31.300.* LaneChangeCondition6: true$', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('.35.300.* QuitCondition: true, delay: 3.00, LaneChangeEvent6, COMPLETE / END_TRANSITION == END_TRANSITION, edge: rising', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('.38.300.* QuitCondition: true$', log, re.MULTILINE)  is not None)
@@ -673,11 +673,11 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
         self.assertTrue(re.search('^.-2.000.* Ego New position:\\n.-2.000.* Pos\\(200.00, -1.53, 0.00\\) '\
-            'Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
+            'Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 s 200.00 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.-2.000.* OverTaker2 New position:\\n.-2.000.* Pos\\(280.00, -1.53, 0.00\\) '\
-            'Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
+            'Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 s 280.00 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.-2.000.* Ego_ghost New position:\\n.-2.000.* Pos\\(200.00, -1.53, 0.00\\) '\
-            'Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
+            'Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 s 200.00 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.0.000.* Init OverTaker1 LongitudinalAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.0.990.* Init OverTaker1 RoutingAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
@@ -741,11 +741,11 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*ghost_restart.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^.-0.500.* Pos\\(50.00, -11.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -4 offset 0.00 t -11.50', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.-0.500.* Pos\\(50.00, -11.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -4 s 50.00 offset 0.00 t -11.50', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.1.000.* Set parameter myparam = true', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.1.010.* new parameter: true, delay: 0.00, myparam true == true, edge: none', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.1.010.* new parameter: true$', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.1.010.* Pos\\(60.10, -11.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -4 offset 0.00 t -11.50', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.010.* Pos\\(60.10, -11.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -4 s 60.10 offset 0.00 t -11.50', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.1.010.* AddedGhostTeleport runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.2.500.* newspeed runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
@@ -767,10 +767,10 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*ghost_restart2.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('^.-2.000.* Car New position:\\n.-2.000.* Pos\\(20.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.-2.000.* Car New position:\\n.-2.000.* Pos\\(20.00, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 s 20.00 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.3.000.* Set parameter myparam = 1', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.3.010.* EventBrake1StartCondition: true, delay: 0.00, myparam 1 == 1, edge: rising', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.3.010.* Car_ghost New position:\\n.3.010.* Pos\\(50.10, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.3.010.* Car_ghost New position:\\n.3.010.* Pos\\(50.10, -1.53, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 1 laneId -1 s 50.10 offset 0.00 t -1.53', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.3.010.* AddedGhostTeleport runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.5.010.* BrakeAction1 runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
@@ -879,7 +879,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
 
-        self.assertTrue(re.search('^.0.000.* Ego_0_-1 New position:$\\n^.0.000.* Pos\\(45.00, -1.75, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -1 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.0.000.* Ego_0_-1 New position:$\\n^.0.000.* Pos\\(45.00, -1.75, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -1 s 35.00 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.4.990.* Init Ego_23_1 LateralAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
@@ -1041,7 +1041,7 @@ class TestSuite(unittest.TestCase):
 
         # Check some scenario events
 
-        self.assertTrue(re.search('^.0.000.* car_0_-1 New position:$\\n^.0.000.* Pos\\(55.00, -1.75, 0.00\\) Rot\\(3.14, 0.00, 0.00\\) roadId 0 laneId -1 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.0.000.* car_0_-1 New position:$\\n^.0.000.* Pos\\(55.00, -1.75, 0.00\\) Rot\\(3.14, 0.00, 0.00\\) roadId 0 laneId -1 s 45.00 offset 0.00 t -1.75', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.0.400.* event_road_position_rel_heading_0_-1_4 standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions

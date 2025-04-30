@@ -1614,7 +1614,12 @@ bool ConditionDelay::RegisterValue(double time, bool value)
     }
     else if (time < values_.back().time_)
     {
-        LOG_ERROR("Unexpected time value {:.2f} < lastest registered {:.2f}", time, values_.back().time_);
+        LOG_DEBUG("Unexpected time value {:.2f} < lastest registered {:.2f}. Probably ghost restart. Reset condition history.",
+                  time,
+                  values_.back().time_);
+        values_.clear();
+        values_.push_back({time, value});
+        return true;
     }
     else if (time < values_.back().time_ + SMALL_NUMBER)
     {
