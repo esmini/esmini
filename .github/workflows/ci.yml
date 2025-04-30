@@ -25,13 +25,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4.1.7
 
-      - name: Install clang-format-15
-        if: runner.os == 'Linux'
-        run: wget https://apt.llvm.org/llvm.sh
-          && chmod +x llvm.sh
-          && sudo ./llvm.sh 15
-          && sudo apt-get install -y -q clang-format-15
-
       - name: Install Python3.8 and dependencies
         uses: actions/setup-python@v5.1.1
         with:
