@@ -3861,11 +3861,7 @@ Call `SE_EnableOSIFile(filename)` in order to create a OSI tracefile. Specify cu
 
 By default, the OSI timestamps are set to the same value as the simulation time. The timestamps can be explicity set for each frame via `SE_SetOSITimeStamp(unsigned long long int nanoseconds)`. This will set the time for the upcoming frame, and should thus be set prior to each call to `SE_Step*`.
 
-**Note:** If any OSI related function call has been made prior to `SE_Init*` esmini will activate OSI and the OSI data will be populated during the `SE_Init*` call. First OSI timestamp in the logs defaults to 0.
-If there is a need for the first timestamp in OSI to be something else than 0:
-
-1. There must be no OSI related function calls prior to `SE_Init*`, and
-2. `SE_SetOSITimeStamp` has to be called after `SE_Init*` and before first call to any OSI function that will trigger OSI data to be populated. See code example in test case https://github.com/esmini/esmini/blob/e2cc749a4218facf37af72ef66af7150e050f624/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp#L1962[SetOSITimestampTest].
+**Note:** If any OSI related function call has been made prior to `SE_Init*` esmini will activate OSI and the OSI data, including timestamps, will be populated during the `SE_Init*` call.
 
 ===== OSI settings
 

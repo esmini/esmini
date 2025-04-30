@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2025-04-30 Version 2.46.2
+
+Improvements and fixes:
+- Fix specified log level having no effect on stdout (bug introduced in v2.46.0)
+- Allow setting explicit OSI timestamp before SE_Init (updated doc [here](https://esmini.github.io/#_osi_timestamps))
+
 ### 2025-04-28 Version 2.46.1
 
 Improvements and fixes:
