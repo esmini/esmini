@@ -9,7 +9,6 @@ from command.run import pylint
 from command.run import pytest
 from cli.cli import CLI
 from command.fetch.dependency import Dependency
-from command.run.run import Run
 from command.generate.opendrive import OpenDrive
 
 ##############################################################################################################################
@@ -38,15 +37,6 @@ class Start(object):
             elif "opendrive" == command_list[2].name:
                 opendrive = OpenDrive()
                 opendrive.generate_opendrive("1.7")
-        if "run" == command_list[1].name:
-            run = Run()
-            if "format" == command_list[2].name:
-                run.format_args = command_list[2].parsed_args
-                run.run_format()
-            elif "pylint" == command_list[2].name:
-                pylint.run_pylint()
-            elif "pytest" == command_list[2].name:
-                pytest.run_pytest()
 
     def execution_scheduler(self, cli_argv_list):
         for cli_argv in cli_argv_list:
