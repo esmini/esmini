@@ -2047,7 +2047,6 @@ void LatDistanceAction::Step(double simTime, double)
             else
             {
                 move_state_ = MoveState::MOVE_DYNAMIC;
-                destination_reached_ = false;
             }
         }
         break;
@@ -2088,65 +2087,53 @@ void LatDistanceAction::Step(double simTime, double)
             GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
 
             // Cap acceleration if given
-            double acc = LARGE_NUMBER;
             if (LARGE_NUMBER != dynamics_.max_acceleration_)
             {
-                acc = abs(dynamics_.max_acceleration_);
+                acceleration_ = abs(dynamics_.max_acceleration_);
             }
+
+            // Predict braking distance for new acceleration 
+            // double v_avg = lat_vel_ / 2.0; // (v0 + vfinal) / 2
+            // double a_avg = acceleration_ / 2.0; // (a0 + afinal) / 2
+            // double braking_time = (lat_vel_ - 0.0) / a_avg; // t = (v - v0) / a
+            // double braking_distance = v_avg * braking_time; // v_avg * t
+            double braking_distance = lat_vel_ * lat_vel_ / (2.0 * abs(acceleration_)); // v^2 / (2 * a)
 
             // Maybe we can normalize the acceleration so it diminishes as we get closer to the target
             // But we only flip sign on acc if we are on the other side of the target, so that needs to be fixed
-            acc *= -SIGN(distance_error);
+            acceleration_ *= -SIGN(distance_error);
 
-            bool start_braking = ((lat_vel_ * lat_vel_) / (2.0 * abs(dynamics_.max_acceleration_))) > abs(distance_error);
-            if (start_braking && !deceleration_phase)
+            if (abs(distance_error) < abs(braking_distance) && SIGN(lat_vel_) == SIGN(acceleration_))
             {
-                // We are going to brake, so we need to set the acceleration to the negative value
-                move_sign = -SIGN(acc);
-                deceleration_phase = true;
-            }
-            else if (!deceleration_phase)
-            {
-                // We are not going to brake, so we need to set the acceleration to the positive value
-                move_sign = SIGN(acc);
+                // We are on the other side of the target, so we need to flip sign on the acceleration
+                acceleration_ = -acceleration_;
             }
 
-            acc = move_sign * abs(acc);
-
-            double norm_error = 1.0;
-            if (abs(distance_error) < 0.1 && lat_vel_ < 0.1)
+            double acc_factor = 1.0;
+            if (abs(distance_error) < 0.1 && abs(lat_vel_) < 0.1)
             {
-                // Reached requested distance, quit action
-                norm_error = (1.0 - 1.0 / (1.0 + abs(distance_error))) / 5.0;
-                norm_error = CLAMP(norm_error, 0.0, 1.0); 
+                // We are on the other side of the target, so we need to flip sign on the acceleration
+                acc_factor = 1.0 - 1.0 / (1.0 + (abs(distance_error)));
 
                 if (abs(distance_error) < 0.05)
                 {
-                    norm_error *= 0.2; // Become super gentle close to target
+                    std::cout << "Smoothing acceleration" << std::endl;
+                    acc_factor *= 0.2;
                 }
             }
-            else
-            {
-                norm_error = 1.0;
-            }
 
-            double speed_after_acc = lat_vel_ + acc * norm_error * dt;
-
-            if (SIGN(speed_after_acc) != SIGN(lat_vel_) && abs(lat_vel_) < 0.1)
-            {
-                // Predict if next speed will make us move in different direction, if so we have finished decelerating
-                move_sign = -move_sign;
-                deceleration_phase = false;
-            }
+            double speed_after_acc = lat_vel_ + acceleration_ * acc_factor * dt;
 
             lat_vel_ = ABS_LIMIT(speed_after_acc, std::min(dynamics_.max_speed_, object_->GetSpeed()));
 
-            if (abs(lat_vel_) < 0.01)
+            double d_offset = lat_vel_ * dt;
+            double new_error = distance_error + d_offset; 
+
+            if (abs(lat_vel_) < 0.05 && SIGN(new_error) != SIGN(distance_error))
             {
+                acceleration_ = 0.0;
                 lat_vel_ = 0.0;
             }
-
-            double d_offset = lat_vel_ * dt;
 
             std::cout << "Time: " << sim_time_ << std::endl;
             std::cout << "spped_after_acc: " << speed_after_acc << std::endl;
@@ -2154,9 +2141,9 @@ void LatDistanceAction::Step(double simTime, double)
             std::cout << "object_->GetSpeed(): " << object_->GetSpeed() << std::endl;
             std::cout << "Lat vel: " << lat_vel_ << std::endl;
             std::cout << "Distance error: " << distance_error << std::endl;
-            std::cout << "Acceleration: " << acc << std::endl;
+            std::cout << "New error: " << new_error << std::endl;
+            std::cout << "Acceleration: " << acceleration_ << std::endl;
             std::cout << "d_offset: " << d_offset << std::endl;
-            std::cout << "Deceleration phase: " << deceleration_phase << std::endl;
             std::cout << std::endl;
             // double vel_long = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
             object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset() + d_offset);
