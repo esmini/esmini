@@ -45,6 +45,9 @@ jobs:
       - name: Run cmake-format lint
         run: pre-commit run cmake-format --all-files
 
+      - name: Run cppcheck lint
+        run: pre-commit run cppcheck --all-files
+
       - name: Run black-format lint
         run: pre-commit run black-format --all-files
 
