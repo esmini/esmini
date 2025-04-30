@@ -118,42 +118,6 @@ def yes_or_no(question):
     return yes_or_no("!!! Only available options are ->")
 
 
-def get_available_cmake_target_flags():
-    """get_available_cmake_target_flags"""
-
-    build_str = ""
-    build_str = (
-        build_str
-        + Color.BOLD
-        + "\n"
-        + "Available cmake target flag(s) for --target_flags key: "
-        + Color.END
-        + "\n"
-    )
-    for flag in ESMINI_CMAKE_TARGET_FLAGS:
-        build_str = (
-            build_str + Color.GREEN + "  " + flag + Color.END + " [true/false]" + "\n"
-        )
-    return build_str
-
-
-def get_available_compilers():
-    """get_available_compilers"""
-
-    build_str = ""
-    build_str = (
-        build_str
-        + Color.BOLD
-        + "\n"
-        + "Available compiler(s) for --compiler key: "
-        + Color.END
-        + "\n"
-    )
-    for compiler in ESMINI_COMPILERS:
-        build_str = build_str + Color.GREEN + "  " + compiler + Color.END + "\n"
-    return build_str
-
-
 def download_entity(source, name, data):
     """download_entity downloads entity from
 
