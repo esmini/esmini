@@ -1321,6 +1321,7 @@ int ScenarioPlayer::Init()
         PrintUsage();
         return -2;
     }
+
     config.LogLoadedConfigFiles();
 
     std::string strAllSetOptions = opt.GetSetOptionsAsStr();
@@ -1353,7 +1354,7 @@ int ScenarioPlayer::Init()
             TxtLogger::Inst().SetLogSkipModules(logSkipModules);
         }
     }
-
+    TxtLogger::Inst().SetLoggersVerbosity();
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
 
     if (dist.GetNumPermutations() > 0)

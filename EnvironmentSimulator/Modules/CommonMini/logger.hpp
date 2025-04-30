@@ -100,6 +100,11 @@ namespace esmini::common
         // creates and validates log file path
         std::string CreateLogFilePath();
 
+        // sets verbosity level for all loggers, there might be a situation when logger is instantiated before parsing of options
+        // with default log level i.e. info. This function should be called after parsing of options to set verbosity level
+        // for all loggers based on the option i.e. log_level
+        void SetLoggersVerbosity();
+
         // private interface
     private:
         // Private constructor for use in singleton pattern

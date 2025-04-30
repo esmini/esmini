@@ -545,7 +545,7 @@ int main(int argc, char **argv)
             TxtLogger::Inst().SetLogSkipModules(logSkipModules);
         }
     }
-
+    TxtLogger::Inst().SetLoggersVerbosity();
     if ((arg_str = opt.GetOptionArg("path")) != "")
     {
         SE_Env::Inst().AddPath(arg_str);

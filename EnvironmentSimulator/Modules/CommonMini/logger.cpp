@@ -108,6 +108,15 @@ namespace esmini::common
         logSkipModules_ = logSkipModules;
     }
 
+    void TxtLogger::SetLoggersVerbosity()
+    {
+        if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_level"))
+        {
+            SetLoggerVerbosity(consoleLogger);
+            SetLoggerVerbosity(fileLogger);
+        }
+    }
+
     void TxtLogger::SetLoggerVerbosity(std::shared_ptr<spdlog::logger>& logger)
     {
         if (!logger)
