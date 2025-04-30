@@ -14,15 +14,15 @@ COMMON_REPLAYER_ARGS = '--file sim.dat --headless --time_scale 10 --res_path ../
 class TestSuite(unittest.TestCase):
 
     def test_cut_in(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ESMINI_ARGS + '--log_level debug')
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*cut-in.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('0.010.* CutInActStart: true, delay: 0.00, 0.0100 > 0.0000, edge: none', log)  is not None)
+        self.assertTrue(re.search('0.060.* \\[debug\\] Dist -25.00 Path \\(reversed\\): 0', log)  is not None)
         self.assertTrue(re.search('\\n.7.740.* BrakeCondition_HWT_0.7: true, delay: 0.00, HWT: 0.70 > 0.70, edge rising', log)  is not None)
-        self.assertTrue(re.search('\\n.7.740.* BrakeCondition_HWT_0.7: true\\n', log)  is not None)
         self.assertTrue(re.search('\\n.16.740.* StopCondition: true, delay: 5.00, CutInManeuver, COMPLETE / END_TRANSITION == END_TRANSITION, edge: rising\\n', log)  is not None)
         self.assertTrue(re.search('\\n.21.740.* StopCondition: true\\n', log)  is not None)
 
