@@ -40,10 +40,10 @@ jobs:
       - run: pip install -r support/python/requirements.txt
 
       - name: Run clang-format lint
-        run: python3 support/python/src/main.py run format --clang_format_checker
+        run: pre-commit run clang-format --all-files
 
       - name: Run cmake-format lint
-        run: python3 support/python/src/main.py run format --cmake_format_checker
+        run: pre-commit run cmake-format --all-files
 
       - name: Run black-format lint
         run: python3 support/python/src/main.py run format --black_format_checker

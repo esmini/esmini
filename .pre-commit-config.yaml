@@ -17,7 +17,7 @@ repos:
         types: [cmake]
         files: ^EnvironmentSimulator/
 
-      - id: black
+      - id: black-format
         name: BlackFormat
         entry: black --line-length 88 --target-version py36 --target-version py37 --target-version py38
         language: system
