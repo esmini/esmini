@@ -45,6 +45,9 @@ jobs:
       - name: Run cmake-format lint
         run: pre-commit run cmake-format --all-files
 
+      - name: Install Cppcheck from snap
+        run: sudo snap install cppcheck
+
       - name: Run cppcheck lint
         run: pre-commit run cppcheck --all-files
 
