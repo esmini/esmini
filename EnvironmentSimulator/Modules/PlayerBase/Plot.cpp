@@ -125,30 +125,19 @@ void Plot::updateData(std::vector<Object*>& objects, double time)
     }
 }
 
-void Plot::plotLine(std::string plot_name, std::string unit, PlotCategories x, PlotCategories y, size_t lineplot_objects)
+void Plot::adjustSelectedObjectsPlotDataAxis(const PlotCategories& y_category)
 {
-    if (ImPlot::BeginPlot(
-            plot_name.c_str(),
-            ImVec2(static_cast<float>(window_w) - 200.0f, (static_cast<float>(window_h) - checkbox_padding) / static_cast<float>(lineplot_objects)),
-            ImPlotFlags_NoLegend))
+    for (size_t item = 0; item < selected_object_.size(); ++item)
     {
-        ImPlot::SetupAxes(get_category_name_[x].c_str(), unit.c_str(), x_scaling, y_scaling);
-        // For every lineplot, we want to plot x,y data for the selected objects
-        for (size_t i = 0; i < selected_object_.size(); i++)
-        {
-            if (!selected_object_[i])
-            {
-                continue;
-            }
-            if (!plot_objects_[i]->plotData.at(x).empty() && !plot_objects_[i]->plotData.at(y).empty())
-            {
-                ImPlot::PlotLine(std::to_string(i).c_str(),
-                                 plot_objects_[i]->plotData.at(x).data(),
-                                 plot_objects_[i]->plotData.at(y).data(),
-                                 static_cast<int>(plot_objects_[i]->plotData.at(x).size()));
-            }
-        }
-        ImPlot::EndPlot();
+        if (!selected_object_[item])
+            continue;
+
+        const auto& data_map = plot_objects_[item]->plotData;
+
+        if (data_map.count(y_category) == 0 || data_map.at(y_category).empty())
+            continue;
+
+        adjustPlotDataAxis({y_category, data_map.at(y_category)}, item);
     }
 }
 
@@ -256,29 +245,48 @@ void Plot::renderPlot(const char* name)  //, float window_w, float window_h)
     }
     ImGui::SetCursorPos(store_pos);  // Set the cursor back to where we start drawing the lineplots
 
-    // Adjust axes and plotting data for all selected objects in loop below
-    for (size_t item = 0; item < selected_object_.size(); item++)
+    for (const auto& category_pair : get_category_name_)
     {
-        if (!selected_object_[item])
-        {
-            continue;
-        }
-        for (const auto& data : plot_objects_[item]->plotData)
-        {
-            // Adjust axes
-            adjustPlotDataAxis(data, item);
+        PlotCategories y_category = category_pair.first;
 
-            // Plot (but not time over time or X over X)
-            if (data.first == PlotCategories::Time)
+        // Skip to plot time v time and if the checkbox is not selected
+        if (y_category == PlotCategories::Time || !lineplot_selection_[y_category])
+            continue;
+
+        // Adjust axes for all selected objects before plotting
+        adjustSelectedObjectsPlotDataAxis(y_category);
+        // Now begin plot
+        std::string plot_name = get_category_name_[y_category];
+        std::string unit      = get_category_unit_[y_category];
+
+        if (ImPlot::BeginPlot(plot_name.c_str(),
+                              ImVec2(static_cast<float>(window_w) - 200.0f,
+                                     (static_cast<float>(window_h) - checkbox_padding) / static_cast<float>(lineplot_objects)),
+                              ImPlotFlags_NoLegend))
+        {
+            ImPlot::SetupAxes(get_category_name_[PlotCategories::Time].c_str(), unit.c_str(), x_scaling, y_scaling);
+
+            for (size_t item = 0; item < selected_object_.size(); ++item)
             {
-                continue;
+                if (!selected_object_[item])
+                    continue;
+
+                const auto& data_map = plot_objects_[item]->plotData;
+
+                if (data_map.count(PlotCategories::Time) == 0 || data_map.count(y_category) == 0)
+                    continue;
+
+                const auto& x_data = data_map.at(PlotCategories::Time);
+                const auto& y_data = data_map.at(y_category);
+
+                if (x_data.empty() || y_data.empty())
+                    continue;
+
+                ImPlot::PlotLine(std::to_string(item).c_str(), x_data.data(), y_data.data(), static_cast<int>(x_data.size()));
             }
-            else if (lineplot_selection_[data.first])  // Checkbox has to be checked
-            {
-                plotLine(get_category_name_[data.first], get_category_unit_[data.first], PlotCategories::Time, data.first, lineplot_objects);
-            }
-            y_scaling = ImPlotAxisFlags_None;
+            ImPlot::EndPlot();
         }
+        y_scaling = ImPlotAxisFlags_None;  // Optional reset
     }
     ImGui::End();
 }

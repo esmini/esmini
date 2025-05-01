@@ -65,8 +65,8 @@ public:
 
     void        updateData(std::vector<Object*>& objects, double dt);
     void        renderPlot(const char* name);  //, float window_width, float window_height);
-    void        plotLine(std::string plot_name, std::string unit, PlotCategories x, PlotCategories y, size_t lineplot_objects);
     void        adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<float>>& d, const size_t item);
+    void        adjustSelectedObjectsPlotDataAxis(const PlotCategories& y_category);
     void        createImguiWindow();
     static void glfw_error_callback(int error, const char* description);
 
@@ -121,13 +121,13 @@ private:
     std::unordered_map<PlotCategories, bool>        lineplot_selection_ = {};
     // Add any new data below
     std::unordered_map<PlotCategories, std::vector<std::string>> lineplot_information_ = {
-        {PlotCategories::LatVel, std::vector<std::string>{"LatVel", "m/s", "true"}},
+        {PlotCategories::LatVel, std::vector<std::string>{"LatVel", "m/s", "false"}},
         {PlotCategories::LongVel, std::vector<std::string>{"LongVel", "m/s", "true"}},
-        {PlotCategories::LatA, std::vector<std::string>{"LatA", "m/s²", "true"}},
-        {PlotCategories::LongA, std::vector<std::string>{"LongA", "m/s²", "true"}},
-        {PlotCategories::LaneOffset, std::vector<std::string>{"LaneOffset", "LaneOffset", "true"}},
-        {PlotCategories::LaneID, std::vector<std::string>{"LaneID", "id", "true"}},
-        {PlotCategories::Time, std::vector<std::string>{"Time", "s", "true"}}};
+        {PlotCategories::LatA, std::vector<std::string>{"LatA", "m/s²", "false"}},
+        {PlotCategories::LongA, std::vector<std::string>{"LongA", "m/s²", "false"}},
+        {PlotCategories::LaneOffset, std::vector<std::string>{"LaneOffset", "LaneOffset", "false"}},
+        {PlotCategories::LaneID, std::vector<std::string>{"LaneID", "id", "false"}},
+        {PlotCategories::Time, std::vector<std::string>{"Time", "s", "false"}}};
 
     size_t            plotcategories_size_ = {};
     std::vector<char> selected_object_     = {};
