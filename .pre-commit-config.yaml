@@ -15,7 +15,7 @@ repos:
         args: [--in-place]
         language: python
         types: [cmake]
-        files: ^(EnvironmentSimulator/|CMakeLists.txt)
+        files: ^(CMakeLists\.txt|[^/]+\.cmake|EnvironmentSimulator/.*(CMakeLists\.txt|\.cmake))$
 
       - id: black-format
         name: BlackFormat
