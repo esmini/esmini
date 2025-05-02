@@ -79,7 +79,7 @@ repos:
           - --suppress=hicpp-signed-bitwise #2
           - --suppress=noExplicitConstructor #2
           - --suppress=unusedStructMember #1 #we will keep it
-          - --suppress=unusedFunction #1 #we will keep it
+          #- --suppress=unusedFunction #1 #we will keep it
           #- --suppress=constVariable #1
           #- --suppress=duplicateBranch #1
           #- --suppress=duplInheritedMember #1
