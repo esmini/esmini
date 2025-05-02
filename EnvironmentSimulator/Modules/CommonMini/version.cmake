@@ -18,7 +18,7 @@ if("${GIT_REV}"
 else()
     execute_process(
         COMMAND git describe --exact-match --tags
-                                                                    OUTPUT_VARIABLE GIT_TAG
+        OUTPUT_VARIABLE GIT_TAG
         ERROR_QUIET)
     execute_process(
         COMMAND git name-rev --name-only HEAD
