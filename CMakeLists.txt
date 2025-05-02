@@ -28,7 +28,7 @@ set(ENABLE_WARNINGS_AS_ERRORS
 set(ENABLE_CCACHE
     OFF
     CACHE BOOL
-          "Enable CCACHE"                                                                                                                                   )
+          "Enable CCACHE")
 
 set(ENABLE_COVERAGE
     OFF
