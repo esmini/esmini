@@ -3626,7 +3626,7 @@ or formatting and code analysis can be done in one step by:
 pre-commit run --all-files
 ----
 
-==== Apply formatting and code analysis
+==== Automatic formatting and code analysis
 pre-commit will automatically run on each commit on all staged files. Sometimes automatic application maybe not needed for instance work in progress etc. In that case, you can skip the pre-commit hook by using the `--no-verify` option when committing:
 
 [source, txt]
