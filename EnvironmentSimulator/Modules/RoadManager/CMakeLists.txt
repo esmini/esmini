@@ -22,7 +22,7 @@ set(SOURCES
 
 add_library(
     pugixml_lib
-    ${EXTERNALS_PUGIXML_PATH}/pugixml.cpp                                                       )
+    ${EXTERNALS_PUGIXML_PATH}/pugixml.cpp)
 
 set(INCLUDES
     RoadManager.hpp
