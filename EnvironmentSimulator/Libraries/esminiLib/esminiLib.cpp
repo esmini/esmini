@@ -2340,6 +2340,7 @@ extern "C"
         SE_ObjCallback cb;
         cb.id   = object_id;
         cb.func = fnPtr;
+        cb.data = nullptr;
         objCallback.push_back(cb);
         player->RegisterObjCallback(object_id, objCallbackFn, user_data);
     }

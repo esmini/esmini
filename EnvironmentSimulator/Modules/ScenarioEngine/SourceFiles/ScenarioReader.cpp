@@ -570,6 +570,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         {
             delete vehicle;
             LOG_ERROR_AND_QUIT("Unrecognized entity scale mode: {}", scaleModeStr);
+            return {};  // This will never be reached, but just to make cppcheck happy
         }
     }
 

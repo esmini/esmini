@@ -181,6 +181,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteNoPath)
     {
         delete se;
         GTEST_FAIL();
+        return;  // this will never hit
     }
 
     double dt = 0.1;

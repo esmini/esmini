@@ -22,7 +22,7 @@ namespace scenarioengine
     typedef struct
     {
         ObjectStateStructDat state;
-        double               odometer;
+        double               odometer = 0.0;
     } ReplayEntry;
 
     class Replay
