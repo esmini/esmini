@@ -1084,7 +1084,7 @@ bool TrigByCollision::CheckCondition(double sim_time)
                 {
                     continue;
                 }
-                if (storyBoard_->entities_->object_[j] != trigObj && storyBoard_->entities_->object_[j]->type_ == type_ &&
+                if (storyBoard_->entities_->object_[j] != trigObj && storyBoard_->entities_->object_[j]->type_ == objectType_ &&
                     storyBoard_->entities_->object_[j]->IsActive())
                 {
                     bool local_result = false;
