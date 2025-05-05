@@ -1226,11 +1226,11 @@ public:
     {
         osiTimeStamp_ = timestamp;
     }
-    unsigned long long GetOSITimeStamp()
+    unsigned long long GetOSITimeStamp() const
     {
         return osiTimeStamp_;
     }
-    bool IsOSITimeStampSet()
+    bool IsOSITimeStampSet() const
     {
         return osiTimeStamp_ != OSI_TIMESTAMP_UNDEFINED;
     }
