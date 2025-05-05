@@ -52,7 +52,7 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
     while (!file_.eof())
     {
         ReplayEntry data;
-
+        data.odometer = 0.0;
         file_.read(reinterpret_cast<char*>(&data.state), sizeof(data.state));
 
         if (!file_.eof())
@@ -113,7 +113,7 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         while (!file_.eof())
         {
             ReplayEntry entry;
-
+            entry.odometer = 0.0;
             file_.read(reinterpret_cast<char*>(&entry.state), sizeof(entry.state));
 
             if (!file_.eof())
