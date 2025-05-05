@@ -66,9 +66,9 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     sudo apt install libtiff-dev
     sudo apt install libjpeg-dev
 
-    fbx_include="../../fbxsdk/include"
-    fbx_lib_release="../../fbxsdk/lib/gcc/x64/release/libfbxsdk.a"
-    fbx_lib_debug="../../fbxsdk/lib/gcc/x64/debug/libfbxsdk.a"
+    fbx_include="$osg_root_dir/fbxsdk/include"
+    fbx_lib_release="$osg_root_dir/fbxsdk/lib/gcc/x64/release/libfbxsdk.a"
+    fbx_lib_debug="$osg_root_dir/fbxsdk/lib/gcc/x64/debug/libfbxsdk.a"
     fbx_xml_lib=libxml2.so
     fbx_zlib_lib=libz.so
 
