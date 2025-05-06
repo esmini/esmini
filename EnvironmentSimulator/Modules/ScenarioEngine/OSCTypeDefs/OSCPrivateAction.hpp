@@ -609,6 +609,8 @@ namespace scenarioengine
         MoveState move_state_;
         double lat_vel_ = 0.0;
         double acceleration_ = 0.0;
+        bool braking_ = false;
+        double braking_acc_ = 0.0;
     };
 
     class LatLaneChangeAction : public OSCPrivateAction
