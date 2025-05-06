@@ -114,9 +114,9 @@ void OSISensorDetection::SensorUpdate(osi3::SensorView* sv)
         }
 
         // Lets check if it is needed to create new points and moving objects visuals
-        double z_offset = 0.10;
         if (sv->has_global_ground_truth())
         {
+            double z_offset = 0.10;
             for (int i = 0; i < sv->global_ground_truth().moving_object_size(); i++)
             {
                 // Get moving object position and dimension

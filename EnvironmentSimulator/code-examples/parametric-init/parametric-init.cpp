@@ -3,11 +3,10 @@
 
 void paramDeclCB(void*)
 {
-    static int counter  = 0;
-    double     value[2] = {1.1, 1.5};
-
+    static int counter = 0;
     if (counter < 2)
     {
+        double value[2] = {1.1, 1.5};
         printf("paramDeclCB call nr %d. Set TargetSpeedFactor = %.2f\n", counter, value[counter]);
         SE_SetParameterDouble("TargetSpeedFactor", value[counter]);
     }

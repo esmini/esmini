@@ -3701,8 +3701,8 @@ void ScenarioReader::parseInit(Init &init)
         {
             Object *entityRef;
 
-            entityRef     = ResolveObjectReference(parameters.ReadAttribute(actionsChild, "entityRef"));
-            bool teleport = false;
+            entityRef = ResolveObjectReference(parameters.ReadAttribute(actionsChild, "entityRef"));
+
             if (entityRef != NULL)
             {
                 for (pugi::xml_node privateChild = actionsChild.first_child(); privateChild; privateChild = privateChild.next_sibling())
@@ -3712,7 +3712,7 @@ void ScenarioReader::parseInit(Init &init)
                     if (action != 0)
                     {
                         action->SetName("Init " + entityRef->name_ + " " + privateChild.first_child().name());
-
+                        bool teleport = false;
                         if (action->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
                         {
                             teleport = true;

@@ -321,13 +321,12 @@ void ControllerNaturalDriver::FilterSurroundingVehicles()
 
 ControllerNaturalDriver* ControllerNaturalDriver::GetOtherDriver(scenarioengine::Object* object) const
 {
-    ControllerNaturalDriver* nd;
     if (object->GetControllerActiveOnDomain(ControlDomains::DOMAIN_LONG))
     {
         auto active_controller = object->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG);
         if (active_controller == Type::CONTROLLER_TYPE_NATURAL_DRIVER)
         {
-            nd = dynamic_cast<ControllerNaturalDriver*>(object->GetAssignedControllerOftype(active_controller));
+            ControllerNaturalDriver* nd = dynamic_cast<ControllerNaturalDriver*>(object->GetAssignedControllerOftype(active_controller));
             return nd;
         }
     }

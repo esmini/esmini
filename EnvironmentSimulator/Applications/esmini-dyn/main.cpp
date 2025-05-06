@@ -64,11 +64,9 @@ typedef struct
 
 void objectCallback(SE_ScenarioObjectState* state, void* my_data)
 {
-    const double  startTrigTime = 7.0;
-    const double  latDist       = 3.5;
-    const double  duration      = 4.0;
-    static bool   firstTime     = true;
-    static double latOffset0;
+    const double startTrigTime = 7.0;
+    const double latDist       = 3.5;
+    const double duration      = 4.0;
 
     Stuff* stuff = static_cast<Stuff*>(my_data);
 
@@ -76,6 +74,8 @@ void objectCallback(SE_ScenarioObjectState* state, void* my_data)
 
     if (static_cast<double>(SE_GetSimulationTime()) > startTrigTime && static_cast<double>(SE_GetSimulationTime()) < startTrigTime + duration)
     {
+        static bool   firstTime = true;
+        static double latOffset0;
         if (firstTime)
         {
             latOffset0 = state->laneOffset;

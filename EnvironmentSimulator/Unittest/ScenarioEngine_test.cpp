@@ -2861,11 +2861,11 @@ TEST(ControllerTest, TestLoomingSimpleFarTan)
 
 static void clearanceFreeSpaceParamDeclCallback(void*)
 {
-    static int counter  = 0;
-    bool       value[2] = {true, false};
+    static int counter = 0;
 
     if (counter < 2)
     {
+        bool value[2] = {true, false};
         ScenarioReader::parameters.setParameterValue("FreeSpace", value[counter]);
     }
 
@@ -2949,11 +2949,11 @@ TEST(TwoPlusOneRoadTest, TestTwoPlusOneRoad)
 
 static void clearanceParamDeclCallback(void*)
 {
-    static int counter  = 0;
-    bool       value[2] = {false, true};
+    static int counter = 0;
 
     if (counter < 2)
     {
+        bool value[2] = {false, true};
         ScenarioReader::parameters.setParameterValue("OppositeLanes", value[counter]);
     }
 
@@ -3230,11 +3230,11 @@ TEST(ConditionTest, TestTTC)
 
 static void TTCAndLateralDistParamDeclCallback(void*)
 {
-    static int counter  = 0;
-    double     value[2] = {0.2, 5.0};
+    static int counter = 0;
 
     if (counter < 2)
     {
+        double value[2] = {0.2, 5.0};
         ScenarioReader::parameters.setParameterValue("LateralDist", value[counter]);
     }
 

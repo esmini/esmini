@@ -162,12 +162,10 @@ void RubberbandManipulator::getUsage(osg::ApplicationUsage& usage) const
 
 bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& us)
 {
-    static float lx0         = 0;
-    static float ly0         = 0;
-    static float ry0         = 0;
-    float        angleScale  = 30.0;
-    float        zoomScale   = 1.0;
-    float        scrollScale = 0.2f;
+    static float lx0        = 0;
+    static float ly0        = 0;
+    static float ry0        = 0;
+    float        angleScale = 30.0;
 
     if (ea.getEventType() & GUIEventAdapter::PUSH)
     {
@@ -218,6 +216,7 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& 
             }
             if (ea.getButtonMask() == GUIEventAdapter::RIGHT_MOUSE_BUTTON)
             {
+                float zoomScale = 1.0;
                 _cameraDistance -= zoomScale * _cameraDistance * (ry0 - ea.getYnormalized());
                 if (_cameraDistance < 1)
                 {
@@ -248,6 +247,7 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& 
                     scroll = 1;
                     break;
             }
+            float scrollScale = 0.2f;
             _cameraDistance -= scrollScale * _cameraDistance * (static_cast<float>(scroll));
             return false;
         }

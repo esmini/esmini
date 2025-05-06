@@ -441,16 +441,14 @@ extern "C"
 
     RM_DLL_API int RM_GetLaneIdByIndex(id_t roadId, int laneIndex, float s)
     {
-        int numberOfDrivableLanes = 0;
-
         if (odrManager == nullptr)
         {
             return -1;
         }
         else
         {
-            roadmanager::Road* road = odrManager->GetRoadById(roadId);
-
+            roadmanager::Road* road                  = odrManager->GetRoadById(roadId);
+            int                numberOfDrivableLanes = 0;
             // Consider only drivable lanes
             roadmanager::LaneSection* laneSection = road->GetLaneSectionByS(s);
             for (unsigned int i = 0; i < laneSection->GetNumberOfLanes(); i++)

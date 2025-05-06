@@ -787,9 +787,6 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
 
         if (object_)
         {
-            double rel_vel[2] = {0.0, 0.0};
-            double proj_speed = 0.0;
-
             if (fabs(object_->pos_.GetVelX()) < SMALL_NUMBER && fabs(object_->pos_.GetVelY()) < SMALL_NUMBER)
             {
                 // object standing still, consider only speed of triggering entity
@@ -797,13 +794,14 @@ bool TrigByTimeToCollision::CheckCondition(double sim_time)
             }
             else
             {
+                double rel_vel[2] = {0.0, 0.0};
                 // Calculate relative speed of triggering entity along object's velocity direction
-                proj_speed = ProjectPointOnVector2DSignedLength(trigObj->pos_.GetVelX(),
-                                                                trigObj->pos_.GetVelY(),
-                                                                object_->pos_.GetVelX(),
-                                                                object_->pos_.GetVelY(),
-                                                                rel_vel[0],
-                                                                rel_vel[1]);
+                double proj_speed = ProjectPointOnVector2DSignedLength(trigObj->pos_.GetVelX(),
+                                                                       trigObj->pos_.GetVelY(),
+                                                                       object_->pos_.GetVelX(),
+                                                                       object_->pos_.GetVelY(),
+                                                                       rel_vel[0],
+                                                                       rel_vel[1]);
 
                 // calculate trig object relative speed as projected velocity absolute difference considering
                 rel_speed = SIGN(trigObj->GetSpeed()) * SIGN(proj_speed) * (proj_speed - fabs(object_->GetSpeed()));

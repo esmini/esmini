@@ -2148,13 +2148,12 @@ TEST(ControllerTest, TestControllers)
         EXPECT_EQ(controller->GetControl(i)->signalId_, signalIds2[i]);
     }
 
-    JunctionController *jcontroller;
-    Junction           *junction = odr->GetJunctionByIdx(1);
+    Junction *junction = odr->GetJunctionByIdx(1);
     EXPECT_EQ(junction->GetNumberOfControllers(), 5);
     int controllerIds[] = {7, 9, 10, 8, 6};
     for (unsigned int i = 0; i < junction->GetNumberOfControllers(); i++)
     {
-        jcontroller = junction->GetJunctionControllerByIdx(i);
+        JunctionController *jcontroller = junction->GetJunctionControllerByIdx(i);
         EXPECT_EQ(jcontroller->id_, controllerIds[i]);
     }
 
@@ -2565,8 +2564,7 @@ TEST_F(MixedRoadsFixture, TestGetClosestLaneIdx)
 
     ASSERT_EQ(road->GetNumberOfLaneSections(), 2);
 
-    double       offset = 0.0;
-    double       s;
+    double       offset       = 0.0;
     LaneSection *lane_section = nullptr;
     idx_t        lane_idx     = IDX_UNDEFINED;
 
@@ -2575,7 +2573,7 @@ TEST_F(MixedRoadsFixture, TestGetClosestLaneIdx)
     for (int i = -1; i < 2; i++)
     {
         lane_section = road->GetLaneSectionByIdx(0);
-        s            = 5.0;
+        double s     = 5.0;
         lane_idx     = lane_section->GetClosestLaneIdx(s, 0.0, road->GetLaneOffset(s), i, offset, true);
         EXPECT_EQ(lane_section->GetLaneIdByIdx(lane_idx), i < 1 ? -1 : 0);
         EXPECT_NEAR(offset, i < 1 ? 1.5 : 0.0, 1e-3);

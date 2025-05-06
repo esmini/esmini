@@ -104,18 +104,18 @@ namespace STGeometry
      */
     void tangentIntersection(double x0, double y0, double s0, double t0, double x1, double y1, double s1, double t1, double &x2, double &y2)
     {
-        double dPx, dPy, r0x, r0y, r1x, r1y, s;
+        double r0x, r0y, s;
         double oneDegree = M_PI / 180;
 
         r0x = cos(t0);
         r0y = sin(t0);
         if (abs(t1 - t0) > oneDegree)
         {
-            r1x = cos(t1);
-            r1y = sin(t1);
-            dPx = x1 - x0;
-            dPy = y1 - y0;
-            s   = (dPy * r1x - dPx * r1y) / (r1x * r0y - r0x * r1y);
+            double r1x = cos(t1);
+            double r1y = sin(t1);
+            double dPx = x1 - x0;
+            double dPy = y1 - y0;
+            s          = (dPy * r1x - dPx * r1y) / (r1x * r0y - r0x * r1y);
         }
         else
             s = s1 - s0;
@@ -242,7 +242,7 @@ namespace STGeometry
      */
     bool brent_zeros(double a, double b, double &res, double delta, DDProc f)
     {
-        double fa, fb, fc, fs, c, d = 0, s;  // init d to avoid compiler warnings (d refer before set is protected by flag)
+        double fa, fb, fc, c, d = 0, s;  // init d to avoid compiler warnings (d refer before set is protected by flag)
         bool   flag;
         fa = f(a);
         fb = f(b);
@@ -268,9 +268,9 @@ namespace STGeometry
             }
             else
                 flag = false;
-            fs = f(s);
-            d  = c;
-            c  = b;
+            double fs = f(s);
+            d         = c;
+            c         = b;
             if (fa * fs < 0)
                 b = s;
             else

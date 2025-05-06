@@ -56,7 +56,6 @@ namespace esmini
 
         std::vector<ScenarioObjectState> objects_sts;
         int                              retval = 0;
-        int                              numberofObjects;
         double                           dt;
         int64_t                          time_stamp = 0;
         while (retval == 0 && _config.max_loop > 0)
@@ -75,7 +74,7 @@ namespace esmini
             retval = this->scenarioEngine->step(dt);
             // std::cout << "retval is: " << retval << std::endl;
 
-            numberofObjects = this->scenarioGateway->getNumberOfObjects();
+            int numberofObjects = this->scenarioGateway->getNumberOfObjects();
             // std::cout << "number of objects: " << numberofObjects << std::endl;
             for (int i = 0; i < numberofObjects; i++)
             {

@@ -1837,12 +1837,9 @@ void LongDistanceAction::Step(double simTime, double)
         object_->pos_.Distance(&target_object_->pos_, cs_, roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL, distance);
     }
 
-    double speed_diff = object_->speed_ - target_object_->speed_;
-    double acc;
-    double jerk;
+    double speed_diff      = object_->speed_ - target_object_->speed_;
     double spring_constant = 0.4;
-    double dc;
-    double requested_dist = 0;
+    double requested_dist  = 0;
 
     if (dist_type_ == DistType::DISTANCE)
     {
@@ -1884,8 +1881,9 @@ void LongDistanceAction::Step(double simTime, double)
         double tension = distance_diff < 0.0 ? dynamics_.max_acceleration_ : dynamics_.max_deceleration_;
 
         double spring_constant_adjusted = tension * spring_constant;
-        dc                              = 2 * sqrt(spring_constant_adjusted);
-        acc                             = distance_diff * spring_constant_adjusted - speed_diff * dc;
+        double dc                       = 2 * sqrt(spring_constant_adjusted);
+        double acc                      = distance_diff * spring_constant_adjusted - speed_diff * dc;
+        double jerk;
         if (acc < 0.0)
         {
             jerk = -dynamics_.max_deceleration_rate_;

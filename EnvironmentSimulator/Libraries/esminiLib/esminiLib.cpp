@@ -1058,11 +1058,10 @@ extern "C"
                                                SE_OSCBoundingBox bounding_box,
                                                int               scale_mode)
     {
-        int object_id = -1;
-
         // Add missing object
         if (player != nullptr)
         {
+            int         object_id = -1;
             std::string name;
             if (object_name == nullptr)
             {

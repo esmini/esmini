@@ -512,8 +512,6 @@ int main(int argc, char **argv)
     TxtLogger::Inst().LogTimeOnly();
     TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
 
-    static char str_buf[128];
-
     if ((arg_str = opt.GetOptionArg("fixed_timestep")) != "")
     {
         fixed_timestep = atof(arg_str.c_str());
@@ -794,7 +792,8 @@ int main(int argc, char **argv)
             // Always update info text, since camera might jump between different entities also during pause
             if (static_cast<int>(cars.size()) > 0 && viewer->currentCarInFocus_ >= 0 && viewer->currentCarInFocus_ < static_cast<int>(cars.size()))
             {
-                Car *car = cars[static_cast<unsigned int>(viewer->currentCarInFocus_)];
+                Car        *car = cars[static_cast<unsigned int>(viewer->currentCarInFocus_)];
+                static char str_buf[128];
                 snprintf(str_buf,
                          sizeof(str_buf),
                          "entity[%d]: %.2fkm/h (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)",

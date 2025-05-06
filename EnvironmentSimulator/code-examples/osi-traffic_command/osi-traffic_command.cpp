@@ -10,7 +10,6 @@ int main(int argc, char* argv[])
 {
     (void)argc;
     (void)argv;
-    const osi3::TrafficCommand* tc;
 
     SE_EnableOSIFile(0);  // 0 or "" will result in default filename, ground_truth.osi
 
@@ -28,7 +27,7 @@ int main(int argc, char* argv[])
         SE_UpdateOSITrafficCommand();
 
         // Fetch OSI struct (via pointer, no copying of data)
-        tc = reinterpret_cast<const osi3::TrafficCommand*>(SE_GetOSITrafficCommandRaw());
+        const osi3::TrafficCommand* tc = reinterpret_cast<const osi3::TrafficCommand*>(SE_GetOSITrafficCommandRaw());
 
         for (int j = 0; j < tc->action().size(); j++)
         {

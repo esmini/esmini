@@ -2666,15 +2666,14 @@ void OSIReporter::CreateMovingObjectFromSensorData(const osi3::SensorData &sd, i
 
 void OSIReporter::CreateLaneBoundaryFromSensordata(const osi3::SensorData &sd, int lane_boundary_nr)
 {
-    osi3::DetectedLaneBoundary lane_boundary = sd.lane_boundary(lane_boundary_nr);
-    double                     x, y, z;
+    osi3::DetectedLaneBoundary lane_boundary     = sd.lane_boundary(lane_boundary_nr);
     osi3::LaneBoundary        *new_lane_boundary = obj_osi_external.sv->mutable_global_ground_truth()->add_lane_boundary();
 
     for (int i = 0; i < sd.lane_boundary(lane_boundary_nr).boundary_line_size(); i++)
     {
-        x = lane_boundary.boundary_line(i).position().x() + sd.mounting_position().position().x();
-        y = lane_boundary.boundary_line(i).position().y() + sd.mounting_position().position().y();
-        z = lane_boundary.boundary_line(i).position().z();
+        double x = lane_boundary.boundary_line(i).position().x() + sd.mounting_position().position().x();
+        double y = lane_boundary.boundary_line(i).position().y() + sd.mounting_position().position().y();
+        double z = lane_boundary.boundary_line(i).position().z();
 
         // Local2GlobalCoordinates(x, y,
         //     sd.mounting_position().position().x(),
