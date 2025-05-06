@@ -73,8 +73,8 @@
             <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
             <ParameterDeclarations>
                 <ParameterDeclaration name="MaxSpeed" parameterType="double" value="70.0"/>
-                <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="10"/>
-                <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="5"/>
+                <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="50"/>
+                <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="50"/>
                 <ParameterDeclaration name="ScaleMode" parameterType="string" value="BBToModel"/>
             </ParameterDeclarations>
             <BoundingBox>
