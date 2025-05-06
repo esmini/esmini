@@ -47,14 +47,14 @@ repos:
           - --error-exitcode=1
           - --inline-suppr
           - --enable=all
-          #- --suppress=missingInclude #3
+          - --suppress=missingInclude #3
           #- --suppress=variableScope #2
           - --suppress=missingOverride #2
           - --suppress=uninitMemberVar #2
           - --suppress=passedByValue #2
           - --suppress=functionStatic #2
           #- --suppress=oppositeInnerCondition #2
-          - --suppress=nullPointerRedundantCheck #2
+          #- --suppress=nullPointerRedundantCheck #2
           #- --suppress=deallocret #2
           - --suppress=knownConditionTrueFalse #2 # we will keep it
           - --suppress=unmatchedSuppression #2

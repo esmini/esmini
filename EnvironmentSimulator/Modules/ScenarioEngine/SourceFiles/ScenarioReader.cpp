@@ -740,7 +740,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                             {
                                 LOG_ERROR_AND_QUIT("Error: Trailer {} not found", parameters.ReadAttribute(trailer_node, "entityRef"));
                             }
-                            if (object->type_ != Object::Type::VEHICLE)
+                            else if (object->type_ != Object::Type::VEHICLE)
                             {
                                 LOG_ERROR_AND_QUIT("Error: Trailer {} is not of Vehicle type", parameters.ReadAttribute(trailer_node, "entityRef"));
                             }
