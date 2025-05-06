@@ -45,8 +45,6 @@ class Sim:
 
     # Retrieve OSI message and print some info
     def GetAndPrintOSIInfo(self):
-        se.SE_UpdateOSIGroundTruth()
-
         msg_string = se.SE_GetOSIGroundTruth(ct.byref(self.msg_size))
         self.msg.ParseFromString(ct.string_at(msg_string, self.msg_size))
 

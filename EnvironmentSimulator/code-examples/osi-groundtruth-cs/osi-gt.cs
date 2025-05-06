@@ -12,20 +12,18 @@ namespace esmini_csharp
     {
         static void Main(string[] args)
         {
-            // intitialize esmini
+            // initialize esmini
             if (ESMiniLib.SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0) != 0)
             {
                 Console.WriteLine("failed to load scenario");
                 return;
             }
-            ESMiniLib.SE_UpdateOSIGroundTruth();
 
             int size = 0;
             while (ESMiniLib.SE_GetQuitFlag() != 1)
             {
                 // Step esmini
                 ESMiniLib.SE_Step();
-                ESMiniLib.SE_UpdateOSIGroundTruth();
 
                 // Get OSI message
                 IntPtr int_ptr = ESMiniLib.SE_GetOSIGroundTruth(ref size);
