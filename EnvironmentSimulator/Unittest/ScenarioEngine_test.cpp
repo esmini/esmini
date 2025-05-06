@@ -4873,6 +4873,37 @@ TEST(StringIds, TestRoadStringIdsEdgeCases)
     EXPECT_EQ(ids[2].first, 3);
 }
 
+TEST(GhostConcept, TestMultipleRestartAtCorrectPosition)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/driver_lane_bouncing_scenario.xosc");
+    const double    dt = 0.1;
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 2);
+
+    // Check expected position and orientation at some specific time stamps
+    while (se->getSimulationTime() < 28.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 609.49, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -3.49, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.03, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 72.0 / 3.6, 1E-2);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 657.60, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -1.76, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 0.04, 1E-3);
+    EXPECT_NEAR(entities->object_[1]->GetSpeed(), 72.0 / 3.6, 1E-3);
+
+    delete se;
+}
+
 int main(int argc, char** argv)
 {
 #if 0  // set to 1 and modify filter to run one single test

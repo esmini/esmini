@@ -8680,8 +8680,8 @@ int Position::TeleportTo(Position* position)
 
     if (position->GetRelativePosition() != nullptr || position->GetTrajectory() != nullptr)
     {
-        // Resolve and release any relation
-        position->EvaluateRelation(true);
+        // Resolve relation
+        position->EvaluateRelation(false);
     }
 
     Duplicate(*position);

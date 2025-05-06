@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+    <FileHeader description="lane bumping" author="mandolin" revMajor="1" revMinor="2" date="2025-04-22T16:02:50.390830"/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/straight_3000m.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="host_Car">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+            <ObjectController>
+                <CatalogReference catalogName="ControllerCatalog" entryName="followGhost" >
+                    <ParameterAssignments>
+                        <ParameterAssignment parameterRef="$HeadStartTime" value="2.5" />
+                        <ParameterAssignment parameterRef="$FollowMode" value="position" />
+                        <ParameterAssignment parameterRef="LookaheadSpeed" value="0.5"/>
+                        <ParameterAssignment parameterRef="MinLookaheadSpeed" value="7.0"/>
+                        <ParameterAssignment parameterRef="LookaheadSteering" value="0.5"/>
+                        <ParameterAssignment parameterRef="MinLookaheadSteering" value="7.0"/>
+                    </ParameterAssignments>
+                </CatalogReference>
+            </ObjectController>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <Private entityRef="host_Car">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="1" laneId="-1" s="50.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="20.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                       <ActivateControllerAction longitudinal="true" lateral="true" />
+                    </PrivateAction>               
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="story_act_ego maneuvergroup">
+            <Act name="act_ego maneuvergroup">
+                <ManeuverGroup name="ego maneuvergroup" maximumExecutionCount="1">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="host_Car"/>
+                    </Actors>
+                    <Maneuver name="drift-maneuver">
+                        <Event name="drift-event" priority="override" maximumExecutionCount="1">
+                            <Action name="drifting">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneOffsetAction continuous="true">
+                                            <LaneOffsetActionDynamics maxLateralAcc="0.3" dynamicsShape="cubic"/>
+                                            <LaneOffsetTarget>
+                                                <RelativeTargetLaneOffset value="-3.0" entityRef="host_Car"/>
+                                            </LaneOffsetTarget>
+                                        </LaneOffsetAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="start_drifting" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="5.0" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                    <Maneuver name="driver_override">
+                        <Event name="steering_right_event" priority="override" maximumExecutionCount="10">
+                            <Action name="steering_right_action">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneOffsetAction continuous="true">
+                                            <LaneOffsetActionDynamics maxLateralAcc="0.3" dynamicsShape="cubic"/>
+                                            <LaneOffsetTarget>
+                                                <RelativeTargetLaneOffset value="-6.0" entityRef="host_Car"/>
+                                            </LaneOffsetTarget>
+                                        </LaneOffsetAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="right_trigger" delay="0.0" conditionEdge="none">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="host_Car"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <DistanceCondition value="1.75" freespace="false" rule="lessThan" relativeDistanceType="lateral" coordinateSystem="road">
+                                                    <Position>
+                                                        <LanePosition roadId="1" laneId="1" s="0.0" offset="0.0"/>
+                                                    </Position>
+                                                </DistanceCondition>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="steering_left_event" priority="override" maximumExecutionCount="10">
+                            <Action name="steering_left_action">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneOffsetAction continuous="true">
+                                            <LaneOffsetActionDynamics maxLateralAcc="0.3" dynamicsShape="cubic"/>
+                                            <LaneOffsetTarget>
+                                                <RelativeTargetLaneOffset value="6.0" entityRef="host_Car"/>
+                                            </LaneOffsetTarget>
+                                        </LaneOffsetAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="left_trigger" delay="0.0" conditionEdge="none">
+                                        <ByEntityCondition>
+                                            <TriggeringEntities triggeringEntitiesRule="any">
+                                                <EntityRef entityRef="host_Car"/>
+                                            </TriggeringEntities>
+                                            <EntityCondition>
+                                                <DistanceCondition value="1.75" freespace="false" rule="lessThan" relativeDistanceType="lateral" coordinateSystem="road">
+                                                    <Position>
+                                                        <LanePosition roadId="1" laneId="-2" s="0.0" offset="0.0"/>
+                                                    </Position>
+                                                </DistanceCondition>
+                                            </EntityCondition>
+                                        </ByEntityCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition name="act_start" delay="0.0" conditionEdge="rising">
+                            <ByValueCondition>
+                                <SimulationTimeCondition value="0.0" rule="greaterThan"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+                <StopTrigger/>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="stoptrigger" delay="0.0" conditionEdge="none">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="30.0" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>
