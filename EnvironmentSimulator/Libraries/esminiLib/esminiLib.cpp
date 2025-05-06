@@ -1795,9 +1795,8 @@ extern "C"
         return 0;
 #else
         (void)nanoseconds;
-#endif  // _USE_OSI
-
         return -1;
+#endif  // _USE_OSI
     }
 
     SE_DLL_API void SE_LogMessage(const char *message)
@@ -2684,8 +2683,8 @@ extern "C"
         return 0;
 #else
         (void)state;
-#endif
         return -1;
+#endif
     }
 
     SE_DLL_API int SE_SaveImagesToFile(int nrOfFrames)

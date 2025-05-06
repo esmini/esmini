@@ -224,7 +224,6 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& 
                 }
                 ry0 = ea.getYnormalized();
             }
-            break;
             return false;
 
         case (GUIEventAdapter::SCROLL):

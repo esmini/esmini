@@ -63,7 +63,7 @@ repos:
           #- --suppress=deallocuse #2
           - --suppress=stlcstrParam #2
           #- --suppress=multiCondition #3
-          - --suppress=duplicateBreak #2
+          #- --suppress=duplicateBreak #2
           - --suppress=uninitvar #2
           - --suppress=unusedLabel #3
           - --suppress=uninitStructMember #2
