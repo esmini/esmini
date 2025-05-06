@@ -67,7 +67,7 @@ class OSIFile():
                     o.base.orientation_acceleration.pitch,
                     o.base.orientation_acceleration.roll,
                     math.sqrt(o.base.velocity.x**2 + o.base.velocity.y**2),
-                    getattr(o.vehicle_attributes, 'wheel_data')[0].orientation.yaw,  # only one wheel for now
+                    getattr(o.vehicle_attributes, 'wheel_data')[0].orientation.yaw if getattr(o.vehicle_attributes, 'wheel_data') else 0.0,  # only one wheel for now
                     0.0  # wheel rotation not available
                     )
                 )
