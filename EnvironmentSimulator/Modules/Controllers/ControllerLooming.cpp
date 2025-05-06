@@ -160,7 +160,7 @@ void ControllerLooming::Step(double timeStep)
                     {
                         lane = lsec->GetLaneById(object_->pos_.GetLaneId());
                     }
-                    else if (laneSec_counter >= 0)
+                    else
                     {
                         lane = lsec->GetLaneById(
                             lane->GetLink(direction_prev == 1 ? roadmanager::LinkType::SUCCESSOR : roadmanager::LinkType::PREDECESSOR)->GetId());

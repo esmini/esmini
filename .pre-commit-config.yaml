@@ -60,9 +60,9 @@ repos:
           - --suppress=unmatchedSuppression #2
           - --suppress=constParameter #2
           - --suppress=useInitializationList #3
-          - --suppress=deallocuse #2
+          #- --suppress=deallocuse #2
           - --suppress=stlcstrParam #2
-          - --suppress=multiCondition #3
+          #- --suppress=multiCondition #3
           - --suppress=duplicateBreak #2
           - --suppress=uninitvar #2
           - --suppress=unusedLabel #3
