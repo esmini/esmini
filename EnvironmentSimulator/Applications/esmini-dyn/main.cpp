@@ -95,7 +95,7 @@ int main(int argc, const char* argv[])
     SimpleVehicle vehicle  = {0, {0, 0, 0, 0, 0, 0, 0, 0}};
     const char*   filename = 0;
 
-    if (!filename == 0 && argc < 2)
+    if (argc < 2)
     {
         printf("Usage variant 1: %s <osc filename>\n", FileNameOf(argv[0]).c_str());
         printf("Usage variant 2: %s --osc <filename> [additional arguments - see esmini documentation]\n", FileNameOf(argv[0]).c_str());

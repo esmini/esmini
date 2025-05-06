@@ -3712,21 +3712,19 @@ void ScenarioReader::parseInit(Init &init)
                     if (action != 0)
                     {
                         action->SetName("Init " + entityRef->name_ + " " + privateChild.first_child().name());
-                        bool teleport = false;
-                        if (action->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
-                        {
-                            teleport = true;
-                        }
-                        else if (teleport == false && action->action_type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
+                        // bool teleport = false;
+                        // if (action->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
+                        // {
+                        //     teleport = true;
+                        // }
+                        // else if (action->action_type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
+                        if (action->action_type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
                         {
                             LOG_WARN("WARNING: Controller activated before positioning (TeleportAction) the entity {}", entityRef->GetName());
                         }
 
                         init.private_action_.push_back(action);
-                        if (entityRef)
-                        {
-                            entityRef->initActions_.push_back(action);
-                        }
+                        entityRef->initActions_.push_back(action);
                     }
                 }
                 entities_->activateObject(entityRef);
