@@ -2902,11 +2902,6 @@ TEST(RelativeClearanceTest, TestRelativeClearanceFreeSpace)
             ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -3.000, 1E-3);
             ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
         }
-        if (i == 2)
-        {
-            ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -3.7222222, 1E-3);
-            ASSERT_EQ(se->entities_.object_[2]->GetName(), "TargetRef");
-        }
         delete se;
     }
     RegisterParameterDeclarationCallback(nullptr, 0);

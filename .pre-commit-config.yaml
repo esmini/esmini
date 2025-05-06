@@ -53,10 +53,10 @@ repos:
           - --suppress=uninitMemberVar #2
           - --suppress=passedByValue #2
           - --suppress=functionStatic #2
-          - --suppress=oppositeInnerCondition #2
+          #- --suppress=oppositeInnerCondition #2
           - --suppress=nullPointerRedundantCheck #2
           #- --suppress=deallocret #2
-          - --suppress=knownConditionTrueFalse #2
+          - --suppress=knownConditionTrueFalse #2 # we will keep it
           - --suppress=unmatchedSuppression #2
           - --suppress=constParameter #2
           - --suppress=useInitializationList #3
