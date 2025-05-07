@@ -1153,7 +1153,7 @@ namespace roadmanager
             contact_point_type_ = contact_point_type;
         }
         RoadLink(LinkType type, pugi::xml_node node);
-        bool operator==(RoadLink &rhs) const;
+        bool operator==(const RoadLink &rhs) const;
 
         id_t GetElementId() const
         {
@@ -3109,7 +3109,7 @@ namespace roadmanager
 
         void              Init();
         static bool       LoadOpenDrive(const char *filename);
-        static bool       LoadOpenDrive(OpenDrive *odr);
+        static bool       LoadOpenDrive(const OpenDrive *odr);
         static OpenDrive *GetOpenDrive();
         int               GotoClosestDrivingLaneAtCurrentPosition();
 
@@ -3979,7 +3979,7 @@ namespace roadmanager
         */
         id_t GetOverlappingRoadId(idx_t index) const;
 
-        void ReplaceObjectRefs(Position *pos1, Position *pos2)
+        void ReplaceObjectRefs(const Position *pos1, Position *pos2)
         {
             if (rel_pos_ == pos1)
             {
@@ -4259,7 +4259,7 @@ namespace roadmanager
         */
         Position::ReturnCode SetPathS(double s, double *remaining_dist = nullptr, bool update_state = true);
 
-        void CopyFrom(Route &route)
+        void CopyFrom(const Route &route)
         {
             *this = route;
         }

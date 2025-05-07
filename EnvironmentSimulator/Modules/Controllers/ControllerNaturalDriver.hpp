@@ -76,8 +76,8 @@ namespace scenarioengine
         bool   AdjacentLanesAvailable();
         void   FilterSurroundingVehicles();
         void   UpdateSurroundingVehicles();
-        void   FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
-        void   FindClosestBehind(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type);
+        void   FindClosestAhead(scenarioengine::Object* object, const roadmanager::PositionDiff& diff, VoIType type);
+        void   FindClosestBehind(scenarioengine::Object* object, const roadmanager::PositionDiff& diff, VoIType type);
         bool   CheckLaneChangePossible(const int lane_id);
         bool   AbortLaneChange() const;
         double EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds) const;

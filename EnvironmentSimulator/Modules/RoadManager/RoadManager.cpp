@@ -2190,7 +2190,7 @@ RoadLink::RoadLink(LinkType type, pugi::xml_node node)
     }
 }
 
-bool RoadLink::operator==(RoadLink& rhs) const
+bool RoadLink::operator==(const RoadLink& rhs) const
 {
     return (rhs.type_ == type_ && rhs.element_type_ == element_type_ && rhs.element_id_ == element_id_ &&
             rhs.contact_point_type_ == contact_point_type_);
@@ -6620,7 +6620,7 @@ bool Position::LoadOpenDrive(const char* filename)
     return (GetOpenDrive()->LoadOpenDriveFile(filename));
 }
 
-bool Position::LoadOpenDrive(OpenDrive* odr)
+bool Position::LoadOpenDrive(const OpenDrive* odr)
 {
     *GetOpenDrive() = *odr;
     return (GetOpenDrive() != nullptr);

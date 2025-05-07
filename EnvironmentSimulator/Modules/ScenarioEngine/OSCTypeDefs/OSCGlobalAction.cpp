@@ -200,7 +200,7 @@ void DeleteEntityAction::Step(double simTime, double dt)
     OSCAction::Stop();
 }
 
-void print_triangles(BBoxVec& vec, char const filename[])
+void print_triangles(const BBoxVec& vec, char const filename[])
 {
     std::ofstream file;
     file.open(filename);
@@ -215,7 +215,7 @@ void print_triangles(BBoxVec& vec, char const filename[])
     file.close();
 }
 
-void print_bbx(BBoxVec& vec, char const filename[])
+void print_bbx(const BBoxVec& vec, char const filename[])
 {
     std::ofstream file;
     file.open(filename);

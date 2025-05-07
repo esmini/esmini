@@ -161,7 +161,7 @@ namespace scenarioengine
             return 0;
         }
 
-        bool IsObjectActor(Object* object) const
+        bool IsObjectActor(const Object* object) const
         {
             for (size_t i = 0; i < actor_.size(); i++)
             {

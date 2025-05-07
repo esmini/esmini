@@ -511,7 +511,7 @@ double ControllerNaturalDriver::EstimateFreespace(const scenarioengine::Object* 
     return ds;  // Not pointing roughly same direction, return ref point differences for now
 }
 
-void ControllerNaturalDriver::FindClosestAhead(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type)
+void ControllerNaturalDriver::FindClosestAhead(scenarioengine::Object* object, const roadmanager::PositionDiff& diff, VoIType type)
 {
     if (vehicles_of_interest_[type].vehicle == nullptr && diff.ds >= 0)
     {
@@ -527,7 +527,7 @@ void ControllerNaturalDriver::FindClosestAhead(scenarioengine::Object* object, r
     return;
 }
 
-void ControllerNaturalDriver::FindClosestBehind(scenarioengine::Object* object, roadmanager::PositionDiff& diff, VoIType type)
+void ControllerNaturalDriver::FindClosestBehind(scenarioengine::Object* object, const roadmanager::PositionDiff& diff, VoIType type)
 {
     if (vehicles_of_interest_[type].vehicle == nullptr && diff.ds < 0)
     {

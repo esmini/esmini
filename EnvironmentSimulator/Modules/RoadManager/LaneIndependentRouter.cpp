@@ -183,7 +183,8 @@ bool LaneIndependentRouter::FindGoal()
     {
         Node *currentNode = unvisited_.top();
         unvisited_.pop();
-        bool nodeIsVisited = std::find_if(visited_.begin(), visited_.end(), [currentNode](Node *n) { return *n == *currentNode; }) != visited_.end();
+        bool nodeIsVisited =
+            std::find_if(visited_.begin(), visited_.end(), [currentNode](const Node *n) { return *n == *currentNode; }) != visited_.end();
         if (nodeIsVisited)
         {
             delete currentNode;

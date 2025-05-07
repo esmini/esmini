@@ -71,7 +71,7 @@ namespace esmini
     public:
         OpenScenario(const std::string& xosc_file, const OpenScenarioConfig& config = OpenScenarioConfig{});
         // get object state use config
-        std::vector<ScenarioObjectState> get_object_state(OpenScenarioConfig* config = nullptr);
+        std::vector<ScenarioObjectState> get_object_state(const OpenScenarioConfig* config = nullptr);
         // get object state use second and frame
         std::vector<ScenarioObjectState> get_object_state_by_second(const int second, const int fps = 30);
 

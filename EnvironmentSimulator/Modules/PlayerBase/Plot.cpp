@@ -103,7 +103,7 @@ void Plot::CleanUp()
     window = nullptr;
 }
 
-void Plot::updateData(std::vector<Object*>& objects, double time)
+void Plot::updateData(const std::vector<Object*>& objects, double time)
 {
     if (plot_objects_.size() < scenarioengine_->entities_.object_.size())
     {

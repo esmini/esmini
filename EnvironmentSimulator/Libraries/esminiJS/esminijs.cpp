@@ -44,7 +44,7 @@ namespace esmini
         std::cout << "init scenario success" << std::endl;
     }
 
-    std::vector<ScenarioObjectState> OpenScenario::get_object_state(OpenScenarioConfig *config)
+    std::vector<ScenarioObjectState> OpenScenario::get_object_state(const OpenScenarioConfig *config)
     {
         OpenScenarioConfig _config = this->config;
         if (config != nullptr)

@@ -136,7 +136,7 @@ namespace scenarioengine
         @param obj Pointer to the object
         @return -1 on failure, else the number of sensors attached to the object
         */
-        int GetNumberOfSensorsAttachedToObject(Object *obj) const;
+        int GetNumberOfSensorsAttachedToObject(const Object *obj) const;
 
 #ifdef _USE_OSG
         void InitVehicleModel(Object *obj, viewer::CarModel *model);

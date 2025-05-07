@@ -131,7 +131,7 @@ void Object::AssignController(Controller* controller)
 void Object::UnassignController(Controller* controller)
 {
     std::vector<Controller*>::iterator itr =
-        std::find_if(controllers_.begin(), controllers_.end(), [&controller](Controller* ctrl) { return ctrl == controller; });
+        std::find_if(controllers_.begin(), controllers_.end(), [&controller](const Controller* ctrl) { return ctrl == controller; });
     if (itr != controllers_.end())
     {
         controller->UnlinkObject();

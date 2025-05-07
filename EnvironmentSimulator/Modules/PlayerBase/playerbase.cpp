@@ -1080,7 +1080,7 @@ int ScenarioPlayer::GetNumberOfObjectSensors() const
     return static_cast<int>(sensor.size());
 }
 
-int ScenarioPlayer::GetNumberOfSensorsAttachedToObject(Object* obj) const
+int ScenarioPlayer::GetNumberOfSensorsAttachedToObject(const Object* obj) const
 {
     if (obj == nullptr)
     {

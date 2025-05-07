@@ -99,25 +99,25 @@ namespace scenarioengine
     {
     public:
         ObjectState();
-        ObjectState(int                    id,
-                    std::string            name,
-                    int                    obj_type,
-                    int                    obj_category,
-                    int                    obj_role,
-                    int                    model_id,
-                    std::string            model3d,
-                    int                    ctrl_type,
-                    OSCBoundingBox         boundingbox,
-                    int                    scaleMode,
-                    int                    visibilityMask,
-                    double                 timestamp,
-                    double                 speed,
-                    double                 wheel_angle,
-                    double                 wheel_rot,
-                    double                 rear_axle_z_pos,
-                    double                 front_axle_x_pos,
-                    double                 front_axle_z_pos,
-                    roadmanager::Position *pos);
+        ObjectState(int                          id,
+                    std::string                  name,
+                    int                          obj_type,
+                    int                          obj_category,
+                    int                          obj_role,
+                    int                          model_id,
+                    std::string                  model3d,
+                    int                          ctrl_type,
+                    OSCBoundingBox               boundingbox,
+                    int                          scaleMode,
+                    int                          visibilityMask,
+                    double                       timestamp,
+                    double                       speed,
+                    double                       wheel_angle,
+                    double                       wheel_rot,
+                    double                       rear_axle_z_pos,
+                    double                       front_axle_x_pos,
+                    double                       front_axle_z_pos,
+                    const roadmanager::Position *pos);
         ObjectState(int            id,
                     std::string    name,
                     int            obj_type,
@@ -304,7 +304,7 @@ namespace scenarioengine
                          double         lateralOffset,
                          double         s);
 
-        int updateObjectPos(int id, double timestamp, roadmanager::Position *pos);
+        int updateObjectPos(int id, double timestamp, const roadmanager::Position *pos);
         int updateObjectRoadPos(int id, double timestamp, id_t roadId, double lateralOffset, double s);
         int updateObjectLanePos(int id, double timestamp, id_t roadId, int laneId, double offset, double s);
         int updateObjectWorldPos(int id, double timestamp, double x, double y, double z, double h, double p, double r);
