@@ -3561,15 +3561,19 @@ Master branch represent the latest released software. It should be in synch with
 
 `<branch name>` might be `master` or `dev`, or whatever branch to be restored.
 
-=== Formatting
+=== Formatting and code analysis
 
-From esmini v2.30.0 the CI will include formatting checks, in addition to static analysis and tests. The code styles are defined by following schemes:
+From esmini v2.30.0 the CI will include formatting checks, in addition to static analysis and tests.
+
+From v2.46.3, esmini utilizes https://pre-commit.com/[pre-commit hooks] for these checks. For details of previous implementation, see older versions of this document, e.g. https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/refs/tags/v2.46.2/index.html[v2.46.2].
+
+The code styles are defined by following schemes:
 
 [horizontal]
-*C++* :: https://github.com/esmini/esmini/blob/master/.clang-format[.clang-format]
-*Python* :: https://github.com/esmini/esmini/blob/master/.black-format[.black-format]
-*cmake* :: https://github.com/esmini/esmini/blob/master/.cmake-format[.cmake-format]
-*cppcheck*:: https://github.com/esmini/esmini/blob/master/.cmake-format[.cmake-format]
+*C++* :: https://github.com/esmini/esmini/blob/dev/.clang-format[.clang-format]
+*Python* :: https://github.com/esmini/esmini/blob/dev/.black-format[.black-format]
+*cmake* :: https://github.com/esmini/esmini/blob/dev/.cmake-format[.cmake-format]
+*cppcheck*:: https://github.com/esmini/esmini/blob/dev/.pre-commit-config.yaml[.pre-commit-config.yaml]
 
 
 esmini uses pre-commit hooks to automatically perform code formatting and static code analysis. To enable this functionality, install the pre-commit package:
