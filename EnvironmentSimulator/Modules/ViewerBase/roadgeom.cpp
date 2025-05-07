@@ -27,11 +27,12 @@
 #include "CommonMini.hpp"
 #include "viewer.hpp"
 
-#define GEOM_TOLERANCE  (0.2 - SMALL_NUMBER)  // Minimum distance between two vertices along road s-axis
-#define TEXTURE_SCALE   0.5                   // Scale factor for asphalt and grass textures 1.0 means whole texture fits in 1 x 1 m square
-#define MAX_GEOM_ERROR  0.25                  // maximum distance from the 3D geometry to the OSI lines
-#define MAX_GEOM_LENGTH 50                    // maximum length of a road geometry mesh segment
-#define MIN_GEOM_LENGTH 0.1                   // minimum length of a road geometry mesh segment, adjust if possible
+#define GEOM_TOLERANCE         (0.2 - SMALL_NUMBER)  // Minimum distance between two vertices along road s-axis
+#define TEXTURE_SCALE          2.0                   // Scale factor for asphalt and grass textures 2.0 means whole texture fits in 2 x 2 m square
+#define MAX_GEOM_ERROR         0.25                  // maximum distance from the 3D geometry to the OSI lines
+#define MAX_GEOM_LENGTH        50                    // maximum length of a road geometry mesh segment
+#define MIN_GEOM_LENGTH        0.1                   // minimum length of a road geometry mesh segment, adjust if possible
+#define ROADMARK_TEXTURE_SCALE 3.0                   // scale factor for roadmark textures, 3.0 means whole texture fits in 3 x 3 m square
 
 #define POLYGON_OFFSET_SIDEWALK  2.0
 #define POLYGON_OFFSET_ROADMARKS 1.0
@@ -111,11 +112,41 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array>        vertices,
     // create material with unique name
     static int                  counter           = 0;
     osg::ref_ptr<osg::Material> materialRoadmark_ = new osg::Material;
+    // set color now before defining the texture to allow for blending color and texture
     materialRoadmark_->setName((std::string("RoadMarkMaterial") + std::to_string(counter++).c_str()));
+    printf("Material name: %s\n", materialRoadmark_->getName().c_str());
     materialRoadmark_->setDiffuse(osg::Material::FRONT_AND_BACK, color_array->at(0));
     materialRoadmark_->setAmbient(osg::Material::FRONT_AND_BACK, color_array->at(0));
     materialRoadmark_->setAlpha(osg::Material::FRONT_AND_BACK, 1.0 - fade);
     geode->getOrCreateStateSet()->setAttributeAndModes(materialRoadmark_.get());
+
+    osg::ref_ptr<osg::Texture2D> tex_roadmark;
+    if (!SE_Env::Inst().GetOptions().GetOptionSet("generate_without_textures"))
+    {
+        tex_roadmark = ReadTexture("roadmark.jpg");
+        if (tex_roadmark)
+        {
+            // set color to white for texture mapping. but keep alpha
+            color_array->back()[0] = 1.0f;
+            color_array->back()[1] = 1.0f;
+            color_array->back()[2] = 1.0f;
+            tex_roadmark->setWrap(osg::Texture2D::WrapParameter::WRAP_S, osg::Texture2D::WrapMode::REPEAT);
+            tex_roadmark->setWrap(osg::Texture2D::WrapParameter::WRAP_T, osg::Texture2D::WrapMode::REPEAT);
+            tex_roadmark->setFilter(osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR_MIPMAP_LINEAR);
+            tex_roadmark->setFilter(osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR);
+            geom->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex_roadmark.get());
+        }
+
+        // set texture coordinates anyway, for potential post processing
+        osg::ref_ptr<osg::Vec2Array> texcoords   = new osg::Vec2Array(static_cast<unsigned int>(indices.get()->getNumIndices()));
+        double                       rm_texscale = 1.0 / ROADMARK_TEXTURE_SCALE;
+        for (unsigned int i = 0; i < indices.get()->getNumIndices(); i++)
+        {
+            (*texcoords)[i].set(osg::Vec2(static_cast<float>(rm_texscale * ((*vertices)[(*indices)[i]][0] - origin_[0])),
+                                          static_cast<float>(rm_texscale * ((*vertices)[(*indices)[i]][1] - origin_[1]))));
+        }
+        geom->setTexCoordArray(0, texcoords.get());
+    }
 
     // also embed color in geometry, e.g. for post processing in full stack simulations
     geom->setColorArray(color_array.get());
@@ -731,7 +762,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                             (*verticesAll)[static_cast<unsigned int>(vertex_idx_all)].set(static_cast<float>(gp.x - origin_[0]),
                                                                                           static_cast<float>(gp.y - origin_[1]),
                                                                                           static_cast<float>(gp.z));
-                            double texscale = TEXTURE_SCALE;
+                            double texscale = 1.0 / TEXTURE_SCALE;
                             (*texcoordsAll)[static_cast<unsigned int>(vertex_idx_all)].set(
                                 osg::Vec2(static_cast<float>(texscale * (gp.x - origin_[0])), static_cast<float>(texscale * (gp.y - origin_[1]))));
                             vertex_idx_all++;
