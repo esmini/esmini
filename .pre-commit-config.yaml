@@ -61,7 +61,7 @@ repos:
           - --suppress=uninitStructMember #2
           - --suppress=missingIncludeSystem #3
           - --suppress=invalidPrintfArgType_sint #2
-          - --suppress=unusedVariable #2
+          #- --suppress=unusedVariable #2
           - --suppress=operatorEqVarError #2
           - --suppress=hicpp-signed-bitwise #2
           - --suppress=noExplicitConstructor #2

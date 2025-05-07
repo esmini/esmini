@@ -2152,9 +2152,9 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
 
 void SE_Options::ApplyDefaultValues()
 {
-    for (auto& [key, opt] : option_)
+    for (auto& option : option_)
     {
-        [[maybe_unused]] const auto& unused_key = key;
+        auto& opt = option.second;
         if (opt.arg_value_.empty() && !opt.default_value_.empty())
         {
             if ((!opt.autoApply_ && opt.set_) || (opt.autoApply_ && !opt.set_))
@@ -2193,16 +2193,15 @@ bool SE_Options::HasUnknownArgs() const
 void SE_Options::Reset()
 {
     optionOrder_.clear();
-    for (auto& [key, option] : option_)
+
+    for (auto& option : option_)
     {
-        [[maybe_unused]] const auto& unused_key = key;
-        if (!option.persistent_)
+        if (!option.second.persistent_)
         {
-            option.arg_value_.clear();
-            option.set_ = false;
+            option.second.set_ = false;
+            option.second.arg_value_.clear();
         }
     }
-
     originalArgs_.clear();
 }
 
