@@ -3581,24 +3581,20 @@ Then, run the following command to install the pre-commit hooks in esmini root f
 pre-commit install
 ```
 
-To run formatting locally, follow steps below:
+To run formatting locally, follow steps below.
 
 [discreet]
 ==== Dependencies
+
 ===== clang-format
+[horizontal]
+*Windows*:: Download and install https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.7/LLVM-15.0.7-win64.exe[LLVM-15.0.7-win64.exe]
+*Linux*:: ```sudo apt install clang-format```
 
-Windows: +
-Download and install LLVM-15.0.7-win64.exe found here: +
-https://github.com/llvm/llvm-project/releases/tag/llvmorg-15.0.7
-
-Linux: +
-
-
-```
-sudo apt install clang-format
-```
-
-see also: https://github.com/esmini/esmini/blob/dev/.github/workflows/ci.yml#L26[ci.yml]
+===== cppcheck
+[horizontal]
+*Windows*:: Download and install https://github.com/danmar/cppcheck/releases/download/2.17.1/cppcheck-2.17.1-x64-Setup.msi[cppcheck-2.17.1-x64-Setup.msi]
+*Linux*:: ```sudo apt install cppcheck```
 
 ===== Install dependent Python packages
 [source, txt]
