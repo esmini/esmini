@@ -2032,6 +2032,7 @@ RoadMarkInfo Lane::GetRoadMarkInfoByS(id_t track_id, int lane_id, double s) cons
     LaneRoadMarkType* lane_roadMarkType;
     RoadMarkInfo      rm_info = {IDX_UNDEFINED, IDX_UNDEFINED};
     idx_t             lsec_idx;
+
     if (road == 0)
     {
         LOG_ERROR("Position::Set Error: track {} not available", track_id);
@@ -3061,24 +3062,21 @@ Road* OpenDrive::GetRoadByIdx(idx_t idx) const
 
 Road* roadmanager::OpenDrive::GetRoadByIdStr(std::string id_str) const
 {
-    for (auto r : road_)
+    std::vector<Road*>::const_iterator itr = std::find_if(road_.begin(), road_.end(), [&id_str](Road* r) { return r->GetIdStr() == id_str; });
+    if (itr != road_.end())
     {
-        if (r->GetIdStr() == id_str)
-        {
-            return r;
-        }
+        return *itr;
     }
     return nullptr;
 }
 
 Junction* roadmanager::OpenDrive::GetJunctionByIdStr(std::string id_str) const
 {
-    for (auto j : junction_)
+    std::vector<Junction*>::const_iterator itr =
+        std::find_if(junction_.begin(), junction_.end(), [&id_str](Junction* j) { return j->GetIdStr() == id_str; });
+    if (itr != junction_.end())
     {
-        if (j->GetIdStr() == id_str)
-        {
-            return j;
-        }
+        return *itr;
     }
     return nullptr;
 }
@@ -6073,14 +6071,12 @@ void OpenDrive::EstablishUniqueIds(pugi::xml_node& parent, std::string name, std
 
 id_t OpenDrive::LookupIdFromStr(std::vector<std::pair<id_t, std::string>>& ids, std::string id_str)
 {
-    for (auto& id : ids)
+    std::vector<std::pair<id_t, std::string>>::iterator itr =
+        std::find_if(ids.begin(), ids.end(), [&id_str](const std::pair<id_t, std::string>& id) { return id.second == id_str; });
+    if (itr != ids.end())
     {
-        if (id.second == id_str)
-        {
-            return id.first;
-        }
+        return itr->first;
     }
-
     return ID_UNDEFINED;
 }
 
@@ -6111,16 +6107,12 @@ id_t OpenDrive::LookupJunctionIdFromStr(std::string id_str)
 id_t roadmanager::OpenDrive::GenerateRoadId()
 {
     id_t max_id = 0;
+    auto it     = std::max_element(road_.begin(), road_.end(), [](const auto& a, const auto& b) { return a->GetId() < b->GetId(); });
 
-    // generate new id as current maximum id + 1
-    for (auto r : road_)
+    if (it != road_.end())
     {
-        if (r->GetId() > max_id)
-        {
-            max_id = r->GetId();
-        }
+        max_id = (*it)->GetId();
     }
-
     return max_id + 1;
 }
 
@@ -7681,15 +7673,9 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                     // check whether current road is part of the route
                     if (route_ != nullptr && route_->IsValid())
                     {
-                        bool road_on_route = false;
-                        for (auto& wp : route_->minimal_waypoints_)
-                        {
-                            if (wp.GetTrackId() == current_road->GetId())
-                            {
-                                road_on_route = true;
-                                break;
-                            }
-                        }
+                        bool road_on_route = std::any_of(route_->minimal_waypoints_.begin(),
+                                                         route_->minimal_waypoints_.end(),
+                                                         [current_road](const auto& wp) { return wp.GetTrackId() == current_road->GetId(); });
 
                         if (!road_on_route)
                         {

@@ -207,14 +207,11 @@ void Plot::adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<
 void Plot::renderPlot(const char* name)  //, float window_w, float window_h)
 {
     // See how many boxes that has been checked (excl. time), used to scale lineplots
-    size_t lineplot_objects = 0;
-    for (const auto& selection : lineplot_selection_)
-    {
-        if (selection.first != PlotCategories::Time && selection.second)
-        {
-            lineplot_objects += 1;
-        }
-    }
+    size_t lineplot_objects =
+        static_cast<size_t>(std::count_if(lineplot_selection_.begin(),
+                                          lineplot_selection_.end(),
+                                          [](const auto& selection) { return selection.first != PlotCategories::Time && selection.second; }));
+
     ImGui::SetNextWindowSize(ImVec2(static_cast<float>(window_w), static_cast<float>(window_h)), ImGuiCond_Once);
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
     ImGui::Begin(name, nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar);

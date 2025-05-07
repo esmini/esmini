@@ -17,14 +17,13 @@ using namespace scenarioengine;
 
 StoryBoardElement* StoryBoardElement::FindChildByName(std::string name)
 {
-    for (auto child : *GetChildren())
+    std::vector<StoryBoardElement*>*          children = GetChildren();
+    std::vector<StoryBoardElement*>::iterator it =
+        std::find_if(children->begin(), children->end(), [&name](StoryBoardElement* child) { return child->GetName() == name; });
+    if (it != children->end())
     {
-        if (child->GetName() == name)
-        {
-            return child;
-        }
+        return *it;
     }
-
     return nullptr;
 }
 

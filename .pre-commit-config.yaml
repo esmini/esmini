@@ -56,7 +56,6 @@ repos:
           #- --suppress=oppositeInnerCondition #2
           #- --suppress=nullPointerRedundantCheck #2
           #- --suppress=deallocret #2
-          - --suppress=knownConditionTrueFalse #2 # we will keep it
           - --suppress=unmatchedSuppression #2
           - --suppress=constParameter #2
           - --suppress=useInitializationList #3
@@ -67,7 +66,7 @@ repos:
           - --suppress=uninitvar #2
           - --suppress=unusedLabel #3
           - --suppress=uninitStructMember #2
-          - --suppress=useStlAlgorithm #3
+          #- --suppress=useStlAlgorithm #3
           - --suppress=shadowFunction #2
           - --suppress=missingIncludeSystem #3
           - --suppress=oppositeExpression #3
@@ -77,6 +76,7 @@ repos:
           - --suppress=hicpp-signed-bitwise #2
           - --suppress=noExplicitConstructor #2
           - --suppress=noValidConfiguration #3
+          - --suppress=knownConditionTrueFalse #2 # we will keep it
           - --suppress=unusedStructMember #1 #we will keep it
           - --suppress=unusedFunction #1 #we will keep it
           - --suppress=preprocessorErrorDirective #2 #we will keep it as cppcheck does not support evaluating __has_include() properly.

@@ -446,14 +446,13 @@ WaypointStatus ControllerFollowRoute::GetWaypointStatus(roadmanager::Position ve
         }
     }
 
-    for (Road *previousRoad : possiblePreviousRoads)
+    std::vector<Road *>::iterator itr = std::find_if(possiblePreviousRoads.begin(),
+                                                     possiblePreviousRoads.end(),
+                                                     [&waypoint](Road *road) { return road->GetId() == waypoint.GetTrackId(); });
+    if (itr != possiblePreviousRoads.end())
     {
-        if (previousRoad->GetId() == waypoint.GetTrackId())
-        {
-            int previousLaneId = currentRoad->GetConnectingLaneId(link, vehiclePos.GetLaneId(), previousRoad->GetId());
-            return previousLaneId == waypoint.GetLaneId() ? PASSED_WAYPOINT : MISSED_WAYPOINT;
-        }
+        int previousLaneId = currentRoad->GetConnectingLaneId(link, vehiclePos.GetLaneId(), waypoint.GetTrackId());
+        return previousLaneId == waypoint.GetLaneId() ? PASSED_WAYPOINT : MISSED_WAYPOINT;
     }
-
     return WAYPOINT_NOT_REACHED;
 }

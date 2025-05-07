@@ -554,16 +554,16 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
         for (const auto &crop : osi_crop_)
         {
             ObjectState *crop_obj = nullptr;
-            for (const auto &obj : objectState)
-            {
-                if (obj->state_.info.id == crop.first)  // Find the crop ObjectState
-                {
-                    crop_obj = obj.get();
-                    break;
-                }
-            }
 
-            if (crop_obj == nullptr)
+            std::vector<std::unique_ptr<ObjectState>>::const_iterator itr =
+                std::find_if(objectState.begin(),
+                             objectState.end(),
+                             [crop](const std::unique_ptr<ObjectState> &obj) { return obj->state_.info.id == crop.first; });
+            if (itr != objectState.end())
+            {
+                crop_obj = itr->get();
+            }
+            else
             {
                 LOG_WARN("Warning: Object with id {} not found in the scenario, and hence no OSI update around this object", crop.first);
                 continue;
