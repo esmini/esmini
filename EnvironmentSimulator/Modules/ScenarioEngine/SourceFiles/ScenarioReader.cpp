@@ -2443,7 +2443,7 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
         }
         else
         {
-            *values[i].variable = strtod(parameters.ReadAttribute(dynamics_node, values[i].label.c_str()));
+            *values[i].variable = strtod(parameters.ReadAttribute(dynamics_node, values[i].label));
 
             if (*values[i].variable < SMALL_NUMBER)
             {
