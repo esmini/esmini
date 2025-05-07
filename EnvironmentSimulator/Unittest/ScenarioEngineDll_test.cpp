@@ -4930,28 +4930,28 @@ TEST(RoadmanagerTest, TestSimpleGetDistance)
     ASSERT_EQ(n_Objects, 4);
 
     double distance, timestamp;
-    int    ret = SE_SimpleGetDistanceToObject(0, 1, SE_RelativeDistanceType::REL_DIST_EUCLIDIAN, 200.0, distance, timestamp);
+    int    ret = SE_SimpleGetDistanceToObject(0, 1, SE_RelativeDistanceType::REL_DIST_EUCLIDIAN, 200.0, &distance, &timestamp);
     EXPECT_EQ(ret, 0);
     EXPECT_NEAR(distance, 185.043f, error);
     EXPECT_NEAR(timestamp, 0.0f, error);
 
-    ret = SE_SimpleGetDistanceToObject(0, 2, SE_RelativeDistanceType::REL_DIST_LATERAL, 200.0, distance, timestamp);
+    ret = SE_SimpleGetDistanceToObject(0, 2, SE_RelativeDistanceType::REL_DIST_LATERAL, 200.0, &distance, &timestamp);
     EXPECT_EQ(ret, -2);
 
-    ret = SE_SimpleGetDistanceToObject(0, 3, SE_RelativeDistanceType::REL_DIST_LONGITUDINAL, 200.0, distance, timestamp);
+    ret = SE_SimpleGetDistanceToObject(0, 3, SE_RelativeDistanceType::REL_DIST_LONGITUDINAL, 200.0, &distance, &timestamp);
     EXPECT_EQ(ret, -2);
 
     SE_StepDT(0.1f);
     SE_StepDT(0.1f);
 
     // Object 1 is deleted
-    ret = SE_SimpleGetDistanceToObject(0, 1, SE_RelativeDistanceType::REL_DIST_EUCLIDIAN, 200.0, distance, timestamp);
+    ret = SE_SimpleGetDistanceToObject(0, 1, SE_RelativeDistanceType::REL_DIST_EUCLIDIAN, 200.0, &distance, &timestamp);
     EXPECT_EQ(ret, -1);
 
     SE_StepDT(0.1f);
 
     // Object 3 is teleported close to ego
-    ret = SE_SimpleGetDistanceToObject(0, 3, SE_RelativeDistanceType::REL_DIST_LONGITUDINAL, 200.0, distance, timestamp);
+    ret = SE_SimpleGetDistanceToObject(0, 3, SE_RelativeDistanceType::REL_DIST_LONGITUDINAL, 200.0, &distance, &timestamp);
     EXPECT_EQ(ret, 0);
     EXPECT_NEAR(distance, 80.5f, error);
     EXPECT_NEAR(timestamp, 0.3f, error);
@@ -4961,7 +4961,7 @@ TEST(RoadmanagerTest, TestSimpleGetDistance)
         SE_StepDT(0.1f);
     }
     // Object 2 cooldown from being out of range initially has not passed
-    ret = SE_SimpleGetDistanceToObject(0, 2, SE_RelativeDistanceType::REL_DIST_LATERAL, 200.0, distance, timestamp);
+    ret = SE_SimpleGetDistanceToObject(0, 2, SE_RelativeDistanceType::REL_DIST_LATERAL, 200.0, &distance, &timestamp);
     EXPECT_EQ(ret, -2);
     EXPECT_NEAR(timestamp, 0.0f, error);
 
@@ -4971,7 +4971,7 @@ TEST(RoadmanagerTest, TestSimpleGetDistance)
     }
 
     // Object 2 is within 500m range and 3s cooldown has passed
-    ret = SE_SimpleGetDistanceToObject(0, 2, SE_RelativeDistanceType::REL_DIST_LATERAL, 200.0, distance, timestamp);
+    ret = SE_SimpleGetDistanceToObject(0, 2, SE_RelativeDistanceType::REL_DIST_LATERAL, 200.0, &distance, &timestamp);
     EXPECT_EQ(ret, 0);
     EXPECT_NEAR(distance, 0.0f, error);
     EXPECT_NEAR(timestamp, 3.2f, error);

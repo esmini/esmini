@@ -307,8 +307,8 @@ void ControllerNaturalDriver::FilterSurroundingVehicles()
                                                  obj,
                                                  roadmanager::RelativeDistanceType::REL_DIST_EUCLIDIAN,
                                                  lookahead_dist_ * 2,
-                                                 relative_distance,
-                                                 timestamp);
+                                                 &relative_distance,
+                                                 &timestamp);
 
         if (ret == 0 && relative_distance <= lookahead_dist_ && relative_distance >= -lookahead_dist_)
         {

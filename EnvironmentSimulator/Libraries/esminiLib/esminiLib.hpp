@@ -18,7 +18,8 @@
 #define SE_DLL_API  // Leave empty on Mac
 #endif
 
-#include "stdint.h"
+#include <stdint.h>
+#include <stdbool.h>
 
 typedef uint32_t id_t;
 
@@ -1324,8 +1325,8 @@ extern "C"
                                                 const int               object_b_id,
                                                 SE_RelativeDistanceType dist_type,
                                                 const double            tracking_limit,
-                                                double                 &distance,
-                                                double                 &timestamp);
+                                                double                 *distance,
+                                                double                 *timestamp);
 
     /**
             Create an ideal object sensor and attach to specified vehicle

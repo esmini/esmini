@@ -1412,8 +1412,8 @@ int ScenarioEngine::GetDistance(Object*                           object_1,
                                 Object*                           object_2,
                                 roadmanager::RelativeDistanceType dist_type,
                                 const double                      tracking_limit,
-                                double&                           distance,
-                                double&                           timestamp)
+                                double*                           distance,
+                                double*                           timestamp)
 {
     uint64_t key     = GenerateKey(object_1->GetId(), object_2->GetId());
     uint64_t rev_key = GenerateKey(object_2->GetId(), object_1->GetId());
@@ -1440,8 +1440,8 @@ int ScenarioEngine::GetDistance(Object*                           object_1,
     }
 
     auto& measurement = it->second.measurement_[static_cast<size_t>(dist_type)];
-    distance          = measurement.distance_;
-    timestamp         = measurement.timestamp_;
+    *distance         = measurement.distance_;
+    *timestamp        = measurement.timestamp_;
 
     return dist_updated;
 }

@@ -90,8 +90,8 @@ namespace scenarioengine
                          Object                           *object_2,
                          roadmanager::RelativeDistanceType dist_type,
                          const double                      tracking_limit,
-                         double                           &distance,
-                         double                           &timestamp);
+                         double                           *distance,
+                         double                           *timestamp);
         bool GetDisableControllersFlag()
         {
             return disable_controllers_;

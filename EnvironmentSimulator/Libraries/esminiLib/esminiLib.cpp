@@ -2284,8 +2284,8 @@ extern "C"
                                                 const int               object_b_id,
                                                 SE_RelativeDistanceType dist_type,
                                                 const double            tracking_limit,
-                                                double                 &distance,
-                                                double                 &timestamp)
+                                                double                 *distance,
+                                                double                 *timestamp)
     {
         Object *obj_a = nullptr;
         if (getObjectById(object_a_id, obj_a) == -1)
