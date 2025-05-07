@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
         {
             if (tc->action(j).has_lane_change_action())
             {
-                printf("Lane change action (id %u) started: objId %d deltaLane %d shapeType %d duration %.2f distance %.2f\n",
+                printf("Lane change action (id %u) started: objId %u deltaLane %d shapeType %d duration %.2f distance %.2f\n",
                        static_cast<unsigned int>(tc->action(j).lane_change_action().action_header().action_id().value()),
                        static_cast<unsigned int>(tc->traffic_participant_id().value()),
                        tc->action(j).lane_change_action().relative_target_lane(),
@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
 
             if (tc->action(j).has_speed_action())
             {
-                printf("Speed action (id %u) started: objId %d targetSpeed %.2f shape %d duration %.2f distance %.2f\n",
+                printf("Speed action (id %u) started: objId %u targetSpeed %.2f shape %d duration %.2f distance %.2f\n",
                        static_cast<unsigned int>(tc->action(j).speed_action().action_header().action_id().value()),
                        static_cast<unsigned int>(tc->traffic_participant_id().value()),
                        tc->action(j).speed_action().absolute_target_speed(),
@@ -55,7 +55,7 @@ int main(int argc, char* argv[])
 
             if (tc->action(j).has_teleport_action())
             {
-                printf("Teleport action (id %u) started: objId %d x %.2f y %.2f z %.2f h %.2f p %.2f r %.2f\n",
+                printf("Teleport action (id %u) started: objId %u x %.2f y %.2f z %.2f h %.2f p %.2f r %.2f\n",
                        static_cast<unsigned int>(tc->action(j).teleport_action().action_header().action_id().value()),
                        static_cast<unsigned int>(tc->traffic_participant_id().value()),
                        tc->action(j).teleport_action().position().x(),
