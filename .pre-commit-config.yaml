@@ -67,7 +67,7 @@ repos:
           - --suppress=unusedLabel #3
           - --suppress=uninitStructMember #2
           #- --suppress=useStlAlgorithm #3
-          - --suppress=shadowFunction #2
+          #- --suppress=shadowFunction #2
           - --suppress=missingIncludeSystem #3
           - --suppress=oppositeExpression #3
           - --suppress=invalidPrintfArgType_sint #2

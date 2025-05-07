@@ -303,19 +303,19 @@ namespace STGeometry
     bool geometryIntersect(Triangle &triangle, EllipseInfo &eInfo, Solutions &sol)
     {
         double                 res;
-        double                 h, k, A, SMjA, SMnA;
+        double                 h, k, AA, SMjA, SMnA;
         roadmanager::Geometry *geometry = (triangle.geometry());
         h                               = eInfo.egoPos.GetX();
         k                               = eInfo.egoPos.GetY();
-        A                               = eInfo.egoPos.GetH();
+        AA                              = eInfo.egoPos.GetH();
         SMjA                            = eInfo.SMjA;
         SMnA                            = eInfo.SMnA;
 
-        DDProc ellipseP = [h, k, A, SMjA, SMnA, geometry](double s)
+        DDProc ellipseP = [h, k, AA, SMjA, SMnA, geometry](double s)
         {
             double x, y, hdg;
             geometry->EvaluateDS(s, &x, &y, &hdg);
-            return ellipse(h, k, A, SMjA, SMnA, x, y);
+            return ellipse(h, k, AA, SMjA, SMnA, x, y);
         };
         if (!brent_zeros(triangle.sI, triangle.sF, res, SMALL_NUMBER, ellipseP))
             return false;
