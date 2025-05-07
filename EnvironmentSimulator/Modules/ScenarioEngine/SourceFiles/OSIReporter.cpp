@@ -407,7 +407,7 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
                 roadmanager::RMObject *object = road->GetRoadObject(j);
                 if (object)
                 {
-                    UpdateOSIStationaryObjectODR(road->GetId(), object);
+                    UpdateOSIStationaryObjectODR(object);
                 }
             }
         }
@@ -622,11 +622,8 @@ int OSIReporter::UpdateOSIHostVehicleData(ObjectState *objectState)
     return 0;
 }
 
-int OSIReporter::UpdateOSIStationaryObjectODR(id_t road_id, roadmanager::RMObject *object)
+int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
 {
-    osi3::StationaryObject so;
-    obj_osi_internal.static_gt->mutable_stationary_object();
-    (void)road_id;
     // Create OSI Stationary Object
     obj_osi_internal.sobj = obj_osi_internal.static_gt->add_stationary_object();
 
