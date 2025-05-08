@@ -57,8 +57,7 @@ repos:
           - --suppress=uninitStructMember #2
           - --suppress=missingIncludeSystem #3
           - --suppress=missingInclude #3
-          - --suppress=operatorEqVarError #2
-          - --suppress=hicpp-signed-bitwise #2
+          - --suppress=operatorEqVarError #2 # do code changes with emil
           - --suppress=noExplicitConstructor #2
           - --suppress=noValidConfiguration #3
           - --suppress=knownConditionTrueFalse #2 # we will keep it
