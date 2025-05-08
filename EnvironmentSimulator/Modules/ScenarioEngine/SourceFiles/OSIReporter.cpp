@@ -470,7 +470,7 @@ void OSIReporter::CropOSIDynamicGroundTruth(const int id, const double radius)
                 else
                 {
                     osi_crop_.erase(osi_crop_.begin() + static_cast<int>(i));
-                    LOG_INFO("CropGroundTruth: Removed crop for id %d", id);
+                    LOG_INFO("CropGroundTruth: Removed crop for entity id {}", id);
                 }
                 return;
             }
@@ -480,7 +480,7 @@ void OSIReporter::CropOSIDynamicGroundTruth(const int id, const double radius)
             osi_crop_.emplace_back(std::make_pair(id, radius));
         }
     }
-    LOG_INFO("CropGroundTruth: Added crop for id %d with radius %.2f", id, radius);
+    LOG_INFO("CropGroundTruth: Added crop for entity id {} with radius {}", id, radius);
 }
 
 void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &obj)
