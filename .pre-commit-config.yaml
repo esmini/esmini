@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: clang-format
         name: ClangFormat
-        entry: clang-format-15 -i
+        entry: ./support/script/clang-format-runner.sh -i
         language: system
         types_or: [c, c++]
         exclude: ^externals/.*$

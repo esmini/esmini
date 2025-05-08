@@ -32,6 +32,9 @@ jobs:
           cache: 'pip'
       - run: pip install -r support/python/requirements.txt
 
+      - name: Make clang-format executable
+        run: chmod +x support/script/clang-format-runner.sh
+
       - name: Run clang-format lint
         run: pre-commit run clang-format --all-files
 
