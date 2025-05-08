@@ -958,7 +958,7 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 148219);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 148112);  // initial OSI size, including static content
 
     int road_lane_size;
 
@@ -970,12 +970,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 149231);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 148997);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 150244);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 150009);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -3477,7 +3477,6 @@ TEST(TestOsiReporter, OutlineWithRepeat)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
@@ -3601,7 +3600,6 @@ TEST(TestOsiReporter, OutlineInCurveRoad)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
@@ -3665,7 +3663,6 @@ TEST(TestOsiReporter, MarkingTest)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
@@ -3841,7 +3838,6 @@ TEST(TestOsiReporter, MarkingTest)
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     const char* gt1 = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt1, sv_size);
@@ -4011,7 +4007,6 @@ TEST(TestOsiReporter, TestMarkingMerge)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
@@ -4123,7 +4118,6 @@ TEST(TestOsiReporter, TestMarkingsCircularRoad)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
@@ -4157,7 +4151,6 @@ TEST(TestOsiReporter, StationaryObjectWithRepeatTest)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
@@ -4198,12 +4191,10 @@ TEST(TestOsiReporter, StationaryObjectWithRepeatTest)
 
 TEST(TestOsiReporter, CrestCurveRoadObjectTest)
 {
-    const char* args[] =
-        {"--osc", "../../../EnvironmentSimulator/Unittest/xosc/test_crest-curve.xosc", "--window", "60", "60", "800", "400", "--headless"};
+    const char* args[] = {"--osc", "../EnvironmentSimulator/Unittest/xosc/test_crest-curve.xosc",  "--headless", "--window", "60", "60", "800", "400"};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
@@ -4310,13 +4301,12 @@ TEST(TestOsiReporter, CrestCurveRoadObjectTest)
     EXPECT_EQ(id5, 5);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().position().x(), 272.740, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().position().y(), -79.856, 1e-3);
+    EXPECT_NEAR(osi_gt.stationary_object(5).base().position().z(), 4.295, 1e-3);
 #ifdef _USE_OSG
-    EXPECT_NEAR(osi_gt.stationary_object(5).base().position().z(), 3.295 + osi_gt.stationary_object(5).base().dimension().height() / 2.0, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().dimension().length(), 0.200, 1e-3);
     EXPECT_NEAR(osi_gt.stationary_object(5).base().dimension().width(), 0.200, 1e-3);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().dimension().height(), 2);
 #else
-    EXPECT_NEAR(osi_gt.stationary_object(5).base().position().z(), 3.295, 1e-3);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().dimension().length(), DEFAULT_MIN_DIM);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().dimension().width(), DEFAULT_MIN_DIM);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(5).base().dimension().height(), DEFAULT_MIN_DIM);
@@ -4353,7 +4343,6 @@ TEST(TestOsiReporter, StationaryObjectTest)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
@@ -4453,17 +4442,21 @@ TEST(TestOsiReporter, StationaryObjectTest)
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(13).base().position().y(), 5.0);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(13).base().position().z(), 1.0);
     SE_Close();
+}
 
+TEST(TestOsiReporter, StationaryObjectTestWithViewer)
+{
     // with viewer
     const char* args[] =
-        {"--osc", "../../../EnvironmentSimulator/Unittest/xosc/test_stationary_objects.xosc", "--window", "60", "60", "800", "400", "--headless"};
+        {"--osc", "../../../EnvironmentSimulator/Unittest/xosc/test_stationary_objects.xosc", "--headless", "--window", "60", "60", "800", "400"};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
-    const char* gt1 = SE_GetOSIGroundTruth(&sv_size);
-    osi_gt.ParseFromArray(gt1, sv_size);
+    int               sv_size = 0;
+    osi3::GroundTruth osi_gt;
+    const char* gt = SE_GetOSIGroundTruth(&sv_size);
+    osi_gt.ParseFromArray(gt, sv_size);
 
     EXPECT_EQ(osi_gt.mutable_stationary_object()->size(), 16);
     EXPECT_DOUBLE_EQ(osi_gt.stationary_object(0).base().dimension().length(), DEFAULT_MIN_DIM);
@@ -4542,7 +4535,6 @@ TEST(TestOsiReporter, OutlineInSharpCurve)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
@@ -4584,7 +4576,6 @@ TEST(TestOsiReporter, OutlinesWithChangingBB)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
@@ -4698,7 +4689,6 @@ TEST(TestOsiReporter, LocalCornerOutline)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
@@ -4834,7 +4824,6 @@ TEST(TestOsiReporter, RoadCornerOutline)
     ASSERT_EQ(i_init, 0);
 
     SE_StepDT(0.001f);
-    SE_UpdateOSIGroundTruth();
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;

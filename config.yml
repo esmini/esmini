@@ -6,3 +6,4 @@ replayer:
   file: sim.dat
 odrviewer:
   window: 60 60 800 400
+  odr: resources/xodr/crest-curve.xodr

@@ -625,7 +625,7 @@ int OSIReporter::UpdateOSIHostVehicleData(ObjectState *objectState)
 
 int UpdateOSIStationaryObjectODRMarking(std::vector<std::vector<Point3D>> &points)
 {
-    obj_osi_internal.rm = obj_osi_internal.gt->add_road_marking();
+    obj_osi_internal.rm = obj_osi_internal.static_gt->add_road_marking();
     obj_osi_internal.rm->mutable_classification()->set_type(osi3::RoadMarking_Classification_Type::RoadMarking_Classification_Type_TYPE_OTHER);
     for (const auto &allPoints : points)
     {
@@ -743,9 +743,9 @@ int UpdateOSIStationaryObjectODRPosition(roadmanager::RMObject *object)
 void AddOSIStationaryObject(roadmanager::RMObject *object, bool isRepeat = false)
 {
     // Create OSI Stationary Object
-    obj_osi_internal.sobj = obj_osi_internal.gt->add_stationary_object();
+    obj_osi_internal.sobj = obj_osi_internal.static_gt->add_stationary_object();
     // Set OSI Stationary Object Mutable ID
-    int sobj_size = obj_osi_internal.gt->mutable_stationary_object()->size();
+    int sobj_size = obj_osi_internal.static_gt->mutable_stationary_object()->size();
     obj_osi_internal.sobj->mutable_id()->set_value(static_cast<unsigned int>(sobj_size - 1));
     // Set OSI Stationary Object Type and Classification
     UpdateOSIStationaryObjectODRType(object->GetType(), object->GetParkingSpace().GetRestrictions(), isRepeat);
@@ -2571,7 +2571,7 @@ int OSIReporter::UpdateTrafficSignals()
                 if (signal->IsDynamic())
                 {
                     osi3::TrafficLight *trafficLight = obj_osi_internal.static_gt->add_traffic_light();
-                    trafficLight->mutable_id()->set_value(static_cast<unsigned int>(signal->GetId()));
+                    trafficLight->mutable_id()->set_value(signal->GetId());
                     trafficLight->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
                     trafficLight->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
                     trafficLight->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(
