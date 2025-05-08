@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 # Detect OS and set the appropriate clang-format command
 if [[ "$OSTYPE" == "msys"* || "$OSTYPE" == "cygwin"* || "$OSTYPE" == "win32" ]]; then
