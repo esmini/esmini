@@ -2665,26 +2665,34 @@ int Viewer::DrawMarking(roadmanager::RMObject* object, osg::Group* parent)
         for (auto& segment : marking.GetMarkingSegments())  // get all segments/edges for each marking definition
         {
             osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+
             for (auto& points : segment.GetAllPoints())  // get all points per segment
             {
+                if (points.size() != 4)
+                {
+                    LOG_INFO("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1");
+                }
                 osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(points.size());  // one set at bottom and one at top
 
-                for (int i = 0; i < points.size(); i += 4)  // get vertices defining each individual marking, defined by 4 vertices
+                (*vertices)[0].set(static_cast<float>(points[0].x - origin_[0]),
+                                   static_cast<float>(points[0].y - origin_[1]),
+                                   static_cast<float>(points[0].z));
+                (*vertices)[1].set(static_cast<float>(points[1].x - origin_[0]),
+                                   static_cast<float>(points[1].y - origin_[1]),
+                                   static_cast<float>(points[1].z));
+                (*vertices)[2].set(static_cast<float>(points[2].x - origin_[0]),
+                                   static_cast<float>(points[2].y - origin_[1]),
+                                   static_cast<float>(points[2].z));
+                (*vertices)[3].set(static_cast<float>(points[3].x - origin_[0]),
+                                   static_cast<float>(points[3].y - origin_[1]),
+                                   static_cast<float>(points[3].z));
+                for (int i = 0; i < 4; i++)
                 {
-                    (*vertices)[i * 4 + 0].set(static_cast<float>(points[i * 4 + 0].x - origin_[0]),
-                                               static_cast<float>(points[i * 4 + 0].y - origin_[1]),
-                                               static_cast<float>(points[i * 4 + 0].z));
-                    (*vertices)[i * 4 + 1].set(static_cast<float>(points[i * 4 + 1].x - origin_[0]),
-                                               static_cast<float>(points[i * 4 + 1].y - origin_[1]),
-                                               static_cast<float>(points[i * 4 + 1].z));
-                    (*vertices)[i * 4 + 2].set(static_cast<float>(points[i * 4 + 2].x - origin_[0]),
-                                               static_cast<float>(points[i * 4 + 2].y - origin_[1]),
-                                               static_cast<float>(points[i * 4 + 2].z));
-                    (*vertices)[i * 4 + 3].set(static_cast<float>(points[i * 4 + 3].x - origin_[0]),
-                                               static_cast<float>(points[i * 4 + 3].y - origin_[1]),
-                                               static_cast<float>(points[i * 4 + 3].z));
+                    if (fabs(points[i].x) > 1e4 || fabs(points[i].y) > 1e4)
+                    {
+                        printf("vertices %d: %.2f %.2f\n", i, points[i].x, points[i].y);
+                    }
                 }
-
                 // Finally create and add geometry
                 osg::ref_ptr<osg::Geometry> geom  = new osg::Geometry;
                 osg::ref_ptr<osg::Vec4Array> color_array = new osg::Vec4Array;
@@ -3039,10 +3047,9 @@ void Viewer::AddModel(bool                                         IsMarkingAvai
     parent->addChild(tx);
     osg::ref_ptr<osg::Node> bb_wf;  // handle to the shape that will be the wireframed bounding box
 
-    if (IsMarkingAvailable)  // show bounding box for objects without markings
+    if (IsMarkingAvailable)
     {
         // Reuse created 3D bounding box model for wireframe representation of objects with markings
-        static_cast<osg::ShapeDrawable*>(tx->getChild(0))->setColor(osg::Vec4(1.0, 1.0, 1.0, 1.0));  // draw wf as white
         bb_wf = tx->getChild(0);
         bb_wf->setNodeMask(NODE_MASK_OBJECT_WF);
     }
@@ -3069,27 +3076,19 @@ void Viewer::AddModel(bool                                         IsMarkingAvai
 // create object from given object and scales
 void Viewer::AddOutlineModel(bool IsMarkingAvailable, osg::ref_ptr<osg::Geode> geode, osg::ref_ptr<osg::Group> parent)
 {
-    osg::ref_ptr<osg::Geode>  bb_wf = new osg::Geode;
-    osg::ComputeBoundsVisitor cbv;
-    geode->accept(cbv);
-    osg::BoundingBox modelBB;
-    modelBB = cbv.getBoundingBox();
-    bb_wf->addDrawable(new osg::ShapeDrawable(new osg::Box(modelBB.center(),
-                                                           modelBB._max.x() - modelBB._min.x(),
-                                                           modelBB._max.y() - modelBB._min.y(),
-                                                           modelBB._max.z() - modelBB._min.z())));
-    osg::PolygonMode* polygonMode = new osg::PolygonMode;
-    polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
-    bb_wf->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-    bb_wf->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-    bb_wf->setNodeMask(NodeMask::NODE_MASK_OBJECT_WF);
-    parent->addChild(bb_wf);
-
-    if (!IsMarkingAvailable)  // show bounding box only for objects without markings
+    if (IsMarkingAvailable)  // show bounding box only for objects without markings
     {
-        parent->addChild(geode);
+        osg::PolygonMode* polygonMode = new osg::PolygonMode;
+        polygonMode->setMode(osg::PolygonMode::FRONT_AND_BACK, osg::PolygonMode::LINE);
+        geode->getOrCreateStateSet()->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+        geode->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+        geode->setNodeMask(NODE_MASK_OBJECT_WF);
+    }
+    else
+    {
         geode->setNodeMask(NODE_MASK_OBJECT_SOLID);
     }
+    parent->addChild(geode);
 }
 
 bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                       object,
@@ -3099,7 +3098,8 @@ bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                       
 {
     bool      repeatAdded = false;
     double    scale_x = 1.0, scale_y = 1.0, scale_z = 1.0;
-    osg::Vec4 color = GetObjectColor(object->GetType());
+    osg::Vec4 color_obj = GetObjectColor(object->GetType());
+    osg::Vec4 color_wf = osg::Vec4(1.0, 1.0, 1.0, 1.0);
     for (auto& repeat : object->GetRepeats())
     {
         for (auto& repeatedObj : object->GetRepeatedObjects(repeat, roadmanager::Repeat::ZeroDistanceRepeatStrategy::MULTIPLE_OBJECTS))
@@ -3109,7 +3109,7 @@ bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                       
                 if (repeatedObj->GetNumberOfOutlines() > 0)
                 {
                     osg::ref_ptr<osg::Geode> geodeNew = new osg::Geode;
-                    CreateOutlineModel(repeatedObj->GetOutline(0), color, geodeNew);  // zero distance outlie. only one outline shall be avilable
+                    CreateOutlineModel(repeatedObj->GetOutline(0), color_obj, geodeNew);  // zero distance outlie. only one outline shall be avilable
                     AddOutlineModel(object->GetNumberOfMarkings() > 0, geodeNew, parent);
                 }
                 else
@@ -3140,7 +3140,7 @@ bool viewer::Viewer::CreateRepeats(roadmanager::RMObject*                       
                     else
                     {
                         osg::ref_ptr<osg::Geode> geodeNew = new osg::Geode;
-                        CreateOutlineModel(outline, color, geodeNew);  // create outline model
+                        CreateOutlineModel(outline, object->GetNumberOfMarkings() > 0 ? color_wf : color_obj, geodeNew);  // create outline model
                         AddOutlineModel(object->GetNumberOfMarkings() > 0, geodeNew, parent);
                     }
                 }
@@ -3159,13 +3159,22 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
         CreateRoadSignals(objGroup, road->GetSignals());
         for (auto& object : road->GetRoadObjects())  // always create viewer object
         {
-            osg::Vec4                                    color        = GetObjectColor(object->GetType());
+            osg::Vec4                                    color;
             osg::ref_ptr<osg::Geode>                     geode        = new osg::Geode;
             osg::ref_ptr<osg::LOD>                       objLOD       = new osg::LOD();
             osg::ref_ptr<osg::Group>                     lodGroup     = new osg::Group;
             osg::ref_ptr<osg::PositionAttitudeTransform> tx           = nullptr;
             osg::ref_ptr<osg::Group>                     OutlineGroup = new osg::Group();
             double                                       scale_x = 1.0, scale_y = 1.0, scale_z = 1.0;
+
+            if (object->GetNumberOfMarkings() > 0)
+            {
+                color = osg::Vec4(1.0, 1.0, 1.0, 1.0);
+            }
+            else
+            {
+                color = GetObjectColor(object->GetType());
+            }
 
             objGroup->addChild(objLOD);
             objLOD->addChild(lodGroup);

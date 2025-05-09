@@ -2987,19 +2987,17 @@ bool roadmanager::Repeat::IsHeightSet() const
 
 double Repeat::GetLengthWithFactor(double factor) const
 {
-    double repeatLength = GetLengthOfVector2D(GetLength(), (GetTEnd() - GetTStart()));
-    double h_offset     = atan2(GetTEnd() - GetTStart(), repeatLength);
-    return ((GetValueOrZero(GetLengthStart()) + factor * (GetValueOrZero(GetLengthEnd()) - GetValueOrZero(GetLengthStart()))) / cos(h_offset));
+    return Interpolate(GetValueOrZero(GetLengthStart()), GetValueOrZero(GetLengthEnd()), factor);
 }
 
 double Repeat::GetWidthWithFactor(double factor) const
 {
-    return (GetValueOrZero(GetWidthStart()) + (factor * (GetValueOrZero(GetWidthEnd()) - GetValueOrZero(GetWidthStart()))));
+    return Interpolate(GetValueOrZero(GetWidthStart()), GetValueOrZero(GetWidthEnd()), factor);
 }
 
 double Repeat::GetZOffsetWithFactor(double factor) const
 {
-    return (GetValueOrZero(GetZOffsetStart()) + (factor * (GetValueOrZero(GetZOffsetEnd()) - GetValueOrZero(GetZOffsetStart()))));
+    return Interpolate(GetValueOrZero(GetZOffsetStart()), GetValueOrZero(GetZOffsetEnd()), factor);
 }
 
 double Repeat::GetHeightWithFactor(double factor) const
@@ -3184,42 +3182,14 @@ MarkingSegment& roadmanager::Marking::GetMarkingSegmentByIdx(size_t i)
     return MarkingSegments_.at(i);
 }
 
+bool roadmanager::Marking::IsOutline()
+{
+    return cornerReferenceIds_.size() > 0;
+}
+
 unsigned int MarkingSegment::GetNumberOfPoints() const
 {
     return static_cast<unsigned int>(allPoints_.size());
-}
-
-void roadmanager::MarkingGenerator::getCenterAlignedPoint(Point2D& point, double alpha, Marking::Side side)
-{
-    Point2D point_local;
-    RotateVec2D(marking_.GetWidth() / 2, 0.0, alpha, point_local.x, point_local.y);
-
-#if 1
-    point.x += point_local.x;
-    point.y += point_local.y;
-#else
-    // to do center align seems wrong
-    if (side == Marking::Side::FRONT)
-    {
-        point.x += cos(alpha) * (marking_.GetWidth() / 2);
-        point.y -= sin(alpha) * (marking_.GetWidth() / 2);
-    }
-    else if (side == Marking::Side::LEFT)
-    {
-        point.x += cos(alpha) * (marking_.GetWidth() / 2);
-        point.y -= sin(alpha) * (marking_.GetWidth() / 2);
-    }
-    else if (side == Marking::Side::REAR)
-    {
-        point.x += cos(alpha) * (marking_.GetWidth() / 2);
-        point.y -= sin(alpha) * (marking_.GetWidth() / 2);
-    }
-    else if (side == Marking::Side::RIGHT)  // center allign the marking
-    {
-        point.x -= cos(alpha) * (marking_.GetWidth() / 2);
-        point.y += sin(alpha) * (marking_.GetWidth() / 2);
-    }
-#endif
 }
 
 void roadmanager::MarkingGenerator::CalculateDetailsBasedOnAngle(Point2D& start, Point2D& end)
@@ -3393,7 +3363,6 @@ void RMObject::GenerateMarkingsFromObject(Marking& marking)
 {
     MarkingGenerator markingGenerator(marking);
     MarkingSegment   segment(0, 0, 0);
-    segment.SetMergeType(MarkingSegment::MergeType::MERGE_END);  // merge not required for non outline object
     Point2D start, end;
     double  heading = GetH() + GetHOffset();
     double dh = 0.0;
@@ -3844,14 +3813,16 @@ void RMObject::ResolveMarkings()
                     {
                         continue;
                     }
-                    if ((markings_[i].GetMarkingSegmentByIdx(j).IsMergeRequired() &&
-                         markings_[l].GetMarkingSegmentByIdx(m).IsMergeRequired()) &&  // check its from outline(non outline marking should not merge)
-                        (markings_[i].GetMarkingSegmentByIdx(j).GetOutlineId() ==
-                         markings_[l].GetMarkingSegmentByIdx(m).GetOutlineId()) &&  // check its from same outline
-                        (markings_[i].GetMarkingSegmentByIdx(j).GetEndCornerId() ==
-                         markings_[l].GetMarkingSegmentByIdx(m).GetStartCornerId()) &&  // check is consective corner ids
+                    if ((markings_[i].GetMarkingSegmentByIdx(j).IsMergeRequired() && markings_[l].GetMarkingSegmentByIdx(m).IsMergeRequired()) &&
+                        (((markings_[i].IsOutline() && markings_[l].IsOutline()) &&
+                          (markings_[i].GetMarkingSegmentByIdx(j).GetOutlineId() ==
+                           markings_[l].GetMarkingSegmentByIdx(m).GetOutlineId()) &&  // check if from same outline
+                          (markings_[i].GetMarkingSegmentByIdx(j).GetEndCornerId() ==
+                           markings_[l].GetMarkingSegmentByIdx(m).GetStartCornerId())) ||  // check if consective corners
+                         ((static_cast<int>(markings_[i].GetSide()) + 1) % 4 ==
+                          static_cast<int>(markings_[l].GetSide()))) &&  // bounding box, check if consective sides
                         (markings_[i].GetMarkingSegmentByIdx(j).IsMergeEnd() &&
-                         markings_[l].GetMarkingSegmentByIdx(m).IsMergeStart()))  // check if one marking touches end and touches start, resolve
+                         markings_[l].GetMarkingSegmentByIdx(m).IsMergeStart()))  // check if markings endpoints should merge
                     {
                         ResolveTwoLinesWithWidth(markings_[i].GetMarkingSegmentByIdx(j).GetAllPoints(),
                                                  markings_[l].GetMarkingSegmentByIdx(m).GetAllPoints());

@@ -319,7 +319,15 @@ bool FileExists(const char* fileName);
 std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path);
 
 /**
-        Retrun zero if value is NaN otherwise return value
+        Return the weigthed sum of two values
+        @param value1 First value
+        @param value2 Second value
+        @param p Weighting factor (0: value1, 1: value2)
+ */
+double Interpolate(double value1, double value2, double p);
+
+/**
+        Return zero if value is NaN, else value
  */
 double GetValueOrZero(double value);
 

@@ -197,6 +197,11 @@ bool FileExists(const char* fileName)
     return infile.good();
 }
 
+double Interpolate(double value1, double value2, double p)
+{
+    return value1 + p * (value2 - value1);
+}
+
 double GetValueOrZero(double value)
 {
     if (std::isnan(value))

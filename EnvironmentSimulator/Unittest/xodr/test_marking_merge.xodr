@@ -6,7 +6,7 @@
         <link>
         </link>
         <planView>
-            <geometry s="0.0" x="0.0" y="0.0" hdg="0.0" length="100">
+            <geometry s="0.0" x="0.0" y="0.0" hdg="1.0" length="100">
                 <line/>
             </geometry>
         </planView>

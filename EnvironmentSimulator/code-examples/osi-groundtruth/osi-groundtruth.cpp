@@ -44,7 +44,7 @@ int main(int argc, char* argv[])
         SE_StepDT(0.01f);
 
         // Further updates will only affect dynamic OSI stuff
-        SE_UpdateOSIGroundTruth();
+        SE_UpdateOSIGroundTruth(true);
 
         // Fetch OSI struct
         gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());

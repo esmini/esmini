@@ -2024,7 +2024,7 @@ namespace roadmanager
               side_(side)
         {
         }
-        Side                     GetSide() const;
+        Side                         GetSide() const;
         RoadMarkColor                GetColor() const;
         void                         GetPos(double s, double t, double dz, double &x, double &y, double &z);
         const std::vector<id_t>     &GetCornerReferenceIds() const;
@@ -2040,6 +2040,7 @@ namespace roadmanager
         std::vector<MarkingSegment> &GetMarkingSegments();
         size_t                       GetNumberOfMarkingSegments() const;
         MarkingSegment              &GetMarkingSegmentByIdx(size_t i);
+        bool                         IsOutline();
 
     private:
         id_t                        roadId_;
@@ -2069,8 +2070,6 @@ namespace roadmanager
             dx_, dy_;
         // get resolved points in 3D
         Point3D GetPoint3D(const Point2D &point);
-        // get points in the center aligned to the start and end points
-        void getCenterAlignedPoint(Point2D &point, double alpha, Marking::Side side);
         // set start and end points for the given corner type along calculating the alpha, beta other parameters
         void CalculateDetailsBasedOnAngle(Point2D &start, Point2D &end);
     };
