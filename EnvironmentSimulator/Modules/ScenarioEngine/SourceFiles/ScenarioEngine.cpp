@@ -380,6 +380,11 @@ int ScenarioEngine::step(double deltaSimTime)
         else
         {
             obj->SetEndOfRoad(false);
+            if (obj->HasBeenEndOfRoad() && obj->reset_)
+            {
+                obj->SetSpeed(obj->GetSpeedEndOfRoad());
+                obj->SetBeenEndOfRoad(false);
+            }
         }
 
         // Report updated state to the gateway
@@ -745,6 +750,8 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
                 if (retval < 0)
                 {
                     // Something went wrong, couldn't move vehicle forward. Stop.
+                    obj->SetSpeedEndOfRoad(obj->GetSpeed());
+                    obj->SetBeenEndOfRoad(true);
                     obj->SetSpeed(0.0);
                 }
                 obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL |
