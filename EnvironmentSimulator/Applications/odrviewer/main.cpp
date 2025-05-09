@@ -743,7 +743,6 @@ int main(int argc, char **argv)
         }
         LOG_INFO("{} cars added", static_cast<int>(cars.size()));
 
-        __int64 now            = 0;
         __int64 lastTimeStamp  = 0;
         __int64 firstTimeStamp = 0;
 
@@ -752,7 +751,7 @@ int main(int argc, char **argv)
         TxtLogger::Inst().SetLoggerTime(&system_time);
         while (!viewer->osgViewer_->done())
         {
-            now = SE_getSystemTime();
+            __int64 now = SE_getSystemTime();
             if (first_time)
             {
                 firstTimeStamp = now;

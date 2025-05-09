@@ -244,11 +244,11 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
 
 int ScenarioPlayer::Frame(bool server_mode)
 {
-    static __int64 time_stamp = 0;
-    double         dt;
+    double dt;
 
     if ((dt = GetFixedTimestep()) < 0.0)
     {
+        static __int64 time_stamp = 0;
         return Frame(SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize), server_mode);
     }
     else
