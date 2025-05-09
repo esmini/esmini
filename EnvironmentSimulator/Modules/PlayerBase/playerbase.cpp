@@ -1237,7 +1237,6 @@ int ScenarioPlayer::Init()
                   false,
                   false);
     opt.AddOption("disable_controllers", "Disable controllers");
-    opt.AddOption("disable_pline_interpolation", "Do not apply orientation interpolation of polyline trajectories");
     opt.AddOption("disable_log", "Prevent logfile from being created");
     opt.AddOption("disable_stdout", "Prevent messages to stdout");
     opt.AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");
@@ -1250,6 +1249,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("help", "Show this help message (-h works as well)");
     opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization. Toggle key 'R'");
     opt.AddOption("hide_trajectories", "Hide trajectories from start. Toggle key 'n'");
+    opt.AddOption("ignore_heading_for_traj_motion", "Ignore heading when deciding motion direction along trajectory");
     opt.AddOption("ignore_odr_offset", "Ignore any offset specified in the OpenDRIVE file header");
     opt.AddOption("ignore_z", "Ignore provided z values from OSC file and place vehicle relative to road");
     opt.AddOption("ignore_p", "Ignore provided pitch values from OSC file and place vehicle relative to road");
@@ -1286,6 +1286,7 @@ int ScenarioPlayer::Init()
 #ifdef _USE_IMPLOT
     opt.AddOption("plot", "Show window with line-plots of interesting data. Modes: asynchronous, synchronous", "mode", "asynchronous");
 #endif
+    opt.AddOption("pline_interpolation", "Interpolate orientation (\"segment\", \"corner\", \"off\")", "mode");
     opt.AddOption("record", "Record position data into a file for later replay", "filename", DAT_FILENAME);
     opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
     opt.AddOption("return_nr_permutations", "Return number of permutations without executing the scenario (-1 = error)");

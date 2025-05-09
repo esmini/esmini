@@ -11525,11 +11525,9 @@ void PolyLineBase::Reset(bool clear_vertices)
     {
         vertex_.clear();
     }
-    current_index_ = 0;
-    length_        = 0.0;
-    // current_val_.s      = 0.0;
-    current_val_.time   = 0.0;
-    interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_NONE;
+    current_index_    = 0;
+    length_           = 0.0;
+    current_val_.time = 0.0;
 }
 
 PolyLineShape::~PolyLineShape()
@@ -11657,24 +11655,6 @@ void PolyLineShape::CalculatePolyLine()
 
     pline_.Reset(false);
     double speed = initial_speed_;
-
-    if (SE_Env::Inst().GetOptions().GetOptionSet("disable_pline_interpolation"))
-    {
-        pline_.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_NONE;
-    }
-    else if (following_mode_ == FollowingMode::FOLLOW)
-    {
-        pline_.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
-    }
-    else if (following_mode_ == FollowingMode::POSITION)
-    {
-        pline_.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_CORNER;
-    }
-    else
-    {
-        // fallback to no interpolation
-        pline_.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_NONE;
-    }
 
     // Copy data from trajectory vertices to polyline
     for (size_t i = 0; i < vertex_.size(); i++)
@@ -11903,7 +11883,7 @@ int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
 
         if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME)
         {
-            double dt = p - pline_.vertex_[i].time;
+            double dt = MAX(0.0, p - pline_.vertex_[i].time);  // dt never negative for time based parameter
 
             if (pline_.vertex_[i].acc < 0.0)
             {

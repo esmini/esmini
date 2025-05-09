@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2025-04-04T10:00:00" description="Trajectory heading and interpolation test" author="esmini team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="x0" parameterType="double" value="100.0"/>
+      <ParameterDeclaration name="x1" parameterType="double" value="${$x0 + 20}"/>
+      <ParameterDeclaration name="x2" parameterType="double" value="${$x1 + 20}"/>
+      <ParameterDeclaration name="x3" parameterType="double" value="${$x2 + 20}"/>
+      <ParameterDeclaration name="y0" parameterType="double" value="-9.0"/>
+      <ParameterDeclaration name="y1" parameterType="double" value="${$y0 + 4.0}"/>
+      <ParameterDeclaration name="y2" parameterType="double" value="${$y0 + 0.0}"/>
+      <ParameterDeclaration name="y3" parameterType="double" value="${$y0 + 4.0}"/>
+      <ParameterDeclaration name="ydelta" parameterType="double" value="5.0"/>
+      <ParameterDeclaration name="h0" parameterType="double" value="${pi}"/>
+      <ParameterDeclaration name="sdelta" parameterType="double" value="5.0"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_highway_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Car1">
+         <Vehicle name="car_white" vehicleCategory="car" model3d="../models/car_white.osgb">
+            <ParameterDeclarations/>
+            <BoundingBox>
+               <Center x="1.4" y="0.0" z="0.75"/>
+               <Dimensions width="2.0" length="5.04" height="1.5"/>
+            </BoundingBox>
+            <Performance maxSpeed="60.0" maxDeceleration="10.0" maxAcceleration="5.0"/>
+            <Axles>
+               <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+               <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <Properties>
+               <Property name="model_id" value="0"/>
+               <Property name="scaleMode" value="BBToModel"/>
+               <Property name="ignoreHeadingForTrajMotion" value="true"/>
+               <Property name="plineInterpolation" value="corner"/>
+            </Properties>
+         </Vehicle>
+      </ScenarioObject>
+      <ScenarioObject name="Car2">
+         <Vehicle name="car_blue" vehicleCategory="car" model3d="../models/car_blue.osgb">
+            <ParameterDeclarations/>
+            <BoundingBox>
+               <Center x="1.4" y="0.0" z="0.75"/>
+               <Dimensions width="2.0" length="5.04" height="1.5"/>
+            </BoundingBox>
+            <Performance maxSpeed="60.0" maxDeceleration="10.0" maxAcceleration="5.0"/>
+            <Axles>
+               <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+               <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <Properties>
+               <Property name="model_id" value="1"/>
+               <Property name="scaleMode" value="BBToModel"/>
+               <Property name="ignoreHeadingForTrajMotion" value="false"/>
+            </Properties>
+         </Vehicle>
+      </ScenarioObject>
+      <ScenarioObject name="Car3">
+         <Vehicle name="car_red" vehicleCategory="car" model3d="../models/car_red.osgb">
+            <ParameterDeclarations/>
+            <BoundingBox>
+               <Center x="1.4" y="0.0" z="0.75"/>
+               <Dimensions width="2.0" length="5.04" height="1.5"/>
+            </BoundingBox>
+            <Performance maxSpeed="60.0" maxDeceleration="10.0" maxAcceleration="5.0"/>
+            <Axles>
+               <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+               <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <Properties>
+               <Property name="model_id" value="2"/>
+               <Property name="scaleMode" value="BBToModel"/>
+               <Property name="ignoreHeadingForTrajMotion" value="true"/>
+               <Property name="plineInterpolation" value="segment"/>
+            </Properties>
+         </Vehicle>
+      </ScenarioObject>
+      <ScenarioObject name="Car4">
+         <Vehicle name="car_yellow" vehicleCategory="car" model3d="../models/car_yellow.osgb">
+            <ParameterDeclarations/>
+            <BoundingBox>
+               <Center x="1.4" y="0.0" z="0.75"/>
+               <Dimensions width="2.0" length="5.04" height="1.5"/>
+            </BoundingBox>
+            <Performance maxSpeed="60.0" maxDeceleration="10.0" maxAcceleration="5.0"/>
+            <Axles>
+               <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+               <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <Properties>
+               <Property name="model_id" value="3"/>
+               <Property name="scaleMode" value="BBToModel"/>
+               <Property name="ignoreHeadingForTrajMotion" value="true"/>
+               <Property name="plineInterpolation" value="none"/>
+            </Properties>
+         </Vehicle>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Car1">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="$x0" y="$y0" h="$h0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="5.0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Car2">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="$x0" y="${$y0 + $ydelta * 1}" h="$h0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="5.0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Car3">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="$x0" y="${$y0 + $ydelta * 2}" h="$h0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="5.0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Car4">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="$x0" y="${$y0 + $ydelta * 3}" h="$h0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="5.0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story">
+         <Act name="act">
+            <ManeuverGroup name="ManeuverGroup1" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Car1"/>
+               </Actors>
+               <Maneuver name="Maneuver">
+                  <Event name="Event" priority="override">
+                     <Action name="Action">
+                        <PrivateAction>
+                           <RoutingAction>
+                              <FollowTrajectoryAction initialDistanceOffset="$sdelta">
+                                 <Trajectory closed="false" name="TrajectoryPLine">
+                                    <ParameterDeclarations/>
+                                    <Shape>
+                                       <Polyline>
+                                          <Vertex time="0">
+                                             <Position>
+                                                <WorldPosition x="$x0" y="${$y0 + $ydelta * 0}" h="${pi}"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex time="4">
+                                             <Position>
+                                                <WorldPosition x="$x1" y="${$y1 + $ydelta * 0}"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex time="8">
+                                             <Position>
+                                                <WorldPosition x="$x2" y="${$y2 + $ydelta * 0}"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex time="12">
+                                             <Position>
+                                                <WorldPosition x="$x3" y="${$y3 + $ydelta * 0}"/>
+                                             </Position>
+                                          </Vertex>
+                                       </Polyline>
+                                    </Shape>
+                                 </Trajectory>
+                                 <TimeReference>
+                                    <!-- <Timing domainAbsoluteRelative="absolute" scale="1.0" offset="0.0"/> -->
+                                    <None/>
+                                 </TimeReference>
+                                 <TrajectoryFollowingMode followingMode="position"/>
+                              </FollowTrajectoryAction>
+                           </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup name="ManeuverGroup2" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Car2"/>
+               </Actors>
+               <Maneuver name="Maneuver">
+                  <Event name="Event" priority="override">
+                     <Action name="Action">
+                        <PrivateAction>
+                           <RoutingAction>
+                              <FollowTrajectoryAction initialDistanceOffset="$sdelta">
+                                 <Trajectory closed="false" name="TrajectoryPLine">
+                                    <ParameterDeclarations/>
+                                    <Shape>
+                                       <Polyline>
+                                          <Vertex time="0">
+                                             <Position>
+                                                <WorldPosition x="$x0" y="${$y0 + $ydelta * 1}" h="${pi}"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex time="4">
+                                             <Position>
+                                                <WorldPosition x="$x1" y="${$y1 + $ydelta * 1}"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex time="8">
+                                             <Position>
+                                                <WorldPosition x="$x2" y="${$y2 + $ydelta * 1}"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex time="12">
+                                             <Position>
+                                                <WorldPosition x="$x3" y="${$y3 + $ydelta * 1}"/>
+                                             </Position>
+                                          </Vertex>
+                                       </Polyline>
+                                    </Shape>
+                                 </Trajectory>
+                                 <TimeReference>
+                                    <!-- <Timing domainAbsoluteRelative="absolute" scale="1.0" offset="0.0"/> -->
+                                    <None/>
+                                 </TimeReference>
+                                 <TrajectoryFollowingMode followingMode="position"/>
+                              </FollowTrajectoryAction>
+                           </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup name="ManeuverGroup3" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Car3"/>
+               </Actors>
+               <Maneuver name="Maneuver">
+                  <Event name="Event" priority="override">
+                     <Action name="Action">
+                        <PrivateAction>
+                           <RoutingAction>
+                              <FollowTrajectoryAction initialDistanceOffset="$sdelta">
+                                 <Trajectory closed="false" name="TrajectoryPLine">
+                                    <ParameterDeclarations/>
+                                    <Shape>
+                                       <Polyline>
+                                          <Vertex time="0">
+                                             <Position>
+                                                <WorldPosition x="$x0" y="${$y0 + $ydelta * 2}" h="${pi}"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex time="4">
+                                             <Position>
+                                                <WorldPosition x="$x1" y="${$y1 + $ydelta * 2}"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex time="8">
+                                             <Position>
+                                                <WorldPosition x="$x2" y="${$y2 + $ydelta * 2}"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex time="12">
+                                             <Position>
+                                                <WorldPosition x="$x3" y="${$y3 + $ydelta * 2}"/>
+                                             </Position>
+                                          </Vertex>
+                                       </Polyline>
+                                    </Shape>
+                                 </Trajectory>
+                                 <TimeReference>
+                                    <!-- <Timing domainAbsoluteRelative="absolute" scale="1.0" offset="0.0"/> -->
+                                    <None/>
+                                 </TimeReference>
+                                 <TrajectoryFollowingMode followingMode="position"/>
+                              </FollowTrajectoryAction>
+                           </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup name="ManeuverGroup4" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Car4"/>
+               </Actors>
+               <Maneuver name="Maneuver">
+                  <Event name="Event" priority="override">
+                     <Action name="Action">
+                        <PrivateAction>
+                           <RoutingAction>
+                              <FollowTrajectoryAction initialDistanceOffset="$sdelta">
+                                 <Trajectory closed="false" name="TrajectoryPLine">
+                                    <ParameterDeclarations/>
+                                    <Shape>
+                                       <Polyline>
+                                          <Vertex time="0">
+                                             <Position>
+                                                <WorldPosition x="$x0" y="${$y0 + $ydelta * 3}" h="${pi}"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex time="4">
+                                             <Position>
+                                                <WorldPosition x="$x1" y="${$y1 + $ydelta * 3}"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex time="8">
+                                             <Position>
+                                                <WorldPosition x="$x2" y="${$y2 + $ydelta * 3}"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex time="12">
+                                             <Position>
+                                                <WorldPosition x="$x3" y="${$y3 + $ydelta * 3}"/>
+                                             </Position>
+                                          </Vertex>
+                                       </Polyline>
+                                    </Shape>
+                                 </Trajectory>
+                                 <TimeReference>
+                                    <!-- <Timing domainAbsoluteRelative="absolute" scale="1.0" offset="0.0"/> -->
+                                    <None/>
+                                 </TimeReference>
+                                 <TrajectoryFollowingMode followingMode="position"/>
+                              </FollowTrajectoryAction>
+                           </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StopTrigger" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <StoryboardElementStateCondition storyboardElementType="act" storyboardElementRef="act" state="endTransition"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

@@ -773,6 +773,273 @@ TEST(TrajectoryTest, FollowTrajectoryReverse)
     delete se;
 }
 
+TEST(TrajectoryTest, TestIgnoreHeadingAndInterpolationByVehicleProperty)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/traj_heading_and_interpolation.xosc");
+    const double    dt = 0.1;
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 4);
+
+    // check initial pose
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 104.903, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -8.019, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 3.142, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 5.0, 1E-2);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 104.903, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -3.019, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 3.142, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->GetSpeed(), 5.0, 1E-2);
+
+    EXPECT_NEAR(entities->object_[2]->pos_.GetX(), 104.903, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetY(), 1.981, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetH(), 3.863, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->GetSpeed(), 5.0, 1E-2);
+
+    EXPECT_NEAR(entities->object_[3]->pos_.GetX(), 104.903, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetY(), 6.981, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetH(), 3.142, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->GetSpeed(), 5.0, 1E-2);
+
+    // Check expected position and orientation at some specific time stamps
+    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 129.417, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -6.883, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 6.086, 1E-2);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 80.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -4.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 3.142, 1E-2);
+
+    EXPECT_NEAR(entities->object_[2]->pos_.GetX(), 129.417, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetY(), 3.117, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetH(), 6.272, 1E-2);
+
+    EXPECT_NEAR(entities->object_[3]->pos_.GetX(), 129.417, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetY(), 8.117, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetH(), 6.086, 1E-2);
+
+    // just before second corner
+    while (se->getSimulationTime() < 7.1 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 139.714, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -8.943, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 6.254, 1E-2);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 69.500, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -4.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 3.142, 1E-2);
+
+    EXPECT_NEAR(entities->object_[2]->pos_.GetX(), 139.714, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetY(), 1.057, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetH(), 0.192, 1E-2);
+
+    EXPECT_NEAR(entities->object_[3]->pos_.GetX(), 139.714, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetY(), 6.057, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetH(), 6.086, 1E-2);
+
+    // just after second corner
+    while (se->getSimulationTime() < 7.3 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 140.694, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -8.861, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.070, 1E-2);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 68.500, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -4.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 3.142, 1E-2);
+
+    EXPECT_NEAR(entities->object_[2]->pos_.GetX(), 140.694, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetY(), 1.139, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetH(), 0.197, 1E-2);
+
+    EXPECT_NEAR(entities->object_[3]->pos_.GetX(), 140.694, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetY(), 6.139, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetH(), 0.197, 1E-2);
+
+    delete se;
+}
+
+TEST(TrajectoryTest, TestIgnoreHeadingAndInterpolationByOption)
+{
+    SE_Env::Inst().GetOptions().AddOption("pline_interpolation", "", "mode", "segment", true);
+    SE_Env::Inst().GetOptions().ApplyDefaultValues();
+
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/traj_heading_and_interpolation.xosc");
+    const double    dt = 0.1;
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 4);
+
+    // check initial pose
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 104.903, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -8.019, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 3.863, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), 5.0, 1E-2);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 104.903, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -3.019, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 3.863, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->GetSpeed(), 5.0, 1E-2);
+
+    EXPECT_NEAR(entities->object_[2]->pos_.GetX(), 104.903, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetY(), 1.981, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetH(), 3.863, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->GetSpeed(), 5.0, 1E-2);
+
+    EXPECT_NEAR(entities->object_[3]->pos_.GetX(), 104.903, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetY(), 6.981, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetH(), 3.863, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->GetSpeed(), 5.0, 1E-2);
+
+    // Check expected position and orientation at some specific time stamps
+    while (se->getSimulationTime() < 3.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 119.612, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -5.078, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 6.029, 1E-2);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 90.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -4.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 3.142, 1E-2);
+
+    EXPECT_NEAR(entities->object_[2]->pos_.GetX(), 119.612, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetY(), 4.922, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetH(), 6.029, 1E-2);
+
+    EXPECT_NEAR(entities->object_[3]->pos_.GetX(), 119.612, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetY(), 9.922, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetH(), 6.029, 1E-2);
+
+    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 129.417, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -6.883, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 6.272, 1E-2);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 80.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -4.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 3.142, 1E-2);
+
+    EXPECT_NEAR(entities->object_[2]->pos_.GetX(), 129.417, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetY(), 3.117, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetH(), 6.272, 1E-2);
+
+    EXPECT_NEAR(entities->object_[3]->pos_.GetX(), 129.417, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetY(), 8.117, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetH(), 6.272, 1E-2);
+
+    delete se;
+    SE_Env::Inst().GetOptions().Reset();
+}
+
+TEST(TrajectoryTest, TestUseCases)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/traj_use_cases.xosc");
+    const double    dt = 0.1;
+    ASSERT_NE(se, nullptr);
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 6);
+
+    // check initial pose
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 65.000, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -9.000, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 3.142, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), -5.000, 1E-2);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 65.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -5.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 0.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->GetSpeed(), -5.000, 1E-2);
+
+    EXPECT_NEAR(entities->object_[2]->pos_.GetX(), 65.000, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetY(), -1.000, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetH(), 3.142, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->GetSpeed(), -5.000, 1E-2);
+
+    EXPECT_NEAR(entities->object_[3]->pos_.GetX(), 65.000, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetY(), 3.000, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetH(), 3.142, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->GetSpeed(), -2.500, 1E-2);
+
+    EXPECT_NEAR(entities->object_[4]->pos_.GetX(), 65.000, 1E-2);
+    EXPECT_NEAR(entities->object_[4]->pos_.GetY(), -13.000, 1E-2);
+    EXPECT_NEAR(entities->object_[4]->pos_.GetH(), 2.356, 1E-2);
+    EXPECT_NEAR(entities->object_[4]->GetSpeed(), 5.0, 1E-2);
+
+    EXPECT_NEAR(entities->object_[5]->pos_.GetX(), 65.000, 1E-2);
+    EXPECT_NEAR(entities->object_[5]->pos_.GetY(), -17.000, 1E-2);
+    EXPECT_NEAR(entities->object_[5]->pos_.GetH(), 2.356, 1E-2);
+    EXPECT_NEAR(entities->object_[5]->GetSpeed(), -2.500, 1E-2);
+
+    // Check expected position and orientation at some specific time stamps
+    while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 75.000, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -9.000, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 3.142, 1E-2);
+    EXPECT_NEAR(entities->object_[0]->GetSpeed(), -5.000, 1E-2);
+
+    EXPECT_NEAR(entities->object_[1]->pos_.GetX(), 55.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetY(), -5.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->pos_.GetH(), 0.000, 1E-2);
+    EXPECT_NEAR(entities->object_[1]->GetSpeed(), -5.000, 1E-2);
+
+    EXPECT_NEAR(entities->object_[2]->pos_.GetX(), 75.000, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetY(), -1.000, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->pos_.GetH(), 3.142, 1E-2);
+    EXPECT_NEAR(entities->object_[2]->GetSpeed(), -5.000, 1E-2);
+
+    EXPECT_NEAR(entities->object_[3]->pos_.GetX(), 75.000, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetY(), 3.000, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->pos_.GetH(), 3.142, 1E-2);
+    EXPECT_NEAR(entities->object_[3]->GetSpeed(), -5.000, 1E-2);
+
+    EXPECT_NEAR(entities->object_[4]->pos_.GetX(), 75.000, 1E-2);
+    EXPECT_NEAR(entities->object_[4]->pos_.GetY(), -13.000, 1E-2);
+    EXPECT_NEAR(entities->object_[4]->pos_.GetH(), 2.356, 1E-2);
+    EXPECT_NEAR(entities->object_[4]->GetSpeed(), 5.000, 1E-2);
+
+    EXPECT_NEAR(entities->object_[5]->pos_.GetX(), 75.000, 1E-2);
+    EXPECT_NEAR(entities->object_[5]->pos_.GetY(), -17.000, 1E-2);
+    EXPECT_NEAR(entities->object_[5]->pos_.GetH(), 2.356, 1E-2);
+    EXPECT_NEAR(entities->object_[5]->GetSpeed(), -5.000, 1E-2);
+
+    delete se;
+}
+
 TEST(ExpressionTest, ConcatenateStrings)
 {
     ExprReturnStruct rs;
@@ -4911,6 +5178,8 @@ int main(int argc, char** argv)
     // Or make use of launch argument, e.g. --gtest_filter=*ALKS_R157_TestR157RegulationMinDist*
 #endif
     testing::InitGoogleTest(&argc, argv);
+
+    // Set options needed by scenarioengine
 
     if (argc > 1)
     {

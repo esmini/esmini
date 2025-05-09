@@ -1033,6 +1033,8 @@ namespace scenarioengine
         double                     initialDistanceOffset_;
         int                        initialHeadingSign_;
         int                        movingDirection_;
+        bool                       explicit_h_active_;
+        bool                       ignore_heading_for_motion_;
 
         FollowTrajectoryAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY,
@@ -1046,7 +1048,9 @@ namespace scenarioengine
               time_(0),
               initialDistanceOffset_(0),
               initialHeadingSign_(1),
-              movingDirection_(1)
+              movingDirection_(1),
+              explicit_h_active_(false),
+              ignore_heading_for_motion_(false)
         {
         }
 
@@ -1056,18 +1060,24 @@ namespace scenarioengine
                                static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG))
         {
             SetName(action.GetName());
-            traj_                  = action.traj_->Copy();
-            timing_domain_         = action.timing_domain_;
-            timing_scale_          = action.timing_scale_;
-            timing_offset_         = action.timing_offset_;
-            initialDistanceOffset_ = action.timing_offset_;
-            following_mode_        = action.following_mode_;
-            time_                  = 0;
-            initialHeadingSign_    = action.initialHeadingSign_;
-            movingDirection_       = action.movingDirection_;
+            traj_                      = action.traj_->Copy();
+            timing_domain_             = action.timing_domain_;
+            timing_scale_              = action.timing_scale_;
+            timing_offset_             = action.timing_offset_;
+            initialDistanceOffset_     = action.timing_offset_;
+            following_mode_            = action.following_mode_;
+            time_                      = 0;
+            initialHeadingSign_        = action.initialHeadingSign_;
+            movingDirection_           = action.movingDirection_;
+            explicit_h_active_         = action.explicit_h_active_;
+            ignore_heading_for_motion_ = action.ignore_heading_for_motion_;
         }
 
         ~FollowTrajectoryAction();
+        void SetIgnoreHeadingForMotion(bool value)
+        {
+            ignore_heading_for_motion_ = value;
+        }
 
         OSCPrivateAction* Copy()
         {

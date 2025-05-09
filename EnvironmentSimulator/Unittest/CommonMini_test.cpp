@@ -281,6 +281,14 @@ TEST(ProgramOptions, TestConfigOptionPostprocessing)
     }
 }
 
+TEST(MathFunctions, TestGetAbsAngleDifference)
+{
+    EXPECT_NEAR(GetAbsAngleDifference(1.0, 2.0), 1.0, 1e-3);
+    EXPECT_NEAR(GetAbsAngleDifference(1.0, 5.0), 2.2831, 1e-3);
+    EXPECT_NEAR(GetAbsAngleDifference(5.0, 1.0), 2.2831, 1e-3);
+    EXPECT_NEAR(GetAbsAngleDifference(-1.0, 2.0), 3.0, 1e-3);
+}
+
 int main(int argc, char** argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";
@@ -290,9 +298,6 @@ int main(int argc, char** argv)
     {
         if (!strcmp(argv[1], "--disable_stdout"))
         {
-            // disable logging to stdout from the esminiLib
-            SE_SetOptionPersistent("disable_stdout");
-
             // disable logging to stdout from the test cases
             SE_Env::Inst().GetOptions().SetOptionValue("disable_stdout", "", false, true);
         }

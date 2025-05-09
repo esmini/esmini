@@ -650,7 +650,7 @@
                         <RoutingAction>
                             <FollowTrajectoryAction>
                                 <TimeReference>
-                                    <None/>
+                                    <Timing domainAbsoluteRelative="relative" scale="1.0" offset="0.0"/>
                                 </TimeReference>
                                 <TrajectoryFollowingMode followingMode="position"/>
                                 <TrajectoryRef>

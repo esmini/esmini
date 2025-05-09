@@ -1937,7 +1937,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.8.900.* Init van_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.8.900.* Init car_trailer RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.8.900.* Init semi_tractor RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('.8.900.* Init truck_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.9.000.* Init truck_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.9.000.* Init car_blue RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.9.000.* Init motorbike RoutingAction runningState -> endTransition -> completeState', log)  is not None)
 
@@ -1980,7 +1980,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('5.900, 7, motorbike, -49.886, 42.500, 0.000, 1.045, 0.000, 0.000, 10.000, 0.050, 5.207', csv, re.MULTILINE))
         self.assertTrue(re.search('5.900, 8, car_trailer, -89.135, 32.499, 0.000, 3.531, 0.000, 0.000, 10.000, -0.051, 5.209', csv, re.MULTILINE))
         self.assertTrue(re.search('5.900, 9, semi_tractor, -79.885, 50.500, 0.000, 4.187, 0.000, 0.000, -10.000, -0.051, -5.209', csv, re.MULTILINE))
-        self.assertTrue(re.search('5.900, 10, truck_yellow, -94.885, 54.500, 0.000, 4.187, 0.000, 0.000, -10.000, -0.051, -5.209', csv, re.MULTILINE))
+        self.assertTrue(re.search('5.900, 10, truck_yellow, -94.886, 54.500, 0.000, 4.187, 0.000, 0.000, -10.000, -0.050, -5.207', csv, re.MULTILINE))
 
         self.assertTrue(re.search('6.100, 0, bicycle1, 51.435, 23.441, 0.000, 1.302, 0.000, 0.000, 10.000, 0.133, 4.640', csv, re.MULTILINE))
         self.assertTrue(re.search('6.100, 1, scooter1, 36.435, 27.441, 0.000, 4.444, 0.000, 0.000, -10.000, -0.133, -4.640', csv, re.MULTILINE))
@@ -1992,7 +1992,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('6.100, 7, motorbike, -49.886, 43.500, 0.000, 2.095, 0.000, 0.000, 10.000, 0.150, 4.638', csv, re.MULTILINE))
         self.assertTrue(re.search('6.100, 8, car_trailer, -91.001, 32.000, 0.000, 3.271, 0.000, 0.000, 10.000, -0.151, 4.640', csv, re.MULTILINE))
         self.assertTrue(re.search('6.100, 9, semi_tractor, -79.887, 51.500, 0.000, 5.237, 0.000, 0.000, -10.000, -0.151, -4.640', csv, re.MULTILINE))
-        self.assertTrue(re.search('6.100, 10, truck_yellow, -94.887, 55.500, 0.000, 5.237, 0.000, 0.000, -10.000, -0.151, -4.640', csv, re.MULTILINE))
+        self.assertTrue(re.search('6.100, 10, truck_yellow, -94.886, 55.500, 0.000, 5.237, 0.000, 0.000, -10.000, -0.150, -4.638', csv, re.MULTILINE))
 
         self.assertTrue(re.search('10.000, 0, bicycle1, 40.099, 47.103, 0.000, 2.835, 0.000, 0.000, 0.000, 0.000, 5.815', csv, re.MULTILINE))
         self.assertTrue(re.search('10.000, 1, scooter1, 25.099, 51.103, 0.000, 5.977, 0.000, 0.000, 0.000, 0.000, -5.815', csv, re.MULTILINE))
@@ -2004,7 +2004,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('10.000, 7, motorbike, -75.867, 58.498, 0.000, 2.620, 0.000, 0.000, 0.000, 0.000, 2.386', csv, re.MULTILINE))
         self.assertTrue(re.search('10.000, 8, car_trailer, -120.000, 32.000, 0.000, 3.142, 0.000, 0.000, 0.000, 0.000, 5.815', csv, re.MULTILINE))
         self.assertTrue(re.search('10.000, 9, semi_tractor, -104.999, 65.999, 0.000, 5.762, 0.000, 0.000, 0.000, 0.000, -5.815', csv, re.MULTILINE))
-        self.assertTrue(re.search('10.000, 10, truck_yellow, -119.999, 69.999, 0.000, 5.762, 0.000, 0.000, 0.000, 0.000, -5.815', csv, re.MULTILINE))
+        self.assertTrue(re.search('10.000, 10, truck_yellow, -120.867, 70.498, 0.000, 5.762, 0.000, 0.000, 0.000, 0.000, -2.386', csv, re.MULTILINE))
 
     def test_traj_speed(self):
         # This test case checks correct handling of driving speed wrt specified speed and trajectory control point headings, specified or not
@@ -2019,6 +2019,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*trajectory_speed.xosc', log)  is not None)
         self.assertTrue(re.search('.9.000.* Init car_blue RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.9.000.* Init motorbike RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.9.000.* Init truck_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.13.200.* Init bicycle1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.13.200.* Init scooter1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.13.200.* Init car_white RoutingAction runningState -> endTransition -> completeState', log)  is not None)
@@ -2027,7 +2028,6 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.13.200.* Init van_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.13.200.* Init car_trailer RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.13.200.* Init semi_tractor RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('.13.200.* Init truck_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('.15.100.* StopCondition: true, delay: 0.00, 15.1000 > 15.0000, edge: none', log)  is not None)
@@ -2056,7 +2056,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('6.600, 7, motorbike, -46.000, -54.216, 0.000, 4.190, 0.000, 0.000, 10.000, 0.000, 0.074', csv, re.MULTILINE))
         self.assertTrue(re.search('6.600, 8, car_trailer, -32.000, -95.671, 0.000, 4.712, 0.000, 0.000, 0.200, 0.000, 5.416', csv, re.MULTILINE))
         self.assertTrue(re.search('6.600, 9, semi_tractor, -53.835, -83.931, 0.000, 1.048, 0.000, 0.000, -0.200, 0.000, -5.416', csv, re.MULTILINE))
-        self.assertTrue(re.search('6.600, 10, truck_yellow, -57.835, -98.931, 0.000, 1.048, 0.000, 0.000, -0.200, 0.000, -5.416', csv, re.MULTILINE))
+        self.assertTrue(re.search('6.600, 10, truck_yellow, -58.000, -99.216, 0.000, 1.048, 0.000, 0.000, -10.000, -0.000, -0.074', csv, re.MULTILINE))
 
         self.assertTrue(re.search('6.700, 0, bicycle1, -28.028, 52.206, 0.000, 3.080, 0.000, 0.000, -0.100, 0.014, 5.388', csv, re.MULTILINE))
         self.assertTrue(re.search('6.700, 1, scooter1, -32.028, 37.206, 0.000, 6.221, 0.000, 0.000, 0.100, -0.014, -5.388', csv, re.MULTILINE))
@@ -2068,7 +2068,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('6.700, 7, motorbike, -46.500, -55.082, 0.000, 4.190, 0.000, 0.000, 10.000, 0.000, 2.931', csv, re.MULTILINE))
         self.assertTrue(re.search('6.700, 8, car_trailer, -32.000, -95.661, 0.000, 4.712, 0.000, 0.000, -0.100, 0.000, 5.388', csv, re.MULTILINE))
         self.assertTrue(re.search('6.700, 9, semi_tractor, -53.830, -83.922, 0.000, 1.048, 0.000, 0.000, 0.100, 0.000, -5.388', csv, re.MULTILINE))
-        self.assertTrue(re.search('6.700, 10, truck_yellow, -57.830, -98.922, 0.000, 1.048, 0.000, 0.000, 0.100, 0.000, -5.388', csv, re.MULTILINE))
+        self.assertTrue(re.search('6.700, 10, truck_yellow, -58.500, -100.082, 0.000, 1.048, 0.000, 0.000, -10.000, 0.000, -2.931', csv, re.MULTILINE))
 
         self.assertTrue(re.search('13.200, 0, bicycle1, -0.000, 0.660, 0.000, 1.571, 0.000, 0.000, -19.600, 0.004, -4.397', csv, re.MULTILINE))
         self.assertTrue(re.search('13.200, 1, scooter1, -4.000, -14.340, 0.000, 4.713, 0.000, 0.000, 19.600, -0.004, 4.397', csv, re.MULTILINE))
@@ -2080,7 +2080,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('13.200, 7, motorbike, -58.449, -75.780, 0.000, 4.190, 0.000, 0.000, 0.000, 0.000, 2.100', csv, re.MULTILINE))
         self.assertTrue(re.search('13.200, 8, car_trailer, -61.670, -89.428, 0.000, 1.048, 0.000, 0.000, -19.600, 0.000, -4.397', csv, re.MULTILINE))
         self.assertTrue(re.search('13.200, 9, semi_tractor, -36.000, -134.340, 0.000, 4.712, 0.000, 0.000, 19.600, 0.000, 4.397', csv, re.MULTILINE))
-        self.assertTrue(re.search('13.200, 10, truck_yellow, -40.000, -149.340, 0.000, 4.712, 0.000, 0.000, 19.600, 0.000, 4.397', csv, re.MULTILINE))
+        self.assertTrue(re.search('13.200, 10, truck_yellow, -70.549, -120.953, 0.000, 1.048, 0.000, 0.000, 0.000, 0.000, -2.671', csv, re.MULTILINE))
 
         self.assertTrue(re.search('', csv, re.MULTILINE))
 

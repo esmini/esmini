@@ -6,6 +6,12 @@
                 description="Vehicle catalog"
                 author="esmini team"/>
 
+    <!-- esmini specific vehicle properties: -->
+    <!-- model_id [0, 1, 2, ...] default = 0 -->
+    <!-- scaleMode [None, BBToModel, ModelToBB] default = None -->
+    <!-- ignoreHeadingForTrajMotion [true, false] default = false/> -->
+    <!-- plineInterpolation [segment, corner, off] default = given by followingMode/> -->
+
     <!-- Cars -->
 
     <Catalog name="VehicleCatalog">

@@ -335,6 +335,71 @@ void FollowTrajectoryAction::Start(double simTime)
 {
     OSCAction::Start(simTime);
 
+    // Check whether to ignore heading for trajectory motion direction. Prioritize option over object property.
+    if (SE_Env::Inst().GetOptions().GetOptionSet("ignore_heading_for_traj_motion"))
+    {
+        SetIgnoreHeadingForMotion(true);
+    }
+    else if (object_ != nullptr && object_->properties_.ValueExists("ignoreHeadingForTrajMotion"))
+    {
+        SetIgnoreHeadingForMotion(object_->properties_.GetValueStr("ignoreHeadingForTrajMotion") == "true");
+    }
+
+    // global interpolation option highest prio, then per object property, then based on action followingMode
+    if (SE_Env::Inst().GetOptions().GetOptionSet("pline_interpolation"))
+    {
+        std::string interp_mode = SE_Env::Inst().GetOptions().GetOptionArg("pline_interpolation");
+        if (interp_mode == "off")
+        {
+            traj_->shape_->pline_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_NONE);
+        }
+        else if (interp_mode == "segment")
+        {
+            traj_->shape_->pline_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT);
+        }
+        else if (interp_mode == "corner")
+        {
+            traj_->shape_->pline_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_CORNER);
+        }
+        else
+        {
+            // fallback to no interpolation
+            traj_->shape_->pline_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_NONE);
+        }
+    }
+    else if (object_ != nullptr && object_->properties_.ValueExists("plineInterpolation"))
+    {
+        std::string interp_mode = object_->properties_.GetValueStr("plineInterpolation");
+        if (interp_mode == "segment")
+        {
+            traj_->shape_->pline_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT);
+        }
+        else if (interp_mode == "corner")
+        {
+            traj_->shape_->pline_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_CORNER);
+        }
+        else if (interp_mode == "off")
+        {
+            traj_->shape_->pline_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_NONE);
+        }
+    }
+    else
+    {
+        if (following_mode_ == FollowingMode::FOLLOW)
+        {
+            traj_->shape_->pline_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT);
+        }
+        else if (following_mode_ == FollowingMode::POSITION)
+        {
+            traj_->shape_->pline_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_CORNER);
+        }
+        else
+        {
+            // fallback to no interpolation
+            traj_->shape_->pline_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_NONE);
+        }
+    }
+
     if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         // lateral motion controlled elsewhere
@@ -350,23 +415,18 @@ void FollowTrajectoryAction::Start(double simTime)
     object_->pos_.SetTrajectoryS(initialDistanceOffset_);
     time_ = traj_->GetTime();
 
-    // establigh speed sign / driving direction
-    double speedSign;
+    // establish speed sign / driving direction, default is driving forward
+    double speedSign = 1.0;
     if (timing_domain_ == TimingDomain::NONE)
     {
         speedSign = SIGN(object_->GetSpeed());
     }
     else
     {
-        // for timestamp mode, speed sign is given by heading �f set
+        // for timestamp mode, speed sign is given by heading if set
         if (traj_->IsHSetExplicitly())
         {
             speedSign = GetAbsAngleDifference(traj_->GetH(), traj_->GetHTrue()) > M_PI_2 + SMALL_NUMBER ? -1 : 1;
-        }
-        else
-        {
-            // else default to driving forward
-            speedSign = 1;
         }
     }
 
@@ -374,15 +434,22 @@ void FollowTrajectoryAction::Start(double simTime)
     if (traj_->IsHSetExplicitly())
     {
         object_->pos_.SetHeading(traj_->GetH());
+        explicit_h_active_ = true;
     }
     else
     {
         // heading not specified: align with trajectory, forward or backwards according to speed sign
         object_->pos_.SetHeading(GetAngleInInterval2PI(traj_->GetHTrue() + (speedSign < 0 ? M_PI : 0.0)));
+        explicit_h_active_ = false;
     }
 
-    // register initial heading direction - it will be applied in case heading is not set explicitly
     initialHeadingSign_ = GetAbsAngleDifference(object_->pos_.GetH(), traj_->GetHTrue()) > M_PI_2 + SMALL_NUMBER ? -1 : 1;
+
+    if (traj_->IsHSetExplicitly() && ignore_heading_for_motion_)
+    {
+        // ignore heading for motion
+        initialHeadingSign_ = 1;
+    }
 
     // establish initial speed if time reference is defined
     if (timing_domain_ != TimingDomain::NONE)
@@ -500,7 +567,8 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         // Speed is controlled elsewhere - just follow trajectory with current speed
         (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))))
     {
-        movingDirection_ = SIGN(object_->GetSpeed()) * headingDirection;
+        // determine moving direction based on segment inital heading, in addition to speed sign
+        movingDirection_ = SIGN(object_->GetSpeed()) * initialHeadingSign_;
         object_->pos_.MoveTrajectoryDS(movingDirection_ * fabs(object_->speed_) * dt);
     }
     else if (timing_domain_ == TimingDomain::TIMING_RELATIVE)
@@ -536,8 +604,20 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         }
     }
 
-    if (!traj_->IsHSetExplicitly())
+    // Check if switching into segment with no specified heading
+    if (traj_->IsHSetExplicitly())
     {
+        explicit_h_active_ = true;
+    }
+    else
+    {
+        if (explicit_h_active_)
+        {
+            // entering a segment lacking specified heading, determine moving direction based on relative heading
+            initialHeadingSign_ = GetAbsAngleDifference(object_->pos_.GetH(), traj_->GetHTrue()) > M_PI_2 + SMALL_NUMBER ? -1 : 1;
+            explicit_h_active_  = false;
+        }
+
         // adjust entity heading
         if (initialHeadingSign_ < 0)
         {

@@ -1339,31 +1339,49 @@ When FollowMode is `position` esmini will:
 
 The driving direction and entity direction can be controlled by trajectory configuration combined with entity speed and heading. It's possible to follow trajectory in opposite direction and also to drive forward or reverse along the trajectory. The table below lists some combinations and possibilities.
 
-[cols="2,2,2,2,1,2,2,2", stripes=even]
+.FollowTrajectory action motion direction based on input
+[cols="1,2,2,2,2,1,2,2,2,2", stripes=even]
 |===
-|trajectory type|specified heading|time-stamps|speed sign|⇒|entity heading|moving direction|entity (in tc)
-
-|clothoid|n/a|-|1||1|1|bicycle1
-|clothoid|n/a|-|-1||-1|1|scooter1
-|polyline/nurbs|-|-|1||1|1|car_white
-|polyline/nurbs|-|-|-1||-1|1|car_red
-|polyline/nurbs|-|yes|1 *||1|1|car_blue
-|polyline/nurbs|1|-|1||1|1|car_yellow
-|polyline/nurbs|1|-|-1||1|-1|van_red
-|polyline/nurbs|1|yes|1 *||1|1|motorbike
-|polyline/nurbs|-1|-|1||-1|-1|car_trailer
-|polyline/nurbs|-1|-|-1||-1|1|semi_tractor
-|polyline/nurbs|-1|yes|-1 *||-1|1|truck_yellow
+|
+4+|input|⇒
+4+|output
+||trajectory type|heading rel. traj|timestamps|speed||heading rel. traj|speed|moving dir. rel. traj|entity (in tc)
+|1|clothoid|n/a|n/a|&gt; 0||forward|no change|forward|bicycle1
+|2|clothoid|n/a|n/a|&lt; 0||backward|no change|forward|scooter1
+|3|polyline/nurbs|-|-|&gt; 0||forward|no change|forward|car_white
+|4|polyline/nurbs|-|-|&lt; 0||backward|no change|forward|car_red
+|5|polyline/nurbs|-|yes|ignored||forward|&gt; 0|forward|car_blue
+|6|polyline/nurbs|forward|-|&gt; 0||no change|no change|forward|car_yellow
+|7|polyline/nurbs|forward|-|&lt; 0||no change|no change|backward|van_red
+|8|polyline/nurbs|forward|yes|ignored||no change|&gt; 0|forward|motorbike
+|9|polyline/nurbs|backward|-|&gt; 0||no change|no change|backward|car_trailer
+|10|polyline/nurbs|backward|-|&lt; 0||no change|no change|forward|semi_tractor
+|11|polyline/nurbs|backward|yes|ignored||no change|&lt; 0|forward|truck_yellow
 |===
-pass:[*] calculated based on entity heading sign
 
 [horizontal]
-*specified heading*:: explicit heading (optionally supported by some shape types) in trajectory control points pointing forward (-90 < heading < 90 deg along trajectory s axis) or backwards. n/a indicates not supported, "-" not specified, 1 forward, -1 backwards.
-*timestamps*:: "-" indicates not specified or timeReference == None, "yes" indicates specified heading and timeReference != None
-*speed sign*:: 1 for speed >= 0, -1 for speed < 0. For timestamp mode, the magnitude of speed and overall motion direction is given by trajectory control point's timestamps and heading. Allowing for reversing, the initial heading of the entity, if specified, affects whether speed is positive (driving forward) or negative (reversing).
-*entity heading*:: Entity heading relative trajectory s-axis direction (heading/tangent). 1: facing along s, -1: facing away from s. When not specified, entity heading will be aligned forward (1) or backwards (-1) according to the speed sign. Interpolation will be applied based on specified followingMode, see previous section.
-*moving direction*:: reference point motion along trajectory s-axis or opposite direction, given by: speed sign * entity heading
-*entity (in tc)*:: Corresponding entity in the smoke test scenario https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/trajectory_speed.xosc[trajectory_speed.xosc], which checks the various trajectory configurations.
+*input heading*:: explicit heading (optionally supported by some shape types) in trajectory control points pointing forward (-90 < heading < 90 deg along trajectory s axis) or backwards. `n/a`: not supported, `-`: not specified.
+*timestamps*:: `n/a`: not supported, `-` not specified or timeReference is None, `yes`: specified timestamp and timeReference != None
+*speed*:: `>0`: speed >= 0, `<0`: speed < 0. For timestamp mode, the magnitude of speed and overall motion direction is given by trajectory control point's timestamps and heading. Allowing for reversing, the initial heading of the entity, if specified, affects whether speed is positive (driving forward) or negative (reversing), see line 8 and 11.
+*output heading*:: Entity heading relative trajectory s-axis direction (heading/tangent). `no change`: not affected by the action, `forward`: facing along s, `backward`: facing away from s. When not specified, entity heading will be aligned forward or backward according to the speed direction. Interpolation will be applied based on specified followingMode, see previous section.
+*moving direction*:: entity motion along trajectory s-axis or opposite direction, given by: `sign(speed) * sign(entity heading rel. traj)`
+*entity (in tc)*:: Corresponding entity in the smoke test scenario https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/trajectory_speed.xosc[trajectory_speed.xosc], which checks the various trajectory configurations. See also videoclip below.
+
+===== Options
+The influence from entity heading on the moving direction can be disabled by setting the global `ignore_heading_for_traj_motion` option, or setting the per Vehicle property    `ignoreHeadingForTrajMotion`="true". That will allow for entities facing away from and still move along the trajectory s-direction forward or backward according to specified speed alone. Line 9 and 10 above would result in:
+
+.Motion direction affected by `ignore_heading_for_traj_motion` option
+[cols="1,2,2,2,2,1,2,2,2,2", stripes=even]
+|===
+|
+4+|input|⇒
+4+|output
+||trajectory type|heading rel. traj|timestamps|speed||heading rel. traj|speed|moving dir. rel. traj|entity (in tc)
+|9|polyline/nurbs|backward|-|&gt; 0||no change|&lt; 0 *|forward *|car_trailer
+|10|polyline/nurbs|backward|-|&lt; 0||no change|&gt; 0 *|backward *|semi_tractor
+|===
+
+pass:[*] indicating changed output
 
 ===== Example scenarios
 
@@ -1374,6 +1392,29 @@ video::mSekcv5Mqeo[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
 .scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/trajectory_special_cases.xosc[trajectory_special_cases.xosc] including example how to transition between reverse and forward driving
 video::sjOgdx8qfEM[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+===== Use cases
+
+.Trajectory configurations for some specific use cases
+[cols="1,3,2,2,2,2,1,2,2,2", stripes=even]
+|===
+||
+4+|input|⇒
+3+|output
+||Use case|heading rel. traj|timestamps|speed|ignore heading *||heading rel. traj|speed|moving dir. rel. traj
+|1|Reversing with set speed|-|no|&lt; 0|no||backward|no change|forward
+|2|"|forward|no|&lt; 0|no||no change|no change|backward
+|3|"|backward|no|&lt; 0|no||no change|no change|forward
+|4|Reversing with timestamps|backward|yes|ignored|no||no change|&lt; 0|forward
+|5|Moving along traj with any heading|any|no|&gt; 0|yes||no change|no change|forward
+|6|"|any|yes|ignored|no||no change|sign depends on heading|forward
+|===
+
+pass:[*] `ignore_heading_for_traj_motion` option or `ignoreHeadingForTrajMotion` property described avove
+
+See scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/traj_use_cases.xosc[traj_use_cases.xosc]. Run from esmini root as:
+
+`./bin/esmini --path ./resources/models --osc ./EnvironmentSimulator/Unittest/xosc/traj_use_cases.xosc --custom_fixed_camera 24,27,28,5.5,0.57`
 
 === Friction
 
@@ -1783,7 +1824,7 @@ Missing angles will be handled according to the table below:
 
 While moving along polylines, which tangent is not continuous, it's usually preferred to interpolate/smoothen orientation along whole linear segments or at least when passing vertex corners.
 
-The table below shows what interpolation method will be applied based on FollowingMode setting for the trajectory:
+The table below shows what interpolation method will be applied, as default, based on FollowingMode setting for the trajectory:
 
 [%autowidth, cols="2,2"]
 |===
@@ -1792,7 +1833,14 @@ The table below shows what interpolation method will be applied based on Followi
 |follow|segment
 |===
 
-Polyline trajectory orientation interpolation can be disabled altogether by setting the `disable_pline_interpolation` option (see esmini <<Launch commands>>).
+The interpolation mode can be explicitly set, or even disabled altogether:
+
+* option: `pline_interpolation <mode>` (see also esmini <<Launch commands>>)
+* vehicle property: `plineInterpolation <mode>`
+
+Valid modes: `segment`, `corner`, `off`
+
+*Note:* The option is global, i.e. affects all trajectories, while vehicle property is per entity. Option has precedence, so any vehicle property will be ignored if the option is set.
 
 === Example
 There is a code and scenario example illustrating the various interpolation and position modes:
