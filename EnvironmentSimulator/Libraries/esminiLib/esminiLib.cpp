@@ -2524,7 +2524,6 @@ extern "C"
         {
             delete ((vehicle::Vehicle *)handleSimpleVehicle);
             // cppcheck-suppress uselessAssignmentPtrArg
-            // cppcheck-suppress unreadVariable
             handleSimpleVehicle = 0;
         }
     }

@@ -1169,7 +1169,6 @@ public:
     }
 
     // Get an integer in the range (min, max) NOTE: including max
-    // cppcheck-suppress functionConst
     int GetNumberBetween(int min, int max)
     {
         if (max < min)
@@ -1179,12 +1178,12 @@ public:
 
         return std::uniform_int_distribution<>{min, max}(gen_);
     }
-    // cppcheck-suppress functionConst
+
     double GetReal()  // returns a floating point number between 0 and 1
     {
         return std::uniform_real_distribution<>{}(gen_);
     }
-    // cppcheck-suppress functionConst
+
     double GetRealBetween(double min, double max)
     {
         return std::uniform_real_distribution<>{min, max}(gen_);
