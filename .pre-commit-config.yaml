@@ -43,6 +43,7 @@ repos:
         exclude: ^externals/.*$
         files: ^EnvironmentSimulator/
         args:
+          - --quiet
           - --inconclusive
           - --error-exitcode=1
           - --inline-suppr
@@ -74,7 +75,7 @@ repos:
           - --suppress=uselessOverride
           - --suppress=cstyleCast
           - --suppress=checkersReport
-          - --suppress=truncLongCastAssignment          
+          - --suppress=truncLongCastAssignment
           - --suppress=unreadVariable
           - --suppress=constParameterPointer
           - --suppress=variableScope
