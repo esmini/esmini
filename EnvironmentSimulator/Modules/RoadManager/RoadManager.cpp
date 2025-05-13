@@ -5226,14 +5226,14 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
 {
     OpenDrive* odr = startPos_->GetOpenDrive();
     RoadLink*  link;
-    Junction*  junction    = 0;
+    Junction*  junction;
     Road*      startRoad   = odr->GetRoadById(startPos_->GetTrackId());
     Road*      targetRoad  = odr->GetRoadById(targetPos_->GetTrackId());
     Road*      pivotRoad   = startRoad;
     int        pivotLaneId = startPos_->GetLaneId();
-    Road*      nextRoad    = startRoad;
-    bool       found       = false;
-    double     tmpDist     = 0;
+    Road*      nextRoad;
+    bool       found   = false;
+    double     tmpDist = 0;
     size_t     i;
 
     // This method will find and measure the length of the shortest path
@@ -11126,8 +11126,8 @@ int PolyLineBase::EvaluateSegmentByLocalS(idx_t i, double local_s, TrajVertex& p
                     if (interpolation_mode_ == InterpolationMode::INTERPOLATE_CORNER)
                     {
                         // Strategy: Align to line, interpolate only at corners
-                        double radius   = MIN(2.0, length / 2.0);
-                        double a_corner = 0.0;
+                        double radius = MIN(2.0, length / 2.0);
+                        double a_corner;
                         if (local_s < radius)
                         {
                             // passed a corner

@@ -540,8 +540,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                         size_t l = 0;
                         for (; l < static_cast<unsigned int>(lsec->GetNumberOfLanes()); l++)
                         {
-                            lane                                            = lsec->GetLaneByIdx(static_cast<int>(l));
-                            std::vector<roadmanager::PointStruct> osiPoints = lane->GetOSIPoints()->GetPoints();
+                            lane = lsec->GetLaneByIdx(static_cast<int>(l));
 
                             // generate point at pivot s-value
                             double t = road->GetLaneOffset(s_value_candidates[k]) +

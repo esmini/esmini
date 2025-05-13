@@ -76,14 +76,12 @@ repos:
           - --suppress=cstyleCast
           - --suppress=checkersReport
           - --suppress=truncLongCastAssignment
-          - --suppress=unreadVariable
-          - --suppress=constParameterPointer
-          #- --suppress=variableScope
+          #- --suppress=unreadVariable
+          - --suppress=constParameterPointer          
           - --suppress=checkLevelNormal
           - --suppress=constParameterReference
           - --suppress=constParameter
-          - --suppress=constParameterCallback
-          #- --suppress=constVariable
+          - --suppress=constParameterCallback          
           - --suppress=constVariableReference
           - --suppress=suspiciousFloatingPointCast
           - --suppress=unusedVariable
