@@ -1,5 +1,27 @@
 ## esmini release notes
 
+### 2025-05-13 Version 2.46.3
+
+Improvements and fixes:
+- Add options for trajectory motion control
+  - option and vehicle property for ignoring heading for motion direction
+    - see [User guide - Trajectory motion direction control option](https://esmini.github.io/#_trajectory_motion_direction_control_option)
+  - option and vehicle property for explicit interpolation mode
+    - see [User guide - Trajectory interpolation and alignment](https://esmini.github.io/#_trajectory_interpolation_and_alignment)
+  - Note: Previous option `--disable_pline_interpolation` replaced by `--pline_interpolation off`
+- Expose object odometer in esminiLib API ([SE_GetObjectOdometer()](https://github.com/esmini/esmini/blob/22f146db3611a0bc02a592be39e51b74e1ba5b99/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1181))
+- Handle missing wheel data in [osi2csv.py](https://github.com/esmini/esmini/blob/dev/scripts/osi2csv.py) script, avoid crash
+- Fix missed trigger during ghost restart
+- Support repeated use of ghost teleport action
+- Restore esminiLib C compatibility and add CI regression check  ([issue #697](https://github.com/esmini/esmini/issues/697))
+- Fix bad OSI crop printout and adjust OSITrafficCmd log level
+- Fix bug showing one (im)plot per object
+
+Minor fixes:
+- Fix fbx path in Linux osg app build script
+- Fix osgconv example typo in [User guide - Convert osgb models for use in Unity](https://esmini.github.io/#_convert_osgb_models_for_use_in_unity)
+- Remove obsolete osi API calls in code examples
+
 ### 2025-04-30 Version 2.46.2
 
 Improvements and fixes:

@@ -28,8 +28,6 @@ Options:
       Additional custom light source <x,y,z,intensity> intensity range 0..1
   --disable_controllers
       Disable controllers
-  --disable_pline_interpolation
-      Do not apply orientation interpolation of polyline trajectories
   --disable_log
       Prevent logfile from being created
   --disable_stdout
@@ -54,6 +52,8 @@ Options:
       Disable route waypoint visualization. Toggle key 'R'
   --hide_trajectories
       Hide trajectories from start. Toggle key 'n'
+  --ignore_heading_for_traj_motion
+      Ignore heading when deciding motion direction along trajectory
   --ignore_odr_offset
       Ignore any offset specified in the OpenDRIVE file header
   --ignore_z
@@ -108,6 +108,8 @@ Options:
       Launch UDP server for action/command injection
   --plot [mode]  (default if value omitted: asynchronous)
       Show window with line-plots of interesting data. Modes: asynchronous, synchronous
+  --pline_interpolation <mode>
+      Interpolate orientation ("segment", "corner", "off")
   --record [filename]  (default if value omitted: sim.dat)
       Record position data into a file for later replay
   --road_features [mode]  (default if value omitted: on)

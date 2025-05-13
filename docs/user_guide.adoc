@@ -1367,7 +1367,7 @@ The driving direction and entity direction can be controlled by trajectory confi
 *moving direction*:: entity motion along trajectory s-axis or opposite direction, given by: `sign(speed) * sign(entity heading rel. traj)`
 *entity (in tc)*:: Corresponding entity in the smoke test scenario https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/trajectory_speed.xosc[trajectory_speed.xosc], which checks the various trajectory configurations. See also videoclip below.
 
-===== Options
+===== Trajectory motion direction control option
 The influence from entity heading on the moving direction can be disabled by setting the global `ignore_heading_for_traj_motion` option, or setting the per Vehicle property    `ignoreHeadingForTrajMotion`="true". That will allow for entities facing away from and still move along the trajectory s-direction forward or backward according to specified speed alone. Line 9 and 10 above would result in:
 
 .Motion direction affected by `ignore_heading_for_traj_motion` option
@@ -2538,7 +2538,7 @@ Here follows an example of how to convert .osgb models into .fbx format for use 
    `osgconv model.osgb out/model.fbx -s 100,100,100` +
    "-s ..." is for scaling which typically is needed for fbx files.
    Potentially it also needs to be oriented according to Unity coordinate system. In that case try: +
-   `osgconv model.osgb out/model.fbx -s 100,100,100 --use-world-frame -o 120--0.5773503,-0.5773503,-0.5773503`
+   `osgconv model.osgb out/model.fbx -s 100,100,100 --use-world-frame -o 120pass:[--]0.5773503,-0.5773503,-0.5773503`
 
 A folder named "out" should have been created and including the model.fbx plus any texture files
 
