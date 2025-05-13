@@ -377,7 +377,7 @@ int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
     return MIN(i, static_cast<int>(data_.size()) - 1);
 }
 
-unsigned int Replay::FindNextTimestamp(bool wrap)
+unsigned int Replay::FindNextTimestamp(bool wrap) const
 {
     unsigned int index = index_ + 1;
     for (; index < data_.size(); index++)

@@ -198,7 +198,7 @@ namespace roadmanager
          * @return true
          * @return false
          */
-        bool IsPositionValid(Position pos);
+        bool IsPositionValid(Position pos) const;
         template <class Q>
         void clearQueue(Q &q)
         {

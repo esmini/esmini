@@ -171,7 +171,7 @@ namespace scenarioengine
             return "OSCPrivateAction base class";
         };
 
-        unsigned int GetDomains()
+        unsigned int GetDomains() const
         {
             return domains_;
         }
@@ -410,15 +410,15 @@ namespace scenarioengine
         {
             entry_.push_back(entry);
         }
-        double GetStartTime()
+        double GetStartTime() const
         {
             return start_time_;
         }
-        double GetElapsedTime()
+        double GetElapsedTime() const
         {
             return elapsed_;
         }
-        double GetSpeed()
+        double GetSpeed() const
         {
             return speed_;
         }
@@ -821,13 +821,13 @@ namespace scenarioengine
         void Step(double simTime, double dt);
         void Start(double simTime);
 
-        const char* Mode2Str(SynchMode mode);
+        const char* Mode2Str(SynchMode mode) const;
 
     private:
         double CalcSpeedForLinearProfile(double v_final, double time, double dist);
         void   PrintStatus(const char* custom_msg);
         // const char* Mode2Str(SynchMode mode);
-        const char* SubMode2Str(SynchSubmode submode);
+        const char* SubMode2Str(SynchSubmode submode) const;
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2)
         {
@@ -894,7 +894,7 @@ namespace scenarioengine
     private:
         bool ghost_restart_;
 
-        bool IsGhostRestart()
+        bool IsGhostRestart() const
         {
             return ghost_restart_;
         }

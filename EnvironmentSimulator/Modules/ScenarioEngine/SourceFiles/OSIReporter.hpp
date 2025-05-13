@@ -172,7 +172,7 @@ public:
     {
         return (udp_client_ ? udp_client_->GetStatus() : -1);
     }
-    bool IsFileOpen()
+    bool IsFileOpen() const
     {
         return osi_file.is_open();
     }

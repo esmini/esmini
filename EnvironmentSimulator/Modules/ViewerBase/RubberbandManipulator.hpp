@@ -126,7 +126,7 @@ namespace osgGA
 
         void setMode(unsigned int mode);
 
-        int getMode()
+        int getMode() const
         {
             return static_cast<int>(_mode);
         }
@@ -140,7 +140,7 @@ namespace osgGA
             customCamera_.push_back(customCamera);
         }
 
-        unsigned int GetNumberOfCameraModes()
+        unsigned int GetNumberOfCameraModes() const
         {
             return static_cast<unsigned int>(CAMERA_MODE::RB_NUM_MODES + customCamera_.size() - 1);
         }

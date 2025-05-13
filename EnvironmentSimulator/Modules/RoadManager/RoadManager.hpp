@@ -2729,7 +2729,7 @@ namespace roadmanager
                                  bool                     &osi_requirement,
                                  std::vector<PointStruct> &osi_point,
                                  bool                     &insert,
-                                 const double              s_max);
+                                 const double              s_max) const;
         bool CheckLaneOSIRequirement(std::vector<double> x0, std::vector<double> y0, std::vector<double> x1, std::vector<double> y1) const;
         void SetLaneOSIPoints();
         void SetRoadMarkOSIPoints();
@@ -3938,7 +3938,7 @@ namespace roadmanager
         */
         void SetModeBits(PosModeType type, int bits);
 
-        int GetMode(PosModeType type);
+        int GetMode(PosModeType type) const;
 
         /**
         Specify which lane types the position object snaps to (is aware of)
@@ -4434,7 +4434,7 @@ namespace roadmanager
          * @param index If >= 0, start search from this index (-1 use cached value), returns index of matching trajectory segment
          * @return 0 if successful, < 0 see GhostTrailReturnCode enum for error/information codes
          */
-        GhostTrailReturnCode Time2S(double time, double &s, idx_t &index);
+        GhostTrailReturnCode Time2S(double time, double &s, idx_t &index) const;
 
         std::vector<TrajVertex> vertex_;
         idx_t                   current_index_ = 0;
@@ -4578,7 +4578,7 @@ namespace roadmanager
         ~ClothoidShape() = default;
         int    Evaluate(double p, TrajectoryParamType ptype, TrajVertex &pos);
         int    Evaluate(double p, TrajectoryParamType ptype);
-        int    EvaluateInternal(double s, TrajVertex &pos);
+        int    EvaluateInternal(double s, TrajVertex &pos) const;
         void   CalculatePolyLine() override;
         double GetLength()
         {

@@ -6679,7 +6679,7 @@ int OpenDrive::CheckAndAddOSIPoint(Position&                 pos_pivot,
                                    bool&                     osi_requirement,
                                    std::vector<PointStruct>& osi_point,
                                    bool&                     insert,
-                                   const double              s_max)
+                                   const double              s_max) const
 {
     const double min_segment_length = 0.2;
     double       max_segment_length = SE_Env::Inst().GetOSIMaxLongitudinalDistance();
@@ -10068,7 +10068,7 @@ void Position::SetModes(int types, int mode)
     }
 }
 
-int Position::GetMode(PosModeType type)
+int Position::GetMode(PosModeType type) const
 {
     if (type == PosModeType::SET)
     {
@@ -11237,7 +11237,7 @@ idx_t PolyLineBase::Evaluate(double s)
     return Evaluate(s, current_val_, current_index_);
 }
 
-PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, idx_t& index)
+PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, idx_t& index) const
 {
     int direction = 1;
 
@@ -12677,7 +12677,7 @@ void ClothoidShape::CalculatePolyLine()
     }
 }
 
-int ClothoidShape::EvaluateInternal(double s, TrajVertex& pos)
+int ClothoidShape::EvaluateInternal(double s, TrajVertex& pos) const
 {
     // for spirals, the heading is always aligned with tangent of the curve
     spiral_.EvaluateDS(s, &pos.x, &pos.y, &pos.h);

@@ -49,12 +49,12 @@ namespace scenarioengine
         double offset_;
         double factor_;
 
-        double GetValue();
+        double GetValue() const;
         double GetFactor() const
         {
             return factor_;
         }
-        double GetHeading();
+        double GetHeading() const;
         void   SetFactor(double factor)
         {
             factor_ = factor;

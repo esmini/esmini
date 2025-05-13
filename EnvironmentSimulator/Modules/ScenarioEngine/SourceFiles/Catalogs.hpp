@@ -51,7 +51,7 @@ namespace scenarioengine
         }
 
         static std::string GetTypeAsStr_(CatalogType type);
-        std::string        GetTypeAsStr()
+        std::string        GetTypeAsStr() const
         {
             return GetTypeAsStr_(type_);
         }
@@ -95,7 +95,7 @@ namespace scenarioengine
             return 0;
         }
 
-        std::string GetTypeAsStr()
+        std::string GetTypeAsStr() const
         {
             return Entry::GetTypeAsStr_(type_);
         }

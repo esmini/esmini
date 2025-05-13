@@ -214,7 +214,7 @@ bool LaneIndependentRouter::FindGoal()
     return false;
 }
 
-bool LaneIndependentRouter::IsPositionValid(Position pos)
+bool LaneIndependentRouter::IsPositionValid(Position pos) const
 {
     Road *road = odr_->GetRoadById(pos.GetTrackId());
     if (!road)

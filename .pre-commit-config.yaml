@@ -71,7 +71,7 @@ repos:
           - --suppress=duplicateAssignExpression
           - --suppress=duplInheritedMember
           - --suppress=returnByReference
-          - --suppress=functionConst
+          #- --suppress=functionConst
           - --suppress=uselessOverride
           - --suppress=cstyleCast
           - --suppress=checkersReport

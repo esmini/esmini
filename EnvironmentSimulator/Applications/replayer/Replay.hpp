@@ -49,7 +49,7 @@ namespace scenarioengine
         void                  GoToEnd();
         int                   GoToNextFrame();
         void                  GoToPreviousFrame();
-        unsigned int          FindNextTimestamp(bool wrap = false);
+        unsigned int          FindNextTimestamp(bool wrap = false) const;
         unsigned int          FindPreviousTimestamp(bool wrap = false) const;
         ReplayEntry*          GetEntry(int id);
         ObjectStateStructDat* GetState(int id);
@@ -77,6 +77,7 @@ namespace scenarioengine
         }
         void CleanEntries(std::vector<ReplayEntry>& entries);
         void BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntry>>>& scenarios);
+        // cppcheck-suppress functionConst
         void CreateMergedDatfile(const std::string filename);
 
     private:

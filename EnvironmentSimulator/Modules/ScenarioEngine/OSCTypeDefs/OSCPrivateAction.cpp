@@ -2107,7 +2107,7 @@ double SynchronizeAction::CalcSpeedForLinearProfile(double v_final, double time,
     return v0;
 }
 
-const char* SynchronizeAction::Mode2Str(SynchMode mode)
+const char* SynchronizeAction::Mode2Str(SynchMode mode) const
 {
     if (mode == SynchMode::MODE_NONE)
     {
@@ -2143,7 +2143,7 @@ const char* SynchronizeAction::Mode2Str(SynchMode mode)
     }
 }
 
-const char* SynchronizeAction::SubMode2Str(SynchSubmode submode)
+const char* SynchronizeAction::SubMode2Str(SynchSubmode submode) const
 {
     if (submode == SynchSubmode::SUBMODE_CONCAVE)
     {

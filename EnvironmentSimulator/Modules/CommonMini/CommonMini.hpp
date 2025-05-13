@@ -773,7 +773,7 @@ public:
     void OpenLogfile(std::string filename);
     void CloseLogFile();
     void LogVersion();
-    bool IsFileOpen()
+    bool IsFileOpen() const
     {
         return file_.is_open();
     }
@@ -992,7 +992,7 @@ public:
     {
         return 1E-3 * static_cast<double>((SE_getSystemTime() - start_time_));
     }
-    double Remaining()
+    double Remaining() const
     {
         if (Expired())
         {
@@ -1030,7 +1030,7 @@ public:
         duration_   = 0;
     }
 
-    double Remaining(double timestamp_s)
+    double Remaining(double timestamp_s) const
     {
         if (Expired(timestamp_s))
         {
@@ -1169,6 +1169,7 @@ public:
     }
 
     // Get an integer in the range (min, max) NOTE: including max
+    // cppcheck-suppress functionConst
     int GetNumberBetween(int min, int max)
     {
         if (max < min)
@@ -1178,12 +1179,12 @@ public:
 
         return std::uniform_int_distribution<>{min, max}(gen_);
     }
-
+    // cppcheck-suppress functionConst
     double GetReal()  // returns a floating point number between 0 and 1
     {
         return std::uniform_real_distribution<>{}(gen_);
     }
-
+    // cppcheck-suppress functionConst
     double GetRealBetween(double min, double max)
     {
         return std::uniform_real_distribution<>{min, max}(gen_);

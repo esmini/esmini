@@ -23,12 +23,12 @@ using namespace scenarioengine;
 #define WHEEL_RADIUS 0.35
 #define SLOPPY_SCALE 5.0  // Magic scale factor to achieve reasonable sloppiness in range 0..1
 
-double SinusoidalTransition::GetValue()
+double SinusoidalTransition::GetValue() const
 {
     return start_ + amplitude_ * (offset_ + cos(startAngle_ + factor_ * M_PI));
 }
 
-double SinusoidalTransition::GetHeading()
+double SinusoidalTransition::GetHeading() const
 {
     return -amplitude_ * sin(startAngle_ + factor_ * M_PI);
 }

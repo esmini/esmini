@@ -95,7 +95,7 @@ namespace aabbTree
         {
             return urhc_;
         }
-        ptTriangle triangle()
+        ptTriangle triangle() const
         {
             return triangle_;
         }
