@@ -3029,7 +3029,8 @@ namespace roadmanager
         enum class PositionStatusMode
         {
             POS_STATUS_END_OF_ROAD  = (1 << 0),
-            POS_STATUS_END_OF_ROUTE = (1 << 1)
+            POS_STATUS_END_OF_ROUTE = (1 << 1),
+            POS_STATUS_CANT_MOVE = (1 << 2)
         };
 
         // Modes for interpret Z, Head, Pitch, Roll coordinate value as absolute or relative
@@ -3897,6 +3898,16 @@ namespace roadmanager
         int GetStatusBitMask() const
         {
             return status_;
+        }
+
+        void SetStatusBitMask(PositionStatusMode status)
+        {
+            status_ |= static_cast<int>(status);
+        }
+
+        void ClearStatusBitMask(PositionStatusMode status)
+        {
+            status_ &= ~static_cast<int>(status);
         }
 
         /**

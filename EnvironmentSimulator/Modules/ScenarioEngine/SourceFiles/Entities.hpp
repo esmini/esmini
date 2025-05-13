@@ -167,7 +167,6 @@ namespace scenarioengine
         Type        type_;
         int         id_;
         double      speed_;
-        double      speed_at_end_of_road_;
         double      wheel_angle_;
         double      wheel_rot_;
         std::string model3d_;
@@ -176,7 +175,6 @@ namespace scenarioengine
         double      odometer_;
         double      end_of_road_timestamp_;
         double      off_road_timestamp_;
-        bool        has_been_end_of_road_;
         double      stand_still_timestamp_;
         bool        reset_;  // indicate discreet movement, teleporting, no odometer update
 
@@ -382,26 +380,6 @@ namespace scenarioengine
         @return Overlap found accoring to OverlapType
         */
         OverlapType OverlappingFront(Object* target, double tolerance);
-
-        bool HasBeenEndOfRoad() const
-        {
-            return has_been_end_of_road_;
-        }
-
-        void SetBeenEndOfRoad(bool state)
-        {
-            has_been_end_of_road_ = state;
-        }
-
-        double GetSpeedEndOfRoad() const
-        {
-            return speed_at_end_of_road_;
-        }
-
-        void SetSpeedEndOfRoad(const double speed)
-        {
-            speed_at_end_of_road_ = speed;
-        }
 
         void SetSpeed(double speed)
         {

@@ -24,7 +24,6 @@ Object::Object(Type type)
     : type_(type),
       id_(0),
       speed_(0),
-      speed_at_end_of_road_(0),
       wheel_angle_(0),
       wheel_rot_(0),
       model3d_(""),
@@ -33,7 +32,6 @@ Object::Object(Type type)
       odometer_(0),
       end_of_road_timestamp_(0.0),
       off_road_timestamp_(0.0),
-      has_been_end_of_road_(false),
       stand_still_timestamp_(0),
       reset_(0),
       headstart_time_(0),
@@ -118,7 +116,32 @@ void Object::SetStandStill(bool state, double time)
 
 Position::ReturnCode Object::MoveAlongS(double ds, bool actualDistance)
 {
-    return pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance, Position::MoveDirectionMode::HEADING_DIRECTION, true);
+    double old_s = pos_.GetS();
+    auto ret = pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance, Position::MoveDirectionMode::HEADING_DIRECTION, true);
+
+    if (pos_.GetS() - old_s < SMALL_NUMBER)
+    {
+        pos_.SetStatusBitMask(Position::PositionStatusMode::POS_STATUS_CANT_MOVE);
+    }
+    else
+    {
+        pos_.ClearStatusBitMask(Position::PositionStatusMode::POS_STATUS_CANT_MOVE);
+    }
+
+    // If error is end of road AND object is not moving, set speed to 0, for other errors set speed to 0
+    if (ret == Position::ReturnCode::ERROR_END_OF_ROAD && pos_.GetStatusBitMask() & static_cast<int>(Position::PositionStatusMode::POS_STATUS_CANT_MOVE))
+    {
+        this->SetSpeed(0.0);
+    }
+    else if (static_cast<int>(ret) < 0 && ret != Position::ReturnCode::ERROR_END_OF_ROAD)
+    {
+        this->SetSpeed(0.0);
+    }
+
+    this->SetDirtyBits(Object::DirtyBit::LONGITUDINAL |
+                        Object::DirtyBit::SPEED);  // indicate that speed has been applied, prevent automatically set from velocity
+
+    return ret;
 }
 
 void Object::AssignController(Controller* controller)

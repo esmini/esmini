@@ -369,8 +369,7 @@ int ScenarioEngine::step(double deltaSimTime)
             }
         }
 
-        if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD) ||
-            obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROUTE))
+        if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
         {
             if (!obj->IsEndOfRoad())
             {
@@ -380,11 +379,6 @@ int ScenarioEngine::step(double deltaSimTime)
         else
         {
             obj->SetEndOfRoad(false);
-            if (obj->HasBeenEndOfRoad() && obj->reset_)
-            {
-                obj->SetSpeed(obj->GetSpeedEndOfRoad());
-                obj->SetBeenEndOfRoad(false);
-            }
         }
 
         // Report updated state to the gateway
@@ -747,16 +741,6 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
             if (tow_vehicle == nullptr)
             {
                 retval = static_cast<int>(obj->MoveAlongS(steplen, true));
-                if (retval < 0)
-                {
-                    // Something went wrong, couldn't move vehicle forward. Stop.
-                    obj->SetSpeedEndOfRoad(obj->GetSpeed());
-                    obj->SetBeenEndOfRoad(true);
-                    obj->SetSpeed(0.0);
-                }
-                obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL |
-                                  Object::DirtyBit::SPEED  // indicate that speed has been applied, prevent automatically set from velocity
-                );
             }
         }
     }
