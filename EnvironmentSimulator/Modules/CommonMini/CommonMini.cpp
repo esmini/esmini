@@ -1033,9 +1033,9 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
     double sy = sin(p0);
     double sz = sin(r0);
 
-    double R0[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
-                       {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
-                       {-sy, cy * sz, cy * cz}};
+    const double R0[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
+                             {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
+                             {-sy, cy * sz, cy * cz}};
 
     cx = cos(h1);
     cy = cos(p1);
@@ -1044,9 +1044,9 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
     sy = sin(p1);
     sz = sin(r1);
 
-    double R1[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
-                       {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
-                       {-sy, cy * sz, cy * cz}};
+    const double R1[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
+                             {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
+                             {-sy, cy * sz, cy * cz}};
 
     // Multiply
     double R2[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
@@ -1157,9 +1157,9 @@ void CalcRelAnglesFromRoadAndAbsAngles(double  h_road,
     sy = sin(p_abs);
     sz = sin(r_abs);
 
-    double R1[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
-                       {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
-                       {-sy, cy * sz, cy * cz}};
+    const double R1[3][3] = {{cx * cy, cx * sy * sz - sx * cz, sx * sz + cx * sy * cz},
+                             {sx * cy, cx * cz + sx * sy * sz, sx * sy * cz - cx * sz},
+                             {-sy, cy * sz, cy * cz}};
 
     // Multiply
     double R2[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
@@ -2259,7 +2259,7 @@ int SE_WritePPM(const char* filename, int width, int height, const unsigned char
                 {
                     // write one line at a time, starting from bottom
                     const unsigned char* ptr      = &data[pixelSize * ((height - i - 1) * width + j)];
-                    unsigned char        bytes[3] = {(ptr[2]), ptr[1], ptr[0]};
+                    const unsigned char  bytes[3] = {(ptr[2]), ptr[1], ptr[0]};
                     fwrite(bytes, 3, 1, file);
                 }
             }
@@ -2269,7 +2269,7 @@ int SE_WritePPM(const char* filename, int width, int height, const unsigned char
             for (int i = 0; i < width * height; i++)
             {
                 const unsigned char* ptr      = &data[i * pixelSize];
-                unsigned char        bytes[3] = {(ptr[2]), ptr[1], ptr[0]};
+                const unsigned char  bytes[3] = {(ptr[2]), ptr[1], ptr[0]};
                 fwrite(bytes, 3, 1, file);
             }
         }
@@ -2302,7 +2302,7 @@ int SE_WriteTGA(const char* filename, int width, int height, const unsigned char
     }
 
     /* Write TGA Header */
-    uint8_t header[18] = {
+    const uint8_t header[18] = {
         0,
         0,
         2,  // uncompressed RGB
@@ -2330,7 +2330,7 @@ int SE_WriteTGA(const char* filename, int width, int height, const unsigned char
         for (int i = 0; i < width * height; i++)
         {
             const unsigned char* ptr      = &data[i * pixelSize];
-            unsigned char        bytes[3] = {(ptr[2]), ptr[1], ptr[0]};
+            const unsigned char  bytes[3] = {(ptr[2]), ptr[1], ptr[0]};
             fwrite(bytes, 3, 1, file);
         }
     }

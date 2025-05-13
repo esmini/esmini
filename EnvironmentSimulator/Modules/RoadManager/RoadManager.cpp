@@ -5080,7 +5080,7 @@ Road* Junction::GetRoadAtOtherEndOfConnectingRoad(Road* connecting_road, Road* i
     }
 
     // Check both ends
-    LinkType link_type[2] = {LinkType::PREDECESSOR, LinkType::SUCCESSOR};
+    const LinkType link_type[2] = {LinkType::PREDECESSOR, LinkType::SUCCESSOR};
     for (int i = 0; i < 2; i++)
     {
         RoadLink* link = connecting_road->GetLink(link_type[i]);

@@ -83,7 +83,7 @@ repos:
           - --suppress=constParameterReference
           - --suppress=constParameter
           - --suppress=constParameterCallback
-          - --suppress=constVariable
+          #- --suppress=constVariable
           - --suppress=constVariableReference
           - --suppress=suspiciousFloatingPointCast
           - --suppress=unusedVariable
