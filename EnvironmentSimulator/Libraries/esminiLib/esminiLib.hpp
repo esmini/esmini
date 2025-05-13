@@ -1174,6 +1174,13 @@ extern "C"
     SE_DLL_API int SE_GetObjectCollision(int object_id, int index);
 
     /**
+            Get the traveled distance of an object
+            @param object_id Id of the object
+            @return traveled distance if successful, std::nanf if not
+    */
+    SE_DLL_API float SE_GetObjectOdometer(int object_id);
+
+    /**
            Get the angular velocity of the specified object
            @param object_id Id of the object
            @param x reference to a variable returning the velocity along global x-axis
