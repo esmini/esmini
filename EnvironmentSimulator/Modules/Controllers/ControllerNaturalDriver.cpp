@@ -485,10 +485,10 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
 double ControllerNaturalDriver::EstimateFreespace(const scenarioengine::Object* follow, const scenarioengine::Object* target, const double ds) const
 {
     // adjust longitudinal dist wrt bounding boxes
-    double adjusted_gap_length = ds;
-    double dHeading            = GetAbsAngleDifference(follow->pos_.GetH(), target->pos_.GetH());
+    double dHeading = GetAbsAngleDifference(follow->pos_.GetH(), target->pos_.GetH());
     if (dHeading < M_PI_2)  // objects are pointing roughly in the same direction
     {
+        double adjusted_gap_length = ds;
         // TODO: Needs adjustment if ref is not BB center
         if (ds > 0)
         {

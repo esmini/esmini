@@ -731,8 +731,7 @@ int ScenarioEngine::parseScenario()
 
 int ScenarioEngine::defaultController(Object* obj, double dt)
 {
-    int    retval  = 0;
-    double steplen = obj->speed_ * dt;
+    int retval = 0;
 
     if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL))  // No action has updated longitudinal dimension
     {
@@ -741,7 +740,8 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
             Vehicle* tow_vehicle = static_cast<Vehicle*>(obj->TowVehicle());
             if (tow_vehicle == nullptr)
             {
-                retval = static_cast<int>(obj->MoveAlongS(steplen, true));
+                double steplen = obj->speed_ * dt;
+                retval         = static_cast<int>(obj->MoveAlongS(steplen, true));
                 if (retval < 0)
                 {
                     // Something went wrong, couldn't move vehicle forward. Stop.

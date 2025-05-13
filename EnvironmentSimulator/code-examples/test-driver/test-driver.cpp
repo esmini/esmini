@@ -83,15 +83,14 @@ int main(int argc, char* argv[])
                 targetSpeed = defaultTargetSpeed / (1 + curveWeight * static_cast<double>(fabs(roadInfo.angle)));
             }
 
-            // Steer towards where the point
-            double steerAngle = roadInfo.angle;
-
             // Accelerate or decelerate towards target speed - THROTTLE_WEIGHT tunes magnitude
             double throttle = throttleWeight * (targetSpeed - static_cast<double>(vehicleState.speed));
 
             // Step vehicle model with driver input, but wait until time > 0
             if (SE_GetSimulationTime() > 0 && !SE_GetPauseFlag())
             {
+                // Steer towards where the point
+                double steerAngle = roadInfo.angle;
                 SE_SimpleVehicleControlAnalog(vehicleHandle, dt, throttle, steerAngle);
             }
 

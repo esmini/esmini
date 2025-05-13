@@ -1090,11 +1090,6 @@ int OSIReporter::UpdateOSIIntersection()
     osi3::Lane                    *osi_lane  = nullptr;
     for (unsigned int i = 0; i < opendrive->GetNumOfJunctions(); i++)
     {
-        std::vector<LaneLengthStruct> left_lane_lengths;
-        std::vector<LaneLengthStruct> right_lane_lengths;
-        std::vector<LaneLengthStruct> lane_lengths;
-        std::vector<LaneLengthStruct> tmp_lane_lengths;
-        std::set<id_t>                connected_roads;
         // add check if it is an intersection or an highway exit/entry
         junction = opendrive->GetJunctionByIdx(i);
 
@@ -1164,7 +1159,11 @@ int OSIReporter::UpdateOSIIntersection()
             osi_lane = obj_osi_internal.static_gt->add_lane();
             osi_lane->mutable_id()->set_value(junction->GetGlobalId());
             osi_lane->mutable_classification()->set_type(osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_INTERSECTION);
-
+            std::vector<LaneLengthStruct> left_lane_lengths;
+            std::vector<LaneLengthStruct> right_lane_lengths;
+            std::vector<LaneLengthStruct> lane_lengths;
+            std::vector<LaneLengthStruct> tmp_lane_lengths;
+            std::set<id_t>                connected_roads;
             // check all connections in the junction
             for (unsigned int j = 0; j < junction->GetNumberOfConnections(); j++)
             {

@@ -2347,12 +2347,11 @@ int SE_WriteTGA(const char* filename, int width, int height, const unsigned char
 int SE_ReadCSVFile(const char* filename, std::vector<std::vector<std::string>>& content, int skip_lines)
 {
     // Cred: https://java2blog.com/read-csv-file-in-cpp/
-    std::vector<std::string> row;
-    std::string              line, word;
 
     std::fstream file(filename, std::ios::in);
     if (file.is_open())
     {
+        std::string line;
         for (int i = 0; i < skip_lines; i++)
         {
             if (!getline(file, line))
@@ -2361,6 +2360,8 @@ int SE_ReadCSVFile(const char* filename, std::vector<std::vector<std::string>>& 
                 return -1;
             }
         }
+        std::vector<std::string> row;
+        std::string              word;
         while (getline(file, line))
         {
             row.clear();

@@ -2517,8 +2517,6 @@ void SynchronizeAction::Step(double simTime, double dt)
             double v0 = SIGN(object_->GetSpeed()) * abs(object_->pos_.GetVelS());
             double v1 = final_speed_->GetValue();
 
-            double signed_term = sqrt(2.0) * sqrt(2.0 * s * s - 2 * (v1 + v0) * t * s + (v1 * v1 + v0 * v0) * t * t);
-
             // Calculate both solutions from the quadratic equation
             double vx = 0;
             if (fabs(v1 - v0) < SMALL_NUMBER)
@@ -2530,23 +2528,24 @@ void SynchronizeAction::Step(double simTime, double dt)
             }
             else
             {
-                double x1  = -(signed_term + 2 * s - 2 * v1 * t) / (2 * (v1 - v0));
-                double x2  = -(-signed_term + 2 * s - 2 * v1 * t) / (2 * (v1 - v0));
-                double vx1 = (2 * s - signed_term) / (2 * t);
-                double vx2 = (2 * s + signed_term) / (2 * t);
-                double a1  = (vx1 - v0) / x1;
-                double a2  = (vx2 - v0) / x2;
+                double signed_term = sqrt(2.0) * sqrt(2.0 * s * s - 2 * (v1 + v0) * t * s + (v1 * v1 + v0 * v0) * t * t);
+                double x1          = -(signed_term + 2 * s - 2 * v1 * t) / (2 * (v1 - v0));
+                double x2          = -(-signed_term + 2 * s - 2 * v1 * t) / (2 * (v1 - v0));
 
                 // Choose solution, only one is found within the given time span [0:masterTimeToDest]
                 if (x1 > 0 && x1 < t)
                 {
-                    vx  = vx1;
-                    acc = a1;
+                    double vx1 = (2 * s - signed_term) / (2 * t);
+                    double a1  = (vx1 - v0) / x1;
+                    vx         = vx1;
+                    acc        = a1;
                 }
                 else if (x2 > 0 && x2 < t)
                 {
-                    vx  = vx2;
-                    acc = a2;
+                    double vx2 = (2 * s + signed_term) / (2 * t);
+                    double a2  = (vx2 - v0) / x2;
+                    vx         = vx2;
+                    acc        = a2;
                 }
                 else
                 {

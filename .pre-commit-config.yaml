@@ -78,7 +78,7 @@ repos:
           - --suppress=truncLongCastAssignment
           - --suppress=unreadVariable
           - --suppress=constParameterPointer
-          - --suppress=variableScope
+          #- --suppress=variableScope
           - --suppress=checkLevelNormal
           - --suppress=constParameterReference
           - --suppress=constParameter

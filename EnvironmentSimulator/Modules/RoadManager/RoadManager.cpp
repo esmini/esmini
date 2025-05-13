@@ -833,7 +833,6 @@ void Poly3::Print() const
 
 void Poly3::EvaluateDSLocal(double ds, double& u, double& v) const
 {
-    double distTmp = 0;
     double steplen = MIN(10, ds);  // along u axis - to be tuned
 
     u = v = 0;
@@ -845,6 +844,7 @@ void Poly3::EvaluateDSLocal(double ds, double& u, double& v) const
     }
     else if (ds > SMALL_NUMBER)
     {
+        double distTmp = 0;
         for (double uTmp = 0; uTmp < length_; uTmp += steplen)
         {
             double vTmp  = poly3_.Evaluate(uTmp);
@@ -6326,7 +6326,6 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
     {
         if (FileExists(file_name_candidates[i].c_str()))
         {
-            std::string line;
             // assuming the file is text
             std::ifstream fs;
             fs.open(file_name_candidates[i].c_str());
@@ -6341,8 +6340,8 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
             }
             else
             {
-                const char delimiter = '=';
-
+                const char  delimiter = '=';
+                std::string line;
                 // process each line in turn
                 while (std::getline(fs, line))
                 {
@@ -7767,14 +7766,13 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         {
             if (osi_point_idx_ != IDX_UNDEFINED && distFromCurrentPos < 5.0 && lane_section_idx_ != IDX_UNDEFINED)
             {
-                startLaneSecIdx       = lane_section_idx_;
-                unsigned int n_points = search_win / 2;
+                startLaneSecIdx = lane_section_idx_;
 
                 if (osi_point_idx_ < search_win / 2)
                 {
-                    n_points = search_win / 2 - osi_point_idx_;  // consider remaining points in previous lane sections
                     if (startLaneSecIdx > 0)
                     {
+                        unsigned int n_points = search_win / 2 - osi_point_idx_;  // consider remaining points in previous lane sections
                         // look in previous lane sections
                         for (size_t j = 0; n_points > 0 && startLaneSecIdx > 0 && j < search_win / 2; j++)
                         {

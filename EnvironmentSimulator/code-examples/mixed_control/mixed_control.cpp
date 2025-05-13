@@ -86,9 +86,6 @@ int main(int argc, char* argv[])
             // Slow down when curve ahead - CURVE_WEIGHT is the tuning parameter
             targetSpeed = defaultTargetSpeed / (1 + curveWeight * static_cast<double>(fabs(roadInfo.angle)));
 
-            // Steer towards where the point
-            double steerAngle = roadInfo.angle;
-
             // Get simulation delta time since last call (first will be minimum timestep)
             if (!fixed_timestep)
             {
@@ -110,6 +107,8 @@ int main(int argc, char* argv[])
             // Step vehicle model with driver input, but wait until time > 0
             if (SE_GetSimulationTime() > 0 && !SE_GetPauseFlag())
             {
+                // Steer towards where the point
+                double steerAngle = roadInfo.angle;
                 SE_SimpleVehicleControlAnalog(vehicleHandle, dt, throttle, steerAngle);
             }
 
