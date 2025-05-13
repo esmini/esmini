@@ -12930,9 +12930,8 @@ void Position::EvaluateRelation(bool release)
 
     if (GetType() == Position::PositionType::RELATIVE_LANE || GetType() == Position::PositionType::RELATIVE_ROAD)
     {
-        Position          pos_tmp;
-        Route             route_backup;
-        shared_ptr<Route> route;
+        Position pos_tmp;
+        Route    route_backup;
 
         pos_tmp.Duplicate(*rel_pos_);  // copy referred entity's route as a starting point
 

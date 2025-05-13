@@ -75,13 +75,11 @@ repos:
           - --suppress=uselessOverride
           - --suppress=cstyleCast
           - --suppress=checkersReport
-          - --suppress=truncLongCastAssignment
-          #- --suppress=unreadVariable
+          - --suppress=truncLongCastAssignment          
           - --suppress=constParameterPointer          
           - --suppress=checkLevelNormal
           - --suppress=constParameterReference
           - --suppress=constParameter
           - --suppress=constParameterCallback          
           - --suppress=constVariableReference
-          - --suppress=suspiciousFloatingPointCast
-          - --suppress=unusedVariable
+          - --suppress=suspiciousFloatingPointCast          
