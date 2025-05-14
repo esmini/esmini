@@ -2208,8 +2208,9 @@ namespace roadmanager
         /**
         Retrieve the lanesection index at specified s-value
         @param s distance along the road segment
+        @return index of the lane section on success, IDX_UNDEFINED on failure
         */
-        unsigned int GetLaneSectionIdxByS(double s, idx_t start_at = 0) const;
+        idx_t GetLaneSectionIdxByS(double s, idx_t start_at = 0) const;
 
         /**
         Retrieve the lanesection at specified s-value
@@ -2229,11 +2230,20 @@ namespace roadmanager
         */
         double GetCenterOffset(double s, int lane_id) const;
 
-        int             GetLaneInfoByS(double    s,
-                                       idx_t     start_lane_link_idx,
-                                       int       start_lane_id,
-                                       LaneInfo &lane_info,
-                                       int       laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING) const;
+        /**
+        Retrieve lane information at given s value from given lane id
+        @param s distance along the road segment
+        @param start_lane_link_idx index of the lane link to start search from
+        @param start_lane_id lane id to start search from
+        @param lane_info reference to LaneInfo object to be filled with lane information
+        @return index of the lane section on success, or -1 on failure
+        */
+        int GetLaneInfoByS(double    s,
+                           idx_t     start_lane_link_idx,
+                           int       start_lane_id,
+                           LaneInfo &lane_info,
+                           int       laneTypeMask = Lane::LaneType::LANE_TYPE_ANY_DRIVING) const;
+
         int             GetConnectingLaneId(RoadLink *road_link, int fromLaneId, id_t connectingRoadId) const;
         double          GetLaneWidthByS(double s, int lane_id) const;
         Lane::LaneType  GetLaneTypeByS(double s, int lane_id) const;

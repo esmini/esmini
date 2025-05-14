@@ -2189,11 +2189,15 @@ TEST(EdgeCaseTest, TestSTruncation)
 
     s = 17.0;
     // outside road length
-    EXPECT_EQ(road->GetLaneSectionIdxByS(s), 0);
+    EXPECT_EQ(road->GetLaneSectionIdxByS(s), IDX_UNDEFINED);
     laneSection = road->GetLaneSectionByS(s);
+    EXPECT_EQ(laneSection, nullptr);
+
+    laneSection = road->GetLaneSectionByS(road->GetLength());
     EXPECT_NE(laneSection, nullptr);
     EXPECT_EQ(laneSection->GetLaneByIdx(0)->GetId(), 3);
-    pos.SetLanePos(1, -1, s, 0.0);
+
+    EXPECT_NE(pos.SetLanePos(1, -1, s, 0.0), roadmanager::Position::ReturnCode::OK);
     EXPECT_NEAR(pos.GetS(), 16.90918, 1e-4);  // truncated
     EXPECT_NEAR(pos.GetS(), road->GetLength(), 1e-4);
     EXPECT_NEAR(pos.GetX(), 50.0702, 1e-4);
