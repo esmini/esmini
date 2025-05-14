@@ -1604,13 +1604,7 @@ void LongSpeedProfileAction::Start(double simTime)
                     j = vtx.k_ - k0 < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
                 }
 
-                if (abs(k0 - k1) < SMALL_NUMBER)
-                {
-                    // no change in acceleration, skip jerk segment
-                    t3 = t0;
-                    v3 = v0;
-                }
-                else
+                if (abs(k0 - k1) >= SMALL_NUMBER)
                 {
                     // find time for next jerk
                     // https://www.wolframalpha.com/input?i=solve+b%3Dk*g%2Bn%2Cd%3Dl*j%2Bo%2Cd%3Db%2Bk*%28j-g%29%2Bm*%28j-g%29%5E2%2F2%2Cl%3Dk%2Bm*%28j-g%29+for+b%2Cd%2Cg%2Cj
