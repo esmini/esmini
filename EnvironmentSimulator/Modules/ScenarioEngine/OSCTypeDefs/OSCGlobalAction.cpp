@@ -228,7 +228,7 @@ void print_bbx(const BBoxVec& vec, char const filename[])
     file.close();
 }
 
-void printTree(aabbTree::Tree& tree, char filename[])
+void printTree(aabbTree::Tree& tree, const char filename[])
 {
     std::ofstream file;
     file.open(filename);

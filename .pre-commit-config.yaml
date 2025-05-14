@@ -65,8 +65,7 @@ repos:
           - --suppress=unusedStructMember #1 #we will keep it
           - --suppress=unusedFunction #1 #we will keep it
           - --suppress=preprocessorErrorDirective #2 #we will keep it as cppcheck does not support evaluating __has_include() properly.
-          # 2.17 cppcheck
-          #- --suppress=redundantAssignment  # extended
+          # 2.17 cppcheck          
           - --suppress=constVariablePointer
           - --suppress=normalCheckLevelMaxBranches
           - --suppress=duplicateAssignExpression
@@ -79,7 +78,7 @@ repos:
           - --suppress=constParameterPointer          
           - --suppress=checkLevelNormal
           - --suppress=constParameterReference
-          - --suppress=constParameter #extended
+          #- --suppress=constParameter #extended
           - --suppress=constParameterCallback          
           - --suppress=constVariableReference
           - --suppress=suspiciousFloatingPointCast          
