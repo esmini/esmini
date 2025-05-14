@@ -579,7 +579,7 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
     }
 }
 
-void Replay::CreateMergedDatfile(const std::string filename)
+void Replay::CreateMergedDatfile(const std::string filename) const
 {
     std::ofstream data_file_;
     data_file_.open(filename, std::ofstream::binary);
@@ -589,14 +589,14 @@ void Replay::CreateMergedDatfile(const std::string filename)
         exit(-1);
     }
 
-    data_file_.write(reinterpret_cast<char*>(&header_), sizeof(header_));
+    data_file_.write(reinterpret_cast<const char*>(&header_), sizeof(header_));
 
     if (data_file_.is_open())
     {
         // Write status to file - for later replay
         for (size_t i = 0; i < data_.size(); i++)
         {
-            data_file_.write(reinterpret_cast<char*>(&data_[i].state), sizeof(data_[i].state));
+            data_file_.write(reinterpret_cast<const char*>(&data_[i].state), sizeof(data_[i].state));
         }
     }
 }

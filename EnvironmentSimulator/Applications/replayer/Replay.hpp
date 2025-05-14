@@ -77,8 +77,7 @@ namespace scenarioengine
         }
         void CleanEntries(std::vector<ReplayEntry>& entries);
         void BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntry>>>& scenarios);
-        // cppcheck-suppress functionConst
-        void CreateMergedDatfile(const std::string filename);
+        void CreateMergedDatfile(const std::string filename) const;
 
     private:
         std::ifstream            file_;
