@@ -14,20 +14,19 @@ COMMON_REPLAYER_ARGS = '--file sim.dat --headless --time_scale 10 --res_path ../
 class TestSuite(unittest.TestCase):
 
     def test_cut_in(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ESMINI_ARGS + '--log_level debug')
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ESMINI_ARGS + '--log_level debug')
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*cut-in.xosc', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('0.010.* CutInActStart: true, delay: 0.00, 0.0100 > 0.0000, edge: none', log)  is not None)
-        self.assertTrue(re.search('0.060.* \\[debug\\] Dist -25.00 Path \\(reversed\\): 0', log)  is not None)
         self.assertTrue(re.search('\\n.7.740.* BrakeCondition_HWT_0.7: true, delay: 0.00, HWT: 0.70 > 0.70, edge rising', log)  is not None)
         self.assertTrue(re.search('\\n.16.740.* StopCondition: true, delay: 5.00, CutInManeuver, COMPLETE / END_TRANSITION == END_TRANSITION, edge: rising\\n', log)  is not None)
         self.assertTrue(re.search('\\n.21.740.* StopCondition: true\\n', log)  is not None)
 
     def test_ltap_od(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/ltap-od.xosc'), COMMON_ESMINI_ARGS \
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/ltap-od.xosc'), COMMON_ESMINI_ARGS \
             + '--disable_controllers')
 
         # Check some initialization steps
@@ -46,7 +45,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n6.500, 1, NPC, 24.456, 0.305, 0.000, 5.394, 0.000, 0.000, 7.000, 0.335, 5.147', csv))
 
     def test_variables(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/lane_change_trig_by_variable.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/lane_change_trig_by_variable.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*lane_change_trig_by_variable.xosc', log)  is not None)
@@ -62,7 +61,7 @@ class TestSuite(unittest.TestCase):
         # make sure OSI is supported, which should be the case when bin/osireceiver is present
         if (os.path.isfile('../bin/osireceiver') or os.path.isfile('../bin/osireceiver.exe')):
 
-            log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/trajectory-test.xosc'), COMMON_ESMINI_ARGS \
+            log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/trajectory-test.xosc'), COMMON_ESMINI_ARGS \
                 + '--disable_controllers ' + '--osi_file')
 
             # Check some initialization steps
@@ -87,7 +86,7 @@ class TestSuite(unittest.TestCase):
             print('\n  - skipping test_trajectory check for non OSI builds', flush=True)
 
     def test_synchronize(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ESMINI_ARGS \
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ESMINI_ARGS \
             + '--disable_controllers')
 
         # Check some initialization steps
@@ -117,7 +116,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n25.000, 4, NPC4, 24.312, 610.213, -0.826, 1.481, 6.283, 0.000, 9.928', csv))
 
     def test_left_hand_by_heading(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/left-hand-traffic_by_heading.xosc'), COMMON_ESMINI_ARGS \
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/left-hand-traffic_by_heading.xosc'), COMMON_ESMINI_ARGS \
             + '--disable_controllers')
 
         # Check some initialization steps
@@ -140,7 +139,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n9.010, 0, Ego, -5.639, 310.318, -0.547, 1.555, 0.002, 6.283, 30.000, -0.000, 5.737', csv))
 
     def test_left_hand_using_road_rule(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/left-hand-traffic_using_road_rule.xosc'), COMMON_ESMINI_ARGS \
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/left-hand-traffic_using_road_rule.xosc'), COMMON_ESMINI_ARGS \
             + '--disable_controllers')
 
         # Check some initialization steps
@@ -163,7 +162,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n9.010, 0, Ego, -5.639, 310.318, -0.547, 1.555, 0.002, 0.000, 30.000, -0.000, 5.737', csv))
 
     def test_routing(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/routing-test.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/routing-test.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*routing-test.xosc', log)  is not None)
@@ -197,7 +196,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n43.310, 0, Ego, 639.136, -1.875, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
 
     def test_acc(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/acc-test.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/acc-test.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*acc-test.xosc', log)  is not None)
@@ -232,7 +231,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n33.000, 1, Target, 293.119, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 1.691', csv))
 
     def test_highway_driver(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/highway_driver.xosc'), COMMON_ESMINI_ARGS + ' --fixed_timestep 0.1')
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/highway_driver.xosc'), COMMON_ESMINI_ARGS + ' --fixed_timestep 0.1')
 
         # Check entities are placed where they should be
         self.assertTrue(re.search('Loading .*highway_driver.xosc', log)  is not None)
@@ -281,7 +280,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n45.000, 0, Ego, 32.161, 688.644, -0.922, 1.461, 0.003, 0.000, 0.053, -0.000, 5.846', csv))
 
     def test_swarm(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.1')
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.1')
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*swarm.xosc', log)  is not None)
@@ -321,7 +320,7 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^14.000, 45, swarm_35\\+\\+, 13.591, 665.270, -0.867, 4.609, 6.281, 6.283, 30.000, 0.001, 4.033', csv, re.MULTILINE))
 
     def test_conflicting_domains(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*conflicting-domains.xosc', log))
@@ -353,7 +352,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^5.550, 0, Ego, 51.786, -1.535, 0.000, 0.000, 0.000, 0.000, 12.661, 0.030, 2.853', csv, re.MULTILINE))
 
     def test_follow_ghost(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/follow_ghost.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/follow_ghost.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*follow_ghost.xosc', log)  is not None)
@@ -374,7 +373,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^13.350, 0, Ego, 10.931, 342.076, -0.610, 1.551, 0.002, 0.000, 10.006, -0.001, 5.970', csv, re.MULTILINE))
 
     def test_heading_trig(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/traj-heading-trig.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/traj-heading-trig.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*traj-heading-trig.xosc', log)  is not None)
@@ -391,7 +390,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^12.690, 0, Car0, 582.260, 41.297, 0.000, 0.951, 0.000, 0.000, 13.889, 0.031, 0.917', csv, re.MULTILINE))
 
     def test_relative_speed_trig(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/direction_dimension_trig.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/direction_dimension_trig.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*direction_dimension_trig.xosc', log)  is not None)
@@ -411,7 +410,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^4.210, 1, OverTaker, 97.462, 10.051, 0.000, 5.356, 0.000, 0.000, 5.894, 0.000, 4.116', csv, re.MULTILINE))
 
     def test_lane_change_at_hw_exit(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/highway_exit.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/highway_exit.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*highway_exit.xosc', log)  is not None)
@@ -435,7 +434,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^11.500, 1, Target, 400.801, -30.941, 0.000, 5.933, 0.000, 0.000, 31.250, 0.000, 1.812', csv, re.MULTILINE))
 
     def test_lane_change_clothoid(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/lane-change_clothoid_based_trajectory.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/lane-change_clothoid_based_trajectory.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*lane-change_clothoid_based_trajectory.xosc', log)  is not None)
@@ -461,7 +460,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^4.520, 0, Car, 112.609, 1.458, 0.000, 0.001, 0.000, 0.000, 13.889, -0.031, 3.436', csv, re.MULTILINE))
 
     def test_action_dynamics(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test_action_dynamics.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test_action_dynamics.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*test_action_dynamics.xosc', log)  is not None)
@@ -489,7 +488,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^26.000, 0, Car, 162.787, 1.968, 0.000, 6.283, 0.000, 0.000, 7.000, -0.103, 5.074', csv, re.MULTILINE))
 
     def test_route_lane_change(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/route_lane_change.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/route_lane_change.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*route_lane_change.xosc', log)  is not None)
@@ -525,7 +524,7 @@ class TestSuite(unittest.TestCase):
 
 
     def test_drop_bike(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/drop-bike.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/drop-bike.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*drop-bike.xosc', log)  is not None)
@@ -542,7 +541,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^4.330, 2, bike, 216.150, -2.135, 0.100, 1.570, 0.000, 1.570, 0.000, 0.000, 4.305', csv, re.MULTILINE))
 
     def test_speed_over_distance(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/speed_over_distance.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/speed_over_distance.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*speed_over_distance.xosc', log)  is not None)
@@ -560,7 +559,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^34.860, 0, Car, 299.667, -1.535, 0.000, 0.000, 0.000, 0.000, 22.222', csv, re.MULTILINE))
 
     def test_collision_condition1(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc'), COMMON_ESMINI_ARGS + \
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc'), COMMON_ESMINI_ARGS + \
             '--disable_controllers')
 
         # Explicit collision detection in condition when global collision detection is disabled
@@ -581,7 +580,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^20.000, 2, NPC2, 30.000, 1.535, 0.000, 3.142, 0.000, 0.000, 1.000, 0.000, 0.594', csv, re.MULTILINE))
 
     def test_collision_condition2(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc'), COMMON_ESMINI_ARGS + \
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc'), COMMON_ESMINI_ARGS + \
             '--disable_controllers --collision')
 
         # Same as previous, but making use of enabled global collision detection in condition
@@ -619,7 +618,7 @@ class TestSuite(unittest.TestCase):
             print('\n  - skipping collision checks on mac due to replayer graphics dependencies not working on CI macOS image', flush=True)
 
     def test_add_delete_entity(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*add_delete_entity.xosc', log)  is not None)
@@ -648,7 +647,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^15.910, 0, Car1, 500.000, -1.535, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
 
     def test_multi_lane_changes(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/multi_lane_changes.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/multi_lane_changes.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*multi_lane_changes.xosc', log)  is not None)
@@ -677,7 +676,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^20.000, 3, Target3, 362.760, -6.000, 0.000, 0.000, 0.000, 0.000, 15.278, 0.000, 1.913', csv, re.MULTILINE))
 
     def test_init_cases(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/init_test.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/init_test.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*init_test.xosc', log)  is not None)
@@ -726,7 +725,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^0.020, 3, Ego_ghost, 220.094, 0.532, 0.000, 0.103, 0.000, 0.000, 10.000, 0.000, 1.166', csv, re.MULTILINE))
 
     def test_reverse_lane_change(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/reverse_lane_change.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/reverse_lane_change.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*reverse_lane_change.xosc', log)  is not None)
@@ -746,7 +745,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^10.000, 0, Ego, 199.766, 1.535, 0.000, 0.000, 0.000, 0.000, -13.889, 0.000, -5.686', csv, re.MULTILINE))
 
     def test_ghost_restart(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*ghost_restart.xosc', log)  is not None)
@@ -772,7 +771,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^5.000, 1, Ego_ghost, 104.691, -8.000, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 1.497', csv, re.MULTILINE))
 
     def test_ghost_restart2(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart2.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart2.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*ghost_restart2.xosc', log)  is not None)
@@ -817,7 +816,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^8.010, 2, Car_ghost, 71.285, -1.534, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 2.405', csv, re.MULTILINE))
 
     def test_maneuver_groups_x_3(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/maneuver_groups_x_3.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/maneuver_groups_x_3.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*maneuver_groups_x_3.xosc', log)  is not None)
@@ -837,7 +836,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^6.800, 0, Target, 74.000, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000, 0.203, 2.895', csv, re.MULTILINE))
 
     def test_speed_profile(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/speed-profile_test.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/speed-profile_test.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*speed-profile_test.xosc', log)  is not None)
@@ -883,7 +882,7 @@ class TestSuite(unittest.TestCase):
 
     def test_star(self):
         # star is a synthetic scenario involving permutations of road heading, pitch and relative road position
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/star.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/star.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*star.xosc', log)  is not None)
@@ -1045,7 +1044,7 @@ class TestSuite(unittest.TestCase):
 
     def test_star_position_types(self):
         # star_position_types is a synthetic scenario involving further variants of position types
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/star_position_types.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/star_position_types.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*star_position_types.xosc', log)  is not None)
@@ -1628,7 +1627,7 @@ class TestSuite(unittest.TestCase):
             print('\n  - skipping state checks for various ALKS models due to missing replayer, probably esmini built without OSG support', flush=True)
 
     def test_user_defined_action(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/user_defined_action.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/user_defined_action.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*user_defined_action.xosc', log)  is not None)
@@ -1650,7 +1649,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n8.950, 0, Ego, 117.762, -1.535, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 2.861', csv))
 
     def test_trailer_connect(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/trailer_connect.xosc'), COMMON_ESMINI_ARGS)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/trailer_connect.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*trailer_connect.xosc', log)  is not None)
@@ -1678,7 +1677,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^17.500, 1, Car, 19.354, 31.048, 0.000, 6.083, 0.000, 0.000, 0.000, 0.000, 4.919', csv, re.MULTILINE))
 
     def test_pedestrian(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/pedestrian.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/pedestrian.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*pedestrian.xosc', log)  is not None)
@@ -1708,7 +1707,7 @@ class TestSuite(unittest.TestCase):
     def test_drive_when_close(self):
         # this test case exercises restarting events within same maneuver. A car will drive only when near another specific one, otherwise stop.
 
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/drive_when_close.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1 --disable_controllers")
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/drive_when_close.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1 --disable_controllers")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*drive_when_close.xosc', log)  is not None)
@@ -1742,7 +1741,7 @@ class TestSuite(unittest.TestCase):
     def test_action_injection(self):
         # this test case exercises the action injection mechanism
 
-        log, duration, cpu_time = run_scenario(esmini_arguments='--osc ../resources/xosc/cut-in.xosc ' + COMMON_ESMINI_ARGS, application='code-examples-bin/action_injection')
+        log, duration, cpu_time, _ = run_scenario(esmini_arguments='--osc ../resources/xosc/cut-in.xosc ' + COMMON_ESMINI_ARGS, application='code-examples-bin/action_injection')
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*cut-in.xosc', log)  is not None)
@@ -1771,7 +1770,7 @@ class TestSuite(unittest.TestCase):
 
     def test_multi_controller(self):
         # this test case exercises assignment and activation of two controllers, partly overlapping in time
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/multi_controller.xosc'), COMMON_ESMINI_ARGS + "--seed 397860069 --fixed_timestep 0.1")
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/multi_controller.xosc'), COMMON_ESMINI_ARGS + "--seed 397860069 --fixed_timestep 0.1")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*multi_controller.xosc', log)  is not None)
@@ -1803,7 +1802,7 @@ class TestSuite(unittest.TestCase):
     def test_mixed_control(self):
         # this test case exercises the action injection mechanism
 
-        log, duration, cpu_time = run_scenario(esmini_arguments='--osc ../EnvironmentSimulator/code-examples/mixed_control/mixed_control.xosc ' + COMMON_ESMINI_ARGS + ' --fixed_timestep 0.1', application='code-examples-bin/mixed_control')
+        log, duration, cpu_time, _ = run_scenario(esmini_arguments='--osc ../EnvironmentSimulator/code-examples/mixed_control/mixed_control.xosc ' + COMMON_ESMINI_ARGS + ' --fixed_timestep 0.1', application='code-examples-bin/mixed_control')
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*mixed_control.xosc', log)  is not None)
@@ -1830,7 +1829,7 @@ class TestSuite(unittest.TestCase):
     def test_repeats_and_relative_speed(self):
         # this test case exercises restarting events and maneuvers to maintain relative speed using SpeedAction without continuous flag.
 
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/repeated_relative_speed.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/repeated_relative_speed.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*repeated_relative_speed.xosc', log)  is not None)
@@ -1855,7 +1854,7 @@ class TestSuite(unittest.TestCase):
     def test_ad_hoc_traffic(self):
         # this test case exercises the action injection mechanism
 
-        log, duration, cpu_time = run_scenario(esmini_arguments='--headless', application='code-examples-bin/ad_hoc_traffic')
+        log, duration, cpu_time, _ = run_scenario(esmini_arguments='--headless', application='code-examples-bin/ad_hoc_traffic')
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*ad_hoc_traffic/empty_scenario.xosc', log)  is not None)
@@ -1913,7 +1912,7 @@ class TestSuite(unittest.TestCase):
         # This test case checks rising condition edge. A car is accelerating from 0 up to 10m/s, then braking to a stop.
         # Stop condition is speed < 1 on rising edge, which happens only after speed reach < 1 after being greater.
 
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/rising_edge.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/rising_edge.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*rising_edge.xosc', log)  is not None)
@@ -1936,7 +1935,7 @@ class TestSuite(unittest.TestCase):
         # The scenario contains 11 vehicles and trajectories or various types and configurations, according to table in
         # esmini User guide: https://esmini.github.io/#_trajectory_moving_and_driving_direction
 
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/trajectory_heading.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/trajectory_heading.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*trajectory_heading.xosc', log)  is not None)
@@ -2024,7 +2023,7 @@ class TestSuite(unittest.TestCase):
         # the speed profile is simply starting at 20 m/s, decelerating linearly to -20, then accelerating to 20 again
         # the heading of the entities is expected to remain aligned to the trajectory according to initial conditions
 
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/trajectory_speed.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/trajectory_speed.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*trajectory_speed.xosc', log)  is not None)
@@ -2102,7 +2101,7 @@ class TestSuite(unittest.TestCase):
         # for info on trajectory interpretation, see:
         # esmini User guide: https://esmini.github.io/#_trajectory_moving_and_driving_direction
 
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/trajectory_special_cases.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/trajectory_special_cases.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*trajectory_special_cases.xosc', log)  is not None)
@@ -2127,13 +2126,13 @@ class TestSuite(unittest.TestCase):
 
     def test_scenario_not_found(self):
         # This test case checks handling of missing scenario file
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'dummy_folder/dummy_filename.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1", ignoreReturnCode = True)
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'dummy_folder/dummy_filename.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1", ignoreReturnCode = True)
 
         # Check some initialization steps
         self.assertTrue(re.search("Couldn't locate OpenSCENARIO file dummy_filename.xosc", log)  is not None)
 
     def test_lane_change_simple(self):
-        log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/lane_change_simple.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/lane_change_simple.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*lane_change_simple.xosc', log)  is not None)

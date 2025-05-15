@@ -1,0 +1,60 @@
+name: MemoryLeak
+
+on:
+  schedule:
+    # This will run the memory leak check job Nightly at 1AM every day for the dev branch
+    # * is a special character in YAML so you have to quote this string
+    - cron: '0 1 * * *'
+
+  workflow_dispatch:
+
+jobs:
+  memoryleak:
+    strategy:
+      matrix:
+        configuration: [RelWithDebInfo]
+        os: [ubuntu-22.04]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4.1.7
+        with:
+          ref: ${{ github.event.ref }}
+          submodules: true
+          fetch-depth: 0  # Fetch all history for proper branch switching
+      
+      - name: Install valgrind
+        run: |
+          sudo apt update
+          sudo apt install -y valgrind
+
+      - name: Conditional Checkout
+        run: |
+          if [ "${{ github.ref }}" == "refs/heads/master" ]; then
+            git checkout dev
+          fi
+
+      - uses: ./.github/actions/setup_tools_shared
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            externals/googletest
+            externals/osg
+            externals/osi
+            externals/sumo
+            resources/models
+          key: ${{ runner.os }}-external-resources
+
+      - name: CMake Configure - Ubuntu
+        if: runner.os == 'Linux'
+        run: cmake -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
+
+      - name: CMake Build
+        run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
+
+      - name: Run Tests
+        # Use xvfb on Linux and extend timeout allowing for slow execution
+        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_memory_leak_tests.sh

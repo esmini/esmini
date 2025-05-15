@@ -88,7 +88,7 @@ class TestSuiteBase(unittest.TestCase):
             failure = False
             for j in range(n_runs):
                 try:
-                    log, duration, cpu_time = run_scenario(scenario, esmini_args, application=exec, measure_cpu_time=True)
+                    log, duration, cpu_time, _ = run_scenario(scenario, esmini_args, application=exec, measure_cpu_time=True)
                 except Exception as e:
                     print(e, flush=True)
                     print('\nFailure - check log.txt and', exec, file=sys.stderr, flush=True)
