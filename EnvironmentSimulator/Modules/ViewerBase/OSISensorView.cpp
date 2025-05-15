@@ -79,7 +79,7 @@ void OSISensorDetection::SensorUpdate(osi3::SensorView* sv)
                 point.second->Hide();
             }
             // If the point was detected before, we show it again
-            else if (found && !point.second->showing_)
+            else if (!point.second->showing_)
             {
                 point.second->Show();
             }
@@ -106,7 +106,7 @@ void OSISensorDetection::SensorUpdate(osi3::SensorView* sv)
                 car.second->Hide();
             }
             // If the moving object was detected before, we show it again
-            else if (found && !car.second->showing_)
+            else if (!car.second->showing_)
             {
                 car.second->Show();
             }

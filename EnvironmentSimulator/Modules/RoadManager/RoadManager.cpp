@@ -2958,7 +2958,7 @@ bool Road::GetZAndPitchByS(double s, double* z, double* z_prim, double* z_primPr
             return false;
         }
 
-        if (elevation && s > elevation->GetS() + elevation->GetLength() - SMALL_NUMBER)
+        if (s > elevation->GetS() + elevation->GetLength() - SMALL_NUMBER)
         {
             while (s > elevation->GetS() + elevation->GetLength() - SMALL_NUMBER && *index < GetNumberOfElevations() - 1)
             {
@@ -2966,7 +2966,7 @@ bool Road::GetZAndPitchByS(double s, double* z, double* z_prim, double* z_primPr
                 elevation = GetElevation(++*index);
             }
         }
-        else if (elevation && s < elevation->GetS())
+        else if (s < elevation->GetS())
         {
             while (s < elevation->GetS() && *index > 0)
             {
@@ -3007,7 +3007,7 @@ bool Road::UpdateZAndRollBySAndT(double s, double t, double* z, double* roadSupe
             return false;
         }
 
-        if (super_elevation && s > super_elevation->GetS() + super_elevation->GetLength())
+        if (s > super_elevation->GetS() + super_elevation->GetLength())
         {
             while (s > super_elevation->GetS() + super_elevation->GetLength() && *index < GetNumberOfSuperElevations() - 1)
             {
@@ -3015,7 +3015,7 @@ bool Road::UpdateZAndRollBySAndT(double s, double t, double* z, double* roadSupe
                 super_elevation = GetSuperElevation(++*index);
             }
         }
-        else if (super_elevation && s < super_elevation->GetS())
+        else if (s < super_elevation->GetS())
         {
             while (s < super_elevation->GetS() && *index > 0)
             {
@@ -3951,60 +3951,56 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                 pugi::xml_node    sub_type          = roadMark.child("type");
                                 if (sub_type)
                                 {
-                                    if (sub_type != NULL)
+                                    std::string sub_type_name  = sub_type.attribute("name").value();
+                                    double      sub_type_width = atof(sub_type.attribute("width").value());
+                                    lane_roadMarkType          = new LaneRoadMarkType(sub_type_name, sub_type_width);
+                                    lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
+
+                                    for (pugi::xml_node line = sub_type.child("line"); line; line = line.next_sibling("line"))
                                     {
-                                        std::string sub_type_name  = sub_type.attribute("name").value();
-                                        double      sub_type_width = atof(sub_type.attribute("width").value());
-                                        lane_roadMarkType          = new LaneRoadMarkType(sub_type_name, sub_type_width);
-                                        lane_roadMark->AddType(std::shared_ptr<LaneRoadMarkType>{lane_roadMarkType});
+                                        double llength    = atof(line.attribute("length").value());
+                                        double space      = atof(line.attribute("space").value());
+                                        double t_offset   = atof(line.attribute("tOffset").value());
+                                        double s_offset_l = atof(line.attribute("sOffset").value());
 
-                                        for (pugi::xml_node line = sub_type.child("line"); line; line = line.next_sibling("line"))
+                                        if (!line.attribute("color").empty())
                                         {
-                                            double llength    = atof(line.attribute("length").value());
-                                            double space      = atof(line.attribute("space").value());
-                                            double t_offset   = atof(line.attribute("tOffset").value());
-                                            double s_offset_l = atof(line.attribute("sOffset").value());
-
-                                            if (!line.attribute("color").empty())
+                                            RoadMarkColor tmp_color = LaneRoadMark::ParseColor(line);
+                                            if (tmp_color != RoadMarkColor::UNDEFINED)
                                             {
-                                                RoadMarkColor tmp_color = LaneRoadMark::ParseColor(line);
-                                                if (tmp_color != RoadMarkColor::UNDEFINED)
-                                                {
-                                                    roadMark_color =
-                                                        tmp_color;  // supersedes the setting in <RoadMark> element (available from odr v1.5)
-                                                }
+                                                roadMark_color = tmp_color;  // supersedes the setting in <RoadMark> element (available from odr v1.5)
                                             }
-
-                                            // rule (optional)
-                                            LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
-                                            if (line.attribute("rule") != 0 && strcmp(line.attribute("rule").value(), ""))
-                                            {
-                                                if (!strcmp(line.attribute("rule").value(), "none"))
-                                                {
-                                                    rule = LaneRoadMarkTypeLine::NONE;
-                                                }
-                                                else if (!strcmp(line.attribute("rule").value(), "caution"))
-                                                {
-                                                    rule = LaneRoadMarkTypeLine::CAUTION;
-                                                }
-                                                else if (!strcmp(line.attribute("rule").value(), "no passing"))
-                                                {
-                                                    rule = LaneRoadMarkTypeLine::NO_PASSING;
-                                                }
-                                                else
-                                                {
-                                                    LOG_ERROR("unknown lane road mark type line rule: {} (road id={})",
-                                                              line.attribute("rule").value(),
-                                                              r->GetId());
-                                                }
-                                            }
-
-                                            double width = atof(line.attribute("width").value());
-
-                                            LaneRoadMarkTypeLine* lane_roadMarkTypeLine =
-                                                new LaneRoadMarkTypeLine(llength, space, t_offset, s_offset_l, rule, width, roadMark_color);
-                                            lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>(lane_roadMarkTypeLine));
                                         }
+
+                                        // rule (optional)
+                                        LaneRoadMarkTypeLine::RoadMarkTypeLineRule rule = LaneRoadMarkTypeLine::NONE;
+                                        if (line.attribute("rule") != 0 && strcmp(line.attribute("rule").value(), ""))
+                                        {
+                                            if (!strcmp(line.attribute("rule").value(), "none"))
+                                            {
+                                                rule = LaneRoadMarkTypeLine::NONE;
+                                            }
+                                            else if (!strcmp(line.attribute("rule").value(), "caution"))
+                                            {
+                                                rule = LaneRoadMarkTypeLine::CAUTION;
+                                            }
+                                            else if (!strcmp(line.attribute("rule").value(), "no passing"))
+                                            {
+                                                rule = LaneRoadMarkTypeLine::NO_PASSING;
+                                            }
+                                            else
+                                            {
+                                                LOG_ERROR("unknown lane road mark type line rule: {} (road id={})",
+                                                          line.attribute("rule").value(),
+                                                          r->GetId());
+                                            }
+                                        }
+
+                                        double width = atof(line.attribute("width").value());
+
+                                        LaneRoadMarkTypeLine* lane_roadMarkTypeLine =
+                                            new LaneRoadMarkTypeLine(llength, space, t_offset, s_offset_l, rule, width, roadMark_color);
+                                        lane_roadMarkType->AddLine(std::shared_ptr<LaneRoadMarkTypeLine>(lane_roadMarkTypeLine));
                                     }
                                 }
 

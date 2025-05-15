@@ -48,9 +48,9 @@ repos:
           - --error-exitcode=1
           - --inline-suppr
           - --enable=all
-          - --suppress=knownConditionTrueFalse # intentional for clarity, configuration checks, or future conditions.
-          - --suppress=unusedStructMember # kept for alignment, future use, or external access (e.g., serialization).
-          - --suppress=unusedFunction # kept due to external calls, API compatibility, or future use.
+          - --suppress=knownConditionTrueFalse # intentional for clarity, and some cppcheck will not be able to detect it.
+          - --suppress=unusedStructMember # kept for alignment, external access.
+          - --suppress=unusedFunction # kept due to external calls, API compatibility.
           - --suppress=preprocessorErrorDirective # kept; cppcheck doesn't fully support __has_include().
           # Following warnings are suppressed based on esmini team’s decision due to low priority.
           - --suppress=missingOverride

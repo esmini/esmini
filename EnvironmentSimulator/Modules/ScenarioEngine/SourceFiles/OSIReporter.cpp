@@ -2076,7 +2076,7 @@ int OSIReporter::UpdateOSIRoadLane()
                                     osi3::Identifier *left_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
                                     left_lane_bound_id->set_value(line_ids[jj]);
                                 }
-                                else if (lane_id > 0)
+                                else
                                 {
                                     osi3::Identifier *left_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
                                     left_lane_bound_id->set_value(line_ids[jj]);
@@ -2105,8 +2105,8 @@ int OSIReporter::UpdateOSIRoadLane()
                         {
                             next_lane_id = lane_id + 1;
                         }
-                        else if (lane_id > 0)  // if lane is on the left, then it contains its left boundary. So I need to look into its right
-                                               // lane for the right boundary
+                        else  // if lane is on the left, then it contains its left boundary. So I need to look into its right
+                              // lane for the right boundary
                         {
                             next_lane_id = lane_id - 1;
                         }
@@ -2124,7 +2124,7 @@ int OSIReporter::UpdateOSIRoadLane()
                                         osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_left_lane_boundary_id();
                                         right_lane_bound_id->set_value(nextlane_line_ids[jj]);
                                     }
-                                    else if (lane_id > 0)
+                                    else
                                     {
                                         osi3::Identifier *right_lane_bound_id = osi_lane->mutable_classification()->add_right_lane_boundary_id();
                                         right_lane_bound_id->set_value(nextlane_line_ids[jj]);
@@ -2322,10 +2322,7 @@ int OSIReporter::UpdateOSIRoadLane()
                         predecessorLane = predecessor_lane_section->GetLaneById(lane->GetLink(roadmanager::LinkType::PREDECESSOR)->GetId());
                         if (predecessorLane)
                         {
-                            if (!lane_pairing)
-                            {
-                                lane_pairing = osi_lane->mutable_classification()->add_lane_pairing();
-                            }
+                            lane_pairing = osi_lane->mutable_classification()->add_lane_pairing();
                             lane_pairing->mutable_antecessor_lane_id()->set_value(predecessorLane->GetGlobalId());
                         }
                     }

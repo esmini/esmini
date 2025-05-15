@@ -1598,11 +1598,7 @@ void LongSpeedProfileAction::Start(double simTime)
                 m0  = m1;
                 k1  = vtx.k_;
                 m1  = vtx.m_;
-
-                if (index < vertex.size() - 1)
-                {
-                    j = vtx.k_ - k0 < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
-                }
+                j   = vtx.k_ - k0 < 0 ? -dynamics_.max_deceleration_rate_ : dynamics_.max_acceleration_rate_;
 
                 if (abs(k0 - k1) >= SMALL_NUMBER)
                 {
