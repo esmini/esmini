@@ -2524,7 +2524,10 @@ extern "C"
         {
             delete ((vehicle::Vehicle *)handleSimpleVehicle);
             // cppcheck-suppress uselessAssignmentPtrArg
+            // Assigning nullptr as a defensive pattern to make it clear the pointer is no longer valid after deletion.
+
             // cppcheck-suppress unreadVariable
+            // The pointer is assigned nullptr purely for clarity; it's not used afterward, which is expected.
             handleSimpleVehicle = 0;
         }
     }

@@ -60,6 +60,8 @@ float color_blue[3]       = {0.25f, 0.38f, 0.7f};
 float color_yellow[3]     = {0.75f, 0.7f, 0.4f};
 float color_white[3]      = {1.0f, 1.0f, 0.9f};
 // cppcheck-suppress unknownMacro
+// The following macros are defined by the framework or plugin system and are correctly expanded during compilation.
+// Cppcheck cannot resolve them during static analysis, so this warning is false positive.
 USE_OSGPLUGIN(osg2)
 USE_OSGPLUGIN(jpeg)
 USE_SERIALIZER_WRAPPER_LIBRARY(osg)

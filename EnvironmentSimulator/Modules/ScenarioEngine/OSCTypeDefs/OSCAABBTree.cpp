@@ -341,14 +341,16 @@ void aabbTree::processCandidates(Candidates const &candidates, vector<ptTriangle
 {
     for (auto const &candidate : candidates)
     {
-        ptTriangle const tr1 = candidate.bbox1 ? candidate.bbox1->triangle() : nullptr;
-        ptTriangle const tr2 = candidate.bbox2 ? candidate.bbox2->triangle() : nullptr;
+        ptTriangle const tr1 = candidate.bbox1->triangle();
+        ptTriangle const tr2 = candidate.bbox2->triangle();
         if (tr1 && tr2)
         {
             // cppcheck-suppress nullPointer
+            // Suppress false positives: guaranteed non-null due to check above
             if (tr1->collide(tr2))
             {
                 // cppcheck-suppress nullPointer
+                // Suppress false positives: guaranteed non-null due to check above
                 if (tr2->geometry())
                     solutions.push_back(tr2);
                 else

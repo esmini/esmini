@@ -1169,7 +1169,10 @@ public:
     }
 
     // Get an integer in the range (min, max) NOTE: including max
+
     // cppcheck-suppress functionConst
+    // This function is intentionally not marked as const because it calls gen_ (std::mt19937), which modifies internal state each time a number is
+    // generated. Although no visible state is changed, the Random Number Generator state must be advanced, so the function is not logically const.
     int GetNumberBetween(int min, int max)
     {
         if (max < min)
@@ -1180,11 +1183,15 @@ public:
         return std::uniform_int_distribution<>{min, max}(gen_);
     }
     // cppcheck-suppress functionConst
+    // This function is intentionally not marked as const because it calls gen_ (std::mt19937), which modifies internal state each time a number is
+    // generated. Although no visible state is changed, the Random Number Generator state must be advanced, so the function is not logically const.
     double GetReal()  // returns a floating point number between 0 and 1
     {
         return std::uniform_real_distribution<>{}(gen_);
     }
     // cppcheck-suppress functionConst
+    // This function is intentionally not marked as const because it calls gen_ (std::mt19937), which modifies internal state each time a number is
+    // generated. Although no visible state is changed, the Random Number Generator state must be advanced, so the function is not logically const.
     double GetRealBetween(double min, double max)
     {
         return std::uniform_real_distribution<>{min, max}(gen_);

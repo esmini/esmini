@@ -48,6 +48,11 @@ repos:
           - --error-exitcode=1
           - --inline-suppr
           - --enable=all
+          - --suppress=knownConditionTrueFalse # intentional for clarity, configuration checks, or future conditions.
+          - --suppress=unusedStructMember # kept for alignment, future use, or external access (e.g., serialization).
+          - --suppress=unusedFunction # kept due to external calls, API compatibility, or future use.
+          - --suppress=preprocessorErrorDirective # kept; cppcheck doesn't fully support __has_include().
+          # Following warnings are suppressed based on esmini team’s decision due to low priority.
           - --suppress=missingOverride
           - --suppress=uninitMemberVar
           - --suppress=passedByValue
@@ -61,22 +66,18 @@ repos:
           - --suppress=operatorEqVarError
           - --suppress=noExplicitConstructor
           - --suppress=noValidConfiguration
-          - --suppress=knownConditionTrueFalse # will be kept
-          - --suppress=unusedStructMember # will be kept
-          - --suppress=unusedFunction # will be kept
-          - --suppress=preprocessorErrorDirective # will be kept, cppcheck does not support evaluating __has_include() properly.
-          # Following warnings are added in cppcheck-2.17
+          # Following warnings are from cppcheck 2.17 — will be picked up when the esmini team decides.
           - --suppress=constVariablePointer
           - --suppress=normalCheckLevelMaxBranches
-          - --suppress=duplicateAssignExpression          
-          - --suppress=returnByReference          
+          - --suppress=duplicateAssignExpression
+          - --suppress=returnByReference
           - --suppress=uselessOverride
           - --suppress=cstyleCast
           - --suppress=checkersReport
-          - --suppress=truncLongCastAssignment          
-          - --suppress=constParameterPointer          
+          - --suppress=truncLongCastAssignment
+          - --suppress=constParameterPointer
           - --suppress=checkLevelNormal
-          - --suppress=constParameterReference          
-          - --suppress=constParameterCallback          
+          - --suppress=constParameterReference
+          - --suppress=constParameterCallback
           - --suppress=constVariableReference
-          - --suppress=suspiciousFloatingPointCast          
+          - --suppress=suspiciousFloatingPointCast
