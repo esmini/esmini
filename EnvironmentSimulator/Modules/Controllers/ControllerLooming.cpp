@@ -229,7 +229,7 @@ void ControllerLooming::Step(double timeStep)
                         {
                             double xr = 0.0, yr = 0.0;
                             double local_x = 0.0;
-                            double local_y = (m == 0 ? +1 : -1) * road->GetLaneWidthByS(osi_points[cur_idx].s, object_->pos_.GetLaneId()) / 2;
+                            double local_y = (m == 0 ? +1 : -1) * roadTemp->GetLaneWidthByS(osi_points[cur_idx].s, object_->pos_.GetLaneId()) / 2;
                             local_y        = (direction == 1 ? local_y : -local_y);  // switch y position according to ego driving side
                             RotateVec2D(local_x, local_y, osi_points[cur_idx].h, xr, yr);
                             double far_x_tmp   = osi_points[cur_idx].x + xr;
