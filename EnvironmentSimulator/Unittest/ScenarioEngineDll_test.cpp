@@ -4191,7 +4191,7 @@ TEST(TestOsiReporter, StationaryObjectWithRepeatTest)
 
 TEST(TestOsiReporter, CrestCurveRoadObjectTest)
 {
-    const char* args[] = {"--osc", "../EnvironmentSimulator/Unittest/xosc/test_crest-curve.xosc",  "--headless", "--window", "60", "60", "800", "400"};
+    const char* args[] = {"--osc", "../EnvironmentSimulator/Unittest/xosc/test_crest-curve.xosc", "--headless", "--window", "60", "60", "800", "400"};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
 
     SE_StepDT(0.001f);
@@ -4455,7 +4455,7 @@ TEST(TestOsiReporter, StationaryObjectTestWithViewer)
 
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
-    const char* gt = SE_GetOSIGroundTruth(&sv_size);
+    const char*       gt = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
 
     EXPECT_EQ(osi_gt.mutable_stationary_object()->size(), 16);
