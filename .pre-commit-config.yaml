@@ -48,24 +48,24 @@ repos:
           - --error-exitcode=1
           - --inline-suppr
           - --enable=all
-          - --suppress=missingOverride #2
-          - --suppress=uninitMemberVar #2
-          - --suppress=passedByValue #2
-          - --suppress=functionStatic #2
-          - --suppress=unmatchedSuppression #2
-          - --suppress=useInitializationList #3
-          - --suppress=unusedLabel #3
-          - --suppress=uninitStructMember #2
-          - --suppress=missingIncludeSystem #3
-          - --suppress=missingInclude #3
-          - --suppress=operatorEqVarError #2 # do code changes with emil
-          - --suppress=noExplicitConstructor #2
-          - --suppress=noValidConfiguration #3
-          - --suppress=knownConditionTrueFalse #2 # we will keep it
-          - --suppress=unusedStructMember #1 #we will keep it
-          - --suppress=unusedFunction #1 #we will keep it
-          - --suppress=preprocessorErrorDirective #2 #we will keep it as cppcheck does not support evaluating __has_include() properly.
-          # 2.17 cppcheck          
+          - --suppress=missingOverride
+          - --suppress=uninitMemberVar
+          - --suppress=passedByValue
+          - --suppress=functionStatic
+          - --suppress=unmatchedSuppression
+          - --suppress=useInitializationList
+          - --suppress=unusedLabel
+          - --suppress=uninitStructMember
+          - --suppress=missingIncludeSystem
+          - --suppress=missingInclude
+          - --suppress=operatorEqVarError
+          - --suppress=noExplicitConstructor
+          - --suppress=noValidConfiguration
+          - --suppress=knownConditionTrueFalse # will be kept
+          - --suppress=unusedStructMember # will be kept
+          - --suppress=unusedFunction # will be kept
+          - --suppress=preprocessorErrorDirective # will be kept, cppcheck does not support evaluating __has_include() properly.
+          # Following warnings are added in cppcheck-2.17
           - --suppress=constVariablePointer
           - --suppress=normalCheckLevelMaxBranches
           - --suppress=duplicateAssignExpression          

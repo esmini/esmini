@@ -2453,7 +2453,6 @@ Below are the steps to add new controller in esmini:
 . Create Instantiate method in the new controller. The name shall be unique eg InstantiateControllerLooming
 . In the new controller, Type name shall be unique eg, CONTROLLER_LOOMING_TYPE_NAME
 . Add controller type and it shall be unique in EnvironmentSimulator/Modules/Controllers/Controller.hpp
-. Make sure GetTypeStatic() and GetTypeNameStatic() and methods returns the unique type and type name values
 
 == OpenSceneGraph and 3D models
 
