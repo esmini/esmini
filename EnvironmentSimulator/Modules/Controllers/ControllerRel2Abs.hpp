@@ -77,21 +77,13 @@ namespace scenarioengine
         void ReportKeyEvent(int key, bool down);
         void CopyPosition(Object* object, position_copy* obj_copy);
 
-        static const char* GetTypeNameStatic()
+        virtual const char* GetTypeName()
         {
             return CONTROLLER_REL2ABS_TYPE_NAME;
         }
-        virtual const char* GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
-        {
-            return Controller::Type::CONTROLLER_TYPE_REL2ABS;
-        }
         virtual int GetType()
         {
-            return GetTypeStatic();
+            return Controller::Type::CONTROLLER_TYPE_REL2ABS;
         }
 
     private:

@@ -78,23 +78,23 @@ ScenarioReader::~ScenarioReader()
 void ScenarioReader::LoadControllers()
 {
     // Register all internal controllers. The user may register custom ones as well before reading the scenario.
-    RegisterController(ControllerSloppyDriver::GetTypeNameStatic(), InstantiateControllerSloppyDriver);
-    RegisterController(ControllerInteractive::GetTypeNameStatic(), InstantiateControllerInteractive);
-    RegisterController(ControllerFollowGhost::GetTypeNameStatic(), InstantiateControllerFollowGhost);
-    RegisterController(ControllerFollowRoute::GetTypeNameStatic(), InstantiateControllerFollowRoute);
+    RegisterController(CONTROLLER_SLOPPY_DRIVER_TYPE_NAME, InstantiateControllerSloppyDriver);
+    RegisterController(CONTROLLER_INTERACTIVE_TYPE_NAME, InstantiateControllerInteractive);
+    RegisterController(CONTROLLER_FOLLOW_GHOST_TYPE_NAME, InstantiateControllerFollowGhost);
+    RegisterController(CONTROLLER_FOLLOW_ROUTE_TYPE_NAME, InstantiateControllerFollowRoute);
 #ifdef _USE_SUMO
-    RegisterController(ControllerSumo::GetTypeNameStatic(), InstantiateControllerSumo);
+    RegisterController(CONTROLLER_SUMO_TYPE_NAME, InstantiateControllerSumo);
 #endif
-    RegisterController(ControllerExternal::GetTypeNameStatic(), InstantiateControllerExternal);
-    RegisterController(ControllerRel2Abs::GetTypeNameStatic(), InstantiateControllerRel2Abs);
-    RegisterController(ControllerACC::GetTypeNameStatic(), InstantiateControllerACC);
-    RegisterController(ControllerNaturalDriver::GetTypeNameStatic(), InstantiateNaturalDriver);
-    RegisterController(ControllerALKS::GetTypeNameStatic(), InstantiateControllerALKS);
-    RegisterController(ControllerUDPDriver::GetTypeNameStatic(), InstantiateControllerUDPDriver);
-    RegisterController(ControllerECE_ALKS_REF_DRIVER::GetTypeNameStatic(), InstantiateControllerECE_ALKS_REF_DRIVER);
-    RegisterController(ControllerALKS_R157SM::GetTypeNameStatic(), InstantiateControllerALKS_R157SM);
-    RegisterController(ControllerLooming::GetTypeNameStatic(), InstantiateControllerLooming);
-    RegisterController(ControllerOffroadFollower::GetTypeNameStatic(), InstantiateControllerOffroadFollower);
+    RegisterController(CONTROLLER_EXTERNAL_TYPE_NAME, InstantiateControllerExternal);
+    RegisterController(CONTROLLER_REL2ABS_TYPE_NAME, InstantiateControllerRel2Abs);
+    RegisterController(CONTROLLER_ACC_TYPE_NAME, InstantiateControllerACC);
+    RegisterController(CONTROLLER_NATURAL_DRIVER_TYPE_NAME, InstantiateNaturalDriver);
+    RegisterController(CONTROLLER_ALKS_TYPE_NAME, InstantiateControllerALKS);
+    RegisterController(CONTROLLER_UDP_DRIVER_TYPE_NAME, InstantiateControllerUDPDriver);
+    RegisterController(CONTROLLER_ECE_ALKS_REF_DRIVER_TYPE_NAME, InstantiateControllerECE_ALKS_REF_DRIVER);
+    RegisterController(CONTROLLER_ALKS_R157SM_TYPE_NAME, InstantiateControllerALKS_R157SM);
+    RegisterController(CONTROLLER_LOOMING_TYPE_NAME, InstantiateControllerLooming);
+    RegisterController(CONTROLLER_OFFROAD_FOLLOWER_TYPE_NAME, InstantiateControllerOffroadFollower);
 }
 
 void ScenarioReader::UnloadControllers()

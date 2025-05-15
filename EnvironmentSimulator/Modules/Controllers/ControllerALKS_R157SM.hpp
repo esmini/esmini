@@ -603,21 +603,13 @@ namespace scenarioengine
         ControllerALKS_R157SM(InitArgs* args);
         ~ControllerALKS_R157SM();
 
-        static const char* GetTypeNameStatic()
+        virtual const char* GetTypeName()
         {
             return CONTROLLER_ALKS_R157SM_TYPE_NAME;
         }
-        virtual const char* GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
-        {
-            return CONTROLLER_ALKS_R157SM;
-        }
         virtual int GetType()
         {
-            return GetTypeStatic();
+            return CONTROLLER_ALKS_R157SM;
         }
 
         void Init();

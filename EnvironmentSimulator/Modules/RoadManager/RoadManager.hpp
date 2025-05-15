@@ -188,7 +188,7 @@ namespace roadmanager
         {
             return x_;
         }
-        void SetX(double x)
+        virtual void SetX(double x)
         {
             x_ = x;
         }
@@ -196,7 +196,7 @@ namespace roadmanager
         {
             return y_;
         }
-        void SetY(double y)
+        virtual void SetY(double y)
         {
             y_ = y;
         }
@@ -204,7 +204,7 @@ namespace roadmanager
         {
             return GetAngleInInterval2PI(hdg_);
         }
-        void SetHdg(double hdg)
+        virtual void SetHdg(double hdg)
         {
             hdg_ = hdg;
         }
@@ -343,9 +343,9 @@ namespace roadmanager
         void   Print() const;
         void   EvaluateDS(double ds, double *x, double *y, double *h) const;
         double EvaluateCurvatureDS(double ds) const;
-        void   SetX(double x);
-        void   SetY(double y);
-        void   SetHdg(double h);
+        void   SetX(double x) override;
+        void   SetY(double y) override;
+        void   SetHdg(double h) override;
 
         ClothoidType clothoid_type_;
         Arc          arc_;

@@ -166,7 +166,7 @@ namespace scenarioengine
             return 0;
         };
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "OSCPrivateAction base class";
         };
@@ -283,7 +283,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "SpeedAction";
         };
@@ -391,7 +391,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "SpeedProfileAction";
         };
@@ -497,7 +497,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "LongitudinalDistanceAction";
         };
@@ -617,7 +617,7 @@ namespace scenarioengine
             }
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "LaneChangeAction";
         };
@@ -698,7 +698,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "LaneOffsetAction";
         };
@@ -813,7 +813,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "SynchronizeAction";
         };
@@ -877,7 +877,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "TeleportAction";
         };
@@ -923,7 +923,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "ConnectTrailerAction";
         };
@@ -960,7 +960,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "ConnectTrailerAction";
         };
@@ -1006,7 +1006,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "AssignRouteAction";
         };
@@ -1088,7 +1088,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "FollowTrajectoryAction";
         };
@@ -1133,7 +1133,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "AcquirePositionAction";
         };
@@ -1187,7 +1187,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "AssignControllerAction";
         };
@@ -1251,7 +1251,7 @@ namespace scenarioengine
 
         void Start(double simTime);
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "ActivateControllerAction";
         };
@@ -1296,7 +1296,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "VisibilityAction";
         };
@@ -1346,7 +1346,7 @@ namespace scenarioengine
             return new_action;
         }
 
-        std::string Type2Str()
+        virtual std::string Type2Str()
         {
             return "OverrideControlAction";
         };

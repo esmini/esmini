@@ -68,8 +68,7 @@ repos:
           # 2.17 cppcheck          
           - --suppress=constVariablePointer
           - --suppress=normalCheckLevelMaxBranches
-          - --suppress=duplicateAssignExpression
-          - --suppress=duplInheritedMember # extended
+          - --suppress=duplicateAssignExpression          
           - --suppress=returnByReference          
           - --suppress=uselessOverride
           - --suppress=cstyleCast
@@ -77,8 +76,7 @@ repos:
           - --suppress=truncLongCastAssignment          
           - --suppress=constParameterPointer          
           - --suppress=checkLevelNormal
-          - --suppress=constParameterReference
-          #- --suppress=constParameter #extended
+          - --suppress=constParameterReference          
           - --suppress=constParameterCallback          
           - --suppress=constVariableReference
           - --suppress=suspiciousFloatingPointCast          

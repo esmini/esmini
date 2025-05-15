@@ -1099,7 +1099,7 @@ extern "C"
                 vehicle->boundingbox_ = bb;
 
                 Controller::InitArgs args = {"", "", 0, 0, 0, 0};
-                args.type                 = ControllerExternal::GetTypeNameStatic();
+                args.type                 = CONTROLLER_EXTERNAL_TYPE_NAME;
                 Controller *ctrl          = InstantiateControllerExternal(&args);
                 if (ctrl != nullptr)
                 {

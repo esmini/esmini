@@ -70,21 +70,13 @@ namespace scenarioengine
         Controller(InitArgs* args = nullptr);
         virtual ~Controller() = default;
 
-        static const char* GetTypeNameStatic()
+        virtual const char* GetTypeName()
         {
             return CONTROLLER_BASE_TYPE_NAME;
         }
-        virtual const char* GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
-        {
-            return CONTROLLER_BASE_TYPE_ID;
-        }
         virtual int GetType()
         {
-            return GetTypeStatic();
+            return CONTROLLER_BASE_TYPE_ID;
         }
 
         virtual void LinkObject(Object* object);

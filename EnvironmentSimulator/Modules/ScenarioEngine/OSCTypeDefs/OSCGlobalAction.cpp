@@ -621,7 +621,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             Controller::InitArgs args;
             args.name       = "Swarm ACC controller";
-            args.type       = ControllerACC::GetTypeNameStatic();
+            args.type       = CONTROLLER_ACC_TYPE_NAME;
             args.entities   = entities_;
             args.gateway    = gateway_;
             args.parameters = 0;

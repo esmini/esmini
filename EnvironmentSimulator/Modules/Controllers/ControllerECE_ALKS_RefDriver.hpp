@@ -29,21 +29,13 @@ namespace scenarioengine
     public:
         ControllerECE_ALKS_REF_DRIVER(InitArgs* args);
 
-        static const char* GetTypeNameStatic()
+        virtual const char* GetTypeName()
         {
             return CONTROLLER_ECE_ALKS_REF_DRIVER_TYPE_NAME;
         }
-        virtual const char* GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
-        {
-            return CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER;
-        }
         virtual int GetType()
         {
-            return GetTypeStatic();
+            return CONTROLLER_TYPE_ECE_ALKS_REF_DRIVER;
         }
 
         void Init();
