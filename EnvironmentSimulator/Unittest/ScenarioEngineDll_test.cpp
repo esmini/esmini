@@ -4124,7 +4124,6 @@ TEST(ExternalController, TestPositionAlignment)
         double targetSpeed;
         float  ghost_speed = 0.0f;
         SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime() + 0.25f, &roadInfo, &ghost_speed);
-
         targetSpeed = ghost_speed;
 
         // Steer towards where the point

@@ -298,6 +298,13 @@
                 </ByEntityCondition>
              </Condition>
           </ConditionGroup>
+         <ConditionGroup>
+            <Condition name="StopSimulationCondition" delay="0" conditionEdge="rising">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="20" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
       </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>

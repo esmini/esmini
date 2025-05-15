@@ -104,6 +104,18 @@
                             </TeleportAction>
                         </PrivateAction>
                      </Action>
+                     <Action name="End Of Road speed action">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="cubic" value="4" dynamicsDimension="time" />
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="25"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
                      <StartTrigger>
                         <ConditionGroup>
                             <Condition name="End Of Road condition" delay="0" conditionEdge="rising">

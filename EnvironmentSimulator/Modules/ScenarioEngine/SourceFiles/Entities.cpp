@@ -117,7 +117,7 @@ void Object::SetStandStill(bool state, double time)
 Position::ReturnCode Object::MoveAlongS(double ds, bool actualDistance)
 {
     double old_s = pos_.GetS();
-    auto ret = pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance, Position::MoveDirectionMode::HEADING_DIRECTION, true);
+    auto   ret   = pos_.MoveAlongS(ds, 0.0, GetJunctionSelectorAngle(), actualDistance, Position::MoveDirectionMode::HEADING_DIRECTION, true);
 
     if (pos_.GetS() - old_s < SMALL_NUMBER)
     {
@@ -129,7 +129,8 @@ Position::ReturnCode Object::MoveAlongS(double ds, bool actualDistance)
     }
 
     // If error is end of road AND object is not moving, set speed to 0, for other errors set speed to 0
-    if (ret == Position::ReturnCode::ERROR_END_OF_ROAD && pos_.GetStatusBitMask() & static_cast<int>(Position::PositionStatusMode::POS_STATUS_CANT_MOVE))
+    if (ret == Position::ReturnCode::ERROR_END_OF_ROAD &&
+        pos_.GetStatusBitMask() & static_cast<int>(Position::PositionStatusMode::POS_STATUS_CANT_MOVE))
     {
         this->SetSpeed(0.0);
     }
@@ -139,7 +140,7 @@ Position::ReturnCode Object::MoveAlongS(double ds, bool actualDistance)
     }
 
     this->SetDirtyBits(Object::DirtyBit::LONGITUDINAL |
-                        Object::DirtyBit::SPEED);  // indicate that speed has been applied, prevent automatically set from velocity
+                       Object::DirtyBit::SPEED);  // indicate that speed has been applied, prevent automatically set from velocity
 
     return ret;
 }

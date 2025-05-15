@@ -11218,7 +11218,7 @@ idx_t PolyLineBase::Evaluate(double s, TrajVertex& pos, idx_t startAtIndex)
         return IDX_UNDEFINED;
     }
 
-    if (s > GetVertices().back().s)
+    if (s > GetVertices().back().s - SMALL_NUMBER)
     {
         // end of trajectory
         s       = length_;

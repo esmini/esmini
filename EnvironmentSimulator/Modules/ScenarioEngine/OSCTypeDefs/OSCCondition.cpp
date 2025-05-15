@@ -1205,7 +1205,8 @@ bool TrigByEndOfRoad::CheckCondition(double sim_time)
             current_duration_ = sim_time - triggering_entities_.entity_[i].object_->GetEndOfRoadTimestamp();
         }
 
-        bool cant_move = (triggering_entities_.entity_[i].object_->pos_.GetStatusBitMask() & static_cast<int>(Position::PositionStatusMode::POS_STATUS_CANT_MOVE));
+        bool cant_move =
+            (triggering_entities_.entity_[i].object_->pos_.GetStatusBitMask() & static_cast<int>(Position::PositionStatusMode::POS_STATUS_CANT_MOVE));
         result = (triggering_entities_.entity_[i].object_->IsEndOfRoad() && cant_move && current_duration_ > duration_ - SMALL_NUMBER);
 
         if (result == true)
