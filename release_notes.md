@@ -1,5 +1,12 @@
 ## esmini release notes
 
+### 2025-05-15 Version 2.46.4
+
+Improvements and fixes:
+- Fix intermittent crash in RoadManager GetLaneSectionIdxByS()
+- Add further checks and error return codes in RoadManager
+- Fix look-ahead bug in LoomingController
+
 ### 2025-05-13 Version 2.46.3
 
 Improvements and fixes:
