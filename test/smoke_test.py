@@ -79,7 +79,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n17.250.*, 0, Ego, 217.345, 167.663, 1.989, 1.738, 6.209, 0.000, 16.000', csv))
         self.assertTrue(re.search('\\n17.250, 1, Target, 210.637, 157.437, 1.289, 1.225, 6.216, 0.032, 14.906, 0.050, 2.746', csv))
         self.assertTrue(re.search('\\n25.000.*, 0, Ego, 206.081, 288.506, 5.436, 1.188, 6.238, 0.000, 16.000', csv))
-        self.assertTrue(re.search('\\n25.000, 1, Target, 216.246, 307.463, 6.701, 0.969, 6.214, 0.000, 21.101, -0.032, 5.562', csv))
+        self.assertTrue(re.search('\\n25.000, 1, Target, 216.246, 307.463, 6.701, 0.969, 6.214, (0.000|6.283), 21.101, -0.032, 5.562', csv))
 
     def test_synchronize(self):
         log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ESMINI_ARGS \
