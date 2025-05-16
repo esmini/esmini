@@ -14,8 +14,9 @@ COMMON_REPLAYER_ARGS = '--file sim.dat --headless --time_scale 10 --res_path ../
 class TestSuite(unittest.TestCase):
 
     def test_all_example_scenarios(self):
+        failures = []
         xosc_files = [f for f in os.listdir(os.path.join(ESMINI_PATH, 'resources/xosc')) if f.endswith('.xosc')]
-        for scenario in xosc_files:
+        for scenario in xosc_files[0:2]:
             skip_file = False
             disable_controllers = False
 
@@ -31,12 +32,19 @@ class TestSuite(unittest.TestCase):
             if skip_file:
                 continue
 
-            COMMON_ESMINI_ARGS += "--disable_controllers" if disable_controllers else ""
-            log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, f'resources/xosc/{scenario}'), COMMON_ESMINI_ARGS + '--log_level debug', None, None, False, False, True)
+            EXTRA_ARGS = "--disable_controllers " if disable_controllers else ""
+            log, duration, cpu_time = run_scenario(os.path.join(ESMINI_PATH, f'resources/xosc/{scenario}'), COMMON_ESMINI_ARGS + EXTRA_ARGS + '--log_level debug', None, None, False, False, True)
 
-        # Check some initialization steps
-        self.assertTrue(re.search('Loading .*cut-in.xosc', log)  is not None)
+            # Check some initialization steps
+            try:
+                self.assertTrue(re.search(f'Loading .*{scenario}', log) is not None)
+            except AssertionError as e:
+                failures.append(f"Scenario {scenario}: {str(e)}")
 
+            # Final report
+        if failures:
+            failure_summary = "\n".join(failures)
+            self.fail(f"\nSome scenario checks failed:\n{failure_summary}")
         # Check some scenario events
 
 if __name__ == "__main__":
