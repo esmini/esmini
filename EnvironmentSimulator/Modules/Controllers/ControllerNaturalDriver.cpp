@@ -439,7 +439,6 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
     VoIType adj_lead, adj_follow;
     GetVehicleOfInterestType(lane_id, adj_lead, adj_follow);
 
-    double new_following_acceleration      = GetAcceleration(vehicles_of_interest_[adj_follow].vehicle, vehicles_of_interest_[adj_lead].vehicle);
     double new_following_pred_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow].vehicle, object_);
     if (new_following_pred_acceleration < -max_imposed_braking_)
     {
@@ -469,7 +468,8 @@ bool ControllerNaturalDriver::CheckLaneChangePossible(const int lane_id)
             "old_following_pred_acceleration - old_following_acceleration" ...more can current following vehicle accelerate?
         */
 
-        double jerk = predicted_new_acceleration - acceleration +
+        double new_following_acceleration = GetAcceleration(vehicles_of_interest_[adj_follow].vehicle, vehicles_of_interest_[adj_lead].vehicle);
+        double jerk                       = predicted_new_acceleration - acceleration +
                       politeness_ * (new_following_pred_acceleration - new_following_acceleration + old_following_pred_acceleration -
                                      old_following_acceleration);
 
