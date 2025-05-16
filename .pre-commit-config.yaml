@@ -48,7 +48,7 @@ repos:
           - --error-exitcode=1
           - --inline-suppr
           - --enable=all
-          - --suppress=knownConditionTrueFalse # intentional for clarity, and some cppcheck will not be able to detect it.
+          - --suppress=knownConditionTrueFalse # intentional for clarity, also cppcheck will not be able to detect some.
           - --suppress=unusedStructMember # kept for alignment, external access.
           - --suppress=unusedFunction # kept due to external calls, API compatibility.
           - --suppress=preprocessorErrorDirective # kept; cppcheck doesn't fully support __has_include().
@@ -66,7 +66,7 @@ repos:
           - --suppress=operatorEqVarError
           - --suppress=noExplicitConstructor
           - --suppress=noValidConfiguration
-          # Following warnings are from cppcheck 2.17 — will be picked up when the esmini team decides.
+          # Following warnings are from cppcheck 2.17 — will be picked up when esmini team decides.
           - --suppress=constVariablePointer
           - --suppress=normalCheckLevelMaxBranches
           - --suppress=duplicateAssignExpression
