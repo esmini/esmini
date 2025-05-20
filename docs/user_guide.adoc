@@ -3633,6 +3633,9 @@ pre-commit will automatically run on each commit on all staged files. Sometimes 
 git commit -m "my commit message" --no-verify
 ----
 
+==== cppcheck version
+By default, the esmini CI/CD pipeline uses Cppcheck version 2.7. However, it also supports versions 2.13 and the latest 2.17. If a different version of Cppcheck is required due to specific dependencies, it is recommended to leverage the esmini CI/CD system for static code analysis. In such cases, creating a fork of the esmini repository and conducting the analysis within that environment is the preferred approach.
+
 === Test
 
 ==== Test frameworks
