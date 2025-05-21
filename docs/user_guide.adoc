@@ -3634,7 +3634,9 @@ git commit -m "my commit message" --no-verify
 ----
 
 ==== cppcheck version
-By default, the esmini CI/CD pipeline uses Cppcheck version 2.7. However, it also supports versions 2.13 and the latest 2.17. If a different version of Cppcheck is required due to specific dependencies, it is recommended to leverage the esmini CI/CD system for static code analysis. In such cases, creating a fork of the esmini repository and conducting the analysis within that environment is the preferred approach.
+As of esmini v2.47.0, the esmini CI/CD pipeline runs Cppcheck v2.17 on Ubuntu 24.04.
+
+If a different version of Cppcheck is required, e.g. due to specific dependencies, it is recommended to make use of esmini CI/CD system for static code analysis. In such case, the recommended approach is to create a fork of the esmini repository and conducting the analysis within that environment, simply by pushing the code.
 
 === Test
 
