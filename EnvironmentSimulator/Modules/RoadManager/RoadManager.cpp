@@ -8734,14 +8734,6 @@ std::string OpenDrive::LinkType2Str(LinkType type)
 
 int Position::TeleportTo(Position* position)
 {
-    roadmanager::Position tmpPos;
-    if (position->GetRelativePosition() == this)
-    {
-        // Special case: Relation short circuit - need to make a copy before reseting
-        tmpPos.Duplicate(*this);
-        position->SetRelativePosition(&tmpPos, position->GetType());
-    }
-
     if (position->GetRelativePosition() != nullptr || position->GetTrajectory() != nullptr)
     {
         // Resolve relation
