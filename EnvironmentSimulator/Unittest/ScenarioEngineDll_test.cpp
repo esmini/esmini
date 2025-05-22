@@ -4606,11 +4606,11 @@ static void paramDeclCallbackSetRoute(void* args)
 
     SE_SetParameterInt("StartRoadId", static_cast<int>(positions[counter][0]));
     SE_SetParameterInt("StartLaneId", static_cast<int>(positions[counter][1]));
-    SE_SetParameterDouble("StartRoadS", positions[counter][2]);
+    SE_SetParameterDouble("StartS", positions[counter][2]);
     SE_SetParameterDouble("StartH", positions[counter][3]);
     SE_SetParameterInt("EndRoadId", static_cast<int>(positions[counter][4]));
     SE_SetParameterInt("EndLaneId", static_cast<int>(positions[counter][5]));
-    SE_SetParameterDouble("EndRoadS", positions[counter][6]);
+    SE_SetParameterDouble("EndS", positions[counter][6]);
     SE_SetParameterDouble("EndH", positions[counter][7]);
 
     counter++;
@@ -4875,6 +4875,7 @@ TEST(RoadmanagerTest, TestGetInfoAtDistance)
 TEST(RoadmanagerTest, TestGetPositionDiff)
 {
     std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/loomingAdvancedTest.xosc";
+    float       dt            = 0.1f;
 
     EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
 
@@ -4884,36 +4885,36 @@ TEST(RoadmanagerTest, TestGetPositionDiff)
     SE_PositionDiff diff;
     ASSERT_EQ(SE_GetDistanceToObject(0, 1, false, &diff), 0);
     EXPECT_EQ(diff.dLaneId, 0);
-    EXPECT_NEAR(diff.ds, 247.100, 1e-3);
+    EXPECT_NEAR(diff.ds, 245.1000, 1e-3);
     EXPECT_NEAR(diff.dt, 0.0, 1e-3);
-    EXPECT_NEAR(diff.dx, 233.409, 1e-3);
+    EXPECT_NEAR(diff.dx, 231.4086, 1e-3);
     EXPECT_NEAR(diff.dy, 53.693, 1e-3);
     EXPECT_EQ(diff.oppositeLanes, false);
 
     while (SE_GetSimulationTime() < 30.9f)
     {
-        SE_StepDT(0.1f);
+        SE_StepDT(dt);
     }
 
     ASSERT_EQ(SE_GetDistanceToObject(0, 1, true, &diff), 0);
     EXPECT_EQ(diff.dLaneId, 0);
-    EXPECT_NEAR(diff.ds, 31.6925, 1e-3);
+    EXPECT_NEAR(diff.ds, 31.7769, 1e-3);
     EXPECT_NEAR(diff.dt, 0.0, 1e-3);
-    EXPECT_NEAR(diff.dx, 20.8153, 1e-3);
-    EXPECT_NEAR(diff.dy, -18.4346, 1e-3);
+    EXPECT_NEAR(diff.dx, 19.2839, 1e-3);
+    EXPECT_NEAR(diff.dy, -19.1543, 1e-3);
     EXPECT_EQ(diff.oppositeLanes, false);
 
     while (SE_GetSimulationTime() < 35.0f)
     {
-        SE_StepDT(0.1f);
+        SE_StepDT(dt);
     }
 
     ASSERT_EQ(SE_GetDistanceToObject(0, 1, false, &diff), 0);
     EXPECT_EQ(diff.dLaneId, -1);
-    EXPECT_NEAR(diff.ds, -93.0020, 1e-3);
-    EXPECT_NEAR(diff.dt, -2.8970, 1e-3);
-    EXPECT_NEAR(diff.dx, -30.5731, 1e-3);
-    EXPECT_NEAR(diff.dy, -68.9285, 1e-3);
+    EXPECT_NEAR(diff.ds, -94.9739, 1e-3);
+    EXPECT_NEAR(diff.dt, -3.0613, 1e-3);
+    EXPECT_NEAR(diff.dx, -33.8099, 1e-3);
+    EXPECT_NEAR(diff.dy, -68.1728, 1e-3);
     EXPECT_EQ(diff.oppositeLanes, true);
 
     SE_Close();

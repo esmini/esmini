@@ -968,8 +968,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
 
     double ds = object_->pos_.DistanceToDS(SIGN(object_->speed_) * delta_long);  // find correspondning delta s along road reference line
 
-    roadmanager::Position::ReturnCode retval = roadmanager::Position::ReturnCode::OK;
-    retval = object_->pos_.MoveAlongS(ds, 0.0, -1.0, false, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true);
+    object_->pos_.MoveAlongS(ds, 0.0, -1.0, false, roadmanager::Position::MoveDirectionMode::HEADING_DIRECTION, true);
     internal_pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset());
 
     if (object_->pos_.GetRoute())
@@ -1001,15 +1000,15 @@ void LatLaneChangeAction::Step(double simTime, double dt)
                                                       heading_agnostic_);
     }
 
-    if (retval == roadmanager::Position::ReturnCode::ERROR_END_OF_ROAD)
-    {
-        object_->SetSpeed(0.0);
-    }
-
     if (!(object_->pos_.GetRoute() && object_->pos_.GetRoute()->IsValid()))
     {
         // Attach object position to closest road and lane, look up via inertial coordinates
         object_->pos_.XYZ2TrackPos(object_->pos_.GetX(), object_->pos_.GetY(), object_->pos_.GetZ(), roadmanager::Position::PosMode::Z_ABS);
+    }
+
+    if (object_->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
+    {
+        OSCAction::End();
     }
 
     object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);

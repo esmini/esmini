@@ -79,28 +79,28 @@
                   <EntityRef entityRef="Ego"/>
                </Actors>
 			</ManeuverGroup >
-                <StartTrigger>
-                    <ConditionGroup>
-                        <Condition name="SenarioStart" delay="0" conditionEdge="none">
-                            <ByValueCondition>
-                                <SimulationTimeCondition value="0" rule="greaterThan"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StartTrigger>
+            <StartTrigger>
+                <ConditionGroup>
+                    <Condition name="SenarioStart" delay="0" conditionEdge="none">
+                        <ByValueCondition>
+                            <SimulationTimeCondition value="0" rule="greaterThan"/>
+                        </ByValueCondition>
+                    </Condition>
+                </ConditionGroup>
+            </StartTrigger>
             </Act>
         </Story>
         <StopTrigger>
             <ConditionGroup>
-                    <Condition name="End Of Road condition" delay="0" conditionEdge="rising">
-                        <ByEntityCondition>
-                            <TriggeringEntities triggeringEntitiesRule="any">
-                                <EntityRef entityRef="Ego"/>
-                            </TriggeringEntities>
-                            <EntityCondition>
-                                <EndOfRoadCondition duration="0.0" />
-                            </EntityCondition>
-                        </ByEntityCondition>
+                <Condition name="End Of Road condition" delay="0" conditionEdge="rising">
+                    <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                            <EntityRef entityRef="Ego"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                            <EndOfRoadCondition duration="2.0" />
+                        </EntityCondition>
+                    </ByEntityCondition>
                 </Condition>
             </ConditionGroup>
         </StopTrigger>

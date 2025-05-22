@@ -3043,9 +3043,9 @@ TEST(ControllerTest, TestLoomingControllerAdvanced)
         se->prepareGroundTruth(dt);
     }
     EXPECT_EQ(ctrl->getHasFarTan(), true);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 83.3215, 1E-3);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4529, 1E-3);
-    ASSERT_NEAR(se->entities_.object_[0]->pos_.GetH(), 5.7631, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetS(), 85.3214, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.4444, 1E-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetH(), 5.7631, 1e-3);
 
     while (se->getSimulationTime() < 31.0 - SMALL_NUMBER)
     {

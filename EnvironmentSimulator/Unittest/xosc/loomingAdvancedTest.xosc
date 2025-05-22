@@ -7,7 +7,7 @@
     <ParameterDeclarations>
         <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
         <ParameterDeclaration name="EgoSpeed" parameterType="double" value="50.0"/>
-        <ParameterDeclaration name="EgoS" parameterType="double" value="0.0"/>
+        <ParameterDeclaration name="EgoS" parameterType="double" value="2.0"/>
     </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>

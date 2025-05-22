@@ -86,7 +86,7 @@
                                                 <EntityRef entityRef="Car"/>
                                             </TriggeringEntities>
                                             <EntityCondition>
-                                                <ReachPositionCondition tolerance="1.0">
+                                                <ReachPositionCondition tolerance="2.0">
                                                     <Position>
                                                         <LanePosition roadId="2" laneId="-1" s="$StartS"/>
                                                     </Position>

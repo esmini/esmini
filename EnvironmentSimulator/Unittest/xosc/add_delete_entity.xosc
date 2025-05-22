@@ -126,7 +126,7 @@
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="DeleteCar1Event2Condition" delay="0" conditionEdge="none">
+                                    <Condition name="DeleteCar1Event2Condition" delay="0.5" conditionEdge="none">
                                         <ByEntityCondition>
                                             <TriggeringEntities triggeringEntitiesRule="any">
                                                 <EntityRef entityRef="Car1"/>

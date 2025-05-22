@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- A simple lane change scenario demonstrates the EndOfRoad condition.   -->
-<!-- When car reaches the end of the road it will be teleported back to    -->
-<!-- the start position and start over the maneuver. This will be repeated -->
-<!-- twice according to event maximumExecutionCount.                       -->
+<!-- A simple lane change scenario demonstrates the EndOfRoad condition.                                                 -->
+<!-- When car reaches the end of the road it will be teleported back to  the start position and start over the maneuver. -->
+<!-- The events will be repeated according to maximumExecutionCount of the events.                                       -->
+<!-- The story contains two acts. First act the end-of-road condition triggers after 2.5 seconds, causing the speed to   -->
+<!-- reset to zero. This speed modification is checked at third trigger of the end-of-road condition, since then there   -->
+<!-- is no speed event. In the second act the end-of-road duration is 0, hence speed should NOT be modified.             -->
 <OpenSCENARIO>
    <FileHeader revMajor="1"
                revMinor="0"
@@ -19,7 +21,6 @@
    </CatalogLocations>
    <RoadNetwork>
       <LogicFile filepath="../xodr/curve_r100.xodr"/>
-      <!-- <SceneGraphFile filepath="../models/curve_r100.osgb"/> -->
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
@@ -60,7 +61,8 @@
                   <EntityRef entityRef="$owner"/>
                </Actors>
                <Maneuver name="Lane change maneuver">
-                  <Event name="Lane change event" maximumExecutionCount="2" priority="overwrite">
+                  <!-- Trig lane change twice. First when reaching specified position, then at same position after "restart" after end of road -->
+                  <Event name="Lane change event" maximumExecutionCount="2" priority="parallel">
                      <Action name="Lane change action">
                         <PrivateAction>
                            <LateralAction>
@@ -93,15 +95,48 @@
                      </StartTrigger>
                   </Event>
                </Maneuver>
-               <Maneuver name="End Of Road maneuver">
-                  <Event name="End Of Road event" maximumExecutionCount="3" priority="overwrite">
-                     <Action name="End Of Road action">
+               <Maneuver name="End Of Road teleport maneuver">
+                  <!-- Trig teleport event three times, on reaching end of road. -->
+                  <Event name="End Of Road teleport event" maximumExecutionCount="3" priority="parallel">
+                     <Action name="End Of Road teleport action">
                         <PrivateAction>
                             <TeleportAction>
                                 <Position>
                                     <LanePosition roadId="0" laneId="-1" offset="0" s="10"/>
                                 </Position>
                             </TeleportAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                            <Condition name="End Of Road condition" delay="0" conditionEdge="rising">
+                                <ByEntityCondition>
+                                    <TriggeringEntities triggeringEntitiesRule="any">
+                                        <EntityRef entityRef="Ego"/>
+                                    </TriggeringEntities>
+                                    <EntityCondition>
+                                        <EndOfRoadCondition duration="2.5"/>
+                                    </EntityCondition>
+                                </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="End Of Road speed maneuver">
+                  <!-- Trig speed event twice, on reaching end of road. At third teleport no speed should be explicitly set, -->
+                  <!-- hence it is expected to stay at zero after stuck at end of road -->
+                  <Event name="End Of Road speed event" maximumExecutionCount="2" priority="parallel">
+                     <Action name="End Of Road speed action">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="cubic" value="4" dynamicsDimension="time" />
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="25"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
                         </PrivateAction>
                      </Action>
                      <StartTrigger>
@@ -131,13 +166,109 @@
                </ConditionGroup>
             </StartTrigger>
          </Act>
+         <Act name="Lane change act 2">
+            <ManeuverGroup maximumExecutionCount="1" name="Lane change maneuver group">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="$owner"/>
+               </Actors>
+               <Maneuver name="Act 2 init">
+                  <Event name="Act 2 init event" maximumExecutionCount="2" priority="overwrite">
+                     <Action name="Act 2 init speed action">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="cubic" value="4" dynamicsDimension="time" />
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="25"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger/>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="Act 2 Lane change maneuver">
+                  <Event name="Act 2 Lane change event" maximumExecutionCount="2" priority="overwrite">
+                     <Action name="Act 2 Lane change action">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="4" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Lane change condition" delay="0" conditionEdge="rising">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <ReachPositionCondition tolerance="1.0">
+                                       <Position>
+                                          <LanePosition roadId="0" laneId="-1" s="50.0"/>
+                                       </Position>
+                                    </ReachPositionCondition>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="Act 2 End Of Road teleport maneuver">
+                  <Event name="Act 2 End Of Road teleport event" maximumExecutionCount="2" priority="overwrite">
+                     <Action name="Act 2 End Of Road teleport action">
+                        <PrivateAction>
+                            <TeleportAction>
+                                <Position>
+                                    <LanePosition roadId="0" laneId="-1" offset="0" s="10"/>
+                                </Position>
+                            </TeleportAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                            <Condition name="End Of Road condition" delay="0" conditionEdge="rising">
+                                <ByEntityCondition>
+                                    <TriggeringEntities triggeringEntitiesRule="any">
+                                        <EntityRef entityRef="Ego"/>
+                                    </TriggeringEntities>
+                                    <EntityCondition>
+                                        <EndOfRoadCondition duration="0.0"/>
+                                    </EntityCondition>
+                                </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+                     <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="act"
+                                                         storyboardElementRef="Lane change act"
+                                                         state="completeState"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>
       </Story>
       <StopTrigger>
          <ConditionGroup>
-            <Condition name="QuitCondition" delay="4" conditionEdge="rising">
+            <Condition name="QuitCondition" delay="8" conditionEdge="rising">
                <ByValueCondition>
-                  <StoryboardElementStateCondition storyboardElementType="event"
-                                                   storyboardElementRef="End Of Road event"
+                  <StoryboardElementStateCondition storyboardElementType="act"
+                                                   storyboardElementRef="Lane change act 2"
                                                    state="completeState"/>
                </ByValueCondition>
             </Condition>

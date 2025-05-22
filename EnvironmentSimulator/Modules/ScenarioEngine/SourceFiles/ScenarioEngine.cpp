@@ -369,12 +369,16 @@ int ScenarioEngine::step(double deltaSimTime)
             }
         }
 
-        if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD) ||
-            obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROUTE))
+        if (obj->pos_.GetStatusBitMask() & static_cast<int>(roadmanager::Position::PositionStatusMode::POS_STATUS_END_OF_ROAD))
         {
             if (!obj->IsEndOfRoad())
             {
                 obj->SetEndOfRoad(true, simulationTime_);
+            }
+            else if (NEAR_ZERO(obj->pos_.GetVelX()) && NEAR_ZERO(obj->pos_.GetVelY()) && NEAR_ZERO(obj->pos_.GetVelZ()))
+            {
+                // object at end of road and not moving, enforce zero speed
+                obj->SetSpeed(0.0);
             }
         }
         else
@@ -742,7 +746,7 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
             if (tow_vehicle == nullptr)
             {
                 retval = static_cast<int>(obj->MoveAlongS(steplen, true));
-                if (retval < 0)
+                if (retval == static_cast<int>(roadmanager::Position::ReturnCode::ERROR_GENERIC))
                 {
                     // Something went wrong, couldn't move vehicle forward. Stop.
                     obj->SetSpeed(0.0);
