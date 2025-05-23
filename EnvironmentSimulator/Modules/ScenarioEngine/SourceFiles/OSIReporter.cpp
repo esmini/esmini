@@ -1034,6 +1034,9 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
                     static_cast<unsigned int>(objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].axle));
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_index(
                     static_cast<unsigned int>(objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].index));  // Index along axis
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_wheel_radius(objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].wheel_radius);
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(i)->set_rotation_rate(objectState->state_.info.wheel_data[static_cast<unsigned int>(i)].rotation_rate);
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->set_number_wheels(objectState->state_.info.wheel_data.size());
             }
         }
     }

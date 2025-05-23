@@ -34,9 +34,9 @@ namespace scenarioengine
         double p = 0.0;  // pitch in global coordinate system
         // double r;                     // roll in global coordinate system
         // double width;                 // median width of the tire
-        // double wheel_radius;          // median radius of the wheel measured from the center of the wheel to the outer part of the tire
+        double wheel_radius;          // median radius of the wheel measured from the center of the wheel to the outer part of the tire
         double friction_coefficient = 0.0;  // the value describes the kinetic friction of the tyre's contact point
-        // double rotation_rate;         // rotation rate of the wheel
+        double rotation_rate = 0.0;         // rotation rate of the wheel
         // double rim_radius;  // 	median radius of the rim measured from the center to the outer, visible part of the rim
         int axle  = -1;  // 0=front, 1=next axle from front and so on. -1 indicates wheel is not existing.
         int index = -1;  // The index of the wheel on the axle, counting in the direction of positive-y, that is, right-to-left. -1 indicates wheel
@@ -725,24 +725,24 @@ namespace scenarioengine
             if (category_ == Category::CAR || category_ == Category::VAN || category_ == Category::TRUCK || category_ == Category::SEMITRAILER ||
                 category_ == Category::BUS || category_ == Category::TRAIN || category_ == Category::TRAM)
             {
-                WheelData frontrightwheel{front_axle_.positionX, -front_axle_.trackWidth / 2.0, front_axle_.positionZ, 0.0, 0.0, 1.0, 0, 0};
-                WheelData frontleftwheel{front_axle_.positionX, front_axle_.trackWidth / 2.0, front_axle_.positionZ, 0.0, 0.0, 1.0, 0, 1};
-                WheelData rearrightwheel{0.0, -rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 1, 0};
-                WheelData rearleftwheel{0.0, rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 1, 1};
+                WheelData frontrightwheel{front_axle_.positionX, -front_axle_.trackWidth / 2.0, front_axle_.positionZ, 0.0, 0.0, 0.0, 1.0, 0.0, 0, 0};
+                WheelData frontleftwheel{front_axle_.positionX, front_axle_.trackWidth / 2.0, front_axle_.positionZ, 0.0, 0.0, 0.0, 1.0, 0.0, 0, 1};
+                WheelData rearrightwheel{0.0, -rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 0.0, 1.0, 0.0, 1, 0};
+                WheelData rearleftwheel{0.0, rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 0.0, 1.0, 0.0, 1, 1};;
 
                 // order according to OSI, front-to-rear and right-to-left
                 wheel_data = {frontrightwheel, frontleftwheel, rearrightwheel, rearleftwheel};
             }
             else if (category_ == Category::MOTORBIKE || category_ == Category::BICYCLE)
             {
-                WheelData frontwheel{front_axle_.positionX, 0.0, front_axle_.positionZ, 0.0, 0.0, 1.0, 0, 0};
-                WheelData rearwheel{0.0, 0.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 1, 0};
+                WheelData frontwheel{front_axle_.positionX, 0.0, front_axle_.positionZ, 0.0, 0.0, 0.0, 1.0, 0.0, 0, 0};
+                WheelData rearwheel{0.0, 0.0, rear_axle_.positionZ, 0.0, 0.0, 0.0, 1.0, 0.0, 1, 0};
                 wheel_data = {frontwheel, rearwheel};
             }
             else if (category_ == Category::TRAILER)
             {
-                WheelData leftwheel{rear_axle_.positionX, -rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 0, 1};
-                WheelData rightwheel{rear_axle_.positionX, rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 1.0, 0, 0};
+                WheelData leftwheel{rear_axle_.positionX, -rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 0.0, 1.0, 0.0, 0, 1};
+                WheelData rightwheel{rear_axle_.positionX, rear_axle_.trackWidth / 2.0, rear_axle_.positionZ, 0.0, 0.0, 0.0, 1.0, 0.0, 0, 0};
                 wheel_data = {leftwheel, rightwheel};
             }
         }
