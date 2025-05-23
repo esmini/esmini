@@ -524,9 +524,9 @@ void ScenarioPlayer::ViewerFrame(bool init)
         for (unsigned int i = 0; i < scenarioEngine->entities_.object_.size(); i++)
         {
             Object* e = scenarioEngine->entities_.object_[i];
-            double x = e->pos_.GetX();
-            double y = e->pos_.GetY();
-            double z = e->pos_.GetZ();
+            double  x = e->pos_.GetX();
+            double  y = e->pos_.GetY();
+            double  z = e->pos_.GetZ();
             if (i == 0)
             {
                 min_x = max_x = x;
@@ -544,9 +544,9 @@ void ScenarioPlayer::ViewerFrame(bool init)
             }
         }
 
-        double center_x = (min_x + max_x) / 2.0;
-        double center_y = (min_y + max_y) / 2.0;
-        double center_z = (min_z + max_z) / 2.0;
+        float  center_x = static_cast<float>((min_x + max_x) / 2.0);
+        float  center_y = static_cast<float>((min_y + max_y) / 2.0);
+        float  center_z = static_cast<float>((min_z + max_z) / 2.0);
 
         double distance = GetLengthOfLine2D(min_x, min_y, max_x, max_y);
         viewer_->rubberbandManipulator_->setCenterAndDistance(osg::Vec3(center_x, center_y, center_z), 20 + distance);

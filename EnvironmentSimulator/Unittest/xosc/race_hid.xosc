@@ -21,48 +21,35 @@
             </ParameterAssignments>
          </CatalogReference>
          <ObjectController name="hid_ctrl1">
-            <CatalogReference catalogName="ControllerCatalog" entryName="hid">
+            <CatalogReference catalogName="ControllerCatalog" entryName="LogitechSteeringWheel_Windows">
                <ParameterAssignments>
-                  <ParameterAssignment parameterRef="SteeringRate" value="6"/>
-                  <!-- Logitech Steering wheel Windows -->
-                  <!-- <ParameterAssignment parameterRef="DeviceID" value="0"/>
-                  <ParameterAssignment parameterRef="SteeringAxis" value="X"/>
-                  <ParameterAssignment parameterRef="ThrottleAxis" value="Y"/> -->
-                  <!-- Logitech Steering wheel Linux -->
-                  <!-- <ParameterAssignment parameterRef="DeviceID" value="2"/>
-                  <ParameterAssignment parameterRef="SteeringAxis" value="R"/>
-                  <ParameterAssignment parameterRef="ThrottleAxis" value="Y"/> -->
-                  <!-- PS4 controller Linux -->
-                  <ParameterAssignment parameterRef="DeviceID" value="2"/>
-                  <ParameterAssignment parameterRef="SteeringAxis" value="R"/>
-                  <ParameterAssignment parameterRef="ThrottleAxis" value="Y"/>
+                  <ParameterAssignment parameterRef="DeviceID" value="0"/>
                </ParameterAssignments>
             </CatalogReference>
          </ObjectController>
       </ScenarioObject>
       <ScenarioObject name="Car2">
          <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
-         <!-- <ObjectController name="hid_ctrl2">
-            <CatalogReference catalogName="ControllerCatalog" entryName="hid">
-               <ParameterAssignments>
-                  <ParameterAssignment parameterRef="SteeringRate" value="6"/>
-                  <ParameterAssignment parameterRef="DeviceID" value="1"/>
-                  <ParameterAssignment parameterRef="SteeringAxis" value="X"/>
-                  <ParameterAssignment parameterRef="ThrottleAxis" value="R"/>
-               </ParameterAssignments>
-            </CatalogReference>
-         </ObjectController> -->
+         <!-- <ObjectController name="hid_ctrl2"> -->
+            <!-- <CatalogReference catalogName="ControllerCatalog" entryName="hid"> -->
+               <!-- <ParameterAssignments> -->
+                  <!-- <ParameterAssignment parameterRef="SteeringRate" value="6"/> -->
+                  <!-- <ParameterAssignment parameterRef="DeviceID" value="1"/> -->
+                  <!-- <ParameterAssignment parameterRef="SteeringAxis" value="X"/> -->
+                  <!-- <ParameterAssignment parameterRef="ThrottleAxis" value="R"/> -->
+               <!-- </ParameterAssignments> -->
+            <!-- </CatalogReference> -->
+         <!-- </ObjectController> -->
       </ScenarioObject>
       <ScenarioObject name="Car3">
          <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
-         <!-- <ObjectController name="hid_ctrl3">
-            <CatalogReference catalogName="ControllerCatalog" entryName="hid">
+         <ObjectController name="hid_ctrl3">
+            <CatalogReference catalogName="ControllerCatalog" entryName="PS4Controller_Windows">
                <ParameterAssignments>
-                  <ParameterAssignment parameterRef="DeviceID" value="0"/>
-                  <ParameterAssignment parameterRef="SteeringRate" value="6"/>
+                  <ParameterAssignment parameterRef="DeviceID" value="1"/>
                </ParameterAssignments>
             </CatalogReference>
-         </ObjectController> -->
+         </ObjectController>
       </ScenarioObject>
    </Entities>
    <Storyboard>
@@ -90,6 +77,16 @@
                      </Position>
                   </TeleportAction>
                </PrivateAction>
+               <PrivateAction>
+                   <LongitudinalAction>
+                       <SpeedAction>
+                           <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                           <SpeedActionTarget>
+                               <AbsoluteTargetSpeed value="5.0"/>
+                           </SpeedActionTarget>
+                       </SpeedAction>
+                   </LongitudinalAction>
+               </PrivateAction>               
                <!-- <PrivateAction> -->
                   <!-- <ControllerAction> -->
                      <!-- <ActivateControllerAction objectControllerRef="hid_ctrl2" longitudinal="true" lateral="true"/> -->
@@ -104,11 +101,11 @@
                      </Position>
                   </TeleportAction>
                </PrivateAction>
-               <!-- <PrivateAction> -->
-                  <!-- <ControllerAction> -->
-                     <!-- <ActivateControllerAction objectControllerRef="hid_ctrl3" longitudinal="true" lateral="true"/> -->
-                  <!-- </ControllerAction> -->
-               <!-- </PrivateAction> -->
+               <PrivateAction>
+                  <ControllerAction>
+                     <ActivateControllerAction objectControllerRef="hid_ctrl3" longitudinal="true" lateral="true"/>
+                  </ControllerAction>
+               </PrivateAction>
             </Private>
          </Actions>
       </Init>

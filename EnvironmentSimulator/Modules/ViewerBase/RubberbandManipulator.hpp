@@ -127,9 +127,9 @@ namespace osgGA
             }
 
         private:
-            osg::Vec3  center_;
-            bool set_;
-        } ;
+            osg::Vec3 center_;
+            bool      set_;
+        };
 
         RubberbandManipulator(unsigned int mode, osg::Vec3d origin, double& time_ref);
 
@@ -195,7 +195,7 @@ namespace osgGA
         {
             return relative_pos_;
         }
-        osg::Vec3d origin_;
+        osg::Vec3d     origin_;
         ExplicitCenter explicitCenter_;
 
         FOCUS_MODE GetFocusMode()

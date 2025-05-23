@@ -15,9 +15,7 @@
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
 
-
 using namespace scenarioengine;
-
 
 Controller* scenarioengine::InstantiateControllerHID(void* args)
 {
@@ -61,7 +59,13 @@ int ControllerHID::ParseAxis(const std::string& axis, HID_AXIS& axis_type)
     return 0;
 }
 
-ControllerHID::ControllerHID(InitArgs* args) : Controller(args), steering_(0.0), throttle_(0.0), steering_rate_(4.0), device_id_(0), device_id_internal_(0)
+ControllerHID::ControllerHID(InitArgs* args)
+    : Controller(args),
+      steering_(0.0),
+      throttle_(0.0),
+      steering_rate_(4.0),
+      device_id_(0),
+      device_id_internal_(-1)
 {
     if (args && args->properties)
     {
@@ -91,6 +95,11 @@ ControllerHID::ControllerHID(InitArgs* args) : Controller(args), steering_(0.0),
     align_to_road_heading_on_activation_   = true;
 }
 
+ControllerHID::~ControllerHID()
+{
+    CloseHID();
+}
+
 void ControllerHID::Init()
 {
     OpenHID(device_id_);
@@ -104,7 +113,7 @@ void ControllerHID::Step(double timeStep)
         return;
     }
 
-    LOG_DEBUG("steering: {:.2f} throttle: {:.2f}  ", steering_, throttle_);
+    // LOG_DEBUG("steering: {:.2f} throttle: {:.2f}  ", steering_, throttle_);
 
     vehicle_.SetMaxSpeed(object_->GetMaxSpeed());
 
@@ -131,9 +140,9 @@ void ControllerHID::Step(double timeStep)
 }
 
 int ControllerHID::Activate(ControlActivationMode lat_activation_mode,
-                                    ControlActivationMode long_activation_mode,
-                                    ControlActivationMode light_activation_mode,
-                                    ControlActivationMode anim_activation_mode)
+                            ControlActivationMode long_activation_mode,
+                            ControlActivationMode light_activation_mode,
+                            ControlActivationMode anim_activation_mode)
 {
     if (object_)
     {
@@ -146,11 +155,16 @@ int ControllerHID::Activate(ControlActivationMode lat_activation_mode,
         vehicle_.SetSteeringRate(steering_rate_);
     }
 
-
     object_->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
     object_->SetJunctionSelectorAngle(0.0);
 
     return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+}
+
+void ControllerHID::Deactivate()
+{
+    CloseHID();
+    Controller::Deactivate();
 }
 
 #ifdef _WIN32
@@ -164,17 +178,22 @@ int ControllerHID::OpenHID(int device_id)
         return -1;
     }
 
-    joy_info_ = {};
-    joy_info_.dwSize = sizeof(JOYINFOEX);
+    joy_info_         = {};
+    joy_info_.dwSize  = sizeof(JOYINFOEX);
     joy_info_.dwFlags = JOY_RETURNALL;
 
     device_id_internal_ = JOYSTICKID1 + device_id;
 
-    MMRESULT res = joyGetPosEx(device_id_internal_, &joy_info_);
+    MMRESULT res = joyGetPosEx(static_cast<unsigned int>(JOYSTICKID1 + device_id), &joy_info_);
     if (res != JOYERR_NOERROR)
     {
         LOG_ERROR("Joystick with device id {} not ready or not connected", device_id_internal_);
+        device_id_internal_ = -1;  // Reset fd
         return -1;
+    }
+    else
+    {
+        LOG_INFO("Opened joystick device id {}", device_id_internal_);
     }
 
     return 0;
@@ -182,6 +201,11 @@ int ControllerHID::OpenHID(int device_id)
 
 int ControllerHID::ReadHID(double& throttle, double& steering)
 {
+    if (device_id_internal_ < 0)
+    {
+        return -1;  // Device not opened or invalid
+    }
+
     MMRESULT res = joyGetPosEx(device_id_internal_, &joy_info_);
 
     DWORD axis_values[static_cast<unsigned int>(HID_AXIS::HID_NR_OF_AXIS)] =
@@ -212,16 +236,15 @@ int ControllerHID::ReadHID(double& throttle, double& steering)
     return 0;
 }
 
-void CloseHID()
+void ControllerHID::CloseHID()
 {
-
 }
 
 #else
 
 int ControllerHID::OpenHID(int device_id)
 {
-    std::string     joystick_path;
+    std::string joystick_path;
 
     joystick_path = "/dev/input/js" + std::to_string(device_id);
 
@@ -243,7 +266,7 @@ int ControllerHID::OpenHID(int device_id)
         snprintf(name, sizeof(name), "Unknown Joystick %d", device_id);
     }
 
-    int  num_axes = 0;
+    int num_axes = 0;
     ioctl(device_id_internal_, JSIOCGAXES, &num_axes);  // Get number of axes
 
     int num_buttons = 0;
@@ -252,13 +275,12 @@ int ControllerHID::OpenHID(int device_id)
     // Consider it a "real" joystick if it has at least one axis or one button
     if (num_axes > 0 || num_buttons > 0)
     {
-        printf("%d %d\n", num_axes, num_buttons);
-        LOG_DEBUG("Found {} Axis: {} Buttons: {}", joystick_path + " " + name, num_axes, num_buttons);
+        LOG_INFO("Opened {} Axis: {} Buttons: {}", joystick_path + " " + name, num_axes);
     }
     else
     {
         // If it has no axes or buttons, it's not a joystick for our purpose
-        std::cout << "Skipping " << joystick_path << " (no axes/buttons detected)." << std::endl;
+        LOG_ERROR("Skipping {} (no axes/buttons detected).", joystick_path + " " + name);
         close(device_id_internal_);  // Close this non-joystick device
         device_id_internal_ = -1;    // Reset fd
         return -1;
@@ -269,8 +291,12 @@ int ControllerHID::OpenHID(int device_id)
 
 int ControllerHID::ReadHID(double& throttle, double& steering)
 {
-    struct js_event js_event;
+    if (device_id_internal_ < 0)
+    {
+        return -1;  // Device not opened or invalid
+    }
 
+    struct js_event js_event;
     if (read(device_id_internal_, &js_event, sizeof(struct js_event)) == static_cast<ssize_t>(sizeof(struct js_event)))
     {
         // Mask out JS_EVENT_INIT (initial state event)
@@ -280,7 +306,7 @@ int ControllerHID::ReadHID(double& throttle, double& steering)
                 LOG_DEBUG("Button {} {}", js_event.number, js_event.value ? "pressed" : "released");
                 break;
             case JS_EVENT_AXIS:
-                LOG_DEBUG("Axis {} value: {}", js_event.number,  js_event.value);
+                LOG_DEBUG("Axis {} value: {}", js_event.number, js_event.value);
 
                 // hard code axis
                 if (js_event.number == 0)

@@ -22,7 +22,6 @@
 #include "Parameters.hpp"
 #include "vehicle.hpp"
 
-
 #ifdef _WIN32
 #include <windows.h>
 #include <mmsystem.h>
@@ -35,7 +34,6 @@
 #include <unistd.h>          // For read() and close()
 #include <linux/joystick.h>  // For joystick event structure and ioctl commands
 #endif
-
 
 #define CONTROLLER_HID_TYPE_NAME "HIDController"
 
@@ -57,6 +55,7 @@ namespace scenarioengine
     {
     public:
         ControllerHID(InitArgs* args);
+        ~ControllerHID() override;
 
         void Init();
         void Step(double timeStep);
@@ -64,6 +63,8 @@ namespace scenarioengine
                       ControlActivationMode long_activation_mode,
                       ControlActivationMode light_activation_mode,
                       ControlActivationMode anim_activation_mode);
+
+        void Deactivate() override;
 
         static const char* GetTypeNameStatic()
         {
@@ -81,24 +82,22 @@ namespace scenarioengine
         {
             return GetTypeStatic();
         }
-        int OpenHID(int device_id);
+        int  OpenHID(int device_id);
         void CloseHID();
-        int ReadHID(double& throttle, double& steering);
-        int ParseAxis(const std::string& axis, HID_AXIS& axis_type);
+        int  ReadHID(double& throttle, double& steering);
+        int  ParseAxis(const std::string& axis, HID_AXIS& axis_type);
 
     private:
-        vehicle::Vehicle  vehicle_;
-        double            steering_;
-        double            throttle_;
-        double            steering_rate_;
-        int               device_id_;
-        HID_AXIS          throttle_axis_;
-        HID_AXIS          steering_axis_;
+        vehicle::Vehicle vehicle_;
+        double           steering_;
+        double           throttle_;
+        double           steering_rate_;
+        int              device_id_;
+        HID_AXIS         throttle_axis_;
+        HID_AXIS         steering_axis_;
+        int              device_id_internal_;
 #ifdef _WIN32
         JOYINFOEX joy_info_;
-        UINT      device_id_internal_;
-#else
-        int      device_id_internal_;
 #endif
     };
 

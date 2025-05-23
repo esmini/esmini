@@ -484,7 +484,7 @@ namespace viewer
          * @param mode According to the RubberbandManipulator::CAMERA_MODE enum, plus any number of custom cameras. Set -1 to select the last.
          */
         void SetCameraMode(int mode);
-        int GetCameraMode();
+        int  GetCameraMode();
         int  GetNumberOfCameraModes();
         void UpdateCameraFOV();
         void SetVehicleInFocus(int idx);
