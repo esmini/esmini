@@ -547,7 +547,6 @@ void ScenarioPlayer::ViewerFrame(bool init)
         float  center_x = static_cast<float>((min_x + max_x) / 2.0);
         float  center_y = static_cast<float>((min_y + max_y) / 2.0);
         float  center_z = static_cast<float>((min_z + max_z) / 2.0);
-
         double distance = GetLengthOfLine2D(min_x, min_y, max_x, max_y);
         viewer_->rubberbandManipulator_->setCenterAndDistance(osg::Vec3(center_x, center_y, center_z), 20 + distance);
     }

@@ -26,7 +26,7 @@
 #include <windows.h>
 #include <mmsystem.h>
 #include <iostream>
-#else
+#elif __linux__
 #include <iostream>
 #include <string>
 #include <vector>

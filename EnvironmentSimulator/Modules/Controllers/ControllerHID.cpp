@@ -240,7 +240,7 @@ void ControllerHID::CloseHID()
 {
 }
 
-#else
+#elif defined(__linux__)
 
 int ControllerHID::OpenHID(int device_id)
 {
@@ -340,6 +340,21 @@ int ControllerHID::ReadHID(double& throttle, double& steering)
 void ControllerHID::CloseHID()
 {
     close(device_id_internal_);
+}
+#else
+
+int ControllerHID::OpenHID(int device_id)
+{
+    return -1;
+}
+
+int ControllerHID::ReadHID(double& throttle, double& steering)
+{
+    return -1;
+}
+
+void ControllerHID::CloseHID()
+{
 }
 
 #endif
