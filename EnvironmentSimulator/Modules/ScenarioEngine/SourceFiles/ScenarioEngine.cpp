@@ -960,16 +960,19 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                     wheel.h = static_cast<float>(obj->wheel_angle_);  // I assume always 0 due to fixed rear axis. Better to have = 0?
                 }
 
+                Object::Axle* axle = wheel.axle == 0 ? &obj->front_axle_ : &obj->rear_axle_;
+
                 if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
                 {
-                    wheel.p = static_cast<float>(obj->wheel_rot_);
+                    wheel.p             = static_cast<float>(obj->wheel_rot_);
+                    wheel.wheel_radius  = axle->wheelDiameter / 2;
+                    wheel.rotation_rate = obj->speed_ / (axle->wheelDiameter / 2);
                 }
 
                 // Update wheel frictions
                 if (std::isnan(friction_global))
                 {
-                    Object::Axle* axle = wheel.axle == 0 ? &obj->front_axle_ : &obj->rear_axle_;
-                    int           side = wheel.index == 0 ? -1 : 1;
+                    int side = wheel.index == 0 ? -1 : 1;
                     // Calculate global position of the wheel
                     double w_pos[2];
                     double w_rel_pos[2];
