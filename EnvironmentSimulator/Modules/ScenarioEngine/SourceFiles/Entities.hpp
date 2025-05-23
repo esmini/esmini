@@ -34,9 +34,9 @@ namespace scenarioengine
         double p = 0.0;  // pitch in global coordinate system
         // double r;                     // roll in global coordinate system
         // double width;                 // median width of the tire
-        double wheel_radius;  // median radius of the wheel measured from the center of the wheel to the outer part of the tire
+        double wheel_radius;                // median radius of the wheel measured from the center of the wheel to the outer part of the tire
         double friction_coefficient = 0.0;  // the value describes the kinetic friction of the tyre's contact point
-        double rotation_rate = 0.0;  // rotation rate of the wheel
+        double rotation_rate        = 0.0;  // rotation rate of the wheel
         // double rim_radius;  // 	median radius of the rim measured from the center to the outer, visible part of the rim
         int axle  = -1;  // 0=front, 1=next axle from front and so on. -1 indicates wheel is not existing.
         int index = -1;  // The index of the wheel on the axle, counting in the direction of positive-y, that is, right-to-left. -1 indicates wheel
