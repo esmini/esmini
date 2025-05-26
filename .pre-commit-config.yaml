@@ -52,7 +52,7 @@ repos:
           - --suppress=unusedStructMember # kept for alignment, external access.
           - --suppress=unusedFunction # kept due to external calls, API compatibility.
           - --suppress=preprocessorErrorDirective # kept; cppcheck doesn't fully support __has_include().
-          # Following warnings are suppressed based on esmini team’s decision due to low priority.
+          # Following warnings are suppressed based on esmini team’s decision due to their low priority.
           - --suppress=missingOverride
           - --suppress=uninitMemberVar
           - --suppress=passedByValue
