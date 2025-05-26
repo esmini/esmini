@@ -36,7 +36,7 @@ Options:
       Generate road 3D model even if SceneGraphFile is specified
   --fixed_timestep <timestep>
       Run simulation decoupled from realtime, with specified timesteps
-  --follow_object [index]  (default if option or value omitted: 0)
+  --follow_object <object index (0, 1, 2..., ALL, ROAD)>
       Set index of initial object for camera to follow (change with Tab/shift-Tab)
   --generate_no_road_objects
       Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)

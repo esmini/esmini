@@ -21,9 +21,9 @@
             </ParameterAssignments>
          </CatalogReference>
          <ObjectController name="hid_ctrl1">
-            <CatalogReference catalogName="GameControllerCatalog" entryName="PS4Controller_Windows">
+            <CatalogReference catalogName="GameControllerCatalog" entryName="PS5Controller_Windows">
                <ParameterAssignments>
-                  <ParameterAssignment parameterRef="DeviceID" value="1"/>
+                  <ParameterAssignment parameterRef="DeviceID" value="0"/>
                </ParameterAssignments>
             </CatalogReference>
          </ObjectController>

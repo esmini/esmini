@@ -516,6 +516,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
         }
         viewer_->SetInfoText(str_buf);
     }
+
     mutex.Unlock();
 
     if (!init)
@@ -965,28 +966,51 @@ int ScenarioPlayer::InitViewer()
     // Choose vehicle to look at initially (switch with 'Tab')
     if (opt.GetOptionSet("follow_object"))
     {
+        int follow_object_idx = 0;
         LOG_INFO("Follow object {}", strtoi(opt.GetOptionArg("follow_object")));
-        viewer_->SetVehicleInFocus(strtoi(opt.GetOptionArg("follow_object")));
+        std::string follow_object = opt.GetOptionArg("follow_object");
+        if (follow_object == "ALL")
+        {
+            if (scenarioEngine->entities_.object_.size() > 0)
+            {
+                follow_object_idx = static_cast<int>(scenarioEngine->entities_.object_.size());
+            }
+        }
+        else if (follow_object == "NONE")
+        {
+            if (viewer_->environment_ != nullptr)
+            {
+                follow_object_idx = -1;
+            }
+        }
+        else
+        {
+            follow_object_idx = strtoi(opt.GetOptionArg("follow_object"));
+        }
+        viewer_->SetVehicleInFocus(follow_object_idx);
     }
     else
     {
-        viewer_->SetVehicleInFocus(0);
-    }
-
-    for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
-    {
-        Object* obj = scenarioEngine->entities_.object_[i];
-
-        if (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_INTERACTIVE) ||
-            obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL) ||
-            obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST))
+        for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
         {
-            if (viewer_->GetEntityInFocus() == 0)
+            Object* obj = scenarioEngine->entities_.object_[i];
+
+            if (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_INTERACTIVE) ||
+                obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL) ||
+                obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST))
             {
-                // Focus on first vehicle of specified types
-                viewer_->SetVehicleInFocus(static_cast<int>(i));
+                if (viewer_->GetEntityInFocus() == 0)
+                {
+                    // Focus on first vehicle of specified types
+                    viewer_->SetVehicleInFocus(static_cast<int>(i));
+                }
             }
         }
+    }
+    if (!opt.GetOptionSet("follow_object"))
+    {
+        // default to first object
+        viewer_->SetVehicleInFocus(0);
     }
 
     // Decorate window border with application name and arguments
@@ -1241,7 +1265,9 @@ int ScenarioPlayer::Init()
     opt.AddOption("disable_stdout", "Prevent messages to stdout");
     opt.AddOption("enforce_generate_model", "Generate road 3D model even if SceneGraphFile is specified");
     opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
-    opt.AddOption("follow_object", "Set index of initial object for camera to follow (change with Tab/shift-Tab)", "index", "0", true);
+    opt.AddOption("follow_object",
+                  "Set index of initial object for camera to follow (change with Tab/shift-Tab)",
+                  "object index (0, 1, 2..., ALL, ROAD)");
     opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
     opt.AddOption("ground_plane", "Add a large flat ground surface");

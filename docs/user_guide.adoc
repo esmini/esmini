@@ -2455,7 +2455,14 @@ Controlling Ego or target vehicles can be useful for demonstrating or evaluating
 
 Any number of connected devices can be used. The mapping system is a bit tricky, but flexible. It allows to use most joystick alike controllers (racing wheel, joystick, gamepad...) and assign any input axis or button to the steering, throttle and brake inputs of an entity.
 
-Example scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/race_hid.xosc[race_hid.xosc] shows how to assign game controllers to one or several vehicles. The scenario puts three cars at beginning of a road. One will immediatelly start driving. The second is controlled by a game controller, which needs to be setup for specific connected device - see details below. The third can also be controlled by a game controller by uncommenting the ObjectController code in the sceenario. Otherwise, by default it will stand still. First car reaching end of road is the winner.
+===== Example scenario
+https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/race_hid.xosc[race_hid.xosc] shows how to assign game controllers to one or several vehicles.
+
+The scenario puts three cars at beginning of a road. One will immediatelly start driving. The second is controlled by a game controller, which needs to be setup for specific connected device - see details below.
+
+The third can also be controlled by a game controller by uncommenting the ObjectController code in the sceenario. Otherwise, by default it will stand still.
+
+First car reaching end of road is the winner. Any car coming outside road area for more than one second will be punished by teleport back to the beginning of the road.
 
 ===== Limitations
 
@@ -2476,7 +2483,7 @@ ID is a sequence number and will depend on the current configuration of the syst
 
 Mapping of input axes and buttons is independent of the ID and can be specified for any specific controller. But it will be different between Windows and Linux.
 
-A examples are provided in the separate catalog https://github.com/esmini/esmini/blob/dev/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc[ControllerCatalog.xosc], including:
+A examples are provided in the separate catalog https://github.com/esmini/esmini/blob/dev/resources/xosc/Catalogs/Controllers/GameControllerCatalog.xosc[GameControllerCatalog.xosc], including:
 
 * Hori Racing Wheel APEX
 * PS4 Controller (DualShock 4)
@@ -2495,9 +2502,8 @@ Example: If you have a PS4 controller, you can assign the left trigger to the br
 
 If you need to inverse an axis, just put "-" in front of the axis name, e.g. `-AXIS_Y`.
 
-.Mapping
 ++++
-<iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTIxA9xhO1GomQDd3GvamIaul80S4GLH4UHyWubsG7sm3lLuCMqMo0QcHg-6D-NfKqqFKDwGWa1W_g2/pubhtml?gid=2029882313&amp;single=true&amp;widget=false&amp;headers=false&amp" width="550" height="1540"></iframe>
+<iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTIxA9xhO1GomQDd3GvamIaul80S4GLH4UHyWubsG7sm3lLuCMqMo0QcHg-6D-NfKqqFKDwGWa1W_g2/pubhtml?gid=2029882313&&widget=false&headers=false&chrome=true" frameborder="0" width="730" height="1267"></iframe>
 ++++
 
 https://docs.google.com/spreadsheets/d/1Y-zhAOcks3-rkcVdz3EvwBqOhvOwyE20sGZJcFM1OvI/edit?usp=sharingLink[Link] to full table, including ranges.
@@ -2505,8 +2511,6 @@ https://docs.google.com/spreadsheets/d/1Y-zhAOcks3-rkcVdz3EvwBqOhvOwyE20sGZJcFM1
 It's a bit tricky to find out ID and mappings. The next sections provides some help using common tools.
 
 To see received data from device set wsmini option `--log_level debug`.
-
-
 
 ====== Windows tools
 

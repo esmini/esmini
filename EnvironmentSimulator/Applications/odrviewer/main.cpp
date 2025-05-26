@@ -809,7 +809,7 @@ int main(int argc, char **argv)
             run_state.step = false;
 
             // Step the simulation
-            viewer->osgViewer_->frame();
+            viewer->Frame(0.0);
 
             if (duration > -SMALL_NUMBER && system_time > duration - SMALL_NUMBER)
             {

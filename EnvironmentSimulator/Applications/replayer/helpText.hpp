@@ -14,8 +14,8 @@ static const char* helpText = "\n\
 Key shortcuts \n\
     \n\
     H (shift + h): Print this help text to console \n\
-    TAB:           Move camera to next vehicle \n\
-    Shift + TAB:   Move camera to previoius vehicle \n\
+    TAB:           Move camera to next vehicle (0, 1, 2..., ALL, ROAD)\n\
+    Shift + TAB:   Move camera to previous vehicle \n\
     Delete:        Same as above (Shift + TAB) \n\
     Space:         Toggle pause / play \n\
     g:             Toggle show / hide ghost models \n\
@@ -41,7 +41,7 @@ Key shortcuts \n\
         Up:                 Increase timeScale(play faster) \n\
         Down:               Decrease timeScale(play slower) \n\
     \n\
-    1 - 9: Camera models acording to : \n\
+    1 - 9: Camera models according to : \n\
         1: Custom camera model \n\
         2: Flight \n\
         3: Drive \n\
@@ -57,7 +57,7 @@ Key shortcuts \n\
            - Orbit        (camera facing vehicle, rotating around it) \n\
            - Fixed        (fix rotation, always straight behind vehicle) \n\
            - Flex         (imagine the camera attached to vehicle via an elastic string) \n\
-           - Flex - orbit (Like flex but allows for roatation around vehicle) \n\
+           - Flex - orbit (Like flex but allows for rotation around vehicle) \n\
            - Top          (top view, fixed rotation, always straight above vehicle) \n\
            - Driver       (\"driver\" view, fixed at center of vehicle) \n\
     \n\

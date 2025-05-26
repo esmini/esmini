@@ -78,6 +78,20 @@
                 <Property name="brakeInput" value="AXIS_RX" />
             </Properties>
         </Controller>
+        <Controller name="PS5Controller_Windows">
+            <ParameterDeclarations>
+                <ParameterDeclaration name="SteeringRate" parameterType="double" value="6.0" />
+                <ParameterDeclaration name="DeviceID" parameterType="integer" value="0" />
+            </ParameterDeclarations>
+            <Properties>
+                <Property name="esminiController" value="HIDController" />
+                <Property name="steeringRate" value="$SteeringRate" />
+                <Property name="deviceID" value="$DeviceID" />
+                <Property name="steeringInput" value="AXIS_X" />
+                <Property name="throttleInput" value="AXIS_RY" />
+                <Property name="brakeInput" value="AXIS_RX" />
+            </Properties>
+        </Controller>        
         <Controller name="TrustGXT39_Windows">
             <ParameterDeclarations>
                 <ParameterDeclaration name="SteeringRate" parameterType="double" value="6.0" />
@@ -95,7 +109,7 @@
         <Controller name="LogitechSteeringWheel_Linux">
             <ParameterDeclarations>
                 <ParameterDeclaration name="SteeringRate" parameterType="double" value="6.0" />
-                <ParameterDeclaration name="DeviceID" parameterType="integer" value="2" />
+                <ParameterDeclaration name="DeviceID" parameterType="integer" value="0" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="HIDController" />

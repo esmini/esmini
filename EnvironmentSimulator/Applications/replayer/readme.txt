@@ -84,8 +84,8 @@ Additional OSG graphics options:
 Key shortcuts
 
     H (shift + h): Print this help text to console
-    TAB:           Move camera to next vehicle
-    Shift + TAB:   Move camera to previoius vehicle
+    TAB:           Move camera to next vehicle (0, 1, 2..., ALL, ROAD)
+    Shift + TAB:   Move camera to previous vehicle
     Delete:        Same as above (Shift + TAB)
     Space:         Toggle pause / play
     g:             Toggle show / hide ghost models
@@ -111,7 +111,7 @@ Key shortcuts
         Up:                 Increase timeScale(play faster)
         Down:               Decrease timeScale(play slower)
 
-    1 - 9: Camera models acording to :
+    1 - 9: Camera models according to :
         1: Custom camera model
         2: Flight
         3: Drive
@@ -127,7 +127,7 @@ Key shortcuts
            - Orbit        (camera facing vehicle, rotating around it)
            - Fixed        (fix rotation, always straight behind vehicle)
            - Flex         (imagine the camera attached to vehicle via an elastic string)
-           - Flex - orbit (Like flex but allows for roatation around vehicle)
+           - Flex - orbit (Like flex but allows for rotation around vehicle)
            - Top          (top view, fixed rotation, always straight above vehicle)
            - Driver       ("driver" view, fixed at center of vehicle)
 

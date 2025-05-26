@@ -1076,6 +1076,17 @@ void EntityModel::SetRotation(double h, double p, double r)
     txNode_->setAttitude(quat_);
 }
 
+const osg::Vec3d* viewer::EntityModel::GetPosition() const
+{
+    if (txNode_ != nullptr)
+    {
+        return &txNode_->getPosition();
+    }
+
+    LOG_ERROR("Unexpected missing transform node in EntityModel {}", name_);
+    return nullptr;
+}
+
 void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
 {
     // Update wheel angles and rotation for front wheels
@@ -1871,6 +1882,11 @@ void Viewer::SetCameraMode(int mode)
     camMode_ = mode;
     rubberbandManipulator_->setMode(static_cast<unsigned int>(camMode_));
     UpdateCameraFOV();
+}
+
+int Viewer::GetCameraMode()
+{
+    return camMode_;
 }
 
 int Viewer::GetNumberOfCameraModes()
@@ -3447,18 +3463,31 @@ void Viewer::SetCameraTrackNode(osg::ref_ptr<osg::Node> node, bool calcDistance)
     nodeTrackerManipulator_->setTrackNode(node);
 }
 
-void Viewer::SetVehicleInFocus(int idx)
+void Viewer::SetVehicleInFocus(int idx, bool calcDistance)
 {
     if (idx >= 0 && idx < static_cast<int>(entities_.size()))
     {
-        // calculate distance only for first vehicle and non top views
-        SetCameraTrackNode(
-            entities_[static_cast<unsigned int>(idx)]->bbGroup_,
-            (currentCarInFocus_ == -1 && rubberbandManipulator_->getMode() != osgGA::RubberbandManipulator::CAMERA_MODE::RB_MODE_TOP) ? true : false);
+        // focus on entity, calculate distance only when  first vehicle and non top views
+        SetCameraTrackNode(entities_[static_cast<unsigned int>(idx)]->bbGroup_, calcDistance);
         rubberbandManipulator_->setTrackTransform(entities_[static_cast<unsigned int>(idx)]->txNode_);
-
-        currentCarInFocus_ = idx;
     }
+    else if (idx >= static_cast<int>(entities_.size()) && entities_.size() > 1)
+    {
+        // special mode 1: Fit all entities in view, focus on geometric center
+        SetCameraTrackNode(nullptr, false);
+    }
+    else if (idx < 0 && environment_ != nullptr)
+    {
+        // special mode 2: Track environment model
+        SetCameraTrackNode(environment_, true);
+        rubberbandManipulator_->setTrackTransform(nullptr);
+    }
+    else
+    {
+        LOG_WARN("SetVehicleInFocus: Invalid vehicle index {} - no change in focus", idx);
+        return;
+    }
+    currentCarInFocus_ = CLAMP(idx, -1, static_cast<int>(entities_.size()));
 }
 
 void SetFixCameraFlag(bool fixed)
@@ -3631,6 +3660,51 @@ void Viewer::SetOffScreenActive(bool state)
 
 void Viewer::Frame(double time)
 {
+    if (rubberbandManipulator_->getTrackNode() == nullptr)
+    {
+        if (entities_.size() > 1)
+        {
+            // calculate center point of all entities, and set distance based on bounding box size
+            double min_x = 0.0, min_y = 0.0, max_x = 0.0, max_y = 0.0, min_z = 0.0, max_z = 0.0;
+            for (unsigned int i = 0; i < entities_.size(); i++)
+            {
+                const osg::Vec3d* v = entities_[i]->GetPosition();
+                if (v == nullptr)
+                {
+                    continue;  // no position available
+                }
+                double x = v->x() + origin_[0];
+                double y = v->y() + origin_[1];
+                double z = v->z() + origin_[2];
+                if (i == 0)
+                {
+                    min_x = max_x = x;
+                    min_y = max_y = y;
+                    min_z = max_z = z;
+                }
+                else
+                {
+                    min_x = MIN(min_x, x);
+                    max_x = MAX(max_x, x);
+                    min_y = MIN(min_y, y);
+                    max_y = MAX(max_y, y);
+                    min_z = MIN(min_z, z);
+                    max_z = MAX(max_z, z);
+                }
+            }
+
+            float  center_x = static_cast<float>((min_x + max_x) / 2.0);
+            float  center_y = static_cast<float>((min_y + max_y) / 2.0);
+            float  center_z = static_cast<float>((min_z + max_z) / 2.0);
+            double distance = GetLengthOfLine2D(min_x, min_y, max_x, max_y);
+            rubberbandManipulator_->setCenterAndDistance(osg::Vec3(center_x, center_y, center_z), 20 + distance);
+        }
+        else
+        {
+            rubberbandManipulator_->setTrackNode(environment_, true);
+        }
+    }
+
     time_ = time;
 
     if (IsOffScreenRequested())
@@ -3826,16 +3900,46 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
                 }
                 int idx = viewer_->currentCarInFocus_ + step;
 
-                if (idx >= static_cast<int>(viewer_->entities_.size()))
+                if ((idx < -1 && viewer_->environment_ != nullptr) || (idx == -1 && viewer_->environment_ == nullptr))
                 {
-                    idx = 0;
+                    if (viewer_->entities_.size() > 1)
+                    {
+                        // wrap to group of all entities
+                        idx = static_cast<int>(viewer_->entities_.size());
+                    }
+                    else if (viewer_->entities_.size() > 0)
+                    {
+                        // wrap to first and single entities
+                        idx = 0;
+                    }
+                    else
+                    {
+                        // fall back to NONE
+                        idx = -1;
+                    }
                 }
-                else if (idx < 0)
+                else if ((idx > static_cast<int>(viewer_->entities_.size())) ||
+                         ((idx > static_cast<int>(viewer_->entities_.size() - 1) && (viewer_->entities_.size() < 2))))
                 {
-                    idx = static_cast<int>(viewer_->entities_.size()) - 1;
+                    // wrap to NONE
+                    idx = -1;
                 }
 
-                viewer_->SetVehicleInFocus(idx);
+                // handle resulting index
+                if (idx == -1)
+                {
+                    if (viewer_->environment_ == nullptr)
+                    {
+                        if (viewer_->entities_.size() > 0)
+                        {
+                            // entity 0 exists, focus on that instead of environment
+                            idx = 0;
+                        }
+                    }
+                }
+
+                // calculate distance only when moving focus from ALL or NONE to a single entity
+                viewer_->SetVehicleInFocus(idx, (step == 1 && idx == 0) || (step == -1 && idx == viewer_->entities_.size() - 1));
             }
         }
         break;

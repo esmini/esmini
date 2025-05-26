@@ -290,9 +290,10 @@ namespace viewer
                     osg::Vec4                trail_color,
                     std::string              name);
         virtual ~EntityModel();
-        void SetPosition(double x, double y, double z);
-        void SetRotation(double hRoad, double pRoad, double hRelative, double r);
-        void SetRotation(double h, double p, double r);
+        void              SetPosition(double x, double y, double z);
+        void              SetRotation(double hRoad, double pRoad, double hRelative, double r);
+        void              SetRotation(double h, double p, double r);
+        const osg::Vec3d* GetPosition() const;
 
         void SetTransparency(double factor);
 
@@ -484,9 +485,10 @@ namespace viewer
          * @param mode According to the RubberbandManipulator::CAMERA_MODE enum, plus any number of custom cameras. Set -1 to select the last.
          */
         void SetCameraMode(int mode);
+        int  GetCameraMode();
         int  GetNumberOfCameraModes();
         void UpdateCameraFOV();
-        void SetVehicleInFocus(int idx);
+        void SetVehicleInFocus(int idx, bool calcDistance = true);
         int  GetEntityInFocus()
         {
             return currentCarInFocus_;

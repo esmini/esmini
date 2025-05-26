@@ -1172,7 +1172,7 @@ int main(int argc, char** argv)
             }
 
             // Update graphics
-            viewer_->osgViewer_->frame();
+            viewer_->Frame(0.0);
 #endif  // _USE_OSG
         }
 #ifdef _USE_OSG
