@@ -41,10 +41,39 @@ jobs:
       - name: Run cmake-format lint
         run: pre-commit run cmake-format --all-files
 
-      - name: Install Cppcheck
+      - name: Cache Cppcheck 2.17.1
+        uses: actions/cache@v4
+        id: cache-cppcheck
+        with:
+          path: ~/.local/cppcheck-2.17.1
+          key: cppcheck-2.17.1-${{ runner.os }}
+
+      - name: Install build dependencies for Cppcheck
+        if: steps.cache-cppcheck.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cppcheck
+          sudo apt-get install -y build-essential cmake libpcre3-dev
+
+      - name: Build and install Cppcheck 2.17.1
+        if: steps.cache-cppcheck.outputs.cache-hit != 'true'
+        run: |
+          cd /tmp
+          wget https://github.com/danmar/cppcheck/archive/refs/tags/2.17.1.tar.gz
+          tar -xzf 2.17.1.tar.gz
+          cd cppcheck-2.17.1
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/.local/cppcheck-2.17.1 -DCMAKE_BUILD_TYPE=Release
+          make -j$(nproc)
+          make install
+
+      - name: Add Cppcheck to PATH
+        run: echo "$HOME/.local/cppcheck-2.17.1/bin" >> $GITHUB_PATH
+
+      - name: Verify Cppcheck version
+        run: |
+          cppcheck --version
+          which cppcheck
 
       - name: Run cppcheck lint
         run: pre-commit run cppcheck --all-files
