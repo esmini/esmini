@@ -3633,10 +3633,45 @@ pre-commit will automatically run on each commit on all staged files. Sometimes 
 git commit -m "my commit message" --no-verify
 ----
 
-==== cppcheck version
-As of esmini v2.47.0, the esmini CI/CD pipeline runs Cppcheck v2.17 on Ubuntu 24.04.
+==== Cppcheck Version in Esmini CI/CD
+The CI/CD pipeline uses Cppcheck version 2.17 for static code analysis. If you require a different version of Cppcheck, perhaps due to specific dependencies, it is recommended to leverage the Esmini CI/CD environment itself. To do this, create a fork of the Esmini repository and run your static analysis within that environment simply by pushing your code changes. This ensures consistency with the CI/CD setup.
 
-If a different version of Cppcheck is required, e.g. due to specific dependencies, it is recommended to make use of esmini CI/CD system for static code analysis. In such case, the recommended approach is to create a fork of the esmini repository and conducting the analysis within that environment, simply by pushing the code.
+==== Using a Different Cppcheck Version Locally
+If you prefer to use a different version of Cppcheck locally or do not want to install version 2.17 system-wide, follow the instructions below.
+
+If you have a different version installed or don't want to install 2.17 system-wide
+For Linux and macOS:
+
+Download Cppcheck 2.17.1 source from:
+
+https://github.com/danmar/cppcheck/archive/refs/tags/2.17.1.tar.gz
+
+Extract it to your home directory (for example, to ~/cppcheck-2.17.1).
+
+Build it:
+[source, txt]
+----
+cd ~/cppcheck-2.17.1
+mkdir build
+cd build
+cmake ..
+cmake --build .
+----
+
+To run pre-commit using this local build of Cppcheck 2.17, run the following from your Esmini root folder:
+[source, txt]
+----
+PATH="$HOME/cppcheck-2.17.1/build/bin:$PATH" pre-commit run cppcheck --all-files
+----
+
+This command temporarily uses your locally built Cppcheck 2.17 without changing your system default.
+
+For Windows:
+
+Download the official Cppcheck 2.17 installer from:
+
+https://github.com/danmar/cppcheck/releases/download/2.17.1/cppcheck-2.17.1-x64-Setup.msi
+
 
 === Test
 
