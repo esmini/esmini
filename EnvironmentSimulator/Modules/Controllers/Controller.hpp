@@ -51,6 +51,7 @@ namespace scenarioengine
             CONTROLLER_ALKS_R157SM,
             CONTROLLER_TYPE_LOOMING,
             CONTROLLER_TYPE_OFFROAD_FOLLOWER,
+            CONTROLLER_TYPE_HID,
             N_CONTROLLER_TYPES,
             CONTROLLER_TYPE_UNDEFINED,
             GHOST_RESERVED_TYPE       = 100,

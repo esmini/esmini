@@ -2444,6 +2444,106 @@ Demo (running scenario https://github.com/esmini/esmini/blob/master/resources/xo
 
 video::JV31gvCCe3Y[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
+==== HIDcontroller
+
+From v2.47.0 esmini supports game controllers, allowing interactive control of one or multiple entities in a simulation. Any joystick compatible device should work, e.g. joystick, gamepad, racing wheel, etc.
+
+Controlling Ego or target vehicles can be useful for demonstrating or evaluating functions in the loop. Examples:
+
+* Adjust Ego lateral lane position to check lane-departure function characteristics
+* Control a target vehicle to put AD operated Ego in challenging situations
+
+Any number of connected devices can be used. The mapping system is a bit tricky, but flexible. It allows to use most joystick alike controllers (racing wheel, joystick, gamepad...) and assign any input axis or button to the steering, throttle and brake inputs of an entity.
+
+Example scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/race_hid.xosc[race_hid.xosc] shows how to assign game controllers to one or several vehicles. The scenario puts three cars at beginning of a road. One will immediatelly start driving. The second is controlled by a game controller, which needs to be setup for specific connected device - see details below. The third can also be controlled by a game controller by uncommenting the ObjectController code in the sceenario. Otherwise, by default it will stand still. First car reaching end of road is the winner.
+
+===== Limitations
+
+Only three input channels are supported: Steering, Throttle and Brake.
+
+No automatic detection of game controllers is implemented, instead it has to be explicitly configured. See more info below.
+
+Only Windows and Linux (Ubuntu) supported, not macOS.
+
+===== Configuration
+
+To configure game controller inputs, you need to:
+
+* map steering, throttle and brake to axes or buttons of the device. If brake is not mapped, esmini will assume same axis as throttle, a combination quite common for racing wheels on Windows.
+* find out the device ID and assign it to the `deviceID` property, or `DeviceID` parameter when referring a catalog entry.
+
+ID is a sequence number and will depend on the current configuration of the system, e.g. number and order of connected game controllers. Hence, it probably needs to be adjusted for the specific setup.
+
+Mapping of input axes and buttons is independent of the ID and can be specified for any specific controller. But it will be different between Windows and Linux.
+
+A examples are provided in the separate catalog https://github.com/esmini/esmini/blob/dev/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc[ControllerCatalog.xosc], including:
+
+* Hori Racing Wheel APEX
+* PS4 Controller (DualShock 4)
+* Logitech Steering Wheel WingMan Formula GP
+* Trust GXT 39 gamepad
+
+However, it's simple to add other ones. See next sections for details.
+
+You can also use the catalog `HID_generic` controller and assign the ID and mappings via parameters.
+
+===== Mapping of axes and buttons
+
+Axes and buttons are denoted differently on Windows and Linux. The following table shows the mapping of axes and buttons for some game controllers currently in the catalog.
+
+Example: If you have a PS4 controller, you can assign the left trigger to the brake by specifying controller property `brakeInput` = `AXIS_RX` (analog) or `BTN_7` (binary).
+
+If you need to inverse an axis, just put "-" in front of the axis name, e.g. `-AXIS_Y`.
+
+.Mapping
+++++
+<iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTIxA9xhO1GomQDd3GvamIaul80S4GLH4UHyWubsG7sm3lLuCMqMo0QcHg-6D-NfKqqFKDwGWa1W_g2/pubhtml?gid=2029882313&amp;single=true&amp;widget=false&amp;headers=false&amp" width="550" height="1540"></iframe>
+++++
+
+https://docs.google.com/spreadsheets/d/1Y-zhAOcks3-rkcVdz3EvwBqOhvOwyE20sGZJcFM1OvI/edit?usp=sharingLink[Link] to full table, including ranges.
+
+It's a bit tricky to find out ID and mappings. The next sections provides some help using common tools.
+
+To see received data from device set wsmini option `--log_level debug`.
+
+
+
+====== Windows tools
+
+To find out available input devices, including game controllers, you can use the `dxdiag` tool:
+
+Win+R, type `dxdiag`, press Enter.
+
+Look under "DirectInput Devices" in the "Input". It will list all connected input devices, including game controllers. The ID is found in the "Controller ID" column.
+
+For further information, run the Game Controller settings:
+
+Win+R, type `joy.cpl`, press Enter
+
+Select controller and click `Properties` to test the device.
+
+====== Linux tools
+
+To find available game controllers, you can run:
+
+`ls /dev/input/js*`
+
+Any connected game controller should appear as `/dev/input/js0`, `/dev/input/js1`, etc.
+
+For further information you can use `jstest`. Install it:
+
+`sudo apt install joystick`
+
+Example usage:
+
+`jstest /dev/input/js2`
+
+will show you information and the state of the game controller with ID 2.
+
+Also, `jstest-gtk` is a graphical tool that can be installed with:
+
+`sudo apt install jstest-gtk`
+
 ===  How to add a new controller
 
 Below are the steps to add new controller in esmini:

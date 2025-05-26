@@ -30,6 +30,7 @@
 #include "ControllerALKS_R157SM.hpp"
 #include "ControllerLooming.hpp"
 #include "ControllerOffroadFollower.hpp"
+#include "ControllerHID.hpp"
 
 #include <cstdlib>
 
@@ -95,6 +96,7 @@ void ScenarioReader::LoadControllers()
     RegisterController(ControllerALKS_R157SM::GetTypeNameStatic(), InstantiateControllerALKS_R157SM);
     RegisterController(ControllerLooming::GetTypeNameStatic(), InstantiateControllerLooming);
     RegisterController(ControllerOffroadFollower::GetTypeNameStatic(), InstantiateControllerOffroadFollower);
+    RegisterController(ControllerHID::GetTypeNameStatic(), InstantiateControllerHID);
 }
 
 void ScenarioReader::UnloadControllers()

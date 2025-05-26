@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2025-05-22T10:00:00" description="Three cars racing to end of road, using HID controllers. Highscore 23.5" author="esmini team"/>
+   <ParameterDeclarations/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/curves.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Car1">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white">
+            <ParameterAssignments>
+               <ParameterAssignment parameterRef="MaxSpeed" value="100"/>
+            </ParameterAssignments>
+         </CatalogReference>
+         <ObjectController name="hid_ctrl1">
+            <CatalogReference catalogName="GameControllerCatalog" entryName="PS4Controller_Windows">
+               <ParameterAssignments>
+                  <ParameterAssignment parameterRef="DeviceID" value="1"/>
+               </ParameterAssignments>
+            </CatalogReference>
+         </ObjectController>
+      </ScenarioObject>
+      <ScenarioObject name="Car2">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+      <ScenarioObject name="Car3">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
+         <!-- Uncomment and adjust below to add controller to the third car -->
+         <!-- <ObjectController name="hid_ctrl3"> -->
+            <!-- <CatalogReference catalogName="GameControllerCatalog" entryName="LogitechSteeringWheel_Windows"> -->
+               <!-- <ParameterAssignments> -->
+                  <!-- <ParameterAssignment parameterRef="DeviceID" value="0"/> -->
+               <!-- </ParameterAssignments> -->
+            <!-- </CatalogReference> -->
+         <!-- </ObjectController> -->
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Car1">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <RoadPosition roadId="1" t="3" s="5"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ControllerAction>
+                     <ActivateControllerAction objectControllerRef="hid_ctrl1" longitudinal="true" lateral="true"/>
+                  </ControllerAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Car2">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <RoadPosition roadId="1" t="0" s="5"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                   <LongitudinalAction>
+                       <SpeedAction>
+                           <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="rate" value="5.0"/>
+                           <SpeedActionTarget>
+                               <AbsoluteTargetSpeed value="${100/3.6}"/>
+                           </SpeedActionTarget>
+                       </SpeedAction>
+                   </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ControllerAction>
+                     <ActivateControllerAction objectControllerRef="hid_ctrl2" longitudinal="true" lateral="true"/>
+                  </ControllerAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Car3">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <RoadPosition roadId="1" t="-3" s="5"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ControllerAction>
+                     <ActivateControllerAction objectControllerRef="hid_ctrl3" longitudinal="true" lateral="true"/>
+                  </ControllerAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story">
+         <Act name="Act">
+            <ManeuverGroup maximumExecutionCount="1000" name="Manuever group 1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Car1"/>
+               </Actors>
+               <Maneuver name="Restart maneuver 1">
+                  <Event name="Restart event 1" priority="parallel">
+                     <Action name="Restart deactivate controllers 1">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <ActivateControllerAction objectControllerRef="hid_ctrl1" longitudinal="false" lateral="false"/>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="Restart teleport action 1">
+                        <PrivateAction>
+                           <TeleportAction>
+                              <Position>
+                                 <RoadPosition roadId="1" t="3" s="5"/>
+                              </Position>
+                           </TeleportAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="Restart re-activate controllers 1">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <ActivateControllerAction objectControllerRef="hid_ctrl1" longitudinal="true" lateral="true"/>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Off-road condition 1" delay="0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Car1"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <OffroadCondition duration="1.0"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1000" name="Manuever group 2">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Car2"/>
+               </Actors>
+               <Maneuver name="Restart maneuver 2">
+                  <Event name="Restart event 2" priority="parallel">
+                     <Action name="Restart deactivate controllers 2">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <ActivateControllerAction objectControllerRef="hid_ctrl2" longitudinal="false" lateral="false"/>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="Restart teleport action 2">
+                        <PrivateAction>
+                           <TeleportAction>
+                              <Position>
+                                 <RoadPosition roadId="1" t="3" s="5"/>
+                              </Position>
+                           </TeleportAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="Restart re-activate controllers 2">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <ActivateControllerAction objectControllerRef="hid_ctrl2" longitudinal="true" lateral="true"/>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Off-road condition 2" delay="0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Car2"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <OffroadCondition duration="1.0"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1000" name="Manuever group 3">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Car3"/>
+               </Actors>
+               <Maneuver name="Restart maneuver 3">
+                  <Event name="Restart event 3" priority="parallel">
+                     <Action name="Restart deactivate controllers 3">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <ActivateControllerAction objectControllerRef="hid_ctrl3" longitudinal="false" lateral="false"/>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="Restart teleport action 3">
+                        <PrivateAction>
+                           <TeleportAction>
+                              <Position>
+                                 <RoadPosition roadId="1" t="3" s="5"/>
+                              </Position>
+                           </TeleportAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="Restart re-activate controllers 3">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <ActivateControllerAction objectControllerRef="hid_ctrl3" longitudinal="true" lateral="true"/>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Off-road condition 3" delay="0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Car3"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <OffroadCondition duration="1.0"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="Timeout condition" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="600" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+         <ConditionGroup>
+            <Condition name="Car1 wins" delay="0" conditionEdge="none">
+               <ByEntityCondition>
+                  <TriggeringEntities triggeringEntitiesRule="any">
+                     <EntityRef entityRef="Car1"/>
+                  </TriggeringEntities>
+                  <EntityCondition>
+                     <ReachPositionCondition tolerance="20">
+                        <Position>
+                           <RoadPosition roadId="1" t="0" s="1154.3"/>
+                        </Position>
+                     </ReachPositionCondition>
+                  </EntityCondition>
+               </ByEntityCondition>
+            </Condition>
+         </ConditionGroup>
+         <ConditionGroup>
+            <Condition name="Car2 wins" delay="0" conditionEdge="none">
+               <ByEntityCondition>
+                  <TriggeringEntities triggeringEntitiesRule="any">
+                     <EntityRef entityRef="Car2"/>
+                  </TriggeringEntities>
+                  <EntityCondition>
+                     <ReachPositionCondition tolerance="20">
+                        <Position>
+                           <RoadPosition roadId="1" t="0" s="1154.3"/>
+                        </Position>
+                     </ReachPositionCondition>
+                  </EntityCondition>
+               </ByEntityCondition>
+            </Condition>
+         </ConditionGroup>
+         <ConditionGroup>
+            <Condition name="Car3 wins" delay="0" conditionEdge="none">
+               <ByEntityCondition>
+                  <TriggeringEntities triggeringEntitiesRule="any">
+                     <EntityRef entityRef="Car3"/>
+                  </TriggeringEntities>
+                  <EntityCondition>
+                     <ReachPositionCondition tolerance="20">
+                        <Position>
+                           <RoadPosition roadId="1" t="0" s="1154.3"/>
+                        </Position>
+                     </ReachPositionCondition>
+                  </EntityCondition>
+               </ByEntityCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>
+
