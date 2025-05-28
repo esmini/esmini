@@ -2675,8 +2675,9 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
 
     osg::ref_ptr<osg::Group> group = new osg::Group();
 
-    osg::ref_ptr<osg::Vec3Array> vertices_sides = new osg::Vec3Array(static_cast<unsigned int>(nrPoints) * 2);  // one set at bottom and one at top
-    osg::ref_ptr<osg::Vec3Array> vertices_top   = new osg::Vec3Array(static_cast<unsigned int>(nrPoints));      // one set at bottom and one at top
+    osg::ref_ptr<osg::Vec3Array> vertices_sides  = new osg::Vec3Array(static_cast<unsigned int>(nrPoints) * 2);  // one set at bottom and one at top
+    osg::ref_ptr<osg::Vec3Array> vertices_top    = new osg::Vec3Array(static_cast<unsigned int>(nrPoints));      // top
+    osg::ref_ptr<osg::Vec3Array> vertices_bottom = new osg::Vec3Array(static_cast<unsigned int>(nrPoints));      // bottom
 
     // Set vertices
     for (size_t i = 0; i < outline->corner_.size(); i++)
@@ -2689,6 +2690,7 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
                                          static_cast<float>(z + corner->GetHeight()));
         (*vertices_sides)[i * 2 + 1].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
         (*vertices_top)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z + corner->GetHeight()));
+        (*vertices_bottom)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
     }
 
     // Close geometry
@@ -2697,11 +2699,12 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
         (*vertices_sides)[2 * static_cast<unsigned int>(nrPoints) - 2].set((*vertices_sides)[0]);
         (*vertices_sides)[2 * static_cast<unsigned int>(nrPoints) - 1].set((*vertices_sides)[1]);
         (*vertices_top)[static_cast<unsigned int>(nrPoints) - 1].set((*vertices_top)[0]);
+        (*vertices_bottom)[static_cast<unsigned int>(nrPoints) - 1].set((*vertices_bottom)[0]);
     }
 
     // Finally create and add geometry
     osg::ref_ptr<osg::Geode>    geode  = new osg::Geode;
-    osg::ref_ptr<osg::Geometry> geom[] = {new osg::Geometry, new osg::Geometry};
+    osg::ref_ptr<osg::Geometry> geom[] = {new osg::Geometry, new osg::Geometry, new osg::Geometry};
 
     geom[0]->setVertexArray(vertices_sides.get());
     geom[0]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, 2 * nrPoints));
@@ -2712,9 +2715,14 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
         geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
         osgUtil::Tessellator tessellator;
         tessellator.retessellatePolygons(*geom[1]);
+
+        // then also add bottom
+        geom[2]->setVertexArray(vertices_bottom.get());
+        geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
+        tessellator.retessellatePolygons(*geom[2]);
     }
 
-    int nrGeoms = roof ? 2 : 1;
+    int nrGeoms = roof ? 3 : 1;
     for (int i = 0; i < nrGeoms; i++)
     {
         osgUtil::SmoothingVisitor::smooth(*geom[i], 0.5);
@@ -2919,6 +2927,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 osg::ref_ptr<osg::Vec3Array> vertices_right_side;
                 osg::ref_ptr<osg::Vec3Array> vertices_left_side;
                 osg::ref_ptr<osg::Vec3Array> vertices_top;
+                osg::ref_ptr<osg::Vec3Array> vertices_bottom;
                 osg::ref_ptr<osg::Group>     group;
                 if (tx == nullptr)  // No model loaded
                 {
@@ -3099,6 +3108,8 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                             vertices_left_side->push_back(osg::Vec3d(pos.GetX() + p0x - origin_[0], pos.GetY() + p0y - origin_[1], pos.GetZ()));
                             vertices_top->push_back(osg::Vec3d(pos.GetX() + p0x - origin_[0], pos.GetY() + p0y - origin_[1], pos.GetZ() + z));
                             vertices_top->push_back(osg::Vec3d(pos.GetX() + p1x - origin_[0], pos.GetY() + p1y - origin_[1], pos.GetZ() + z));
+                            vertices_bottom->push_back(osg::Vec3d(pos.GetX() + p0x - origin_[0], pos.GetY() + p0y - origin_[1], pos.GetZ()));
+                            vertices_bottom->push_back(osg::Vec3d(pos.GetX() + p1x - origin_[0], pos.GetY() + p1y - origin_[1], pos.GetZ()));
                         }
                         else  // separate objects
                         {
@@ -3174,7 +3185,7 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                 {
                     // Create geometry for continuous object
                     osg::ref_ptr<osg::Geode>    geode  = new osg::Geode;
-                    osg::ref_ptr<osg::Geometry> geom[] = {new osg::Geometry, new osg::Geometry};
+                    osg::ref_ptr<osg::Geometry> geom[] = {new osg::Geometry, new osg::Geometry, new osg::Geometry};
 
                     // Concatenate vertices for right and left side into one single array going around the object counter clockwise
                     osg::ref_ptr<osg::Vec3Array> vertices = vertices_right_side;
@@ -3190,8 +3201,13 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                     geom[1]->setVertexArray(vertices_top.get());
                     geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, static_cast<int>(vertices_top->size())));
 
+                    // Add floor
+                    geom[2]->setVertexArray(vertices_bottom.get());
+                    geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, static_cast<int>(vertices_top->size())));
+
                     osgUtil::Tessellator tessellator;
                     tessellator.retessellatePolygons(*geom[1]);
+                    tessellator.retessellatePolygons(*geom[2]);
 
                     osg::ref_ptr<osg::Vec4Array> color_obj = new osg::Vec4Array();
                     color_obj->push_back(color);
