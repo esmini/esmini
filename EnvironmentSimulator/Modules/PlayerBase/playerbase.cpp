@@ -1208,7 +1208,7 @@ void ScenarioPlayer::SteeringSensorSetVisible(int object_index, bool value)
     }
 
     int obj_index = scenarioEngine->entities_.GetObjectIdxById(object_index);
-    if (obj_index >= 0)
+    if (obj_index >= 0 && obj_index < static_cast<int>(viewer_->entities_.size()))
     {
         viewer::EntityModel* m = viewer_->entities_[static_cast<unsigned int>(obj_index)];
         if (m->IsMoving())
