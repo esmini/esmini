@@ -2729,6 +2729,57 @@ Add two custom light sources: +
 .Original model with one light added
 image::light_second_light.jpg[]
 
+=== Convert osgb models for use in Blender
+Here follows an example of how to convert .osgb models into .obj format for use in Blender. obj is easy to use as it has a human readable text format, easy mapping between its material parameters and Blender's and minimal settings when converting back to .osgb. 
+
+. Open a command prompt in the folder where your model.osgb is
+. Run command: +
+   `osgconv model.osgb model.obj -s 100,100,100 --use-world-frame -o -90-1,0,0` +
+   "-s ..." is for scaling which typically is needed for .obj files. +
+   "--use-world-frame" is to use the world coordinate system, which is typically needed for obj files. +
+   "-o -90-1,0,0" is to rotate the model so that it faces the positive x-axis in Blender. This is a common requirement for .obj files as they typically face the negative y-axis by default.
+
+A file should have been created called "model.obj". It's important to note that the textures in the .osgb file are not automatically copied to the .obj file location, so you will need to copy them manually to the same location as the generated .obj.
+
+=== Import into Blender
+. Drag the resulting obj file, and all textures, into a suitable folder, preferably an empty folder
+. Open Blender and delete the default cube
+. Go to "File" -> "Import" -> "Wavefront (.obj)"
+. Navigate to the folder where you placed the .obj file and select it, and click "Import Wavefront OBJ"
+
+=== Material settings in Blender
+Highlight the object in Blender and go to the "Material Properties" tab. You will see the material settings for the imported model.
+
+Make sure that the "surface" type is set to "Principled BSDF" which is the default in Blender. This shader supports a wide range of material properties and is suitable for most models.
+
+Under the "Base Color" section, you can set the color of the material. The following parameters in Blender match the obj material parameters: +
+- `Ka` (Ambient Color) corresponds to the "Metallic" in Blender, how much the material reflects ambient light. +
+- `Kd` (Diffuse Color) corresponds to the "Base Color" HSV values combined (if no texture png) in Blender, which is the color of the material when light is directly hitting it. +
+- `Ks` (Specular Color) corresponds to the "Specular" colors "IOR level" in Blender, which is the color highlights from shiny surfaces. +
+- `Ns` (Specular Exponent) corresponds to the "Roughness" in Blender, where a lower value means a shinier surface. +
+- `d` (Transparency) corresponds to the "Alpha" value in Blender, where a value of 1.0 means fully opaque and 0.0 means fully transparent. +
+- `Ke` (Emissive Color) corresponds to the "Emission" colors HSV values in Blender, which is the color of light emitted by the material.
+
+=== Export Blender obj
+When you are done editing the model in Blender, you can export it to obj format with suitable settings for osgconv.
+. Go to "File" -> "Export" -> "Wavefront (.obj)"
+. In the export dialog, leave most default, but make sure to set the following options on the right side: +
+- `Scale` to 1.0 +
+- `Forward Axis` to -Z +
+- `Up Axis` to Y +
+- `Materials` is checked +
+- `Path Mode` to "Copy" +
+
+Then select the folder where you want to save the exported obj file (preferably same folder as your textures if you have any) and click "Export OBJ".
+
+=== Convert back to osgb
+Now you can convert the exported .obj file back to .osgb format using osgconv.
+
+. Open a command prompt in the folder where your newly exported_model.obj is and run the command: +
+. `osgconv exported_model.obj exported_model.osgb`
+
+This will create a new .osgb file that you can use in your application.
+
 
 == Support / Q&A
 
