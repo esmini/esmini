@@ -2485,10 +2485,12 @@ Mapping of input axes and buttons is independent of the ID and can be specified 
 
 A examples are provided in the separate catalog https://github.com/esmini/esmini/blob/dev/resources/xosc/Catalogs/Controllers/GameControllerCatalog.xosc[GameControllerCatalog.xosc], including:
 
-* Hori Racing Wheel APEX
-* PS4 Controller (DualShock 4)
-* Logitech Steering Wheel WingMan Formula GP
 * Trust GXT 39 gamepad
+* PS4 Controller (DualShock 4)
+* PS5 Controller (DualSense)
+* Hori Racing Wheel APEX
+* Logitech Steering Wheel WingMan Formula GP
+* Logitech Steering Wheel
 
 However, it's simple to add other ones. See next sections for details.
 
@@ -2730,7 +2732,7 @@ Add two custom light sources: +
 image::light_second_light.jpg[]
 
 === Convert osgb models for use in Blender
-Here follows an example of how to convert .osgb models into .obj format for use in Blender. obj is easy to use as it has a human readable text format, easy mapping between its material parameters and Blender's and minimal settings when converting back to .osgb. 
+Here follows an example of how to convert .osgb models into .obj format for use in Blender. obj is easy to use as it has a human readable text format, easy mapping between its material parameters and Blender's and minimal settings when converting back to .osgb.
 
 . Open a command prompt in the folder where your model.osgb is
 . Run command: +

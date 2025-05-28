@@ -1,5 +1,31 @@
 ## esmini release notes
 
+### 2025-05-28 Version 2.47.0
+
+New features:
+- Add support for HID game controllers
+  - separate controller, similar to interactiveController
+  - properties for device ID and mappings to steering, throttle and brake
+  - Windows and Linux only (not macOS)
+  - see more info in [User guide - HIDController](https://esmini.github.io/#_hidcontroller)
+- Add camera follow modes ALL and ROAD
+  - focus on geometric center of all entities or road network
+  - for ALL mode, continuously update center point and zoom factor
+  - reachable by Tab/shift-Tab (0, 1, 2..., ALL, ROAD) and <br>
+    `--follow_object` option, see [User guide - esmini cmd reference](https://esmini.github.io/#_esmini)
+
+Improvements and fixes:
+- Nightly job to check for memory leaks with Valgrind
+- Document how to work with Blender (see [User guide](https://esmini.github.io/#_convert_osgb_models_for_use_in_blender))
+- Fix relative teleport bug with relative position
+- Fix bug to ensure not missing ghost final state (at end of trail)
+- Add stop triggers to avoid infinite scenarios (needed for memory tests)
+- Rework end-of-road condition and handling
+  - change EOR duration check from ">" to ">=" to support 0 delay
+  - retain speed for the one step reaching end of road (EOR)
+  - while stuck at EOR, set speed = 0
+- Add missing floor to outline objects (not all are put on ground...)
+
 ### 2025-05-15 Version 2.46.4
 
 Improvements and fixes:
