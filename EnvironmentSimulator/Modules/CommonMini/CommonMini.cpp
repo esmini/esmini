@@ -815,21 +815,22 @@ std::vector<std::string> SplitQuotedString(const std::string& str, char delim)
     int                      pos = -1;
     do
     {
-        auto quotePos = str.find_first_of('"', pos + 1);
+        size_t quotePos = str.find_first_of('"', pos + 1);
         if (quotePos == std::string::npos)
         {
             auto vec = SplitString(str.substr(pos + 1, str.size()), delim);
             result.insert(result.end(), std::make_move_iterator(vec.begin()), std::make_move_iterator(vec.end()));
             return result;
         }
-        pos = str.find_first_of('"', quotePos + 1);
-        if (pos == std::string::npos)
+        size_t nextPos = str.find_first_of('"', quotePos + 1);
+        if (nextPos == std::string::npos)
         {
             auto vec = SplitString(str.substr(quotePos + 1, str.size()), delim);
             result.insert(result.end(), std::make_move_iterator(vec.begin()), std::make_move_iterator(vec.end()));
             return result;
         }
-        result.emplace_back(str.substr(quotePos + 1, pos - quotePos - 1));
+        result.emplace_back(str.substr(quotePos + 1, nextPos - quotePos - 1));
+        pos = static_cast<unsigned int>(nextPos);
     } while (true);
 }
 

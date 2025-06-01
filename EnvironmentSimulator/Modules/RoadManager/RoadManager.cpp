@@ -1216,9 +1216,10 @@ SE_Color::Color roadmanager::ODRColor2SEColor(roadmanager::RoadMarkColor color)
             return SE_Color::Color::YELLOW;
         case roadmanager::RoadMarkColor::UNDEFINED:
             return SE_Color::Color::UNDEFINED;
+        default:
+            LOG_ERROR("Unexpeccted roadmark color id: {}", color);
     }
 
-    LOG_ERROR("Unrecognized roadmark color id: {}", color);
     return SE_Color::Color::UNDEFINED;
 }
 
