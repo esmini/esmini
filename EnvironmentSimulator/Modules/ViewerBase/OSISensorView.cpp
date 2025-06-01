@@ -11,6 +11,7 @@
  */
 
 #include "OSISensorView.hpp"
+#include "RoadManager.hpp"
 
 using namespace viewer;
 
@@ -192,7 +193,10 @@ OSIDetectedPoint::OSIDetectedPoint(const osg::Vec3 point, osg::ref_ptr<osg::Grou
 
     // start point of each road mark
     osi_detection_points_->push_back(point);
-    osi_detection_color_->push_back(osg::Vec4(color_green[0], color_green[1], color_green[2], 1.0));
+    osi_detection_color_->push_back(osg::Vec4(SE_Color::Color2RBG(SE_Color::Color::GREEN)[0],
+                                              SE_Color::Color2RBG(SE_Color::Color::GREEN)[1],
+                                              SE_Color::Color2RBG(SE_Color::Color::GREEN)[2],
+                                              1.0));
 
     osi_detection_point->setSize(8.0f);
     osi_detection_geom_->getOrCreateStateSet()->setAttributeAndModes(osi_detection_point, osg::StateAttribute::ON);
@@ -238,11 +242,11 @@ OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double
     osg::Material* material = new osg::Material();
 
     // Set color of vehicle based on its index
-    float* color = color_green;
-    float  b     = 1.0;  // brighness range (0,1)
+    const float(*color)[3] = &SE_Color::Color2RBG(SE_Color::Color::GREEN);
+    float b                = 1.0;  // brighness range (0,1)
 
-    material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0f));
-    material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0f));
+    material->setAmbient(osg::Material::FRONT, osg::Vec4(b * (*color)[0], b * (*color)[1], b * (*color)[2], 1.0f));
+    material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * (*color)[0], b * (*color)[1], b * (*color)[2], 1.0f));
 
     // Set dimensions of the entity "box"
     osi_detection_tx_->setScale(bb_dimensions_);

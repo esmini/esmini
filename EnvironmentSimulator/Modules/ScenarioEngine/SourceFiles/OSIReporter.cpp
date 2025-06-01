@@ -1742,7 +1742,7 @@ int OSIReporter::UpdateOSILaneBoundary()
                                     osi3::LaneBoundary_Classification_Color classific_col;
                                     switch (laneroadmark->GetColor())
                                     {
-                                        case roadmanager::RoadMarkColor::STANDARD_COLOR:
+                                        case roadmanager::RoadMarkColor::STANDARD:
                                             classific_col = osi3::LaneBoundary_Classification_Color::LaneBoundary_Classification_Color_COLOR_WHITE;
                                             break;
                                         case roadmanager::RoadMarkColor::BLUE:

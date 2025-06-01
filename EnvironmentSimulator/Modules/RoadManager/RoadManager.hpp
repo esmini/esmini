@@ -560,14 +560,20 @@ namespace roadmanager
     enum class RoadMarkColor
     {
         UNDEFINED,
-        STANDARD_COLOR,  // equivalent to white
+        BLACK,
         BLUE,
         GREEN,
+        ORANGE,
         RED,
+        STANDARD,  // equivalent to white
+        VIOLET,
         WHITE,
         YELLOW,
         UNKNOWN,
+        COUNT  // number of elements
     };
+
+    SE_Color::Color ODRColor2SEColor(RoadMarkColor color);
 
     class LaneRoadMarkTypeLine
     {

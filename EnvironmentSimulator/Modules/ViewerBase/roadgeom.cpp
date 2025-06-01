@@ -50,6 +50,43 @@ bool compare_s_values(double s0, double s1)
     return (fabs(s1 - s0) < 0.1);
 }
 
+osg::ref_ptr<osg::Material> RoadGeom::GetOrCreateMaterial(const std::string& basename, osg::Vec4 color)
+{
+    uint32_t key = viewer::GenerateColorKeyFromDoubles(color[0], color[1], color[2], color[3]);
+
+    if (std_materials_.find(key) != std_materials_.end())
+    {
+        return std_materials_[key];
+    }
+    else
+    {
+        // create and store new materiak
+        osg::ref_ptr<osg::Material> material = new osg::Material;
+        material->setName(fmt::format("Material_{}_{}_0x{:02x}{:02x}{:02x}{:02x}",
+                                      number_of_materials,
+                                      basename,
+                                      static_cast<unsigned int>(color[0] * 255),
+                                      static_cast<unsigned int>(color[1] * 255),
+                                      static_cast<unsigned int>(color[2] * 255),
+                                      static_cast<unsigned int>(color[3] * 255)));
+
+        LOG_DEBUG("Creating material {}", material->getName());
+        material->setDiffuse(osg::Material::FRONT_AND_BACK, color);
+        material->setAmbient(osg::Material::FRONT_AND_BACK, color);
+        material->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        material->setEmission(osg::Material::FRONT_AND_BACK, osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        material->setShininess(osg::Material::FRONT_AND_BACK, 1.0f);
+
+        // store material for reuse
+        std_materials_[key] = material;
+
+        // keep track of the number of created materials
+        number_of_materials++;
+
+        return material;
+    }
+}
+
 osg::ref_ptr<osg::Texture2D> RoadGeom::ReadTexture(std::string filename)
 {
     osg::ref_ptr<osg::Texture2D> tex = 0;
@@ -104,49 +141,12 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array>        vertices,
 
     // Use PolygonOffset feature to avoid z-fighting with road surface
     geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(-POLYGON_OFFSET_ROADMARKS, -SIGN(POLYGON_OFFSET_ROADMARKS)));
-    osgUtil::SmoothingVisitor::smooth(*geom, 0.0);
 
     osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-    geode->addDrawable(geom);
 
     // create material with unique name
-    static int                  counter           = 0;
-    osg::ref_ptr<osg::Material> materialRoadmark_ = new osg::Material;
-    // set color now before defining the texture to allow for blending color and texture
-    materialRoadmark_->setName((std::string("RoadMarkMaterial") + std::to_string(counter++).c_str()));
-    printf("Material name: %s\n", materialRoadmark_->getName().c_str());
-    materialRoadmark_->setDiffuse(osg::Material::FRONT_AND_BACK, color_array->at(0));
-    materialRoadmark_->setAmbient(osg::Material::FRONT_AND_BACK, color_array->at(0));
-    materialRoadmark_->setAlpha(osg::Material::FRONT_AND_BACK, 1.0 - fade);
-    geode->getOrCreateStateSet()->setAttributeAndModes(materialRoadmark_.get());
-
-    osg::ref_ptr<osg::Texture2D> tex_roadmark;
-    if (!SE_Env::Inst().GetOptions().GetOptionSet("generate_without_textures"))
-    {
-        tex_roadmark = ReadTexture("roadmark.jpg");
-        if (tex_roadmark)
-        {
-            // set color to white for texture mapping. but keep alpha
-            color_array->back()[0] = 1.0f;
-            color_array->back()[1] = 1.0f;
-            color_array->back()[2] = 1.0f;
-            tex_roadmark->setWrap(osg::Texture2D::WrapParameter::WRAP_S, osg::Texture2D::WrapMode::REPEAT);
-            tex_roadmark->setWrap(osg::Texture2D::WrapParameter::WRAP_T, osg::Texture2D::WrapMode::REPEAT);
-            tex_roadmark->setFilter(osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR_MIPMAP_LINEAR);
-            tex_roadmark->setFilter(osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR);
-            geom->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex_roadmark.get());
-        }
-
-        // set texture coordinates anyway, for potential post processing
-        osg::ref_ptr<osg::Vec2Array> texcoords   = new osg::Vec2Array(static_cast<unsigned int>(indices.get()->getNumIndices()));
-        double                       rm_texscale = 1.0 / ROADMARK_TEXTURE_SCALE;
-        for (unsigned int i = 0; i < indices.get()->getNumIndices(); i++)
-        {
-            (*texcoords)[i].set(osg::Vec2(static_cast<float>(rm_texscale * ((*vertices)[(*indices)[i]][0] - origin_[0])),
-                                          static_cast<float>(rm_texscale * ((*vertices)[(*indices)[i]][1] - origin_[1]))));
-        }
-        geom->setTexCoordArray(0, texcoords.get());
-    }
+    osg::ref_ptr<osg::Material> materialRoadmark_ =
+        GetOrCreateMaterial("RoadMark_" + roadmanager::LaneRoadMark::RoadMarkColor2Str(color), color_array->back());
 
     // also embed color in geometry, e.g. for post processing in full stack simulations
     geom->setColorArray(color_array.get());
@@ -158,6 +158,34 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array>        vertices,
         geom->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
     }
 
+    geode->getOrCreateStateSet()->setAttributeAndModes(materialRoadmark_.get());
+
+    osg::ref_ptr<osg::Texture2D> tex_roadmark;
+    if (!SE_Env::Inst().GetOptions().GetOptionSet("generate_without_textures"))
+    {
+        // set texture coordinates anyway, for potential post processing
+        osg::ref_ptr<osg::Vec2Array> texcoords   = new osg::Vec2Array(indices.get()->getNumIndices());
+        double                       rm_texscale = 1.0 / ROADMARK_TEXTURE_SCALE;
+        for (unsigned int i = 0; i < indices.get()->getNumIndices(); i++)
+        {
+            (*texcoords)[i].set(osg::Vec2(static_cast<float>(rm_texscale * ((*vertices)[(*indices)[i]][0])),
+                                          static_cast<float>(rm_texscale * ((*vertices)[(*indices)[i]][1]))));
+        }
+        geom->setTexCoordArray(0, texcoords.get());
+
+        tex_roadmark = ReadTexture("roadmark.jpg");
+        if (tex_roadmark)
+        {
+            // set color to white for texture mapping. but keep alpha
+            color_array->back()[0] = 1.0f;
+            color_array->back()[1] = 1.0f;
+            color_array->back()[2] = 1.0f;
+            geode->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex_roadmark.get());
+        }
+    }
+
+    osgUtil::SmoothingVisitor::smooth(*geom, 0.0);
+    geode->addDrawable(geom.get());
     rm_group_->addChild(geode);
 }
 
@@ -273,7 +301,7 @@ int RoadGeom::AddRoadMarks(roadmanager::Lane* lane, osg::Group* parent)
                         }
                         else if (!osi_points[q].endpoint)
                         {
-                            LOG_INFO("Unexpected last point without endpoint q {}", q);
+                            LOG_ERROR("Unexpected last point without endpoint q {}", q);
                         }
 
                         if (q == startpoint)
@@ -812,8 +840,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
 
                         if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD))
                         {
-                            osg::ref_ptr<osg::Material> materialAsphalt_ = new osg::Material;
-                            osg::Vec4                   new_color        = color_asphalt->at(0);
+                            osg::Vec4 new_color = color_asphalt->at(0);
 
                             if (friction < friction_default - SMALL_NUMBER)  // low friction, make it blueish
                             {
@@ -830,8 +857,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                                 new_color[2] -= 0.75 * factor;
                             }
 
-                            materialAsphalt_->setDiffuse(osg::Material::FRONT_AND_BACK, new_color);
-                            materialAsphalt_->setAmbient(osg::Material::FRONT_AND_BACK, new_color);
+                            osg::ref_ptr<osg::Material> materialAsphalt_ = GetOrCreateMaterial("Asphalt", new_color);
 
                             if (tex_asphalt)
                             {
@@ -842,10 +868,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                         else if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BIKING) ||
                                  laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK))
                         {
-                            osg::ref_ptr<osg::Material> materialConcrete_ = new osg::Material;
-                            materialConcrete_->setDiffuse(osg::Material::FRONT_AND_BACK, color_concrete->at(0));
-                            materialConcrete_->setAmbient(osg::Material::FRONT_AND_BACK, color_concrete->at(0));
-
+                            osg::ref_ptr<osg::Material> materialConcrete_ = GetOrCreateMaterial("Concrete", color_concrete->at(0));
                             geom->getOrCreateStateSet()->setAttributeAndModes(materialConcrete_.get());
 
                             // Use PolygonOffset feature to avoid z-fighting with road surface
@@ -855,10 +878,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                         else if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BORDER) && k != 1 &&
                                  k != static_cast<unsigned int>(lsec->GetNumberOfLanes()) - 1)
                         {
-                            osg::ref_ptr<osg::Material> materialBorderInner_ = new osg::Material;
-                            materialBorderInner_->setDiffuse(osg::Material::FRONT_AND_BACK, color_border_inner->at(0));
-                            materialBorderInner_->setAmbient(osg::Material::FRONT_AND_BACK, color_border_inner->at(0));
-
+                            osg::ref_ptr<osg::Material> materialBorderInner_ = GetOrCreateMaterial("Border", color_border_inner->at(0));
                             geom->getOrCreateStateSet()->setAttributeAndModes(materialBorderInner_.get());
 
                             // Use PolygonOffset feature to avoid z-fighting with road surface
@@ -867,10 +887,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                         }
                         else
                         {
-                            osg::ref_ptr<osg::Material> materialGrass_ = new osg::Material;
-
-                            materialGrass_->setDiffuse(osg::Material::FRONT_AND_BACK, color_grass->at(0));
-                            materialGrass_->setAmbient(osg::Material::FRONT_AND_BACK, color_grass->at(0));
+                            osg::ref_ptr<osg::Material> materialGrass_ = GetOrCreateMaterial("Grass", color_grass->at(0));
 
                             if (tex_grass)
                             {

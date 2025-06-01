@@ -2391,3 +2391,80 @@ int SE_ReadCSVFile(const char* filename, std::vector<std::vector<std::string>>& 
 
     return 0;
 }
+
+const std::string SE_Color::color_strings_[static_cast<size_t>(SE_Color::Color::COUNT)] = {"undefined",    // UNDEFINED
+                                                                                           "black",        // BLACK
+                                                                                           "blue",         // BLUE
+                                                                                           "green",        // GREEN
+                                                                                           "orange",       // ORANGE
+                                                                                           "red",          // RED
+                                                                                           "violet",       // VIOLET
+                                                                                           "white",        // WHITE
+                                                                                           "yellow",       // YELLOW
+                                                                                           "dark_gray",    // DARK_GRAY
+                                                                                           "gray",         // GRAY
+                                                                                           "light_gray"};  // LIGHT_GRAY
+
+const std::map<std::string, SE_Color::Color> SE_Color::str2enum_ = {{"undefined", Color::UNDEFINED},
+                                                                    {"black", Color::BLACK},
+                                                                    {"blue", Color::BLUE},
+                                                                    {"green", Color::GREEN},
+                                                                    {"orange", Color::ORANGE},
+                                                                    {"red", Color::RED},
+                                                                    {"violet", Color::VIOLET},
+                                                                    {"white", Color::WHITE},
+                                                                    {"yellow", Color::YELLOW},
+                                                                    {"dark_gray", Color::DARK_GRAY},
+                                                                    {"gray", Color::GRAY},
+                                                                    {"light_gray", Color::LIGHT_GRAY}};
+
+const float SE_Color::rgb_values_[static_cast<size_t>(SE_Color::Color::COUNT)][3] = {
+    {0.0f, 0.0f, 0.0f},    // UNDEFINED
+    {0.2f, 0.2f, 0.2f},    // BLACK
+    {0.25f, 0.38f, 0.7f},  // BLUE
+    {0.2f, 0.6f, 0.3f},    // GREEN
+    {0.5f, 0.5f, 0.1f},    // ORANGE
+    {0.8f, 0.3f, 0.3f},    // RED
+    {0.4f, 0.0f, 0.8f},    // VIOLET
+    {1.0f, 1.0f, 0.9f},    // WHITE
+    {0.85f, 0.8f, 0.2f},   // YELLOW
+    {0.5f, 0.5f, 0.5f},    // DARK_GRAY
+    {0.7f, 0.7f, 0.7f},    // GRAY
+    {0.75f, 0.75f, 0.75f}  // LIGHT_GRAY
+};
+
+SE_Color::Color SE_Color::ColorStr2Idx(std::string color_str)
+{
+    return str2enum_.count(color_str) ? str2enum_.at(color_str) : Color::COUNT;
+}
+
+const std::string& SE_Color::ColorIdx2Str(Color color_idx)
+{
+    if (color_idx == Color::COUNT)
+    {
+        return color_strings_[static_cast<unsigned int>(Color::UNDEFINED)];
+    }
+
+    return color_strings_[static_cast<size_t>(color_idx)];
+}
+
+const float (&SE_Color::ColorStr2RBG(std::string color_str))[3]
+{
+    Color color_enum = ColorStr2Idx(color_str);
+    if (color_enum == Color::COUNT)
+    {
+        LOG_ERROR("Invalid color {} - fallback to undefined", color_str);
+        return rgb_values_[static_cast<unsigned int>(Color::UNDEFINED)];
+    }
+    return rgb_values_[static_cast<size_t>(color_enum)];
+}
+
+const float (&SE_Color::Color2RBG(Color color_enum))[3]
+{
+    if (color_enum == Color::COUNT)
+    {
+        LOG_ERROR("Invalid color enum {} - fallback to undefined", color_enum);
+        return rgb_values_[static_cast<unsigned int>(Color::UNDEFINED)];
+    }
+    return rgb_values_[static_cast<size_t>(color_enum)];
+}

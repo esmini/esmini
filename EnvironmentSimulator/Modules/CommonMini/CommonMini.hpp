@@ -172,6 +172,36 @@ enum class GhostMode
     RESTARTING  // ghost restart is ongoing, including the final restart timestep
 };
 
+class SE_Color
+{
+public:
+    enum class Color
+    {
+        UNDEFINED,
+        BLACK,
+        BLUE,
+        GREEN,
+        ORANGE,
+        RED,
+        VIOLET,
+        WHITE,
+        YELLOW,
+        DARK_GRAY,
+        GRAY,
+        LIGHT_GRAY,
+        COUNT  // Number of colors defined
+    };
+
+    static const float                        rgb_values_[static_cast<size_t>(Color::COUNT)][3];
+    static const std::map<std::string, Color> str2enum_;
+    static const std::string                  color_strings_[static_cast<size_t>(Color::COUNT)];
+
+    static Color              ColorStr2Idx(std::string color_str);
+    static const std::string& ColorIdx2Str(Color color_idx);
+    static const float (&ColorStr2RBG(std::string color_str))[3];
+    static const float (&Color2RBG(Color color_enum))[3];
+};
+
 class SE_Vector
 {
 public:

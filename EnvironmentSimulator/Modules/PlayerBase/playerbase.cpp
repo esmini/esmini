@@ -344,7 +344,10 @@ void ScenarioPlayer::ViewerFrame(bool init)
 
     // remove deleted cars
     osg::Vec4 trail_color;
-    trail_color.set(color_blue[0], color_blue[1], color_blue[2], 1.0);
+    trail_color.set(SE_Color::Color2RBG(SE_Color::Color::BLUE)[0],
+                    SE_Color::Color2RBG(SE_Color::Color::BLUE)[1],
+                    SE_Color::Color2RBG(SE_Color::Color::BLUE)[2],
+                    1.0);
     for (size_t i = 0; i < viewer_->entities_.size() && i < scenarioEngine->entities_.object_.size(); i++)
     {
         if (scenarioEngine->entities_.object_[i]->name_ != viewer_->entities_[i]->name_ ||
@@ -917,19 +920,31 @@ int ScenarioPlayer::InitViewer()
         // Create trajectory/trails for all entities
         if (obj->GetId() == 0)
         {
-            trail_color.set(color_white[0], color_white[1], color_white[2], 1.0);
+            trail_color.set(SE_Color::Color2RBG(SE_Color::Color::WHITE)[0],
+                            SE_Color::Color2RBG(SE_Color::Color::WHITE)[1],
+                            SE_Color::Color2RBG(SE_Color::Color::WHITE)[2],
+                            1.0);
         }
         else if (obj->IsGhost())
         {
-            trail_color.set(color_black[0], color_black[1], color_black[2], 1.0);
+            trail_color.set(SE_Color::Color2RBG(SE_Color::Color::BLACK)[0],
+                            SE_Color::Color2RBG(SE_Color::Color::BLACK)[1],
+                            SE_Color::Color2RBG(SE_Color::Color::BLACK)[2],
+                            1.0);
         }
         else if (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL))
         {
-            trail_color.set(color_yellow[0], color_yellow[1], color_yellow[2], 1.0);
+            trail_color.set(SE_Color::Color2RBG(SE_Color::Color::YELLOW)[0],
+                            SE_Color::Color2RBG(SE_Color::Color::YELLOW)[1],
+                            SE_Color::Color2RBG(SE_Color::Color::YELLOW)[2],
+                            1.0);
         }
         else
         {
-            trail_color.set(color_red[0], color_red[1], color_red[2], 1.0);
+            trail_color.set(SE_Color::Color2RBG(SE_Color::Color::RED)[0],
+                            SE_Color::Color2RBG(SE_Color::Color::RED)[1],
+                            SE_Color::Color2RBG(SE_Color::Color::RED)[2],
+                            1.0);
         }
 
         //  Create vehicles for visualization
@@ -1119,7 +1134,7 @@ int ScenarioPlayer::GetNumberOfSensorsAttachedToObject(Object* obj)
 void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
 {
     // Add a sensor to show when query road info ahead
-    model->steering_sensor_ = viewer_->CreateSensor(color_green, true, true, 0.4, 3);
+    model->steering_sensor_ = viewer_->CreateSensor(SE_Color::Color2RBG(SE_Color::Color::GREEN), true, true, 0.4, 3);
     viewer_->SensorSetPivotPos(model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
     viewer_->SensorSetTargetPos(model->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
     if (obj->ghost_)
@@ -1138,7 +1153,7 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
     {
         if (odr_manager->GetNumOfRoads() > 0)
         {
-            model->trail_sensor_ = viewer_->CreateSensor(color_red, true, false, 0.4, 3);
+            model->trail_sensor_ = viewer_->CreateSensor(SE_Color::Color2RBG(SE_Color::Color::RED), true, false, 0.4, 3);
         }
     }
     else if (obj->IsGhost())

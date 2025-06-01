@@ -36,15 +36,6 @@
 #include "Entities.hpp"
 #include "OSCParameterDistribution.hpp"
 
-extern float color_green[3];
-extern float color_gray[3];
-extern float color_dark_gray[3];
-extern float color_red[3];
-extern float color_blue[3];
-extern float color_yellow[3];
-extern float color_white[3];
-extern float color_black[3];
-
 using namespace scenarioengine;
 
 namespace viewer
@@ -72,6 +63,8 @@ namespace viewer
     } NodeMask;
 
     osg::Vec4 ODR2OSGColor(roadmanager::RoadMarkColor color);
+    uint32_t  GenerateColorKeyFromDoubles(double r, double g, double b, double a);
+    uint32_t  GenerateColorKeyFromBytes(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
 
     class PolyLine
     {
@@ -558,7 +551,7 @@ namespace viewer
         void         ToggleNodeMaskBits(int bits);
         int          GetNodeMaskBit(int mask);
         void         SetCameraTrackNode(osg::ref_ptr<osg::Node> xform, bool calcDistance = false);
-        PointSensor* CreateSensor(float color[], bool create_ball, bool create_line, double ball_radius, double line_width);
+        PointSensor* CreateSensor(const float (&color)[3], bool create_ball, bool create_line, double ball_radius, double line_width);
         bool         CreateRoadSensors(MovingModel* moving_model);
         void         SetWindowTitle(std::string title);
         void         SetWindowTitleFromArgs(std::vector<std::string>& arg);

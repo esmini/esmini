@@ -50,16 +50,6 @@
 #define ORTHO_FOV                          1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
-float color_green[3]      = {0.2f, 0.6f, 0.3f};
-float color_gray[3]       = {0.7f, 0.7f, 0.7f};
-float color_dark_gray[3]  = {0.5f, 0.5f, 0.5f};
-float color_light_gray[3] = {0.7f, 0.7f, 0.7f};
-float color_red[3]        = {0.8f, 0.3f, 0.3f};
-float color_black[3]      = {0.2f, 0.2f, 0.2f};
-float color_blue[3]       = {0.25f, 0.38f, 0.7f};
-float color_yellow[3]     = {0.75f, 0.7f, 0.4f};
-float color_white[3]      = {1.0f, 1.0f, 0.9f};
-
 USE_OSGPLUGIN(osg2)
 USE_OSGPLUGIN(jpeg)
 USE_SERIALIZER_WRAPPER_LIBRARY(osg)
@@ -71,30 +61,24 @@ using namespace viewer;
 
 osg::Vec4 viewer::ODR2OSGColor(roadmanager::RoadMarkColor color)
 {
-    osg::Vec4 osgc;
+    const float(&rgb)[3] = SE_Color::Color2RBG(roadmanager::ODRColor2SEColor(color));
+    return osg::Vec4(rgb[0], rgb[1], rgb[2], 1.0f);
+}
 
-    if (color == roadmanager::RoadMarkColor::YELLOW)
-    {
-        osgc.set(0.9f, 0.9f, 0.25f, 1.0f);
-    }
-    else if (color == roadmanager::RoadMarkColor::GREEN)
-    {
-        osgc.set(0.2f, 0.8f, 0.4f, 1.0f);
-    }
-    else if (color == roadmanager::RoadMarkColor::RED)
-    {
-        osgc.set(0.95f, 0.4f, 0.3f, 1.0f);
-    }
-    else if (color == roadmanager::RoadMarkColor::BLUE)
-    {
-        osgc.set(0.2f, 0.5f, 0.9f, 1.0f);
-    }
-    else
-    {
-        osgc.set(0.95f, 0.95f, 0.92f, 1.0f);
-    }
+uint32_t viewer::GenerateColorKeyFromDoubles(double r, double g, double b, double a)
+{
+    uint8_t r8 = static_cast<uint8_t>(std::max(0.0, std::min(255.0, r * 255.0)));
+    uint8_t g8 = static_cast<uint8_t>(std::max(0.0, std::min(255.0, g * 255.0)));
+    uint8_t b8 = static_cast<uint8_t>(std::max(0.0, std::min(255.0, b * 255.0)));
+    uint8_t a8 = static_cast<uint8_t>(std::max(0.0, std::min(255.0, a * 255.0)));
 
-    return osgc;
+    return GenerateColorKeyFromBytes(r8, g8, b8, a8);
+}
+
+uint32_t viewer::GenerateColorKeyFromBytes(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+{
+    // code the color as a 32-bit integer in the format 0xRRGGBBAA
+    return (r << 24) + (g << 16) + (b << 8) + a;
 }
 
 // Derive a class from NodeVisitor to find a node with a  specific name.
@@ -528,7 +512,10 @@ SensorViewFrustum::SensorViewFrustum(Viewer* viewer, ObjectSensor* sensor, osg::
     // Geometry2 -> Drawing solid lines representing the boundary of each volume of FOV
     osg::ref_ptr<osg::Geometry>  geom2     = new osg::Geometry;
     osg::ref_ptr<osg::Vec4Array> FOV_color = new osg::Vec4Array(1);
-    (*FOV_color)[0].set(color_green[0], color_green[1], color_green[2], 1.0);
+    (*FOV_color)[0].set(SE_Color::Color2RBG(SE_Color::Color::GREEN)[0],
+                        SE_Color::Color2RBG(SE_Color::Color::GREEN)[1],
+                        SE_Color::Color2RBG(SE_Color::Color::GREEN)[2],
+                        1.0);
     geom2->setUseDisplayList(true);
     geom2->setUseVertexBufferObjects(true);
     geom2->setVertexArray(vertices.get());
@@ -550,7 +537,10 @@ SensorViewFrustum::SensorViewFrustum(Viewer* viewer, ObjectSensor* sensor, osg::
     // Geometry3 -> Drawing solid lines representing the boundary of blind spot area between sensor mounting position and near FOV plane
     osg::ref_ptr<osg::Geometry>  geom3            = new osg::Geometry;
     osg::ref_ptr<osg::Vec4Array> blind_spot_color = new osg::Vec4Array(1);
-    (*blind_spot_color)[0].set(color_red[0], color_red[1], color_red[2], 1.0);
+    (*blind_spot_color)[0].set(SE_Color::Color2RBG(SE_Color::Color::RED)[0],
+                               SE_Color::Color2RBG(SE_Color::Color::RED)[1],
+                               SE_Color::Color2RBG(SE_Color::Color::RED)[2],
+                               1.0);
     geom3->setUseDisplayList(true);
     geom3->setUseVertexBufferObjects(true);
     geom3->setVertexArray(vertices.get());
@@ -570,7 +560,10 @@ SensorViewFrustum::SensorViewFrustum(Viewer* viewer, ObjectSensor* sensor, osg::
     osg::ref_ptr<osg::Vec4Array> mounting_color   = new osg::Vec4Array(1);
     osg::ref_ptr<osg::Point>     mount_point      = new osg::Point();
     mount_point->setSize(8.0f);
-    (*mounting_color)[0].set(color_red[0], color_red[1], color_red[2], 1.0);
+    (*mounting_color)[0].set(SE_Color::Color2RBG(SE_Color::Color::RED)[0],
+                             SE_Color::Color2RBG(SE_Color::Color::RED)[1],
+                             SE_Color::Color2RBG(SE_Color::Color::RED)[2],
+                             1.0);
     (*mounting_vertice)[0].set(0, 0, 0);
     geom4->setUseDisplayList(true);
     geom4->setUseVertexBufferObjects(true);
@@ -2000,22 +1993,30 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
 
     // Make sure we have a 3D model
     // Set color of vehicle based on its index
-    float* color;
-    float  b     = 1.0;  // brighness
-    int    index = entities_.size() % 4;
+    const float(*color)[3] = nullptr;
+    float b                = 1.0;  // brighness
+    int   index            = entities_.size() % 4;
 
     if (index == 0)
-        color = color_light_gray;
+    {
+        color = &SE_Color::Color2RBG(SE_Color::Color::LIGHT_GRAY);
+    }
     else if (index == 1)
-        color = color_red;
+    {
+        color = &SE_Color::Color2RBG(SE_Color::Color::RED);
+    }
     else if (index == 2)
-        color = color_blue;
+    {
+        color = &SE_Color::Color2RBG(SE_Color::Color::BLUE);
+    }
     else
-        color = color_yellow;
+    {
+        color = &SE_Color::Color2RBG(SE_Color::Color::YELLOW);
+    }
 
     osg::Material* material = new osg::Material();
-    material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0f));
-    material->setAmbient(osg::Material::FRONT, osg::Vec4(b * color[0], b * color[1], b * color[2], 1.0f));
+    material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * (*color)[0], b * (*color)[1], b * (*color)[2], 1.0f));
+    material->setAmbient(osg::Material::FRONT, osg::Vec4(b * (*color)[0], b * (*color)[1], b * (*color)[2], 1.0f));
     osg::ref_ptr<osg::PositionAttitudeTransform> modeltx = new osg::PositionAttitudeTransform;
     if (modelgroup == nullptr)
     {
@@ -2545,11 +2546,17 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
 
             if (i == 0)
             {
-                kp_color->push_back(osg::Vec4(color_yellow[0], color_yellow[1], color_yellow[2], 1.0));
+                kp_color->push_back(osg::Vec4(SE_Color::Color2RBG(SE_Color::Color::YELLOW)[0],
+                                              SE_Color::Color2RBG(SE_Color::Color::YELLOW)[1],
+                                              SE_Color::Color2RBG(SE_Color::Color::YELLOW)[2],
+                                              1.0));
             }
             else
             {
-                kp_color->push_back(osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0));
+                kp_color->push_back(osg::Vec4(SE_Color::Color2RBG(SE_Color::Color::RED)[0],
+                                              SE_Color::Color2RBG(SE_Color::Color::RED)[1],
+                                              SE_Color::Color2RBG(SE_Color::Color::RED)[2],
+                                              1.0));
             }
         }
 
@@ -2631,26 +2638,50 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                             pline = AddPolyLine(viewer,
                                                 odrLines_,
                                                 vertices,
-                                                osg::Vec4(color_yellow[0], color_yellow[1], color_yellow[2], 1.0),
+                                                osg::Vec4(SE_Color::Color2RBG(SE_Color::Color::YELLOW)[0],
+                                                          SE_Color::Color2RBG(SE_Color::Color::YELLOW)[1],
+                                                          SE_Color::Color2RBG(SE_Color::Color::YELLOW)[2],
+                                                          1.0),
                                                 2.0,
                                                 OSI_DOT_SIZE);
                         }
                         else
                         {
                             // center lane
-                            pline =
-                                AddPolyLine(viewer, odrLines_, vertices, osg::Vec4(color_red[0], color_red[1], color_red[2], 1.0), 6.0, OSI_DOT_SIZE);
+                            AddPolyLine(viewer,
+                                        odrLines_,
+                                        vertices,
+                                        osg::Vec4(SE_Color::Color2RBG(SE_Color::Color::RED)[0],
+                                                  SE_Color::Color2RBG(SE_Color::Color::RED)[1],
+                                                  SE_Color::Color2RBG(SE_Color::Color::RED)[2],
+                                                  1.0),
+                                        6.0,
+                                        OSI_DOT_SIZE);
                         }
                     }
                     else if (k == 1)
                     {
-                        pline =
-                            AddPolyLine(viewer, odrLines_, vertices, osg::Vec4(color_blue[0], color_blue[1], color_blue[2], 1.0), 1.5, OSI_DOT_SIZE);
+                        pline = AddPolyLine(viewer,
+                                            odrLines_,
+                                            vertices,
+                                            osg::Vec4(SE_Color::Color2RBG(SE_Color::Color::BLUE)[0],
+                                                      SE_Color::Color2RBG(SE_Color::Color::BLUE)[1],
+                                                      SE_Color::Color2RBG(SE_Color::Color::BLUE)[2],
+                                                      1.0),
+                                            1.5,
+                                            OSI_DOT_SIZE);
                     }
                     else
                     {
-                        pline =
-                            AddPolyLine(viewer, odrLines_, vertices, osg::Vec4(color_gray[0], color_gray[1], color_gray[2], 1.0), 1.5, OSI_DOT_SIZE);
+                        pline = AddPolyLine(viewer,
+                                            odrLines_,
+                                            vertices,
+                                            osg::Vec4(SE_Color::Color2RBG(SE_Color::Color::GRAY)[0],
+                                                      SE_Color::Color2RBG(SE_Color::Color::GRAY)[1],
+                                                      SE_Color::Color2RBG(SE_Color::Color::GRAY)[2],
+                                                      1.0),
+                                            1.5,
+                                            OSI_DOT_SIZE);
                     }
                     if (pline != nullptr)
                     {
@@ -3251,14 +3282,14 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 
 bool Viewer::CreateRoadSensors(MovingModel* moving_model)
 {
-    moving_model->road_sensor_  = CreateSensor(color_gray, true, false, 0.35, 2.5);
-    moving_model->route_sensor_ = CreateSensor(color_blue, true, false, 0.30, 2.5);
-    moving_model->lane_sensor_  = CreateSensor(color_gray, true, true, 0.25, 2.5);
+    moving_model->road_sensor_  = CreateSensor(SE_Color::Color2RBG(SE_Color::Color::GRAY), true, false, 0.35, 2.5);
+    moving_model->route_sensor_ = CreateSensor(SE_Color::Color2RBG(SE_Color::Color::BLUE), true, false, 0.30, 2.5);
+    moving_model->lane_sensor_  = CreateSensor(SE_Color::Color2RBG(SE_Color::Color::GRAY), true, true, 0.25, 2.5);
 
     return true;
 }
 
-PointSensor* Viewer::CreateSensor(float color[], bool create_ball, bool create_line, double ball_radius, double line_width)
+PointSensor* Viewer::CreateSensor(const float (&color)[3], bool create_ball, bool create_line, double ball_radius, double line_width)
 {
     PointSensor* sensor = new PointSensor();
     sensor->group_      = new osg::Group();
