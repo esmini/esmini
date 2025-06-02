@@ -2,7 +2,7 @@
 
 shopt -s extglob
 
-rm -rf esmini-demo 
+rm -rf esmini-demo
 
 mkdir esmini-demo
 
@@ -91,6 +91,8 @@ resources/models/se_c_31-3.osgb \
 resources/models/se_c_31-5.osgb \
 resources/models/de_123.osgb \
 resources/models/se_a_20-1.osgb \
+resources/models/cn_jin-70.osgb \
+resources/models/cn_shi-50.osgb \
 resources/models/pole.osgb \
 resources/models/asphalt.jpg \
 resources/models/grass.jpg \

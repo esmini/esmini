@@ -110,6 +110,8 @@
 			<object type="pole" name="pole" id="3" s="100.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 			<object type="pole" name="pole" id="4" s="200.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 			<object type="pole" name="pole" id="5" s="200.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="5" s="230.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="5" s="260.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 			<object type="pole" name="pole" id="1" s="350.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 			<object type="pole" name="pole" id="6" s="500.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 			<object type="pole" name="pole" id="7" s="500.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
@@ -129,6 +131,8 @@
 			<signal s="200.0" t="3.57" id="6" name="speed_50_4" dynamic="no" orientation="+" zOffset="1.7" type="274" country="de" subtype="" value="50" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
 			<signal s="200.0" t="-3.57" id="7" name="speed_50_5" dynamic="no" orientation="+" zOffset="1.7" type="274" country="de" subtype="" value="50" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
 			<signal s="200.0" t="3.57" id="8" name="speed_30_2" dynamic="no" orientation="-" zOffset="1.7" type="274" country="de" subtype="" value="30" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="230.0" t="3.57" id="20" name="speed_lowest_50" dynamic="no" orientation="-" zOffset="1.7" type="shi" country="cn" subtype="" value="50" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+			<signal s="260.0" t="3.57" id="21" name="speed_highest_70" dynamic="no" orientation="-" zOffset="1.7" type="jin" country="cn" subtype="" value="70" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
 			<signal s="200.0" t="-3.57" id="9" name="speed_30_3" dynamic="no" orientation="-" zOffset="1.7" type="274" country="de" subtype="" value="30" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61">
                 <validity fromLane="-3" toLane="-2" />
                 <validity fromLane="1" toLane="2" />

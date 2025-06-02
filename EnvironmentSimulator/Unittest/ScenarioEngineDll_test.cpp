@@ -3809,7 +3809,7 @@ TEST(RoadSign, TestValidityRecord)
     int n_Objects = SE_GetNumberOfObjects();
     EXPECT_EQ(n_Objects, 2);
 
-    EXPECT_EQ(SE_GetNumberOfRoadSigns(1), 15);
+    EXPECT_EQ(SE_GetNumberOfRoadSigns(1), 17);
     EXPECT_EQ(SE_GetNumberOfRoadSignValidityRecords(1, 0), 2);
 
     SE_RoadObjValidity validityRec;
@@ -3822,17 +3822,17 @@ TEST(RoadSign, TestValidityRecord)
     EXPECT_EQ(validityRec.fromLane, 1);
     EXPECT_EQ(validityRec.toLane, 3);
 
-    EXPECT_EQ(SE_GetNumberOfRoadSignValidityRecords(1, 9), 3);
+    EXPECT_EQ(SE_GetNumberOfRoadSignValidityRecords(1, 11), 3);
 
-    EXPECT_EQ(SE_GetRoadSignValidityRecord(1, 9, 0, &validityRec), 0);
+    EXPECT_EQ(SE_GetRoadSignValidityRecord(1, 11, 0, &validityRec), 0);
     EXPECT_EQ(validityRec.fromLane, -3);
     EXPECT_EQ(validityRec.toLane, -2);
 
-    EXPECT_EQ(SE_GetRoadSignValidityRecord(1, 9, 1, &validityRec), 0);
+    EXPECT_EQ(SE_GetRoadSignValidityRecord(1, 11, 1, &validityRec), 0);
     EXPECT_EQ(validityRec.fromLane, 1);
     EXPECT_EQ(validityRec.toLane, 2);
 
-    EXPECT_EQ(SE_GetRoadSignValidityRecord(1, 9, 2, &validityRec), 0);
+    EXPECT_EQ(SE_GetRoadSignValidityRecord(1, 11, 2, &validityRec), 0);
     EXPECT_EQ(validityRec.fromLane, 3);
     EXPECT_EQ(validityRec.toLane, 3);
 
