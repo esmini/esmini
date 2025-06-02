@@ -12,7 +12,7 @@ runs:
         && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 200
         && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 200
 
-    - uses: actions/setup-python@v5.1.1
+    - uses: actions/setup-python@v5.6.0
       with:
         python-version: '3.8'
         cache: 'pip'
