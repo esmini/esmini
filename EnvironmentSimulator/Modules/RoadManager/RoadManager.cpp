@@ -6379,9 +6379,9 @@ bool OpenDrive::LoadSignalsByCountry(const std::string& country)
         file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], sign_filename));
         file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "traffic_signals/" + sign_filename));
         file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "resources/traffic_signals/" + sign_filename));
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "/../traffic_signals/" + sign_filename));
+        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../traffic_signals/" + sign_filename));
         file_name_candidates.push_back(
-            CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "/../resources/traffic_signals/" + sign_filename));
+            CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../resources/traffic_signals/" + sign_filename));
     }
 
     size_t i;

@@ -1979,7 +1979,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         {
             file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], modelFilepath));
             file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../models/" + modelFilepath));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "/../resources/models/" + modelFilepath));
+            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../resources/models/" + modelFilepath));
             file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(modelFilepath)));
         }
         for (size_t i = 0; i < file_name_candidates.size(); i++)
