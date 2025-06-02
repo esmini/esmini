@@ -966,7 +966,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                 {
                     wheel.p             = static_cast<float>(obj->wheel_rot_);
                     wheel.wheel_radius  = axle->wheelDiameter / 2;
-                    wheel.rotation_rate = obj->speed_ / (axle->wheelDiameter / 2);
+                    wheel.rotation_rate = obj->speed_ / wheel.wheel_radius;
                 }
 
                 // Update wheel frictions
