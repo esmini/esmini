@@ -76,6 +76,10 @@ osg::ref_ptr<osg::Material> RoadGeom::GetOrCreateMaterial(const std::string& bas
         material->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
         material->setEmission(osg::Material::FRONT_AND_BACK, osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
         material->setShininess(osg::Material::FRONT_AND_BACK, 1.0f);
+        if (basename == "Asphalt")
+        {
+            material->setUserValue("friction", friction_default);  // default friction value
+        }
 
         // store material for reuse
         std_materials_[key] = material;
@@ -124,23 +128,6 @@ osg::ref_ptr<osg::Texture2D> RoadGeom::ReadTexture(std::string filename)
     return tex;
 }
 
-void RoadGeom::AddRoadMaterialInList(osg::ref_ptr<osg::Material> material, double friction)
-{
-    if (material)
-    {
-        FrictionDetails fd;
-        fd.material = material;
-        fd.friction = friction;
-
-        material_friction_list_.push_back(fd);
-    }
-}
-
-std::vector<RoadGeom::FrictionDetails> RoadGeom::GetRoadMaterialList()
-{
-    return material_friction_list_;
-}
-
 const osg::Vec4 RoadGeom::GetFrictionColor(const double friction)
 {
     osg::Vec4 new_color = color_asphalt_->at(0);
@@ -158,9 +145,11 @@ const osg::Vec4 RoadGeom::GetFrictionColor(const double friction)
         new_color[1] -= 0.75 * factor;
         new_color[2] -= 0.75 * factor;
     }
+
     new_color[0] = CLAMP(0.0, 1.0, new_color[0]);
     new_color[1] = CLAMP(0.0, 1.0, new_color[1]);
     new_color[2] = CLAMP(0.0, 1.0, new_color[2]);
+
     return new_color;
 }
 
@@ -876,9 +865,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
 
                         if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD))
                         {
-                            osg::ref_ptr<osg::Material> materialAsphalt_ = new osg::Material;
                             osg::Vec4                   new_color        = GetFrictionColor(friction);
-
                             osg::ref_ptr<osg::Material> materialAsphalt_ = GetOrCreateMaterial("Asphalt", new_color);
 
                             if (tex_asphalt)
@@ -886,7 +873,6 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                                 tex = tex_asphalt.get();
                             }
                             geom->getOrCreateStateSet()->setAttributeAndModes(materialAsphalt_.get());
-                            AddRoadMaterialInList(materialAsphalt_, friction);
                         }
                         else if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BIKING) ||
                                  laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK))
