@@ -80,7 +80,7 @@ public:
     /**
     Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
     */
-    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, OSCEnvironment& environment);
+    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);  //, OSCEnvironment& environment);
     /**
     Fills up the osi message with  static GroundTruth
     */
@@ -88,7 +88,7 @@ public:
     /**
     Fills up the osi message with dynamic GroundTruth
     */
-    int UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState, OSCEnvironment& environment);
+    int UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);  //, OSCEnvironment& environment);
     /**
     Fills up the osi message with Stationary Object from the OpenDRIVE description
     */

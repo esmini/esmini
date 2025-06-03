@@ -799,9 +799,9 @@ uint32_t GetSecondsSinceMidnight(const std::string& dateTimeString)
 
     uint32_t seconds = static_cast<uint32_t>(timeStruct.tm_hour * 3600 + timeStruct.tm_min * 60 + timeStruct.tm_sec);
 
-    double milliseconds = 0.0;
     if (ss.peek() == '.')
     {
+        double milliseconds = 0.0;
         ss.ignore() >> milliseconds;
     }
     int  tz_hour = 0, tz_min = 0;
@@ -844,8 +844,7 @@ namespace
 
 int64_t GetEpochTimeFromString(const std::string& datetime)
 {
-    std::tm tm           = {};
-    double  milliseconds = 0.0;
+    std::tm tm      = {};
     int     tz_hour = 0, tz_min = 0;
     char    sign      = '+';
     char    delimiter = ':';
@@ -855,6 +854,7 @@ int64_t GetEpochTimeFromString(const std::string& datetime)
 
     if (ss.peek() == '.')
     {
+        double milliseconds = 0.0;
         ss.ignore() >> milliseconds;
     }
 

@@ -148,7 +148,7 @@ namespace scenarioengine
     */
     typedef struct
     {
-        double                       frictionscalefactor;
+        double                       friction_scale_factor;
         std::optional<WetnessType>   wetness;
         std::optional<OSCProperties> properties;
     } RoadCondition;
