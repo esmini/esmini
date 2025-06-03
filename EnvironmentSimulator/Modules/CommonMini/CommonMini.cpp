@@ -799,9 +799,9 @@ uint32_t GetSecondsSinceMidnight(const std::string& dateTimeString)
 
     uint32_t seconds = static_cast<uint32_t>(timeStruct.tm_hour * 3600 + timeStruct.tm_min * 60 + timeStruct.tm_sec);
 
-    double milliseconds = 0.0;
     if (ss.peek() == '.')
     {
+        double milliseconds = 0.0;
         ss.ignore() >> milliseconds;
     }
     int  tz_hour = 0, tz_min = 0;
@@ -816,36 +816,32 @@ uint32_t GetSecondsSinceMidnight(const std::string& dateTimeString)
     return seconds;
 }
 
-namespace
+time_t portable_timegm(struct tm* tm)
 {
-    time_t portable_timegm(struct tm* tm)
-    {
 #ifdef _WIN32
-        // Windows implementation using _mkgmtime
-        return _mkgmtime(tm);
+    // Windows implementation using _mkgmtime
+    return _mkgmtime(tm);
 #else
-        // Unix implementation
-        time_t ret;
-        char*  tz;
+    // Unix implementation
+    time_t ret;
+    char*  tz;
 
-        tz = getenv("TZ");
-        setenv("TZ", "", 1);
-        tzset();
-        ret = mktime(tm);
-        if (tz)
-            setenv("TZ", tz, 1);
-        else
-            unsetenv("TZ");
-        tzset();
-        return ret;
+    tz = getenv("TZ");
+    setenv("TZ", "", 1);
+    tzset();
+    ret = mktime(tm);
+    if (tz)
+        setenv("TZ", tz, 1);
+    else
+        unsetenv("TZ");
+    tzset();
+    return ret;
 #endif
-    }
-}  // namespace
+}
 
 int64_t GetEpochTimeFromString(const std::string& datetime)
 {
-    std::tm tm           = {};
-    double  milliseconds = 0.0;
+    std::tm tm      = {};
     int     tz_hour = 0, tz_min = 0;
     char    sign      = '+';
     char    delimiter = ':';
@@ -855,6 +851,7 @@ int64_t GetEpochTimeFromString(const std::string& datetime)
 
     if (ss.peek() == '.')
     {
+        double milliseconds = 0.0;
         ss.ignore() >> milliseconds;
     }
 
@@ -945,14 +942,9 @@ void SE_sleep(unsigned int msec)
 
 #else
 
-#include <chrono>
-#include "CommonMini.hpp"
-
-using namespace std::chrono;
-
 __int64 SE_getSystemTime()
 {
-    return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 void SE_sleep(unsigned int msec)

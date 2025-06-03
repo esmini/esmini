@@ -2339,7 +2339,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
             {
                 if (envChild.name() == std::string("Environment"))
                 {
-                    ParseOSCEnvironment(envChild, envAction->new_environment_);
+                    parseOSCEnvironment(envChild, envAction->new_environment_);
                 }
                 else if (envChild.name() == std::string("CatalogReference"))
                 {
@@ -2349,7 +2349,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                         LOG_WARN("Ignoring CatalogReference in environment, Failed to resolve catalog reference");
                         continue;
                     }
-                    ParseOSCEnvironment(entry->GetNode(), envAction->new_environment_);
+                    parseOSCEnvironment(entry->GetNode(), envAction->new_environment_);
                 }
                 else
                 {
@@ -4900,7 +4900,7 @@ static void SelectCloudState(scenarioengine::CloudState &state, const std::strin
     }
 }
 
-void ScenarioReader::ParseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvironment &env)
+void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvironment &env)
 {
     for (pugi::xml_node envChild : xml_node.children())
     {

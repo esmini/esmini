@@ -12,7 +12,6 @@
 
 #include "CommonMini.hpp"
 #include "OSIReporter.hpp"
-#include "OSCEnvironment.hpp"
 #include "OSITrafficCommand.hpp"
 #include "OSCEnvironment.hpp"
 #include <cmath>
@@ -280,7 +279,7 @@ void OSIReporter::SetOSIStaticReportMode(OSIStaticReportMode mode)
     static_update_mode_ = mode;
 }
 
-int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, OSCEnvironment &environment)
+int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)  //, OSCEnvironment &environment)
 {
     if (osi_initialized_ && (GetUpdated() || (GetCounter() - counter_offset_) % osi_freq_ != 0))
     {
@@ -291,7 +290,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
     if (!osi_initialized_)
     {
         UpdateOSIStaticGroundTruth(objectState);
-        UpdateOSIDynamicGroundTruth(objectState, environment);
+        UpdateOSIDynamicGroundTruth(objectState);  //, environment);
 
         if (IsFileOpen() || GetUDPClientStatus() == 0)
         {
@@ -307,7 +306,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
     else
     {
         // We always want to update the dynamic ground truth
-        UpdateOSIDynamicGroundTruth(objectState, environment);
+        UpdateOSIDynamicGroundTruth(objectState);  //, environment);
         obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
 
         switch (static_update_mode_)
@@ -507,7 +506,7 @@ void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &
     }
 }
 
-int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState, OSCEnvironment &environment)
+int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)  //, OSCEnvironment &environment)
 {
     obj_osi_internal.dynamic_gt->clear_moving_object();
     obj_osi_internal.dynamic_gt->clear_timestamp();
@@ -599,7 +598,8 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
             }
         }
     }
-    UpdateEnvironment(environment);
+    UpdateEnvironment(scenario_engine_->environment);
+    // UpdateEnvironment(environment);
     return 0;
 }
 
@@ -3362,39 +3362,39 @@ void OSIReporter::UpdateEnvironmentFog(const double visibility_range)
     }
 }
 
-void OSIReporter::UpdateEnvironmentPrecipitation(const double precipitationintensity)
+void OSIReporter::UpdateEnvironmentPrecipitation(const double precipitation_intensity)
 {
-    if (precipitationintensity > 149)
+    if (precipitation_intensity > 149)
     {
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
             osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_EXTREME);
     }
-    else if (precipitationintensity > 34)
+    else if (precipitation_intensity > 34)
     {
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
             osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_VERY_HEAVY);
     }
-    else if (precipitationintensity > 8.1)
+    else if (precipitation_intensity > 8.1)
     {
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
             osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_HEAVY);
     }
-    else if (precipitationintensity > 1.9)
+    else if (precipitation_intensity > 1.9)
     {
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
             osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_MODERATE);
     }
-    else if (precipitationintensity > 0.5)
+    else if (precipitation_intensity > 0.5)
     {
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
             osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_LIGHT);
     }
-    else if (precipitationintensity > 0.1)
+    else if (precipitation_intensity > 0.1)
     {
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
             osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_VERY_LIGHT);
     }
-    else if (precipitationintensity > 0)
+    else if (precipitation_intensity > 0)
     {
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
             osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_NONE);

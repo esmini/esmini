@@ -322,7 +322,7 @@ void ScenarioPlayer::ScenarioPostFrame()
         {
             osiReporter->ReportSensors(sensor);
 
-            osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_, scenarioEngine->environment);
+            osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);  //, scenarioEngine->environment);
 
             osiReporter->UpdateOSITrafficCommand();
         }

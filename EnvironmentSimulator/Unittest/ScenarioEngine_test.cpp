@@ -5496,8 +5496,8 @@ TEST(EnvironmentTest, Basic)
 
     new_environment.SetRoadCondition(1);
     environment.UpdateEnvironment(new_environment);
-    EXPECT_EQ(new_environment.GetRoadCondition().frictionscalefactor, 1);
-    EXPECT_EQ(new_environment.GetRoadCondition().frictionscalefactor, environment.GetRoadCondition().frictionscalefactor);
+    EXPECT_EQ(new_environment.GetRoadCondition().friction_scale_factor, 1);
+    EXPECT_EQ(new_environment.GetRoadCondition().friction_scale_factor, environment.GetRoadCondition().friction_scale_factor);
     EXPECT_TRUE(new_environment.IsRoadConditionSet());
     EXPECT_TRUE(environment.IsRoadConditionSet());
 }
@@ -5595,7 +5595,7 @@ TEST(EnvironmentTest, Parsing)
     EXPECT_NEAR(oscEnv.GetWind().direction, windNode.attribute("direction").as_double(), 1e-5);
     EXPECT_NEAR(oscEnv.GetWind().speed, windNode.attribute("speed").as_double(), 1e-5);
 
-    EXPECT_NEAR(oscEnv.GetRoadCondition().frictionscalefactor, roadCondNode.attribute("frictionScaleFactor").as_double(), 1e-5);
+    EXPECT_NEAR(oscEnv.GetRoadCondition().friction_scale_factor, roadCondNode.attribute("frictionScaleFactor").as_double(), 1e-5);
 
     delete globalAct;
 }

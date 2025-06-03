@@ -3500,7 +3500,6 @@ TEST(EnvironmentTest, OSIForEnvironment)
     EXPECT_EQ(osi_gt.mutable_environmental_conditions()->mutable_wind()->speed(), 10);
     EXPECT_EQ(osi_gt.mutable_environmental_conditions()->mutable_time_of_day()->seconds_since_midnight(), 37800);
     EXPECT_EQ(osi_gt.mutable_environmental_conditions()->unix_timestamp(), 1700044200);
-
     while (SE_GetQuitFlag() != 1)
     {
         SE_StepDT(0.1f);
