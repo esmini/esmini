@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2025-06- Version 2.47.1
+
+Improvements and fixes:
+- Roadmarks, improved performance ~x%
+- Added two chinese speed roadsigns, update model pack as...
+
 ### 2025-05-28 Version 2.47.0
 
 New features:

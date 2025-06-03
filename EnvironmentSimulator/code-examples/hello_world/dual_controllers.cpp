@@ -2,9 +2,22 @@
 #include "esminiLib.hpp"
 #include <iostream>
 
-int main()
+int main(int argc, char** argv)
 {
-    if (SE_Init("../EnvironmentSimulator/code-examples/hello_world/acc_with_external_controller.xosc", 0, 1, 0, 0) != 0)
+    int retval = 0;
+
+    if (argc > 1)
+    {
+        // use specific scenario file, but allow for custom command line arguments
+        SE_SetOptionValue("osc", "../EnvironmentSimulator/code-examples/hello_world/acc_with_external_controller.xosc");
+        retval = SE_InitWithArgs(argc, const_cast<const char**>(argv));
+    }
+    else
+    {
+        retval = SE_Init("../EnvironmentSimulator/code-examples/hello_world/acc_with_external_controller.xosc", 0, 1, 0, 0);
+    }
+
+    if (retval != 0)
     {
         printf("Failed to initialize the scenario\n");
         return -1;

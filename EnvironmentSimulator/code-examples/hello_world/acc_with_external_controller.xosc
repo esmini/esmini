@@ -16,7 +16,7 @@
     <Entities>
         <ScenarioObject name="Ego">
             <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
-            <ObjectController name="interactive_ctrl">
+            <ObjectController name="external_ctrl">
                 <CatalogReference catalogName="ControllerCatalog" entryName="externalController"/>
             </ObjectController>
             <ObjectController name="acc_ctrl">
@@ -50,7 +50,7 @@
                     </PrivateAction>
                     <PrivateAction>
                         <ControllerAction>
-                            <ActivateControllerAction objectControllerRef="interactive_ctrl" longitudinal="false" lateral="true"/>
+                            <ActivateControllerAction objectControllerRef="external_ctrl" longitudinal="false" lateral="true"/>
                         </ControllerAction>
                     </PrivateAction>
                     <PrivateAction>
