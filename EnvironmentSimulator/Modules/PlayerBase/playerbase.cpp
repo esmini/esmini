@@ -949,7 +949,7 @@ int ScenarioPlayer::InitViewer()
 
         //  Create vehicles for visualization
         bool road_sensor = false;
-        if (obj->GetGhost() || obj->IsControllerActiveOnAnyOfDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG)))
+        if (obj->GetGhost() || obj->IsControllerActiveOnAnyOfDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT_AND_LONG)))
         {
             road_sensor = true;
         }

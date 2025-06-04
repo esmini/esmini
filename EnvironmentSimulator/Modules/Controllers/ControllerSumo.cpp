@@ -239,22 +239,19 @@ void ControllerSumo::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-int ControllerSumo::Activate(ControlActivationMode lat_activation_mode,
-                             ControlActivationMode long_activation_mode,
-                             ControlActivationMode light_activation_mode,
-                             ControlActivationMode anim_activation_mode)
+int ControllerSumo::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
     // Reset time
     time_ = 0;
 
     // SUMO controller forced into both domains
-    if (lat_activation_mode != ControlActivationMode::ON || long_activation_mode != ControlActivationMode::ON)
+    if (mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)] != ControlActivationMode::ON ||
+        mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)] != ControlActivationMode::ON)
     {
         LOG_INFO("SUMO controller forced into operation of both domains (lat/long)");
-        lat_activation_mode = long_activation_mode = ControlActivationMode::ON;
     }
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return Controller::Activate({ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF});
 }
 
 void ControllerSumo::SetSumoVehicle(Object* object)

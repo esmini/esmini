@@ -224,7 +224,7 @@ void Event::Start(double simTime)
                             // Domains overlap, at least one domain in common. Terminate old action.
                             LOG_WARN("Stopping {} on conflicting {} domain(s)",
                                      obj->initActions_[j]->GetName(),
-                                     ControlDomain2Str(obj->initActions_[j]->GetDomains()));
+                                     ControlDomainMask2Str(obj->initActions_[j]->GetDomains()));
                             obj->initActions_[j]->End();
                         }
                     }
@@ -248,7 +248,7 @@ void Event::Start(double simTime)
                                     LOG_WARN("Stopping object {} {} on conflicting {} domain(s)",
                                              obj->GetName(),
                                              pa2->GetName(),
-                                             ControlDomain2Str(pa2->GetDomains()));
+                                             ControlDomainMask2Str(pa2->GetDomains()));
                                     pa2->End();
                                 }
                             }

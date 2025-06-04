@@ -40,7 +40,7 @@ ControllerACC::ControllerACC(InitArgs* args)
       setSpeedSet_(false),
       virtual_(false)
 {
-    operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
+    operating_domains_ = static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG);
 
     if (args && args->properties && args->properties->ValueExists("timeGap"))
     {
@@ -235,10 +235,7 @@ void ControllerACC::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-int ControllerACC::Activate(ControlActivationMode lat_activation_mode,
-                            ControlActivationMode long_activation_mode,
-                            ControlActivationMode light_activation_mode,
-                            ControlActivationMode anim_activation_mode)
+int ControllerACC::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
     currentSpeed_ = object_->GetSpeed();
     if (mode_ == ControlOperationMode::MODE_ADDITIVE || setSpeedSet_ == false)
@@ -246,9 +243,9 @@ int ControllerACC::Activate(ControlActivationMode lat_activation_mode,
         setSpeed_ = object_->GetSpeed();
     }
 
-    Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    Controller::Activate(mode);
 
-    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
+    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
     {
         // Make sure heading is aligned with road driving direction
         object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);

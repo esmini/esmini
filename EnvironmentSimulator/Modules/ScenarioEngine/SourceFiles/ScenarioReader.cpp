@@ -1584,10 +1584,8 @@ int ScenarioReader::parseEntities()
                             obj->id_ = -1;
 
                             // SUMO controller is special in the sense that it is always active
-                            ctrl->Activate(ControlActivationMode::ON,
-                                           ControlActivationMode::ON,
-                                           ControlActivationMode::ON,
-                                           ControlActivationMode::ON);
+                            ctrl->Activate(
+                                {ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF});
 
                             // SUMO controller is not assigned to any scenario vehicle
                         }
@@ -3164,11 +3162,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     // otherwise only lateral
                     if (action_follow_trajectory->timing_domain_ == FollowTrajectoryAction::TimingDomain::NONE)
                     {
-                        action_follow_trajectory->domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LAT);
+                        action_follow_trajectory->domains_ = static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT);
                     }
                     else
                     {
-                        action_follow_trajectory->domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG);
+                        action_follow_trajectory->domains_ = static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT_AND_LONG);
                     }
 
                     action = action_follow_trajectory;

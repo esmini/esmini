@@ -25,8 +25,8 @@ Controller* scenarioengine::InstantiateController(void* args)
 }
 
 Controller::Controller(InitArgs* args)  // init operatingdomains
-    : operating_domains_(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG)),
-      active_domains_(static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
+    : operating_domains_(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT_AND_LONG)),
+      active_domains_(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE)),
       mode_(ControlOperationMode::MODE_OVERRIDE),
       object_(0),
       entities_(0),
@@ -76,12 +76,12 @@ void Controller::Step(double timeStep)
     {
         if (mode_ == ControlOperationMode::MODE_OVERRIDE)
         {
-            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
+            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
             {
                 object_->SetDirtyBits(Object::DirtyBit::LATERAL);
             }
 
-            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
+            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
             {
                 object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
             }
@@ -103,51 +103,41 @@ void Controller::UnlinkObject()
     object_ = nullptr;
 }
 
-int Controller::Activate(ControlActivationMode lat_mode,
-                         ControlActivationMode long_mode,
-                         ControlActivationMode light_mode,
-                         ControlActivationMode anim_mode)
+int Controller::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
-    if (lat_mode == ControlActivationMode::OFF && align_to_road_heading_on_deactivation_)
+    if (mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)] == ControlActivationMode::OFF && align_to_road_heading_on_deactivation_)
     {
         // Make sure heading is aligned with driving direction when controller is deactivated on the lateral domain
-        if (IsActiveOnDomains(static_cast<int>(ControlDomains::DOMAIN_LAT)))
+        if (IsActiveOnDomains(static_cast<int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
         {
             AlignToRoadHeading();
         }
     }
 
-    if (lat_mode == ControlActivationMode::ON && align_to_road_heading_on_activation_)
+    if (mode[static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)] == ControlActivationMode::ON && align_to_road_heading_on_activation_)
     {
         // Make sure heading is aligned with driving direction when controller is activated on the lateral domain
         AlignToRoadHeading();
     }
 
-    unsigned int control_domains[4] = {static_cast<unsigned int>(ControlDomains::DOMAIN_LAT),
-                                       static_cast<unsigned int>(ControlDomains::DOMAIN_LONG),
-                                       static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT),
-                                       static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM)};
-
-    const ControlActivationMode modes[4] = {lat_mode, long_mode, light_mode, anim_mode};
-
-    for (unsigned int i = 0; i < 4; i++)
+    for (unsigned int i = 0; i < static_cast<unsigned int>(ControlDomains::COUNT); i++)
     {
-        if (modes[i] == ControlActivationMode::OFF)
+        if (mode[i] == ControlActivationMode::OFF)
         {
-            active_domains_ &= ~control_domains[i];
+            active_domains_ &= ~(static_cast<unsigned int>(ControlDomain2DomainMask(static_cast<ControlDomains>(i))));
         }
-        else if (modes[i] == ControlActivationMode::ON)
+        else if (mode[i] == ControlActivationMode::ON)
         {
-            if ((operating_domains_ & control_domains[i]) == 0)
+            if ((operating_domains_ & static_cast<unsigned int>(ControlDomain2DomainMask(static_cast<ControlDomains>(i)))) == 0)
             {
                 LOG_WARN("Warning: Controller {} operating domains: {}. Skipping activation on domain {}",
                          GetName(),
-                         ControlDomain2Str(operating_domains_),
-                         ControlDomain2Str(control_domains[i]));
+                         ControlDomainMask2Str(operating_domains_),
+                         ControlDomain2Str(static_cast<ControlDomains>(i)));
             }
             else
             {
-                active_domains_ |= control_domains[i];
+                active_domains_ |= static_cast<unsigned int>(ControlDomain2DomainMask(static_cast<ControlDomains>(i)));
             }
         }
     }
@@ -157,8 +147,8 @@ int Controller::Activate(ControlActivationMode lat_mode,
 void scenarioengine::Controller::DeactivateDomains(unsigned int domains)
 {
     // Make sure heading is aligned with driving direction when controller is deactivated on the lateral domain
-    if (align_to_road_heading_on_deactivation_ && IsActiveOnDomains(static_cast<int>(ControlDomains::DOMAIN_LAT)) &&
-        (domains & static_cast<int>(ControlDomains::DOMAIN_LAT)))
+    if (align_to_road_heading_on_deactivation_ && IsActiveOnDomains(static_cast<int>(ControlDomainMasks::DOMAIN_MASK_LAT)) &&
+        (domains & static_cast<int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
     {
         AlignToRoadHeading();
     }
@@ -214,7 +204,7 @@ bool Controller::IsActiveOnAnyOfDomains(unsigned int domainMask) const
 
 bool Controller::IsActive() const
 {
-    return GetActiveDomains() != static_cast<unsigned int>(ControlDomains::DOMAIN_NONE);
+    return GetActiveDomains() != static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE);
 }
 
 void scenarioengine::Controller::AlignToRoadHeading()

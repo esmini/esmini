@@ -262,14 +262,16 @@ namespace scenarioengine
         bool                    target_speed_reached_;
 
         LongSpeedAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED, parent, static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)),
               target_(0),
               target_speed_reached_(false)
         {
         }
 
         LongSpeedAction(const LongSpeedAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED,
+                               action.parent_,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG))
         {
             SetName(action.GetName());
             target_               = action.target_;
@@ -351,7 +353,9 @@ namespace scenarioengine
         int                       cur_index_;
 
         LongSpeedProfileAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED_PROFILE, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED_PROFILE,
+                               parent,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)),
               following_mode_(FollowingMode::POSITION),
               entity_ref_(nullptr),
               cur_index_(0),
@@ -361,7 +365,9 @@ namespace scenarioengine
         }
 
         LongSpeedProfileAction(FollowingMode follow_mode, StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED_PROFILE, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED_PROFILE,
+                               parent,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)),
               following_mode_(follow_mode),
               entity_ref_(nullptr),
               cur_index_(0),
@@ -373,7 +379,7 @@ namespace scenarioengine
         LongSpeedProfileAction(const LongSpeedProfileAction& action)
             : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_SPEED_PROFILE,
                                action.parent_,
-                               static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG))
         {
             SetName(action.GetName());
             following_mode_ = action.following_mode_;
@@ -463,7 +469,7 @@ namespace scenarioengine
         roadmanager::CoordinateSystem cs_;
 
         LongDistanceAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE, parent, static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)),
               target_object_(0),
               distance_(0),
               dist_type_(DistType::DISTANCE),
@@ -476,7 +482,9 @@ namespace scenarioengine
         }
 
         LongDistanceAction(const LongDistanceAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LONG_DISTANCE,
+                               action.parent_,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG))
         {
             SetName(action.GetName());
             target_object_ = action.target_object_;
@@ -571,7 +579,7 @@ namespace scenarioengine
         double             target_lane_offset_;
 
         LatLaneChangeAction(StoryBoardElement* parent, LatLaneChangeAction::DynamicsDimension timing_type = DynamicsDimension::TIME)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, parent, static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)),
               target_(0),
               target_lane_offset_(0.0),
               start_offset_(0.0),
@@ -581,7 +589,9 @@ namespace scenarioengine
         }
 
         LatLaneChangeAction(const LatLaneChangeAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_CHANGE,
+                               action.parent_,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)),
               transition_(action.transition_),
               target_lane_offset_(action.target_lane_offset_),
               start_offset_(action.start_offset_),
@@ -677,14 +687,16 @@ namespace scenarioengine
         double                  max_lateral_acc_;
 
         LatLaneOffsetAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT))
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET, parent, static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT))
         {
             max_lateral_acc_ = 0;
             target_          = 0;
         }
 
         LatLaneOffsetAction(const LatLaneOffsetAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT))
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_LANE_OFFSET,
+                               action.parent_,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT))
         {
             SetName(action.GetName());
             target_          = action.target_;
@@ -761,7 +773,9 @@ namespace scenarioengine
         double lastMasterDist_;
 
         SynchronizeAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))
+            : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION,
+                               parent,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG))
         {
             master_object_     = 0;
             final_speed_       = 0;
@@ -777,7 +791,7 @@ namespace scenarioengine
         SynchronizeAction(const SynchronizeAction& action)
             : OSCPrivateAction(OSCPrivateAction::ActionType::SYNCHRONIZE_ACTION,
                                action.parent_,
-                               static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG))
         {
             SetName(action.GetName());
             master_object_          = action.master_object_;
@@ -849,13 +863,17 @@ namespace scenarioengine
         roadmanager::Position position_;
 
         TeleportAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT,
+                               parent,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT_AND_LONG)),
               ghost_restart_(false)
         {
         }
 
         TeleportAction(const TeleportAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG))
+            : OSCPrivateAction(OSCPrivateAction::ActionType::TELEPORT,
+                               action.parent_,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT_AND_LONG))
         {
             SetName(action.GetName());
             position_      = action.position_;
@@ -904,14 +922,16 @@ namespace scenarioengine
     {
     public:
         ConnectTrailerAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::CONNECT_TRAILER_ACTION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE))
+            : OSCPrivateAction(OSCPrivateAction::ActionType::CONNECT_TRAILER_ACTION,
+                               parent,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE))
         {
         }
 
         ConnectTrailerAction(const ConnectTrailerAction& action)
             : OSCPrivateAction(OSCPrivateAction::ActionType::CONNECT_TRAILER_ACTION,
                                action.parent_,
-                               static_cast<unsigned int>(ControlDomains::DOMAIN_NONE))
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE))
         {
             SetName(action.GetName());
             trailer_object_ = action.trailer_object_;
@@ -942,14 +962,14 @@ namespace scenarioengine
         DisconnectTrailerAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::DISCONNECT_TRAILER_ACTION,
                                parent,
-                               static_cast<unsigned int>(ControlDomains::DOMAIN_NONE))
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE))
         {
         }
 
         DisconnectTrailerAction(const DisconnectTrailerAction& action)
             : OSCPrivateAction(OSCPrivateAction::ActionType::DISCONNECT_TRAILER_ACTION,
                                action.parent_,
-                               static_cast<unsigned int>(ControlDomains::DOMAIN_NONE))
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE))
         {
             SetName(action.GetName());
         }
@@ -979,13 +999,15 @@ namespace scenarioengine
         ~AssignRouteAction();
 
         AssignRouteAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, parent, static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE)),
               route_(0)
         {
         }
 
         AssignRouteAction(const AssignRouteAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_ROUTE,
+                               action.parent_,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE)),
               route_(0)
         {
             SetName(action.GetName());
@@ -1042,7 +1064,7 @@ namespace scenarioengine
         FollowTrajectoryAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY,
                                parent,
-                               static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG)),
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT_AND_LONG)),
               traj_(0),
               timing_domain_(TimingDomain::NONE),
               following_mode_(FollowingMode::FOLLOW),
@@ -1060,7 +1082,7 @@ namespace scenarioengine
         FollowTrajectoryAction(const FollowTrajectoryAction& action)
             : OSCPrivateAction(OSCPrivateAction::ActionType::FOLLOW_TRAJECTORY,
                                action.parent_,
-                               static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG))
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT_AND_LONG))
         {
             SetName(action.GetName());
             traj_                      = action.traj_->Copy();
@@ -1111,7 +1133,9 @@ namespace scenarioengine
         ~AcquirePositionAction();
 
         AcquirePositionAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::ACQUIRE_POSITION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ACQUIRE_POSITION,
+                               parent,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)),
               route_(0)
         {
         }
@@ -1119,7 +1143,7 @@ namespace scenarioengine
         AcquirePositionAction(const AcquirePositionAction& action)
             : OSCPrivateAction(OSCPrivateAction::ActionType::ACQUIRE_POSITION,
                                action.parent_,
-                               static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)),
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)),
               route_(0)
         {
             SetName(action.GetName());
@@ -1159,7 +1183,9 @@ namespace scenarioengine
                                ControlActivationMode light_activation_mode,
                                ControlActivationMode anim_activation_mode,
                                StoryBoardElement*    parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER,
+                               parent,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE)),
               controller_(controller),
               lat_activation_mode_(lat_activation_mode),
               long_activation_mode_(long_activation_mode),
@@ -1171,7 +1197,7 @@ namespace scenarioengine
         AssignControllerAction(const AssignControllerAction& action)
             : OSCPrivateAction(OSCPrivateAction::ActionType::ASSIGN_CONTROLLER,
                                action.parent_,
-                               static_cast<unsigned int>(ControlDomains::DOMAIN_NONE))
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE))
         {
             SetName(action.GetName());
             controller_            = action.controller_;
@@ -1204,10 +1230,10 @@ namespace scenarioengine
     public:
         std::string           ctrl_name_;
         Controller*           controller_;
-        ControlActivationMode lat_activation_mode_   = ControlActivationMode::OFF;
-        ControlActivationMode long_activation_mode_  = ControlActivationMode::OFF;
-        ControlActivationMode light_activation_mode_ = ControlActivationMode::OFF;
-        ControlActivationMode anim_activation_mode_  = ControlActivationMode::OFF;
+        ControlActivationMode activation_mode_[static_cast<unsigned int>(ControlDomains::COUNT)] = {ControlActivationMode::OFF,
+                                                                                                    ControlActivationMode::OFF,
+                                                                                                    ControlActivationMode::OFF,
+                                                                                                    ControlActivationMode::OFF};
 
         /**
         Constructor with domain specification
@@ -1218,29 +1244,20 @@ namespace scenarioengine
                                  ControlActivationMode long_activation_mode,
                                  ControlActivationMode light_activation_mode,
                                  ControlActivationMode anim_activation_mode,
-                                 StoryBoardElement*    parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
-              ctrl_name_(ctrl_name),
-              controller_(nullptr),
-              lat_activation_mode_(lat_activation_mode),
-              long_activation_mode_(long_activation_mode),
-              light_activation_mode_(light_activation_mode),
-              anim_activation_mode_(anim_activation_mode)
-        {
-        }
+                                 StoryBoardElement*    parent);
 
         ActivateControllerAction(const ActivateControllerAction& action)
             : OSCPrivateAction(OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER,
                                action.parent_,
-                               static_cast<unsigned int>(ControlDomains::DOMAIN_NONE))
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE))
         {
             SetName(action.GetName());
-            ctrl_name_             = action.ctrl_name_;
-            controller_            = action.controller_;
-            lat_activation_mode_   = action.lat_activation_mode_;
-            long_activation_mode_  = action.long_activation_mode_;
-            light_activation_mode_ = action.light_activation_mode_;
-            anim_activation_mode_  = action.anim_activation_mode_;
+            ctrl_name_  = action.ctrl_name_;
+            controller_ = action.controller_;
+            for (unsigned int i = 0; i < static_cast<unsigned int>(ControlDomains::COUNT); ++i)
+            {
+                activation_mode_[i] = action.activation_mode_[i];
+            }
         }
 
         OSCPrivateAction* Copy()
@@ -1271,7 +1288,7 @@ namespace scenarioengine
         bool sensors_;
 
         VisibilityAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, parent, static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE)),
               graphics_(true),
               traffic_(true),
               sensors_(true)
@@ -1279,7 +1296,9 @@ namespace scenarioengine
         }
 
         VisibilityAction(const VisibilityAction& action)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY, action.parent_, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::VISIBILITY,
+                               action.parent_,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE)),
               graphics_(true),
               traffic_(true),
               sensors_(true)
@@ -1312,7 +1331,9 @@ namespace scenarioengine
 
         // assume both domains
         OverrideControlAction(double value, bool active, Object::OverrideType type, StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_NONE)),
+            : OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER,
+                               parent,
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE)),
               overrideType_(type)
         {
             (void)value;
@@ -1326,7 +1347,7 @@ namespace scenarioengine
         OverrideControlAction(const OverrideControlAction& action)
             : OSCPrivateAction(OSCPrivateAction::ActionType::OVERRIDE_CONTROLLER,
                                action.parent_,
-                               static_cast<unsigned int>(ControlDomains::DOMAIN_NONE))
+                               static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE))
         {
             SetName(action.GetName());
             overrideType_      = action.overrideType_;

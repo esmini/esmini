@@ -76,7 +76,7 @@ void ControllerSloppyDriver::Step(double timeStep)
     currentSpeed_ = object_->GetSpeed();
 
     // Do modification to a local position object and then report to gateway
-    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
+    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
     {
         if (speedTimer_.Expired(time_))
         {
@@ -120,7 +120,7 @@ void ControllerSloppyDriver::Step(double timeStep)
         }
     }
 
-    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
+    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
     {
         if (lateralTimer_.Expired(time_))
         {
@@ -178,10 +178,7 @@ void ControllerSloppyDriver::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-int ControllerSloppyDriver::Activate(ControlActivationMode lat_activation_mode,
-                                     ControlActivationMode long_activation_mode,
-                                     ControlActivationMode light_activation_mode,
-                                     ControlActivationMode anim_activation_mode)
+int ControllerSloppyDriver::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
     if (object_)
     {
@@ -202,7 +199,7 @@ int ControllerSloppyDriver::Activate(ControlActivationMode lat_activation_mode,
         currentH_   = object_->pos_.GetHRelative();
     }
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return Controller::Activate(mode);
 }
 
 void ControllerSloppyDriver::ReportKeyEvent(int key, bool down)

@@ -248,12 +248,12 @@ void ControllerHID::Step(double timeStep)
     vehicle_.posZ_  = object_->pos_.GetZRoad();
     vehicle_.pitch_ = object_->pos_.GetPRoad();
 
-    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
+    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
     {
         gateway_->updateObjectSpeed(object_->id_, 0.0, vehicle_.speed_);
     }
 
-    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
+    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
     {
         gateway_->updateObjectWheelAngle(object_->id_, 0.0, vehicle_.wheelAngle_);
     }
@@ -261,10 +261,7 @@ void ControllerHID::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-int ControllerHID::Activate(ControlActivationMode lat_activation_mode,
-                            ControlActivationMode long_activation_mode,
-                            ControlActivationMode light_activation_mode,
-                            ControlActivationMode anim_activation_mode)
+int ControllerHID::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
     if (object_ != nullptr)
     {
@@ -284,7 +281,7 @@ int ControllerHID::Activate(ControlActivationMode lat_activation_mode,
         values_[i] = 0;
     }
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return Controller::Activate(mode);
 }
 
 void ControllerHID::Deactivate()

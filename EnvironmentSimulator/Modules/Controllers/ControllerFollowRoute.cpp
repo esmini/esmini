@@ -133,10 +133,7 @@ void ControllerFollowRoute::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-int ControllerFollowRoute::Activate(ControlActivationMode lat_activation_mode,
-                                    ControlActivationMode long_activation_mode,
-                                    ControlActivationMode light_activation_mode,
-                                    ControlActivationMode anim_activation_mode)
+int ControllerFollowRoute::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
     LOG_INFO("FollowRoute activate");
 
@@ -151,7 +148,7 @@ int ControllerFollowRoute::Activate(ControlActivationMode lat_activation_mode,
     waypoints_             = {};
     laneChangeAction_      = nullptr;
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return Controller::Activate(mode);
 }
 
 void ControllerFollowRoute::ReportKeyEvent(int key, bool down)

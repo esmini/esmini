@@ -254,17 +254,22 @@ bool Object::IsAnyActiveControllerOfType(Controller::Type type)
     return false;
 }
 
-scenarioengine::Controller* Object::GetControllerActiveOnDomain(ControlDomains domain)
+scenarioengine::Controller* Object::GetControllerActiveOnDomainMask(ControlDomainMasks domain_mask)
 {
     std::vector<Controller*>::iterator itr =
         std::find_if(controllers_.begin(),
                      controllers_.end(),
-                     [&domain](Controller* ctrl) { return ctrl->IsActiveOnDomains(static_cast<unsigned int>(domain)); });
+                     [&domain_mask](Controller* ctrl) { return ctrl->IsActiveOnDomains(static_cast<unsigned int>(domain_mask)); });
     if (itr != controllers_.end())
     {
         return *itr;
     }
     return nullptr;
+}
+
+scenarioengine::Controller* Object::GetControllerActiveOnDomain(ControlDomains domain)
+{
+    return GetControllerActiveOnDomainMask(ControlDomain2DomainMask(domain));
 }
 
 scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(ControlDomains domain)

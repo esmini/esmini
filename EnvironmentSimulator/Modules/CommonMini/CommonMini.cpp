@@ -157,18 +157,18 @@ std::map<int, std::string> ParseModelIds()
     return entity_model_map_;
 }
 
-std::string ControlDomain2Str(unsigned int domains)
+std::string ControlDomainMask2Str(unsigned int domain_mask)
 {
     std::string str;
 
-    if (domains != static_cast<unsigned int>(ControlDomains::DOMAIN_NONE))
+    if (domain_mask != static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE))
     {
-        if (domains & static_cast<unsigned int>(ControlDomains::DOMAIN_LAT))
+        if (domain_mask & static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT))
         {
             str += "Lateral";
         }
 
-        if (domains & static_cast<unsigned int>(ControlDomains::DOMAIN_LONG))
+        if (domain_mask & static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG))
         {
             if (!str.empty())
             {
@@ -177,7 +177,7 @@ std::string ControlDomain2Str(unsigned int domains)
             str += "Longitudinal";
         }
 
-        if (domains & static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT))
+        if (domain_mask & static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LIGHT))
         {
             if (!str.empty())
             {
@@ -186,7 +186,7 @@ std::string ControlDomain2Str(unsigned int domains)
             str += "lighting";
         }
 
-        if (domains & static_cast<unsigned int>(ControlDomains::DOMAIN_ANIM))
+        if (domain_mask & static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_ANIM))
         {
             if (!str.empty())
             {
@@ -201,6 +201,35 @@ std::string ControlDomain2Str(unsigned int domains)
     }
 
     return str;
+}
+
+ControlDomainMasks ControlDomain2DomainMask(ControlDomains domain)
+{
+    switch (domain)
+    {
+        case ControlDomains::DOMAIN_LONG:
+            return ControlDomainMasks::DOMAIN_MASK_LONG;
+        case ControlDomains::DOMAIN_LAT:
+            return ControlDomainMasks::DOMAIN_MASK_LAT;
+        case ControlDomains::DOMAIN_LIGHT:
+            return ControlDomainMasks::DOMAIN_MASK_LIGHT;
+        case ControlDomains::DOMAIN_ANIM:
+            return ControlDomainMasks::DOMAIN_MASK_ANIM;
+        default:
+            break;
+    }
+
+    return ControlDomainMasks::DOMAIN_MASK_NONE;
+}
+
+std::string ControlDomain2Str(ControlDomains domain)
+{
+    if (domain != ControlDomains::COUNT)
+    {
+        return ControlDomainMask2Str(static_cast<unsigned int>(ControlDomain2DomainMask(domain)));
+    }
+
+    return "Undefined";
 }
 
 bool FileExists(const char* fileName)

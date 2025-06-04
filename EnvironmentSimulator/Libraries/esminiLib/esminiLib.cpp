@@ -1105,7 +1105,7 @@ extern "C"
                 {
                     player->scenarioEngine->scenarioReader->AddController(ctrl);
                     vehicle->AssignController(ctrl);
-                    ctrl->Activate(ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF);
+                    ctrl->Activate({ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF});
                 }
             }
             else

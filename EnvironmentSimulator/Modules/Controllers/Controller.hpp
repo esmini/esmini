@@ -82,14 +82,11 @@ namespace scenarioengine
 
         virtual void LinkObject(Object* object);
         virtual void UnlinkObject();
-        virtual int  Activate(ControlActivationMode lat_mode,
-                              ControlActivationMode long_mode,
-                              ControlActivationMode light_mode,
-                              ControlActivationMode anim_mode);
+        virtual int  Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)]);
 
         virtual void Deactivate()
         {
-            DeactivateDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_ALL));
+            DeactivateDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_ALL));
         };
 
         virtual void DeactivateDomains(unsigned int domains);
@@ -115,7 +112,7 @@ namespace scenarioengine
 
         bool Active() const
         {
-            return (active_domains_ != static_cast<unsigned int>(ControlDomains::DOMAIN_NONE));
+            return (active_domains_ != static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE));
         };
 
         std::string GetName() const

@@ -355,10 +355,7 @@ void ControllerUDPDriver::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-int ControllerUDPDriver::Activate(ControlActivationMode lat_activation_mode,
-                                  ControlActivationMode long_activation_mode,
-                                  ControlActivationMode light_activation_mode,
-                                  ControlActivationMode anim_activation_mode)
+int ControllerUDPDriver::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
     if (object_)
     {
@@ -397,7 +394,7 @@ int ControllerUDPDriver::Activate(ControlActivationMode lat_activation_mode,
     steer      = vehicle::STEERING_NONE;
     accelerate = vehicle::THROTTLE_NONE;
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return Controller::Activate(mode);
 }
 
 void ControllerUDPDriver::ReportKeyEvent(int key, bool down)

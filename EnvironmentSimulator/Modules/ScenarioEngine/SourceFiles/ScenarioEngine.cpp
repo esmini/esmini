@@ -345,7 +345,8 @@ int ScenarioEngine::step(double deltaSimTime)
 
         // Do not move objects when speed is zero,
         // and only ghosts allowed to execute during ghost restart
-        if (!(obj->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT_AND_LONG))) &&
+        if (!(obj->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE,
+                                             static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT_AND_LONG))) &&
             fabs(obj->speed_) > SMALL_NUMBER &&
             // Skip update for non ghost objects during ghost restart
             !(!obj->IsGhost() && SE_Env::Inst().GetGhostMode() == GhostMode::RESTARTING) && !obj->TowVehicle())  // update trailers later
@@ -739,7 +740,7 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 
     if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL))  // No action has updated longitudinal dimension
     {
-        if (!obj->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LONG)))
+        if (!obj->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
         {
             Vehicle* tow_vehicle = static_cast<Vehicle*>(obj->TowVehicle());
             if (tow_vehicle == nullptr)

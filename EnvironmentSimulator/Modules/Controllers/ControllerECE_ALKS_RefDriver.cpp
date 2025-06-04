@@ -477,14 +477,11 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-int ControllerECE_ALKS_REF_DRIVER::Activate(ControlActivationMode lat_activation_mode,
-                                            ControlActivationMode long_activation_mode,
-                                            ControlActivationMode light_activation_mode,
-                                            ControlActivationMode anim_activation_mode)
+int ControllerECE_ALKS_REF_DRIVER::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
     Reset();
 
-    Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    Controller::Activate(mode);
 
     return 0;
 }

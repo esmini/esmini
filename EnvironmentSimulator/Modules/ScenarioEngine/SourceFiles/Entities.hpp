@@ -407,6 +407,7 @@ namespace scenarioengine
         Controller*      GetAssignedControllerOftype(Controller::Type type);
         bool             IsAnyAssignedControllerOfType(Controller::Type type);
         bool             IsAnyActiveControllerOfType(Controller::Type type);
+        Controller*      GetControllerActiveOnDomainMask(ControlDomainMasks domain_mask);
         Controller*      GetControllerActiveOnDomain(ControlDomains domain);
         Controller::Type GetControllerTypeActiveOnDomain(ControlDomains domain);
         unsigned int     GetNrOfAssignedControllers() const

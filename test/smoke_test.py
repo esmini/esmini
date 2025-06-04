@@ -1812,7 +1812,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.14.800.* AccelerateEvent standbyState -> startTransition -> runningState', log)  is not None)
         self.assertTrue(re.search('.16.200.* ActivateACCTrigger: true, delay: 0.00, rel_dist: 38.95 < 40.00, edge: rising', log)  is not None)
         self.assertTrue(re.search('.16.200.* Controller ACCController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
-        self.assertTrue(re.search('.24.100.* Deactivating conflicting ctrl ACCController on domain Longitudinal', log)  is not None)
+        self.assertTrue(re.search('.24.100.* Deactivating ctrl ACCController conflicting on domain Longitudinal \\(< osc v1.3\\)', log)  is not None)
         self.assertTrue(re.search('.24.100.* Controller ExternalController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
         self.assertTrue(re.search('.28.100.* ActivateACCControllerAgainEvent standbyState -> startTransition -> runningState', log)  is not None)
         self.assertTrue(re.search('.28.100.* Controller ACCController active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
@@ -2187,6 +2187,46 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^10.000, 1, LeadVehicle, 150.440, -1.535, 0.000, 0.000, 0.000, 0.000, 7.000, 0.000, 4.228', csv, re.MULTILINE))
         self.assertTrue(re.search('^35.010, 0, Ego, 371.772, -3.415, 0.000, 6.276, 0.000, 0.000, 5.021, 0.000, 0.466', csv, re.MULTILINE))
         self.assertTrue(re.search('^35.010, 1, LeadVehicle, 387.300, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 2.387', csv, re.MULTILINE))
+
+    def controller_conflict_common(self, osc_version):
+        s = 'EnvironmentSimulator/Unittest/xosc/controller_conflict_' + osc_version + '.xosc'
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, s), COMMON_ESMINI_ARGS + "--fixed_timestep 0.05")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*{}'.format(os.path.basename(s)), log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('.0.000.* Controller .* active on domains: Lateral & Longitudinal \\(mask=0x3\\)', log)  is not None)
+        self.assertTrue(re.search('.3.100.* AssignALKSControllerAction initState -> startTransition -> runningState', log)  is not None)
+        if (osc_version == '1_1'):
+            self.assertTrue(re.search('.3.100.* Deactivating ctrl .* conflicting on domain Longitudinal \\(< osc v1.3\\)', log) is not None)
+        else:
+            self.assertTrue(re.search('.3.100.* Controller InteractiveController active on domains: None \\(mask=0x0\\)', log)  is not None)
+            self.assertTrue(re.search('.3.100.* DeactivateInteractiveController initState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('.3.100.* Controller  active on domains: Longitudinal \\(mask=0x1\\)', log)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+
+        self.assertTrue(re.search('^3.100, 0, Ego, 90.072, -1.535, -2.084, 6.283, 0.038, 6.279, 15.664, 0.000, 4.832', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.100, 1, Target, 105.669, 2.494, -2.679, 0.214, 0.036, 0.000, 8.333, 0.022, 4.694', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.150, 0, Ego, 90.850, -1.445, -2.113, 0.115, 0.039, 0.000, 15.464, 0.025, 0.758', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.150, 1, Target, 106.076, 2.583, -2.694, 0.217, 0.036, 0.000, 8.333, 0.022, 5.885', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 0, Ego, 112.079, 3.951, -2.906, 0.328, 0.033, 0.002, 8.064, -0.018, 5.863', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 1, Target, 120.926, 6.700, -3.192, 0.324, 0.029, 0.000, 8.333, 0.022, 5.950', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.500, 0, Ego, 120.638, 6.604, -3.184, 0.322, 0.029, 0.000, 5.470, 0.022, 5.964', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.500, 1, Target, 132.589, 11.186, -3.492, 0.410, 0.019, 0.000, 8.333, 0.022, 3.965', csv, re.MULTILINE))
+
+    def test_controller_conflict_1_1(self):
+        # this test case verify behavior of pre OpenSCENARIO v1.3 behavior, activating controller deactivates any previous one regardless of domains
+        # since only one controller can be active at a time
+        self.controller_conflict_common('1_1')
+
+    def test_controller_conflict_1_3(self):
+        # this test case verify behavior OpenSCENARIO v1.3 onward behavior, activating controller deactivates any previous one on conflicting
+        # domain only, since multiple controllers can be active at a time - but only one per domain. Deactivating on non conflicting domains
+        # needs to be done explicitly.
+        self.controller_conflict_common('1_3')
 
 if __name__ == "__main__":
     # execute only if run as a script

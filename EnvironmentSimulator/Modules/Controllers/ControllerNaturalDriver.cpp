@@ -51,7 +51,7 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
       route_(-1),
       initiate_lanechange_(false)
 {
-    operating_domains_ = static_cast<unsigned int>(ControlDomains::DOMAIN_LONG);
+    operating_domains_ = static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG);
 
     if (args && args->properties)
     {
@@ -380,10 +380,7 @@ double ControllerNaturalDriver::GetDesiredGap(double max_acceleration,
     return desired_distance + std::max(0.0, follow_speed * desired_thw + follow_speed * relative_speed / (2 * std::sqrt(ab)));
 }
 
-int ControllerNaturalDriver::Activate(ControlActivationMode lat_activation_mode,
-                                      ControlActivationMode long_activation_mode,
-                                      ControlActivationMode light_activation_mode,
-                                      ControlActivationMode anim_activation_mode)
+int ControllerNaturalDriver::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
     current_speed_ = object_->GetSpeed();
     if (mode_ == ControlOperationMode::MODE_ADDITIVE)
@@ -391,9 +388,9 @@ int ControllerNaturalDriver::Activate(ControlActivationMode lat_activation_mode,
         // desired_speed_ = object_->GetSpeed();
     }
 
-    Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    Controller::Activate(mode);
 
-    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
+    if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
     {
         // Make sure heading is aligned with road driving direction
         object_->pos_.SetHeadingRelative((object_->pos_.GetHRelative() > M_PI_2 && object_->pos_.GetHRelative() < 3 * M_PI_2) ? M_PI : 0.0);

@@ -111,13 +111,22 @@ enum class ModKeyMask
 
 enum class ControlDomains
 {
-    DOMAIN_NONE         = 0,
-    DOMAIN_LONG         = 1,
-    DOMAIN_LAT          = 1 << 1,
-    DOMAIN_LIGHT        = 1 << 2,
-    DOMAIN_ANIM         = 1 << 3,
-    DOMAIN_LAT_AND_LONG = DOMAIN_LAT | DOMAIN_LONG,                               // = 3 (1+2)
-    DOMAIN_ALL          = DOMAIN_LAT | DOMAIN_LONG | DOMAIN_LIGHT | DOMAIN_ANIM,  // = 15 (1+2+4+8)
+    DOMAIN_LONG  = 0,
+    DOMAIN_LAT   = 1,
+    DOMAIN_LIGHT = 2,
+    DOMAIN_ANIM  = 3,
+    COUNT        = 4
+};
+
+enum class ControlDomainMasks
+{
+    DOMAIN_MASK_NONE         = 0,
+    DOMAIN_MASK_LONG         = 1,
+    DOMAIN_MASK_LAT          = 1 << 1,
+    DOMAIN_MASK_LIGHT        = 1 << 2,
+    DOMAIN_MASK_ANIM         = 1 << 3,
+    DOMAIN_MASK_LAT_AND_LONG = DOMAIN_MASK_LAT | DOMAIN_MASK_LONG,                                         // = 3 (1+2)
+    DOMAIN_MASK_ALL          = DOMAIN_MASK_LAT | DOMAIN_MASK_LONG | DOMAIN_MASK_LIGHT | DOMAIN_MASK_ANIM,  // = 15 (1+2+4+8)
 };
 
 enum class ControlOperationMode
@@ -147,7 +156,9 @@ enum class FollowingMode
     POSITION
 };
 
-std::string ControlDomain2Str(unsigned int domains);
+std::string        ControlDomainMask2Str(unsigned int domain_mask);
+std::string        ControlDomain2Str(ControlDomains domain);
+ControlDomainMasks ControlDomain2DomainMask(ControlDomains domain);
 
 enum class PixelFormat
 {

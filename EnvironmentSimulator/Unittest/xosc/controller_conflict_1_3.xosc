@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate switching between two controllers -->
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2025-06-04T10:00:00" description="Demonstrate switching between two controllers" author="esmini-team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="HWTACCOn" parameterType="double" value="3.0"/>
+      <ParameterDeclaration name="HWTACCOff" parameterType="string" value="5.0"/>
+      <ParameterDeclaration name="ACCTimeGap" parameterType="string" value="3.0"/>
+      <ParameterDeclaration name="TargetSpeed1KmH" parameterType="double" value="30"/>
+      <ParameterDeclaration name="TargetSpeed2KmH" parameterType="double" value="70"/>
+      <ParameterDeclaration name="RoadId" parameterType="integer" value="1"/>
+      <ParameterDeclaration name="LaneId" parameterType="integer" value="-1"/>
+      <ParameterDeclaration name="myTrigger" parameterType="boolean" value="true"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/curves_elevation.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="$RoadId" laneId="$LaneId" offset="0" s="40"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="20"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="$RoadId" laneId="$LaneId" offset="0" s="80"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$TargetSpeed1KmH / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="ControllerStory">
+         <ParameterDeclarations/>
+         <Act name="ControllerAct">
+            <ManeuverGroup maximumExecutionCount="1" name="ControllerMG">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="ControllerManeuver">
+                  <Event name="ActivateInteractiveEvent" priority="overwrite" maximumExecutionCount="10">
+                     <Action name="AssignInteractiveAction">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <AssignControllerAction>
+                                 <ObjectController name="InteractiveController">
+                                    <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+                                 </ObjectController>
+                              </AssignControllerAction>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="ActivateInteractiveAction">
+                        <PrivateAction>
+                           <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="ActivateInteractiveCondition" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <ParameterCondition parameterRef="myTrigger" value="true" rule="equalTo"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="ActivateALKSControllerEvent" priority="overwrite" maximumExecutionCount="10">
+                     <Action name="AssignALKSControllerAction">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <AssignControllerAction>
+                                 <CatalogReference catalogName="ControllerCatalog" entryName="ALKS_R157SM_Controller">
+                                    <ParameterAssignments>
+                                       <ParameterAssignment parameterRef="model" value="ReferenceDriver"/>
+                                       <ParameterAssignment parameterRef="cruise" value="true"/>
+                                       <ParameterAssignment parameterRef="logLevel" value="0"/>
+                                    </ParameterAssignments>
+                                 </CatalogReference>
+                              </AssignControllerAction>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="DeactivateInteractiveController">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <ActivateControllerAction objectControllerRef="InteractiveController" longitudinal="false" lateral="false"/>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="ActivateALKSControllerAction">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <!-- acrtivate ALKS only on longitudinal domain, allowing lane change action to operate on the lateral -->
+                              <ActivateControllerAction longitudinal="true" lateral="false"/>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <!-- Add lane change action -->
+                     <Action name="Lane change action">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="cubic" value="1.0" dynamicsDimension="rate"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="ActivateALKSController" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <ParameterCondition parameterRef="myTrigger" value="false" rule="equalTo"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <!-- Add time based trigger for changing parameter value -->
+                  <Event name="Parameter event" priority="parallel">
+                     <Action name="Dummy parameter action">
+                        <GlobalAction>
+                           <ParameterAction parameterRef="myTrigger">
+                              <SetAction value="false"/>
+                           </ParameterAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Parameter set condition" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="3" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger/>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="Quit condition" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="10" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

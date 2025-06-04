@@ -60,10 +60,7 @@ namespace scenarioengine
         void Init();
         void InitPostPlayer();
         void Step(double dt);
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
+        int  Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)]);
 
         bool   AdjacentLanesAvailable();
         void   FilterSurroundingVehicles();

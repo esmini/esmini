@@ -263,17 +263,14 @@ void ControllerALKS_R157SM::LinkObject(Object* object)
     Controller::LinkObject(object);
 }
 
-int ControllerALKS_R157SM::Activate(ControlActivationMode lat_activation_mode,
-                                    ControlActivationMode long_activation_mode,
-                                    ControlActivationMode light_activation_mode,
-                                    ControlActivationMode anim_activation_mode)
+int ControllerALKS_R157SM::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
     if (model_)
     {
         model_->set_speed_ = object_->GetSpeed();
     }
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return Controller::Activate(mode);
 }
 
 void ControllerALKS_R157SM::SetScenarioEngine(ScenarioEngine* scenario_engine)

@@ -70,10 +70,7 @@ namespace scenarioengine
 
         void Init();
         void Step(double timeStep);
-        int  Activate(ControlActivationMode lat_activation_mode,
-                      ControlActivationMode long_activation_mode,
-                      ControlActivationMode light_activation_mode,
-                      ControlActivationMode anim_activation_mode);
+        int  Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)]);
         void ReportKeyEvent(int key, bool down);
         void CopyPosition(Object* object, position_copy* obj_copy);
 

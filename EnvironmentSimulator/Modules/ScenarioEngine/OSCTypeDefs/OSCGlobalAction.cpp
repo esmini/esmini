@@ -677,7 +677,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
 
             vehicle->AssignController(acc);
             acc->LinkObject(vehicle);
-            acc->Activate(ControlActivationMode::OFF, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF);
+            acc->Activate({ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF, ControlActivationMode::OFF});
 
             SpawnInfo sInfo = {
                 id,                    // Vehicle ID

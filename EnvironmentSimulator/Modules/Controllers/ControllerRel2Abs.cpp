@@ -607,10 +607,7 @@ void ControllerRel2Abs::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-int ControllerRel2Abs::Activate(ControlActivationMode lat_activation_mode,
-                                ControlActivationMode long_activation_mode,
-                                ControlActivationMode light_activation_mode,
-                                ControlActivationMode anim_activation_mode)
+int ControllerRel2Abs::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
 #ifdef CONTROLLER_REL2ABS_DEBUG
     logData.open("LogData.csv");
@@ -627,7 +624,7 @@ int ControllerRel2Abs::Activate(ControlActivationMode lat_activation_mode,
     pred_timestep      = 0.1;
     pred_nbr_timesteps = pred_horizon / pred_timestep;
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return Controller::Activate(mode);
 }
 
 void ControllerRel2Abs::ReportKeyEvent(int key, bool down)

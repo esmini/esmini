@@ -112,10 +112,7 @@ void ControllerOffroadFollower::Step(double timeStep)
     Controller::Step(timeStep);
 }
 
-int ControllerOffroadFollower::Activate(ControlActivationMode lat_activation_mode,
-                                        ControlActivationMode long_activation_mode,
-                                        ControlActivationMode light_activation_mode,
-                                        ControlActivationMode anim_activation_mode)
+int ControllerOffroadFollower::Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)])
 {
     if (object_)
     {
@@ -130,7 +127,7 @@ int ControllerOffroadFollower::Activate(ControlActivationMode lat_activation_mod
         object_->SetJunctionSelectorAngle(0.0);
     }
 
-    return Controller::Activate(lat_activation_mode, long_activation_mode, light_activation_mode, anim_activation_mode);
+    return Controller::Activate(mode);
 }
 
 void ControllerOffroadFollower::ReportKeyEvent(int key, bool down)
