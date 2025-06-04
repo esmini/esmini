@@ -136,7 +136,7 @@
                 </ManeuverGroup>
                 <StartTrigger>
                     <ConditionGroup>
-                        <Condition name="act_start" delay="0" conditionEdge="rising">
+                        <Condition name="act_start" delay="0" conditionEdge="none">
                             <ByValueCondition>
                                 <SimulationTimeCondition value="0" rule="greaterThan"/>
                             </ByValueCondition>
