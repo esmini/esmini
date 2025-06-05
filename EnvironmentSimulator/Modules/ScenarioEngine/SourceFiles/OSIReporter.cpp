@@ -12,7 +12,6 @@
 
 #include "CommonMini.hpp"
 #include "OSIReporter.hpp"
-#include "OSCEnvironment.hpp"
 #include "OSITrafficCommand.hpp"
 #include <cmath>
 #include <string>
