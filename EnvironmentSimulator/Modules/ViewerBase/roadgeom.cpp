@@ -76,7 +76,7 @@ osg::ref_ptr<osg::Material> RoadGeom::GetOrCreateMaterial(const std::string& bas
         material->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
         material->setEmission(osg::Material::FRONT_AND_BACK, osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
         material->setShininess(osg::Material::FRONT_AND_BACK, 1.0f);
-        if (static_cast<uint8_t>(MaterialType::ASPHALT) == texture_type)
+        if (static_cast<uint8_t>(TextureType::ASPHALT) == texture_type)
         {
             material->setUserValue("friction", lane_friction_);  // default friction value
         }
@@ -176,7 +176,7 @@ void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array>        vertices,
     // create material with unique name
     osg::ref_ptr<osg::Material> materialRoadmark_ = GetOrCreateMaterial("RoadMark_" + roadmanager::LaneRoadMark::RoadMarkColor2Str(color),
                                                                         color_array->back(),
-                                                                        static_cast<uint8_t>(RoadGeom::MaterialType::ROADMARK));
+                                                                        static_cast<uint8_t>(RoadGeom::TextureType::NONE));
 
     // also embed color in geometry, e.g. for post processing in full stack simulations
     geom->setColorArray(color_array.get());
@@ -445,15 +445,15 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
 
     if (!SE_Env::Inst().GetOptions().GetOptionSet("generate_without_textures"))
     {
-        texture_map_[MaterialType::ASPHALT] = ReadTexture("asphalt.jpg");
-        texture_map_[MaterialType::GRASS]   = ReadTexture("grass.jpg");
+        texture_map_[TextureType::ASPHALT] = ReadTexture("asphalt.jpg");
+        texture_map_[TextureType::GRASS]   = ReadTexture("grass.jpg");
     }
 
     osg::ref_ptr<osg::Vec4Array> color_concrete     = new osg::Vec4Array;
     osg::ref_ptr<osg::Vec4Array> color_border_inner = new osg::Vec4Array;
     osg::ref_ptr<osg::Vec4Array> color_grass        = new osg::Vec4Array;
 
-    if (texture_map_.count(MaterialType::ASPHALT) > 0)  // We have a texture
+    if (texture_map_.count(TextureType::ASPHALT) > 0)  // We have a texture
     {
         color_asphalt_->push_back(osg::Vec4(1.f, 1.f, 1.f, 1.0f));
     }
@@ -462,7 +462,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
         color_asphalt_->push_back(osg::Vec4(0.3f, 0.3f, 0.3f, 1.0f));
     }
 
-    if (texture_map_.count(MaterialType::GRASS) > 0)  // We have a texture
+    if (texture_map_.count(TextureType::GRASS) > 0)  // We have a texture
     {
         color_grass->push_back(osg::Vec4(1.f, 1.f, 1.f, 1.0f));
     }
@@ -860,13 +860,12 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                         geom->setTexCoordArray(0, texcoordsLocal.get());
                         osgUtil::SmoothingVisitor::smooth(*geom, 0.5);
 
-                        auto tex = MaterialType::NONE;
+                        auto tex = TextureType::NONE;
 
                         if (laneForMaterial->IsType(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD))
                         {
-                            tex                                          = MaterialType::ASPHALT;
-                            osg::Vec4                   new_color        = GetFrictionColor(lane_friction_);
-                            osg::ref_ptr<osg::Material> materialAsphalt_ = GetOrCreateMaterial("Asphalt", new_color, static_cast<uint8_t>(tex), 0xFF);
+                            tex                                          = TextureType::ASPHALT;
+                            osg::ref_ptr<osg::Material> materialAsphalt_ = GetOrCreateMaterial("Asphalt", GetFrictionColor(lane_friction_), static_cast<uint8_t>(tex), 1);
 
                             geom->getOrCreateStateSet()->setAttributeAndModes(materialAsphalt_.get());
                         }
@@ -894,7 +893,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                         }
                         else
                         {
-                            tex                                        = MaterialType::GRASS;
+                            tex                                        = TextureType::GRASS;
                             osg::ref_ptr<osg::Material> materialGrass_ = GetOrCreateMaterial("Grass", color_grass->at(0), static_cast<uint8_t>(tex));
 
                             geom->getOrCreateStateSet()->setAttributeAndModes(materialGrass_.get());
@@ -905,7 +904,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
                         }
                         geom->setColorBinding(osg::Geometry::BIND_OVERALL);
 
-                        std::unordered_map<RoadGeom::MaterialType, osg::ref_ptr<osg::Texture2D>>::iterator tex_it = texture_map_.find(tex);
+                        auto tex_it = texture_map_.find(tex);
                         if (tex_it != texture_map_.end())
                         {
                             geom->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex_it->second.get());
