@@ -65,7 +65,6 @@ namespace viewer
 
     osg::Vec4 ODR2OSGColor(roadmanager::RoadMarkColor color);
     uint64_t  GenerateMaterialKey(double r, double g, double b, double a, uint8_t t, uint8_t f);
-    uint64_t  GenerateMaterialKeyFromBytes(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t t, uint8_t f);
 
     class PolyLine
     {

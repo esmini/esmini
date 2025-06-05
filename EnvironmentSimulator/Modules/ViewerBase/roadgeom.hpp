@@ -23,16 +23,19 @@
 class RoadGeom
 {
 public:
-    enum class TextureType : uint8_t
+    enum class MaterialType : uint8_t
     {
         NONE = 0,
         ASPHALT,
         GRASS,
+        ROADMARK,
+        CONCRETE,
+        BORDER
     };
 
-    osg::ref_ptr<osg::Group>                        root_;
-    osg::ref_ptr<osg::Group>                        rm_group_;
-    osg::ref_ptr<osg::Vec4Array>                    color_asphalt_ = new osg::Vec4Array;
+    osg::ref_ptr<osg::Group>                                  root_;
+    osg::ref_ptr<osg::Group>                                  rm_group_;
+    osg::ref_ptr<osg::Vec4Array>                              color_asphalt_ = new osg::Vec4Array;
     std::unordered_map<uint64_t, osg::ref_ptr<osg::Material>> std_materials_ = {};
 
     RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin);
@@ -48,7 +51,7 @@ public:
 
 private:
     unsigned int                                                   number_of_materials = 0;
-    std::unordered_map<TextureType, osg::ref_ptr<osg::Texture2D>> texture_map_        = {};
+    std::unordered_map<MaterialType, osg::ref_ptr<osg::Texture2D>> texture_map_        = {};
     double                                                         lane_friction_      = 1.0;
 };
 
