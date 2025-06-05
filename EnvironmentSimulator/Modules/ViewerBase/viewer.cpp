@@ -1794,7 +1794,7 @@ void Viewer::CreateFog(const double range)
     fog->setDensity(1 / range);
     fog->setStart(static_cast<float>(-range));
     fog->setEnd(static_cast<float>(range));
-    fog->setColor(osg::Vec4(0.1f, 0.1f, 0.1f, 1.0f));
+    fog->setColor(osg::Vec4(0.9f, 0.9f, 0.9f, 1.0f));
     rootnode_->getOrCreateStateSet()->setAttributeAndModes(fog.get());
 }
 
