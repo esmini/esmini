@@ -3785,13 +3785,13 @@ cmake ..
 cmake --build .
 ----
 
-To run pre-commit using this local build of Cppcheck 2.17, run the following from your esmini root folder:
-[source, txt]
-----
-PATH="$HOME/cppcheck-2.17.1/build/bin:$PATH" pre-commit run cppcheck --all-files
-----
+To temporarily use your locally built Cppcheck 2.17 without changing your system default, run the following from your esmini root folder:
 
-This command temporarily uses your locally built Cppcheck 2.17 without changing your system default.
+`PATH="$HOME/cppcheck-2.17.1/build/bin:$PATH" pre-commit run cppcheck --all-files`
+
+To make this change more permanent, you can add the following line to your shell configuration file (e.g. ~/.bashrc):
+
+`export PATH="$HOME/cppcheck-2.17.1/build/bin":$PATH`
 
 ====== For Windows
 
