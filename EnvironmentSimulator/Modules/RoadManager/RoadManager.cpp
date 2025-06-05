@@ -1089,7 +1089,7 @@ Lane::Material* Lane::GetMaterialByS(double s) const
 
 void Lane::AddLaneMaterial(Lane::Material* lane_material)
 {
-    if (lane_material_.size() > 0 && lane_material->s_offset < lane_material_.back()->s_offset)
+    if (lane_material_.size() > 0 && (lane_material->s_offset - lane_material_.back()->s_offset) < SMALL_NUMBER)
     {
         for (unsigned int i = 0; i < lane_material_.size(); i++)
         {
@@ -1109,14 +1109,6 @@ void Lane::AddLaneMaterial(Lane::Material* lane_material)
     }
 
     lane_material_.push_back(lane_material);
-    // If first lane material is not at s = 0, add one with default friction for the initial segment
-    if (lane_material_.size() == 1 && lane_material_[0]->s_offset > SMALL_NUMBER)
-    {
-        Lane::Material* m = new Lane::Material();
-        m->friction       = std::nan("");
-        m->s_offset       = 0.0;
-        lane_material_.insert(lane_material_.begin(), m);
-    }
 }
 
 LaneLink* Lane::GetLink(LinkType type) const
@@ -4216,26 +4208,26 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             }
 
                             // Lane material - only friction supported
+                            lane->AddLaneMaterial(new Lane::Material{
+                                0.0,
+                                FRICTION_DEFAULT});  // Add default material, so we'll always have a material at s=0.0. Might be overwritten below.
                             for (pugi::xml_node material = lane_node->child("material"); material; material = material.next_sibling("material"))
                             {
                                 Lane::Material* lane_material = new Lane::Material();
-                                if (lane_material != nullptr)
+                                lane_material->s_offset       = atof(material.attribute("sOffset").value());
+                                if (!material.attribute("friction").empty())
                                 {
-                                    lane_material->s_offset = atof(material.attribute("sOffset").value());
-                                    if (!material.attribute("friction").empty())
-                                    {
-                                        lane_material->friction = atof(material.attribute("friction").value());
-                                    }
-                                    else
-                                    {
-                                        lane_material->friction = FRICTION_DEFAULT;
-                                    }
-
-                                    // update global friction value used for optimization
-                                    Position::GetOpenDrive()->SetFriction(lane_material->friction);
-
-                                    lane->AddLaneMaterial(lane_material);
+                                    lane_material->friction = atof(material.attribute("friction").value());
                                 }
+                                else
+                                {
+                                    lane_material->friction = FRICTION_DEFAULT;
+                                }
+
+                                // update global friction value used for optimization
+                                Position::GetOpenDrive()->SetFriction(lane_material->friction);
+
+                                lane->AddLaneMaterial(lane_material);
                             }
                         }
                     }
@@ -10716,14 +10708,7 @@ int Position::GetRoadLaneInfo(RoadLaneInfo* data) const
         data->road_type   = road->GetRoadTypeByS(GetS());
         data->road_rule   = road->GetRule();
         Lane::Material* m = road->GetLaneMaterialByS(GetS(), GetLaneId());
-        if (m != nullptr)
-        {
-            data->friction = m->friction;
-        }
-        else
-        {
-            data->friction = FRICTION_DEFAULT;
-        }
+        data->friction    = m->friction;
     }
 
     return 0;

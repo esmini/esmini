@@ -192,11 +192,10 @@ namespace scenarioengine
         pugi::xml_node        osc_root_;
         std::string           oscFilename_;
         Entities*             entities_;
-		OSCEnvironment *environment_;
         Catalogs*             catalogs_;
-        OSCEnvironment*       environment_;
         ScenarioGateway*      gateway_;
         ScenarioEngine*       scenarioEngine_;
+        OSCEnvironment*       environment_;
         bool                  disable_controllers_;
         static ControllerPool controllerPool_;
         int                   versionMajor_;
@@ -204,11 +203,9 @@ namespace scenarioengine
         std::string           description_;
         StoryBoard*           story_board_;
 
-		// Environment
         int             ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
         ConditionGroup* ParseConditionGroup(pugi::xml_node node);
         Object*         ResolveObjectReference(std::string name);
-		void ParseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvironment* new_env);
-	};
+    };
 
-}
+}  // namespace scenarioengine

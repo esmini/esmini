@@ -80,7 +80,7 @@ public:
     /**
     Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
     */
-    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);  //, OSCEnvironment& environment);
+    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
     /**
     Fills up the osi message with  static GroundTruth
     */
@@ -88,7 +88,7 @@ public:
     /**
     Fills up the osi message with dynamic GroundTruth
     */
-    int UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);  //, OSCEnvironment& environment);
+    int UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
     /**
     Fills up the osi message with Stationary Object from the OpenDRIVE description
     */
@@ -270,5 +270,6 @@ private:
     bool                                osi_initialized_    = false;
     bool                                report_ghost_       = true;
     OSIStaticReportMode                 static_update_mode_ = OSIStaticReportMode::DEFAULT;
-    std::vector<std::pair<int, double>> osi_crop_           = {};  // id, radius
+    std::vector<std::pair<int, double>> osi_crop_           = {};       // id, radius
+    std::optional<int64_t>              environment_timestamp_offset_;  // Offset to apply to environment timestamp, in seconds
 };

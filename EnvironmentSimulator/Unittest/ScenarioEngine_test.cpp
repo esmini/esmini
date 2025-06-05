@@ -1736,162 +1736,6 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
-TEST(EnvironmentTest, Basic)
-{
-    OSCEnvironment environment;
-    OSCEnvironment new_environment;
-
-    new_environment.SetAtmosphericPressure(100000);
-    environment.UpdateEnvironment(&new_environment);
-    EXPECT_EQ(new_environment.GetAtmosphericPressure(),100000);
-    EXPECT_EQ(new_environment.GetAtmosphericPressure(),environment.GetAtmosphericPressure());
-    EXPECT_TRUE(new_environment.IsAtmosphericPressure());
-    EXPECT_TRUE(environment.IsAtmosphericPressure());
-
-    new_environment.SetTemperature(293);
-    environment.UpdateEnvironment(&new_environment);
-    EXPECT_EQ(new_environment.GetTemperature(),293);
-    EXPECT_EQ(new_environment.GetTemperature(),environment.GetTemperature());
-    EXPECT_TRUE(new_environment.IsTemperature());
-    EXPECT_TRUE(environment.IsTemperature());
-
-    new_environment.SetCloudState(scenarioengine::CloudState::HEAVILY_CLOUDY);
-    environment.UpdateEnvironment(&new_environment);
-    EXPECT_EQ(new_environment.GetCloudState(),scenarioengine::CloudState::HEAVILY_CLOUDY);
-    EXPECT_EQ(new_environment.GetCloudState(),environment.GetCloudState());
-    EXPECT_TRUE(new_environment.IsCloudState());
-    EXPECT_TRUE(environment.IsCloudState());
-    
-    new_environment.SetFog(1000);
-    environment.UpdateEnvironment(&new_environment);
-    EXPECT_EQ(new_environment.GetFog()->visibility_range,1000);
-    EXPECT_EQ(new_environment.GetFog()->visibility_range,environment.GetFog()->visibility_range);
-    EXPECT_TRUE(new_environment.IsFog());
-    EXPECT_TRUE(environment.IsFog());
-
-    new_environment.SetPrecipitation(0.1,scenarioengine::PrecipitationType::SNOW);
-    environment.UpdateEnvironment(&new_environment);
-    EXPECT_EQ(new_environment.GetPrecipitation()->precipitationintensity,0.1);
-    EXPECT_EQ(new_environment.GetPrecipitation()->precipitationtype,scenarioengine::PrecipitationType::SNOW);
-    EXPECT_EQ(new_environment.GetPrecipitation()->precipitationintensity,environment.GetPrecipitation()->precipitationintensity);
-    EXPECT_EQ(new_environment.GetPrecipitation()->precipitationtype,environment.GetPrecipitation()->precipitationtype);
-    EXPECT_TRUE(new_environment.IsPrecipitation());
-    EXPECT_TRUE(environment.IsPrecipitation());
-
-    new_environment.SetSun(2,1,10000);
-    environment.UpdateEnvironment(&new_environment);
-    EXPECT_EQ(new_environment.GetSun()->azimuth,2);
-    EXPECT_EQ(new_environment.GetSun()->elevation,1);
-    EXPECT_EQ(new_environment.GetSun()->intensity,10000);
-    EXPECT_EQ(new_environment.GetSun()->azimuth,environment.GetSun()->azimuth);
-    EXPECT_EQ(new_environment.GetSun()->intensity,environment.GetSun()->intensity);
-    EXPECT_EQ(new_environment.GetSun()->elevation,environment.GetSun()->elevation);
-    EXPECT_TRUE(new_environment.IsSun());
-    EXPECT_TRUE(environment.IsSun());
-    
-    new_environment.SetWind(2,10);
-    environment.UpdateEnvironment(&new_environment);
-    EXPECT_EQ(new_environment.GetWind()->direction,2);
-    EXPECT_EQ(new_environment.GetWind()->speed,10);
-    EXPECT_EQ(new_environment.GetWind()->direction,environment.GetWind()->direction);
-    EXPECT_EQ(new_environment.GetWind()->speed,environment.GetWind()->speed);
-    EXPECT_TRUE(new_environment.GetWind());
-    EXPECT_TRUE(environment.GetWind());
-
-    new_environment.SetRoadCondition(1);
-    environment.UpdateEnvironment(&new_environment);
-    EXPECT_EQ(new_environment.GetRoadCondition()->frictionscalefactor,1);
-    EXPECT_EQ(new_environment.GetRoadCondition()->frictionscalefactor,environment.GetRoadCondition()->frictionscalefactor);
-    EXPECT_TRUE(new_environment.IsRoadCondition());
-    EXPECT_TRUE(environment.IsRoadCondition());
-
-}
-
-TEST(EnvironmentTest, Parsing)
-{
-    // Set up mock xml_node
-    pugi::xml_document doc;
-    pugi::xml_node actionNode = doc.append_child("Action");
-    pugi::xml_node envActionNode = actionNode.append_child("EnvironmentAction");
-    pugi::xml_node envNode = envActionNode.append_child("Environment");
-    // Time of day
-    pugi::xml_node todNode = envNode.append_child("TimeOfDay");
-    todNode.append_attribute("animation").set_value(false);
-    todNode.append_attribute("dateTime").set_value("2021-12-02T11:30:30");
-
-    // Weather and attributes
-    pugi::xml_node weatherNode = envNode.append_child("Weather");
-    weatherNode.append_attribute("cloudState").set_value("cloudy");
-    weatherNode.append_attribute("temperature").set_value("4");
-    weatherNode.append_attribute("atmosphericPressure").set_value("1000");
-    // Sun
-    pugi::xml_node sunNode = weatherNode.append_child("Sun");
-    sunNode.append_attribute("azimuth").set_value(0.5);
-    sunNode.append_attribute("intensity").set_value(300.1);
-    sunNode.append_attribute("elevation").set_value(3.2);
-    // Fog
-    pugi::xml_node fogNode = weatherNode.append_child("Fog");
-    fogNode.append_attribute("visualRange").set_value(1000);
-    pugi::xml_node fogBoundingboxNode = fogNode.append_child("BoundingBox");
-    pugi::xml_node bbCenterNode = fogBoundingboxNode.append_child("Center");
-    bbCenterNode.append_attribute("x").set_value(1);
-    bbCenterNode.append_attribute("y").set_value(1);
-    bbCenterNode.append_attribute("z").set_value(1.1);
-    pugi::xml_node bbDimNode = fogBoundingboxNode.append_child("Dimensions");
-    bbDimNode.append_attribute("width").set_value(1.2);
-    bbDimNode.append_attribute("length").set_value(1.3);
-    bbDimNode.append_attribute("height").set_value(1.4);
-    // Precipitation
-    pugi::xml_node precipNode = weatherNode.append_child("Precipitation");
-    precipNode.append_attribute("precipitationType").set_value("dry");
-    precipNode.append_attribute("precipitationIntensity").set_value(0.0);
-    // Wind
-    pugi::xml_node windNode = weatherNode.append_child("Wind");
-    windNode.append_attribute("direction").set_value(1.1);
-    windNode.append_attribute("speed").set_value(10);
-
-    // Road condition
-    pugi::xml_node roadCondNode = envNode.append_child("RoadCondition");
-    roadCondNode.append_attribute("frictionScaleFactor").set_value(0.5);
-
-    // Test using ScenarioReader
-    Entities entities;
-    Catalogs catalogs;
-    OSCEnvironment environment;
-    ScenarioReader reader(&entities, &catalogs, &environment);
-
-    OSCGlobalAction *globalAct = reader.parseOSCGlobalAction(actionNode);
-    EnvironmentAction *envAct = static_cast<EnvironmentAction*>(globalAct);
-    OSCEnvironment oscEnv = envAct->new_environment_;
-
-    EXPECT_EQ(oscEnv.GetTimeOfDay()->animation, todNode.attribute("animation").as_bool());
-    EXPECT_EQ(oscEnv.GetTimeOfDay()->datetime, todNode.attribute("dateTime").value());
-
-    EXPECT_EQ(oscEnv.GetCloudState(), scenarioengine::CloudState::CLOUDY);
-    EXPECT_NEAR(oscEnv.GetTemperature(), weatherNode.attribute("temperature").as_double(), 1e-5);
-    EXPECT_NEAR(oscEnv.GetAtmosphericPressure(), weatherNode.attribute("atmosphericPressure").as_double(), 1e-5);
-
-    EXPECT_NEAR(oscEnv.GetSun()->azimuth, sunNode.attribute("azimuth").as_double(), 1e-5);
-    EXPECT_NEAR(oscEnv.GetSun()->intensity, sunNode.attribute("intensity").as_double(), 1e-5);
-    EXPECT_NEAR(oscEnv.GetSun()->elevation, sunNode.attribute("elevation").as_double(), 1e-5);
-
-    EXPECT_NEAR(oscEnv.GetFog()->visibility_range, fogNode.attribute("visualRange").as_float(), 1e-5);
-    EXPECT_NEAR(oscEnv.GetFog()->boundingbox.center_.x_, bbCenterNode.attribute("x").as_float(), 1e-5);
-    EXPECT_NEAR(oscEnv.GetFog()->boundingbox.center_.y_, bbCenterNode.attribute("y").as_float(), 1e-5);
-    EXPECT_NEAR(oscEnv.GetFog()->boundingbox.center_.z_, bbCenterNode.attribute("z").as_float(), 1e-5);
-    EXPECT_NEAR(oscEnv.GetFog()->boundingbox.dimensions_.width_, bbDimNode.attribute("width").as_float(), 1e-5);
-    EXPECT_NEAR(oscEnv.GetFog()->boundingbox.dimensions_.length_, bbDimNode.attribute("length").as_float(), 1e-5);
-    EXPECT_NEAR(oscEnv.GetFog()->boundingbox.dimensions_.height_, bbDimNode.attribute("height").as_float(), 1e-5);
-
-    EXPECT_EQ(oscEnv.GetPrecipitation()->precipitationtype, scenarioengine::PrecipitationType::DRY);
-    EXPECT_NEAR(oscEnv.GetPrecipitation()->precipitationintensity, precipNode.attribute("precipitationIntensity").as_double(), 1e-5);
-
-    EXPECT_NEAR(oscEnv.GetWind()->direction, windNode.attribute("direction").as_double(), 1e-5);
-    EXPECT_NEAR(oscEnv.GetWind()->speed, windNode.attribute("speed").as_double(), 1e-5);
-
-    EXPECT_NEAR(oscEnv.GetRoadCondition()->frictionscalefactor, roadCondNode.attribute("frictionScaleFactor").as_double(), 1e-5);
-}
-
 TEST(RoadOrientationTest, TestElevationPitchRoll)
 {
     double dt = 0.1;
@@ -4210,7 +4054,7 @@ TEST(Friction, TestFrictionPerWheel)
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
-    ASSERT_EQ(entities->object_.size(), 1);
+    ASSERT_EQ(entities->object_.size(), 2);
 
     ScenarioGateway* gw = se->getScenarioGateway();
 
@@ -4222,6 +4066,12 @@ TEST(Friction, TestFrictionPerWheel)
     EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
+
+    ObjectStateStruct* target_state = &gw->objectState_[1]->state_;
+    EXPECT_NEAR(target_state->info.wheel_data[0].friction_coefficient, 0.8, 1E-3);
+    EXPECT_NEAR(target_state->info.wheel_data[1].friction_coefficient, 0.8, 1E-3);
+    EXPECT_NEAR(target_state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(target_state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
 
     while (se->getSimulationTime() < 1.8 + SMALL_NUMBER)
     {
@@ -4412,7 +4262,7 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
-    ASSERT_EQ(entities->object_.size(), 1);
+    ASSERT_EQ(entities->object_.size(), 2);
 
     ScenarioGateway* gw = se->getScenarioGateway();
 
@@ -5746,22 +5596,22 @@ TEST(EnvironmentTest, TimeOfDayFormat)
 TEST(EnvironmentTest, SecondsSinceMidnight)
 {
     std::string dateTime1 = "2023-11-15T10:30:00.123+05:30";
-    EXPECT_EQ(GetSecondsSinceMidnight(dateTime1), 57600);
+    EXPECT_EQ(GetSecondsSinceMidnight(dateTime1), 37800);
     std::string dateTime2 = "2023-11-15T00:00:00.123+05:30";
-    EXPECT_EQ(GetSecondsSinceMidnight(dateTime2), 19800);
+    EXPECT_EQ(GetSecondsSinceMidnight(dateTime2), 0);
     std::string dateTime3 = "2023-11-15T23:59:59.123+05:30";
-    EXPECT_EQ(GetSecondsSinceMidnight(dateTime3), 106199);
+    EXPECT_EQ(GetSecondsSinceMidnight(dateTime3), 86399);
     std::string dateTime4 = "2023-11-15T12:00:00.000+05:30";
-    EXPECT_EQ(GetSecondsSinceMidnight(dateTime4), 63000);
+    EXPECT_EQ(GetSecondsSinceMidnight(dateTime4), 43200);
     std::string dateTime5 = "2023-11-15T12:00:00.000-05:30";
-    EXPECT_EQ(GetSecondsSinceMidnight(dateTime5), 23400);
+    EXPECT_EQ(GetSecondsSinceMidnight(dateTime5), 43200);
     std::string dateTime6 = "2023-11-15T12:00:00.000+00:00";
     EXPECT_EQ(GetSecondsSinceMidnight(dateTime6), 43200);
     std::string dateTime7 = "2023-11-15T00:00:00.000+00:00";
     EXPECT_EQ(GetSecondsSinceMidnight(dateTime7), 0);
 }
 
-TEST(EnvironmentTest, SecoundsToFactor)
+TEST(EnvironmentTest, SecondsToFactor)
 {
     std::string dateTime1 = "2023-11-15T00:00:00.000+00:00";
     EXPECT_EQ(GetSecondsToFactor(static_cast<int>(GetSecondsSinceMidnight(dateTime1))), 0.0);
@@ -5777,16 +5627,17 @@ TEST(EnvironmentTest, SecoundsToFactor)
 
 TEST(EnvironmentTest, EpochTime)
 {
+    // On these, we expect the same epoch time regardless of timezone, as we assume the input is local time
     std::string dateTime1 = "2023-11-15T10:30:00.123+05:30";
-    EXPECT_EQ(GetEpochTimeFromString(dateTime1), 1700024400);
+    EXPECT_EQ(GetEpochTimeFromString(dateTime1), 1700044200);
     std::string dateTime2 = "2023-11-15T00:00:00.123+05:30";
-    EXPECT_EQ(GetEpochTimeFromString(dateTime2), 1699986600);
+    EXPECT_EQ(GetEpochTimeFromString(dateTime2), 1700006400);
     std::string dateTime3 = "2023-11-15T23:59:59.123+05:30";
-    EXPECT_EQ(GetEpochTimeFromString(dateTime3), 1700072999);
+    EXPECT_EQ(GetEpochTimeFromString(dateTime3), 1700092799);
     std::string dateTime4 = "2023-11-15T12:00:00.000+05:30";
-    EXPECT_EQ(GetEpochTimeFromString(dateTime4), 1700029800);
+    EXPECT_EQ(GetEpochTimeFromString(dateTime4), 1700049600);
     std::string dateTime5 = "2023-11-15T12:00:00.000-05:30";
-    EXPECT_EQ(GetEpochTimeFromString(dateTime5), 1700069400);
+    EXPECT_EQ(GetEpochTimeFromString(dateTime5), 1700049600);
     std::string dateTime6 = "2023-11-15T12:00:00.000+00:00";
     EXPECT_EQ(GetEpochTimeFromString(dateTime6), 1700049600);
     std::string dateTime7 = "2011-03-10T11:23:56.000+0100";

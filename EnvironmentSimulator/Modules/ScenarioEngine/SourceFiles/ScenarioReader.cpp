@@ -59,7 +59,6 @@ static std::vector<StoryBoardElementTriggerInfo> storyboard_element_triggers;
 ScenarioReader::ScenarioReader(Entities *entities, Catalogs *catalogs, OSCEnvironment *environment, bool disable_controllers)
     : entities_(entities),
       catalogs_(catalogs),
-      environment_(environment),
       gateway_(nullptr),
       scenarioEngine_(nullptr),
       environment_(environment),
@@ -2172,30 +2171,15 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                     paramSetAction->name_       = parameters.ReadAttribute(actionChild, "parameterRef");
                     paramSetAction->value_      = parameters.ReadAttribute(paramChild, "value");
                     paramSetAction->parameters_ = &parameters;
-					action = paramSetAction;
-				}
-				else
-				{
-					LOG_ERROR("ParameterAction %s not supported yet", paramChild.name());
-				}
-			}
-		}
-		else if (actionChild.name() == std::string("EnvironmentAction"))
-		{
-			EnvironmentAction *envAction = new EnvironmentAction();
-			ParseOSCEnvironment(actionChild.child("Environment"),&envAction->new_environment_);
-			envAction->SetEnvironment(environment_);
-			LOG("Parsing OSC Environment with node %s", actionChild.name());
-			if (oscEnv != nullptr)
-			{
-				envAction->SetEnvironment(environment_);
-				action = envAction;
-			}
-			else
-			{
-				LOG_ERROR("Error parsing OSC Environment with node %s", actionChild.name());
-			}
-		}
+
+                    action = paramSetAction;
+                }
+                else
+                {
+                    LOG_WARN("ParameterAction %s not supported yet", paramChild.name());
+                }
+            }
+        }
         else if (actionChild.name() == std::string("VariableAction"))
         {
             for (pugi::xml_node varChild = actionChild.first_child(); varChild; varChild = varChild.next_sibling())
@@ -4990,10 +4974,18 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                     }
                     if (!intensityStr.empty())
                     {
+                        if (GetVersionMajor() == 1 && GetVersionMinor() >= 2)
+                        {
+                            LOG_WARN("In Sun, intensity is deprecated in v1.1. Use illuminance instead, Accepting it anyway.");
+                        }
                         env.SetSun(Sun{std::stod(azimuth), std::stod(elevation), std::stod(intensityStr)});
                     }
                     else if (!illuminanceStr.empty())
                     {
+                        if (GetVersionMajor() == 1 && GetVersionMinor() < 2)
+                        {
+                            LOG_WARN("In Sun, illuminance is introduced in v1.2. Use intensity for earlier versions, Accepting it anyway.");
+                        }
                         env.SetSun(Sun{std::stod(azimuth), std::stod(elevation), std::stod(illuminanceStr)});
                     }
                     else

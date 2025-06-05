@@ -797,78 +797,44 @@ uint32_t GetSecondsSinceMidnight(const std::string& dateTimeString)
         ss.ignore();
     ss >> timeStruct.tm_sec;
 
-    uint32_t seconds = static_cast<uint32_t>(timeStruct.tm_hour * 3600 + timeStruct.tm_min * 60 + timeStruct.tm_sec);
-
+    // Discard fractional seconds
     if (ss.peek() == '.')
     {
-        double milliseconds = 0.0;
-        ss.ignore() >> milliseconds;
-    }
-    int  tz_hour = 0, tz_min = 0;
-    char sign      = '+';
-    char delimiter = ':';
-    if (ss >> sign >> tz_hour >> delimiter >> tz_min)
-    {
-        int offset = (tz_hour * 3600 + tz_min * 60) * (sign == '+' ? 1 : -1);
-        seconds += offset;
+        std::string dummy;
+        std::getline(ss, dummy, '+');  // Read until the + in timezone
     }
 
-    return seconds;
-}
-
-time_t portable_timegm(struct tm* tm)
-{
-#ifdef _WIN32
-    // Windows implementation using _mkgmtime
-    return _mkgmtime(tm);
-#else
-    // Unix implementation
-    time_t ret;
-    char*  tz;
-
-    tz = getenv("TZ");
-    setenv("TZ", "", 1);
-    tzset();
-    ret = mktime(tm);
-    if (tz)
-        setenv("TZ", tz, 1);
-    else
-        unsetenv("TZ");
-    tzset();
-    return ret;
-#endif
+    // Ignore timezone
+    return static_cast<uint32_t>(timeStruct.tm_hour * 3600 + timeStruct.tm_min * 60 + timeStruct.tm_sec);
 }
 
 int64_t GetEpochTimeFromString(const std::string& datetime)
 {
-    std::tm tm      = {};
-    int     tz_hour = 0, tz_min = 0;
-    char    sign      = '+';
-    char    delimiter = ':';
+    std::tm tm = {};
 
     std::istringstream ss(datetime);
     ss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
 
     if (ss.peek() == '.')
     {
-        double milliseconds = 0.0;
-        ss.ignore() >> milliseconds;
+        int milliseconds = 0;
+        ss.ignore();
+        ss >> milliseconds;
     }
+    // We're ignoring tz info afterwards, if present
 
-    // Convert to epoch time (treating tm as UTC)
-    tm.tm_isdst      = -1;  // Let system determine DST
-    std::time_t time = portable_timegm(&tm);
+    tm.tm_isdst = -1;  // To be proper, we tell mktime to ignore DST
 
-    // Apply the timezone offset from the string
-    if (ss >> sign >> tz_hour >> delimiter >> tz_min)
-    {
-        int offset = (tz_hour * 3600 + tz_min * 60) * (sign == '+' ? 1 : -1);
-        time -= offset;  // Subtract because converting to UTC
-    }
+#if defined(_WIN32)
+    std::time_t epoch = _mkgmtime(&tm);
+#elif defined(__unix__) || defined(__APPLE__)
+    std::time_t epoch = timegm(&tm);
+#else
+    // fallback if not available
+    std::time_t epoch = mktime(&tm);
+#endif
 
-    auto tp = std::chrono::system_clock::from_time_t(time);
-
-    return std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch()).count();
+    return static_cast<int64_t>(epoch);
 }
 
 double GetSecondsToFactor(int seconds)

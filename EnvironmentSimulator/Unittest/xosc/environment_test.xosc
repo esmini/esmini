@@ -2,9 +2,9 @@
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
     <FileHeader description="Mandolin" author="my scenario" revMajor="1" revMinor="3" date="2021-12-03T07:43:43.904344"/>
     <ParameterDeclarations>
-        <ParameterDeclaration name="RoadName" parameterType="string" value="../../../resources/xodr/straight_500m.xodr"/>
-        <ParameterDeclaration name="RoadId" parameterType="int" value="1"/>
-        <ParameterDeclaration name="SimulationEndTime" parameterType="double" value="1.04"/>
+        <ParameterDeclaration name="RoadName" parameterType="string" value="../xodr/straight_highway_500m.xodr"/>
+        <ParameterDeclaration name="RoadId" parameterType="int" value="0"/>
+        <ParameterDeclaration name="SimulationEndTime" parameterType="double" value="3.00"/>
     </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
@@ -26,7 +26,7 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="$RoadId" laneId="-1" s="50.0" offset="0.0"/>
+                                <LanePosition roadId="$RoadId" laneId="-1" s="78.0" offset="0.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
@@ -35,7 +35,7 @@
                             <SpeedAction>
                                 <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="30"/>
+                                    <AbsoluteTargetSpeed value="10.0"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -77,7 +77,7 @@
                                 <ConditionGroup>
                                     <Condition name="s" delay="0" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="0.01" rule="greaterOrEqual"/>
+                                            <SimulationTimeCondition value="1.0" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -99,7 +99,7 @@
                                 <ConditionGroup>
                                     <Condition name="s" delay="0" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="1.01" rule="greaterOrEqual"/>
+                                            <SimulationTimeCondition value="2.0" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>

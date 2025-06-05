@@ -76,7 +76,7 @@ namespace scenarioengine
     */
     typedef struct
     {
-        float visibility_range;
+        double                        visibility_range;
         std::optional<OSCBoundingBox> boundingbox;
     } Fog;
 
