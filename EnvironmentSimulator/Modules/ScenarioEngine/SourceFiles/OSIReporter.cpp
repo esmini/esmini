@@ -1429,18 +1429,34 @@ int OSIReporter::UpdateOSIIntersection()
             // sort the correct free-boundaries
             for (unsigned int j = 0; j < left_lane_lengths.size(); j++)
             {
-                // Tolerance for checking if
-
                 bool keep_right = true;
                 bool keep_left  = true;
                 for (unsigned int k = 0; k < lane_lengths.size(); k++)
                 {
                     int same_left = roadmanager::CheckOverlapingOSIPoints(left_lane_lengths[j].osipoints, lane_lengths[k].osipoints, tolerance);
+                    if (same_left < 0)
+                    {
+                        LOG_DEBUG(
+                            "CheckOverlapingOSIPoints() -> left_lane_lengths road_id {} length {}, lane_lengths road_id {} length {}",
+                            left_lane_lengths[j].road_id,
+                            left_lane_lengths[j].osipoints == nullptr ? -1 : static_cast<int>(left_lane_lengths[j].osipoints->GetNumOfOSIPoints()),
+                            lane_lengths[k].road_id,
+                            lane_lengths[k].osipoints == nullptr ? -1 : static_cast<int>(lane_lengths[k].osipoints->GetNumOfOSIPoints()));
+                    }
                     if (same_left > 0)
                     {
                         keep_left = false;
                     }
                     int same_right = roadmanager::CheckOverlapingOSIPoints(right_lane_lengths[j].osipoints, lane_lengths[k].osipoints, tolerance);
+                    if (same_right < 0)
+                    {
+                        LOG_DEBUG(
+                            "CheckOverlapingOSIPoints() -> right_lane_lengths road_id {} length {}, lane_lengths road_id {} length {}",
+                            right_lane_lengths[j].road_id,
+                            right_lane_lengths[j].osipoints == nullptr ? -1 : static_cast<int>(right_lane_lengths[j].osipoints->GetNumOfOSIPoints()),
+                            lane_lengths[k].road_id,
+                            lane_lengths[k].osipoints == nullptr ? -1 : static_cast<int>(lane_lengths[k].osipoints->GetNumOfOSIPoints()));
+                    }
                     if (same_right > 0)
                     {
                         keep_right = false;

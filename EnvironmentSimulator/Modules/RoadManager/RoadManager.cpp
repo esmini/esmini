@@ -451,7 +451,7 @@ int roadmanager::CheckOverlapingOSIPoints(OSIPoints* first_set, OSIPoints* secon
     std::vector<double> distances;
     int                 retvalue = 0;
 
-    if (first_set == nullptr || second_set == nullptr)
+    if (first_set == nullptr || first_set->GetNumOfOSIPoints() == 0 || second_set == nullptr || second_set->GetNumOfOSIPoints() == 0)
     {
         return -1;
     }
@@ -513,14 +513,12 @@ void Polynomial::Set(double a, double b, double c, double d, double p_scale)
 
 PointStruct& OSIPoints::GetPoint(idx_t i)
 {
-    if (point_.empty() || i >= point_.size())
+    if (i >= point_.size())
     {
-        throw std::runtime_error("OSIPoints::GetPoint(int i) -> exceeds index");
+        LOG_ERROR_AND_QUIT("OSIPoints::GetPoint() -> index {} out of bounds {}", i, point_.size());
     }
-    else
-    {
-        return point_[i];
-    }
+
+    return point_[i];
 }
 
 double OSIPoints::GetXfromIdx(idx_t i) const
