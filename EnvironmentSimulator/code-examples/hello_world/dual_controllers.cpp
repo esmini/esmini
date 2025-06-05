@@ -64,6 +64,7 @@ int main(int argc, char** argv)
         SE_StepDT(static_cast<float>(dt));
     }
 
+    SE_SimpleVehicleDelete(vehicleHandle);
     SE_Close();
 
     return 0;
