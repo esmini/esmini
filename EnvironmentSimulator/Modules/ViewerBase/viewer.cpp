@@ -88,12 +88,7 @@ uint64_t viewer::GenerateMaterialKey(double r, double g, double b, double a, uin
     uint8_t b8 = static_cast<uint8_t>(std::max(0.0, std::min(255.0, b * 255.0)));
     uint8_t a8 = static_cast<uint8_t>(std::max(0.0, std::min(255.0, a * 255.0)));
 
-    return GenerateMaterialKeyFromBytes(r8, g8, b8, a8, t, f);
-}
-
-uint64_t viewer::GenerateMaterialKeyFromBytes(uint8_t r, uint8_t g, uint8_t b, uint8_t a, uint8_t t, uint8_t f)
-{
-    // code the color as a 64-bit integer in the format 0xRRGGBBAATTFF (T = texture_idx, F = friction)
+    // code the color as a 64-bit integer in the format 0xRRGGBBAATTFF (T = texture_type, F = friction)
     return (static_cast<uint64_t>(r) << 40) | (static_cast<uint64_t>(g) << 32) | (static_cast<uint64_t>(b) << 24) | (static_cast<uint64_t>(a) << 16) |
            (static_cast<uint64_t>(t) << 8) | static_cast<uint64_t>(f);
 }
@@ -1842,7 +1837,6 @@ void viewer::Viewer::UpdateFrictonScaleFactorInMaterial(const double factor)
         double material_friction;
         if (std_material->getUserValue("friction", material_friction))
         {
-            std::cout << "Updating friction scale factor in materials to " << factor << " material friction " << material_friction << std::endl;
             osg::Vec4 friction_color = roadGeom->GetFrictionColor(material_friction * factor);
             std_material->setAmbient(osg::Material::FRONT_AND_BACK, friction_color);
             std_material->setDiffuse(osg::Material::FRONT_AND_BACK, friction_color);
