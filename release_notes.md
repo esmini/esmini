@@ -1,6 +1,6 @@
 ## esmini release notes
 
-### 2025-06- Version 2.47.1
+### 2025-06-05 Version 2.47.1
 
 Improvements and fixes:
 - Roadmarks, improved performance ~x%
