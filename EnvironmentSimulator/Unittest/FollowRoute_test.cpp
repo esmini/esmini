@@ -623,7 +623,7 @@ TEST(FollowRouteTest, CalcWeightFastest)
     Road::RoadTypeEntry* motorway = new Road::RoadTypeEntry;
     motorway->road_type_          = Road::RoadType::ROADTYPE_MOTORWAY;
     motorway->speed_              = 25;
-    road1.AddRoadType(motorway);
+    road1.AddRoadType(0.0, motorway);
     double weigth = roadCalc.CalcWeight(nullptr, Position::RouteStrategy::FASTEST, road1.GetLength(), &road1);
     // 200 / 25 = 8
     ASSERT_NEAR(8, weigth, 0.01);
@@ -666,10 +666,10 @@ TEST(FollowRouteTest, CalcAverageSpeedForRoadsWithoutSpeed)
     rural->road_type_             = Road::RoadType::ROADTYPE_RURAL;
     motorway->road_type_          = Road::RoadType::ROADTYPE_MOTORWAY;
 
-    road1.AddRoadType(lowSpeed);
-    road2.AddRoadType(town);
-    road3.AddRoadType(rural);
-    road4.AddRoadType(motorway);
+    road1.AddRoadType(0.0, lowSpeed);
+    road2.AddRoadType(0.0, town);
+    road3.AddRoadType(0.0, rural);
+    road4.AddRoadType(0.0, motorway);
 
     double averageSpeed  = roadCalc.CalcAverageSpeed(&road1);
     double expectedSpeed = 8.333;
@@ -709,10 +709,10 @@ TEST(FollowRouteTest, CalcAverageSpeedForRoadsWithDefinedSpeed)
     motorway->road_type_          = Road::RoadType::ROADTYPE_MOTORWAY;
     motorway->speed_              = 40;
 
-    road1.AddRoadType(lowSpeed);
-    road2.AddRoadType(town);
-    road3.AddRoadType(rural);
-    road4.AddRoadType(motorway);
+    road1.AddRoadType(0.0, lowSpeed);
+    road2.AddRoadType(0.0, town);
+    road3.AddRoadType(0.0, rural);
+    road4.AddRoadType(0.0, motorway);
 
     double averageSpeed  = roadCalc.CalcAverageSpeed(&road1);
     double expectedSpeed = 10;
@@ -741,8 +741,8 @@ TEST(FollowRouteTest, CalcAverageSpeedForTwoRoadTypes)
     lowSpeed->road_type_          = Road::RoadType::ROADTYPE_LOWSPEED;
     town->road_type_              = Road::RoadType::ROADTYPE_TOWN;
 
-    road.AddRoadType(lowSpeed);
-    road.AddRoadType(town);
+    road.AddRoadType(0.0, lowSpeed);
+    road.AddRoadType(1.0, town);
 
     double averageSpeed  = roadCalc.CalcAverageSpeed(&road);
     double expectedSpeed = 11.11;

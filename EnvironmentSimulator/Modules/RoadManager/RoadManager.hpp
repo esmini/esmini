@@ -2143,7 +2143,6 @@ namespace roadmanager
 
         struct RoadTypeEntry
         {
-            double    s_;
             RoadType  road_type_;
             double    speed_ = 0;  // m/s
             SpeedUnit unit_;       // Originally specified unit
@@ -2286,32 +2285,32 @@ namespace roadmanager
         {
             link_.push_back(link);
         }
-        void AddRoadType(RoadTypeEntry *type)
+        void AddRoadType(double s, RoadTypeEntry *type)
         {
-            type_.push_back(type);
+            type_[s] = type;
         }
         unsigned int GetNumberOfRoadTypes() const
         {
             return static_cast<unsigned int>(type_.size());
         }
-        RoadTypeEntry *GetRoadType(idx_t idx) const;
-        RoadLink      *GetLink(LinkType type) const;
-        void           AddLine(Line *line);
-        void           AddArc(Arc *arc);
-        void           AddSpiral(Spiral *spiral);
-        void           AddPoly3(Poly3 *poly3);
-        void           AddParamPoly3(ParamPoly3 *param_poly3);
-        void           AddElevation(Elevation *elevation);
-        void           AddSuperElevation(Elevation *super_elevation);
-        void           AddLaneSection(LaneSection *lane_section);
-        void           AddLaneOffset(LaneOffset *lane_offset);
-        void           AddSignal(Signal *signal);
-        void           AddObject(RMObject *object);
-        Elevation     *GetElevation(idx_t idx) const;
-        Elevation     *GetSuperElevation(idx_t idx) const;
-        unsigned int   GetNumberOfSignals() const;
-        Signal        *GetSignal(idx_t idx) const;
-        unsigned int   GetNumberOfObjects() const
+        const std::map<double, RoadTypeEntry *> &GetRoadType() const;
+        RoadLink                                *GetLink(LinkType type) const;
+        void                                     AddLine(Line *line);
+        void                                     AddArc(Arc *arc);
+        void                                     AddSpiral(Spiral *spiral);
+        void                                     AddPoly3(Poly3 *poly3);
+        void                                     AddParamPoly3(ParamPoly3 *param_poly3);
+        void                                     AddElevation(Elevation *elevation);
+        void                                     AddSuperElevation(Elevation *super_elevation);
+        void                                     AddLaneSection(LaneSection *lane_section);
+        void                                     AddLaneOffset(LaneOffset *lane_offset);
+        void                                     AddSignal(Signal *signal);
+        void                                     AddObject(RMObject *object);
+        Elevation                               *GetElevation(idx_t idx) const;
+        Elevation                               *GetSuperElevation(idx_t idx) const;
+        unsigned int                             GetNumberOfSignals() const;
+        Signal                                  *GetSignal(idx_t idx) const;
+        unsigned int                             GetNumberOfObjects() const
         {
             return static_cast<unsigned int>(object_.size());
         }
@@ -2398,15 +2397,15 @@ namespace roadmanager
         id_t        junction_;
         RoadRule    rule_;
 
-        std::vector<RoadTypeEntry *> type_;
-        std::vector<RoadLink *>      link_;
-        std::vector<Geometry *>      geometry_;
-        std::vector<Elevation *>     elevation_profile_;
-        std::vector<Elevation *>     super_elevation_profile_;
-        std::vector<LaneSection *>   lane_section_;
-        std::vector<LaneOffset *>    lane_offset_;
-        std::vector<Signal *>        signal_;
-        std::vector<RMObject *>      object_;
+        std::map<double, Road::RoadTypeEntry *> type_;
+        std::vector<RoadLink *>                 link_;
+        std::vector<Geometry *>                 geometry_;
+        std::vector<Elevation *>                elevation_profile_;
+        std::vector<Elevation *>                super_elevation_profile_;
+        std::vector<LaneSection *>              lane_section_;
+        std::vector<LaneOffset *>               lane_offset_;
+        std::vector<Signal *>                   signal_;
+        std::vector<RMObject *>                 object_;
     };
 
     class LaneRoadLaneConnection

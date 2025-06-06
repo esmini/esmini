@@ -425,16 +425,16 @@ double RoadCalculations::CalcAverageSpeed(Road *road)
     }
 
     double totalSpeed = 0;
-    for (unsigned int i = 0; i < roadTypeCount; i++)
+    for (auto &t : road->GetRoadType())
     {
-        switch (road->GetRoadType(i)->road_type_)
+        switch (t.second->road_type_)
         {
             case Road::RoadType::ROADTYPE_PEDESTRIAN:
             case Road::RoadType::ROADTYPE_BICYCLE:
             {
-                if (road->GetRoadType(i)->speed_ > SMALL_NUMBER)
+                if (t.second->speed_ > SMALL_NUMBER)
                 {
-                    totalSpeed += road->GetRoadType(i)->speed_;
+                    totalSpeed += t.second->speed_;
                 }
                 else
                 {
@@ -446,9 +446,9 @@ double RoadCalculations::CalcAverageSpeed(Road *road)
             case Road::RoadType::ROADTYPE_TOWNPLAYSTREET:
             case Road::RoadType::ROADTYPE_TOWNPRIVATE:
             {
-                if (road->GetRoadType(i)->speed_ > SMALL_NUMBER)
+                if (t.second->speed_ > SMALL_NUMBER)
                 {
-                    totalSpeed += road->GetRoadType(i)->speed_;
+                    totalSpeed += t.second->speed_;
                 }
                 else
                 {
@@ -459,9 +459,9 @@ double RoadCalculations::CalcAverageSpeed(Road *road)
             case Road::RoadType::ROADTYPE_TOWN:
             case Road::RoadType::ROADTYPE_TOWNLOCAL:
             {
-                if (road->GetRoadType(i)->speed_ > SMALL_NUMBER)
+                if (t.second->speed_ > SMALL_NUMBER)
                 {
-                    totalSpeed += road->GetRoadType(i)->speed_;
+                    totalSpeed += t.second->speed_;
                 }
                 else
                 {
@@ -472,9 +472,9 @@ double RoadCalculations::CalcAverageSpeed(Road *road)
             case Road::RoadType::ROADTYPE_RURAL:
             case Road::RoadType::ROADTYPE_UNKNOWN:
             {
-                if (road->GetRoadType(i)->speed_ > SMALL_NUMBER)
+                if (t.second->speed_ > SMALL_NUMBER)
                 {
-                    totalSpeed += road->GetRoadType(i)->speed_;
+                    totalSpeed += t.second->speed_;
                 }
                 else
                 {
@@ -484,9 +484,9 @@ double RoadCalculations::CalcAverageSpeed(Road *road)
             }
             case Road::RoadType::ROADTYPE_MOTORWAY:
             {
-                if (road->GetRoadType(i)->speed_ > SMALL_NUMBER)
+                if (t.second->speed_ > SMALL_NUMBER)
                 {
-                    totalSpeed += road->GetRoadType(i)->speed_;
+                    totalSpeed += t.second->speed_;
                 }
                 else
                 {

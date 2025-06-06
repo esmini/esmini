@@ -1675,17 +1675,23 @@ double Road::GetSpeedByS(double s) const
 {
     if (type_.size() > 0)
     {
-        if (s < type_[0]->s_)
+        auto it = type_.upper_bound(s);
+        if (it != type_.begin())
         {
-            LOG_WARN("GetSpeedByS: s {:.2f} < first type entry s {:.2f}, assuming first value from s 0", s, type_[0]->s_);
+            // Decrement the iterator to get the element immediately preceding 'it'
+            --it;
+            return it->second->speed_;
         }
-        size_t i;
-        for (i = 0; i < type_.size() - 1 && s > type_[i + 1]->s_ - SMALL_NUMBER; i++)
-            ;
-
-        return type_[i]->speed_;
+        else
+        {
+            // Pick first, even if s value < first
+            if (it->first > s)
+            {
+                LOG_DEBUG("GetSpeedByS: s {:.2f} < first type entry s {:.2f}, use first value {}", s, it->first, it->second->speed_);
+            }
+            return it->second->speed_;
+        }
     }
-
     // No type entries, fall back to a speed based on nr of lanes
     return 0;
 }
@@ -1694,11 +1700,22 @@ Road::RoadType Road::GetRoadTypeByS(double s) const
 {
     if (type_.size() > 0)
     {
-        size_t i;
-        for (i = 0; i < type_.size() - 1 && s > type_[i + 1]->s_ - SMALL_NUMBER; i++)
-            ;
-
-        return type_[i]->road_type_;
+        auto it = type_.upper_bound(s);
+        if (it != type_.begin())
+        {
+            // Decrement the iterator to get the element immediately preceding 'it'
+            --it;
+            return it->second->road_type_;
+        }
+        else
+        {
+            // Pick first, even if s value < first
+            if (it->first > s)
+            {
+                LOG_DEBUG("GetRoadTypeByS: s {:.2f} < first type entry s {:.2f}, use first value {}", s, it->first, it->second->road_type_);
+            }
+            return it->second->road_type_;
+        }
     }
 
     // No type entries, fall back to default road definition
@@ -2263,9 +2280,9 @@ void RoadLink::Print() const
 
 Road::~Road()
 {
-    for (size_t i = 0; i < type_.size(); i++)
+    for (auto& t : type_)
     {
-        delete (type_[i]);
+        delete t.second;
     }
     type_.clear();
     for (size_t i = 0; i < geometry_.size(); i++)
@@ -2967,16 +2984,9 @@ double Road::GetCenterOffset(double s, int lane_id) const
     return 0.0;
 }
 
-Road::RoadTypeEntry* Road::GetRoadType(idx_t idx) const
+const std::map<double, Road::RoadTypeEntry*>& Road::GetRoadType() const
 {
-    if (idx < type_.size())
-    {
-        return type_[idx];
-    }
-    else
-    {
-        return 0;
-    }
+    return type_;
 }
 
 RoadLink* Road::GetLink(LinkType type) const
@@ -3459,7 +3469,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
             }
             // Lägg in lite mer 1.8
 
-            r_type->s_ = atof(type_node.attribute("s").value());
+            double road_type_s_ = atof(type_node.attribute("s").value());
 
             // Check for optional speed record
             r_type->unit_        = SpeedUnit::MS;  // default
@@ -3493,7 +3503,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 Position::GetOpenDrive()->SetSpeedUnit(r_type->unit_);
             }
 
-            r->AddRoadType(r_type);
+            r->AddRoadType(road_type_s_, r_type);
         }
 
         pugi::xml_node link = road_node.child("link");
@@ -5051,11 +5061,10 @@ bool Junction::IsOsiIntersection() const
     {
         return false;  // direct junction has no area -> no free lane boundaries
     }
-    else if (!connection_.empty() && connection_[0] != nullptr && connection_[0]->GetIncomingRoad() != nullptr &&
-             connection_[0]->GetIncomingRoad()->GetRoadType(0) != nullptr)
+    else if (!connection_.empty() && connection_[0] != nullptr && connection_[0]->GetIncomingRoad() != nullptr)
     {
         // check if the first road is of type highway, then assumes it is not a intersection
-        if (connection_[0]->GetIncomingRoad()->GetRoadType(0)->road_type_ == Road::RoadType::ROADTYPE_MOTORWAY)
+        if (connection_[0]->GetIncomingRoad()->GetRoadTypeByS(0.0) == Road::RoadType::ROADTYPE_MOTORWAY)
         {
             return false;
         }
