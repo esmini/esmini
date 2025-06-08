@@ -2160,7 +2160,25 @@ const char* SynchronizeAction::SubMode2Str(SynchSubmode submode) const
 
 void SynchronizeAction::PrintStatus(const char* custom_msg)
 {
-    LOG_INFO("{}, mode={} ({}) sub-mode={} ({})", custom_msg, Mode2Str(mode_), mode_, SubMode2Str(submode_), submode_);
+    LOG_DEBUG("Synchronize: {}, mode={} ({}) sub-mode={} ({})", custom_msg, Mode2Str(mode_), mode_, SubMode2Str(submode_), submode_);
+}
+
+void SynchronizeAction::SetMode(SynchMode mode, std::string msg)
+{
+    if (mode != mode_)
+    {
+        mode_ = mode;
+        PrintStatus(("SetMode " + msg).c_str());
+    }
+}
+
+void SynchronizeAction::SetSubMode(SynchSubmode submode, std::string msg)
+{
+    if (submode != submode_)
+    {
+        submode_ = submode;
+        PrintStatus(("SetSubMode" + msg).c_str());
+    }
 }
 
 void SynchronizeAction::Start(double simTime)
@@ -2214,7 +2232,8 @@ void SynchronizeAction::Step(double simTime, double dt)
 {
     (void)simTime;
     (void)dt;
-    bool done = false;
+    bool done                      = false;
+    int  distance_direction_master = 1;  // assume by default that destination is ahead
 
     if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
     {
@@ -2234,6 +2253,10 @@ void SynchronizeAction::Step(double simTime, double dt)
                                                roadmanager::CoordinateSystem::CS_TRAJECTORY,
                                                roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL,
                                                masterDist);
+        distance_direction_master =
+            SIGN(masterDist) *
+            (IsAngleForward(GetAngleDifference(master_object_->pos_.GetTrajectory()->GetHTrue(), master_object_->pos_.GetH())) ? 1 : -1);
+        masterDist = fabs(masterDist);
     }
 
     if (retval == -1 || masterDist > LARGE_NUMBER - SMALL_NUMBER)
@@ -2241,12 +2264,18 @@ void SynchronizeAction::Step(double simTime, double dt)
         if (!master_object_->pos_.Delta(&target_position_master_, diff))
         {
             // No road network path between master vehicle and master target pos - using world coordinate distance
-            diff.ds = GetLengthOfLine2D(master_object_->pos_.GetX(),
-                                        master_object_->pos_.GetY(),
-                                        target_position_master_.GetX(),
-                                        target_position_master_.GetY());
+            double distance_vector[2]     = {target_position_master_.GetX() - master_object_->pos_.GetX(),
+                                             target_position_master_.GetY() - master_object_->pos_.GetY()};
+            diff.ds                       = GetLengthOfVector2D(distance_vector[0], distance_vector[1]);
+            masterDist                    = fabs(diff.ds);
+            double heading_to_destination = GetAngleOfVector(distance_vector[0], distance_vector[1]);
+            distance_direction_master     = IsAngleForward(GetAngleDifference(heading_to_destination, master_object_->pos_.GetH())) ? 1 : -1;
         }
-        masterDist = fabs(diff.ds);
+        else
+        {
+            distance_direction_master = SIGN(diff.ds);
+            masterDist                = fabs(diff.ds);
+        }
     }
 
     retval = -1;
@@ -2256,6 +2285,7 @@ void SynchronizeAction::Step(double simTime, double dt)
                                         roadmanager::CoordinateSystem::CS_TRAJECTORY,
                                         roadmanager::RelativeDistanceType::REL_DIST_LONGITUDINAL,
                                         dist);
+        dist   = fabs(dist);
     }
 
     if (retval == -1 || dist > LARGE_NUMBER - SMALL_NUMBER)
@@ -2263,9 +2293,14 @@ void SynchronizeAction::Step(double simTime, double dt)
         if (!object_->pos_.Delta(&target_position_, diff))
         {
             // No road network path between action vehicle and action target pos - using world coordinate distance
-            diff.ds = GetLengthOfLine2D(object_->pos_.GetX(), object_->pos_.GetY(), target_position_.GetX(), target_position_.GetY());
+            double distance_vector[2] = {target_position_.GetX() - object_->pos_.GetX(), target_position_.GetY() - object_->pos_.GetY()};
+            diff.ds                   = GetLengthOfVector2D(distance_vector[0], distance_vector[1]);
+            dist                      = fabs(diff.ds);
         }
-        dist = fabs(diff.ds);
+        else
+        {
+            dist = fabs(diff.ds);
+        }
     }
 
     // Done when distance increases, indicating that destination just has been reached or passed
@@ -2300,7 +2335,7 @@ void SynchronizeAction::Step(double simTime, double dt)
     double masterTimeToDest = LARGE_NUMBER;
 
     // project speed on road s-axis
-    double master_speed = SIGN(master_object_->GetSpeed()) * abs(master_object_->pos_.GetVelS());
+    double master_speed = SIGN(master_object_->GetSpeed()) * distance_direction_master * fabs(master_object_->pos_.GetVelS());
 
     if (master_speed > SMALL_NUMBER)
     {
@@ -2311,6 +2346,12 @@ void SynchronizeAction::Step(double simTime, double dt)
             LOG_INFO("Synchronize masterTimeToDest ({:.3f}) reached within this timestep ({:.3f})", masterTimeToDest, dt);
             done = true;
         }
+    }
+    else if (mode_ != SynchMode::MODE_WAITING)
+    {
+        SetMode(SynchMode::MODE_WAITING, "Waiting for master to move");
+        // Master is standing still, do not move
+        object_->SetSpeed(0);
     }
 
     if (done)
@@ -2334,13 +2375,12 @@ void SynchronizeAction::Step(double simTime, double dt)
 
                 if (dist - steadyState_.dist_ < SMALL_NUMBER || masterTimeToDest - time_to_ss < SMALL_NUMBER)
                 {
-                    mode_    = SynchMode::MODE_STEADY_STATE;
-                    submode_ = SynchSubmode::SUBMODE_NONE;
+                    SetMode(SynchMode::MODE_STEADY_STATE);
+                    SetSubMode(SynchSubmode::SUBMODE_NONE);
                     if (time_to_ss > masterTimeToDest && (time_to_ss - masterTimeToDest) * final_speed_->GetValue() > tolerance_)
                     {
                         LOG_INFO("Entering Stead State according to criteria but not enough time to reach destination");
                     }
-                    // PrintStatus("SteadyState");
                 }
                 else
                 {
@@ -2426,7 +2466,7 @@ void SynchronizeAction::Step(double simTime, double dt)
                 else
                 {
                     // Reset mode
-                    mode_ = SynchMode::MODE_NONE;
+                    SetMode(SynchMode::MODE_NONE, "Reset");
                 }
             }
             if (mode_ == SynchMode::MODE_STOP_IMMEDIATELY)
@@ -2436,8 +2476,7 @@ void SynchronizeAction::Step(double simTime, double dt)
                 if (object_->speed_ < 0)
                 {
                     object_->SetSpeed(0);
-                    mode_ = SynchMode::MODE_WAITING;  // wait for master to move
-                                                      // PrintStatus("Waiting");
+                    SetMode(SynchMode::MODE_WAITING, "Waiting");
                 }
 
                 return;
@@ -2447,8 +2486,7 @@ void SynchronizeAction::Step(double simTime, double dt)
                 if (masterTimeToDest < 2 * dist / final_speed_->GetValue())
                 {
                     // Time to move again after the stop
-                    mode_ = SynchMode::MODE_LINEAR;
-                    // PrintStatus("Restart");
+                    SetMode(SynchMode::MODE_LINEAR, "Restart");
                 }
                 else
                 {
@@ -2479,8 +2517,7 @@ void SynchronizeAction::Step(double simTime, double dt)
                 if (fabs(object_->speed_ - v0_onLine) < 0.1)
                 {
                     // Passed apex. Switch to linear mode (constant acc) to reach final destination and speed
-                    mode_ = SynchMode::MODE_LINEAR;
-                    // PrintStatus("Passed apex");
+                    SetMode(SynchMode::MODE_LINEAR, "Passed apex");
 
                     // Keep current speed for this time step
                     return;
@@ -2490,18 +2527,17 @@ void SynchronizeAction::Step(double simTime, double dt)
             if (mode_ == SynchMode::MODE_NONE)
             {
                 // Since not linear mode, go into non-linear mode
-                mode_ = SynchMode::MODE_NON_LINEAR;
+                SetMode(SynchMode::MODE_NON_LINEAR);
 
                 // Find out submode, convex or concave
                 if ((final_speed_->GetValue() + object_->speed_) / 2 < dist / masterTimeToDest)
                 {
-                    submode_ = SynchSubmode::SUBMODE_CONVEX;
+                    SetSubMode(SynchSubmode::SUBMODE_CONVEX);
                 }
                 else
                 {
-                    submode_ = SynchSubmode::SUBMODE_CONCAVE;
+                    SetSubMode(SynchSubmode::SUBMODE_CONCAVE);
                 }
-                // PrintStatus("Non-linear");
             }
 
             // Now, calculate x and vx according to default method oulined in the documentation
@@ -2553,8 +2589,7 @@ void SynchronizeAction::Step(double simTime, double dt)
                 ((submode_ == SynchSubmode::SUBMODE_CONCAVE && acc > 0) || (submode_ == SynchSubmode::SUBMODE_CONVEX && acc < 0)))
             {
                 // Reached the apex of the speed profile, switch mode and phase
-                mode_ = SynchMode::MODE_LINEAR;
-                // PrintStatus("Reached apex");
+                SetMode(SynchMode::MODE_LINEAR, "Reached apex");
 
                 // Keep speed for this time step
                 acc = 0;
@@ -2578,17 +2613,15 @@ void SynchronizeAction::Step(double simTime, double dt)
                 if (t1 * v0 / 2 > s / 2)
                 {
                     // If more than half distance to destination needed, then stop immediatelly
-                    acc   = MAX_DECELERATION;
-                    mode_ = SynchMode::MODE_STOP_IMMEDIATELY;
-                    // PrintStatus("Stop immediately");
+                    acc = MAX_DECELERATION;
+                    SetMode(SynchMode::MODE_STOP_IMMEDIATELY);
                 }
 
                 if (v0 + acc * dt < 0)
                 {
                     // Reached to a stop
                     object_->SetSpeed(0);
-                    mode_ = SynchMode::MODE_STOPPED;
-                    // PrintStatus("Stopped");
+                    SetMode(SynchMode::MODE_STOPPED);
 
                     return;
                 }
@@ -2597,8 +2630,16 @@ void SynchronizeAction::Step(double simTime, double dt)
         else
         {
             // No final speed specified. Calculate it based on current speed and available time
-            double final_speed = 2 * average_speed - object_->speed_;
-            acc                = (final_speed - object_->speed_) / masterTimeToDest;
+            if (master_speed > SMALL_NUMBER)
+            {
+                if (mode_ != SynchMode::MODE_LINEAR)
+                {
+                    SetMode(SynchMode::MODE_LINEAR, "Moving towards destination");
+                }
+
+                double final_speed = 2 * average_speed - object_->speed_;
+                acc                = (final_speed - object_->speed_) / masterTimeToDest;
+            }
         }
 
         object_->SetSpeed(object_->GetSpeed() + acc * dt);

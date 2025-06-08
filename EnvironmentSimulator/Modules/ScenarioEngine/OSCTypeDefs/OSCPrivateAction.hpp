@@ -838,9 +838,10 @@ namespace scenarioengine
         const char* Mode2Str(SynchMode mode) const;
 
     private:
-        double CalcSpeedForLinearProfile(double v_final, double time, double dist);
-        void   PrintStatus(const char* custom_msg);
-        // const char* Mode2Str(SynchMode mode);
+        double      CalcSpeedForLinearProfile(double v_final, double time, double dist);
+        void        PrintStatus(const char* custom_msg);
+        void        SetMode(SynchMode mode, std::string msg = "");
+        void        SetSubMode(SynchSubmode submode, std::string msg = "");
         const char* SubMode2Str(SynchSubmode submode) const;
 
         void ReplaceObjectRefs(Object* obj1, Object* obj2)

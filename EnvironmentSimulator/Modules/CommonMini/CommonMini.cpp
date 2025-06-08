@@ -313,7 +313,8 @@ double GetAngleDifference(double angle1, double angle2)
 
 bool IsAngleForward(double teta)
 {
-    return !(teta > M_PI_2 && teta < 3 * M_PI_2);
+    double teta_norm = GetAngleInInterval2PI(teta);
+    return !(teta_norm > M_PI_2 && teta_norm < 3 * M_PI_2);
 }
 
 double GetAngleSum(double angle1, double angle2)
