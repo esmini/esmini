@@ -32,6 +32,88 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n4.250, 0, Ego, 73.611, -14.000, 0.000, 0.000, 0.000, 0.000, 5.556, 0.000, 4.628', csv))
         self.assertTrue(re.search('\n4.250, 1, GVT, 77.778, -14.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
 
+    def test_AEB_C2C_2023_NCAP_AEB_C2C_CCFhol_2023(self):
+
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_C2C_2023/NCAP_AEB_C2C_CCFhol_2023.xosc'), COMMON_ARGS)
+
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading .*NCAP_AEB_C2C_CCFhol_2023', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.7.850.* GVT_LaneChange initState -> startTransition -> runningState', log)  is not None)
+        self.assertTrue(re.search('\n.12.350.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and GVT, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.13.400.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n7.850, 0, Ego, 202.639, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 2.571', csv))
+        self.assertTrue(re.search('\n7.850, 1, GVT, 383.090, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 0.083', csv))
+        self.assertTrue(re.search('\n7.850, 2, SOV, 359.540, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 3.588', csv))
+        self.assertTrue(re.search('\n7.900, 0, Ego, 203.611, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 5.349', csv))
+        self.assertTrue(re.search('\n7.900, 1, GVT, 382.118, 1.748, 0.000, 3.145, 0.000, 0.000, 19.444, 0.013, 2.860', csv))
+        self.assertTrue(re.search('\n7.900, 2, SOV, 358.568, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 0.083', csv))
+        self.assertTrue(re.search('\n9.250, 0, Ego, 229.861, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 4.951', csv))
+        self.assertTrue(re.search('\n9.250, 1, GVT, 355.920, 0.287, 0.000, 3.239, 0.000, 0.000, 19.444, 0.000, 2.462', csv))
+        self.assertTrue(re.search('\n9.250, 2, SOV, 332.318, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 5.968', csv))
+        self.assertTrue(re.search('\n12.250, 0, Ego, 288.194, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 1.972', csv))
+        self.assertTrue(re.search('\n12.250, 1, GVT, 297.664, -1.713, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 5.766', csv))
+        self.assertTrue(re.search('\n12.250, 2, SOV, 273.985, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 2.988', csv))
+        self.assertTrue(re.search('\n12.300, 0, Ego, 289.167, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 4.749', csv))
+        self.assertTrue(re.search('\n12.300, 1, GVT, 296.692, -1.713, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 2.261', csv))
+        self.assertTrue(re.search('\n12.300, 2, SOV, 273.013, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 5.766', csv))
+
+        self.assertTrue(re.search('\n', csv))
+        self.assertTrue(re.search('\n', csv))
+        self.assertTrue(re.search('\n', csv))
+        self.assertTrue(re.search('\n', csv))
+        self.assertTrue(re.search('\n', csv))
+        self.assertTrue(re.search('\n', csv))
+        self.assertTrue(re.search('\n', csv))
+        self.assertTrue(re.search('\n', csv))
+        self.assertTrue(re.search('\n', csv))
+        self.assertTrue(re.search('\n', csv))
+        self.assertTrue(re.search('\n', csv))
+        self.assertTrue(re.search('\n', csv))
+
+    def test_AEB_C2C_2023_NCAP_AEB_C2C_CCFhos_2023(self):
+
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_C2C_2023/NCAP_AEB_C2C_CCFhos_2023.xosc'), COMMON_ARGS)
+
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading .*NCAP_AEB_C2C_CCFhos_2023', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.7.850.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and GVT, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.8.900.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n7.800, 0, Ego, 201.667, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 6.077', csv))
+        self.assertTrue(re.search('\n7.800, 1, GVT, 209.444, -1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 6.077', csv))
+        self.assertTrue(re.search('\n7.850, 0, Ego, 202.639, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 2.571', csv))
+        self.assertTrue(re.search('\n7.850, 1, GVT, 208.472, -1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 2.571', csv))
+
+    def test_AEB_C2C_2023_NCAP_AEB_C2C_CCFtap_2023(self):
+
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_C2C_2023/NCAP_AEB_C2C_CCFtap_2023.xosc'), COMMON_ARGS)
+
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading .*NCAP_AEB_C2C_CCFtap_2023', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.24.150.* Synchronize masterTimeToDest \\(0.002\\) reached within this timestep \\(0.050\\)', log)  is not None)
+        self.assertTrue(re.search('\n.24.300.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and Target, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.27.350.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n24.250, 0, Ego, 157.264, -0.920, 0.000, 0.375, 0.000, 0.000, 2.778, 0.348, 3.965', csv))
+        self.assertTrue(re.search('\n24.250, 1, Target, 163.965, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 4.844', csv))
+        self.assertTrue(re.search('\n24.300, 0, Ego, 157.392, -0.868, 0.000, 0.390, 0.000, 0.000, 2.778, 0.348, 4.362', csv))
+        self.assertTrue(re.search('\n24.300, 1, Target, 163.548, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 6.034', csv))
+        self.assertTrue(re.search('\n27.350, 0, Ego, 162.721, 5.309, 0.000, 1.321, 0.000, 0.000, 2.778, 0.316, 3.435', csv))
+        self.assertTrue(re.search('\n27.350, 1, Target, 138.131, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 3.255', csv))
+
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CBFA_2023(self):
 
         log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CBFA_2023.xosc'), COMMON_ARGS)
@@ -186,6 +268,48 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n27.450, 1, VRU, 163.241, 9.500, 0.000, 6.283, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
         self.assertTrue(re.search('\n27.500, 0, Ego, 162.808, 5.716, 0.000, 1.356, 0.000, 0.000, 2.778, 0.262, 4.626', csv))
         self.assertTrue(re.search('\n27.500, 1, VRU, 163.310, 9.500, 0.000, 6.283, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+
+    def test_AEB_VRU_2023_NCAP_AEB_VRU_CPRA_Cm_2023(self):
+
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CPRA_Cm_2023.xosc'), COMMON_ARGS)
+
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPRA_Cm_2023', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.6.450.* Entering Stead State according to criteria but not enough time to reach destination', log)  is not None)
+        self.assertTrue(re.search('\n.8.300.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.8.350.* StopAfterCollision: true, delay: 1.00, variable collisionDetected true == true, edge: none', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n4.200, 0, Ego, 95.333, 0.000, 0.000, 0.000, 0.000, 0.000, -1.111, 0.000, -0.767', csv))
+        self.assertTrue(re.search('\n4.200, 1, VRU, 89.750, -4.000, 0.000, 1.571, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n4.250, 0, Ego, 95.278, 0.000, 0.000, 0.000, 0.000, 0.000, -1.111, 0.000, -0.926', csv))
+        self.assertTrue(re.search('\n4.250, 1, VRU, 89.750, -4.000, 0.000, 1.571, 0.000, 0.000, 0.027, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n8.250, 0, Ego, 90.833, 0.000, 0.000, 0.000, 0.000, 0.000, -1.111, 0.000, -1.058', csv))
+        self.assertTrue(re.search('\n8.250, 1, VRU, 89.750, 0.057, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n8.300, 0, Ego, 90.778, 0.000, 0.000, 0.000, 0.000, 0.000, -1.111, 0.000, -1.216', csv))
+        self.assertTrue(re.search('\n8.300, 1, VRU, 89.750, 0.127, 0.000, 1.571, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
+
+    def test_AEB_VRU_2023_NCAP_AEB_VRU_CPRA_Cs_2023(self):
+
+        log, duration, cpu_time, _ = run_scenario(os.path.join(NCAP_PREFIX + 'AEB_VRU_2023/NCAP_AEB_VRU_CPRA_Cs_2023.xosc'), COMMON_ARGS)
+
+        # Check some initialization steps
+        self.assertTrue(re.search('.*Loading .*NCAP_AEB_VRU_CPRA_Cs_2023', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('\n.8.050.* DetectCollision: true, delay: 0.00, 1 collision\\(s\\): Ego and VRU, edge: none', log)  is not None)
+        self.assertTrue(re.search('\n.9.100.* storyBoard runningState -> stopTransition -> completeState', log)  is not None)
+
+        # Check vehicle state
+        csv = generate_csv()
+        self.assertTrue(re.search('\n8.000, 0, Ego, 91.111, 0.000, 0.000, 0.000, 0.000, 0.000, -1.111, 0.000, -0.264', csv))
+        self.assertTrue(re.search('\n8.000, 1, VRU, 90.000, 0.000, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+        self.assertTrue(re.search('\n8.050, 0, Ego, 91.056, 0.000, 0.000, 0.000, 0.000, 0.000, -1.111, 0.000, -0.423', csv))
+        self.assertTrue(re.search('\n8.050, 1, VRU, 90.000, 0.000, 0.000, 4.712, 0.000, 0.000, 0.000, 0.000, 0.000', csv))
+
 
 if __name__ == "__main__":
     # execute only if run as a script
