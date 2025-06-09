@@ -4,7 +4,7 @@
 
 Code QA updates:
 - Use pre-commit hooks to lint and format code
-  - see [User guide - Formatting and code analysis](https://esmini.github.io/#formatting-and-code-analysis)
+  - see [User guide - Formatting and code analysis](https://esmini.github.io/#_formatting_and_code_analysis)
   - work inspired by [PR #674](https://github.com/esmini/esmini/pull/674)
 
 Improvements and fixes:
