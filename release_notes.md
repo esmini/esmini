@@ -1,10 +1,28 @@
 ## esmini release notes
 
-### 2025-06-05 Version 2.47.1
+### 2025-06-09 Version 2.48.0
+
+Code QA updates:
+- Use pre-commit hooks to lint and format code
+  - see [User guide - Formatting and code analysis](https://esmini.github.io/#formatting-and-code-analysis)
+  - work inspired by [PR #674](https://github.com/esmini/esmini/pull/674)
 
 Improvements and fixes:
-- Roadmarks, improved performance ~x%
-- Added two chinese speed roadsigns, update model pack as...
+- Add wheel rotation rate, radius and number of wheels ([PR #701](https://github.com/esmini/esmini/pull/701))
+- Add two chinese road signs
+  - minimum speed 50 and maximum speed 70
+  - get updated 3D model pack [here](https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1) <br>
+    or remove `resources/models` and run `cmake ..` command again
+- 3D geometry updates:
+  - add roadmark texture coordinates
+  - share material of same color between geometries <br>
+    Note: All textured objects will share material. Will be changed in next release.
+- Restore pre OSC 1.3 controller domain handling ([issue #703](https://github.com/esmini/esmini/issues/703))
+  - for scenarios ≥ v1.3, allow multiple active controllers per entity
+  - for scenarios < v1.3, allow only one active controller per entity
+- Support unordered (wrt s) OpenDRIVE road type elements
+- Improve SynchronizeAction by handling master reversing cases ([issue #705](https://github.com/esmini/esmini/issues/705))
+- Incorporate more scenarios from [Vector NCAP scenarios](https://github.com/vectorgrp/OSC-NCAP-scenarios) suite in esmini CI
 
 ### 2025-05-28 Version 2.47.0
 

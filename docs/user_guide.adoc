@@ -3721,7 +3721,7 @@ Master branch represent the latest released software. It should be in synch with
 
 From esmini v2.30.0 the CI will include formatting checks, in addition to static analysis and tests.
 
-From v2.46.3, esmini utilizes https://pre-commit.com/[pre-commit hooks] for these checks. For details of previous implementation, see older versions of this document, e.g. https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/refs/tags/v2.46.2/index.html[v2.46.2].
+From v2.48.0, esmini utilizes https://pre-commit.com/[pre-commit hooks] for these checks. For details of previous implementation, see older versions of this document, e.g. https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/refs/tags/v2.47.0/index.html[v2.47.0].
 
 The code styles are defined by following schemes:
 
