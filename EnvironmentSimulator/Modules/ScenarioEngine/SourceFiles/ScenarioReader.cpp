@@ -4974,10 +4974,18 @@ void ScenarioReader::parseOSCEnvironment(const pugi::xml_node &xml_node, OSCEnvi
                     }
                     if (!intensityStr.empty())
                     {
+                        if (GetVersionMajor() == 1 && GetVersionMinor() >= 2)
+                        {
+                            LOG_WARN("In Sun, intensity is deprecated in v1.1. Use illuminance instead, Accepting it anyway.");
+                        }
                         env.SetSun(Sun{std::stod(azimuth), std::stod(elevation), std::stod(intensityStr)});
                     }
                     else if (!illuminanceStr.empty())
                     {
+                        if (GetVersionMajor() == 1 && GetVersionMinor() < 2)
+                        {
+                            LOG_WARN("In Sun, illuminance is introduced in v1.2. Use intensity for earlier versions, Accepting it anyway.");
+                        }
                         env.SetSun(Sun{std::stod(azimuth), std::stod(elevation), std::stod(illuminanceStr)});
                     }
                     else

@@ -585,7 +585,6 @@ namespace viewer
         void   Frame(double time);
         void   SetFrictionScaleFactor(const double factor);
         double GetFrictionScaleFactor() const;
-        bool   defulatClearColorUsed_ = false;
 
     private:
         bool                                         CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
@@ -603,7 +602,7 @@ namespace viewer
                                                                 int                                        screenNum,
                                                                 bool                                       headless);
         void                                         CreateFog(const double range);
-        void SetSkyColour(const double sunIntensityFactor, const double fogVishualRangeFoctor, const double ClodinessFactor);
+        void SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
 
         int                                   AddGroundSurface();
         bool                                  keyUp_;
@@ -617,7 +616,8 @@ namespace viewer
         osgViewer::ViewerBase::ThreadingModel initialThreadingModel_;
         bool                                  stand_in_model_;
         double                                time_;
-        double                                frictionScaleFactor_ = 1.0;
+        double                                frictionScaleFactor_;
+        bool                                  defaultClearColorUsed_;
 
         struct
         {
