@@ -3212,7 +3212,7 @@ void OSIReporter::UpdateEnvironmentFog(const double visibility_range)
     {
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_THICK);
     }
-    else if (visibility_range > 0)
+    else if (visibility_range >= 0)
     {
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_fog(osi3::EnvironmentalConditions_Fog_FOG_DENSE);
     }
@@ -3254,7 +3254,7 @@ void OSIReporter::UpdateEnvironmentPrecipitation(const double precipitation_inte
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
             osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_VERY_LIGHT);
     }
-    else if (precipitation_intensity > 0)
+    else if (precipitation_intensity >= 0)
     {
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_precipitation(
             osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_NONE);

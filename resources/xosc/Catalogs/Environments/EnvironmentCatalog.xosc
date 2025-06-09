@@ -46,7 +46,6 @@
             </Weather>
             <RoadCondition frictionScaleFactor="0.5"/>
         </Environment>
-
         <Environment name="weather_test">
             <TimeOfDay animation="true" dateTime="2023-11-15T10:30:00.123+00:00"/>
             <Weather fractionalCloudCover="nineOktas" temperature="300" atmosphericPressure="10000">

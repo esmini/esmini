@@ -1362,6 +1362,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     int  screenNum                = -1;
     stand_in_model_               = false;
     time_                         = 0.0;
+    frictionScaleFactor_          = 1.0;  // default friction scale factor
+    defaultClearColorUsed_        = false;
 
     int aa_mode = DEFAULT_AA_MULTISAMPLES;
     if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
@@ -1685,7 +1687,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     {
         camera->setClearColor(osg::Vec4(color_background[0], color_background[1], color_background[2], 1.0f));
         clearColorSet          = true;
-        defulatClearColorUsed_ = true;
+        defaultClearColorUsed_ = true;
     }
 
     // Setup the camera models
@@ -1798,14 +1800,19 @@ void Viewer::CreateFog(const double range)
     rootnode_->getOrCreateStateSet()->setAttributeAndModes(fog.get());
 }
 
-void viewer::Viewer::SetSkyColour(const double sunIntensityFactor, const double fogVishualRangeFoctor, const double ClodinessFactor)
+void viewer::Viewer::SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor)
 {
-    double      FogAndCloudFactor = CLAMP(0.0, 1.0, fogVishualRangeFoctor + ClodinessFactor);
+    /*
+     Sky color equation: s * ((1 - w) * skycolor + w * graycolor), where:
+     s = sun intensity
+     w = fogVisualRangeFactor + cloudinessFactor (0 <= w <= 1)
+    */
+    double      fogAndCloudFactor = CLAMP(0.0, 1.0, fogVisualRangeFactor + cloudinessFactor);  //
     osg::Light* light             = osgViewer_->getLight();
     light->setDiffuse(osg::Vec4(0.9 * sunIntensityFactor - 0.1, 0.9 * sunIntensityFactor - 0.1, 0.8 * sunIntensityFactor - 0.1, 1));
-    float r = sunIntensityFactor * ((1 - FogAndCloudFactor) * color_background[0] + (FogAndCloudFactor * color_dark_gray[0]));
-    float g = sunIntensityFactor * ((1 - FogAndCloudFactor) * color_background[1] + (FogAndCloudFactor * color_dark_gray[1]));
-    float b = sunIntensityFactor * ((1 - FogAndCloudFactor) * color_background[2] + (FogAndCloudFactor * color_dark_gray[2]));
+    float r = sunIntensityFactor * ((1 - fogAndCloudFactor) * color_background[0] + fogAndCloudFactor * color_dark_gray[0]);
+    float g = sunIntensityFactor * ((1 - fogAndCloudFactor) * color_background[1] + fogAndCloudFactor * color_dark_gray[1]);
+    float b = sunIntensityFactor * ((1 - fogAndCloudFactor) * color_background[2] + fogAndCloudFactor * color_dark_gray[2]);
     osgViewer_->getCamera()->setClearColor(osg::Vec4(r, g, b, 0.0f));
 }
 
@@ -1816,9 +1823,9 @@ void Viewer::CreateWeatherGroup(const scenarioengine::OSCEnvironment& environmen
     {
         CreateFog(environment.GetFog().visibility_range);
     }
-    if (defulatClearColorUsed_)  // no --clear-color option
+    if (defaultClearColorUsed_)  // no --clear-color option
     {
-        SetSkyColour(environment.GetSunIntensityFactor(), environment.GetFogVisibilityRangeFactor(), environment.GetFractionalCloudStateFactor());
+        SetSkyColor(environment.GetSunIntensityFactor(), environment.GetFogVisibilityRangeFactor(), environment.GetFractionalCloudStateFactor());
     }
 
     if (environment.IsRoadConditionSet())
