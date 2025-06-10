@@ -2313,6 +2313,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
 
     emodel->state_set_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
     emodel->state_set_->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+    emodel->state_set_->setRenderBinDetails(10, "DepthSortedBin", osg::StateSet::RenderBinMode::OVERRIDE_RENDERBIN_DETAILS);
 
     emodel->modelBB_ = modelBB;
     emodel->model_   = modelgroup;
@@ -2804,7 +2805,7 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
 {
     if (outline == 0)
         return -1;
-    bool roof = outline->closed_ ? true : false;
+    bool roof = outline->roof_ ? true : false;
 
     // nrPoints will be corners + 1 if the outline should be closed, reusing first corner as last
     int nrPoints = outline->closed_ ? static_cast<int>(outline->corner_.size()) + 1 : static_cast<int>(outline->corner_.size());
@@ -2825,8 +2826,33 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
                                          static_cast<float>(y - origin_[1]),
                                          static_cast<float>(z + corner->GetHeight()));
         (*vertices_sides)[i * 2 + 1].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
-        (*vertices_top)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z + corner->GetHeight()));
-        (*vertices_bottom)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
+
+        // top and bottom shapes
+        if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_POLYGON)
+        {
+            (*vertices_top)[i].set(static_cast<float>(x - origin_[0]),
+                                   static_cast<float>(y - origin_[1]),
+                                   static_cast<float>(z + corner->GetHeight()));
+            (*vertices_bottom)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
+        }
+    }
+
+    if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP)
+    {
+        // rearrange vertices for quad strip
+        for (size_t i = 0; i < outline->corner_.size(); i++)
+        {
+            // points are starting at right side
+            double                      x, y, z;
+            unsigned                    index  = ((i % 2) == 0) ? outline->corner_.size() - 1 - (i / 2) : i / 2;
+            roadmanager::OutlineCorner* corner = outline->corner_[index];
+            corner->GetPos(x, y, z);
+
+            (*vertices_top)[i].set(static_cast<float>(x - origin_[0]),
+                                   static_cast<float>(y - origin_[1]),
+                                   static_cast<float>(z + corner->GetHeight()));
+            (*vertices_bottom)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
+        }
     }
 
     // Close geometry
@@ -2847,15 +2873,26 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
 
     if (roof)
     {
-        geom[1]->setVertexArray(vertices_top.get());
-        geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
-        osgUtil::Tessellator tessellator;
-        tessellator.retessellatePolygons(*geom[1]);
+        if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_POLYGON)
+        {
+            geom[1]->setVertexArray(vertices_top.get());
+            geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
+            osgUtil::Tessellator tessellator;
+            tessellator.retessellatePolygons(*geom[1]);
 
-        // then also add bottom
-        geom[2]->setVertexArray(vertices_bottom.get());
-        geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
-        tessellator.retessellatePolygons(*geom[2]);
+            // then also add bottom
+            geom[2]->setVertexArray(vertices_bottom.get());
+            geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
+            tessellator.retessellatePolygons(*geom[2]);
+        }
+        else
+        {
+            geom[1]->setVertexArray(vertices_top.get());
+            geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, nrPoints - 1));
+
+            geom[2]->setVertexArray(vertices_bottom.get());
+            geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, nrPoints - 1));
+        }
     }
 
     int nrGeoms = roof ? 3 : 1;
@@ -2871,6 +2908,10 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
     material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
     material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
     geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+    geode->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+    geode->getOrCreateStateSet()->setRenderBinDetails(20, "DepthSortedBin", osg::StateSet::RenderBinMode::OVERRIDE_RENDERBIN_DETAILS);
+    geode->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+    geode->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
 
     group->addChild(geode);
     env_origin2odr_->addChild(group);
@@ -3001,23 +3042,9 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
             osg::Vec4              color;
             tx = nullptr;
 
-            // Set color based on object type
-            if (object->GetType() == roadmanager::RMObject::ObjectType::BUILDING || object->GetType() == roadmanager::RMObject::ObjectType::BARRIER)
+            for (unsigned int c = 0; c < 4; c++)
             {
-                color = osg::Vec4(0.6f, 0.6f, 0.6f, 1.0f);
-            }
-            else if (object->GetType() == roadmanager::RMObject::ObjectType::OBSTACLE)
-            {
-                color = osg::Vec4(0.5f, 0.3f, 0.3f, 1.0f);
-            }
-            else if (object->GetType() == roadmanager::RMObject::ObjectType::TREE ||
-                     object->GetType() == roadmanager::RMObject::ObjectType::VEGETATION)
-            {
-                color = osg::Vec4(0.22f, 0.32f, 0.22f, 1.0f);
-            }
-            else
-            {
-                color = osg::Vec4(0.4f, 0.4f, 0.4f, 1.0f);
+                color[c] = object->GetColor()[c];
             }
 
             if (object->GetNumberOfOutlines() > 0 &&
@@ -3029,8 +3056,8 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                     CreateOutlineObject(outline, color);
                 }
                 LOG_INFO("Created outline geometry for object {}.", object->GetName());
-                LOG_INFO("  if it looks strange, e.g.faces too dark or light color, ");
-                LOG_INFO("  check that corners are defined counter-clockwise (as OpenGL default).");
+                LOG_DEBUG("  if it looks strange, e.g.faces too dark or light color, ");
+                LOG_DEBUG("  check that corners are defined counter-clockwise (as OpenGL default).");
             }
             else
             {

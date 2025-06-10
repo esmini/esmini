@@ -795,13 +795,13 @@ TEST(OSI, TestStationaryObjects)
 
     // verify correct location of OpenDRIVE stationary object with polygon
     EXPECT_EQ(osi_gt_ptr->stationary_object(0).id().value(), 0);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().length(), 0.0, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().width(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().length(), 25.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().width(), 10.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().height(), 2.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().x(), 20.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().y(), -7.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().position().z(), 8.0, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().yaw(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().yaw(), 0.2, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().pitch(), 0.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().orientation().roll(), 0.0, 1e-3);
 
@@ -879,6 +879,122 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().orientation().roll(), 0.0, 1e-3);
 
     delete player;
+}
+
+class OSITunnelTestFixture : public ::testing::Test
+{
+protected:
+    OSITunnelTestFixture()
+    {
+        int argc = sizeof(args) / sizeof(char*);
+        player   = new ScenarioPlayer(argc, const_cast<char**>(args));
+    }
+
+    ~OSITunnelTestFixture()
+    {
+        delete player;
+    }
+
+    void SetUp() override
+    {
+        ASSERT_NE(player, nullptr);
+        int retval = player->Init();
+        ASSERT_EQ(retval, 0);
+        ASSERT_EQ(player->scenarioEngine->entities_.object_.size(), 5);
+
+        osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+        ASSERT_NE(osi_gt_ptr, nullptr);
+    }
+
+    const char*              args[6]    = {"esmini", "--osc", "../../../resources/xosc/tunnels.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    ScenarioPlayer*          player     = nullptr;
+    const osi3::GroundTruth* osi_gt_ptr = nullptr;
+};
+
+TEST_F(OSITunnelTestFixture, TestOSIBrokenRoadmarkCurve)
+{
+    // verify that only endpoints of individual roadmarks are reported on OSI
+    // in curves roadmanager splits long lines into segments for smooth visualization
+    // but OSI only reports the endpoints of the segments
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 27);
+    const osi3::LaneBoundary* lane_boundary = &osi_gt_ptr->lane_boundary().Get(5);
+
+    EXPECT_EQ(lane_boundary->classification().type(), osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_DASHED_LINE);
+    EXPECT_EQ(lane_boundary->id().value(), 5);
+    EXPECT_EQ(lane_boundary->boundary_line_size(), 14);
+
+    EXPECT_NEAR(lane_boundary->boundary_line(0).position().x(), 129.8113, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(0).position().y(), 46.9211, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(1).position().x(), 131.0200, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(1).position().y(), 50.7710, 1e-3);
+
+    EXPECT_NEAR(lane_boundary->boundary_line(8).position().x(), 148.5629, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(8).position().y(), 89.3095, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(9).position().x(), 151.1818, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(9).position().y(), 92.0060, 1e-3);
+}
+
+TEST_F(OSITunnelTestFixture, TestOSITunnelBoundary)
+{
+    // verify existence and position of boundaries of all four tunnels
+    const osi3::LaneBoundary* lane_boundary = &osi_gt_ptr->lane_boundary().Get(19);
+    EXPECT_EQ(lane_boundary->id().value(), 1);
+    EXPECT_EQ(lane_boundary->classification().type(), osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_STRUCTURE);
+    EXPECT_EQ(lane_boundary->boundary_line_size(), 22);
+
+    // check lane width taken into consideration
+    EXPECT_NEAR(lane_boundary->boundary_line(0).position().x(), 30.0000, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(0).position().y(), -8.0000, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(11).position().x(), 141.6413, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(11).position().y(), 58.4883, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(21).position().x(), 223.3542, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(21).position().y(), 98.5036, 1e-3);
+
+    // check small tunnel
+    lane_boundary = &osi_gt_ptr->lane_boundary().Get(21);
+    EXPECT_EQ(lane_boundary->id().value(), 2);
+    EXPECT_EQ(lane_boundary->classification().type(), osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_STRUCTURE);
+    EXPECT_EQ(lane_boundary->boundary_line_size(), 2);
+
+    EXPECT_NEAR(lane_boundary->boundary_line(0).position().x(), 284.7489, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(0).position().y(), 99.6338, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(1).position().x(), 293.6830, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(1).position().y(), 101.1629, 1e-3);
+
+    // check tunnel with generate3DModel=false
+    // first point on right side
+    lane_boundary = &osi_gt_ptr->lane_boundary().Get(23);
+    EXPECT_EQ(lane_boundary->id().value(), 3);
+    EXPECT_EQ(lane_boundary->classification().type(), osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_STRUCTURE);
+    EXPECT_EQ(lane_boundary->boundary_line_size(), 14);
+
+    EXPECT_NEAR(lane_boundary->boundary_line(0).position().x(), 340.4665, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(0).position().y(), 139.0141, 1e-3);
+
+    // last point on left side
+    lane_boundary = &osi_gt_ptr->lane_boundary().Get(24);
+    EXPECT_EQ(lane_boundary->id().value(), 3);
+    EXPECT_EQ(lane_boundary->classification().type(), osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_STRUCTURE);
+    EXPECT_EQ(lane_boundary->boundary_line_size(), 14);
+
+    EXPECT_NEAR(lane_boundary->boundary_line(13).position().x(), 436.7085, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(13).position().y(), 228.0072, 1e-3);
+
+    // check tunnel on separate road
+    lane_boundary = &osi_gt_ptr->lane_boundary().Get(25);
+    EXPECT_EQ(lane_boundary->id().value(), 4);
+    EXPECT_EQ(lane_boundary->classification().type(), osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_STRUCTURE);
+    EXPECT_EQ(lane_boundary->boundary_line_size(), 23);
+
+    EXPECT_NEAR(lane_boundary->boundary_line(9).position().x(), 450.0634, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(9).position().y(), -18.2864, 1e-3);
+    EXPECT_NEAR(lane_boundary->boundary_line(9).position().z(), 18.7850, 1e-3);
+
+    // verify same nr points on left side
+    lane_boundary = &osi_gt_ptr->lane_boundary().Get(26);
+    EXPECT_EQ(lane_boundary->id().value(), 4);
+    EXPECT_EQ(lane_boundary->classification().type(), osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_STRUCTURE);
+    EXPECT_EQ(lane_boundary->boundary_line_size(), 23);
 }
 
 #endif  // _USE_OSI

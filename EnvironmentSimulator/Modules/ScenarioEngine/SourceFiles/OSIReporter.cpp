@@ -695,6 +695,16 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(object->GetY());
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(object->GetZ() + object->GetZOffset() + object->GetHeight() / 2.0);
 
+    // Set OSI Stationary Object Boundingbox
+    obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(object->GetHeight());
+    obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_width(object->GetWidth());
+    obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(object->GetLength());
+
+    // Set OSI Stationary Object Orientation
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(object->GetRoll()));
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(object->GetPitch()));
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(object->GetH() + object->GetHOffset()));
+
     if (object->GetNumberOfOutlines() > 0)
     {
         for (unsigned int k = 0; k < object->GetNumberOfOutlines(); k++)
@@ -712,22 +722,10 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
                     vec->set_y(y);
                     height += outline->corner_[l]->GetHeight() / static_cast<double>(outline->corner_.size());
                 }
+                // replace any previous height value with the average height of the outline corners
                 obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(height);
             }
         }
-    }
-    else
-    {
-        // Set OSI Stationary Object Boundingbox
-        obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(object->GetHeight());
-        obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_width(object->GetWidth());
-        obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(object->GetLength());
-        // only bounding box
-
-        // Set OSI Stationary Object Orientation
-        obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(object->GetRoll()));
-        obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(object->GetPitch()));
-        obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(object->GetH() + object->GetHOffset()));
     }
 
     return 0;
@@ -1863,6 +1861,37 @@ int OSIReporter::UpdateOSILaneBoundary()
                         obj_osi_internal.lnb.push_back(osi_laneboundary);
                     }
                 }
+            }
+        }
+    }
+
+    // set any tunnel boundaries
+    for (unsigned int i = 0; i < opendrive->GetNumOfRoads(); i++)
+    {
+        roadmanager::Road *road = opendrive->GetRoadByIdx(i);
+        for (unsigned int j = 0; j < road->GetNumberOfTunnels(); j++)
+        {
+            roadmanager::Tunnel *tunnel = road->GetTunnel(j);
+
+            // create 10 m points for tunnel
+            for (unsigned int k = 0; k < 2; k++)
+            {
+                osi3::LaneBoundary *osi_laneboundary = obj_osi_internal.static_gt->add_lane_boundary();
+
+                // set id and points
+                osi_laneboundary->mutable_id()->set_value(tunnel->id_);
+                for (unsigned int l = 0; l < tunnel->boundary_[k].GetOSIPoints()->GetPoints().size(); l++)
+                {
+                    roadmanager::PointStruct         &p              = tunnel->boundary_[k].GetOSIPoints()->GetPoints()[l];
+                    osi3::LaneBoundary_BoundaryPoint *boundary_point = osi_laneboundary->add_boundary_line();
+                    boundary_point->mutable_position()->set_x(p.x);
+                    boundary_point->mutable_position()->set_y(p.y);
+                    boundary_point->mutable_position()->set_z(p.z);
+                }
+                // set STRUCTURE type which covers tunnel
+                osi_laneboundary->mutable_classification()->set_type(
+                    osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_STRUCTURE);
+                obj_osi_internal.lnb.push_back(osi_laneboundary);
             }
         }
     }

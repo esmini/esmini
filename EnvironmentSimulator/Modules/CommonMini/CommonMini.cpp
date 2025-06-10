@@ -763,6 +763,7 @@ bool IsValidDateTimeFormat(const std::string& dateTimeString)
     }
     catch (const std::invalid_argument& e)
     {
+        LOG_ERROR("IsValidDateTimeFormat: {}", e.what());
         return false;  // Invalid milliseconds
     }
 
@@ -1138,6 +1139,25 @@ FILE* FileOpen(const char* filename, const char* mode)
     return file;
 }
 
+int GetCrossProduct3D(double x1, double y1, double z1, double x2, double y2, double z2, double& x, double& y, double& z)
+{
+    x = y1 * z2 - z1 * y2;
+    y = z1 * x2 - x1 * z2;
+    z = x1 * y2 - y1 * x2;
+
+    return 0;
+}
+
+double GetCrossProduct3DMagnitude(double x1, double y1, double z1, double x2, double y2, double z2)
+{
+    double x, y, z;
+
+    GetCrossProduct3D(x1, y1, z1, x2, y2, z2, x, y, z);
+
+    // Calculate the magnitude of the resulting vector
+    return std::sqrt(x * x + y * y + z * z);
+}
+
 double GetCrossProduct2D(double x1, double y1, double x2, double y2)
 {
     return x1 * y2 - x2 * y1;
@@ -1150,7 +1170,31 @@ double GetDotProduct2D(double x1, double y1, double x2, double y2)
 
 double GetAngleBetweenVectors(double x1, double y1, double x2, double y2)
 {
-    return acos(GetDotProduct2D(x1, y1, x2, y2) / (GetLengthOfVector2D(x1, y1) * GetLengthOfVector2D(x2, y2)));
+    double dp      = GetDotProduct2D(x1, y1, x2, y2);
+    double length1 = GetLengthOfVector2D(x1, y1);
+    double length2 = GetLengthOfVector2D(x2, y2);
+    if (length1 < SMALL_NUMBER || length2 < SMALL_NUMBER)
+    {
+        return 0.0;  // Avoid division by zero
+    }
+    return acos(ABS_LIMIT(dp / (length1 * length2), 1.0));
+}
+
+double GetDotProduct3D(double x1, double y1, double z1, double x2, double y2, double z2)
+{
+    return x1 * x2 + y1 * y2 + z1 * z2;
+}
+
+double GetAngleBetweenVectors3D(double x1, double y1, double z1, double x2, double y2, double z2)
+{
+    double dp      = GetDotProduct3D(x1, y1, z1, x2, y2, z2);
+    double length1 = GetLengthOfVector3D(x1, y1, z1);
+    double length2 = GetLengthOfVector3D(x2, y2, z2);
+    if (length1 < SMALL_NUMBER || length2 < SMALL_NUMBER)
+    {
+        return 0.0;  // Avoid division by zero
+    }
+    return acos(ABS_LIMIT(dp / (length1 * length2), 1.0));
 }
 
 void NormalizeVec2D(double x, double y, double& xn, double& yn)

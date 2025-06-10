@@ -588,6 +588,8 @@ namespace viewer
 
     private:
         osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string filename);
+        int                                          CreateTunnels(roadmanager::OpenDrive* od);
+        int                                          CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
         int                                          InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
                                                                 int                                        x,
                                                                 int                                        y,
@@ -600,7 +602,6 @@ namespace viewer
         bool                                         CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
         bool                                         CreateRoadMarkLines(roadmanager::OpenDrive* od);
         int                                          CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color);
-        int                                          CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
         void                                         CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
         int                                          AddGroundSurface();
         void SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
