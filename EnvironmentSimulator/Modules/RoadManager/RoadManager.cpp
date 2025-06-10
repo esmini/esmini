@@ -2326,6 +2326,11 @@ Road::~Road()
         delete (object_[i]);
     }
     object_.clear();
+    for (size_t i = 0; i < tunnel_.size(); i++)
+    {
+        delete (tunnel_[i]);
+    }
+    tunnel_.clear();
 }
 
 void Road::Print() const
@@ -2462,6 +2467,11 @@ Signal* Road::GetSignal(idx_t idx) const
 void Road::AddObject(RMObject* object)
 {
     object_.push_back(object);
+}
+
+void Road::AddTunnel(Tunnel* tunnel)
+{
+    tunnel_.push_back(tunnel);
 }
 
 RMObject* Road::GetRoadObject(idx_t idx) const
@@ -4773,6 +4783,20 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 {
                     LOG_ERROR("RMObject: Major error");
                 }
+            }
+
+            for (pugi::xml_node tunnel_node = objects.child("tunnel"); tunnel_node; tunnel_node = tunnel_node.next_sibling("tunnel"))
+            {
+                Tunnel* tunnel    = nullptr;
+                tunnel            = new Tunnel();
+                tunnel->daylight_ = tunnel_node.attribute("daylight").as_double();
+                tunnel->id_       = tunnel_node.attribute("id").as_uint();
+                tunnel->length_   = tunnel_node.attribute("length").as_double();
+                tunnel->lighting_ = tunnel_node.attribute("lighting").as_double();
+                tunnel->name_     = tunnel_node.attribute("name").as_string();
+                tunnel->s_        = tunnel_node.attribute("s").as_double();
+                tunnel->type_     = static_cast<Tunnel::Type>(tunnel_node.attribute("type").as_uint());
+                r->AddTunnel(tunnel);
             }
         }
 

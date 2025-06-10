@@ -1203,6 +1203,26 @@ namespace roadmanager
         int toLane_;
     } ValidityRecord;
 
+    class Tunnel
+    {
+    public:
+        enum class Type
+        {
+            STANDARD,
+            UNDERPASS
+        };
+
+        Tunnel() = default;
+
+        double      daylight_ = 0.0;  // degree of daylight in the tunnel
+        double      length_   = 0.0;
+        id_t        id_       = ID_UNDEFINED;
+        double      lighting_ = 0.0;
+        std::string name_;
+        double      s_    = 0.0;
+        Type        type_ = Type::STANDARD;
+    };
+
     class RoadObject
     {
     public:
@@ -2306,6 +2326,7 @@ namespace roadmanager
         void                                     AddLaneOffset(LaneOffset *lane_offset);
         void                                     AddSignal(Signal *signal);
         void                                     AddObject(RMObject *object);
+        void                                     AddTunnel(Tunnel *tunnel);
         Elevation                               *GetElevation(idx_t idx) const;
         Elevation                               *GetSuperElevation(idx_t idx) const;
         unsigned int                             GetNumberOfSignals() const;
@@ -2322,6 +2343,14 @@ namespace roadmanager
         unsigned int GetNumberOfSuperElevations() const
         {
             return static_cast<unsigned int>(super_elevation_profile_.size());
+        }
+        unsigned int GetNumberOfTunnels() const
+        {
+            return static_cast<unsigned int>(tunnel_.size());
+        }
+        Tunnel *GetTunnel(idx_t idx) const
+        {
+            return (idx < tunnel_.size()) ? tunnel_[idx] : nullptr;
         }
         double       GetLaneOffset(double s) const;
         double       GetLaneOffsetPrim(double s) const;
@@ -2406,6 +2435,7 @@ namespace roadmanager
         std::vector<LaneOffset *>               lane_offset_;
         std::vector<Signal *>                   signal_;
         std::vector<RMObject *>                 object_;
+        std::vector<Tunnel *>                   tunnel_;
     };
 
     class LaneRoadLaneConnection
