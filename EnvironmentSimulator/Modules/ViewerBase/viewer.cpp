@@ -1793,8 +1793,14 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osgViewer_->realize();
 }
 
-void Viewer::CreateFog(const double range, const scenarioengine::OSCEnvironment& environment)
+void Viewer::CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor)
 {
+    /*
+        Generate fog based on the following equation:
+        fogColor = color_dark_gray * cloudiness + color_background_gray * (1 - cloudiness)
+
+        Apply fog with sunIntensityFactor, but keep the fogColor as gray for blending with sky color later.
+    */
     osg::ref_ptr<osg::Fog> fog = new osg::Fog;
     fog->setMode(osg::Fog::EXP);
     fog->setDensity(1 / range);
@@ -1803,39 +1809,38 @@ void Viewer::CreateFog(const double range, const scenarioengine::OSCEnvironment&
 
     double skyGray   = (color_background[0] + color_background[1] + color_background[2]) / 3.0;
     double cloudGray = (color_dark_gray[0] + color_dark_gray[1] + color_dark_gray[2]) / 3.0;
-    double grayFog   = cloudGray * environment.GetFractionalCloudStateFactor() + skyGray * (1 - environment.GetFractionalCloudStateFactor());
-    fogColor_[0]     = grayFog;
-    fogColor_[1]     = grayFog;
-    fogColor_[2]     = grayFog;
+    double grayFog   = cloudGray * cloudinessFactor + skyGray * (1 - cloudinessFactor);
 
-    fog->setColor(osg::Vec4(environment.GetSunIntensityFactor() * fogColor_[0],
-                            environment.GetSunIntensityFactor() * fogColor_[1],
-                            environment.GetSunIntensityFactor() * fogColor_[2],
-                            1.0f));
+    fogColor_[0] = grayFog;
+    fogColor_[1] = grayFog;
+    fogColor_[2] = grayFog;
+
+    fog->setColor(osg::Vec4(sunIntensityFactor * fogColor_[0], sunIntensityFactor * fogColor_[1], sunIntensityFactor * fogColor_[2], 1.0f));
     rootnode_->getOrCreateStateSet()->setAttributeAndModes(fog.get());
 }
 
 void viewer::Viewer::SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor)
 {
     /*
-     Sky color equation: s * ((1 - w) * bluecolor + w * fogcolor), where:
-     s = sun intensity
-     w = cloudinessFactor (0 <= w <= 1)
-
+     Sky color equation: sunIntensity * ((1 - cloudiness) * background + cloudiness * fogcolor), where:
+     background = visual_range * fogcolor + (1 - visual_range) * color_background
+     fogColor = color_dark_gray * cloudiness + color_background_gray * (1 - cloudiness)
     */
-    double fogAndCloudFactor = CLAMP(0.0, 1.0, fogVisualRangeFactor + cloudinessFactor);
-
     osg::Light* light = osgViewer_->getLight();
     light->setDiffuse(osg::Vec4(0.9 * sunIntensityFactor - 0.1, 0.9 * sunIntensityFactor - 0.1, 0.8 * sunIntensityFactor - 0.1, 1));
 
+    // Blend background color (blue) with fog color (gray) based on fogVisualRangeFactor (scaled up to have higher influence of fog with low visual
+    // range) This creates a smooth transition from blue sky to gray fog as the visual range decreases.
     float clamped_visual_range = CLAMP(0.0, 1.0, fogVisualRangeFactor * 100.0);
     float blended_background_r = clamped_visual_range * fogColor_[0] + (1 - clamped_visual_range) * color_background[0];
     float blended_background_g = clamped_visual_range * fogColor_[1] + (1 - clamped_visual_range) * color_background[1];
     float blended_background_b = clamped_visual_range * fogColor_[2] + (1 - clamped_visual_range) * color_background[2];
 
-    float r = sunIntensityFactor * ((1 - fogAndCloudFactor) * blended_background_r + fogAndCloudFactor * fogColor_[0]);
-    float g = sunIntensityFactor * ((1 - fogAndCloudFactor) * blended_background_g + fogAndCloudFactor * fogColor_[1]);
-    float b = sunIntensityFactor * ((1 - fogAndCloudFactor) * blended_background_b + fogAndCloudFactor * fogColor_[2]);
+    // Blend the background color with fog color based on cloudinessFactor (very cloudy sky will be overwhelmingly gray), else blue sky with fog
+    // influence
+    float r = sunIntensityFactor * ((1 - cloudinessFactor) * blended_background_r + cloudinessFactor * fogColor_[0]);
+    float g = sunIntensityFactor * ((1 - cloudinessFactor) * blended_background_g + cloudinessFactor * fogColor_[1]);
+    float b = sunIntensityFactor * ((1 - cloudinessFactor) * blended_background_b + cloudinessFactor * fogColor_[2]);
 
     osgViewer_->getCamera()->setClearColor(osg::Vec4(r, g, b, 0.0f));
 }
@@ -1845,7 +1850,7 @@ void Viewer::CreateWeatherGroup(const scenarioengine::OSCEnvironment& environmen
     weatherGroup_ = new osg::PositionAttitudeTransform;
     if (environment.IsFogSet())
     {
-        CreateFog(environment.GetFog().visibility_range, environment);
+        CreateFog(environment.GetFog().visibility_range, environment.GetSunIntensityFactor(), environment.GetFractionalCloudStateFactor());
     }
     if (defaultClearColorUsed_)  // no --clear-color option
     {
