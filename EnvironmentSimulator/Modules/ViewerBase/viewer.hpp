@@ -587,11 +587,7 @@ namespace viewer
         double GetFrictionScaleFactor() const;
 
     private:
-        bool                                         CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
-        bool                                         CreateRoadMarkLines(roadmanager::OpenDrive* od);
-        int                                          CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color);
         osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string filename);
-        int                                          CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
         int                                          InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
                                                                 int                                        x,
                                                                 int                                        y,
@@ -601,10 +597,14 @@ namespace viewer
                                                                 bool                                       decoration,
                                                                 int                                        screenNum,
                                                                 bool                                       headless);
-        void                                         CreateFog(const double range);
+        bool                                         CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
+        bool                                         CreateRoadMarkLines(roadmanager::OpenDrive* od);
+        int                                          CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color);
+        int                                          CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
+        void                                         CreateFog(const double range, const scenarioengine::OSCEnvironment& environment);
+        int                                          AddGroundSurface();
         void SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
 
-        int                                   AddGroundSurface();
         bool                                  keyUp_;
         bool                                  keyDown_;
         bool                                  keyLeft_;
@@ -618,6 +618,7 @@ namespace viewer
         double                                time_;
         double                                frictionScaleFactor_;
         bool                                  defaultClearColorUsed_;
+        osg::Vec4                             fogColor_;
 
         struct
         {
