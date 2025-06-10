@@ -19,8 +19,10 @@
 #include <random>
 #include <algorithm>
 #include <numeric>
+#include "VehiclePool.hpp"
 #include "ControllerACC.hpp"
 #include "ScenarioReader.hpp"
+#include "ScenarioEngine.hpp"
 
 using namespace scenarioengine;
 using namespace STGeometry;
@@ -274,28 +276,7 @@ SwarmTrafficAction::SwarmTrafficAction(StoryBoardElement* parent) : OSCGlobalAct
 
 SwarmTrafficAction::~SwarmTrafficAction()
 {
-    auto RecursiveDeleteTrailers = [](Vehicle* vehicle, auto& recurseLambda) -> void
-    {
-        if (vehicle->trailer_hitch_ && vehicle->trailer_hitch_->trailer_vehicle_)
-        {
-            recurseLambda(static_cast<Vehicle*>(vehicle->trailer_hitch_->trailer_vehicle_), recurseLambda);
-        }
-
-        delete vehicle;
-    };
-
-    for (auto* entry : vehicle_pool_)
-    {
-        if (entry != centralObject_)
-        {
-            if (entry->trailer_hitch_ && entry->trailer_hitch_->trailer_vehicle_)
-            {
-                RecursiveDeleteTrailers(static_cast<Vehicle*>(entry->trailer_hitch_->trailer_vehicle_), RecursiveDeleteTrailers);
-            }
-
-            delete entry;
-        }
-    }
+    delete vehicle_pool_;
 }
 
 void SwarmTrafficAction::Start(double simTime)
@@ -330,29 +311,9 @@ void SwarmTrafficAction::Start(double simTime)
 
     // Register model filesnames from first vehicle catalog
     // if no catalog loaded, use same model as central object
-    Catalogs* catalogs = reader_->GetCatalogs();
-    for (size_t i = 0; i < catalogs->catalog_.size(); i++)
-    {
-        if (catalogs->catalog_[i]->GetType() == CatalogType::CATALOG_VEHICLE)
-        {
-            for (size_t j = 0; j < catalogs->catalog_[i]->entry_.size(); j++)
-            {
-                Vehicle* vehicle = reader_->parseOSCVehicle(catalogs->catalog_[i]->entry_[j]->GetNode());
-                if (vehicle->category_ == Vehicle::Category::CAR || vehicle->category_ == Vehicle::Category::BUS ||
-                    vehicle->category_ == Vehicle::Category::TRUCK || vehicle->category_ == Vehicle::Category::VAN ||
-                    vehicle->category_ == Vehicle::Category::MOTORBIKE)
-                {
-                    vehicle_pool_.push_back(vehicle);
-                }
-                else
-                {
-                    delete vehicle;
-                }
-            }
-        }
-    }
+    vehicle_pool_ = new VehiclePool(reader_, nullptr, true);
 
-    if (vehicle_pool_.size() == 0)
+    if (vehicle_pool_ == nullptr || vehicle_pool_->GetVehicles().size() == 0)
     {
         if (centralObject_ && centralObject_->type_ == Object::Type::VEHICLE)
         {
@@ -362,7 +323,7 @@ void SwarmTrafficAction::Start(double simTime)
             // remove any duplicate controller references
             vehicle->controllers_.clear();
 
-            vehicle_pool_.push_back(vehicle);
+            vehicle_pool_->AddVehicle(vehicle);
         }
         else
         {
@@ -405,6 +366,12 @@ void SwarmTrafficAction::Step(double simTime, double dt)
         spawn(sols, despawn(simTime), simTime);
         lastTime = simTime;
     }
+}
+
+void scenarioengine::SwarmTrafficAction::SetScenarioEngine(ScenarioEngine* scenario_engine)
+{
+    scenario_engine_ = scenario_engine;
+    entities_        = scenario_engine_ != nullptr ? &scenario_engine_->entities_ : nullptr;
 }
 
 void SwarmTrafficAction::createRoadSegments(BBoxVec& vec)
@@ -620,12 +587,12 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
                 continue;  // distance = speed * 2 seconds
 
             Controller::InitArgs args;
-            args.name       = "Swarm ACC controller";
-            args.type       = CONTROLLER_ACC_TYPE_NAME;
-            args.entities   = entities_;
-            args.gateway    = gateway_;
-            args.parameters = 0;
-            args.properties = 0;
+            args.name            = "Swarm ACC controller";
+            args.type            = CONTROLLER_ACC_TYPE_NAME;
+            args.scenario_engine = scenario_engine_;
+            args.gateway         = gateway_;
+            args.parameters      = 0;
+            args.properties      = 0;
 
 #if 0  // This is one way of setting the ACC setSpeed property
             args.properties = new OSCProperties();
@@ -642,10 +609,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             reader_->AddController(acc);
 
             // Pick random model from vehicle catalog
-            std::uniform_int_distribution<int> dist(0, static_cast<int>((vehicle_pool_.size() - 1)));
-            int                                number = dist(SE_Env::Inst().GetRand().GetGenerator());
-
-            Vehicle* vehicle = new Vehicle(*vehicle_pool_[static_cast<unsigned int>(number)]);
+            Vehicle* vehicle = new Vehicle(*vehicle_pool_->GetRandomVehicle());
             vehicle->pos_.SetLanePos(inf.pos.GetTrackId(), laneID, inf.pos.GetS(), 0.0);
 
             // Set swarm traffic direction based on RHT or LHT

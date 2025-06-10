@@ -16,7 +16,6 @@
 #include "Action.hpp"
 #include "CommonMini.hpp"
 #include "Parameters.hpp"
-#include "Entities.hpp"
 #include "ScenarioGateway.hpp"
 #include "OSCAABBTree.hpp"
 #include <vector>
@@ -30,6 +29,7 @@ namespace scenarioengine
     using aabbTree::Solutions;
     using std::vector;
     using namespace Utils;
+    class VehiclePool;
 
     class OSCGlobalAction : public OSCAction
     {
@@ -295,6 +295,7 @@ namespace scenarioengine
     };
 
     class ScenarioReader;
+    class ScenarioEngine;
 
     class SwarmTrafficAction : public OSCGlobalAction
     {
@@ -354,10 +355,8 @@ namespace scenarioengine
         {
             semiMinorAxis_ = axes;
         }
-        void SetEntities(Entities* entities)
-        {
-            entities_ = entities;
-        }
+        void SetScenarioEngine(ScenarioEngine* scenario_engine);
+
         void SetGateway(ScenarioGateway* gateway)
         {
             gateway_ = gateway;
@@ -380,13 +379,14 @@ namespace scenarioengine
         Entities*               entities_;
         ScenarioGateway*        gateway_;
         ScenarioReader*         reader_;
+        ScenarioEngine*         scenario_engine_;
         Object*                 centralObject_;
         aabbTree::ptTree        rTree;
         unsigned long           numberOfVehicles;
         std::vector<SpawnInfo>  spawnedV;
         roadmanager::OpenDrive* odrManager_;
         double                  innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
-        std::vector<Vehicle*>   vehicle_pool_;
+        VehiclePool*            vehicle_pool_;
         static int              counter_;
 
         int         despawn(double simTime);

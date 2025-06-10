@@ -2396,17 +2396,17 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
 
     // Set controller
     scenarioengine::Controller::InitArgs args;
-    args.name       = "ALKS_R157SM_Controller";
-    args.type       = CONTROLLER_ALKS_R157SM_TYPE_NAME;
-    args.parameters = 0;
-    args.gateway    = se->getScenarioGateway();
-    args.properties = new OSCProperties();
+    args.name            = "ALKS_R157SM_Controller";
+    args.type            = CONTROLLER_ALKS_R157SM_TYPE_NAME;
+    args.parameters      = 0;
+    args.gateway         = se->getScenarioGateway();
+    args.scenario_engine = se;
+    args.properties      = new OSCProperties();
     OSCProperties::Property property;
     property.name_  = "model";
     property.value_ = "Regulation";
     args.properties->property_.push_back(property);
     ControllerALKS_R157SM* controller = reinterpret_cast<ControllerALKS_R157SM*>(InstantiateControllerALKS_R157SM(&args));
-    controller->SetScenarioEngine(se);
 
     Object* obj = se->entities_.object_[0];
 

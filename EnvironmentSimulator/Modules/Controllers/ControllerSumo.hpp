@@ -16,6 +16,7 @@
 #include "Controller.hpp"
 #include "pugixml.hpp"
 #include "Parameters.hpp"
+#include "VehiclePool.hpp"
 
 #define CONTROLLER_SUMO_TYPE_NAME "SumoController"
 
@@ -26,6 +27,7 @@ namespace scenarioengine
     {
     public:
         ControllerSumo(InitArgs* args);
+        ~ControllerSumo();
 
         virtual const char* GetTypeName()
         {
@@ -43,12 +45,13 @@ namespace scenarioengine
         void SetSumoVehicle(Object* object);
 
     private:
-        float              sumo_x_offset_;
-        float              sumo_y_offset_;
-        double             time_;
+        float              sumo_x_offset_ = 0.0f;
+        float              sumo_y_offset_ = 0.0f;
+        double             time_          = 0.0;
         pugi::xml_document docsumo_;
         std::string        model_filepath_;
-        Object*            template_vehicle_;
+        Object*            template_vehicle_ = nullptr;
+        VehiclePool*       vehicle_pool_     = nullptr;
     };
 
     Controller* InstantiateControllerSumo(void* args);

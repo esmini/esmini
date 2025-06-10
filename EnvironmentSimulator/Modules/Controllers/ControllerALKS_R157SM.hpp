@@ -145,7 +145,6 @@ namespace scenarioengine
             {
                 return model_mode_;
             }
-            void         SetScenarioEngine(ScenarioEngine* scenario_engine);
             void         SetScenarioType(ScenarioType type);
             ScenarioType GetScenarioType() const
             {
@@ -240,9 +239,8 @@ namespace scenarioengine
             bool full_stop_;
             bool always_trig_on_scenario_;
 
-            const int       deltaLaneId[3] = {-1, 0, 1};
-            const double    g              = 9.8;
-            ScenarioEngine* scenario_engine_;
+            const int    deltaLaneId[3] = {-1, 0, 1};
+            const double g              = 9.8;
 
             virtual bool CheckPerceptionCutIn()
             {
@@ -617,7 +615,6 @@ namespace scenarioengine
         void LinkObject(Object* object);
         int  Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)]);
         void ReportKeyEvent(int key, bool down);
-        void SetScenarioEngine(ScenarioEngine* scenario_engine) override;
     };
 
     Controller* InstantiateControllerALKS_R157SM(void* args);

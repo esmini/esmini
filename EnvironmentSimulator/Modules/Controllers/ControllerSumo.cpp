@@ -14,6 +14,7 @@
 #include "ControllerSumo.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
+#include "ScenarioEngine.hpp"
 #include "pugixml.hpp"
 #include "logger.hpp"
 
@@ -84,7 +85,19 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
     options.push_back("--xml-validation");
     options.push_back("never");
 
+    std::vector<unsigned int> categories = {Vehicle::Category::CAR, Vehicle::Category::VAN};
+    vehicle_pool_->Initialize(scenario_engine_->GetScenarioReader(), &categories, false);
+
     libsumo::Simulation::load(options);
+}
+
+scenarioengine::ControllerSumo::~ControllerSumo()
+{
+    if (vehicle_pool_ != nullptr)
+    {
+        delete vehicle_pool_;
+        vehicle_pool_ = nullptr;
+    }
 }
 
 void ControllerSumo::Init()
@@ -107,18 +120,31 @@ void ControllerSumo::Step(double timeStep)
         {
             if (!entities_->nameExists(deplist[i]))
             {
-                Vehicle* vehicle = new Vehicle();
-                // copy the default vehicle stuff here (add bounding box and so on)
-                LOG_INFO("SUMO controller: Add vehicle to scenario: {}", deplist[i]);
-                vehicle->name_ = deplist[i];
-                vehicle->AssignController(this);
-                vehicle->model3d_     = template_vehicle_->model3d_;
-                vehicle->scaleMode_   = EntityScaleMode::BB_TO_MODEL;
-                vehicle->role_        = static_cast<int>(Object::Role::CIVIL);
-                vehicle->category_    = Vehicle::Category::CAR;
-                vehicle->odometer_    = 0.0;
-                vehicle->boundingbox_ = template_vehicle_->boundingbox_;
-                entities_->addObject(vehicle, true);
+                Vehicle* vehicle = nullptr;
+                if (vehicle_pool_ == nullptr || vehicle_pool_->GetVehicles().empty())
+                {
+                    LOG_INFO("SUMO controller: No vehicles available in pool, use host 3D model");
+                    vehicle = new Vehicle();
+                    // copy the default vehicle stuff here (add bounding box and so on)
+                    vehicle->model3d_ = template_vehicle_->model3d_;
+                }
+                else
+                {
+                    // pick vehicle randomly from pool
+                    vehicle = new Vehicle(*vehicle_pool_->GetRandomVehicle());
+                }
+                if (vehicle != nullptr)
+                {
+                    vehicle->name_ = deplist[i];
+                    vehicle->AssignController(this);
+                    vehicle->scaleMode_   = EntityScaleMode::BB_TO_MODEL;
+                    vehicle->role_        = static_cast<int>(Object::Role::CIVIL);
+                    vehicle->category_    = Vehicle::Category::CAR;
+                    vehicle->odometer_    = 0.0;
+                    vehicle->boundingbox_ = template_vehicle_->boundingbox_;
+                    LOG_INFO("SUMO controller: Add vehicle {} to scenario", vehicle->name_);
+                    entities_->addObject(vehicle, true);
+                }
             }
         }
     }
@@ -136,7 +162,7 @@ void ControllerSumo::Step(double timeStep)
                     Object* obj = entities_->GetObjectByName(arrivelist[i]);
                     if (obj != nullptr)
                     {
-                        LOG_INFO("SUMO controller: Remove vehicle from scenario: {}", arrivelist[i]);
+                        LOG_INFO("SUMO controller: Remove vehicle {} from scenario", arrivelist[i]);
                         gateway_->removeObject(arrivelist[i]);
                         if (obj->objectEvents_.size() > 0 || obj->initActions_.size() > 0)
                         {
@@ -164,7 +190,7 @@ void ControllerSumo::Step(double timeStep)
             std::find(idlist.begin(), idlist.end(), entities_->object_[i]->GetName()) == idlist.end())  // not already in sumo list
         {
             std::string id = entities_->object_[i]->name_;
-            LOG_INFO("SUMO controller: Add vehicle to SUMO: {}", id);
+            LOG_INFO("SUMO controller: Add vehicle {} to SUMO", id);
             libsumo::Vehicle::add(id, "", "DEFAULT_VEHTYPE");
             libsumo::Vehicle::moveToXY(id,
                                        "random",

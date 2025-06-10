@@ -55,10 +55,6 @@ namespace scenarioengine
         void Step(double timeStep);
         int  Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)]);
         void ReportKeyEvent(int key, bool down);
-        void SetScenarioEngine(ScenarioEngine *scenarioEngine)
-        {
-            scenarioEngine_ = scenarioEngine;
-        };
 
         /**
          * @brief Get the time for a lane change
@@ -136,7 +132,6 @@ namespace scenarioengine
          */
         WaypointStatus GetWaypointStatus(roadmanager::Position vehiclePos, roadmanager::Position waypoint);
 
-        ScenarioEngine                    *scenarioEngine_ = nullptr;
         vehicle::Vehicle                   vehicle_;
         LatLaneChangeAction               *laneChangeAction_ = nullptr;
         roadmanager::OpenDrive            *odr_              = nullptr;

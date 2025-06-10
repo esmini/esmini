@@ -59,6 +59,8 @@ static std::vector<StoryBoardElementTriggerInfo> storyboard_element_triggers;
 ScenarioReader::ScenarioReader(Entities *entities, Catalogs *catalogs, bool disable_controllers)
     : entities_(entities),
       catalogs_(catalogs),
+      gateway_(nullptr),
+      scenarioEngine_(nullptr),
       disable_controllers_(disable_controllers),
       story_board_(nullptr)
 {
@@ -1026,13 +1028,13 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
     if (ctrl_entry)
     {
         Controller::InitArgs args;
-        args.name       = name;
-        args.type       = ctrlType;
-        args.entities   = entities_;
-        args.gateway    = gateway_;
-        args.parameters = &parameters;
-        args.properties = &properties;
-        controller      = ctrl_entry->instantiateFunction(&args);
+        args.name            = name;
+        args.type            = ctrlType;
+        args.gateway         = gateway_;
+        args.scenario_engine = scenarioEngine_;
+        args.parameters      = &parameters;
+        args.properties      = &properties;
+        controller           = ctrl_entry->instantiateFunction(&args);
     }
     else
     {
@@ -2263,7 +2265,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 radius = parameters.ReadAttribute(trafficChild, "semiMinorAxis");
                 trafficSwarmAction->SetSemiMinorAxes(std::stod(radius));
 
-                trafficSwarmAction->SetEntities(entities_);
+                trafficSwarmAction->SetScenarioEngine(scenarioEngine_);
                 trafficSwarmAction->SetGateway(gateway_);
                 trafficSwarmAction->SetReader(this);
 

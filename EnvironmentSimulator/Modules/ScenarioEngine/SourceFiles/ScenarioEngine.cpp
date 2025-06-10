@@ -688,7 +688,6 @@ int ScenarioEngine::parseScenario()
         for (size_t i = 0; i < scenarioReader->controller_.size(); i++)
         {
             scenarioReader->controller_[i]->Init();
-            scenarioReader->controller_[i]->SetScenarioEngine(this);
         }
 
         // find out maximum headstart time for ghosts

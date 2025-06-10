@@ -72,7 +72,6 @@ Controller* scenarioengine::InstantiateControllerALKS_R157SM(void* args)
 
 ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args), model_(0)
 {
-    entities_ = 0;
     if (args && args->properties)
     {
         if (args->properties->GetValueStr("model") == "Regulation")
@@ -212,6 +211,11 @@ ControllerALKS_R157SM::ControllerALKS_R157SM(InitArgs* args) : Controller(args),
         }
         LOG_INFO("ALKS_R157SM cruise: {}", model_->cruise_ ? "true" : "false");
     }
+
+    if (model_ != nullptr)
+    {
+        model_->entities_ = entities_;
+    }
 }
 
 ControllerALKS_R157SM::~ControllerALKS_R157SM()
@@ -273,15 +277,6 @@ int ControllerALKS_R157SM::Activate(const ControlActivationMode (&mode)[static_c
     return Controller::Activate(mode);
 }
 
-void ControllerALKS_R157SM::SetScenarioEngine(ScenarioEngine* scenario_engine)
-{
-    scenario_engine_ = scenario_engine;
-    if (model_)
-    {
-        model_->SetScenarioEngine(scenario_engine);
-    }
-}
-
 void ControllerALKS_R157SM::ReportKeyEvent(int key, bool down)
 {
     (void)key;
@@ -294,7 +289,7 @@ int ControllerALKS_R157SM::Model::Detect()
 
     if (entities_ == 0)
     {
-        LOG_ERROR("ALKS_R157SM: No entities! Register scenarioengine - SetScenarioEngine()");
+        LOG_ERROR("ALKS_R157SM: No entities!");
         return -1;
     }
 
@@ -488,7 +483,6 @@ void ControllerALKS_R157SM::Model::ResetReactionTime()
 ControllerALKS_R157SM::Model::Model(ModelType type, double reaction_time, double max_dec, double max_range)
     : type_(type),
       veh_(nullptr),
-      entities_(0),
       cut_in_detected_timestamp_(0.0),
       rt_(reaction_time),
       rt_counter_(0.0),
@@ -508,8 +502,7 @@ ControllerALKS_R157SM::Model::Model(ModelType type, double reaction_time, double
       log_level_(1),
       cruise_(true),
       full_stop_(false),
-      always_trig_on_scenario_(false),
-      scenario_engine_(nullptr)
+      always_trig_on_scenario_(false)
 {
     ResetObjectInFocus();
 }
@@ -602,12 +595,6 @@ void ControllerALKS_R157SM::Model::SetModelMode(ModelMode mode, bool log)
         }
         model_mode_ = mode;
     }
-}
-
-void ControllerALKS_R157SM::Model::SetScenarioEngine(ScenarioEngine* scenario_engine)
-{
-    scenario_engine_ = scenario_engine;
-    entities_        = &scenario_engine_->entities_;
 }
 
 void ControllerALKS_R157SM::Model::SetScenarioType(ScenarioType type)

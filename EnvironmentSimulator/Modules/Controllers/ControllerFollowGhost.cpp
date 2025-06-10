@@ -116,7 +116,7 @@ void ControllerFollowGhost::Step(double timeStep)
         return;
     }
 
-    double currentTime = scenarioEngine_->getSimulationTime();
+    double currentTime = scenario_engine_->getSimulationTime();
     int    ret_val     = 0;
 
     if (follow_mode_ == FollowMode::FOLLOW_MODE_POSITION)

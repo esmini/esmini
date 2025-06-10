@@ -48,11 +48,6 @@ namespace scenarioengine
             return CONTROLLER_TYPE_FOLLOW_GHOST;
         }
 
-        void SetScenarioEngine(ScenarioEngine* scenarioEngine)
-        {
-            scenarioEngine_ = scenarioEngine;
-        };
-
         void Init();
         void Step(double timeStep);
         int  Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)]);
@@ -62,7 +57,6 @@ namespace scenarioengine
         vehicle::Vehicle vehicle_;
         double           headstart_time_;
         FollowMode       follow_mode_;
-        ScenarioEngine*  scenarioEngine_;
         double           lookahead_speed_;
         double           min_lookahead_speed_;
         double           lookahead_steering_;

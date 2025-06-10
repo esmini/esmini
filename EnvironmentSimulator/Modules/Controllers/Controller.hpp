@@ -63,8 +63,8 @@ namespace scenarioengine
             std::string      name;
             std::string      type;
             OSCProperties*   properties;
-            Entities*        entities;
             ScenarioGateway* gateway;
+            ScenarioEngine*  scenario_engine;
             Parameters*      parameters;
         } InitArgs;
 
@@ -98,10 +98,7 @@ namespace scenarioengine
         virtual void InitPostPlayer(){};
 
         virtual void ReportKeyEvent(int key, bool down);
-        virtual void SetScenarioEngine(ScenarioEngine* scenario_engine)
-        {
-            scenario_engine_ = scenario_engine;
-        };
+
         virtual void SetPlayer(ScenarioPlayer* player)
         {
             player_ = player;

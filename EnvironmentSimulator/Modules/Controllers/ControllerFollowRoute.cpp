@@ -279,7 +279,7 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
 
     if (!(laneChangeAction_->GetCurrentState() == StoryBoardElement::State::RUNNING))
     {
-        laneChangeAction_->Start(scenarioEngine_->getSimulationTime());
+        laneChangeAction_->Start(scenario_engine_->getSimulationTime());
 
         mode_ = ControlOperationMode::MODE_OVERRIDE;  // override mode to prevent default controller from moving the entity
 
@@ -288,7 +288,7 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
     else
     {
         mode_ = ControlOperationMode::MODE_ADDITIVE;  // disable override mode to enable use of default controller actions
-        laneChangeAction_->Step(scenarioEngine_->getSimulationTime(), timeStep);
+        laneChangeAction_->Step(scenario_engine_->getSimulationTime(), timeStep);
         mode_ = ControlOperationMode::MODE_OVERRIDE;  // restore override mode to prevent default controller from moving the entity
 
         if (laneChangeAction_->GetCurrentState() == OSCAction::State::COMPLETE)
@@ -310,7 +310,7 @@ void ControllerFollowRoute::ChangeLane(double timeStep)
 bool ControllerFollowRoute::CanChangeLane(int lane)
 {
     roadmanager::Position vehiclePos  = object_->pos_;
-    std::vector<Object *> allVehicles = scenarioEngine_->entities_.object_;
+    std::vector<Object *> allVehicles = scenario_engine_->entities_.object_;
     if (changingLane_)
     {
         return false;

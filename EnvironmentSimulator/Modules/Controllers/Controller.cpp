@@ -13,6 +13,7 @@
 #include "Controller.hpp"
 #include "Entities.hpp"
 #include "ScenarioGateway.hpp"
+#include "ScenarioEngine.hpp"
 #include "logger.hpp"
 
 using namespace scenarioengine;
@@ -28,18 +29,19 @@ Controller::Controller(InitArgs* args)  // init operatingdomains
     : operating_domains_(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT_AND_LONG)),
       active_domains_(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_NONE)),
       mode_(ControlOperationMode::MODE_OVERRIDE),
-      object_(0),
-      entities_(0),
-      gateway_(0),
-      scenario_engine_(0),
-      player_(0)
+      object_(nullptr),
+      entities_(nullptr),
+      gateway_(nullptr),
+      scenario_engine_(nullptr),
+      player_(nullptr)
 {
     if (args)
     {
-        name_      = args->name;
-        type_name_ = args->type;
-        entities_  = args->entities;
-        gateway_   = args->gateway;
+        name_            = args->name;
+        type_name_       = args->type;
+        gateway_         = args->gateway;
+        scenario_engine_ = args->scenario_engine;
+        entities_        = scenario_engine_ != nullptr ? &scenario_engine_->entities_ : nullptr;
     }
     else
     {
