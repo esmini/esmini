@@ -601,7 +601,7 @@ namespace viewer
         bool                                         CreateRoadMarkLines(roadmanager::OpenDrive* od);
         int                                          CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color);
         int                                          CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
-        void                                         CreateFog(const double range, const scenarioengine::OSCEnvironment& environment);
+        void                                         CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
         int                                          AddGroundSurface();
         void SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
 
