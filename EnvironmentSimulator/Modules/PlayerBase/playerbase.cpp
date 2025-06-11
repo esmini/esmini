@@ -30,8 +30,6 @@
 #include "viewer.hpp"
 #endif
 
-#include "spdlog/fmt/fmt.h"
-
 using namespace scenarioengine;
 
 #define GHOST_HEADSTART 2.5
@@ -110,7 +108,6 @@ ScenarioPlayer::~ScenarioPlayer()
     {
         delete s;
     }
-    TxtLogger::Inst().SetLoggerTime(0);
     if (scenarioEngine)
     {
         delete scenarioEngine;
@@ -1383,14 +1380,14 @@ int ScenarioPlayer::Init()
 
     std::string strAllSetOptions = opt.GetSetOptionsAsStr();
 
-    std::string logFilePathOptionValue = TxtLogger::Inst().CreateLogFilePath();
+    std::string logFilePathOptionValue = txtLogger.CreateLogFilePath();
     if (opt.IsOptionArgumentSet("param_dist"))
     {
         // deferring the creation of log file as name of it will be changed afterwards due to permutation distribution
         opt.ClearOption("logfile_path");
     }
 
-    TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
+    txtLogger.SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         arg_str             = opt.GetOptionArg("log_only_modules");
@@ -1398,7 +1395,7 @@ int ScenarioPlayer::Init()
         if (!splitted.empty())
         {
             std::unordered_set<std::string> logOnlyModules(splitted.begin(), splitted.end());
-            TxtLogger::Inst().SetLogOnlyModules(logOnlyModules);
+            txtLogger.SetLogOnlyModules(logOnlyModules);
         }
     }
     if (opt.IsOptionArgumentSet("log_skip_modules"))
@@ -1408,10 +1405,10 @@ int ScenarioPlayer::Init()
         if (!splitted.empty())
         {
             std::unordered_set<std::string> logSkipModules(splitted.begin(), splitted.end());
-            TxtLogger::Inst().SetLogSkipModules(logSkipModules);
+            txtLogger.SetLogSkipModules(logSkipModules);
         }
     }
-    TxtLogger::Inst().SetLoggersVerbosity();
+    txtLogger.SetLoggerVerbosity();
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
 
     if (dist.GetNumPermutations() > 0)
@@ -1502,8 +1499,8 @@ int ScenarioPlayer::Init()
         opt.SetOptionValue("logfile_path", logFilePathOptionValue);
     }
 
-    TxtLogger::Inst().SetLogFilePath(logFilePathOptionValue);
-    TxtLogger::Inst().LogTimeOnly();
+    txtLogger.SetLogFilePath(logFilePathOptionValue);
+    txtLogger.LogTimeOnly();
     LOG_INFO("Player options: {}", strAllSetOptions);
 
     if (opt.GetOptionSet("use_signs_in_external_model"))
@@ -1628,7 +1625,7 @@ int ScenarioPlayer::Init()
         {
             SE_Env::Inst().AddPath(DirNameOf(arg_str));  // add scenario directory to list pf paths
             scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
-            Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
+            txtLogger.SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
         }
         else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
         {
@@ -1640,7 +1637,7 @@ int ScenarioPlayer::Init()
                 return -1;
             }
             scenarioEngine = new ScenarioEngine(doc, disable_controllers_);
-            Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
+            txtLogger.SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
         }
         else
         {

@@ -42,7 +42,8 @@ target_link_libraries(
     ${TARGET}
     PRIVATE CommonMini
             pugixml_lib
-            project_options)
+            project_options
+            fmt)
 
 target_include_directories(
     ${TARGET}
@@ -52,8 +53,8 @@ target_include_directories(
     ${TARGET}
     SYSTEM
     PUBLIC ${EXTERNALS_PUGIXML_PATH}
-           ${ROAD_MANAGER_PATH}
-           ${EXTERNALS_SPDLOG_INCLUDES})
+           ${EXTERNALS_FMT_INCLUDES}
+           ${ROAD_MANAGER_PATH})
 
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})

@@ -16,7 +16,6 @@
 #include "ScenarioEngine.hpp"
 #include "ScenarioGateway.hpp"
 #include "logger.hpp"
-#include "spdlog/fmt/fmt.h"
 
 using namespace scenarioengine;
 

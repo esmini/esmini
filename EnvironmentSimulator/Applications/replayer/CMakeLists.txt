@@ -71,7 +71,6 @@ if(BUILD_REPLAYER)
                 ScenarioEngine
                 CommonMini
                 Controllers
-                ${SPDLOG_LIBRARIES}
                 ${TIME_LIB})
 
     if(USE_OSG)
@@ -108,7 +107,6 @@ target_link_libraries(
     PRIVATE project_options
             RoadManager
             CommonMini
-            ${SPDLOG_LIBRARIES}
             ${TIME_LIB})
 
 target_include_directories(
@@ -160,8 +158,7 @@ if(USE_OSI)
         PRIVATE project_options
                 ${TIME_LIB}
                 ${SOCK_LIB}
-                ${OSI_LIBRARIES}
-                ${SPDLOG_LIBRARIES})
+                ${OSI_LIBRARIES})
 
     disable_static_analysis(${TARGET3})
     disable_iwyu(${TARGET3})

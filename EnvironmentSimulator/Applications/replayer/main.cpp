@@ -482,8 +482,8 @@ int main(int argc, char** argv)
     std::string strAllSetOptions = opt.GetSetOptionsAsStr();
     LOG_INFO("replayer options: {}", strAllSetOptions);
 
-    TxtLogger::Inst().LogTimeOnly();
-    TxtLogger::Inst().SetLoggerTime(&simTime);
+    txtLogger.LogTimeOnly();
+    txtLogger.SetLoggerTime(&simTime);
 
 #ifndef _USE_OSG
     LOG_INFO("Compiled with USE_OSG=FALSE, limited functionality available");

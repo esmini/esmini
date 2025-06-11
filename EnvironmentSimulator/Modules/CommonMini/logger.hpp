@@ -13,10 +13,12 @@
 #pragma once
 
 #include "CommonMini.hpp"
-#include "spdlog/spdlog.h"
+#include "fmt/format.h"
+
 #include <unordered_set>
 #include <string>
 #include <iostream>
+#include <cstdio>
 
 // Converts enum to its underlying integer type and formats it
 template <typename T>
@@ -27,6 +29,14 @@ struct fmt::formatter<T, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::forma
     {
         return fmt::formatter<int>::format(static_cast<int>(t), ctx);
     }
+};
+
+enum LogLevel
+{
+    debug = 0,
+    info  = 1,
+    warn  = 2,
+    error = 3
 };
 
 namespace esmini::common
@@ -40,14 +50,12 @@ namespace esmini::common
     class TxtLogger
     {
     public:
-        // returns the instance of the logger (singleton pattern)
-        static TxtLogger& Inst();
-
+        ~TxtLogger();
         // logs esmini version
         void LogVersion();
 
         // converts string to verbosity level if doesn't succeed then returns verbosity level INFO as default
-        spdlog::level::level_enum GetVerbosityLevelFromStr(const std::string& str);
+        LogLevel GetVerbosityLevelFromStr(const std::string& str);
 
         // puts one line in log with time only
         void LogTimeOnly();
@@ -60,9 +68,6 @@ namespace esmini::common
 
         // stops logging
         void Stop();
-
-        // stops console logging
-        void StopConsoleLogging();
 
         // Sets logger file path
         void SetLogFilePath(const std::string& path);
@@ -86,13 +91,7 @@ namespace esmini::common
         void SetLogSkipModules(const std::unordered_set<std::string>& logSkipModules);
 
         // add time and metadata to log message
-        std::string AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& level, const std::string& log);
-
-        // Returns true if logging to console should be done
-        bool ShouldLogToConsole();
-
-        // Returns true if logging to file should be done
-        bool ShouldLogToFile();
+        std::string AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& logLevelStr, const std::string& log);
 
         // Returns true if logging for the module should be done
         bool ShouldLogModule(char const* file);
@@ -103,19 +102,33 @@ namespace esmini::common
         // sets verbosity level for all loggers, there might be a situation when logger is instantiated before parsing of options
         // with default log level i.e. info. This function should be called after parsing of options to set verbosity level
         // for all loggers based on the option i.e. log_level
-        void SetLoggersVerbosity();
+        void SetLoggerVerbosity();
 
+        template <class... ARGS>
+        void
+        Log(LogLevel msgLogLevel, const std::string& logStr, char const* function, char const* file, long line, const std::string& log, ARGS... args)
+        {
+            if (logLevel_ > msgLogLevel)
+            {
+                return;
+            }
+            if (!ShouldLogModule(file))
+            {
+                return;
+            }
+            consoleLoggingEnabled_ = !SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout");
+            fileLoggingEnabled_    = !SE_Env::Inst().GetOptions().GetOptionSet("disable_log");
+            if (fileLoggingEnabled_ || consoleLoggingEnabled_)
+            {
+                Log(fmt::format(AddTimeAndMetaData(function, file, line, logStr, log), args...));
+            }
+        }
         // private interface
     private:
-        // Private constructor for use in singleton pattern
-        TxtLogger() = default;
-
-        // Sets logger verbosity level based on option
-        void SetLoggerVerbosity(std::shared_ptr<spdlog::logger>& logger);
-
         // Creates a file logger with the given path and returns true otherwise returns false
-        bool CreateFileLogger();
+        bool CreateLogFile();
 
+        void Log(const std::string& msg);
         // private data
     private:
         // modules that should be logged, if empty then all modules should be logged
@@ -128,125 +141,52 @@ namespace esmini::common
         bool metaDataEnabled_ = false;
         // time of the scenario
         double* time_ = nullptr;
-    };  // class TxtLogger
+        // log verbosity level
+        LogLevel logLevel_ = LogLevel::info;
+        // log file
+        FILE* logFile_               = nullptr;
+        bool  firstConsoleLog_       = true;
+        bool  firstFileLog_          = true;
+        bool  consoleLoggingEnabled_ = true;
+        bool  fileLoggingEnabled_    = true;
 
-    extern std::shared_ptr<spdlog::logger> consoleLogger;
-    extern std::shared_ptr<spdlog::logger> fileLogger;
+    };  // class TxtLogger
 
 }  // namespace esmini::common
 
 using TxtLogger = esmini::common::TxtLogger;
 
+extern TxtLogger txtLogger;
+
 template <class... ARGS>
 void __LOG_DEBUG__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
 {
-    if (!TxtLogger::Inst().ShouldLogModule(file))
-    {
-        return;
-    }
-    std::string logWithTimeAndMeta;
-    if (TxtLogger::Inst().ShouldLogToConsole())
-    {
-        logWithTimeAndMeta = TxtLogger::Inst().AddTimeAndMetaData(function, file, line, "debug", log);
-        esmini::common::consoleLogger->debug(logWithTimeAndMeta, args...);
-    }
-    if (TxtLogger::Inst().ShouldLogToFile())
-    {
-        if (logWithTimeAndMeta.empty())
-        {
-            logWithTimeAndMeta = TxtLogger::Inst().AddTimeAndMetaData(function, file, line, "debug", log);
-        }
-        esmini::common::fileLogger->debug(logWithTimeAndMeta, args...);
-    }
+    txtLogger.Log(LogLevel::debug, "debug", function, file, line, log, args...);
 }
 
 template <class... ARGS>
 void __LOG_INFO__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
 {
-    if (!TxtLogger::Inst().ShouldLogModule(file))
-    {
-        return;
-    }
-    std::string logWithTimeAndMeta;
-    if (TxtLogger::Inst().ShouldLogToConsole())
-    {
-        logWithTimeAndMeta = TxtLogger::Inst().AddTimeAndMetaData(function, file, line, "info", log);
-        esmini::common::consoleLogger->info(logWithTimeAndMeta, args...);
-    }
-    if (TxtLogger::Inst().ShouldLogToFile())
-    {
-        if (logWithTimeAndMeta.empty())
-        {
-            logWithTimeAndMeta = TxtLogger::Inst().AddTimeAndMetaData(function, file, line, "info", log);
-        }
-        esmini::common::fileLogger->info(logWithTimeAndMeta, args...);
-    }
+    txtLogger.Log(LogLevel::info, "info", function, file, line, log, args...);
 }
 
 template <class... ARGS>
 void __LOG_WARN__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
 {
-    if (!TxtLogger::Inst().ShouldLogModule(file))
-    {
-        return;
-    }
-    std::string logWithTimeAndMeta;
-    if (TxtLogger::Inst().ShouldLogToConsole())
-    {
-        logWithTimeAndMeta = TxtLogger::Inst().AddTimeAndMetaData(function, file, line, "warn", log);
-        esmini::common::consoleLogger->warn(logWithTimeAndMeta, args...);
-    }
-    if (TxtLogger::Inst().ShouldLogToFile())
-    {
-        if (logWithTimeAndMeta.empty())
-        {
-            logWithTimeAndMeta = TxtLogger::Inst().AddTimeAndMetaData(function, file, line, "warn", log);
-        }
-        esmini::common::fileLogger->warn(logWithTimeAndMeta, args...);
-    }
+    txtLogger.Log(LogLevel::warn, "warn", function, file, line, log, args...);
 }
 
 template <class... ARGS>
 void __LOG_ERROR__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
 {
-    if (!TxtLogger::Inst().ShouldLogModule(file))
-    {
-        return;
-    }
-    std::string logWithTimeAndMeta;
-    if (TxtLogger::Inst().ShouldLogToConsole())
-    {
-        logWithTimeAndMeta = TxtLogger::Inst().AddTimeAndMetaData(function, file, line, "error", log);
-        esmini::common::consoleLogger->error(logWithTimeAndMeta, args...);
-    }
-    if (TxtLogger::Inst().ShouldLogToFile())
-    {
-        if (logWithTimeAndMeta.empty())
-        {
-            logWithTimeAndMeta = TxtLogger::Inst().AddTimeAndMetaData(function, file, line, "error", log);
-        }
-        esmini::common::fileLogger->error(logWithTimeAndMeta, args...);
-    }
+    txtLogger.Log(LogLevel::error, "error", function, file, line, log, args...);
 }
 
 template <class... ARGS>
 void __LOG_ERROR__AND__QUIT__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
 {
-    std::string logMsg;
-    if (TxtLogger::Inst().ShouldLogToConsole())
-    {
-        logMsg = fmt::format(TxtLogger::Inst().AddTimeAndMetaData(function, file, line, "error", log), args...);
-        esmini::common::consoleLogger->error(logMsg);
-    }
-    if (TxtLogger::Inst().ShouldLogToFile())
-    {
-        if (logMsg.empty())
-        {
-            logMsg = fmt::format(TxtLogger::Inst().AddTimeAndMetaData(function, file, line, "error", log), args...);
-        }
-        esmini::common::fileLogger->error(logMsg);
-    }
-    throw std::runtime_error(logMsg);
+    txtLogger.Log(LogLevel::error, "error", function, file, line, log, args...);
+    throw std::runtime_error(fmt::format(txtLogger.AddTimeAndMetaData(function, file, line, "error", log), args...));
 }
 
 #define LOG_ERROR_AND_QUIT(...) __LOG_ERROR__AND__QUIT__(__func__, __FILE__, __LINE__, ##__VA_ARGS__)
