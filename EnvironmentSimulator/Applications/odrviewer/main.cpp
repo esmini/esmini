@@ -508,9 +508,9 @@ int main(int argc, char **argv)
         }
     }
 
-    TxtLogger::Inst().SetLogFilePath(TxtLogger::Inst().CreateLogFilePath());
-    TxtLogger::Inst().LogTimeOnly();
-    TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
+    txtLogger.SetLogFilePath(txtLogger.CreateLogFilePath());
+    txtLogger.LogTimeOnly();
+    txtLogger.SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
 
     if ((arg_str = opt.GetOptionArg("fixed_timestep")) != "")
     {
@@ -532,7 +532,7 @@ int main(int argc, char **argv)
         {
             std::unordered_set<std::string> logOnlyModules;
             logOnlyModules.insert(splitted.begin(), splitted.end());
-            TxtLogger::Inst().SetLogOnlyModules(logOnlyModules);
+            txtLogger.SetLogOnlyModules(logOnlyModules);
         }
     }
 
@@ -544,10 +544,10 @@ int main(int argc, char **argv)
         {
             std::unordered_set<std::string> logSkipModules;
             logSkipModules.insert(splitted.begin(), splitted.end());
-            TxtLogger::Inst().SetLogSkipModules(logSkipModules);
+            txtLogger.SetLogSkipModules(logSkipModules);
         }
     }
-    TxtLogger::Inst().SetLoggersVerbosity();
+    txtLogger.SetLoggerVerbosity();
     if ((arg_str = opt.GetOptionArg("path")) != "")
     {
         SE_Env::Inst().AddPath(arg_str);
@@ -748,7 +748,7 @@ int main(int argc, char **argv)
 
         static bool first_time  = true;
         double      system_time = 0.0;
-        TxtLogger::Inst().SetLoggerTime(&system_time);
+        txtLogger.SetLoggerTime(&system_time);
         while (!viewer->osgViewer_->done())
         {
             __int64 now = SE_getSystemTime();

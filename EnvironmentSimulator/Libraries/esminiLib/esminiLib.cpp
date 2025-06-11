@@ -932,7 +932,7 @@ extern "C"
     {
         resetScenario();
         RegisterParameterDeclarationCallback(nullptr, nullptr);
-        TxtLogger::Inst().Stop();
+        txtLogger.Stop();
     }
 
     SE_DLL_API void SE_LogToConsole(bool mode)
@@ -1806,7 +1806,7 @@ extern "C"
 
     SE_DLL_API void SE_CloseLogFile()
     {
-        TxtLogger::Inst().StopFileLogging();
+        txtLogger.StopFileLogging();
     }
 
     SE_DLL_API int SE_ObjectHasGhost(int object_id)

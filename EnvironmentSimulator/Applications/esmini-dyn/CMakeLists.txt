@@ -44,15 +44,14 @@ target_include_directories(
 target_include_directories(
     ${TARGET}
     SYSTEM
-    PUBLIC ${EXTERNALS_OSI_INCLUDES}
-    PUBLIC ${EXTERNALS_SPDLOG_INCLUDES})
+    PUBLIC ${EXTERNALS_OSI_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
     PRIVATE esminiLib
     PRIVATE CommonMini
-    PRIVATE ${SPDLOG_LIBRARIES}
     PRIVATE ${TIME_LIB})
+# PRIVATE ${FMT_LIBRARIES})
 
 if(USE_OSI)
     target_link_libraries(
