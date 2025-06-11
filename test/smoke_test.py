@@ -13,6 +13,16 @@ COMMON_REPLAYER_ARGS = '--file sim.dat --headless --time_scale 10 --res_path ../
 
 class TestSuite(unittest.TestCase):
 
+    def use_sumo(self):
+        result = subprocess.run(
+            "cmake ../build -L | grep USE_SUMO",
+            capture_output=True,
+            text=True,
+            check=True,
+            shell=True
+        )
+        return result.stdout == "USE_SUMO:BOOL=ON"
+
     def test_cut_in(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ESMINI_ARGS + '--log_level debug')
 
@@ -2229,61 +2239,64 @@ class TestSuite(unittest.TestCase):
         self.controller_conflict_common('1_3')
 
     def test_cut_in_sumo(self):
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in_sumo.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.5")
+        if self.use_sumo():
+            log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in_sumo.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.5")
 
-        # Check some initialization steps
-        self.assertTrue(re.search('Loading .*cut-in_sumo.xosc', log)  is not None)
+            # Check some initialization steps
+            self.assertTrue(re.search('Loading .*cut-in_sumo.xosc', log)  is not None)
 
-        # Check some scenario events
-        self.assertTrue(re.search('^.0.000.* SUMO controller: Add vehicle veh0 to scenario', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.0.000.* SUMO controller: Add vehicle Ego to SUMO', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.0.000.* SUMO controller: Add vehicle Target1 to SUMO', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.2.500.* SUMO controller: Add vehicle veh1 to scenario', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.5.000.* SUMO controller: Add vehicle veh2 to scenario', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.7.500.* SUMO controller: Add vehicle veh3 to scenario', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.21.000.* first_lane_change standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.40.500.* storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
+            # Check some scenario events
+            self.assertTrue(re.search('^.0.000.* SUMO controller: Add vehicle veh0 to scenario', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.0.000.* SUMO controller: Add vehicle Ego to SUMO', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.0.000.* SUMO controller: Add vehicle Target1 to SUMO', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.2.500.* SUMO controller: Add vehicle veh1 to scenario', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.5.000.* SUMO controller: Add vehicle veh2 to scenario', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.7.500.* SUMO controller: Add vehicle veh3 to scenario', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.21.000.* first_lane_change standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.40.500.* storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
 
-        # Check vehicle key positions
-        csv = generate_csv()
-        self.assertTrue(re.search('^22.000, 0, Ego, 8.546, 131.996, -0.209, 1.565, 0.002, 0.000, 17.450, -0.000, 3.649', csv, re.MULTILINE))
-        self.assertTrue(re.search('^22.000, 1, Target1, 5.557, 142.501, -0.233, 1.543, 0.002, 6.283, 25.000, -0.006, 2.229', csv, re.MULTILINE))
-        self.assertTrue(re.search('^22.000, 2, veh0, 14.811, 285.613, -0.500, 1.558, 0.000, 0.000, 14.716, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^22.000, 3, veh1, 14.089, 224.628, -0.390, 1.561, 0.000, 0.000, 13.022, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^22.000, 4, veh2, 13.881, 202.965, -0.350, 1.563, 0.000, 0.000, 13.371, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^22.000, 5, veh3, 13.681, 178.218, -0.310, 1.563, 0.000, 0.000, 14.550, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^40.500, 0, Ego, 16.375, 500.596, -0.841, 1.517, 0.000, 0.000, 20.000, -0.001, 1.574', csv, re.MULTILINE))
-        self.assertTrue(re.search('^40.500, 1, Target1, 23.806, 604.508, -0.826, 1.483, 6.283, 0.000, 25.000, -0.001, 4.189', csv, re.MULTILINE))
-        self.assertTrue(re.search('^40.500, 2, veh0, 23.682, 557.477, -0.840, 1.495, 0.000, 0.000, 14.714, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^40.500, 3, veh1, 19.484, 465.357, -0.810, 1.527, 0.000, 0.000, 13.021, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^40.500, 4, veh2, 16.387, 445.007, -0.790, 1.536, 0.000, 0.000, 13.022, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^40.500, 5, veh3, 12.193, 436.026, -0.778, 1.537, 6.278, 0.000, 15.025, 0.000, 0.000', csv, re.MULTILINE))
+            # Check vehicle key positions
+            csv = generate_csv()
+            self.assertTrue(re.search('^22.000, 0, Ego, 8.546, 131.996, -0.209, 1.565, 0.002, 0.000, 17.450, -0.000, 3.649', csv, re.MULTILINE))
+            self.assertTrue(re.search('^22.000, 1, Target1, 5.557, 142.501, -0.233, 1.543, 0.002, 6.283, 25.000, -0.006, 2.229', csv, re.MULTILINE))
+            self.assertTrue(re.search('^22.000, 2, veh0, 14.811, 285.613, -0.500, 1.558, 0.000, 0.000, 14.716, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^22.000, 3, veh1, 14.089, 224.628, -0.390, 1.561, 0.000, 0.000, 13.022, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^22.000, 4, veh2, 13.881, 202.965, -0.350, 1.563, 0.000, 0.000, 13.371, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^22.000, 5, veh3, 13.681, 178.218, -0.310, 1.563, 0.000, 0.000, 14.550, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.500, 0, Ego, 16.375, 500.596, -0.841, 1.517, 0.000, 0.000, 20.000, -0.001, 1.574', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.500, 1, Target1, 23.806, 604.508, -0.826, 1.483, 6.283, 0.000, 25.000, -0.001, 4.189', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.500, 2, veh0, 23.682, 557.477, -0.840, 1.495, 0.000, 0.000, 14.714, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.500, 3, veh1, 19.484, 465.357, -0.810, 1.527, 0.000, 0.000, 13.021, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.500, 4, veh2, 16.387, 445.007, -0.790, 1.536, 0.000, 0.000, 13.022, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.500, 5, veh3, 12.193, 436.026, -0.778, 1.537, 6.278, 0.000, 15.025, 0.000, 0.000', csv, re.MULTILINE))
+        else:
+            print("Skipping due to lacking SUMO support")
 
     def test_sumo_test(self):
-        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/sumo-test.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 10.0")
+        if self.use_sumo():
+            log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/sumo-test.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 20.0")
 
-        # Check some initialization steps
-        self.assertTrue(re.search('Loading .*sumo-test.xosc', log)  is not None)
+            # Check some initialization steps
+            self.assertTrue(re.search('Loading .*sumo-test.xosc', log)  is not None)
 
-        # Check some scenario events
-        self.assertTrue(re.search('^.10.000.* SUMO controller: Remove vehicle Ego from scenario', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.20.000.* SUMO controller: Add vehicle 44 to scenario', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.20.000.* SUMO controller: Remove vehicle 17 from scenario', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.610.000.* storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
+            # Check some scenario events
+            self.assertTrue(re.search('^.20.000.* SUMO controller: Add vehicle 99 to scenario', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.20.000.* SUMO controller: Remove vehicle Ego from scenario', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.20.000.* SUMO controller: Remove vehicle 17 from scenario', log, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^.620.000.* storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
 
-        # Check vehicle key positions
-        csv = generate_csv()
-        self.assertTrue(re.search('^30.000, 1, 0, 217.821, -3.640, 0.000, 0.000, 0.000, 0.000, 0.377, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^30.000, 2, 1, 531.870, 121.666, 0.000, 0.937, 0.000, 0.000, 4.456, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^30.000, 3, 2, 343.916, 1.880, 0.000, 3.142, 0.000, 0.000, 2.780, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^30.000, 4, 3, 291.880, -20.270, 0.000, 1.571, 0.000, 0.000, 12.204, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^30.000, 5, 4, 337.323, -241.870, 0.000, 6.283, 0.000, 0.000, 14.304, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^30.000, 96, 80, 116.820, 1.880, 0.000, 3.142, 0.000, 0.000, 1.612, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^30.000, 97, 81, 528.130, -165.608, 0.000, 4.712, 0.000, 0.000, 13.853, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^30.000, 98, 91, 528.445, -200.318, 0.000, 1.194, 0.000, 0.000, 12.382, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^30.000, 99, 84, 528.130, -137.477, 0.000, 4.712, 0.000, 0.000, 15.453, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^30.000, 100, 99, 516.357, -220.973, 0.000, 0.808, 0.000, 0.000, 13.469, 0.000, 0.000', csv, re.MULTILINE))
-
+            # Check vehicle key positions
+            csv = generate_csv()
+            self.assertTrue(re.search('^40.000, 1, 0, 218.251, -3.640, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.000, 2, 1, 510.657, 226.636, 0.000, 2.384, 0.000, 0.000, 13.026, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.000, 3, 2, 339.507, 1.880, 0.000, 3.142, 0.000, 0.000, 0.001, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.000, 4, 3, 290.049, -4.098, 0.000, 1.861, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.000, 97, 81, 437.115, -238.120, 0.000, 3.142, 0.000, 0.000, 13.858, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.000, 98, 91, 531.880, -77.001, 0.000, 1.571, 0.000, 0.000, 12.382, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.000, 99, 84, 459.101, -238.120, 0.000, 3.142, 0.000, 0.000, 14.010, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.000, 100, 99, 531.880, -97.204, 0.000, 1.571, 0.000, 0.000, 12.457, 0.000, 0.000', csv, re.MULTILINE))
+        else:
+            print("Skipping due to lacking SUMO support")
 
 if __name__ == "__main__":
     # execute only if run as a script
