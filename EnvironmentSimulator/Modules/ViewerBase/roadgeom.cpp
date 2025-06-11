@@ -455,7 +455,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
     osg::ref_ptr<osg::Vec4Array> color_border_inner = new osg::Vec4Array;
     osg::ref_ptr<osg::Vec4Array> color_grass        = new osg::Vec4Array;
 
-    if (texture_map_.count(MaterialType::ASPHALT) > 0)  // We have a texture
+    if (auto it = texture_map_.find(MaterialType::ASPHALT); it != texture_map_.end() && it->second != nullptr)  // We have a texture
     {
         color_asphalt_->push_back(osg::Vec4(1.f, 1.f, 1.f, 1.0f));
     }
@@ -464,7 +464,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
         color_asphalt_->push_back(osg::Vec4(0.3f, 0.3f, 0.3f, 1.0f));
     }
 
-    if (texture_map_.count(MaterialType::GRASS) > 0)  // We have a texture
+    if (auto it = texture_map_.find(MaterialType::GRASS); it != texture_map_.end() && it->second != nullptr)  // We have a texture
     {
         color_grass->push_back(osg::Vec4(1.f, 1.f, 1.f, 1.0f));
     }
