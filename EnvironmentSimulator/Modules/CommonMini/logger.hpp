@@ -72,9 +72,6 @@ namespace esmini::common
         // stops logging
         void Stop();
 
-        // stops console logging
-        void StopConsoleLogging();
-
         // Sets logger file path
         void SetLogFilePath(const std::string& path);
 
@@ -99,12 +96,6 @@ namespace esmini::common
         // add time and metadata to log message
         std::string AddTimeAndMetaData(char const* function, char const* file, long line, const std::string& logLevelStr, const std::string& log);
 
-        // Returns true if logging to console should be done
-        bool ShouldLogToConsole();
-
-        // Returns true if logging to file should be done
-        bool ShouldLogToFile();
-
         // Returns true if logging for the module should be done
         bool ShouldLogModule(char const* file);
 
@@ -114,11 +105,8 @@ namespace esmini::common
         // sets verbosity level for all loggers, there might be a situation when logger is instantiated before parsing of options
         // with default log level i.e. info. This function should be called after parsing of options to set verbosity level
         // for all loggers based on the option i.e. log_level
-        void SetLoggersVerbosity();
+        void SetLoggerVerbosity();
 
-        void SetLogLevel(LogLevel val);
-
-        LogLevel GetLogLevel() const;
         // template <class... ARGS>
         // void Log(LogLevel msgLogLevel, const std::string& logStr, char const* function, char const* file,
         //     long line, const std::string& log, ARGS... args);
@@ -149,7 +137,7 @@ namespace esmini::common
             {
                 if (!logFile_.is_open())
                 {
-                    CreateFileLogger();
+                    CreateLogFile();
                 }
                 if (firstFileLog_)
                 {
@@ -165,11 +153,8 @@ namespace esmini::common
         }
         // private interface
     private:
-        // Private constructor for use in singleton pattern
-        // TxtLogger() = default;
-
         // Creates a file logger with the given path and returns true otherwise returns false
-        bool CreateFileLogger();
+        bool CreateLogFile();
 
         // private data
     private:

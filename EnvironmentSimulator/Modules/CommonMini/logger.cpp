@@ -63,14 +63,6 @@ namespace esmini::common
         Stop();
     }
 
-    void TxtLogger::SetLogLevel(LogLevel val)
-    {
-        logLevel_ = val;
-    }
-    LogLevel TxtLogger::GetLogLevel() const
-    {
-        return logLevel_;
-    }
     bool TxtLogger::IsMetaDataEnabled() const
     {
         return metaDataEnabled_;
@@ -101,7 +93,7 @@ namespace esmini::common
         logSkipModules_ = logSkipModules;
     }
 
-    void TxtLogger::SetLoggersVerbosity()
+    void TxtLogger::SetLoggerVerbosity()
     {
         if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_level"))
         {
@@ -123,7 +115,7 @@ namespace esmini::common
         return ValidateAndCreateFilePath(filePath, LOG_FILENAME, "txt");
     }
 
-    bool TxtLogger::CreateFileLogger()
+    bool TxtLogger::CreateLogFile()
     {
         std::string filePath = CreateLogFilePath();
         if (filePath.empty())
@@ -175,7 +167,7 @@ namespace esmini::common
         {
             SE_Env::Inst().GetOptions().SetOptionValue("logfile_path", filePath);
         }
-        CreateFileLogger();
+        CreateLogFile();
     }
 
     LogLevel TxtLogger::GetVerbosityLevelFromStr(const std::string& str)

@@ -1404,7 +1404,7 @@ int ScenarioPlayer::Init()
             txtLogger.SetLogSkipModules(logSkipModules);
         }
     }
-    txtLogger.SetLoggersVerbosity();
+    txtLogger.SetLoggerVerbosity();
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
 
     if (dist.GetNumPermutations() > 0)
