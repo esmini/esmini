@@ -274,11 +274,6 @@ SwarmTrafficAction::SwarmTrafficAction(StoryBoardElement* parent) : OSCGlobalAct
     counter_ = 0;
 }
 
-SwarmTrafficAction::~SwarmTrafficAction()
-{
-    delete vehicle_pool_;
-}
-
 void SwarmTrafficAction::Start(double simTime)
 {
     LOG_INFO("Swarm IR: {:.2f}, SMjA: {:.2f}, SMnA: {:.2f}, maxV: {} vel: {:.2f}",
@@ -311,9 +306,9 @@ void SwarmTrafficAction::Start(double simTime)
 
     // Register model filesnames from first vehicle catalog
     // if no catalog loaded, use same model as central object
-    vehicle_pool_ = new VehiclePool(reader_, nullptr, true);
+    vehicle_pool_.Initialize(reader_, nullptr, true);
 
-    if (vehicle_pool_ == nullptr || vehicle_pool_->GetVehicles().size() == 0)
+    if (vehicle_pool_.GetVehicles().size() == 0)
     {
         if (centralObject_ && centralObject_->type_ == Object::Type::VEHICLE)
         {
@@ -323,7 +318,7 @@ void SwarmTrafficAction::Start(double simTime)
             // remove any duplicate controller references
             vehicle->controllers_.clear();
 
-            vehicle_pool_->AddVehicle(vehicle);
+            vehicle_pool_.AddVehicle(vehicle);
         }
         else
         {
@@ -609,7 +604,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             reader_->AddController(acc);
 
             // Pick random model from vehicle catalog
-            Vehicle* vehicle = new Vehicle(*vehicle_pool_->GetRandomVehicle());
+            Vehicle* vehicle = new Vehicle(*vehicle_pool_.GetRandomVehicle());
             vehicle->pos_.SetLanePos(inf.pos.GetTrackId(), laneID, inf.pos.GetS(), 0.0);
 
             // Set swarm traffic direction based on RHT or LHT

@@ -22,6 +22,7 @@
 #include "OSCUtils.hpp"
 #include "OSCPosition.hpp"
 #include "logger.hpp"
+#include "VehiclePool.hpp"
 
 namespace scenarioengine
 {
@@ -317,7 +318,6 @@ namespace scenarioengine
         } SelectInfo;
 
         SwarmTrafficAction(StoryBoardElement* parent);
-        ~SwarmTrafficAction();
 
         SwarmTrafficAction(const SwarmTrafficAction& action, StoryBoardElement* parent) : OSCGlobalAction(ActionType::SWARM_TRAFFIC, parent)
         {
@@ -386,7 +386,7 @@ namespace scenarioengine
         std::vector<SpawnInfo>  spawnedV;
         roadmanager::OpenDrive* odrManager_;
         double                  innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
-        VehiclePool*            vehicle_pool_;
+        VehiclePool             vehicle_pool_;
         static int              counter_;
 
         int         despawn(double simTime);

@@ -27,7 +27,6 @@ namespace scenarioengine
     {
     public:
         ControllerSumo(InitArgs* args);
-        ~ControllerSumo();
 
         virtual const char* GetTypeName()
         {
@@ -38,7 +37,6 @@ namespace scenarioengine
             return CONTROLLER_TYPE_SUMO;
         }
 
-        void Init();
         void Step(double timeStep);
         int  Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)]);
 
@@ -51,7 +49,7 @@ namespace scenarioengine
         pugi::xml_document docsumo_;
         std::string        model_filepath_;
         Object*            template_vehicle_ = nullptr;
-        VehiclePool*       vehicle_pool_     = nullptr;
+        VehiclePool        vehicle_pool_;
     };
 
     Controller* InstantiateControllerSumo(void* args);

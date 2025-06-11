@@ -12,6 +12,7 @@
 
 #include <random>
 #include "VehiclePool.hpp"
+#include "ScenarioReader.hpp"
 
 using namespace scenarioengine;
 

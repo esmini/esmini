@@ -12,12 +12,11 @@
 
 #pragma once
 
-#include "Entities.hpp"
-#include "Catalogs.hpp"
-#include "ScenarioReader.hpp"
-
 namespace scenarioengine
 {
+
+    class ScenarioReader;
+    class Vehicle;
 
     class VehiclePool
     {

@@ -86,22 +86,9 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
     options.push_back("never");
 
     std::vector<unsigned int> categories = {Vehicle::Category::CAR, Vehicle::Category::VAN};
-    vehicle_pool_->Initialize(scenario_engine_->GetScenarioReader(), &categories, false);
+    vehicle_pool_.Initialize(scenario_engine_->GetScenarioReader(), &categories, false);
 
     libsumo::Simulation::load(options);
-}
-
-scenarioengine::ControllerSumo::~ControllerSumo()
-{
-    if (vehicle_pool_ != nullptr)
-    {
-        delete vehicle_pool_;
-        vehicle_pool_ = nullptr;
-    }
-}
-
-void ControllerSumo::Init()
-{
 }
 
 void ControllerSumo::Step(double timeStep)
@@ -121,7 +108,7 @@ void ControllerSumo::Step(double timeStep)
             if (!entities_->nameExists(deplist[i]))
             {
                 Vehicle* vehicle = nullptr;
-                if (vehicle_pool_ == nullptr || vehicle_pool_->GetVehicles().empty())
+                if (vehicle_pool_.GetVehicles().empty())
                 {
                     LOG_INFO("SUMO controller: No vehicles available in pool, use host 3D model");
                     vehicle = new Vehicle();
@@ -131,7 +118,7 @@ void ControllerSumo::Step(double timeStep)
                 else
                 {
                     // pick vehicle randomly from pool
-                    vehicle = new Vehicle(*vehicle_pool_->GetRandomVehicle());
+                    vehicle = new Vehicle(*vehicle_pool_.GetRandomVehicle());
                 }
                 if (vehicle != nullptr)
                 {

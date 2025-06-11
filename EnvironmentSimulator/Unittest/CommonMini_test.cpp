@@ -289,6 +289,14 @@ TEST(MathFunctions, TestGetAbsAngleDifference)
     EXPECT_NEAR(GetAbsAngleDifference(-1.0, 2.0), 3.0, 1e-3);
 }
 
+TEST(CommonUtilityFunctions, TestCombineDirectoryPathAndFilepath)
+{
+    EXPECT_EQ(CombineDirectoryPathAndFilepath("/home/kalle", "my_file.txt"), "/home/kalle/./my_file.txt");
+    EXPECT_EQ(CombineDirectoryPathAndFilepath("/home/Kalle", "my_File.txt"), "/home/Kalle/./my_File.txt");
+    EXPECT_EQ(CombineDirectoryPathAndFilepath("../home/Kalle", "my_File.txt"), "../home/Kalle/./my_File.txt");
+    EXPECT_EQ(CombineDirectoryPathAndFilepath("", "my_File.txt"), "./my_File.txt");
+}
+
 int main(int argc, char** argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";
