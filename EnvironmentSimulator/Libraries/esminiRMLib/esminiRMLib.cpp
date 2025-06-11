@@ -186,7 +186,7 @@ extern "C"
 
     RM_DLL_API void RM_SetLogFilePath(const char* logFilePath)
     {
-        TxtLogger::Inst().SetLogFilePath(logFilePath);
+        txtLogger.SetLogFilePath(logFilePath);
     }
 
     RM_DLL_API int RM_CreatePosition()

@@ -38,13 +38,11 @@ namespace scenarioengine
 ScenarioEngine::ScenarioEngine(std::string oscFilename, bool disable_controllers)
 {
     init_status_ = InitScenario(oscFilename, disable_controllers);
-    TxtLogger::Inst().SetLoggerTime(GetSimulationTimePtr());
 }
 
 ScenarioEngine::ScenarioEngine(const pugi::xml_document& xml_doc, bool disable_controllers)
 {
     init_status_ = InitScenario(xml_doc, disable_controllers);
-    TxtLogger::Inst().SetLoggerTime(GetSimulationTimePtr());
 }
 
 void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
@@ -57,6 +55,7 @@ void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
     scenarioReader       = new ScenarioReader(&entities_, &catalogs, &environment, disable_controllers);
     injected_actions_    = nullptr;
     ghost_               = nullptr;
+    txtLogger.SetLoggerTime(GetSimulationTimePtr());
     SE_Env::Inst().SetGhostMode(GhostMode::NORMAL);
     SE_Env::Inst().SetGhostHeadstart(0.0);
 }
@@ -127,7 +126,7 @@ ScenarioEngine::~ScenarioEngine()
     delete scenarioReader;
     scenarioReader = 0;
     LOG_INFO("Closing");
-    TxtLogger::Inst().Stop();
+    txtLogger.SetLoggerTime(nullptr);
 }
 
 void ScenarioEngine::UpdateGhostMode()

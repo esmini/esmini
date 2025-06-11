@@ -78,7 +78,7 @@ target_include_directories(
            ${EXTERNALS_SUMO_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_EXPR_PATH}
-           ${EXTERNALS_SPDLOG_INCLUDES})
+           ${EXTERNALS_FMT_INCLUDES})
 
 target_link_libraries(
     ${TARGET}

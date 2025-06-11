@@ -41,8 +41,7 @@ target_link_libraries(
     PRIVATE project_options
             RoadManager
             CommonMini
-            ${TIME_LIB}
-            ${SPDLOG_LIBRARIES})
+            ${TIME_LIB})
 
 if(USE_OSG)
     target_link_libraries(

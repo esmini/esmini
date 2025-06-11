@@ -836,37 +836,6 @@ double strtod(std::string s);
 */
 void        StrCopy(char* dest, const char* src, size_t size, bool terminate = true);
 std::string GetVersionInfoForLog();
-// Global Logger class
-class Logger
-{
-public:
-    typedef void (*FuncPtr)(const char*);
-
-    static Logger& Inst();
-    void           Log(bool quit, bool trace, const char* file, const char* func, int line, const char* format, ...);
-    void           SetCallback(FuncPtr callback);
-    bool           IsCallbackSet() const;
-    void           SetTimePtr(double* timePtr)
-    {
-        time_ = timePtr;
-    }
-    void OpenLogfile(std::string filename);
-    void CloseLogFile();
-    void LogVersion();
-    bool IsFileOpen() const
-    {
-        return file_.is_open();
-    }
-
-private:
-    Logger();
-    ~Logger();
-
-    SE_Mutex      mutex_;
-    FuncPtr       callback_;
-    std::ofstream file_;
-    double*       time_;  // seconds
-};
 
 // Global Vehicle Data Logger
 class CSV_Logger
