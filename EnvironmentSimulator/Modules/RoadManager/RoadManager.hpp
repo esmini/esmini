@@ -27,8 +27,9 @@
 
 namespace roadmanager
 {
-    id_t GetNewGlobalLaneId();
-    id_t GetNewGlobalLaneBoundaryId();
+    id_t        GetNewGlobalLaneId();
+    id_t        GetNewGlobalLaneBoundaryId();
+    const char *ReadUserData(pugi::xml_node node, const std::string &code, const std::string &default_value = "");
 
     /**
             Add offset to a laneId to find a relative landId considering reference lane 0
@@ -1219,8 +1220,9 @@ namespace roadmanager
         id_t        id_       = ID_UNDEFINED;
         double      lighting_ = 0.0;
         std::string name_;
-        double      s_    = 0.0;
-        Type        type_ = Type::STANDARD;
+        double      s_                = 0.0;
+        Type        type_             = Type::STANDARD;
+        bool        generate_3D_model = true;
     };
 
     class RoadObject

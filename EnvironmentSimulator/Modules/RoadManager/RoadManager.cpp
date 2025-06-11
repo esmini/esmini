@@ -416,6 +416,20 @@ id_t roadmanager::GetNewGlobalLaneBoundaryId()
     return returnvalue;
 }
 
+const char* roadmanager::ReadUserData(pugi::xml_node node, const std::string& code, const std::string& default_value)
+{
+    pugi::xml_node userData = node.child("userData");
+    if (userData)
+    {
+        if (code == userData.attribute("code").value())
+        {
+            return userData.attribute("value").value();
+        }
+    }
+
+    return default_value.c_str();
+}
+
 int roadmanager::GetRelativeLaneId(int lane_id, int offset)
 {
     int result = lane_id + offset;
@@ -3873,17 +3887,8 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             for (pugi::xml_node roadMark = lane_node->child("roadMark"); roadMark; roadMark = roadMark.next_sibling("roadMark"))
                             {
                                 // s_offset
-                                double s_offset = atof(roadMark.attribute("sOffset").value());
-
-                                double         roadMark_fade = 0.0;
-                                pugi::xml_node userData      = roadMark.child("userData");
-                                if (userData)
-                                {
-                                    if (!strcmp(userData.attribute("code").value(), "fade"))
-                                    {
-                                        roadMark_fade = CLAMP(atof(userData.attribute("value").value()), 0.0, 1.0);
-                                    }
-                                }
+                                double s_offset      = atof(roadMark.attribute("sOffset").value());
+                                double roadMark_fade = CLAMP(atof(ReadUserData(roadMark, "fade", "0.0")), 0.0, 1.0);
 
                                 // type
                                 LaneRoadMark::RoadMarkType roadMark_type = LaneRoadMark::NONE_TYPE;
@@ -4796,6 +4801,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 tunnel->name_     = tunnel_node.attribute("name").as_string();
                 tunnel->s_        = tunnel_node.attribute("s").as_double();
                 tunnel->type_     = static_cast<Tunnel::Type>(tunnel_node.attribute("type").as_uint());
+
+                // generate 3D model by default, skip only if corresponding userData field set to "false"
+                tunnel->generate_3D_model = strcmp(ReadUserData(tunnel_node, "generate3DModel", "true"), "false");
+
                 r->AddTunnel(tunnel);
             }
         }
