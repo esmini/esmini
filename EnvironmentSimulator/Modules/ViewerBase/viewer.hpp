@@ -618,7 +618,7 @@ namespace viewer
         double                                time_;
         double                                frictionScaleFactor_;
         bool                                  defaultClearColorUsed_;
-        osg::Vec4                             fogColor_;
+        std::vector<float>                    fogColor_;
 
         struct
         {

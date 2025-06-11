@@ -62,8 +62,6 @@ float color_blue[3]       = {0.25f, 0.38f, 0.7f};
 float color_yellow[3]     = {0.75f, 0.7f, 0.4f};
 float color_white[3]      = {1.0f, 1.0f, 0.9f};
 float color_background[3] = {0.5f, 0.75f, 1.0f};
-float color_fog_bright[3] = {0.9f, 0.9f, 0.9f};
-float color_fog_dark[3]   = {0.05f, 0.05f, 0.05f};
 
 // cppcheck-suppress unknownMacro
 // The following macros are defined by the framework or plugin system and are correctly expanded during compilation.
@@ -1360,14 +1358,14 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osg_screenshot_event_handler_ = false;
     imgCallback_                  = {nullptr, nullptr};
     winDim_                       = {-1, -1, -1, -1};
-    bool decoration               = true;
-    int  screenNum                = -1;
     stand_in_model_               = false;
     time_                         = 0.0;
     frictionScaleFactor_          = 1.0;  // default friction scale factor
     defaultClearColorUsed_        = false;
-    fogColor_                     = osg::Vec4(color_fog_bright[0], color_fog_bright[1], color_fog_bright[2],
-                          1.0f);  // default fog color
+    fogColor_                     = {0.75f, 0.75f, 0.75f};  // Default fog color, average of color_background
+
+    bool decoration = true;
+    int  screenNum  = -1;
 
     int aa_mode = DEFAULT_AA_MULTISAMPLES;
     if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
