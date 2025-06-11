@@ -1302,7 +1302,7 @@ int OnRequestShowHelpOrVersion(int argc, char** argv, SE_Options& opt)
         }
         else if (strcmp(argv[i], "--version") == 0)
         {
-            TxtLogger::Inst().LogVersion();
+            txtLogger.LogVersion();
             retVal += 2;
         }
     }

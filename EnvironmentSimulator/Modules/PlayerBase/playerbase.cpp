@@ -110,7 +110,7 @@ ScenarioPlayer::~ScenarioPlayer()
     {
         delete s;
     }
-    TxtLogger::Inst().SetLoggerTime(0);
+    txtLogger.SetLoggerTime(0);
     if (scenarioEngine)
     {
         delete scenarioEngine;
@@ -1376,14 +1376,14 @@ int ScenarioPlayer::Init()
 
     std::string strAllSetOptions = opt.GetSetOptionsAsStr();
 
-    std::string logFilePathOptionValue = TxtLogger::Inst().CreateLogFilePath();
+    std::string logFilePathOptionValue = txtLogger.CreateLogFilePath();
     if (opt.IsOptionArgumentSet("param_dist"))
     {
         // deferring the creation of log file as name of it will be changed afterwards due to permutation distribution
         opt.ClearOption("logfile_path");
     }
 
-    TxtLogger::Inst().SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
+    txtLogger.SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
         arg_str             = opt.GetOptionArg("log_only_modules");
@@ -1391,7 +1391,7 @@ int ScenarioPlayer::Init()
         if (!splitted.empty())
         {
             std::unordered_set<std::string> logOnlyModules(splitted.begin(), splitted.end());
-            TxtLogger::Inst().SetLogOnlyModules(logOnlyModules);
+            txtLogger.SetLogOnlyModules(logOnlyModules);
         }
     }
     if (opt.IsOptionArgumentSet("log_skip_modules"))
@@ -1401,10 +1401,10 @@ int ScenarioPlayer::Init()
         if (!splitted.empty())
         {
             std::unordered_set<std::string> logSkipModules(splitted.begin(), splitted.end());
-            TxtLogger::Inst().SetLogSkipModules(logSkipModules);
+            txtLogger.SetLogSkipModules(logSkipModules);
         }
     }
-    TxtLogger::Inst().SetLoggersVerbosity();
+    txtLogger.SetLoggersVerbosity();
     OSCParameterDistribution& dist = OSCParameterDistribution::Inst();
 
     if (dist.GetNumPermutations() > 0)
@@ -1495,8 +1495,8 @@ int ScenarioPlayer::Init()
         opt.SetOptionValue("logfile_path", logFilePathOptionValue);
     }
 
-    TxtLogger::Inst().SetLogFilePath(logFilePathOptionValue);
-    TxtLogger::Inst().LogTimeOnly();
+    txtLogger.SetLogFilePath(logFilePathOptionValue);
+    txtLogger.LogTimeOnly();
     LOG_INFO("Player options: {}", strAllSetOptions);
 
     if (opt.GetOptionSet("use_signs_in_external_model"))
