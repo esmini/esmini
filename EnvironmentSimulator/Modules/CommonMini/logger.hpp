@@ -119,17 +119,12 @@ namespace esmini::common
         void SetLogLevel(LogLevel val);
 
         LogLevel GetLogLevel() const;
-        //template <class... ARGS>
-        //void Log(LogLevel msgLogLevel, const std::string& logStr, char const* function, char const* file,
-        //    long line, const std::string& log, ARGS... args);
+        // template <class... ARGS>
+        // void Log(LogLevel msgLogLevel, const std::string& logStr, char const* function, char const* file,
+        //     long line, const std::string& log, ARGS... args);
         template <class... ARGS>
-        void Log(LogLevel           msgLogLevel,
-                            const std::string& logStr,
-                            char const*        function,
-                            char const*        file,
-                            long               line,
-                            const std::string& log,
-                            ARGS... args)
+        void
+        Log(LogLevel msgLogLevel, const std::string& logStr, char const* function, char const* file, long line, const std::string& log, ARGS... args)
         {
             if (logLevel_ > msgLogLevel)
             {
@@ -142,7 +137,7 @@ namespace esmini::common
             std::string logWithTimeAndMeta;
             if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout"))
             {
-                if(firstConsoleLog_)
+                if (firstConsoleLog_)
                 {
                     std::cout << GetVersionInfoForLog() << '\n';
                     firstConsoleLog_ = false;
@@ -152,13 +147,13 @@ namespace esmini::common
             }
             if (!SE_Env::Inst().GetOptions().GetOptionSet("disable_log"))
             {
-                if(!logFile_.is_open())
+                if (!logFile_.is_open())
                 {
                     CreateFileLogger();
                 }
-                if(firstFileLog_)
+                if (firstFileLog_)
                 {
-                    logFile_<< GetVersionInfoForLog() << '\n';
+                    logFile_ << GetVersionInfoForLog() << '\n';
                     firstFileLog_ = false;
                 }
                 if (logWithTimeAndMeta.empty())
@@ -192,8 +187,8 @@ namespace esmini::common
         LogLevel logLevel_ = LogLevel::info;
         // log file
         std::ofstream logFile_;
-        bool firstConsoleLog_ = true;
-        bool firstFileLog_ = true;
+        bool          firstConsoleLog_ = true;
+        bool          firstFileLog_    = true;
 
     };  // class TxtLogger
 

@@ -133,7 +133,7 @@ namespace esmini::common
 
         try
         {
-            if(SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append"))
+            if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append"))
             {
                 logFile_.open(filePath, std::ios::app);
             }
@@ -142,7 +142,7 @@ namespace esmini::common
                 logFile_.open(filePath);
             }
 
-            if(!logFile_.is_open())
+            if (!logFile_.is_open())
             {
                 std::cout << "Unable to open log file " << filePath << std::endl;
             }
@@ -209,7 +209,7 @@ namespace esmini::common
 
     void TxtLogger::StopFileLogging()
     {
-        if(logFile_.is_open())
+        if (logFile_.is_open())
         {
             logFile_.flush();
             logFile_.close();
@@ -279,35 +279,33 @@ namespace esmini::common
 
     void TxtLogger::LogVersion()
     {
-        if(!SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout"))
+        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout"))
         {
             std::cout << GetVersionInfoForLog() << '\n';
         }
-        if(SE_Env::Inst().GetOptions().GetOptionSet("disable_log"))
+        if (SE_Env::Inst().GetOptions().GetOptionSet("disable_log"))
         {
             logFile_ << GetVersionInfoForLog() << '\n';
         }
-
     }
 
     void TxtLogger::LogTimeOnly()
     {
-        auto now = std::chrono::system_clock::now();
-        auto dateTimeUntilSec = std::chrono::time_point_cast<std::chrono::seconds>(now);
-        std::string dateTime = fmt::format("[{:%Y-%m-%d %H:%M:%S}]\n", dateTimeUntilSec);
-        if(!SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout"))
+        auto        now              = std::chrono::system_clock::now();
+        auto        dateTimeUntilSec = std::chrono::time_point_cast<std::chrono::seconds>(now);
+        std::string dateTime         = fmt::format("[{:%Y-%m-%d %H:%M:%S}]\n", dateTimeUntilSec);
+        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout"))
         {
             std::cout << dateTime;
         }
         if (!SE_Env::Inst().GetOptions().GetOptionSet("disable_log"))
         {
-            if(firstFileLog_)
+            if (firstFileLog_)
             {
-                logFile_<< GetVersionInfoForLog() << '\n';
+                logFile_ << GetVersionInfoForLog() << '\n';
                 firstFileLog_ = false;
             }
             logFile_ << dateTime;
-
         }
     }
 }  // namespace esmini::common
