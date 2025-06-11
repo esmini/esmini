@@ -192,9 +192,9 @@ namespace scenarioengine
         std::string           oscFilename_;
         Entities*             entities_;
         Catalogs*             catalogs_;
-        OSCEnvironment*       environment_;
         ScenarioGateway*      gateway_;
         ScenarioEngine*       scenarioEngine_;
+        OSCEnvironment*       environment_;
         bool                  disable_controllers_;
         static ControllerPool controllerPool_;
         int                   versionMajor_;

@@ -89,8 +89,8 @@ uint64_t viewer::GenerateMaterialKey(double r, double g, double b, double a, uin
     uint8_t a8 = static_cast<uint8_t>(std::max(0.0, std::min(255.0, a * 255.0)));
 
     // code the color as a 64-bit integer in the format 0xRRGGBBAATTFF (T = texture_type, F = friction)
-    return (static_cast<uint64_t>(r) << 40) | (static_cast<uint64_t>(g) << 32) | (static_cast<uint64_t>(b) << 24) | (static_cast<uint64_t>(a) << 16) |
-           (static_cast<uint64_t>(t) << 8) | static_cast<uint64_t>(f);
+    return (static_cast<uint64_t>(r8) << 40) | (static_cast<uint64_t>(g8) << 32) | (static_cast<uint64_t>(b8) << 24) |
+           (static_cast<uint64_t>(a8) << 16) | (static_cast<uint64_t>(t) << 8) | static_cast<uint64_t>(f);
 }
 
 // Derive a class from NodeVisitor to find a node with a  specific name.
