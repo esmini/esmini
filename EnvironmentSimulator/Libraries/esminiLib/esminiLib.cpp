@@ -2868,7 +2868,7 @@ extern "C"
 #ifdef _USE_OSG
         if (player && player->viewer_)
         {
-            return player->viewer_->GetEntityInFocus();
+            return SE_GetId(player->viewer_->GetEntityInFocus());
         }
 #endif
         return -1;
