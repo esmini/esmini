@@ -3268,7 +3268,139 @@ TEST(ConditionTest, TestTTCAndLateralDist)
     RegisterParameterDeclarationCallback(nullptr, 0);
 }
 
-TEST(ConditionTest, TestConditionDelay)
+TEST(ConditionTest, TestConditionDelayBasic)
+{
+    ConditionDelay                                     cd;
+    const std::vector<ConditionDelay::ConditionValue>& cdv = cd.GetValues();
+
+    // Replace previous value at same time
+    cd.RegisterValue(-1, false);
+    EXPECT_EQ(cd.GetValueAtTime(4.0), false);
+    cd.RegisterValue(-1, true);
+    EXPECT_EQ(cdv.size(), 1);
+    EXPECT_EQ(cdv[0].value_, true);
+    EXPECT_EQ(cd.GetValueAtTime(-2.0), false);
+    EXPECT_EQ(cd.GetValueAtTime(4.0), true);
+    EXPECT_EQ(cd.GetValueAtTime(-2), false);
+    EXPECT_EQ(cd.GetValueAtTime(-1), true);
+
+    // Overwrite existing value at timestamp and remove next with same value
+    cd.RegisterValue(-1, true);
+    EXPECT_EQ(cdv.size(), 1);
+    EXPECT_EQ(cdv[0].value_, true);
+
+    // Overwrite existing value at timestamp
+    cd.RegisterValue(-1, false);
+    EXPECT_EQ(cdv.size(), 1);
+    EXPECT_EQ(cdv[0].value_, false);
+
+    // insert new value and remove next with same value
+    cd.RegisterValue(-2, false);
+    EXPECT_EQ(cdv.size(), 1);
+    EXPECT_EQ(cdv[0].time_, -2);
+    EXPECT_EQ(cdv[0].value_, false);
+
+    // insert new unique value
+    cd.RegisterValue(-3, true);
+    EXPECT_EQ(cdv.size(), 2);
+    EXPECT_EQ(cdv[0].time_, -3);
+    EXPECT_EQ(cdv[0].value_, true);
+    EXPECT_EQ(cdv[1].time_, -2);
+    EXPECT_EQ(cdv[1].value_, false);
+
+    // new value at existing timestamp, entry will be removed since value exists at previous timestamp
+    cd.RegisterValue(-2, true);
+    EXPECT_EQ(cdv.size(), 1);
+    EXPECT_EQ(cdv[0].time_, -3);
+    EXPECT_EQ(cdv[0].value_, true);
+
+    // insert new unique value
+    cd.RegisterValue(0, false);
+    EXPECT_EQ(cdv.size(), 2);
+    EXPECT_EQ(cdv[0].time_, -3);
+    EXPECT_EQ(cdv[0].value_, true);
+    EXPECT_EQ(cdv[1].time_, 0);
+    EXPECT_EQ(cdv[1].value_, false);
+
+    // insert duplicate value at larger timestap, ensure it's ignored
+    cd.RegisterValue(5, false);
+    EXPECT_EQ(cdv.size(), 2);
+    EXPECT_EQ(cdv[0].time_, -3);
+    EXPECT_EQ(cdv[0].value_, true);
+    EXPECT_EQ(cdv[1].time_, 0);
+    EXPECT_EQ(cdv[1].value_, false);
+
+    // insert new value at larger timestap, ensure it's added at back
+    cd.RegisterValue(5, true);
+    EXPECT_EQ(cdv.size(), 3);
+    EXPECT_EQ(cdv[0].time_, -3);
+    EXPECT_EQ(cdv[0].value_, true);
+    EXPECT_EQ(cdv[1].time_, 0);
+    EXPECT_EQ(cdv[1].value_, false);
+    EXPECT_EQ(cdv[2].time_, 5);
+    EXPECT_EQ(cdv[2].value_, true);
+
+    // replace value at existing timestap, ensure both previous and next elements are removed
+    cd.RegisterValue(0, true);
+    EXPECT_EQ(cdv.size(), 1);
+    EXPECT_EQ(cdv[0].time_, -3);
+    EXPECT_EQ(cdv[0].value_, true);
+
+    // add some new values again
+    cd.RegisterValue(0, false);
+    cd.RegisterValue(5, true);
+    EXPECT_EQ(cdv.size(), 3);
+    EXPECT_EQ(cdv[0].time_, -3);
+    EXPECT_EQ(cdv[0].value_, true);
+    EXPECT_EQ(cdv[1].time_, 0);
+    EXPECT_EQ(cdv[1].value_, false);
+    EXPECT_EQ(cdv[2].time_, 5);
+    EXPECT_EQ(cdv[2].value_, true);
+
+    // add duplicate value at earlier timestamp, ensure timestamp is updated
+    cd.RegisterValue(2, true);
+    EXPECT_EQ(cdv.size(), 3);
+    EXPECT_EQ(cdv[0].time_, -3);
+    EXPECT_EQ(cdv[0].value_, true);
+    EXPECT_EQ(cdv[1].time_, 0);
+    EXPECT_EQ(cdv[1].value_, false);
+    EXPECT_EQ(cdv[2].time_, 2);
+    EXPECT_EQ(cdv[2].value_, true);
+
+    // add duplicate value at later timestamp, ensure it's ignored
+    cd.RegisterValue(1, false);
+    EXPECT_EQ(cdv.size(), 3);
+    EXPECT_EQ(cdv[0].time_, -3);
+    EXPECT_EQ(cdv[0].value_, true);
+    EXPECT_EQ(cdv[1].time_, 0);
+    EXPECT_EQ(cdv[1].value_, false);
+    EXPECT_EQ(cdv[2].time_, 2);
+    EXPECT_EQ(cdv[2].value_, true);
+
+    // add duplicate value at later timestamp than last element, ensure it's ignored
+    cd.RegisterValue(7, true);
+    EXPECT_EQ(cdv.size(), 3);
+    EXPECT_EQ(cdv[0].time_, -3);
+    EXPECT_EQ(cdv[0].value_, true);
+    EXPECT_EQ(cdv[1].time_, 0);
+    EXPECT_EQ(cdv[1].value_, false);
+    EXPECT_EQ(cdv[2].time_, 2);
+    EXPECT_EQ(cdv[2].value_, true);
+
+    // some checks retriving values from the condition delay registry
+    EXPECT_EQ(cd.GetValueAtTime(-5), false);
+    EXPECT_EQ(cd.GetValueAtTime(-3.1), false);
+    EXPECT_EQ(cd.GetValueAtTime(-3.0), true);
+    EXPECT_EQ(cd.GetValueAtTime(-2.9), true);
+    EXPECT_EQ(cd.GetValueAtTime(-5), false);
+    EXPECT_EQ(cd.GetValueAtTime(-0.1), true);
+    EXPECT_EQ(cd.GetValueAtTime(0.0), false);
+    EXPECT_EQ(cd.GetValueAtTime(0.0), false);
+    EXPECT_EQ(cd.GetValueAtTime(2.0), true);
+    EXPECT_EQ(cd.GetValueAtTime(10.0), true);
+}
+
+TEST(ConditionTest, TestConditionDelayScenario)
 {
     double dt = 0.1;
 

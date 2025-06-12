@@ -291,6 +291,7 @@ bool OSCCondition::Evaluate(double sim_time)
 
     if (history_.RegisterValue(sim_time, current_value))
     {
+        LOG_DEBUG("Registered {} value {}", name_, current_value);
         if (current_value || history_.GetNumberOfEntries() > 1)
         {
             Log(current_value, true);
@@ -1609,13 +1610,69 @@ bool ConditionDelay::RegisterValue(double time, bool value)
         values_.push_back({time, value});
         return true;
     }
-    else if (time < values_.back().time_)
+    else if (time < values_.back().time_ + SMALL_NUMBER)
     {
-        LOG_DEBUG("Unexpected time value {:.2f} < lastest registered {:.2f}. Probably ghost restart. Reset condition history.",
+        LOG_DEBUG("Unexpected time value {:.2f} <= lastest registered {:.2f}. Probably ghost restart. Insert value based on timestamp.",
                   time,
                   values_.back().time_);
-        values_.clear();
-        values_.push_back({time, value});
+
+        auto it = std::lower_bound(values_.begin(),
+                                   values_.end(),
+                                   time,
+                                   [](const ConditionValue& pivot_value, const double& t) { return pivot_value.time_ < t; });
+
+        // Insert new value at the correct position wrt timestamp
+        // the algorithm is based on that every element is different value than any previous and next
+        // the element found by lower_bound is referred to as pivot and is the first element with same or larger time stamp
+        if (it != values_.end())
+        {
+            if (it->time_ == time)
+            {
+                if (value != it->value_)
+                {
+                    if (it == values_.begin())
+                    {
+                        // change value of first element
+                        it->value_ = value;
+                    }
+                    else
+                    {
+                        // pivot element is obsolete, remove it and the next which also becomes obsolete
+                        if (it + 1 != values_.end())
+                        {
+                            values_.erase(it + 1);
+                        }
+                        values_.erase(it);
+                    }
+                }
+            }
+            else if (it->value_ == value)
+            {
+                // values are same, update the timestamp of pivot element
+                it->time_ = time;
+            }
+            else  // pivot element has different value
+            {
+                if (it + 1 != values_.end())
+                {
+                    // next element value is same, just update it's timestamp
+                    (it + 1)->time_ = time;
+                }
+                else
+                {
+                    // if there is a previous element it has the same value and we can skip this, else add it
+                    if (it == values_.begin())
+                    {
+                        values_.insert(it, {time, value});
+                    }
+                }
+            }
+        }
+        else
+        {
+            // If the time is beyond the last entry, add a new one
+            values_.push_back({time, value});
+        }
         return true;
     }
     else if (time < values_.back().time_ + SMALL_NUMBER)
@@ -1642,24 +1699,55 @@ void ConditionDelay::Reset()
     current_index_ = 0;
 }
 
+void ConditionDelay::ResetCurrentIndex(double time)
+{
+    current_index_ = 0;
+
+    // Check if value has become true in the time window since last check
+    for (unsigned int i = 0; i < values_.size(); i++)
+    {
+        ConditionValue& v = values_[i];
+        if (v.time_ < time + SMALL_NUMBER)
+        {
+            // found value at given timestamp
+            current_index_ = i;
+            break;
+        }
+    }
+}
+
 bool ConditionDelay::GetValueAtTime(double time)
 {
     bool retval = false;
 
     if (!values_.empty())
     {
+        // detect ghost restart by checking for decreased time value
+        if (current_index_ > 0 && time < values_[current_index_ - 1].time_ - SMALL_NUMBER)
+        {
+            LOG_DEBUG("ConditionDelay::GetValueAtTime: Time value of past {:.2f} / {:.2f}, probably Ghost restart. Reset index.",
+                      time,
+                      values_[current_index_ - 1].time_);
+            ResetCurrentIndex(time);
+        }
+
         if (current_index_ >= values_.size())
         {
             // passed last registered value, pick it
             retval = values_.back().value_;
         }
-        else
+        else if (time > values_[current_index_].time_ - SMALL_NUMBER)
         {
             // Check if value has become true in the time window since last check
             for (; current_index_ < values_.size() && time > values_[current_index_].time_ - SMALL_NUMBER; current_index_++)
             {
                 retval |= values_[current_index_].value_;
             }
+        }
+        else if (current_index_ > 0)
+        {
+            // use value from current time window
+            retval = values_[current_index_ - 1].value_;
         }
     }
 

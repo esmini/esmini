@@ -32,23 +32,29 @@ namespace scenarioengine
     class ConditionDelay
     {
     public:
+        struct ConditionValue
+        {
+            double time_;
+            bool   value_;
+        };
+
         /**
             Register condition trig status at a specific time
             @param time: time to register the condition status
             @param value: condition status
             @return true if the value was registered, false otherwise
         */
-        bool   RegisterValue(double time, bool value);
-        void   Reset();
-        bool   GetValueAtTime(double time);
-        size_t GetNumberOfEntries() const;
+        bool                               RegisterValue(double time, bool value);
+        void                               Reset();
+        void                               ResetCurrentIndex(double time = 0.0);
+        bool                               GetValueAtTime(double time);
+        size_t                             GetNumberOfEntries() const;
+        const std::vector<ConditionValue>& GetValues() const
+        {
+            return values_;
+        }
 
     private:
-        struct ConditionValue
-        {
-            double time_;
-            bool   value_;
-        };
         std::vector<ConditionValue> values_;
         unsigned int                current_index_ = 0;  // point to next value to check
     };
