@@ -1856,6 +1856,18 @@ extern "C"
     SE_DLL_API int SE_GetObjectInCameraFocus();
 
     /**
+    Get the position (x, y, z) and orientation (heading/yaw, pitch, roll) of the viewer camera
+    @param x reference to a variable returning the camera x coordinate
+    @param y reference to a variable returning the camera y coordinate
+    @param z reference to a variable returning the camera z coordinate
+    @param h reference to a variable returning the camera heading/yaw
+    @param p reference to a variable returning the camera pitch
+    @param r reference to a variable returning the camera roll
+    @return 0 if successful, -1 if not
+    */
+    SE_DLL_API int SE_GetCameraPos(float *x, float *y, float *z, float *h, float *p, float *r);
+
+    /**
             Get the number Route points assigned for a specific vehicle
             @param object_id The index of the vehicle
             @return number of Route points (0 means no route assigned), -1 on error
