@@ -13,15 +13,25 @@ COMMON_REPLAYER_ARGS = '--file sim.dat --headless --time_scale 10 --res_path ../
 
 class TestSuite(unittest.TestCase):
 
-    def use_sumo(self):
+    def use_package(self, pack_name):
         result = subprocess.run(
-            "cmake ../build -L | grep USE_SUMO",
+            ["cmake", "-B", "../build", "-N", "-L"],
             capture_output=True,
             text=True,
             check=True,
-            shell=True
+            shell=False
         )
-        return result.stdout == "USE_SUMO:BOOL=ON"
+        return result.stdout.find("USE_" + pack_name + ":BOOL=ON") != -1
+
+    def build_type(self, build_type):
+        result = subprocess.run(
+            ["cmake", "-B", "../build", "-N", "-L"],
+            capture_output=True,
+            text=True,
+            check=True,
+            shell=False
+        )
+        return result.stdout.find("CMAKE_BUILD_TYPE:STRING=" + build_type) != -1
 
     def test_cut_in(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in.xosc'), COMMON_ESMINI_ARGS + '--log_level debug')
@@ -93,7 +103,7 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('\\n25.000.*, 0, Ego, 206.081, 288.506, 5.436, 1.188, 6.238, 0.000, 16.000', csv))
             self.assertTrue(re.search('\\n25.000, 1, Target, 216.246, 307.463, 6.701, 0.969, 6.214, (0.000|6.283), 21.101, -0.032, 5.562', csv))
         else:
-            print('\n  - skipping test_trajectory check for non OSI builds', flush=True)
+            print('skipping test_trajectory check for non OSI builds ', end='', file=sys.stderr)
 
     def test_synchronize(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ESMINI_ARGS \
@@ -613,8 +623,7 @@ class TestSuite(unittest.TestCase):
 
         # osg viewer, which replayer depends on, fails on CI headless mac system
         if sys.platform != "darwin":
-            # make sure replayer is available, which is not the case when USE_OSG=FALSE has been defined in build configuration
-            if (os.path.isfile('../bin/replayer') or os.path.isfile('../bin/replayer.exe')):
+            if self.use_package("OSG"):
                 log = run_replayer(COMMON_REPLAYER_ARGS + '--collision continue')
                 self.assertTrue(re.search('Collision between Ego \\(id 0\\) and NPC2 \\(id 2\\) at time 5.25.', log, re.MULTILINE)  is not None)
                 self.assertTrue(re.search('Relative speed 14.40 km/h', log, re.MULTILINE)  is not None)
@@ -623,9 +632,9 @@ class TestSuite(unittest.TestCase):
                 self.assertTrue(re.search('Relative speed 14.40 km/h', log, re.MULTILINE)  is not None)
                 self.assertTrue(re.search('Angle 0.00 degrees \\(ego to target\\)', log, re.MULTILINE)  is not None)
             else:
-                print('\n  - skipping collision checks due to missing replayer, probably esmini built without OSG support', flush=True)
+                print('skipping collision checks due to disabled OSG support and hence missing replayer ', end='', file=sys.stderr)
         else:
-            print('\n  - skipping collision checks on mac due to replayer graphics dependencies not working on CI macOS image', flush=True)
+            print('skipping collision checks on mac due to replayer graphics dependencies not working on CI macOS image ', end='', file=sys.stderr)
 
     def test_add_delete_entity(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ESMINI_ARGS)
@@ -1583,9 +1592,9 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^.* Loading inline', log[-1], re.MULTILINE)  is not None)
             self.assertTrue(re.search('^.0.000.* Recording data to file sim_', log[-1], re.MULTILINE)  is not None)
             self.assertTrue(re.search('^.0.000.* Controller ALKS_R157SM_Controller active on domains: Longitudinal \\(mask=0x1\\)', log[-1], re.MULTILINE)  is not None)
-        return
+
         # make sure replayer is available, which is not the case when USE_OSG=FALSE has been defined in build configuration
-        if (os.path.isfile('../bin/replayer') or os.path.isfile('../bin/replayer.exe')):
+        if self.use_package("OSG"):
             if len(models) > 0:
                 with open(STDOUT_FILENAME, "w") as f:
                     if len(models) > 1:
@@ -1634,7 +1643,7 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^6.350, 301, Target, 160.872, -1.535, 0.000, 0.000, 0.000, 0.000, 2.832, 0.000, 5.098', csv, re.MULTILINE))
             self.assertTrue(re.search('^', csv, re.MULTILINE))
         else:
-            print('\n  - skipping state checks for various ALKS models due to missing replayer, probably esmini built without OSG support', flush=True)
+            print('skipping state checks for various ALKS models due to missing OSG support/replayer ', end='', file=sys.stderr)
 
     def test_user_defined_action(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/user_defined_action.xosc'), COMMON_ESMINI_ARGS)
@@ -2239,7 +2248,7 @@ class TestSuite(unittest.TestCase):
         self.controller_conflict_common('1_3')
 
     def test_cut_in_sumo(self):
-        if self.use_sumo():
+        if self.use_package("SUMO"):
             log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in_sumo.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.5")
 
             # Check some initialization steps
@@ -2270,33 +2279,37 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^40.500, 4, veh2, 16.387, 445.007, -0.790, 1.536, 0.000, 0.000, 13.022, 0.000, 0.000', csv, re.MULTILINE))
             self.assertTrue(re.search('^40.500, 5, veh3, 12.193, 436.026, -0.778, 1.537, 6.278, 0.000, 15.025, 0.000, 0.000', csv, re.MULTILINE))
         else:
-            print("Skipping due to lacking SUMO support")
+            print("Skipping due to lacking SUMO support ", end='', file=sys.stderr)
 
     def test_sumo_test(self):
-        if self.use_sumo():
-            log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/sumo-test.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 20.0")
+        if self.use_package("SUMO"):
+            if self.build_type("Release"):
+                log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/sumo-test.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 20.0")
 
-            # Check some initialization steps
-            self.assertTrue(re.search('Loading .*sumo-test.xosc', log)  is not None)
+                # Check some initialization steps
+                self.assertTrue(re.search('Loading .*sumo-test.xosc', log)  is not None)
 
-            # Check some scenario events
-            self.assertTrue(re.search('^.20.000.* SUMO controller: Add vehicle 99 to scenario', log, re.MULTILINE)  is not None)
-            self.assertTrue(re.search('^.20.000.* SUMO controller: Remove vehicle Ego from scenario', log, re.MULTILINE)  is not None)
-            self.assertTrue(re.search('^.20.000.* SUMO controller: Remove vehicle 17 from scenario', log, re.MULTILINE)  is not None)
-            self.assertTrue(re.search('^.620.000.* storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
+                # Check some scenario events
+                self.assertTrue(re.search('^.20.000.* SUMO controller: Add vehicle 99 to scenario', log, re.MULTILINE)  is not None)
+                self.assertTrue(re.search('^.20.000.* SUMO controller: Remove vehicle Ego from scenario', log, re.MULTILINE)  is not None)
+                self.assertTrue(re.search('^.20.000.* SUMO controller: Remove vehicle 17 from scenario', log, re.MULTILINE)  is not None)
+                self.assertTrue(re.search('^.620.000.* storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
 
-            # Check vehicle key positions
-            csv = generate_csv()
-            self.assertTrue(re.search('^40.000, 1, 0, 218.251, -3.640, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.000, 2, 1, 510.657, 226.636, 0.000, 2.384, 0.000, 0.000, 13.026, 0.000, 0.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.000, 3, 2, 339.507, 1.880, 0.000, 3.142, 0.000, 0.000, 0.001, 0.000, 0.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.000, 4, 3, 290.049, -4.098, 0.000, 1.861, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.000, 97, 81, 437.115, -238.120, 0.000, 3.142, 0.000, 0.000, 13.858, 0.000, 0.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.000, 98, 91, 531.880, -77.001, 0.000, 1.571, 0.000, 0.000, 12.382, 0.000, 0.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.000, 99, 84, 459.101, -238.120, 0.000, 3.142, 0.000, 0.000, 14.010, 0.000, 0.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^40.000, 100, 99, 531.880, -97.204, 0.000, 1.571, 0.000, 0.000, 12.457, 0.000, 0.000', csv, re.MULTILINE))
+                # Check vehicle key positions
+                csv = generate_csv()
+                self.assertTrue(re.search('^40.000, 1, 0, 218.251, -3.640, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+                self.assertTrue(re.search('^40.000, 2, 1, 510.657, 226.636, 0.000, 2.384, 0.000, 0.000, 13.026, 0.000, 0.000', csv, re.MULTILINE))
+                self.assertTrue(re.search('^40.000, 3, 2, 339.507, 1.880, 0.000, 3.142, 0.000, 0.000, 0.001, 0.000, 0.000', csv, re.MULTILINE))
+                self.assertTrue(re.search('^40.000, 4, 3, 290.049, -4.098, 0.000, 1.861, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+                self.assertTrue(re.search('^40.000, 97, 81, 437.115, -238.120, 0.000, 3.142, 0.000, 0.000, 13.858, 0.000, 0.000', csv, re.MULTILINE))
+                self.assertTrue(re.search('^40.000, 98, 91, 531.880, -77.001, 0.000, 1.571, 0.000, 0.000, 12.382, 0.000, 0.000', csv, re.MULTILINE))
+                self.assertTrue(re.search('^40.000, 99, 84, 459.101, -238.120, 0.000, 3.142, 0.000, 0.000, 14.010, 0.000, 0.000', csv, re.MULTILINE))
+                self.assertTrue(re.search('^40.000, 100, 99, 531.880, -97.204, 0.000, 1.571, 0.000, 0.000, 12.457, 0.000, 0.000', csv, re.MULTILINE))
+            else:
+                print("Skipping large test for non-Release build ", end='', file=sys.stderr)
         else:
-            print("Skipping due to lacking SUMO support")
+            print("Skipping due to lacking SUMO support ", end='', file=sys.stderr)
+
 
 if __name__ == "__main__":
     # execute only if run as a script

@@ -13,6 +13,7 @@ LOG_FILENAME = 'log.txt'
 DAT_FILENAME = 'sim.dat'
 STDOUT_FILENAME = 'stdout.txt'
 TIMEOUT = 40
+POLL_INTERVAL = 0.1  # seconds
 
 VALGRIND_LEVEL_SUMMARY = ["valgrind", "--leak-check=summary", "--show-leak-kinds=definite,possible"]
 VALGRIND_LEVEL_FULL = ["valgrind", "--leak-check=full", "--show-leak-kinds=all", "--track-origins=yes", "--verbose"]
@@ -57,6 +58,7 @@ def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, 
 
     return_code = None
     cpu_times = None
+    start_time = None
 
     with open(STDOUT_FILENAME, "w") as f:
         process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)),
@@ -74,7 +76,7 @@ def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, 
                 except:
                     pass
             else:
-                time.sleep(1)
+                time.sleep(POLL_INTERVAL)
 
         if return_code is None:
             print('timeout ({}s). Terminating scenario ({}).'.format(time.time() - start_time, os.path.basename(osc_filename)))
@@ -82,16 +84,19 @@ def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, 
             process.wait()
             assert False, 'Timeout'
 
+    duration = time.time() - start_time
+
     if not ignoreReturnCode:
         assert return_code == 0
 
+    print('({:.2f} s) '.format(duration), end='', file=sys.stderr)
     errlog = None
     with open(STDOUT_FILENAME, 'r') as errfile:
         errlog = errfile.read()
 
     with open(LOG_FILENAME, 'r') as logfile:
-        log = logfile.read(), time.time() - start_time, cpu_times, errlog
-        return log
+        log = logfile.read()
+        return log, duration, cpu_times, errlog
 
     assert False, 'No log file'
 
