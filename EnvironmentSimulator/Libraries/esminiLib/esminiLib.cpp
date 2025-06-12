@@ -2863,6 +2863,17 @@ extern "C"
         return -1;
     }
 
+    SE_DLL_API int SE_GetObjectInCameraFocus()
+    {
+#ifdef _USE_OSG
+        if (player && player->viewer_)
+        {
+            return SE_GetId(player->viewer_->GetEntityInFocus());
+        }
+#endif
+        return -1;
+    }
+
     SE_DLL_API int SE_GetNumberOfRoutePoints(int object_id)
     {
         Object *obj = nullptr;
