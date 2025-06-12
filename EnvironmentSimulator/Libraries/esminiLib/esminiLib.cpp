@@ -2874,6 +2874,33 @@ extern "C"
         return -1;
     }
 
+    SE_DLL_API int SE_GetCameraPos(float *x, float *y, float *z, float *h, float *p, float *r)
+    {
+#ifdef _USE_OSG
+        if (player && player->viewer_)
+        {
+            osg::Vec3 pos;
+            osg::Vec3 rot;
+            player->viewer_->GetCameraPosAndRot(pos, rot);
+            *x = pos[0];
+            *y = pos[1];
+            *z = pos[2];
+            *h = rot[0];
+            *p = rot[1];
+            *r = rot[2];
+            return 0;
+        }
+#else
+        (void)x;
+        (void)y;
+        (void)z;
+        (void)h;
+        (void)p;
+        (void)r;
+#endif  // _USE_OSG
+        return -1;
+    }
+
     SE_DLL_API int SE_GetNumberOfRoutePoints(int object_id)
     {
         Object *obj = nullptr;

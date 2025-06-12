@@ -1843,7 +1843,7 @@ extern "C"
     SE_DLL_API int SE_SetCameraMode(int mode);
 
     /**
-    Sets the camera focus to the specified object 
+    Sets the camera focus to the specified object
     @param object_id The object to focus on
     @return 0 if successful, -1 if not
     */
@@ -1854,6 +1854,18 @@ extern "C"
     @return Id of the object, -1 on error e.g. scenario not initialized or viewer not enabled
     */
     SE_DLL_API int SE_GetObjectInCameraFocus();
+
+    /**
+    Get the position (x, y, z) and orientation (heading/yaw, pitch, roll) of the viewer camera
+    @param x reference to a variable returning the camera x coordinate
+    @param y reference to a variable returning the camera y coordinate
+    @param z reference to a variable returning the camera z coordinate
+    @param h reference to a variable returning the camera heading/yaw
+    @param p reference to a variable returning the camera pitch
+    @param r reference to a variable returning the camera roll
+    @return 0 if successful, -1 if not
+    */
+    SE_DLL_API int SE_GetCameraPos(float *x, float *y, float *z, float *h, float *p, float *r);
 
     /**
             Get the number Route points assigned for a specific vehicle
