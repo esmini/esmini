@@ -3922,7 +3922,7 @@ TEST(Friction, TestFrictionPerWheel)
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
-    ASSERT_EQ(entities->object_.size(), 1);
+    ASSERT_EQ(entities->object_.size(), 2);
 
     ScenarioGateway* gw = se->getScenarioGateway();
 
@@ -3934,6 +3934,12 @@ TEST(Friction, TestFrictionPerWheel)
     EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
+
+    ObjectStateStruct* target_state = &gw->objectState_[1]->state_;
+    EXPECT_NEAR(target_state->info.wheel_data[0].friction_coefficient, 0.8, 1E-3);
+    EXPECT_NEAR(target_state->info.wheel_data[1].friction_coefficient, 0.8, 1E-3);
+    EXPECT_NEAR(target_state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(target_state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
 
     while (se->getSimulationTime() < 1.8 + SMALL_NUMBER)
     {
@@ -4124,7 +4130,7 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
-    ASSERT_EQ(entities->object_.size(), 1);
+    ASSERT_EQ(entities->object_.size(), 2);
 
     ScenarioGateway* gw = se->getScenarioGateway();
 
@@ -5489,16 +5495,17 @@ TEST(EnvironmentTest, SecondsToFactor)
 
 TEST(EnvironmentTest, EpochTime)
 {
+    // On these, we expect the same epoch time regardless of timezone, as we assume the input is local time
     std::string dateTime1 = "2023-11-15T10:30:00.123+05:30";
-    EXPECT_EQ(GetEpochTimeFromString(dateTime1), 1700024400);
+    EXPECT_EQ(GetEpochTimeFromString(dateTime1), 1700044200);
     std::string dateTime2 = "2023-11-15T00:00:00.123+05:30";
-    EXPECT_EQ(GetEpochTimeFromString(dateTime2), 1699986600);
+    EXPECT_EQ(GetEpochTimeFromString(dateTime2), 1700006400);
     std::string dateTime3 = "2023-11-15T23:59:59.123+05:30";
-    EXPECT_EQ(GetEpochTimeFromString(dateTime3), 1700072999);
+    EXPECT_EQ(GetEpochTimeFromString(dateTime3), 1700092799);
     std::string dateTime4 = "2023-11-15T12:00:00.000+05:30";
-    EXPECT_EQ(GetEpochTimeFromString(dateTime4), 1700029800);
+    EXPECT_EQ(GetEpochTimeFromString(dateTime4), 1700049600);
     std::string dateTime5 = "2023-11-15T12:00:00.000-05:30";
-    EXPECT_EQ(GetEpochTimeFromString(dateTime5), 1700069400);
+    EXPECT_EQ(GetEpochTimeFromString(dateTime5), 1700049600);
     std::string dateTime6 = "2023-11-15T12:00:00.000+00:00";
     EXPECT_EQ(GetEpochTimeFromString(dateTime6), 1700049600);
     std::string dateTime7 = "2011-03-10T11:23:56.000+0100";
