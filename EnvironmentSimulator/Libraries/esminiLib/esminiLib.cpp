@@ -2886,11 +2886,18 @@ extern "C"
             *y = pos[1];
             *z = pos[2];
             *r = rot[0];
-            *h = rot[1];
-            *p = rot[2];
+            *p = rot[1];
+            *h = rot[2];
             return 0;
         }
-#endif
+#else
+        (void)x;
+        (void)y;
+        (void)z;
+        (void)h;
+        (void)p;
+        (void)r;
+#endif  // _USE_OSG
         return -1;
     }
 
