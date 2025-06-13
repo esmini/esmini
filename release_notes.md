@@ -1,5 +1,18 @@
 ## esmini release notes
 
+### 2025-06-13 Version 2.48.1
+
+Improvements and fixes:
+- Randomize cars for SUMO ctrl ([issue #706](https://github.com/esmini/esmini/issues/706))
+  - use cars and vans from available catalogs
+- Fix OpenDRIVE_traffic_signals.txt not found by renaming it to pure lowercase
+  - esmini (from v2.25.1) assumes prefix/country code to be lower case
+- Fix lost delayed triggers during ghost restart
+  - consider all condition events, both before and during restart phase
+- Improve CI smoke test runner
+  - speed up CI smoke tests by reducing watchdog sleep intervals
+  - print scenario execution time
+
 ### 2025-06-09 Version 2.48.0
 
 Code QA updates:
