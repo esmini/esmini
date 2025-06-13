@@ -4473,7 +4473,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 
                 double      s    = atof(object.attribute("s").value());
                 double      t    = atof(object.attribute("t").value());
-                int         ids  = atoi(object.attribute("id").value());
+                id_t        ids  = object.attribute("id").as_uint();
                 std::string name = object.attribute("name").value();
 
                 // orientation
@@ -4667,7 +4667,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 {
                     for (pugi::xml_node outline_node = outlines_node.child("outline"); outline_node; outline_node = outline_node.next_sibling())
                     {
-                        int      id      = atoi(outline_node.attribute("id").value());
+                        id_t     id      = outline_node.attribute("id").as_uint();
                         bool     closed  = !strcmp(outline_node.attribute("closed").value(), "true") ? true : false;
                         Outline* outline = new Outline(id, Outline::FillType::FILL_TYPE_UNDEFINED, closed);
 
