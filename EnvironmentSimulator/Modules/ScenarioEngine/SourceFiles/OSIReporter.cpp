@@ -278,7 +278,7 @@ void OSIReporter::SetOSIStaticReportMode(OSIStaticReportMode mode)
     static_update_mode_ = mode;
 }
 
-int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)  //, OSCEnvironment &environment)
+int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)
 {
     if (osi_initialized_ && (GetUpdated() || (GetCounter() - counter_offset_) % osi_freq_ != 0))
     {
@@ -289,7 +289,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
     if (!osi_initialized_)
     {
         UpdateOSIStaticGroundTruth(objectState);
-        UpdateOSIDynamicGroundTruth(objectState);  //, environment);
+        UpdateOSIDynamicGroundTruth(objectState);
 
         if (IsFileOpen() || GetUDPClientStatus() == 0)
         {
@@ -305,7 +305,7 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
     else
     {
         // We always want to update the dynamic ground truth
-        UpdateOSIDynamicGroundTruth(objectState);  //, environment);
+        UpdateOSIDynamicGroundTruth(objectState);
         obj_osi_external.gt->CopyFrom(*obj_osi_internal.dynamic_gt);
 
         switch (static_update_mode_)
@@ -505,7 +505,7 @@ void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &
     }
 }
 
-int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)  //, OSCEnvironment &environment)
+int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>> &objectState)
 {
     obj_osi_internal.dynamic_gt->clear_moving_object();
     obj_osi_internal.dynamic_gt->clear_timestamp();
@@ -598,7 +598,6 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
         }
     }
     UpdateEnvironment(scenario_engine_->environment);
-    // UpdateEnvironment(environment);
     return 0;
 }
 
