@@ -103,7 +103,7 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('\\n25.000.*, 0, Ego, 206.081, 288.506, 5.436, 1.188, 6.238, 0.000, 16.000', csv))
             self.assertTrue(re.search('\\n25.000, 1, Target, 216.246, 307.463, 6.701, 0.969, 6.214, (0.000|6.283), 21.101, -0.032, 5.562', csv))
         else:
-            print('\n  - skipping test_trajectory check for non OSI builds ', flush=True, end='')
+            print('\n  - skipping test_trajectory check for non OSI builds ', end='', file=sys.stderr)
 
     def test_synchronize(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/synchronize.xosc'), COMMON_ESMINI_ARGS \
@@ -632,9 +632,9 @@ class TestSuite(unittest.TestCase):
                 self.assertTrue(re.search('Relative speed 14.40 km/h', log, re.MULTILINE)  is not None)
                 self.assertTrue(re.search('Angle 0.00 degrees \\(ego to target\\)', log, re.MULTILINE)  is not None)
             else:
-                print('\n  - skipping collision checks due to disabled OSG support and hence missing replayer ', flush=True, end='')
+                print('\n  - skipping collision checks due to disabled OSG support and hence missing replayer ', end='', file=sys.stderr)
         else:
-            print('\n  - skipping collision checks on mac due to replayer graphics dependencies not working on CI macOS image ', flush=True, end='')
+            print('\n  - skipping collision checks on mac due to replayer graphics dependencies not working on CI macOS image ', end='', file=sys.stderr)
 
     def test_add_delete_entity(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc'), COMMON_ESMINI_ARGS)
@@ -1643,7 +1643,7 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^6.350, 301, Target, 160.872, -1.535, 0.000, 0.000, 0.000, 0.000, 2.832, 0.000, 5.098', csv, re.MULTILINE))
             self.assertTrue(re.search('^', csv, re.MULTILINE))
         else:
-            print('\n  - skipping state checks for various ALKS models due to missing OSG support/replayer ', flush=True, end='')
+            print('\n  - skipping state checks for various ALKS models due to missing OSG support/replayer ', end='', file=sys.stderr)
 
     def test_user_defined_action(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/user_defined_action.xosc'), COMMON_ESMINI_ARGS)
@@ -2279,7 +2279,7 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^40.500, 4, veh2, 16.387, 445.007, -0.790, 1.536, 0.000, 0.000, 13.022, 0.000, 0.000', csv, re.MULTILINE))
             self.assertTrue(re.search('^40.500, 5, veh3, 12.193, 436.026, -0.778, 1.537, 6.278, 0.000, 15.025, 0.000, 0.000', csv, re.MULTILINE))
         else:
-            print("Skipping due to lacking SUMO support ", flush=True, end='')
+            print("Skipping due to lacking SUMO support ", end='', file=sys.stderr)
 
     def test_sumo_test(self):
         if self.use_package("SUMO"):
@@ -2306,9 +2306,9 @@ class TestSuite(unittest.TestCase):
                 self.assertTrue(re.search('^40.000, 99, 84, 459.101, -238.120, 0.000, 3.142, 0.000, 0.000, 14.010, 0.000, 0.000', csv, re.MULTILINE))
                 self.assertTrue(re.search('^40.000, 100, 99, 531.880, -97.204, 0.000, 1.571, 0.000, 0.000, 12.457, 0.000, 0.000', csv, re.MULTILINE))
             else:
-                print("Skipping large test for non-Release build ", flush=True, end='')
+                print("Skipping large test for non-Release build ", end='', file=sys.stderr)
         else:
-            print("Skipping due to lacking SUMO support ", flush=True, end='')
+            print("Skipping due to lacking SUMO support ", end='', file=sys.stderr)
 
 
 if __name__ == "__main__":
