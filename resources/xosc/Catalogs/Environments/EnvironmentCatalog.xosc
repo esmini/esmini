@@ -37,10 +37,10 @@
             <RoadCondition frictionScaleFactor="0.7"/>
         </Environment>
         <Environment name="winter">
-            <TimeOfDay animation="true" dateTime="2025-12-15T10:30:00.123+00:00"/>
+            <TimeOfDay animation="true" dateTime="2025-12-15T12:30:00.123+00:00"/>
             <Weather fractionalCloudCover="sevenOktas" temperature="271.15" atmosphericPressure="10000">
-                <Sun azimuth="1.57" intensity="10000" elevation="0.3"/>
-                <Fog visualRange="20"/>
+                <Sun azimuth="1.57" intensity="80000" elevation="0.3"/>
+                <Fog visualRange="300"/>
                 <Precipitation precipitationType="snow" precipitationIntensity="10.0"/>
                 <Wind direction="3.1415" speed="10"/>
             </Weather>

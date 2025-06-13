@@ -1865,15 +1865,17 @@ void Viewer::CreateWeatherGroup(const scenarioengine::OSCEnvironment& environmen
 
 void viewer::Viewer::UpdateFrictonScaleFactorInMaterial(const double factor)
 {
-    for (const auto& [key, std_material] : roadGeom->std_materials_)
+    if (roadGeom != nullptr)
     {
-        // double    friction       = std::isnan(materialList.friction) ? 1 * factor : materialList.friction * factor;
-        double material_friction;
-        if (std_material->getUserValue("friction", material_friction))
+        for (const auto& [key, std_material] : roadGeom->std_materials_)
         {
-            osg::Vec4 friction_color = roadGeom->GetFrictionColor(material_friction * factor);
-            std_material->setAmbient(osg::Material::FRONT_AND_BACK, friction_color);
-            std_material->setDiffuse(osg::Material::FRONT_AND_BACK, friction_color);
+            double material_friction;
+            if (std_material->getUserValue("friction", material_friction))
+            {
+                osg::Vec4 friction_color = roadGeom->GetFrictionColor(material_friction * factor);
+                std_material->setAmbient(osg::Material::FRONT_AND_BACK, friction_color);
+                std_material->setDiffuse(osg::Material::FRONT_AND_BACK, friction_color);
+            }
         }
     }
 }
