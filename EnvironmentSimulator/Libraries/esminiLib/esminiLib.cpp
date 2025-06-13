@@ -2885,9 +2885,9 @@ extern "C"
             *x = pos[0];
             *y = pos[1];
             *z = pos[2];
-            *r = rot[0];
+            *h = rot[0];
             *p = rot[1];
-            *h = rot[2];
+            *r = rot[2];
             return 0;
         }
 #else
