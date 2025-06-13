@@ -1843,7 +1843,7 @@ extern "C"
     SE_DLL_API int SE_SetCameraMode(int mode);
 
     /**
-    Sets the camera focus to the specified object 
+    Sets the camera focus to the specified object
     @param object_id The object to focus on
     @return 0 if successful, -1 if not
     */
