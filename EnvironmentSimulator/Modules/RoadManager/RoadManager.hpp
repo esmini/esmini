@@ -1720,12 +1720,12 @@ namespace roadmanager
             FILL_TYPE_UNDEFINED
         } FillType;
 
-        int                          id_;
+        id_t                         id_;
         FillType                     fillType_;
         bool                         closed_;
         std::vector<OutlineCorner *> corner_;
 
-        Outline(int id, FillType fillType, bool closed) : id_(id), fillType_(fillType), closed_(closed)
+        Outline(id_t id, FillType fillType, bool closed) : id_(id), fillType_(fillType), closed_(closed)
         {
         }
 
@@ -1957,7 +1957,7 @@ namespace roadmanager
 
         RMObject(double      s,
                  double      t,
-                 int         id,
+                 id_t        id,
                  std::string name,
                  Orientation orientation,
                  double      z_offset,
@@ -2015,7 +2015,7 @@ namespace roadmanager
         {
             return type_;
         }
-        int GetId() const
+        id_t GetId() const
         {
             return id_;
         }
@@ -2118,7 +2118,7 @@ namespace roadmanager
     private:
         std::string            name_;
         ObjectType             type_;
-        int                    id_;
+        id_t                   id_;
         double                 s_;
         double                 t_;
         double                 z_offset_;
