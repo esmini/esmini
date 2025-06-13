@@ -2811,46 +2811,8 @@ osg::ref_ptr<osg::PositionAttitudeTransform> Viewer::LoadRoadFeature(roadmanager
     return xform;
 }
 
-int Viewer::CreateTunnels(roadmanager::OpenDrive* od)
-{
-    osg::ref_ptr<osg::Group> group = new osg::Group;
-    for (unsigned int r = 0; r < od->GetNumOfRoads(); r++)
-    {
-        roadmanager::Road* road = od->GetRoadByIdx(r);
-        for (unsigned int i = 0; i < road->GetNumberOfTunnels(); i++)
-        {
-            roadmanager::Tunnel* tunnel = road->GetTunnel(i);
-            if (tunnel == nullptr)
-            {
-                continue;
-            }
-            roadmanager::RMObject rm_obj(tunnel->s_,
-                                         -5.0,
-                                         tunnel->id_,
-                                         tunnel->name_,
-                                         roadmanager::RoadObject::Orientation(),
-                                         0.0,
-                                         roadmanager::RMObject::ObjectType::BARRIER,
-                                         tunnel->length_,
-                                         7.0,
-                                         2.0,
-                                         0.0,
-                                         0.0,
-                                         0.0,
-                                         0.0,
-                                         0.0,
-                                         0.0,
-                                         0.0);
-        }
-    }
-    env_origin2odr_->addChild(group);
-    return 0;
-}
-
 int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
 {
-    CreateTunnels(od);
-
     osg::ref_ptr<osg::Group>                     objGroup = new osg::Group;
     osg::ref_ptr<osg::PositionAttitudeTransform> tx       = nullptr;
 
@@ -2965,8 +2927,8 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                     CreateOutlineObject(outline, color);
                 }
                 LOG_INFO("Created outline geometry for object {}.", object->GetName());
-                LOG_INFO("  if it looks strange, e.g.faces too dark or light color, ");
-                LOG_INFO("  check that corners are defined counter-clockwise (as OpenGL default).");
+                LOG_DEBUG("  if it looks strange, e.g.faces too dark or light color, ");
+                LOG_DEBUG("  check that corners are defined counter-clockwise (as OpenGL default).");
             }
             else
             {

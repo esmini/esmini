@@ -4579,58 +4579,22 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 
                     if (rdistance < SMALL_NUMBER)
                     {
-                        // inter-distance is zero, treat as outline
-                        Outline*     outline            = new Outline(ids, Outline::FillType::FILL_TYPE_UNDEFINED, true);
-                        const double max_segment_length = 10.0;
-
-                        // find smallest value of length and rlength, but between SMALL_NUMBER and max_segment_length
-                        double segment_length = max_segment_length;
-                        if (length > SMALL_NUMBER && length < segment_length)
-                        {
-                            segment_length = length;
-                        }
-                        if (rlength > SMALL_NUMBER && rlength < segment_length)
-                        {
-                            segment_length = rlength;
-                        }
-
-                        unsigned int n_segments = static_cast<unsigned int>((MAX(1.0, rlength / segment_length)));
-
-                        // Create outline polygon, visiting corners counter clockwise
-                        for (unsigned int i = 0; i < 2; i++)
-                        {
-                            for (unsigned int j = 0; j < n_segments + 1; j++)
-                            {
-                                double       factor  = static_cast<double>((i == 0 ? j : (n_segments - j))) / n_segments;
-                                const double min_dim = 0.05;
-                                double       w_start = rwidthStart;
-                                double       w_end   = rwidthEnd;
-                                double       h_start = rheightStart;
-                                double       h_end   = rheightEnd;
-
-                                if (w_start < SMALL_NUMBER && w_end < SMALL_NUMBER)
-                                {
-                                    w_start = w_end = min_dim;
-                                }
-                                if (h_start < SMALL_NUMBER && h_end < SMALL_NUMBER)
-                                {
-                                    h_start = h_end = min_dim;
-                                }
-
-                                double         w_local = w_start + factor * (w_end - w_start);
-                                OutlineCorner* corner  = static_cast<OutlineCorner*>(
-                                    new OutlineCornerRoad(r->GetId(),
-                                                          rs + factor * rlength,
-                                                          rtStart + factor * (rtEnd - rtStart) + (i == 0 ? -w_local / 2.0 : w_local / 2.0),
-                                                          rzOffsetStart + factor * (rzOffsetEnd - rzOffsetStart),
-                                                          h_start + factor * (h_end - h_start),
-                                                          s,
-                                                          t,
-                                                          heading));
-
-                                outline->AddCorner(corner);
-                            }
-                        }
+                        Outline* outline = CreateContinuousRepeatOutline(r,
+                                                                         ids,
+                                                                         s,
+                                                                         t,
+                                                                         heading,
+                                                                         length,
+                                                                         rs,
+                                                                         rlength,
+                                                                         rwidthStart,
+                                                                         rwidthEnd,
+                                                                         rheightStart,
+                                                                         rheightEnd,
+                                                                         rtStart,
+                                                                         rtEnd,
+                                                                         rzOffsetStart,
+                                                                         rzOffsetEnd);
                         obj->AddOutline(outline);
                     }
 
@@ -4806,6 +4770,103 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 tunnel->generate_3D_model = strcmp(ReadUserData(tunnel_node, "generate3DModel", "true"), "false");
 
                 r->AddTunnel(tunnel);
+
+                if (tunnel->generate_3D_model)
+                {
+                    // create additional side walls and overhead roof structure objects
+                    // create object with position of main element
+                    Position pos;
+                    double   tunnel_height         = 5.0;
+                    double   tunnel_wall_thickness = 2.0;
+                    double   tunnel_roof_thickness = 2.0;
+                    double   tunnel_width =
+                        r->GetWidth(tunnel->s_,
+                                    0,
+                                    static_cast<unsigned int>(Lane::LaneType::LANE_TYPE_ANY_ROAD | Lane::LaneType::LANE_TYPE_BIKING |
+                                                              Lane::LaneType::LANE_TYPE_SIDEWALK | Lane::LaneType::LANE_TYPE_BORDER)) +
+                        tunnel_wall_thickness;
+
+                    // create walls
+                    for (auto tt : {-tunnel_width / 2.0, tunnel_width / 2.0})
+                    {
+                        pos.SetTrackPos(r->GetId(), tunnel->s_, tt);
+                        roadmanager::RMObject* rm_obj = new RMObject(tunnel->s_,
+                                                                     tt,
+                                                                     tunnel->id_,
+                                                                     tunnel->name_,
+                                                                     RoadObject::Orientation(),
+                                                                     0.0,
+                                                                     RMObject::ObjectType::BARRIER,
+                                                                     tunnel->length_,
+                                                                     tunnel_height,
+                                                                     tunnel_width,
+                                                                     0.0,
+                                                                     0.0,
+                                                                     0.0,
+                                                                     pos.GetX(),
+                                                                     pos.GetY(),
+                                                                     pos.GetZ(),
+                                                                     pos.GetH());
+
+                        Outline* outline = CreateContinuousRepeatOutline(r,
+                                                                         tunnel->id_,
+                                                                         tunnel->s_,
+                                                                         tt,
+                                                                         0.0,
+                                                                         tunnel->length_,
+                                                                         tunnel->s_,
+                                                                         tunnel->length_,
+                                                                         tunnel_wall_thickness,
+                                                                         tunnel_wall_thickness,
+                                                                         tunnel_height,
+                                                                         tunnel_height,
+                                                                         tt,
+                                                                         tt,
+                                                                         0.0,
+                                                                         0.0);
+                        rm_obj->AddOutline(outline);
+                        r->AddObject(rm_obj);
+                    }
+
+                    // create roof
+                    pos.SetTrackPos(r->GetId(), tunnel->s_, 0.0);
+                    roadmanager::RMObject* rm_obj = new RMObject(tunnel->s_,
+                                                                 0.0,
+                                                                 tunnel->id_,
+                                                                 tunnel->name_,
+                                                                 RoadObject::Orientation(),
+                                                                 0.0,
+                                                                 RMObject::ObjectType::BARRIER,
+                                                                 tunnel->length_,
+                                                                 tunnel_height,
+                                                                 tunnel_width + tunnel_wall_thickness,
+                                                                 0.0,
+                                                                 0.0,
+                                                                 0.0,
+                                                                 pos.GetX(),
+                                                                 pos.GetY(),
+                                                                 pos.GetZ(),
+                                                                 pos.GetH());
+
+                    Outline* outline = CreateContinuousRepeatOutline(r,
+                                                                     tunnel->id_,
+                                                                     tunnel->s_,
+                                                                     0.0,
+                                                                     0.0,
+                                                                     tunnel->length_,
+                                                                     tunnel->s_,
+                                                                     tunnel->length_,
+                                                                     tunnel_width + tunnel_wall_thickness,
+                                                                     tunnel_width + tunnel_wall_thickness,
+                                                                     tunnel_roof_thickness,
+                                                                     tunnel_roof_thickness,
+                                                                     0.0,
+                                                                     0.0,
+                                                                     tunnel_height,
+                                                                     tunnel_height);
+                    rm_obj->AddOutline(outline);
+                    r->AddObject(rm_obj);
+                }
             }
         }
 
@@ -6205,6 +6266,87 @@ id_t OpenDrive::LookupJunctionIdFromStr(std::string id_str)
     }
 
     return id;
+}
+
+Outline* roadmanager::OpenDrive::CreateContinuousRepeatOutline(Road*  r,
+                                                               id_t   ids,
+                                                               double s,
+                                                               double t,
+                                                               double heading,
+                                                               double length,
+                                                               double rs,
+                                                               double rlength,
+                                                               double rwidthStart,
+                                                               double rwidthEnd,
+                                                               double rheightStart,
+                                                               double rheightEnd,
+                                                               double rtStart,
+                                                               double rtEnd,
+                                                               double rzOffsetStart,
+                                                               double rzOffsetEnd)
+{
+    // inter-distance is zero, treat as outline
+    Outline* outline = new Outline(ids, Outline::FillType::FILL_TYPE_UNDEFINED, true);
+    if (outline == nullptr)
+    {
+        LOG_ERROR("Failed to create outline {}", ids);
+        return nullptr;
+    }
+    else
+    {
+        const double max_segment_length = 10.0;
+
+        // find smallest value of length and rlength, but between SMALL_NUMBER and max_segment_length
+        double segment_length = max_segment_length;
+        if (length > SMALL_NUMBER && length < segment_length)
+        {
+            segment_length = length;
+        }
+        if (rlength > SMALL_NUMBER && rlength < segment_length)
+        {
+            segment_length = rlength;
+        }
+
+        unsigned int n_segments = static_cast<unsigned int>((MAX(1.0, rlength / segment_length)));
+
+        // Create outline polygon, visiting corners counter clockwise
+        for (unsigned int i = 0; i < 2; i++)
+        {
+            for (unsigned int j = 0; j < n_segments + 1; j++)
+            {
+                double       factor  = static_cast<double>((i == 0 ? j : (n_segments - j))) / n_segments;
+                const double min_dim = 0.05;
+                double       w_start = rwidthStart;
+                double       w_end   = rwidthEnd;
+                double       h_start = rheightStart;
+                double       h_end   = rheightEnd;
+
+                if (w_start < SMALL_NUMBER && w_end < SMALL_NUMBER)
+                {
+                    w_start = w_end = min_dim;
+                }
+                if (h_start < SMALL_NUMBER && h_end < SMALL_NUMBER)
+                {
+                    h_start = h_end = min_dim;
+                }
+
+                double         w_local = w_start + factor * (w_end - w_start);
+                OutlineCorner* corner  = static_cast<OutlineCorner*>(
+                    new OutlineCornerRoad(r->GetId(),
+                                          rs + factor * rlength,
+                                          rtStart + factor * (rtEnd - rtStart) + (i == 0 ? -w_local / 2.0 : w_local / 2.0),
+                                          rzOffsetStart + factor * (rzOffsetEnd - rzOffsetStart),
+                                          h_start + factor * (h_end - h_start),
+                                          s,
+                                          t,
+                                          heading));
+
+                outline->AddCorner(corner);
+            }
+        }
+    }
+
+    return outline;
 }
 
 id_t roadmanager::OpenDrive::GenerateRoadId()

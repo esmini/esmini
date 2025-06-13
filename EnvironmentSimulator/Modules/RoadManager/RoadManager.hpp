@@ -2917,6 +2917,23 @@ namespace roadmanager
         id_t LookupRoadIdFromStr(std::string id_str);
         id_t LookupJunctionIdFromStr(std::string id_str);
 
+        Outline *CreateContinuousRepeatOutline(Road  *r,
+                                               id_t   ids,
+                                               double s,
+                                               double t,
+                                               double heading,
+                                               double length,
+                                               double rs,
+                                               double rlength,
+                                               double rwidthStart,
+                                               double rwidthEnd,
+                                               double rheightStart,
+                                               double rheightEnd,
+                                               double rtStart,
+                                               double rtEnd,
+                                               double rzOffsetStart,
+                                               double rzOffsetEnd);
+
     private:
         pugi::xml_node                            root_node_;
         std::vector<Road *>                       road_;
