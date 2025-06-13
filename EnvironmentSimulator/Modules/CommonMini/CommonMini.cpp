@@ -733,6 +733,7 @@ std::string GetVersionInfoForLog()
     info.append(esmini_git_branch());
     info.append("\nesmini BUILD VERSION: ");
     info.append(esmini_build_version());
+    info.append("\n");
     return info;
 }
 

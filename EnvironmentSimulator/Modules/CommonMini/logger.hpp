@@ -19,7 +19,7 @@
 #include <unordered_set>
 #include <string>
 #include <iostream>
-#include <fstream>
+#include <cstdio>
 
 // Converts enum to its underlying integer type and formats it
 template <typename T>
@@ -51,8 +51,6 @@ namespace esmini::common
     class TxtLogger
     {
     public:
-        // returns the instance of the logger (singleton pattern)
-        // static TxtLogger& Inst();
         ~TxtLogger();
         // logs esmini version
         void LogVersion();
@@ -107,9 +105,6 @@ namespace esmini::common
         // for all loggers based on the option i.e. log_level
         void SetLoggerVerbosity();
 
-        // template <class... ARGS>
-        // void Log(LogLevel msgLogLevel, const std::string& logStr, char const* function, char const* file,
-        //     long line, const std::string& log, ARGS... args);
         template <class... ARGS>
         void
         Log(LogLevel msgLogLevel, const std::string& logStr, char const* function, char const* file, long line, const std::string& log, ARGS... args)
@@ -122,33 +117,11 @@ namespace esmini::common
             {
                 return;
             }
-            std::string logWithTimeAndMeta;
-            if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout"))
+            consoleLoggingEnabled_ = !SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout");
+            fileLoggingEnabled_    = !SE_Env::Inst().GetOptions().GetOptionSet("disable_log");
+            if (fileLoggingEnabled_ || consoleLoggingEnabled_)
             {
-                if (firstConsoleLog_)
-                {
-                    std::cout << GetVersionInfoForLog() << '\n';
-                    firstConsoleLog_ = false;
-                }
-                logWithTimeAndMeta = fmt::format(AddTimeAndMetaData(function, file, line, logStr, log), args...);
-                std::cout << logWithTimeAndMeta;
-            }
-            if (!SE_Env::Inst().GetOptions().GetOptionSet("disable_log"))
-            {
-                if (!logFile_.is_open())
-                {
-                    CreateLogFile();
-                }
-                if (firstFileLog_)
-                {
-                    logFile_ << GetVersionInfoForLog() << '\n';
-                    firstFileLog_ = false;
-                }
-                if (logWithTimeAndMeta.empty())
-                {
-                    logWithTimeAndMeta = fmt::format(AddTimeAndMetaData(function, file, line, logStr, log), args...);
-                }
-                logFile_ << logWithTimeAndMeta;
+                Log(fmt::format(AddTimeAndMetaData(function, file, line, logStr, log), args...));
             }
         }
         // private interface
@@ -156,6 +129,7 @@ namespace esmini::common
         // Creates a file logger with the given path and returns true otherwise returns false
         bool CreateLogFile();
 
+        void Log(const std::string& msg);
         // private data
     private:
         // modules that should be logged, if empty then all modules should be logged
@@ -171,9 +145,11 @@ namespace esmini::common
         // log verbosity level
         LogLevel logLevel_ = LogLevel::info;
         // log file
-        std::ofstream logFile_;
-        bool          firstConsoleLog_ = true;
-        bool          firstFileLog_    = true;
+        FILE* logFile_               = nullptr;
+        bool  firstConsoleLog_       = true;
+        bool  firstFileLog_          = true;
+        bool  consoleLoggingEnabled_ = true;
+        bool  fileLoggingEnabled_    = true;
 
     };  // class TxtLogger
 

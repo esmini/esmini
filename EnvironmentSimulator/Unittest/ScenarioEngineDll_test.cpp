@@ -328,10 +328,10 @@ TEST(ProgramOptions, TestAutoNotAppliedWhenSetEmpty)
     std::string paramName = "logfile_path";
     SE_SetOptionValue(paramName.c_str(), "");
     const char* args[] = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
-    ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
+    EXPECT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     const char* value = SE_GetOptionValue(paramName.c_str());
     std::string optionValue(value);
-    ASSERT_EQ(optionValue, "");
+    EXPECT_EQ(optionValue, "");
     SE_Close();
 }
 

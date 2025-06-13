@@ -127,14 +127,14 @@ namespace esmini::common
         {
             if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append"))
             {
-                logFile_.open(filePath, std::ios::app);
+                logFile_ = fopen(filePath.c_str(), "a");
             }
             else
             {
-                logFile_.open(filePath);
+                logFile_ = fopen(filePath.c_str(), "w");
             }
 
-            if (!logFile_.is_open())
+            if (logFile_ == nullptr)
             {
                 std::cout << "Unable to open log file " << filePath << std::endl;
             }
@@ -201,11 +201,12 @@ namespace esmini::common
 
     void TxtLogger::StopFileLogging()
     {
-        if (logFile_.is_open())
+        if (logFile_ != nullptr)
         {
-            logFile_.flush();
-            logFile_.close();
+            fclose(logFile_);
+            logFile_ = nullptr;
         }
+        currentLogFileName_.clear();
         firstFileLog_ = true;
     }
 
@@ -273,11 +274,18 @@ namespace esmini::common
     {
         if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout"))
         {
-            std::cout << GetVersionInfoForLog() << '\n';
+            fputs(GetVersionInfoForLog().c_str(), stdout);
         }
         if (SE_Env::Inst().GetOptions().GetOptionSet("disable_log"))
         {
-            logFile_ << GetVersionInfoForLog() << '\n';
+            if (logFile_ == nullptr)
+            {
+                if (!CreateLogFile())
+                {
+                    return;
+                }
+            }
+            fputs(GetVersionInfoForLog().c_str(), logFile_);
         }
     }
 
@@ -286,18 +294,35 @@ namespace esmini::common
         auto        now              = std::chrono::system_clock::now();
         auto        dateTimeUntilSec = std::chrono::time_point_cast<std::chrono::seconds>(now);
         std::string dateTime         = fmt::format("[{:%Y-%m-%d %H:%M:%S}]\n", dateTimeUntilSec);
-        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet("disable_stdout"))
+        Log(dateTime);
+    }
+
+    void TxtLogger::Log(const std::string& msg)
+    {
+        if (consoleLoggingEnabled_)
         {
-            std::cout << dateTime;
+            if (firstConsoleLog_)
+            {
+                fputs(GetVersionInfoForLog().c_str(), stdout);
+                firstConsoleLog_ = false;
+            }
+            fputs(msg.c_str(), stdout);
         }
-        if (!SE_Env::Inst().GetOptions().GetOptionSet("disable_log"))
+        if (fileLoggingEnabled_)
         {
+            if (logFile_ == nullptr)
+            {
+                if (!CreateLogFile())
+                {
+                    return;
+                }
+            }
             if (firstFileLog_)
             {
-                logFile_ << GetVersionInfoForLog() << '\n';
+                fputs(GetVersionInfoForLog().c_str(), logFile_);
                 firstFileLog_ = false;
             }
-            logFile_ << dateTime;
+            fputs(msg.c_str(), logFile_);
         }
     }
 }  // namespace esmini::common
