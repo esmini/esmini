@@ -5458,22 +5458,22 @@ TEST(EnvironmentTest, TimeOfDayFormat)
 TEST(EnvironmentTest, SecondsSinceMidnight)
 {
     std::string dateTime1 = "2023-11-15T10:30:00.123+05:30";
-    EXPECT_EQ(GetSecondsSinceMidnight(dateTime1), 57600);
+    EXPECT_EQ(GetSecondsSinceMidnight(dateTime1), 37800);
     std::string dateTime2 = "2023-11-15T00:00:00.123+05:30";
-    EXPECT_EQ(GetSecondsSinceMidnight(dateTime2), 19800);
+    EXPECT_EQ(GetSecondsSinceMidnight(dateTime2), 0);
     std::string dateTime3 = "2023-11-15T23:59:59.123+05:30";
-    EXPECT_EQ(GetSecondsSinceMidnight(dateTime3), 106199);
+    EXPECT_EQ(GetSecondsSinceMidnight(dateTime3), 86399);
     std::string dateTime4 = "2023-11-15T12:00:00.000+05:30";
-    EXPECT_EQ(GetSecondsSinceMidnight(dateTime4), 63000);
+    EXPECT_EQ(GetSecondsSinceMidnight(dateTime4), 43200);
     std::string dateTime5 = "2023-11-15T12:00:00.000-05:30";
-    EXPECT_EQ(GetSecondsSinceMidnight(dateTime5), 23400);
+    EXPECT_EQ(GetSecondsSinceMidnight(dateTime5), 43200);
     std::string dateTime6 = "2023-11-15T12:00:00.000+00:00";
     EXPECT_EQ(GetSecondsSinceMidnight(dateTime6), 43200);
     std::string dateTime7 = "2023-11-15T00:00:00.000+00:00";
     EXPECT_EQ(GetSecondsSinceMidnight(dateTime7), 0);
 }
 
-TEST(EnvironmentTest, SecoundsToFactor)
+TEST(EnvironmentTest, SecondsToFactor)
 {
     std::string dateTime1 = "2023-11-15T00:00:00.000+00:00";
     EXPECT_EQ(GetSecondsToFactor(static_cast<int>(GetSecondsSinceMidnight(dateTime1))), 0.0);

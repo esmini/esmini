@@ -797,23 +797,15 @@ uint32_t GetSecondsSinceMidnight(const std::string& dateTimeString)
         ss.ignore();
     ss >> timeStruct.tm_sec;
 
-    uint32_t seconds = static_cast<uint32_t>(timeStruct.tm_hour * 3600 + timeStruct.tm_min * 60 + timeStruct.tm_sec);
-
+    // Discard fractional seconds
     if (ss.peek() == '.')
     {
-        double milliseconds = 0.0;
-        ss.ignore() >> milliseconds;
-    }
-    int  tz_hour = 0, tz_min = 0;
-    char sign      = '+';
-    char delimiter = ':';
-    if (ss >> sign >> tz_hour >> delimiter >> tz_min)
-    {
-        int offset = (tz_hour * 3600 + tz_min * 60) * (sign == '+' ? 1 : -1);
-        seconds += offset;
+        std::string dummy;
+        std::getline(ss, dummy, '+');  // Read until the + in timezone
     }
 
-    return seconds;
+    // Ignore timezone
+    return static_cast<uint32_t>(timeStruct.tm_hour * 3600 + timeStruct.tm_min * 60 + timeStruct.tm_sec);
 }
 
 time_t portable_timegm(struct tm* tm)

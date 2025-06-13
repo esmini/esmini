@@ -3167,18 +3167,29 @@ void OSIReporter::UpdateEnvironmentSun(const OSCEnvironment &environment)
 
 void OSIReporter::UpdateEnvironmentTimeOfDay(const OSCEnvironment &environment)
 {
-    obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_time_of_day()->set_seconds_since_midnight(
-        GetSecondsSinceMidnight(environment.GetTimeOfDay().datetime));
     if (!environment.GetTimeOfDay().animation)
     {
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_time_of_day()->set_seconds_since_midnight(
+            GetSecondsSinceMidnight(environment.GetTimeOfDay().datetime));
+
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_unix_timestamp(
             GetEpochTimeFromString(environment.GetTimeOfDay().datetime));
     }
     else
     {
+        auto dyn_gt_timestamp = obj_osi_internal.dynamic_gt->mutable_timestamp()->seconds();
+        if (!environment_timestamp_offset_.has_value() && dyn_gt_timestamp > 0)
+        {
+            environment_timestamp_offset_ = dyn_gt_timestamp;
+        }
+
+        obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->mutable_time_of_day()->set_seconds_since_midnight(
+            GetSecondsSinceMidnight(environment.GetTimeOfDay().datetime) +
+            static_cast<uint32_t>(dyn_gt_timestamp - environment_timestamp_offset_.value_or(0)));
+
         obj_osi_internal.dynamic_gt->mutable_environmental_conditions()->set_unix_timestamp(
-            GetEpochTimeFromString(environment.GetTimeOfDay().datetime) +
-            obj_osi_internal.dynamic_gt->mutable_timestamp()->seconds());  // plus simulation time, nanosec is wrong
+            GetEpochTimeFromString(environment.GetTimeOfDay().datetime) + dyn_gt_timestamp -
+            environment_timestamp_offset_.value_or(0));  // plus simulation time, nanosec is wrong
     }
 }
 

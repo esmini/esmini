@@ -270,5 +270,6 @@ private:
     bool                                osi_initialized_    = false;
     bool                                report_ghost_       = true;
     OSIStaticReportMode                 static_update_mode_ = OSIStaticReportMode::DEFAULT;
-    std::vector<std::pair<int, double>> osi_crop_           = {};  // id, radius
+    std::vector<std::pair<int, double>> osi_crop_           = {};       // id, radius
+    std::optional<int64_t>              environment_timestamp_offset_;  // Offset to apply to environment timestamp, in seconds
 };
