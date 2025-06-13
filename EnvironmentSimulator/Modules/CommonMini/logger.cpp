@@ -125,6 +125,10 @@ namespace esmini::common
 
         try
         {
+            if (logFile_ != nullptr)
+            {
+                std::cout << "Trying to open already open log file: " << filePath << std::endl;
+            }
             if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append"))
             {
                 logFile_ = fopen(filePath.c_str(), "a");
