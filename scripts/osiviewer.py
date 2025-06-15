@@ -758,6 +758,8 @@ class View:
     def toggle_visibility(self, label):
         for plot in self.static_plots_by_type[label]:
             plot.set_visible(not plot.get_visible())
+            # prevent object from being picked if not visible
+            plot.set_picker(True if plot.get_visible() else None)
         self.redraw()
 
     # Function to update the dynamic plot (called repeatedly)
