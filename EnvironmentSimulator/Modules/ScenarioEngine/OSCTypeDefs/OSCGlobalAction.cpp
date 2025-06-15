@@ -304,7 +304,7 @@ void SwarmTrafficAction::Start(double simTime)
     tree->build(vec);
     rTree = tree;
 
-    // Register model filesnames from first vehicle catalog
+    // Register model filenames from vehicle catalog
     // if no catalog loaded, use same model as central object
     vehicle_pool_.Initialize(reader_, nullptr, true);
 
