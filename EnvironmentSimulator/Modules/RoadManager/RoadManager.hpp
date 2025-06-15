@@ -894,7 +894,8 @@ namespace roadmanager
             LANE_TYPE_ANY_DRIVING =
                 LANE_TYPE_DRIVING | LANE_TYPE_ENTRY | LANE_TYPE_EXIT | LANE_TYPE_OFF_RAMP | LANE_TYPE_ON_RAMP | LANE_TYPE_BIDIRECTIONAL,  // 1966594
             LANE_TYPE_ANY_ROAD = LANE_TYPE_ANY_DRIVING | LANE_TYPE_RESTRICTED | LANE_TYPE_STOP,                                           // 1966726
-            LANE_TYPE_ANY      = (-1)                                                                                                     // 1
+            LANE_TYPE_ANY      = (-1),                                                                                                    // 1
+            LANE_TYPE_TUNNEL   = ~1  // All lane types except "none" is accepted as road crossection for tunnel
         } LaneType;
 
         // Construct & Destruct
@@ -1217,6 +1218,7 @@ namespace roadmanager
 
         double      daylight_ = 0.0;  // degree of daylight in the tunnel
         double      length_   = 0.0;
+        double      width_    = 0.0;
         id_t        id_       = ID_UNDEFINED;
         double      lighting_ = 0.0;
         std::string name_;

@@ -70,6 +70,8 @@ using namespace roadmanager;
 #define ROADMARK_WIDTH_STANDARD    0.15
 #define ROADMARK_WIDTH_BOLD        0.20
 #define NURBS_STEPLENGTH           1.0
+#define TUNNEL_WALL_THICKNESS      2.0
+#define TUNNEL_ROOF_THICKNESS      2.0
 
 static id_t g_Lane_id;
 static id_t g_Laneb_id;
@@ -4766,6 +4768,8 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 tunnel->s_        = tunnel_node.attribute("s").as_double();
                 tunnel->type_     = static_cast<Tunnel::Type>(tunnel_node.attribute("type").as_uint());
 
+                tunnel->width_ = r->GetWidth(tunnel->s_, 0, static_cast<unsigned int>(Lane::LaneType::LANE_TYPE_TUNNEL)) + TUNNEL_WALL_THICKNESS;
+
                 // generate 3D model by default, skip only if corresponding userData field set to "false"
                 tunnel->generate_3D_model = strcmp(ReadUserData(tunnel_node, "generate3DModel", "true"), "false");
 
@@ -4776,18 +4780,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                     // create additional side walls and overhead roof structure objects
                     // create object with position of main element
                     Position pos;
-                    double   tunnel_height         = 5.0;
-                    double   tunnel_wall_thickness = 2.0;
-                    double   tunnel_roof_thickness = 2.0;
-                    double   tunnel_width =
-                        r->GetWidth(tunnel->s_,
-                                    0,
-                                    static_cast<unsigned int>(Lane::LaneType::LANE_TYPE_ANY_ROAD | Lane::LaneType::LANE_TYPE_BIKING |
-                                                              Lane::LaneType::LANE_TYPE_SIDEWALK | Lane::LaneType::LANE_TYPE_BORDER)) +
-                        tunnel_wall_thickness;
+                    double   tunnel_height = 4.5;
 
                     // create walls
-                    for (auto tt : {-tunnel_width / 2.0, tunnel_width / 2.0})
+                    for (auto tt : {-tunnel->width_ / 2.0, tunnel->width_ / 2.0})
                     {
                         pos.SetTrackPos(r->GetId(), tunnel->s_, tt);
                         roadmanager::RMObject* rm_obj = new RMObject(tunnel->s_,
@@ -4799,7 +4795,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                                                      RMObject::ObjectType::BARRIER,
                                                                      tunnel->length_,
                                                                      tunnel_height,
-                                                                     tunnel_width,
+                                                                     tunnel->width_,
                                                                      0.0,
                                                                      0.0,
                                                                      0.0,
@@ -4816,8 +4812,8 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                                                          tunnel->length_,
                                                                          tunnel->s_,
                                                                          tunnel->length_,
-                                                                         tunnel_wall_thickness,
-                                                                         tunnel_wall_thickness,
+                                                                         TUNNEL_WALL_THICKNESS,
+                                                                         TUNNEL_WALL_THICKNESS,
                                                                          tunnel_height,
                                                                          tunnel_height,
                                                                          tt,
@@ -4839,7 +4835,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                                                  RMObject::ObjectType::BARRIER,
                                                                  tunnel->length_,
                                                                  tunnel_height,
-                                                                 tunnel_width + tunnel_wall_thickness,
+                                                                 tunnel->width_,
                                                                  0.0,
                                                                  0.0,
                                                                  0.0,
@@ -4856,10 +4852,10 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                                                                      tunnel->length_,
                                                                      tunnel->s_,
                                                                      tunnel->length_,
-                                                                     tunnel_width + tunnel_wall_thickness,
-                                                                     tunnel_width + tunnel_wall_thickness,
-                                                                     tunnel_roof_thickness,
-                                                                     tunnel_roof_thickness,
+                                                                     tunnel->width_ + TUNNEL_WALL_THICKNESS,
+                                                                     tunnel->width_ + TUNNEL_WALL_THICKNESS,
+                                                                     TUNNEL_ROOF_THICKNESS,
+                                                                     TUNNEL_ROOF_THICKNESS,
                                                                      0.0,
                                                                      0.0,
                                                                      tunnel_height,
