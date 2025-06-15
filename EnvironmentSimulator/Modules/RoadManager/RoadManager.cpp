@@ -4774,95 +4774,6 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 tunnel->generate_3D_model = strcmp(ReadUserData(tunnel_node, "generate3DModel", "true"), "false");
 
                 r->AddTunnel(tunnel);
-
-                if (tunnel->generate_3D_model)
-                {
-                    // create additional side walls and overhead roof structure objects
-                    // create object with position of main element
-                    Position pos;
-                    double   tunnel_height = 4.5;
-
-                    // create walls
-                    for (auto tt : {-tunnel->width_ / 2.0, tunnel->width_ / 2.0})
-                    {
-                        pos.SetTrackPos(r->GetId(), tunnel->s_, tt);
-                        roadmanager::RMObject* rm_obj = new RMObject(tunnel->s_,
-                                                                     tt,
-                                                                     tunnel->id_,
-                                                                     tunnel->name_,
-                                                                     RoadObject::Orientation(),
-                                                                     0.0,
-                                                                     RMObject::ObjectType::BARRIER,
-                                                                     tunnel->length_,
-                                                                     tunnel_height,
-                                                                     tunnel->width_,
-                                                                     0.0,
-                                                                     0.0,
-                                                                     0.0,
-                                                                     pos.GetX(),
-                                                                     pos.GetY(),
-                                                                     pos.GetZ(),
-                                                                     pos.GetH());
-
-                        Outline* outline = CreateContinuousRepeatOutline(r,
-                                                                         tunnel->id_,
-                                                                         tunnel->s_,
-                                                                         tt,
-                                                                         0.0,
-                                                                         tunnel->length_,
-                                                                         tunnel->s_,
-                                                                         tunnel->length_,
-                                                                         TUNNEL_WALL_THICKNESS,
-                                                                         TUNNEL_WALL_THICKNESS,
-                                                                         tunnel_height,
-                                                                         tunnel_height,
-                                                                         tt,
-                                                                         tt,
-                                                                         0.0,
-                                                                         0.0);
-                        rm_obj->AddOutline(outline);
-                        r->AddObject(rm_obj);
-                    }
-
-                    // create roof
-                    pos.SetTrackPos(r->GetId(), tunnel->s_, 0.0);
-                    roadmanager::RMObject* rm_obj = new RMObject(tunnel->s_,
-                                                                 0.0,
-                                                                 tunnel->id_,
-                                                                 tunnel->name_,
-                                                                 RoadObject::Orientation(),
-                                                                 0.0,
-                                                                 RMObject::ObjectType::BARRIER,
-                                                                 tunnel->length_,
-                                                                 tunnel_height,
-                                                                 tunnel->width_,
-                                                                 0.0,
-                                                                 0.0,
-                                                                 0.0,
-                                                                 pos.GetX(),
-                                                                 pos.GetY(),
-                                                                 pos.GetZ(),
-                                                                 pos.GetH());
-
-                    Outline* outline = CreateContinuousRepeatOutline(r,
-                                                                     tunnel->id_,
-                                                                     tunnel->s_,
-                                                                     0.0,
-                                                                     0.0,
-                                                                     tunnel->length_,
-                                                                     tunnel->s_,
-                                                                     tunnel->length_,
-                                                                     tunnel->width_ + TUNNEL_WALL_THICKNESS,
-                                                                     tunnel->width_ + TUNNEL_WALL_THICKNESS,
-                                                                     TUNNEL_ROOF_THICKNESS,
-                                                                     TUNNEL_ROOF_THICKNESS,
-                                                                     0.0,
-                                                                     0.0,
-                                                                     tunnel_height,
-                                                                     tunnel_height);
-                    rm_obj->AddOutline(outline);
-                    r->AddObject(rm_obj);
-                }
             }
         }
 
@@ -7309,7 +7220,6 @@ void OpenDrive::SetLaneBoundaryPoints()
             {
                 lsec_end = road->GetLaneSectionByIdx(j + 1)->GetS();
             }
-
             // Looping through each lane
             number_of_lanes = lsec->GetNumberOfLanes();
             for (unsigned int k = 0; k < number_of_lanes; k++)
@@ -7679,6 +7589,121 @@ void OpenDrive::SetRoadMarkOSIPoints()
     }
 }
 
+void OpenDrive::CreateTunnelOSIPoints()
+{
+    for (auto road : road_)
+    {
+        for (auto tunnel : road->GetTunnels())
+        {
+            unsigned int steps = static_cast<unsigned int>(tunnel->length_ / 10.0);
+            double       ds    = tunnel->length_ / static_cast<double>(steps);
+            Position     pos;
+
+            for (unsigned int i = 0; i < 2; i++)
+            {
+                for (unsigned int step = 0; step < steps; step++)
+                {
+                    int    side  = (i == 0) ? -1 : 1;
+                    double s_tmp = tunnel->s_ + step * ds;
+                    double t     = road->GetWidth(s_tmp, side, Lane::LaneType::LANE_TYPE_TUNNEL);
+                    // create position at s + ds
+                    pos.SetTrackPos(road->GetId(), s_tmp, side * t);
+                    PointStruct p = {pos.GetS(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetHRoad(), false};
+                    tunnel->boundary_[i].osi_points_.GetPoints().push_back(p);
+                }
+            }
+
+            if (tunnel->generate_3D_model)
+            {
+                // create additional side walls and overhead roof structure objects
+                // create object with position of main element
+                double tunnel_height = 4.5;
+
+                // create walls
+                for (auto tt : {-tunnel->width_ / 2.0, tunnel->width_ / 2.0})
+                {
+                    pos.SetTrackPos(road->GetId(), tunnel->s_, tt);
+                    roadmanager::RMObject* rm_obj = new RMObject(tunnel->s_,
+                                                                 tt,
+                                                                 tunnel->id_,
+                                                                 tunnel->name_,
+                                                                 RoadObject::Orientation(),
+                                                                 0.0,
+                                                                 RMObject::ObjectType::BARRIER,
+                                                                 tunnel->length_,
+                                                                 tunnel_height,
+                                                                 tunnel->width_,
+                                                                 0.0,
+                                                                 0.0,
+                                                                 0.0,
+                                                                 pos.GetX(),
+                                                                 pos.GetY(),
+                                                                 pos.GetZ(),
+                                                                 pos.GetH());
+
+                    Outline* outline = CreateContinuousRepeatOutline(road,
+                                                                     tunnel->id_,
+                                                                     tunnel->s_,
+                                                                     tt,
+                                                                     0.0,
+                                                                     tunnel->length_,
+                                                                     tunnel->s_,
+                                                                     tunnel->length_,
+                                                                     TUNNEL_WALL_THICKNESS,
+                                                                     TUNNEL_WALL_THICKNESS,
+                                                                     tunnel_height,
+                                                                     tunnel_height,
+                                                                     tt,
+                                                                     tt,
+                                                                     0.0,
+                                                                     0.0);
+                    rm_obj->AddOutline(outline);
+                    road->AddObject(rm_obj);
+                }
+
+                // create roof
+                pos.SetTrackPos(road->GetId(), tunnel->s_, 0.0);
+                roadmanager::RMObject* rm_obj = new RMObject(tunnel->s_,
+                                                             0.0,
+                                                             tunnel->id_,
+                                                             tunnel->name_,
+                                                             RoadObject::Orientation(),
+                                                             0.0,
+                                                             RMObject::ObjectType::BARRIER,
+                                                             tunnel->length_,
+                                                             tunnel_height,
+                                                             tunnel->width_,
+                                                             0.0,
+                                                             0.0,
+                                                             0.0,
+                                                             pos.GetX(),
+                                                             pos.GetY(),
+                                                             pos.GetZ(),
+                                                             pos.GetH());
+
+                Outline* outline = CreateContinuousRepeatOutline(road,
+                                                                 tunnel->id_,
+                                                                 tunnel->s_,
+                                                                 0.0,
+                                                                 0.0,
+                                                                 tunnel->length_,
+                                                                 tunnel->s_,
+                                                                 tunnel->length_,
+                                                                 tunnel->width_ + TUNNEL_WALL_THICKNESS,
+                                                                 tunnel->width_ + TUNNEL_WALL_THICKNESS,
+                                                                 TUNNEL_ROOF_THICKNESS,
+                                                                 TUNNEL_ROOF_THICKNESS,
+                                                                 0.0,
+                                                                 0.0,
+                                                                 tunnel_height,
+                                                                 tunnel_height);
+                rm_obj->AddOutline(outline);
+                road->AddObject(rm_obj);
+            }
+        }
+    }
+}
+
 bool OpenDrive::SetRoadOSI()
 {
     if (this == Position::GetOpenDrive())
@@ -7686,6 +7711,7 @@ bool OpenDrive::SetRoadOSI()
         SetLaneOSIPoints();
         SetRoadMarkOSIPoints();
         SetLaneBoundaryPoints();
+        CreateTunnelOSIPoints();
         return true;
     }
 

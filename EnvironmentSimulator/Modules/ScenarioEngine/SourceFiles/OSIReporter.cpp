@@ -1848,53 +1848,35 @@ int OSIReporter::UpdateOSILaneBoundary()
                 }
             }
         }
+    }
 
-        // loop over all tunnels
+    // set any tunnel boundaries
+    for (unsigned int i = 0; i < opendrive->GetNumOfRoads(); i++)
+    {
+        roadmanager::Road *road = opendrive->GetRoadByIdx(i);
         for (unsigned int j = 0; j < road->GetNumberOfTunnels(); j++)
         {
-            roadmanager::Tunnel  *tunnel = road->GetTunnel(j);
-            roadmanager::Position pos;
-            // create 10 m points for tunnel
-            unsigned int steps = static_cast<unsigned int>(tunnel->length_ / 10.0);
-            double       ds    = tunnel->length_ / static_cast<double>(steps);
+            roadmanager::Tunnel *tunnel = road->GetTunnel(j);
 
-            for (auto &side : {-1, 1})
+            // create 10 m points for tunnel
+            for (unsigned int k = 0; k < 2; k++)
             {
-#if 0
-                // Use OSI points of outer lane defining the tunnel road crossection
-                if (side == -1)
-                {
-                    // find rightmost tunnel lane
-                    roadmanager::Lane *lane = nullptr;
-                    for (unsigned int k = 0; k < lsec->GetNumberOfLanes(); k++)
-                    {
-                        roadmanager::Lane *lane_tmp = lsec->GetLaneByIdx(k);
-                        if (lane_tmp->GetLaneType & roadmanager::Lane::LaneType::LANE_TYPE_TUNNEL)
-                        {
-                            lane = lane_tmp;
-                        }
-                        else
-                        {
-                            // we're done, use previous lane which represents the first lane, from center, not defined for tunnel
-                            break;
-                        }
-                    }
-                }
-#else
                 osi3::LaneBoundary *osi_laneboundary = obj_osi_internal.static_gt->add_lane_boundary();
-                for (unsigned int l = 0; l < steps + 1; l++)
-                {
-                    pos.SetTrackPos(road->GetId(), tunnel->s_ + l * ds, tunnel->width_ * 0.5 * side);
-                    osi3::LaneBoundary_BoundaryPoint *boundary_point = osi_laneboundary->add_boundary_line();
-                    boundary_point->mutable_position()->set_x(pos.GetX());
-                    boundary_point->mutable_position()->set_y(pos.GetY());
-                    boundary_point->mutable_position()->set_z(pos.GetZ());
-                }
-                osi_laneboundary->mutable_classification()->set_type(
-                    osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_BARRIER);
+
+                // set id and points
                 osi_laneboundary->mutable_id()->set_value(tunnel->id_);
+                for (unsigned int l = 0; l < tunnel->boundary_[k].GetOSIPoints()->GetPoints().size(); l++)
+                {
+                    roadmanager::PointStruct         &p              = tunnel->boundary_[k].GetOSIPoints()->GetPoints()[l];
+                    osi3::LaneBoundary_BoundaryPoint *boundary_point = osi_laneboundary->add_boundary_line();
+                    boundary_point->mutable_position()->set_x(p.x);
+                    boundary_point->mutable_position()->set_y(p.y);
+                    boundary_point->mutable_position()->set_z(p.z);
+                }
+                // set STRUCTURE type which covers tunnel
+                osi_laneboundary->mutable_classification()->set_type(
+                    osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_STRUCTURE);
                 obj_osi_internal.lnb.push_back(osi_laneboundary);
-#endif
             }
         }
     }

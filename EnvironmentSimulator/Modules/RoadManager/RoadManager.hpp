@@ -536,6 +536,10 @@ namespace roadmanager
         LaneBoundaryOSI(id_t gbid) : global_id_(gbid)
         {
         }
+        LaneBoundaryOSI()
+        {
+            SetGlobalId();
+        }
         ~LaneBoundaryOSI(){};
         void SetGlobalId();
         id_t GetGlobalId() const
@@ -1216,15 +1220,16 @@ namespace roadmanager
 
         Tunnel() = default;
 
-        double      daylight_ = 0.0;  // degree of daylight in the tunnel
-        double      length_   = 0.0;
-        double      width_    = 0.0;
-        id_t        id_       = ID_UNDEFINED;
-        double      lighting_ = 0.0;
-        std::string name_;
-        double      s_                = 0.0;
-        Type        type_             = Type::STANDARD;
-        bool        generate_3D_model = true;
+        double          daylight_ = 0.0;  // degree of daylight in the tunnel
+        double          length_   = 0.0;
+        double          width_    = 0.0;
+        id_t            id_       = ID_UNDEFINED;
+        double          lighting_ = 0.0;
+        std::string     name_;
+        double          s_                = 0.0;
+        Type            type_             = Type::STANDARD;
+        bool            generate_3D_model = true;
+        LaneBoundaryOSI boundary_[2];
     };
 
     class RoadObject
@@ -2356,6 +2361,10 @@ namespace roadmanager
         {
             return (idx < tunnel_.size()) ? tunnel_[idx] : nullptr;
         }
+        const std::vector<Tunnel *> &GetTunnels() const
+        {
+            return tunnel_;
+        }
         double       GetLaneOffset(double s) const;
         double       GetLaneOffsetPrim(double s) const;
         unsigned int GetNumberOfLanes(double s) const;
@@ -2788,6 +2797,11 @@ namespace roadmanager
                 then it creates a LaneBoundary following the lane border (left border for left lanes, right border for right lanes)
         */
         void SetLaneBoundaryPoints();
+
+        /**
+                Create tunnel road objects from lane boundary OSI points
+        */
+        void CreateTunnelOSIPoints();
 
         /**
                 Retrieve a road segment specified by road ID
