@@ -1691,7 +1691,6 @@ namespace roadmanager
             return height_;
         }
 
-    private:
         id_t   roadId_;
         double s_, t_, dz_, height_, center_s_, center_t_, center_heading_;
     };
@@ -1707,7 +1706,6 @@ namespace roadmanager
             return height_;
         }
 
-    private:
         id_t   roadId_;
         double s_, t_, u_, v_, zLocal_, height_, heading_;
     };
@@ -2801,7 +2799,7 @@ namespace roadmanager
         /**
                 Create tunnel road objects from lane boundary OSI points
         */
-        void CreateTunnelOSIPoints();
+        void CreateTunnelOSIPointsAndObjects();
 
         /**
                 Retrieve a road segment specified by road ID
