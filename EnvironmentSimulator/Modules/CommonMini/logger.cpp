@@ -26,6 +26,9 @@ namespace fs = std::experimental::filesystem;
 
 #include <unordered_set>
 #include <iostream>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 
 TxtLogger txtLogger;
 
@@ -297,10 +300,11 @@ namespace esmini::common
 
     void TxtLogger::LogTimeOnly()
     {
-        auto        now              = std::chrono::system_clock::now();
-        auto        dateTimeUntilSec = std::chrono::time_point_cast<std::chrono::seconds>(now);
-        std::string dateTime         = fmt::format("[{:%Y-%m-%d %H:%M:%S}]\n", dateTimeUntilSec);
-        Log(dateTime);
+        std::time_t       now_c    = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::tm*          local_tm = std::localtime(&now_c);
+        std::stringstream ss;
+        ss << std::put_time(local_tm, "%Y-%m-%d %H:%M:%S");
+        Log(fmt::format("[{}]\n", ss.str()));
     }
 
     void TxtLogger::Log(const std::string& msg)
