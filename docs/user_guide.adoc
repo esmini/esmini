@@ -1431,12 +1431,12 @@ Example road: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Uni
 .Road with various friction segments, coefficient evaluated per wheel
 image::friction.jpg[]
 
-=== Environment Action
-From v2.49.0 esmini supports `EnvironmentAction` (https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/EnvironmentAction.html[OpenSCENARIO ref]), which allows you to set weather state, road conditions, and time of the day.
+=== Environment conditions
+From v2.49.0 esmini supports the https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/EnvironmentAction.html[`EnvironmentAction`], which allows you to set weather state, road conditions, and time of the day.
 
 There are two ways to define `EnvironmentAction`:
 
-- **Directly in the OpenSCENARIO file**:
+*1. Directly in the OpenSCENARIO file* +
 You can define the `EnvironmentAction`, which is a `GlobalAction` directly within your OpenSCENARIO file, example:
 
 [source,xml]
@@ -1457,7 +1457,7 @@ You can define the `EnvironmentAction`, which is a `GlobalAction` directly withi
 </GlobalAction>
 ----
 
-- **Using a Catalog**:
+*2. Using a Catalog* +
 You can create a catalog of environments and reference them in your OpenSCENARIO file. This allows you to re-use the same environment across multiple scenarios, ensuring consistency and reducing redundancy, example:
 
 [source,xml]
@@ -1468,21 +1468,26 @@ You can create a catalog of environments and reference them in your OpenSCENARIO
     </EnvironmentAction>
 </GlobalAction>
 ----
-The catalog reference points to a specific environment defined in the `EnvironmentCatalog` https://github.com/esmini/esmini/tree/master/resources/xosc/Catalogs/Environments/EnvironmentCatalog[link]. The catalog can contain multiple environments, each with its own set of parameters.
+The catalog reference points to a specific environment defined in the https://github.com/esmini/esmini/tree/master/resources/xosc/Catalogs/Environments/EnvironmentCatalog[`EnvironmentCatalog`]. The catalog can contain multiple environments, each with its own set of parameters.
 
-Example scenario using both methods: https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_environment.xosc[link]
+Example scenario using both methods: https://github.com/esmini/esmini/blob/dev/resources/xosc/cut-in_environment.xosc[cut-in_environment.xosc]
 
+video::-mQUJU1rR2M[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
-*Visual Elements Affecting the Viewer:*
+Note that vehicle headlights are currently not considered in the viewer.
 
-*Sun Element*
+==== Visual elements affecting the viewer
 
-The `Sun` element's `illuminance` directly controls the sky color, where the value 100000 represents the brightest blue sky. 
+Although all the environment conditions are reported in the OSI data, only some are visualized. Currently, as of v2.49.0, all but `precipitation`, `wind` and `domeImage` are visualized in some way, described below.
+
+===== Sun element
+
+The `Sun` element's `illuminance` directly controls the sky color, where the value 100000 represents the brightest blue sky.
 
 * `illuminance`: A linear shift from **black** (illuminance 0) to **bright blue** (illuminance 100000).
 * `azimuth` and `elevation`: These attributes have no visual effect on the scenario's representation.
 
-*TimeOfDay Animation*
+===== TimeOfDay animation
 
 The `TimeOfDay` element controls sky color based on the set time. Its `animation` attribute determines whether the OSI data's time of day and unix timestamp in the environmental conditions advance with simulation time or not.
 
@@ -1491,7 +1496,7 @@ The `TimeOfDay` element controls sky color based on the set time. Its `animation
     * `12:00:00` corresponds to an `illuminance` of 100000.
 * **Precedence**: The `Sun` element's `illuminance` value will always override the `TimeOfDay` animation if both has been set in the scenario.
 
-*Weather Element*
+===== Weather element
 
 The `Weather` element influences the sky color based on cloud cover.
 
@@ -1500,7 +1505,7 @@ The `Weather` element influences the sky color based on cloud cover.
 * `zeroOktas`: Represents a clear sky.
 * `NineOktas`: Represents a completely overcast sky.
 
-*Fog Element*
+===== Fog element
 
 The `Fog` element creates a fog effect, with its density determined by `visualRange`.
 
@@ -1510,8 +1515,11 @@ The `Fog` element creates a fog effect, with its density determined by `visualRa
 * **Sky Color Logic (affected by fog)**:
     `sunIlluminance * ((1 - cloudiness) * background_color + cloudiness * fogcolor)`
 
-Where `background` is calculated as 
+Where `background` is calculated as
 `visual_range * fogcolor + (1 - visual_range) * color_background`
+
+.Fog in example scenario https://github.com/esmini/esmini/blob/dev/resources/xosc/cut-in_environment.xosc[cut-in_environment.xosc]
+image::fog.jpg[]
 
 === SUMO integration
 
