@@ -127,7 +127,6 @@ ScenarioEngine::~ScenarioEngine()
     delete scenarioReader;
     scenarioReader = 0;
     LOG_INFO("Closing");
-    txtLogger.Stop();  // should postpone it as much as possible
     txtLogger.SetLoggerTime(nullptr);
 }
 
