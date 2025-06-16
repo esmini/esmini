@@ -1470,9 +1470,15 @@ You can create a catalog of environments and reference them in your OpenSCENARIO
 ----
 The catalog reference points to a specific environment defined in the https://github.com/esmini/esmini/tree/master/resources/xosc/Catalogs/Environments/EnvironmentCatalog[`EnvironmentCatalog`]. The catalog can contain multiple environments, each with its own set of parameters.
 
-Example scenario using both methods: https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_environment.xosc[cut-in_environment.xosc]
+Example scenario using both methods: https://github.com/esmini/esmini/blob/dev/resources/xosc/cut-in_environment.xosc[cut-in_environment.xosc]
+
+video::-mQUJU1rR2M[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+Note that vehicle headlights are currently not considered in the viewer.
 
 ==== Visual elements affecting the viewer
+
+Although all the environment conditions are reported in the OSI data, only some are visualized. Currently, as of v2.49.0, all but `precipitation`, `wind` and `domeImage` are visualized in some way, described below.
 
 ===== Sun element
 
@@ -1511,6 +1517,9 @@ The `Fog` element creates a fog effect, with its density determined by `visualRa
 
 Where `background` is calculated as
 `visual_range * fogcolor + (1 - visual_range) * color_background`
+
+.Fog in example scenario https://github.com/esmini/esmini/blob/dev/resources/xosc/cut-in_environment.xosc[cut-in_environment.xosc]
+image::fog.jpg[]
 
 === SUMO integration
 
