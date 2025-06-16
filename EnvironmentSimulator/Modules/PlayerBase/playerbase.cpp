@@ -110,7 +110,7 @@ ScenarioPlayer::~ScenarioPlayer()
     {
         delete s;
     }
-    txtLogger.SetLoggerTime(0);
+    txtLogger.SetLoggerTime(nullptr);
     if (scenarioEngine)
     {
         delete scenarioEngine;

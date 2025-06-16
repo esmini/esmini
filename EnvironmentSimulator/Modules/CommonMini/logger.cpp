@@ -128,6 +128,7 @@ namespace esmini::common
             if (logFile_ != nullptr)
             {
                 std::cout << "Trying to open already open log file: " << filePath << std::endl;
+                StopFileLogging();
             }
             if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_append"))
             {
@@ -141,6 +142,7 @@ namespace esmini::common
             if (logFile_ == nullptr)
             {
                 std::cout << "Unable to open log file " << filePath << std::endl;
+                return false;
             }
         }
         catch (const std::exception& ex)
@@ -201,6 +203,7 @@ namespace esmini::common
         logOnlyModules_.clear();
         logSkipModules_.clear();
         firstConsoleLog_ = true;
+        time_            = nullptr;
     }
 
     void TxtLogger::StopFileLogging()
@@ -303,30 +306,41 @@ namespace esmini::common
 
     void TxtLogger::Log(const std::string& msg)
     {
-        if (consoleLoggingEnabled_)
+        try
         {
-            if (firstConsoleLog_)
+            if (consoleLoggingEnabled_)
             {
-                fputs(GetVersionInfoForLog().c_str(), stdout);
-                firstConsoleLog_ = false;
-            }
-            fputs(msg.c_str(), stdout);
-        }
-        if (fileLoggingEnabled_)
-        {
-            if (logFile_ == nullptr)
-            {
-                if (!CreateLogFile())
+                if (firstConsoleLog_)
                 {
-                    return;
+                    fputs(GetVersionInfoForLog().c_str(), stdout);
+                    firstConsoleLog_ = false;
                 }
+                fputs(msg.c_str(), stdout);
             }
-            if (firstFileLog_)
+            if (fileLoggingEnabled_)
             {
-                fputs(GetVersionInfoForLog().c_str(), logFile_);
-                firstFileLog_ = false;
+                if (logFile_ == nullptr)
+                {
+                    if (!CreateLogFile())
+                    {
+                        return;
+                    }
+                }
+                if (firstFileLog_)
+                {
+                    fputs(GetVersionInfoForLog().c_str(), logFile_);
+                    firstFileLog_ = false;
+                }
+                fputs(msg.c_str(), logFile_);
             }
-            fputs(msg.c_str(), logFile_);
+        }
+        catch (const std::exception& e)
+        {
+            std::cout << "Exception caught: " << e.what() << std::endl;
+        }
+        catch (...)
+        {
+            std::cout << "Generic exception caught" << std::endl;
         }
     }
 }  // namespace esmini::common
