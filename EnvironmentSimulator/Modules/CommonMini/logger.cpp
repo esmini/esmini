@@ -203,7 +203,6 @@ namespace esmini::common
         logOnlyModules_.clear();
         logSkipModules_.clear();
         firstConsoleLog_ = true;
-        time_            = nullptr;
     }
 
     void TxtLogger::StopFileLogging()
