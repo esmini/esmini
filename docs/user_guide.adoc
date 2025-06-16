@@ -1484,9 +1484,9 @@ The `Sun` element's `illuminance` directly controls the sky color, where the val
 
 *TimeOfDay Animation*
 
-When the `TimeOfDay` element has `animation="true"`, the sky color is dynamically adjusted based on the time of day using.
+The `TimeOfDay` element controls sky color based on the set time. Its `animation` attribute determines whether the OSI data's time of day and unix timestamp in the environmental conditions advance with simulation time or not.
 
-* **Logic**: This animation utilizes the `Sun illuminance` property to adjust the color.
+* **Logic**: `TimeOfDay` utilizes the `Sun illuminance` property to adjust the color.
     * `00:00:00` corresponds to an `illuminance` of 0.
     * `12:00:00` corresponds to an `illuminance` of 100000.
 * **Precedence**: The `Sun` element's `illuminance` value will always override the `TimeOfDay` animation if both has been set in the scenario.
