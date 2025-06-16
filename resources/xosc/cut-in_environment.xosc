@@ -8,7 +8,7 @@
 
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="2"
+               revMinor="3"
                date="2025-06-13T10:00:00"
                description="Basic cut-in"
                author="esmini-team"/>
@@ -195,7 +195,7 @@
                               <Environment name="weather">
                                  <TimeOfDay animation="true" dateTime="2025-10-15T12:00:00.012+00:00"/>
                                  <Weather fractionalCloudCover="sixOktas" temperature="278.15" atmosphericPressure="100500">
-                                    <Sun azimuth="2.35" intensity="100000" elevation="0.4"/>
+                                    <Sun azimuth="2.35" illuminance="80000" elevation="0.4"/>
                                     <Fog visualRange="10000"/>
                                     <Precipitation precipitationType="dry" precipitationIntensity="0.0"/>
                                     <Wind direction="1.5708" speed="8"/>

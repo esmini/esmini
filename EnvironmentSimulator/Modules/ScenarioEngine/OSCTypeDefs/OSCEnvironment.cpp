@@ -246,14 +246,20 @@ bool scenarioengine::OSCEnvironment::IsSunIntensitySet() const
 
 double scenarioengine::OSCEnvironment::GetSunIntensity() const
 {
-    return GetSun().intensity.value();
+    double intensity = GetSun().intensity.value_or(0.0);
+    if (intensity < 0.0)
+    {
+        intensity = 0.0;
+        LOG_WARN("Sun illuminance can't be less than 0, setting it to 0.");
+    }
+    return intensity;
 }
 
 double scenarioengine::OSCEnvironment::GetSunIntensityFactor() const
 {
     if (IsSunIntensitySet())
     {
-        double intensity = GetSunIntensity();
+        double intensity = CLAMP(GetSunIntensity(), OSCSunIntensityMin, OSCSunIntensityMax);
         // Normalize intensity to a factor between 0 and 1
         return (intensity - OSCSunIntensityMin) / (OSCSunIntensityMax - OSCSunIntensityMin);
     }
