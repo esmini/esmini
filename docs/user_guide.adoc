@@ -1432,26 +1432,21 @@ Example road: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Uni
 image::friction.jpg[]
 
 === Environment Action
-This action is to dynamically control environmental conditions, It allows you to define and modify weather, road conditions, and time of day, creating realistic and varied testing environments.
+From v2.49.0 esmini supports `EnvironmentAction` (https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/EnvironmentAction.html[OpenSCENARIO ref]), which allows you to set weather state, road conditions, and time of the day.
 
-The EnvironmentAction is used within GlobalAction elements in your OpenSCENARIO file. You can define a new environment directly within the EnvironmentAction or reference a pre-defined environment from a catalog.
-
-Two ways to define EnvironmentAction:
+There are two ways to define `EnvironmentAction`:
 
 - **Directly in the OpenSCENARIO file**:
-You can define the environment directly within the EnvironmentAction element in your OpenSCENARIO file. This allows you to specify the desired weather, road conditions, and time of day for that specific scenario.
+You can define the `EnvironmentAction`, which is a `GlobalAction` directly within your OpenSCENARIO file, example:
 
 [source,xml]
 ----
 <GlobalAction>
     <EnvironmentAction>
         <Environment name="weather">
-            <ParameterDeclarations>
-                <ParameterDeclaration name="AnimationStatus" parameterType="boolean" value="true"/>
-            </ParameterDeclarations>
-            <TimeOfDay animation="$AnimationStatus" dateTime="2023-11-15T10:30:00.123+00:00"/>
-            <Weather cloudState="free" temperature="300" atmosphericPressure="10000">
-                <Sun azimuth="0.4" intensity="10000" elevation="0.3"/>
+            <TimeOfDay animation="true" dateTime="2023-11-15T10:30:00.123+00:00"/>
+            <Weather fractionalCloudCover="zeroOktas" temperature="300" atmosphericPressure="10000">
+                <Sun azimuth="0.4" illuminance="100000" elevation="0.3"/>
                 <Fog visualRange="6000"/>
                 <Precipitation precipitationType="snow" precipitationIntensity="10.0"/>
                 <Wind direction="3.1415" speed="10"/>
@@ -1463,24 +1458,60 @@ You can define the environment directly within the EnvironmentAction element in 
 ----
 
 - **Using a Catalog**:
-You can create a catalog of predefined environments and reference them in your OpenSCENARIO file. This allows you to reuse the same environment settings across multiple scenarios, ensuring consistency and reducing redundancy.
+You can create a catalog of environments and reference them in your OpenSCENARIO file. This allows you to re-use the same environment across multiple scenarios, ensuring consistency and reducing redundancy, example:
 
 [source,xml]
 ----
 <GlobalAction>
     <EnvironmentAction>
-        <Environment name="weather">
-            <CatalogReference catalogName="WeatherCatalog" catalogVersion="summer"/>
-        </Environment>
+        <CatalogReference catalogName="EnvironmentCatalog" entryName="summer"/>
     </EnvironmentAction>
 </GlobalAction>
 ----
-The catalog reference points to a specific environment defined in the WeatherCatalog which is placed in resources/xosc/Catalogs/Environments. The catalog can contain multiple environments, each with its own set of parameters.
+The catalog reference points to a specific environment defined in the `EnvironmentCatalog` https://github.com/esmini/esmini/tree/master/resources/xosc/Catalogs/Environments/EnvironmentCatalog[link]. The catalog can contain multiple environments, each with its own set of parameters.
 
-**NOTES**
+Example scenario using both methods: https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_environment.xosc[link]
 
-- TimeOfDay animation is not supported in the viewer. The viewer will only display the sky color corresponding to the set time of day. OSI will synchronize the time of day with the simulation time and update accordingly only for animation true.
-- Rain, Snow, wind cloud cover and precipitation not visualized in the viewer. The OSI will still populate those details, but the visual representation of those will not be shown.
+
+*Visual Elements Affecting the Viewer:*
+
+*Sun Element*
+
+The `Sun` element's `illuminance` directly controls the sky color, where the value 100000 represents the brightest blue sky. 
+
+* `illuminance`: A linear shift from **black** (illuminance 0) to **bright blue** (illuminance 100000).
+* `azimuth` and `elevation`: These attributes have no visual effect on the scenario's representation.
+
+*TimeOfDay Animation*
+
+The `TimeOfDay` element controls sky color based on the set time. Its `animation` attribute determines whether the OSI data's time of day and unix timestamp in the environmental conditions advance with simulation time or not.
+
+* **Logic**: `TimeOfDay` utilizes the `Sun illuminance` property to adjust the color.
+    * `00:00:00` corresponds to an `illuminance` of 0.
+    * `12:00:00` corresponds to an `illuminance` of 100000.
+* **Precedence**: The `Sun` element's `illuminance` value will always override the `TimeOfDay` animation if both has been set in the scenario.
+
+*Weather Element*
+
+The `Weather` element influences the sky color based on cloud cover.
+
+* `fractionalCloudCover`: Linearly shifts the sky color from **bright blue** to **gray** in increment of eights (`1/8`).
+
+* `zeroOktas`: Represents a clear sky.
+* `NineOktas`: Represents a completely overcast sky.
+
+*Fog Element*
+
+The `Fog` element creates a fog effect, with its density determined by `visualRange`.
+
+* `visualRange`: Lower values result in denser fog.
+* **Fog Color Logic**:
+    `fogColor = color_dark_gray * cloudiness + color_background_gray * (1 - cloudiness)`
+* **Sky Color Logic (affected by fog)**:
+    `sunIlluminance * ((1 - cloudiness) * background_color + cloudiness * fogcolor)`
+
+Where `background` is calculated as 
+`visual_range * fogcolor + (1 - visual_range) * color_background`
 
 === SUMO integration
 
