@@ -7596,7 +7596,7 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
     {
         for (auto tunnel : road->GetTunnels())
         {
-            unsigned int steps = static_cast<unsigned int>(tunnel->length_ / 10.0);
+            unsigned int steps = static_cast<unsigned int>(tunnel->length_ / 10.0) + 1;  // nr of tunnel segments
             double       ds    = tunnel->length_ / static_cast<double>(steps);
             Position     pos;
             RMObject*    rm_obj[3] = {nullptr, nullptr, nullptr};
@@ -7611,23 +7611,52 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
                     outline = new Outline(tunnel->id_, Outline::FillType::FILL_TYPE_UNDEFINED, true);
                 }
 
-                for (unsigned int step = 0; step < steps; step++)
+                double t_offset = (i == 0) ? -TUNNEL_WALL_THICKNESS : 0.0;  // points needs to be entered counter clockwise
+                for (unsigned int step = 0; step < steps + 1; step++)       // add one for endpoints of last segment
                 {
-                    double s_tmp    = tunnel->s_ + step * ds;
-                    double t        = side * road->GetWidth(s_tmp, side, Lane::LaneType::LANE_TYPE_TUNNEL);
-                    double t_offset = (i == 0) ? -TUNNEL_WALL_THICKNESS : 0.0;  // points needs to be entered counter clockwise
-
-                    // create position at s + ds
-                    pos.SetTrackPos(road->GetId(), s_tmp, t);
+                    bool   replace = false;
+                    double t       = side * road->GetWidth(tunnel->s_ + step * ds, side, Lane::LaneType::LANE_TYPE_TUNNEL);
+                    pos.SetTrackPos(road->GetId(), tunnel->s_ + step * ds, t);
                     PointStruct p = {pos.GetS(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetHRoad(), false};
-                    tunnel->boundary_[i].osi_points_.GetPoints().push_back(p);
+
+                    if (step > 1)
+                    {
+                        // after the two first points are established, start checking whether to replace previous one based on error thershold
+                        PointStruct p0 = tunnel->boundary_[i].osi_points_.GetPoints()[tunnel->boundary_[i].osi_points_.GetNumOfOSIPoints() - 2];
+                        PointStruct p1 = tunnel->boundary_[i].osi_points_.GetPoints()[tunnel->boundary_[i].osi_points_.GetNumOfOSIPoints() - 1];
+                        double      angle_error = GetAngleBetweenVectors(p1.x - p0.x, p1.y - p0.y, pos.GetX() - p0.x, pos.GetY() - p0.y);
+
+                        if (ds * tan(angle_error) < 0.2)  // error threshold = 0.2 meter
+                        {
+                            // next point is roughly aligned in the same direction, overwrite previous
+                            replace = true;
+                        }
+                    }
+
+                    if (replace)
+                    {
+                        tunnel->boundary_[i].osi_points_.GetPoints().back() = p;
+                    }
+                    else
+                    {
+                        tunnel->boundary_[i].osi_points_.GetPoints().push_back(p);
+                    }
 
                     if (outline != nullptr)
                     {
                         // corners of the tunnel wall
-                        OutlineCorner* corner =
-                            static_cast<OutlineCorner*>(new OutlineCornerRoad(road->GetId(), s_tmp, t + t_offset, 0.0, TUNNEL_HEIGHT, 0.0, 0.0, 0.0));
-                        outline->AddCorner(corner);
+                        if (replace)
+                        {
+                            OutlineCornerRoad* corner = static_cast<OutlineCornerRoad*>(outline->corner_.back()->GetCorner());
+                            corner->s_                = p.s;
+                            corner->t_                = t + t_offset;
+                        }
+                        else
+                        {
+                            OutlineCorner* corner = static_cast<OutlineCorner*>(
+                                new OutlineCornerRoad(road->GetId(), p.s, t + t_offset, 0.0, TUNNEL_HEIGHT, 0.0, 0.0, 0.0));
+                            outline->AddCorner(corner);
+                        }
                     }
                 }
 

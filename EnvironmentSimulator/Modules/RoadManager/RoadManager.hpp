@@ -1675,6 +1675,10 @@ namespace roadmanager
         virtual void   GetPos(double &x, double &y, double &z)      = 0;
         virtual void   GetPosLocal(double &x, double &y, double &z) = 0;
         virtual double GetHeight()                                  = 0;
+        OutlineCorner *GetCorner()
+        {
+            return this;
+        }
         virtual ~OutlineCorner()
         {
         }
