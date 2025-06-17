@@ -869,7 +869,7 @@ namespace roadmanager
             double friction;
         } Material;
 
-        typedef enum : unsigned int
+        typedef enum : int
         {
             LANE_TYPE_NONE            = (1 << 0),   // 1
             LANE_TYPE_DRIVING         = (1 << 1),   // 2
@@ -898,8 +898,8 @@ namespace roadmanager
             LANE_TYPE_ANY_DRIVING =
                 LANE_TYPE_DRIVING | LANE_TYPE_ENTRY | LANE_TYPE_EXIT | LANE_TYPE_OFF_RAMP | LANE_TYPE_ON_RAMP | LANE_TYPE_BIDIRECTIONAL,  // 1966594
             LANE_TYPE_ANY_ROAD = LANE_TYPE_ANY_DRIVING | LANE_TYPE_RESTRICTED | LANE_TYPE_STOP,                                           // 1966726
-            LANE_TYPE_ANY      = (0xffffffff),  // 4294967295
-            LANE_TYPE_TUNNEL = (0xfffffffe)  // All lane types except "none" is accepted as road crossection for tunnel                 // 4294967294
+            LANE_TYPE_ANY      = -1,
+            LANE_TYPE_TUNNEL   = -2
         } LaneType;
 
         // Construct & Destruct
@@ -2419,7 +2419,7 @@ namespace roadmanager
                 @param laneTypeMask Bitmask specifying what lane types to consider - see Lane::LaneType
                 @return Width (m)
         */
-        double GetWidth(double s, int side, unsigned int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY) const;  // side: -1=right, 1=left, 0=both
+        double GetWidth(double s, int side, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY) const;  // side: -1=right, 1=left, 0=both
 
         int GetIntIdByStringId(std::string string_id);
 

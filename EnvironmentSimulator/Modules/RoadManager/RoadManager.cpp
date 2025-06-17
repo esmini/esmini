@@ -2975,7 +2975,7 @@ bool Road::IsDirectlyConnected(const Road* road, double* curvature, int fromLane
     return false;
 }
 
-double Road::GetWidth(double s, int side, unsigned int laneTypeMask) const
+double Road::GetWidth(double s, int side, int laneTypeMask) const
 {
     double       offset0 = 0;
     double       offset1 = 0;
@@ -7766,7 +7766,7 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
                 Outline* outline = new Outline(tunnel->id_, Outline::FillType::FILL_TYPE_UNDEFINED, true);
                 for (unsigned int i = 0; i < 2; i++)
                 {
-                    for (unsigned int j = 0; j < rm_obj[i]->GetOutline(0)->corner_.size() / 2; j++)
+                    for (unsigned int j = 0; rm_obj[i]->GetOutline(0) && j < rm_obj[i]->GetOutline(0)->corner_.size() / 2; j++)
                     {
                         unsigned int       index = (i == 0 ? j : (static_cast<unsigned int>(rm_obj[i]->GetOutline(0)->corner_.size()) / 2 - (j + 1)));
                         OutlineCornerRoad* tmp   = static_cast<OutlineCornerRoad*>(rm_obj[i]->GetOutline(0)->corner_[index]);
