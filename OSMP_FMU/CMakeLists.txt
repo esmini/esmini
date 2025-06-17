@@ -136,7 +136,7 @@ if(STATIC_LINKING)
 
     include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/external/osg.cmake)
     set_osg_libs()
-
+    add_subdirectory(../externals/fmt fmt)
     target_link_libraries(
         ${TARGET}
         PRIVATE esminiLib_static${LIB_POSTFIX}
@@ -149,6 +149,7 @@ if(STATIC_LINKING)
                 ${OSI_LIBRARIES}
                 ${SUMO_LIBRARIES}
                 ${OSG_LIBRARIES}
+                fmt
                 pugixml_lib
                 stdc++fs
                 ${ADDITIONAL_LIBS})
