@@ -1,0 +1,126 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenDRIVE>
+   <header name="ref_point" revMajor="1" revMinor="6" date="2025-05-28 07:38:05.855254" north="0.0" south="0.0" east="0.0" west="0.0"/>
+    <road rule="RHT" id="1" junction="-1" length="580.0">
+        <link/>
+        <planView>
+            <geometry s="0" x="0" y="0" hdg="0" length="50">
+                <line/>
+            </geometry>
+            <geometry s="50" x="50.0" y="0.0" hdg="0" length="50.0">
+                <spiral curvStart="0.0" curvEnd="0.02"/>
+            </geometry>
+            <geometry s="100.0" x="98.76438441001723" y="8.185702368785028" hdg="0.5" length="20.0">
+                <arc curvature="0.02"/>
+            </geometry>
+            <geometry s="120.0" x="113.95945296118126" y="20.984332049770444" hdg="0.9" length="75.0">
+                <spiral curvStart="0.02" curvEnd="-0.02"/>
+            </geometry>
+            <geometry s="195.0" x="144.39480120564744" y="89.01926936010614" hdg="0.9" length="20.0">
+                <arc curvature="-0.02"/>
+            </geometry>
+            <geometry s="215.0" x="159.58986975681148" y="101.81789904109154" hdg="0.5" length="50.0">
+                <spiral curvStart="-0.02" curvEnd="0.0"/>
+            </geometry>
+            <geometry s="265.0" x="208.35425416682872" y="110.00360140987657" hdg="0.0" length="50">
+                <line/>
+            </geometry>
+            <geometry s="315.0" x="258.3542541668287" y="110.00360140987657" hdg="0.0" length="50.0">
+                <spiral curvStart="0.0" curvEnd="0.02"/>
+            </geometry>
+            <geometry s="365.0" x="307.1186385768459" y="118.1893037786616" hdg="0.5" length="20.0">
+                <arc curvature="0.02"/>
+            </geometry>
+            <geometry s="385.0" x="322.3137071280099" y="130.98793345964702" hdg="0.9" length="75.0">
+                <spiral curvStart="0.02" curvEnd="-0.02"/>
+            </geometry>
+            <geometry s="460.0" x="352.7490553724761" y="199.02287076998272" hdg="0.9" length="20.0">
+                <arc curvature="-0.02"/>
+            </geometry>
+            <geometry s="480.0" x="367.9441239236401" y="211.82150045096813" hdg="0.5" length="50.0">
+                <spiral curvStart="-0.02" curvEnd="0.0"/>
+            </geometry>
+            <geometry s="530.0" x="416.70850833365733" y="220.00720281975316" hdg="0.0" length="50">
+                <line/>
+            </geometry>
+        </planView>
+        <elevationProfile/>
+      <lateralProfile/>
+      <lanes>
+         <laneSection s="0">
+            <left>
+               <lane id="3" type="none" level="false">
+                  <link/>
+                  <width a="20.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="none" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+               <lane id="2" type="border" level="false">
+                  <link/>
+                  <width a="5.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="none" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+               <lane id="1" type="driving" level="false">
+                  <link/>
+                  <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+            </left>
+            <center>
+               <lane id="0" type="none" level="false">
+                  <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2">
+                     <type name="broken" width="0.2">
+                        <line length="3" space="9" tOffset="0" width="0.15" sOffset="0"/>
+                     </type>
+                  </roadMark>
+               </lane>
+            </center>
+            <right>
+               <lane id="-1" type="driving" level="false">
+                  <link/>
+                  <width a="3.0" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                  <roadMark sOffset="150" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
+                  <roadMark sOffset="225" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+               <lane id="-2" type="driving" level="false">
+                  <link/>
+                  <width a="0.0" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                  <width a="0.0" b="0" c="0.02625" d="-0.000875" sOffset="150"/>
+                  <width a="3.5" b="0" c="0.0" d="0.0" sOffset="170"/>
+                  <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+               <lane id="-3" type="border" level="false">
+                  <link/>
+                  <width a="5.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="none" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+               <lane id="-4" type="none" level="false">
+                  <link/>
+                  <width a="20.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="none" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+            </right>
+         </laneSection>
+      </lanes>
+      <objects>
+         <tunnel s="30.0" length="250.0" name="FlexibleTunnel" id="1" type="standard" lighting="0.5" daylight="0.9">
+            <userData code="generate3DModel" value="true"/>
+         </tunnel>
+         <tunnel s="340.0" length="8.0" name="ShortTunnel" id="2" type="standard" lighting="0.5" daylight="0.9">
+            <userData code="generate3DModel" value="true"/>
+         </tunnel>
+         <tunnel s="400.0" length="150.0" name="ManualTunnel" id="3" type="standard" lighting="0.5" daylight="0.9">
+            <userData code="generate3DModel" value="false"/>
+         </tunnel>
+         <object type="barrier" s="0.0" t="0.0" length="0.0" hdg="0.0" orientation="none" id="2" zOffset="0.0">
+            <repeat distance="0.0" heightStart="5.0" heightEnd="5.0" widthStart="10.0" widthEnd="10.0" zOffsetEnd="0.0" zOffsetStart="0.0" length="150" s="400.0" tStart="13" tEnd="13"/>
+         </object>
+         <object type="barrier" s="0.0" t="0.0" length="0.0" hdg="0.0" orientation="none" id="3" zOffset="0.0">
+            <repeat distance="0.0" heightStart="5.0" heightEnd="5.0" widthStart="10.0" widthEnd="10.0" zOffsetEnd="0.0" zOffsetStart="0.0" length="150" s="400.0" tStart="-16.5" tEnd="-16.5"/>
+         </object>
+         <object type="barrier" s="0.0" t="0.0" length="0.0" hdg="0.0" orientation="none" id="4" zOffset="0.0">
+            <repeat distance="0.0" heightStart="2.0" heightEnd="2.0" widthStart="39.5" widthEnd="39.5" zOffsetEnd="5.0" zOffsetStart="5.0" length="150" s="400.0" tStart="-1.75" tEnd="-1.75"/>
+         </object>
+      </objects>
+   </road>
+</OpenDRIVE>

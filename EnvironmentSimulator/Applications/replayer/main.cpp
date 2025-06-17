@@ -444,6 +444,7 @@ int main(int argc, char** argv)
 #endif  // _USEOSG
     opt.AddOption("time_scale", "Playback speed scale factor (1.0 == normal)", "factor");
 #ifdef _USE_OSG
+    opt.AddOption("tunnel_transparency", "Set level of transparency for generated tunnels [0:1]", "transparency", "0.0");
     opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"", "view_mode");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
 #endif  // _USEOSG

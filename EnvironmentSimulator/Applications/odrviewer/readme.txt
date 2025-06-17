@@ -80,6 +80,8 @@ Options:
       Scale screen overlay text
   --traffic_rule <rule (right/left)>
       Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)
+  --tunnel_transparency [transparency]  (default if value omitted: 0.0)
+      Set level of transparency for generated tunnels [0:1]
   --use_signs_in_external_model
       When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE
   --version

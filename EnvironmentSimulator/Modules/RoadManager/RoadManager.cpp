@@ -421,12 +421,11 @@ id_t roadmanager::GetNewGlobalLaneBoundaryId()
 
 const char* roadmanager::ReadUserData(pugi::xml_node node, const std::string& code, const std::string& default_value)
 {
-    pugi::xml_node userData = node.child("userData");
-    if (userData)
+    for (auto& child : node.children("userData"))
     {
-        if (code == userData.attribute("code").value())
+        if (code == child.attribute("code").value())
         {
-            return userData.attribute("value").value();
+            return child.attribute("value").value();
         }
     }
 
@@ -2587,6 +2586,70 @@ void OutlineCornerLocal::GetPosLocal(double& x, double& y, double& z)
     z = zLocal_;
 }
 
+roadmanager::RMObject::RMObject(double      s,
+                                double      t,
+                                id_t        id,
+                                std::string name,
+                                Orientation orientation,
+                                double      z_offset,
+                                ObjectType  type,
+                                double      length,
+                                double      height,
+                                double      width,
+                                double      heading,
+                                double      pitch,
+                                double      roll,
+                                double      x,
+                                double      y,
+                                double      z,
+                                double      h)
+    : RoadObject(x, y, z, h),
+      name_(name),
+      type_(type),
+      id_(id),
+      s_(s),
+      t_(t),
+      z_offset_(z_offset),
+      orientation_(orientation),
+      length_(length),
+      height_(height),
+      width_(width),
+      heading_(heading),
+      pitch_(pitch),
+      roll_(roll)
+{
+    // set defautl color based on object type
+    // Set color based on object type
+    if (type_ == ObjectType::BUILDING || type_ == ObjectType::BARRIER)
+    {
+        color_[0] = 0.6f;
+        color_[1] = 0.6f;
+        color_[2] = 0.6f;
+        color_[3] = 1.0f;
+    }
+    else if (type_ == ObjectType::OBSTACLE)
+    {
+        color_[0] = 0.5f;
+        color_[1] = 0.3f;
+        color_[2] = 0.3f;
+        color_[3] = 1.0f;
+    }
+    else if (type_ == ObjectType::TREE || type_ == ObjectType::VEGETATION)
+    {
+        color_[0] = 0.22f;
+        color_[1] = 0.32f;
+        color_[2] = 0.22f;
+        color_[3] = 1.0f;
+    }
+    else
+    {
+        color_[0] = 0.4f;
+        color_[1] = 0.4f;
+        color_[2] = 0.4f;
+        color_[3] = 1.0f;
+    }
+}
+
 std::string RMObject::Type2Str(RMObject::ObjectType type)
 {
     unsigned int t = static_cast<unsigned int>(type);
@@ -2912,7 +2975,7 @@ bool Road::IsDirectlyConnected(const Road* road, double* curvature, int fromLane
     return false;
 }
 
-double Road::GetWidth(double s, int side, int laneTypeMask) const
+double Road::GetWidth(double s, int side, unsigned int laneTypeMask) const
 {
     double       offset0 = 0;
     double       offset1 = 0;
@@ -4769,10 +4832,13 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 tunnel->s_        = tunnel_node.attribute("s").as_double();
                 tunnel->type_     = static_cast<Tunnel::Type>(tunnel_node.attribute("type").as_uint());
 
-                tunnel->width_ = r->GetWidth(tunnel->s_, 0, static_cast<unsigned int>(Lane::LaneType::LANE_TYPE_TUNNEL)) + TUNNEL_WALL_THICKNESS;
+                tunnel->width_ = r->GetWidth(tunnel->s_, 0, Lane::LaneType::LANE_TYPE_TUNNEL) + TUNNEL_WALL_THICKNESS;
 
                 // generate 3D model by default, skip only if corresponding userData field set to "false"
                 tunnel->generate_3D_model = strcmp(ReadUserData(tunnel_node, "generate3DModel", "true"), "false");
+
+                // optionally make tunnel more or less transparent, to allow seing what's going on inside
+                tunnel->transparency_ = atof(SE_Env::Inst().GetOptions().GetOptionArg("tunnel_transparency").c_str());
 
                 r->AddTunnel(tunnel);
             }
@@ -7736,6 +7802,11 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
                                          0.0);
                 rm_obj[2]->AddOutline(outline);
                 road->AddObject(rm_obj[2]);
+
+                for (auto o : rm_obj)
+                {
+                    o->GetColor()[3] = static_cast<float>(1.0 - tunnel->transparency_);  // set semitransparent
+                }
             }
         }
     }

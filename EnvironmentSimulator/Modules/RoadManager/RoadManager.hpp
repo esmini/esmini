@@ -869,7 +869,7 @@ namespace roadmanager
             double friction;
         } Material;
 
-        typedef enum
+        typedef enum : unsigned int
         {
             LANE_TYPE_NONE            = (1 << 0),   // 1
             LANE_TYPE_DRIVING         = (1 << 1),   // 2
@@ -898,8 +898,8 @@ namespace roadmanager
             LANE_TYPE_ANY_DRIVING =
                 LANE_TYPE_DRIVING | LANE_TYPE_ENTRY | LANE_TYPE_EXIT | LANE_TYPE_OFF_RAMP | LANE_TYPE_ON_RAMP | LANE_TYPE_BIDIRECTIONAL,  // 1966594
             LANE_TYPE_ANY_ROAD = LANE_TYPE_ANY_DRIVING | LANE_TYPE_RESTRICTED | LANE_TYPE_STOP,                                           // 1966726
-            LANE_TYPE_ANY      = (-1),                                                                                                    // 1
-            LANE_TYPE_TUNNEL   = ~1  // All lane types except "none" is accepted as road crossection for tunnel
+            LANE_TYPE_ANY      = (0xffffffff),  // 4294967295
+            LANE_TYPE_TUNNEL = (0xfffffffe)  // All lane types except "none" is accepted as road crossection for tunnel                 // 4294967294
         } LaneType;
 
         // Construct & Destruct
@@ -1229,6 +1229,7 @@ namespace roadmanager
         double          s_                = 0.0;
         Type            type_             = Type::STANDARD;
         bool            generate_3D_model = true;
+        double          transparency_     = 0.0;
         LaneBoundaryOSI boundary_[2];
     };
 
@@ -1980,23 +1981,7 @@ namespace roadmanager
                  double      x,
                  double      y,
                  double      z,
-                 double      h)
-            : RoadObject(x, y, z, h),
-              name_(name),
-              type_(type),
-              id_(id),
-              s_(s),
-              t_(t),
-              z_offset_(z_offset),
-              orientation_(orientation),
-              length_(length),
-              height_(height),
-              width_(width),
-              heading_(heading),
-              pitch_(pitch),
-              roll_(roll)
-        {
-        }
+                 double      h);
 
         ~RMObject()
         {
@@ -2123,6 +2108,10 @@ namespace roadmanager
         {
             return parking_space_;
         }
+        float *GetColor()
+        {
+            return color_;
+        }
 
     private:
         std::string            name_;
@@ -2142,6 +2131,7 @@ namespace roadmanager
         Repeat                *repeat_ = nullptr;
         std::vector<Repeat *>  repeats_;
         ParkingSpace           parking_space_;
+        float                  color_[4] = {0.0, 0.0, 0.0, 0.0};
     };
 
     enum class SpeedUnit
@@ -2429,7 +2419,7 @@ namespace roadmanager
                 @param laneTypeMask Bitmask specifying what lane types to consider - see Lane::LaneType
                 @return Width (m)
         */
-        double GetWidth(double s, int side, int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY) const;  // side: -1=right, 1=left, 0=both
+        double GetWidth(double s, int side, unsigned int laneTypeMask = Lane::LaneType::LANE_TYPE_ANY) const;  // side: -1=right, 1=left, 0=both
 
         int GetIntIdByStringId(std::string string_id);
 

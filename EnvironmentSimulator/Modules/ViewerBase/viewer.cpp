@@ -2211,6 +2211,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
 
     emodel->state_set_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
     emodel->state_set_->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+    emodel->state_set_->setRenderBinDetails(10, "DepthSortedBin", osg::StateSet::RenderBinMode::OVERRIDE_RENDERBIN_DETAILS);
 
     emodel->modelBB_ = modelBB;
     emodel->model_   = modelgroup;
@@ -2769,6 +2770,10 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
     material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
     material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
     geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+    geode->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+    geode->getOrCreateStateSet()->setRenderBinDetails(20, "DepthSortedBin", osg::StateSet::RenderBinMode::OVERRIDE_RENDERBIN_DETAILS);
+    geode->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+    geode->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
 
     group->addChild(geode);
     env_origin2odr_->addChild(group);
@@ -2899,23 +2904,9 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
             osg::Vec4              color;
             tx = nullptr;
 
-            // Set color based on object type
-            if (object->GetType() == roadmanager::RMObject::ObjectType::BUILDING || object->GetType() == roadmanager::RMObject::ObjectType::BARRIER)
+            for (unsigned int c = 0; c < 4; c++)
             {
-                color = osg::Vec4(0.6f, 0.6f, 0.6f, 1.0f);
-            }
-            else if (object->GetType() == roadmanager::RMObject::ObjectType::OBSTACLE)
-            {
-                color = osg::Vec4(0.5f, 0.3f, 0.3f, 1.0f);
-            }
-            else if (object->GetType() == roadmanager::RMObject::ObjectType::TREE ||
-                     object->GetType() == roadmanager::RMObject::ObjectType::VEGETATION)
-            {
-                color = osg::Vec4(0.22f, 0.32f, 0.22f, 1.0f);
-            }
-            else
-            {
-                color = osg::Vec4(0.4f, 0.4f, 0.4f, 1.0f);
+                color[c] = object->GetColor()[c];
             }
 
             if (object->GetNumberOfOutlines() > 0 &&
