@@ -4,9 +4,6 @@ include_guard()
 
 macro(set_special_build_flags)
 
-    set(CMAKE_CXX_FLAGS
-        "${CMAKE_CXX_FLAGS} -DSPDLOG_COMPILED_LIB")
-
     if(APPLE)
         set(CMAKE_CXX_FLAGS
             "${CMAKE_CXX_FLAGS} ${CXX_STD_FLAG} -std=c++17 -pthread -fPIC -flto -DGL_SILENCE_DEPRECATION")

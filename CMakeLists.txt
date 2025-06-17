@@ -110,6 +110,10 @@ set(CMAKE_BUILD_TYPE
     "Release"
     CACHE STRING
           "build mode")
+set(FMT_INSTALL
+    OFF
+    CACHE BOOL
+          "If FMT should be installed")
 
 # ############################### Setting project rules ############################################################
 
@@ -250,7 +254,7 @@ if(NOT
       "test/OSC-NCAP-scenarios/.git"
    OR NOT
       EXISTS
-      "externals/spdlog/.git")
+      "externals/fmt/.git")
     execute_process(
         COMMAND git submodule update --init --recursive
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
@@ -258,23 +262,12 @@ endif()
 
 # ############################### Add submodules #####################################################################
 
-set(SPDLOG_BUILD_SHARED
-    OFF)
-set(SPDLOG_BUILD_PIC
-    ON)
-set(SPDLOG_LIBRARIES
-    spdlog)
 set(YAML_LIBRARIES
     yaml)
+set(FMT_LIBRARIES
+    fmt)
 
-add_subdirectory(externals/spdlog)
-
-if(LINUX)
-    # add link lib for missing filesystem functions in case gcc 7.5 is used
-    set(SPDLOG_LIBRARIES
-        ${SPDLOG_LIBRARIES}
-        "-lstdc++fs")
-endif()
+add_subdirectory(externals/fmt)
 
 # ############################### OTHERS #############################################################################
 
@@ -289,6 +282,11 @@ set(EXTERNALS_EXPR_PATH
           "")
 set(EXTERNALS_YAML_PATH
     ${EXTERNALS_YAML_PATH}
+    CACHE INTERNAL
+          "")
+
+set(EXTERNALS_FMT_PATH
+    ${EXTERNALS_FMT_PATH}
     CACHE INTERNAL
           "")
 

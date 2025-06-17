@@ -137,15 +137,6 @@ if(STATIC_LINKING)
     include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/external/osg.cmake)
     set_osg_libs()
 
-    # add spdlog library as submodule
-    set(SPDLOG_BUILD_SHARED OFF)
-    set(SPDLOG_BUILD_PIC ON)
-    add_subdirectory(../externals/spdlog spdlog)
-    if(LINUX)
-        # add link lib for missing filesystem functions in case gcc 7.5 is used
-        set(SPDLOG_LIBRARIES ${SPDLOG_LIBRARIES} "-lstdc++fs")
-    endif()
-
     target_link_libraries(
         ${TARGET}
         PRIVATE esminiLib_static${LIB_POSTFIX}
@@ -158,7 +149,6 @@ if(STATIC_LINKING)
                 ${OSI_LIBRARIES}
                 ${SUMO_LIBRARIES}
                 ${OSG_LIBRARIES}
-                spdlog
                 pugixml_lib
                 stdc++fs
                 ${ADDITIONAL_LIBS})

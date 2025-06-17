@@ -40,11 +40,11 @@ target_include_directories(
     ${TARGET}
     PRIVATE project_options
     PUBLIC ${EXTERNALS_YAML_INCLUDES}
-           ${EXTERNALS_SPDLOG_INCLUDES})
+           ${EXTERNALS_FMT_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
-    PUBLIC ${SPDLOG_LIBRARIES})
+    PUBLIC ${FMT_LIBRARIES})
 
 if(NOT
    MSVC)

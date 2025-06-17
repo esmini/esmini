@@ -30,7 +30,7 @@
 #include "viewer.hpp"
 #endif
 
-#include "spdlog/fmt/fmt.h"
+#include "fmt/format.h"
 
 using namespace scenarioengine;
 

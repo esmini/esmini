@@ -13,8 +13,8 @@
 #pragma once
 
 #include "CommonMini.hpp"
-#include "spdlog/fmt/fmt.h"
-#include "spdlog/fmt/chrono.h"
+#include "fmt/format.h"
+#include "fmt/chrono.h"
 
 #include <unordered_set>
 #include <string>

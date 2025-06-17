@@ -78,7 +78,7 @@ foreach(
                ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_OSG_INCLUDES}
                ${EXTERNALS_PUGIXML_PATH}
-               ${EXTERNALS_SPDLOG_INCLUDES})
+               ${EXTERNALS_FMT_INCLUDES})
 
     target_link_libraries(
         ${TARGET}
@@ -87,7 +87,7 @@ foreach(
                 CommonMini
                 Controllers
                 RoadManager
-                ${SPDLOG_LIBRARIES}
+                ${FMT_LIBRARIES}
                 ${TIME_LIB}
                 ${SOCK_LIB})
 

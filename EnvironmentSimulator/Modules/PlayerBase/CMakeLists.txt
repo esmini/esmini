@@ -63,7 +63,7 @@ target_include_directories(
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_IMPLOT_INCLUDES}
            ${EXTERNALS_YAML_INCLUDES}
-           ${EXTERNALS_SPDLOG_INCLUDES})
+           ${EXTERNALS_FMT_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
