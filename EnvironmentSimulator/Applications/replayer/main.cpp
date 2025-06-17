@@ -372,9 +372,9 @@ int GetGhostIdx()
 
 int main(int argc, char** argv)
 {
-    std::unique_ptr<Replay> player;
-    double                  simTime = 0;
-    std::string             arg_str;
+    Replay*     player;
+    double      simTime = 0;
+    std::string arg_str;
 
     // Setup signal handler to catch Ctrl-C
     signal(SIGINT, signal_handler);
@@ -528,7 +528,7 @@ int main(int argc, char** argv)
     {
         if (!arg_str.empty())
         {
-            player = std::make_unique<Replay>(arg_str, opt.GetOptionArg("file"), save_merged);
+            player = new Replay(arg_str, opt.GetOptionArg("file"), save_merged);
 
             if (!save_merged.empty())
             {
@@ -543,7 +543,7 @@ int main(int argc, char** argv)
                 LOG_ERROR("\"--saved_merged\" works only in combination with \"--dir\" argument, combining multiple dat files");
                 return -1;
             }
-            player = std::make_unique<Replay>(opt.GetOptionArg("file"), true);
+            player = new Replay(opt.GetOptionArg("file"), true);
         }
     }
     catch (const std::exception& e)
@@ -603,7 +603,7 @@ int main(int argc, char** argv)
                 printf("continue without road description\n");
             }
         }
-
+        simTime = player->GetTime();
 #ifdef _USE_OSG
         char                    info_str_buf[256];
         double                  targetSimTime = simTime;
@@ -755,7 +755,7 @@ int main(int argc, char** argv)
                                      mask * viewer::NodeMask::NODE_MASK_INFO);
         }
 
-        viewer_->RegisterKeyEventCallback(ReportKeyEvent, player.get());
+        viewer_->RegisterKeyEventCallback(ReportKeyEvent, player);
         viewer_->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv_[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));
 
         __int64 now           = 0;
@@ -871,7 +871,7 @@ int main(int argc, char** argv)
             } while (pos != std::string::npos);
         }
 
-        if (ParseEntities(player.get()) != 0)
+        if (ParseEntities(player) != 0)
         {
 #ifdef _USE_OSG
             delete viewer_;
@@ -1175,7 +1175,9 @@ int main(int argc, char** argv)
             viewer_->Frame(0.0);
 #endif  // _USE_OSG
         }
+        delete player;
 #ifdef _USE_OSG
+        viewer_->renderSemaphore.Release();  // allow rendering thread to finish
         delete viewer_;
 #endif  // _USE_OSG
     }
