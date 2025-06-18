@@ -2007,20 +2007,18 @@ void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanage
     }
 
     // double measured_distance;
-    double measured_distance = pos1.GetT() - pos2.GetT();
-    // pos1.Distance(&pos2, cs_, roadmanager::RelativeDistanceType::REL_DIST_LATERAL, measured_distance);
-    std::cout << "Measured distance: " << measured_distance << std::endl;
+    double measured_distance = pos2.GetT() - pos1.GetT();
     distance_error = 0.0;
     if (!freespace_)
     {
         // How much we need to move to reach the target distance
-        distance_error = measured_distance - distance_;
+        distance_error = measured_distance + distance_;
     }
     else
     {
         double ego_width = object_->boundingbox_.dimensions_.width_;
         double target_width = target_object_->boundingbox_.dimensions_.width_;
-        distance_error = measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0 - distance_; // Taking into account the width of both vehicles
+        distance_error = measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0 + distance_; // Taking into account the width of both vehicles
     }
 }
 
@@ -2081,7 +2079,6 @@ void LatDistanceAction::Step(double simTime, double)
         break;
         case (MoveState::MOVE_DYNAMIC):
         {
-            double prev_lat_vel = lat_vel_;
             double d_offset;
             // Find desired position
             double distance_error;
@@ -2096,7 +2093,7 @@ void LatDistanceAction::Step(double simTime, double)
 
                 // Maybe we can normalize the acceleration so it diminishes as we get closer to the target
                 // But we only flip sign on acc if we are on the other side of the target, so that needs to be fixed
-                acceleration_ *= -SIGN(distance_error);
+                acceleration_ *= SIGN(distance_error);
 
                 if (abs(distance_error) < abs(braking_distance) && SIGN(lat_vel_) == SIGN(acceleration_))
                 {
@@ -2126,36 +2123,24 @@ void LatDistanceAction::Step(double simTime, double)
                 }
 
                 d_offset = lat_vel_ * dt;
-                // double new_error = distance_error + d_offset; 
-                // if (SIGN(new_error) != SIGN(distance_error))
-                // {
-                //     d_offset = -distance_error;
-                //     double new_vel = d_offset / dt;
-                //     double d_vel = new_vel - prev_lat_vel;
-                //     double new_acc = d_vel / dt;
-                //     if (abs(new_acc) < acceleration_)
-                //     {
-                //         lat_vel_ = new_vel;   
-                //         acceleration_ = new_acc;
-                //     }
-                //     else
-                //     {
-                //         d_offset = lat_vel_ * dt;
-                //     }
-                // }
             }
             else
             {
                 // Maybe we can normalize the acceleration so it diminishes as we get closer to the target
                 // But we only flip sign on acc if we are on the other side of the target, so that needs to be fixed
-                lat_vel_ = -SIGN(distance_error) * std::min(dynamics_.max_speed_, object_->GetSpeed());
+                lat_vel_ = SIGN(distance_error) * std::min(dynamics_.max_speed_, object_->GetSpeed());
                 
                 d_offset = lat_vel_ * dt;
-                double new_error = distance_error + d_offset; 
+                double new_error = distance_error - d_offset; 
                 if (SIGN(new_error) != SIGN(distance_error))
                 {
-                    d_offset = -distance_error;
+                    d_offset = distance_error;
                     lat_vel_ = d_offset / dt;
+
+                    if (!continuous_)
+                    {
+                        OSCAction::End();
+                    }
                 }
             }
 
