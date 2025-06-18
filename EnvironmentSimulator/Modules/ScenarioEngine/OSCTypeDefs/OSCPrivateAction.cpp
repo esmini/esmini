@@ -1834,8 +1834,7 @@ void LongDistanceAction::Step(double simTime, double)
 
     double speed_diff      = object_->speed_ - target_object_->speed_;
     double spring_constant = 0.4;
-    double dc;
-    double requested_dist = 0;
+    double requested_dist  = 0;
 
     if (dist_type_ == DistType::DISTANCE)
     {
