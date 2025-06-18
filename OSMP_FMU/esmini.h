@@ -61,7 +61,8 @@ using namespace std;
 #define FMI_INTEGER_TRAFFICCOMMAND_OUT_BASELO_IDX 9
 #define FMI_INTEGER_TRAFFICCOMMAND_OUT_BASEHI_IDX 10
 #define FMI_INTEGER_TRAFFICCOMMAND_OUT_SIZE_IDX 11
-#define FMI_INTEGER_LAST_IDX FMI_INTEGER_TRAFFICCOMMAND_OUT_SIZE_IDX
+#define FMI_INTEGER_QUIT_FLAG_IDX 12
+#define FMI_INTEGER_LAST_IDX FMI_INTEGER_QUIT_FLAG_IDX
 #define FMI_INTEGER_VARS (FMI_INTEGER_LAST_IDX+1)
 
 /* Real Variables */
@@ -202,12 +203,13 @@ protected:
     fmi2Integer integer_vars[FMI_INTEGER_VARS];
     fmi2Real real_vars[FMI_REAL_VARS];
     string string_vars[FMI_STRING_VARS];
-    string* currentBuffer;
-    string* lastBuffer;
+    std::vector<string*> buffers;
 
     /* Simple Accessors */
     fmi2Boolean fmi_valid() { return boolean_vars[FMI_BOOLEAN_VALID_IDX]; }
     void set_fmi_valid(fmi2Boolean value) { boolean_vars[FMI_BOOLEAN_VALID_IDX]=value; }
+    fmi2Integer quit_flag() { return integer_vars[FMI_INTEGER_QUIT_FLAG_IDX]; }
+    void set_quit_flag(fmi2Integer value) { integer_vars[FMI_INTEGER_QUIT_FLAG_IDX]=value; }
     fmi2Boolean fmi_use_viewer() { return boolean_vars[FMI_BOOLEAN_USE_VIEWER_IDX]; }
     void set_fmi_use_viewer(fmi2Boolean value) { boolean_vars[FMI_BOOLEAN_USE_VIEWER_IDX]=value; }
     string fmi_xosc_path() { return string_vars[FMI_STRING_XOSC_PATH_IDX]; }
@@ -220,4 +222,5 @@ protected:
     //bool get_fmi_traffic_command_update_in(osi3::TrafficCommandUpdate& data);     //TODO: Wait for OSI update
     void set_fmi_traffic_command_out(const osi3::TrafficCommand& data);
     void reset_fmi_traffic_command_out();
+    void clear_buffers();
 };

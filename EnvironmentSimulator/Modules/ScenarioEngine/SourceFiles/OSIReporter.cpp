@@ -2611,7 +2611,7 @@ int OSIReporter::UpdateTrafficSignals()
 
 int OSIReporter::UpdateOSITrafficCommand()
 {
-    obj_osi_external.tc->clear_action();
+    obj_osi_external.tc->Clear();
 
     if (GetUDPClientStatus() == 0 || IsFileOpen())
     {
@@ -2621,7 +2621,7 @@ int OSIReporter::UpdateOSITrafficCommand()
 
     for (auto state_change : traffic_command_state_changes_)
     {
-        if (state_change.transition == StoryBoardElement::Transition::START_TRANSITION)
+        if (state_change.transition == StoryBoardElement::Transition::START_TRANSITION && state_change.state == StoryBoardElement::State::RUNNING)
         {
             ReportTrafficCommand(obj_osi_external.tc, state_change.action, scenario_engine_->getSimulationTime());
         }
