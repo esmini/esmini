@@ -269,7 +269,9 @@ set(FMT_LIBRARIES
 set(CMAKE_POSITION_INDEPENDENT_CODE
     ON)
 add_subdirectory(externals/fmt)
-
+target_compile_options(
+    fmt
+    PRIVATE -fPIC)
 # ############################### OTHERS #############################################################################
 
 # Add variables to global scope, e.g. when esmini is used as submodule
@@ -285,7 +287,6 @@ set(EXTERNALS_YAML_PATH
     ${EXTERNALS_YAML_PATH}
     CACHE INTERNAL
           "")
-
 set(EXTERNALS_FMT_PATH
     ${EXTERNALS_FMT_PATH}
     CACHE INTERNAL
