@@ -2703,7 +2703,7 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
 {
     if (outline == 0)
         return -1;
-    bool roof = outline->closed_ ? true : false;
+    bool roof = outline->roof_ ? true : false;
 
     // nrPoints will be corners + 1 if the outline should be closed, reusing first corner as last
     int nrPoints = outline->closed_ ? static_cast<int>(outline->corner_.size()) + 1 : static_cast<int>(outline->corner_.size());
@@ -2724,8 +2724,34 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
                                          static_cast<float>(y - origin_[1]),
                                          static_cast<float>(z + corner->GetHeight()));
         (*vertices_sides)[i * 2 + 1].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
-        (*vertices_top)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z + corner->GetHeight()));
-        (*vertices_bottom)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
+
+        // top and bottom shapes
+        if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_POLYGON)
+        {
+            (*vertices_top)[i].set(static_cast<float>(x - origin_[0]),
+                                   static_cast<float>(y - origin_[1]),
+                                   static_cast<float>(z + corner->GetHeight()));
+            (*vertices_bottom)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
+        }
+    }
+
+    if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP)
+    {
+        // rearrange vertices for quad strip
+        for (size_t i = 0; i < outline->corner_.size(); i++)
+        {
+            // points are starting at right side
+            double                      x, y, z;
+            //unsigned                    index  = ((i % 2) == 0) ? i / 2 : (outline->corner_.size() - (i / 2 + 1));
+            unsigned                    index  = ((i % 2) == 0) ? (outline->corner_.size() - (i / 2 + 1)) : i / 2;
+            roadmanager::OutlineCorner* corner = outline->corner_[index];
+            corner->GetPos(x, y, z);
+
+            (*vertices_top)[i].set(static_cast<float>(x - origin_[0]),
+                                    static_cast<float>(y - origin_[1]),
+                                    static_cast<float>(z + corner->GetHeight()));
+            (*vertices_bottom)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
+        }
     }
 
     // Close geometry
@@ -2746,15 +2772,26 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
 
     if (roof)
     {
-        geom[1]->setVertexArray(vertices_top.get());
-        geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
-        osgUtil::Tessellator tessellator;
-        tessellator.retessellatePolygons(*geom[1]);
+        if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_POLYGON)
+        {
+            geom[1]->setVertexArray(vertices_top.get());
+            geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
+            osgUtil::Tessellator tessellator;
+            tessellator.retessellatePolygons(*geom[1]);
 
-        // then also add bottom
-        geom[2]->setVertexArray(vertices_bottom.get());
-        geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
-        tessellator.retessellatePolygons(*geom[2]);
+            // then also add bottom
+            geom[2]->setVertexArray(vertices_bottom.get());
+            geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
+            tessellator.retessellatePolygons(*geom[2]);
+        }
+        else
+        {
+            geom[1]->setVertexArray(vertices_top.get());
+            geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, nrPoints - 1));
+
+            geom[2]->setVertexArray(vertices_bottom.get());
+            geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, nrPoints - 1));
+        }
     }
 
     int nrGeoms = roof ? 3 : 1;

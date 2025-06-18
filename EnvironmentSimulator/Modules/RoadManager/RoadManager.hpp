@@ -1730,12 +1730,20 @@ namespace roadmanager
             FILL_TYPE_UNDEFINED
         } FillType;
 
-        id_t                         id_;
-        FillType                     fillType_;
-        bool                         closed_;
-        std::vector<OutlineCorner *> corner_;
+        typedef enum
+        {
+            CONTOUR_TYPE_POLYGON,
+            CONTOUR_TYPE_QUAD_STRIP
+        } ContourType;
 
-        Outline(id_t id, FillType fillType, bool closed) : id_(id), fillType_(fillType), closed_(closed)
+        id_t                         id_ = ID_UNDEFINED;
+        FillType                     fillType_ = FILL_TYPE_UNDEFINED;
+        bool                         closed_ = false;
+        bool                         roof_ = false;
+        std::vector<OutlineCorner *> corner_;
+        ContourType                  contourType_ = CONTOUR_TYPE_POLYGON;  // controls how the 3D tessellation of the countour should be done
+
+        Outline(id_t id, FillType fillType, bool closed) : id_(id), fillType_(fillType), closed_(closed), roof_(closed)  // default put roof on closed outlines
         {
         }
 
@@ -1750,6 +1758,15 @@ namespace roadmanager
         {
             corner_.push_back(outlineCorner);
         }
+        void SetCountourType(ContourType contourType)
+        {
+            contourType_ = contourType;
+        }
+        bool GetCountourType() const
+        {
+            return contourType_;
+        }
+
     };
 
     class ParkingSpace

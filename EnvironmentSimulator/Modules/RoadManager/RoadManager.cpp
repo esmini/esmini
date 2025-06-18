@@ -3954,6 +3954,11 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             {
                                 // s_offset
                                 double s_offset      = atof(roadMark.attribute("sOffset").value());
+                                if (s_offset > r->GetLength() - SMALL_NUMBER)
+                                {
+                                    LOG_ERROR("Roadmark s value {:.2f} beyond road length {:.2f}, ignoring it", s_offset, r->GetLength());
+                                    continue;
+                                }
                                 double roadMark_fade = CLAMP(atof(ReadUserData(roadMark, "fade", "0.0")), 0.0, 1.0);
 
                                 // type
@@ -4603,6 +4608,11 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 {
                     std::string rattr;
                     double      rs            = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stod(rattr);
+                    if (rs > r->GetLength() - SMALL_NUMBER)
+                    {
+                        LOG_ERROR("Repeat s value {:.2f} beyond road length {:.2f}, ignoring", rs, r->GetLength());
+                        continue;
+                    }
                     double      rlength       = (rattr = ReadAttribute(repeat_node, "length", true)) == "" ? 0.0 : std::stod(rattr);
                     double      rdistance     = (rattr = ReadAttribute(repeat_node, "distance", true)) == "" ? 0.0 : std::stod(rattr);
                     double      rtStart       = (rattr = ReadAttribute(repeat_node, "tStart", true)) == "" ? 0.0 : std::stod(rattr);
@@ -7662,65 +7672,93 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
     {
         for (auto tunnel : road->GetTunnels())
         {
-            unsigned int steps = static_cast<unsigned int>(tunnel->length_ / 10.0) + 1;  // nr of tunnel segments
-            double       ds    = tunnel->length_ / static_cast<double>(steps);
-            Position     pos;
-            RMObject*    rm_obj[3] = {nullptr, nullptr, nullptr};
+            struct tpoint_struct
+            {
+                double s;
+                double t;
+                double x;
+                double y;
+                double z;
+                double h;
+            };
+            unsigned int      steps = static_cast<unsigned int>(tunnel->length_ / 10.0) + 1;  // nr of tunnel segments
+            double            ds    = tunnel->length_ / static_cast<double>(steps);
+            Position          pos;
+            RMObject*         rm_obj[3] = {nullptr, nullptr, nullptr};
+            std::vector<bool> keep[2]   = {std::vector<bool>(steps + 1), std::vector<bool>(steps + 1)};  // keep track of which vertices to keep
+            std::vector<tpoint_struct> tpoint[2] = {std::vector<tpoint_struct>(steps + 1),
+                                                    std::vector<tpoint_struct>(steps + 1)};  // OSI points for left and right side
 
             // OSI points
             for (unsigned int i = 0; i < 2; i++)
             {
-                int      side    = (i == 0) ? -1 : 1;
+                unsigned int pivot = 0;
+                int          side  = (i == 0) ? 1 : -1;
+
+                // points needs to be entered counter clockwise, i.e. starting with right side of each wall
+                double       t_offset = (side == -1) ? -TUNNEL_WALL_THICKNESS : 0.0;
+
+                for (unsigned int step = 0; step < steps + 1; step++)  // add one for endpoints of last segment
+                {
+                    keep[i][step] = true;  // preliminary
+                    double t      = side * road->GetWidth(tunnel->s_ + step * ds, side, Lane::LaneType::LANE_TYPE_TUNNEL) + t_offset;
+                    pos.SetTrackPos(road->GetId(), tunnel->s_ + step * ds, t);
+                    tpoint[i][step] = {pos.GetS(), pos.GetT(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetHRoad()};
+
+                    if (step > 1)
+                    {
+                        // after the two first points are established, start checking whether to replace previous one based on error threshold
+                        tpoint_struct p0 = tpoint[i][pivot];
+                        tpoint_struct p1 = tpoint[i][pivot + 1];
+
+                        double angle_error = GetAngleBetweenVectors(p1.x - p0.x, p1.y - p0.y, pos.GetX() - p0.x, pos.GetY() - p0.y);
+
+                        if (ds * tan(angle_error) < 0.2)  // error threshold = 0.2 meter
+                        {
+                            // this point is roughly aligned with previous one, skip previous
+                            keep[i][step - 1] = false;
+                        }
+                        else
+                        {
+                            // keep previous point
+                            pivot = step - 1;
+                        }
+                    }
+                }
+            }
+
+            // pick points to keep, only remove points that no side need
+            for (unsigned int step = 0; step < steps + 1; step++)
+            {
+                if (keep[0][step] == true || keep[1][step] == true)
+                {
+                    keep[0][step] = true;
+                    keep[1][step] = true;
+                }
+            }
+
+            for (unsigned int i = 0; i < 2; i++)
+            {
                 Outline* outline = nullptr;
                 if (tunnel->generate_3D_model)
                 {
                     outline = new Outline(tunnel->id_, Outline::FillType::FILL_TYPE_UNDEFINED, true);
+                    outline->SetCountourType(Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP);
+                    outline->roof_ = false;  // no top face on walls
                 }
 
-                double t_offset = (i == 0) ? -TUNNEL_WALL_THICKNESS : 0.0;  // points needs to be entered counter clockwise
-                for (unsigned int step = 0; step < steps + 1; step++)       // add one for endpoints of last segment
+                for (unsigned int step = 0; step < steps + 1; step++)
                 {
-                    bool   replace = false;
-                    double t       = side * road->GetWidth(tunnel->s_ + step * ds, side, Lane::LaneType::LANE_TYPE_TUNNEL);
-                    pos.SetTrackPos(road->GetId(), tunnel->s_ + step * ds, t);
-                    PointStruct p = {pos.GetS(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetHRoad(), false};
-
-                    if (step > 1)
+                    if (keep[i][step])
                     {
-                        // after the two first points are established, start checking whether to replace previous one based on error thershold
-                        PointStruct p0 = tunnel->boundary_[i].osi_points_.GetPoints()[tunnel->boundary_[i].osi_points_.GetNumOfOSIPoints() - 2];
-                        PointStruct p1 = tunnel->boundary_[i].osi_points_.GetPoints()[tunnel->boundary_[i].osi_points_.GetNumOfOSIPoints() - 1];
-                        double      angle_error = GetAngleBetweenVectors(p1.x - p0.x, p1.y - p0.y, pos.GetX() - p0.x, pos.GetY() - p0.y);
+                        tpoint_struct& p = tpoint[i][step];
 
-                        if (ds * tan(angle_error) < 0.2)  // error threshold = 0.2 meter
+                        tunnel->boundary_[i].osi_points_.GetPoints().push_back({p.s, p.x, p.y, p.z, p.h, false});
+
+                        if (outline != nullptr)
                         {
-                            // next point is roughly aligned in the same direction, overwrite previous
-                            replace = true;
-                        }
-                    }
-
-                    if (replace)
-                    {
-                        tunnel->boundary_[i].osi_points_.GetPoints().back() = p;
-                    }
-                    else
-                    {
-                        tunnel->boundary_[i].osi_points_.GetPoints().push_back(p);
-                    }
-
-                    if (outline != nullptr)
-                    {
-                        // corners of the tunnel wall
-                        if (replace)
-                        {
-                            OutlineCornerRoad* corner = static_cast<OutlineCornerRoad*>(outline->corner_.back()->GetCorner());
-                            corner->s_                = p.s;
-                            corner->t_                = t + t_offset;
-                        }
-                        else
-                        {
-                            OutlineCorner* corner = static_cast<OutlineCorner*>(
-                                new OutlineCornerRoad(road->GetId(), p.s, t + t_offset, 0.0, TUNNEL_HEIGHT, 0.0, 0.0, 0.0));
+                            OutlineCorner* corner =
+                                static_cast<OutlineCorner*>(new OutlineCornerRoad(road->GetId(), p.s, p.t, 0.0, TUNNEL_HEIGHT, 0.0, 0.0, 0.0));
                             outline->AddCorner(corner);
                         }
                     }
@@ -7764,21 +7802,24 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
             {
                 // and the roof wich covers the outer points of both walls
                 Outline* outline = new Outline(tunnel->id_, Outline::FillType::FILL_TYPE_UNDEFINED, true);
+                outline->SetCountourType(Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP);
+                outline->roof_ = true;    // top face on tunnel roof
+
                 for (unsigned int i = 0; i < 2; i++)
                 {
+                    int side = (i == 0) ? 1 : -1;
                     for (unsigned int j = 0; rm_obj[i]->GetOutline(0) && j < rm_obj[i]->GetOutline(0)->corner_.size() / 2; j++)
                     {
-                        unsigned int       index = (i == 0 ? j : (static_cast<unsigned int>(rm_obj[i]->GetOutline(0)->corner_.size()) / 2 - (j + 1)));
+                        unsigned int       index = (side == 1 ? j : (static_cast<unsigned int>(rm_obj[i]->GetOutline(0)->corner_.size()) / 2 - (j + 1)));
                         OutlineCornerRoad* tmp   = static_cast<OutlineCornerRoad*>(rm_obj[i]->GetOutline(0)->corner_[index]);
                         OutlineCorner*     corner = static_cast<OutlineCorner*>(new OutlineCornerRoad(tmp->roadId_,
                                                                                                   tmp->s_,
-                                                                                                  tmp->t_ + (i == 1 ? TUNNEL_WALL_THICKNESS : 0.0),
+                                                                                                  tmp->t_ + (side == 1 ? TUNNEL_WALL_THICKNESS : 0.0),
                                                                                                   TUNNEL_HEIGHT,
                                                                                                   TUNNEL_ROOF_THICKNESS,
                                                                                                   0.0,
                                                                                                   0.0,
                                                                                                   0.0));
-
                         outline->AddCorner(corner);
                     }
                 }
