@@ -117,11 +117,12 @@ bool EsminiOsiSource::get_fmi_traffic_update_in(osi3::TrafficUpdate& data)
 
 void EsminiOsiSource::set_fmi_sensor_view_out(const osi3::SensorView& data)
 {
-  data.SerializeToString(currentBuffer);
-  encode_pointer_to_integer(currentBuffer->data(),integer_vars[FMI_INTEGER_SENSORVIEW_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_OUT_BASELO_IDX]);
-  integer_vars[FMI_INTEGER_SENSORVIEW_OUT_SIZE_IDX]=(fmi2Integer)currentBuffer->length();
-  normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_SENSORVIEW_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_OUT_BASELO_IDX],currentBuffer->data());
-  swap(currentBuffer,lastBuffer);
+    string* buffer = new string();
+    data.SerializeToString(buffer);
+    encode_pointer_to_integer(buffer->data(),integer_vars[FMI_INTEGER_SENSORVIEW_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_OUT_BASELO_IDX]);
+    integer_vars[FMI_INTEGER_SENSORVIEW_OUT_SIZE_IDX]=(fmi2Integer)buffer->length();
+    normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_SENSORVIEW_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_SENSORVIEW_OUT_BASELO_IDX],buffer->data());
+    buffers.push_back(buffer);
 }
 
 void EsminiOsiSource::reset_fmi_sensor_view_out()
@@ -133,11 +134,12 @@ void EsminiOsiSource::reset_fmi_sensor_view_out()
 
 void EsminiOsiSource::set_fmi_traffic_command_out(const osi3::TrafficCommand& data)
 {
-    data.SerializeToString(currentBuffer);
-    encode_pointer_to_integer(currentBuffer->data(),integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASELO_IDX]);
-    integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_SIZE_IDX]=(fmi2Integer)currentBuffer->length();
-    normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASELO_IDX],currentBuffer->data());
-    swap(currentBuffer,lastBuffer);
+    string* buffer = new string();
+    data.SerializeToString(buffer);
+    encode_pointer_to_integer(buffer->data(),integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASELO_IDX]);
+    integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_SIZE_IDX]=(fmi2Integer)buffer->length();
+    normal_log("OSMP","Providing %08X %08X, writing from %p ...",integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASEHI_IDX],integer_vars[FMI_INTEGER_TRAFFICCOMMAND_OUT_BASELO_IDX],buffer->data());
+    buffers.push_back(buffer);
 }
 
 void EsminiOsiSource::reset_fmi_traffic_command_out()
@@ -209,6 +211,7 @@ fmi2Status EsminiOsiSource::doExitInitializationMode()
 fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint)
 {
   DEBUGBREAK();
+  clear_buffers();
 
   // Handle OSI TrafficUpdate input
   osi3::TrafficUpdate traffic_update;
@@ -268,15 +271,12 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
   set_fmi_sensor_view_out(currentOut);
 
   // Handle OSI TrafficCommand output
-  if (SE_UpdateOSITrafficCommand() != 0)
-  {
-    std::cerr <<"Failed update OSI TrafficCommand" << std::endl;
-    return fmi2Error;
-  }
   const auto* traffic_command = reinterpret_cast<const osi3::TrafficCommand*>(SE_GetOSITrafficCommandRaw()); // Fetch OSI struct (via pointer, no copying of data)
   set_fmi_traffic_command_out(*traffic_command);
 
   set_fmi_valid(1);
+  set_quit_flag(SE_GetQuitFlag());
+
   return fmi2OK;
 }
 
@@ -304,18 +304,24 @@ EsminiOsiSource::EsminiOsiSource(fmi2String theinstanceName, fmi2Type thefmuType
       visible(!!thevisible),
       loggingOn(!!theloggingOn)
 {
-  currentBuffer = new string();
-  lastBuffer = new string();
   loggingCategories.clear();
   loggingCategories.insert("FMI");
   loggingCategories.insert("OSMP");
   loggingCategories.insert("OSI");
 }
 
+void EsminiOsiSource::clear_buffers()
+{
+    while (!buffers.empty()) {
+        string* el = buffers.back();
+        buffers.pop_back();
+        delete el;
+    }
+}
+
 EsminiOsiSource::~EsminiOsiSource()
 {
-  delete currentBuffer;
-  delete lastBuffer;
+    clear_buffers();
 }
 
 fmi2Status EsminiOsiSource::SetDebugLogging(fmi2Boolean theloggingOn, size_t nCategories, const fmi2String categories[])
