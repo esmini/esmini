@@ -18,7 +18,7 @@
 
 #define MAX_DECELERATION                -8.0
 #define LONGITUDINAL_DISTANCE_THRESHOLD 0.1
-#define LATERAL_DISTANCE_THRESHOLD 0.01
+#define LATERAL_DISTANCE_THRESHOLD      0.01
 
 using namespace scenarioengine;
 
@@ -1946,12 +1946,11 @@ void LatDistanceAction::Start(double simTime)
     if (displacement_ == DisplacementType::ANY)
     {
         // Find out current displacement, and apply it
-        double distance, x, y;
-        distance = object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
+        double x, y;
+        object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
 
         // Just interested in the x-axis component of the distance, if 0.0 we default to the right
-        distance = y;
-        (distance < 0.0) ? displacement_ = DisplacementType::LEFT_TO_REFERENCED_ENTITY : displacement_ = DisplacementType::RIGHT_TO_REFERENCED_ENTITY;
+        (y < 0.0) ? displacement_ = DisplacementType::LEFT_TO_REFERENCED_ENTITY : displacement_ = DisplacementType::RIGHT_TO_REFERENCED_ENTITY;
     }
 
     if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
@@ -1984,7 +1983,7 @@ void LatDistanceAction::GetDesiredRoadPos(const SE_Vector lat_axis, const double
     {
         // How much we need to move to reach the target distance in the direction of the road
         shift_x = -std::sin(object_->pos_.GetRoadH()) * distance_error;
-        shift_y =  std::cos(object_->pos_.GetRoadH()) * distance_error;
+        shift_y = std::cos(object_->pos_.GetRoadH()) * distance_error;
     }
     else
     {
@@ -2008,7 +2007,7 @@ void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanage
 
     // double measured_distance;
     double measured_distance = pos2.GetT() - pos1.GetT();
-    distance_error = 0.0;
+    distance_error           = 0.0;
     if (!freespace_)
     {
         // How much we need to move to reach the target distance
@@ -2016,9 +2015,10 @@ void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanage
     }
     else
     {
-        double ego_width = object_->boundingbox_.dimensions_.width_;
+        double ego_width    = object_->boundingbox_.dimensions_.width_;
         double target_width = target_object_->boundingbox_.dimensions_.width_;
-        distance_error = measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0 + distance_; // Taking into account the width of both vehicles
+        distance_error =
+            measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0 + distance_;  // Taking into account the width of both vehicles
     }
 }
 
@@ -2051,8 +2051,8 @@ void LatDistanceAction::Step(double simTime, double)
         {
             double distance_error;
             GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
-            
-            SE_Vector lat_axis = {-sin(object_->pos_.GetH()), cos(object_->pos_.GetH())};
+
+            SE_Vector             lat_axis = {-sin(object_->pos_.GetH()), cos(object_->pos_.GetH())};
             roadmanager::Position internal_pos;
             GetDesiredRoadPos(lat_axis, distance_error, internal_pos);
 
@@ -2063,7 +2063,7 @@ void LatDistanceAction::Step(double simTime, double)
             }
             else
             {
-                object_->pos_.SetHeading(target_object_->pos_.GetH()); // How should we put the heading?
+                object_->pos_.SetHeading(target_object_->pos_.GetH());  // How should we put the heading?
             }
 
             object_->SetSpeed(object_->GetSpeed());
@@ -2074,7 +2074,6 @@ void LatDistanceAction::Step(double simTime, double)
                 move_state_ = MoveState::INIT;
                 OSCAction::End();
             }
-            
         }
         break;
         case (MoveState::MOVE_DYNAMIC):
@@ -2085,53 +2084,50 @@ void LatDistanceAction::Step(double simTime, double)
             GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
 
             // Cap acceleration if given
-            if (LARGE_NUMBER != dynamics_.max_acceleration_)
+            if (LARGE_NUMBER != dynamics_.max_acceleration_ && LARGE_NUMBER != dynamics_.max_deceleration_)
             {
-                acceleration_ = abs(dynamics_.max_acceleration_);
-                
-                double braking_distance = lat_vel_ * lat_vel_ / (2.0 * abs(acceleration_));
+                // Parameters
+                double LATERAL_SPRING_CONSTANT = 1.0;  // Then increase to tune speed.
+                double LATERAL_DAMPING_RATIO   = 1.0;  // Keep at 1.0 for critical damping, or slightly less (0.8-0.9) for minor overshoot.
 
-                // Maybe we can normalize the acceleration so it diminishes as we get closer to the target
-                // But we only flip sign on acc if we are on the other side of the target, so that needs to be fixed
-                acceleration_ *= SIGN(distance_error);
+                double relative_lat_vel = lat_vel_ - target_object_->pos_.GetVelLat();
 
-                if (abs(distance_error) < abs(braking_distance) && SIGN(lat_vel_) == SIGN(acceleration_))
+                double omega_n             = sqrt(LATERAL_SPRING_CONSTANT);
+                double damping_coefficient = 2 * LATERAL_DAMPING_RATIO * omega_n;
+
+                // Desired lateral acceleration
+                // Positive distance_error (too far right) -> needs positive acceleration (move left).
+                // Positive relative_lat_vel (moving left relative to target) -> needs negative acceleration (dampen).
+                double desired_accel_lat = (LATERAL_SPRING_CONSTANT * distance_error) - (damping_coefficient * relative_lat_vel);
+
+                double delta_accel = desired_accel_lat - acceleration_;
+
+                // Clamp the change in acceleration (delta_accel) by jerk limits
+                if (delta_accel > dynamics_.max_acceleration_rate_ * dt)
                 {
-                    // We are on the other side of the target, so we need to flip sign on the acceleration
-                    acceleration_ = -acceleration_;
+                    delta_accel = dynamics_.max_acceleration_rate_ * dt;
+                }
+                else if (delta_accel < -(dynamics_.max_deceleration_rate_ * dt))  // Ensure max_jerk_negative is a positive magnitude
+                {
+                    delta_accel = -(dynamics_.max_deceleration_rate_ * dt);
                 }
 
-                double acc_factor = 1.0;
-                if (abs(distance_error) < 0.1 && abs(lat_vel_) < 0.1)
-                {
-                    // We are on the other side of the target, so we need to flip sign on the acceleration
-                    acc_factor = 1.0 - 1.0 / (1.0 + (abs(distance_error)));
+                // Calculate the new acceleration after applying jerk limits
+                acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_deceleration_, dynamics_.max_acceleration_);
 
-                    if (abs(distance_error) < 0.05)
-                    {
-                        acc_factor *= 0.2;
-                    }
-                }
+                lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, std::min(dynamics_.max_speed_, object_->GetSpeed()));
 
-                double speed_after_acc = lat_vel_ + acceleration_ * acc_factor * dt;
-
-                lat_vel_ = ABS_LIMIT(speed_after_acc, std::min(dynamics_.max_speed_, object_->GetSpeed()));
-
-                if (abs(distance_error) < 0.05 && abs(lat_vel_) < 0.1)
-                {
-                    lat_vel_ *= 0.9; // Soft deceleration
-                }
-
-                d_offset = lat_vel_ * dt;
+                // Use the more accurate integration for position
+                d_offset = lat_vel_ * dt + 0.5 * acceleration_ * dt * dt;
             }
             else
             {
                 // Maybe we can normalize the acceleration so it diminishes as we get closer to the target
                 // But we only flip sign on acc if we are on the other side of the target, so that needs to be fixed
                 lat_vel_ = SIGN(distance_error) * std::min(dynamics_.max_speed_, object_->GetSpeed());
-                
-                d_offset = lat_vel_ * dt;
-                double new_error = distance_error - d_offset; 
+
+                d_offset         = lat_vel_ * dt;
+                double new_error = distance_error - d_offset;
                 if (SIGN(new_error) != SIGN(distance_error))
                 {
                     d_offset = distance_error;
@@ -2144,23 +2140,15 @@ void LatDistanceAction::Step(double simTime, double)
                 }
             }
 
-
-            std::cout << "Time: " << sim_time_ << std::endl;
-            // std::cout << "spped_after_acc: " << speed_after_acc << std::endl;
-            std::cout << "dynamics_.max_speed_: " << dynamics_.max_speed_ << std::endl;
-            std::cout << "object_->GetSpeed(): " << object_->GetSpeed() << std::endl;
-            std::cout << "Lat vel: " << lat_vel_ << std::endl;
-            std::cout << "Distance error: " << distance_error << std::endl;
-            std::cout << "Acceleration: " << acceleration_ << std::endl;
-            std::cout << "d_offset: " << d_offset << std::endl;
-            std::cout << std::endl;
             double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
             object_->pos_.SetHeading(atan2(lat_vel_, long_vel));
-            object_->pos_.SetLanePos(object_->pos_.GetTrackId(), object_->pos_.GetLaneId(), object_->pos_.GetS(), object_->pos_.GetOffset() + d_offset);
+            object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
+                                     object_->pos_.GetLaneId(),
+                                     object_->pos_.GetS(),
+                                     object_->pos_.GetOffset() + d_offset);
             object_->pos_.MoveAlongS(long_vel * dt);
             object_->SetSpeed(object_->GetSpeed());
             object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
-
         }
     }
 }

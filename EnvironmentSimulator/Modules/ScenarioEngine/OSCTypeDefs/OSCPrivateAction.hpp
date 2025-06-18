@@ -522,7 +522,7 @@ namespace scenarioengine
     private:
         double acceleration_;
     };
-    
+
     class LatDistanceAction : public OSCPrivateAction
     {
     public:
@@ -540,7 +540,7 @@ namespace scenarioengine
 
         typedef enum
         {
-            NONE, // Needed?
+            NONE,  // Needed?
             LEFT_TO_REFERENCED_ENTITY,
             RIGHT_TO_REFERENCED_ENTITY,
             ANY
@@ -564,7 +564,9 @@ namespace scenarioengine
               freespace_(0),
               sim_time_(0),
               displacement_(DisplacementType::NONE),
-              cs_(roadmanager::CoordinateSystem::CS_ENTITY)
+              cs_(roadmanager::CoordinateSystem::CS_ENTITY),
+              lat_vel_(0.0),
+              acceleration_(0.0)
         {
         }
 
@@ -577,9 +579,12 @@ namespace scenarioengine
             distance_      = action.distance_;
             dist_type_     = action.dist_type_;
             freespace_     = action.freespace_;
+            continuous_    = action.continuous_;
             sim_time_      = action.sim_time_;
             displacement_  = action.displacement_;
             cs_            = action.cs_;
+            lat_vel_       = action.lat_vel_;
+            acceleration_  = action.acceleration_;
         }
 
         OSCPrivateAction* Copy()
@@ -607,10 +612,8 @@ namespace scenarioengine
 
     private:
         MoveState move_state_;
-        double lat_vel_ = 0.0;
-        double acceleration_ = 0.0;
-        bool braking_ = false;
-        double braking_acc_ = 0.0;
+        double    lat_vel_      = 0.0;
+        double    acceleration_ = 0.0;
     };
 
     class LatLaneChangeAction : public OSCPrivateAction
