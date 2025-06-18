@@ -77,7 +77,8 @@ target_include_directories(
            ${EXTERNALS_OSI_INCLUDES}
            ${EXTERNALS_SUMO_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
-           ${EXTERNALS_EXPR_PATH})
+           ${EXTERNALS_EXPR_PATH}
+           ${EXTERNALS_FMT_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
