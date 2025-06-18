@@ -268,10 +268,10 @@ set(FMT_LIBRARIES
     fmt)
 set(CMAKE_POSITION_INDEPENDENT_CODE
     ON)
+set(FMT_SHARED
+    OFF)
 add_subdirectory(externals/fmt)
-target_compile_options(
-    fmt
-    PRIVATE -fPIC)
+# target_compile_options( fmt PRIVATE -fPIC)
 # ############################### OTHERS #############################################################################
 
 # Add variables to global scope, e.g. when esmini is used as submodule
