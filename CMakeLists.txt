@@ -270,6 +270,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE
     ON)
 set(FMT_SHARED
     OFF)
+set(FMT_LIBRARIES
+    ${FMT_LIBRARIES}
+    "-lstdc++fs")
+
 add_subdirectory(externals/fmt)
 # target_compile_options( fmt PRIVATE -fPIC)
 # ############################### OTHERS #############################################################################
