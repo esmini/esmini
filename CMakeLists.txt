@@ -266,7 +266,8 @@ set(YAML_LIBRARIES
     yaml)
 set(FMT_LIBRARIES
     fmt)
-
+set(CMAKE_POSITION_INDEPENDENT_CODE
+    ON)
 add_subdirectory(externals/fmt)
 
 # ############################### OTHERS #############################################################################
