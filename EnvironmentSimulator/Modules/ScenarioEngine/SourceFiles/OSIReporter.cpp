@@ -695,6 +695,16 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(object->GetY());
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(object->GetZ() + object->GetZOffset() + object->GetHeight() / 2.0);
 
+    // Set OSI Stationary Object Boundingbox
+    obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(object->GetHeight());
+    obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_width(object->GetWidth());
+    obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(object->GetLength());
+
+    // Set OSI Stationary Object Orientation
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(object->GetRoll()));
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(object->GetPitch()));
+    obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(object->GetH() + object->GetHOffset()));
+
     if (object->GetNumberOfOutlines() > 0)
     {
         for (unsigned int k = 0; k < object->GetNumberOfOutlines(); k++)
@@ -712,22 +722,10 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
                     vec->set_y(y);
                     height += outline->corner_[l]->GetHeight() / static_cast<double>(outline->corner_.size());
                 }
+                // replace any previous height value with the average height of the outline corners
                 obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(height);
             }
         }
-    }
-    else
-    {
-        // Set OSI Stationary Object Boundingbox
-        obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(object->GetHeight());
-        obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_width(object->GetWidth());
-        obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_length(object->GetLength());
-        // only bounding box
-
-        // Set OSI Stationary Object Orientation
-        obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(object->GetRoll()));
-        obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(object->GetPitch()));
-        obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(object->GetH() + object->GetHOffset()));
     }
 
     return 0;

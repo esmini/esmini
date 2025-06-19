@@ -892,7 +892,7 @@ TEST(OSI, TestTunnels)
     ASSERT_EQ(retval, 0);
 
     ScenarioEngine* se = player->scenarioEngine;
-    ASSERT_EQ(se->entities_.object_.size(), 4);
+    ASSERT_EQ(se->entities_.object_.size(), 5);
 
     const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
     ASSERT_NE(osi_gt_ptr, nullptr);

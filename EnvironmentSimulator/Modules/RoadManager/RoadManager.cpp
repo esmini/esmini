@@ -7642,7 +7642,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                         }
                                     }
 
-                                    // Set all collected osi points for the current lane rpadmarkline
+                                    // Set all collected osi points for the current lane roadmarkline
                                     lane_roadMarkTypeLine->osi_points_.Set(osi_point);
 
                                     // Clear osi collectors for roadmarks for next iteration

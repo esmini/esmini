@@ -4,8 +4,8 @@
         <link/>
         <planView>
             <geometry s="0" x="0" y="0" hdg="0" length="80">
-                <line/>
-                <!-- <arc curvature="0.02"/> -->
+                <!-- <line/> -->
+                <arc curvature="0.02"/>
             </geometry>
         </planView>
         <lateralProfile/>

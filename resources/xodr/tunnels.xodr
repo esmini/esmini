@@ -192,8 +192,6 @@
                <lane id="-2" type="driving" level="false">
                   <link/>
                   <width a="0.0" b="0.0" c="0.0" d="0.0" sOffset="0"/>
-                  <!-- <width a="0.0" b="0" c="0.02625" d="-0.000875" sOffset="150"/> -->
-                  <!-- <width a="3.5" b="0" c="0.0" d="0.0" sOffset="170"/> -->
                   <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
                </lane>
                <lane id="-3" type="border" level="false">
