@@ -397,6 +397,10 @@ double GetAngleDifference(double angle1, double angle2);
 */
 bool IsAngleForward(double teta);
 
+double GetCrossProduct3DMagnitude(double x1, double y1, double z1, double x2, double y2, double z2);
+
+int GetCrossProduct3D(double x1, double y1, double z1, double x2, double y2, double z2, double& x, double& y, double& z);
+
 /**
         Retrieve the cross product of two vectors where z=0
 */
@@ -411,6 +415,8 @@ double GetDotProduct2D(double x1, double y1, double x2, double y2);
         Retrieve the angle between two vectors of any length
 */
 double GetAngleBetweenVectors(double x1, double y1, double x2, double y2);
+
+double GetDotProduct3D(double x1, double y1, double z1, double x2, double y2, double z2);
 
 /**
         Retrieve the intersection between two line segments/vectors a and b
@@ -606,6 +612,8 @@ void Local2GlobalCoordinates(double& xTargetGlobal,
                              double  thetaGlobal,
                              double  targetXforHost,
                              double  targetYforHost);
+
+double GetAngleBetweenVectors3D(double x1, double y1, double z1, double x2, double y2, double z2);
 
 /**
         Normalize a 2D vector

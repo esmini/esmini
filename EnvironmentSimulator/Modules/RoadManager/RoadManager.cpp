@@ -6278,6 +6278,8 @@ Outline* roadmanager::OpenDrive::CreateContinuousRepeatOutline(Road*  r,
     }
     else
     {
+        outline->contourType_ = Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP;
+
         const double max_segment_length = 10.0;
 
         // find smallest value of length and rlength, but between SMALL_NUMBER and max_segment_length
@@ -7709,10 +7711,12 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
                     if (step > 1)
                     {
                         // after the two first points are established, start checking whether to replace previous one based on error threshold
+                        // check error in 3D, i.e. consider both XY plane and elevation curvature
                         tpoint_struct p0 = tpoint[i][pivot];
                         tpoint_struct p1 = tpoint[i][pivot + 1];
 
-                        double angle_error = GetAngleBetweenVectors(p1.x - p0.x, p1.y - p0.y, pos.GetX() - p0.x, pos.GetY() - p0.y);
+                        double angle_error =
+                            GetAngleBetweenVectors3D(p1.x - p0.x, p1.y - p0.y, p1.z - p0.z, pos.GetX() - p0.x, pos.GetY() - p0.y, pos.GetZ() - p0.z);
 
                         if (ds * tan(angle_error) < 0.2)  // error threshold = 0.2 meter
                         {
