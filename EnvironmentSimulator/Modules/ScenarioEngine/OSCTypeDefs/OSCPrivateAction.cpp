@@ -2078,7 +2078,6 @@ void LatDistanceAction::Step(double simTime, double)
         break;
         case (MoveState::MOVE_DYNAMIC):
         {
-            double d_offset;
             // Find desired position
             double distance_error;
             GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
@@ -2087,18 +2086,15 @@ void LatDistanceAction::Step(double simTime, double)
             if (LARGE_NUMBER != dynamics_.max_acceleration_ && LARGE_NUMBER != dynamics_.max_deceleration_)
             {
                 // Parameters
-                double LATERAL_SPRING_CONSTANT = 1.0;  // Then increase to tune speed.
-                double LATERAL_DAMPING_RATIO   = 1.0;  // Keep at 1.0 for critical damping, or slightly less (0.8-0.9) for minor overshoot.
+                double spring_constant_adjusted = 0.4 * dynamics_.max_acceleration_;  // Then increase to tune speed.
 
-                double relative_lat_vel = lat_vel_ - target_object_->pos_.GetVelLat();
-
-                double omega_n             = sqrt(LATERAL_SPRING_CONSTANT);
-                double damping_coefficient = 2 * LATERAL_DAMPING_RATIO * omega_n;
+                double speed_diff_lat      = lat_vel_ - target_object_->pos_.GetVelLat();
+                double damping_coefficient = 2 * sqrt(spring_constant_adjusted);  // * LATERAL_DAMPING_RATIO (1.0 for critical damping)
 
                 // Desired lateral acceleration
                 // Positive distance_error (too far right) -> needs positive acceleration (move left).
                 // Positive relative_lat_vel (moving left relative to target) -> needs negative acceleration (dampen).
-                double desired_accel_lat = (LATERAL_SPRING_CONSTANT * distance_error) - (damping_coefficient * relative_lat_vel);
+                double desired_accel_lat = distance_error * spring_constant_adjusted - speed_diff_lat * damping_coefficient;
 
                 double delta_accel = desired_accel_lat - acceleration_;
 
@@ -2116,9 +2112,6 @@ void LatDistanceAction::Step(double simTime, double)
                 acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_deceleration_, dynamics_.max_acceleration_);
 
                 lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, std::min(dynamics_.max_speed_, object_->GetSpeed()));
-
-                // Use the more accurate integration for position
-                d_offset = lat_vel_ * dt + 0.5 * acceleration_ * dt * dt;
             }
             else
             {
@@ -2126,7 +2119,7 @@ void LatDistanceAction::Step(double simTime, double)
                 // But we only flip sign on acc if we are on the other side of the target, so that needs to be fixed
                 lat_vel_ = SIGN(distance_error) * std::min(dynamics_.max_speed_, object_->GetSpeed());
 
-                d_offset         = lat_vel_ * dt;
+                double d_offset  = lat_vel_ * dt;
                 double new_error = distance_error - d_offset;
                 if (SIGN(new_error) != SIGN(distance_error))
                 {
@@ -2141,14 +2134,15 @@ void LatDistanceAction::Step(double simTime, double)
             }
 
             double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
-            object_->pos_.SetHeading(atan2(lat_vel_, long_vel));
+            object_->pos_.SetHeading(object_->pos_.GetRoadH() + atan2(lat_vel_, long_vel));
             object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
                                      object_->pos_.GetLaneId(),
-                                     object_->pos_.GetS(),
-                                     object_->pos_.GetOffset() + d_offset);
-            object_->pos_.MoveAlongS(long_vel * dt);
+                                     object_->pos_.GetS() + long_vel * dt,
+                                     object_->pos_.GetOffset() + lat_vel_ * dt);
+            // object_->pos_.MoveAlongS(long_vel * dt);
             object_->SetSpeed(object_->GetSpeed());
-            object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+            object_->SetDirtyBits(Object::DirtyBit::LATERAL |
+                                  Object::DirtyBit::LONGITUDINAL);  // | Object::DirtyBit::SPEED || Object::DirtyBit::ALIGN_MODE_H_SET);
         }
     }
 }
