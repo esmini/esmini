@@ -66,6 +66,7 @@ macro(set_special_build_flags)
             # (unreferenced formal parameter) to allow function headers with unreferenced parameters for increased readability
 
             add_compile_options(
+                /utf-8
                 /permissive-
                 /W4
                 /wd4127
