@@ -1677,6 +1677,12 @@ int OSIReporter::UpdateOSILaneBoundary()
                                     }
                                 }
 
+                                if (laneroadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN ||
+                                    laneroadmark->GetType() == roadmanager::LaneRoadMark::RoadMarkType::BROKEN_BROKEN)
+                                {
+                                    broken = true;
+                                }
+
                                 osi3::LaneBoundary *osi_laneboundary = 0;
 
                                 idx_t line_id = laneroadmarktypeline->GetGlobalId();
@@ -1697,14 +1703,25 @@ int OSIReporter::UpdateOSILaneBoundary()
                                     osi_laneboundary->mutable_id()->set_value(line_id);
 
                                     unsigned int n_osi_points = laneroadmarktypeline->GetOSIPoints()->GetNumOfOSIPoints();
+                                    bool         startpoint   = true;
                                     for (unsigned int h = 0; h < n_osi_points; h++)
                                     {
+                                        bool endpoint = laneroadmarktypeline->GetOSIPoints()->GetPoint(h).endpoint;
+
+                                        if (broken && !startpoint && !endpoint)
+                                        {
+                                            // skip intermediate points
+                                            continue;
+                                        }
+
                                         osi3::LaneBoundary_BoundaryPoint *boundary_point = osi_laneboundary->add_boundary_line();
                                         boundary_point->mutable_position()->set_x(laneroadmarktypeline->GetOSIPoints()->GetXfromIdx(h));
                                         boundary_point->mutable_position()->set_y(laneroadmarktypeline->GetOSIPoints()->GetYfromIdx(h));
                                         boundary_point->mutable_position()->set_z(laneroadmarktypeline->GetOSIPoints()->GetZfromIdx(h));
                                         boundary_point->set_width(laneroadmarktypeline->GetWidth());
                                         boundary_point->set_height(laneroadmark->GetHeight());
+
+                                        startpoint = endpoint ? true : false;
                                     }
 
                                     // update classification type
