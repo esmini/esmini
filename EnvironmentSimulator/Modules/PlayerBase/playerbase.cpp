@@ -30,8 +30,6 @@
 #include "viewer.hpp"
 #endif
 
-#include "fmt/format.h"
-
 using namespace scenarioengine;
 
 #define GHOST_HEADSTART 2.5

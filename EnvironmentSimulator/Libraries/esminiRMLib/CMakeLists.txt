@@ -44,7 +44,7 @@ target_link_libraries(
     ${TARGET}
     PRIVATE RoadManager
     PRIVATE CommonMini
-    PRIVATE ${FMT_LIBRARIES}
+    # PRIVATE ${FMT_LIBRARIES}
     PRIVATE ${TIME_LIB})
 
 disable_static_analysis(${TARGET})

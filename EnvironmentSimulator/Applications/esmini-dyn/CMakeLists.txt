@@ -50,8 +50,8 @@ target_link_libraries(
     ${TARGET}
     PRIVATE esminiLib
     PRIVATE CommonMini
-    PRIVATE ${TIME_LIB}
-    PRIVATE ${FMT_LIBRARIES})
+    PRIVATE ${TIME_LIB})
+# PRIVATE ${FMT_LIBRARIES})
 
 if(USE_OSI)
     target_link_libraries(

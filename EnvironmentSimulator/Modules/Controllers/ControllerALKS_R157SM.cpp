@@ -16,7 +16,6 @@
 #include "ScenarioEngine.hpp"
 #include "ScenarioGateway.hpp"
 #include "logger.hpp"
-#include "fmt/format.h"
 
 using namespace scenarioengine;
 

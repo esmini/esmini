@@ -71,7 +71,7 @@ target_link_libraries(
             ${OSI_LIBRARIES}
             ${SUMO_LIBRARIES}
             ${IMPLOT_LIBRARIES}
-            ${FMT_LIBRARIES}
+            # ${FMT_LIBRARIES}
             ${TIME_LIB}
             ${SOCK_LIB})
 
