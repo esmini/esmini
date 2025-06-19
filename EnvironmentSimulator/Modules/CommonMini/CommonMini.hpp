@@ -1119,6 +1119,9 @@ public:
 
 class DampedSpring
 {
+    /*
+        https://en.wikipedia.org/wiki/Mass-spring-damper_model
+    */
 public:
     // Custom damping factor, set 0 for no damping
     DampedSpring() : x_(0), x0_(0), t_(0), d_(0), v_(0), a_(0), critical_(false){};
