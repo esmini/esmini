@@ -71,7 +71,8 @@ using namespace std;
 
 /* String Variables */
 #define FMI_STRING_XOSC_PATH_IDX 0
-#define FMI_STRING_LAST_IDX FMI_STRING_XOSC_PATH_IDX
+#define FMI_STRING_ESMINI_ARGS_IDX 1
+#define FMI_STRING_LAST_IDX FMI_STRING_ESMINI_ARGS_IDX
 #define FMI_STRING_VARS (FMI_STRING_LAST_IDX+1)
 
 #include <iostream>
@@ -214,6 +215,8 @@ protected:
     void set_fmi_use_viewer(fmi2Boolean value) { boolean_vars[FMI_BOOLEAN_USE_VIEWER_IDX]=value; }
     string fmi_xosc_path() { return string_vars[FMI_STRING_XOSC_PATH_IDX]; }
     void set_fmi_xosc_path(string value) { string_vars[FMI_STRING_XOSC_PATH_IDX]=value; }
+    string fmi_esmini_args() { return string_vars[FMI_STRING_ESMINI_ARGS_IDX]; }
+    void set_fmi_esmini_args(string value) { string_vars[FMI_STRING_ESMINI_ARGS_IDX]=value; }
 
     /* Protocol Buffer Accessors */
     bool get_fmi_traffic_update_in(osi3::TrafficUpdate& data);
