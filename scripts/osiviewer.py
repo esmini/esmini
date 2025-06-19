@@ -619,9 +619,10 @@ class View:
         plot = self.ax.add_collection(collection)
         self.static_plots_by_type["CenterLine"] = [plot]
 
-        no_line_type = False
-        unknown_line_type = False
+
         for index, l in enumerate(gt.lane_boundary):
+            no_line_type = False
+            unknown_line_type = False
             ids = []
             indices = []
             i=0
@@ -636,6 +637,8 @@ class View:
                 if type == 2:
                     color = '#DDDDDD'  # light gray for NO_LINE
                     no_line_type = True
+                elif type == 13:
+                    color = '#FF5555'  # red for STRUCTURE
                 else:
                     color = '#FF9999'  # light red as default for various unsupported line types
                     unknown_line_type = True
