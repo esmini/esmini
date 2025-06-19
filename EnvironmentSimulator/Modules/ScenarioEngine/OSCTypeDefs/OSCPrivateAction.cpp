@@ -2043,6 +2043,15 @@ void LatDistanceAction::Step(double simTime, double)
             }
             else
             {
+                if (LARGE_NUMBER != dynamics_.max_acceleration_ || LARGE_NUMBER != dynamics_.max_deceleration_)
+                {
+                    if (LARGE_NUMBER == dynamics_.max_acceleration_)
+                    {
+                        LOG_WARN("LatDistanceAction: maxAcceleration is not set, setting it to maxDeceleration");
+                        dynamics_.max_acceleration_ = dynamics_.max_deceleration_;
+                    }
+                    spring_.SetTension(0.4 * dynamics_.max_acceleration_);  // Adjust spring tension based on max acceleration
+                }
                 move_state_ = MoveState::MOVE_DYNAMIC;
             }
         }
@@ -2083,38 +2092,26 @@ void LatDistanceAction::Step(double simTime, double)
             GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
 
             // Cap acceleration if given
-            if (LARGE_NUMBER != dynamics_.max_acceleration_ && LARGE_NUMBER != dynamics_.max_deceleration_)
+            if (LARGE_NUMBER != dynamics_.max_acceleration_)
             {
                 // Parameters
                 // For the spring values x and x0, we set the current distance error and target value to 0.0 since we have already calculated the
                 // distance error We negate the distance error to ensure that the spring force acts in the correct direction
                 spring_.SetValue(-distance_error);
-                spring_.SetTargetValue(0.0);
-                spring_.SetTension(0.4 * dynamics_.max_acceleration_);      // Adjust spring tension based on max acceleration
                 spring_.SetV(lat_vel_ - target_object_->pos_.GetVelLat());  // Speed difference in lateral direction
                 spring_.Update(dt);
 
-                double delta_accel = spring_.GetA() - acceleration_;  // Calculate change in acceleration
-
                 // Clamp the change in acceleration (delta_accel) by jerk limits
-                if (delta_accel > dynamics_.max_acceleration_rate_ * dt)
-                {
-                    delta_accel = dynamics_.max_acceleration_rate_ * dt;
-                }
-                else if (delta_accel < -(dynamics_.max_deceleration_rate_ * dt))
-                {
-                    delta_accel = -(dynamics_.max_deceleration_rate_ * dt);
-                }
+                double delta_accel =
+                    CLAMP(spring_.GetA() - acceleration_, -(dynamics_.max_acceleration_rate_ * dt), dynamics_.max_acceleration_rate_ * dt);
 
                 // Calculate the new acceleration after applying jerk limits
-                acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_deceleration_, dynamics_.max_acceleration_);
+                acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_acceleration_, dynamics_.max_acceleration_);
 
                 lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, std::min(dynamics_.max_speed_, object_->GetSpeed()));
             }
             else
             {
-                // Maybe we can normalize the acceleration so it diminishes as we get closer to the target
-                // But we only flip sign on acc if we are on the other side of the target, so that needs to be fixed
                 lat_vel_ = SIGN(distance_error) * std::min(dynamics_.max_speed_, object_->GetSpeed());
 
                 double d_offset  = lat_vel_ * dt;
