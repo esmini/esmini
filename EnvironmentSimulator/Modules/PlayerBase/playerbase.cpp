@@ -1618,7 +1618,7 @@ int ScenarioPlayer::Init()
         {
             SE_Env::Inst().AddPath(DirNameOf(arg_str));  // add scenario directory to list pf paths
             scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
-            Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
+            txtLogger.SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
         }
         else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
         {
@@ -1630,7 +1630,7 @@ int ScenarioPlayer::Init()
                 return -1;
             }
             scenarioEngine = new ScenarioEngine(doc, disable_controllers_);
-            Logger::Inst().SetTimePtr(scenarioEngine->GetSimulationTimePtr());
+            txtLogger.SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
         }
         else
         {
