@@ -566,7 +566,8 @@ namespace scenarioengine
               displacement_(DisplacementType::NONE),
               cs_(roadmanager::CoordinateSystem::CS_ENTITY),
               lat_vel_(0.0),
-              acceleration_(0.0)
+              acceleration_(0.0),
+              spring_(0.0, 0.0, 0.0)  // Initialize to use critical damping
         {
         }
 
@@ -585,6 +586,7 @@ namespace scenarioengine
             cs_            = action.cs_;
             lat_vel_       = action.lat_vel_;
             acceleration_  = action.acceleration_;
+            spring_        = action.spring_;
         }
 
         OSCPrivateAction* Copy()
@@ -611,9 +613,10 @@ namespace scenarioengine
         void ReplaceObjectRefs(Object* obj1, Object* obj2);
 
     private:
-        MoveState move_state_;
-        double    lat_vel_      = 0.0;
-        double    acceleration_ = 0.0;
+        MoveState    move_state_;
+        double       lat_vel_;
+        double       acceleration_;
+        DampedSpring spring_;
     };
 
     class LatLaneChangeAction : public OSCPrivateAction
