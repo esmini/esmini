@@ -7800,7 +7800,7 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
 
             if (tunnel->generate_3D_model && rm_obj[0] != nullptr && rm_obj[1] != nullptr)
             {
-                // and the roof wich covers the outer points of both walls
+                // and the roof which covers the outer points of both walls
                 Outline* outline = new Outline(tunnel->id_, Outline::FillType::FILL_TYPE_UNDEFINED, true);
                 outline->SetCountourType(Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP);
                 outline->roof_ = true;    // top face on tunnel roof
