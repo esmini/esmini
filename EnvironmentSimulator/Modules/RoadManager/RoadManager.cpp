@@ -7672,6 +7672,11 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
 {
     for (auto road : road_)
     {
+        if (road->GetNumberOfGeometries() == 0)
+        {
+            continue;
+        }
+
         for (auto tunnel : road->GetTunnels())
         {
             struct tpoint_struct
@@ -7699,12 +7704,11 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
 
                 // points needs to be entered counter clockwise, starting with points of the right wall side
                 // right side of right wall will offset by wall thickness from inner side
-                double t_offset = (side == -1) ? -TUNNEL_WALL_THICKNESS : 0.0;
 
                 for (unsigned int step = 0; step < steps + 1; step++)  // add one for endpoints of last segment
                 {
                     keep[i][step] = true;  // preliminary
-                    double t      = side * road->GetWidth(tunnel->s_ + step * ds, side, Lane::LaneType::LANE_TYPE_TUNNEL) + t_offset;
+                    double t      = side * road->GetWidth(tunnel->s_ + step * ds, side, Lane::LaneType::LANE_TYPE_TUNNEL);
                     pos.SetTrackPos(road->GetId(), tunnel->s_ + step * ds, t);
                     tpoint[i][step] = {pos.GetS(), pos.GetT(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetHRoad()};
 
@@ -7742,47 +7746,103 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
                 }
             }
 
-            // pick points for OSI and tessellation
+            // pick points for OSI
             for (unsigned int i = 0; i < 2; i++)
             {
-                Outline* outline = nullptr;
-                if (tunnel->generate_3D_model)
-                {
-                    outline = new Outline(tunnel->id_, Outline::FillType::FILL_TYPE_UNDEFINED, true);
-                    outline->SetCountourType(Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP);
-                    outline->roof_ = false;  // no top face on walls
-                }
-
                 for (unsigned int step = 0; step < steps + 1; step++)
                 {
                     if (keep[i][step])
                     {
                         tpoint_struct& p = tpoint[i][step];
-
                         tunnel->boundary_[i].osi_points_.GetPoints().push_back({p.s, p.x, p.y, p.z, p.h, false});
+                    }
+                }
+            }
 
-                        if (outline != nullptr)
+            if (tunnel->generate_3D_model)
+            {
+                // pick points for tessellation
+                for (unsigned int i = 0; i < 2; i++)
+                {
+                    Outline* outline = new Outline(tunnel->id_, Outline::FillType::FILL_TYPE_UNDEFINED, true);
+                    if (outline != nullptr)
+                    {
+                        outline->SetCountourType(Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP);
+                        outline->roof_ = false;  // no top face on walls
+                        int side       = (i == 0) ? -1 : 1;
+
+                        for (unsigned int j = 0; j < 2; j++)  // add two points for each step, one for each side
                         {
-                            OutlineCorner* corner =
-                                static_cast<OutlineCorner*>(new OutlineCornerRoad(road->GetId(), p.s, p.t, 0.0, TUNNEL_HEIGHT, 0.0, 0.0, 0.0));
-                            outline->AddCorner(corner);
+                            for (unsigned int step = 0; step < steps + 1; step++)
+                            {
+                                int          wallside = (j == 0) ? -1 : 1;  // right side is -1, left side is +1
+                                unsigned int index    = (wallside == -1) ? step : (steps - step);
+
+                                if (keep[i][index])
+                                {
+                                    double t_offset = (side * wallside < 0) ? 0.0 : wallside * TUNNEL_WALL_THICKNESS;  // offset for wall side
+
+                                    tpoint_struct& p = tpoint[i][index];
+
+                                    OutlineCorner* corner = static_cast<OutlineCorner*>(
+                                        new OutlineCornerRoad(road->GetId(), p.s, p.t + t_offset, 0.0, TUNNEL_HEIGHT, 0.0, 0.0, 0.0));
+                                    outline->AddCorner(corner);
+                                }
+                            }
                         }
+
+                        rm_obj[i] = new RMObject(tunnel->s_,
+                                                 0.0,
+                                                 tunnel->id_,
+                                                 tunnel->name_,
+                                                 RoadObject::Orientation(),
+                                                 0.0,
+                                                 RMObject::ObjectType::BARRIER,
+                                                 tunnel->length_,
+                                                 TUNNEL_HEIGHT,
+                                                 tunnel->width_,
+                                                 0.0,
+                                                 0.0,
+                                                 0.0,
+                                                 road->GetGeometry(0)->GetX(),
+                                                 road->GetGeometry(0)->GetY(),
+                                                 0.0,
+                                                 0.0);
+                        rm_obj[i]->AddOutline(outline);
+                        road->AddObject(rm_obj[i]);
                     }
                 }
 
-                if (outline != nullptr)
+                if (rm_obj[0] != nullptr && rm_obj[1] != nullptr)
                 {
-                    // add remaining outline points to complete the outline
-                    // outer points for left side and inner points for right side
-                    for (unsigned int j = static_cast<unsigned int>(outline->corner_.size()); j > 0; j--)
+                    // and the roof which covers the outer points of both walls
+                    Outline* outline = new Outline(tunnel->id_, Outline::FillType::FILL_TYPE_UNDEFINED, true);
+                    outline->SetCountourType(Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP);
+                    outline->roof_ = true;  // top face on tunnel roof
+
+                    // starting with points along right side along tunnel, coming back left side
+                    for (unsigned int i = 0; i < 2; i++)
                     {
-                        OutlineCornerRoad* tmp    = static_cast<OutlineCornerRoad*>(outline->corner_[j - 1]);
-                        OutlineCorner*     corner = static_cast<OutlineCorner*>(
-                            new OutlineCornerRoad(tmp->roadId_, tmp->s_, tmp->t_ + TUNNEL_WALL_THICKNESS, tmp->dz_, tmp->height_, 0.0, 0.0, 0.0));
-                        outline->AddCorner(corner);
+                        int side = (i == 0) ? -1 : 1;
+                        for (unsigned int j = 0; rm_obj[i]->GetOutline(0) && j < rm_obj[i]->GetOutline(0)->corner_.size() / 2; j++)
+                        {
+                            unsigned int index =
+                                (side == -1 ? j : (static_cast<unsigned int>(rm_obj[i]->GetOutline(0)->corner_.size()) / 2 - (j + 1)));
+                            OutlineCornerRoad* tmp = static_cast<OutlineCornerRoad*>(rm_obj[i]->GetOutline(0)->corner_[index]);
+                            OutlineCorner*     corner =
+                                static_cast<OutlineCorner*>(new OutlineCornerRoad(tmp->roadId_,
+                                                                                  tmp->s_,
+                                                                                  tmp->t_ + (side == 1 ? TUNNEL_WALL_THICKNESS : 0.0),
+                                                                                  TUNNEL_HEIGHT,
+                                                                                  TUNNEL_ROOF_THICKNESS,
+                                                                                  0.0,
+                                                                                  0.0,
+                                                                                  0.0));
+                            outline->AddCorner(corner);
+                        }
                     }
 
-                    rm_obj[i] = new RMObject(tunnel->s_,
+                    rm_obj[2] = new RMObject(tunnel->s_,
                                              0.0,
                                              tunnel->id_,
                                              tunnel->name_,
@@ -7795,67 +7855,17 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
                                              0.0,
                                              0.0,
                                              0.0,
-                                             0.0,
-                                             0.0,
+                                             road->GetGeometry(0)->GetX(),
+                                             road->GetGeometry(0)->GetY(),
                                              0.0,
                                              0.0);
-                    rm_obj[i]->AddOutline(outline);
-                    road->AddObject(rm_obj[i]);
-                }
-            }
+                    rm_obj[2]->AddOutline(outline);
+                    road->AddObject(rm_obj[2]);
 
-            if (tunnel->generate_3D_model && rm_obj[0] != nullptr && rm_obj[1] != nullptr)
-            {
-                // and the roof which covers the outer points of both walls
-                Outline* outline = new Outline(tunnel->id_, Outline::FillType::FILL_TYPE_UNDEFINED, true);
-                outline->SetCountourType(Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP);
-                outline->roof_ = true;  // top face on tunnel roof
-
-                // starting with points along right side along tunnel, coming back left side
-                for (unsigned int i = 0; i < 2; i++)
-                {
-                    int side = (i == 0) ? -1 : 1;
-                    for (unsigned int j = 0; rm_obj[i]->GetOutline(0) && j < rm_obj[i]->GetOutline(0)->corner_.size() / 2; j++)
+                    for (auto o : rm_obj)
                     {
-                        // unsigned int       index = (side == 1 ? j : (static_cast<unsigned int>(rm_obj[i]->GetOutline(0)->corner_.size()) / 2 - (j +
-                        // 1)));
-                        unsigned int index = (side == -1 ? j : (static_cast<unsigned int>(rm_obj[i]->GetOutline(0)->corner_.size()) / 2 - (j + 1)));
-                        OutlineCornerRoad* tmp    = static_cast<OutlineCornerRoad*>(rm_obj[i]->GetOutline(0)->corner_[index]);
-                        OutlineCorner*     corner = static_cast<OutlineCorner*>(new OutlineCornerRoad(tmp->roadId_,
-                                                                                                  tmp->s_,
-                                                                                                  tmp->t_ + (side == 1 ? TUNNEL_WALL_THICKNESS : 0.0),
-                                                                                                  TUNNEL_HEIGHT,
-                                                                                                  TUNNEL_ROOF_THICKNESS,
-                                                                                                  0.0,
-                                                                                                  0.0,
-                                                                                                  0.0));
-                        outline->AddCorner(corner);
+                        o->GetColor()[3] = static_cast<float>(1.0 - tunnel->transparency_);  // set semitransparent
                     }
-                }
-
-                rm_obj[2] = new RMObject(tunnel->s_,
-                                         0.0,
-                                         tunnel->id_,
-                                         tunnel->name_,
-                                         RoadObject::Orientation(),
-                                         0.0,
-                                         RMObject::ObjectType::BARRIER,
-                                         tunnel->length_,
-                                         TUNNEL_HEIGHT,
-                                         tunnel->width_,
-                                         0.0,
-                                         0.0,
-                                         0.0,
-                                         0.0,
-                                         0.0,
-                                         0.0,
-                                         0.0);
-                rm_obj[2]->AddOutline(outline);
-                road->AddObject(rm_obj[2]);
-
-                for (auto o : rm_obj)
-                {
-                    o->GetColor()[3] = static_cast<float>(1.0 - tunnel->transparency_);  // set semitransparent
                 }
             }
         }
