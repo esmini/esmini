@@ -2742,14 +2742,13 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
         {
             // points are starting at right side
             double                      x, y, z;
-            //unsigned                    index  = ((i % 2) == 0) ? i / 2 : (outline->corner_.size() - (i / 2 + 1));
-            unsigned                    index  = ((i % 2) == 0) ? i / 2 : outline->corner_.size() - 1 - (i / 2);
+            unsigned                    index  = ((i % 2) == 0) ? outline->corner_.size() - 1 - (i / 2) : i / 2;
             roadmanager::OutlineCorner* corner = outline->corner_[index];
             corner->GetPos(x, y, z);
 
             (*vertices_top)[i].set(static_cast<float>(x - origin_[0]),
-                                    static_cast<float>(y - origin_[1]),
-                                    static_cast<float>(z + corner->GetHeight()));
+                                   static_cast<float>(y - origin_[1]),
+                                   static_cast<float>(z + corner->GetHeight()));
             (*vertices_bottom)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
         }
     }

@@ -3953,7 +3953,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             for (pugi::xml_node roadMark = lane_node->child("roadMark"); roadMark; roadMark = roadMark.next_sibling("roadMark"))
                             {
                                 // s_offset
-                                double s_offset      = atof(roadMark.attribute("sOffset").value());
+                                double s_offset = atof(roadMark.attribute("sOffset").value());
                                 if (s_offset > r->GetLength() - SMALL_NUMBER)
                                 {
                                     LOG_ERROR("Roadmark s value {:.2f} beyond road length {:.2f}, ignoring it", s_offset, r->GetLength());
@@ -4607,20 +4607,20 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 for (pugi::xml_node repeat_node = object.child("repeat"); repeat_node; repeat_node = repeat_node.next_sibling("repeat"))
                 {
                     std::string rattr;
-                    double      rs            = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stod(rattr);
+                    double      rs = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stod(rattr);
                     if (rs > r->GetLength() - SMALL_NUMBER)
                     {
                         LOG_ERROR("Repeat s value {:.2f} beyond road length {:.2f}, ignoring", rs, r->GetLength());
                         continue;
                     }
-                    double      rlength       = (rattr = ReadAttribute(repeat_node, "length", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rdistance     = (rattr = ReadAttribute(repeat_node, "distance", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rtStart       = (rattr = ReadAttribute(repeat_node, "tStart", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rtEnd         = (rattr = ReadAttribute(repeat_node, "tEnd", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rheightStart  = (rattr = ReadAttribute(repeat_node, "heightStart", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rheightEnd    = (rattr = ReadAttribute(repeat_node, "heightEnd", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rzOffsetStart = (rattr = ReadAttribute(repeat_node, "zOffsetStart", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rzOffsetEnd   = (rattr = ReadAttribute(repeat_node, "zOffsetEnd", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rlength       = (rattr = ReadAttribute(repeat_node, "length", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rdistance     = (rattr = ReadAttribute(repeat_node, "distance", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rtStart       = (rattr = ReadAttribute(repeat_node, "tStart", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rtEnd         = (rattr = ReadAttribute(repeat_node, "tEnd", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rheightStart  = (rattr = ReadAttribute(repeat_node, "heightStart", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rheightEnd    = (rattr = ReadAttribute(repeat_node, "heightEnd", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rzOffsetStart = (rattr = ReadAttribute(repeat_node, "zOffsetStart", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rzOffsetEnd   = (rattr = ReadAttribute(repeat_node, "zOffsetEnd", true)) == "" ? 0.0 : std::stod(rattr);
 
                     double rwidthStart  = (rattr = ReadAttribute(repeat_node, "widthStart", false)) == "" ? 0.0 : std::stod(rattr);
                     double rwidthEnd    = (rattr = ReadAttribute(repeat_node, "widthEnd", false)) == "" ? 0.0 : std::stod(rattr);
@@ -7689,14 +7689,15 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
             std::vector<tpoint_struct> tpoint[2] = {std::vector<tpoint_struct>(steps + 1),
                                                     std::vector<tpoint_struct>(steps + 1)};  // OSI points for left and right side
 
-            // OSI points
+            // OSI points for the two tunnel walls, starting with the right side (-1)
             for (unsigned int i = 0; i < 2; i++)
             {
                 unsigned int pivot = 0;
-                int          side  = (i == 0) ? 1 : -1;
+                int          side  = (i == 0) ? -1 : 1;
 
-                // points needs to be entered counter clockwise, i.e. starting with right side of each wall
-                double       t_offset = (side == -1) ? -TUNNEL_WALL_THICKNESS : 0.0;
+                // points needs to be entered counter clockwise, starting with points of the right wall side
+                // right side of right wall will offset by wall thickness from inner side
+                double t_offset = (side == -1) ? -TUNNEL_WALL_THICKNESS : 0.0;
 
                 for (unsigned int step = 0; step < steps + 1; step++)  // add one for endpoints of last segment
                 {
@@ -7737,6 +7738,7 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
                 }
             }
 
+            // pick points for OSI and tessellation
             for (unsigned int i = 0; i < 2; i++)
             {
                 Outline* outline = nullptr;
@@ -7803,15 +7805,18 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
                 // and the roof which covers the outer points of both walls
                 Outline* outline = new Outline(tunnel->id_, Outline::FillType::FILL_TYPE_UNDEFINED, true);
                 outline->SetCountourType(Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP);
-                outline->roof_ = true;    // top face on tunnel roof
+                outline->roof_ = true;  // top face on tunnel roof
 
+                // starting with points along right side along tunnel, coming back left side
                 for (unsigned int i = 0; i < 2; i++)
                 {
-                    int side = (i == 0) ? 1 : -1;
+                    int side = (i == 0) ? -1 : 1;
                     for (unsigned int j = 0; rm_obj[i]->GetOutline(0) && j < rm_obj[i]->GetOutline(0)->corner_.size() / 2; j++)
                     {
-                        unsigned int       index = (side == 1 ? j : (static_cast<unsigned int>(rm_obj[i]->GetOutline(0)->corner_.size()) / 2 - (j + 1)));
-                        OutlineCornerRoad* tmp   = static_cast<OutlineCornerRoad*>(rm_obj[i]->GetOutline(0)->corner_[index]);
+                        // unsigned int       index = (side == 1 ? j : (static_cast<unsigned int>(rm_obj[i]->GetOutline(0)->corner_.size()) / 2 - (j +
+                        // 1)));
+                        unsigned int index = (side == -1 ? j : (static_cast<unsigned int>(rm_obj[i]->GetOutline(0)->corner_.size()) / 2 - (j + 1)));
+                        OutlineCornerRoad* tmp    = static_cast<OutlineCornerRoad*>(rm_obj[i]->GetOutline(0)->corner_[index]);
                         OutlineCorner*     corner = static_cast<OutlineCorner*>(new OutlineCornerRoad(tmp->roadId_,
                                                                                                   tmp->s_,
                                                                                                   tmp->t_ + (side == 1 ? TUNNEL_WALL_THICKNESS : 0.0),
