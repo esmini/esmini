@@ -567,7 +567,7 @@ namespace scenarioengine
               cs_(roadmanager::CoordinateSystem::CS_ENTITY),
               lat_vel_(0.0),
               acceleration_(0.0),
-              spring_(0.0, 0.0, 0.0)  // Initialize to use critical damping
+              spring_(0.0, 0.0, 0.0)
         {
         }
 
