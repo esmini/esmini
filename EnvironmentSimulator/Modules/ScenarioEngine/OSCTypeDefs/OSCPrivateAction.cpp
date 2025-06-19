@@ -2086,24 +2086,22 @@ void LatDistanceAction::Step(double simTime, double)
             if (LARGE_NUMBER != dynamics_.max_acceleration_ && LARGE_NUMBER != dynamics_.max_deceleration_)
             {
                 // Parameters
-                double spring_constant_adjusted = 0.4 * dynamics_.max_acceleration_;  // Then increase to tune speed.
+                // For the spring values x and x0, we set the current distance error and target value to 0.0 since we have already calculated the
+                // distance error We negate the distance error to ensure that the spring force acts in the correct direction
+                spring_.SetValue(-distance_error);
+                spring_.SetTargetValue(0.0);
+                spring_.SetTension(0.4 * dynamics_.max_acceleration_);      // Adjust spring tension based on max acceleration
+                spring_.SetV(lat_vel_ - target_object_->pos_.GetVelLat());  // Speed difference in lateral direction
+                spring_.Update(dt);
 
-                double speed_diff_lat      = lat_vel_ - target_object_->pos_.GetVelLat();
-                double damping_coefficient = 2 * sqrt(spring_constant_adjusted);  // * LATERAL_DAMPING_RATIO (1.0 for critical damping)
-
-                // Desired lateral acceleration
-                // Positive distance_error (too far right) -> needs positive acceleration (move left).
-                // Positive relative_lat_vel (moving left relative to target) -> needs negative acceleration (dampen).
-                double desired_accel_lat = distance_error * spring_constant_adjusted - speed_diff_lat * damping_coefficient;
-
-                double delta_accel = desired_accel_lat - acceleration_;
+                double delta_accel = spring_.GetA() - acceleration_;  // Calculate change in acceleration
 
                 // Clamp the change in acceleration (delta_accel) by jerk limits
                 if (delta_accel > dynamics_.max_acceleration_rate_ * dt)
                 {
                     delta_accel = dynamics_.max_acceleration_rate_ * dt;
                 }
-                else if (delta_accel < -(dynamics_.max_deceleration_rate_ * dt))  // Ensure max_jerk_negative is a positive magnitude
+                else if (delta_accel < -(dynamics_.max_deceleration_rate_ * dt))
                 {
                     delta_accel = -(dynamics_.max_deceleration_rate_ * dt);
                 }
@@ -2134,12 +2132,13 @@ void LatDistanceAction::Step(double simTime, double)
             }
 
             double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
+
             object_->pos_.SetHeading(object_->pos_.GetRoadH() + atan2(lat_vel_, long_vel));
             object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
                                      object_->pos_.GetLaneId(),
                                      object_->pos_.GetS() + long_vel * dt,
                                      object_->pos_.GetOffset() + lat_vel_ * dt);
-            // object_->pos_.MoveAlongS(long_vel * dt);
+
             object_->SetSpeed(object_->GetSpeed());
             object_->SetDirtyBits(Object::DirtyBit::LATERAL |
                                   Object::DirtyBit::LONGITUDINAL);  // | Object::DirtyBit::SPEED || Object::DirtyBit::ALIGN_MODE_H_SET);

@@ -1171,7 +1171,7 @@ public:
         a_ = -t_ * (x_ - x0_) - d_ * v_;
         v_ = v_ + a_ * timeStep;
         x_ = x_ + v_ * timeStep;
-    };
+    }
 
     void SetValue(double value)
     {
