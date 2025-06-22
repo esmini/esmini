@@ -2159,6 +2159,7 @@ class TestSuite(unittest.TestCase):
         # Check some scenario events
         self.assertTrue(re.search('^.0.100.* CutInActStart: true, delay: 0.00, 0.1000 > 0.0000, edge: risingOrFalling', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.8.400.* Lane change event completed run 1 \\(of max 2\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.35.600.* End Of Road condition: true, delay: 0.00, end_of_road duration: 2.50 >= 2.50, edge: rising', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.43.000.* End Of Road speed event completed run 1 \\(of max 2\\)', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.44.600.* Lane change event complete after 2 executions', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.79.100.* End Of Road speed event complete after 2 executions', log, re.MULTILINE)  is not None)
