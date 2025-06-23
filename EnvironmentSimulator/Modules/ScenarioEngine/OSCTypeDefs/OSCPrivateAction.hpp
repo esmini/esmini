@@ -567,7 +567,9 @@ namespace scenarioengine
               cs_(roadmanager::CoordinateSystem::CS_ENTITY),
               lat_vel_(0.0),
               acceleration_(0.0),
-              spring_(0.0, 0.0, 0.0)
+              spring_(0.0, 0.0, 0.0),
+              old_x_(0.0),
+              old_y_(0.0)
         {
         }
 
@@ -587,6 +589,8 @@ namespace scenarioengine
             lat_vel_       = action.lat_vel_;
             acceleration_  = action.acceleration_;
             spring_        = action.spring_;
+            old_x_         = action.old_x_;
+            old_y_         = action.old_y_;
         }
 
         OSCPrivateAction* Copy()
@@ -617,6 +621,8 @@ namespace scenarioengine
         double       lat_vel_;
         double       acceleration_;
         DampedSpring spring_;
+        double       old_x_;
+        double       old_y_;
     };
 
     class LatLaneChangeAction : public OSCPrivateAction
