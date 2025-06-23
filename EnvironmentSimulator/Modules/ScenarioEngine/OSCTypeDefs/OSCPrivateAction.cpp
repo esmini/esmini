@@ -2061,27 +2061,27 @@ void LatDistanceAction::Step(double simTime, double)
             double distance_error;
             GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
 
+            roadmanager::Position desired_pos;
             SE_Vector             lat_axis = {-sin(object_->pos_.GetH()), cos(object_->pos_.GetH())};
-            roadmanager::Position internal_pos;
-            GetDesiredRoadPos(lat_axis, distance_error, internal_pos);
+            GetDesiredRoadPos(lat_axis, distance_error, desired_pos);
+            object_->pos_.SetLanePos(desired_pos.GetTrackId(), desired_pos.GetLaneId(), desired_pos.GetS(), desired_pos.GetOffset());
 
-            object_->pos_.SetLanePos(internal_pos.GetTrackId(), internal_pos.GetLaneId(), internal_pos.GetS(), internal_pos.GetOffset());
             if (!continuous_)
             {
-                object_->pos_.SetHeading(internal_pos.GetRoadH());
+                object_->pos_.SetHeading(desired_pos.GetRoadH());
+
+                if (std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
+                {
+                    // Reached requested distance, quit action
+                    move_state_ = MoveState::INIT;
+                    OSCAction::End();
+                }
             }
             else
             {
-                object_->pos_.SetHeading(target_object_->pos_.GetH());  // How should we put the heading?
-            }
-
-            object_->SetSpeed(object_->GetSpeed());
-
-            if (!continuous_ && std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
-            {
-                // Reached requested distance, quit action
-                move_state_ = MoveState::INIT;
-                OSCAction::End();
+                object_->pos_.SetHeading(atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_));
+                old_x_ = object_->pos_.GetX();
+                old_y_ = object_->pos_.GetY();
             }
         }
         break;
