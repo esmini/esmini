@@ -55,7 +55,7 @@ void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
     injected_actions_    = nullptr;
     ghost_               = nullptr;
     txtLogger.SetLoggerTime(GetSimulationTimePtr());
-    scenarioReader       = new ScenarioReader(&entities_, &catalogs, &environment, disable_controllers);
+    scenarioReader = new ScenarioReader(&entities_, &catalogs, &environment, disable_controllers);
     SE_Env::Inst().SetGhostMode(GhostMode::NORMAL);
     SE_Env::Inst().SetGhostHeadstart(0.0);
 }
