@@ -111,9 +111,6 @@
     <ScalarVariable name="esmini_args" valueReference="1" causality="parameter" variability="fixed">
       <String start=""/>
     </ScalarVariable>
-    <ScalarVariable name="quit_flag" valueReference="12" causality="output" variability="discrete" initial="exact">
-      <Integer start="0"/>
-    </ScalarVariable>
   </ModelVariables>
   <ModelStructure>
     <Outputs>
@@ -124,7 +121,6 @@
       <Unknown index="11"/>
       <Unknown index="12"/>
       <Unknown index="13"/>
-      <Unknown index="17"/>
     </Outputs>
   </ModelStructure>
 </fmiModelDescription>
