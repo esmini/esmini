@@ -90,7 +90,7 @@
         </ssd:Connections>
         <ssd:SystemGeometry x1="-904.0" y1="-368.0" x2="347.5" y2="251.0"/>
     </ssd:System>
-    <ssd:DefaultExperiment startTime="0.0" stopTime="15.0">
+    <ssd:DefaultExperiment startTime="0.0">
         <ssd:Annotations>
             <!-- additional OpenMCx specific simulation parameters -->
             <ssc:Annotation type="com.avl.model.connect.ssp.task"
@@ -98,7 +98,7 @@
                 <!-- sequential execution of component steps -->
                 <!-- synchronization time step size of 0.001 -->
                 <!-- simulation will end when the stopTime is reached -->
-                <mc:Task stepType="sequential" deltaTime="0.01" endType="end_time"/>
+                <mc:Task stepType="sequential" deltaTime="0.01" endType="first_component"/>
             </ssc:Annotation>
         </ssd:Annotations>
     </ssd:DefaultExperiment>

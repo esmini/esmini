@@ -109,6 +109,7 @@ public:
     fmi2Status SetInteger(const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]);
     fmi2Status SetBoolean(const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]);
     fmi2Status SetString(const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]);
+    bool slave_terminated() { return slaveTerminated; };
 
 protected:
     /* Internal Implementation */
@@ -198,13 +199,17 @@ protected:
     string fmuResourceLocation;
     bool visible;
     bool loggingOn;
+    bool slaveTerminated;
     set<string> loggingCategories;
     fmi2CallbackFunctions functions;
     fmi2Boolean boolean_vars[FMI_BOOLEAN_VARS];
     fmi2Integer integer_vars[FMI_INTEGER_VARS];
     fmi2Real real_vars[FMI_REAL_VARS];
     string string_vars[FMI_STRING_VARS];
-    std::vector<string*> buffers;
+    string* currentBufferSVOut;
+    string* lastBufferSVOut;
+    string* currentBufferTCOut;
+    string* lastBufferTCOut;
 
     /* Simple Accessors */
     fmi2Boolean fmi_valid() { return boolean_vars[FMI_BOOLEAN_VALID_IDX]; }
@@ -225,5 +230,4 @@ protected:
     //bool get_fmi_traffic_command_update_in(osi3::TrafficCommandUpdate& data);     //TODO: Wait for OSI update
     void set_fmi_traffic_command_out(const osi3::TrafficCommand& data);
     void reset_fmi_traffic_command_out();
-    void clear_buffers();
 };
