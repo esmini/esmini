@@ -87,7 +87,7 @@ class TestSuiteBase(unittest.TestCase):
             failure = False
             for j in range(n_runs):
                 try:
-                    log, duration, cpu_time, _ = run_scenario(scenario, esmini_args, application=exec, measure_cpu_time=True)
+                    log, duration, cpu_time, _ = run_scenario(scenario, esmini_args, application=exec, measure_cpu_time=True, print_duration=False)
                 except Exception as e:
                     print(e, file=sys.stderr, flush=True)
                     print('\nFailure - check log.txt and', exec, file=sys.stderr, flush=True)
@@ -116,14 +116,17 @@ class TestSuiteBase(unittest.TestCase):
             median_cpu_user = self.median(result_cpu_user)
             median_cpu_system = self.median(result_cpu_system)
             median_cpu_total = self.median(result_cpu_total)
+
             print('\n{}, {} {:.3f} ({:.3f}) / {:.3f}, {:.3f} / {:.3f}, {:.3f} / {:.3f}, {:.3f}, {}, {} '.format(
                 os.path.realpath(exec).replace(os.path.sep, '/'),
                 os.path.basename(scenario),
                 median_cpu_total, ref_cpu_time, average_cpu_total, median_cpu_user, average_cpu_user, median_cpu_system, average_cpu_system, average_duration, timestep, n_runs),
                 file=sys.stderr,
                 flush=True, end='')
+
             if ref_cpu_time > 0:
                 self.assertLess(median_cpu_total, ref_cpu_time * (1 + TOLERANCE))
+
             time_vals_run.append(median_cpu_total)
 
         print('', file=sys.stderr, flush=True)
@@ -241,6 +244,17 @@ if __name__ == "__main__":
     print("tolerance: {:.2f} ({:.0f}%)".format(TOLERANCE, 100 * TOLERANCE), file=sys.stderr, flush=True)
     if len(scenarios) > 0:
         print('runs:', args.runs, file=sys.stderr, flush=True)
+
+    # check for Release build
+    result = subprocess.run(
+        ["cmake", "-B", "../build", "-N", "-L"],
+        capture_output=True,
+        text=True,
+        check=True,
+        shell=False
+    )
+    if result.stdout.find("CMAKE_BUILD_TYPE:STRING=Release") == -1:
+        print("WARNING: Found non Release cmake build type. Results may be inaccurate.")
 
     print("executable, scenario ... cpu_total median (ref) / average, cpu_user median / average, cpu_system median / average, duration average, timestep, n_runs", file=sys.stderr, flush=True)
 
