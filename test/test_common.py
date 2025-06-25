@@ -89,7 +89,7 @@ def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, 
     if not ignoreReturnCode:
         assert return_code == 0
 
-    print('({:.2f} s) '.format(duration), end='', file=sys.stderr)
+    #print('({:.2f} s) '.format(duration), end='', file=sys.stderr)
     errlog = None
     with open(STDOUT_FILENAME, 'r') as errfile:
         errlog = errfile.read()
