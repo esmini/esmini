@@ -2016,24 +2016,22 @@ void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanage
 
     // double measured_distance;
     roadmanager::PositionDiff pos_diff;
-    pos2.Delta(&pos1, pos_diff);
-    int    sign              = (IsAngleForward(pos1.GetHRelative())) ? 1 : -1;  // Facing along the road : 1, against the road: -1
-    double measured_distance = -sign * pos_diff.dt;                             // Negate if facing against the road to preserve the sign
-    distance_error           = 0.0;
+    pos2.Delta(&pos1, pos_diff);  // pos1 is the actor, pos2 is the referenced object
+    // LOG_INFO("Pos diff ds {} dt {} dOppLane {}", pos_diff.ds, pos_diff.dt, pos_diff.dOppLane);
+    distance_error = 0.0;
     if (!freespace_)
     {
         // How much we need to move to reach the target distance, negate if facing against the road
-        distance_error = sign * (measured_distance + distance_);
+        distance_error = distance_ - pos_diff.dt;
     }
     else
     {
         double ego_width    = object_->boundingbox_.dimensions_.width_;
         double target_width = target_object_->boundingbox_.dimensions_.width_;
-        distance_error      = sign * (measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0 +
-                                 distance_);  // Taking into account the width of both vehicles
+        distance_error      = (abs(distance_) < SMALL_NUMBER) ? -pos_diff.dt
+                                                              : SIGN(distance_) * (ego_width + target_width) / 2.0 + distance_ -
+                                                               pos_diff.dt;  // Taking into account the width of both vehicles
     }
-    std::cout << "Distance error: " << distance_error << "\n";
-    // distance_error *= sign;
 }
 
 void LatDistanceAction::Step(double simTime, double)
@@ -2148,7 +2146,7 @@ void LatDistanceAction::Step(double simTime, double)
                 }
             }
 
-            double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
+            double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(MAX(fabs(lat_vel_), SMALL_NUMBER), 2));
 
             object_->MoveAlongS(long_vel * dt);
             object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
@@ -2158,9 +2156,13 @@ void LatDistanceAction::Step(double simTime, double)
 
             object_->pos_.SetHeading(atan2(object_->pos_.GetY() - old_y_, object_->pos_.GetX() - old_x_));
 
+            // LOG_INFO("Heading {} dx {} dy {} ds {}", object_->pos_.GetH(), object_->pos_.GetX() - old_x_, object_->pos_.GetY() - old_y_, long_vel *
+            // dt);
+
             object_->SetSpeed(object_->GetSpeed());
-            object_->SetDirtyBits(Object::DirtyBit::LATERAL |
-                                  Object::DirtyBit::LONGITUDINAL);  // | Object::DirtyBit::SPEED || Object::DirtyBit::ALIGN_MODE_H_SET);
+            object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL |
+                                  Object::DirtyBit::SPEED);  // || Object::DirtyBit::ALIGN_MODE_H_SET);
+
             old_x_ = object_->pos_.GetX();
             old_y_ = object_->pos_.GetY();
         }

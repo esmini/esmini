@@ -75,7 +75,7 @@
             </Properties>
         </Vehicle>
 
-        <Vehicle name="car_red" vehicleCategory="car" >
+        <Vehicle name="car_red" vehicleCategory="car" model3d="../models/car_red.osgb">
             <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
             <ParameterDeclarations>
                 <ParameterDeclaration name="MaxSpeed" parameterType="double" value="70.0"/>
