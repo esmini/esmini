@@ -2844,17 +2844,15 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     std::string continuous   = parameters.ReadAttribute(lateralChild, "continuous");
                     action_dist->continuous_ = (continuous == "true");
 
-                    std::string freespace = parameters.ReadAttribute(lateralChild, "freespace");
+                    std::string freespace   = parameters.ReadAttribute(lateralChild, "freespace");
                     action_dist->freespace_ = (freespace == "true" || freespace == "1");
 
                     std::string distance = parameters.ReadAttribute(lateralChild, "distance");
-                    if (distance.empty())
+                    if (!distance.empty())
                     {
-                        LOG_ERROR_AND_QUIT("Missing/invalid mandatory LateralDistanceAction attribute distance");
-                        return 0;
+                        action_dist->distance_ = strtod(distance);
                     }
-                    action_dist->distance_ = strtod(distance);
-                        
+
                     std::string displacement = parameters.ReadAttribute(lateralChild, "displacement");
                     if (GetVersionMajor() <= 1 && GetVersionMinor() >= 1)
                     {
@@ -2883,7 +2881,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             action_dist->distance_ = abs(action_dist->distance_);
                         }
                     }
-                    else if (!displacement.empty()) // Is it supported in 1.1??
+                    else if (!displacement.empty())  // Is it supported in 1.1??
                     {
                         LOG_WARN("LateralDistanceAction displacement not supported in OSC version {}.{}", GetVersionMajor(), GetVersionMinor());
                     }
