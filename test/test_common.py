@@ -30,7 +30,7 @@ def set_timeout(timeout):
     global TIMEOUT
     TIMEOUT = timeout
 
-def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, application = None, ignoreReturnCode = False, measure_cpu_time = False, check_memory_leaks_level: str = "none"):
+def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, application = None, ignoreReturnCode = False, measure_cpu_time = False, check_memory_leaks_level: str = "none", print_duration = True):
 
     if os.path.exists(LOG_FILENAME):
         os.remove(LOG_FILENAME)
@@ -89,7 +89,9 @@ def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, 
     if not ignoreReturnCode:
         assert return_code == 0
 
-    #print('({:.2f} s) '.format(duration), end='', file=sys.stderr)
+    if print_duration:
+        print('({:.2f} s) '.format(duration), end='', file=sys.stderr, flush=True)
+
     errlog = None
     with open(STDOUT_FILENAME, 'r') as errfile:
         errlog = errfile.read()
