@@ -60,11 +60,11 @@ namespace viewer
         NODE_MASK_TRAJECTORY_LINES = (1 << 12),
         NODE_MASK_ROUTE_WAYPOINTS  = (1 << 13),
         NODE_MASK_SIGN             = (1 << 14),
+        NODE_MASK_WEATHER          = (1 << 15),
     } NodeMask;
 
     osg::Vec4 ODR2OSGColor(roadmanager::RoadMarkColor color);
-    uint32_t  GenerateColorKeyFromDoubles(double r, double g, double b, double a);
-    uint32_t  GenerateColorKeyFromBytes(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+    uint64_t  GenerateMaterialKey(double r, double g, double b, double a, uint8_t t, uint8_t f);
 
     class PolyLine
     {
@@ -437,6 +437,12 @@ namespace viewer
         osg::ref_ptr<osg::MatrixTransform>          env_origin2odr_;   // transform the environment to the OpenDRIVE origin
         osg::ref_ptr<osg::MatrixTransform>          root_origin2odr_;  // transform objects to the OpenDRIVE origin
 
+        // Weather stuff
+        osg::ref_ptr<osg::PositionAttitudeTransform> weatherGroup_;  // parent for all OSC Environment related stuff
+        osg::ref_ptr<osg::PositionAttitudeTransform> fogBoundingBox_;
+        void                                         CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment);
+        void                                         UpdateFrictonScaleFactorInMaterial(const double factor);
+
         std::string                   exe_path_;
         std::vector<KeyEventCallback> callback_;
         ImageCallback                 imgCallback_;
@@ -576,13 +582,13 @@ namespace viewer
             return osg_screenshot_event_handler_;
         }
 
-        void Frame(double time);
+        void   Frame(double time);
+        void   SetFrictionScaleFactor(const double factor);
+        double GetFrictionScaleFactor() const;
 
     private:
-        bool                                         CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
-        bool                                         CreateRoadMarkLines(roadmanager::OpenDrive* od);
-        int                                          CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color);
         osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string filename);
+        int                                          CreateTunnels(roadmanager::OpenDrive* od);
         int                                          CreateRoadSignsAndObjects(roadmanager::OpenDrive* od);
         int                                          InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
                                                                 int                                        x,
@@ -593,8 +599,13 @@ namespace viewer
                                                                 bool                                       decoration,
                                                                 int                                        screenNum,
                                                                 bool                                       headless);
+        bool                                         CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
+        bool                                         CreateRoadMarkLines(roadmanager::OpenDrive* od);
+        int                                          CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color);
+        void                                         CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
+        int                                          AddGroundSurface();
+        void SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
 
-        int                                   AddGroundSurface();
         bool                                  keyUp_;
         bool                                  keyDown_;
         bool                                  keyLeft_;
@@ -606,6 +617,9 @@ namespace viewer
         osgViewer::ViewerBase::ThreadingModel initialThreadingModel_;
         bool                                  stand_in_model_;
         double                                time_;
+        double                                frictionScaleFactor_;
+        bool                                  defaultClearColorUsed_;
+        std::vector<float>                    fogColor_;
 
         struct
         {

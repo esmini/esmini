@@ -619,9 +619,10 @@ class View:
         plot = self.ax.add_collection(collection)
         self.static_plots_by_type["CenterLine"] = [plot]
 
-        no_line_type = False
-        unknown_line_type = False
+
         for index, l in enumerate(gt.lane_boundary):
+            no_line_type = False
+            unknown_line_type = False
             ids = []
             indices = []
             i=0
@@ -636,6 +637,8 @@ class View:
                 if type == 2:
                     color = '#DDDDDD'  # light gray for NO_LINE
                     no_line_type = True
+                elif type == 13:
+                    color = '#FF5555'  # red for STRUCTURE
                 else:
                     color = '#FF9999'  # light red as default for various unsupported line types
                     unknown_line_type = True
@@ -705,24 +708,32 @@ class View:
             self.osi_idx_by_stationary[patch] = i
 
         # stationary objects
-        for index, s in enumerate(gt.stationary_object):
-            if s.HasField('base'):
-                b = s.base
-                hdg = b.orientation.yaw
-                patch = None
-                if len(b.base_polygon) > 0:
-                    vertices = []
-                    for p in b.base_polygon:
-                        vertices.append((p.x, p.y))
-                    patch = self.ax.add_patch(patches.Polygon(vertices, label="stationary_polygon".format(s.id.value, index), facecolor='#CCCCCC', edgecolor='black', linewidth=1, picker=5, fill=True, zorder=2))
-                    patch.set_transform(transforms.Affine2D().rotate_deg(np.rad2deg(0)).translate(b.position.x, b.position.y) + self.ax.transData)
-                else:
-                    w = b.dimension.width
-                    l = b.dimension.length
-                    patch = self.ax.add_patch(plt.Rectangle((-l/2, -w/2), l, w, label="stationary_bb".format(s.id.value, index), facecolor='#CCCCCC', edgecolor='black', lw=1, picker=5, fill=True, zorder=2))
-                    patch.set_transform(transforms.Affine2D().rotate_deg(np.rad2deg(hdg)).translate(b.position.x, b.position.y) + self.ax.transData)
-                self.osi_ids_by_stationary[patch] = s.id.value
-                self.osi_idx_by_stationary[patch] = index
+        if len(gt.stationary_object) > 0:
+            # make objects semitransparent
+            fillcolor = '#CCCCCC88'
+            edgecolor = '#66666688'
+            self.plot_colors["objects"] = '#444444'
+            for index, s in enumerate(gt.stationary_object):
+                if s.HasField('base'):
+                    b = s.base
+                    hdg = b.orientation.yaw
+                    patch = None
+                    if len(b.base_polygon) > 0:
+                        vertices = []
+                        for p in b.base_polygon:
+                            vertices.append((p.x, p.y))
+                        patch = self.ax.add_patch(patches.Polygon(vertices, label="stationary_polygon".format(s.id.value, index), facecolor=fillcolor, edgecolor=edgecolor, linewidth=1, picker=5, fill=True, zorder=2))
+                        patch.set_transform(transforms.Affine2D().rotate_deg(np.rad2deg(0)).translate(b.position.x, b.position.y) + self.ax.transData)
+                    else:
+                        w = b.dimension.width
+                        l = b.dimension.length
+                        patch = self.ax.add_patch(plt.Rectangle((-l/2, -w/2), l, w, label="stationary_bb".format(s.id.value, index), facecolor=fillcolor, edgecolor=edgecolor, lw=1, picker=5, fill=True, zorder=2))
+                        patch.set_transform(transforms.Affine2D().rotate_deg(np.rad2deg(hdg)).translate(b.position.x, b.position.y) + self.ax.transData)
+                    self.osi_ids_by_stationary[patch] = s.id.value
+                    self.osi_idx_by_stationary[patch] = index
+                    if not "objects" in self.static_plots_by_type:
+                        self.static_plots_by_type["objects"] = []
+                    self.static_plots_by_type["objects"].append(patch)
 
     def update_pick_text(self, label, index, id, instance):
         self.text.set_text('selected:\n{}\nidx {} id {} # {}\n'.format(label, index, id, instance))
@@ -758,6 +769,8 @@ class View:
     def toggle_visibility(self, label):
         for plot in self.static_plots_by_type[label]:
             plot.set_visible(not plot.get_visible())
+            # prevent object from being picked if not visible
+            plot.set_picker(True if plot.get_visible() else None)
         self.redraw()
 
     # Function to update the dynamic plot (called repeatedly)
@@ -791,7 +804,7 @@ class OSIFile:
             print('ERROR: Could not open file {} for reading'.format(self.filename))
             exit(-1)
 
-        ctr = 0        
+        ctr = 0
         while self.read_next_message():
             timestamp = self.gt.timestamp.seconds + self.gt.timestamp.nanos * 1e-9
             if self.view is None:
@@ -813,7 +826,7 @@ class OSIFile:
                         # add keyframe
                         bb.add_keyframe(timestamp, obj.base.position.x, obj.base.position.y, obj.base.orientation.yaw, v, ctr)
             ctr += 1
-        
+
         # Fill in the missing keyframes for each object
         for bb in self.view.bb_objects.bb_objects:
             if not bb.kf:

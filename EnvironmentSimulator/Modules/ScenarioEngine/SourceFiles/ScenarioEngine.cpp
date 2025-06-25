@@ -54,7 +54,7 @@ void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
     simulationTime_      = 0;
     trueTime_            = 0;
     frame_nr_            = 0;
-    scenarioReader       = new ScenarioReader(&entities_, &catalogs, disable_controllers);
+    scenarioReader       = new ScenarioReader(&entities_, &catalogs, &environment, disable_controllers);
     injected_actions_    = nullptr;
     ghost_               = nullptr;
     SE_Env::Inst().SetGhostMode(GhostMode::NORMAL);
@@ -995,12 +995,16 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 
                     roadmanager::RoadLaneInfo info;
                     wp.GetRoadLaneInfo(&info);
-                    wheel.friction_coefficient = info.friction;
+                    wheel.friction_coefficient = environment.IsRoadConditionSet() && !std::isnan(info.friction)
+                                                     ? environment.GetRoadCondition().friction_scale_factor * info.friction
+                                                     : info.friction;
                 }
                 else
                 {
                     // same friction everywhere
-                    wheel.friction_coefficient = friction_global;
+                    wheel.friction_coefficient = environment.IsRoadConditionSet() && !std::isnan(friction_global)
+                                                     ? environment.GetRoadCondition().friction_scale_factor * friction_global
+                                                     : friction_global;
                 }
             }
             scenarioGateway.updateObjectWheelData(obj->id_, wheel_data);

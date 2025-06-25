@@ -30,6 +30,8 @@
 #include <osgUtil/SmoothingVisitor>
 #include <osgUtil/Tessellator>  // to tessellate multiple contours
 #include <osgUtil/Optimizer>    // to flatten transform nodes
+#include <osg/Fog>
+#include "OSCEnvironment.hpp"
 
 #define SHADOW_SCALE                       1.20
 #define SHADOW_MODEL_FILEPATH              "shadow_face.osgb"
@@ -50,6 +52,15 @@
 #define ORTHO_FOV                          1.0
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 
+float color_green[3]      = {0.2f, 0.6f, 0.3f};
+float color_gray[3]       = {0.7f, 0.7f, 0.7f};
+float color_red[3]        = {0.8f, 0.3f, 0.3f};
+float color_black[3]      = {0.2f, 0.2f, 0.2f};
+float color_blue[3]       = {0.25f, 0.38f, 0.7f};
+float color_yellow[3]     = {0.75f, 0.7f, 0.4f};
+float color_white[3]      = {1.0f, 1.0f, 0.9f};
+float color_background[3] = {0.5f, 0.75f, 1.0f};
+
 // cppcheck-suppress unknownMacro
 // The following macros are defined by the framework or plugin system and are correctly expanded during compilation.
 // Cppcheck cannot resolve them during static analysis, so this warning is false positive.
@@ -68,20 +79,16 @@ osg::Vec4 viewer::ODR2OSGColor(roadmanager::RoadMarkColor color)
     return osg::Vec4(rgb[0], rgb[1], rgb[2], 1.0f);
 }
 
-uint32_t viewer::GenerateColorKeyFromDoubles(double r, double g, double b, double a)
+uint64_t viewer::GenerateMaterialKey(double r, double g, double b, double a, uint8_t t, uint8_t f)
 {
     uint8_t r8 = static_cast<uint8_t>(std::max(0.0, std::min(255.0, r * 255.0)));
     uint8_t g8 = static_cast<uint8_t>(std::max(0.0, std::min(255.0, g * 255.0)));
     uint8_t b8 = static_cast<uint8_t>(std::max(0.0, std::min(255.0, b * 255.0)));
     uint8_t a8 = static_cast<uint8_t>(std::max(0.0, std::min(255.0, a * 255.0)));
 
-    return GenerateColorKeyFromBytes(r8, g8, b8, a8);
-}
-
-uint32_t viewer::GenerateColorKeyFromBytes(uint8_t r, uint8_t g, uint8_t b, uint8_t a)
-{
-    // code the color as a 32-bit integer in the format 0xRRGGBBAA
-    return (r << 24) + (g << 16) + (b << 8) + a;
+    // code the color as a 64-bit integer in the format 0xRRGGBBAATTFF (T = texture_type, F = friction)
+    return (static_cast<uint64_t>(r8) << 40) | (static_cast<uint64_t>(g8) << 32) | (static_cast<uint64_t>(b8) << 24) |
+           (static_cast<uint64_t>(a8) << 16) | (static_cast<uint64_t>(t) << 8) | static_cast<uint64_t>(f);
 }
 
 // Derive a class from NodeVisitor to find a node with a  specific name.
@@ -1349,10 +1356,14 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osg_screenshot_event_handler_ = false;
     imgCallback_                  = {nullptr, nullptr};
     winDim_                       = {-1, -1, -1, -1};
-    bool decoration               = true;
-    int  screenNum                = -1;
     stand_in_model_               = false;
     time_                         = 0.0;
+    frictionScaleFactor_          = 1.0;  // default friction scale factor
+    defaultClearColorUsed_        = false;
+    fogColor_                     = {0.75f, 0.75f, 0.75f};  // Default fog color, average of color_background
+
+    bool decoration = true;
+    int  screenNum  = -1;
 
     int aa_mode = DEFAULT_AA_MULTISAMPLES;
     if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
@@ -1435,7 +1446,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     if (!clear_color)
     {
         // Default background color
-        camera->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 1.0f));
+        // camera->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 1.0f)); currrnt code, check if it is needed
+        camera->setClearColor(osg::Vec4(color_background[0], color_background[1], color_background[2], 1.0f));
     }
     else
     {
@@ -1673,8 +1685,9 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     if (!clearColorSet)
     {
-        camera->setClearColor(osg::Vec4(0.5f, 0.75f, 1.0f, 1.0f));
-        clearColorSet = true;
+        camera->setClearColor(osg::Vec4(color_background[0], color_background[1], color_background[2], 1.0f));
+        clearColorSet          = true;
+        defaultClearColorUsed_ = true;
     }
 
     // Setup the camera models
@@ -1723,11 +1736,11 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     // Light
     osgViewer_->setLightingMode(osg::View::LightingMode::SKY_LIGHT);
     osg::Light* light = osgViewer_->getLight();
-    light->setPosition(osg::Vec4(-7500.0 + origin_[0], 5000.0 + origin_[1], 10000.0, 1.0));
+    light->setPosition(osg::Vec4(-7500., 5000., 10000., 1.0));
     light->setDirection(osg::Vec3(7.5, -5., -10.));
     float ambient = 0.4f;
-    light->setAmbient(osg::Vec4(ambient, ambient, 0.9f * ambient, 1.0f));
-    light->setDiffuse(osg::Vec4(0.8f, 0.8f, 0.7f, 1.0f));
+    light->setAmbient(osg::Vec4(ambient, ambient, 0.9 * ambient, 1));
+    light->setDiffuse(osg::Vec4(0.8, 0.8, 0.7, 1));
 
     // Overlay text
     float font_size = 12.0f;
@@ -1774,6 +1787,95 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     initialThreadingModel_ = osgViewer_->getThreadingModel();
 
     osgViewer_->realize();
+}
+
+void Viewer::CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor)
+{
+    /*
+        Generate fog based on the following equation:
+        fogColor = color_gray * cloudiness + color_background_gray * (1 - cloudiness)
+
+        Apply fog with sunIntensityFactor, but keep the fogColor as gray for blending with sky color later.
+    */
+    osg::ref_ptr<osg::Fog> fog = new osg::Fog;
+    fog->setMode(osg::Fog::EXP);
+    fog->setDensity(1 / range);
+    fog->setStart(static_cast<float>(-range));
+    fog->setEnd(static_cast<float>(range));
+
+    double skyGray   = (color_background[0] + color_background[1] + color_background[2]) / 3.0;
+    double cloudGray = (color_gray[0] + color_gray[1] + color_gray[2]) / 3.0;
+    double grayFog   = cloudGray * cloudinessFactor + skyGray * (1 - cloudinessFactor);
+
+    fogColor_[0] = grayFog;
+    fogColor_[1] = grayFog;
+    fogColor_[2] = grayFog;
+
+    fog->setColor(osg::Vec4(sunIntensityFactor * fogColor_[0], sunIntensityFactor * fogColor_[1], sunIntensityFactor * fogColor_[2], 1.0f));
+    rootnode_->getOrCreateStateSet()->setAttributeAndModes(fog.get());
+}
+
+void viewer::Viewer::SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor)
+{
+    /*
+     Sky color equation: sunIntensity * ((1 - cloudiness) * background + cloudiness * fogcolor), where:
+     background = visual_range * fogcolor + (1 - visual_range) * color_background
+     fogColor = color_gray * cloudiness + color_background_gray * (1 - cloudiness)
+    */
+    osg::Light* light = osgViewer_->getLight();
+    light->setDiffuse(osg::Vec4(0.9 * sunIntensityFactor - 0.1, 0.9 * sunIntensityFactor - 0.1, 0.8 * sunIntensityFactor - 0.1, 1));
+
+    // Blend background color (blue) with fog color (gray) based on fogVisualRangeFactor (scaled up to have higher influence of fog with low visual
+    // range) This creates a smooth transition from blue sky to gray fog as the visual range decreases.
+    float clamped_visual_range = CLAMP(0.0, 1.0, fogVisualRangeFactor * 100.0);
+    float blended_background_r = clamped_visual_range * fogColor_[0] + (1 - clamped_visual_range) * color_background[0];
+    float blended_background_g = clamped_visual_range * fogColor_[1] + (1 - clamped_visual_range) * color_background[1];
+    float blended_background_b = clamped_visual_range * fogColor_[2] + (1 - clamped_visual_range) * color_background[2];
+
+    // Blend the background color with fog color based on cloudinessFactor (very cloudy sky will be overwhelmingly gray), else blue sky with fog
+    // influence
+    float r = sunIntensityFactor * ((1 - cloudinessFactor) * blended_background_r + cloudinessFactor * fogColor_[0]);
+    float g = sunIntensityFactor * ((1 - cloudinessFactor) * blended_background_g + cloudinessFactor * fogColor_[1]);
+    float b = sunIntensityFactor * ((1 - cloudinessFactor) * blended_background_b + cloudinessFactor * fogColor_[2]);
+
+    osgViewer_->getCamera()->setClearColor(osg::Vec4(r, g, b, 0.0f));
+}
+
+void Viewer::CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment)
+{
+    weatherGroup_ = new osg::PositionAttitudeTransform;
+    if (environment.IsFogSet())
+    {
+        CreateFog(environment.GetFog().visibility_range, environment.GetSunIntensityFactor(), environment.GetFractionalCloudStateFactor());
+    }
+    if (defaultClearColorUsed_)  // no --clear-color option
+    {
+        SetSkyColor(environment.GetSunIntensityFactor(), environment.GetFogVisibilityRangeFactor(), environment.GetFractionalCloudStateFactor());
+    }
+
+    if (environment.IsRoadConditionSet())
+    {
+        UpdateFrictonScaleFactorInMaterial(environment.GetRoadCondition().friction_scale_factor);
+    }
+
+    rootnode_->addChild(weatherGroup_);
+}
+
+void viewer::Viewer::UpdateFrictonScaleFactorInMaterial(const double factor)
+{
+    if (roadGeom != nullptr)
+    {
+        for (const auto& [key, std_material] : roadGeom->std_materials_)
+        {
+            double material_friction;
+            if (std_material->getUserValue("friction", material_friction))
+            {
+                osg::Vec4 friction_color = roadGeom->GetFrictionColor(material_friction * factor);
+                std_material->setAmbient(osg::Material::FRONT_AND_BACK, friction_color);
+                std_material->setDiffuse(osg::Material::FRONT_AND_BACK, friction_color);
+            }
+        }
+    }
 }
 
 Viewer::~Viewer()
@@ -2211,6 +2313,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
 
     emodel->state_set_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
     emodel->state_set_->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+    emodel->state_set_->setRenderBinDetails(10, "DepthSortedBin", osg::StateSet::RenderBinMode::OVERRIDE_RENDERBIN_DETAILS);
 
     emodel->modelBB_ = modelBB;
     emodel->model_   = modelgroup;
@@ -2702,7 +2805,7 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
 {
     if (outline == 0)
         return -1;
-    bool roof = outline->closed_ ? true : false;
+    bool roof = outline->roof_ ? true : false;
 
     // nrPoints will be corners + 1 if the outline should be closed, reusing first corner as last
     int nrPoints = outline->closed_ ? static_cast<int>(outline->corner_.size()) + 1 : static_cast<int>(outline->corner_.size());
@@ -2723,8 +2826,33 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
                                          static_cast<float>(y - origin_[1]),
                                          static_cast<float>(z + corner->GetHeight()));
         (*vertices_sides)[i * 2 + 1].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
-        (*vertices_top)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z + corner->GetHeight()));
-        (*vertices_bottom)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
+
+        // top and bottom shapes
+        if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_POLYGON)
+        {
+            (*vertices_top)[i].set(static_cast<float>(x - origin_[0]),
+                                   static_cast<float>(y - origin_[1]),
+                                   static_cast<float>(z + corner->GetHeight()));
+            (*vertices_bottom)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
+        }
+    }
+
+    if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP)
+    {
+        // rearrange vertices for quad strip
+        for (size_t i = 0; i < outline->corner_.size(); i++)
+        {
+            // points are starting at right side
+            double                      x, y, z;
+            unsigned                    index  = ((i % 2) == 0) ? outline->corner_.size() - 1 - (i / 2) : i / 2;
+            roadmanager::OutlineCorner* corner = outline->corner_[index];
+            corner->GetPos(x, y, z);
+
+            (*vertices_top)[i].set(static_cast<float>(x - origin_[0]),
+                                   static_cast<float>(y - origin_[1]),
+                                   static_cast<float>(z + corner->GetHeight()));
+            (*vertices_bottom)[i].set(static_cast<float>(x - origin_[0]), static_cast<float>(y - origin_[1]), static_cast<float>(z));
+        }
     }
 
     // Close geometry
@@ -2745,15 +2873,26 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
 
     if (roof)
     {
-        geom[1]->setVertexArray(vertices_top.get());
-        geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
-        osgUtil::Tessellator tessellator;
-        tessellator.retessellatePolygons(*geom[1]);
+        if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_POLYGON)
+        {
+            geom[1]->setVertexArray(vertices_top.get());
+            geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
+            osgUtil::Tessellator tessellator;
+            tessellator.retessellatePolygons(*geom[1]);
 
-        // then also add bottom
-        geom[2]->setVertexArray(vertices_bottom.get());
-        geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
-        tessellator.retessellatePolygons(*geom[2]);
+            // then also add bottom
+            geom[2]->setVertexArray(vertices_bottom.get());
+            geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
+            tessellator.retessellatePolygons(*geom[2]);
+        }
+        else
+        {
+            geom[1]->setVertexArray(vertices_top.get());
+            geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, nrPoints - 1));
+
+            geom[2]->setVertexArray(vertices_bottom.get());
+            geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, nrPoints - 1));
+        }
     }
 
     int nrGeoms = roof ? 3 : 1;
@@ -2769,6 +2908,10 @@ int Viewer::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color)
     material_->setDiffuse(osg::Material::FRONT_AND_BACK, color);
     material_->setAmbient(osg::Material::FRONT_AND_BACK, color);
     geode->getOrCreateStateSet()->setAttributeAndModes(material_.get());
+    geode->getOrCreateStateSet()->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+    geode->getOrCreateStateSet()->setRenderBinDetails(20, "DepthSortedBin", osg::StateSet::RenderBinMode::OVERRIDE_RENDERBIN_DETAILS);
+    geode->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+    geode->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
 
     group->addChild(geode);
     env_origin2odr_->addChild(group);
@@ -2899,23 +3042,9 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
             osg::Vec4              color;
             tx = nullptr;
 
-            // Set color based on object type
-            if (object->GetType() == roadmanager::RMObject::ObjectType::BUILDING || object->GetType() == roadmanager::RMObject::ObjectType::BARRIER)
+            for (unsigned int c = 0; c < 4; c++)
             {
-                color = osg::Vec4(0.6f, 0.6f, 0.6f, 1.0f);
-            }
-            else if (object->GetType() == roadmanager::RMObject::ObjectType::OBSTACLE)
-            {
-                color = osg::Vec4(0.5f, 0.3f, 0.3f, 1.0f);
-            }
-            else if (object->GetType() == roadmanager::RMObject::ObjectType::TREE ||
-                     object->GetType() == roadmanager::RMObject::ObjectType::VEGETATION)
-            {
-                color = osg::Vec4(0.22f, 0.32f, 0.22f, 1.0f);
-            }
-            else
-            {
-                color = osg::Vec4(0.4f, 0.4f, 0.4f, 1.0f);
+                color[c] = object->GetColor()[c];
             }
 
             if (object->GetNumberOfOutlines() > 0 &&
@@ -2927,8 +3056,8 @@ int Viewer::CreateRoadSignsAndObjects(roadmanager::OpenDrive* od)
                     CreateOutlineObject(outline, color);
                 }
                 LOG_INFO("Created outline geometry for object {}.", object->GetName());
-                LOG_INFO("  if it looks strange, e.g.faces too dark or light color, ");
-                LOG_INFO("  check that corners are defined counter-clockwise (as OpenGL default).");
+                LOG_DEBUG("  if it looks strange, e.g.faces too dark or light color, ");
+                LOG_DEBUG("  check that corners are defined counter-clockwise (as OpenGL default).");
             }
             else
             {
@@ -3768,6 +3897,16 @@ void Viewer::Frame(double time)
     {
         frameCounter_++;
     }
+}
+
+void Viewer::SetFrictionScaleFactor(const double factor)
+{
+    frictionScaleFactor_ = factor;
+}
+
+double Viewer::GetFrictionScaleFactor() const
+{
+    return frictionScaleFactor_;
 }
 
 bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)

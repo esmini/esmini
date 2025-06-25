@@ -1,5 +1,29 @@
 ## esmini release notes
 
+### 2025-06-24 Version 2.49.0
+
+New features:
+- Add support for OpenSCENARIO EnvironmentAction
+  - see info in [User guide - Environment conditions](https://esmini.github.io/#_environment_conditions)
+  - video clip: https://youtu.be/-mQUJU1rR2M
+- Add support for OpenDRIVE Tunnel
+  - see info in [User guide - Tunnels](https://esmini.github.io/#_tunnels)
+  - video clip: https://youtu.be/pTYcu1yFe5k
+
+Improvements and fixes:
+- Fix SUMO controller memory leak
+- Add replayer offscreen render support
+- Fix replayer ghost stalling application bug
+- Add further camera interfaces to esmini lib ([PR #708](https://github.com/esmini/esmini/pull/708))
+- Fix steering sensor bug ([PR #702](https://github.com/esmini/esmini/pull/702))
+- Fix corrupt OSI dashed/broken roadmarks in curved roads
+- osiviewer updates:
+  - Make stationary objects semi-transparent to see inside tunnels
+  - Add checkbox for hiding stationary objects
+  - Plot structure boundaries, e.g. tunnels, with red color
+- Fix EndOfRoad condition log entry
+- Fix zero rate bug causing entities thrown into space ([issue #711](https://github.com/esmini/esmini/issues/711))
+
 ### 2025-06-13 Version 2.48.1
 
 Improvements and fixes:

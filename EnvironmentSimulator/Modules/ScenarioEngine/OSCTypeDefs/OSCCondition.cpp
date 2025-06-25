@@ -1200,10 +1200,13 @@ bool TrigByEndOfRoad::CheckCondition(double sim_time)
             continue;
         }
 
-        if (triggering_entities_.entity_[i].object_->IsEndOfRoad() &&
-            (sim_time - triggering_entities_.entity_[i].object_->GetEndOfRoadTimestamp() > duration_ - SMALL_NUMBER))
+        if (triggering_entities_.entity_[i].object_->IsEndOfRoad())
         {
-            result = true;
+            current_duration_ = sim_time - triggering_entities_.entity_[i].object_->GetEndOfRoadTimestamp();
+            if (current_duration_ > duration_ - SMALL_NUMBER)
+            {
+                result = true;
+            }
         }
 
         if (result == true)

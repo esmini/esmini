@@ -136,6 +136,41 @@ public:
         LOG_INFO("Excluding ghost from ground truth");
     }
 
+    /**
+    Fills the Environment_condition
+    */
+    void UpdateEnvironment(const OSCEnvironment& environment);
+
+    /**
+    Fills the Weather_condition
+    */
+    void UpdateEnvironmentWeather(const OSCEnvironment& environment);
+
+    /**
+    Fills the fractional cloud state
+    */
+    void UpdateEnvironmentFractionalCloudState(const OSCEnvironment& environment);
+
+    /**
+    Fills the Sun
+    */
+    void UpdateEnvironmentSun(const OSCEnvironment& environment);
+
+    /**
+    Fills the TimeOfDay
+    */
+    void UpdateEnvironmentTimeOfDay(const OSCEnvironment& environment);
+
+    /**
+    Fills the Fog
+    */
+    void UpdateEnvironmentFog(const double visibility_range);
+
+    /**
+    Fills the precipitation
+    */
+    void UpdateEnvironmentPrecipitation(const double precipitation_intensity);
+
     std::vector<TrafficCommandStateChange> traffic_command_state_changes_;
 
     void RegisterTrafficCommandStateChange(OSCPrivateAction* action, StoryBoardElement::State state, StoryBoardElement::Transition transition)
@@ -235,5 +270,6 @@ private:
     bool                                osi_initialized_    = false;
     bool                                report_ghost_       = true;
     OSIStaticReportMode                 static_update_mode_ = OSIStaticReportMode::DEFAULT;
-    std::vector<std::pair<int, double>> osi_crop_           = {};  // id, radius
+    std::vector<std::pair<int, double>> osi_crop_           = {};       // id, radius
+    std::optional<int64_t>              environment_timestamp_offset_;  // Offset to apply to environment timestamp, in seconds
 };

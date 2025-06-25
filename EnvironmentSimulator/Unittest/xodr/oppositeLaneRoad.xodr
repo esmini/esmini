@@ -24,7 +24,7 @@
                 </left>
                 <center>
                     <lane id="0" type="none" level="false">
-                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                        <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                 </center>
                 <right>
@@ -64,7 +64,7 @@
                 </left>
                 <center>
                     <lane id="0" type="none" level="false">
-                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                        <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                 </center>
                 <right>
@@ -103,7 +103,7 @@
                 </left>
                 <center>
                     <lane id="0" type="none" level="false">
-                        <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                        <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
                     </lane>
                 </center>
                 <right>

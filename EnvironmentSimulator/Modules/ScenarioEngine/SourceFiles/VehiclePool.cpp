@@ -21,30 +21,33 @@ VehiclePool::VehiclePool(ScenarioReader* reader, const std::vector<unsigned int>
     Initialize(reader, categories, accept_trailers);
 }
 
-VehiclePool::~VehiclePool()
+void VehiclePool::DeleteVehicleAndTrailers(Vehicle* vehicle)
 {
-    auto RecursiveDeleteTrailers = [](Vehicle* vehicle, auto& recurseLambda) -> void
+    auto RecursiveDeleteTrailers = [](Vehicle* v, auto& recurseLambda) -> void
     {
-        if (vehicle->trailer_hitch_ && vehicle->trailer_hitch_->trailer_vehicle_)
+        if (v->trailer_hitch_ && v->trailer_hitch_->trailer_vehicle_)
         {
-            recurseLambda(static_cast<Vehicle*>(vehicle->trailer_hitch_->trailer_vehicle_), recurseLambda);
+            recurseLambda(static_cast<Vehicle*>(v->trailer_hitch_->trailer_vehicle_), recurseLambda);
         }
 
-        delete vehicle;
+        delete v;
     };
 
-    for (auto* entry : vehicle_pool_)
+    if (vehicle->trailer_hitch_ && vehicle->trailer_hitch_->trailer_vehicle_)
     {
-        if (entry->trailer_hitch_ && entry->trailer_hitch_->trailer_vehicle_)
-        {
-            RecursiveDeleteTrailers(static_cast<Vehicle*>(entry->trailer_hitch_->trailer_vehicle_), RecursiveDeleteTrailers);
-        }
+        RecursiveDeleteTrailers(static_cast<Vehicle*>(vehicle->trailer_hitch_->trailer_vehicle_), RecursiveDeleteTrailers);
     }
 
-    for (auto* vehicle : vehicle_pool_)
+    delete vehicle;
+}
+
+VehiclePool::~VehiclePool()
+{
+    for (auto* entry : vehicle_pool_)
     {
-        delete vehicle;
+        DeleteVehicleAndTrailers(entry);
     }
+
     vehicle_pool_.clear();
 }
 
@@ -74,7 +77,7 @@ int VehiclePool::Initialize(ScenarioReader* reader, const std::vector<unsigned i
                 }
                 else
                 {
-                    delete vehicle;
+                    DeleteVehicleAndTrailers(vehicle);
                 }
             }
         }
@@ -99,6 +102,7 @@ Vehicle* VehiclePool::GetVehicle(unsigned int index)
     {
         return vehicle_pool_[index];
     }
+
     return nullptr;
 }
 
@@ -106,5 +110,6 @@ Vehicle* VehiclePool::GetRandomVehicle()
 {
     std::uniform_int_distribution<int> dist(0, static_cast<int>(vehicle_pool_.size() - 1));
     unsigned int                       number = static_cast<unsigned int>(dist(SE_Env::Inst().GetRand().GetGenerator()));
+
     return GetVehicle(number);
 }

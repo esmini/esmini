@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader revMajor="1"
+                revMinor="3"
+                date="2025-06-16T10:00:00"
+                description="Environment catalog"
+                author="esmini team"/>
+    <Catalog name="VehicleCatalog">
+        <Environment name="spring">
+            <TimeOfDay animation="true" dateTime="2025-04-15T14:00:00.456+00:00"/>
+            <Weather fractionalCloudCover="oneOktas" temperature="283.15" atmosphericPressure="101500">
+                <Sun azimuth="0.78" illuminance="70000" elevation="0.6"/>
+                <Fog visualRange="50"/>
+                <Precipitation precipitationType="rain" precipitationIntensity="2.0"/>
+                <Wind direction="0.0" speed="5"/>
+            </Weather>
+            <RoadCondition frictionScaleFactor="0.8"/>
+        </Environment>
+        <Environment name="summer">
+            <TimeOfDay animation="true" dateTime="2025-07-15T12:00:00.789+00:00"/>
+            <Weather fractionalCloudCover="zeroOktas" temperature="293.15" atmosphericPressure="101800">
+                <Sun azimuth="0.0" illuminance="90000" elevation="0.8"/>
+                <Fog visualRange="1000"/>
+                <Precipitation precipitationType="dry" precipitationIntensity="0.0"/>
+                <Wind direction="4.7124" speed="3"/>
+            </Weather>
+            <RoadCondition frictionScaleFactor="0.9"/>
+        </Environment>
+        <Environment name="autumn">
+            <TimeOfDay animation="true" dateTime="2025-10-15T09:00:00.012+00:00"/>
+            <Weather fractionalCloudCover="fiveOktas" temperature="278.15" atmosphericPressure="100500">
+                <Sun azimuth="2.35" illuminance="60000" elevation="0.4"/>
+                <Fog visualRange="40"/>
+                <Precipitation precipitationType="rain" precipitationIntensity="5.0"/>
+                <Wind direction="1.5708" speed="8"/>
+            </Weather>
+            <RoadCondition frictionScaleFactor="0.7"/>
+        </Environment>
+        <Environment name="winter">
+            <TimeOfDay animation="true" dateTime="2025-12-15T12:30:00.123+00:00"/>
+            <Weather fractionalCloudCover="sevenOktas" temperature="271.15" atmosphericPressure="10000">
+                <Sun azimuth="1.57" illuminance="80000" elevation="0.3"/>
+                <Fog visualRange="300"/>
+                <Precipitation precipitationType="snow" precipitationIntensity="10.0"/>
+                <Wind direction="3.1415" speed="10"/>
+            </Weather>
+            <RoadCondition frictionScaleFactor="0.5"/>
+        </Environment>
+        <Environment name="weather_test">
+            <TimeOfDay animation="true" dateTime="2023-11-15T10:30:00.123+00:00"/>
+            <Weather fractionalCloudCover="nineOktas" temperature="300" atmosphericPressure="10000">
+                <Sun azimuth="0.4" illuminance="100000" elevation="0.3"/>
+                <Fog visualRange="60000"/>
+                <Precipitation precipitationType="snow" precipitationIntensity="10.0"/>
+                <Wind direction="3.1415" speed="10"/>
+            </Weather>
+            <RoadCondition frictionScaleFactor="0.9"/>
+        </Environment>
+   </Catalog>
+</OpenSCENARIO>

@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate basic maneuvers and triggers with environment actions -->
+<!-- A white car is driving with constant speed -->
+<!-- A red car is overtaking -->
+<!-- At specific time gap the red car changes lane -->
+<!-- and ends up in front of the white car -->
+<!-- At another, larger, time gap the red car brakes -->
+
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="3"
+               date="2025-06-13T10:00:00"
+               description="Basic cut-in"
+               author="esmini-team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="EgoStartS" parameterType="double" value="50"/>
+      <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
+      <ParameterDeclaration name="HeadwayTime_Brake" parameterType="double" value="0.7"/>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="108"/>
+      <ParameterDeclaration name="TargetSpeedFactor" parameterType="double" value="1.2"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <EnvironmentCatalog>
+         <Directory path="../xosc/Catalogs/Environments"/>
+      </EnvironmentCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/e6mini.xodr"/>
+      <SceneGraphFile filepath="../models/e6mini.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+        <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="OverTaker">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-3" offset="0" s="$EgoStartS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$EgoSpeed / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="OverTaker">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-2" offset="0" s="25"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="CutInAndBrakeStory">
+         <ParameterDeclarations>
+            <ParameterDeclaration parameterType="string" name="owner" value="OverTaker"/>
+         </ParameterDeclarations>
+         <Act name="CutInAndBrakeAct">
+            <ManeuverGroup maximumExecutionCount="1" name="CutInAndBrakeSequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="$owner"/>
+               </Actors>
+               <Maneuver name="WeatherManeuver">
+                  <Event name="nightTimeEvent" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="nightTimeAction">
+                        <GlobalAction>
+                           <EnvironmentAction>
+                                 <Environment name="weather">
+                                    <TimeOfDay animation="true" dateTime="2025-06-13T00:00:00.000+00:00"/>
+                                 </Environment>
+                           </EnvironmentAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="simcondition" delay="0" conditionEdge="none">
+                                 <ByValueCondition>
+                                    <SimulationTimeCondition value="1.0" rule="greaterOrEqual"/>
+                                 </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="morningTimeEvent" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="morningTimeAction">
+                        <GlobalAction>
+                           <EnvironmentAction>
+                                 <Environment name="weather">
+                                    <TimeOfDay animation="true" dateTime="2025-06-13T06:00:00.000+00:00"/>
+                                 </Environment>
+                           </EnvironmentAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="simcondition" delay="0" conditionEdge="none">
+                                 <ByValueCondition>
+                                    <SimulationTimeCondition value="4.0" rule="greaterOrEqual"/>
+                                 </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="noonTimeEvent" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="noonTimeAction">
+                        <GlobalAction>
+                           <EnvironmentAction>
+                                 <Environment name="weather">
+                                    <TimeOfDay animation="true" dateTime="2025-06-13T12:00:00.000+00:00"/>
+                                 </Environment>
+                           </EnvironmentAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="simcondition" delay="0" conditionEdge="none">
+                                 <ByValueCondition>
+                                    <SimulationTimeCondition value="7.0" rule="greaterOrEqual"/>
+                                 </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="fogEventDense" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="fogActionDense">
+                        <GlobalAction>
+                           <EnvironmentAction>
+                                 <Environment name="weather">
+                                    <Weather>
+                                       <Fog visualRange="20"/>
+                                    </Weather>
+                                 </Environment>
+                           </EnvironmentAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="simcondition" delay="0" conditionEdge="none">
+                                 <ByValueCondition>
+                                    <SimulationTimeCondition value="10.0" rule="greaterOrEqual"/>
+                                 </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="fogEventReset" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="fogActionReset">
+                        <GlobalAction>
+                           <EnvironmentAction>
+                                 <Environment name="weather">
+                                    <Weather>
+                                       <Fog visualRange="10000"/>
+                                    </Weather>
+                                 </Environment>
+                           </EnvironmentAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="simcondition" delay="0" conditionEdge="none">
+                                 <ByValueCondition>
+                                    <SimulationTimeCondition value="13.0" rule="greaterOrEqual"/>
+                                 </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="multipleChangesEvent" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="multipleChangesAction">
+                        <GlobalAction>
+                           <EnvironmentAction>
+                              <Environment name="weather">
+                                 <TimeOfDay animation="true" dateTime="2025-10-15T12:00:00.012+00:00"/>
+                                 <Weather fractionalCloudCover="sixOktas" temperature="278.15" atmosphericPressure="100500">
+                                    <Sun azimuth="2.35" illuminance="80000" elevation="0.4"/>
+                                    <Fog visualRange="10000"/>
+                                    <Precipitation precipitationType="dry" precipitationIntensity="0.0"/>
+                                    <Wind direction="1.5708" speed="8"/>
+                                 </Weather>
+                                 <RoadCondition frictionScaleFactor="0.9"/>
+                              </Environment>
+                           </EnvironmentAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="simcondition" delay="0" conditionEdge="none">
+                                 <ByValueCondition>
+                                    <SimulationTimeCondition value="15.0" rule="greaterOrEqual"/>
+                                 </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="catalogEvent" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="catalogAction">
+                        <GlobalAction>
+                           <EnvironmentAction>
+                                 <CatalogReference catalogName="EnvironmentCatalog" entryName="winter"/>
+                           </EnvironmentAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="s" delay="0" conditionEdge="none">
+                                 <ByValueCondition>
+                                    <SimulationTimeCondition value="17.0" rule="greaterOrEqual"/>
+                                 </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="CutInManeuver">
+                  <Event name="OverTakerStartSpeedEvent" priority="overwrite">
+                     <Action name="OverTakerStartSpeedAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time" />
+                                 <SpeedActionTarget>
+                                    <RelativeTargetSpeed entityRef="Ego"
+                                                         value="$TargetSpeedFactor"
+                                                         speedTargetValueType="factor"
+                                                         continuous="true"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="OverTakerStartSpeedCondition"
+                                      delay="0"
+                                      conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="act"
+                                                                  storyboardElementRef="CutInAndBrakeAct"
+                                                                  state="startTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="CutInEvent" priority="overwrite">
+                     <Action name="CutInAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="3" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <RelativeTargetLane entityRef="Ego" value="0"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="CutInStartCondition" delay="0" conditionEdge="rising">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <TimeHeadwayCondition entityRef="$owner"
+                                                          value="$HeadwayTime_LaneChange"
+                                                          freespace="false"
+                                                          coordinateSystem="road"
+                                                          relativeDistanceType="longitudinal"
+                                                          rule="greaterThan"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="OvertakerBrakeEvent" priority="parallel">
+                     <Action name="OvertakerBrakeAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="-4" dynamicsDimension="rate"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="0"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="${BrakeCondition_HWT + _ + $HeadwayTime_Brake}" delay="0" conditionEdge="rising">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <TimeHeadwayCondition entityRef="$owner"
+                                                          value="$HeadwayTime_Brake"
+                                                          freespace="false"
+                                                          coordinateSystem="entity"
+                                                          relativeDistanceType="longitudinal"
+                                                          rule="greaterThan"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="CutInActStart" delay="0" conditionEdge="none">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>
+      </Story>
+      <StopTrigger>
+          <ConditionGroup>
+             <Condition name="StopCondition" delay="5" conditionEdge="rising">
+                <ByValueCondition>
+                   <StoryboardElementStateCondition storyboardElementType="maneuver"
+                                                    storyboardElementRef="CutInManeuver"
+                                                    state="endTransition"/>
+                </ByValueCondition>
+             </Condition>
+          </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

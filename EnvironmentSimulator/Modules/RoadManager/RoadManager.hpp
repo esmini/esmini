@@ -24,11 +24,13 @@
 
 #define PARAMPOLY3_STEPS 100
 #define FRICTION_DEFAULT 1.0
+#define FRICTION_MAX     5.0
 
 namespace roadmanager
 {
-    id_t GetNewGlobalLaneId();
-    id_t GetNewGlobalLaneBoundaryId();
+    id_t        GetNewGlobalLaneId();
+    id_t        GetNewGlobalLaneBoundaryId();
+    const char *ReadUserData(pugi::xml_node node, const std::string &code, const std::string &default_value = "");
 
     /**
             Add offset to a laneId to find a relative landId considering reference lane 0
@@ -535,6 +537,10 @@ namespace roadmanager
         LaneBoundaryOSI(id_t gbid) : global_id_(gbid)
         {
         }
+        LaneBoundaryOSI()
+        {
+            SetGlobalId();
+        }
         ~LaneBoundaryOSI(){};
         void SetGlobalId();
         id_t GetGlobalId() const
@@ -864,7 +870,7 @@ namespace roadmanager
             double friction;
         } Material;
 
-        typedef enum
+        typedef enum : int
         {
             LANE_TYPE_NONE            = (1 << 0),   // 1
             LANE_TYPE_DRIVING         = (1 << 1),   // 2
@@ -893,7 +899,8 @@ namespace roadmanager
             LANE_TYPE_ANY_DRIVING =
                 LANE_TYPE_DRIVING | LANE_TYPE_ENTRY | LANE_TYPE_EXIT | LANE_TYPE_OFF_RAMP | LANE_TYPE_ON_RAMP | LANE_TYPE_BIDIRECTIONAL,  // 1966594
             LANE_TYPE_ANY_ROAD = LANE_TYPE_ANY_DRIVING | LANE_TYPE_RESTRICTED | LANE_TYPE_STOP,                                           // 1966726
-            LANE_TYPE_ANY      = (-1)                                                                                                     // 1
+            LANE_TYPE_ANY      = -1,
+            LANE_TYPE_TUNNEL   = -2
         } LaneType;
 
         // Construct & Destruct
@@ -1202,6 +1209,30 @@ namespace roadmanager
         int fromLane_;
         int toLane_;
     } ValidityRecord;
+
+    class Tunnel
+    {
+    public:
+        enum class Type
+        {
+            STANDARD,
+            UNDERPASS
+        };
+
+        Tunnel() = default;
+
+        double          daylight_ = 0.0;  // degree of daylight in the tunnel
+        double          length_   = 0.0;
+        double          width_    = 0.0;
+        id_t            id_       = ID_UNDEFINED;
+        double          lighting_ = 0.0;
+        std::string     name_;
+        double          s_                = 0.0;
+        Type            type_             = Type::STANDARD;
+        bool            generate_3D_model = true;
+        double          transparency_     = 0.0;
+        LaneBoundaryOSI boundary_[2];
+    };
 
     class RoadObject
     {
@@ -1646,6 +1677,10 @@ namespace roadmanager
         virtual void   GetPos(double &x, double &y, double &z)      = 0;
         virtual void   GetPosLocal(double &x, double &y, double &z) = 0;
         virtual double GetHeight()                                  = 0;
+        OutlineCorner *GetCorner()
+        {
+            return this;
+        }
         virtual ~OutlineCorner()
         {
         }
@@ -1662,7 +1697,6 @@ namespace roadmanager
             return height_;
         }
 
-    private:
         id_t   roadId_;
         double s_, t_, dz_, height_, center_s_, center_t_, center_heading_;
     };
@@ -1678,7 +1712,6 @@ namespace roadmanager
             return height_;
         }
 
-    private:
         id_t   roadId_;
         double s_, t_, u_, v_, zLocal_, height_, heading_;
     };
@@ -1698,12 +1731,24 @@ namespace roadmanager
             FILL_TYPE_UNDEFINED
         } FillType;
 
-        int                          id_;
-        FillType                     fillType_;
-        bool                         closed_;
-        std::vector<OutlineCorner *> corner_;
+        typedef enum
+        {
+            CONTOUR_TYPE_POLYGON,
+            CONTOUR_TYPE_QUAD_STRIP
+        } ContourType;
 
-        Outline(int id, FillType fillType, bool closed) : id_(id), fillType_(fillType), closed_(closed)
+        id_t                         id_       = ID_UNDEFINED;
+        FillType                     fillType_ = FILL_TYPE_UNDEFINED;
+        bool                         closed_   = false;
+        bool                         roof_     = false;
+        std::vector<OutlineCorner *> corner_;
+        ContourType                  contourType_ = CONTOUR_TYPE_POLYGON;  // controls how the 3D tessellation of the countour should be done
+
+        Outline(id_t id, FillType fillType, bool closed)
+            : id_(id),
+              fillType_(fillType),
+              closed_(closed),
+              roof_(closed)  // default put roof on closed outlines
         {
         }
 
@@ -1717,6 +1762,14 @@ namespace roadmanager
         void AddCorner(OutlineCorner *outlineCorner)
         {
             corner_.push_back(outlineCorner);
+        }
+        void SetCountourType(ContourType contourType)
+        {
+            contourType_ = contourType;
+        }
+        bool GetCountourType() const
+        {
+            return contourType_;
         }
     };
 
@@ -1935,7 +1988,7 @@ namespace roadmanager
 
         RMObject(double      s,
                  double      t,
-                 int         id,
+                 id_t        id,
                  std::string name,
                  Orientation orientation,
                  double      z_offset,
@@ -1949,23 +2002,7 @@ namespace roadmanager
                  double      x,
                  double      y,
                  double      z,
-                 double      h)
-            : RoadObject(x, y, z, h),
-              name_(name),
-              type_(type),
-              id_(id),
-              s_(s),
-              t_(t),
-              z_offset_(z_offset),
-              orientation_(orientation),
-              length_(length),
-              height_(height),
-              width_(width),
-              heading_(heading),
-              pitch_(pitch),
-              roll_(roll)
-        {
-        }
+                 double      h);
 
         ~RMObject()
         {
@@ -1993,7 +2030,7 @@ namespace roadmanager
         {
             return type_;
         }
-        int GetId() const
+        id_t GetId() const
         {
             return id_;
         }
@@ -2092,11 +2129,15 @@ namespace roadmanager
         {
             return parking_space_;
         }
+        float *GetColor()
+        {
+            return color_;
+        }
 
     private:
         std::string            name_;
         ObjectType             type_;
-        int                    id_;
+        id_t                   id_;
         double                 s_;
         double                 t_;
         double                 z_offset_;
@@ -2111,6 +2152,7 @@ namespace roadmanager
         Repeat                *repeat_ = nullptr;
         std::vector<Repeat *>  repeats_;
         ParkingSpace           parking_space_;
+        float                  color_[4] = {0.0, 0.0, 0.0, 0.0};
     };
 
     enum class SpeedUnit
@@ -2306,6 +2348,7 @@ namespace roadmanager
         void                                     AddLaneOffset(LaneOffset *lane_offset);
         void                                     AddSignal(Signal *signal);
         void                                     AddObject(RMObject *object);
+        void                                     AddTunnel(Tunnel *tunnel);
         Elevation                               *GetElevation(idx_t idx) const;
         Elevation                               *GetSuperElevation(idx_t idx) const;
         unsigned int                             GetNumberOfSignals() const;
@@ -2322,6 +2365,18 @@ namespace roadmanager
         unsigned int GetNumberOfSuperElevations() const
         {
             return static_cast<unsigned int>(super_elevation_profile_.size());
+        }
+        unsigned int GetNumberOfTunnels() const
+        {
+            return static_cast<unsigned int>(tunnel_.size());
+        }
+        Tunnel *GetTunnel(idx_t idx) const
+        {
+            return (idx < tunnel_.size()) ? tunnel_[idx] : nullptr;
+        }
+        const std::vector<Tunnel *> &GetTunnels() const
+        {
+            return tunnel_;
         }
         double       GetLaneOffset(double s) const;
         double       GetLaneOffsetPrim(double s) const;
@@ -2406,6 +2461,7 @@ namespace roadmanager
         std::vector<LaneOffset *>               lane_offset_;
         std::vector<Signal *>                   signal_;
         std::vector<RMObject *>                 object_;
+        std::vector<Tunnel *>                   tunnel_;
     };
 
     class LaneRoadLaneConnection
@@ -2756,6 +2812,11 @@ namespace roadmanager
         void SetLaneBoundaryPoints();
 
         /**
+                Create tunnel road objects from lane boundary OSI points
+        */
+        void CreateTunnelOSIPointsAndObjects();
+
+        /**
                 Retrieve a road segment specified by road ID
                 @param id road ID as specified in the OpenDRIVE file
         */
@@ -2884,6 +2945,23 @@ namespace roadmanager
         void EstablishUniqueIds(pugi::xml_node &parent, std::string name, std::vector<std::pair<id_t, std::string>> &ids);
         id_t LookupRoadIdFromStr(std::string id_str);
         id_t LookupJunctionIdFromStr(std::string id_str);
+
+        Outline *CreateContinuousRepeatOutline(Road  *r,
+                                               id_t   ids,
+                                               double s,
+                                               double t,
+                                               double heading,
+                                               double length,
+                                               double rs,
+                                               double rlength,
+                                               double rwidthStart,
+                                               double rwidthEnd,
+                                               double rheightStart,
+                                               double rheightEnd,
+                                               double rtStart,
+                                               double rtEnd,
+                                               double rzOffsetStart,
+                                               double rzOffsetEnd);
 
     private:
         pugi::xml_node                            root_node_;
