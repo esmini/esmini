@@ -67,7 +67,6 @@ class TestSuiteBase(unittest.TestCase):
             return (list[int(size/2 - 1)] + list[int(size/2)]) / 2
 
     def run_repeat(self, scenario, esmini_args, timestep, ref_cpu_time, n_runs, plot=False):
-
         if n_runs < 1:
             self.assertFalse, "No runs specified"
             return
@@ -90,7 +89,7 @@ class TestSuiteBase(unittest.TestCase):
                 try:
                     log, duration, cpu_time, _ = run_scenario(scenario, esmini_args, application=exec, measure_cpu_time=True)
                 except Exception as e:
-                    print(e, flush=True)
+                    print(e, file=sys.stderr, flush=True)
                     print('\nFailure - check log.txt and', exec, file=sys.stderr, flush=True)
                     self.fail("Failed to execute test")
                     break
@@ -98,7 +97,6 @@ class TestSuiteBase(unittest.TestCase):
                 result_cpu_user.append(cpu_time.user)
                 result_cpu_system.append(cpu_time.system)
                 result_cpu_total.append(cpu_time.user + cpu_time.system)
-
             if failure:
                 continue
 
@@ -108,32 +106,27 @@ class TestSuiteBase(unittest.TestCase):
                 del result_cpu_user[0]
                 del result_cpu_system[0]
                 del result_cpu_total[0]
-
             average_duration = sum(result_duration) / len(result_duration)
             average_cpu_user = sum(result_cpu_user) / len(result_cpu_user)
             average_cpu_system = sum(result_cpu_system) / len(result_cpu_system)
             average_cpu_total = sum(result_cpu_total) / len(result_cpu_total)
-
             result_cpu_user.sort()
             result_cpu_system.sort()
             result_cpu_total.sort()
-
             median_cpu_user = self.median(result_cpu_user)
             median_cpu_system = self.median(result_cpu_system)
             median_cpu_total = self.median(result_cpu_total)
-
-            if ref_cpu_time > 0:
-                self.assertLess(median_cpu_total, ref_cpu_time * (1 + TOLERANCE))
-
             print('\n{}, {} {:.3f} ({:.3f}) / {:.3f}, {:.3f} / {:.3f}, {:.3f} / {:.3f}, {:.3f}, {}, {} '.format(
                 os.path.realpath(exec).replace(os.path.sep, '/'),
                 os.path.basename(scenario),
                 median_cpu_total, ref_cpu_time, average_cpu_total, median_cpu_user, average_cpu_user, median_cpu_system, average_cpu_system, average_duration, timestep, n_runs),
+                file=sys.stderr,
                 flush=True, end='')
-
+            if ref_cpu_time > 0:
+                self.assertLess(median_cpu_total, ref_cpu_time * (1 + TOLERANCE))
             time_vals_run.append(median_cpu_total)
 
-        print('', flush=True)
+        print('', file=sys.stderr, flush=True)
         time_vals.append(time_vals_run)
 
 class TestSuitePresetScenarios(TestSuiteBase):
@@ -244,12 +237,12 @@ if __name__ == "__main__":
     if args.scenarios is not None:
         scenarios += [os.path.realpath(s) for s in expand_wildcards(args.scenarios)]
 
-    print("timeout:", args.timeout, flush=True)
-    print("tolerance: {:.2f} ({:.0f}%)".format(TOLERANCE, 100 * TOLERANCE), flush=True)
+    print("timeout:", args.timeout, file=sys.stderr, flush=True)
+    print("tolerance: {:.2f} ({:.0f}%)".format(TOLERANCE, 100 * TOLERANCE), file=sys.stderr, flush=True)
     if len(scenarios) > 0:
-        print('runs:', args.runs, flush=True)
+        print('runs:', args.runs, file=sys.stderr, flush=True)
 
-    print("executable, scenario ... cpu_total median (ref) / average, cpu_user median / average, cpu_system median / average, duration average, timestep, n_runs", flush=True)
+    print("executable, scenario ... cpu_total median (ref) / average, cpu_user median / average, cpu_system median / average, duration average, timestep, n_runs", file=sys.stderr, flush=True)
 
     set_timeout(args.timeout)
 
