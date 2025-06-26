@@ -2839,12 +2839,26 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         parseDynamicConstraints(dynamics_node, action_dist->dynamics_, object);
                     }
 
-                    action_dist->target_object_ = ResolveObjectReference(parameters.ReadAttribute(lateralChild, "entityRef"));
+                    std::string entity_ref = parameters.ReadAttribute(lateralChild, "entityRef");
+                    if (entity_ref.empty())
+                    {
+                        LOG_ERROR_AND_QUIT("LateralDistanceAction: Mandatory attribute entityRef is missing");
+                    }
+                    action_dist->target_object_ = ResolveObjectReference(entity_ref);
 
-                    std::string continuous   = parameters.ReadAttribute(lateralChild, "continuous");
+                    std::string continuous = parameters.ReadAttribute(lateralChild, "continuous");
+                    if (continuous.empty())
+                    {
+                        LOG_ERROR_AND_QUIT("LateralDistanceAction: Mandatory attribute continuous is missing");
+                    }
                     action_dist->continuous_ = (continuous == "true");
 
-                    std::string freespace   = parameters.ReadAttribute(lateralChild, "freespace");
+                    std::string freespace = parameters.ReadAttribute(lateralChild, "freespace");
+                    if (freespace.empty())
+                    {
+                        LOG_ERROR_AND_QUIT("LateralDistanceAction: Mandatory attribute freespace is missing");
+                    }
+
                     action_dist->freespace_ = (freespace == "true" || freespace == "1");
 
                     std::string distance = parameters.ReadAttribute(lateralChild, "distance");
