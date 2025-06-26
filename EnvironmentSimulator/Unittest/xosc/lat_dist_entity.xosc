@@ -1,0 +1,280 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+   <FileHeader description="" author="esmini team" revMajor="1" revMinor="3" date="2025-07-07T08:00:00"/>
+   <ParameterDeclarations>
+      <!-- Modes: 0=simple 1=test 2=interactive -->
+      <ParameterDeclaration name="mode" parameterType="integer" value="1"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <SceneGraphFile filepath="../../../resources/models/parking_lot.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+         <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+         </ObjectController>
+      </ScenarioObject>
+      <ScenarioObject name="Target">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="100.0" y="100" h="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="2.5"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="92.0" y="110" h="0.4"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="5"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LateralAction>
+                     <LateralDistanceAction continuous="true" coordinateSystem="entity" entityRef="Ego" freespace="false" distance="5.0" displacement="leftToReferencedEntity">
+                        <DynamicConstraints maxAcceleration="5.0"/>
+                     </LateralDistanceAction>
+                  </LateralAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="MyStory">
+         <Act name="MyAct">
+            <ManeuverGroup maximumExecutionCount="1" name="MyManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="MyManeuver">
+                  <Event name="ActivateControllerEvent" priority="override">
+                     <Action name="ActivateControllerAction">
+                        <PrivateAction>
+                           <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="ActivateControllerTrigger" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <ParameterCondition parameterRef="mode" value="2" rule="equalTo"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event maximumExecutionCount="1" name="FollowPolyLineTrajectoryEvent" priority="override">
+                     <Action name="FollowPolyLineTrajectoryAction">
+                        <PrivateAction>
+                           <RoutingAction>
+                              <FollowTrajectoryAction>
+                                 <Trajectory closed="false" name="pline_trajectory">
+                                    <ParameterDeclarations/>
+                                    <Shape>
+                                       <Polyline>
+                                          <Vertex>
+                                             <Position>
+                                                <WorldPosition x="100.0" y="100.0"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex>
+                                             <Position>
+                                                <WorldPosition x="120.0" y="100.0"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex>
+                                             <Position>
+                                                <WorldPosition x="100.0" y="120.0"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex>
+                                             <Position>
+                                                <WorldPosition x="110.0" y="90.0"/>
+                                             </Position>
+                                          </Vertex>
+                                       </Polyline>
+                                    </Shape>
+                                 </Trajectory>
+                                 <TimeReference>
+                                    <None/>
+                                 </TimeReference>
+                                 <TrajectoryFollowingMode followingMode="position"/>
+                              </FollowTrajectoryAction>
+                           </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                  </Event>
+                  <Event maximumExecutionCount="1" name="FollowNurbsTrajectoryEvent" priority="override">
+                     <Action name="FollowNurbsTrajectoryAction">
+                        <PrivateAction>
+                           <RoutingAction>
+                              <FollowTrajectoryAction>
+                                 <TrajectoryRef>
+                                    <Trajectory closed="false" name="pline_trajectory">
+                                       <ParameterDeclarations/>
+                                       <Shape>
+                                          <Nurbs order="3">
+                                             <ControlPoint>
+                                                <Position>
+                                                   <RelativeWorldPosition entityRef="Ego" dx="0.0" dy="0.0"/>
+                                                </Position>
+                                             </ControlPoint>
+                                             <ControlPoint>
+                                                <Position>
+                                                   <RelativeWorldPosition entityRef="Ego" dx="20.0" dy="0.0"/>
+                                                </Position>
+                                             </ControlPoint>
+                                             <ControlPoint>
+                                                <Position>
+                                                   <RelativeWorldPosition entityRef="Ego" dx="20.0" dy="20.0"/>
+                                                </Position>
+                                             </ControlPoint>
+                                             <ControlPoint>
+                                                <Position>
+                                                   <RelativeWorldPosition entityRef="Ego" dx="-10.0" dy="-10.0"/>
+                                                </Position>
+                                             </ControlPoint>
+                                             <ControlPoint>
+                                                <Position>
+                                                   <RelativeWorldPosition entityRef="Ego" dx="-20.0" dy="0.0"/>
+                                                </Position>
+                                             </ControlPoint>
+                                             <Knot value="0.0"/>
+                                             <Knot value="0.0"/>
+                                             <Knot value="0.0"/>
+                                             <Knot value="0.33"/>
+                                             <Knot value="0.66"/>
+                                             <Knot value="1.0"/>
+                                             <Knot value="1.0"/>
+                                             <Knot value="1.0"/>
+                                          </Nurbs>
+                                       </Shape>
+                                    </Trajectory>
+                                 </TrajectoryRef>
+                                 <TimeReference>
+                                    <None/>
+                                 </TimeReference>
+                                 <TrajectoryFollowingMode followingMode="position"/>
+                              </FollowTrajectoryAction>
+                           </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="NurbsTrajectoryTrigger" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="FollowPolyLineTrajectoryEvent" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="MyManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Target"/>
+               </Actors>
+               <Maneuver name="MyManeuver">
+                  <Event maximumExecutionCount="1" name="LateralDistanceWithFreespaceEventLeft" priority="override">
+                     <Action name="LateralDistanceWithFreespaceActionLeft">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LateralDistanceAction continuous="true" coordinateSystem="entity" entityRef="Ego" freespace="true" distance="5.0" displacement="leftToReferencedEntity">
+                                 <DynamicConstraints maxAcceleration="10.0"/>
+                              </LateralDistanceAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LateralDistanceWithFreespaceTimeTrigger" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="28" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                           <Condition name="LateralDistanceWithFreespaceEnableTrigger" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <ParameterCondition parameterRef="mode" value="1" rule="equalTo"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event maximumExecutionCount="1" name="LateralDistanceWithFreespaceEventRight" priority="override">
+                     <Action name="LateralDistanceWithFreespaceActionRight">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LateralDistanceAction continuous="true" coordinateSystem="entity" entityRef="Ego" freespace="true" distance="5.0" displacement="rightToReferencedEntity">
+                                 <DynamicConstraints maxAcceleration="10.0"/>
+                              </LateralDistanceAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LateralDistanceWithFreespaceTimeTrigger" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="35" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                           <Condition name="LateralDistanceWithFreespaceEnableTrigger" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <ParameterCondition parameterRef="mode" value="1" rule="equalTo"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StopSimulationCondition" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="65" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

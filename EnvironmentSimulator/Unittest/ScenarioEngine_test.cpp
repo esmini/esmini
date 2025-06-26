@@ -5696,6 +5696,85 @@ TEST(DeltaDirection, DistanceDiffDirection)
     ASSERT_EQ(pos_diff.dDirection, false);
 }
 
+TEST(LatDistAction, EntityCoordinates)
+{
+    std::unique_ptr<ScenarioEngine> se = std::make_unique<ScenarioEngine>("../../../EnvironmentSimulator/Unittest/xosc/lat_dist_entity_basic.xosc");
+    ASSERT_NE(se, nullptr);
+    const double dt = 0.1;
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 5);
+
+    roadmanager::Position& pos_0 = entities->object_[0]->pos_;
+    roadmanager::Position& pos_1 = entities->object_[1]->pos_;
+    roadmanager::Position& pos_2 = entities->object_[2]->pos_;
+    roadmanager::Position& pos_3 = entities->object_[3]->pos_;
+    roadmanager::Position& pos_4 = entities->object_[4]->pos_;
+
+    EXPECT_NEAR(pos_0.GetX(), 100.0, 1e-3);
+    EXPECT_NEAR(pos_0.GetY(), -1.535, 1e-3);
+    EXPECT_NEAR(pos_0.GetH(), 0.0, 1e-3);
+    EXPECT_NEAR(pos_1.GetX(), 115.0, 1e-3);
+    EXPECT_NEAR(pos_1.GetY(), -9.0, 1e-3);
+    EXPECT_NEAR(pos_1.GetH(), 1.5708, 1e-3);
+    EXPECT_NEAR(pos_2.GetX(), 135.0, 1e-3);
+    EXPECT_NEAR(pos_2.GetY(), -9.0, 1e-3);
+    EXPECT_NEAR(pos_2.GetH(), 0.7854, 1e-3);
+    EXPECT_NEAR(pos_3.GetX(), 149.0, 1e-3);
+    EXPECT_NEAR(pos_3.GetY(), -5.0, 1e-3);
+    EXPECT_NEAR(pos_3.GetH(), 5.4977, 1e-3);
+    EXPECT_NEAR(pos_4.GetX(), 177.0, 1e-3);
+    EXPECT_NEAR(pos_4.GetY(), -1.5, 1e-3);
+    EXPECT_NEAR(pos_4.GetH(), 1.5707, 1e-3);
+
+    while (se->getSimulationTime() < 1.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    EXPECT_NEAR(pos_0.GetX(), 100.0, 1e-3);
+    EXPECT_NEAR(pos_0.GetY(), -1.535, 1e-3);
+    EXPECT_NEAR(pos_0.GetH(), 0.0, 1e-3);
+    EXPECT_NEAR(pos_1.GetX(), 115.0718, 1e-3);
+    EXPECT_NEAR(pos_1.GetY(), -4.0023, 1e-3);
+    EXPECT_NEAR(pos_1.GetH(), 1.4850, 1e-3);
+    EXPECT_NEAR(pos_2.GetX(), 136.3312, 1e-3);
+    EXPECT_NEAR(pos_2.GetY(), -4.3221, 1e-3);
+    EXPECT_NEAR(pos_2.GetH(), 1.5141, 1e-3);
+    EXPECT_NEAR(pos_3.GetX(), 153.6639, 1e-3);
+    EXPECT_NEAR(pos_3.GetY(), -6.1186, 1e-3);
+    EXPECT_NEAR(pos_3.GetH(), 0.2146, 1e-3);
+    EXPECT_NEAR(pos_4.GetX(), 179.5069, 1e-3);
+    EXPECT_NEAR(pos_4.GetY(), 2.5889, 1e-3);
+    EXPECT_NEAR(pos_4.GetH(), 0.5707, 1e-3);
+
+    while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    EXPECT_NEAR(pos_0.GetX(), 100.0, 1e-3);
+    EXPECT_NEAR(pos_0.GetY(), -1.535, 1e-3);
+    EXPECT_NEAR(pos_0.GetH(), 0.0, 1e-3);
+    EXPECT_NEAR(pos_1.GetX(), 132.3449, 1e-3);
+    EXPECT_NEAR(pos_1.GetY(), 1.4591, 1e-3);
+    EXPECT_NEAR(pos_1.GetH(), 0.0011, 1e-3);
+    EXPECT_NEAR(pos_2.GetX(), 153.3136, 1e-3);
+    EXPECT_NEAR(pos_2.GetY(), 1.4587, 1e-3);
+    EXPECT_NEAR(pos_2.GetH(), 0.0012, 1e-3);
+    EXPECT_NEAR(pos_3.GetX(), 170.3916, 1e-3);
+    EXPECT_NEAR(pos_3.GetY(), 1.4508, 1e-3);
+    EXPECT_NEAR(pos_3.GetH(), 0.0046, 1e-3);
+    EXPECT_NEAR(pos_4.GetX(), 199.1407, 1e-3);
+    EXPECT_NEAR(pos_4.GetY(), 1.4706, 1e-3);
+    EXPECT_NEAR(pos_4.GetH(), 6.2821, 1e-3);
+}
+
 int main(int argc, char** argv)
 {
 #if 0  // set to 1 and modify filter to run one single test

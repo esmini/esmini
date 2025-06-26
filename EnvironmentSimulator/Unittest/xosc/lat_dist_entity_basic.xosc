@@ -1,0 +1,213 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+   <FileHeader description="" author="esmini team" revMajor="1" revMinor="3" date="2025-07-07T08:00:00"/>
+   <ParameterDeclarations>
+      <!-- Modes: 0=test 1=interactive -->
+      <ParameterDeclaration name="mode" parameterType="integer" value="0"/>
+      <ParameterDeclaration name="speed" parameterType="double" value="5"/>
+      <ParameterDeclaration name="dist" parameterType="double" value="20"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+        <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+         <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+         </ObjectController>
+      </ScenarioObject>
+      <ScenarioObject name="Target1">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target2">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target3">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+      <ScenarioObject name="Target4">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" s="100"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target1">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="${95 + 1 * $dist}" y="-9" h="${pi/2}"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="$speed"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LateralAction>
+                     <LateralDistanceAction continuous="true" coordinateSystem="entity" entityRef="Ego" freespace="true" distance="1" displacement="leftToReferencedEntity">
+                        <DynamicConstraints maxAcceleration="$speed"/>
+                     </LateralDistanceAction>
+                  </LateralAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target2">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="${95 + 2 * $dist}" y="-9" h="${pi/4}"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="$speed"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LateralAction>
+                     <LateralDistanceAction continuous="true" coordinateSystem="entity" entityRef="Ego" freespace="true" distance="1" displacement="leftToReferencedEntity">
+                        <DynamicConstraints maxAcceleration="5.0"/>
+                     </LateralDistanceAction>
+                  </LateralAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target3">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="${95 + 2.7 * $dist}" y="-5" h="${-pi/4}"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="5"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LateralAction>
+                     <LateralDistanceAction continuous="true" coordinateSystem="entity" entityRef="Ego" freespace="true" distance="1" displacement="leftToReferencedEntity">
+                        <DynamicConstraints maxAcceleration="5.0"/>
+                     </LateralDistanceAction>
+                  </LateralAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Target4">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="${95 + 4.1 * $dist}" y="-1.5" h="${pi/2}"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="5"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LateralAction>
+                     <LateralDistanceAction continuous="true" coordinateSystem="entity" entityRef="Ego" freespace="true" distance="1" displacement="leftToReferencedEntity">
+                        <DynamicConstraints maxAcceleration="5.0"/>
+                     </LateralDistanceAction>
+                  </LateralAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="MyStory">
+         <Act name="MyAct">
+            <ManeuverGroup maximumExecutionCount="1" name="MyManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="MyManeuver">
+                  <Event name="ActivateControllerEvent" priority="override">
+                     <Action name="ActivateControllerAction">
+                        <PrivateAction>
+                           <ActivateControllerAction longitudinal="true" lateral="true"/>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="ActivateControllerTrigger" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <ParameterCondition parameterRef="mode" value="1" rule="equalTo"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StopSimulationConditionTest" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="5.0" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+            <Condition name="StopSimulationCondition" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <ParameterCondition parameterRef="mode" value="0" rule="equalTo"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+         <ConditionGroup>
+            <Condition name="StopSimulationConditionInteractive" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="120.0" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+            <Condition name="StopSimulationCondition" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <ParameterCondition parameterRef="mode" value="1" rule="equalTo"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

@@ -2180,7 +2180,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^145.600, 0, Ego, 10.000, -1.535, 0.000, 0.000, 0.000, 0.000, 25.000, -0.050, 3.149', csv, re.MULTILINE))
         self.assertTrue(re.search('^175.000, 0, Ego, 598.465, 190.240, 0.000, 1.571, 0.000, 0.000, 25.000, 0.000, 4.565', csv, re.MULTILINE))
         self.assertTrue(re.search('^183.500, 0, Ego, 210.000, -1.535, 0.000, 0.000, 0.000, 0.000, 25.000, 0.000, 2.239', csv, re.MULTILINE))
-    
+
     def test_lat_dist_road_coordinates(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/lat_dist_road_test.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
 
@@ -2348,6 +2348,45 @@ class TestSuite(unittest.TestCase):
         else:
             print("Skipping due to lacking SUMO support ", end='', file=sys.stderr)
 
+    def test_lateral_distance_entity(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/lat_dist_entity.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*lat_dist_entity.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('^.0.000.* FollowPolyLineTrajectoryAction initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.28.100.* Stopping Init Target LateralAction on conflicting Longitudinal domain\\(s\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.32.000.* FollowNurbsTrajectoryAction initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.65.100.* storyBoard runningState -> stopTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.*Closing', log, re.MULTILINE)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('^2.000, 0, Ego, 105.000, 100.000, 0.000, 0.000, 0.000, 0.000, 2.500, 0.000, 1.719', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.000, 1, Target, 100.368, 105.946, 0.000, 5.845, 0.000, 0.000, 5.000, -0.328, 3.439', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.000, 0, Ego, 110.000, 100.000, 0.000, 0.000, 0.000, 0.000, 2.500, 0.000, 3.439', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.000, 1, Target, 110.270, 105.016, 0.000, 6.278, 0.000, 0.000, 5.000, 0.008, 0.594', csv, re.MULTILINE))
+        self.assertTrue(re.search('^10.000, 0, Ego, 116.464, 103.536, 0.000, 2.356, 0.000, 0.000, 2.500, 0.200, 2.314', csv, re.MULTILINE))
+        self.assertTrue(re.search('^10.000, 1, Target, 128.434, 114.618, 0.000, 2.699, 0.000, 0.000, 5.000, 0.628, 4.627', csv, re.MULTILINE))
+        self.assertTrue(re.search('^17.000, 0, Ego, 104.090, 115.910, 0.000, 2.356, 0.000, 0.000, 2.500, 0.000, 2.048', csv, re.MULTILINE))
+        self.assertTrue(re.search('^17.000, 1, Target, 100.421, 112.521, 0.000, 2.359, 0.000, 0.000, 5.000, -0.003, 4.096', csv, re.MULTILINE))
+        self.assertTrue(re.search('^28.000, 0, Ego, 106.867, 99.399, 0.000, 5.034, 0.000, 0.000, 2.500, 0.000, 5.221', csv, re.MULTILINE))
+        self.assertTrue(re.search('^28.000, 1, Target, 111.515, 101.226, 0.000, 5.038, 0.000, 0.000, 5.000, -0.006, 4.159', csv, re.MULTILINE))
+        self.assertTrue(re.search('^28.500, 0, Ego, 107.262, 98.213, 0.000, 5.034, 0.000, 0.000, 2.500, 0.000, 2.509', csv, re.MULTILINE))
+        self.assertTrue(re.search('^28.500, 1, Target, 113.107, 99.429, 0.000, 5.837, 0.000, 0.000, 5.000, 0.195, 5.019', csv, re.MULTILINE))
+        self.assertTrue(re.search('^30.000, 0, Ego, 108.448, 94.655, 0.000, 5.034, 0.000, 0.000, 2.500, 0.000, 0.657', csv, re.MULTILINE))
+        self.assertTrue(re.search('^30.000, 1, Target, 116.410, 92.882, 0.000, 5.036, 0.000, 0.000, 5.000, -0.005, 1.315', csv, re.MULTILINE))
+        self.assertTrue(re.search('^36.000, 0, Ego, 113.981, 80.739, 0.000, 5.238, 0.000, 0.000, 2.500, 0.106, 5.815', csv, re.MULTILINE))
+        self.assertTrue(re.search('^36.000, 1, Target, 125.659, 66.082, 0.000, 3.668, 0.000, 0.000, 5.000, -0.376, 5.348', csv, re.MULTILINE))
+        self.assertTrue(re.search('^40.000, 0, Ego, 121.040, 73.977, 0.000, 5.985, 0.000, 0.000, 2.500, 0.422, 2.971', csv, re.MULTILINE))
+        self.assertTrue(re.search('^40.000, 1, Target, 130.983, 62.401, 0.000, 0.676, 0.000, 0.000, 5.000, 0.276, 5.942', csv, re.MULTILINE))
+        self.assertTrue(re.search('^47.300, 0, Ego, 123.078, 83.060, 0.000, 2.584, 0.000, 0.000, 2.500, 0.065, 4.848', csv, re.MULTILINE))
+        self.assertTrue(re.search('^47.300, 1, Target, 125.370, 89.894, 0.000, 2.590, 0.000, 0.000, 5.000, 0.052, 3.413', csv, re.MULTILINE))
+        self.assertTrue(re.search('^60.000, 0, Ego, 102.245, 104.341, 0.000, 1.434, 0.000, 0.000, 2.500, -0.268, 1.315', csv, re.MULTILINE))
+        self.assertTrue(re.search('^60.000, 1, Target, 109.035, 127.836, 0.000, 6.147, 0.000, 0.000, 5.000, -0.134, 2.630', csv, re.MULTILINE))
+        self.assertTrue(re.search('^65.100, 0, Ego, 103.797, 109.070, 0.000, 1.109, 0.000, 0.000, 0.000, 0.000, 3.034', csv, re.MULTILINE))
+        self.assertTrue(re.search('^65.100, 1, Target, 126.524, 139.057, 0.000, 1.107, 0.000, 0.000, 5.000, -0.024, 0.089', csv, re.MULTILINE))
 
 if __name__ == "__main__":
     # execute only if run as a script

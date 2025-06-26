@@ -444,6 +444,25 @@ int GetIntersectionOfTwoLineSegments(double  ax1,
                                      double& y3);
 
 /**
+        This function calculates any intersection points between a line and a circle.
+        Returns nr of intersections found.
+
+        @param p0 first point of line
+        @param p1 second point of line
+        @param cc center of circle
+        @param cr radius of circle
+        @param i0 first intersection point (if exists)
+        @param i1 second intersection point (if exists)
+        @return Number of intersections found (0, 1 or 2)
+ */
+int GetIntersectionsOfLineAndCircle(const double (&p0)[2],
+                                    const double (&p1)[2],
+                                    const double (&cc)[2],
+                                    const double cr,
+                                    double (&i0)[2],
+                                    double (&i1)[2]);
+
+/**
         Calculate distance between two 2D points
 */
 double PointDistance2D(double x0, double y0, double x1, double y1);

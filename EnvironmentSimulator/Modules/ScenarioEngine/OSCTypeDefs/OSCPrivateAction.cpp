@@ -1948,28 +1948,62 @@ void LatDistanceAction::Start(double simTime)
         displacement_ = DisplacementType::LEFT_TO_REFERENCED_ENTITY;
     }
 
-    if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
-    {
-        // We want to be on the left side of the target object
-        distance_ = -abs(distance_);
-        sign_     = -1.0;
-    }
-    else if (displacement_ == DisplacementType::RIGHT_TO_REFERENCED_ENTITY)
-    {
-        // We want to be on the right side of the target object
-        distance_ = abs(distance_);
-        sign_     = 1.0;
-    }
+    double ego_width    = object_->boundingbox_.dimensions_.width_;
+    double target_width = target_object_->boundingbox_.dimensions_.width_;
 
-    if (freespace_)
+    if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
     {
-        // We only take the width of the cars into account if we are in freespace mode
-        double ego_width    = object_->boundingbox_.dimensions_.width_;
-        double target_width = target_object_->boundingbox_.dimensions_.width_;
-        distance_ += sign_ * (ego_width + target_width) / 2.0;
+        if (freespace_)
+        {
+            distance_ += (ego_width + target_width) / 2.0;
+        }
+        distance_ *= displacement_ == DisplacementType::RIGHT_TO_REFERENCED_ENTITY ? -1 : 1;
+    }
+    else if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
+    {
+        if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
+        {
+            // We want to be on the left side of the target object
+            distance_ = -abs(distance_);
+            sign_     = -1.0;
+        }
+        else if (displacement_ == DisplacementType::RIGHT_TO_REFERENCED_ENTITY)
+        {
+            // We want to be on the right side of the target object
+            distance_ = abs(distance_);
+            sign_     = 1.0;
+        }
+
+        if (freespace_)
+        {
+            // We only take the width of the cars into account if we are in freespace mode
+            distance_ += sign_ * (ego_width + target_width) / 2.0;
+        }
     }
 
     move_state_ = MoveState::INIT;
+
+    // do some usage checks
+    if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
+    {
+        if (dynamics_.max_acceleration_rate_ < LARGE_NUMBER || dynamics_.max_deceleration_rate_ < LARGE_NUMBER ||
+            dynamics_.max_deceleration_ < LARGE_NUMBER || dynamics_.max_speed_ < LARGE_NUMBER)
+        {
+            LOG_INFO("LatDistanceAction: For entity coord system only maxAcceleration is supported (clamped at 1000). Omit for instant positioning.");
+        }
+    }
+    else if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
+    {
+        if (dynamics_.max_acceleration_rate_ < LARGE_NUMBER || dynamics_.max_deceleration_rate_ < LARGE_NUMBER ||
+            dynamics_.max_deceleration_ < LARGE_NUMBER)
+        {
+            LOG_INFO("LatDistanceAction: For road coord system only maxAcceleration and mAxSpeed are supported. Omit for instant positioning.");
+        }
+    }
+    else
+    {
+        LOG_WARN("LatDistanceAction: Unsupported coordinate system {}", cs_);
+    }
 
     OSCAction::Start(simTime);
 }
@@ -1998,9 +2032,9 @@ void LatDistanceAction::GetDesiredRoadPos(const double distance_error, roadmanag
 void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanager::Position& pos2, double& distance_error)
 {
     // Find out current distance
-    if (roadmanager::CoordinateSystem::CS_ROAD != cs_)
+    if (roadmanager::CoordinateSystem::CS_ROAD != cs_ && roadmanager::CoordinateSystem::CS_ENTITY != cs_)
     {
-        LOG_WARN("LateralDistanceAction: Unsupported coordinate system");
+        LOG_WARN("LatDistanceAction: Unsupported coordinate system {}", cs_);
         return;
     }
 
@@ -2038,118 +2072,249 @@ void LatDistanceAction::Step(double simTime, double dt)
         return;
     }
 
-    switch (move_state_)
+    if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
     {
-        case MoveState::INIT:
+        // find intersection of object's y axis and target object's x-axis
+        double target_obj_x_axis[2] = {0.0, 0.0};
+        double target_obj_offset[2] = {0.0, 0.0};
+        double target_pos[2]        = {0.0, 0.0};
+        double step_len             = object_->GetSpeed() * dt;
+
+        RotateVec2D(1.0, 0.0, target_object_->pos_.GetH(), target_obj_x_axis[0], target_obj_x_axis[1]);
+        RotateVec2D(0.0, distance_, target_object_->pos_.GetH(), target_obj_offset[0], target_obj_offset[1]);
+
+        // calculate target position, i.e. aiming point
+        ProjectPointOnLine2D(object_->pos_.GetX(),
+                             object_->pos_.GetY(),
+                             target_object_->pos_.GetX() + target_obj_offset[0],
+                             target_object_->pos_.GetY() + target_obj_offset[1],
+                             target_object_->pos_.GetX() + target_obj_offset[0] + target_obj_x_axis[0],
+                             target_object_->pos_.GetY() + target_obj_offset[1] + target_obj_x_axis[1],
+                             target_pos[0],
+                             target_pos[1]);
+
+        double delta[2] = {target_pos[0] - object_->pos_.GetX(), target_pos[1] - object_->pos_.GetY()};
+        double dist     = GetLengthOfVector2D(delta[0], delta[1]);
+
+        if (dynamics_.max_acceleration_ >= LARGE_NUMBER)
         {
-            if (dynamics_.max_speed_ >= LARGE_NUMBER && dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
+            // move instantly to target position
+            if (dist < fabs(object_->GetSpeed()) * dt)
             {
-                move_state_ = MoveState::MOVE_RIGID;
+                // given speed, some distance remains for moving forward
+                double dist_remains = fabs(object_->GetSpeed()) * dt - dist;
+                object_->pos_.SetInertiaPos(target_pos[0] + target_obj_x_axis[0] * dist_remains,
+                                            target_pos[1] + target_obj_x_axis[1] * dist_remains,
+                                            target_object_->pos_.GetH());
             }
             else
             {
-                spring_.SetTension(0.4 * dynamics_.max_acceleration_);  // Adjust spring tension based on max acceleration
-                move_state_ = MoveState::MOVE_DYNAMIC;
+                object_->pos_.SetInertiaPos(target_pos[0], target_pos[1], target_object_->pos_.GetH());
             }
-            old_x_ = object_->pos_.GetX();
-            old_y_ = object_->pos_.GetY();
         }
-        break;
-        case MoveState::MOVE_RIGID:
+        else
         {
-            double distance_error;
-            GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
-
-            roadmanager::Position desired_pos;
-            GetDesiredRoadPos(distance_error, desired_pos);
-            object_->pos_.SetLanePos(desired_pos.GetTrackId(), desired_pos.GetLaneId(), desired_pos.GetS(), desired_pos.GetOffset());
-            object_->SetSpeed(object_->GetSpeed());
-            if (!continuous_)
+            double delta_norm[2] = {0.0, 0.0};
+            NormalizeVec2D(delta[0], delta[1], delta_norm[0], delta_norm[1]);
+            double new_pos[2] = {0.0, 0.0};
+            if (dist < SMALL_NUMBER)
             {
-                object_->pos_.SetHeading(atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_));
-
-                if (std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
-                {
-                    // Reached requested distance, quit action
-                    move_state_ = MoveState::INIT;
-                    OSCAction::End();
-                }
+                // on parallel line at specified distance, just move along
+                RotateVec2D(1.0, 0.0, target_object_->pos_.GetH(), new_pos[0], new_pos[1]);
+                object_->pos_.SetInertiaPos(object_->pos_.GetX() + new_pos[0] * step_len,
+                                            object_->pos_.GetY() + new_pos[1] * step_len,
+                                            target_object_->pos_.GetH());
             }
             else
             {
-                object_->pos_.SetHeading(atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_));
-            }
-            old_x_ = object_->pos_.GetX();
-            old_y_ = object_->pos_.GetY();
-            object_->SetDirtyBits(Object::DirtyBit::LATERAL);
-        }
-        break;
-        case (MoveState::MOVE_DYNAMIC):
-        {
-            // Find desired position
-            double distance_error;
-            GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
+                // calculate turn radius based on acceleration constraint, clamp 1000 m/s^2 for nuneric stability
+                // acceleration peaking at mid curve, approximate 1.5 times with a pure circular path
+                double turn_radius = MAX(0.5, 1.5 * pow(object_->GetSpeed(), 2) / MIN(fabs(dynamics_.max_acceleration_), 1000));
+                double dh_max      = MIN(fabs((object_->GetSpeed() / turn_radius) * dt) * 1.5, M_PI - SMALL_NUMBER);
 
-            if (LARGE_NUMBER != dynamics_.max_acceleration_)
-            {
-                // Parameters
-                // For the spring values x and x0, we set the current distance error and target value to 0.0 since we have already calculated the
-                // distance error. Distance error is negated to ensure that the spring force acts in the correct direction
-                spring_.SetValue(-distance_error);
-                spring_.SetV(lat_vel_ - target_object_->pos_.GetVelLat());  // Speed difference in lateral direction
-                spring_.Update(dt);
-
-                // Clamp the change in acceleration (delta_accel) by jerk limits
-                double delta_accel =
-                    CLAMP(spring_.GetA() - acceleration_, -(dynamics_.max_acceleration_rate_ * dt), dynamics_.max_acceleration_rate_ * dt);
-
-                // Calculate the new acceleration after applying jerk limits
-                acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_acceleration_, dynamics_.max_acceleration_);
-
-                // Subtract small number to maintain some longitudinal velocity, avoid driving in wrong direction if lat speed is capped
-                lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, (std::min(dynamics_.max_speed_, object_->GetSpeed()) - SMALL_NUMBER));
-
-                if (!continuous_ && std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
+                if (dist < step_len / 2 - SMALL_NUMBER && step_len / 2 > turn_radius - SMALL_NUMBER)
                 {
-                    // Reached requested distance, quit action
-                    move_state_ = MoveState::INIT;
-                    OSCAction::End();
-                }
-            }
-            else
-            {
-                // Subtract small number to maintain some longitudinal velocity, avoid driving in wrong direction if lat speed is capped
-                lat_vel_ = SIGN(distance_error) * (std::min(dynamics_.max_speed_, object_->GetSpeed()) - SMALL_NUMBER);
+                    // if distance to target point is small, move directly to the target
+                    double i0[2], i1[2];
+                    GetIntersectionsOfLineAndCircle(
+                        {target_object_->pos_.GetX() + target_obj_offset[0], target_object_->pos_.GetY() + target_obj_offset[1]},
+                        {target_object_->pos_.GetX() + target_obj_offset[0] + target_obj_x_axis[0],
+                         target_object_->pos_.GetY() + target_obj_offset[1] + target_obj_x_axis[1]},
+                        {object_->pos_.GetX(), object_->pos_.GetY()},
+                        step_len,
+                        i0,
+                        i1);
 
-                double d_offset  = lat_vel_ * dt;
-                double new_error = distance_error - d_offset;
-                if (SIGN(new_error) != SIGN(distance_error))
-                {
-                    d_offset = distance_error;
-                    lat_vel_ = d_offset / dt;
-
-                    if (!continuous_)
+                    // pick point most aligned with current heading
+                    double h0 = GetAngleOfVector(i0[0] - object_->pos_.GetX(), i0[1] - object_->pos_.GetY());
+                    double h1 = GetAngleOfVector(i1[0] - object_->pos_.GetX(), i1[1] - object_->pos_.GetY());
+                    if (GetAbsAngleDifference(h0, target_object_->pos_.GetH()) < GetAbsAngleDifference(h1, target_object_->pos_.GetH()))
                     {
+                        // pick first intersection
+                        object_->pos_.SetInertiaPos(i0[0], i0[1], h0);
+                    }
+                    else
+                    {
+                        // pick second intersection
+                        object_->pos_.SetInertiaPos(i1[0], i1[1], h1);
+                    }
+                }
+                else
+                {
+                    // move towards the target distance line
+                    double dh = 0.0;
+                    if (dist > turn_radius - SMALL_NUMBER)
+                    {
+                        // if distance to target point is large, move straight towards the target while limit heading change rate
+                        double target_heading = atan2(target_pos[1] - object_->pos_.GetY(), target_pos[0] - object_->pos_.GetX());
+                        dh                    = ABS_LIMIT(GetAngleDifference(target_heading, object_->pos_.GetH()), dh_max);
+                    }
+                    else
+                    {
+                        // within turning radius, align heading with target vehicle while moving towards the target distance line
+                        // calculate new driving direction (heading) based on distance and heading alignment with target line
+                        double h_diff_delta = GetAngleDifference(GetAngleOfVector(delta[0], delta[1]), object_->pos_.GetH());
+                        double h_diff_heading =
+                            GetAngleDifference(GetAngleOfVector(target_obj_x_axis[0], target_obj_x_axis[1]), object_->pos_.GetH());
+
+                        double d_angle = step_len / turn_radius;  // angle in radians repersenting the distance along the segment
+
+                        // calculate linear transition parameter w based on mean tangent angle on the segment
+                        double angle = MAX(acos(1 - dist / turn_radius), d_angle / 2);
+                        double w     = (2 * angle - d_angle / 2) / M_PI;
+
+                        // then apply cubic smoothing for C1 continuity, if acc_y set
+                        w = 3 * pow(w, 2) - 2 * pow(w, 3);
+
+                        // calculate delta heading based on distance to target point and heading alignment
+                        dh = ABS_LIMIT((w)*h_diff_delta + (1 - w) * h_diff_heading, dh_max);
+                    }
+                    double new_heading = GetAngleInInterval2PI(object_->pos_.GetH() + dh);
+                    new_pos[0]         = object_->pos_.GetX() + cos(new_heading) * step_len;
+                    new_pos[1]         = object_->pos_.GetY() + sin(new_heading) * step_len;
+
+                    object_->pos_.SetInertiaPos(new_pos[0], new_pos[1], new_heading);
+                }
+            }
+        }
+        object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+    }
+    else if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
+    {
+        switch (move_state_)
+        {
+            case MoveState::INIT:
+            {
+                if (dynamics_.max_speed_ >= LARGE_NUMBER && dynamics_.max_acceleration_ >= LARGE_NUMBER &&
+                    dynamics_.max_deceleration_ >= LARGE_NUMBER)
+                {
+                    move_state_ = MoveState::MOVE_RIGID;
+                }
+                else
+                {
+                    spring_.SetTension(0.4 * dynamics_.max_acceleration_);  // Adjust spring tension based on max acceleration
+                    move_state_ = MoveState::MOVE_DYNAMIC;
+                }
+                old_x_ = object_->pos_.GetX();
+                old_y_ = object_->pos_.GetY();
+            }
+            break;
+            case MoveState::MOVE_RIGID:
+            {
+                double distance_error;
+                GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
+
+                roadmanager::Position desired_pos;
+                GetDesiredRoadPos(distance_error, desired_pos);
+                object_->pos_.SetLanePos(desired_pos.GetTrackId(), desired_pos.GetLaneId(), desired_pos.GetS(), desired_pos.GetOffset());
+                object_->SetSpeed(object_->GetSpeed());
+                if (!continuous_)
+                {
+                    object_->pos_.SetHeading(atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_));
+
+                    if (std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
+                    {
+                        // Reached requested distance, quit action
+                        move_state_ = MoveState::INIT;
                         OSCAction::End();
                     }
                 }
+                else
+                {
+                    object_->pos_.SetHeading(atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_));
+                }
+                old_x_ = object_->pos_.GetX();
+                old_y_ = object_->pos_.GetY();
+                object_->SetDirtyBits(Object::DirtyBit::LATERAL);
             }
+            break;
+            case (MoveState::MOVE_DYNAMIC):
+            {
+                // Find desired position
+                double distance_error;
+                GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
 
-            double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
+                if (LARGE_NUMBER != dynamics_.max_acceleration_)
+                {
+                    // Parameters
+                    // For the spring values x and x0, we set the current distance error and target value to 0.0 since we have already calculated the
+                    // distance error. Distance error is negated to ensure that the spring force acts in the correct direction
+                    spring_.SetValue(-distance_error);
+                    spring_.SetV(lat_vel_ - target_object_->pos_.GetVelLat());  // Speed difference in lateral direction
+                    spring_.Update(dt);
 
-            object_->MoveAlongS(long_vel * dt);
-            object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
-                                     object_->pos_.GetLaneId(),
-                                     object_->pos_.GetS(),
-                                     object_->pos_.GetOffset() + lat_vel_ * dt);
+                    // Clamp the change in acceleration (delta_accel) by jerk limits
+                    double delta_accel =
+                        CLAMP(spring_.GetA() - acceleration_, -(dynamics_.max_acceleration_rate_ * dt), dynamics_.max_acceleration_rate_ * dt);
 
-            object_->pos_.SetHeading(atan2(object_->pos_.GetY() - old_y_, object_->pos_.GetX() - old_x_));
+                    // Calculate the new acceleration after applying jerk limits
+                    acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_acceleration_, dynamics_.max_acceleration_);
 
-            object_->SetSpeed(object_->GetSpeed());
-            object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED);
+                    // Subtract small number to maintain some longitudinal velocity, avoid driving in wrong direction if lat speed is capped
+                    lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, (std::min(dynamics_.max_speed_, object_->GetSpeed()) - SMALL_NUMBER));
 
-            old_x_ = object_->pos_.GetX();
-            old_y_ = object_->pos_.GetY();
+                    if (!continuous_ && std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
+                    {
+                        // Reached requested distance, quit action
+                        move_state_ = MoveState::INIT;
+                        OSCAction::End();
+                    }
+                }
+                else
+                {
+                    // Subtract small number to maintain some longitudinal velocity, avoid driving in wrong direction if lat speed is capped
+                    lat_vel_ = SIGN(distance_error) * (std::min(dynamics_.max_speed_, object_->GetSpeed()) - SMALL_NUMBER);
+
+                    double d_offset  = lat_vel_ * dt;
+                    double new_error = distance_error - d_offset;
+                    if (SIGN(new_error) != SIGN(distance_error))
+                    {
+                        d_offset = distance_error;
+                        lat_vel_ = d_offset / dt;
+
+                        if (!continuous_)
+                        {
+                            OSCAction::End();
+                        }
+                    }
+                }
+
+                double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
+
+                object_->MoveAlongS(long_vel * dt);
+                object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
+                                         object_->pos_.GetLaneId(),
+                                         object_->pos_.GetS(),
+                                         object_->pos_.GetOffset() + lat_vel_ * dt);
+
+                object_->pos_.SetHeading(atan2(object_->pos_.GetY() - old_y_, object_->pos_.GetX() - old_x_));
+
+                object_->SetSpeed(object_->GetSpeed());
+                object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED);
+
+                old_x_ = object_->pos_.GetX();
+                old_y_ = object_->pos_.GetY();
+            }
         }
     }
 }

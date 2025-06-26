@@ -387,6 +387,52 @@ int GetIntersectionOfTwoLineSegments(double  ax1,
     return 0;
 }
 
+int GetIntersectionsOfLineAndCircle(const double (&p0)[2],
+                                    const double (&p1)[2],
+                                    const double (&cc)[2],
+                                    const double cr,
+                                    double (&i0)[2],
+                                    double (&i1)[2])
+{
+    int num_intersections = 0;
+
+    // Use the quadratic formula to find intersections
+    double dx           = p1[0] - p0[0];
+    double dy           = p1[1] - p0[1];
+    double A            = dx * dx + dy * dy;
+    double B            = 2 * (dx * (p0[0] - cc[0]) + dy * (p0[1] - cc[1]));
+    double C            = (p0[0] - cc[0]) * (p0[0] - cc[0]) + (p0[1] - cc[1]) * (p0[1] - cc[1]) - cr * cr;
+    double discriminant = B * B - 4 * A * C;
+
+    if (discriminant < -SMALL_NUMBER)
+    {
+        // No intersection
+        return 0;
+    }
+    else if (NEAR_NUMBERS(discriminant, 0))
+    {
+        // One intersection
+        double t          = -B / (2 * A);
+        i0[0]             = p0[0] + t * dx;
+        i0[1]             = p0[1] + t * dy;
+        num_intersections = 1;
+    }
+    else
+    {
+        // Two intersections
+        double sqrt_discriminant = sqrt(discriminant);
+        double t1                = (-B + sqrt_discriminant) / (2 * A);
+        double t2                = (-B - sqrt_discriminant) / (2 * A);
+        i0[0]                    = p0[0] + t1 * dx;
+        i0[1]                    = p0[1] + t1 * dy;
+        i1[0]                    = p0[0] + t2 * dx;
+        i1[1]                    = p0[1] + t2 * dy;
+        num_intersections        = 2;
+    }
+
+    return num_intersections;
+}
+
 bool PointInBetweenVectorEndpoints(double x3, double y3, double x1, double y1, double x2, double y2, double& sNorm)
 {
     bool inside;

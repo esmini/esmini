@@ -2073,11 +2073,41 @@ The following logic applies for the actor to reach the desired lateral distance 
 
 * maxDeceleration constraint: Not supported. Use maxAcceleration instead.
 
-Freespace calculations assume all vehicles share the same heading and only consider their widths for determining lateral relationships
+Freespace calculations assume all vehicles share the same heading and only consider their widths for determining lateral relationships.
+
+A video clip showing a the LateralDistanceAction in a highway driving context. A typical use case would be a target vehicle swerving in neighbor lane, challenging the AD/ADS functions of an Ego vehicle.
+
+video::lATeP5cz_HE[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
 ==== Entity coordinate system
 
-TBD
+The lateral distance is defined as a distance to the left or right of the given reference entity in its local coordinate system, i.e. along the reference entity y-axis.
+
+Imagine a point exactly at given distance to the left or right of the reference entity, on its y-axis. Then imagine an infinite line passing through that point and parallel to the reference entity's x-axis. This is the line where the action entity should strive to drive along. Note that for each simulation step this line will be updated to reflect the current position and orientation of the reference entity.
+
+The following logic applies for the actor to reach the desired lateral distance to the referenced entity:
+
+* No dynamic constraints: Lateral distance reached in one single simulation step.
+
+* maxAcceleration constraint: The entity will drive towards and align to the "distance line" explained above, as fast as possible given the lateral acceleration constraint and current longitudinal speed. The larger lasteral acceleration the smaller turning radius. Smoothing will be applied to the beginning and end of the turning manuever for C1 continuiuty (no rapid steering changes). Longitudinal speed will be maintained.
+
+Image below illustrates the lateral distance action in entity coordinate system, with a reference entity (white car) and a few action entities (red cars). The red cars have various starting states but will all strive to reach a lateral distance of 1.0m to the left of the reference entity. From test scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/lat_dist_entity_basic.xosc[lat_dist_entity_basic.xosc].
+
+image::lat_dist_explained.jpg[]
+
+A video clip from another test scenario, https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/lat_dist_entity.xosc[lat_dist_entity.xosc], demonstrating the lateral distance action in entity coordinate system:
+
+video::JPwLDv1SgR0[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+There are various modes of this scenario:
+
+* Mode 0 is a simpler variant keeping same distance throughout the scenario (shown in video clip above)
+* Mode 1 is used for test case and includes further challenges e.g. switching into freespace mode and swapping side, from left to right.
+* Mode 2 is interactive, you drive Ego with keyboard arrow keys.
+
+Mode is a scenario parameter and can easily be changed in the ParameterDeclaration in the top section of the file.
+
+Regarding use cases of the LateralDistanceAction in entity coordinate system, we have no clue. But we're interested to learn how, if ever, its' being used. Please let us know.
 
 == Controllers
 

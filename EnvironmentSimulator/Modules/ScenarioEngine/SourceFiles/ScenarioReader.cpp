@@ -2485,14 +2485,14 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
                          values[i].default_value < values[i].performance_value ? values[i].default_value : values[i].performance_value);
                 *values[i].variable = values[i].default_value < values[i].performance_value ? values[i].default_value : values[i].performance_value;
             }
-            else if (*values[i].variable > values[i].performance_value)
-            {
-                LOG_WARN("parseDynamicConstraints: {} value {:.2f} exceeds object performance value: {:.2f}, truncating",
-                         values[i].label,
-                         *values[i].variable,
-                         values[i].performance_value);
-                *values[i].variable = values[i].performance_value;
-            }
+            // else if (*values[i].variable > values[i].performance_value)
+            //{
+            //     LOG_WARN("parseDynamicConstraints: {} value {:.2f} exceeds object performance value: {:.2f}, truncating",
+            //              values[i].label,
+            //              *values[i].variable,
+            //              values[i].performance_value);
+            //     *values[i].variable = values[i].performance_value;
+            // }
         }
     }
 

@@ -424,7 +424,7 @@
 
         <!-- Tractor + Semi-trailer + Trailer -->
         <Vehicle name="semi_truck_with_extra_trailer" vehicleCategory="truck" model3d="../models/semi_tractor.osgb">
-            <!-- tractor model bounding box xyz: 2.20, 0.00, 1.68 lwh: 5.70, 2.60, 3.36 -->  
+            <!-- tractor model bounding box xyz: 2.20, 0.00, 1.68 lwh: 5.70, 2.60, 3.36 -->
             <BoundingBox>
                 <Center x="2.20" y="0.0" z="1.68"/>
                 <Dimensions width="2.6" length="5.70" height="3.36"/>
@@ -491,7 +491,7 @@
 
         <!-- Tractor + Semi-trailer + Trailer with rotating axle -->
         <Vehicle name="semi_truck_with_extra_trailer_rotating_axle" vehicleCategory="truck" model3d="../models/semi_tractor.osgb">
-            <!-- tractor model bounding box xyz: 2.20, 0.00, 1.68 lwh: 5.70, 2.60, 3.36 -->  
+            <!-- tractor model bounding box xyz: 2.20, 0.00, 1.68 lwh: 5.70, 2.60, 3.36 -->
             <BoundingBox>
                 <Center x="2.20" y="0.0" z="1.68"/>
                 <Dimensions width="2.6" length="5.70" height="3.36"/>
