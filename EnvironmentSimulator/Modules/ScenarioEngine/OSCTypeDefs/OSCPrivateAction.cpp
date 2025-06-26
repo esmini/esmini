@@ -1949,30 +1949,37 @@ void LatDistanceAction::Start(double simTime)
     // }
 
     // Resolve displacement
-    if (displacement_ == DisplacementType::ANY)
+    if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
     {
-        // Find out current displacement, and apply it
-        double x, y;
-        object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
 
-        // Just interested in the x-axis component of the distance, if 0.0 we default to the right
-        (y < 0.0) ? displacement_ = DisplacementType::LEFT_TO_REFERENCED_ENTITY : displacement_ = DisplacementType::RIGHT_TO_REFERENCED_ENTITY;
     }
-
-    if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
+    else
     {
-        // We want to be on the left side of the target object
-        distance_ = abs(distance_);
-    }
-    else if (displacement_ == DisplacementType::RIGHT_TO_REFERENCED_ENTITY)
-    {
-        // We want to be on the right side of the target object
-        distance_ = -abs(distance_);
-    }
+        if (displacement_ == DisplacementType::ANY)
+        {
+            // Find out current displacement, and apply it
+            double x, y;
+            object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
 
-    old_x_      = object_->pos_.GetX();
-    old_y_      = object_->pos_.GetY();
-    move_state_ = MoveState::INIT;
+            // Just interested in the x-axis component of the distance, if 0.0 we default to the right
+            (y < 0.0) ? displacement_ = DisplacementType::LEFT_TO_REFERENCED_ENTITY : displacement_ = DisplacementType::RIGHT_TO_REFERENCED_ENTITY;
+        }
+
+        if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
+        {
+            // We want to be on the left side of the target object
+            distance_ = abs(distance_);
+        }
+        else if (displacement_ == DisplacementType::RIGHT_TO_REFERENCED_ENTITY)
+        {
+            // We want to be on the right side of the target object
+            distance_ = -abs(distance_);
+        }
+
+        old_x_      = object_->pos_.GetX();
+        old_y_      = object_->pos_.GetY();
+        move_state_ = MoveState::INIT;
+    }
 
     OSCAction::Start(simTime);
 }
@@ -2008,35 +2015,46 @@ void LatDistanceAction::GetDesiredRoadPos(const double distance_error, roadmanag
 void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanager::Position& pos2, double& distance_error)
 {
     // Find out current distance
-    if (roadmanager::CoordinateSystem::CS_ROAD != cs_)
+    if (roadmanager::CoordinateSystem::CS_ROAD != cs_ && roadmanager::CoordinateSystem::CS_ENTITY != cs_)
     {
-        LOG_WARN("LatDistanceAction: Unsupported coordinate system");
+        LOG_WARN("LatDistanceAction: Unsupported coordinate system {}", cs_);
         return;
     }
 
     // double measured_distance;
     roadmanager::PositionDiff pos_diff;
     pos2.Delta(&pos1, pos_diff);
-    int    sign              = (IsAngleForward(pos1.GetHRelative())) ? 1 : -1;  // Facing along the road : 1, against the road: -1
-    double measured_distance = -sign * pos_diff.dt;                             // Negate if facing against the road to preserve the sign
-    distance_error           = 0.0;
-    if (!freespace_)
+    LOG_INFO("LatDistanceAction: ds: {:.2f} dt: {:.2f}", pos_diff.ds, pos_diff.dt);
+
+    if (roadmanager::CoordinateSystem::CS_ENTITY == cs_)
     {
-        // How much we need to move to reach the target distance, negate if facing against the road
-        distance_error = sign * (measured_distance + distance_);
+        distance_error = pos_diff.dt;
+        return;
     }
     else
     {
-        double ego_width    = object_->boundingbox_.dimensions_.width_;
-        double target_width = target_object_->boundingbox_.dimensions_.width_;
-        distance_error      = sign * (measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0 +
-                                 distance_);  // Taking into account the width of both vehicles
+        int    sign              = (IsAngleForward(pos1.GetHRelative())) ? 1 : -1;  // Facing along the road : 1, against the road: -1
+        double measured_distance = -sign * pos_diff.dt;                             // Negate if facing against the road to preserve the sign
+        distance_error           = 0.0;
+        if (!freespace_)
+        {
+            // How much we need to move to reach the target distance, negate if facing against the road
+            distance_error = sign * (measured_distance + distance_);
+        }
+        else
+        {
+            double ego_width    = object_->boundingbox_.dimensions_.width_;
+            double target_width = target_object_->boundingbox_.dimensions_.width_;
+            distance_error      = sign * (measured_distance + SIGN(distance_) * (ego_width + target_width) / 2.0 +
+                                     distance_);  // Taking into account the width of both vehicles
+        }
+        std::cout << "Distance error: " << distance_error << "\n";
+        // distance_error *= sign;
+
     }
-    std::cout << "Distance error: " << distance_error << "\n";
-    // distance_error *= sign;
 }
 
-void LatDistanceAction::Step(double simTime, double)
+void LatDistanceAction::Step(double simTime, double dt)
 {
     if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
@@ -2044,125 +2062,162 @@ void LatDistanceAction::Step(double simTime, double)
         return;
     }
 
-    double dt = simTime - sim_time_;
-    sim_time_ = simTime;
-
-    switch (move_state_)
+    if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
     {
-        case MoveState::INIT:
+        // find projection of objects reference point on reference entity x-axis offseted by specified distance
+        double target_obj_x_axis[2] = {0.0, 0.0};
+        double target_obj_offset[2] = {0.0, 0.0};
+        double new_pos[2]           = {0.0, 0.0};
+
+        RotateVec2D(1.0, 0.0, target_object_->pos_.GetH(), target_obj_x_axis[0], target_obj_x_axis[1]);
+        RotateVec2D(0.0, distance_, target_object_->pos_.GetH(), target_obj_offset[0], target_obj_offset[1]);
+        ProjectPointOnLine2D(object_->pos_.GetX(),
+                             object_->pos_.GetY(),
+                             target_object_->pos_.GetX() + target_obj_offset[0],
+                             target_object_->pos_.GetY() + target_obj_offset[1],
+                             target_object_->pos_.GetX() + target_obj_offset[0] + target_obj_x_axis[0],
+                             target_object_->pos_.GetY() + target_obj_offset[1] + target_obj_x_axis[1],
+                             new_pos[0],
+                             new_pos[1]);
+
+        if (dynamics_.max_speed_ >= LARGE_NUMBER && dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
         {
-            if (dynamics_.max_speed_ >= LARGE_NUMBER && dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
+            // move instantly to the calculated target point
+            object_->pos_.SetInertiaPos(new_pos[0], new_pos[1], target_object_->pos_.GetH());
+        }
+        else
+        {
+            // move towards the projected point
+            double delta[2] = {new_pos[0] - object_->pos_.GetX(), new_pos[1] - object_->pos_.GetY()};
+            double dist     = GetLengthOfVector2D(delta[0], delta[1]);
+            double speed    = ABS_LIMIT(dist / dt, dynamics_.max_speed_);
+            double step     = speed * dt;
+            double fraction = step / dist;
+            double delta_h  = fraction * GetAngleDifference(target_object_->pos_.GetH(), object_->pos_.GetH());
+            object_->pos_.SetInertiaPos(object_->pos_.GetX() + delta[0], object_->pos_.GetY() + delta[1], object_->pos_.GetH() + delta_h);
+        }
+
+        object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+    }
+    else
+    {
+        switch (move_state_)
+        {
+            case MoveState::INIT:
             {
-                move_state_ = MoveState::MOVE_RIGID;
-            }
-            else
-            {
-                if (LARGE_NUMBER != dynamics_.max_acceleration_ || LARGE_NUMBER != dynamics_.max_deceleration_)
+                if (dynamics_.max_speed_ >= LARGE_NUMBER && dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
                 {
-                    if (LARGE_NUMBER == dynamics_.max_acceleration_)
+                    move_state_ = MoveState::MOVE_RIGID;
+                }
+                else
+                {
+                    if (LARGE_NUMBER != dynamics_.max_acceleration_ || LARGE_NUMBER != dynamics_.max_deceleration_)
                     {
-                        LOG_WARN("LatDistanceAction: maxAcceleration is not set, setting it to maxDeceleration");
-                        dynamics_.max_acceleration_ = dynamics_.max_deceleration_;
+                        if (LARGE_NUMBER == dynamics_.max_acceleration_)
+                        {
+                            LOG_WARN("LatDistanceAction: maxAcceleration is not set, setting it to maxDeceleration");
+                            dynamics_.max_acceleration_ = dynamics_.max_deceleration_;
+                        }
+                        spring_.SetTension(0.4 * dynamics_.max_acceleration_);  // Adjust spring tension based on max acceleration
                     }
-                    spring_.SetTension(0.4 * dynamics_.max_acceleration_);  // Adjust spring tension based on max acceleration
-                }
-                move_state_ = MoveState::MOVE_DYNAMIC;
-            }
-        }
-        break;
-        case MoveState::MOVE_RIGID:
-        {
-            double distance_error;
-            GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
-
-            roadmanager::Position desired_pos;
-            GetDesiredRoadPos(distance_error, desired_pos);
-            object_->pos_.SetLanePos(desired_pos.GetTrackId(), desired_pos.GetLaneId(), desired_pos.GetS(), desired_pos.GetOffset());
-
-            if (!continuous_)
-            {
-                object_->pos_.SetHeading(desired_pos.GetRoadH());
-
-                if (std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
-                {
-                    // Reached requested distance, quit action
-                    move_state_ = MoveState::INIT;
-                    OSCAction::End();
+                    move_state_ = MoveState::MOVE_DYNAMIC;
                 }
             }
-            else
+            break;
+            case MoveState::MOVE_RIGID:
             {
-                object_->pos_.SetHeading(atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_));
-                old_x_ = object_->pos_.GetX();
-                old_y_ = object_->pos_.GetY();
-            }
-        }
-        break;
-        case (MoveState::MOVE_DYNAMIC):
-        {
-            // Find desired position
-            double distance_error;
-            GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
+                double distance_error;
+                GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
 
-            // Cap acceleration if given
-            if (LARGE_NUMBER != dynamics_.max_acceleration_)
-            {
-                // Parameters
-                // For the spring values x and x0, we set the current distance error and target value to 0.0 since we have already calculated the
-                // distance error We negate the distance error to ensure that the spring force acts in the correct direction
-                spring_.SetValue(-distance_error);
-                spring_.SetV(lat_vel_ - target_object_->pos_.GetVelLat());  // Speed difference in lateral direction
-                spring_.Update(dt);
+                roadmanager::Position desired_pos;
+                GetDesiredRoadPos(distance_error, desired_pos);
+                object_->pos_.SetLanePos(desired_pos.GetTrackId(), desired_pos.GetLaneId(), desired_pos.GetS(), desired_pos.GetOffset());
 
-                // Clamp the change in acceleration (delta_accel) by jerk limits
-                double delta_accel =
-                    CLAMP(spring_.GetA() - acceleration_, -(dynamics_.max_acceleration_rate_ * dt), dynamics_.max_acceleration_rate_ * dt);
-
-                // Calculate the new acceleration after applying jerk limits
-                acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_acceleration_, dynamics_.max_acceleration_);
-
-                lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, std::min(dynamics_.max_speed_, object_->GetSpeed()));
-
-                if (!continuous_ && std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
+                if (!continuous_)
                 {
-                    // Reached requested distance, quit action
-                    move_state_ = MoveState::INIT;
-                    OSCAction::End();
-                }
-            }
-            else
-            {
-                lat_vel_ = SIGN(distance_error) * std::min(dynamics_.max_speed_, object_->GetSpeed());
+                    object_->pos_.SetHeading(desired_pos.GetRoadH());
 
-                double d_offset  = lat_vel_ * dt;
-                double new_error = distance_error - d_offset;
-                if (SIGN(new_error) != SIGN(distance_error))
-                {
-                    d_offset = distance_error;
-                    lat_vel_ = d_offset / dt;
-
-                    if (!continuous_)
+                    if (std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
                     {
+                        // Reached requested distance, quit action
+                        move_state_ = MoveState::INIT;
                         OSCAction::End();
                     }
                 }
+                else
+                {
+                    object_->pos_.SetHeading(atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_));
+                    old_x_ = object_->pos_.GetX();
+                    old_y_ = object_->pos_.GetY();
+                }
             }
+            break;
+            case (MoveState::MOVE_DYNAMIC):
+            {
+                // Find desired position
+                double distance_error;
+                GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
 
-            double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
+                // Cap acceleration if given
+                if (LARGE_NUMBER != dynamics_.max_acceleration_)
+                {
+                    // Parameters
+                    // For the spring values x and x0, we set the current distance error and target value to 0.0 since we have already calculated the
+                    // distance error We negate the distance error to ensure that the spring force acts in the correct direction
+                    spring_.SetValue(-distance_error);
+                    spring_.SetV(lat_vel_ - target_object_->pos_.GetVelLat());  // Speed difference in lateral direction
+                    spring_.Update(dt);
 
-            object_->MoveAlongS(long_vel * dt);
-            object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
-                                     object_->pos_.GetLaneId(),
-                                     object_->pos_.GetS(),
-                                     object_->pos_.GetOffset() + lat_vel_ * dt);
+                    // Clamp the change in acceleration (delta_accel) by jerk limits
+                    double delta_accel =
+                        CLAMP(spring_.GetA() - acceleration_, -(dynamics_.max_acceleration_rate_ * dt), dynamics_.max_acceleration_rate_ * dt);
 
-            object_->pos_.SetHeading(atan2(object_->pos_.GetY() - old_y_, object_->pos_.GetX() - old_x_));
+                    // Calculate the new acceleration after applying jerk limits
+                    acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_acceleration_, dynamics_.max_acceleration_);
 
-            object_->SetSpeed(object_->GetSpeed());
-            object_->SetDirtyBits(Object::DirtyBit::LATERAL |
-                                  Object::DirtyBit::LONGITUDINAL);  // | Object::DirtyBit::SPEED || Object::DirtyBit::ALIGN_MODE_H_SET);
-            old_x_ = object_->pos_.GetX();
-            old_y_ = object_->pos_.GetY();
+                    lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, std::min(dynamics_.max_speed_, object_->GetSpeed()));
+
+                    if (!continuous_ && std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
+                    {
+                        // Reached requested distance, quit action
+                        move_state_ = MoveState::INIT;
+                        OSCAction::End();
+                    }
+                }
+                else
+                {
+                    lat_vel_ = SIGN(distance_error) * std::min(dynamics_.max_speed_, object_->GetSpeed());
+
+                    double d_offset  = lat_vel_ * dt;
+                    double new_error = distance_error - d_offset;
+                    if (SIGN(new_error) != SIGN(distance_error))
+                    {
+                        d_offset = distance_error;
+                        lat_vel_ = d_offset / dt;
+
+                        if (!continuous_)
+                        {
+                            OSCAction::End();
+                        }
+                    }
+                }
+
+                double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
+
+                object_->MoveAlongS(long_vel * dt);
+                object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
+                                         object_->pos_.GetLaneId(),
+                                         object_->pos_.GetS(),
+                                         object_->pos_.GetOffset() + lat_vel_ * dt);
+
+                object_->pos_.SetHeading(atan2(object_->pos_.GetY() - old_y_, object_->pos_.GetX() - old_x_));
+
+                object_->SetSpeed(object_->GetSpeed());
+                object_->SetDirtyBits(Object::DirtyBit::LATERAL |
+                                      Object::DirtyBit::LONGITUDINAL);  // | Object::DirtyBit::SPEED || Object::DirtyBit::ALIGN_MODE_H_SET);
+                old_x_ = object_->pos_.GetX();
+                old_y_ = object_->pos_.GetY();
+            }
         }
     }
 }

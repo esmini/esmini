@@ -97,6 +97,9 @@ static int execute_scenario(int argc, char* argv[])
         }
 
         retval = player->Frame(dt);
+        //roadmanager::PositionDiff diff;
+        //player->scenarioEngine->entities_.object_[0]->pos_.Delta(&player->scenarioEngine->entities_.object_[1]->pos_, diff);
+        //LOG_INFO("ds: {} dt: {}", diff.ds, diff.dt);
 
 #ifdef _USE_IMPLOT
         if (plot != nullptr && plot->IsModeSynchronuous())

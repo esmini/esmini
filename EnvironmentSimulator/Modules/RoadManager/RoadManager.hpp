@@ -3435,7 +3435,7 @@ namespace roadmanager
         @return 0 if position found and parameter values are valid, else -1
         */
         int Distance(double x, double y, CoordinateSystem cs, RelativeDistanceType relDistType, double &dist, double maxDist = LARGE_NUMBER) const;
-        
+
         /**
          * Get the lateral stopping distance of the entity given its current speed and maximum deceleration
          * @param maxDeceleration The maximum deceleration of the entity
@@ -3444,7 +3444,7 @@ namespace roadmanager
         {
             return this->GetVelLat() * this->GetVelLat() / (2.0 * abs(maxDeceleration));
         }
-        
+
         /**
          * Get the longitudinal stopping distance of the entity given its current speed and maximum deceleration
          * @param maxDeceleration The maximum deceleration of the entity
