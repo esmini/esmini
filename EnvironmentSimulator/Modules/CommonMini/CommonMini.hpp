@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include "EnumConfig.hpp"
+
 #include <vector>
 #include <random>
 #include <fstream>
