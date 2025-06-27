@@ -108,6 +108,9 @@
     <ScalarVariable name="xosc_path" valueReference="0" causality="parameter" variability="fixed">
       <String start=""/>
     </ScalarVariable>
+    <ScalarVariable name="esmini_args" valueReference="1" causality="parameter" variability="fixed">
+      <String start=""/>
+    </ScalarVariable>
   </ModelVariables>
   <ModelStructure>
     <Outputs>
