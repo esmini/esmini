@@ -12,6 +12,8 @@
 
 #pragma once
 
+#include "EnumConfig.hpp"
+
 #include <vector>
 #include <random>
 #include <fstream>
@@ -940,12 +942,16 @@ public:
     std::string              opt_str_;
     std::string              opt_desc_;
     std::string              opt_arg_;
-    bool                     set_;
+    bool                     set_ = false;
     std::vector<std::string> arg_value_;
     std::string              default_value_;
     bool                     persistent_          = false;
     bool                     autoApply_           = false;
     bool                     isSingleValueOption_ = false;
+
+    SE_Option()
+    {
+    }
 
     SE_Option(std::string opt_str,
               std::string opt_desc,
@@ -971,6 +977,10 @@ class SE_Options
 #define OPT_PREFIX "--"
 
 public:
+    SE_Options()
+    {
+        option_.resize(CONFIG_ENUM::CONFIGS_COUNT);
+    }
     void AddOption(std::string opt_str,
                    std::string opt_desc,
                    std::string opt_arg             = "",
@@ -1001,16 +1011,16 @@ public:
     // it does the whole cleanup of the option i.e. unsets, non-persists and clears value(s) of the option
     int UnsetOption(const std::string& opt);
     // clears only value(s) of the option and let the other flags as they are
-    int                                               ClearOption(const std::string& opt);
-    const std::unordered_map<std::string, SE_Option>& GetAllOptions() const;
-    std::string                                       GetSetOptionsAsStr() const;
+    int         ClearOption(const std::string& opt);
+    std::string GetSetOptionsAsStr() const;
 
 private:
-    std::unordered_map<std::string, SE_Option> option_;
-    std::vector<SE_Option*>                    optionOrder_;  // To maintain the order of insertion of options, to print in help
-    std::string                                app_name_;
-    std::vector<std::string>                   originalArgs_;
-    std::vector<std::string>                   unknown_args_;
+    // std::unordered_map<std::string, SE_Option> option_;
+    std::vector<SE_Option>   option_;
+    std::vector<SE_Option*>  optionOrder_;  // To maintain the order of insertion of options, to print in help
+    std::string              app_name_;
+    std::vector<std::string> originalArgs_;
+    std::vector<std::string> unknown_args_;
 
     // Get option by name if present otherwise will return null
     SE_Option* GetOption(std::string opt);
