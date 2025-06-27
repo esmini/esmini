@@ -10756,6 +10756,10 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
         int                              adjustedLaneIdA = GetLaneId();
         roadmanager::RoadPath::PathNode* last_node       = path->visited_.size() > 0 ? path->visited_.back() : nullptr;
 
+        // Check the angles of the two positions relative to the road direction
+        bool pos_a_forward = (IsAngleForward(GetHRelative()));
+        bool pos_b_forward = (IsAngleForward(pos_b->GetHRelative()));
+
         if (last_node != nullptr)
         {
             // Find out corresponding lane ID of connected route up to pos B
@@ -10767,6 +10771,9 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
                 adjustedLaneIdA = last_node->fromRoad->GetConnectingLaneId(last_node->link, adjustedLaneIdA, pos_b->GetTrackId());
                 // move to the s location of pos B to find out the lane ID there (possibly another lane section)
                 adjustedLaneIdA = road_B->GetConnectedLaneIdAtS(adjustedLaneIdA, 0.0, pos_b->GetS());
+
+                // Check relative heading
+                pos_a_forward = true;  // We come in at the start of the road, so we are aligned with the road direction
             }
             else
             {
@@ -10776,7 +10783,17 @@ bool Position::Delta(Position* pos_b, PositionDiff& diff, bool bothDirections, d
                 adjustedLaneIdA = last_node->fromRoad->GetConnectingLaneId(last_node->link, adjustedLaneIdA, pos_b->GetTrackId());
                 // move to the s location of pos B to find out the lane ID there (possibly another lane section)
                 adjustedLaneIdA = road_B->GetConnectedLaneIdAtS(adjustedLaneIdA, -1.0, pos_b->GetS());
+
+                // Check relative heading
+                pos_a_forward = false;  // We come in at the end of the road, so we are aligned against the road direction
             }
+        }
+        // If the relative direction of the two positions is the same, we are driving in the same direction unless the detected path is reversed, then
+        // we have to invert the dDirection
+        diff.dDirection = (pos_a_forward == pos_b_forward);
+        if (bothDirections == true && path->direction_ == -1)
+        {
+            diff.dDirection = !diff.dDirection;
         }
 
         // calculate delta lane id and lateral position
