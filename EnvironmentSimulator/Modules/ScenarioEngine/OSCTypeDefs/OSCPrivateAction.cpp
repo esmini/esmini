@@ -1970,8 +1970,6 @@ void LatDistanceAction::Start(double simTime)
         distance_ = -abs(distance_);
     }
 
-    old_x_      = object_->pos_.GetX();
-    old_y_      = object_->pos_.GetY();
     move_state_ = MoveState::INIT;
 
     OSCAction::Start(simTime);
@@ -2016,8 +2014,7 @@ void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanage
 
     // double measured_distance;
     roadmanager::PositionDiff pos_diff;
-    pos2.Delta(&pos1, pos_diff);  // pos1 is the actor, pos2 is the referenced object
-    // LOG_INFO("Pos diff ds {} dt {} dOppLane {}", pos_diff.ds, pos_diff.dt, pos_diff.dOppLane);
+    pos2.Delta(&pos1, pos_diff, true);  // pos1 is the actor, pos2 is the referenced object
     distance_error = 0.0;
     if (!freespace_)
     {
@@ -2066,6 +2063,8 @@ void LatDistanceAction::Step(double simTime, double)
                 }
                 move_state_ = MoveState::MOVE_DYNAMIC;
             }
+            old_x_ = object_->pos_.GetX();
+            old_y_ = object_->pos_.GetY();
         }
         break;
         case MoveState::MOVE_RIGID:
@@ -2076,7 +2075,7 @@ void LatDistanceAction::Step(double simTime, double)
             roadmanager::Position desired_pos;
             GetDesiredRoadPos(distance_error, desired_pos);
             object_->pos_.SetLanePos(desired_pos.GetTrackId(), desired_pos.GetLaneId(), desired_pos.GetS(), desired_pos.GetOffset());
-
+            object_->SetSpeed(object_->GetSpeed());
             if (!continuous_)
             {
                 object_->pos_.SetHeading(desired_pos.GetRoadH());
@@ -2090,10 +2089,14 @@ void LatDistanceAction::Step(double simTime, double)
             }
             else
             {
+                // auto new_heading = atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_);
+                // if (std::abs(new_heading - object_->pos_.GetH()) > M_PI / 4) new_heading = desired_pos.GetRoadH();
+                // Avoid large heading changes
                 object_->pos_.SetHeading(atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_));
                 old_x_ = object_->pos_.GetX();
                 old_y_ = object_->pos_.GetY();
             }
+            object_->SetDirtyBits(Object::DirtyBit::LATERAL);
         }
         break;
         case (MoveState::MOVE_DYNAMIC):
