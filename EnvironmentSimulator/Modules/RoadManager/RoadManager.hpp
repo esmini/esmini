@@ -3439,7 +3439,7 @@ namespace roadmanager
         /**
          * Get the lateral stopping distance of the entity given its current speed and maximum deceleration
          * @param maxDeceleration The maximum deceleration of the entity
-        */
+         */
         double GetLatStoppingDistance(double maxDeceleration)
         {
             return this->GetVelLat() * this->GetVelLat() / (2.0 * abs(maxDeceleration));
@@ -3448,7 +3448,7 @@ namespace roadmanager
         /**
          * Get the longitudinal stopping distance of the entity given its current speed and maximum deceleration
          * @param maxDeceleration The maximum deceleration of the entity
-        */
+         */
         double GetLongStoppingDistance(double maxDeceleration)
         {
             return this->GetVelLong() * this->GetVelLong() / (2.0 * abs(maxDeceleration));

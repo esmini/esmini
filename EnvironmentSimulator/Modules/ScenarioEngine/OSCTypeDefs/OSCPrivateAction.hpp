@@ -555,6 +555,7 @@ namespace scenarioengine
         DisplacementType              displacement_;
         DynamicConstraints            dynamics_;
         roadmanager::CoordinateSystem cs_;
+        DampedSpring                  entity_cs_long_spring_;
 
         LatDistanceAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::LAT_DISTANCE, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)),

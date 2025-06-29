@@ -1951,7 +1951,8 @@ void LatDistanceAction::Start(double simTime)
     // Resolve displacement
     if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
     {
-
+        entity_cs_long_spring_.SetTension(1.0);
+        entity_cs_long_spring_.SetOptimalDamping();
     }
     else
     {
@@ -2050,7 +2051,6 @@ void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanage
         }
         std::cout << "Distance error: " << distance_error << "\n";
         // distance_error *= sign;
-
     }
 }
 
@@ -2064,40 +2064,80 @@ void LatDistanceAction::Step(double simTime, double dt)
 
     if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
     {
-        // find projection of objects reference point on reference entity x-axis offseted by specified distance
+        // find intersection of object's y axis and target object's x-axis
         double target_obj_x_axis[2] = {0.0, 0.0};
         double target_obj_offset[2] = {0.0, 0.0};
-        double new_pos[2]           = {0.0, 0.0};
+        double obj_y_axis[2]        = {0.0, 0.0};
+        double target_pos[2]        = {0.0, 0.0};
+        double step_len             = object_->GetSpeed() * dt;
+        double heading              = 0.0;
 
         RotateVec2D(1.0, 0.0, target_object_->pos_.GetH(), target_obj_x_axis[0], target_obj_x_axis[1]);
         RotateVec2D(0.0, distance_, target_object_->pos_.GetH(), target_obj_offset[0], target_obj_offset[1]);
-        ProjectPointOnLine2D(object_->pos_.GetX(),
-                             object_->pos_.GetY(),
-                             target_object_->pos_.GetX() + target_obj_offset[0],
-                             target_object_->pos_.GetY() + target_obj_offset[1],
-                             target_object_->pos_.GetX() + target_obj_offset[0] + target_obj_x_axis[0],
-                             target_object_->pos_.GetY() + target_obj_offset[1] + target_obj_x_axis[1],
-                             new_pos[0],
-                             new_pos[1]);
+#if 0  // perpendicular to road s axis
+        RotateVec2D(0.0, 1.0, IsAngleForward(object_->pos_.GetHRelative()) ? 0.0 : M_PI, obj_y_axis[0], obj_y_axis[1]);
+#else  // perpendicular to object
+        RotateVec2D(0.0, 1.0, object_->pos_.GetH(), obj_y_axis[0], obj_y_axis[1]);
+#endif
+
+        GetIntersectionOfTwoLineSegments(object_->pos_.GetX(),
+                                         object_->pos_.GetY(),
+                                         object_->pos_.GetX() + obj_y_axis[0],
+                                         object_->pos_.GetY() + obj_y_axis[1],
+                                         target_object_->pos_.GetX() + target_obj_offset[0],
+                                         target_object_->pos_.GetY() + target_obj_offset[1],
+                                         target_object_->pos_.GetX() + target_obj_offset[0] + target_obj_x_axis[0],
+                                         target_object_->pos_.GetY() + target_obj_offset[1] + target_obj_x_axis[1],
+                                         target_pos[0],
+                                         target_pos[1]);
+
+        double delta[2]      = {target_pos[0] - object_->pos_.GetX(), target_pos[1] - object_->pos_.GetY()};
+        double dist          = GetLengthOfVector2D(delta[0], delta[1]);
+        double delta_norm[2] = {0.0, 0.0};
+        NormalizeVec2D(delta[0], delta[1], delta_norm[0], delta_norm[1]);
+        double new_pos[2] = {object_->pos_.GetX() + delta_norm[0] * MAX(step_len, dist), object_->pos_.GetY() + delta_norm[1] * MAX(step_len, dist)};
+        if (dist > SMALL_NUMBER)
+        {
+            if (dist < step_len - SMALL_NUMBER)
+            {
+                // after moving to the target point on parallel line, then along the parallel line
+                heading = atan2(delta[1], delta[0]);
+                double
+            }
+            else
+            {
+            }
+        }
+
+        heading = dist < SMALL_NUMBER ? object_->pos_.GetH() : atan2(delta[1], delta[0]);
 
         if (dynamics_.max_speed_ >= LARGE_NUMBER && dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
         {
-            // move instantly to the calculated target point
-            object_->pos_.SetInertiaPos(new_pos[0], new_pos[1], target_object_->pos_.GetH());
+            // move instantly to the calculated target point, keep heading and longitudinal speed
+            LOG_INFO("LatDistanceAction: Moving to target position ({:.2f}, {:.2f}) with heading {:.2f}", target_pos[0], target_pos[1], heading);
+            object_->pos_.SetInertiaPos(target_pos[0], target_pos[1], heading);
+            object_->SetDirtyBits(Object::DirtyBit::LATERAL);
         }
         else
         {
             // move towards the projected point
-            double delta[2] = {new_pos[0] - object_->pos_.GetX(), new_pos[1] - object_->pos_.GetY()};
-            double dist     = GetLengthOfVector2D(delta[0], delta[1]);
-            double speed    = ABS_LIMIT(dist / dt, dynamics_.max_speed_);
-            double step     = speed * dt;
-            double fraction = step / dist;
-            double delta_h  = fraction * GetAngleDifference(target_object_->pos_.GetH(), object_->pos_.GetH());
-            object_->pos_.SetInertiaPos(object_->pos_.GetX() + delta[0], object_->pos_.GetY() + delta[1], object_->pos_.GetH() + delta_h);
-        }
+            double old_pos[2]      = {object_->pos_.GetX(), object_->pos_.GetY()};
+            double angle_to_target = atan2(delta[1], delta[0]);
+            entity_cs_long_spring_.SetValue(dist);
+            entity_cs_long_spring_.Update(dt);
 
-        object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+            // let acceleration from spring affect heading between align with target vehicle to target position
+            double factor = ABS_LIMIT(entity_cs_long_spring_.GetV(), object_->GetMaxSpeed()) / object_->GetMaxSpeed();
+            heading       = factor * angle_to_target + (1 - factor) * target_object_->pos_.GetH();
+
+            double new_delta[2] = {object_->GetSpeed() * dt * cos(heading), object_->GetSpeed() * dt * sin(heading)};
+            LOG_INFO("angle_to_target {:.2f} heading {:.2f} new_delta ({:.2f}, {:.2f})", angle_to_target, heading, new_delta[0], new_delta[1]);
+
+            object_->pos_.SetInertiaPos(object_->pos_.GetX() + new_delta[0], object_->pos_.GetY() + new_delta[1], heading);
+
+            // set also speed update bit to avoid automatic speed update
+            object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+        }
     }
     else
     {
@@ -2105,7 +2145,8 @@ void LatDistanceAction::Step(double simTime, double dt)
         {
             case MoveState::INIT:
             {
-                if (dynamics_.max_speed_ >= LARGE_NUMBER && dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
+                if (dynamics_.max_speed_ >= LARGE_NUMBER && dynamics_.max_acceleration_ >= LARGE_NUMBER &&
+                    dynamics_.max_deceleration_ >= LARGE_NUMBER)
                 {
                     move_state_ = MoveState::MOVE_RIGID;
                 }

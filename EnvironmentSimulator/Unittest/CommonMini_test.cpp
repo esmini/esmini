@@ -297,6 +297,22 @@ TEST(CommonUtilityFunctions, TestCombineDirectoryPathAndFilepath)
     EXPECT_EQ(CombineDirectoryPathAndFilepath("", "my_File.txt"), "./my_File.txt");
 }
 
+TEST(MathFunctions, TestGetIntersectionsOfLineAndCircle)
+{
+    double i0[2], i1[2];  // intersection points
+
+    // some edge cases
+    EXPECT_EQ(GetIntersectionsOfLineAndCircle({0.0, 0.0}, {1.0, 0.0}, {0.0, 2.0}, 1.0, i0, i1), 0);     // circle above the line
+    EXPECT_EQ(GetIntersectionsOfLineAndCircle({0.0, 0.0}, {1.0, 0.0}, {0.0, -2.0}, 1.0, i0, i1), 0);    // circle below the line
+    EXPECT_EQ(GetIntersectionsOfLineAndCircle({0.0, 0.0}, {1.0, 0.0}, {10.0, 1.0}, 1.0, i0, i1), 1);    // tangent/one intersection point
+    EXPECT_EQ(GetIntersectionsOfLineAndCircle({0.0, 0.0}, {1.0, 0.0}, {10.0, -1.0}, 1.0, i0, i1), 1);   // tangent/one intersection point
+    EXPECT_EQ(GetIntersectionsOfLineAndCircle({0.0, 0.0}, {1.0, 0.0}, {10.0, -1.0}, 1.1, i0, i1), 2);   // two intersection points
+    EXPECT_EQ(GetIntersectionsOfLineAndCircle({0.0, 0.0}, {1.0, 0.0}, {10.0, -1.0}, 0.99, i0, i1), 0);  // no intersection point, but very close to it
+    EXPECT_EQ(GetIntersectionsOfLineAndCircle({-1.0, 0.0}, {-1.0, 5.0}, {1.0, 1.0}, 1.99, i0, i1), 0);  // no intersection point, but very close to it
+    EXPECT_EQ(GetIntersectionsOfLineAndCircle({-1.0, 0.0}, {-1.0, 5.0}, {1.0, 1.0}, 2.0, i0, i1), 1);   // one intersection
+    EXPECT_EQ(GetIntersectionsOfLineAndCircle({-1.0, 0.0}, {-1.0, 5.0}, {1.0, 1.0}, 2.01, i0, i1), 2);  // two intersection points
+}
+
 int main(int argc, char** argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";
