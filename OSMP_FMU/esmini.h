@@ -61,8 +61,7 @@ using namespace std;
 #define FMI_INTEGER_TRAFFICCOMMAND_OUT_BASELO_IDX 9
 #define FMI_INTEGER_TRAFFICCOMMAND_OUT_BASEHI_IDX 10
 #define FMI_INTEGER_TRAFFICCOMMAND_OUT_SIZE_IDX 11
-#define FMI_INTEGER_QUIT_FLAG_IDX 12
-#define FMI_INTEGER_LAST_IDX FMI_INTEGER_QUIT_FLAG_IDX
+#define FMI_INTEGER_LAST_IDX FMI_INTEGER_TRAFFICCOMMAND_OUT_SIZE_IDX
 #define FMI_INTEGER_VARS (FMI_INTEGER_LAST_IDX+1)
 
 /* Real Variables */
@@ -109,7 +108,7 @@ public:
     fmi2Status SetInteger(const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]);
     fmi2Status SetBoolean(const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]);
     fmi2Status SetString(const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]);
-    bool slave_terminated() { return slaveTerminated; };
+    bool get_slave_terminated() { return fmiSlaveTerminated; };
 
 protected:
     /* Internal Implementation */
@@ -199,7 +198,7 @@ protected:
     string fmuResourceLocation;
     bool visible;
     bool loggingOn;
-    bool slaveTerminated;
+    bool fmiSlaveTerminated;
     set<string> loggingCategories;
     fmi2CallbackFunctions functions;
     fmi2Boolean boolean_vars[FMI_BOOLEAN_VARS];
@@ -214,8 +213,6 @@ protected:
     /* Simple Accessors */
     fmi2Boolean fmi_valid() { return boolean_vars[FMI_BOOLEAN_VALID_IDX]; }
     void set_fmi_valid(fmi2Boolean value) { boolean_vars[FMI_BOOLEAN_VALID_IDX]=value; }
-    fmi2Integer quit_flag() { return integer_vars[FMI_INTEGER_QUIT_FLAG_IDX]; }
-    void set_quit_flag(fmi2Integer value) { integer_vars[FMI_INTEGER_QUIT_FLAG_IDX]=value; }
     fmi2Boolean fmi_use_viewer() { return boolean_vars[FMI_BOOLEAN_USE_VIEWER_IDX]; }
     void set_fmi_use_viewer(fmi2Boolean value) { boolean_vars[FMI_BOOLEAN_USE_VIEWER_IDX]=value; }
     string fmi_xosc_path() { return string_vars[FMI_STRING_XOSC_PATH_IDX]; }

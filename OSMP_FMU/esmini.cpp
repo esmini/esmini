@@ -206,7 +206,7 @@ fmi2Status EsminiOsiSource::doStart(fmi2Boolean toleranceDefined,
 {
     DEBUGBREAK();
 
-    slaveTerminated = false;
+    fmiSlaveTerminated = false;
 
     return fmi2OK;
 }
@@ -223,7 +223,6 @@ fmi2Status EsminiOsiSource::doExitInitializationMode()
     DEBUGBREAK();
 
     std::string esmini_args = fmi_esmini_args();
-    std::cerr << "Esmini args are \"" << esmini_args << "\"" << std::endl;
     if (esmini_args.empty())
     {
         const std::string xosc_path = fmi_xosc_path();
@@ -335,7 +334,7 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
     set_fmi_valid(1);
     if (SE_GetQuitFlag() > 0) {
         normal_log("OSMP", ("esmini terminated with flag " + std::to_string(SE_GetQuitFlag()) + ". Terminating agent!").c_str());
-        slaveTerminated = true;
+        fmiSlaveTerminated = true;
         return fmi2Discard;
     }
 
@@ -508,7 +507,7 @@ fmi2Status EsminiOsiSource::Reset()
 {
     fmi_verbose_log("fmi2Reset()");
 
-    slaveTerminated = false;
+    fmiSlaveTerminated = false;
 
     doFree();
     return doInit();
@@ -842,7 +841,7 @@ extern "C"
     {
         if (s == fmi2StatusKind::fmi2Terminated) {
             EsminiOsiSource* myc = (EsminiOsiSource*)c;
-            *value = myc->slave_terminated() ? fmi2True : fmi2False;
+            *value = myc->get_slave_terminated() ? fmi2True : fmi2False;
             return fmi2OK;
         }
         return fmi2Discard;

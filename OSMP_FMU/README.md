@@ -17,7 +17,8 @@ The SensorView is the output of the FMU. The FMU can be used in either open-loop
   cmake --build . --config Release
   ```
 - Run the FMU in a co-simulation, e.g. by using the open source framework [OpenMCx](https://github.com/eclipse/openmcx).
-Be sure to set the OpenScenario file as FMI parameter *xosc_path*.
+You may set the OpenScenario file as FMI parameter *xosc_path* or specify explicitly all esmini arguments as FMI parameter *esmini_args* (e.g. `--window 0 0 320 240 --capture_screen --fixed_timestep 0.05 --osc myscenario.xosc`).
+If both (*xosc_path* and *esmini_args*) are specified *esmini_args* will be used.
 Furthermore, you can set, if the scenario viewer is displayed with the boolean FMI parameter *use_viewer*.
 The esmini OSMP FMU can be used in either open-loop or closed-loop configuration.
   - Open-loop: Leave the osi3::TrafficUpdate input empty.
