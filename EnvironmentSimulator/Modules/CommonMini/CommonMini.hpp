@@ -976,11 +976,11 @@ public:
     int UnsetOption(const std::string& opt);
     // clears only value(s) of the option and let the other flags as they are
     int                                               ClearOption(const std::string& opt);
-    const std::unordered_map<std::string, SE_Option>& GetAllOptions() const;
     std::string                                       GetSetOptionsAsStr() const;
 
 private:
-    std::unordered_map<std::string, SE_Option> option_;
+    // std::unordered_map<std::string, SE_Option> option_;
+    std::vector<SE_Option> option_;
     std::vector<SE_Option*>                    optionOrder_;  // To maintain the order of insertion of options, to print in help
     std::string                                app_name_;
     std::vector<std::string>                   originalArgs_;

@@ -1947,11 +1947,12 @@ void SE_Options::AddOption(std::string opt_str,
     else
     {
         SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply, isSingleValueOption);
-        const auto [itr, success] = option_.insert(std::make_pair(opt_str, opt));
-        if (success)
-        {
-            optionOrder_.push_back(&itr->second);
-        }
+        option_[ConvertStrKeyToEnum(opt_str)] = opt;
+        //const auto [itr, success] = option_.insert(std::make_pair(opt_str, opt));
+        //if (success)
+        //{
+        optionOrder_.push_back(&opt);
+        //}
     }
 }
 
@@ -2117,28 +2118,23 @@ int SE_Options::ClearOption(const std::string& opt)
     return 0;
 }
 
-const std::unordered_map<std::string, SE_Option>& SE_Options::GetAllOptions() const
-{
-    return option_;
-}
-
 std::string SE_Options::GetSetOptionsAsStr() const
 {
     std::string strAllSetOptions;
-    for (const auto& pair : GetAllOptions())
+    for (const auto& option : option_)
     {
-        if (pair.second.set_)
+        if (option.set_)
         {
             std::string currentOptionValue;
-            if (!pair.second.arg_value_.empty())
+            if (!option.arg_value_.empty())
             {
-                for (auto itr = pair.second.arg_value_.begin(); itr != pair.second.arg_value_.end(); ++itr)
+                for (auto itr = option.arg_value_.begin(); itr != option.arg_value_.end(); ++itr)
                 {
                     currentOptionValue = fmt::format("{} {}", currentOptionValue, *itr);
                 }
             }
 
-            strAllSetOptions = fmt::format("{}--{}{} ", strAllSetOptions, pair.second.opt_str_, currentOptionValue);
+            strAllSetOptions = fmt::format("{}--{}{} ", strAllSetOptions, option.opt_str_, currentOptionValue);
         }
     }
     return strAllSetOptions;
@@ -2224,9 +2220,8 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
 
 void SE_Options::ApplyDefaultValues()
 {
-    for (auto& option : option_)
+    for (auto& opt : option_)
     {
-        auto& opt = option.second;
         if (opt.arg_value_.empty() && !opt.default_value_.empty())
         {
             if ((!opt.autoApply_ && opt.set_) || (opt.autoApply_ && !opt.set_))
@@ -2240,11 +2235,13 @@ void SE_Options::ApplyDefaultValues()
 
 SE_Option* SE_Options::GetOption(std::string opt)
 {
-    if (auto itr = option_.find(opt); itr != option_.end())
-    {
-        return &itr->second;
-    }
-    return nullptr;
+    return &option_[ConvertStrKeyToEnum(opt)];
+
+    // if (auto itr = option_.find(opt); itr != option_.end())
+    // {
+    //     return &itr->second;
+    // }
+    // return nullptr;
 }
 
 bool SE_Options::IsInOriginalArgs(std::string opt)
@@ -2268,10 +2265,10 @@ void SE_Options::Reset()
 
     for (auto& option : option_)
     {
-        if (!option.second.persistent_)
+        if (!option.persistent_)
         {
-            option.second.set_ = false;
-            option.second.arg_value_.clear();
+            option.set_ = false;
+            option.arg_value_.clear();
         }
     }
     originalArgs_.clear();
