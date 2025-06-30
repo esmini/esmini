@@ -20,6 +20,7 @@
 #include "pugixml.hpp"
 #include "OSCGlobalAction.hpp"
 #include "OSCBoundingBox.hpp"
+#include "OSCEnvironment.hpp"
 #include "Parameters.hpp"
 #include "Controller.hpp"
 #include "ScenarioGateway.hpp"
@@ -70,7 +71,7 @@ namespace scenarioengine
     class ScenarioReader
     {
     public:
-        ScenarioReader(Entities* entities, Catalogs* catalogs, bool disable_controllers = false);
+        ScenarioReader(Entities* entities, Catalogs* catalogs, OSCEnvironment* environment, bool disable_controllers = false);
         ~ScenarioReader();
         int  loadOSCFile(const char* path);
         int  loadOSCMem(const pugi::xml_document& xml_doc);
@@ -132,6 +133,7 @@ namespace scenarioengine
         OSCUserDefinedAction*     parseOSCUserDefinedAction(pugi::xml_node actionNode, Event* parent);
         void                      parseOSCOrientation(OSCOrientation& orientation, pugi::xml_node orientationNode);
         OSCPosition*              parseOSCPosition(pugi::xml_node positionNode, OSCPosition* base_on_pos = nullptr);
+        void                      parseOSCEnvironment(const pugi::xml_node& xml_node, OSCEnvironment& env);
 
         // Storyboard - Story
         OSCCondition* parseOSCCondition(pugi::xml_node conditionNode);
@@ -193,6 +195,7 @@ namespace scenarioengine
         Catalogs*             catalogs_;
         ScenarioGateway*      gateway_;
         ScenarioEngine*       scenarioEngine_;
+        OSCEnvironment*       environment_;
         bool                  disable_controllers_;
         static ControllerPool controllerPool_;
         int                   versionMajor_;

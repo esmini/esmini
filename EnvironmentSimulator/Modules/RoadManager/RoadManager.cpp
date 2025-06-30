@@ -70,6 +70,9 @@ using namespace roadmanager;
 #define ROADMARK_WIDTH_STANDARD    0.15
 #define ROADMARK_WIDTH_BOLD        0.20
 #define NURBS_STEPLENGTH           1.0
+#define TUNNEL_WALL_THICKNESS      2.0
+#define TUNNEL_ROOF_THICKNESS      2.0
+#define TUNNEL_HEIGHT              4.5
 
 static id_t g_Lane_id;
 static id_t g_Laneb_id;
@@ -414,6 +417,19 @@ id_t roadmanager::GetNewGlobalLaneBoundaryId()
     id_t returnvalue = g_Laneb_id;
     g_Laneb_id++;
     return returnvalue;
+}
+
+const char* roadmanager::ReadUserData(pugi::xml_node node, const std::string& code, const std::string& default_value)
+{
+    for (auto& child : node.children("userData"))
+    {
+        if (code == child.attribute("code").value())
+        {
+            return child.attribute("value").value();
+        }
+    }
+
+    return default_value.c_str();
 }
 
 int roadmanager::GetRelativeLaneId(int lane_id, int offset)
@@ -1089,7 +1105,7 @@ Lane::Material* Lane::GetMaterialByS(double s) const
 
 void Lane::AddLaneMaterial(Lane::Material* lane_material)
 {
-    if (lane_material_.size() > 0 && lane_material->s_offset < lane_material_.back()->s_offset)
+    if (lane_material_.size() > 0 && (lane_material->s_offset - lane_material_.back()->s_offset) < SMALL_NUMBER)
     {
         for (unsigned int i = 0; i < lane_material_.size(); i++)
         {
@@ -1109,14 +1125,6 @@ void Lane::AddLaneMaterial(Lane::Material* lane_material)
     }
 
     lane_material_.push_back(lane_material);
-    // If first lane material is not at s = 0, add one with default friction for the initial segment
-    if (lane_material_.size() == 1 && lane_material_[0]->s_offset > SMALL_NUMBER)
-    {
-        Lane::Material* m = new Lane::Material();
-        m->friction       = std::nan("");
-        m->s_offset       = 0.0;
-        lane_material_.insert(lane_material_.begin(), m);
-    }
 }
 
 LaneLink* Lane::GetLink(LinkType type) const
@@ -2326,6 +2334,11 @@ Road::~Road()
         delete (object_[i]);
     }
     object_.clear();
+    for (size_t i = 0; i < tunnel_.size(); i++)
+    {
+        delete (tunnel_[i]);
+    }
+    tunnel_.clear();
 }
 
 void Road::Print() const
@@ -2464,6 +2477,11 @@ void Road::AddObject(RMObject* object)
     object_.push_back(object);
 }
 
+void Road::AddTunnel(Tunnel* tunnel)
+{
+    tunnel_.push_back(tunnel);
+}
+
 RMObject* Road::GetRoadObject(idx_t idx) const
 {
     if (idx >= object_.size())
@@ -2558,6 +2576,70 @@ void OutlineCornerLocal::GetPosLocal(double& x, double& y, double& z)
     x = u2;
     y = v2;
     z = zLocal_;
+}
+
+roadmanager::RMObject::RMObject(double      s,
+                                double      t,
+                                id_t        id,
+                                std::string name,
+                                Orientation orientation,
+                                double      z_offset,
+                                ObjectType  type,
+                                double      length,
+                                double      height,
+                                double      width,
+                                double      heading,
+                                double      pitch,
+                                double      roll,
+                                double      x,
+                                double      y,
+                                double      z,
+                                double      h)
+    : RoadObject(x, y, z, h),
+      name_(name),
+      type_(type),
+      id_(id),
+      s_(s),
+      t_(t),
+      z_offset_(z_offset),
+      orientation_(orientation),
+      length_(length),
+      height_(height),
+      width_(width),
+      heading_(heading),
+      pitch_(pitch),
+      roll_(roll)
+{
+    // set defautl color based on object type
+    // Set color based on object type
+    if (type_ == ObjectType::BUILDING || type_ == ObjectType::BARRIER)
+    {
+        color_[0] = 0.6f;
+        color_[1] = 0.6f;
+        color_[2] = 0.6f;
+        color_[3] = 1.0f;
+    }
+    else if (type_ == ObjectType::OBSTACLE)
+    {
+        color_[0] = 0.5f;
+        color_[1] = 0.3f;
+        color_[2] = 0.3f;
+        color_[3] = 1.0f;
+    }
+    else if (type_ == ObjectType::TREE || type_ == ObjectType::VEGETATION)
+    {
+        color_[0] = 0.22f;
+        color_[1] = 0.32f;
+        color_[2] = 0.22f;
+        color_[3] = 1.0f;
+    }
+    else
+    {
+        color_[0] = 0.4f;
+        color_[1] = 0.4f;
+        color_[2] = 0.4f;
+        color_[3] = 1.0f;
+    }
 }
 
 std::string RMObject::Type2Str(RMObject::ObjectType type)
@@ -3864,16 +3946,12 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             {
                                 // s_offset
                                 double s_offset = atof(roadMark.attribute("sOffset").value());
-
-                                double         roadMark_fade = 0.0;
-                                pugi::xml_node userData      = roadMark.child("userData");
-                                if (userData)
+                                if (s_offset > r->GetLength() - SMALL_NUMBER)
                                 {
-                                    if (!strcmp(userData.attribute("code").value(), "fade"))
-                                    {
-                                        roadMark_fade = CLAMP(atof(userData.attribute("value").value()), 0.0, 1.0);
-                                    }
+                                    LOG_ERROR("Roadmark s value {:.2f} beyond road length {:.2f}, ignoring it", s_offset, r->GetLength());
+                                    continue;
                                 }
+                                double roadMark_fade = CLAMP(atof(ReadUserData(roadMark, "fade", "0.0")), 0.0, 1.0);
 
                                 // type
                                 LaneRoadMark::RoadMarkType roadMark_type = LaneRoadMark::NONE_TYPE;
@@ -4216,26 +4294,26 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                             }
 
                             // Lane material - only friction supported
+                            lane->AddLaneMaterial(new Lane::Material{
+                                0.0,
+                                FRICTION_DEFAULT});  // Add default material, so we'll always have a material at s=0.0. Might be overwritten below.
                             for (pugi::xml_node material = lane_node->child("material"); material; material = material.next_sibling("material"))
                             {
                                 Lane::Material* lane_material = new Lane::Material();
-                                if (lane_material != nullptr)
+                                lane_material->s_offset       = atof(material.attribute("sOffset").value());
+                                if (!material.attribute("friction").empty())
                                 {
-                                    lane_material->s_offset = atof(material.attribute("sOffset").value());
-                                    if (!material.attribute("friction").empty())
-                                    {
-                                        lane_material->friction = atof(material.attribute("friction").value());
-                                    }
-                                    else
-                                    {
-                                        lane_material->friction = FRICTION_DEFAULT;
-                                    }
-
-                                    // update global friction value used for optimization
-                                    Position::GetOpenDrive()->SetFriction(lane_material->friction);
-
-                                    lane->AddLaneMaterial(lane_material);
+                                    lane_material->friction = atof(material.attribute("friction").value());
                                 }
+                                else
+                                {
+                                    lane_material->friction = FRICTION_DEFAULT;
+                                }
+
+                                // update global friction value used for optimization
+                                Position::GetOpenDrive()->SetFriction(lane_material->friction);
+
+                                lane->AddLaneMaterial(lane_material);
                             }
                         }
                     }
@@ -4481,7 +4559,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 
                 double      s    = atof(object.attribute("s").value());
                 double      t    = atof(object.attribute("t").value());
-                int         ids  = atoi(object.attribute("id").value());
+                id_t        ids  = object.attribute("id").as_uint();
                 std::string name = object.attribute("name").value();
 
                 // orientation
@@ -4521,15 +4599,20 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 for (pugi::xml_node repeat_node = object.child("repeat"); repeat_node; repeat_node = repeat_node.next_sibling("repeat"))
                 {
                     std::string rattr;
-                    double      rs            = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rlength       = (rattr = ReadAttribute(repeat_node, "length", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rdistance     = (rattr = ReadAttribute(repeat_node, "distance", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rtStart       = (rattr = ReadAttribute(repeat_node, "tStart", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rtEnd         = (rattr = ReadAttribute(repeat_node, "tEnd", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rheightStart  = (rattr = ReadAttribute(repeat_node, "heightStart", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rheightEnd    = (rattr = ReadAttribute(repeat_node, "heightEnd", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rzOffsetStart = (rattr = ReadAttribute(repeat_node, "zOffsetStart", true)) == "" ? 0.0 : std::stod(rattr);
-                    double      rzOffsetEnd   = (rattr = ReadAttribute(repeat_node, "zOffsetEnd", true)) == "" ? 0.0 : std::stod(rattr);
+                    double      rs = (rattr = ReadAttribute(repeat_node, "s", true)) == "" ? 0.0 : std::stod(rattr);
+                    if (rs > r->GetLength() - SMALL_NUMBER)
+                    {
+                        LOG_ERROR("Repeat s value {:.2f} beyond road length {:.2f}, ignoring", rs, r->GetLength());
+                        continue;
+                    }
+                    double rlength       = (rattr = ReadAttribute(repeat_node, "length", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rdistance     = (rattr = ReadAttribute(repeat_node, "distance", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rtStart       = (rattr = ReadAttribute(repeat_node, "tStart", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rtEnd         = (rattr = ReadAttribute(repeat_node, "tEnd", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rheightStart  = (rattr = ReadAttribute(repeat_node, "heightStart", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rheightEnd    = (rattr = ReadAttribute(repeat_node, "heightEnd", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rzOffsetStart = (rattr = ReadAttribute(repeat_node, "zOffsetStart", true)) == "" ? 0.0 : std::stod(rattr);
+                    double rzOffsetEnd   = (rattr = ReadAttribute(repeat_node, "zOffsetEnd", true)) == "" ? 0.0 : std::stod(rattr);
 
                     double rwidthStart  = (rattr = ReadAttribute(repeat_node, "widthStart", false)) == "" ? 0.0 : std::stod(rattr);
                     double rwidthEnd    = (rattr = ReadAttribute(repeat_node, "widthEnd", false)) == "" ? 0.0 : std::stod(rattr);
@@ -4564,58 +4647,22 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
 
                     if (rdistance < SMALL_NUMBER)
                     {
-                        // inter-distance is zero, treat as outline
-                        Outline*     outline            = new Outline(ids, Outline::FillType::FILL_TYPE_UNDEFINED, true);
-                        const double max_segment_length = 10.0;
-
-                        // find smallest value of length and rlength, but between SMALL_NUMBER and max_segment_length
-                        double segment_length = max_segment_length;
-                        if (length > SMALL_NUMBER && length < segment_length)
-                        {
-                            segment_length = length;
-                        }
-                        if (rlength > SMALL_NUMBER && rlength < segment_length)
-                        {
-                            segment_length = rlength;
-                        }
-
-                        unsigned int n_segments = static_cast<unsigned int>((MAX(1.0, rlength / segment_length)));
-
-                        // Create outline polygon, visiting corners counter clockwise
-                        for (unsigned int i = 0; i < 2; i++)
-                        {
-                            for (unsigned int j = 0; j < n_segments + 1; j++)
-                            {
-                                double       factor  = static_cast<double>((i == 0 ? j : (n_segments - j))) / n_segments;
-                                const double min_dim = 0.05;
-                                double       w_start = rwidthStart;
-                                double       w_end   = rwidthEnd;
-                                double       h_start = rheightStart;
-                                double       h_end   = rheightEnd;
-
-                                if (w_start < SMALL_NUMBER && w_end < SMALL_NUMBER)
-                                {
-                                    w_start = w_end = min_dim;
-                                }
-                                if (h_start < SMALL_NUMBER && h_end < SMALL_NUMBER)
-                                {
-                                    h_start = h_end = min_dim;
-                                }
-
-                                double         w_local = w_start + factor * (w_end - w_start);
-                                OutlineCorner* corner  = static_cast<OutlineCorner*>(
-                                    new OutlineCornerRoad(r->GetId(),
-                                                          rs + factor * rlength,
-                                                          rtStart + factor * (rtEnd - rtStart) + (i == 0 ? -w_local / 2.0 : w_local / 2.0),
-                                                          rzOffsetStart + factor * (rzOffsetEnd - rzOffsetStart),
-                                                          h_start + factor * (h_end - h_start),
-                                                          s,
-                                                          t,
-                                                          heading));
-
-                                outline->AddCorner(corner);
-                            }
-                        }
+                        Outline* outline = CreateContinuousRepeatOutline(r,
+                                                                         ids,
+                                                                         s,
+                                                                         t,
+                                                                         heading,
+                                                                         length,
+                                                                         rs,
+                                                                         rlength,
+                                                                         rwidthStart,
+                                                                         rwidthEnd,
+                                                                         rheightStart,
+                                                                         rheightEnd,
+                                                                         rtStart,
+                                                                         rtEnd,
+                                                                         rzOffsetStart,
+                                                                         rzOffsetEnd);
                         obj->AddOutline(outline);
                     }
 
@@ -4675,7 +4722,7 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 {
                     for (pugi::xml_node outline_node = outlines_node.child("outline"); outline_node; outline_node = outline_node.next_sibling())
                     {
-                        int      id      = atoi(outline_node.attribute("id").value());
+                        id_t     id      = outline_node.attribute("id").as_uint();
                         bool     closed  = !strcmp(outline_node.attribute("closed").value(), "true") ? true : false;
                         Outline* outline = new Outline(id, Outline::FillType::FILL_TYPE_UNDEFINED, closed);
 
@@ -4773,6 +4820,29 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 {
                     LOG_ERROR("RMObject: Major error");
                 }
+            }
+
+            for (pugi::xml_node tunnel_node = objects.child("tunnel"); tunnel_node; tunnel_node = tunnel_node.next_sibling("tunnel"))
+            {
+                Tunnel* tunnel    = nullptr;
+                tunnel            = new Tunnel();
+                tunnel->daylight_ = tunnel_node.attribute("daylight").as_double();
+                tunnel->id_       = tunnel_node.attribute("id").as_uint();
+                tunnel->length_   = tunnel_node.attribute("length").as_double();
+                tunnel->lighting_ = tunnel_node.attribute("lighting").as_double();
+                tunnel->name_     = tunnel_node.attribute("name").as_string();
+                tunnel->s_        = tunnel_node.attribute("s").as_double();
+                tunnel->type_     = static_cast<Tunnel::Type>(tunnel_node.attribute("type").as_uint());
+
+                tunnel->width_ = r->GetWidth(tunnel->s_, 0, Lane::LaneType::LANE_TYPE_TUNNEL) + TUNNEL_WALL_THICKNESS;
+
+                // generate 3D model by default, skip only if corresponding userData field set to "false"
+                tunnel->generate_3D_model = strcmp(ReadUserData(tunnel_node, "generate3DModel", "true"), "false");
+
+                // optionally make tunnel more or less transparent, to allow seing what's going on inside
+                tunnel->transparency_ = atof(SE_Env::Inst().GetOptions().GetOptionArg("tunnel_transparency").c_str());
+
+                r->AddTunnel(tunnel);
             }
         }
 
@@ -6174,6 +6244,89 @@ id_t OpenDrive::LookupJunctionIdFromStr(std::string id_str)
     return id;
 }
 
+Outline* roadmanager::OpenDrive::CreateContinuousRepeatOutline(Road*  r,
+                                                               id_t   ids,
+                                                               double s,
+                                                               double t,
+                                                               double heading,
+                                                               double length,
+                                                               double rs,
+                                                               double rlength,
+                                                               double rwidthStart,
+                                                               double rwidthEnd,
+                                                               double rheightStart,
+                                                               double rheightEnd,
+                                                               double rtStart,
+                                                               double rtEnd,
+                                                               double rzOffsetStart,
+                                                               double rzOffsetEnd)
+{
+    // inter-distance is zero, treat as outline
+    Outline* outline = new Outline(ids, Outline::FillType::FILL_TYPE_UNDEFINED, true);
+    if (outline == nullptr)
+    {
+        LOG_ERROR("Failed to create outline {}", ids);
+        return nullptr;
+    }
+    else
+    {
+        outline->contourType_ = Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP;
+
+        const double max_segment_length = 10.0;
+
+        // find smallest value of length and rlength, but between SMALL_NUMBER and max_segment_length
+        double segment_length = max_segment_length;
+        if (length > SMALL_NUMBER && length < segment_length)
+        {
+            segment_length = length;
+        }
+        if (rlength > SMALL_NUMBER && rlength < segment_length)
+        {
+            segment_length = rlength;
+        }
+
+        unsigned int n_segments = static_cast<unsigned int>((MAX(1.0, rlength / segment_length)));
+
+        // Create outline polygon, visiting corners counter clockwise
+        for (unsigned int i = 0; i < 2; i++)
+        {
+            for (unsigned int j = 0; j < n_segments + 1; j++)
+            {
+                double       factor  = static_cast<double>((i == 0 ? j : (n_segments - j))) / n_segments;
+                const double min_dim = 0.05;
+                double       w_start = rwidthStart;
+                double       w_end   = rwidthEnd;
+                double       h_start = rheightStart;
+                double       h_end   = rheightEnd;
+
+                if (w_start < SMALL_NUMBER && w_end < SMALL_NUMBER)
+                {
+                    w_start = w_end = min_dim;
+                }
+                if (h_start < SMALL_NUMBER && h_end < SMALL_NUMBER)
+                {
+                    h_start = h_end = min_dim;
+                }
+
+                double         w_local = w_start + factor * (w_end - w_start);
+                OutlineCorner* corner  = static_cast<OutlineCorner*>(
+                    new OutlineCornerRoad(r->GetId(),
+                                          rs + factor * rlength,
+                                          rtStart + factor * (rtEnd - rtStart) + (i == 0 ? -w_local / 2.0 : w_local / 2.0),
+                                          rzOffsetStart + factor * (rzOffsetEnd - rzOffsetStart),
+                                          h_start + factor * (h_end - h_start),
+                                          s,
+                                          t,
+                                          heading));
+
+                outline->AddCorner(corner);
+            }
+        }
+    }
+
+    return outline;
+}
+
 id_t roadmanager::OpenDrive::GenerateRoadId()
 {
     id_t max_id = 0;
@@ -7138,7 +7291,6 @@ void OpenDrive::SetLaneBoundaryPoints()
             {
                 lsec_end = road->GetLaneSectionByIdx(j + 1)->GetS();
             }
-
             // Looping through each lane
             number_of_lanes = lsec->GetNumberOfLanes();
             for (unsigned int k = 0; k < number_of_lanes; k++)
@@ -7482,7 +7634,7 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                         }
                                     }
 
-                                    // Set all collected osi points for the current lane rpadmarkline
+                                    // Set all collected osi points for the current lane roadmarkline
                                     lane_roadMarkTypeLine->osi_points_.Set(osi_point);
 
                                     // Clear osi collectors for roadmarks for next iteration
@@ -7508,6 +7660,210 @@ void OpenDrive::SetRoadMarkOSIPoints()
     }
 }
 
+void OpenDrive::CreateTunnelOSIPointsAndObjects()
+{
+    for (auto road : road_)
+    {
+        if (road->GetNumberOfGeometries() == 0)
+        {
+            continue;
+        }
+
+        for (auto tunnel : road->GetTunnels())
+        {
+            struct tpoint_struct
+            {
+                double s;
+                double t;
+                double x;
+                double y;
+                double z;
+                double h;
+            };
+            unsigned int      steps = static_cast<unsigned int>(tunnel->length_ / 10.0) + 1;  // nr of tunnel segments
+            double            ds    = tunnel->length_ / static_cast<double>(steps);
+            Position          pos;
+            RMObject*         rm_obj[3] = {nullptr, nullptr, nullptr};
+            std::vector<bool> keep[2]   = {std::vector<bool>(steps + 1), std::vector<bool>(steps + 1)};  // keep track of which vertices to keep
+            std::vector<tpoint_struct> tpoint[2] = {std::vector<tpoint_struct>(steps + 1),
+                                                    std::vector<tpoint_struct>(steps + 1)};  // OSI points for left and right side
+
+            // OSI points for the two tunnel walls, starting with the right side (-1)
+            for (unsigned int i = 0; i < 2; i++)
+            {
+                unsigned int pivot = 0;
+                int          side  = (i == 0) ? -1 : 1;
+
+                // points needs to be entered counter clockwise, starting with points of the right wall side
+                // right side of right wall will offset by wall thickness from inner side
+
+                for (unsigned int step = 0; step < steps + 1; step++)  // add one for endpoints of last segment
+                {
+                    keep[i][step] = true;  // preliminary
+                    double t      = side * road->GetWidth(tunnel->s_ + step * ds, side, Lane::LaneType::LANE_TYPE_TUNNEL);
+                    pos.SetTrackPos(road->GetId(), tunnel->s_ + step * ds, t);
+                    tpoint[i][step] = {pos.GetS(), pos.GetT(), pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetHRoad()};
+
+                    if (step > 1)
+                    {
+                        // after the two first points are established, start checking whether to replace previous one based on error threshold
+                        // check error in 3D, i.e. consider both XY plane and elevation curvature
+                        tpoint_struct p0 = tpoint[i][pivot];
+                        tpoint_struct p1 = tpoint[i][pivot + 1];
+
+                        double angle_error =
+                            GetAngleBetweenVectors3D(p1.x - p0.x, p1.y - p0.y, p1.z - p0.z, pos.GetX() - p0.x, pos.GetY() - p0.y, pos.GetZ() - p0.z);
+
+                        if (ds * tan(angle_error) < 0.2)  // error threshold = 0.2 meter
+                        {
+                            // this point is roughly aligned with previous one, skip previous
+                            keep[i][step - 1] = false;
+                        }
+                        else
+                        {
+                            // keep previous point
+                            pivot = step - 1;
+                        }
+                    }
+                }
+            }
+
+            // pick points to keep, only remove points that no side need
+            for (unsigned int step = 0; step < steps + 1; step++)
+            {
+                if (keep[0][step] == true || keep[1][step] == true)
+                {
+                    keep[0][step] = true;
+                    keep[1][step] = true;
+                }
+            }
+
+            // pick points for OSI
+            for (unsigned int i = 0; i < 2; i++)
+            {
+                for (unsigned int step = 0; step < steps + 1; step++)
+                {
+                    if (keep[i][step])
+                    {
+                        tpoint_struct& p = tpoint[i][step];
+                        tunnel->boundary_[i].osi_points_.GetPoints().push_back({p.s, p.x, p.y, p.z, p.h, false});
+                    }
+                }
+            }
+
+            if (tunnel->generate_3D_model)
+            {
+                // pick points for tessellation
+                for (unsigned int i = 0; i < 2; i++)
+                {
+                    Outline* outline = new Outline(tunnel->id_, Outline::FillType::FILL_TYPE_UNDEFINED, true);
+                    if (outline != nullptr)
+                    {
+                        outline->SetCountourType(Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP);
+                        outline->roof_ = false;  // no top face on walls
+                        int side       = (i == 0) ? -1 : 1;
+
+                        for (unsigned int j = 0; j < 2; j++)  // add two points for each step, one for each side
+                        {
+                            for (unsigned int step = 0; step < steps + 1; step++)
+                            {
+                                int          wallside = (j == 0) ? -1 : 1;  // right side is -1, left side is +1
+                                unsigned int index    = (wallside == -1) ? step : (steps - step);
+
+                                if (keep[i][index])
+                                {
+                                    double t_offset = (side * wallside < 0) ? 0.0 : wallside * TUNNEL_WALL_THICKNESS;  // offset for wall side
+
+                                    tpoint_struct& p = tpoint[i][index];
+
+                                    OutlineCorner* corner = static_cast<OutlineCorner*>(
+                                        new OutlineCornerRoad(road->GetId(), p.s, p.t + t_offset, 0.0, TUNNEL_HEIGHT, 0.0, 0.0, 0.0));
+                                    outline->AddCorner(corner);
+                                }
+                            }
+                        }
+
+                        rm_obj[i] = new RMObject(tunnel->s_,
+                                                 0.0,
+                                                 tunnel->id_,
+                                                 tunnel->name_,
+                                                 RoadObject::Orientation(),
+                                                 0.0,
+                                                 RMObject::ObjectType::BARRIER,
+                                                 tunnel->length_,
+                                                 TUNNEL_HEIGHT,
+                                                 tunnel->width_,
+                                                 0.0,
+                                                 0.0,
+                                                 0.0,
+                                                 road->GetGeometry(0)->GetX(),
+                                                 road->GetGeometry(0)->GetY(),
+                                                 0.0,
+                                                 0.0);
+                        rm_obj[i]->AddOutline(outline);
+                        road->AddObject(rm_obj[i]);
+                    }
+                }
+
+                if (rm_obj[0] != nullptr && rm_obj[1] != nullptr)
+                {
+                    // and the roof which covers the outer points of both walls
+                    Outline* outline = new Outline(tunnel->id_, Outline::FillType::FILL_TYPE_UNDEFINED, true);
+                    outline->SetCountourType(Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP);
+                    outline->roof_ = true;  // top face on tunnel roof
+
+                    // starting with points along right side along tunnel, coming back left side
+                    for (unsigned int i = 0; i < 2; i++)
+                    {
+                        int side = (i == 0) ? -1 : 1;
+                        for (unsigned int j = 0; rm_obj[i]->GetOutline(0) && j < rm_obj[i]->GetOutline(0)->corner_.size() / 2; j++)
+                        {
+                            unsigned int index =
+                                (side == -1 ? j : (static_cast<unsigned int>(rm_obj[i]->GetOutline(0)->corner_.size()) / 2 - (j + 1)));
+                            OutlineCornerRoad* tmp = static_cast<OutlineCornerRoad*>(rm_obj[i]->GetOutline(0)->corner_[index]);
+                            OutlineCorner*     corner =
+                                static_cast<OutlineCorner*>(new OutlineCornerRoad(tmp->roadId_,
+                                                                                  tmp->s_,
+                                                                                  tmp->t_ + (side == 1 ? TUNNEL_WALL_THICKNESS : 0.0),
+                                                                                  TUNNEL_HEIGHT,
+                                                                                  TUNNEL_ROOF_THICKNESS,
+                                                                                  0.0,
+                                                                                  0.0,
+                                                                                  0.0));
+                            outline->AddCorner(corner);
+                        }
+                    }
+
+                    rm_obj[2] = new RMObject(tunnel->s_,
+                                             0.0,
+                                             tunnel->id_,
+                                             tunnel->name_,
+                                             RoadObject::Orientation(),
+                                             0.0,
+                                             RMObject::ObjectType::BARRIER,
+                                             tunnel->length_,
+                                             TUNNEL_HEIGHT,
+                                             tunnel->width_,
+                                             0.0,
+                                             0.0,
+                                             0.0,
+                                             road->GetGeometry(0)->GetX(),
+                                             road->GetGeometry(0)->GetY(),
+                                             0.0,
+                                             0.0);
+                    rm_obj[2]->AddOutline(outline);
+                    road->AddObject(rm_obj[2]);
+
+                    for (auto o : rm_obj)
+                    {
+                        o->GetColor()[3] = static_cast<float>(1.0 - tunnel->transparency_);  // set semitransparent
+                    }
+                }
+            }
+        }
+    }
+}
+
 bool OpenDrive::SetRoadOSI()
 {
     if (this == Position::GetOpenDrive())
@@ -7515,6 +7871,7 @@ bool OpenDrive::SetRoadOSI()
         SetLaneOSIPoints();
         SetRoadMarkOSIPoints();
         SetLaneBoundaryPoints();
+        CreateTunnelOSIPointsAndObjects();
         return true;
     }
 
@@ -10716,14 +11073,7 @@ int Position::GetRoadLaneInfo(RoadLaneInfo* data) const
         data->road_type   = road->GetRoadTypeByS(GetS());
         data->road_rule   = road->GetRule();
         Lane::Material* m = road->GetLaneMaterialByS(GetS(), GetLaneId());
-        if (m != nullptr)
-        {
-            data->friction = m->friction;
-        }
-        else
-        {
-            data->friction = FRICTION_DEFAULT;
-        }
+        data->friction    = m->friction;
     }
 
     return 0;

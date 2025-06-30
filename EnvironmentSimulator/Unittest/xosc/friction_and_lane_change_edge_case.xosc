@@ -22,6 +22,9 @@
                 <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
             </ObjectController>
         </ScenarioObject>
+        <ScenarioObject name="Target">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
     </Entities>
     <Storyboard>
         <Init>
@@ -46,6 +49,25 @@
                                 <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="time" value="0.0"/>
                                 <SpeedActionTarget>
                                     <AbsoluteTargetSpeed value="$EgoSpeed"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Target">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" s="89" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="linear" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="0"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>

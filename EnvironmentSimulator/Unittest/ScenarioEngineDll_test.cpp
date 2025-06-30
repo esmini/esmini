@@ -958,12 +958,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 84962);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 84984);  // initial OSI size, including static content
 
     SE_StepDT(0.001f);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 85959);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 85981);  // slight growth due to only dynamic updates
 
     int road_lane_size;
 
@@ -975,12 +975,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 87119);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 87141);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 88280);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 88302);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -3470,6 +3470,101 @@ TEST(TestOsiReporter, AssignRoleTest)
     EXPECT_EQ(osi_gt->moving_object(1).vehicle_classification().role(), osi3::MovingObject_VehicleClassification_Role_ROLE_POLICE);
 
     EXPECT_EQ(strcmp(SE_GetObjectModelFileName(1), "car_police.osgb"), 0);
+
+    SE_Close();
+}
+
+TEST(EnvironmentTest, OSIForEnvironment)
+{
+    std::string              scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/environment_test.xosc";
+    const osi3::GroundTruth* osi_gt;
+
+    EXPECT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+
+    osi_gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    SE_StepDT(1.0f);
+    SE_StepDT(1.0f);
+
+    EXPECT_EQ(osi_gt->environmental_conditions().atmospheric_pressure(), 80000);
+    EXPECT_EQ(osi_gt->environmental_conditions().fog(), osi3::EnvironmentalConditions_Fog_FOG_MODERATE_VISIBILITY);
+    EXPECT_EQ(osi_gt->environmental_conditions().temperature(), 300);
+    EXPECT_EQ(osi_gt->environmental_conditions().sun().azimuth(), 0.4);
+    EXPECT_EQ(osi_gt->environmental_conditions().sun().elevation(), 0.3);
+    EXPECT_EQ(osi_gt->environmental_conditions().sun().intensity(), 10000);
+    EXPECT_EQ(osi_gt->environmental_conditions().ambient_illumination(),
+              osi3::EnvironmentalConditions_AmbientIllumination_AMBIENT_ILLUMINATION_LEVEL8);
+    EXPECT_EQ(osi_gt->environmental_conditions().precipitation(), osi3::EnvironmentalConditions_Precipitation_PRECIPITATION_HEAVY);
+    EXPECT_EQ(osi_gt->environmental_conditions().clouds().fractional_cloud_cover(),
+              osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_ZERO_OKTAS);
+    EXPECT_EQ(osi_gt->environmental_conditions().wind().origin_direction(), 3.1415);
+    EXPECT_EQ(osi_gt->environmental_conditions().wind().speed(), 10);
+    EXPECT_EQ(osi_gt->environmental_conditions().time_of_day().seconds_since_midnight(), 37800);
+    EXPECT_EQ(osi_gt->environmental_conditions().unix_timestamp(), 1700044200);
+
+    SE_StepDT(0.1f);
+
+    EXPECT_EQ(osi_gt->environmental_conditions().time_of_day().seconds_since_midnight(), 37800);
+    EXPECT_EQ(osi_gt->environmental_conditions().unix_timestamp(),
+              1700044200);  // TimeOfDay animation is true, simulation time is 1.0s which is added to epoch time
+    EXPECT_EQ(osi_gt->environmental_conditions().clouds().fractional_cloud_cover(),
+              osi3::EnvironmentalConditions_CloudLayer_FractionalCloudCover_FRACTIONAL_CLOUD_COVER_ONE_OKTAS);
+
+    SE_StepDT(1.0f);
+
+    EXPECT_EQ(osi_gt->environmental_conditions().time_of_day().seconds_since_midnight(), 37801);
+    EXPECT_EQ(osi_gt->environmental_conditions().unix_timestamp(),
+              1700044201);  // TimeOfDay animation is true, simulation time is 1.0s which is added to epoch time
+
+    SE_Close();
+}
+
+TEST(EnvironmentTest, OSIFrictionScaleFactor)
+{
+    std::string              scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/environment_test.xosc";
+    const osi3::GroundTruth* osi_gt;
+
+    ASSERT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+
+    osi_gt = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    // All wheels on road where we should have default friction, no scale factor
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(0).friction_coefficient(), 1.0000, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(1).friction_coefficient(), 1.0000, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(2).friction_coefficient(), 1.0000, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(3).friction_coefficient(), 1.0000, 1E-3);
+
+    SE_StepDT(1.0f);
+
+    // Front wheels on road with lower friction, rear wheels on road with default friction, no scale factor
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(0).friction_coefficient(), 0.8000, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(1).friction_coefficient(), 0.8000, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(2).friction_coefficient(), 1.0000, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(3).friction_coefficient(), 1.0000, 1E-3);
+
+    SE_StepDT(1.0f);
+
+    // All wheels on road with lower friction, scale factor applied
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(0).friction_coefficient(), 0.7200, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(1).friction_coefficient(), 0.7200, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(2).friction_coefficient(), 0.7200, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(3).friction_coefficient(), 0.7200, 1E-3);
+
+    SE_StepDT(1.0f);
+
+    // Front wheels on road with default friction, rear wheels on road with lower friction, scale factor applied
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(0).friction_coefficient(), 0.9000, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(1).friction_coefficient(), 0.9000, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(2).friction_coefficient(), 0.7200, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(3).friction_coefficient(), 0.7200, 1E-3);
+
+    SE_StepDT(1.0f);
+
+    // All wheels on road with default friction, scale factor applied
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(0).friction_coefficient(), 0.9000, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(1).friction_coefficient(), 0.9000, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(2).friction_coefficient(), 0.9000, 1E-3);
+    EXPECT_NEAR(osi_gt->moving_object(0).vehicle_attributes().wheel_data(3).friction_coefficient(), 0.9000, 1E-3);
 
     SE_Close();
 }

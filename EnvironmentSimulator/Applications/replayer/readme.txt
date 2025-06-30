@@ -66,6 +66,8 @@ Options:
       Scale screen overlay text
   --time_scale <factor>
       Playback speed scale factor (1.0 == normal)
+  --tunnel_transparency [transparency]  (default if value omitted: 0.0)
+      Set level of transparency for generated tunnels [0:1]
   --view_mode <view_mode>
       Entity visualization: "model"(default)/"boundingbox"/"both"
   --use_signs_in_external_model

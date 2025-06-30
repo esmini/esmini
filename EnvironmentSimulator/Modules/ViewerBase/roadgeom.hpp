@@ -23,10 +23,20 @@
 class RoadGeom
 {
 public:
-    osg::ref_ptr<osg::Group>                        root_;
-    osg::ref_ptr<osg::Group>                        rm_group_;
-    std::map<uint32_t, osg::ref_ptr<osg::Material>> std_materials_;
-    std::map<uint32_t, osg::ref_ptr<osg::Material>> fade_materials_;
+    enum class MaterialType : uint8_t
+    {
+        NONE = 0,
+        ASPHALT,
+        GRASS,
+        ROADMARK,
+        CONCRETE,
+        BORDER
+    };
+
+    osg::ref_ptr<osg::Group>                                  root_;
+    osg::ref_ptr<osg::Group>                                  rm_group_;
+    osg::ref_ptr<osg::Vec4Array>                              color_asphalt_ = new osg::Vec4Array;
+    std::unordered_map<uint64_t, osg::ref_ptr<osg::Material>> std_materials_ = {};
 
     RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin);
 
@@ -35,11 +45,14 @@ public:
                                                  osg::ref_ptr<osg::DrawElementsUInt> indices,
                                                  roadmanager::RoadMarkColor          color,
                                                  double                              fade);
-    osg::ref_ptr<osg::Material>  GetOrCreateMaterial(const std::string& basename, osg::Vec4 color);
+    osg::ref_ptr<osg::Material>  GetOrCreateMaterial(const std::string& basename, osg::Vec4 color, uint8_t texture_type, uint8_t has_friction = 0);
     osg::ref_ptr<osg::Texture2D> ReadTexture(std::string filename);
+    const osg::Vec4              GetFrictionColor(const double friction);
 
 private:
-    unsigned int number_of_materials = 0;
+    unsigned int                                                   number_of_materials = 0;
+    std::unordered_map<MaterialType, osg::ref_ptr<osg::Texture2D>> texture_map_        = {};
+    double                                                         lane_friction_      = 1.0;
 };
 
 #endif  // ROADGEOM_HPP_

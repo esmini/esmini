@@ -27,6 +27,7 @@ namespace scenarioengine
     {
     public:
         ControllerSumo(InitArgs* args);
+        ~ControllerSumo();
 
         virtual const char* GetTypeName()
         {

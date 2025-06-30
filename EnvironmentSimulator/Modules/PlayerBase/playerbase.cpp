@@ -340,6 +340,12 @@ void ScenarioPlayer::ViewerFrame(bool init)
         return;
     }
 
+    if (scenarioEngine->environment.IsEnvironment() && !scenarioEngine->environment.IsEnvironmentUpdatedInViewer())
+    {
+        scenarioEngine->environment.SetEnvironmentUpdatedInViewer(true);
+        viewer_->CreateWeatherGroup(scenarioEngine->environment);
+    }
+
     mutex.Lock();
 
     // remove deleted cars
@@ -1202,7 +1208,7 @@ void ScenarioPlayer::SteeringSensorSetVisible(int object_index, bool value)
     }
 
     int obj_index = scenarioEngine->entities_.GetObjectIdxById(object_index);
-    if (obj_index >= 0)
+    if (obj_index >= 0 && obj_index < static_cast<int>(viewer_->entities_.size()))
     {
         viewer::EntityModel* m = viewer_->entities_[static_cast<unsigned int>(obj_index)];
         if (m->IsMoving())
@@ -1352,6 +1358,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
     opt.AddOption("trail_mode", "Show trail lines and/or dots. Modes: 0=None 1=lines 2=dots 3=both. Toggle key 'j'", "mode", "0");
     opt.AddOption("traj_filter", "Simple filter merging close points. Set 0.0 to disable", "radius", "0.1", true);
+    opt.AddOption("tunnel_transparency", "Set level of transparency for generated tunnels [0:1]", "transparency", "0.0");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
 

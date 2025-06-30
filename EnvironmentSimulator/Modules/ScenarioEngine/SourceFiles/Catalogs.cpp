@@ -45,6 +45,10 @@ CatalogType Entry::GetTypeByNodeName(pugi::xml_node node)
     {
         return CatalogType::CATALOG_TRAJECTORY;
     }
+    else if (!strcmp(node.name(), "Environment"))
+    {
+        return CatalogType::CATALOG_ENVIRONMENT;
+    }
     else
     {
         LOG_ERROR("Unsupported catalog entry type: {}", node.name());

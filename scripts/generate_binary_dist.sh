@@ -45,6 +45,7 @@ resources/xosc/two_plus_one_road.xosc \
 resources/xosc/truck_with_rotating_axle.xosc \
 resources/xosc/trailer_connect.xosc \
 resources/xosc/bicycle_fall_over.xosc \
+resources/xosc/tunnels.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -62,6 +63,7 @@ resources/xodr/multi_intersections.xodr \
 resources/xodr/curves_elevation.xodr \
 resources/xodr/crest-curve.xodr \
 resources/xodr/two_plus_one.xodr \
+resources/xodr/tunnels.xodr \
 resources/models/bus_blue.osgb \
 resources/models/car_blue.osgb \
 resources/models/car_red.osgb \
@@ -144,6 +146,7 @@ run/esmini/run_trailers.* \
 run/esmini/run_two-plus-one-road.* \
 run/esmini/run_truck_with_rotating_axle.* \
 run/esmini/run_trailer_connect.* \
+run/esmini/run_tunnels.* \
 run/odrviewer/run_e6mini*.* \
 run/odrviewer/run_multi_intersections*.* \
 run/replayer/run_and_plot_cut-in_speed*.* \

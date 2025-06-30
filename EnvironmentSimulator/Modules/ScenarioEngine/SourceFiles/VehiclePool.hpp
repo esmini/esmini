@@ -27,6 +27,7 @@ namespace scenarioengine
 
         int                          Initialize(ScenarioReader* reader, const std::vector<unsigned int>* categories, bool accept_trailers);
         int                          AddVehicle(Vehicle* vehicle);
+        void                         DeleteVehicleAndTrailers(Vehicle* vehicle);
         const std::vector<Vehicle*>& GetVehicles() const
         {
             return vehicle_pool_;

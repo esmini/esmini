@@ -1431,6 +1431,153 @@ Example road: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Uni
 .Road with various friction segments, coefficient evaluated per wheel
 image::friction.jpg[]
 
+=== Environment conditions
+From v2.49.0 esmini supports the https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/EnvironmentAction.html[`EnvironmentAction`], which allows you to set weather state, road conditions, and time of the day.
+
+There are two ways to define `EnvironmentAction`:
+
+*1. Directly in the OpenSCENARIO file* +
+You can define the `EnvironmentAction`, which is a `GlobalAction` directly within your OpenSCENARIO file, example:
+
+[source,xml]
+----
+<GlobalAction>
+    <EnvironmentAction>
+        <Environment name="weather">
+            <TimeOfDay animation="true" dateTime="2023-11-15T10:30:00.123+00:00"/>
+            <Weather fractionalCloudCover="zeroOktas" temperature="300" atmosphericPressure="10000">
+                <Sun azimuth="0.4" illuminance="100000" elevation="0.3"/>
+                <Fog visualRange="6000"/>
+                <Precipitation precipitationType="snow" precipitationIntensity="10.0"/>
+                <Wind direction="3.1415" speed="10"/>
+            </Weather>
+            <RoadCondition frictionScaleFactor="0.9"/>
+        </Environment>
+    </EnvironmentAction>
+</GlobalAction>
+----
+
+*2. Using a Catalog* +
+You can create a catalog of environments and reference them in your OpenSCENARIO file. This allows you to re-use the same environment across multiple scenarios, ensuring consistency and reducing redundancy, example:
+
+[source,xml]
+----
+<GlobalAction>
+    <EnvironmentAction>
+        <CatalogReference catalogName="EnvironmentCatalog" entryName="summer"/>
+    </EnvironmentAction>
+</GlobalAction>
+----
+The catalog reference points to a specific environment defined in the https://github.com/esmini/esmini/tree/master/resources/xosc/Catalogs/Environments/EnvironmentCatalog[`EnvironmentCatalog`]. The catalog can contain multiple environments, each with its own set of parameters.
+
+Example scenario using both methods: https://github.com/esmini/esmini/blob/dev/resources/xosc/cut-in_environment.xosc[cut-in_environment.xosc]
+
+video::-mQUJU1rR2M[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+Note that vehicle headlights are currently not considered in the viewer.
+
+==== Visual elements affecting the viewer
+
+Although all the environment conditions are reported in the OSI data, only some are visualized. Currently, as of v2.49.0, all but `precipitation`, `wind` and `domeImage` are visualized in some way, described below.
+
+===== Sun element
+
+The `Sun` element's `illuminance` directly controls the sky color, where the value 100000 represents the brightest blue sky.
+
+* `illuminance`: A linear shift from **black** (illuminance 0) to **bright blue** (illuminance 100000).
+* `azimuth` and `elevation`: These attributes have no visual effect on the scenario's representation.
+
+===== TimeOfDay animation
+
+The `TimeOfDay` element controls sky color based on the set time. Its `animation` attribute determines whether the OSI data's time of day and unix timestamp in the environmental conditions advance with simulation time or not.
+
+* **Logic**: `TimeOfDay` utilizes the `Sun illuminance` property to adjust the color.
+    * `00:00:00` corresponds to an `illuminance` of 0.
+    * `12:00:00` corresponds to an `illuminance` of 100000.
+* **Precedence**: The `Sun` element's `illuminance` value will always override the `TimeOfDay` animation if both has been set in the scenario.
+
+===== Weather element
+
+The `Weather` element influences the sky color based on cloud cover.
+
+* `fractionalCloudCover`: Linearly shifts the sky color from **bright blue** to **gray** in increment of eights (`1/8`).
+
+* `zeroOktas`: Represents a clear sky.
+* `NineOktas`: Represents a completely overcast sky.
+
+===== Fog element
+
+The `Fog` element creates a fog effect, with its density determined by `visualRange`.
+
+* `visualRange`: Lower values result in denser fog.
+* **Fog Color Logic**:
+    `fogColor = color_dark_gray * cloudiness + color_background_gray * (1 - cloudiness)`
+* **Sky Color Logic (affected by fog)**:
+    `sunIlluminance * ((1 - cloudiness) * background_color + cloudiness * fogcolor)`
+
+Where `background` is calculated as
+`visual_range * fogcolor + (1 - visual_range) * color_background`
+
+.Fog in example scenario https://github.com/esmini/esmini/blob/dev/resources/xosc/cut-in_environment.xosc[cut-in_environment.xosc]
+image::fog.jpg[]
+
+=== Tunnels
+
+From v2.49.0, esmini supports OpenDRIVE tunnels.
+
+A tunnel is defined as a road object, according to https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/13_objects/13_11_tunnels.html[OpenDRIVE Tunnel element specification].
+
+Example:
+
+[source,xml]
+----
+<tunnel s="30.0" length="250.0" name="MyTunnel" id="1" type="standard"/>
+----
+
+This will define a tunnel named "MyTunnel" starting at 30m along the road, with a length of 250m.
+
+==== Tunnel 3D model and transparency
+
+By default, esmini will generate a simple 3D model of the tunnel. The width will cover all road lanes except any out lanes of type `none`. The height will be fixed to 4.5m. Walls and roof constructions 2m thick.
+
+.Automatically created tunnel 3D model
+image::tunnel_opaque.jpg[]
+
+To disable auto-generation of the tunnel model, set the userData attribute `generate3DModel` to `false`. Example:
+
+[source,xml]
+----
+<tunnel s="30.0" length="250.0" name="MyTunnel" id="1" type="standard">
+    <userData code="generate3DModel" value="false"/>
+</tunnel>
+----
+
+To see whats going on inside a tunnel, esmini provides a `tunnel_transparency` option. Example:
+
+`./bin/esmini --osc ./resources/xosc/tunnels.xosc --tunnel_transparency 0.6`
+
+.60% tunnel transparency
+image::tunnel_transparent.jpg[]
+
+The generated tunnel model will adapt to any changes in road width, as can be seen in below image:
+
+.Tunnel adapting to changing road width
+image::tunnel_width.jpg[]
+
+If the automatically created tunnel model does not fit your needs, you can define it in terms of ordinary OpenDRIVE road objects. Then, for example, the tunnel width can be customized as well as the thickness of walls and/or roof construction. In the example scenario below the tunnel named "ManualTunnel" is such.
+
+==== Tunnel example scenario
+
+Here's a demo scenario including a few tunnels: +
+https://github.com/esmini/esmini/blob/dev/resources/xosc/tunnels.xosc
+
+and the associated OpenDRIVE file: +
+https://github.com/esmini/esmini/blob/dev/resources/xodr/tunnels.xodr
+
+Video clip showing some usage of tunnels in esmini, including OSI inspection:
+
+video::pTYcu1yFe5k[youtube,width=800,height=450,opts="autoplay,nocontrols,loop"]
+
 === SUMO integration
 
 https://eclipse.dev/sumo/[SUMO] is a great open source traffic simulation tool. It has been integrated with esmini, making it possible to run SUMO simulations in esmini, and even mix or co-simulate SUMO vehicles with OpenSCENARIO vehicles.

@@ -285,7 +285,7 @@ void OSCPrivateAction::TransitionDynamics::UpdateRate()
     // Adapt sign
     rate_ = SIGN(GetTargetVal() - GetStartVal()) * abs(rate_);
 
-    if (dimension_ == DynamicsDimension::RATE)
+    if (dimension_ == DynamicsDimension::RATE && !NEAR_ZERO(rate_))
     {
         // Find out parameter range from rate
         param_target_val_ = AVOID_ZERO(GetTargetParamValByPrimPeak(rate_));

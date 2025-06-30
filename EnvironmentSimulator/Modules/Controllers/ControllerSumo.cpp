@@ -91,9 +91,20 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
     libsumo::Simulation::load(options);
 }
 
+ControllerSumo::~ControllerSumo()
+{
+    if (object_ != nullptr)
+    {
+        delete object_;
+        object_ = nullptr;
+    }
+
+    libsumo::Simulation::close();
+}
+
 void ControllerSumo::Step(double timeStep)
 {
-    // stepping funciton for sumo, adds/removes vehicles (based on sumo),
+    // stepping function for sumo, adds/removes vehicles (based on sumo),
     // updates all positions of vehicles in the simulation that are controlled by sumo
     // do sumo timestep
     time_ += timeStep;

@@ -24,6 +24,10 @@
 #include <sstream>
 #include <locale>
 #include <array>
+#include <regex>
+#include <chrono>
+#include <iomanip>
+#include <string>
 
 // UDP network includes
 #ifndef _WIN32
@@ -39,6 +43,7 @@
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #include <windows.h>
+#include <timezoneapi.h>
 #elif defined(__APPLE__)
 #include <mach-o/dyld.h>
 #include <dlfcn.h>
@@ -705,6 +710,156 @@ bool IsNumber(const std::string& str, int max_digits)
     return true;
 }
 
+bool IsValidDateTimeFormat(const std::string& dateTimeString)
+{
+    std::regex pattern(R"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2})");
+    if (!std::regex_match(dateTimeString, pattern))
+    {
+        return false;  // Invalid format
+    }
+
+    std::tm           timeStruct = {};
+    std::stringstream ss(dateTimeString);
+    ss >> std::get_time(&timeStruct, "%Y-%m-%dT%H:%M:%S");
+
+    if (ss.fail())
+    {
+        return false;  // Failed to parse time
+    }
+
+    // Check for valid date/time components
+    if (timeStruct.tm_year < 0 || timeStruct.tm_year > 20000 || timeStruct.tm_mon < 0 || timeStruct.tm_mon > 11 || timeStruct.tm_mday < 1 ||
+        timeStruct.tm_mday > 31 || timeStruct.tm_hour < 0 || timeStruct.tm_hour > 23 || timeStruct.tm_min < 0 || timeStruct.tm_min > 59 ||
+        timeStruct.tm_sec < 0 || timeStruct.tm_sec > 59)
+    {
+        return false;  // Invalid date/time values
+    }
+
+    // Basic month day validation
+    if (timeStruct.tm_mon == 1 && timeStruct.tm_mday > 29)
+        return false;
+    if ((timeStruct.tm_mon == 3 || timeStruct.tm_mon == 5 || timeStruct.tm_mon == 8 || timeStruct.tm_mon == 10) && timeStruct.tm_mday > 30)
+        return false;
+
+    // Check Leap year for february
+    if (timeStruct.tm_mon == 1 && timeStruct.tm_mday == 29)
+    {
+        int year = timeStruct.tm_year + 1900;
+        if (year % 4 != 0)
+            return false;
+        if (year % 100 == 0 && year % 400 != 0)
+            return false;
+    }
+
+    // Check milliseconds
+    std::string millisecondsStr = dateTimeString.substr(20, 3);
+    try
+    {
+        int milliseconds = std::stoi(millisecondsStr);
+        if (milliseconds < 0 || milliseconds > 999)
+        {
+            return false;
+        }
+    }
+    catch (const std::invalid_argument& e)
+    {
+        LOG_ERROR("IsValidDateTimeFormat: {}", e.what());
+        return false;  // Invalid milliseconds
+    }
+
+    // Check timezone offset
+    std::string timezoneStr = dateTimeString.substr(23);
+    std::regex  timezonePattern(R"([+-]\d{2}:\d{2})");
+    if (!std::regex_match(timezoneStr, timezonePattern))
+        return false;
+
+    return true;  // Valid date and time
+}
+
+uint32_t GetSecondsSinceMidnight(const std::string& dateTimeString)
+{
+    std::tm           timeStruct = {};
+    std::stringstream ss(dateTimeString);
+
+    ss >> timeStruct.tm_year;
+    if (ss.peek() == '-')
+        ss.ignore();
+    ss >> timeStruct.tm_mon;
+    if (ss.peek() == '-')
+        ss.ignore();
+    ss >> timeStruct.tm_mday;
+    if (ss.peek() == 'T')
+        ss.ignore();
+    ss >> timeStruct.tm_hour;
+    if (ss.peek() == ':')
+        ss.ignore();
+    ss >> timeStruct.tm_min;
+    if (ss.peek() == ':')
+        ss.ignore();
+    ss >> timeStruct.tm_sec;
+
+    // Discard fractional seconds
+    if (ss.peek() == '.')
+    {
+        std::string dummy;
+        std::getline(ss, dummy, '+');  // Read until the + in timezone
+    }
+
+    // Ignore timezone
+    return static_cast<uint32_t>(timeStruct.tm_hour * 3600 + timeStruct.tm_min * 60 + timeStruct.tm_sec);
+}
+
+int64_t GetEpochTimeFromString(const std::string& datetime)
+{
+    std::tm tm = {};
+
+    std::istringstream ss(datetime);
+    ss >> std::get_time(&tm, "%Y-%m-%dT%H:%M:%S");
+
+    if (ss.peek() == '.')
+    {
+        int milliseconds = 0;
+        ss.ignore();
+        ss >> milliseconds;
+    }
+    // We're ignoring tz info afterwards, if present
+
+    tm.tm_isdst = -1;  // To be proper, we tell mktime to ignore DST
+
+#if defined(_WIN32)
+    std::time_t epoch = _mkgmtime(&tm);
+#elif defined(__unix__) || defined(__APPLE__)
+    std::time_t epoch = timegm(&tm);
+#else
+    // fallback if not available
+    std::time_t epoch = mktime(&tm);
+#endif
+
+    return static_cast<int64_t>(epoch);
+}
+
+double GetSecondsToFactor(int seconds)
+{
+    // There are 24 * 60 * 60 seconds in a day
+    constexpr int secondsInDay = 86400;
+
+    // Normalize the seconds to a range of 0 to 2*pi (one full cycle)
+    double normalizedTime = (static_cast<double>(seconds) / secondsInDay) * 2.0 * M_PI;
+
+    // Shift the phase so that the peak (factor 1) is at noon (12 * 3600 seconds)
+    // Noon corresponds to the middle of the day, so we shift by pi
+    double noonInRadians    = (12.0 * 3600.0 / secondsInDay) * 2.0 * M_PI;
+    double phaseShiftedTime = normalizedTime - noonInRadians;
+
+    // Use the cosine function to create the sinusoidal shape.
+    // cos(0) = 1, which we want at noon.
+    // cos(pi) = -1, which we want at midnight (after shifting).
+    // Take the absolute value and then scale and shift to get a range of 0 to 1.
+    double factor = 0.5 * (std::cos(phaseShiftedTime) + 1.0);
+
+    return factor;
+}
+
 int strtoi(std::string s)
 {
     return atoi(s.c_str());
@@ -754,13 +909,9 @@ void SE_sleep(unsigned int msec)
 
 #else
 
-#include <chrono>
-
-using namespace std::chrono;
-
 __int64 SE_getSystemTime()
 {
-    return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 void SE_sleep(unsigned int msec)
@@ -988,6 +1139,25 @@ FILE* FileOpen(const char* filename, const char* mode)
     return file;
 }
 
+int GetCrossProduct3D(double x1, double y1, double z1, double x2, double y2, double z2, double& x, double& y, double& z)
+{
+    x = y1 * z2 - z1 * y2;
+    y = z1 * x2 - x1 * z2;
+    z = x1 * y2 - y1 * x2;
+
+    return 0;
+}
+
+double GetCrossProduct3DMagnitude(double x1, double y1, double z1, double x2, double y2, double z2)
+{
+    double x, y, z;
+
+    GetCrossProduct3D(x1, y1, z1, x2, y2, z2, x, y, z);
+
+    // Calculate the magnitude of the resulting vector
+    return std::sqrt(x * x + y * y + z * z);
+}
+
 double GetCrossProduct2D(double x1, double y1, double x2, double y2)
 {
     return x1 * y2 - x2 * y1;
@@ -1000,7 +1170,31 @@ double GetDotProduct2D(double x1, double y1, double x2, double y2)
 
 double GetAngleBetweenVectors(double x1, double y1, double x2, double y2)
 {
-    return acos(GetDotProduct2D(x1, y1, x2, y2) / (GetLengthOfVector2D(x1, y1) * GetLengthOfVector2D(x2, y2)));
+    double dp      = GetDotProduct2D(x1, y1, x2, y2);
+    double length1 = GetLengthOfVector2D(x1, y1);
+    double length2 = GetLengthOfVector2D(x2, y2);
+    if (length1 < SMALL_NUMBER || length2 < SMALL_NUMBER)
+    {
+        return 0.0;  // Avoid division by zero
+    }
+    return acos(ABS_LIMIT(dp / (length1 * length2), 1.0));
+}
+
+double GetDotProduct3D(double x1, double y1, double z1, double x2, double y2, double z2)
+{
+    return x1 * x2 + y1 * y2 + z1 * z2;
+}
+
+double GetAngleBetweenVectors3D(double x1, double y1, double z1, double x2, double y2, double z2)
+{
+    double dp      = GetDotProduct3D(x1, y1, z1, x2, y2, z2);
+    double length1 = GetLengthOfVector3D(x1, y1, z1);
+    double length2 = GetLengthOfVector3D(x2, y2, z2);
+    if (length1 < SMALL_NUMBER || length2 < SMALL_NUMBER)
+    {
+        return 0.0;  // Avoid division by zero
+    }
+    return acos(ABS_LIMIT(dp / (length1 * length2), 1.0));
 }
 
 void NormalizeVec2D(double x, double y, double& xn, double& yn)

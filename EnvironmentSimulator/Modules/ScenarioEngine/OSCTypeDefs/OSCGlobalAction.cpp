@@ -44,6 +44,19 @@ using std::vector;
 
 int SwarmTrafficAction::counter_ = 0;
 
+void EnvironmentAction::Start(double simTime)
+{
+    environment_->UpdateEnvironment(new_environment_);
+    OSCAction::Start(simTime);
+}
+
+void EnvironmentAction::Step(double simTime, double dt)
+{
+    (void)simTime;
+    (void)dt;
+    OSCAction::Stop();
+}
+
 void ParameterSetAction::Start(double simTime)
 {
     LOG_INFO("Set parameter {} = {}", name_, value_);
@@ -304,7 +317,7 @@ void SwarmTrafficAction::Start(double simTime)
     tree->build(vec);
     rTree = tree;
 
-    // Register model filesnames from first vehicle catalog
+    // Register model filenames from vehicle catalog
     // if no catalog loaded, use same model as central object
     vehicle_pool_.Initialize(reader_, nullptr, true);
 

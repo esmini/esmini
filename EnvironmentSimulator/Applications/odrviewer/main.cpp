@@ -457,6 +457,7 @@ int main(int argc, char **argv)
     opt.AddOption("stop_at_end_of_road", "Instead of respawning elsewhere, stop when no connection exists");
     opt.AddOption("text_scale", "Scale screen overlay text", "size factor", "1.0", true);
     opt.AddOption("traffic_rule", "Enforce left or right hand traffic, regardless OpenDRIVE rule attribute (default: right)", "rule (right/left)");
+    opt.AddOption("tunnel_transparency", "Set level of transparency for generated tunnels [0:1]", "transparency", "0.0");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
 
