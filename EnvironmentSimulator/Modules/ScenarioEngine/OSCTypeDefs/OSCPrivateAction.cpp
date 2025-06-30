@@ -2074,12 +2074,10 @@ void LatDistanceAction::Step(double simTime, double dt)
 
         RotateVec2D(1.0, 0.0, target_object_->pos_.GetH(), target_obj_x_axis[0], target_obj_x_axis[1]);
         RotateVec2D(0.0, distance_, target_object_->pos_.GetH(), target_obj_offset[0], target_obj_offset[1]);
-#if 0  // perpendicular to road s axis
+#if 0    // perpendicular to road s axis
         RotateVec2D(0.0, 1.0, IsAngleForward(object_->pos_.GetHRelative()) ? 0.0 : M_PI, obj_y_axis[0], obj_y_axis[1]);
-#else  // perpendicular to object
+#elif 0  // perpendicular to object
         RotateVec2D(0.0, 1.0, object_->pos_.GetH(), obj_y_axis[0], obj_y_axis[1]);
-#endif
-
         GetIntersectionOfTwoLineSegments(object_->pos_.GetX(),
                                          object_->pos_.GetY(),
                                          object_->pos_.GetX() + obj_y_axis[0],
@@ -2090,27 +2088,102 @@ void LatDistanceAction::Step(double simTime, double dt)
                                          target_object_->pos_.GetY() + target_obj_offset[1] + target_obj_x_axis[1],
                                          target_pos[0],
                                          target_pos[1]);
+#else    // perpendicular to target heading
+        ProjectPointOnLine2D(object_->pos_.GetX(),
+                             object_->pos_.GetY(),
+                             target_object_->pos_.GetX() + target_obj_offset[0],
+                             target_object_->pos_.GetY() + target_obj_offset[1],
+                             target_object_->pos_.GetX() + target_obj_offset[0] + target_obj_x_axis[0],
+                             target_object_->pos_.GetY() + target_obj_offset[1] + target_obj_x_axis[1],
+                             target_pos[0],
+                             target_pos[1]);
+#endif
 
         double delta[2]      = {target_pos[0] - object_->pos_.GetX(), target_pos[1] - object_->pos_.GetY()};
         double dist          = GetLengthOfVector2D(delta[0], delta[1]);
         double delta_norm[2] = {0.0, 0.0};
         NormalizeVec2D(delta[0], delta[1], delta_norm[0], delta_norm[1]);
         double new_pos[2] = {object_->pos_.GetX() + delta_norm[0] * MAX(step_len, dist), object_->pos_.GetY() + delta_norm[1] * MAX(step_len, dist)};
+        LOG_INFO("steplen {} dist {}", step_len, dist);
         if (dist > SMALL_NUMBER)
         {
-            if (dist < step_len - SMALL_NUMBER)
+            // if (dist < step_len - SMALL_NUMBER)
+            if (dist < 10.0)
             {
-                // after moving to the target point on parallel line, then along the parallel line
-                heading = atan2(delta[1], delta[0]);
-                double
+                // We're reaching the line at parallel distance from target x axis
+                // find intersection of that line and the circle defined by current point (center) and distance (radius)
+                double obj_pos[2] = {object_->pos_.GetX(), object_->pos_.GetY()};
+                double i0[2], i1[2];
+                int    n_intersections = GetIntersectionsOfLineAndCircle(
+                    {target_object_->pos_.GetX() + target_obj_offset[0], target_object_->pos_.GetY() + target_obj_offset[1]},
+                    {target_object_->pos_.GetX() + target_obj_offset[0] + target_obj_x_axis[0],
+                        target_object_->pos_.GetY() + target_obj_offset[1] + target_obj_x_axis[1]},
+                    obj_pos,
+                    // step_len,
+                    10.0,
+                    i0,
+                    i1);
+                if (n_intersections == 1)
+                {
+                    LOG_INFO("one intersection");
+                    object_->pos_.SetInertiaPos(i0[0], i0[1], heading);
+                }
+                else if (n_intersections == 2)
+                {
+                    // pick point closest to current heading
+                    double h0 = GetAngleOfVector(i0[0] - object_->pos_.GetX(), i0[1] - object_->pos_.GetY());
+                    double h1 = GetAngleOfVector(i1[0] - object_->pos_.GetX(), i1[1] - object_->pos_.GetY());
+                    LOG_INFO(
+                        "n_intersections {} dist {:.2f} steplen {:.2f} h0: {:.2f} h1: {:.2f} i0: {:.2f}, {:.2f} i1: {:.2f}, {:.2f}, object pos {:.2f}, {:.2f}",
+                        n_intersections,
+                        dist,
+                        step_len,
+                        h0,
+                        h1,
+                        i0[0],
+                        i0[1],
+                        i1[0],
+                        i1[1],
+                        object_->pos_.GetX(),
+                        object_->pos_.GetY());
+                    if (GetAbsAngleDifference(h0, target_object_->pos_.GetH()) < GetAbsAngleDifference(h1, target_object_->pos_.GetH()))
+                    {
+                        RotateVec2D(1.0, 0.0, h0, new_pos[0], new_pos[1]);
+                        object_->pos_.SetInertiaPos(object_->pos_.GetX() + new_pos[0] * step_len, object_->pos_.GetY() + new_pos[1] * step_len, h0);
+                    }
+                    else
+                    {
+                        RotateVec2D(1.0, 0.0, h1, new_pos[0], new_pos[1]);
+                        object_->pos_.SetInertiaPos(object_->pos_.GetX() + new_pos[0] * step_len, object_->pos_.GetY() + new_pos[1] * step_len, h1);
+                    }
+                }
+                else
+                {
+                    LOG_WARN("Unexpected, no circle intersections");
+                }
             }
             else
             {
+                // move towards the target
+                new_pos[0] = object_->pos_.GetX() + delta_norm[0] * step_len;
+                new_pos[1] = object_->pos_.GetY() + delta_norm[1] * step_len;
+                double h   = atan2(new_pos[1] - object_->pos_.GetY(), new_pos[0] - object_->pos_.GetX());
+                LOG_INFO("delta x {:.2f} y {:.2f} h {:.2f}", new_pos[0] - object_->pos_.GetX(), new_pos[1] - object_->pos_.GetY(), h);
+                object_->pos_.SetInertiaPos(new_pos[0], new_pos[1], h);
             }
+            object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+        }
+        else
+        {
+            // at parallel line at specified distance, just move along
+            RotateVec2D(1.0, 0.0, target_object_->pos_.GetH(), new_pos[0], new_pos[1]);
+            object_->pos_.SetInertiaPos(object_->pos_.GetX() + new_pos[0] * step_len,
+                                        object_->pos_.GetY() + new_pos[1] * step_len,
+                                        target_object_->pos_.GetH());
         }
 
+#if 0
         heading = dist < SMALL_NUMBER ? object_->pos_.GetH() : atan2(delta[1], delta[0]);
-
         if (dynamics_.max_speed_ >= LARGE_NUMBER && dynamics_.max_acceleration_ >= LARGE_NUMBER && dynamics_.max_deceleration_ >= LARGE_NUMBER)
         {
             // move instantly to the calculated target point, keep heading and longitudinal speed
@@ -2138,6 +2211,7 @@ void LatDistanceAction::Step(double simTime, double dt)
             // set also speed update bit to avoid automatic speed update
             object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
         }
+#endif
     }
     else
     {
