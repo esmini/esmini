@@ -1948,8 +1948,8 @@ void SE_Options::AddOption(std::string opt_str,
     {
         SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply, isSingleValueOption);
         option_[ConvertStrKeyToEnum(opt_str)] = opt;
-        //const auto [itr, success] = option_.insert(std::make_pair(opt_str, opt));
-        //if (success)
+        // const auto [itr, success] = option_.insert(std::make_pair(opt_str, opt));
+        // if (success)
         //{
         optionOrder_.push_back(&opt);
         //}
