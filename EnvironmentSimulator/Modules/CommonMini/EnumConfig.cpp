@@ -5,8 +5,8 @@ CONFIG_ENUM ConvertStrKeyToEnum(const std::string& key)
 {
     if (auto itr = configStrKeyEnumMap.find(key); itr == configStrKeyEnumMap.end())
     {
-        LOG_ERROR("Unknown option:{}", key);
-        throw std::invalid_argument(std::string("Unknown option: ") + key);
+        // the option can be for viewer stuff
+        return CONFIGS_COUNT;
     }
     else
     {

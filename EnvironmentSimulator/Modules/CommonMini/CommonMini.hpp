@@ -914,12 +914,16 @@ public:
     std::string              opt_str_;
     std::string              opt_desc_;
     std::string              opt_arg_;
-    bool                     set_;
+    bool                     set_ = false;
     std::vector<std::string> arg_value_;
     std::string              default_value_;
     bool                     persistent_          = false;
     bool                     autoApply_           = false;
     bool                     isSingleValueOption_ = false;
+
+    SE_Option()
+    {
+    }
 
     SE_Option(std::string opt_str,
               std::string opt_desc,
@@ -945,6 +949,10 @@ class SE_Options
 #define OPT_PREFIX "--"
 
 public:
+    SE_Options()
+    {
+        option_.resize(CONFIG_ENUM::CONFIGS_COUNT);
+    }
     void AddOption(std::string opt_str,
                    std::string opt_desc,
                    std::string opt_arg             = "",
