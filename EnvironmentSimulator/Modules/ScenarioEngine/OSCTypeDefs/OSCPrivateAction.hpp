@@ -569,7 +569,8 @@ namespace scenarioengine
               acceleration_(0.0),
               spring_(0.0, 0.0, 0.0),
               old_x_(0.0),
-              old_y_(0.0)
+              old_y_(0.0),
+              sign_(0.0)
         {
         }
 
@@ -591,6 +592,7 @@ namespace scenarioengine
             spring_        = action.spring_;
             old_x_         = action.old_x_;
             old_y_         = action.old_y_;
+            sign_          = action.sign_;
         }
 
         OSCPrivateAction* Copy()
@@ -623,6 +625,7 @@ namespace scenarioengine
         DampedSpring spring_;
         double       old_x_;
         double       old_y_;
+        double       sign_;
     };
 
     class LatLaneChangeAction : public OSCPrivateAction

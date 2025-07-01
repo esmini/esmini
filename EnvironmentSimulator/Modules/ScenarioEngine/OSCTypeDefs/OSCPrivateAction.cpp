@@ -1949,26 +1949,30 @@ void LatDistanceAction::Start(double simTime)
     // }
 
     // Resolve displacement
-    // if (displacement_ == DisplacementType::ANY)
-    // {
-    //     // Find out current displacement, and apply it
-    //     double x, y;
-    //     object_->pos_.getRelativeDistance(target_object_->pos_.GetX(), target_object_->pos_.GetY(), x, y);
+    if (displacement_ == DisplacementType::ANY)
+    {
+        displacement_ = DisplacementType::RIGHT_TO_REFERENCED_ENTITY;
+    }
 
-    //     // Just interested in the x-axis component of the distance, if 0.0 we default to the right
-    //     (y < 0.0) ? displacement_ = DisplacementType::LEFT_TO_REFERENCED_ENTITY : displacement_ = DisplacementType::RIGHT_TO_REFERENCED_ENTITY;
-    // }
+    if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
+    {
+        // We want to be on the left side of the target object
+        distance_ = -abs(distance_);
+        sign_     = -1.0;
+    }
+    else if (displacement_ == DisplacementType::RIGHT_TO_REFERENCED_ENTITY)
+    {
+        // We want to be on the right side of the target object
+        distance_ = abs(distance_);
+        sign_     = 1.0;
+    }
 
-    // if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
-    // {
-    //     // We want to be on the left side of the target object
-    //     distance_ = abs(distance_);
-    // }
-    // else if (displacement_ == DisplacementType::RIGHT_TO_REFERENCED_ENTITY)
-    // {
-    //     // We want to be on the right side of the target object
-    //     distance_ = -abs(distance_);
-    // }
+    if (freespace_)
+    {
+        double ego_width    = object_->boundingbox_.dimensions_.width_;
+        double target_width = target_object_->boundingbox_.dimensions_.width_;
+        distance_ += sign_ * (ego_width + target_width) / 2.0;
+    }
 
     move_state_ = MoveState::INIT;
 
@@ -2018,39 +2022,14 @@ void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanage
     bool facing_forward = IsAngleForward(object_->pos_.GetHRelative());
 
     distance_error = 0.0;
-    if (!freespace_)
+    // Both cars facing along the driving direction or against it
+    if ((facing_forward && pos_diff.dDirection) || (!facing_forward && !pos_diff.dDirection))
     {
-        // Both cars facing along the driving direction or against it
-        if ((facing_forward && pos_diff.dDirection) || (!facing_forward && !pos_diff.dDirection))
-        {
-            if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
-            {
-                distance_error = -(pos_diff.dt - distance_);
-            }
-            else  // RIGHT_TO_REFERENCED_ENTITY
-            {
-                distance_error = -(pos_diff.dt + distance_);
-            }
-        }
-        else  // One of the actors is facing against the driving direction
-        {
-            if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
-            {
-                distance_error = -(pos_diff.dt + distance_);
-            }
-            else  // RIGHT_TO_REFERENCED_ENTITY
-            {
-                distance_error = -(pos_diff.dt - distance_);
-            }
-        }
+        distance_error = -(pos_diff.dt + distance_);
     }
-    else
+    else  // One of the actors is facing against the driving direction
     {
-        double ego_width    = object_->boundingbox_.dimensions_.width_;
-        double target_width = target_object_->boundingbox_.dimensions_.width_;
-        distance_error      = (abs(distance_) < SMALL_NUMBER) ? -pos_diff.dt
-                                                              : SIGN(distance_) * (ego_width + target_width) / 2.0 + distance_ -
-                                                               pos_diff.dt;  // Taking into account the width of both vehicles
+        distance_error = -(pos_diff.dt - distance_);
     }
 }
 
