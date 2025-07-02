@@ -93,27 +93,25 @@ void RubberbandManipulator::setMode(unsigned int mode)
         mode = GetNumberOfCameraModes() - 1;
     }
 
-    // If leaving locked views, then reset camera rotations
+    // If leaving locked views, then reset camera rotations and zoom
     if (mode_ == RB_MODE_TOP || mode_ == RB_MODE_DRIVER || mode_ >= RB_MODE_CUSTOM)
     {
         cameraAngle_        = orbitCameraAngle;
         cameraRotation_     = orbitCameraRotation;
         cameraBaseDistance_ = orbitCameraDistance;
+        zoom_distance_      = 0.0;
     }
 
     mode_ = mode;
 
-    if (mode == RB_MODE_RUBBER_BAND)
+    if (mode_ == RB_MODE_RUBBER_BAND)
     {
         cameraAngle_        = orbitCameraAngle;
         cameraBaseDistance_ = orbitCameraDistance;
     }
-    else if (mode == RB_MODE_TOP)
+    else if (mode_ == RB_MODE_TOP)
     {
         cameraBaseDistance_ = topCameraDistance;
-    }
-    else if (mode >= CAMERA_MODE::RB_MODE_CUSTOM)
-    {
     }
 }
 
@@ -155,8 +153,17 @@ void RubberbandManipulator::calculateCameraDistance()
     osg::BoundingBox bb   = cbv.getBoundingBox();
     osg::Vec3        minV = bb._min * m.front();
     osg::Vec3        maxV = bb._max * m.front();
-    cameraBaseDistance_   = MAX((maxV.x() - minV.x() + maxV.y() - minV.y()) / 2, orbitCameraDistance);
-    zoom_distance_        = 0.0;
+
+    if (mode_ == RB_MODE_TOP)
+    {
+        cameraBaseDistance_ = topCameraDistance;
+    }
+    else
+    {
+        cameraBaseDistance_ = MAX((maxV.x() - minV.x() + maxV.y() - minV.y()) / 2, orbitCameraDistance);
+    }
+
+    zoom_distance_ = 0.0;
 }
 
 void RubberbandManipulator::init(const GUIEventAdapter&, GUIActionAdapter& us)
@@ -382,7 +389,6 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
     {
         cameraRotation_ = 0;
         cameraAngle_    = 0;
-        relative_pos_.set(1.0, 0.0, 0.0);
     }
     else if (mode_ >= RB_MODE_CUSTOM)
     {
