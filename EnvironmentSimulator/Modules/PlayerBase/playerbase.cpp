@@ -518,7 +518,18 @@ void ScenarioPlayer::ViewerFrame(bool init)
         }
         else
         {
-            snprintf(str_buf, sizeof(str_buf), "%.2fs No entity in focus...", scenarioEngine->getSimulationTime());
+            if (viewer_->currentCarInFocus_ < 0 && viewer_->entities_.size() > 1)
+            {
+                snprintf(str_buf, sizeof(str_buf), "%.2fs Environment in focus", scenarioEngine->getSimulationTime());
+            }
+            else if (viewer_->currentCarInFocus_ > 0 && static_cast<unsigned int>(viewer_->currentCarInFocus_) >= viewer_->entities_.size())
+            {
+                snprintf(str_buf, sizeof(str_buf), "%.2fs All entities in focus", scenarioEngine->getSimulationTime());
+            }
+            else
+            {
+                snprintf(str_buf, sizeof(str_buf), "%.2fs", scenarioEngine->getSimulationTime());
+            }
         }
         viewer_->SetInfoText(str_buf);
     }

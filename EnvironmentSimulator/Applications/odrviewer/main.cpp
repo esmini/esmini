@@ -790,7 +790,8 @@ int main(int argc, char **argv)
                 }
             }
             // Always update info text, since camera might jump between different entities also during pause
-            if (static_cast<int>(cars.size()) > 0 && viewer->currentCarInFocus_ >= 0 && viewer->currentCarInFocus_ < static_cast<int>(cars.size()))
+            if (viewer->currentCarInFocus_ >= 0 && static_cast<unsigned int>(viewer->currentCarInFocus_) < viewer->entities_.size())
+            // if (static_cast<int>(cars.size()) > 0 && viewer->currentCarInFocus_ >= 0 && viewer->currentCarInFocus_ < static_cast<int>(cars.size()))
             {
                 Car        *car = cars[static_cast<unsigned int>(viewer->currentCarInFocus_)];
                 static char str_buf[128];
@@ -807,6 +808,21 @@ int main(int argc, char **argv)
                          car->pos.GetY(),
                          car->pos.GetH());
                 viewer->SetInfoText(str_buf);
+            }
+            else
+            {
+                if (viewer->currentCarInFocus_ < 0 && viewer->entities_.size() > 1)
+                {
+                    viewer->SetInfoText("Environment in focus");
+                }
+                else if (viewer->currentCarInFocus_ > 0 && static_cast<unsigned int>(viewer->currentCarInFocus_) >= viewer->entities_.size())
+                {
+                    viewer->SetInfoText("All entities in focus");
+                }
+                else
+                {
+                    viewer->SetInfoText("");
+                }
             }
 
             run_state.step = false;

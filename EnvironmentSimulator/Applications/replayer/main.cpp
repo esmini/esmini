@@ -1080,6 +1080,18 @@ int main(int argc, char** argv)
                     }
 #endif  // _USE_OSG
                 }
+
+#ifdef _USE_OSG
+                if (viewer_->currentCarInFocus_ < 0)
+                {
+                    viewer_->SetInfoText(scenarioEntity.size() > 0 ? "Environment in focus" : "");
+                }
+                else if (viewer_->currentCarInFocus_ > 0 && static_cast<unsigned int>(viewer_->currentCarInFocus_) >= scenarioEntity.size())
+                {
+                    viewer_->SetInfoText("All entities in focus");
+                }
+#endif  // _USE_OSG
+
                 // Collision detection
                 if (col_analysis && scenarioEntity.size() > 1)
                 {

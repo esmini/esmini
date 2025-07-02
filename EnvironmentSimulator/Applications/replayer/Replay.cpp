@@ -326,6 +326,11 @@ void Replay::GoToDeltaTime(double dt, bool stop_at_next_frame)
 
 int Replay::GoToNextFrame()
 {
+    if (data_.empty())
+    {
+        return -1;
+    }
+
     float ctime = data_[index_].state.info.timeStamp;
     for (size_t i = index_ + 1; i < data_.size(); i++)
     {
@@ -486,6 +491,11 @@ void Replay::SetStopTime(double time)
 
 void Replay::CleanEntries(std::vector<ReplayEntry>& entries)
 {
+    if (entries.empty())
+    {
+        return;
+    }
+
     for (unsigned int i = 0; i < entries.size() - 1; i++)
     {
         if (entries[i + 1].state.info.timeStamp < entries[i].state.info.timeStamp)
