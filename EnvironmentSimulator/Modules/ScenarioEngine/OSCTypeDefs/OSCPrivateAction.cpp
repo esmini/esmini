@@ -1945,7 +1945,8 @@ void LatDistanceAction::Start(double simTime)
     // Resolve displacement
     if (displacement_ == DisplacementType::ANY)
     {
-        displacement_ = DisplacementType::RIGHT_TO_REFERENCED_ENTITY;
+        LOG_INFO("LateralDistanceAction: Displacement not set, defaulting to leftToReferencedEntity");
+        displacement_ = DisplacementType::LEFT_TO_REFERENCED_ENTITY;
     }
 
     if (displacement_ == DisplacementType::LEFT_TO_REFERENCED_ENTITY)
@@ -1978,14 +1979,7 @@ void LatDistanceAction::GetDesiredRoadPos(const double distance_error, roadmanag
 {
     double shift_x = 0.0;
     double shift_y = 0.0;
-    if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
-    {
-        // How much we need to move to reach the target distance in the direction of the vehicle
-        SE_Vector lat_axis = {-sin(target_object_->pos_.GetH()), cos(target_object_->pos_.GetH())};
-        shift_x            = lat_axis.x() * distance_error;
-        shift_y            = lat_axis.y() * distance_error;
-    }
-    else if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
+    if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
     {
         // How much we need to move to reach the target distance in the direction of the road
         shift_x = -std::sin(object_->pos_.GetRoadH()) * distance_error;
@@ -1993,7 +1987,7 @@ void LatDistanceAction::GetDesiredRoadPos(const double distance_error, roadmanag
     }
     else
     {
-        LOG_WARN("LatDistanceAction: Unsupported coordinate system");
+        LOG_WARN("LateralDistanceAction: Unsupported coordinate system");
     }
 
     // Add the necessary shift to the current position
@@ -2007,7 +2001,7 @@ void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanage
     // Find out current distance
     if (roadmanager::CoordinateSystem::CS_ROAD != cs_)
     {
-        LOG_WARN("LatDistanceAction: Unsupported coordinate system");
+        LOG_WARN("LateralDistanceAction: Unsupported coordinate system");
         return;
     }
 
@@ -2017,14 +2011,14 @@ void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanage
 
     if (!path_found)
     {
-        LOG_ERROR("LatDistanceAction: No path found between objects {} and {}", object_->GetId(), target_object_->GetId());
+        LOG_ERROR("LateralDistanceAction: No path found between objects {} and {}", object_->GetId(), target_object_->GetId());
         OSCAction::End();
         return;
     }
 
     bool facing_forward = IsAngleForward(object_->pos_.GetHRelative());
+    distance_error      = 0.0;
 
-    distance_error = 0.0;
     // Both cars facing same direction, either along the driving direction or against it
     if ((facing_forward && pos_diff.dDirection) || (!facing_forward && !pos_diff.dDirection))
     {
