@@ -2069,7 +2069,7 @@ void LatDistanceAction::Step(double simTime, double)
             object_->SetSpeed(object_->GetSpeed());
             if (!continuous_)
             {
-                object_->pos_.SetHeading(desired_pos.GetRoadH());
+                object_->pos_.SetHeading(atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_));
 
                 if (std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
                 {
@@ -2081,9 +2081,9 @@ void LatDistanceAction::Step(double simTime, double)
             else
             {
                 object_->pos_.SetHeading(atan2(desired_pos.GetY() - old_y_, desired_pos.GetX() - old_x_));
-                old_x_ = object_->pos_.GetX();
-                old_y_ = object_->pos_.GetY();
             }
+            old_x_ = object_->pos_.GetX();
+            old_y_ = object_->pos_.GetY();
             object_->SetDirtyBits(Object::DirtyBit::LATERAL);
         }
         break;
@@ -2093,36 +2093,47 @@ void LatDistanceAction::Step(double simTime, double)
             double distance_error;
             GetDistanceError(object_->pos_, target_object_->pos_, distance_error);
 
-            // Parameters
-            // For the spring values x and x0, we set the current distance error and target value to 0.0 since we have already calculated the
-            // distance error. Distance error is negated to ensure that the spring force acts in the correct direction
-            spring_.SetValue(-distance_error);
-            spring_.SetV(lat_vel_ - target_object_->pos_.GetVelLat());  // Speed difference in lateral direction
-            spring_.Update(dt);
-
-            // Clamp the change in acceleration (delta_accel) by jerk limits
-            double delta_accel =
-                CLAMP(spring_.GetA() - acceleration_, -(dynamics_.max_acceleration_rate_ * dt), dynamics_.max_acceleration_rate_ * dt);
-
-            // Calculate the new acceleration after applying jerk limits
-            acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_acceleration_, dynamics_.max_acceleration_);
-
-            lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, std::min(dynamics_.max_speed_, object_->GetSpeed()));
-
-            // Presumably the spring doesn't overshoot, so we can snap to position if error changes sign
-            double d_offset  = lat_vel_ * dt;
-            double new_error = distance_error - d_offset;
-            if (SIGN(new_error) != SIGN(distance_error))
+            if (LARGE_NUMBER != dynamics_.max_acceleration_)
             {
-                d_offset = distance_error;
-                lat_vel_ = d_offset / dt;
+                // Parameters
+                // For the spring values x and x0, we set the current distance error and target value to 0.0 since we have already calculated the
+                // distance error. Distance error is negated to ensure that the spring force acts in the correct direction
+                spring_.SetValue(-distance_error);
+                spring_.SetV(lat_vel_ - target_object_->pos_.GetVelLat());  // Speed difference in lateral direction
+                spring_.Update(dt);
+
+                // Clamp the change in acceleration (delta_accel) by jerk limits
+                double delta_accel =
+                    CLAMP(spring_.GetA() - acceleration_, -(dynamics_.max_acceleration_rate_ * dt), dynamics_.max_acceleration_rate_ * dt);
+
+                // Calculate the new acceleration after applying jerk limits
+                acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_acceleration_, dynamics_.max_acceleration_);
+
+                lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, std::min(dynamics_.max_speed_, object_->GetSpeed()));
+
+                if (!continuous_ && std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
+                {
+                    // Reached requested distance, quit action
+                    move_state_ = MoveState::INIT;
+                    OSCAction::End();
+                }
             }
-
-            if (!continuous_ && std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
+            else
             {
-                // Reached requested distance, quit action
-                move_state_ = MoveState::INIT;
-                OSCAction::End();
+                lat_vel_ = SIGN(distance_error) * std::min(dynamics_.max_speed_, object_->GetSpeed());
+
+                double d_offset  = lat_vel_ * dt;
+                double new_error = distance_error - d_offset;
+                if (SIGN(new_error) != SIGN(distance_error))
+                {
+                    d_offset = distance_error;
+                    lat_vel_ = d_offset / dt;
+
+                    if (!continuous_)
+                    {
+                        OSCAction::End();
+                    }
+                }
             }
 
             double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(MAX(fabs(lat_vel_), SMALL_NUMBER), 2));
