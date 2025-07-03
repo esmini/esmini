@@ -2173,8 +2173,9 @@ void LatDistanceAction::Step(double simTime, double dt)
                 double h_diff_heading = GetAngleDifference(GetAngleOfVector(target_obj_x_axis[0], target_obj_x_axis[1]), object_->pos_.GetH());
 
                 // double w          = MIN(1.0, dist / turn_radius);
-                double w          = 2 * atan(dist / turn_radius) / M_PI_2;
-                double angle_diff = w * h_diff_delta + (1 - w) * h_diff_heading;
+                double w = 2 * asin(1 - dist / turn_radius) / M_PI;
+                LOG_INFO("asin {:.2f}", w);
+                double angle_diff = (1 - w) * h_diff_delta + (w)*h_diff_heading;
 
                 // double heading        = object_->pos_.GetH() + ABS_LIMIT(angle_diff, angle_max);
                 double heading = object_->pos_.GetH() + angle_diff;
