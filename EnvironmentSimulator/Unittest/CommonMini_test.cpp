@@ -297,6 +297,13 @@ TEST(CommonUtilityFunctions, TestCombineDirectoryPathAndFilepath)
     EXPECT_EQ(CombineDirectoryPathAndFilepath("", "my_File.txt"), "./my_File.txt");
 }
 
+TEST(MathFunctions, TestGetAngleDifference)
+{
+    EXPECT_NEAR(GetAngleDifference(-0.4, 0.0), -0.4, 1e-5);
+    EXPECT_NEAR(GetAngleDifference(0.1, 6.2), 0.183185, 1e-5);
+    EXPECT_NEAR(GetAngleDifference(6.2, 0.1), -0.183185, 1e-5);
+}
+
 TEST(MathFunctions, TestGetIntersectionsOfLineAndCircle)
 {
     double i0[2], i1[2];  // intersection points
