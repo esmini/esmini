@@ -408,6 +408,15 @@
                   </Event>
                </Maneuver>
             </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LatDistActStart" delay="0" conditionEdge="none">
+                        <ByValueCondition>
+                           <SimulationTimeCondition value="0" rule="greaterThan"/>
+                        </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
          </Act>	  
       </Story>
 		<StopTrigger>
