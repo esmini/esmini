@@ -2109,6 +2109,7 @@ void LatDistanceAction::Step(double simTime, double)
                 // Calculate the new acceleration after applying jerk limits
                 acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_acceleration_, dynamics_.max_acceleration_);
 
+                // Subtract small number to maintain some longitudinal velocity, avoid driving in wrong direction if lat speed is capped
                 lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, (std::min(dynamics_.max_speed_, object_->GetSpeed() - SMALL_NUMBER)));
 
                 if (!continuous_ && std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
