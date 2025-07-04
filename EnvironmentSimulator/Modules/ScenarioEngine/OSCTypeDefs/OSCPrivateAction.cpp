@@ -1951,10 +1951,6 @@ void LatDistanceAction::Start(double simTime)
     // Resolve displacement
     if (cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
     {
-        entity_cs_dist_spring_.SetTension(0.0);
-        entity_cs_dist_spring_.SetOptimalDamping();
-        entity_cs_heading_spring_.SetTension(0.0);
-        entity_cs_heading_spring_.SetOptimalDamping();
     }
     else
     {
@@ -2069,7 +2065,6 @@ void LatDistanceAction::Step(double simTime, double dt)
         // find intersection of object's y axis and target object's x-axis
         double target_obj_x_axis[2] = {0.0, 0.0};
         double target_obj_offset[2] = {0.0, 0.0};
-        double obj_y_axis[2]        = {0.0, 0.0};
         double target_pos[2]        = {0.0, 0.0};
         double step_len             = object_->GetSpeed() * dt;
 
@@ -2077,21 +2072,6 @@ void LatDistanceAction::Step(double simTime, double dt)
         RotateVec2D(0.0, distance_, target_object_->pos_.GetH(), target_obj_offset[0], target_obj_offset[1]);
 
         // calculate target position, i.e. aiming point
-#if 0    // perpendicular to road s axis
-        RotateVec2D(0.0, 1.0, IsAngleForward(object_->pos_.GetHRelative()) ? 0.0 : M_PI, obj_y_axis[0], obj_y_axis[1]);
-#elif 0  // perpendicular to object
-        RotateVec2D(0.0, 1.0, object_->pos_.GetH(), obj_y_axis[0], obj_y_axis[1]);
-        GetIntersectionOfTwoLineSegments(object_->pos_.GetX(),
-                                         object_->pos_.GetY(),
-                                         object_->pos_.GetX() + obj_y_axis[0],
-                                         object_->pos_.GetY() + obj_y_axis[1],
-                                         target_object_->pos_.GetX() + target_obj_offset[0],
-                                         target_object_->pos_.GetY() + target_obj_offset[1],
-                                         target_object_->pos_.GetX() + target_obj_offset[0] + target_obj_x_axis[0],
-                                         target_object_->pos_.GetY() + target_obj_offset[1] + target_obj_x_axis[1],
-                                         target_pos[0],
-                                         target_pos[1]);
-#else    // perpendicular to target heading
         ProjectPointOnLine2D(object_->pos_.GetX(),
                              object_->pos_.GetY(),
                              target_object_->pos_.GetX() + target_obj_offset[0],
@@ -2100,138 +2080,101 @@ void LatDistanceAction::Step(double simTime, double dt)
                              target_object_->pos_.GetY() + target_obj_offset[1] + target_obj_x_axis[1],
                              target_pos[0],
                              target_pos[1]);
-#endif
 
-        double delta[2]      = {target_pos[0] - object_->pos_.GetX(), target_pos[1] - object_->pos_.GetY()};
-        double dist          = GetLengthOfVector2D(delta[0], delta[1]);
-        double delta_norm[2] = {0.0, 0.0};
-        NormalizeVec2D(delta[0], delta[1], delta_norm[0], delta_norm[1]);
-        double new_pos[2]  = {0.0, 0.0};
-        double angle_max   = asin(dynamics_.max_speed_ * dt / step_len);
-        double turn_radius = step_len / (2 * sin(angle_max));
+        double delta[2] = {target_pos[0] - object_->pos_.GetX(), target_pos[1] - object_->pos_.GetY()};
+        double dist     = GetLengthOfVector2D(delta[0], delta[1]);
 
-        if (dist < SMALL_NUMBER)
+        if (dynamics_.max_speed_ >= LARGE_NUMBER && dynamics_.max_acceleration_ >= LARGE_NUMBER)
         {
-            // on parallel line at specified distance, just move along
-            RotateVec2D(1.0, 0.0, target_object_->pos_.GetH(), new_pos[0], new_pos[1]);
-            object_->pos_.SetInertiaPos(object_->pos_.GetX() + new_pos[0] * step_len,
-                                        object_->pos_.GetY() + new_pos[1] * step_len,
-                                        target_object_->pos_.GetH());
-        }
-        else
-        {
-            if (dist > turn_radius - SMALL_NUMBER)
+            // move instantly to target position
+            if (dist < fabs(object_->GetSpeed()) * dt)
             {
-                // distance to target point is large, move straight towards the target
-                new_pos[0] = object_->pos_.GetX() + delta_norm[0] * step_len;
-                new_pos[1] = object_->pos_.GetY() + delta_norm[1] * step_len;
-                object_->pos_.SetInertiaPos(new_pos[0], new_pos[1], atan2(new_pos[1] - object_->pos_.GetY(), new_pos[0] - object_->pos_.GetX()));
+                // given speed, some distance remains for moving forward
+                double dist_remains = fabs(object_->GetSpeed()) * dt - dist;
+                object_->pos_.SetInertiaPos(target_pos[0] + target_obj_x_axis[0] * dist_remains,
+                                            target_pos[1] + target_obj_x_axis[1] * dist_remains,
+                                            target_object_->pos_.GetH());
             }
             else
             {
-#if 0    // circle method
-         // We're reaching the target line parallel to target x axis
-         // find intersections of that line and the circle defined by current position (center) and turning radius (radius)
-                double center[2] = {object_->pos_.GetX(), object_->pos_.GetY()};
-                double i0[2], i1[2];
-                int    n_intersections = GetIntersectionsOfLineAndCircle(
-                    {target_object_->pos_.GetX() + target_obj_offset[0], target_object_->pos_.GetY() + target_obj_offset[1]},
-                    {target_object_->pos_.GetX() + target_obj_offset[0] + target_obj_x_axis[0],
-                        target_object_->pos_.GetY() + target_obj_offset[1] + target_obj_x_axis[1]},
-                    center,
-                    turn_radius,
-                    i0,
-                    i1);
+                object_->pos_.SetInertiaPos(target_pos[0], target_pos[1], target_object_->pos_.GetH());
+            }
+        }
+        else
+        {
+            double delta_norm[2] = {0.0, 0.0};
+            NormalizeVec2D(delta[0], delta[1], delta_norm[0], delta_norm[1]);
+            double new_pos[2] = {0.0, 0.0};
+            double angle_max  = asin(dynamics_.max_speed_ * dt / step_len);
 
-                if (n_intersections != 2)
+            if (dist < SMALL_NUMBER)
+            {
+                // on parallel line at specified distance, just move along
+                RotateVec2D(1.0, 0.0, target_object_->pos_.GetH(), new_pos[0], new_pos[1]);
+                object_->pos_.SetInertiaPos(object_->pos_.GetX() + new_pos[0] * step_len,
+                                            object_->pos_.GetY() + new_pos[1] * step_len,
+                                            target_object_->pos_.GetH());
+            }
+            else
+            {
+                double turn_radius = 0.0;
+
+                if (dynamics_.max_acceleration_ < LARGE_NUMBER)
                 {
-                    LOG_INFO("Unexpected: Found {} intersections - expected 2 given circle radius", n_intersections);
+                    // acceleration peaking at mid curve, approximate 1.5 times with a pure circular path
+                    turn_radius = 1.5 * pow(object_->GetSpeed(), 2) / dynamics_.max_acceleration_;
+                }
+                else if (dynamics_.max_speed_ < LARGE_NUMBER)
+                {
+                    // no acceleration constraint - apply perfect circular path to align with target line
+                    // find radius corresponding to specified max speed, which in this case is heading change rate
+                    turn_radius = fabs(object_->GetSpeed()) / MAX(fabs(dynamics_.max_speed_), SMALL_NUMBER);
+                }
+
+                if (dist > turn_radius - SMALL_NUMBER)
+                {
+                    // distance to target point is large, move straight towards the target
+                    new_pos[0] = object_->pos_.GetX() + delta_norm[0] * step_len;
+                    new_pos[1] = object_->pos_.GetY() + delta_norm[1] * step_len;
+                    object_->pos_.SetInertiaPos(new_pos[0], new_pos[1], atan2(new_pos[1] - object_->pos_.GetY(), new_pos[0] - object_->pos_.GetX()));
                 }
                 else
                 {
-                    // pick point most aligned with current heading
-                    double h0 = GetAngleOfVector(i0[0] - object_->pos_.GetX(), i0[1] - object_->pos_.GetY());
-                    double h1 = GetAngleOfVector(i1[0] - object_->pos_.GetX(), i1[1] - object_->pos_.GetY());
-                    double h =
-                        GetAbsAngleDifference(h0, target_object_->pos_.GetH()) < GetAbsAngleDifference(h1, target_object_->pos_.GetH()) ? h0 : h1;
+                    // calculate new driving direction (heading) based on distance and heading alignment with target line
+                    double h_diff_delta   = GetAngleDifference(GetAngleOfVector(delta[0], delta[1]), object_->pos_.GetH());
+                    double h_diff_heading = GetAngleDifference(GetAngleOfVector(target_obj_x_axis[0], target_obj_x_axis[1]), object_->pos_.GetH());
 
-                    RotateVec2D(1.0, 0.0, h, new_pos[0], new_pos[1]);
-                    object_->pos_.SetInertiaPos(object_->pos_.GetX() + new_pos[0] * step_len, object_->pos_.GetY() + new_pos[1] * step_len, h);
-                }
-#elif 1  // two angle diff method
-
-                // find out maximum lateral movement wrt max speed
-                // double max_lat_movement = MIN(step_len, dynamics_.max_speed_ * dt);
-
-                // find out maxumum heading diff
-                // double max_delta_angle = asin(max_lat_movement / step_len);
-
-                // double max_anglular_rate = max_delta_angle * dt;
-
-                // calculate new driving direction (heading) based on distance and heading alignment with target line
-                double h_diff_delta   = GetAngleDifference(GetAngleOfVector(delta[0], delta[1]), object_->pos_.GetH());
-                double h_diff_heading = GetAngleDifference(GetAngleOfVector(target_obj_x_axis[0], target_obj_x_axis[1]), object_->pos_.GetH());
-
-                // double w          = MIN(1.0, dist / turn_radius);
-                double w = 2 * asin(1 - dist / turn_radius) / M_PI;
-                LOG_INFO("asin {:.2f}", w);
-                double angle_diff = (1 - w) * h_diff_delta + (w)*h_diff_heading;
-
-                // double heading        = object_->pos_.GetH() + ABS_LIMIT(angle_diff, angle_max);
-                double heading = object_->pos_.GetH() + angle_diff;
-                double dir[2]  = {0.0, 0.0};
-
-                LOG_INFO(
-                    "turn_radius {:.2f} w {:.2f} dist {:.2f} h_diff_delta {:.2f} h_diff_heading {:.2f} angle_diff {:.5f} angle_max {:.2f} heading_spr {:.2f} dist_spr {:.2f} heading {:.2f}",
-                    turn_radius,
-                    w,
-                    dist,
-                    h_diff_delta,
-                    h_diff_heading,
-                    angle_diff,
-                    angle_max,
-                    entity_cs_heading_spring_.GetValue(),
-                    entity_cs_dist_spring_.GetValue(),
-                    heading);
-
-                RotateVec2D(1.0, 0.0, heading, dir[0], dir[1]);
-                object_->pos_.SetInertiaPos(object_->pos_.GetX() + step_len * dir[0], object_->pos_.GetY() + step_len * dir[1], heading);
-
-#else  // spring method
-
-                // find and register heading difference
-                entity_cs_heading_spring_.SetValue(GetAngleDifference(object_->pos_.GetH(), target_object_->pos_.GetH()));
-                entity_cs_heading_spring_.Update(dt);
-
-                // find out and register signed distance
-                double side = GetCrossProduct2D(delta[0], delta[1], target_obj_x_axis[0], target_obj_x_axis[1]);
-                entity_cs_dist_spring_.SetValue(SIGN(side) * dist);
-                entity_cs_dist_spring_.Update(dt);
-
-                // calculate new driving direction (heading) based on distance and heading spring
-                double w              = MIN(1.0, dist / turn_radius);
-                double h_diff_delta   = GetAngleDifference(GetAngleOfVector(delta[0], delta[1]), object_->pos_.GetH());
-                double h_diff_heading = GetAngleDifference(GetAngleOfVector(target_obj_x_axis[0], target_obj_x_axis[1]), object_->pos_.GetH());
-                double heading        = object_->pos_.GetH() + w * h_diff_delta + (1 - w) * h_diff_heading;
-                double dir[2]         = {0.0, 0.0};
-
-                LOG_INFO(
-                    "w {:.2f} side {:.2f} dist {:.2f} h_diff_delta {:.2f} h_diff_heading {:.2f} heading_spr {:.2f} dist_spr {:.2f} heading {:.2f}",
-                    w,
-                    side,
-                    dist,
-                    h_diff_delta,
-                    h_diff_heading,
-                    entity_cs_heading_spring_.GetValue(),
-                    entity_cs_dist_spring_.GetValue(),
-                    heading);
-
-                RotateVec2D(1.0, 0.0, heading, dir[0], dir[1]);
-                object_->pos_.SetInertiaPos(object_->pos_.GetX() + step_len * dir[0], object_->pos_.GetY() + step_len * dir[1], heading);
+                    // first calculate linear transition parameter w0
+                    double w = 2 * acos(1 - dist / turn_radius) / M_PI;
+#if 1
+                    // cubic smoothing
+                    w = 3 * pow(w, 2) - 2 * pow(w, 3);
+#elif 0
+                    // sinusoidal smoothing
+                    w = (1 - cos(M_PI * w)) / 2.0;
 #endif
+                    double angle_diff = (w)*h_diff_delta + (1 - w) * h_diff_heading;
+
+                    double heading = object_->pos_.GetH() + angle_diff;
+                    double dir[2]  = {0.0, 0.0};
+
+                    LOG_INFO(
+                        "turn_radius {:.2f} w {:.2f} dist {:.2f} h_diff_delta {:.2f} h_diff_heading {:.2f} angle_diff {:.5f} angle_max {:.2f} heading {:.2f}",
+                        turn_radius,
+                        w,
+                        dist,
+                        h_diff_delta,
+                        h_diff_heading,
+                        angle_diff,
+                        angle_max,
+                        heading);
+
+                    RotateVec2D(1.0, 0.0, heading, dir[0], dir[1]);
+                    object_->pos_.SetInertiaPos(object_->pos_.GetX() + step_len * dir[0], object_->pos_.GetY() + step_len * dir[1], heading);
+                }
             }
-            object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
         }
+        object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
     }
     else
     {
