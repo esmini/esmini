@@ -5644,6 +5644,58 @@ TEST(EnvironmentTest, EpochTime)
     EXPECT_EQ(GetEpochTimeFromString(dateTime7), 1299756236);
 }
 
+TEST(DeltaDirection, DistanceDiffDirection)
+{
+    std::unique_ptr<ScenarioEngine> se = std::make_unique<ScenarioEngine>("../../../EnvironmentSimulator/Unittest/xosc/lat_dist_road_test.xosc");
+    ASSERT_NE(se, nullptr);
+    const double dt = 0.1;
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 2);
+    roadmanager::Position& pos_1 = entities->object_[0]->pos_;
+    roadmanager::Position& pos_2 = entities->object_[1]->pos_;
+
+    ASSERT_EQ(pos_1.GetTrackId(), 0);
+    ASSERT_EQ(pos_2.GetTrackId(), 0);
+
+    roadmanager::PositionDiff pos_diff;
+    pos_1.Delta(&pos_2, pos_diff);
+    ASSERT_EQ(pos_diff.dDirection, true);
+
+    while (se->getSimulationTime() < 1.6)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    ASSERT_EQ(pos_1.GetTrackId(), 1);
+    ASSERT_EQ(pos_2.GetTrackId(), 0);
+
+    pos_1.Delta(&pos_2, pos_diff);
+    ASSERT_EQ(pos_diff.dDirection, true);
+
+    while (se->getSimulationTime() < 2.2)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    pos_1.Delta(&pos_2, pos_diff);
+    ASSERT_EQ(pos_diff.dDirection, false);
+
+    while (se->getSimulationTime() < 13.5)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    pos_1.Delta(&pos_2, pos_diff);
+    ASSERT_EQ(pos_diff.dDirection, false);
+}
+
 int main(int argc, char** argv)
 {
 #if 0  // set to 1 and modify filter to run one single test
