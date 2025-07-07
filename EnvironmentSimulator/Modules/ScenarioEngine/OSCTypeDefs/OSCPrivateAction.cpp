@@ -1767,7 +1767,6 @@ void LongSpeedAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 void LongDistanceAction::Start(double simTime)
 {
-    sim_time_ = simTime;
     if (target_object_ == 0)
     {
         LOG_ERROR("Can't trig without set target object ");
@@ -1807,16 +1806,15 @@ void LongDistanceAction::Start(double simTime)
     OSCAction::Start(simTime);
 }
 
-void LongDistanceAction::Step(double simTime, double)
+void LongDistanceAction::Step(double simTime, double dt)
 {
+    (void)simTime;
+
     if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
     {
         // longitudinal motion controlled elsewhere
         return;
     }
-
-    double dt = simTime - sim_time_;
-    sim_time_ = simTime;
 
     // Find out current distance
     double distance;
