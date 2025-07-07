@@ -2459,10 +2459,10 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
     };
 
     value values[] = {
-        {&dc.max_speed_, 250.0 / 3.6, obj->performance_.maxSpeed, "maxSpeed"},
-        {&dc.max_acceleration_, 5.0, obj->performance_.maxAcceleration, "maxAcceleration"},
+        {&dc.max_speed_, 250.0 / 3.6, obj ? obj->performance_.maxSpeed : LARGE_NUMBER, "maxSpeed"},
+        {&dc.max_acceleration_, 5.0, obj ? obj->performance_.maxAcceleration : LARGE_NUMBER, "maxAcceleration"},
         {&dc.max_acceleration_rate_, LARGE_NUMBER, dc.max_acceleration_rate_, "maxAccelerationRate"},
-        {&dc.max_deceleration_, 10.0, obj->performance_.maxDeceleration, "maxDeceleration"},
+        {&dc.max_deceleration_, 10.0, obj ? obj->performance_.maxDeceleration : LARGE_NUMBER, "maxDeceleration"},
         {&dc.max_deceleration_rate_, LARGE_NUMBER, dc.max_deceleration_rate_, "maxDecelerationRate"},
     };
 
@@ -2485,14 +2485,14 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
                          values[i].default_value < values[i].performance_value ? values[i].default_value : values[i].performance_value);
                 *values[i].variable = values[i].default_value < values[i].performance_value ? values[i].default_value : values[i].performance_value;
             }
-            // else if (*values[i].variable > values[i].performance_value)
-            //{
-            //     LOG_WARN("parseDynamicConstraints: {} value {:.2f} exceeds object performance value: {:.2f}, truncating",
-            //              values[i].label,
-            //              *values[i].variable,
-            //              values[i].performance_value);
-            //     *values[i].variable = values[i].performance_value;
-            // }
+            else if (*values[i].variable > values[i].performance_value)
+            {
+                LOG_WARN("parseDynamicConstraints: {} value {:.2f} exceeds object performance value: {:.2f}, truncating",
+                         values[i].label,
+                         *values[i].variable,
+                         values[i].performance_value);
+                *values[i].variable = values[i].performance_value;
+            }
         }
     }
 
@@ -2836,7 +2836,23 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     pugi::xml_node dynamics_node = lateralChild.child("DynamicConstraints");
                     if (dynamics_node != NULL)
                     {
-                        parseDynamicConstraints(dynamics_node, action_dist->dynamics_, object);
+                        // skip passing object to ignore entity configuration for this action
+                        parseDynamicConstraints(dynamics_node, action_dist->dynamics_);
+                        if (action_dist->dynamics_.max_acceleration_ < LARGE_NUMBER &&
+                            action_dist->dynamics_.max_acceleration_ > object->performance_.maxAcceleration)
+                        {
+                            LOG_WARN("LateralDistanceAction maxAcceleration {:.2f} exceeds object {} performance value: {:.2f}. Accepted.",
+                                     action_dist->dynamics_.max_acceleration_,
+                                     object->GetName(),
+                                     object->performance_.maxAcceleration);
+                        }
+                        if (action_dist->dynamics_.max_speed_ < LARGE_NUMBER && action_dist->dynamics_.max_speed_ > object->performance_.maxSpeed)
+                        {
+                            LOG_WARN("LateralDistanceAction maxSpeed {:.2f} exceeds object {} performance value: {:.2f}. Accepted.",
+                                     action_dist->dynamics_.max_speed_,
+                                     object->GetName(),
+                                     object->performance_.maxSpeed);
+                        }
                     }
 
                     std::string entity_ref = parameters.ReadAttribute(lateralChild, "entityRef");

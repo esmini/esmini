@@ -1987,7 +1987,7 @@ void LatDistanceAction::Start(double simTime)
         if (dynamics_.max_acceleration_rate_ < LARGE_NUMBER || dynamics_.max_deceleration_rate_ < LARGE_NUMBER ||
             dynamics_.max_deceleration_ < LARGE_NUMBER || dynamics_.max_speed_ < LARGE_NUMBER)
         {
-            LOG_INFO("LatDistanceAction: For entity coord system only maxAcceleration is supported (clamped at 1000). Omit for instant positioning.");
+            LOG_WARN("LatDistanceAction: For entity coord system only maxAcceleration is supported (clamped at 1000). Omit for instant positioning.");
         }
     }
     else if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)

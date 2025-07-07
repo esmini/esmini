@@ -127,13 +127,17 @@ namespace scenarioengine
         // Storyboard - Init
         void                      parseInit(Init& init);
         ActivateControllerAction* parseActivateControllerAction(pugi::xml_node actionNode, Event* parent);
-        int                       parseDynamicConstraints(pugi::xml_node dynamics_node, DynamicConstraints& dc, Object* obj);
-        OSCPrivateAction*         parseOSCPrivateAction(pugi::xml_node actionNode, Object* object, Event* parent);
-        OSCGlobalAction*          parseOSCGlobalAction(pugi::xml_node actionNode, Event* parent);
-        OSCUserDefinedAction*     parseOSCUserDefinedAction(pugi::xml_node actionNode, Event* parent);
-        void                      parseOSCOrientation(OSCOrientation& orientation, pugi::xml_node orientationNode);
-        OSCPosition*              parseOSCPosition(pugi::xml_node positionNode, OSCPosition* base_on_pos = nullptr);
-        void                      parseOSCEnvironment(const pugi::xml_node& xml_node, OSCEnvironment& env);
+
+        /**
+        Parse dynamic constraints. Skip obj to ignore entity settings.
+        */
+        int                   parseDynamicConstraints(pugi::xml_node dynamics_node, DynamicConstraints& dc, Object* obj = nullptr);
+        OSCPrivateAction*     parseOSCPrivateAction(pugi::xml_node actionNode, Object* object, Event* parent);
+        OSCGlobalAction*      parseOSCGlobalAction(pugi::xml_node actionNode, Event* parent);
+        OSCUserDefinedAction* parseOSCUserDefinedAction(pugi::xml_node actionNode, Event* parent);
+        void                  parseOSCOrientation(OSCOrientation& orientation, pugi::xml_node orientationNode);
+        OSCPosition*          parseOSCPosition(pugi::xml_node positionNode, OSCPosition* base_on_pos = nullptr);
+        void                  parseOSCEnvironment(const pugi::xml_node& xml_node, OSCEnvironment& env);
 
         // Storyboard - Story
         OSCCondition* parseOSCCondition(pugi::xml_node conditionNode);
