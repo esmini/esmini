@@ -2071,7 +2071,7 @@ The following logic applies for the actor to reach the desired lateral distance 
 
 * maxAcceleration constraint: The actor follows a https://en.wikipedia.org/wiki/Mass-spring-damper_model[damped spring model], accelerating up to the specified maxAcceleration. If maxSpeed is also defined, the actor will not exceed it. If maxSpeed is not defined, the actor accelerates until reaching its current forward speed projected onto the road's t-axis. As the actor approaches the desired lateral distance, it will decelerate with the given maxAcceleration until it reaches the target distance.
 
-* maxDeceleration constraint: Overriden by maxAcceleration if both are defined, otherwise behaves same as maxAcceleration.
+* maxDeceleration constraint: Not supported. Use maxAcceleration instead.
 
 Freespace calculations assume all vehicles share the same heading and only consider their widths for determining lateral relationships
 
