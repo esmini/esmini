@@ -1935,7 +1935,6 @@ void LongDistanceAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
 
 void LatDistanceAction::Start(double simTime)
 {
-    sim_time_ = simTime;
     if (target_object_ == 0)
     {
         LOG_ERROR("Can't trig without set target object ");
@@ -2030,16 +2029,14 @@ void LatDistanceAction::GetDistanceError(roadmanager::Position& pos1, roadmanage
     }
 }
 
-void LatDistanceAction::Step(double simTime, double)
+void LatDistanceAction::Step(double simTime, double dt)
 {
+    (void)simTime;
     if (object_->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomains::DOMAIN_LAT)))
     {
         // lateral motion controlled elsewhere
         return;
     }
-
-    double dt = simTime - sim_time_;
-    sim_time_ = simTime;
 
     switch (move_state_)
     {
@@ -2110,7 +2107,7 @@ void LatDistanceAction::Step(double simTime, double)
                 acceleration_ = CLAMP(acceleration_ + delta_accel, -dynamics_.max_acceleration_, dynamics_.max_acceleration_);
 
                 // Subtract small number to maintain some longitudinal velocity, avoid driving in wrong direction if lat speed is capped
-                lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, (std::min(dynamics_.max_speed_, object_->GetSpeed() - SMALL_NUMBER)));
+                lat_vel_ = ABS_LIMIT(lat_vel_ + acceleration_ * dt, (std::min(dynamics_.max_speed_, object_->GetSpeed()) - SMALL_NUMBER));
 
                 if (!continuous_ && std::abs(distance_error) < LATERAL_DISTANCE_THRESHOLD)
                 {
@@ -2138,7 +2135,7 @@ void LatDistanceAction::Step(double simTime, double)
                 }
             }
 
-            double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(MAX(fabs(lat_vel_), SMALL_NUMBER), 2));
+            double long_vel = sqrt(pow(object_->GetSpeed(), 2) - pow(lat_vel_, 2));
 
             object_->MoveAlongS(long_vel * dt);
             object_->pos_.SetLanePos(object_->pos_.GetTrackId(),
@@ -2149,8 +2146,7 @@ void LatDistanceAction::Step(double simTime, double)
             object_->pos_.SetHeading(atan2(object_->pos_.GetY() - old_y_, object_->pos_.GetX() - old_x_));
 
             object_->SetSpeed(object_->GetSpeed());
-            object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL |
-                                  Object::DirtyBit::SPEED);  // || Object::DirtyBit::ALIGN_MODE_H_SET);
+            object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED);
 
             old_x_ = object_->pos_.GetX();
             old_y_ = object_->pos_.GetY();

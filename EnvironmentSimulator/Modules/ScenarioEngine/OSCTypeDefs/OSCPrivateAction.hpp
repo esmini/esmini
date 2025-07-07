@@ -551,7 +551,6 @@ namespace scenarioengine
         DistType                      dist_type_;
         double                        freespace_;
         bool                          continuous_;
-        double                        sim_time_;
         DisplacementType              displacement_;
         DynamicConstraints            dynamics_;
         roadmanager::CoordinateSystem cs_;
@@ -562,7 +561,6 @@ namespace scenarioengine
               distance_(0),
               dist_type_(DistType::DISTANCE),
               freespace_(0),
-              sim_time_(0),
               displacement_(DisplacementType::NONE),
               cs_(roadmanager::CoordinateSystem::CS_ENTITY),
               lat_vel_(0.0),
@@ -584,7 +582,6 @@ namespace scenarioengine
             dist_type_     = action.dist_type_;
             freespace_     = action.freespace_;
             continuous_    = action.continuous_;
-            sim_time_      = action.sim_time_;
             displacement_  = action.displacement_;
             cs_            = action.cs_;
             lat_vel_       = action.lat_vel_;

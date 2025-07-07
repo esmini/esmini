@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate different settings of the LateralDistanceAction with the road coordinate system -->
+<!-- There are several LateralDistanceActions which aims to either continuously or once reach a  -->
+<!-- lateral distance to a reference vehicle. There are mixes of dynamics constraints for the transition. -->
+<!-- The lateral distance kept is either with or without freespace (freespace=(car1.width + car2.width) / 2)-->
+
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="1"
+               date="2021-04-09T10:00:00"
+               description="Basic cut-in"
+               author="esmini-team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_police"/>
+      <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_red"/>
+      <ParameterDeclaration name="EgoStartS" parameterType="double" value="50"/>
+      <ParameterDeclaration name="HeadwayTime_LaneChange" parameterType="double" value="0.4"/>
+      <ParameterDeclaration name="HeadwayTime_Brake" parameterType="double" value="0.7"/>
+      <ParameterDeclaration name="EgoSpeed" parameterType="double" value="108"/>
+      <ParameterDeclaration name="TargetSpeedFactor" parameterType="double" value="1.2"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/e6mini.xodr"/>
+      <SceneGraphFile filepath="../models/e6mini.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+        <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+      </ScenarioObject>
+      <ScenarioObject name="OverTaker">
+         <CatalogReference catalogName="VehicleCatalog" entryName="$TargetVehicle"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-3" offset="0" s="$EgoStartS"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$EgoSpeed / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="OverTaker">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-2" offset="0.5" s="60"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${$EgoSpeed / 3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="LateralDistanceStory">
+         <ParameterDeclarations>
+            <ParameterDeclaration parameterType="string" name="owner" value="OverTaker"/>
+         </ParameterDeclarations>
+         <Act name="LateralDistanceAct">
+            <ManeuverGroup maximumExecutionCount="1" name="LaneChangeSequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="LaneChange1Maneuver">
+                  <Event name="LaneChange1Event" priority="overwrite">
+                     <Action name="LaneChange1Action">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction >
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <RelativeTargetLane entityRef="Ego" value="-1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LaneChange1StartCondition" delay="1" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <RelativeDistanceCondition entityRef="OverTaker"
+                                                               freespace="true"
+                                                               relativeDistanceType="lateral"
+                                                               rule="lessThan"
+                                                               value="0.6"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="LaneChange2Maneuver">
+                  <Event name="LaneChange2Event" priority="overwrite">
+                     <Action name="LaneChange2Action">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction >
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="3" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <RelativeTargetLane entityRef="Ego" value="2"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LaneChange2StartCondition" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="8.0" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="LaneChange3Maneuver">
+                  <Event name="LaneChange3Event" priority="overwrite">
+                     <Action name="LaneChange2Action">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction >
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="4" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <RelativeTargetLane entityRef="Ego" value="-2"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LaneChange3StartCondition" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="LaneChange2Maneuver" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="LateralDistanceSequence">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="$owner"/>
+               </Actors>
+               <Maneuver name="LateralDistanceMaxSpeedManeuver">
+                  <Event name="LateralDistanceMaxSpeedEvent" priority="overwrite">
+                     <Action name="LateralDistanceAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LateralDistanceAction continuous="true"
+                                                     coordinateSystem="road"
+                                                     entityRef="Ego"
+                                                     freespace="true"
+                                                     distance="0.5"
+                                                     displacement="leftToReferencedEntity">
+                                <DynamicConstraints maxSpeed="2.0"/> 
+                              </LateralDistanceAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LateralDistanceStartCondition" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="1.0" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="LateralDistanceMaxSpeedAndAccManeuver">
+                  <Event name="LateralDistanceMaxSpeedAndAccEvent" priority="overwrite">
+                     <Action name="LateralDistanceAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LateralDistanceAction continuous="true"
+                                                     coordinateSystem="road"
+                                                     entityRef="Ego"
+                                                     freespace="true"
+                                                     distance="0.5"
+                                                     displacement="rightToReferencedEntity">
+                                <DynamicConstraints maxSpeed="3.0" maxAcceleration="5.0"/> 
+                              </LateralDistanceAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="EgoLaneChangeCompleteCondition" delay="1" conditionEdge="none">
+                                 <ByValueCondition>
+                                    <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="LaneChange1Event" state="endTransition"/>
+                                 </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="LateralDistanceMaxAccManeuver">
+                  <Event name="LateralDistanceMaxAccEvent" priority="overwrite">
+                     <Action name="LateralDistanceAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LateralDistanceAction continuous="false"
+                                                     coordinateSystem="road"
+                                                     entityRef="Ego"
+                                                     freespace="false"
+                                                     distance="1.0"
+                                                     displacement="leftToReferencedEntity">
+                                <DynamicConstraints maxAcceleration="7.0"/> 
+                              </LateralDistanceAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="EgoLaneChange3CompleteCondition" delay="3" conditionEdge="none">
+                                 <ByValueCondition>
+                                    <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="LaneChange3Maneuver" state="endTransition"/>
+                                 </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LateralDistanceActStart" delay="0" conditionEdge="none">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>
+      </Story>
+      <StopTrigger>
+          <ConditionGroup>
+             <Condition name="StopCondition" delay="5" conditionEdge="rising">
+                <ByValueCondition>
+                   <StoryboardElementStateCondition storyboardElementType="maneuver"
+                                                    storyboardElementRef="LateralDistanceMaxAccManeuver"
+                                                    state="endTransition"/>
+                </ByValueCondition>
+             </Condition>
+          </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>
