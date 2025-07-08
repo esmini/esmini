@@ -2075,7 +2075,7 @@ The following logic applies for the actor to reach the desired lateral distance 
 
 Freespace calculations assume all vehicles share the same heading and only consider their widths for determining lateral relationships.
 
-A video clip showing a the LateralDistanceAction in a highway driving context. A typical use case would be a target vehicle swerving in neighbor lane, challenging the AD/ADS functions of an Ego vehicle.
+A video clip showing a the LateralDistanceAction in a highway driving context. A typical use case would be a target vehicle swerving in neighbor lane, challenging the AD/ADS functions of an Ego vehicle. From demo scenario https://github.com/esmini/esmini/blob/dev/resources/xosc/keep_lateral_distance.xosc[keep_lateral_distance.xosc].
 
 video::lATeP5cz_HE[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 

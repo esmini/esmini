@@ -1,5 +1,25 @@
 ## esmini release notes
 
+### 2025-07-08 Version 2.50.0
+
+New features:
+- Support LateralDistanceAction ([issue #653](https://github.com/esmini/esmini/issues/653))
+  - limited to road and entity coordinates
+  - more info and video clips in [User guide - Lateral distance action logics](https://esmini.github.io/#_lateral_distance_action_logics)
+
+Improvements and fixes:
+- Update coverage of [odr](https://github.com/esmini/esmini/blob/master/odr_coverage.txt) and [osc](https://github.com/esmini/esmini/blob/master/osc_coverage.txt)
+- Improve OSMP FMU ([PR #710](https://github.com/esmini/esmini/pull/710))
+  - add AssignRoute and AcquirePosition to traffic commands
+  - fix OSI timestamp nanosecond issue
+  - more fixes and details documented in the pull request (link above)
+- Fix top view bug ([issue #715](https://github.com/esmini/esmini/issues/715))
+- Slim logging implementation
+  - remove spdlog dependency, only keep fmt lib for formatting
+- Improve smoke test performance and include scenario run time in output
+- Clarify focus on environment and all entities in overlay info text
+- Remove unintended ghost related OSI warning
+
 ### 2025-06-24 Version 2.49.0
 
 New features:
