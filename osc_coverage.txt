@@ -4,9 +4,9 @@ OpenSCENARIO
             VehicleCatalog                                                     Yes
             ControllerCatalog                                                  Yes
             PedestrianCatalog                                                  Yes
-            PedestrianControllerCatalog                                        No
-            MiscObjectCatalog                                                  No
-            EnvironmentCatalog                                                 No
+            PedestrianControllerCatalog                                        Yes
+            MiscObjectCatalog                                                  Yes
+            EnvironmentCatalog                                                 Yes
             ManeuverCatalog                                                    Yes
             TrajectoryCatalog                                                  Yes
             RouteCatalog                                                       Yes
@@ -15,7 +15,7 @@ OpenSCENARIO
         Stochastic                                                             No
     ScenarioDefinition
         ParameterDeclaration                                                   Yes
-        VariableDeclaration (1.2)                                              No
+        VariableDeclaration (1.2)                                              Yes
         CatalogLocations                                                       Yes
         RoadNetwork
             LogicFile                                                          Yes
@@ -30,7 +30,7 @@ OpenSCENARIO
                 EntityObject
                     CatalogReference                                           Yes
                     Vehicle                                                    Yes
-                        Role (1.2)                                             No
+                        Role (1.2)                                             Yes
                         Trailer (1.3)                                          Yes
                     Pedestrian                                                 Yes
                     MiscObject                                                 Yes
@@ -56,10 +56,10 @@ OpenSCENARIO
                                 priority                                       Yes
                                 Action
                                     Global                                     Yes
-                                        Environment                            No
+                                        Environment                            Yes
                                             DomeImage (1.2)                    No
-                                            Weather                            No
-                                            RoadCondition                      No
+                                            Weather                            Yes (with limited visualization)
+                                            RoadCondition                      Yes (frictionScaleFactor only)
                                         Entity                                 Yes
                                             AddEntityAction                    Yes
                                             DeleteEntityAction                 Yes
@@ -82,7 +82,7 @@ OpenSCENARIO
                                         ActivateController                     Yes
                                             animation (1.2)                    No
                                             lighting (1.2)                     No
-                                            controllerRef                      No
+                                            controllerRef                      Yes
                                         AnimationAction (1.2)                  No
                                         AppearanceAction (1.2)                 No
                                         AssignController                       Yes
@@ -123,7 +123,7 @@ OpenSCENARIO
                                                         value                  Yes
                                                     Absolute
                                                         value                  Yes
-                                            Distance                           No
+                                            Distance                           Yes (road and entity coordinates)
                                         Longitudinal
                                             Speed
                                                 Dynamics
@@ -304,7 +304,7 @@ Common classes
 
 Enumerations
     AutomaticGearType (1.2)                    No
-    CloudState                                 No
+    CloudState                                 Yes
     ColorType (1.2)                            No
     ConditionEdge                              Yes
     ControllerType (1.2)                       No
@@ -317,8 +317,8 @@ Enumerations
     DynamicsDimension                          Yes
     DynamicsShape                              Yes
     FollowingMode                              Yes (but only in SpeedProfileAction)
-    FractionalCloudCover (1.2)                 No
-    LateralDisplacement (1.1)                  No
+    FractionalCloudCover (1.2)                 Yes
+    LateralDisplacement (1.1)                  Yes
     LightMode (1.2)                            No
     LongitudinalDisplacement (1.1)             Yes
     MiscObjectCategory                         Yes
