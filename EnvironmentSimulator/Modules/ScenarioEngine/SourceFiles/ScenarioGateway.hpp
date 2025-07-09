@@ -14,9 +14,7 @@
 #include "RoadManager.hpp"
 #include "OSCBoundingBox.hpp"
 #include "Entities.hpp"
-
-#define DAT_FILE_FORMAT_VERSION 2
-#define DAT_FILENAME_SIZE       512
+#include "PacketHandler.hpp"
 
 namespace scenarioengine
 {
@@ -59,13 +57,14 @@ namespace scenarioengine
         int            obj_category;  // sub type for vehicle, pedestrian and miscobj
         int            ctrl_type;     // See Controller::Type enum
         float          timeStamp;
-        char           name[NAME_LEN];
+        std::string    name;
         float          speed;
         float          wheel_angle;  // Only used for vehicle
         float          wheel_rot;    // Only used for vehicle
         OSCBoundingBox boundingbox;
         int            scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
         int            visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        bool           active;
     };
 
     struct ObjectPositionStructDat
@@ -88,13 +87,6 @@ namespace scenarioengine
         struct ObjectInfoStructDat     info;
         struct ObjectPositionStructDat pos;
     };
-
-    typedef struct
-    {
-        int  version;
-        char odr_filename[DAT_FILENAME_SIZE];
-        char model_filename[DAT_FILENAME_SIZE];
-    } DatHeader;
 
     class ObjectState
     {
@@ -368,14 +360,15 @@ namespace scenarioengine
         }
         ObjectState *getObjectStatePtrById(int id);
         int          getObjectStateById(int id, ObjectState &objectState) const;
-        void         WriteStatesToFile();
+        void         WriteStatesToFile(const double simulation_time, const double dt);
         int          RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
 
         std::vector<std::unique_ptr<ObjectState>> objectState_;
 
     private:
         int updateObjectInfo(ObjectState *obj_state, double timestamp, int visibilityMask, double speed, double wheel_angle, double wheel_rot);
-        std::ofstream data_file_;
+        std::ofstream  data_file_;
+        Dat::DatWriter dat_writer_;
     };
 
 }  // namespace scenarioengine

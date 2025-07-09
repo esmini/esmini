@@ -44,7 +44,6 @@ using namespace scenarioengine;
 #define JUMP_DELTA_TIME_LARGE 1.0
 #define JUMP_DELTA_TIME_SMALL 0.1
 
-static const double                stepSize    = 0.01;
 static const double                maxStepSize = 0.1;
 static const double                minStepSize = 0.001;
 static std::vector<int>            removeObjects;
@@ -89,7 +88,7 @@ int ShowGhosts(Replay* player, bool show)
         }
 
         state = player->GetState(entity->id);
-        if (state == nullptr)
+        if (state == nullptr || !state->info.active)
         {
             continue;
         }
@@ -122,7 +121,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
-                player->GoToEnd();
+                player->GoToEnd(true);
             }
             else
             {
@@ -145,7 +144,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
                 // rewind to beginning
-                player->GoToStart();
+                player->GoToStart(true);
             }
             else
             {
@@ -157,6 +156,11 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
         else if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Space))
         {
             pause_player = !pause_player;
+
+            if (pause_player)
+            {
+                player->SetTimeToNearestTimestamp();
+            }
         }
         else if (keyEvent->key_ == 'H')
         {
@@ -203,148 +207,151 @@ ScenarioEntity* getScenarioEntityById(int id)
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 int ParseEntities(Replay* player)
 {
     struct OdoInfo
     {
-        double x, y, odometer;
+        float x, y, odometer;
     };
-    std::map<int, OdoInfo> odo_info;  // temporary keep track of entity odometers
 
-    for (int i = 0; i < static_cast<int>(player->data_.size()); i++)
+    for (auto& [id, timelines] : player->objects_timeline_)
     {
-        ReplayEntry*          entry = &player->data_[static_cast<unsigned int>(i)];
-        ObjectStateStructDat* state = &entry->state;
-        OdoInfo               odo_entry;
-
-        if (no_ghost && state->info.ctrl_type == GHOST_CTRL_TYPE)
+        OdoInfo odo_entry = {};
+        for (size_t i = 0; i < player->timestamps_.size(); i++)
         {
-            continue;
-        }
+            ReplayEntry entry = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i]);
 
-        if (std::find(removeObjects.begin(), removeObjects.end(), state->info.id) != removeObjects.end())
-        {
-            continue;
-        }
+            if (no_ghost && timelines.ctrl_type_.values[0].second == GHOST_CTRL_TYPE)
+            {
+                continue;
+            }
 
-        ScenarioEntity* sc = getScenarioEntityById(state->info.id);
+            if (std::find(removeObjects.begin(), removeObjects.end(), id) != removeObjects.end())
+            {
+                continue;
+            }
 
-        // If not available, create it
-        if (sc == 0)
-        {
-            ScenarioEntity new_sc;
+            ScenarioEntity* sc = getScenarioEntityById(id);
 
-            new_sc.id             = state->info.id;
-            new_sc.pos            = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f, 0.0f, 0.0f};
-            new_sc.wheel_angle    = 0.0f;
-            new_sc.wheel_rotation = 0.0f;
-            new_sc.name           = state->info.name;
-            new_sc.visible        = true;
-            new_sc.bounding_box   = state->info.boundingbox;
+            // If not available, create it
+            if (sc == nullptr)
+            {
+                ScenarioEntity new_sc;
 
-            odo_entry.x        = state->pos.x;
-            odo_entry.y        = state->pos.y;
-            odo_entry.odometer = 0.0;
-            odo_info.insert(std::make_pair(new_sc.id, odo_entry));  // Set inital odometer value for the entity
+                new_sc.id             = id;
+                new_sc.pos            = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f, 0.0f, 0.0f};
+                new_sc.wheel_angle    = 0.0f;
+                new_sc.wheel_rotation = 0.0f;
+                new_sc.name           = timelines.name_.values.front().second;
+                new_sc.visible        = true;
+                new_sc.bounding_box   = timelines.bounding_box_.values.front().second;
+
+                odo_entry.x        = timelines.pose_.values.front().second.x;
+                odo_entry.y        = timelines.pose_.values.front().second.y;
+                odo_entry.odometer = timelines.odometer_.values.front().second;
 
 #ifdef _USE_OSG
-            new_sc.trajectory = nullptr;
-            new_sc.trajPoints = 0;
+                new_sc.trajectory = nullptr;
+                new_sc.trajPoints = 0;
 
-            std::string filename;
-            if (state->info.model_id >= 0)
-            {
-                filename = SE_Env::Inst().GetModelFilenameById(state->info.model_id);
-            }
+                std::string filename;
+                if (timelines.model_id_.values.front().second >= 0)
+                {
+                    filename = SE_Env::Inst().GetModelFilenameById(timelines.model_id_.values.front().second);
+                }
 
-            bool found = false;
-            if ((new_sc.entityModel =
-                     viewer_->CreateEntityModel(LocateFile(filename, {CombineDirectoryPathAndFilepath(res_path, "models")}, "Entity 3D model", found),
-                                                osg::Vec4(0.5, 0.5, 0.5, 1.0),
-                                                viewer::EntityModel::EntityType::VEHICLE,
-                                                false,
-                                                state->info.name,
-                                                &state->info.boundingbox,
-                                                0.0,
-                                                static_cast<EntityScaleMode>(state->info.scaleMode))) == 0)
-            {
-                return -1;
-            }
-            else
-            {
-                if (viewer_->AddEntityModel(new_sc.entityModel) != 0)
+                bool found = false;
+                if ((new_sc.entityModel = viewer_->CreateEntityModel(
+                         LocateFile(filename, {CombineDirectoryPathAndFilepath(res_path, "models")}, "Entity 3D model", found),
+                         osg::Vec4(0.5, 0.5, 0.5, 1.0),
+                         viewer::EntityModel::EntityType::VEHICLE,
+                         false,
+                         timelines.name_.values.front().second,
+                         &timelines.bounding_box_.values.front().second,
+                         0.0,
+                         static_cast<EntityScaleMode>(timelines.scale_mode_.values.front().second))) == 0)
                 {
                     return -1;
                 }
-            }
-
-            if (state->info.ctrl_type == GHOST_CTRL_TYPE)
-            {
-                if (no_ghost_model)
-                {
-                    new_sc.entityModel->txNode_->setNodeMask(0x0);
-                }
                 else
                 {
-                    new_sc.entityModel->SetTransparency(0.6);
+                    if (viewer_->AddEntityModel(new_sc.entityModel) != 0)
+                    {
+                        return -1;
+                    }
                 }
-            }
+
+                if (timelines.ctrl_type_.values.front().second == GHOST_CTRL_TYPE)
+                {
+                    if (no_ghost_model)
+                    {
+                        new_sc.entityModel->txNode_->setNodeMask(0x0);
+                    }
+                    else
+                    {
+                        new_sc.entityModel->SetTransparency(0.6);
+                    }
+                }
 #endif  // _USE_OSG
 
-            // Add it to the list of scenario cars
-            scenarioEntity.push_back(new_sc);
-            sc = &scenarioEntity.back();
-        }
+                scenarioEntity.push_back(new_sc);
+                // cppcheck-suppress unreadVariable
+                // This variable is used if we compile with OSG
+                sc = &scenarioEntity.back();
+            }
 
 #ifdef _USE_OSG
-        if (sc->trajPoints == 0)
-        {
-            sc->trajPoints = new osg::Vec3Array;
-        }
-
-        double z_offset = 0.2;
-
-        if (sc->trajPoints->size() == 0)
-        {
-            sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer_->origin_[0]),
-                                                 static_cast<float>(static_cast<double>(state->pos.y) - viewer_->origin_[1]),
-                                                 state->pos.z + static_cast<float>(z_offset)));
-        }
-        else
-        {
-            double minTrajPointDist = 1;
-
-            if (sc->trajPoints->size() > 2 && GetLengthOfLine2D(state->pos.x,
-                                                                state->pos.y,
-                                                                (*sc->trajPoints)[sc->trajPoints->size() - 2][0],
-                                                                (*sc->trajPoints)[sc->trajPoints->size() - 2][1]) < minTrajPointDist)
+            if (sc->trajPoints == 0)
             {
-                // Replace last point until distance is above threshold
-                sc->trajPoints->back() = osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer_->origin_[0]),
-                                                    static_cast<float>(static_cast<double>(state->pos.y) - viewer_->origin_[1]),
-                                                    state->pos.z + static_cast<float>(z_offset));
+                sc->trajPoints = new osg::Vec3Array;
+            }
+
+            double z_offset = 0.2;
+
+            if (sc->trajPoints->size() == 0)
+            {
+                sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(entry.state.pos.x) - viewer_->origin_[0]),
+                                                     static_cast<float>(static_cast<double>(entry.state.pos.y) - viewer_->origin_[1]),
+                                                     entry.state.pos.z + static_cast<float>(z_offset)));
             }
             else
             {
-                sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer_->origin_[0]),
-                                                     static_cast<float>(static_cast<double>(state->pos.y) - viewer_->origin_[1]),
-                                                     state->pos.z + static_cast<float>(z_offset)));
+                double minTrajPointDist = 1;
+
+                if (sc->trajPoints->size() > 2 && GetLengthOfLine2D(entry.state.pos.x,
+                                                                    entry.state.pos.y,
+                                                                    (*sc->trajPoints)[sc->trajPoints->size() - 2][0],
+                                                                    (*sc->trajPoints)[sc->trajPoints->size() - 2][1]) < minTrajPointDist)
+                {
+                    // Replace last point until distance is above threshold
+                    sc->trajPoints->back() = osg::Vec3f(static_cast<float>(static_cast<double>(entry.state.pos.x) - viewer_->origin_[0]),
+                                                        static_cast<float>(static_cast<double>(entry.state.pos.y) - viewer_->origin_[1]),
+                                                        entry.state.pos.z + static_cast<float>(z_offset));
+                }
+                else
+                {
+                    sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(entry.state.pos.x) - viewer_->origin_[0]),
+                                                         static_cast<float>(static_cast<double>(entry.state.pos.y) - viewer_->origin_[1]),
+                                                         entry.state.pos.z + static_cast<float>(z_offset)));
+                }
             }
-        }
 #endif  // _USE_OSG
 
-        // calculate odometer
-        odo_entry    = odo_info[sc->id];
-        double delta = GetLengthOfLine2D(odo_entry.x, odo_entry.y, state->pos.x, state->pos.y);
-        odo_entry.odometer += delta;
-        odo_entry.x      = state->pos.x;
-        odo_entry.y      = state->pos.y;
-        odo_info[sc->id] = odo_entry;  // save updated odo info for next calculation
+            // calculate odometer
+            double delta = GetLengthOfLine2D(odo_entry.x, odo_entry.y, entry.state.pos.x, entry.state.pos.y);
+            odo_entry.odometer += static_cast<float>(delta);
+            odo_entry.x = entry.state.pos.x;
+            odo_entry.y = entry.state.pos.y;
 
-        entry->odometer = odo_entry.odometer;  // update odometer
+            // Add it to the odometer timeline if it has increased
+            if (odo_entry.odometer > timelines.odometer_.values.back().second)
+            {
+                timelines.odometer_.values.emplace_back(player->timestamps_[i], odo_entry.odometer);
+            }
+        }
     }
 
 #ifdef _USE_OSG
@@ -370,16 +377,17 @@ int ParseEntities(Replay* player)
     return 0;
 }
 
-int GetGhostIdx()
+std::vector<int> GetGhostIdx()
 {
+    std::vector<int> ghostIndices;
     for (size_t i = 0; i < scenarioEntity.size(); i++)
     {
         if (scenarioEntity[i].name.find("_ghost") != std::string::npos)
         {
-            return static_cast<int>(i);
+            ghostIndices.push_back(static_cast<int>(i));
         }
     }
-    return -1;  // No ghost
+    return ghostIndices;
 }
 
 int main(int argc, char** argv)
@@ -422,23 +430,27 @@ int main(int argc, char** argv)
     opt.AddOption("dir",
                   "Directory containing replays to overlay, pair with \"file\" argument, where \"file\" is .dat filename match substring",
                   "path");
+    opt.AddOption("fixed_timestep", "Use fixed timestep for the replay", "s", "");
 #ifdef _USE_OSG
     opt.AddOption("ground_plane", "Add a large flat ground surface");
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
-#endif  // _USEOSG
+#endif  // _USE_OSG
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("help", "Show this help message (-h works as well)");
 #ifdef _USE_OSG
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
+#endif  // _USE_OSG
+    // opt.AddOption("include_ghost_reset", "Include ghost reset in the replay or not");
+#ifdef _USE_OSG
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
-#endif  // _USEOSG
+#endif  // _USE_OSG
     opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", REPLAYER_LOG_FILENAME, true);
     opt.AddOption("log_level", "Log level debug, info, warn, error", "mode", "info", true);
 #ifdef _USE_OSG
     opt.AddOption("no_ghost", "Remove ghost entities");
     opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
-#endif  // _USEOSG
+#endif  // _USE_OSG
     opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files.", "path", "", false, false);
     opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
 #ifdef _USE_OSG
@@ -498,6 +510,7 @@ int main(int argc, char** argv)
     txtLogger.SetLoggerVerbosity();
     txtLogger.LogTimeOnly();
     txtLogger.SetLoggerTime(&simTime);
+    txtLogger.SetLoggerVerbosity();
 
 #ifndef _USE_OSG
     LOG_INFO("Compiled with USE_OSG=FALSE, limited functionality available");
@@ -559,7 +572,7 @@ int main(int argc, char** argv)
                 LOG_ERROR("\"--saved_merged\" works only in combination with \"--dir\" argument, combining multiple dat files");
                 return -1;
             }
-            player = new Replay(opt.GetOptionValue("file"), true);
+            player = new Replay(opt.GetOptionValue("file"));
         }
     }
     catch (const std::exception& e)
@@ -572,18 +585,21 @@ int main(int argc, char** argv)
     {
 #ifdef _USE_OSG
 
-        if (strcmp(player->header_.odr_filename, ""))
+        if (strcmp(player->dat_header_.odr_filename.string.c_str(), ""))
         {
             bool found = false;
-            roadmanager::Position::LoadOpenDrive(
-                LocateFile(player->header_.odr_filename, {CombineDirectoryPathAndFilepath(res_path, "xodr")}, "OpenDRIVE file", found).c_str());
+            roadmanager::Position::LoadOpenDrive(LocateFile(player->dat_header_.odr_filename.string.c_str(),
+                                                            {CombineDirectoryPathAndFilepath(res_path, "xodr")},
+                                                            "OpenDRIVE file",
+                                                            found)
+                                                     .c_str());
         }
 
         char                    info_str_buf[256];
         double                  targetSimTime = simTime;
         roadmanager::OpenDrive* odrManager    = roadmanager::Position::GetOpenDrive();
         osg::ArgumentParser     arguments(&argc_, argv_);
-        viewer_ = new viewer::Viewer(odrManager, player->header_.model_filename, NULL, argv_[0], arguments, &opt);
+        viewer_ = new viewer::Viewer(odrManager, player->dat_header_.model_filename.string.c_str(), NULL, argv_[0], arguments, &opt);
 
         if (viewer_ == nullptr)
         {
@@ -855,25 +871,21 @@ int main(int argc, char** argv)
             return -1;
         }
 
-        const int ghost_idx = GetGhostIdx();
+        const std::vector<int> ghost_indices = GetGhostIdx();
 
         std::string start_time_str = opt.GetOptionValue("start_time");
         if (!start_time_str.empty())
         {
             double startTime = 1E-3 * strtod(start_time_str);
-            if (static_cast<float>(startTime) < player->data_[0].state.info.timeStamp)
+            if (startTime < player->timestamps_.front())
             {
-                printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n",
-                       startTime,
-                       static_cast<double>(player->data_[0].state.info.timeStamp));
-                startTime = static_cast<double>(player->data_[0].state.info.timeStamp);
+                printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n", startTime, player->timestamps_.front());
+                startTime = player->timestamps_.front();
             }
-            else if (static_cast<float>(startTime) > player->data_.back().state.info.timeStamp)
+            else if (startTime > player->timestamps_.back())
             {
-                printf("Specified start time (%.2f) > last timestamp (%.2f), adapting.\n",
-                       startTime,
-                       static_cast<double>(player->data_.back().state.info.timeStamp));
-                startTime = static_cast<double>(player->data_.back().state.info.timeStamp);
+                printf("Specified start time (%.2f) > last timestamp (%.2f), adapting.\n", startTime, player->timestamps_.back());
+                startTime = player->timestamps_.back();
             }
             player->SetStartTime(startTime);
             player->GoToTime(startTime);
@@ -883,19 +895,15 @@ int main(int argc, char** argv)
         if (!stop_time_str.empty())
         {
             double stopTime = 1E-3 * strtod(stop_time_str);
-            if (static_cast<float>(stopTime) > player->data_.back().state.info.timeStamp)
+            if (stopTime > player->timestamps_.back())
             {
-                printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n",
-                       stopTime,
-                       static_cast<double>(player->data_.back().state.info.timeStamp));
-                stopTime = static_cast<double>(player->data_.back().state.info.timeStamp);
+                printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->timestamps_.back());
+                stopTime = player->timestamps_.back();
             }
-            else if (static_cast<float>(stopTime) < player->data_[0].state.info.timeStamp)
+            else if (stopTime < player->timestamps_.front())
             {
-                printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n",
-                       stopTime,
-                       static_cast<double>(player->data_[0].state.info.timeStamp));
-                stopTime = static_cast<double>(player->data_[0].state.info.timeStamp);
+                printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n", stopTime, player->timestamps_.front());
+                stopTime = player->timestamps_.front();
             }
             player->SetStopTime(stopTime);
         }
@@ -967,7 +975,6 @@ int main(int argc, char** argv)
 #endif  // _USE_OSG
 
                 // Fetch states of scenario objects
-                ReplayEntry*          entry = nullptr;
                 ObjectStateStructDat* state = nullptr;
                 for (int index = 0; index < static_cast<int>(scenarioEntity.size()); index++)
                 {
@@ -977,10 +984,11 @@ int main(int argc, char** argv)
                         throw std::runtime_error(std::string("Unexpected entity found: ").append(std::to_string(state->info.id)));
                     }
 
-                    entry = player->GetEntry(sc->id);
-                    if (entry)
+                    ReplayEntry entry                   = player->GetReplayEntryAtTimeIncremental(sc->id, simTime);
+                    player->object_state_cache_[sc->id] = entry;  // Update cache
+                    if (entry.state.info.active)
                     {
-                        state              = &entry->state;
+                        state              = &entry.state;
                         sc->pos            = state->pos;
                         sc->wheel_angle    = state->info.wheel_angle;
                         sc->wheel_rotation = state->info.wheel_rot;
@@ -1015,9 +1023,9 @@ int main(int argc, char** argv)
                     snprintf(sc->entityModel->on_screen_info_.string_,
                              sizeof(sc->entityModel->on_screen_info_.string_),
                              " %s (%d) %.2fm\n %.2fkm/h road %d lane %d/%.2f s %.2f\n x %.2f y %.2f hdg %.2f\n osi x %.2f y %.2f \n|",
-                             state->info.name,
+                             state->info.name.c_str(),
                              state->info.id,
-                             entry->odometer,
+                             entry.odometer,
                              3.6 * static_cast<double>(state->info.speed),
                              sc->pos.roadId,
                              sc->pos.laneId,
@@ -1038,11 +1046,11 @@ int main(int argc, char** argv)
                                  "%.3fs entity[%d]: %s (%d) %.2fs %.2fkm/h %.2fm (%d, %d, %.2f, %.2f)/(%.2f, %.2f %.2f) tScale: %.2f ",
                                  simTime,
                                  viewer_->currentCarInFocus_,
-                                 state->info.name,
+                                 state->info.name.c_str(),
                                  state->info.id,
                                  static_cast<double>(state->info.timeStamp),
                                  3.6 * static_cast<double>(state->info.speed),
-                                 entry->odometer,
+                                 entry.odometer,
                                  sc->pos.roadId,
                                  sc->pos.laneId,
                                  static_cast<double>(fabs(sc->pos.offset)) < SMALL_NUMBER ? 0 : static_cast<double>(sc->pos.offset),
@@ -1075,7 +1083,7 @@ int main(int argc, char** argv)
                     {
                         for (size_t i = 0; i < scenarioEntity.size(); i++)
                         {
-                            if (static_cast<int>(i) != ghost_idx)  // Ignore ghost
+                            if (std::find(ghost_indices.begin(), ghost_indices.end(), static_cast<int>(i)) == ghost_indices.end())
                             {
                                 updateCorners(scenarioEntity[i]);
                             }
@@ -1083,13 +1091,15 @@ int main(int argc, char** argv)
 
                         for (size_t i = 0; i < scenarioEntity.size(); i++)
                         {
-                            if (static_cast<int>(i) == ghost_idx)
+                            bool is_ghost = std::find(ghost_indices.begin(), ghost_indices.end(), static_cast<int>(i)) != ghost_indices.end();
+                            if (is_ghost || !scenarioEntity[i].visible)
                             {
                                 continue;
                             }
                             for (size_t j = i + 1; j < scenarioEntity.size(); j++)
                             {
-                                if (static_cast<int>(j) == ghost_idx)
+                                is_ghost = std::find(ghost_indices.begin(), ghost_indices.end(), static_cast<int>(j)) != ghost_indices.end();
+                                if (is_ghost || !scenarioEntity[j].visible)
                                 {
                                     continue;
                                 }

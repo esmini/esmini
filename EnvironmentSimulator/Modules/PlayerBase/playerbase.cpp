@@ -184,7 +184,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
 {
     static bool messageShown  = false;
     int         retval        = 0;
-    double      ghost_solo_dt = 0.05;
+    double      ghost_solo_dt = (GetFixedTimestep() < 0.0) ? 0.05 : GetFixedTimestep();
 
     if (!IsPaused() || server_mode)
     {
@@ -284,14 +284,11 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
 
         scenarioEngine->prepareGroundTruth(timestep_s);
 
-        if (SE_Env::Inst().GetGhostMode() != GhostMode::RESTART)
-        {
-            scenarioGateway->WriteStatesToFile();
+        scenarioGateway->WriteStatesToFile(scenarioEngine->getSimulationTime(), timestep_s);
 
-            if (CSV_Log)
-            {
-                UpdateCSV_Log();
-            }
+        if (CSV_Log)
+        {
+            UpdateCSV_Log();
         }
 
         if (keyframe)

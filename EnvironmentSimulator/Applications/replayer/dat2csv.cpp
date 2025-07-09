@@ -18,6 +18,7 @@
 
 #include "Replay.hpp"
 #include "CommonMini.hpp"
+#include "PacketHandler.hpp"
 
 using namespace scenarioengine;
 
@@ -48,7 +49,7 @@ int main(int argc, char** argv)
     // Create replayer object for parsing the binary data file
     try
     {
-        player = new Replay(argv[1], false);
+        player = new Replay(argv[1]);
     }
     catch (const std::exception& e)
     {
@@ -59,36 +60,47 @@ int main(int argc, char** argv)
     // First output header and CSV labels
     snprintf(line,
              MAX_LINE_LEN,
-             "Version: %d, OpenDRIVE: %s, 3DModel: %s\n",
-             player->header_.version,
-             player->header_.odr_filename,
-             player->header_.model_filename);
+             "Version: %d.%d, OpenDRIVE: %s, 3DModel: %s\n",
+             player->dat_header_.version_major,
+             player->dat_header_.version_minor,
+             player->dat_header_.odr_filename.string.c_str(),
+             player->dat_header_.model_filename.string.c_str());
     file << line;
     snprintf(line, MAX_LINE_LEN, "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot\n");
     file << line;
 
-    // Then output all entries with comma separated values
-    for (size_t i = 0; i < player->data_.size(); i++)
+    // If not fixed timestep in log, we loop over all timestamps_
+    for (size_t i = 0; i < player->timestamps_.size(); i++)
     {
-        ObjectStateStructDat* state = &player->data_[i].state;
+        for (const auto& [id, _] : player->objects_timeline_)
+        {
+            auto                  entry = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i]);
+            ObjectStateStructDat* state = &entry.state;
 
-        snprintf(line,
-                 MAX_LINE_LEN,
-                 "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
-                 static_cast<double>(state->info.timeStamp),
-                 state->info.id,
-                 state->info.name,
-                 static_cast<double>(state->pos.x),
-                 static_cast<double>(state->pos.y),
-                 static_cast<double>(state->pos.z),
-                 static_cast<double>(state->pos.h),
-                 static_cast<double>(state->pos.p),
-                 static_cast<double>(state->pos.r),
-                 static_cast<double>(state->info.speed),
-                 static_cast<double>(state->info.wheel_angle),
-                 static_cast<double>(state->info.wheel_rot));
+            if (!state->info.active)
+            {
+                continue;
+            }
 
-        file << line;
+            // Output all entries with comma separated values
+            snprintf(line,
+                     MAX_LINE_LEN,
+                     "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
+                     static_cast<double>(state->info.timeStamp),
+                     state->info.id,
+                     state->info.name.c_str(),
+                     static_cast<double>(state->pos.x),
+                     static_cast<double>(state->pos.y),
+                     static_cast<double>(state->pos.z),
+                     static_cast<double>(state->pos.h),
+                     static_cast<double>(state->pos.p),
+                     static_cast<double>(state->pos.r),
+                     static_cast<double>(state->info.speed),
+                     static_cast<double>(state->info.wheel_angle),
+                     static_cast<double>(state->info.wheel_rot));
+
+            file << line;
+        }
     }
 
     file.close();

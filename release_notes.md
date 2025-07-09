@@ -1,3 +1,9 @@
+### DRAFT - Version x
+- Changing fixed timestep on ghost from 0.05 -> GetFixedTimestep() will cause any scenario using followGhost to be slightly different (also at svadds!)
+- Following python code eliminated due to currently not compatible with new dat-format
+  - csv2dat functionality in dat.py
+  - dat2xosc script
+
 ## esmini release notes
 
 ### 2025-10-24 Version 2.53.1

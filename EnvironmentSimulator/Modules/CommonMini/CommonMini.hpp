@@ -62,8 +62,8 @@ using idx_t = uint32_t;
 #define CLAMP(x, lo, hi)              MIN(hi, MAX(lo, x))
 #define AVOID_ZERO(x)                 (SIGN(x) * MAX(SMALL_NUMBER, fabs(x)))
 #define NEAR_ZERO(x)                  (abs(x) < SMALL_NUMBER)
-#define NEAR_NUMBERS(x, y)            (abs(x - y) < SMALL_NUMBER)
-#define NEAR_NUMBERSF(x, y)           (abs(x - y) < SMALL_NUMBERF)
+#define NEAR_NUMBERS(x, y)            (abs((x) - (y)) < SMALL_NUMBER)
+#define NEAR_NUMBERSF(x, y)           (abs((x) - (y)) < SMALL_NUMBERF)
 #define IS_IN_SPAN(x, y, z)           ((x) >= (y) && (x) <= (z))
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION     0.05
@@ -99,6 +99,9 @@ enum class KeyType  // copy key enums from OSG GUIEventAdapter
     KEY_Shift_R   = 0xFFE2, /* Right shift */
     KEY_Control_L = 0xFFE3, /* Left control */
     KEY_Control_R = 0xFFE4, /* Right control */
+    KEY_Alt_L     = 0xFFE9, /* Left alt */
+    KEY_Alt_R     = 0xFFEA, /* Right alt */
+
 };
 
 enum class ModKeyMask
@@ -107,8 +110,11 @@ enum class ModKeyMask
     MODKEY_RIGHT_SHIFT = 0x0002,
     MODKEY_LEFT_CTRL   = 0x0004,
     MODKEY_RIGHT_CTRL  = 0x0008,
+    MODKEY_LEFT_ALT    = 0x0010,
+    MODKEY_RIGHT_ALT   = 0x0020,
     MODKEY_CTRL        = (MODKEY_LEFT_CTRL | MODKEY_RIGHT_CTRL),
     MODKEY_SHIFT       = (MODKEY_LEFT_SHIFT | MODKEY_RIGHT_SHIFT),
+    MODKEY_ALT         = (MODKEY_LEFT_ALT | MODKEY_RIGHT_ALT),
 };
 
 enum class ControlDomains
@@ -1010,7 +1016,7 @@ public:
     std::string GetOptionValue(std::string opt, unsigned int index = 0);
 
     // Get option value by enum and index if present otherwise will return empty string
-    std::string GetOptionValueByEnum(esmini_options::CONFIG_ENUM opt, unsigned int index = 0);
+    std::string GetOptionValueByEnum(esmini_options::CONFIG_ENUM opt);
 
     // returns all the values set for the option
     std::vector<std::string>& GetOptionValues(std::string opt);

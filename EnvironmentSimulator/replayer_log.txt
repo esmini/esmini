@@ -1,0 +1,12 @@
+esmini GIT REV: v2.49.0-59-46391a0e-dirty
+esmini GIT TAG: 
+esmini GIT BRANCH: new_df_and_reworked_replay_data
+esmini BUILD VERSION: N/A - client build
+[] [info] Loaded config file: /home/slundel6/git-repos/esmini/config.yml (../bin/../config.yml)
+[] [info] replayer options: --text_scale 1.0 --config_file_path config.yml --camera_mode orbit --info_text 1 --logfile_path replayer_log.txt --file ../sim.dat --res_path ./resources 
+[2025-08-15 08:58:35]
+[0.000] [info] Datfile sim.dat opened.
+[0.000] [info] Datfile header: version 1.0, odr_filename: ../xodr/e6mini.xodr, model_filename: ../models/e6mini.osgb
+[0.000] [info] Window created at 74,146 with size 800,400
+[0.000] [error] Failed to read environment model ../models/e6mini.osgb
+[0.000] [info] Adjusted OverTaker bounding box to model car_red.osgb - xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49

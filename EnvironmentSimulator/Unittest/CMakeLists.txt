@@ -87,7 +87,8 @@ unittest(
     ScenarioEngineDll_test
     "${ScenarioEngineDll_sources}"
     esminiLib
-    CommonMini
+    ScenarioEngine
+    RoadManager
     ${OSI_LIBRARIES})
 
 # ############################### Creating executable (RoadManagerDll_test) ##########################################

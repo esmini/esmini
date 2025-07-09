@@ -798,6 +798,11 @@ bool IsNumber(const std::string& str, int max_digits)
     return true;
 }
 
+bool IsDoubleEqual(double a, double b)
+{
+    return fabs(a - b) < SMALL_NUMBER;
+}
+
 bool IsValidDateTimeFormat(const std::string& dateTimeString)
 {
     std::regex pattern(R"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2})");
@@ -923,7 +928,7 @@ int64_t GetEpochTimeFromString(const std::string& datetime)
     std::time_t epoch = mktime(&tm);
 #endif
 
-    return static_cast<int64_t>(epoch);
+    return epoch;
 }
 
 double GetSecondsToFactor(int seconds)
@@ -1098,10 +1103,10 @@ std::vector<std::string> SplitQuotedString(const std::string& str, char delim)
     int                      pos = -1;
     do
     {
-        size_t quotePos = str.find_first_of('"', pos + 1);
+        size_t quotePos = str.find_first_of('"', static_cast<size_t>(pos + 1));
         if (quotePos == std::string::npos)
         {
-            auto vec = SplitString(str.substr(pos + 1, str.size()), delim);
+            auto vec = SplitString(str.substr(static_cast<size_t>(pos + 1), str.size()), delim);
             result.insert(result.end(), std::make_move_iterator(vec.begin()), std::make_move_iterator(vec.end()));
             return result;
         }
@@ -1113,7 +1118,7 @@ std::vector<std::string> SplitQuotedString(const std::string& str, char delim)
             return result;
         }
         result.emplace_back(str.substr(quotePos + 1, nextPos - quotePos - 1));
-        pos = static_cast<unsigned int>(nextPos);
+        pos = static_cast<int>(nextPos);
     } while (true);
 }
 
@@ -1658,7 +1663,7 @@ std::string GetDefaultPath()
     Dl_info dl_info;
 
     // Use dladdr to retrieve the path of the loaded library
-    if (dladdr((void*)&GetDefaultPath, &dl_info) == 0)
+    if (dladdr(reinterpret_cast<void*>(&GetDefaultPath), &dl_info) == 0)
     {
         LOG_ERROR("Failed to get Executable/Library path.");
         return "";
@@ -2404,7 +2409,7 @@ std::string SE_Options::GetOptionValue(std::string opt, unsigned int index)
         return "";
     }
 
-    return option->GetValue(index);
+    return option->GetValue(static_cast<int>(index));
 }
 
 SE_Option* SE_Options::GetOptionByEnum(esmini_options::CONFIG_ENUM opt)
@@ -2431,7 +2436,7 @@ std::string SE_Options::GetAppName() const
     return app_name_;
 }
 
-std::string SE_Options::GetOptionValueByEnum(esmini_options::CONFIG_ENUM opt, unsigned int index)
+std::string SE_Options::GetOptionValueByEnum(esmini_options::CONFIG_ENUM opt)
 {
     SE_Option* option = GetOptionByEnum(opt);
 
