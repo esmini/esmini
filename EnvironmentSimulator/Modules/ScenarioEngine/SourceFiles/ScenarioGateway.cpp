@@ -1115,66 +1115,24 @@ void ScenarioGateway::removeObject(std::string name)
     }
 }
 
-void ScenarioGateway::WriteStatesToFile()
+void ScenarioGateway::WriteStatesToFile(const double simulation_time, const double dt)
 {
-    if (data_file_.is_open())
+    if (dat_writer_.IsWriteFileOpen())
     {
-        // Write status to file - for later replay
-        for (size_t i = 0; i < objectState_.size(); i++)
-        {
-            struct ObjectStateStructDat datState;
-
-            datState.info.boundingbox = objectState_[i]->state_.info.boundingbox;
-            datState.info.ctrl_type   = objectState_[i]->state_.info.ctrl_type;
-            datState.info.id          = objectState_[i]->state_.info.id;
-            datState.info.model_id    = objectState_[i]->state_.info.model_id;
-            memcpy(datState.info.name, objectState_[i]->state_.info.name, sizeof(datState.info.name));
-            datState.info.obj_category   = objectState_[i]->state_.info.obj_category;
-            datState.info.obj_type       = objectState_[i]->state_.info.ctrl_type;
-            datState.info.scaleMode      = objectState_[i]->state_.info.scaleMode;
-            datState.info.speed          = static_cast<float>(objectState_[i]->state_.info.speed);
-            datState.info.timeStamp      = static_cast<float>(objectState_[i]->state_.info.timeStamp);
-            datState.info.visibilityMask = objectState_[i]->state_.info.visibilityMask;
-
-            // assume first wheel is on front axle and steering
-            datState.info.wheel_angle =
-                objectState_[i]->state_.info.wheel_data.size() > 0 ? static_cast<float>(objectState_[i]->state_.info.wheel_data[0].h) : 0.0f;
-            datState.info.wheel_rot =
-                objectState_[i]->state_.info.wheel_data.size() > 0 ? static_cast<float>(objectState_[i]->state_.info.wheel_data[0].p) : 0.0f;
-
-            datState.pos.x      = static_cast<float>(objectState_[i]->state_.pos.GetX());
-            datState.pos.y      = static_cast<float>(objectState_[i]->state_.pos.GetY());
-            datState.pos.z      = static_cast<float>(objectState_[i]->state_.pos.GetZ());
-            datState.pos.h      = static_cast<float>(objectState_[i]->state_.pos.GetH());
-            datState.pos.p      = static_cast<float>(objectState_[i]->state_.pos.GetP());
-            datState.pos.r      = static_cast<float>(objectState_[i]->state_.pos.GetR());
-            datState.pos.roadId = objectState_[i]->state_.pos.GetTrackId();
-            datState.pos.laneId = objectState_[i]->state_.pos.GetLaneId();
-            datState.pos.offset = static_cast<float>(objectState_[i]->state_.pos.GetOffset());
-            datState.pos.t      = static_cast<float>(objectState_[i]->state_.pos.GetT());
-            datState.pos.s      = static_cast<float>(objectState_[i]->state_.pos.GetS());
-            data_file_.write(reinterpret_cast<char*>(&datState), sizeof(datState));
-        }
+        dat_writer_.SetSimulationTime(simulation_time, dt);
+        dat_writer_.WriteGenericDataToDat();
+        dat_writer_.WriteObjectStatesToDat(objectState_);
+        dat_writer_.SetTimestampWritten(false);
     }
 }
 
 int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename, std::string model_filename)
 {
-    if (!filename.empty())
+    if (filename.empty())
     {
-        data_file_.open(filename, std::ofstream::binary);
-        if (data_file_.fail())
-        {
-            LOG_ERROR("Cannot open file: {}", filename);
-            return -1;
-        }
-        DatHeader header;
-        header.version = DAT_FILE_FORMAT_VERSION;
-        StrCopy(header.odr_filename, odr_filename.c_str(), MIN(odr_filename.length() + 1, DAT_FILENAME_SIZE));
-        StrCopy(header.model_filename, model_filename.c_str(), MIN(model_filename.length() + 1, DAT_FILENAME_SIZE));
-
-        data_file_.write(reinterpret_cast<char*>(&header), sizeof(header));
+        LOG_ERROR("Filename is empty");
+        return -1;
     }
 
-    return 0;
+    return dat_writer_.Init(filename, odr_filename, model_filename);
 }

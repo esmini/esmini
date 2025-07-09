@@ -493,7 +493,10 @@ It will show only log entries relating to storyboard, including triggering. Exam
 ----
 
 ==== Scenario recording (.dat)
-In addition esmini can save a `.dat` file which captures the state of all entities. This file can later be used either to replay (see <<Replay scenario>>) the scenario or converted to `.csv` for further analysis, e.g. in Excel.
+From version 2.53.0 esmini implements a package-based `.dat` file format. The new format comes with increased flexibility without unnecessary file size growth. It supports gradually adding/removing content in the `.dat` files without breaking compatibility. Packages consists of header (packet ID and packet size) and the data. This file can later be used either to replay (see <<Replay scenario>>) the scenario or convert it to `.csv` for further analysis, e.g. in Excel.
+
+A list of available packet IDs and packet structure etc. can be found in: +
+https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/PacketHandler.hpp[`EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/PacketHandler.hpp`]
 
 To create a recording with regular timesteps: +
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --fixed_timestep 0.05 --record sim.dat``
@@ -514,6 +517,16 @@ for f in ./my_scenarios/*.xosc; do ./bin/esmini --headless --fixed_timestep 0.05
 ----
 
 It also works in Git bash on Windows.
+
+==== Scenario recording (.dat) versioning
+The new `.dat` file format starts at version 3.0, succeeding version 2. The version is written to the file header. The versioning follows semantic versioning principles, where:
+
+* Major version (X.y): Incompatible changes to the file format.
+* Minor version (x.Y): Backwards-compatible additions and/or bug fixes to the file format.
+
+Replaying a `.dat` file created with a different minor version, both previous and future, is supported. For example, replay a `.dat` file created with esmini version 3.7 using replayer version 3.5, and vice versa. However, due to the nature of the changes, the replay behavior can't be guaranteed to be identical between minor versions. For example, content added via a new package in a newer minor version will not be present when replaying with an older minor version. In summary, replayer will gracefully skip unknown packages while showing all recognized ones.
+
+If the major version of the `.dat` file differs from the replayer version, replay is not supported. For example, a `.dat` file created with version 4.1 cannot be replayed using version 3.8, and vice versa. Either the `.dat` file has to be recreated using the same major version as the replayer, or the replayer has to be updated/downgraded to match the major version of the `.dat` file.
 
 ==== CSV logger
 To create a more complete csv logfile, compared to the content of the .dat file, activate the CSV_Logger:

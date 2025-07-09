@@ -14,11 +14,166 @@
 
 #include <string>
 #include <fstream>
+#include <variant>
+#include <set>
+#include <optional>
 #include "CommonMini.hpp"
 #include "ScenarioGateway.hpp"
 
 namespace scenarioengine
 {
+    // Reworked data structures to hold properties over time
+    template <typename T>
+    struct Timeline
+    {
+        std::vector<std::pair<double, T>> values;          // Pairs of timestamp and value
+        mutable size_t                    last_index = 0;  // Set as mutable to allow modification in const methods
+        mutable double                    last_time  = LARGE_NUMBER;
+
+        std::optional<T> get_value_incremental(double time) const noexcept
+        {
+            if (values.empty())
+            {
+                return std::nullopt;
+            }
+
+            if (values.size() == 1)
+            {
+                last_index = 0;
+                last_time  = values[0].first;
+                return values[0].second;
+            }
+
+            size_t idx = last_index;
+
+            if (NEAR_NUMBERS(last_time, time))
+            {
+                return values[idx].second;
+            }
+
+            if (time >= values[idx].first)  // moving forward
+            {
+                while (idx + 1 < values.size() && values[idx + 1].first <= time + SMALL_NUMBER)
+                {
+                    idx++;
+                }
+            }
+            else  // moving backward
+            {
+                while (idx > 0 && values[idx].first > time + SMALL_NUMBER)
+                {
+                    idx--;
+                }
+            }
+
+            last_index = idx;
+            last_time  = time;
+
+            return values[idx].second;
+        }
+
+        std::optional<T> get_value_binary(double time, bool upper = false) const noexcept
+        {
+            if (values.empty())
+            {
+                return std::nullopt;
+            }
+
+            if (values.size() == 1)
+            {
+                return values.front().second;
+            }
+
+            auto search_begin = values.begin();
+            auto search_end   = values.end();
+
+            auto it =
+                std::upper_bound(search_begin, search_end, time + SMALL_NUMBER, [](double t, const std::pair<double, T>& v) { return t < v.first; });
+
+            if (it == values.begin())
+            {
+                return it->second;
+            }
+
+            // end is past-the-end, so go to last element
+            if (it == values.end())
+            {
+                --it;
+            }
+
+            if (!upper)  // We snap to lowest value, which is default
+            {
+                --it;
+            }
+
+            return it->second;
+        }
+
+        std::optional<size_t> get_index_binary(double time) const noexcept
+        {
+            if (values.empty())
+            {
+                return std::nullopt;
+            }
+
+            if (values.size() == 1)
+            {
+                return 1;
+            }
+
+            auto search_begin = values.begin();
+            auto search_end   = values.end();
+
+            auto it = std::upper_bound(search_begin, search_end, time, [](double t, const std::pair<double, T>& v) { return t < v.first; });
+
+            if (it == values.begin())
+            {
+                return 0;
+            }
+
+            return static_cast<size_t>(std::distance(values.begin(), it));
+        }
+    };
+
+    struct PropertyTimeline
+    {
+        Timeline<int>            model_id_;
+        Timeline<int>            obj_type_;
+        Timeline<int>            obj_category_;
+        Timeline<int>            ctrl_type_;
+        Timeline<std::string>    name_;
+        Timeline<float>          speed_;
+        Timeline<float>          wheel_angle_;
+        Timeline<float>          wheel_rot_;
+        Timeline<OSCBoundingBox> bounding_box_;
+        Timeline<int>            scale_mode_;
+        Timeline<int>            visibility_mask_;
+        Timeline<Dat::Pose>      pose_;
+        Timeline<id_t>           road_id_;
+        Timeline<int>            lane_id_;
+        Timeline<float>          pos_offset_;
+        Timeline<float>          pos_t_;
+        Timeline<float>          pos_s_;
+        Timeline<bool>           active_;
+        Timeline<float>          odometer_;
+    };
+
+    // Custom comparator ensuring map has ids ordered as:
+    // <0, 1, 2, 3, -1, -2, -3, ...>
+    struct MapComparator
+    {
+        bool operator()(int lhs, int rhs) const
+        {
+            if (lhs >= 0 && rhs < 0)
+                return true;
+            if (lhs < 0 && rhs >= 0)
+                return false;
+            if (lhs >= 0 && rhs >= 0)
+                return lhs < rhs;
+            return lhs > rhs;
+        }
+    };
+
     typedef struct
     {
         ObjectStateStructDat state;
@@ -28,33 +183,47 @@ namespace scenarioengine
     class Replay
     {
     public:
-        DatHeader                header_;
-        std::vector<ReplayEntry> data_;
+        std::vector<ReplayEntry>                       data_;
+        Dat::DatHeader                                 dat_header_;
+        Timeline<double>                               dt_;
+        std::map<int, PropertyTimeline, MapComparator> objects_timeline_;
+        std::vector<double>                            timestamps_;
+        std::unordered_map<int, ReplayEntry>           object_state_cache_;
+        int                                            ghost_ghost_counter_ = -1;
 
-        Replay(std::string filename, bool clean);
-        // Replay(const std::string directory, const std::string scenario, bool clean);
+        Replay(std::string filename);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
+
+        void SetupGhostsTimeline();
+        int  ParsePackets(const std::string& filename);
+        void FillInTimestamps();
+        void FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);
+        void CreateMergedDatfile(const std::string filename) const;
+        void ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filename);
 
         /**
                 Go to specific time
                 @param time timestamp (0 = beginning, -1 end)
                 @param stop_at_next_frame If true move max to next/previous time frame
         */
-        void                  GoToTime(double time, bool stop_at_next_frame = false);
+        void                  SetTimeToNearestTimestamp();
+        unsigned int          FindIndexAtTimestamp(double timestamp);
+        void                  GoToTime(double target_time, bool stop_at_next_frame = false);
         void                  GoToDeltaTime(double dt, bool stop_at_next_frame = false);
         void                  GetReplaysFromDirectory(const std::string dir, const std::string sce);
         size_t                GetNumberOfScenarios() const;
-        void                  GoToStart();
-        void                  GoToEnd();
+        void                  GoToStart(bool ignore_repeat = false);
+        void                  GoToEnd(bool ignore_repeat = false);
         int                   GoToNextFrame();
         void                  GoToPreviousFrame();
-        unsigned int          FindNextTimestamp(bool wrap = false) const;
-        unsigned int          FindPreviousTimestamp(bool wrap = false) const;
-        ReplayEntry*          GetEntry(int id);
         ObjectStateStructDat* GetState(int id);
+        int                   ReadOldDatHeader(const std::string& filename);
         void                  SetStartTime(double time);
         void                  SetStopTime(double time);
+        ReplayEntry           GetReplayEntryAtTimeIncremental(int id, double t) const;
+        ReplayEntry           GetReplayEntryAtTimeBinary(int id, double t) const;
+        std::vector<int>      GetAllObjectIDs() const;
         double                GetStartTime() const
         {
             return startTime_;
@@ -75,24 +244,24 @@ namespace scenarioengine
         {
             repeat_ = repeat;
         }
-        void CleanEntries(std::vector<ReplayEntry>& entries);
-        void BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntry>>>& scenarios);
-        void CreateMergedDatfile(const std::string filename) const;
 
     private:
-        std::ifstream            file_;
         std::vector<std::string> scenarios_;
         double                   time_;
-        double                   startTime_;
-        double                   stopTime_;
-        unsigned int             startIndex_;
-        unsigned int             stopIndex_;
-        unsigned int             index_;
-        bool                     repeat_;
-        bool                     clean_;
+        double                   startTime_  = 0.0;
+        double                   stopTime_   = 0.0;
+        unsigned int             startIndex_ = 0;
+        unsigned int             stopIndex_  = 0;
+        unsigned int             index_      = 0;
+        bool                     repeat_     = false;
         std::string              create_datfile_;
 
-        int FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
+        /* PacketHandler stuff */
+        double                            timestamp_            = 0.0;
+        bool                              ghost_timeline_setup_ = false;
+        int                               current_object_id_;
+        int                               ghost_controller_id_;
+        scenarioengine::PropertyTimeline* current_object_timeline_;
     };
 
 }  // namespace scenarioengine
