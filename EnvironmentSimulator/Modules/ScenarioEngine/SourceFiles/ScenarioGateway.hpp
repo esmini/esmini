@@ -14,6 +14,7 @@
 #include "RoadManager.hpp"
 #include "OSCBoundingBox.hpp"
 #include "Entities.hpp"
+#include "PacketHandler.hpp"
 
 #define DAT_FILE_FORMAT_VERSION 2
 #define DAT_FILENAME_SIZE       512
@@ -375,7 +376,8 @@ namespace scenarioengine
 
     private:
         int updateObjectInfo(ObjectState *obj_state, double timestamp, int visibilityMask, double speed, double wheel_angle, double wheel_rot);
-        std::ofstream data_file_;
+        std::ofstream  data_file_;
+        Dat::DatLogger dat_logger_ = {};
     };
 
 }  // namespace scenarioengine
