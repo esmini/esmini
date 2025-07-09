@@ -2083,7 +2083,7 @@ video::lATeP5cz_HE[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
 The lateral distance is defined as a distance to the left or right of the given reference entity in its local coordinate system, i.e. along the reference entity y-axis.
 
-Imagine a point exactly at given distance to the left or right of the reference entity, on its y-axis. Then imagine an infinite line passing through that point and parallel to the reference entity's x-axis. This is the line where the action entity should strive to drive along. Note that for each simulation step this line will be updated to reflect the current position and orientation of the reference entity.
+Imagine a line parallel, and at given distance, to the reference entity's x-axis. This is the line where the action entity should strive to drive along. Note that for each simulation step this line will be updated to reflect the current position and orientation of the reference entity.
 
 The following logic applies for the actor to reach the desired lateral distance to the referenced entity:
 
