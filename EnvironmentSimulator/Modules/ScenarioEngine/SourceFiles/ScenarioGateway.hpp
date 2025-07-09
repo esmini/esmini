@@ -320,6 +320,7 @@ namespace scenarioengine
         int updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
         int updateObjectVisibilityMask(int id, int visibilityMask);
         int updateObjectControllerType(int id, int controllerType);
+        int updateObjectBoundingBox(int id, OSCBoundingBox bb);
         int updateObjectWheelData(int id, std::vector<WheelData> wheel_data);
 
         /**

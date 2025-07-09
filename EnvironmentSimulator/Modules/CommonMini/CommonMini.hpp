@@ -145,6 +145,7 @@ enum class ControlActivationMode
 
 enum class EntityScaleMode
 {
+    UNDEFINED,
     NONE,
     BB_TO_MODEL,  // Scale bounding box to 3D model
     MODEL_TO_BB,  // Scale 3D model to specified or generated bounding box

@@ -39,7 +39,11 @@
         <ScenarioObject name="SumoVehicles">
             <CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
             <ObjectController>
-                <CatalogReference catalogName="ControllerCatalog" entryName="sumoController"/>
+                <CatalogReference catalogName="ControllerCatalog" entryName="sumoController">
+                  <ParameterAssignments>
+                     <ParameterAssignment parameterRef="OverrideVehicleScaleMode" value="BBToModel"/>
+                  </ParameterAssignments>
+                </CatalogReference>
             </ObjectController>
         </ScenarioObject>
     </Entities>

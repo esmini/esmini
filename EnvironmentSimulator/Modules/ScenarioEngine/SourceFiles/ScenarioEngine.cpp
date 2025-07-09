@@ -177,7 +177,8 @@ int ScenarioEngine::step(double deltaSimTime)
             Object* obj = entities_.object_[i];
 
             obj->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
-                                Object::DirtyBit::WHEEL_ROTATION | Object::DirtyBit::ACCELERATION | Object::DirtyBit::CONTROLLER);
+                                Object::DirtyBit::WHEEL_ROTATION | Object::DirtyBit::ACCELERATION | Object::DirtyBit::CONTROLLER |
+                                Object::DirtyBit::BOUNDING_BOX);
             obj->reset_ = false;
 
             // Fetch dirty bits from gateway, indicating what has been reported externally and needs to be protected
@@ -247,6 +248,10 @@ int ScenarioEngine::step(double deltaSimTime)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
                                       roadmanager::Position::PosMode::Z_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
+                }
+                if (o->dirty_ & Object::DirtyBit::BOUNDING_BOX)
+                {
+                    obj->boundingbox_ = o->state_.info.boundingbox;
                 }
             }
         }
@@ -417,6 +422,11 @@ int ScenarioEngine::step(double deltaSimTime)
             if (obj->CheckDirtyBits(Object::DirtyBit::CONTROLLER))
             {
                 scenarioGateway.updateObjectControllerType(obj->id_, obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG));
+            }
+
+            if (obj->CheckDirtyBits(Object::DirtyBit::BOUNDING_BOX))
+            {
+                scenarioGateway.updateObjectBoundingBox(obj->id_, obj->boundingbox_);
             }
 
             // Friction is not considered
@@ -803,6 +813,11 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             {
                 obj->wheel_rot_ = o->state_.info.wheel_data.size() > 0 ? o->state_.info.wheel_data[0].p : 0.0;
                 obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+            }
+            if (o->dirty_ & Object::DirtyBit::BOUNDING_BOX)
+            {
+                obj->boundingbox_ = o->state_.info.boundingbox;
+                obj->SetDirtyBits(Object::DirtyBit::BOUNDING_BOX);
             }
         }
 

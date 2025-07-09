@@ -7,8 +7,7 @@
     </input>
     <time>
         <begin value="0"/>
-        <end value="1000"/>
+        <end value="100"/>
         <step-length value="0.01" />        
     </time>
-
 </configuration>

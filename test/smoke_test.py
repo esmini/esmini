@@ -2287,7 +2287,7 @@ class TestSuite(unittest.TestCase):
 
     def test_cut_in_sumo(self):
         if self.use_package("SUMO"):
-            log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in_sumo.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.5")
+            log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in_sumo.xosc'), COMMON_ESMINI_ARGS + "--seed 0 --fixed_timestep 0.5 --log_level debug")
 
             # Check some initialization steps
             self.assertTrue(re.search('Loading .*cut-in_sumo.xosc', log)  is not None)

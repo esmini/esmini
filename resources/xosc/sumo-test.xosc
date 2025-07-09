@@ -28,6 +28,7 @@
                 <Controller name="SumoTraffic">
                     <Properties>
                         <Property name="esminiController" value="SumoController" />
+                        <Property name="overrideVehicleScaleMode" value="BBToModel" />
                         <File filepath="../sumo_inputs/multi_intersections.sumocfg"/>
                     </Properties>
                 </Controller>

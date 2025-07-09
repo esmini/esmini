@@ -946,6 +946,22 @@ int ScenarioGateway::updateObjectControllerType(int id, int controllerType)
     return 0;
 }
 
+int ScenarioGateway::updateObjectBoundingBox(int id, OSCBoundingBox bb)
+{
+    ObjectState* obj_state = getObjectStatePtrById(id);
+
+    if (obj_state == nullptr)
+    {
+        LOG_ERROR("Can't set bounding box for object {} yet. Please register object using reportObject() first.", id);
+        return -1;
+    }
+
+    obj_state->state_.info.boundingbox = bb;
+    obj_state->dirty_ |= Object::DirtyBit::BOUNDING_BOX;
+
+    return 0;
+}
+
 int ScenarioGateway::updateObjectWheelData(int id, std::vector<WheelData> wheel_data)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);

@@ -34,6 +34,11 @@ Controller* scenarioengine::InstantiateControllerSumo(void* args)
 
 ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
 {
+    if (args == nullptr || args->properties == nullptr || args->properties->file_.filepath_.empty())
+    {
+        LOG_ERROR_AND_QUIT("SUMO Controller: No filename!");
+    }
+
     // SUMO controller forced into override mode - will not perform any scenario actions
     if (mode_ != ControlOperationMode::MODE_OVERRIDE)
     {
@@ -41,10 +46,31 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
         mode_ = ControlOperationMode::MODE_OVERRIDE;
     }
 
-    if (args->properties->file_.filepath_.empty())
+    if (args->properties && args->properties->ValueExists("overrideVehicleScaleMode"))
     {
-        LOG_ERROR("No filename!");
-        return;
+        std::string scale_str = args->properties->GetValueStr("overrideVehicleScaleMode");
+
+        if (scale_str == "None")
+        {
+            scale_mode_ = EntityScaleMode::NONE;
+        }
+        else if (scale_str == "BBToModel")
+        {
+            scale_mode_ = EntityScaleMode::BB_TO_MODEL;
+        }
+        else if (scale_str == "ModelToBB")
+        {
+            scale_mode_ = EntityScaleMode::MODEL_TO_BB;
+        }
+        else if (scale_str != "UseVehicle")
+        {
+            LOG_ERROR("Unrecognized scalemode {} found, ignoring", scale_str);
+        }
+
+        if (scale_mode_ != EntityScaleMode::UNDEFINED)
+        {
+            LOG_DEBUG("SUMO controller: overriding vehicle scale mode to {}", scale_str);
+        }
     }
 
     if (docsumo_.load_file(args->properties->file_.filepath_.c_str()).status == pugi::status_file_not_found)
@@ -135,13 +161,37 @@ void ControllerSumo::Step(double timeStep)
                 {
                     vehicle->name_ = deplist[i];
                     vehicle->AssignController(this);
-                    vehicle->scaleMode_   = EntityScaleMode::BB_TO_MODEL;
-                    vehicle->role_        = static_cast<int>(Object::Role::CIVIL);
-                    vehicle->category_    = Vehicle::Category::CAR;
-                    vehicle->odometer_    = 0.0;
-                    vehicle->boundingbox_ = template_vehicle_->boundingbox_;
+                    if (scale_mode_ != EntityScaleMode::UNDEFINED)
+                    {
+                        // override vehicle scale mode (controlling bounding box and 3D model dimensions)
+                        vehicle->scaleMode_ = scale_mode_;
+                    }
+                    vehicle->role_     = static_cast<int>(Object::Role::CIVIL);
+                    vehicle->category_ = Vehicle::Category::CAR;
+                    vehicle->odometer_ = 0.0;
                     LOG_INFO("SUMO controller: Add vehicle {} to scenario", vehicle->name_);
                     entities_->addObject(vehicle, true);
+
+                    // report to gateway
+                    gateway_->reportObject(vehicle->id_,
+                                           vehicle->name_,
+                                           static_cast<int>(vehicle->type_),
+                                           vehicle->category_,
+                                           vehicle->role_,
+                                           vehicle->model_id_,
+                                           vehicle->model3d_,
+                                           vehicle->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
+                                           vehicle->boundingbox_,
+                                           static_cast<int>(vehicle->scaleMode_),
+                                           0xff,
+                                           time_,
+                                           vehicle->speed_,
+                                           vehicle->wheel_angle_,
+                                           vehicle->wheel_rot_,
+                                           vehicle->rear_axle_.positionZ,
+                                           vehicle->front_axle_.positionX,
+                                           vehicle->front_axle_.positionZ,
+                                           &vehicle->pos_);
                 }
             }
         }
@@ -225,25 +275,16 @@ void ControllerSumo::Step(double timeStep)
                 obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 
                 // Report updated state to the gateway
-                gateway_->reportObject(obj->id_,
-                                       obj->name_,
-                                       static_cast<int>(obj->type_),
-                                       obj->category_,
-                                       obj->role_,
-                                       obj->model_id_,
-                                       obj->model3d_,
-                                       obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
-                                       obj->boundingbox_,
-                                       static_cast<int>(obj->scaleMode_),
-                                       0xff,
-                                       time_,
-                                       obj->speed_,
-                                       obj->wheel_angle_,
-                                       obj->wheel_rot_,
-                                       object_->rear_axle_.positionZ,
-                                       object_->front_axle_.positionX,
-                                       object_->front_axle_.positionZ,
-                                       &obj->pos_);
+                gateway_->updateObjectPos(obj->id_, scenario_engine_->getSimulationTime(), &obj->pos_);
+                gateway_->updateObjectSpeed(obj->id_, scenario_engine_->getSimulationTime(), obj->GetSpeed());
+                gateway_->updateObjectWheelAngle(obj->id_, scenario_engine_->getSimulationTime(), obj->wheel_angle_);
+                gateway_->updateObjectWheelRotation(obj->id_, scenario_engine_->getSimulationTime(), obj->wheel_rot_);
+
+                if (obj->GetDirtyBitMask() & Object::DirtyBit::BOUNDING_BOX)
+                {
+                    // Update bounding box if it has changed
+                    gateway_->updateObjectBoundingBox(obj->id_, obj->boundingbox_);
+                }
             }
             else if (!entities_->object_[i]->IsGhost())
             {

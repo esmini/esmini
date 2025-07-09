@@ -134,9 +134,12 @@
         <Controller name="sumoController">
             <ParameterDeclarations>
                 <ParameterDeclaration name="CfgFile" parameterType="string" value="../sumo_inputs/e6mini.sumocfg" />
+                <!-- Override vehicle scale modes: UseVehicle (no override), None, BBToModel, ModelToBB -->
+                <ParameterDeclaration name="OverrideVehicleScaleMode" parameterType="string" value="UseVehicle" />
             </ParameterDeclarations>
             <Properties>
                 <Property name="esminiController" value="SumoController" />
+                <Property name="overrideVehicleScaleMode" value="$OverrideVehicleScaleMode"/>
                 <File filepath="$CfgFile"/>
             </Properties>
         </Controller>

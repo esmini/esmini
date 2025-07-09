@@ -208,11 +208,6 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
             }
         }
 
-        if (retval == 0)
-        {
-            ScenarioPostFrame();
-        }
-
         if (GetState() == PlayerState::PLAYER_STATE_STEP)
         {
             SetState(PlayerState::PLAYER_STATE_PAUSE);
@@ -233,6 +228,16 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
         if (player_server_)
         {
             player_server_->Step();
+        }
+    }
+
+    if (!IsPaused() || server_mode)
+    {
+        if (retval == 0)
+        {
+            scenarioEngine->mutex_.Lock();
+            ScenarioPostFrame();
+            scenarioEngine->mutex_.Unlock();
         }
     }
 
@@ -373,6 +378,12 @@ void ScenarioPlayer::ViewerFrame(bool init)
                                                            obj->name_,
                                                            &obj->boundingbox_,
                                                            obj->scaleMode_));
+
+        if (obj->scaleMode_ == EntityScaleMode::BB_TO_MODEL)
+        {
+            // report updated bounding box
+            scenarioGateway->updateObjectBoundingBox(obj->GetId(), obj->boundingbox_);
+        }
 
         // Connect callback for setting transparency
         viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(obj, viewer_->entities_.back());

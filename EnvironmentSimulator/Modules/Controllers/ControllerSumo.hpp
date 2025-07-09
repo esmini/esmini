@@ -51,6 +51,7 @@ namespace scenarioengine
         std::string        model_filepath_;
         Object*            template_vehicle_ = nullptr;
         VehiclePool        vehicle_pool_;
+        EntityScaleMode    scale_mode_ = EntityScaleMode::UNDEFINED;
     };
 
     Controller* InstantiateControllerSumo(void* args);
