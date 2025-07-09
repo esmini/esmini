@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<OpenSCENARIO>
+   <FileHeader author="esmini team" date="2025-07-09T08:00:00" description="For issue 706 investigation" revMajor="1" revMinor="3"/>
+   <ParameterDeclarations/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+      </ScenarioObject>
+      <ScenarioObject name="SumoVehicles">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+         <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="sumoController">
+               <ParameterAssignments>
+                  <ParameterAssignment parameterRef="CfgFile" value="../../../resources/sumo_inputs/straight.sumocfg"/>
+                  <ParameterAssignment parameterRef="OverrideVehicleScaleMode" value="BBToModel"/>
+               </ParameterAssignments>
+            </CatalogReference>
+         </ObjectController>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsDimension="rate" dynamicsShape="linear" value="10"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="10"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition laneId="-1" offset="0" roadId="1" s="10"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition conditionEdge="none" delay="0" name="stop_simulation">
+               <ByValueCondition>
+                  <SimulationTimeCondition rule="greaterOrEqual" value="10"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>
