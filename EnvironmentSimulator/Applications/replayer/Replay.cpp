@@ -19,64 +19,82 @@ using namespace scenarioengine;
 
 Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat_(false), clean_(clean)
 {
-    file_.open(filename, std::ofstream::binary);
-    if (file_.fail())
+    std::ifstream file;
+    file.open(filename, std::ifstream::binary);
+    if (file.fail())
     {
-        LOG_ERROR("Cannot open file: {}", filename);
-        throw std::invalid_argument(std::string("Cannot open file: ") + filename);
+        LOG_ERROR_AND_QUIT("Cannot open file: {}", filename);
     }
 
-    file_.read(reinterpret_cast<char*>(&header_), sizeof(header_));
-    LOG_INFO("Recording {} opened. dat version: {} odr: {} model: {}",
-             FileNameOf(filename),
-             header_.version,
-             FileNameOf(header_.odr_filename),
-             FileNameOf(header_.model_filename));
+    LOG_INFO("Datfile {} opened.", FileNameOf(filename));
 
-    if (header_.version != DAT_FILE_FORMAT_VERSION)
+    // Get the file size
+    file.seekg(0, std::ios::end);
+    const auto file_size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    while (file.tellg() < file_size)
     {
-        LOG_ERROR_AND_QUIT("Version mismatch. {} is version {} while supported version is {}. Please re-create dat file.",
-                           filename,
-                           header_.version,
-                           DAT_FILE_FORMAT_VERSION);
-    }
-
-    if (header_.version != DAT_FILE_FORMAT_VERSION)
-    {
-        LOG_ERROR_AND_QUIT("Version mismatch. {} is version {} while supported version is {}. Please re-create dat file.",
-                           filename,
-                           header_.version,
-                           DAT_FILE_FORMAT_VERSION);
-    }
-
-    while (!file_.eof())
-    {
-        ReplayEntry data;
-        data.odometer = 0.0;
-        file_.read(reinterpret_cast<char*>(&data.state), sizeof(data.state));
-
-        if (!file_.eof())
+        Dat::PacketHeader header;
+        if (!file.read(reinterpret_cast<char*>(&header), sizeof(header)))
         {
-            data_.push_back(data);
+            LOG_ERROR("Failed to read packet header.");
+            break;
+        }
+
+        if (header.id > static_cast<int>(Dat::PacketId::END_OF_SCENARIO))
+        {
+            LOG_ERROR("Unknown packet id: {}", header.id);
+            break;
+        }
+
+        if (header.id == static_cast<int>(Dat::PacketId::HEADER))
+        {
+            Dat::DatHeader d_header;
+
+            if (!file.read(reinterpret_cast<char*>(&d_header.version_major), sizeof(d_header.version_major)) ||
+                !file.read(reinterpret_cast<char*>(&d_header.version_minor), sizeof(d_header.version_minor)))
+            {
+                LOG_ERROR("Failed reading header versions.");
+                break;
+            }
+
+            if (!file.read(reinterpret_cast<char*>(&d_header.odr_filename.size), sizeof(d_header.odr_filename.size)))
+            {
+                LOG_ERROR("Failed reading odr filename size.");
+                break;
+            }
+            d_header.odr_filename.string.resize(d_header.odr_filename.size);
+            if (!file.read(d_header.odr_filename.string.data(), d_header.odr_filename.size))
+            {
+                LOG_ERROR("Failed reading odr filename string.");
+                break;
+            }
+
+            if (!file.read(reinterpret_cast<char*>(&d_header.model_filename.size), sizeof(d_header.model_filename.size)))
+            {
+                LOG_ERROR("Failed reading odr model filename size.");
+                break;
+            }
+            d_header.model_filename.string.resize(d_header.model_filename.size);
+            if (!file.read(d_header.model_filename.string.data(), d_header.model_filename.size))
+            {
+                LOG_ERROR("Failed reading odr model string.");
+                break;
+            }
+
+            LOG_INFO("Version: {}.{}", d_header.version_major, d_header.version_minor);
+            LOG_INFO("ODR file: {}", d_header.odr_filename.string);
+            LOG_INFO("Model file: {}", d_header.model_filename.string);
+        }
+        else
+        {
+            // Skip unknown or unhandled packet types for now
+            file.seekg(header.data_size, std::ios::cur);
         }
     }
 
-    if (clean_)
-    {
-        CleanEntries(data_);
-    }
-
-    if (data_.size() > 0)
-    {
-        // Register first entry timestamp as starting time
-        time_       = data_[0].state.info.timeStamp;
-        startTime_  = time_;
-        startIndex_ = 0;
-
-        // Register last entry timestamp as stop time
-        stopTime_  = data_.back().state.info.timeStamp;
-        stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stopTime_));
-    }
+    file.close();
 }
 
 Replay::Replay(const std::string directory, const std::string scenario, std::string create_datfile)

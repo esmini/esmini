@@ -1134,21 +1134,11 @@ void ScenarioGateway::WriteStatesToFile()
 
 int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename, std::string model_filename)
 {
-    if (!filename.empty())
+    if (filename.empty())
     {
-        data_file_.open(filename, std::ofstream::binary);
-        if (data_file_.fail())
-        {
-            LOG_ERROR("Cannot open file: {}", filename);
-            return -1;
-        }
-        DatHeader header;
-        header.version = DAT_FILE_FORMAT_VERSION;
-        StrCopy(header.odr_filename, odr_filename.c_str(), MIN(odr_filename.length() + 1, DAT_FILENAME_SIZE));
-        StrCopy(header.model_filename, model_filename.c_str(), MIN(model_filename.length() + 1, DAT_FILENAME_SIZE));
-
-        data_file_.write(reinterpret_cast<char*>(&header), sizeof(header));
+        LOG_ERROR("Filename is empty");
+        return -1;
     }
 
-    return 0;
+    return dat_logger_.Init(filename, odr_filename, model_filename);
 }
