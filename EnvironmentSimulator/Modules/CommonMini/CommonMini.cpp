@@ -756,6 +756,11 @@ bool IsNumber(const std::string& str, int max_digits)
     return true;
 }
 
+bool IsDoubleEqual(double a, double b)
+{
+    return fabs(a - b) < SMALL_NUMBER;
+}
+
 bool IsValidDateTimeFormat(const std::string& dateTimeString)
 {
     std::regex pattern(R"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2})");
