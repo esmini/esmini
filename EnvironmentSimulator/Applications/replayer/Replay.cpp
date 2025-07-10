@@ -48,49 +48,87 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
             break;
         }
 
-        if (header.id == static_cast<int>(Dat::PacketId::HEADER))
+        switch (header.id)
         {
-            Dat::DatHeader d_header;
+            case static_cast<id_t>(Dat::PacketId::DAT_HEADER):
+            {
+                Dat::DatHeader d_header;
 
-            if (!file.read(reinterpret_cast<char*>(&d_header.version_major), sizeof(d_header.version_major)) ||
-                !file.read(reinterpret_cast<char*>(&d_header.version_minor), sizeof(d_header.version_minor)))
-            {
-                LOG_ERROR("Failed reading header versions.");
-                break;
-            }
+                if (!file.read(reinterpret_cast<char*>(&d_header.version_major), sizeof(d_header.version_major)) ||
+                    !file.read(reinterpret_cast<char*>(&d_header.version_minor), sizeof(d_header.version_minor)))
+                {
+                    LOG_ERROR("Failed reading header versions.");
+                    break;
+                }
 
-            if (!file.read(reinterpret_cast<char*>(&d_header.odr_filename.size), sizeof(d_header.odr_filename.size)))
-            {
-                LOG_ERROR("Failed reading odr filename size.");
-                break;
-            }
-            d_header.odr_filename.string.resize(d_header.odr_filename.size);
-            if (!file.read(d_header.odr_filename.string.data(), d_header.odr_filename.size))
-            {
-                LOG_ERROR("Failed reading odr filename string.");
-                break;
-            }
+                if (!file.read(reinterpret_cast<char*>(&d_header.odr_filename.size), sizeof(d_header.odr_filename.size)))
+                {
+                    LOG_ERROR("Failed reading odr filename size.");
+                    break;
+                }
+                d_header.odr_filename.string.resize(d_header.odr_filename.size);
+                if (!file.read(d_header.odr_filename.string.data(), d_header.odr_filename.size))
+                {
+                    LOG_ERROR("Failed reading odr filename string.");
+                    break;
+                }
 
-            if (!file.read(reinterpret_cast<char*>(&d_header.model_filename.size), sizeof(d_header.model_filename.size)))
-            {
-                LOG_ERROR("Failed reading odr model filename size.");
-                break;
-            }
-            d_header.model_filename.string.resize(d_header.model_filename.size);
-            if (!file.read(d_header.model_filename.string.data(), d_header.model_filename.size))
-            {
-                LOG_ERROR("Failed reading odr model string.");
-                break;
-            }
+                if (!file.read(reinterpret_cast<char*>(&d_header.model_filename.size), sizeof(d_header.model_filename.size)))
+                {
+                    LOG_ERROR("Failed reading odr model filename size.");
+                    break;
+                }
+                d_header.model_filename.string.resize(d_header.model_filename.size);
+                if (!file.read(d_header.model_filename.string.data(), d_header.model_filename.size))
+                {
+                    LOG_ERROR("Failed reading odr model string.");
+                    break;
+                }
 
-            LOG_INFO("Version: {}.{}", d_header.version_major, d_header.version_minor);
-            LOG_INFO("ODR file: {}", d_header.odr_filename.string);
-            LOG_INFO("Model file: {}", d_header.model_filename.string);
-        }
-        else
-        {
-            // Skip unknown or unhandled packet types for now
-            file.seekg(header.data_size, std::ios::cur);
+                LOG_INFO("Version: {}.{}", d_header.version_major, d_header.version_minor);
+                LOG_INFO("ODR file: {}", d_header.odr_filename.string);
+                LOG_INFO("Model file: {}", d_header.model_filename.string);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::TIMESTAMP):
+            {
+                Dat::PacketGeneric packet;
+                packet.header = header;
+                packet.data.resize(packet.header.data_size);
+                if (!file.read(packet.data.data(), packet.header.data_size))
+                {
+                    LOG_ERROR("Failed reading speed data.");
+                    break;
+                }
+
+                double timestamp;
+                memcpy(&timestamp, packet.data.data(), sizeof(timestamp));
+                LOG_INFO("Time is {} s", timestamp);
+
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::SPEED):
+            {
+                Dat::PacketGeneric packet;
+                packet.header = header;
+                packet.data.resize(packet.header.data_size);
+                if (!file.read(packet.data.data(), packet.header.data_size))
+                {
+                    LOG_ERROR("Failed reading speed data.");
+                    break;
+                }
+                double speed;
+                memcpy(&speed, packet.data.data(), sizeof(speed));
+                LOG_INFO("Speed is {} m/s", speed);
+
+                break;
+            }
+            default:
+            {
+                // Skip the data for this packet (unknown)
+                file.seekg(header.data_size, std::ios::cur);
+                break;
+            }
         }
     }
 

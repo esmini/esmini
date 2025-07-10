@@ -372,7 +372,7 @@ namespace scenarioengine
     private:
         int updateObjectInfo(ObjectState *obj_state, double timestamp, int visibilityMask, double speed, double wheel_angle, double wheel_rot);
         std::ofstream  data_file_;
-        Dat::DatLogger dat_logger_ = {};
+        Dat::DatLogger dat_logger_;
     };
 
 }  // namespace scenarioengine

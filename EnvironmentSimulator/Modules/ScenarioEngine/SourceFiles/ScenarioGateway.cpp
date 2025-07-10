@@ -1091,44 +1091,14 @@ void ScenarioGateway::removeObject(std::string name)
 
 void ScenarioGateway::WriteStatesToFile()
 {
-    if (data_file_.is_open())
+    if (dat_logger_.IsFileOpen())
     {
         // Write status to file - for later replay
-        for (size_t i = 0; i < objectState_.size(); i++)
+        for (const auto& ObjState : objectState_)
         {
-            struct ObjectStateStructDat datState;
-
-            datState.info.boundingbox = objectState_[i]->state_.info.boundingbox;
-            datState.info.ctrl_type   = objectState_[i]->state_.info.ctrl_type;
-            datState.info.id          = objectState_[i]->state_.info.id;
-            datState.info.model_id    = objectState_[i]->state_.info.model_id;
-            memcpy(datState.info.name, objectState_[i]->state_.info.name, sizeof(datState.info.name));
-            datState.info.obj_category   = objectState_[i]->state_.info.obj_category;
-            datState.info.obj_type       = objectState_[i]->state_.info.ctrl_type;
-            datState.info.scaleMode      = objectState_[i]->state_.info.scaleMode;
-            datState.info.speed          = static_cast<float>(objectState_[i]->state_.info.speed);
-            datState.info.timeStamp      = static_cast<float>(objectState_[i]->state_.info.timeStamp);
-            datState.info.visibilityMask = objectState_[i]->state_.info.visibilityMask;
-
-            // assume first wheel is on front axle and steering
-            datState.info.wheel_angle =
-                objectState_[i]->state_.info.wheel_data.size() > 0 ? static_cast<float>(objectState_[i]->state_.info.wheel_data[0].h) : 0.0f;
-            datState.info.wheel_rot =
-                objectState_[i]->state_.info.wheel_data.size() > 0 ? static_cast<float>(objectState_[i]->state_.info.wheel_data[0].p) : 0.0f;
-
-            datState.pos.x      = static_cast<float>(objectState_[i]->state_.pos.GetX());
-            datState.pos.y      = static_cast<float>(objectState_[i]->state_.pos.GetY());
-            datState.pos.z      = static_cast<float>(objectState_[i]->state_.pos.GetZ());
-            datState.pos.h      = static_cast<float>(objectState_[i]->state_.pos.GetH());
-            datState.pos.p      = static_cast<float>(objectState_[i]->state_.pos.GetP());
-            datState.pos.r      = static_cast<float>(objectState_[i]->state_.pos.GetR());
-            datState.pos.roadId = objectState_[i]->state_.pos.GetTrackId();
-            datState.pos.laneId = objectState_[i]->state_.pos.GetLaneId();
-            datState.pos.offset = static_cast<float>(objectState_[i]->state_.pos.GetOffset());
-            datState.pos.t      = static_cast<float>(objectState_[i]->state_.pos.GetT());
-            datState.pos.s      = static_cast<float>(objectState_[i]->state_.pos.GetS());
-            data_file_.write(reinterpret_cast<char*>(&datState), sizeof(datState));
+            dat_logger_.WriteToDat(ObjState->state_);
         }
+        dat_logger_.SetTimestampWritten(false);  // Reset timestamp written flag after writing all states
     }
 }
 

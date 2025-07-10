@@ -1,13 +1,17 @@
 #pragma once
 
 #include <fstream>
-#include "CommonMini.hpp"
+
+namespace scenarioengine
+{
+    struct ObjectStateStruct;
+}
 
 namespace Dat
 {
-    enum class PacketId
+    enum class PacketId : id_t
     {
-        HEADER          = 0,
+        DAT_HEADER      = 0,
         OBJ_ID          = 1,
         MODEL_ID        = 2,
         OBJ_TYPE        = 3,
@@ -52,7 +56,7 @@ namespace Dat
         unsigned int data_size;
     };
 
-    struct PacketPose
+    struct Pose
     {
         double x;
         double y;
@@ -62,7 +66,7 @@ namespace Dat
         double r;
     };
 
-    struct PacketBoundingBox
+    struct BoundingBox
     {
         double x;
         double y;
@@ -78,47 +82,62 @@ namespace Dat
         std::vector<char> data;
     };
 
-    struct ObjState
+    struct ObjState  // Could this be ObjectStateStruct with some additional fields?
     {
-        int               objId_          = -1;
-        bool              active_         = false;
-        bool              objWritten_     = false;  // denotes object added pkg written or not
-        double            speed_          = SMALL_NUMBER;
-        PacketPose        pos_            = {};
-        int               modelId_        = -1;
-        int               objType_        = -1;
-        int               objCategory_    = -1;
-        int               ctrlType_       = -1;
-        double            wheelAngle_     = SMALL_NUMBER;
-        double            wheelRot_       = SMALL_NUMBER;
-        PacketBoundingBox boundingBox_    = {};
-        int               scaleMode_      = -1;
-        int               visibilityMask_ = -1;
-        std::string       name_           = {};
-        id_t              roadId_         = ID_UNDEFINED;
-        int               laneId_         = -LARGE_NUMBER_INT;
-        double            posOffset_      = SMALL_NUMBER;
-        double            posT_           = SMALL_NUMBER;
-        double            posS_           = SMALL_NUMBER;
+        int         objId_          = -1;
+        bool        active_         = false;
+        bool        objWritten_     = false;  // denotes object added pkg written or not
+        double      speed_          = SMALL_NUMBER;
+        Pose        pose_           = {};
+        int         modelId_        = -1;
+        int         objType_        = -1;
+        int         objCategory_    = -1;
+        int         ctrlType_       = -1;
+        double      wheelAngle_     = SMALL_NUMBER;
+        double      wheelRot_       = SMALL_NUMBER;
+        BoundingBox boundingBox_    = {};
+        int         scaleMode_      = -1;
+        int         visibilityMask_ = -1;
+        std::string name_           = {};
+        id_t        roadId_         = ID_UNDEFINED;
+        int         laneId_         = -LARGE_NUMBER_INT;
+        double      posOffset_      = SMALL_NUMBER;
+        double      posT_           = SMALL_NUMBER;
+        double      posS_           = SMALL_NUMBER;
     };
 
     struct ObjectStateCache
     {
-        int                               timestamp;
-        std::unordered_map<int, ObjState> obj_state_cache_;
+        double                            timestamp_;
+        std::unordered_map<int, ObjState> state_;
     };
 
     class DatLogger
     {
     public:
+        template <typename T>
+        int  Write(PacketId p_id, const T& data);
+        void WritePacket(PacketGeneric& packet);
+
         DatLogger()  = default;
         ~DatLogger() = default;
 
         int Init(const std::string& fileName, const std::string& odrName, const std::string& modelName);
+        int WriteToDat(const scenarioengine::ObjectStateStruct& object_state);
+
+        bool IsFileOpen() const
+        {
+            return data_file_.is_open();
+        }
+        void SetTimestampWritten(bool written)
+        {
+            timestamp_written_ = written;
+        }
 
     private:
         std::ofstream    data_file_;
         ObjectStateCache object_state_cache_;
+        bool             timestamp_written_ = false;
     };
 
 }  // namespace Dat

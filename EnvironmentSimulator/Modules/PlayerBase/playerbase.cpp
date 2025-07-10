@@ -280,7 +280,7 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
 
         if (SE_Env::Inst().GetGhostMode() != GhostMode::RESTART)
         {
-            // scenarioGateway->WriteStatesToFile();
+            scenarioGateway->WriteStatesToFile();
 
             if (CSV_Log)
             {
