@@ -3751,6 +3751,8 @@ TEST(PositionTest, TestTrajectoryLanePosRoll)
 {
     double dt = 0.1;
 
+    SE_Env::Inst().GetOptions().SetOptionValue("pchip_previous_secant_method", "");
+
     ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/bicycle_fall_over.xosc");
     ASSERT_NE(se, nullptr);
 
@@ -3832,6 +3834,8 @@ TEST(PositionTest, TestTrajectoryLanePosRoll)
     EXPECT_NEAR(entities->object_[0]->GetSpeed(), 0.0, 1E-3);
 
     delete se;
+
+    SE_Env::Inst().GetOptions().ClearOption("pchip_previous_secant_method");
 }
 
 TEST(ClothoidSplineTest, TestTrajectoryShape)

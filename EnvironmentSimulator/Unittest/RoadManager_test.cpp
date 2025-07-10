@@ -1559,11 +1559,11 @@ TEST(RoadTest, RoadWidthDrivingLanes)
 TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
 {
     PolyLineBase pline;
-    TrajVertex   v = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, 0};
+    TrajVertex   v;
 
     // Simple case - no interpolation
-    pline.AddVertex({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
-    pline.AddVertex({std::nan(""), 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
     pline.Evaluate(0.5, v);
 
     EXPECT_NEAR(v.x, 0.5, 1e-5);
@@ -1573,8 +1573,8 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
     // Same but with interpolation
     pline.Reset(true);
     pline.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
-    pline.AddVertex({std::nan(""), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
-    pline.AddVertex({std::nan(""), 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
     pline.Evaluate(0.5, v);
 
     EXPECT_NEAR(v.x, 0.5, 1e-5);
@@ -1584,8 +1584,8 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
     // Wrap around case 1
     pline.Reset(true);
     pline.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
-    pline.AddVertex({std::nan(""), 0.0, 0.0, 0.0, 2 * M_PI - 0.01, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
-    pline.AddVertex({std::nan(""), 1.0, 0.0, 0.0, 0.09, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 0.0, 0.0, 0.0, 2 * M_PI - 0.01, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 1.0, 0.0, 0.0, 0.09, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
     pline.Evaluate(0.5, v);
 
     EXPECT_NEAR(v.x, 0.5, 1e-5);
@@ -1595,8 +1595,8 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
     // Wrap around case 2
     pline.Reset(true);
     pline.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
-    pline.AddVertex({std::nan(""), 10.0, 10.0, 0.0, 0.1, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
-    pline.AddVertex({std::nan(""), 10.0, 0.0, 0.0, -0.5, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 10.0, 10.0, 0.0, 0.1, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 10.0, 0.0, 0.0, -0.5, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
     pline.Evaluate(5.0, v);
 
     EXPECT_NEAR(v.x, 10.0, 1e-5);
@@ -1606,8 +1606,8 @@ TEST(TrajectoryTest, PolyLineBase_YawInterpolation)
     // Wrap around case 3
     pline.Reset(true);
     pline.interpolation_mode_ = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
-    pline.AddVertex({std::nan(""), 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
-    pline.AddVertex({std::nan(""), 0.0, 10.0, 0.0, 8.1, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 0.0, 0.0, 0.0, 0.1, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
+    pline.AddVertex({std::nan(""), 0.0, 10.0, 0.0, 8.1, 0.0, 0.0, ID_UNDEFINED, 0.0, 0.0, 0.0, Position::PosMode::H_ABS});
     pline.Evaluate(5.0, v);
 
     EXPECT_NEAR(v.x, 0.0, 1e-5);
@@ -4291,6 +4291,66 @@ TEST(PositionTest, TestClosestRoadPosFromXY)
     EXPECT_EQ(pos.GetTrackId(), 2);
     EXPECT_EQ(pos.GetLaneId(), 1);
     EXPECT_NEAR(pos.GetS(), 171.34, 1e-2);
+}
+
+TEST(InterpolationTest, TestPCHIPInterpolator)
+{
+    SE_Env::Inst().GetOptions().SetOptionValue("pchip_previous_secant_method", "");
+
+    PolyLineShape plshape;
+    PolyLineBase &pl = plshape.pline_;
+    TrajVertex    v;
+    v.s = std::nan("");
+
+    pl.interpolation_mode_  = PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT;
+    plshape.initial_speed_  = 5.0;
+    plshape.following_mode_ = FollowingMode::FOLLOW;
+
+    v.x    = 0.0;
+    v.y    = 0.0;
+    v.time = 0.0;
+    pl.AddVertex(v);
+
+    v.x    = 10.0;
+    v.y    = 0.0;
+    v.time = 5.0;
+    pl.AddVertex(v);
+
+    v.x    = 20.0;
+    v.y    = 0.0;
+    v.time = 7.0;
+    pl.AddVertex(v);
+
+    plshape.CalculatePolyLine();
+
+    double s     = 0.0;
+    idx_t  index = 0;
+
+    pl.Time2S(0.0, s, index);
+    pl.Evaluate(s, v);
+    EXPECT_NEAR(v.x, 0.0, 1e-3);
+
+    pl.Time2S(2.5, s, index);
+    pl.Evaluate(s, v);
+    EXPECT_NEAR(v.x, 6.875, 1e-3);
+
+    pl.Time2S(5.0, s, index);
+    pl.Evaluate(s, v);
+    EXPECT_NEAR(v.x, 10.0, 1e-3);
+
+    pl.Time2S(5.1, s, index);
+    pl.Evaluate(s, v);
+    EXPECT_NEAR(v.x, 10.2292, 1e-3);
+
+    pl.Time2S(6.0, s, index);
+    pl.Evaluate(s, v);
+    EXPECT_NEAR(v.x, 14.25, 1e-3);
+
+    pl.Time2S(7.0, s, index);
+    pl.Evaluate(s, v);
+    EXPECT_NEAR(v.x, 20.0, 1e-3);
+
+    SE_Env::Inst().GetOptions().ClearOption("pchip_previous_secant_method");
 }
 
 int main(int argc, char **argv)

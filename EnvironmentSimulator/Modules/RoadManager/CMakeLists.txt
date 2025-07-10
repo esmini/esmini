@@ -17,6 +17,7 @@ endif()
 
 set(SOURCES
     RoadManager.cpp
+    pchip.cpp
     odrSpiral.cpp
     LaneIndependentRouter.cpp)
 
@@ -26,6 +27,7 @@ add_library(
 
 set(INCLUDES
     RoadManager.hpp
+    pchip.hpp
     odrSpiral.h
     LaneIndependentRouter.hpp)
 

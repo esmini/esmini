@@ -1345,6 +1345,8 @@ int ScenarioPlayer::Init()
     opt.AddOption("param_permutation", "Run specific permutation of parameter distribution, index in range (0 .. NumberOfPermutations-1)", "index");
     opt.AddOption("pause", "Pause simulation after initialization");
     opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files.", "path", "", false, false);
+    opt.AddOption("pchip_prevent_overshoot", "Modify tangents to prevent overshooting");
+    opt.AddOption("pchip_previous_secant_method", "Instead of Fritsch-Carlson average secant method, use slope of previous secant as tangent");
     opt.AddOption("player_server", "Launch UDP server for action/command injection");
 #ifdef _USE_IMPLOT
     opt.AddOption("plot", "Show window with line-plots of interesting data. Modes: asynchronous, synchronous", "mode", "asynchronous");

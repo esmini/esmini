@@ -21,6 +21,7 @@
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
 #include "logger.hpp"
+#include "pchip.hpp"
 
 #define PARAMPOLY3_STEPS 100
 #define FRICTION_DEFAULT 1.0
@@ -3055,7 +3056,6 @@ namespace roadmanager
         id_t   road_id  = ID_UNDEFINED;  // ID_UNDEFINED indicates no valid road position. Use X, Y instead.
         double time     = 0;
         double speed    = 0;  // speed at vertex point/start of segment
-        double acc      = 0;  // acceleration along the segment
         double param    = 0;
         int    pos_mode = 0;  // resolved alignment bitmask after calculation, see Position::PosMode enum
         double h_true   = 0;  // true trajectory heading, calculated based on polyline approximation
@@ -4535,6 +4535,7 @@ namespace roadmanager
         TrajVertex              current_val_;
         double                  length_             = 0.0;
         InterpolationMode       interpolation_mode_ = InterpolationMode::INTERPOLATE_NONE;
+        PCHIP                   interpolator_;
 
     protected:
         int EvaluateSegmentByLocalS(idx_t i, double local_s, TrajVertex &pos);

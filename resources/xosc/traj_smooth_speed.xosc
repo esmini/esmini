@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2025-07-10T15:00:00" description="Show smooth trajectory spped profile" author="esmini team"/>
+   <ParameterDeclarations/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="5.0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <RoutingAction>
+                     <FollowTrajectoryAction initialDistanceOffset="0.0">
+                        <Trajectory closed="false" name="TrajectoryPLine">
+                           <ParameterDeclarations/>
+                           <Shape>
+                              <Polyline>
+                                 <Vertex time="0">
+                                    <Position>
+                                       <WorldPosition x="0.0" y="0.0"/>
+                                    </Position>
+                                 </Vertex>
+                                 <Vertex time="5">
+                                    <Position>
+                                       <WorldPosition x="10.0" y="0.0"/>
+                                    </Position>
+                                 </Vertex>
+                                 <Vertex time="7">
+                                    <Position>
+                                       <WorldPosition x="20.0" y="0.0"/>
+                                    </Position>
+                                 </Vertex>
+                              </Polyline>
+                           </Shape>
+                        </Trajectory>
+                        <TimeReference>
+                           <Timing domainAbsoluteRelative="relative" scale="1.0" offset="0.0"/>
+                        </TimeReference>
+                        <TrajectoryFollowingMode followingMode="follow"/>
+                     </FollowTrajectoryAction>
+                  </RoutingAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StopTrigger" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="9.0" rule="greaterOrEqual"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

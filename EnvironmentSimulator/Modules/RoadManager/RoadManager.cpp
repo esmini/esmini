@@ -11498,7 +11498,6 @@ int PolyLineBase::EvaluateSegmentByLocalS(idx_t i, double local_s, TrajVertex& p
         pos.road_id  = vp0->road_id;
         pos.time     = vp0->time;
         pos.speed    = vp0->speed;
-        pos.acc      = vp0->acc;
         pos.param    = vp0->param;
         pos.pos_mode = vp0->pos_mode;
         pos.h_true   = vp0->h_true;
@@ -11520,7 +11519,6 @@ int PolyLineBase::EvaluateSegmentByLocalS(idx_t i, double local_s, TrajVertex& p
         pos.road_id  = vp0->road_id;
         pos.time     = (1 - a) * vp0->time + a * vp1->time;
         pos.speed    = (1 - a) * vp0->speed + a * vp1->speed;
-        pos.acc      = (1 - a) * vp0->acc + a * vp1->acc;
         pos.param    = (1 - a) * vp0->param + a * vp1->param;
         pos.h_true   = vp0->h_true;
         pos.pos_mode = vp0->pos_mode;
@@ -11682,77 +11680,87 @@ PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, 
 {
     int direction = 1;
 
-    if (GetNumberOfVertices() < 1)
+    if (interpolator_.IsSet())
     {
-        s     = 0.0;
+        // Interpolate over the whole segment
+        s     = interpolator_.interpolate(time);
         index = IDX_UNDEFINED;
-        return GhostTrailReturnCode::GHOST_TRAIL_NO_VERTICES;
-    }
-    else if (GetNumberOfVertices() == 1)
-    {
-        s     = 0;
-        index = 0;
         return GhostTrailReturnCode::GHOST_TRAIL_OK;
     }
-    else if (time < vertex_[0].time)
+    else
     {
-        s     = 0.0;
-        index = 0;
-        return GhostTrailReturnCode::GHOST_TRAIL_TIME_PRIOR;
-    }
-    else if (time > vertex_.back().time)
-    {
-        s     = vertex_.back().s;
-        index = vertex_.size() > 0 ? static_cast<unsigned int>(vertex_.size()) - 1 : IDX_UNDEFINED;
-        return GhostTrailReturnCode::GHOST_TRAIL_TIME_PAST;
-    }
-
-    // start looking from current index by default
-    idx_t i = current_index_;
-
-    // override with any specified start index
-    if (index != IDX_UNDEFINED && index < GetNumberOfVertices())
-    {
-        i = index;
-    }
-
-    if (time < vertex_[i].time)
-    {
-        direction = -1;  // Search backwards
-    }
-
-    for (size_t j = 0; j < GetNumberOfVertices(); j++)
-    {
-        if (vertex_[i].time <= time && vertex_[i + 1].time > time)
+        if (GetNumberOfVertices() < 1)
         {
-            double w = (time - vertex_[i].time) / (vertex_[i + 1].time - vertex_[i].time);
-            s        = vertex_[i].s + w * (vertex_[i + 1].s - vertex_[i].s);
-            index    = i;
+            s     = 0.0;
+            index = IDX_UNDEFINED;
+            return GhostTrailReturnCode::GHOST_TRAIL_NO_VERTICES;
+        }
+        else if (GetNumberOfVertices() == 1)
+        {
+            s     = 0;
+            index = 0;
             return GhostTrailReturnCode::GHOST_TRAIL_OK;
         }
-
-        if (direction < 0)
+        else if (time < vertex_[0].time)
         {
-            if (i > 0)
-            {
-                i--;
-            }
-            else
-            {
-                // wrap from start to end
-                i = GetNumberOfVertices() - 1;
-            }
+            s     = 0.0;
+            index = 0;
+            return GhostTrailReturnCode::GHOST_TRAIL_TIME_PRIOR;
         }
-        else
+        else if (time > vertex_.back().time)
         {
-            if (i < GetNumberOfVertices() - 1)
+            s     = vertex_.back().s;
+            index = vertex_.size() > 0 ? static_cast<unsigned int>(vertex_.size()) - 1 : IDX_UNDEFINED;
+            return GhostTrailReturnCode::GHOST_TRAIL_TIME_PAST;
+        }
+
+        // start looking from current index by default
+        idx_t i = current_index_;
+
+        if (index != IDX_UNDEFINED && index < GetNumberOfVertices())
+        {
+            // override with any specified start index
+            i = index;
+        }
+
+        if (time < vertex_[i].time)
+        {
+            direction = -1;  // Search backwards
+        }
+
+        for (size_t j = 0; j < GetNumberOfVertices(); j++)
+        {
+            if (vertex_[i].time <= time && vertex_[i + 1].time > time)
             {
-                i++;
+                double w = (time - vertex_[i].time) / (vertex_[i + 1].time - vertex_[i].time);
+                s        = vertex_[i].s + w * (vertex_[i + 1].s - vertex_[i].s);
+                index    = i;
+                return GhostTrailReturnCode::GHOST_TRAIL_OK;
+            }
+
+            if (direction < 0)
+            {
+                if (i > 0)
+                {
+                    i--;
+                }
+                else
+                {
+                    // wrap from start to end
+                    i = GetNumberOfVertices() - 1;
+                }
             }
             else
             {
-                // wrap from end to start
-                i = 0;
+                if (i < GetNumberOfVertices() - 1)
+                {
+                    i++;
+                }
+                else
+                {
+                    // wrap from end to start
+                    i = 0;
+                }
             }
         }
     }
@@ -12199,52 +12207,27 @@ void PolyLineShape::CalculatePolyLine()
     }
 
     // speed and acceleration
-    for (size_t i = 0; i < vertex_.size(); i++)
+    if (following_mode_ == FollowingMode::FOLLOW)
     {
-        // apply constant acceleration on the segment from current position
-        //  s = v0 * t + 1/2 * acc * t^2
-        //  v0 and s (dist) is known, acc and final v1 is unknown
-        //  acc = 2 * (s - v0 * t) / t^2
-        //  v1 = v0 + acc * t
+        // create vector for spline interpolation
+        std::vector<double> time_;
+        std::vector<double> dist_;
 
-        if (following_mode_ == FollowingMode::FOLLOW)
+        for (size_t i = 0; i < pline_.vertex_.size(); i++)
         {
-            if (i == 0)
-            {
-                pline_.vertex_[i].speed   = initial_speed_;
-                pline_.vertex_.back().acc = 0.0;
-            }
-            else
-            {
-                double acc = 0.0;
-                double ds  = pline_.vertex_[i].s - pline_.vertex_[i - 1].s;
-                double dt  = pline_.vertex_[i].time - pline_.vertex_[i - 1].time;
-                if (abs(ds) > SMALL_NUMBER)
-                {
-                    acc = 2 * (ds - speed * dt) / pow(dt, 2);
-                    if (SIGN(speed + acc * dt) != SIGN(speed))
-                    {
-                        // too much time for constant acceleration towards zero speed
-                        // allow arrival at earlier time, add eq v = 0 = v0 + acc * t
-                        // acc = -v0^2 / (2 * s)
-                        acc   = -pow(speed, 2) / (2 * ds);
-                        speed = 0.0;
-                    }
-                    else
-                    {
-                        speed = speed + acc * dt;
-                    }
-                }
-                else
-                {
-                    // no movement, set speed and to zero
-                    speed = 0.0;
-                }
-                pline_.vertex_[i - 1].acc = acc;
-                pline_.vertex_[i].speed   = speed;
-            }
+            time_.push_back(pline_.vertex_[i].time);
+            dist_.push_back(pline_.vertex_[i].s);
         }
-        else  // position mode
+
+        // run hermite spline interpolation
+        pline_.interpolator_.SetPreventOvershoot(SE_Env::Inst().GetOptions().GetOptionSet("pchip_prevent_overshoot"));
+        pline_.interpolator_.SetPreviousSecantMethod(SE_Env::Inst().GetOptions().GetOptionSet("pchip_previous_secant_method"));
+        pline_.interpolator_.SetInitialSlope(initial_speed_);
+        pline_.interpolator_.SetValues(time_, dist_);
+    }
+    else  // position mode
+    {
+        for (size_t i = 0; i < vertex_.size(); i++)
         {
             if (i == pline_.vertex_.size() - 1)
             {
@@ -12299,17 +12282,7 @@ int PolyLineShape::Evaluate(double p, TrajectoryParamType ptype, TrajVertex& pos
 
         if (ptype == TrajectoryParamType::TRAJ_PARAM_TYPE_TIME)
         {
-            double dt = MAX(0.0, p - pline_.vertex_[i].time);  // dt never negative for time based parameter
-
-            if (pline_.vertex_[i].acc < 0.0)
-            {
-                // slowing down, check if need for early stop due to distance too short wrt time
-                double max_dt = -pline_.vertex_[i].speed / pline_.vertex_[i].acc;
-                dt            = MIN(dt, max_dt);
-            }
-
-            //  ds = v0 * t + 1/2 * acc * t^2
-            s = pline_.vertex_[i].s + dt * pline_.vertex_[i].speed + 0.5 * pline_.vertex_[i].acc * dt * dt;
+            pline_.Time2S(p, s, i);
         }
         else
         {

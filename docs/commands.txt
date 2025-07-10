@@ -104,6 +104,10 @@ Options:
       Pause simulation after initialization
   --path <path>...
       Search path prefix for assets, e.g. OpenDRIVE files.
+  --pchip_prevent_overshoot
+      Modify tangents to prevent overshooting
+  --pchip_previous_secant_method
+      Instead of FritschûCarlson average secant method, use slope of previous secant as tangent
   --player_server
       Launch UDP server for action/command injection
   --plot [mode]  (default if value omitted: asynchronous)

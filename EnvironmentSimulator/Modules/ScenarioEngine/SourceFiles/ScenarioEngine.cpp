@@ -929,7 +929,6 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                                                obj->pos_.GetTrackId(),
                                                simulationTime_,
                                                obj->GetSpeed(),
-                                               obj->pos_.GetAcc(),
                                                0.0,
                                                roadmanager::Position::PosMode::H_REL,
                                                0.0});
