@@ -115,9 +115,10 @@ namespace Dat
     class DatLogger
     {
     public:
-        template <typename T>
-        int  Write(PacketId p_id, const T& data);
+        template <typename... Args>
+        int  Write(PacketId p_id, const Args&... data);
         void WritePacket(PacketGeneric& packet);
+        void WriteTimestamp();
 
         DatLogger()  = default;
         ~DatLogger() = default;
