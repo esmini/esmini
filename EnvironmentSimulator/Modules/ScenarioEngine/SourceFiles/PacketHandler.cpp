@@ -5,12 +5,12 @@
 #include "CommonMini.cpp"
 #include "PacketHandler.hpp"
 
-int Dat::DatLogger::Init(const std::string& fileName, const std::string& odrName, const std::string& modelName)
+int Dat::DatLogger::Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name)
 {
-    data_file_.open(fileName, std::ios::binary);
+    data_file_.open(file_name, std::ios::binary);
     if (data_file_.fail())
     {
-        LOG_ERROR("Cannot open file: {}", fileName);
+        LOG_ERROR("Cannot open file: {}", file_name);
         return -1;
     }
 
@@ -18,11 +18,11 @@ int Dat::DatLogger::Init(const std::string& fileName, const std::string& odrName
     d_header.version_major = DAT_VERSION_MAJOR;
     d_header.version_minor = DAT_VERSION_MINOR;
 
-    d_header.odr_filename.size   = static_cast<unsigned int>(odrName.size());
-    d_header.odr_filename.string = odrName;
+    d_header.odr_filename.size   = static_cast<unsigned int>(odr_name.size());
+    d_header.odr_filename.string = odr_name;
 
-    d_header.model_filename.size   = static_cast<unsigned int>(modelName.size());
-    d_header.model_filename.string = modelName;
+    d_header.model_filename.size   = static_cast<unsigned int>(model_name.size());
+    d_header.model_filename.string = model_name;
 
     PacketHeader p_header;
     p_header.id        = static_cast<id_t>(PacketId::DAT_HEADER);
@@ -48,8 +48,8 @@ int Dat::DatLogger::Init(const std::string& fileName, const std::string& odrName
     return 0;
 }
 
-template <typename... Args>
-int Dat::DatLogger::Write(PacketId p_id, const Args&... data)
+template <typename... Data>
+int Dat::DatLogger::Write(PacketId p_id, const Data&... data)
 {
     // Write Time packet, but only once
     if (!timestamp_written_)
@@ -115,5 +115,39 @@ int Dat::DatLogger::WriteToDat(const scenarioengine::ObjectStateStruct& object_s
         Write(PacketId::SPEED, cache_it->second.speed_);
     }
 
+    if (!IsPoseEqual(cache_it->second.pose_, object_state.pos))
+    {
+        cache_it->second.pose_.x = object_state.pos.GetX();
+        cache_it->second.pose_.y = object_state.pos.GetY();
+        cache_it->second.pose_.z = object_state.pos.GetZ();
+        cache_it->second.pose_.h = object_state.pos.GetH();
+        cache_it->second.pose_.p = object_state.pos.GetP();
+        cache_it->second.pose_.r = object_state.pos.GetR();
+
+        Write(PacketId::POSE,
+              cache_it->second.pose_.x,
+              cache_it->second.pose_.y,
+              cache_it->second.pose_.z,
+              cache_it->second.pose_.h,
+              cache_it->second.pose_.p,
+              cache_it->second.pose_.r);
+    }
+
     return 0;
+}
+
+bool Dat::DatLogger::IsFileOpen() const
+{
+    return data_file_.is_open();
+}
+
+void Dat::DatLogger::SetTimestampWritten(bool written)
+{
+    timestamp_written_ = written;
+}
+
+bool Dat::DatLogger::IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const
+{
+    return (pose.x == pos.GetX() && pose.y == pos.GetY() && pose.z == pos.GetZ() && pose.h == pos.GetH() && pose.p == pos.GetP() &&
+            pose.r == pos.GetR());
 }

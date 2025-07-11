@@ -36,6 +36,9 @@ namespace scenarioengine
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
 
+        template <typename... Data>
+        int ReadPacket(const Dat::PacketHeader& header, Data&... data);
+
         /**
                 Go to specific time
                 @param time timestamp (0 = beginning, -1 end)
