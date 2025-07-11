@@ -115,25 +115,20 @@ namespace Dat
     class DatLogger
     {
     public:
-        template <typename... Args>
-        int  Write(PacketId p_id, const Args&... data);
+        template <typename... Data>
+        int  Write(PacketId p_id, const Data&... data);
         void WritePacket(PacketGeneric& packet);
         void WriteTimestamp();
+        int  WriteToDat(const scenarioengine::ObjectStateStruct& object_state);
 
         DatLogger()  = default;
         ~DatLogger() = default;
 
-        int Init(const std::string& fileName, const std::string& odrName, const std::string& modelName);
-        int WriteToDat(const scenarioengine::ObjectStateStruct& object_state);
+        int Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name);
 
-        bool IsFileOpen() const
-        {
-            return data_file_.is_open();
-        }
-        void SetTimestampWritten(bool written)
-        {
-            timestamp_written_ = written;
-        }
+        bool IsFileOpen() const;
+        void SetTimestampWritten(bool written);
+        bool IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const;
 
     private:
         std::ofstream    data_file_;

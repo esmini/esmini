@@ -17,11 +17,28 @@
 
 using namespace scenarioengine;
 
+template <typename... Data>
+int Replay::ReadPacket(const Dat::PacketHeader& header, Data&... data)
+{
+    Dat::PacketGeneric packet;
+    packet.header = header;
+    packet.data.resize(packet.header.data_size);
+    if (!file_.read(packet.data.data(), packet.header.data_size))
+    {
+        return -1;
+    }
+
+    const char* read_ptr = packet.data.data();
+
+    (..., (memcpy(&data, read_ptr, sizeof(data)), read_ptr += sizeof(data)));
+
+    return 0;
+}
+
 Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat_(false), clean_(clean)
 {
-    std::ifstream file;
-    file.open(filename, std::ifstream::binary);
-    if (file.fail())
+    file_.open(filename, std::ifstream::binary);
+    if (file_.fail())
     {
         LOG_ERROR_AND_QUIT("Cannot open file: {}", filename);
     }
@@ -29,14 +46,14 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
     LOG_INFO("Datfile {} opened.", FileNameOf(filename));
 
     // Get the file size
-    file.seekg(0, std::ios::end);
-    const auto file_size = file.tellg();
-    file.seekg(0, std::ios::beg);
+    file_.seekg(0, std::ios::end);
+    const auto file_size = file_.tellg();
+    file_.seekg(0, std::ios::beg);
 
-    while (file.tellg() < file_size)
+    while (file_.tellg() < file_size)
     {
         Dat::PacketHeader header;
-        if (!file.read(reinterpret_cast<char*>(&header), sizeof(header)))
+        if (!file_.read(reinterpret_cast<char*>(&header), sizeof(header)))
         {
             LOG_ERROR("Failed to read packet header.");
             break;
@@ -54,32 +71,32 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
             {
                 Dat::DatHeader d_header;
 
-                if (!file.read(reinterpret_cast<char*>(&d_header.version_major), sizeof(d_header.version_major)) ||
-                    !file.read(reinterpret_cast<char*>(&d_header.version_minor), sizeof(d_header.version_minor)))
+                if (!file_.read(reinterpret_cast<char*>(&d_header.version_major), sizeof(d_header.version_major)) ||
+                    !file_.read(reinterpret_cast<char*>(&d_header.version_minor), sizeof(d_header.version_minor)))
                 {
                     LOG_ERROR("Failed reading header versions.");
                     break;
                 }
 
-                if (!file.read(reinterpret_cast<char*>(&d_header.odr_filename.size), sizeof(d_header.odr_filename.size)))
+                if (!file_.read(reinterpret_cast<char*>(&d_header.odr_filename.size), sizeof(d_header.odr_filename.size)))
                 {
                     LOG_ERROR("Failed reading odr filename size.");
                     break;
                 }
                 d_header.odr_filename.string.resize(d_header.odr_filename.size);
-                if (!file.read(d_header.odr_filename.string.data(), d_header.odr_filename.size))
+                if (!file_.read(d_header.odr_filename.string.data(), d_header.odr_filename.size))
                 {
                     LOG_ERROR("Failed reading odr filename string.");
                     break;
                 }
 
-                if (!file.read(reinterpret_cast<char*>(&d_header.model_filename.size), sizeof(d_header.model_filename.size)))
+                if (!file_.read(reinterpret_cast<char*>(&d_header.model_filename.size), sizeof(d_header.model_filename.size)))
                 {
                     LOG_ERROR("Failed reading odr model filename size.");
                     break;
                 }
                 d_header.model_filename.string.resize(d_header.model_filename.size);
-                if (!file.read(d_header.model_filename.string.data(), d_header.model_filename.size))
+                if (!file_.read(d_header.model_filename.string.data(), d_header.model_filename.size))
                 {
                     LOG_ERROR("Failed reading odr model string.");
                     break;
@@ -92,47 +109,52 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
             }
             case static_cast<id_t>(Dat::PacketId::TIMESTAMP):
             {
-                Dat::PacketGeneric packet;
-                packet.header = header;
-                packet.data.resize(packet.header.data_size);
-                if (!file.read(packet.data.data(), packet.header.data_size))
+                double timestamp;
+                int    ret = ReadPacket(header, timestamp);
+                if (ret != 0)
                 {
                     LOG_ERROR("Failed reading speed data.");
                     break;
                 }
-
-                double timestamp;
-                memcpy(&timestamp, packet.data.data(), sizeof(timestamp));
                 LOG_INFO("Time is {} s", timestamp);
-
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::SPEED):
             {
-                Dat::PacketGeneric packet;
-                packet.header = header;
-                packet.data.resize(packet.header.data_size);
-                if (!file.read(packet.data.data(), packet.header.data_size))
+                // Read speed data
+                double speed;
+                int    ret = ReadPacket(header, speed);
+                if (ret != 0)
                 {
                     LOG_ERROR("Failed reading speed data.");
                     break;
                 }
-                double speed;
-                memcpy(&speed, packet.data.data(), sizeof(speed));
                 LOG_INFO("Speed is {} m/s", speed);
-
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::POSE):
+            {
+                // Read pose data
+                Dat::Pose pose;
+                int       ret = ReadPacket(header, pose.x, pose.y, pose.z, pose.h, pose.p, pose.r);
+                if (ret != 0)
+                {
+                    LOG_ERROR("Failed reading pose data.");
+                    break;
+                }
+                LOG_INFO("Pose is x: {}, y: {}, z: {}, h: {}, p: {}, r: {}", pose.x, pose.y, pose.z, pose.h, pose.p, pose.r);
                 break;
             }
             default:
             {
                 // Skip the data for this packet (unknown)
-                file.seekg(header.data_size, std::ios::cur);
+                file_.seekg(header.data_size, std::ios::cur);
                 break;
             }
         }
     }
 
-    file.close();
+    file_.close();
 }
 
 Replay::Replay(const std::string directory, const std::string scenario, std::string create_datfile)
