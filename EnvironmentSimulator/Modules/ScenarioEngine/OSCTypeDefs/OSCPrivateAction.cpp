@@ -583,6 +583,7 @@ void scenarioengine::FollowTrajectoryAction::Move(double simTime, double dt)
         {
             if (dt > SMALL_NUMBER)  // only update speed if some time has passed
             {
+                movingDirection_ = SIGN(object_->pos_.GetTrajectoryS() - old_s);
                 object_->SetSpeed(movingDirection_ * headingDirection * fabs(object_->pos_.GetTrajectoryS() - old_s) / dt);
             }
         }
