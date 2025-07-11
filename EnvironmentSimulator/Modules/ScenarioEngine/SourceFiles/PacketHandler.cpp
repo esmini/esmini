@@ -48,30 +48,23 @@ int Dat::DatLogger::Init(const std::string& fileName, const std::string& odrName
     return 0;
 }
 
-template <typename T>
-int Dat::DatLogger::Write(PacketId p_id, const T& data)
+template <typename... Args>
+int Dat::DatLogger::Write(PacketId p_id, const Args&... data)
 {
     // Write Time packet, but only once
     if (!timestamp_written_)
     {
-        // Create the timestamp packet
-        PacketGeneric packet;
-        packet.header.id        = static_cast<id_t>(PacketId::TIMESTAMP);
-        packet.header.data_size = static_cast<unsigned int>(sizeof(object_state_cache_.timestamp_));
-        packet.data.resize(packet.header.data_size);
-        memcpy(packet.data.data(), &object_state_cache_.timestamp_, sizeof(object_state_cache_.timestamp_));
-
-        WritePacket(packet);
-
-        timestamp_written_ = true;
+        WriteTimestamp();
     }
 
     // Create the packet
     PacketGeneric packet;
     packet.header.id        = static_cast<id_t>(p_id);
-    packet.header.data_size = static_cast<unsigned int>(sizeof(data));
+    packet.header.data_size = static_cast<unsigned int>((sizeof(data) + ...));
     packet.data.resize(packet.header.data_size);
-    memcpy(packet.data.data(), &data, sizeof(data));
+
+    char* write_ptr = packet.data.data();
+    (..., (memcpy(write_ptr, &data, sizeof(data)), write_ptr += sizeof(data)));
 
     // Write to file
     if (p_id != PacketId::OBJ_ADDED && p_id != PacketId::OBJ_DELETED && p_id != PacketId::END_OF_SCENARIO)
@@ -86,6 +79,19 @@ void Dat::DatLogger::WritePacket(PacketGeneric& packet)
 {
     data_file_.write(reinterpret_cast<char*>(&packet.header), sizeof(PacketHeader));
     data_file_.write(packet.data.data(), static_cast<std::streamsize>(packet.data.size()));
+}
+
+void Dat::DatLogger::WriteTimestamp()
+{
+    PacketGeneric packet;
+    packet.header.id        = static_cast<id_t>(PacketId::TIMESTAMP);
+    packet.header.data_size = static_cast<unsigned int>(sizeof(object_state_cache_.timestamp_));
+    packet.data.resize(packet.header.data_size);
+    memcpy(packet.data.data(), &object_state_cache_.timestamp_, sizeof(object_state_cache_.timestamp_));
+
+    WritePacket(packet);
+
+    timestamp_written_ = true;
 }
 
 int Dat::DatLogger::WriteToDat(const scenarioengine::ObjectStateStruct& object_state)
