@@ -121,6 +121,16 @@ namespace Dat
         void WriteTimestamp();
         int  WriteToDat(const scenarioengine::ObjectStateStruct& object_state);
 
+        size_t SerializedSize(const std::string& str);
+
+        template <typename T>
+        size_t SerializedSize(const T& val);
+
+        template <typename T>
+        void WriteToBuffer(char*& write_ptr, const T& val);
+
+        void WriteToBuffer(char*& write_ptr, const std::string& str);
+
         DatLogger()  = default;
         ~DatLogger() = default;
 
