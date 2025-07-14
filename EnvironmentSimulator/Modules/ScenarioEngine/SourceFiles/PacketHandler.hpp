@@ -118,7 +118,6 @@ namespace Dat
         template <typename... Data>
         int  Write(PacketId p_id, const Data&... data);
         void WritePacket(PacketGeneric& packet);
-        void WriteTimestamp();
         int  WriteToDat(const scenarioengine::ObjectStateStruct& object_state);
 
         size_t SerializedSize(const std::string& str);
@@ -137,14 +136,17 @@ namespace Dat
         int Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name);
 
         bool IsFileOpen() const;
-        void SetTimestampWritten(bool written);
+        void SetTimestampWritten(bool state);
+        void SetObjectIdWritten(bool state);
         bool IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const;
         bool IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const;
 
     private:
         std::ofstream    data_file_;
         ObjectStateCache object_state_cache_;
+        int              current_object_id_ = -1;  // Current object ID being processed
         bool             timestamp_written_ = false;
+        bool             object_id_written_ = false;
     };
 
 }  // namespace Dat

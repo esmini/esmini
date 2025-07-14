@@ -50,6 +50,7 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
     const auto file_size = file_.tellg();
     file_.seekg(0, std::ios::beg);
 
+    Dat::ObjState state;
     while (file_.tellg() < file_size)
     {
         Dat::PacketHeader header;
@@ -110,52 +111,162 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
             case static_cast<id_t>(Dat::PacketId::TIMESTAMP):
             {
                 double timestamp;
-                int    ret = ReadPacket(header, timestamp);
-                if (ret != 0)
-                {
+                if (ReadPacket(header, timestamp) != 0)
                     LOG_ERROR("Failed reading speed data.");
-                    break;
-                }
-                LOG_INFO("Time is {} s", timestamp);
+                LOG_INFO("Timestamp: {:.2f}", timestamp);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::OBJ_ID):
+            {
+                if (ReadPacket(header, state.obj_id_) != 0)
+                    LOG_ERROR("Failed reading object ID.");
+                LOG_INFO("Object ID: {}", state.obj_id_);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::SPEED):
             {
-                // Read speed data
-                double speed;
-                int    ret = ReadPacket(header, speed);
-                if (ret != 0)
-                {
+                if (ReadPacket(header, state.speed_) != 0)
                     LOG_ERROR("Failed reading speed data.");
-                    break;
-                }
-                LOG_INFO("Speed is {} m/s", speed);
+                LOG_INFO("Speed: {:.2f}", state.speed_);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POSE):
             {
-                // Read pose data
-                Dat::Pose pose;
-                int       ret = ReadPacket(header, pose.x, pose.y, pose.z, pose.h, pose.p, pose.r);
-                if (ret != 0)
-                {
+                if (ReadPacket(header, state.pose_.x, state.pose_.y, state.pose_.z, state.pose_.h, state.pose_.p, state.pose_.r) != 0)
                     LOG_ERROR("Failed reading pose data.");
-                    break;
-                }
-                LOG_INFO("Pose is x: {}, y: {}, z: {}, h: {}, p: {}, r: {}", pose.x, pose.y, pose.z, pose.h, pose.p, pose.r);
+                LOG_INFO("Pose: x={:.2f}, y={:.2f}, z={:.2f}, h={:.2f}, p={:.2f}, r={:.2f}",
+                         state.pose_.x,
+                         state.pose_.y,
+                         state.pose_.z,
+                         state.pose_.h,
+                         state.pose_.p,
+                         state.pose_.r);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::MODEL_ID):
             {
-                // Read model ID
-                int model_id;
-                int ret = ReadPacket(header, model_id);
-                if (ret != 0)
-                {
+                if (ReadPacket(header, state.model_id_) != 0)
                     LOG_ERROR("Failed reading model ID.");
+                LOG_INFO("Model ID: {}", state.model_id_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::OBJ_TYPE):
+            {
+                if (ReadPacket(header, state.obj_type_) != 0)
+                    LOG_ERROR("Failed reading object type.");
+                LOG_INFO("Object Type: {}", state.obj_type_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::OBJ_CATEGORY):
+            {
+                if (ReadPacket(header, state.obj_category_) != 0)
+                    LOG_ERROR("Failed reading object category.");
+                LOG_INFO("Object Category: {}", state.obj_category_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::CTRL_TYPE):
+            {
+                if (ReadPacket(header, state.ctrl_type_) != 0)
+                    LOG_ERROR("Failed reading controller type.");
+                LOG_INFO("Controller Type: {}", state.ctrl_type_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::WHEEL_ANGLE):
+            {
+                if (ReadPacket(header, state.wheel_angle_) != 0)
+                    LOG_ERROR("Failed reading wheel angle.");
+                LOG_INFO("Wheel Angle: {:.2f}", state.wheel_angle_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::WHEEL_ROT):
+            {
+                if (ReadPacket(header, state.wheel_rot_) != 0)
+                    LOG_ERROR("Failed reading wheel rotation.");
+                LOG_INFO("Wheel Rotation: {:.2f}", state.wheel_rot_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::BOUNDING_BOX):
+            {
+                if (ReadPacket(header,
+                               state.bounding_box_.x,
+                               state.bounding_box_.y,
+                               state.bounding_box_.z,
+                               state.bounding_box_.length,
+                               state.bounding_box_.width,
+                               state.bounding_box_.height) != 0)
+                {
+                    LOG_ERROR("Failed reading bounding box data.");
+                }
+                LOG_INFO("Bounding Box: x={:.2f}, y={:.2f}, z={:.2f}, length={:.2f}, width={:.2f}, height={:.2f}",
+                         state.bounding_box_.x,
+                         state.bounding_box_.y,
+                         state.bounding_box_.z,
+                         state.bounding_box_.length,
+                         state.bounding_box_.width,
+                         state.bounding_box_.height);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::SCALE_MODE):
+            {
+                if (ReadPacket(header, state.scale_mode_) != 0)
+                    LOG_ERROR("Failed reading scale mode.");
+                LOG_INFO("Scale Mode: {}", state.scale_mode_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::VISIBILITY_MASK):
+            {
+                if (ReadPacket(header, state.visibility_mask_) != 0)
+                    LOG_ERROR("Failed reading visibility mask.");
+                LOG_INFO("Visibility Mask: {}", state.visibility_mask_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::NAME):
+            {
+                unsigned int name_size;
+                if (!file_.read(reinterpret_cast<char*>(&name_size), sizeof(unsigned int)))
+                {
+                    LOG_ERROR("Failed reading object name size.");
                     break;
                 }
-                LOG_INFO("Model ID is {}", model_id);
+                state.name_.resize(name_size);
+                if (!file_.read(state.name_.data(), name_size))
+                    LOG_ERROR("Failed reading object name.");
+                LOG_INFO("Name: {}", state.name_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::ROAD_ID):
+            {
+                if (ReadPacket(header, state.road_id_) != 0)
+                    LOG_ERROR("Failed reading road ID.");
+                LOG_INFO("Road ID: {}", state.road_id_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::LANE_ID):
+            {
+                if (ReadPacket(header, state.lane_id_) != 0)
+                    LOG_ERROR("Failed reading lane ID.");
+                LOG_INFO("Lane ID: {}", state.lane_id_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::POS_OFFSET):
+            {
+                if (ReadPacket(header, state.pos_offset_) != 0)
+                    LOG_ERROR("Failed reading position offset.");
+                LOG_INFO("Position Offset: {:.2f}", state.pos_offset_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::POS_T):
+            {
+                if (ReadPacket(header, state.pos_t_) != 0)
+                    LOG_ERROR("Failed reading position T.");
+                LOG_INFO("Position T: {:.2f}", state.pos_t_);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::POS_S):
+            {
+                if (ReadPacket(header, state.pos_s_) != 0)
+                    LOG_ERROR("Failed reading position S.");
+                LOG_INFO("Position S: {:.2f}", state.pos_s_);
                 break;
             }
             default:

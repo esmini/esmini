@@ -1097,6 +1097,7 @@ void ScenarioGateway::WriteStatesToFile()
         for (const auto& ObjState : objectState_)
         {
             dat_logger_.WriteToDat(ObjState->state_);
+            dat_logger_.SetObjectIdWritten(false);
         }
         dat_logger_.SetTimestampWritten(false);  // Reset timestamp written flag after writing all states
     }
