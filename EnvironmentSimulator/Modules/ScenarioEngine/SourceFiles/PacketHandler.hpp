@@ -84,26 +84,26 @@ namespace Dat
 
     struct ObjState  // Could this be ObjectStateStruct with some additional fields?
     {
-        int         objId_          = -1;
-        bool        active_         = false;
-        bool        objWritten_     = false;  // denotes object added pkg written or not
-        double      speed_          = SMALL_NUMBER;
-        Pose        pose_           = {};
-        int         modelId_        = -1;
-        int         objType_        = -1;
-        int         objCategory_    = -1;
-        int         ctrlType_       = -1;
-        double      wheelAngle_     = SMALL_NUMBER;
-        double      wheelRot_       = SMALL_NUMBER;
-        BoundingBox boundingBox_    = {};
-        int         scaleMode_      = -1;
-        int         visibilityMask_ = -1;
-        std::string name_           = {};
-        id_t        roadId_         = ID_UNDEFINED;
-        int         laneId_         = -LARGE_NUMBER_INT;
-        double      posOffset_      = SMALL_NUMBER;
-        double      posT_           = SMALL_NUMBER;
-        double      posS_           = SMALL_NUMBER;
+        int         obj_id_          = -1;
+        bool        active_          = false;
+        bool        obj_written_     = false;  // denotes object added pkg written or not
+        double      speed_           = SMALL_NUMBER;
+        Pose        pose_            = {};
+        int         model_id_        = -1;
+        int         obj_type_        = -1;
+        int         obj_category_    = -1;
+        int         ctrl_type_       = -1;
+        double      wheel_angle_     = SMALL_NUMBER;
+        double      wheel_rot_       = SMALL_NUMBER;
+        BoundingBox bounding_box_    = {};
+        int         scale_mode_      = -1;
+        int         visibility_mask_ = -1;
+        std::string name_            = {};
+        id_t        road_id_         = ID_UNDEFINED;
+        int         lane_id_         = -LARGE_NUMBER_INT;
+        double      pos_offset_      = SMALL_NUMBER;
+        double      pos_t_           = SMALL_NUMBER;
+        double      pos_s_           = SMALL_NUMBER;
     };
 
     struct ObjectStateCache
@@ -139,6 +139,7 @@ namespace Dat
         bool IsFileOpen() const;
         void SetTimestampWritten(bool written);
         bool IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const;
+        bool IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const;
 
     private:
         std::ofstream    data_file_;
