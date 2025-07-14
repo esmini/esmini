@@ -36,9 +36,6 @@ namespace scenarioengine
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
 
-        template <typename... Data>
-        int ReadPacket(const Dat::PacketHeader& header, Data&... data);
-
         /**
                 Go to specific time
                 @param time timestamp (0 = beginning, -1 end)
@@ -81,6 +78,11 @@ namespace scenarioengine
         void CleanEntries(std::vector<ReplayEntry>& entries);
         void BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntry>>>& scenarios);
         void CreateMergedDatfile(const std::string filename) const;
+
+        template <typename... Data>
+        int ReadPacket(const Dat::PacketHeader& header, Data&... data);
+
+        int ReadStringPacket(std::string& str);
 
     private:
         std::ifstream            file_;
