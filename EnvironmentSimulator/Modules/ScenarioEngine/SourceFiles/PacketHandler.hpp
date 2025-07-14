@@ -130,19 +130,22 @@ namespace Dat
 
         void WriteToBuffer(char*& write_ptr, const std::string& str);
 
+        template <typename... Data>
+        int ReadPacket(const Dat::PacketHeader& header, Data&... data);
+
         DatLogger()  = default;
         ~DatLogger() = default;
 
         int Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name);
 
-        bool IsFileOpen() const;
+        bool IsWriteFileOpen() const;
         void SetTimestampWritten(bool state);
         void SetObjectIdWritten(bool state);
         bool IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const;
         bool IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const;
 
     private:
-        std::ofstream    data_file_;
+        std::ofstream    write_file_;
         ObjectStateCache object_state_cache_;
         int              current_object_id_ = -1;  // Current object ID being processed
         bool             timestamp_written_ = false;
