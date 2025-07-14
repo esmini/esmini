@@ -1100,7 +1100,7 @@ void ScenarioGateway::removeObject(std::string name)
 
 void ScenarioGateway::WriteStatesToFile()
 {
-    if (dat_logger_.IsFileOpen())
+    if (dat_logger_.IsWriteFileOpen())
     {
         // Write status to file - for later replay
         for (const auto& ObjState : objectState_)

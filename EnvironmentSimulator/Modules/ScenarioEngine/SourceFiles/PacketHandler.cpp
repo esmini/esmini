@@ -7,8 +7,8 @@
 
 int Dat::DatLogger::Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name)
 {
-    data_file_.open(file_name, std::ios::binary);
-    if (data_file_.fail())
+    write_file_.open(file_name, std::ios::binary);
+    if (write_file_.fail())
     {
         LOG_ERROR("Cannot open file: {}", file_name);
         return -1;
@@ -237,13 +237,13 @@ int Dat::DatLogger::Write(PacketId p_id, const Data&... data)
 
 void Dat::DatLogger::WritePacket(PacketGeneric& packet)
 {
-    data_file_.write(reinterpret_cast<char*>(&packet.header), sizeof(PacketHeader));
-    data_file_.write(packet.data.data(), static_cast<std::streamsize>(packet.data.size()));
+    write_file_.write(reinterpret_cast<char*>(&packet.header), sizeof(PacketHeader));
+    write_file_.write(packet.data.data(), static_cast<std::streamsize>(packet.data.size()));
 }
 
-bool Dat::DatLogger::IsFileOpen() const
+bool Dat::DatLogger::IsWriteFileOpen() const
 {
-    return data_file_.is_open();
+    return write_file_.is_open();
 }
 
 void Dat::DatLogger::SetTimestampWritten(bool state)
