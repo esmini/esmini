@@ -17,24 +17,6 @@
 
 using namespace scenarioengine;
 
-template <typename... Data>
-int Replay::ReadPacket(const Dat::PacketHeader& header, Data&... data)
-{
-    Dat::PacketGeneric packet;
-    packet.header = header;
-    packet.data.resize(packet.header.data_size);
-    if (!file_.read(packet.data.data(), packet.header.data_size))
-    {
-        return -1;
-    }
-
-    const char* read_ptr = packet.data.data();
-
-    (..., (memcpy(&data, read_ptr, sizeof(data)), read_ptr += sizeof(data)));
-
-    return 0;
-}
-
 Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat_(false), clean_(clean)
 {
     file_.open(filename, std::ifstream::binary);
@@ -79,27 +61,15 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
                     break;
                 }
 
-                if (!file_.read(reinterpret_cast<char*>(&d_header.odr_filename.size), sizeof(d_header.odr_filename.size)))
+                if (ReadStringPacket(d_header.odr_filename.string) != 0)
                 {
-                    LOG_ERROR("Failed reading odr filename size.");
-                    break;
-                }
-                d_header.odr_filename.string.resize(d_header.odr_filename.size);
-                if (!file_.read(d_header.odr_filename.string.data(), d_header.odr_filename.size))
-                {
-                    LOG_ERROR("Failed reading odr filename string.");
+                    LOG_ERROR("Failed reading odr filename.");
                     break;
                 }
 
-                if (!file_.read(reinterpret_cast<char*>(&d_header.model_filename.size), sizeof(d_header.model_filename.size)))
+                if (ReadStringPacket(d_header.model_filename.string) != 0)
                 {
-                    LOG_ERROR("Failed reading odr model filename size.");
-                    break;
-                }
-                d_header.model_filename.string.resize(d_header.model_filename.size);
-                if (!file_.read(d_header.model_filename.string.data(), d_header.model_filename.size))
-                {
-                    LOG_ERROR("Failed reading odr model string.");
+                    LOG_ERROR("Failed reading model filename.");
                     break;
                 }
 
@@ -222,15 +192,8 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
             }
             case static_cast<id_t>(Dat::PacketId::NAME):
             {
-                unsigned int name_size;
-                if (!file_.read(reinterpret_cast<char*>(&name_size), sizeof(unsigned int)))
-                {
-                    LOG_ERROR("Failed reading object name size.");
-                    break;
-                }
-                state.name_.resize(name_size);
-                if (!file_.read(state.name_.data(), name_size))
-                    LOG_ERROR("Failed reading object name.");
+                if (ReadStringPacket(state.name_) != 0)
+                    LOG_ERROR("Failed reading name.");
                 LOG_INFO("Name: {}", state.name_);
                 break;
             }
@@ -811,4 +774,38 @@ void Replay::CreateMergedDatfile(const std::string filename) const
             data_file_.write(reinterpret_cast<const char*>(&data_[i].state), sizeof(data_[i].state));
         }
     }
+}
+
+template <typename... Data>
+int Replay::ReadPacket(const Dat::PacketHeader& header, Data&... data)
+{
+    Dat::PacketGeneric packet;
+    packet.header = header;
+    packet.data.resize(packet.header.data_size);
+    if (!file_.read(packet.data.data(), packet.header.data_size))
+    {
+        return -1;
+    }
+
+    const char* read_ptr = packet.data.data();
+
+    (..., (memcpy(&data, read_ptr, sizeof(data)), read_ptr += sizeof(data)));
+
+    return 0;
+}
+
+int Replay::ReadStringPacket(std::string& str)
+{
+    unsigned int size;
+    if (!file_.read(reinterpret_cast<char*>(&size), sizeof(size)))
+    {
+        return -1;
+    }
+    str.resize(size);
+    if (!file_.read(str.data(), size))
+    {
+        return -1;
+    }
+
+    return 0;
 }
