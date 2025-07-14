@@ -41,15 +41,16 @@ int Dat::DatLogger::WriteToDat(const scenarioengine::ObjectStateStruct& object_s
     // We want to write a state to datfile, so first we set the timestamp
     object_state_cache_.timestamp_ = object_state.info.timeStamp;
 
-    // PacketId::OBJ_ID
-    auto cache_it = object_state_cache_.state_.find(object_state.info.id);
+    // New object state, check if it exists in the cache, else we add it
+    current_object_id_ = object_state.info.id;
+    auto cache_it      = object_state_cache_.state_.find(current_object_id_);
     if (cache_it == object_state_cache_.state_.end())
     {
         // New object state, add it to the cache
         ObjState obj_state;
-        obj_state.obj_id_                                = object_state.info.id;
-        object_state_cache_.state_[object_state.info.id] = obj_state;
-        cache_it                                         = object_state_cache_.state_.find(object_state.info.id);
+        obj_state.obj_id_                              = current_object_id_;
+        object_state_cache_.state_[current_object_id_] = obj_state;
+        cache_it                                       = object_state_cache_.state_.find(current_object_id_);
     }
 
     // PacketId::SPEED
@@ -58,7 +59,6 @@ int Dat::DatLogger::WriteToDat(const scenarioengine::ObjectStateStruct& object_s
         cache_it->second.speed_ = object_state.info.speed;
         Write(PacketId::SPEED, cache_it->second.speed_);
     }
-
     // PacketId::POSE
     if (!IsPoseEqual(cache_it->second.pose_, object_state.pos))
     {
@@ -152,7 +152,6 @@ int Dat::DatLogger::WriteToDat(const scenarioengine::ObjectStateStruct& object_s
         cache_it->second.visibility_mask_ = object_state.info.visibilityMask;
         Write(PacketId::VISIBILITY_MASK, cache_it->second.visibility_mask_);
     }
-
     // PacketId::NAME
     if (std::strcmp(cache_it->second.name_.c_str(), object_state.info.name) != 0)
     {
@@ -161,7 +160,6 @@ int Dat::DatLogger::WriteToDat(const scenarioengine::ObjectStateStruct& object_s
         auto name_size = static_cast<unsigned int>(cache_it->second.name_.size());
         Write(PacketId::NAME, name_size, cache_it->second.name_);
     }
-
     // PacketId::ROAD_ID
     if (cache_it->second.road_id_ != object_state.pos.GetTrackId())
     {
@@ -203,10 +201,18 @@ int Dat::DatLogger::WriteToDat(const scenarioengine::ObjectStateStruct& object_s
 template <typename... Data>
 int Dat::DatLogger::Write(PacketId p_id, const Data&... data)
 {
+    // PacketId::OBJ_ID (we want to always writhe the object ID )
+    if (!object_id_written_ && p_id != PacketId::DAT_HEADER)
+    {
+        object_id_written_ = true;
+        Write(PacketId::OBJ_ID, current_object_id_);
+    }
+
     // Write Time packet, but only once
     if (!timestamp_written_ && p_id != PacketId::DAT_HEADER)
     {
-        WriteTimestamp();
+        timestamp_written_ = true;
+        Write(PacketId::TIMESTAMP, object_state_cache_.timestamp_);
     }
 
     size_t total_size = (SerializedSize(data) + ...);
@@ -235,28 +241,19 @@ void Dat::DatLogger::WritePacket(PacketGeneric& packet)
     data_file_.write(packet.data.data(), static_cast<std::streamsize>(packet.data.size()));
 }
 
-void Dat::DatLogger::WriteTimestamp()
-{
-    PacketGeneric packet;
-    packet.header.id        = static_cast<id_t>(PacketId::TIMESTAMP);
-    packet.header.data_size = static_cast<unsigned int>(sizeof(object_state_cache_.timestamp_));
-    packet.data.resize(packet.header.data_size);
-
-    char* write_ptr = packet.data.data();
-    WriteToBuffer(write_ptr, object_state_cache_.timestamp_);
-    WritePacket(packet);
-
-    timestamp_written_ = true;
-}
-
 bool Dat::DatLogger::IsFileOpen() const
 {
     return data_file_.is_open();
 }
 
-void Dat::DatLogger::SetTimestampWritten(bool written)
+void Dat::DatLogger::SetTimestampWritten(bool state)
 {
-    timestamp_written_ = written;
+    timestamp_written_ = state;
+}
+
+void Dat::DatLogger::SetObjectIdWritten(bool state)
+{
+    object_id_written_ = state;
 }
 
 bool Dat::DatLogger::IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const
