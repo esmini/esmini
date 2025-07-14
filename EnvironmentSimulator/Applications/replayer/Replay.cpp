@@ -145,6 +145,19 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
                 LOG_INFO("Pose is x: {}, y: {}, z: {}, h: {}, p: {}, r: {}", pose.x, pose.y, pose.z, pose.h, pose.p, pose.r);
                 break;
             }
+            case static_cast<id_t>(Dat::PacketId::MODEL_ID):
+            {
+                // Read model ID
+                int model_id;
+                int ret = ReadPacket(header, model_id);
+                if (ret != 0)
+                {
+                    LOG_ERROR("Failed reading model ID.");
+                    break;
+                }
+                LOG_INFO("Model ID is {}", model_id);
+                break;
+            }
             default:
             {
                 // Skip the data for this packet (unknown)
