@@ -52,28 +52,24 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
         {
             Dat::DatHeader d_header;
 
-            if (!file_.read(reinterpret_cast<char*>(&d_header.version_major), sizeof(d_header.version_major)) ||
-                !file_.read(reinterpret_cast<char*>(&d_header.version_minor), sizeof(d_header.version_minor)))
+            if (!file_.read(reinterpret_cast<char*>(&header_.version_major), sizeof(header_.version_major)) ||
+                !file_.read(reinterpret_cast<char*>(&header_.version_minor), sizeof(header_.version_minor)))
             {
                 LOG_ERROR("Failed reading header versions.");
                 break;
             }
 
-            if (ReadStringPacket(d_header.odr_filename.string) != 0)
+            if (ReadStringPacket(header_.odr_filename.string) != 0)
             {
                 LOG_ERROR("Failed reading odr filename.");
                 break;
             }
 
-            if (ReadStringPacket(d_header.model_filename.string) != 0)
+            if (ReadStringPacket(header_.model_filename.string) != 0)
             {
                 LOG_ERROR("Failed reading model filename.");
                 break;
             }
-
-            LOG_INFO("Version: {}.{}", d_header.version_major, d_header.version_minor);
-            LOG_INFO("ODR file: {}", d_header.odr_filename.string);
-            LOG_INFO("Model file: {}", d_header.model_filename.string);
 
             continue;
         }
@@ -312,18 +308,21 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
             throw std::invalid_argument(std::string("Cannot open file: ") + scenarios_[i]);
         }
         file_.read(reinterpret_cast<char*>(&header_), sizeof(header_));
-        LOG_INFO("Recording {} opened. dat version: {} odr: {} model: {}",
+        LOG_INFO("Recording {} opened. dat version: {}.{} odr: {} model: {}",
                  FileNameOf(scenarios_[i]),
-                 header_.version,
-                 FileNameOf(header_.odr_filename),
-                 FileNameOf(header_.model_filename));
+                 header_.version_major,
+                 header_.version_minor,
+                 FileNameOf(header_.odr_filename.string),
+                 FileNameOf(header_.model_filename.string));
 
-        if (header_.version != DAT_FILE_FORMAT_VERSION)
+        if (header_.version_major != DAT_FILE_FORMAT_VERSION_MAJOR || header_.version_minor != DAT_FILE_FORMAT_VERSION_MINOR)
         {
-            LOG_ERROR_AND_QUIT("Version mismatch. {} is version {} while supported version is {}. Please re-create dat file.",
+            LOG_ERROR_AND_QUIT("Version mismatch. {} is version {}.{} while supported version is {}.{}. Please re-create dat file.",
                                scenarios_[i],
-                               header_.version,
-                               DAT_FILE_FORMAT_VERSION);
+                               header_.version_major,
+                               header_.version_minor,
+                               DAT_FILE_FORMAT_VERSION_MAJOR,
+                               DAT_FILE_FORMAT_VERSION_MINOR);
         }
         while (!file_.eof())
         {
