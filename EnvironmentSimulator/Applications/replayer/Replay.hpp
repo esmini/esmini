@@ -29,7 +29,7 @@ namespace scenarioengine
     class Replay
     {
     public:
-        DatHeader                header_;
+        Dat::DatHeader           header_;
         std::vector<ReplayEntry> data_;
 
         Replay(std::string filename, bool clean);
