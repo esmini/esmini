@@ -14,6 +14,7 @@
 
 #include <string>
 #include <fstream>
+#include <variant>
 #include "CommonMini.hpp"
 #include "ScenarioGateway.hpp"
 
@@ -79,6 +80,15 @@ namespace scenarioengine
         void BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntry>>>& scenarios);
         void CreateMergedDatfile(const std::string filename) const;
 
+        /* Anything PacketHandler related, maybe move there later */
+        struct LoggedEvent
+        {
+            double                                                                          timestamp;
+            Dat::PacketId                                                                   packet_id;
+            int                                                                             obj_id;
+            std::variant<int, bool, double, std::string, id_t, Dat::Pose, Dat::BoundingBox> value;
+        };
+
         template <typename... Data>
         int ReadPacket(const Dat::PacketHeader& header, Data&... data);
 
@@ -96,6 +106,7 @@ namespace scenarioengine
         bool                     repeat_;
         bool                     clean_;
         std::string              create_datfile_;
+        std::vector<LoggedEvent> logged_events_;
 
         int FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
     };
