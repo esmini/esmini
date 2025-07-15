@@ -251,44 +251,45 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
             }
         }
 
-        logged_events_.push_back(event);
+        obj_events_map_[event.obj_id].push_back(event);
+        time_events_map_[event.timestamp].push_back(&obj_events_map_[event.obj_id].back());
     }
 
-    for (const auto& logged_event : logged_events_)
-    {
-        std::string value_str = std::visit(
-            [](auto&& val) -> std::string
-            {
-                using T = std::decay_t<decltype(val)>;
-                if constexpr (std::is_same_v<T, std::string>)
-                {
-                    return val;
-                }
-                else if constexpr (std::is_same_v<T, Dat::Pose>)
-                {
-                    return fmt::format("Pose({}, {}, {}, {}, {}, {})", val.x, val.y, val.z, val.h, val.p, val.r);
-                }
-                else if constexpr (std::is_same_v<T, Dat::BoundingBox>)
-                {
-                    return fmt::format("BoundingBox({}, {}, {}, {}, {}, {})", val.x, val.y, val.z, val.length, val.width, val.height);
-                }
-                else if constexpr (std::is_same_v<T, bool>)
-                {
-                    return val ? "true" : "false";
-                }
-                else
-                {
-                    return fmt::format("{}", val);
-                }
-            },
-            logged_event.value);
+    // for (const auto& logged_event : obj_events_map_[1])
+    // {
+    //     std::string value_str = std::visit(
+    //         [](auto&& val) -> std::string
+    //         {
+    //             using T = std::decay_t<decltype(val)>;
+    //             if constexpr (std::is_same_v<T, std::string>)
+    //             {
+    //                 return val;
+    //             }
+    //             else if constexpr (std::is_same_v<T, Dat::Pose>)
+    //             {
+    //                 return fmt::format("Pose({}, {}, {}, {}, {}, {})", val.x, val.y, val.z, val.h, val.p, val.r);
+    //             }
+    //             else if constexpr (std::is_same_v<T, Dat::BoundingBox>)
+    //             {
+    //                 return fmt::format("BoundingBox({}, {}, {}, {}, {}, {})", val.x, val.y, val.z, val.length, val.width, val.height);
+    //             }
+    //             else if constexpr (std::is_same_v<T, bool>)
+    //             {
+    //                 return val ? "true" : "false";
+    //             }
+    //             else
+    //             {
+    //                 return fmt::format("{}", val);
+    //             }
+    //         },
+    //         logged_event.value);
 
-        LOG_INFO("Logged Event: Timestamp: {}, Packet ID: {}, Object ID: {}, Value: {}",
-                 logged_event.timestamp,
-                 static_cast<int>(logged_event.packet_id),
-                 logged_event.obj_id,
-                 value_str);
-    }
+    //     LOG_INFO("Logged Event: Timestamp: {}, Packet ID: {}, Object ID: {}, Value: {}",
+    //              logged_event.timestamp,
+    //              static_cast<int>(logged_event.packet_id),
+    //              logged_event.obj_id,
+    //              value_str);
+    // }
 
     file_.close();
 }
