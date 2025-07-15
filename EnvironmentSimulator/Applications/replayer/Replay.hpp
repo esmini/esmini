@@ -106,7 +106,11 @@ namespace scenarioengine
         bool                     repeat_;
         bool                     clean_;
         std::string              create_datfile_;
-        std::vector<LoggedEvent> logged_events_;
+
+        /* PacketHandler stuff */
+        std::unordered_map<int, std::vector<LoggedEvent>> obj_events_map_;
+        std::map<double, std::vector<const LoggedEvent*>> time_events_map_;
+        std::unordered_map<int, ReplayEntry>              object_state_cache_;
 
         int FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
     };
