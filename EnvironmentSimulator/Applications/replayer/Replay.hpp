@@ -95,6 +95,8 @@ namespace scenarioengine
 
         int ReadStringPacket(std::string& str);
 
+        void BuildDataFromPackets();
+
     private:
         std::ifstream            file_;
         std::vector<std::string> scenarios_;
