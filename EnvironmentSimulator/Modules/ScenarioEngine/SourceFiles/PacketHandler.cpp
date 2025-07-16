@@ -5,6 +5,16 @@
 #include "CommonMini.cpp"
 #include "PacketHandler.hpp"
 
+Dat::DatLogger::~DatLogger()
+{
+    if (IsWriteFileOpen())
+    {
+        Write(PacketId::END_OF_SCENARIO, object_state_cache_.timestamp_);
+        write_file_.flush();
+        write_file_.close();
+    }
+}
+
 int Dat::DatLogger::Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name)
 {
     write_file_.open(file_name, std::ios::binary);
@@ -227,7 +237,7 @@ int Dat::DatLogger::Write(PacketId p_id, const Data&... data)
     (WriteToBuffer(write_ptr, data), ...);
 
     // Write to file
-    if (p_id != PacketId::OBJ_ADDED && p_id != PacketId::OBJ_DELETED && p_id != PacketId::END_OF_SCENARIO)
+    if (p_id != PacketId::OBJ_ADDED && p_id != PacketId::OBJ_DELETED)
     {
         WritePacket(packet);
     }

@@ -249,6 +249,13 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
                 replay_entry.state.pos.s = static_cast<float>(s);
                 break;
             }
+            case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
+            {
+                if (ReadPacket(header, stopTime_) != 0)
+                    LOG_ERROR("Failed reading end of scenario timestamp.");
+                LOG_INFO("End of scenario reached at timestamp: {}", stopTime_);
+                break;
+            }
             default:
             {
                 LOG_ERROR("Unknown packet id: {}", header.id);
@@ -268,14 +275,14 @@ void Replay::BuildDataFromPackets()
 {
     object_state_cache_.clear();
 
-    double dt = 0.01;
+    double dt  = 0.01;
+    stopIndex_ = static_cast<unsigned int>(stopTime_ / dt);
 
+    // Find start time, maybe its earlier than 0.0s
     for (const auto& [id, entry] : obj_events_map_)
     {
         startTime_  = static_cast<double>(std::min(static_cast<float>(startTime_), entry.front().state.info.timeStamp));
-        stopTime_   = static_cast<double>(std::max(static_cast<float>(stopTime_), entry.back().state.info.timeStamp));
         startIndex_ = 0;
-        stopIndex_  = static_cast<unsigned int>(stopTime_ / dt);
     }
 
     for (double t = startTime_; t <= stopTime_; t += dt)

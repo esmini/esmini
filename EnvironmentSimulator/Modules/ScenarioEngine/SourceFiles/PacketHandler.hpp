@@ -133,8 +133,8 @@ namespace Dat
         template <typename... Data>
         int ReadPacket(const Dat::PacketHeader& header, Data&... data);
 
-        DatLogger()  = default;
-        ~DatLogger() = default;
+        DatLogger() = default;
+        ~DatLogger();
 
         int Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name);
 
