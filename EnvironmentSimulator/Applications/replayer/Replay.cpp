@@ -67,10 +67,11 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
                     break;
                 }
 
-                continue;
+                break;
             }
             case static_cast<id_t>(Dat::PacketId::TIMESTAMP):
             {
+                replay_entry.odometer = 0.0;
                 if (ReadPacket(header, timestamp_) != 0)
                     LOG_ERROR("Failed reading speed data.");
                 /* We set the timestamp when OBJ_ID packet is read, since we always transmit in the following order:
@@ -258,6 +259,53 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
     }
 
     file_.close();
+
+    // Add entries to data_ vector
+    BuildDataFromPackets();
+}
+
+void Replay::BuildDataFromPackets()
+{
+    object_state_cache_.clear();
+
+    double dt = 0.01;
+
+    for (const auto& [id, entry] : obj_events_map_)
+    {
+        startTime_  = static_cast<double>(std::min(static_cast<float>(startTime_), entry.front().state.info.timeStamp));
+        stopTime_   = static_cast<double>(std::max(static_cast<float>(stopTime_), entry.back().state.info.timeStamp));
+        startIndex_ = 0;
+        stopIndex_  = static_cast<unsigned int>(stopTime_ / dt);
+    }
+
+    for (double t = startTime_; t <= stopTime_; t += dt)
+    {
+        for (const int obj_id : object_ids_)
+        {
+            const auto& events = obj_events_map_[obj_id];
+
+            auto& last_state = object_state_cache_[obj_id];
+
+            if (!events.empty())
+            {
+                for (const auto& event : events)
+                {
+                    if (static_cast<double>(event.state.info.timeStamp) <= t)
+                    {
+                        last_state = event;  // Update the last state to the most recent event before or at time t
+                    }
+                    else
+                    {
+                        break;  // No need to check further, as events are sorted by timestamp
+                    }
+                }
+            }
+
+            ReplayEntry entry          = last_state;
+            entry.state.info.timeStamp = static_cast<float>(t);
+            data_.push_back(entry);
+        }
+    }
 }
 
 Replay::Replay(const std::string directory, const std::string scenario, std::string create_datfile)
