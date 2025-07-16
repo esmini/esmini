@@ -32,7 +32,7 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
     const auto file_size = file_.tellg();
     file_.seekg(0, std::ios::beg);
 
-    LoggedEvent event;
+    ReplayEntry replay_entry;
     while (file_.tellg() < file_size)
     {
         Dat::PacketHeader header;
@@ -42,57 +42,76 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
             break;
         }
 
-        if (header.id > static_cast<int>(Dat::PacketId::END_OF_SCENARIO))
-        {
-            LOG_ERROR("Unknown packet id: {}", header.id);
-            break;
-        }
-
-        if (header.id == static_cast<int>(Dat::PacketId::DAT_HEADER))
-        {
-            Dat::DatHeader d_header;
-
-            if (!file_.read(reinterpret_cast<char*>(&header_.version_major), sizeof(header_.version_major)) ||
-                !file_.read(reinterpret_cast<char*>(&header_.version_minor), sizeof(header_.version_minor)))
-            {
-                LOG_ERROR("Failed reading header versions.");
-                break;
-            }
-
-            if (ReadStringPacket(header_.odr_filename.string) != 0)
-            {
-                LOG_ERROR("Failed reading odr filename.");
-                break;
-            }
-
-            if (ReadStringPacket(header_.model_filename.string) != 0)
-            {
-                LOG_ERROR("Failed reading model filename.");
-                break;
-            }
-
-            continue;
-        }
-
-        event.packet_id = static_cast<Dat::PacketId>(header.id);
         switch (header.id)
         {
+            case static_cast<int>(Dat::PacketId::DAT_HEADER):
+            {
+                Dat::DatHeader d_header;
+
+                if (!file_.read(reinterpret_cast<char*>(&header_.version_major), sizeof(header_.version_major)) ||
+                    !file_.read(reinterpret_cast<char*>(&header_.version_minor), sizeof(header_.version_minor)))
+                {
+                    LOG_ERROR("Failed reading header versions.");
+                    break;
+                }
+
+                if (ReadStringPacket(header_.odr_filename.string) != 0)
+                {
+                    LOG_ERROR("Failed reading odr filename.");
+                    break;
+                }
+
+                if (ReadStringPacket(header_.model_filename.string) != 0)
+                {
+                    LOG_ERROR("Failed reading model filename.");
+                    break;
+                }
+
+                continue;
+            }
             case static_cast<id_t>(Dat::PacketId::TIMESTAMP):
             {
-                double timestamp;
-                if (ReadPacket(header, timestamp) != 0)
+                if (ReadPacket(header, timestamp_) != 0)
                     LOG_ERROR("Failed reading speed data.");
-                event.timestamp = timestamp;
-                event.value     = timestamp;
+                /* We set the timestamp when OBJ_ID packet is read, since we always transmit in the following order:
+                 - time
+                 - obj_id_1
+                 - data...
+                 - obj_id_2
+                 - data_2
+                 - time
+                 - etc.
+                */
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_ID):
             {
+                if (object_ids_.count(replay_entry.state.info.id) != 0)  // Have we processed this object before?
+                {
+                    // Yes we have, so we add the replay entry and store it as cache before reading a new ID and updating all its data.
+                    // This works because of the flow described in PacketId::TIMESTAMP
+                    obj_events_map_[replay_entry.state.info.id].push_back(replay_entry);
+                    object_state_cache_[replay_entry.state.info.id] = replay_entry;
+                }
+
+                // Get the new object ID
                 int id;
                 if (ReadPacket(header, id) != 0)
                     LOG_ERROR("Failed reading object ID.");
-                event.obj_id = id;
-                event.value  = id;
+
+                if (object_state_cache_.count(id) != 0)
+                {
+                    // If the object already exists in the cache, fetch latest known state
+                    replay_entry = object_state_cache_[id];
+                }
+
+                // We set the latest timestamp which is already fetched
+                replay_entry.state.info.timeStamp = static_cast<float>(timestamp_);
+                replay_entry.state.info.id        = id;  // Could be done earlier I guess, but we do it here for clarity
+
+                object_ids_.insert(replay_entry.state.info.id);  // Add the object ID to the set
+
+                // Proceed with reading the rest of the packet data
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::SPEED):
@@ -100,7 +119,7 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
                 double speed;
                 if (ReadPacket(header, speed) != 0)
                     LOG_ERROR("Failed reading speed data.");
-                event.value = speed;
+                replay_entry.state.info.speed = static_cast<float>(speed);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POSE):
@@ -108,39 +127,37 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
                 Dat::Pose pose;
                 if (ReadPacket(header, pose.x, pose.y, pose.z, pose.h, pose.p, pose.r) != 0)
                     LOG_ERROR("Failed reading pose data.");
-                event.value = pose;
+
+                replay_entry.state.pos.x = static_cast<float>(pose.x);
+                replay_entry.state.pos.y = static_cast<float>(pose.y);
+                replay_entry.state.pos.z = static_cast<float>(pose.z);
+                replay_entry.state.pos.h = static_cast<float>(pose.h);
+                replay_entry.state.pos.p = static_cast<float>(pose.p);
+                replay_entry.state.pos.r = static_cast<float>(pose.r);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::MODEL_ID):
             {
-                int model_id;
-                if (ReadPacket(header, model_id) != 0)
+                if (ReadPacket(header, replay_entry.state.info.model_id) != 0)
                     LOG_ERROR("Failed reading model ID.");
-                event.value = model_id;
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_TYPE):
             {
-                int obj_type;
-                if (ReadPacket(header, obj_type) != 0)
+                if (ReadPacket(header, replay_entry.state.info.obj_type) != 0)
                     LOG_ERROR("Failed reading object type.");
-                event.value = obj_type;
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_CATEGORY):
             {
-                int obj_category;
-                if (ReadPacket(header, obj_category) != 0)
+                if (ReadPacket(header, replay_entry.state.info.obj_category) != 0)
                     LOG_ERROR("Failed reading object category.");
-                event.value = obj_category;
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::CTRL_TYPE):
             {
-                int ctrl_type;
-                if (ReadPacket(header, ctrl_type) != 0)
+                if (ReadPacket(header, replay_entry.state.info.ctrl_type) != 0)
                     LOG_ERROR("Failed reading controller type.");
-                event.value = ctrl_type;
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::WHEEL_ANGLE):
@@ -148,7 +165,7 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
                 double wheel_angle;
                 if (ReadPacket(header, wheel_angle) != 0)
                     LOG_ERROR("Failed reading wheel angle.");
-                event.value = wheel_angle;
+                replay_entry.state.info.wheel_angle = static_cast<float>(wheel_angle);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::WHEEL_ROT):
@@ -156,39 +173,34 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
                 double wheel_rot;
                 if (ReadPacket(header, wheel_rot) != 0)
                     LOG_ERROR("Failed reading wheel rotation.");
-                event.value = wheel_rot;
+                replay_entry.state.info.wheel_rot = static_cast<float>(wheel_rot);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::BOUNDING_BOX):
             {
-                Dat::BoundingBox bounding_box;
-                if (ReadPacket(header,
-                               bounding_box.x,
-                               bounding_box.y,
-                               bounding_box.z,
-                               bounding_box.length,
-                               bounding_box.width,
-                               bounding_box.height) != 0)
+                Dat::BoundingBox boundingbox;
+                if (ReadPacket(header, boundingbox.x, boundingbox.y, boundingbox.z, boundingbox.length, boundingbox.width, boundingbox.height) != 0)
                 {
                     LOG_ERROR("Failed reading bounding box data.");
                 }
-                event.value = bounding_box;
+                replay_entry.state.info.boundingbox.center_.x_          = static_cast<float>(boundingbox.x);
+                replay_entry.state.info.boundingbox.center_.y_          = static_cast<float>(boundingbox.y);
+                replay_entry.state.info.boundingbox.center_.z_          = static_cast<float>(boundingbox.z);
+                replay_entry.state.info.boundingbox.dimensions_.length_ = static_cast<float>(boundingbox.length);
+                replay_entry.state.info.boundingbox.dimensions_.width_  = static_cast<float>(boundingbox.width);
+                replay_entry.state.info.boundingbox.dimensions_.height_ = static_cast<float>(boundingbox.height);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::SCALE_MODE):
             {
-                int scale_mode;
-                if (ReadPacket(header, scale_mode) != 0)
+                if (ReadPacket(header, replay_entry.state.info.scaleMode) != 0)
                     LOG_ERROR("Failed reading scale mode.");
-                event.value = scale_mode;
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::VISIBILITY_MASK):
             {
-                int visibility_mask;
-                if (ReadPacket(header, visibility_mask) != 0)
+                if (ReadPacket(header, replay_entry.state.info.visibilityMask) != 0)
                     LOG_ERROR("Failed reading visibility mask.");
-                event.value = visibility_mask;
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::NAME):
@@ -196,96 +208,54 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
                 std::string name;
                 if (ReadStringPacket(name) != 0)
                     LOG_ERROR("Failed reading name.");
-                event.value = name;
+                id_to_name_[replay_entry.state.info.id] = std::move(name);  // Tranfer ownership to the map, ensuring the name is retained
+                replay_entry.state.info.name            = id_to_name_[replay_entry.state.info.id].c_str();
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::ROAD_ID):
             {
-                id_t road_id;
-                if (ReadPacket(header, road_id) != 0)
+                if (ReadPacket(header, replay_entry.state.pos.roadId) != 0)
                     LOG_ERROR("Failed reading road ID.");
-                event.value = road_id;
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::LANE_ID):
             {
-                int lane_id;
-                if (ReadPacket(header, lane_id) != 0)
+                if (ReadPacket(header, replay_entry.state.pos.laneId) != 0)
                     LOG_ERROR("Failed reading lane ID.");
-                event.value = lane_id;
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POS_OFFSET):
             {
-                double pos_offset;
-                if (ReadPacket(header, pos_offset) != 0)
+                double offset;
+                if (ReadPacket(header, offset) != 0)
                     LOG_ERROR("Failed reading position offset.");
-                event.value = pos_offset;
+                replay_entry.state.pos.offset = static_cast<float>(offset);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POS_T):
             {
-                double pos_t;
-                if (ReadPacket(header, pos_t) != 0)
+                double t;
+                if (ReadPacket(header, t) != 0)
                     LOG_ERROR("Failed reading position T.");
-                event.value = pos_t;
+                replay_entry.state.pos.t = static_cast<float>(t);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POS_S):
             {
-                double pos_s;
-                if (ReadPacket(header, pos_s) != 0)
+                double s;
+                if (ReadPacket(header, s) != 0)
                     LOG_ERROR("Failed reading position S.");
-                event.value = pos_s;
+                replay_entry.state.pos.s = static_cast<float>(s);
                 break;
             }
             default:
             {
-                // Skip the data for this packet (unknown)
+                LOG_ERROR("Unknown packet id: {}", header.id);
                 file_.seekg(header.data_size, std::ios::cur);
                 break;
             }
         }
-
-        obj_events_map_[event.obj_id].push_back(event);
-        time_events_map_[event.timestamp].push_back(&obj_events_map_[event.obj_id].back());
     }
-
-    // for (const auto& logged_event : obj_events_map_[1])
-    // {
-    //     std::string value_str = std::visit(
-    //         [](auto&& val) -> std::string
-    //         {
-    //             using T = std::decay_t<decltype(val)>;
-    //             if constexpr (std::is_same_v<T, std::string>)
-    //             {
-    //                 return val;
-    //             }
-    //             else if constexpr (std::is_same_v<T, Dat::Pose>)
-    //             {
-    //                 return fmt::format("Pose({}, {}, {}, {}, {}, {})", val.x, val.y, val.z, val.h, val.p, val.r);
-    //             }
-    //             else if constexpr (std::is_same_v<T, Dat::BoundingBox>)
-    //             {
-    //                 return fmt::format("BoundingBox({}, {}, {}, {}, {}, {})", val.x, val.y, val.z, val.length, val.width, val.height);
-    //             }
-    //             else if constexpr (std::is_same_v<T, bool>)
-    //             {
-    //                 return val ? "true" : "false";
-    //             }
-    //             else
-    //             {
-    //                 return fmt::format("{}", val);
-    //             }
-    //         },
-    //         logged_event.value);
-
-    //     LOG_INFO("Logged Event: Timestamp: {}, Packet ID: {}, Object ID: {}, Value: {}",
-    //              logged_event.timestamp,
-    //              static_cast<int>(logged_event.packet_id),
-    //              logged_event.obj_id,
-    //              value_str);
-    // }
 
     file_.close();
 }

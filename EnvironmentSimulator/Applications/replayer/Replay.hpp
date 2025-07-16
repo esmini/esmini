@@ -15,6 +15,7 @@
 #include <string>
 #include <fstream>
 #include <variant>
+#include <set>
 #include "CommonMini.hpp"
 #include "ScenarioGateway.hpp"
 
@@ -108,9 +109,11 @@ namespace scenarioengine
         std::string              create_datfile_;
 
         /* PacketHandler stuff */
-        std::unordered_map<int, std::vector<LoggedEvent>> obj_events_map_;
-        std::map<double, std::vector<const LoggedEvent*>> time_events_map_;
+        std::unordered_map<int, std::vector<ReplayEntry>> obj_events_map_;
         std::unordered_map<int, ReplayEntry>              object_state_cache_;
+        std::set<int>                                     object_ids_;  // Keep track of object IDs
+        std::unordered_map<int, std::string>              id_to_name_;  // Keep track of object IDs
+        double                                            timestamp_ = 0.0;
 
         int FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
     };
