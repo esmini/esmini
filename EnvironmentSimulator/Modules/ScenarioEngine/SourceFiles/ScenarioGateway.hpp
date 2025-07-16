@@ -60,7 +60,7 @@ namespace scenarioengine
         int            obj_category;  // sub type for vehicle, pedestrian and miscobj
         int            ctrl_type;     // See Controller::Type enum
         float          timeStamp;
-        char           name[NAME_LEN];
+        const char    *name;
         float          speed;
         float          wheel_angle;  // Only used for vehicle
         float          wheel_rot;    // Only used for vehicle
