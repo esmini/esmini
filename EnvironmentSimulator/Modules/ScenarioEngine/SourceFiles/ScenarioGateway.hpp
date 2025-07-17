@@ -68,6 +68,7 @@ namespace scenarioengine
         OSCBoundingBox boundingbox;
         int            scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
         int            visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        bool           active;
     };
 
     struct ObjectPositionStructDat
