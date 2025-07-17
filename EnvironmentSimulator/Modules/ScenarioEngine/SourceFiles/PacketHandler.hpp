@@ -4,7 +4,7 @@
 
 namespace scenarioengine
 {
-    struct ObjectStateStruct;
+    struct ObjectState;
 }
 
 namespace Dat
@@ -118,7 +118,7 @@ namespace Dat
         template <typename... Data>
         int  Write(PacketId p_id, const Data&... data);
         void WritePacket(PacketGeneric& packet);
-        int  WriteToDat(const scenarioengine::ObjectStateStruct& object_state);
+        int  WriteToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states);
 
         size_t SerializedSize(const std::string& str);
 
@@ -145,11 +145,12 @@ namespace Dat
         bool IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const;
 
     private:
-        std::ofstream    write_file_;
-        ObjectStateCache object_state_cache_;
-        int              current_object_id_ = -1;  // Current object ID being processed
-        bool             timestamp_written_ = false;
-        bool             object_id_written_ = false;
+        std::ofstream           write_file_;
+        ObjectStateCache        object_state_cache_;
+        int                     current_object_id_ = -1;  // Current object ID being processed
+        bool                    timestamp_written_ = false;
+        bool                    object_id_written_ = false;
+        std::unordered_set<int> previous_ids_;  // Keep track of object IDs
     };
 
 }  // namespace Dat
