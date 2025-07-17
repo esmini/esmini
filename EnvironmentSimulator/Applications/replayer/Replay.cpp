@@ -252,7 +252,6 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_DELETED):
             {
-                LOG_INFO("Object {} deleted at timestamp: {}", replay_entry.state.info.id, timestamp_);
                 replay_entry.state.info.active = false;
                 break;
             }
@@ -260,7 +259,6 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
             {
                 if (ReadPacket(header, stopTime_) != 0)
                     LOG_ERROR("Failed reading end of scenario timestamp.");
-                LOG_INFO("End of scenario reached at timestamp: {}", stopTime_);
                 break;
             }
             default:
