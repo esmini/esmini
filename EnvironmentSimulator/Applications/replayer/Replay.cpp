@@ -108,6 +108,7 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
 
                 // We set the latest timestamp which is already fetched
                 replay_entry.state.info.timeStamp = static_cast<float>(timestamp_);
+                replay_entry.state.info.active    = true;
                 replay_entry.state.info.id        = id;  // Could be done earlier I guess, but we do it here for clarity
 
                 object_ids_.insert(replay_entry.state.info.id);  // Add the object ID to the set
@@ -316,7 +317,10 @@ void Replay::BuildDataFromPackets()
 
             ReplayEntry entry          = last_state;
             entry.state.info.timeStamp = static_cast<float>(t);
-            data_.push_back(entry);
+            if (entry.state.info.active)
+            {
+                data_.push_back(entry);
+            }
         }
     }
 }
