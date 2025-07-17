@@ -7,6 +7,7 @@
 
 Dat::DatLogger::~DatLogger()
 {
+    // Seems GateWay which owns DatLogger is destroyed before the scenario ends...
     if (IsWriteFileOpen())
     {
         Write(PacketId::END_OF_SCENARIO, object_state_cache_.timestamp_);
@@ -239,7 +240,12 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
 
 template <typename... Data>
 int Dat::DatLogger::Write(PacketId p_id, const Data&... data)
-{
+{ /*
+     Some recursion below, we'll try to write OBJ_ID, at which point we'll call this function again.
+     Once inside the second call we'll try to Write timestamp and call function again.
+     In the end, TIMESTAMP is written, then OBJ_ID, then data
+  */
+
     // PacketId::OBJ_ID (we want to always write the object ID )
     if (!object_id_written_ && p_id != PacketId::DAT_HEADER && p_id != PacketId::END_OF_SCENARIO)
     {
