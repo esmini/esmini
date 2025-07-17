@@ -249,6 +249,12 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
                 replay_entry.state.pos.s = static_cast<float>(s);
                 break;
             }
+            case static_cast<id_t>(Dat::PacketId::OBJ_DELETED):
+            {
+                LOG_INFO("Object {} deleted at timestamp: {}", replay_entry.state.info.id, timestamp_);
+                replay_entry.state.info.active = false;
+                break;
+            }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
             {
                 if (ReadPacket(header, stopTime_) != 0)
