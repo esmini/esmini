@@ -290,21 +290,27 @@ void Replay::BuildDataFromPackets()
         startIndex_ = 0;
     }
 
+    for (const auto& id : object_ids_)
+    {
+        id_to_search_idx_[id] = 0;  // Initialize search index for each object ID
+    }
+
     for (double t = startTime_; t <= stopTime_; t += dt)
     {
         for (const int obj_id : object_ids_)
         {
             const auto& events = obj_events_map_[obj_id];
 
-            auto& last_state = object_state_cache_[obj_id];
+            auto& last_state = object_state_cache_[obj_id];  // Its ok to be empty, all values will be filled first time object appears
 
             if (!events.empty())
             {
-                for (const auto& event : events)
+                for (size_t i = id_to_search_idx_[obj_id]; i < events.size(); i++)
                 {
-                    if (static_cast<double>(event.state.info.timeStamp) <= t)
+                    if (static_cast<double>(events[i].state.info.timeStamp) <= t + SMALL_NUMBER)
                     {
-                        last_state = event;  // Update the last state to the most recent event before or at time t
+                        last_state                = events[i];  // Update the last state to the most recent event before or at time t
+                        id_to_search_idx_[obj_id] = i;          // Store the index of the last event for this object
                     }
                     else
                     {
