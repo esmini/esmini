@@ -280,8 +280,7 @@ void Replay::BuildDataFromPackets()
 {
     object_state_cache_.clear();
 
-    double dt  = 0.01;
-    stopIndex_ = static_cast<unsigned int>(stopTime_ / dt);
+    double dt = 0.01;
 
     // Find start time, maybe its earlier than 0.0s
     for (const auto& [id, entry] : obj_events_map_)
@@ -327,6 +326,8 @@ void Replay::BuildDataFromPackets()
             }
         }
     }
+
+    stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stopTime_));  // Needs data_ to be filled before this can be called
 }
 
 Replay::Replay(const std::string directory, const std::string scenario, std::string create_datfile)
