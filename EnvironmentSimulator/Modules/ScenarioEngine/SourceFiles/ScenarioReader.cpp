@@ -1851,11 +1851,23 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     else if (positionChildName == "RoadPosition")
     {
         std::string road_id_str = parameters.ReadAttribute(positionChild, "roadId");
-        id_t        road_id     = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(parameters.ReadAttribute(positionChild, "roadId"));
+
+        id_t road_id;
+        try
+        {
+            road_id = static_cast<id_t>(std::stoi(road_id_str));
+        }
+        catch (const std::exception &e)
+        {
+            (void)e;  // Suppress unused variable warning
+            road_id = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(road_id_str);
+        }
+
         if (road_id == ID_UNDEFINED)
         {
             LOG_ERROR_AND_QUIT("Failed to resolve road id {}", road_id_str);
         }
+
         double s = strtod(parameters.ReadAttribute(positionChild, "s"));
         double t = strtod(parameters.ReadAttribute(positionChild, "t"));
 
@@ -1879,11 +1891,23 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     else if (positionChildName == "LanePosition")
     {
         std::string road_id_str = parameters.ReadAttribute(positionChild, "roadId");
-        id_t        road_id     = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(parameters.ReadAttribute(positionChild, "roadId"));
+
+        id_t road_id;
+        try
+        {
+            road_id = static_cast<id_t>(std::stoi(road_id_str));
+        }
+        catch (const std::exception &e)
+        {
+            (void)e;  // Suppress unused variable warning
+            road_id = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(road_id_str);
+        }
+
         if (road_id == ID_UNDEFINED)
         {
             LOG_ERROR_AND_QUIT("Failed to resolve road id {}", road_id_str);
         }
+
         int    lane_id = strtoi(parameters.ReadAttribute(positionChild, "laneId"));
         double s       = strtod(parameters.ReadAttribute(positionChild, "s"));
 
