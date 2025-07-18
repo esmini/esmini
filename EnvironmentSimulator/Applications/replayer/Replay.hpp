@@ -95,6 +95,9 @@ namespace scenarioengine
 
         int ReadStringPacket(std::string& str);
 
+        int ParsePackets(const std::string& filename);
+        int FillHeader();
+
         void BuildDataFromPackets();
 
     private:
