@@ -115,6 +115,10 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
     vehicle_pool_.Initialize(scenario_engine_->GetScenarioReader(), &categories, false);
 
     libsumo::Simulation::load(options);
+    if (!libsumo::Simulation::isLoaded())
+    {
+        LOG_ERROR_AND_QUIT("Failed to load SUMO simulation");
+    }
 }
 
 ControllerSumo::~ControllerSumo()
@@ -133,7 +137,7 @@ void ControllerSumo::Step(double timeStep)
     // stepping function for sumo, adds/removes vehicles (based on sumo),
     // updates all positions of vehicles in the simulation that are controlled by sumo
     // do sumo timestep
-    time_ += timeStep;
+    time_ = scenario_engine_->getSimulationTime();
     libsumo::Simulation::step(time_);
 
     // check if any new cars has been added by sumo and add them to entities
@@ -277,8 +281,6 @@ void ControllerSumo::Step(double timeStep)
                 // Report updated state to the gateway
                 gateway_->updateObjectPos(obj->id_, scenario_engine_->getSimulationTime(), &obj->pos_);
                 gateway_->updateObjectSpeed(obj->id_, scenario_engine_->getSimulationTime(), obj->GetSpeed());
-                gateway_->updateObjectWheelAngle(obj->id_, scenario_engine_->getSimulationTime(), obj->wheel_angle_);
-                gateway_->updateObjectWheelRotation(obj->id_, scenario_engine_->getSimulationTime(), obj->wheel_rot_);
 
                 if (obj->GetDirtyBitMask() & Object::DirtyBit::BOUNDING_BOX)
                 {
