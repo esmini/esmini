@@ -34,10 +34,71 @@ Replay::Replay(std::string filename, bool clean, double fixed_timestep)
 
     // Add entries to data_ vector
     BuildDataFromPackets();
+
+    stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stopTime_));  // Needs data_ to be filled before this can be called
+
+    if (clean)
+    {
+        CleanEntries(data_);
+    }
+}
+
+Replay::Replay(const std::string directory, const std::string scenario, std::string create_datfile)
+    : time_(0.0),
+      index_(0),
+      repeat_(false),
+      create_datfile_(create_datfile)
+{
+    GetReplaysFromDirectory(directory, scenario);
+    std::vector<std::pair<std::string, std::vector<ReplayEntry>>> scenarioData;
+
+    if (scenarios_.size() < 2)
+    {
+        LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
+    }
+
+    double stop_time = 0.0;
+    for (size_t i = 0; i < scenarios_.size(); i++)
+    {
+        ParsePackets(scenarios_[i]);
+        BuildDataFromPackets();
+        scenarioData.emplace_back(scenarios_[i], data_);
+        stop_time = std::max(stop_time, stopTime_);
+    }
+
+    stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stop_time));  // Needs data_ to be filled before this can be called
+
+    // Scenario with smallest start time first
+    std::sort(scenarioData.begin(),
+              scenarioData.end(),
+              [](const auto& sce1, const auto& sce2) { return sce1.second[0].state.info.timeStamp < sce2.second[0].state.info.timeStamp; });
+
+    // Log which scenario belongs to what ID-group (0, 100, 200 etc.)
+    for (size_t i = 0; i < scenarioData.size(); i++)
+    {
+        std::string scenario_tmp = scenarioData[i].first;
+        LOG_INFO("Scenarios corresponding to IDs ({}:{}): {}", i * 100, (i + 1) * 100 - 1, FileNameOf(scenario_tmp));
+    }
+
+    // Ensure increasing timestamps. Remove any other entries.
+    for (auto& sce : scenarioData)
+    {
+        CleanEntries(sce.second);
+    }
+
+    // Build remaining data in order.
+    BuildData(scenarioData);
+
+    if (!create_datfile_.empty())
+    {
+        CreateMergedDatfile(create_datfile_);
+    }
 }
 
 int Replay::ParsePackets(const std::string& filename)
 {
+    ClearData();
+
     file_.open(filename, std::ifstream::binary);
     if (file_.fail())
     {
@@ -361,6 +422,7 @@ void Replay::BuildDataFromPackets()
     for (const auto& [id, entry] : obj_events_map_)
     {
         startTime_  = static_cast<double>(std::min(static_cast<float>(startTime_), entry.front().state.info.timeStamp));
+        time_       = startTime_;
         startIndex_ = 0;
     }
 
@@ -401,8 +463,6 @@ void Replay::BuildDataFromPackets()
             }
         }
     }
-
-    stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stopTime_));  // Needs data_ to be filled before this can be called
 }
 
 int Replay::FillHeader()
@@ -429,101 +489,6 @@ int Replay::FillHeader()
     }
 
     return 0;
-}
-
-Replay::Replay(const std::string directory, const std::string scenario, std::string create_datfile)
-    : time_(0.0),
-      index_(0),
-      repeat_(false),
-      create_datfile_(create_datfile)
-{
-    GetReplaysFromDirectory(directory, scenario);
-    std::vector<std::pair<std::string, std::vector<ReplayEntry>>> scenarioData;
-
-    for (size_t i = 0; i < scenarios_.size(); i++)
-    {
-        file_.open(scenarios_[i], std::ofstream::binary);
-        if (file_.fail())
-        {
-            LOG_ERROR("Cannot open file: {}", scenarios_[i]);
-            throw std::invalid_argument(std::string("Cannot open file: ") + scenarios_[i]);
-        }
-        file_.read(reinterpret_cast<char*>(&header_), sizeof(header_));
-        LOG_INFO("Recording {} opened. dat version: {}.{} odr: {} model: {}",
-                 FileNameOf(scenarios_[i]),
-                 header_.version_major,
-                 header_.version_minor,
-                 FileNameOf(header_.odr_filename.string),
-                 FileNameOf(header_.model_filename.string));
-
-        if (header_.version_major != DAT_FILE_FORMAT_VERSION_MAJOR || header_.version_minor != DAT_FILE_FORMAT_VERSION_MINOR)
-        {
-            LOG_ERROR_AND_QUIT("Version mismatch. {} is version {}.{} while supported version is {}.{}. Please re-create dat file.",
-                               scenarios_[i],
-                               header_.version_major,
-                               header_.version_minor,
-                               DAT_FILE_FORMAT_VERSION_MAJOR,
-                               DAT_FILE_FORMAT_VERSION_MINOR);
-        }
-        while (!file_.eof())
-        {
-            ReplayEntry entry;
-            entry.odometer = 0.0;
-            file_.read(reinterpret_cast<char*>(&entry.state), sizeof(entry.state));
-
-            if (!file_.eof())
-            {
-                data_.push_back(entry);
-            }
-        }
-        // pair <scenario name, scenario data>
-        scenarioData.push_back(std::make_pair(scenarios_[i], data_));
-        data_ = {};
-        file_.close();
-    }
-
-    if (scenarioData.size() < 2)
-    {
-        LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
-    }
-
-    // Scenario with smallest start time first
-    std::sort(scenarioData.begin(),
-              scenarioData.end(),
-              [](const auto& sce1, const auto& sce2) { return sce1.second[0].state.info.timeStamp < sce2.second[0].state.info.timeStamp; });
-
-    // Log which scenario belongs to what ID-group (0, 100, 200 etc.)
-    for (size_t i = 0; i < scenarioData.size(); i++)
-    {
-        std::string scenario_tmp = scenarioData[i].first;
-        LOG_INFO("Scenarios corresponding to IDs ({}:{}): {}", i * 100, (i + 1) * 100 - 1, FileNameOf(scenario_tmp));
-    }
-
-    // Ensure increasing timestamps. Remove any other entries.
-    for (auto& sce : scenarioData)
-    {
-        CleanEntries(sce.second);
-    }
-
-    // Build remaining data in order.
-    BuildData(scenarioData);
-
-    if (data_.size() > 0)
-    {
-        // Register first entry timestamp as starting time
-        time_       = data_[0].state.info.timeStamp;
-        startTime_  = time_;
-        startIndex_ = 0;
-
-        // Register last entry timestamp as stop time
-        stopTime_  = data_.back().state.info.timeStamp;
-        stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stopTime_));
-    }
-
-    if (!create_datfile_.empty())
-    {
-        CreateMergedDatfile(create_datfile_);
-    }
 }
 
 // Browse through replay-folder and appends strings of absolute path to matching scenario
@@ -874,6 +839,14 @@ void Replay::CleanEntries(std::vector<ReplayEntry>& entries)
 
 void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntry>>>& scenarios)
 {
+    if (scenarios.empty() || scenarios[0].second.empty())
+    {
+        LOG_ERROR("BuildData: No scenario data to process.");
+        return;
+    }
+
+    data_.clear();  // Rebuilding data_ from scratch
+
     // Keep track of current index of each scenario
     std::vector<int> cur_idx;
     std::vector<int> next_idx;
@@ -998,4 +971,16 @@ int Replay::ReadStringPacket(std::string& str)
     }
 
     return 0;
+}
+
+void Replay::ClearData()
+{
+    data_.clear();
+    obj_events_map_.clear();
+    object_state_cache_.clear();
+    object_ids_.clear();
+    id_to_name_.clear();
+    id_to_search_idx_.clear();
+    timestamp_ = 0.0;
+    min_timestep_.reset();
 }

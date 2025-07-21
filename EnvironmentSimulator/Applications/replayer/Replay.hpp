@@ -101,17 +101,19 @@ namespace scenarioengine
 
         void BuildDataFromPackets();
 
+        void ClearData();
+
     private:
         std::ifstream            file_;
         std::vector<std::string> scenarios_;
         double                   time_;
-        double                   startTime_;
-        double                   stopTime_;
-        unsigned int             startIndex_;
-        unsigned int             stopIndex_;
-        unsigned int             index_;
-        bool                     repeat_;
-        bool                     clean_;
+        double                   startTime_  = 0.0;
+        double                   stopTime_   = 0.0;
+        unsigned int             startIndex_ = 0;
+        unsigned int             stopIndex_  = 0;
+        unsigned int             index_      = 0;
+        bool                     repeat_     = false;
+        bool                     clean_      = true;
         std::string              create_datfile_;
 
         /* PacketHandler stuff */
