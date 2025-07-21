@@ -419,6 +419,7 @@ int main(int argc, char** argv)
     opt.AddOption("dir",
                   "Directory containing replays to overlay, pair with \"file\" argument, where \"file\" is .dat filename match substring",
                   "path");
+    opt.AddOption("fixed_timestep", "Use fixed timestep for the replay", "s", "");
 #ifdef _USE_OSG
     opt.AddOption("ground_plane", "Add a large flat ground surface");
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
@@ -530,6 +531,14 @@ int main(int argc, char** argv)
         LOG_INFO("Use sign models in external scene graph model, skip creating sign models");
     }
 
+    // Get the timestep
+    double fixed_timestep = 0.0;
+    arg_str               = opt.GetOptionArg("fixed_timestep");
+    if (!arg_str.empty())
+    {
+        fixed_timestep = std::stod(arg_str);
+    }
+
     // Create player
     arg_str = opt.GetOptionValue("dir");
 
@@ -553,7 +562,7 @@ int main(int argc, char** argv)
                 LOG_ERROR("\"--saved_merged\" works only in combination with \"--dir\" argument, combining multiple dat files");
                 return -1;
             }
-            player = new Replay(opt.GetOptionValue("file"), true);
+            player = new Replay(opt.GetOptionValue("file"));
         }
     }
     catch (const std::exception& e)
