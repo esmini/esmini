@@ -1,11 +1,27 @@
 import argparse
 import ctypes
+import struct
 import os
 
 VERSION = 2
 REPLAY_FILENAME_SIZE = 512
 NAME_LEN = 32
 
+def read_uint32(file):
+    return struct.unpack('<I', file.read(4))[0]
+
+def read_string_packet(file):
+    size = read_uint32(file)
+    string_bytes = file.read(size)
+    return string_bytes.decode('utf-8')
+
+def read_dat_header(file):
+    version_major = read_uint32(file)
+    version_minor = read_uint32(file)
+    odr_filename = read_string_packet(file)
+    model_filename = read_string_packet(file)
+
+    return (version_major, version_minor, odr_filename, model_filename)
 
 class ObjectStateStructDat(ctypes.Structure):
     _fields_ = [
@@ -29,6 +45,7 @@ class ObjectStateStructDat(ctypes.Structure):
         ("height", ctypes.c_float),
         ("scaleMode", ctypes.c_int),
         ("visibilityMask", ctypes.c_int),
+        ("active", ctypes.c_bool),
 
         # ObjectPositionStruct
         ("x", ctypes.c_float),
@@ -45,13 +62,6 @@ class ObjectStateStructDat(ctypes.Structure):
     ]
 
 
-class DATHeader(ctypes.Structure):
-    _fields_ = [
-        ('version', ctypes.c_int),
-        ('odr_filename', ctypes.c_char * REPLAY_FILENAME_SIZE),
-        ('model_filename', ctypes.c_char * REPLAY_FILENAME_SIZE),
-    ]
-
 class DATFile():
     def __init__(self, filename):
         if not os.path.isfile(filename):
@@ -63,11 +73,16 @@ class DATFile():
             print('ERROR: Could not open file {} for reading'.format(filename))
             raise
 
-        self.header = DATHeader.from_buffer_copy(self.file.read(ctypes.sizeof(DATHeader)))
+        
         self.filename = filename
-        self.version = self.header.version
-        self.odr_filename = self.header.odr_filename.decode('utf-8')
-        self.model_filename = self.header.model_filename.decode('utf-8')
+        self.version_major, self.version_minor, self.odr_filename, self.model_filename = read_dat_header(self.file)
+        print('Reading dat file: {} (version {}.{}), OpenDRIVE: {}, 3DModel: {}'.format(
+            filename,
+            self.version_major,
+            self.version_minor,
+            self.odr_filename,
+            self.model_filename
+        ))
         self.labels = [field[0] for field in ObjectStateStructDat._fields_]
         self.data = []
 
