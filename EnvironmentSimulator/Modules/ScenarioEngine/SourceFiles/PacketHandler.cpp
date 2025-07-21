@@ -25,24 +25,21 @@ int Dat::DatLogger::Init(const std::string& file_name, const std::string& odr_na
         return -1;
     }
 
-    DatHeader d_header;
-    d_header.version_major = DAT_VERSION_MAJOR;
-    d_header.version_minor = DAT_VERSION_MINOR;
+    // Write version
+    unsigned int version_major = DAT_VERSION_MAJOR;
+    unsigned int version_minor = DAT_VERSION_MINOR;
+    write_file_.write(reinterpret_cast<char*>(&version_major), sizeof(version_major));
+    write_file_.write(reinterpret_cast<char*>(&version_minor), sizeof(version_minor));
 
-    d_header.odr_filename.size   = static_cast<unsigned int>(odr_name.size());
-    d_header.odr_filename.string = odr_name;
+    // Write odr filename
+    unsigned int odr_size = static_cast<unsigned int>(odr_name.size());
+    write_file_.write(reinterpret_cast<char*>(&odr_size), sizeof(odr_size));
+    write_file_.write(odr_name.data(), odr_size);
 
-    d_header.model_filename.size   = static_cast<unsigned int>(model_name.size());
-    d_header.model_filename.string = model_name;
-
-    // Write content
-    Write(PacketId::DAT_HEADER,
-          d_header.version_major,
-          d_header.version_minor,
-          d_header.odr_filename.size,
-          d_header.odr_filename.string,
-          d_header.model_filename.size,
-          d_header.model_filename.string);
+    // Write model filename
+    unsigned int model_size = static_cast<unsigned int>(model_name.size());
+    write_file_.write(reinterpret_cast<char*>(&model_size), sizeof(model_size));
+    write_file_.write(model_name.data(), model_size);
 
     return 0;
 }
