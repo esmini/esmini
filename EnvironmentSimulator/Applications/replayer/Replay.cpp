@@ -112,7 +112,21 @@ int Replay::ParsePackets(const std::string& filename)
     const auto file_size = file_.tellg();
     file_.seekg(0, std::ios::beg);
 
+    // Read raw header BEFORE reading packets
+    if (FillHeader() != 0)
+    {
+        LOG_ERROR_AND_QUIT("Failed to read DAT header.");
+    }
+
+    LOG_INFO("Datfile header: version {}.{}, odr_filename: {}, model_filename: {}",
+             header_.version_major,
+             header_.version_minor,
+             header_.odr_filename.string,
+             header_.model_filename.string);
+
     ReplayEntry replay_entry;
+
+    // Now parse packets
     while (file_.tellg() < file_size)
     {
         Dat::PacketHeader header;
@@ -124,16 +138,6 @@ int Replay::ParsePackets(const std::string& filename)
 
         switch (header.id)
         {
-            case static_cast<int>(Dat::PacketId::DAT_HEADER):
-            {
-                auto ret = FillHeader();
-                if (ret != 0)
-                {
-                    LOG_ERROR("Failed to fill header.");
-                    break;
-                }
-                break;
-            }
             case static_cast<id_t>(Dat::PacketId::TIMESTAMP):
             {
                 replay_entry.odometer = 0.0;
