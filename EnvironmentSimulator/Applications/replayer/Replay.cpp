@@ -17,7 +17,12 @@
 
 using namespace scenarioengine;
 
-Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat_(false), clean_(clean)
+Replay::Replay(std::string filename, bool clean, double fixed_timestep)
+    : time_(0.0),
+      index_(0),
+      repeat_(false),
+      clean_(clean),
+      fixed_timestep_(fixed_timestep)
 {
     // Parse the packets from the file
     int ret = ParsePackets(filename);
@@ -103,6 +108,21 @@ int Replay::ParsePackets(const std::string& filename)
                 {
                     // If the object already exists in the cache, fetch latest known state
                     replay_entry = object_state_cache_[id];
+
+                    // We'll deduce the minimum timestep, might be useful later
+                    if (!min_timestep_.has_value())
+                    {
+                        min_timestep_ = timestamp_ - static_cast<double>(replay_entry.state.info.timeStamp);
+                    }
+                    else
+                    {
+                        double dt = timestamp_ - static_cast<double>(replay_entry.state.info.timeStamp);
+                        if (!(abs(dt) < SMALL_NUMBER))
+                        {
+                            // If we already have a minimum timestep, update it if the current one is smaller
+                            min_timestep_ = std::min(min_timestep_.value(), dt);
+                        }
+                    }
                 }
 
                 // We set the latest timestamp which is already fetched
@@ -330,7 +350,12 @@ void Replay::BuildDataFromPackets()
 {
     object_state_cache_.clear();
 
-    double dt = 0.01;
+    // If fixed timestep is specified, use it, otherwise use the minimum timestep found in the data
+    double dt = min_timestep_.value();
+    if (fixed_timestep_ > 0.0)
+    {
+        dt = fixed_timestep_;
+    }
 
     // Find start time, maybe its earlier than 0.0s
     for (const auto& [id, entry] : obj_events_map_)
