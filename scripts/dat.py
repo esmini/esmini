@@ -284,6 +284,7 @@ class DATFile():
             elif p_id == PacketId.OBJ_DELETED.value:
                 self.ObjectStateStructDat["active"] = False
             elif p_id == PacketId.END_OF_SCENARIO.value:
+                self.object_events_map[self.ObjectStateStructDat["id"]].append(self.ObjectStateStructDat.copy())
                 self.end_time = read_dtype(self.file, DataType.double)
 
     def get_header_line(self):

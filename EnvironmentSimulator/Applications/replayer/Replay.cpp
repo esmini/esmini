@@ -390,6 +390,8 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
             {
+                // Add the last entry for the current object before processing the end of scenario
+                obj_events_map_[replay_entry.state.info.id].push_back(replay_entry);
                 if (ReadPacket(header, stopTime_) != 0)
                 {
                     LOG_ERROR("Failed reading end of scenario timestamp.");
