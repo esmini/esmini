@@ -177,21 +177,22 @@ int Replay::ParsePackets(const std::string& filename)
                     // We'll deduce the minimum timestep, might be useful later
                     if (!min_timestep_.has_value())
                     {
-                        min_timestep_ = static_cast<float>(timestamp_) - replay_entry.state.info.timeStamp;
+                        min_timestep_ = timestamp_ - replay_entry.state.info.timeStamp;
                     }
                     else
                     {
-                        float dt = static_cast<float>(timestamp_) - replay_entry.state.info.timeStamp;
+                        float dt = timestamp_ - replay_entry.state.info.timeStamp;
                         if (!(abs(dt) < SMALL_NUMBERF))
                         {
                             // If we already have a minimum timestep, update it if the current one is smaller
+                            dt            = std::round(dt * 1000.0f) / 1000.0f;  // avoid floating point precision issues
                             min_timestep_ = std::min(min_timestep_.value(), dt);
                         }
                     }
                 }
 
                 // We set the latest timestamp which is already fetched
-                replay_entry.state.info.timeStamp = static_cast<float>(timestamp_);
+                replay_entry.state.info.timeStamp = timestamp_;
                 replay_entry.state.info.active    = true;
                 replay_entry.state.info.id        = id;  // Could be done earlier I guess, but we do it here for clarity
 
@@ -202,30 +203,26 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::SPEED):
             {
-                float speed;
-                if (ReadPacket(header, speed) != 0)
+                if (ReadPacket(header, replay_entry.state.info.speed) != 0)
                 {
                     LOG_ERROR("Failed reading speed data.");
                     return -1;
                 }
-                replay_entry.state.info.speed = speed;
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POSE):
             {
-                Dat::Pose pose;
-                if (ReadPacket(header, pose.x, pose.y, pose.z, pose.h, pose.p, pose.r) != 0)
+                if (ReadPacket(header,
+                               replay_entry.state.pos.x,
+                               replay_entry.state.pos.y,
+                               replay_entry.state.pos.z,
+                               replay_entry.state.pos.h,
+                               replay_entry.state.pos.p,
+                               replay_entry.state.pos.r) != 0)
                 {
                     LOG_ERROR("Failed reading pose data.");
                     return -1;
                 }
-
-                replay_entry.state.pos.x = static_cast<float>(pose.x);
-                replay_entry.state.pos.y = static_cast<float>(pose.y);
-                replay_entry.state.pos.z = static_cast<float>(pose.z);
-                replay_entry.state.pos.h = static_cast<float>(pose.h);
-                replay_entry.state.pos.p = static_cast<float>(pose.p);
-                replay_entry.state.pos.r = static_cast<float>(pose.r);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::MODEL_ID):
@@ -266,40 +263,35 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::WHEEL_ANGLE):
             {
-                float wheel_angle;
-                if (ReadPacket(header, wheel_angle) != 0)
+                if (ReadPacket(header, replay_entry.state.info.wheel_angle) != 0)
                 {
                     LOG_ERROR("Failed reading wheel angle.");
                     return -1;
                 }
-                replay_entry.state.info.wheel_angle = static_cast<float>(wheel_angle);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::WHEEL_ROT):
             {
-                float wheel_rot;
-                if (ReadPacket(header, wheel_rot) != 0)
+                if (ReadPacket(header, replay_entry.state.info.wheel_rot) != 0)
                 {
                     LOG_ERROR("Failed reading wheel rotation.");
                     return -1;
                 }
-                replay_entry.state.info.wheel_rot = static_cast<float>(wheel_rot);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::BOUNDING_BOX):
             {
-                Dat::BoundingBox boundingbox;
-                if (ReadPacket(header, boundingbox.x, boundingbox.y, boundingbox.z, boundingbox.length, boundingbox.width, boundingbox.height) != 0)
+                if (ReadPacket(header,
+                               replay_entry.state.info.boundingbox.center_.x_,
+                               replay_entry.state.info.boundingbox.center_.y_,
+                               replay_entry.state.info.boundingbox.center_.z_,
+                               replay_entry.state.info.boundingbox.dimensions_.length_,
+                               replay_entry.state.info.boundingbox.dimensions_.width_,
+                               replay_entry.state.info.boundingbox.dimensions_.height_) != 0)
                 {
                     LOG_ERROR("Failed reading bounding box data.");
                     return -1;
                 }
-                replay_entry.state.info.boundingbox.center_.x_          = static_cast<float>(boundingbox.x);
-                replay_entry.state.info.boundingbox.center_.y_          = static_cast<float>(boundingbox.y);
-                replay_entry.state.info.boundingbox.center_.z_          = static_cast<float>(boundingbox.z);
-                replay_entry.state.info.boundingbox.dimensions_.length_ = static_cast<float>(boundingbox.length);
-                replay_entry.state.info.boundingbox.dimensions_.width_  = static_cast<float>(boundingbox.width);
-                replay_entry.state.info.boundingbox.dimensions_.height_ = static_cast<float>(boundingbox.height);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::SCALE_MODE):
@@ -352,35 +344,29 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::POS_OFFSET):
             {
-                float offset;
-                if (ReadPacket(header, offset) != 0)
+                if (ReadPacket(header, replay_entry.state.pos.offset) != 0)
                 {
                     LOG_ERROR("Failed reading position offset.");
                     return -1;
                 }
-                replay_entry.state.pos.offset = static_cast<float>(offset);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POS_T):
             {
-                float t;
-                if (ReadPacket(header, t) != 0)
+                if (ReadPacket(header, replay_entry.state.pos.t) != 0)
                 {
                     LOG_ERROR("Failed reading position T.");
                     return -1;
                 }
-                replay_entry.state.pos.t = static_cast<float>(t);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POS_S):
             {
-                float s;
-                if (ReadPacket(header, s) != 0)
+                if (ReadPacket(header, replay_entry.state.pos.s) != 0)
                 {
                     LOG_ERROR("Failed reading position S.");
                     return -1;
                 }
-                replay_entry.state.pos.s = static_cast<float>(s);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_DELETED):

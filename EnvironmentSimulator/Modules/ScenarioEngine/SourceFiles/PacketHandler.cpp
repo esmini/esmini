@@ -65,7 +65,7 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
         }
 
         // We might want to write a state to datfile, so we set the timestamp
-        object_state_cache_.timestamp_ = static_cast<float>(state->info.timeStamp);
+        object_state_cache_.timestamp_ = static_cast<float>(simulation_time_);
 
         // PacketId::SPEED
         if (!NEAR_NUMBERSF(cache_it->second.speed_, static_cast<float>(state->info.speed)))
@@ -121,16 +121,18 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
         }
 
         // PacketId::WHEEL_ANGLE
-        if (!NEAR_NUMBERSF(cache_it->second.wheel_angle_, static_cast<float>(state->info.wheel_data[0].h)))
+        float wheel_angle = (state->info.wheel_data.empty()) ? 0.0f : static_cast<float>(state->info.wheel_data[0].h);
+        if (!NEAR_NUMBERSF(cache_it->second.wheel_angle_, wheel_angle))
         {
-            cache_it->second.wheel_angle_ = static_cast<float>(state->info.wheel_data[0].h);
+            cache_it->second.wheel_angle_ = wheel_angle;
             Write(PacketId::WHEEL_ANGLE, cache_it->second.wheel_angle_);
         }
 
         // PacketId::WHEEL_ROT
-        if (!NEAR_NUMBERSF(cache_it->second.wheel_rot_, static_cast<float>(state->info.wheel_data[0].p)))
+        float wheel_rot = (state->info.wheel_data.empty()) ? 0.0f : static_cast<float>(state->info.wheel_data[0].p);
+        if (!NEAR_NUMBERSF(cache_it->second.wheel_rot_, wheel_rot))
         {
-            cache_it->second.wheel_rot_ = static_cast<float>(state->info.wheel_data[0].p);
+            cache_it->second.wheel_rot_ = wheel_rot;
             Write(PacketId::WHEEL_ROT, cache_it->second.wheel_rot_);
         }
 
@@ -256,7 +258,7 @@ int Dat::DatLogger::Write(PacketId p_id, const Data&... data)
     {
         // Write with simulation time, object_states might be empty, then we have no time-reference
         timestamp_written_ = true;
-        Write(PacketId::TIMESTAMP, simulation_time_);
+        Write(PacketId::TIMESTAMP, static_cast<float>(simulation_time_));
     }
 
     size_t total_size = (SerializedSize(data) + ... + 0);  // +0 incase we want to write without data
