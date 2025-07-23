@@ -194,9 +194,11 @@ class DATFile():
                         else:
                             break
 
+                self.object_state_cache[obj_id] = last_state # Save last state to cache
+
                 state = last_state.copy()
-                state["time"] = t
                 if state["active"]:
+                    state["time"] = t
                     self.data.append([state[label] for label in labels])
             t += dt
 

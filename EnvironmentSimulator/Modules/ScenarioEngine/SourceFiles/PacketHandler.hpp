@@ -140,6 +140,7 @@ namespace Dat
         bool IsWriteFileOpen() const;
         void SetTimestampWritten(bool state);
         void SetObjectIdWritten(bool state);
+        void SetSimulationTime(const double simulation_time);
         bool IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const;
         bool IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const;
 
@@ -149,6 +150,7 @@ namespace Dat
         int                     current_object_id_ = -1;  // Current object ID being processed
         bool                    timestamp_written_ = false;
         bool                    object_id_written_ = false;
+        double                  simulation_time_   = 0.0;
         std::unordered_set<int> previous_ids_;  // Keep track of object IDs
     };
 
