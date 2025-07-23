@@ -523,11 +523,11 @@ int main(int argc, char** argv)
     }
 
     // Get the timestep
-    double fixed_timestep = 0.0;
-    arg_str               = opt.GetOptionArg("fixed_timestep");
+    float fixed_timestep = 0.0f;
+    arg_str              = opt.GetOptionArg("fixed_timestep");
     if (!arg_str.empty())
     {
-        fixed_timestep = std::stod(arg_str);
+        fixed_timestep = std::stof(arg_str);
     }
 
     // Create player

@@ -7,7 +7,7 @@ from collections import defaultdict
 VERSION_MAJOR = 1
 VERSION_MINOR = 0
         
-EPSILON = 0.0001
+EPSILON = 0.001
 
 class PacketId(enum.Enum):
     """Enum for packet IDs."""
@@ -180,7 +180,7 @@ class DATFile():
             labels = self.get_labels_line()
         
         t = start_time
-        while t <= self.end_time:
+        while t <= self.end_time + EPSILON:
             for obj_id in self.object_ids:
                 events = self.object_events_map.get(obj_id, [])
                 last_state = self.object_state_cache.get(obj_id, template.copy())
@@ -247,28 +247,28 @@ class DATFile():
                 name = read_string_packet(self.file)
                 self.ObjectStateStructDat["name"] = name
             elif p_id == PacketId.SPEED.value:
-                speed = read_dtype(self.file, DataType.double)
+                speed = read_dtype(self.file, DataType.float)
                 self.ObjectStateStructDat["speed"] = speed
             elif p_id == PacketId.WHEEL_ANGLE.value:
-                wheel_angle = read_dtype(self.file, DataType.double)
+                wheel_angle = read_dtype(self.file, DataType.float)
                 self.ObjectStateStructDat["wheel_angle"] = wheel_angle
             elif p_id == PacketId.WHEEL_ROT.value:
-                wheel_rot = read_dtype(self.file, DataType.double)
+                wheel_rot = read_dtype(self.file, DataType.float)
                 self.ObjectStateStructDat["wheel_rot"] = wheel_rot
             elif p_id == PacketId.POSE.value:
-                self.ObjectStateStructDat["x"] = read_dtype(self.file, DataType.double)
-                self.ObjectStateStructDat["y"] = read_dtype(self.file, DataType.double)
-                self.ObjectStateStructDat["z"] = read_dtype(self.file, DataType.double)
-                self.ObjectStateStructDat["h"] = read_dtype(self.file, DataType.double)
-                self.ObjectStateStructDat["p"] = read_dtype(self.file, DataType.double)
-                self.ObjectStateStructDat["r"] = read_dtype(self.file, DataType.double)
+                self.ObjectStateStructDat["x"] = read_dtype(self.file, DataType.float)
+                self.ObjectStateStructDat["y"] = read_dtype(self.file, DataType.float)
+                self.ObjectStateStructDat["z"] = read_dtype(self.file, DataType.float)
+                self.ObjectStateStructDat["h"] = read_dtype(self.file, DataType.float)
+                self.ObjectStateStructDat["p"] = read_dtype(self.file, DataType.float)
+                self.ObjectStateStructDat["r"] = read_dtype(self.file, DataType.float)
             elif p_id == PacketId.BOUNDING_BOX.value:
-                self.ObjectStateStructDat["centerOffsetX"] = read_dtype(self.file, DataType.double)
-                self.ObjectStateStructDat["centerOffsetY"] = read_dtype(self.file, DataType.double)
-                self.ObjectStateStructDat["centerOffsetZ"] = read_dtype(self.file, DataType.double)
-                self.ObjectStateStructDat["width"] = read_dtype(self.file, DataType.double)
-                self.ObjectStateStructDat["length"] = read_dtype(self.file, DataType.double)
-                self.ObjectStateStructDat["height"] = read_dtype(self.file, DataType.double)
+                self.ObjectStateStructDat["centerOffsetX"] = read_dtype(self.file, DataType.float)
+                self.ObjectStateStructDat["centerOffsetY"] = read_dtype(self.file, DataType.float)
+                self.ObjectStateStructDat["centerOffsetZ"] = read_dtype(self.file, DataType.float)
+                self.ObjectStateStructDat["width"] = read_dtype(self.file, DataType.float)
+                self.ObjectStateStructDat["length"] = read_dtype(self.file, DataType.float)
+                self.ObjectStateStructDat["height"] = read_dtype(self.file, DataType.float)
             elif p_id == PacketId.SCALE_MODE.value:
                 self.ObjectStateStructDat["scaleMode"] = read_dtype(self.file, DataType.int32)
             elif p_id == PacketId.VISIBILITY_MASK.value:
@@ -278,16 +278,16 @@ class DATFile():
             elif p_id == PacketId.LANE_ID.value:
                 self.ObjectStateStructDat["laneId"] = read_dtype(self.file, DataType.int32)
             elif p_id == PacketId.POS_OFFSET.value:
-                self.ObjectStateStructDat["offset"] = read_dtype(self.file, DataType.double)
+                self.ObjectStateStructDat["offset"] = read_dtype(self.file, DataType.float)
             elif p_id == PacketId.POS_T.value:
-                self.ObjectStateStructDat["t"] = read_dtype(self.file, DataType.double)
+                self.ObjectStateStructDat["t"] = read_dtype(self.file, DataType.float)
             elif p_id == PacketId.POS_S.value:
-                self.ObjectStateStructDat["s"] = read_dtype(self.file, DataType.double)
+                self.ObjectStateStructDat["s"] = read_dtype(self.file, DataType.float)
             elif p_id == PacketId.OBJ_DELETED.value:
                 self.ObjectStateStructDat["active"] = False
             elif p_id == PacketId.END_OF_SCENARIO.value:
                 self.object_events_map[self.ObjectStateStructDat["id"]].append(self.ObjectStateStructDat.copy())
-                self.end_time = read_dtype(self.file, DataType.double)
+                self.end_time = read_dtype(self.file, DataType.float)
 
     def get_header_line(self):
         return f'Version: {self.version_major}.{self.version_minor}, OpenDRIVE: {self.odr_filename}, 3DModel: {self.model_filename}'
