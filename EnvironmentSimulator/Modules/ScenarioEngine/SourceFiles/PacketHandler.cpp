@@ -254,8 +254,9 @@ int Dat::DatLogger::Write(PacketId p_id, const Data&... data)
     // Write Time packet, but only once
     if (!timestamp_written_ && p_id != PacketId::END_OF_SCENARIO)
     {
+        // Write with simulation time, object_states might be empty, then we have no time-reference
         timestamp_written_ = true;
-        Write(PacketId::TIMESTAMP, object_state_cache_.timestamp_);
+        Write(PacketId::TIMESTAMP, simulation_time_);
     }
 
     size_t total_size = (SerializedSize(data) + ... + 0);  // +0 incase we want to write without data
@@ -293,6 +294,11 @@ void Dat::DatLogger::SetTimestampWritten(bool state)
 void Dat::DatLogger::SetObjectIdWritten(bool state)
 {
     object_id_written_ = state;
+}
+
+void Dat::DatLogger::SetSimulationTime(const double simulation_time)
+{
+    simulation_time_ = simulation_time;
 }
 
 bool Dat::DatLogger::IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const
