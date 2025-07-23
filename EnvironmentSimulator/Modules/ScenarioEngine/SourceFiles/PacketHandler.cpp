@@ -212,8 +212,6 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
         this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state
     }
 
-    this->SetTimestampWritten(false);  // Reset timestamp written flag after writing all states
-
     // Will be empty before first iteration, so we ignore that case
     if (!previous_ids_.empty())
     {
@@ -226,11 +224,14 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
                 current_object_id_ = previous_id;
                 Write(PacketId::OBJ_DELETED);
                 object_state_cache_.state_.erase(previous_id);
+                this->SetObjectIdWritten(false);  // Need to reset this flag so write function will write the object ID
             }
         }
     }
 
     previous_ids_ = std::move(current_ids);
+
+    this->SetTimestampWritten(false);  // Reset timestamp written flag after writing all states
 
     return 0;
 }
