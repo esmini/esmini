@@ -10,7 +10,7 @@ Dat::DatLogger::~DatLogger()
     // Seems GateWay which owns DatLogger is destroyed before the scenario ends...
     if (IsWriteFileOpen())
     {
-        Write(PacketId::END_OF_SCENARIO, object_state_cache_.timestamp_);
+        Write(PacketId::END_OF_SCENARIO, static_cast<float>(simulation_time_));
         write_file_.flush();
         write_file_.close();
     }
@@ -65,23 +65,23 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
         }
 
         // We might want to write a state to datfile, so we set the timestamp
-        object_state_cache_.timestamp_ = state->info.timeStamp;
+        object_state_cache_.timestamp_ = static_cast<float>(state->info.timeStamp);
 
         // PacketId::SPEED
-        if (!IsDoubleEqual(cache_it->second.speed_, state->info.speed))
+        if (!NEAR_NUMBERSF(cache_it->second.speed_, static_cast<float>(state->info.speed)))
         {
-            cache_it->second.speed_ = state->info.speed;
+            cache_it->second.speed_ = static_cast<float>(state->info.speed);
             Write(PacketId::SPEED, cache_it->second.speed_);
         }
         // PacketId::POSE
         if (!IsPoseEqual(cache_it->second.pose_, state->pos))
         {
-            cache_it->second.pose_.x = state->pos.GetX();
-            cache_it->second.pose_.y = state->pos.GetY();
-            cache_it->second.pose_.z = state->pos.GetZ();
-            cache_it->second.pose_.h = state->pos.GetH();
-            cache_it->second.pose_.p = state->pos.GetP();
-            cache_it->second.pose_.r = state->pos.GetR();
+            cache_it->second.pose_.x = static_cast<float>(state->pos.GetX());
+            cache_it->second.pose_.y = static_cast<float>(state->pos.GetY());
+            cache_it->second.pose_.z = static_cast<float>(state->pos.GetZ());
+            cache_it->second.pose_.h = static_cast<float>(state->pos.GetH());
+            cache_it->second.pose_.p = static_cast<float>(state->pos.GetP());
+            cache_it->second.pose_.r = static_cast<float>(state->pos.GetR());
 
             Write(PacketId::POSE,
                   cache_it->second.pose_.x,
@@ -121,16 +121,16 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
         }
 
         // PacketId::WHEEL_ANGLE
-        if (!IsDoubleEqual(cache_it->second.wheel_angle_, state->info.wheel_data[0].h))
+        if (!NEAR_NUMBERSF(cache_it->second.wheel_angle_, static_cast<float>(state->info.wheel_data[0].h)))
         {
-            cache_it->second.wheel_angle_ = state->info.wheel_data[0].h;
+            cache_it->second.wheel_angle_ = static_cast<float>(state->info.wheel_data[0].h);
             Write(PacketId::WHEEL_ANGLE, cache_it->second.wheel_angle_);
         }
 
         // PacketId::WHEEL_ROT
-        if (!IsDoubleEqual(cache_it->second.wheel_rot_, state->info.wheel_data[0].p))
+        if (!NEAR_NUMBERSF(cache_it->second.wheel_rot_, static_cast<float>(state->info.wheel_data[0].p)))
         {
-            cache_it->second.wheel_rot_ = state->info.wheel_data[0].p;
+            cache_it->second.wheel_rot_ = static_cast<float>(state->info.wheel_data[0].p);
             Write(PacketId::WHEEL_ROT, cache_it->second.wheel_rot_);
         }
 
@@ -189,23 +189,23 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
         }
 
         // PacketId::POS_OFFSET
-        if (!IsDoubleEqual(cache_it->second.pos_offset_, state->pos.GetOffset()))
+        if (!NEAR_NUMBERSF(cache_it->second.pos_offset_, static_cast<float>(state->pos.GetOffset())))
         {
-            cache_it->second.pos_offset_ = state->pos.GetOffset();
+            cache_it->second.pos_offset_ = static_cast<float>(state->pos.GetOffset());
             Write(PacketId::POS_OFFSET, cache_it->second.pos_offset_);
         }
 
         // PacketId::POS_T
-        if (!IsDoubleEqual(cache_it->second.pos_t_, state->pos.GetT()))
+        if (!NEAR_NUMBERSF(cache_it->second.pos_t_, static_cast<float>(state->pos.GetT())))
         {
-            cache_it->second.pos_t_ = state->pos.GetT();
+            cache_it->second.pos_t_ = static_cast<float>(state->pos.GetT());
             Write(PacketId::POS_T, cache_it->second.pos_t_);
         }
 
         // PacketId::POS_S
-        if (!IsDoubleEqual(cache_it->second.pos_s_, state->pos.GetS()))
+        if (!NEAR_NUMBERSF(cache_it->second.pos_s_, static_cast<float>(state->pos.GetS())))
         {
-            cache_it->second.pos_s_ = state->pos.GetS();
+            cache_it->second.pos_s_ = static_cast<float>(state->pos.GetS());
             Write(PacketId::POS_S, cache_it->second.pos_s_);
         }
 
@@ -303,15 +303,14 @@ void Dat::DatLogger::SetSimulationTime(const double simulation_time)
 
 bool Dat::DatLogger::IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const
 {
-    return (pose.x == pos.GetX() && pose.y == pos.GetY() && pose.z == pos.GetZ() && pose.h == pos.GetH() && pose.p == pos.GetP() &&
-            pose.r == pos.GetR());
+    return (pose.x == static_cast<float>(pos.GetX()) && pose.y == static_cast<float>(pos.GetY()) && pose.z == static_cast<float>(pos.GetZ()) &&
+            pose.h == static_cast<float>(pos.GetH()) && pose.p == static_cast<float>(pos.GetP()) && pose.r == static_cast<float>(pos.GetR()));
 }
 
 bool Dat::DatLogger::IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const
 {
-    return (bb.x == static_cast<double>(osc_bb.center_.x_) && bb.y == static_cast<double>(osc_bb.center_.y_) &&
-            bb.z == static_cast<double>(osc_bb.center_.z_) && bb.length == static_cast<double>(osc_bb.dimensions_.length_) &&
-            bb.width == static_cast<double>(osc_bb.dimensions_.width_) && bb.height == static_cast<double>(osc_bb.dimensions_.height_));
+    return (bb.x == osc_bb.center_.x_ && bb.y == osc_bb.center_.y_ && bb.z == osc_bb.center_.z_ && bb.length == osc_bb.dimensions_.length_ &&
+            bb.width == osc_bb.dimensions_.width_ && bb.height == osc_bb.dimensions_.height_);
 }
 
 size_t Dat::DatLogger::SerializedSize(const std::string& str)

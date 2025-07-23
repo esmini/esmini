@@ -17,7 +17,7 @@
 
 using namespace scenarioengine;
 
-Replay::Replay(std::string filename, bool clean, double fixed_timestep)
+Replay::Replay(std::string filename, bool clean, float fixed_timestep)
     : time_(0.0),
       index_(0),
       repeat_(false),
@@ -177,12 +177,12 @@ int Replay::ParsePackets(const std::string& filename)
                     // We'll deduce the minimum timestep, might be useful later
                     if (!min_timestep_.has_value())
                     {
-                        min_timestep_ = timestamp_ - static_cast<double>(replay_entry.state.info.timeStamp);
+                        min_timestep_ = static_cast<float>(timestamp_) - replay_entry.state.info.timeStamp;
                     }
                     else
                     {
-                        double dt = timestamp_ - static_cast<double>(replay_entry.state.info.timeStamp);
-                        if (!(abs(dt) < SMALL_NUMBER))
+                        float dt = static_cast<float>(timestamp_) - replay_entry.state.info.timeStamp;
+                        if (!(abs(dt) < SMALL_NUMBERF))
                         {
                             // If we already have a minimum timestep, update it if the current one is smaller
                             min_timestep_ = std::min(min_timestep_.value(), dt);
@@ -202,13 +202,13 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::SPEED):
             {
-                double speed;
+                float speed;
                 if (ReadPacket(header, speed) != 0)
                 {
                     LOG_ERROR("Failed reading speed data.");
                     return -1;
                 }
-                replay_entry.state.info.speed = static_cast<float>(speed);
+                replay_entry.state.info.speed = speed;
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POSE):
@@ -266,7 +266,7 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::WHEEL_ANGLE):
             {
-                double wheel_angle;
+                float wheel_angle;
                 if (ReadPacket(header, wheel_angle) != 0)
                 {
                     LOG_ERROR("Failed reading wheel angle.");
@@ -277,7 +277,7 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::WHEEL_ROT):
             {
-                double wheel_rot;
+                float wheel_rot;
                 if (ReadPacket(header, wheel_rot) != 0)
                 {
                     LOG_ERROR("Failed reading wheel rotation.");
@@ -352,7 +352,7 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::POS_OFFSET):
             {
-                double offset;
+                float offset;
                 if (ReadPacket(header, offset) != 0)
                 {
                     LOG_ERROR("Failed reading position offset.");
@@ -363,7 +363,7 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::POS_T):
             {
-                double t;
+                float t;
                 if (ReadPacket(header, t) != 0)
                 {
                     LOG_ERROR("Failed reading position T.");
@@ -374,7 +374,7 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::POS_S):
             {
-                double s;
+                float s;
                 if (ReadPacket(header, s) != 0)
                 {
                     LOG_ERROR("Failed reading position S.");
@@ -392,11 +392,13 @@ int Replay::ParsePackets(const std::string& filename)
             {
                 // Add the last entry for the current object before processing the end of scenario
                 obj_events_map_[replay_entry.state.info.id].push_back(replay_entry);
-                if (ReadPacket(header, stopTime_) != 0)
+                float stop_time;
+                if (ReadPacket(header, stop_time) != 0)
                 {
                     LOG_ERROR("Failed reading end of scenario timestamp.");
                     return -1;
                 }
+                stopTime_ = static_cast<double>(stop_time);
                 break;
             }
             default:
@@ -418,8 +420,8 @@ void Replay::BuildDataFromPackets()
     object_state_cache_.clear();
 
     // If fixed timestep is specified, use it, otherwise use the minimum timestep found in the data
-    double dt = min_timestep_.value();
-    if (fixed_timestep_ > 0.0)
+    float dt = min_timestep_.value();
+    if (fixed_timestep_ > 0.0f)
     {
         dt = fixed_timestep_;
     }
@@ -437,7 +439,7 @@ void Replay::BuildDataFromPackets()
         id_to_search_idx_[id] = 0;  // Initialize search index for each object ID
     }
 
-    for (double t = startTime_; t <= stopTime_; t += dt)
+    for (float t = static_cast<float>(startTime_); t <= static_cast<float>(stopTime_) + 0.001f; t += dt)
     {
         for (const int obj_id : object_ids_)
         {
@@ -449,7 +451,7 @@ void Replay::BuildDataFromPackets()
             {
                 for (size_t i = id_to_search_idx_[obj_id]; i < events.size(); i++)
                 {
-                    if (static_cast<double>(events[i].state.info.timeStamp) <= t + SMALL_NUMBER)
+                    if (events[i].state.info.timeStamp <= static_cast<float>(t) + 0.001f)
                     {
                         last_state                = events[i];  // Update the last state to the most recent event before or at time t
                         id_to_search_idx_[obj_id] = i;          // Store the index of the last event for this object

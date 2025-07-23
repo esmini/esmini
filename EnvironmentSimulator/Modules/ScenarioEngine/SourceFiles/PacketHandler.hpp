@@ -57,22 +57,22 @@ namespace Dat
 
     struct Pose
     {
-        double x;
-        double y;
-        double z;
-        double h;
-        double p;
-        double r;
+        float x;
+        float y;
+        float z;
+        float h;
+        float p;
+        float r;
     };
 
     struct BoundingBox
     {
-        double x;
-        double y;
-        double z;
-        double length;
-        double width;
-        double height;
+        float x;
+        float y;
+        float z;
+        float length;
+        float width;
+        float height;
     };
 
     struct PacketGeneric
@@ -86,28 +86,28 @@ namespace Dat
         int         obj_id_          = -1;
         bool        active_          = false;
         bool        obj_written_     = false;  // denotes object added pkg written or not
-        double      speed_           = SMALL_NUMBER;
+        float       speed_           = SMALL_NUMBERF;
         Pose        pose_            = {};
         int         model_id_        = -1;
         int         obj_type_        = -1;
         int         obj_category_    = -1;
         int         ctrl_type_       = -1;
-        double      wheel_angle_     = SMALL_NUMBER;
-        double      wheel_rot_       = SMALL_NUMBER;
+        float       wheel_angle_     = SMALL_NUMBERF;
+        float       wheel_rot_       = SMALL_NUMBERF;
         BoundingBox bounding_box_    = {};
         int         scale_mode_      = -1;
         int         visibility_mask_ = -1;
         std::string name_            = {};
         id_t        road_id_         = ID_UNDEFINED;
         int         lane_id_         = -LARGE_NUMBER_INT;
-        double      pos_offset_      = SMALL_NUMBER;
-        double      pos_t_           = SMALL_NUMBER;
-        double      pos_s_           = SMALL_NUMBER;
+        float       pos_offset_      = SMALL_NUMBERF;
+        float       pos_t_           = SMALL_NUMBERF;
+        float       pos_s_           = SMALL_NUMBERF;
     };
 
     struct ObjectStateCache
     {
-        double                            timestamp_;
+        float                             timestamp_;
         std::unordered_map<int, ObjState> state_;
     };
 
