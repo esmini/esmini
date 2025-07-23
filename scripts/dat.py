@@ -206,7 +206,7 @@ class DATFile():
         while self.file.tell() < self.file_size:
             p_id = read_packet_header(self.file)
             if p_id == PacketId.TIMESTAMP.value:
-                self.timestamp = read_dtype(self.file, DataType.double)
+                self.timestamp = read_dtype(self.file, DataType.float)
 
             elif p_id == PacketId.OBJ_ID.value:
                 if self.ObjectStateStructDat["id"] in self.object_ids:
@@ -224,6 +224,7 @@ class DATFile():
                     else:
                         dt = self.timestamp - self.ObjectStateStructDat["time"]
                         if not (abs(dt) < 0.001):
+                            dt = round(dt * 1000.0) / 1000.0  # Avoid floating point precision issues
                             self.min_timestep = min(self.min_timestep, dt)
                 
                 self.ObjectStateStructDat["time"] = self.timestamp

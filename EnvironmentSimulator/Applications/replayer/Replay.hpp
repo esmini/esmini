@@ -122,7 +122,7 @@ namespace scenarioengine
         std::set<int>                                     object_ids_;  // Keep track of object IDs
         std::unordered_map<int, std::string>              id_to_name_;  // Keep track of object IDs
         std::unordered_map<int, size_t>                   id_to_search_idx_;
-        double                                            timestamp_      = 0.0;
+        float                                             timestamp_      = 0.0f;
         std::optional<float>                              min_timestep_   = std::nullopt;  // Minimum timestep in data
         float                                             fixed_timestep_ = 0.0f;          // Fixed timestep for replay, if specified
 
