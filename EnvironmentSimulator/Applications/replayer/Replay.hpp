@@ -34,7 +34,7 @@ namespace scenarioengine
         Dat::DatHeader           header_;
         std::vector<ReplayEntry> data_;
 
-        Replay(std::string filename, bool clean, double fixed_timestep = 0.0);
+        Replay(std::string filename, bool clean, float fixed_timestep = 0.0f);
         // Replay(const std::string directory, const std::string scenario, bool clean);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
@@ -123,8 +123,8 @@ namespace scenarioengine
         std::unordered_map<int, std::string>              id_to_name_;  // Keep track of object IDs
         std::unordered_map<int, size_t>                   id_to_search_idx_;
         double                                            timestamp_      = 0.0;
-        std::optional<double>                             min_timestep_   = std::nullopt;  // Minimum timestep in data
-        double                                            fixed_timestep_ = 0.0;           // Fixed timestep for replay, if specified
+        std::optional<float>                              min_timestep_   = std::nullopt;  // Minimum timestep in data
+        float                                             fixed_timestep_ = 0.0f;          // Fixed timestep for replay, if specified
 
         int FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
     };
