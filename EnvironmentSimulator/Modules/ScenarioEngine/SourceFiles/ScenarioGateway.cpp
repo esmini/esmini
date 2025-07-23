@@ -1089,11 +1089,12 @@ void ScenarioGateway::removeObject(std::string name)
     }
 }
 
-void ScenarioGateway::WriteStatesToFile()
+void ScenarioGateway::WriteStatesToFile(const double simulation_time)
 {
     if (dat_logger_.IsWriteFileOpen())
     {
         // Write status to file - for later replay
+        dat_logger_.SetSimulationTime(simulation_time);
         dat_logger_.WriteToDat(objectState_);
     }
 }

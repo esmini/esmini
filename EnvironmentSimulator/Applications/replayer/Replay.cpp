@@ -461,10 +461,10 @@ void Replay::BuildDataFromPackets()
                 }
             }
 
-            ReplayEntry entry          = last_state;
-            entry.state.info.timeStamp = static_cast<float>(t);
+            ReplayEntry entry = last_state;
             if (entry.state.info.active)
             {
+                entry.state.info.timeStamp = static_cast<float>(t);
                 data_.push_back(entry);
             }
         }
