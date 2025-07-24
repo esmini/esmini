@@ -57,16 +57,12 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
     }
 
-    double stop_time = 0.0;
     for (size_t i = 0; i < scenarios_.size(); i++)
     {
         ParsePackets(scenarios_[i]);
         BuildDataFromPackets();
         scenarioData.emplace_back(scenarios_[i], data_);
-        stop_time = std::max(stop_time, stopTime_);
     }
-
-    stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stop_time));  // Needs data_ to be filled before this can be called
 
     // Scenario with smallest start time first
     std::sort(scenarioData.begin(),
@@ -92,6 +88,18 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     if (!create_datfile_.empty())
     {
         CreateMergedDatfile(create_datfile_);
+    }
+
+    if (data_.size() > 0)
+    {
+        // Register first entry timestamp as starting time
+        time_       = data_[0].state.info.timeStamp;
+        startTime_  = time_;
+        startIndex_ = 0;
+
+        // Register last entry timestamp as stop time
+        stopTime_  = data_.back().state.info.timeStamp;
+        stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stopTime_));
     }
 }
 
