@@ -83,11 +83,11 @@ namespace Dat
 
     struct ObjState  // Could this be ObjectStateStruct with some additional fields?
     {
-        int         obj_id_          = -1;
-        bool        active_          = false;
-        bool        obj_written_     = false;  // denotes object added pkg written or not
-        float       speed_           = SMALL_NUMBERF;
-        Pose        pose_            = {};
+        int         obj_id_      = -1;
+        bool        active_      = false;
+        bool        obj_written_ = false;  // denotes object added pkg written or not
+        float       speed_       = SMALL_NUMBERF;
+        Pose        pose_;
         int         model_id_        = -1;
         int         obj_type_        = -1;
         int         obj_category_    = -1;
