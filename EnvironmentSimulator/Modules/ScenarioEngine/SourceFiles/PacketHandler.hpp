@@ -117,7 +117,7 @@ namespace Dat
         template <typename... Data>
         int  Write(PacketId p_id, const Data&... data);
         void WritePacket(PacketGeneric& packet);
-        int  WriteToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states);
+        int  WriteToDat(const std::unique_ptr<scenarioengine::ObjectState>& object_state);
 
         size_t SerializedSize(const std::string& str);
 
@@ -143,6 +143,8 @@ namespace Dat
         void SetSimulationTime(const double simulation_time);
         bool IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const;
         bool IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const;
+        void ResetCurrentIds();
+        void CheckDeletedObjects();
 
     private:
         std::ofstream           write_file_;
@@ -152,6 +154,7 @@ namespace Dat
         bool                    object_id_written_ = false;
         double                  simulation_time_   = 0.0;
         std::unordered_set<int> previous_ids_;  // Keep track of object IDs
+        std::unordered_set<int> current_ids_;   // Keep track of object IDs for the current state
     };
 
 }  // namespace Dat
