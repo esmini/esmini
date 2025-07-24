@@ -1102,9 +1102,16 @@ void ScenarioGateway::WriteStatesToFile(const double simulation_time)
 {
     if (dat_logger_.IsWriteFileOpen())
     {
-        // Write status to file - for later replay
         dat_logger_.SetSimulationTime(simulation_time);
-        dat_logger_.WriteToDat(objectState_);
+        dat_logger_.ResetCurrentIds();
+        for (const auto& object_state : objectState_)
+        {
+            // Write status to file - for later replay
+            dat_logger_.WriteToDat(object_state);
+            dat_logger_.SetObjectIdWritten(false);  // Indicate we need to write object id for next state
+        }
+        dat_logger_.CheckDeletedObjects();
+        dat_logger_.SetTimestampWritten(false);  // Reset timestamp written flag after writing all states
     }
 }
 

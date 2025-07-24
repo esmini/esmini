@@ -44,183 +44,182 @@ int Dat::DatLogger::Init(const std::string& file_name, const std::string& odr_na
     return 0;
 }
 
-int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states)
+int Dat::DatLogger::WriteToDat(const std::unique_ptr<scenarioengine::ObjectState>& object_state)
 {
     // New object state, check if it exists in the cache, else we add it
-    std::unordered_set<int> current_ids;
-    for (const auto& object_state : object_states)
+    const auto state   = &object_state->state_;
+    current_object_id_ = state->info.id;
+    current_ids_.insert(current_object_id_);
+
+    auto cache_it = object_state_cache_.state_.find(current_object_id_);
+    if (cache_it == object_state_cache_.state_.end())
     {
-        auto state = &object_state->state_;
-
-        current_object_id_ = state->info.id;
-        current_ids.insert(current_object_id_);
-        auto cache_it = object_state_cache_.state_.find(current_object_id_);
-        if (cache_it == object_state_cache_.state_.end())
-        {
-            // New object state, add it to the cache
-            ObjState obj_state;
-            obj_state.obj_id_                              = current_object_id_;
-            object_state_cache_.state_[current_object_id_] = obj_state;
-            cache_it                                       = object_state_cache_.state_.find(current_object_id_);
-        }
-
-        // We might want to write a state to datfile, so we set the timestamp
-        object_state_cache_.timestamp_ = static_cast<float>(simulation_time_);
-
-        // PacketId::SPEED
-        if (!NEAR_NUMBERSF(cache_it->second.speed_, static_cast<float>(state->info.speed)))
-        {
-            cache_it->second.speed_ = static_cast<float>(state->info.speed);
-            Write(PacketId::SPEED, cache_it->second.speed_);
-        }
-        // PacketId::POSE
-        if (!IsPoseEqual(cache_it->second.pose_, state->pos))
-        {
-            cache_it->second.pose_.x = static_cast<float>(state->pos.GetX());
-            cache_it->second.pose_.y = static_cast<float>(state->pos.GetY());
-            cache_it->second.pose_.z = static_cast<float>(state->pos.GetZ());
-            cache_it->second.pose_.h = static_cast<float>(state->pos.GetH());
-            cache_it->second.pose_.p = static_cast<float>(state->pos.GetP());
-            cache_it->second.pose_.r = static_cast<float>(state->pos.GetR());
-
-            Write(PacketId::POSE,
-                  cache_it->second.pose_.x,
-                  cache_it->second.pose_.y,
-                  cache_it->second.pose_.z,
-                  cache_it->second.pose_.h,
-                  cache_it->second.pose_.p,
-                  cache_it->second.pose_.r);
-        }
-
-        // PacketId::MODEL_ID
-        if (cache_it->second.model_id_ != state->info.model_id)
-        {
-            cache_it->second.model_id_ = state->info.model_id;
-            Write(PacketId::MODEL_ID, cache_it->second.model_id_);
-        }
-
-        // PacketId::OBJ_TYPE
-        if (cache_it->second.obj_type_ != state->info.obj_type)
-        {
-            cache_it->second.obj_type_ = state->info.obj_type;
-            Write(PacketId::OBJ_TYPE, cache_it->second.obj_type_);
-        }
-
-        // PacketId::OBJ_CATEGORY
-        if (cache_it->second.obj_category_ != state->info.obj_category)
-        {
-            cache_it->second.obj_category_ = state->info.obj_category;
-            Write(PacketId::OBJ_CATEGORY, cache_it->second.obj_category_);
-        }
-
-        // PacketId::CTRL_TYPE
-        if (cache_it->second.ctrl_type_ != state->info.ctrl_type)
-        {
-            cache_it->second.ctrl_type_ = state->info.ctrl_type;
-            Write(PacketId::CTRL_TYPE, cache_it->second.ctrl_type_);
-        }
-
-        // PacketId::WHEEL_ANGLE
-        float wheel_angle = (state->info.wheel_data.empty()) ? 0.0f : static_cast<float>(state->info.wheel_data[0].h);
-        if (!NEAR_NUMBERSF(cache_it->second.wheel_angle_, wheel_angle))
-        {
-            cache_it->second.wheel_angle_ = wheel_angle;
-            Write(PacketId::WHEEL_ANGLE, cache_it->second.wheel_angle_);
-        }
-
-        // PacketId::WHEEL_ROT
-        float wheel_rot = (state->info.wheel_data.empty()) ? 0.0f : static_cast<float>(state->info.wheel_data[0].p);
-        if (!NEAR_NUMBERSF(cache_it->second.wheel_rot_, wheel_rot))
-        {
-            cache_it->second.wheel_rot_ = wheel_rot;
-            Write(PacketId::WHEEL_ROT, cache_it->second.wheel_rot_);
-        }
-
-        // PacketId::BOUNDING_BOX
-        if (!IsBoundingBoxEqual(cache_it->second.bounding_box_, state->info.boundingbox))
-        {
-            cache_it->second.bounding_box_.x      = state->info.boundingbox.center_.x_;
-            cache_it->second.bounding_box_.y      = state->info.boundingbox.center_.y_;
-            cache_it->second.bounding_box_.z      = state->info.boundingbox.center_.z_;
-            cache_it->second.bounding_box_.length = state->info.boundingbox.dimensions_.length_;
-            cache_it->second.bounding_box_.width  = state->info.boundingbox.dimensions_.width_;
-            cache_it->second.bounding_box_.height = state->info.boundingbox.dimensions_.height_;
-
-            Write(PacketId::BOUNDING_BOX,
-                  cache_it->second.bounding_box_.x,
-                  cache_it->second.bounding_box_.y,
-                  cache_it->second.bounding_box_.z,
-                  cache_it->second.bounding_box_.length,
-                  cache_it->second.bounding_box_.width,
-                  cache_it->second.bounding_box_.height);
-        }
-
-        // PacketId::SCALE_MODE
-        if (cache_it->second.scale_mode_ != state->info.scaleMode)
-        {
-            cache_it->second.scale_mode_ = state->info.scaleMode;
-            Write(PacketId::SCALE_MODE, cache_it->second.scale_mode_);
-        }
-
-        // PacketId::VISIBILITY_MASK
-        if (cache_it->second.visibility_mask_ != state->info.visibilityMask)
-        {
-            cache_it->second.visibility_mask_ = state->info.visibilityMask;
-            Write(PacketId::VISIBILITY_MASK, cache_it->second.visibility_mask_);
-        }
-        // PacketId::NAME
-        if (std::strcmp(cache_it->second.name_.c_str(), state->info.name) != 0)
-        {
-            cache_it->second.name_ = std::string(state->info.name);
-
-            auto name_size = static_cast<unsigned int>(cache_it->second.name_.size());
-            Write(PacketId::NAME, name_size, cache_it->second.name_);
-        }
-        // PacketId::ROAD_ID
-        if (cache_it->second.road_id_ != state->pos.GetTrackId())
-        {
-            cache_it->second.road_id_ = state->pos.GetTrackId();
-            Write(PacketId::ROAD_ID, cache_it->second.road_id_);
-        }
-
-        // PacketId::LANE_ID
-        if (cache_it->second.lane_id_ != state->pos.GetLaneId())
-        {
-            cache_it->second.lane_id_ = state->pos.GetLaneId();
-            Write(PacketId::LANE_ID, cache_it->second.lane_id_);
-        }
-
-        // PacketId::POS_OFFSET
-        if (!NEAR_NUMBERSF(cache_it->second.pos_offset_, static_cast<float>(state->pos.GetOffset())))
-        {
-            cache_it->second.pos_offset_ = static_cast<float>(state->pos.GetOffset());
-            Write(PacketId::POS_OFFSET, cache_it->second.pos_offset_);
-        }
-
-        // PacketId::POS_T
-        if (!NEAR_NUMBERSF(cache_it->second.pos_t_, static_cast<float>(state->pos.GetT())))
-        {
-            cache_it->second.pos_t_ = static_cast<float>(state->pos.GetT());
-            Write(PacketId::POS_T, cache_it->second.pos_t_);
-        }
-
-        // PacketId::POS_S
-        if (!NEAR_NUMBERSF(cache_it->second.pos_s_, static_cast<float>(state->pos.GetS())))
-        {
-            cache_it->second.pos_s_ = static_cast<float>(state->pos.GetS());
-            Write(PacketId::POS_S, cache_it->second.pos_s_);
-        }
-
-        this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state
+        // New object state, add it to the cache
+        ObjState obj_state;
+        obj_state.obj_id_                              = current_object_id_;
+        object_state_cache_.state_[current_object_id_] = obj_state;
+        cache_it                                       = object_state_cache_.state_.find(current_object_id_);
     }
 
+    // We might want to write a state to datfile, so we set the timestamp
+    object_state_cache_.timestamp_ = static_cast<float>(simulation_time_);
+
+    // PacketId::SPEED
+    if (!NEAR_NUMBERSF(cache_it->second.speed_, static_cast<float>(state->info.speed)))
+    {
+        cache_it->second.speed_ = static_cast<float>(state->info.speed);
+        Write(PacketId::SPEED, cache_it->second.speed_);
+    }
+    // PacketId::POSE
+    if (!IsPoseEqual(cache_it->second.pose_, state->pos))
+    {
+        cache_it->second.pose_.x = static_cast<float>(state->pos.GetX());
+        cache_it->second.pose_.y = static_cast<float>(state->pos.GetY());
+        cache_it->second.pose_.z = static_cast<float>(state->pos.GetZ());
+        cache_it->second.pose_.h = static_cast<float>(state->pos.GetH());
+        cache_it->second.pose_.p = static_cast<float>(state->pos.GetP());
+        cache_it->second.pose_.r = static_cast<float>(state->pos.GetR());
+
+        Write(PacketId::POSE,
+              cache_it->second.pose_.x,
+              cache_it->second.pose_.y,
+              cache_it->second.pose_.z,
+              cache_it->second.pose_.h,
+              cache_it->second.pose_.p,
+              cache_it->second.pose_.r);
+    }
+
+    // PacketId::MODEL_ID
+    if (cache_it->second.model_id_ != state->info.model_id)
+    {
+        cache_it->second.model_id_ = state->info.model_id;
+        Write(PacketId::MODEL_ID, cache_it->second.model_id_);
+    }
+
+    // PacketId::OBJ_TYPE
+    if (cache_it->second.obj_type_ != state->info.obj_type)
+    {
+        cache_it->second.obj_type_ = state->info.obj_type;
+        Write(PacketId::OBJ_TYPE, cache_it->second.obj_type_);
+    }
+
+    // PacketId::OBJ_CATEGORY
+    if (cache_it->second.obj_category_ != state->info.obj_category)
+    {
+        cache_it->second.obj_category_ = state->info.obj_category;
+        Write(PacketId::OBJ_CATEGORY, cache_it->second.obj_category_);
+    }
+
+    // PacketId::CTRL_TYPE
+    if (cache_it->second.ctrl_type_ != state->info.ctrl_type)
+    {
+        cache_it->second.ctrl_type_ = state->info.ctrl_type;
+        Write(PacketId::CTRL_TYPE, cache_it->second.ctrl_type_);
+    }
+
+    // PacketId::WHEEL_ANGLE
+    float wheel_angle = (state->info.wheel_data.empty()) ? 0.0f : static_cast<float>(state->info.wheel_data[0].h);
+    if (!NEAR_NUMBERSF(cache_it->second.wheel_angle_, wheel_angle))
+    {
+        cache_it->second.wheel_angle_ = wheel_angle;
+        Write(PacketId::WHEEL_ANGLE, cache_it->second.wheel_angle_);
+    }
+
+    // PacketId::WHEEL_ROT
+    float wheel_rot = (state->info.wheel_data.empty()) ? 0.0f : static_cast<float>(state->info.wheel_data[0].p);
+    if (!NEAR_NUMBERSF(cache_it->second.wheel_rot_, wheel_rot))
+    {
+        cache_it->second.wheel_rot_ = wheel_rot;
+        Write(PacketId::WHEEL_ROT, cache_it->second.wheel_rot_);
+    }
+
+    // PacketId::BOUNDING_BOX
+    if (!IsBoundingBoxEqual(cache_it->second.bounding_box_, state->info.boundingbox))
+    {
+        cache_it->second.bounding_box_.x      = state->info.boundingbox.center_.x_;
+        cache_it->second.bounding_box_.y      = state->info.boundingbox.center_.y_;
+        cache_it->second.bounding_box_.z      = state->info.boundingbox.center_.z_;
+        cache_it->second.bounding_box_.length = state->info.boundingbox.dimensions_.length_;
+        cache_it->second.bounding_box_.width  = state->info.boundingbox.dimensions_.width_;
+        cache_it->second.bounding_box_.height = state->info.boundingbox.dimensions_.height_;
+
+        Write(PacketId::BOUNDING_BOX,
+              cache_it->second.bounding_box_.x,
+              cache_it->second.bounding_box_.y,
+              cache_it->second.bounding_box_.z,
+              cache_it->second.bounding_box_.length,
+              cache_it->second.bounding_box_.width,
+              cache_it->second.bounding_box_.height);
+    }
+
+    // PacketId::SCALE_MODE
+    if (cache_it->second.scale_mode_ != state->info.scaleMode)
+    {
+        cache_it->second.scale_mode_ = state->info.scaleMode;
+        Write(PacketId::SCALE_MODE, cache_it->second.scale_mode_);
+    }
+
+    // PacketId::VISIBILITY_MASK
+    if (cache_it->second.visibility_mask_ != state->info.visibilityMask)
+    {
+        cache_it->second.visibility_mask_ = state->info.visibilityMask;
+        Write(PacketId::VISIBILITY_MASK, cache_it->second.visibility_mask_);
+    }
+    // PacketId::NAME
+    if (std::strcmp(cache_it->second.name_.c_str(), state->info.name) != 0)
+    {
+        cache_it->second.name_ = std::string(state->info.name);
+
+        auto name_size = static_cast<unsigned int>(cache_it->second.name_.size());
+        Write(PacketId::NAME, name_size, cache_it->second.name_);
+    }
+    // PacketId::ROAD_ID
+    if (cache_it->second.road_id_ != state->pos.GetTrackId())
+    {
+        cache_it->second.road_id_ = state->pos.GetTrackId();
+        Write(PacketId::ROAD_ID, cache_it->second.road_id_);
+    }
+
+    // PacketId::LANE_ID
+    if (cache_it->second.lane_id_ != state->pos.GetLaneId())
+    {
+        cache_it->second.lane_id_ = state->pos.GetLaneId();
+        Write(PacketId::LANE_ID, cache_it->second.lane_id_);
+    }
+
+    // PacketId::POS_OFFSET
+    if (!NEAR_NUMBERSF(cache_it->second.pos_offset_, static_cast<float>(state->pos.GetOffset())))
+    {
+        cache_it->second.pos_offset_ = static_cast<float>(state->pos.GetOffset());
+        Write(PacketId::POS_OFFSET, cache_it->second.pos_offset_);
+    }
+
+    // PacketId::POS_T
+    if (!NEAR_NUMBERSF(cache_it->second.pos_t_, static_cast<float>(state->pos.GetT())))
+    {
+        cache_it->second.pos_t_ = static_cast<float>(state->pos.GetT());
+        Write(PacketId::POS_T, cache_it->second.pos_t_);
+    }
+
+    // PacketId::POS_S
+    if (!NEAR_NUMBERSF(cache_it->second.pos_s_, static_cast<float>(state->pos.GetS())))
+    {
+        cache_it->second.pos_s_ = static_cast<float>(state->pos.GetS());
+        Write(PacketId::POS_S, cache_it->second.pos_s_);
+    }
+
+    return 0;
+}
+
+void Dat::DatLogger::CheckDeletedObjects()
+{
     // Will be empty before first iteration, so we ignore that case
     if (!previous_ids_.empty())
     {
         // Write deleted objects
         for (const auto& previous_id : previous_ids_)
         {
-            if (current_ids.count(previous_id) == 0)
+            if (current_ids_.count(previous_id) == 0)
             {
                 // Object used to exist but was not found in the current state, so it has been deleted
                 current_object_id_ = previous_id;
@@ -231,11 +230,7 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
         }
     }
 
-    previous_ids_ = std::move(current_ids);
-
-    this->SetTimestampWritten(false);  // Reset timestamp written flag after writing all states
-
-    return 0;
+    previous_ids_ = std::move(current_ids_);
 }
 
 template <typename... Data>
@@ -301,6 +296,11 @@ void Dat::DatLogger::SetObjectIdWritten(bool state)
 void Dat::DatLogger::SetSimulationTime(const double simulation_time)
 {
     simulation_time_ = simulation_time;
+}
+
+void Dat::DatLogger::ResetCurrentIds()
+{
+    current_ids_.clear();
 }
 
 bool Dat::DatLogger::IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const
