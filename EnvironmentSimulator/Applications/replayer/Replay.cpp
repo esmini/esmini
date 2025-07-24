@@ -14,6 +14,7 @@
 #include "ScenarioGateway.hpp"
 #include "CommonMini.hpp"
 #include "dirent.h"
+#include "PacketHandler.hpp"
 
 using namespace scenarioengine;
 
@@ -85,11 +86,6 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     // Build remaining data in order.
     BuildData(scenarioData);
 
-    if (!create_datfile_.empty())
-    {
-        CreateMergedDatfile(create_datfile_);
-    }
-
     if (data_.size() > 0)
     {
         // Register first entry timestamp as starting time
@@ -100,6 +96,11 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         // Register last entry timestamp as stop time
         stopTime_  = data_.back().state.info.timeStamp;
         stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stopTime_));
+    }
+
+    if (!create_datfile_.empty())
+    {
+        CreateMergedDatfile(create_datfile_);
     }
 }
 
@@ -930,22 +931,63 @@ void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntr
 
 void Replay::CreateMergedDatfile(const std::string filename) const
 {
-    std::ofstream data_file_;
-    data_file_.open(filename, std::ofstream::binary);
-    if (data_file_.fail())
+    Dat::DatLogger dat_logger;
+    dat_logger.Init(filename, header_.odr_filename.string, header_.model_filename.string);
+
+    if (!dat_logger.IsWriteFileOpen())
     {
-        LOG_ERROR("Cannot open file: {}", filename);
-        exit(-1);
+        LOG_ERROR("Failed to open dat file for writing: {}", filename);
+        return;
     }
 
-    data_file_.write(reinterpret_cast<const char*>(&header_), sizeof(header_));
-
-    if (data_file_.is_open())
+    std::vector<std::unique_ptr<scenarioengine::ObjectState>> object_states;
+    for (size_t i = 0; i < data_.size() - 1; i++)
     {
-        // Write status to file - for later replay
-        for (size_t i = 0; i < data_.size(); i++)
+        auto obj = std::make_unique<scenarioengine::ObjectState>(data_[i].state.info.id,
+                                                                 data_[i].state.info.name,
+                                                                 data_[i].state.info.obj_type,
+                                                                 data_[i].state.info.obj_category,
+                                                                 0,  // No role
+                                                                 data_[i].state.info.model_id,
+                                                                 data_[i].state.info.ctrl_type,
+                                                                 data_[i].state.info.boundingbox,
+                                                                 data_[i].state.info.scaleMode,
+                                                                 data_[i].state.info.visibilityMask,
+                                                                 static_cast<double>(data_[i].state.info.timeStamp),
+                                                                 static_cast<double>(data_[i].state.info.speed),
+                                                                 static_cast<double>(data_[i].state.info.wheel_angle),
+                                                                 static_cast<double>(data_[i].state.info.wheel_rot),
+                                                                 0.0,  // No z pos
+                                                                 static_cast<double>(data_[i].state.pos.x),
+                                                                 static_cast<double>(data_[i].state.pos.y),
+                                                                 static_cast<double>(data_[i].state.pos.z),
+                                                                 static_cast<double>(data_[i].state.pos.h),
+                                                                 static_cast<double>(data_[i].state.pos.p),
+                                                                 static_cast<double>(data_[i].state.pos.r));
+
+        obj->state_.pos.SetTrackId(data_[i].state.pos.roadId);
+        obj->state_.pos.SetLaneId(data_[i].state.pos.laneId);
+        obj->state_.pos.SetOffset(static_cast<double>(data_[i].state.pos.offset));
+        obj->state_.pos.SetT(static_cast<double>(data_[i].state.pos.t));
+        obj->state_.pos.SetS(static_cast<double>(data_[i].state.pos.s));
+
+        object_states.emplace_back(std::move(obj));
+
+        // If the next timestamp is a new entry, we need to send it to PacketHandler for dat creation
+        if (data_[i + 1].state.info.timeStamp != data_[i].state.info.timeStamp)
         {
-            data_file_.write(reinterpret_cast<const char*>(&data_[i].state), sizeof(data_[i].state));
+            dat_logger.SetSimulationTime(data_[i].state.info.timeStamp);
+            dat_logger.ResetCurrentIds();
+            for (const auto& object_state : object_states)
+            {
+                // Write status to file - for later replay
+                dat_logger.WriteToDat(object_state);
+                dat_logger.SetObjectIdWritten(false);  // Indicate we need to write object id for next state
+            }
+            dat_logger.CheckDeletedObjects();
+            dat_logger.SetTimestampWritten(false);  // Reset timestamp written flag after writing all states
+
+            object_states.clear();  // Clear the states for the next timestamp
         }
     }
 }
