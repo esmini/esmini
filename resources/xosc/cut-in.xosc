@@ -151,7 +151,7 @@
                               <SpeedAction>
                                  <SpeedActionDynamics dynamicsShape="linear" value="-4" dynamicsDimension="rate"/>
                                  <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="3"/>
+                                    <AbsoluteTargetSpeed value="0"/>
                                  </SpeedActionTarget>
                               </SpeedAction>
                            </LongitudinalAction>
