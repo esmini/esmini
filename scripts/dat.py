@@ -35,7 +35,7 @@ class PacketId(enum.Enum):
     END_OF_SCENARIO = 21
 
 class DataType:
-    """Enum for data types used in the .dat file."""
+    """Class for data types used in the .dat file."""
     double = '<d'
     int32 = '<i'
     uint32 = '<I'
@@ -87,6 +87,25 @@ def read_dat_header(file):
     model_filename = read_string_packet(file)
     return (version_major, version_minor, odr_filename, model_filename)
 
+float_map = {
+        PacketId.SPEED.value: "speed",
+        PacketId.WHEEL_ANGLE.value: "wheel_angle",
+        PacketId.WHEEL_ROT.value: "wheel_rot",
+        PacketId.POS_OFFSET.value: "offset",
+        PacketId.POS_T.value: "t",
+        PacketId.POS_S.value: "s",
+        }
+
+integer_map = {
+    PacketId.MODEL_ID.value: ("model_id", DataType.int32),
+    PacketId.OBJ_TYPE.value: ("obj_type", DataType.int32),
+    PacketId.OBJ_CATEGORY.value: ("obj_category", DataType.int32),
+    PacketId.CTRL_TYPE.value: ("ctrl_type", DataType.int32),
+    PacketId.SCALE_MODE.value: ("scaleMode", DataType.int32),
+    PacketId.VISIBILITY_MASK.value: ("visibilityMask", DataType.int32),
+    PacketId.ROAD_ID.value: ("roadId", DataType.uint32),
+    PacketId.LANE_ID.value: ("laneId", DataType.int32),
+}
 
 class DATFile():
     ObjectStateStructDat = {
@@ -152,6 +171,7 @@ class DATFile():
         self.timestamp = 0.0
         self.end_time = 0.0
         self.id_to_search_idx = {}
+        self.ghost_dt = 0.05
 
         self.data = []
 
@@ -161,7 +181,6 @@ class DATFile():
 
     def build_data(self):
         self.object_state_cache.clear()
-
 
         dt = self.min_timestep
         # TODO: Allow custom argument for dt
@@ -178,7 +197,6 @@ class DATFile():
         else:
             labels = self.get_labels_line()
         
-        ghost_dt = 0.05
         t = start_time
         while t <= self.end_time + EPSILON:
             for obj_id in self.object_ids:
@@ -202,16 +220,22 @@ class DATFile():
                     self.data.append([state[label] for label in labels])
 
             if t < 0.0 - EPSILON:  # If t is negative, we use ghost_dt to avoid going backwards in time
-                t += ghost_dt
+                t += self.ghost_dt
             else:
                 t += dt
 
     def parse_data(self):
+        """Parse the .dat file and extract object states.
+           Packets are read in the order they are likely to appear in the file.
+        """
         while self.file.tell() < self.file_size:
             p_id = read_packet_header(self.file)
+
+            # TIMESTAMP packet
             if p_id == PacketId.TIMESTAMP.value:
                 self.timestamp = read_dtype(self.file, DataType.float)
 
+            # OBJ_ID packet
             elif p_id == PacketId.OBJ_ID.value:
                 if self.ObjectStateStructDat["id"] in self.object_ids:
                     self.object_events_map[self.ObjectStateStructDat["id"]].append(self.ObjectStateStructDat.copy())
@@ -223,73 +247,45 @@ class DATFile():
                 if obj_id in self.object_state_cache:
                     self.ObjectStateStructDat = self.object_state_cache[obj_id]
                     
-                    if self.min_timestep == float('inf'):
-                        self.min_timestep = self.timestamp - self.ObjectStateStructDat["time"]
-                    else:
-                        dt = self.timestamp - self.ObjectStateStructDat["time"]
-                        if not (abs(dt) < 0.001):
-                            dt = round(dt * 1000.0) / 1000.0  # Avoid floating point precision issues
-                            self.min_timestep = min(self.min_timestep, dt)
+                    dt = self.timestamp - self.ObjectStateStructDat["time"]
+                    if not (abs(dt) < 0.001):
+                        dt = round(dt * 1000.0) / 1000.0  # Avoid floating point precision issues
+                        self.min_timestep = min(self.min_timestep, dt) if self.min_timestep != float('inf') else dt
                 
                 self.ObjectStateStructDat["time"] = self.timestamp
                 self.ObjectStateStructDat["active"] = True
                 self.ObjectStateStructDat["id"] = obj_id
                 self.object_ids.add(obj_id)
-                
-            elif p_id == PacketId.MODEL_ID.value:
-                model_id = read_dtype(self.file, DataType.int32)
-                self.ObjectStateStructDat["model_id"] = model_id
-            elif p_id == PacketId.OBJ_TYPE.value:
-                obj_type = read_dtype(self.file, DataType.int32)
-                self.ObjectStateStructDat["obj_type"] = obj_type
-            elif p_id == PacketId.OBJ_CATEGORY.value:
-                obj_category = read_dtype(self.file, DataType.int32)
-                self.ObjectStateStructDat["obj_category"] = obj_category
-            elif p_id == PacketId.CTRL_TYPE.value:
-                ctrl_type = read_dtype(self.file, DataType.int32)
-                self.ObjectStateStructDat["ctrl_type"] = ctrl_type
+
+            # POSE packet
+            elif p_id == PacketId.POSE.value:
+                for k in ["x", "y", "z", "h", "p", "r"]:
+                    self.ObjectStateStructDat[k] = read_dtype(self.file, DataType.float)
+            
+            # Any float packet
+            elif p_id in float_map:
+                self.ObjectStateStructDat[float_map[p_id]] = read_dtype(self.file, DataType.float)
+
+            # Any integer packet
+            elif p_id in integer_map:
+                self.ObjectStateStructDat[integer_map[p_id][0]] = read_dtype(self.file, integer_map[p_id][1])
+            
+            # NAME packet
             elif p_id == PacketId.NAME.value:
                 name = read_string_packet(self.file)
                 self.ObjectStateStructDat["name"] = name
-            elif p_id == PacketId.SPEED.value:
-                speed = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["speed"] = speed
-            elif p_id == PacketId.WHEEL_ANGLE.value:
-                wheel_angle = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["wheel_angle"] = wheel_angle
-            elif p_id == PacketId.WHEEL_ROT.value:
-                wheel_rot = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["wheel_rot"] = wheel_rot
-            elif p_id == PacketId.POSE.value:
-                self.ObjectStateStructDat["x"] = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["y"] = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["z"] = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["h"] = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["p"] = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["r"] = read_dtype(self.file, DataType.float)
+            
+            # BOUNDING_BOX packet
             elif p_id == PacketId.BOUNDING_BOX.value:
-                self.ObjectStateStructDat["centerOffsetX"] = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["centerOffsetY"] = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["centerOffsetZ"] = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["width"] = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["length"] = read_dtype(self.file, DataType.float)
-                self.ObjectStateStructDat["height"] = read_dtype(self.file, DataType.float)
-            elif p_id == PacketId.SCALE_MODE.value:
-                self.ObjectStateStructDat["scaleMode"] = read_dtype(self.file, DataType.int32)
-            elif p_id == PacketId.VISIBILITY_MASK.value:
-                self.ObjectStateStructDat["visibilityMask"] = read_dtype(self.file, DataType.int32)
-            elif p_id == PacketId.ROAD_ID.value:
-                self.ObjectStateStructDat["roadId"] = read_dtype(self.file, DataType.uint32)
-            elif p_id == PacketId.LANE_ID.value:
-                self.ObjectStateStructDat["laneId"] = read_dtype(self.file, DataType.int32)
-            elif p_id == PacketId.POS_OFFSET.value:
-                self.ObjectStateStructDat["offset"] = read_dtype(self.file, DataType.float)
-            elif p_id == PacketId.POS_T.value:
-                self.ObjectStateStructDat["t"] = read_dtype(self.file, DataType.float)
-            elif p_id == PacketId.POS_S.value:
-                self.ObjectStateStructDat["s"] = read_dtype(self.file, DataType.float)
+                keys = ["centerOffsetX", "centerOffsetY", "centerOffsetZ", "width", "length", "height"]
+                for k in keys:
+                    self.ObjectStateStructDat[k] = read_dtype(self.file, DataType.float)
+            
+            # OBJ_DELETED packet
             elif p_id == PacketId.OBJ_DELETED.value:
                 self.ObjectStateStructDat["active"] = False
+            
+            # END_OF_SCENARIO packet
             elif p_id == PacketId.END_OF_SCENARIO.value:
                 self.object_events_map[self.ObjectStateStructDat["id"]].append(self.ObjectStateStructDat.copy())
                 self.end_time = read_dtype(self.file, DataType.float)
