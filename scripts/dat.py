@@ -367,25 +367,21 @@ class DATFile():
             data["t"],
             data["s"]];
 
-    # TODO
-    # def print_csv(self, extended = False, include_file_refs = True):
+    def print_csv(self, extended = False, include_file_refs = True):
+        """Print the contents of the .dat file in CSV format to the console."""
+        # Print header
+        if include_file_refs:
+            print(self.get_header_line())
 
-    #     # Print header
-    #     if include_file_refs:
-    #         print(self.get_header_line())
+        # Print column headings / value types
+        if extended:
+            print(', '.join(self.get_labels_line_extended()))
+        else:
+            print(', '.join(self.get_labels_line()))
 
-    #     # Print column headings / value types
-    #     if extended:
-    #         print(self.get_labels_line_extended())
-    #     else:
-    #         print(self.get_labels_line())
-
-    #     # Read and print all rows of data
-    #     for data in self.data:
-    #         if extended:
-    #             print(self.get_data_line_extended(data))
-    #         else:
-    #             print(self.get_data_line(data))
+        # Read and print all rows of data
+        for data in self.data:
+            print(self.get_data_line(data))
 
     def save_csv(self, extended = False, include_file_refs = True):
         csvfile = os.path.splitext(self.filename)[0] + '.csv'
@@ -442,5 +438,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     dat = DATFile(args.filename, args.extended)
-    # dat.print_csv(args.file_refs)
+    dat.print_csv(args.extended, args.file_refs)
     dat.close()
