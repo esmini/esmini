@@ -132,7 +132,6 @@ class DATFile():
             raise
 
         self.version_major, self.version_minor, self.odr_filename, self.model_filename = read_dat_header(self.file)
-        print(f"Reading {filename} with version {self.get_header_line()}")
 
         if (self.version_major != VERSION_MAJOR or self.version_minor != VERSION_MINOR):
             print('Version mismatch. {} is version {}.{} while supported version is: {}.{}'.format(
@@ -179,6 +178,7 @@ class DATFile():
         else:
             labels = self.get_labels_line()
         
+        ghost_dt = 0.05
         t = start_time
         while t <= self.end_time + EPSILON:
             for obj_id in self.object_ids:
@@ -200,7 +200,11 @@ class DATFile():
                 if state["active"]:
                     state["time"] = t
                     self.data.append([state[label] for label in labels])
-            t += dt
+
+            if t < 0.0 - EPSILON:  # If t is negative, we use ghost_dt to avoid going backwards in time
+                t += ghost_dt
+            else:
+                t += dt
 
     def parse_data(self):
         while self.file.tell() < self.file_size:
@@ -442,5 +446,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     dat = DATFile(args.filename, args.extended)
-    dat.print_csv(args.file_refs)
+    # dat.print_csv(args.file_refs)
     dat.close()

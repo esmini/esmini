@@ -425,7 +425,8 @@ void Replay::BuildDataFromPackets()
         id_to_search_idx_[id] = 0;  // Initialize search index for each object ID
     }
 
-    for (float t = static_cast<float>(startTime_); t <= static_cast<float>(stopTime_) + 0.001f; t += dt)
+    float ghost_dt = 0.05f;
+    for (float t = static_cast<float>(startTime_); t <= static_cast<float>(stopTime_) + 0.001f;)
     {
         for (const int obj_id : object_ids_)
         {
@@ -455,6 +456,14 @@ void Replay::BuildDataFromPackets()
                 entry.state.info.timeStamp = static_cast<float>(t);
                 data_.push_back(entry);
             }
+        }
+        if (t < 0.0f - SMALL_NUMBERF)  // If t is negative, we use ghost_dt to avoid going backwards in time
+        {
+            t += ghost_dt;
+        }
+        else
+        {
+            t += dt;
         }
     }
 }
