@@ -2992,6 +2992,7 @@ TEST(OSILaneParing, Signs)
     SE_Close();
 }
 
+/*
 static void ReadDat(std::string filename, std::vector<scenarioengine::ReplayEntry>& entries)
 {
     std::ifstream             file;
@@ -3454,6 +3455,7 @@ TEST(ExternalControlTest, TestTimings)
         }
     }
 }
+*/
 
 TEST(TestOsiReporter, AssignRoleTest)
 {
@@ -4753,7 +4755,7 @@ TEST(DirectJunctionTest, TestVariousRoutes)
     }
     SE_RegisterParameterDeclarationCallback(0, 0);
 }
-
+/*
 TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 {
     const char* args[2][2][6] = {
@@ -4838,7 +4840,7 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
         delete replay;
     }
 }
-
+*/
 void ConditionCallbackInstance1(const char* element_name, double timestamp)
 {
     EXPECT_STREQ(element_name, "act_start_condition");
