@@ -957,7 +957,7 @@ void Replay::CreateMergedDatfile(const std::string filename) const
                                                                  static_cast<double>(data_[i].state.info.speed),
                                                                  static_cast<double>(data_[i].state.info.wheel_angle),
                                                                  static_cast<double>(data_[i].state.info.wheel_rot),
-                                                                 0.0,  // No z pos
+                                                                 0.0,  // No rear axle z pos
                                                                  static_cast<double>(data_[i].state.pos.x),
                                                                  static_cast<double>(data_[i].state.pos.y),
                                                                  static_cast<double>(data_[i].state.pos.z),
@@ -965,6 +965,9 @@ void Replay::CreateMergedDatfile(const std::string filename) const
                                                                  static_cast<double>(data_[i].state.pos.p),
                                                                  static_cast<double>(data_[i].state.pos.r));
 
+        obj->state_.info.wheel_data.emplace_back();  // Initialize wheel_data vector
+        obj->state_.info.wheel_data[0].h = static_cast<double>(data_[i].state.info.wheel_angle);
+        obj->state_.info.wheel_data[0].p = static_cast<double>(data_[i].state.info.wheel_rot);
         obj->state_.pos.SetTrackId(data_[i].state.pos.roadId);
         obj->state_.pos.SetLaneId(data_[i].state.pos.laneId);
         obj->state_.pos.SetOffset(static_cast<double>(data_[i].state.pos.offset));
@@ -980,7 +983,6 @@ void Replay::CreateMergedDatfile(const std::string filename) const
             dat_logger.ResetCurrentIds();
             for (const auto& object_state : object_states)
             {
-                // Write status to file - for later replay
                 dat_logger.WriteToDat(object_state);
                 dat_logger.SetObjectIdWritten(false);  // Indicate we need to write object id for next state
             }
