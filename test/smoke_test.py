@@ -1569,7 +1569,6 @@ class TestSuite(unittest.TestCase):
 
     def test_alks(self):
         # Idea: Run scenario several times with different ALKS safety models
-        return
         with open('../resources/xosc/alks_r157_cut_in_quick_brake.xosc') as f:
             xosc_str = f.read()
 
