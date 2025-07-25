@@ -183,14 +183,14 @@ int Replay::ParsePackets(const std::string& filename)
                     // If the object already exists in the cache, fetch latest known state
                     replay_entry = object_state_cache_[id];
 
-                    // We'll deduce the minimum timestep, might be useful later
-                    if (!min_timestep_.has_value())
+                    // We'll deduce the minimum timestep, might be useful later (excluding ghost objects (ctrl_type == 100))
+                    if (replay_entry.state.info.ctrl_type != 100 && !min_timestep_.has_value())
                     {
-                        min_timestep_ = timestamp_ - replay_entry.state.info.timeStamp;
+                        min_timestep_ = abs(timestamp_ - replay_entry.state.info.timeStamp);
                     }
-                    else
+                    else if (replay_entry.state.info.ctrl_type != 100)
                     {
-                        float dt = timestamp_ - replay_entry.state.info.timeStamp;
+                        float dt = abs(timestamp_ - replay_entry.state.info.timeStamp);
                         if (!(abs(dt) < SMALL_NUMBERF))
                         {
                             // If we already have a minimum timestep, update it if the current one is smaller
