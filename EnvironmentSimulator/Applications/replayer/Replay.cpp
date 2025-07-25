@@ -943,36 +943,37 @@ void Replay::CreateMergedDatfile(const std::string filename) const
     std::vector<std::unique_ptr<scenarioengine::ObjectState>> object_states;
     for (size_t i = 0; i < data_.size() - 1; i++)
     {
-        auto obj = std::make_unique<scenarioengine::ObjectState>(data_[i].state.info.id,
-                                                                 data_[i].state.info.name,
-                                                                 data_[i].state.info.obj_type,
-                                                                 data_[i].state.info.obj_category,
+        auto state = &data_[i].state;
+        auto obj   = std::make_unique<scenarioengine::ObjectState>(state->info.id,
+                                                                 state->info.name,
+                                                                 state->info.obj_type,
+                                                                 state->info.obj_category,
                                                                  0,  // No role
-                                                                 data_[i].state.info.model_id,
-                                                                 data_[i].state.info.ctrl_type,
-                                                                 data_[i].state.info.boundingbox,
-                                                                 data_[i].state.info.scaleMode,
-                                                                 data_[i].state.info.visibilityMask,
-                                                                 static_cast<double>(data_[i].state.info.timeStamp),
-                                                                 static_cast<double>(data_[i].state.info.speed),
-                                                                 static_cast<double>(data_[i].state.info.wheel_angle),
-                                                                 static_cast<double>(data_[i].state.info.wheel_rot),
+                                                                 state->info.model_id,
+                                                                 state->info.ctrl_type,
+                                                                 state->info.boundingbox,
+                                                                 state->info.scaleMode,
+                                                                 state->info.visibilityMask,
+                                                                 static_cast<double>(state->info.timeStamp),
+                                                                 static_cast<double>(state->info.speed),
+                                                                 static_cast<double>(state->info.wheel_angle),
+                                                                 static_cast<double>(state->info.wheel_rot),
                                                                  0.0,  // No rear axle z pos
-                                                                 static_cast<double>(data_[i].state.pos.x),
-                                                                 static_cast<double>(data_[i].state.pos.y),
-                                                                 static_cast<double>(data_[i].state.pos.z),
-                                                                 static_cast<double>(data_[i].state.pos.h),
-                                                                 static_cast<double>(data_[i].state.pos.p),
-                                                                 static_cast<double>(data_[i].state.pos.r));
+                                                                 static_cast<double>(state->pos.x),
+                                                                 static_cast<double>(state->pos.y),
+                                                                 static_cast<double>(state->pos.z),
+                                                                 static_cast<double>(state->pos.h),
+                                                                 static_cast<double>(state->pos.p),
+                                                                 static_cast<double>(state->pos.r));
 
         obj->state_.info.wheel_data.emplace_back();  // Initialize wheel_data vector
-        obj->state_.info.wheel_data[0].h = static_cast<double>(data_[i].state.info.wheel_angle);
-        obj->state_.info.wheel_data[0].p = static_cast<double>(data_[i].state.info.wheel_rot);
-        obj->state_.pos.SetTrackId(data_[i].state.pos.roadId);
-        obj->state_.pos.SetLaneId(data_[i].state.pos.laneId);
-        obj->state_.pos.SetOffset(static_cast<double>(data_[i].state.pos.offset));
-        obj->state_.pos.SetT(static_cast<double>(data_[i].state.pos.t));
-        obj->state_.pos.SetS(static_cast<double>(data_[i].state.pos.s));
+        obj->state_.info.wheel_data[0].h = static_cast<double>(state->info.wheel_angle);
+        obj->state_.info.wheel_data[0].p = static_cast<double>(state->info.wheel_rot);
+        obj->state_.pos.SetTrackId(state->pos.roadId);
+        obj->state_.pos.SetLaneId(state->pos.laneId);
+        obj->state_.pos.SetOffset(static_cast<double>(state->pos.offset));
+        obj->state_.pos.SetT(static_cast<double>(state->pos.t));
+        obj->state_.pos.SetS(static_cast<double>(state->pos.s));
 
         object_states.emplace_back(std::move(obj));
 
@@ -980,14 +981,7 @@ void Replay::CreateMergedDatfile(const std::string filename) const
         if (data_[i + 1].state.info.timeStamp != data_[i].state.info.timeStamp)
         {
             dat_logger.SetSimulationTime(data_[i].state.info.timeStamp);
-            dat_logger.ResetCurrentIds();
-            for (const auto& object_state : object_states)
-            {
-                dat_logger.WriteToDat(object_state);
-                dat_logger.SetObjectIdWritten(false);  // Indicate we need to write object id for next state
-            }
-            dat_logger.CheckDeletedObjects();
-            dat_logger.SetTimestampWritten(false);  // Reset timestamp written flag after writing all states
+            dat_logger.WriteToDat(object_states);
 
             object_states.clear();  // Clear the states for the next timestamp
         }
