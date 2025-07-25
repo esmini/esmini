@@ -1119,8 +1119,13 @@ void ScenarioGateway::WriteStatesToFile(const double simulation_time)
 {
     if (dat_logger_.IsWriteFileOpen())
     {
-        dat_logger_.SetSimulationTime(simulation_time);
-        dat_logger_.WriteToDat(objectState_);
+        // Write only if simulation time is greater than last timestep, ensuring time strictly increasing (ghost might restart)
+        if (simulation_time <= 0.0 + SMALL_NUMBER || simulation_time > last_timestamp_ + SMALL_NUMBER)
+        {
+            dat_logger_.SetSimulationTime(simulation_time);
+            dat_logger_.WriteToDat(objectState_);
+        }
+        last_timestamp_ = std::max(last_timestamp_, simulation_time);
     }
 }
 
