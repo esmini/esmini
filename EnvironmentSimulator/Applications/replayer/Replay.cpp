@@ -152,6 +152,26 @@ int Replay::ParsePackets(const std::string& filename)
                 replay_entry.odometer = 0.0;
                 if (ReadPacket(header, timestamp_) != 0)
                     LOG_ERROR("Failed reading speed data.");
+
+                // If we encounter 2 TIMESTAMP packets in a row, we have non-changed objects
+                // This only happens when we dont have a fixed timestep, then we need to process these packets
+                if (previous_p_id_ == header.id)
+                {
+                    if (obj_events_map_.count(replay_entry.state.info.id) == 0)
+                    {
+                        obj_events_map_[replay_entry.state.info.id].push_back(replay_entry);
+                    }
+                    for (const auto& [obj_id, entry] : obj_events_map_)
+                    {
+                        if (entry.empty())
+                            continue;
+
+                        auto last_entry                 = entry.back();
+                        last_entry.state.info.timeStamp = timestamp_;
+                        obj_events_map_[obj_id].push_back(last_entry);
+                        object_state_cache_[obj_id] = last_entry;
+                    }
+                }
                 /* We set the timestamp when OBJ_ID packet is read, since we always transmit in the following order:
                  - time
                  - obj_id_1
@@ -385,13 +405,16 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
             {
-                // Add the last entry for the current object before processing the end of scenario
-                obj_events_map_[replay_entry.state.info.id].push_back(replay_entry);
                 float stop_time;
                 if (ReadPacket(header, stop_time) != 0)
                 {
                     LOG_ERROR("Failed reading end of scenario timestamp.");
                     return -1;
+                }
+                // We have an unsaved entry, so we add it to the map
+                if (replay_entry.state.info.timeStamp >= stop_time)
+                {
+                    obj_events_map_[replay_entry.state.info.id].push_back(replay_entry);
                 }
                 stopTime_ = static_cast<double>(stop_time);
                 break;
@@ -403,6 +426,7 @@ int Replay::ParsePackets(const std::string& filename)
                 return -1;
             }
         }
+        previous_p_id_ = header.id;
     }
 
     file_.close();

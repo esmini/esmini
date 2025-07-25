@@ -125,6 +125,7 @@ namespace scenarioengine
         float                                             timestamp_      = 0.0f;
         std::optional<float>                              min_timestep_   = std::nullopt;  // Minimum timestep in data
         float                                             fixed_timestep_ = 0.0f;          // Fixed timestep for replay, if specified
+        id_t                                              previous_p_id_  = 22;            // 22 outside length of PacketId
 
         int FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
     };
