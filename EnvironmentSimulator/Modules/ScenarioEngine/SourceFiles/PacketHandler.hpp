@@ -117,7 +117,7 @@ namespace Dat
         template <typename... Data>
         int  Write(PacketId p_id, const Data&... data);
         void WritePacket(PacketGeneric& packet);
-        int  WriteToDat(const std::unique_ptr<scenarioengine::ObjectState>& object_state);
+        int  WriteToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states);
 
         size_t SerializedSize(const std::string& str);
 
