@@ -379,6 +379,7 @@ namespace scenarioengine
         int updateObjectInfo(ObjectState *obj_state, double timestamp, int visibilityMask, double speed, double wheel_angle, double wheel_rot);
         std::ofstream  data_file_;
         Dat::DatLogger dat_logger_;
+        double         last_timestamp_ = 0.0;  // Last timestamp used for writing to file
     };
 
 }  // namespace scenarioengine

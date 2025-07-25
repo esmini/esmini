@@ -247,7 +247,7 @@ class DATFile():
                 if obj_id in self.object_state_cache:
                     self.ObjectStateStructDat = self.object_state_cache[obj_id]
                     
-                    dt = self.timestamp - self.ObjectStateStructDat["time"]
+                    dt = abs(self.timestamp - self.ObjectStateStructDat["time"])
                     if not (abs(dt) < 0.001):
                         dt = round(dt * 1000.0) / 1000.0  # Avoid floating point precision issues
                         self.min_timestep = min(self.min_timestep, dt) if self.min_timestep != float('inf') else dt
