@@ -415,7 +415,7 @@ void Replay::BuildDataFromPackets()
     object_state_cache_.clear();
 
     // If fixed timestep is specified, use it, otherwise use the minimum timestep found in the data
-    float dt = min_timestep_.value();
+    float dt = min_timestep_.value_or(0.01f);  // Default to 10ms if no minimum timestep is found
     if (fixed_timestep_ > 0.0f)
     {
         dt = fixed_timestep_;
