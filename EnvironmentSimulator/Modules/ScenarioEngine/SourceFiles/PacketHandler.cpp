@@ -47,7 +47,6 @@ int Dat::DatLogger::Init(const std::string& file_name, const std::string& odr_na
 int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states)
 {
     this->ResetCurrentIds();
-
     for (const auto& object_state : object_states)
     {
         // New object state, check if it exists in the cache, else we add it
@@ -213,6 +212,18 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
         }
 
         this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state
+    }
+
+    // In case we have variable timestep, we need to write every time packet
+    if (!timestamp_written_ && !fixed_timestep_)
+    {
+        PacketGeneric packet;
+        packet.header.id        = static_cast<id_t>(PacketId::TIMESTAMP);
+        packet.header.data_size = sizeof(float);
+        packet.data.resize(packet.header.data_size);
+        char* write_ptr = packet.data.data();
+        WriteToBuffer(write_ptr, static_cast<float>(simulation_time_));
+        WritePacket(packet);  // Direct write, avoids recursion and repeated flags
     }
 
     this->CheckDeletedObjects();

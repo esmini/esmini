@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include <CommonMini.hpp>
 
 namespace scenarioengine
 {
@@ -132,7 +133,10 @@ namespace Dat
         template <typename... Data>
         int ReadPacket(const Dat::PacketHeader& header, Data&... data);
 
-        DatLogger() = default;
+        DatLogger()
+        {
+            fixed_timestep_ = SE_Env::Inst().GetOptions().GetOptionSet("fixed_timestep");
+        }
         ~DatLogger();
 
         int Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name);
@@ -155,6 +159,7 @@ namespace Dat
         double                  simulation_time_   = 0.0;
         std::unordered_set<int> previous_ids_;  // Keep track of object IDs
         std::unordered_set<int> current_ids_;   // Keep track of object IDs for the current state
+        bool                    fixed_timestep_ = true;
     };
 
 }  // namespace Dat
