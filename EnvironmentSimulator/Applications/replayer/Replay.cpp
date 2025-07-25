@@ -438,19 +438,35 @@ void Replay::BuildDataFromPackets()
 {
     object_state_cache_.clear();
 
-    // If fixed timestep is specified, use it, otherwise use the minimum timestep found in the data
-    float dt = min_timestep_.value_or(0.01f);  // Default to 10ms if no minimum timestep is found
-    if (fixed_timestep_ > 0.0f)
-    {
-        dt = fixed_timestep_;
-    }
-
     // Find start time, maybe its earlier than 0.0s
     for (const auto& [id, entry] : obj_events_map_)
     {
         startTime_  = static_cast<double>(std::min(static_cast<float>(startTime_), entry.front().state.info.timeStamp));
         time_       = startTime_;
         startIndex_ = 0;
+
+        IsDataFixedTimestep(&entry);  // Check if the data has a fixed timestep or not
+    }
+
+    if (!logged_timestep_fixed_)
+    {
+        // If the replay has variable timestep, we build data based on the timestamps found in the packets
+        BuildDataVariableTimestep();
+    }
+    else
+    {
+        // If the replay has a fixed timestep, we can build data directly
+        BuildDataFixedTimestep();
+    }
+}
+
+void Replay::BuildDataFixedTimestep()
+{
+    // If fixed timestep is specified, use it, otherwise use the minimum timestep found in the data
+    float dt = min_timestep_.value_or(0.01f);  // Default to 10ms if no minimum timestep is found
+    if (fixed_timestep_ > 0.0f)
+    {
+        dt = fixed_timestep_;
     }
 
     for (const auto& id : object_ids_)
@@ -497,6 +513,81 @@ void Replay::BuildDataFromPackets()
         else
         {
             t += dt;
+        }
+    }
+}
+
+void Replay::BuildDataVariableTimestep()
+{
+    std::set<float> all_timestamps;  // Sorted, unique timestamps
+
+    // Step 1: Collect all timestamps
+    for (const auto& [obj_id, events] : obj_events_map_)
+    {
+        for (const auto& entry : events)
+        {
+            all_timestamps.insert(entry.state.info.timeStamp);
+        }
+    }
+
+    // Step 2: Process each timestamp
+    for (float t : all_timestamps)
+    {
+        for (int obj_id : object_ids_)
+        {
+            const auto& events     = obj_events_map_[obj_id];
+            auto&       last_state = object_state_cache_[obj_id];  // OK to be empty initially
+
+            // Update last known state if there's an event at or before time `t`
+            for (size_t i = id_to_search_idx_[obj_id]; i < events.size(); ++i)
+            {
+                if (events[i].state.info.timeStamp <= t + SMALL_NUMBERF)
+                {
+                    last_state                = events[i];
+                    id_to_search_idx_[obj_id] = i;
+                }
+                else
+                {
+                    break;  // Since events are sorted
+                }
+            }
+
+            // Emit entry
+            if (last_state.state.info.active)
+            {
+                ReplayEntry entry          = last_state;
+                entry.state.info.timeStamp = t;  // Set current time explicitly
+                data_.push_back(entry);
+            }
+        }
+    }
+}
+
+void Replay::IsDataFixedTimestep(const std::vector<scenarioengine::ReplayEntry>* entry)
+{
+    // Code below to deduce if the replay has a fixed timestep or not...
+    float dt;
+    for (size_t i = 0; i < entry->size() - 1; i++)
+    {
+        float timestamp = entry->at(i).state.info.timeStamp;
+        if (timestamp < 0.0f)
+        {
+            continue;
+        }
+        float next_timestamp = entry->at(i + 1).state.info.timeStamp;
+        float current_dt     = next_timestamp - timestamp;
+        if (i == 0)
+        {
+            dt = current_dt;
+        }
+        else
+        {
+            // If the delta differs by more than a small tolerance, it's not fixed
+            if (std::abs(current_dt - dt) > 0.001f)
+            {
+                logged_timestep_fixed_ = false;
+                break;  // No need to check further
+            }
         }
     }
 }
