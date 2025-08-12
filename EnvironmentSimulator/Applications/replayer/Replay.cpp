@@ -149,196 +149,158 @@ int Replay::ParsePackets(const std::string& filename)
         {
             case static_cast<id_t>(Dat::PacketId::TIMESTAMP):
             {
-                replay_entry.odometer = 0.0;
                 if (ReadPacket(header, timestamp_) != 0)
                     LOG_ERROR("Failed reading speed data.");
-
-                // If we encounter 2 TIMESTAMP packets in a row, we have non-changed objects
-                // This only happens when we dont have a fixed timestep, then we need to process these packets
-                if (previous_p_id_ == header.id)
-                {
-                    if (obj_events_map_.count(replay_entry.state.info.id) == 0)
-                    {
-                        obj_events_map_[replay_entry.state.info.id].push_back(replay_entry);
-                    }
-                    for (const auto& [obj_id, entry] : obj_events_map_)
-                    {
-                        if (entry.empty())
-                            continue;
-
-                        auto last_entry                 = entry.back();
-                        last_entry.state.info.timeStamp = timestamp_;
-                        obj_events_map_[obj_id].push_back(last_entry);
-                        object_state_cache_[obj_id] = last_entry;
-                    }
-                }
-                /* We set the timestamp when OBJ_ID packet is read, since we always transmit in the following order:
-                 - time
-                 - obj_id_1
-                 - data...
-                 - obj_id_2
-                 - data_2
-                 - time
-                 - etc.
-                */
+                timestamps_.push_back(timestamp_);  // Needed for variable timestep?
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_ID):
             {
-                if (object_ids_.count(replay_entry.state.info.id) != 0)  // Have we processed this object before?
+                if (ReadPacket(header, current_object_id_) != 0)
                 {
-                    // Yes we have, so we add the replay entry and store it as cache before reading a new ID and updating all its data.
-                    // This works because of the flow described in PacketId::TIMESTAMP
-                    obj_events_map_[replay_entry.state.info.id].push_back(replay_entry);
-                    object_state_cache_[replay_entry.state.info.id] = replay_entry;
-                }
-
-                // Get the new object ID
-                int id;
-                if (ReadPacket(header, id) != 0)
                     LOG_ERROR("Failed reading object ID.");
-
-                if (object_state_cache_.count(id) != 0)
-                {
-                    // If the object already exists in the cache, fetch latest known state
-                    replay_entry = object_state_cache_[id];
-
-                    // We'll deduce the minimum timestep if its not set (-1.0f), might be useful later (excluding ghost objects (ctrl_type == 100))
-                    if (min_timestep_ == -1.0f && replay_entry.state.info.ctrl_type != 100)
-                    {
-                        min_timestep_ = abs(timestamp_ - replay_entry.state.info.timeStamp);
-                    }
-                    else if (replay_entry.state.info.ctrl_type != 100)
-                    {
-                        float dt = abs(timestamp_ - replay_entry.state.info.timeStamp);
-                        if (!(abs(dt) < SMALL_NUMBERF))
-                        {
-                            // If we already have a minimum timestep, update it if the current one is smaller
-                            dt            = std::round(dt * 1000.0f) / 1000.0f;  // avoid floating point precision issues
-                            min_timestep_ = std::min(min_timestep_.value(), dt);
-                        }
-                    }
+                    return -1;
                 }
 
-                // We set the latest timestamp which is already fetched
-                replay_entry.state.info.timeStamp = timestamp_;
-                replay_entry.state.info.active    = true;
-                replay_entry.state.info.id        = id;  // Could be done earlier I guess, but we do it here for clarity
-
-                object_ids_.insert(replay_entry.state.info.id);  // Add the object ID to the set
-
-                // Proceed with reading the rest of the packet data
+                if (objects_timeline_.count(current_object_id_) == 0)
+                {
+                    // Initialize timelines for this object
+                    objects_timeline_[current_object_id_] = {};
+                    current_object_timeline_              = &objects_timeline_[current_object_id_];
+                }
+                else
+                {
+                    current_object_timeline_ = &objects_timeline_[current_object_id_];
+                }
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::SPEED):
             {
-                if (ReadPacket(header, replay_entry.state.info.speed) != 0)
+                float speed;
+                if (ReadPacket(header, speed) != 0)
                 {
                     LOG_ERROR("Failed reading speed data.");
                     return -1;
                 }
+
+                current_object_timeline_->speed_.values.emplace_back(timestamp_, speed);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POSE):
             {
-                if (ReadPacket(header,
-                               replay_entry.state.pos.x,
-                               replay_entry.state.pos.y,
-                               replay_entry.state.pos.z,
-                               replay_entry.state.pos.h,
-                               replay_entry.state.pos.p,
-                               replay_entry.state.pos.r) != 0)
+                Dat::Pose pose;
+                if (ReadPacket(header, pose.x, pose.y, pose.z, pose.h, pose.p, pose.r) != 0)
                 {
                     LOG_ERROR("Failed reading pose data.");
                     return -1;
                 }
+
+                current_object_timeline_->pose_.values.emplace_back(timestamp_, pose);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::MODEL_ID):
             {
-                if (ReadPacket(header, replay_entry.state.info.model_id) != 0)
+                int model_id;
+                if (ReadPacket(header, model_id) != 0)
                 {
                     LOG_ERROR("Failed reading model ID.");
                     return -1;
                 }
+                current_object_timeline_->model_id_.values.emplace_back(timestamp_, model_id);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_TYPE):
             {
-                if (ReadPacket(header, replay_entry.state.info.obj_type) != 0)
+                int obj_type;
+                if (ReadPacket(header, obj_type) != 0)
                 {
                     LOG_ERROR("Failed reading object type.");
                     return -1;
                 }
+                current_object_timeline_->obj_type_.values.emplace_back(timestamp_, obj_type);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_CATEGORY):
             {
-                if (ReadPacket(header, replay_entry.state.info.obj_category) != 0)
+                int obj_category;
+                if (ReadPacket(header, obj_category) != 0)
                 {
                     LOG_ERROR("Failed reading object category.");
                     return -1;
                 }
+                current_object_timeline_->obj_category_.values.emplace_back(timestamp_, obj_category);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::CTRL_TYPE):
             {
-                if (ReadPacket(header, replay_entry.state.info.ctrl_type) != 0)
+                int ctrl_type;
+                if (ReadPacket(header, ctrl_type) != 0)
                 {
                     LOG_ERROR("Failed reading controller type.");
                     return -1;
                 }
+                current_object_timeline_->ctrl_type_.values.emplace_back(timestamp_, ctrl_type);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::WHEEL_ANGLE):
             {
-                if (ReadPacket(header, replay_entry.state.info.wheel_angle) != 0)
+                float wheel_angle;
+                if (ReadPacket(header, wheel_angle) != 0)
                 {
                     LOG_ERROR("Failed reading wheel angle.");
                     return -1;
                 }
+                current_object_timeline_->wheel_angle_.values.emplace_back(timestamp_, wheel_angle);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::WHEEL_ROT):
             {
-                if (ReadPacket(header, replay_entry.state.info.wheel_rot) != 0)
+                float wheel_rot;
+                if (ReadPacket(header, wheel_rot) != 0)
                 {
                     LOG_ERROR("Failed reading wheel rotation.");
                     return -1;
                 }
+                current_object_timeline_->wheel_rot_.values.emplace_back(timestamp_, wheel_rot);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::BOUNDING_BOX):
             {
+                OSCBoundingBox bounding_box;
                 if (ReadPacket(header,
-                               replay_entry.state.info.boundingbox.center_.x_,
-                               replay_entry.state.info.boundingbox.center_.y_,
-                               replay_entry.state.info.boundingbox.center_.z_,
-                               replay_entry.state.info.boundingbox.dimensions_.length_,
-                               replay_entry.state.info.boundingbox.dimensions_.width_,
-                               replay_entry.state.info.boundingbox.dimensions_.height_) != 0)
+                               bounding_box.center_.x_,
+                               bounding_box.center_.y_,
+                               bounding_box.center_.z_,
+                               bounding_box.dimensions_.length_,
+                               bounding_box.dimensions_.width_,
+                               bounding_box.dimensions_.height_) != 0)
                 {
                     LOG_ERROR("Failed reading bounding box data.");
                     return -1;
                 }
+                current_object_timeline_->bounding_box_.values.emplace_back(timestamp_, bounding_box);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::SCALE_MODE):
             {
-                if (ReadPacket(header, replay_entry.state.info.scaleMode) != 0)
+                int scale_mode;
+                if (ReadPacket(header, scale_mode) != 0)
                 {
                     LOG_ERROR("Failed reading scale mode.");
                     return -1;
                 }
+                current_object_timeline_->scale_mode_.values.emplace_back(timestamp_, scale_mode);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::VISIBILITY_MASK):
             {
-                if (ReadPacket(header, replay_entry.state.info.visibilityMask) != 0)
+                int visibility_mask;
+                if (ReadPacket(header, visibility_mask) != 0)
                 {
                     LOG_ERROR("Failed reading visibility mask.");
                     return -1;
                 }
+                current_object_timeline_->visibility_mask_.values.emplace_back(timestamp_, visibility_mask);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::NAME):
@@ -349,67 +311,78 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading name.");
                     return -1;
                 }
-                id_to_name_[replay_entry.state.info.id] = std::move(name);  // Tranfer ownership to the map, ensuring the name is retained
-                replay_entry.state.info.name            = id_to_name_[replay_entry.state.info.id].c_str();
+                current_object_timeline_->name_.values.emplace_back(timestamp_, std::move(name));
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::ROAD_ID):
             {
-                if (ReadPacket(header, replay_entry.state.pos.roadId) != 0)
+                id_t road_id;
+                if (ReadPacket(header, road_id) != 0)
                 {
                     LOG_ERROR("Failed reading road ID.");
                     return -1;
                 }
+                current_object_timeline_->road_id_.values.emplace_back(timestamp_, road_id);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::LANE_ID):
             {
-                if (ReadPacket(header, replay_entry.state.pos.laneId) != 0)
+                int lane_id;
+                if (ReadPacket(header, lane_id) != 0)
                 {
                     LOG_ERROR("Failed reading lane ID.");
                     return -1;
                 }
+                current_object_timeline_->lane_id_.values.emplace_back(timestamp_, lane_id);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POS_OFFSET):
             {
-                if (ReadPacket(header, replay_entry.state.pos.offset) != 0)
+                float offset;
+                if (ReadPacket(header, offset) != 0)
                 {
                     LOG_ERROR("Failed reading position offset.");
                     return -1;
                 }
+                current_object_timeline_->pos_offset_.values.emplace_back(timestamp_, offset);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POS_T):
             {
-                if (ReadPacket(header, replay_entry.state.pos.t) != 0)
+                float t;
+                if (ReadPacket(header, t) != 0)
                 {
                     LOG_ERROR("Failed reading position T.");
                     return -1;
                 }
+                current_object_timeline_->pos_t_.values.emplace_back(timestamp_, t);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POS_S):
             {
-                if (ReadPacket(header, replay_entry.state.pos.s) != 0)
+                float s;
+                if (ReadPacket(header, s) != 0)
                 {
                     LOG_ERROR("Failed reading position S.");
                     return -1;
                 }
+                current_object_timeline_->pos_s_.values.emplace_back(timestamp_, s);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_DELETED):
             {
-                replay_entry.state.info.active = false;
+                current_object_timeline_->active_.values.emplace_back(timestamp_, false);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::DT):
             {
-                if (ReadPacket(header, min_timestep_) != 0)
+                float dt;
+                if (ReadPacket(header, dt) != 0)
                 {
                     LOG_ERROR("Failed reading fixed timestep.");
                     return -1;
                 }
+                dt_timeline_.values.emplace_back(timestamp_, dt);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
@@ -421,10 +394,10 @@ int Replay::ParsePackets(const std::string& filename)
                     return -1;
                 }
                 // We have an unsaved entry, so we add it to the map
-                if (replay_entry.state.info.timeStamp >= stop_time)
-                {
-                    obj_events_map_[replay_entry.state.info.id].push_back(replay_entry);
-                }
+                // if (replay_entry.state.info.timeStamp >= stop_time)
+                // {
+                //     obj_events_map_[replay_entry.state.info.id].push_back(replay_entry);
+                // }
                 stopTime_ = static_cast<double>(stop_time);
                 break;
             }
