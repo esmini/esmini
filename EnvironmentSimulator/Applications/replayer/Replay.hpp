@@ -129,7 +129,7 @@ namespace scenarioengine
         std::unordered_map<int, size_t>                   id_to_search_idx_;
         float                                             timestamp_             = 0.0f;
         std::optional<float>                              min_timestep_          = std::nullopt;  // Minimum timestep in data
-        float                                             fixed_timestep_        = 0.0f;          // Fixed timestep for replay, if specified
+        float                                             fixed_timestep_        = -1.0f;         // Fixed timestep for replay, if specified
         bool                                              logged_timestep_fixed_ = true;          // Deduced from fixed_timestep_ or dt in data
         id_t                                              previous_p_id_         = 22;            // 22 outside length of PacketId
 
