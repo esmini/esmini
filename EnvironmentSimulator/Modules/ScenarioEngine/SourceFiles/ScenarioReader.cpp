@@ -1679,6 +1679,38 @@ static void CheckAndAdjustRoadSValue(const id_t road_id, double &s)
     }
 }
 
+static id_t ResolveRoadIdFromStr(std::string road_id_str)
+{
+    id_t   road_id           = ID_UNDEFINED;
+    double road_id_as_double = std::nan("");
+
+    try
+    {
+        road_id_as_double = std::stod(road_id_str);
+    }
+    catch (const std::exception &e)
+    {
+        (void)e;  // Suppress unused variable warning
+        road_id = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(road_id_str);
+    }
+
+    if (!std::isnan(road_id_as_double))
+    {
+        if (NEAR_NUMBERS(road_id_as_double, static_cast<id_t>(road_id_as_double)))
+        {
+            // road id is identified as an integer
+            road_id = static_cast<id_t>(road_id_as_double);
+        }
+        else
+        {
+            // interpret decimal number as string ID
+            road_id = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(road_id_str);
+        }
+    }
+
+    return road_id;
+}
+
 OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPosition *base_on_pos)
 {
     OSCPosition            *pos_return    = 0;
@@ -1852,16 +1884,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     {
         std::string road_id_str = parameters.ReadAttribute(positionChild, "roadId");
 
-        id_t road_id;
-        try
-        {
-            road_id = static_cast<id_t>(std::stoi(road_id_str));
-        }
-        catch (const std::exception &e)
-        {
-            (void)e;  // Suppress unused variable warning
-            road_id = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(road_id_str);
-        }
+        id_t road_id = ResolveRoadIdFromStr(road_id_str);
 
         if (road_id == ID_UNDEFINED)
         {
@@ -1892,16 +1915,7 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     {
         std::string road_id_str = parameters.ReadAttribute(positionChild, "roadId");
 
-        id_t road_id;
-        try
-        {
-            road_id = static_cast<id_t>(std::stoi(road_id_str));
-        }
-        catch (const std::exception &e)
-        {
-            (void)e;  // Suppress unused variable warning
-            road_id = roadmanager::Position::GetOpenDrive()->LookupRoadIdFromStr(road_id_str);
-        }
+        id_t road_id = ResolveRoadIdFromStr(road_id_str);
 
         if (road_id == ID_UNDEFINED)
         {
