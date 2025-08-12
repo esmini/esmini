@@ -108,8 +108,9 @@ namespace Dat
         float       dt_              = SMALL_NUMBERF;
     };
 
-    struct ObjectStateCache
+    struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?
     {
+        float                             dt_;
         float                             timestamp_;
         std::unordered_map<int, ObjState> state_;
     };
@@ -118,9 +119,10 @@ namespace Dat
     {
     public:
         template <typename... Data>
-        int  Write(PacketId p_id, const Data&... data);
-        void WritePacket(PacketGeneric& packet);
-        int  WriteToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states);
+        int            Write(PacketId p_id, const Data&... data);
+        void           WritePacket(PacketGeneric& packet);
+        int            WriteToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states);
+        constexpr bool ShouldWriteObjId(PacketId p_id) const noexcept;
 
         size_t SerializedSize(const std::string& str);
 
