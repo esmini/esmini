@@ -1,7 +1,7 @@
 #pragma once
 
 #include <fstream>
-#include <CommonMini.hpp>
+#include "CommonMini.hpp"
 
 namespace scenarioengine
 {
@@ -33,7 +33,8 @@ namespace Dat
         POS_S           = 18,
         OBJ_DELETED     = 19,
         OBJ_ADDED       = 20,
-        END_OF_SCENARIO = 21,
+        DT              = 21,
+        END_OF_SCENARIO = 22,
     };
 
     struct PacketString
@@ -104,6 +105,7 @@ namespace Dat
         float       pos_offset_      = SMALL_NUMBERF;
         float       pos_t_           = SMALL_NUMBERF;
         float       pos_s_           = SMALL_NUMBERF;
+        float       dt_              = SMALL_NUMBERF;
     };
 
     struct ObjectStateCache
@@ -135,7 +137,10 @@ namespace Dat
 
         DatLogger()
         {
-            fixed_timestep_ = SE_Env::Inst().GetOptions().GetOptionSet("fixed_timestep");
+            if (SE_Env::Inst().GetOptions().GetOptionSet("fixed_timestep"))
+            {
+                fixed_timestep_ = std::stof(SE_Env::Inst().GetOptions().GetOptionArg("fixed_timestep"));
+            }
         }
         ~DatLogger();
 
@@ -159,7 +164,7 @@ namespace Dat
         double                  simulation_time_   = 0.0;
         std::unordered_set<int> previous_ids_;  // Keep track of object IDs
         std::unordered_set<int> current_ids_;   // Keep track of object IDs for the current state
-        bool                    fixed_timestep_ = true;
+        float                   fixed_timestep_ = -1.0f;
     };
 
 }  // namespace Dat

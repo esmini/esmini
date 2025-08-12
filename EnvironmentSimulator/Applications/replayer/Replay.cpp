@@ -203,8 +203,8 @@ int Replay::ParsePackets(const std::string& filename)
                     // If the object already exists in the cache, fetch latest known state
                     replay_entry = object_state_cache_[id];
 
-                    // We'll deduce the minimum timestep, might be useful later (excluding ghost objects (ctrl_type == 100))
-                    if (replay_entry.state.info.ctrl_type != 100 && !min_timestep_.has_value())
+                    // We'll deduce the minimum timestep if its not set (-1.0f), might be useful later (excluding ghost objects (ctrl_type == 100))
+                    if (min_timestep_ == -1.0f && replay_entry.state.info.ctrl_type != 100)
                     {
                         min_timestep_ = abs(timestamp_ - replay_entry.state.info.timeStamp);
                     }
@@ -403,6 +403,15 @@ int Replay::ParsePackets(const std::string& filename)
                 replay_entry.state.info.active = false;
                 break;
             }
+            case static_cast<id_t>(Dat::PacketId::DT):
+            {
+                if (ReadPacket(header, min_timestep_) != 0)
+                {
+                    LOG_ERROR("Failed reading fixed timestep.");
+                    return -1;
+                }
+                break;
+            }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
             {
                 float stop_time;
@@ -445,7 +454,10 @@ void Replay::BuildDataFromPackets()
         time_       = startTime_;
         startIndex_ = 0;
 
-        IsDataFixedTimestep(&entry);  // Check if the data has a fixed timestep or not
+        if (fixed_timestep_ == 0.0f)  // We dont have fixed timestep from commandline
+        {
+            IsDataFixedTimestep(&entry);  // Check if the data has a fixed timestep or not
+        }
     }
 
     if (!logged_timestep_fixed_)
