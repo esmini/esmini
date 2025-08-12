@@ -32,7 +32,8 @@ class PacketId(enum.Enum):
     POS_S           = 18
     OBJ_DELETED     = 19
     OBJ_ADDED       = 20
-    END_OF_SCENARIO = 21
+    DT              = 21
+    END_OF_SCENARIO = 22
 
 class DataType:
     """Class for data types used in the .dat file."""
@@ -94,6 +95,7 @@ float_map = {
         PacketId.POS_OFFSET.value: "offset",
         PacketId.POS_T.value: "t",
         PacketId.POS_S.value: "s",
+        PacketId.DT.value: "dt",
         }
 
 integer_map = {
@@ -181,7 +183,6 @@ class DATFile():
 
     def build_data(self):
         self.object_state_cache.clear()
-
         dt = self.min_timestep
         # TODO: Allow custom argument for dt
         start_time = 0.0
@@ -250,7 +251,7 @@ class DATFile():
                     dt = abs(self.timestamp - self.ObjectStateStructDat["time"])
                     if not (abs(dt) < 0.001):
                         dt = round(dt * 1000.0) / 1000.0  # Avoid floating point precision issues
-                        self.min_timestep = min(self.min_timestep, dt) if self.min_timestep != float('inf') else dt
+                        self.min_timestep = min(self.min_timestep, dt) if self.min_timestep != -1.0 else dt
                 
                 self.ObjectStateStructDat["time"] = self.timestamp
                 self.ObjectStateStructDat["active"] = True
@@ -264,7 +265,10 @@ class DATFile():
             
             # Any float packet
             elif p_id in float_map:
-                self.ObjectStateStructDat[float_map[p_id]] = read_dtype(self.file, DataType.float)
+                if p_id == PacketId.DT.value:
+                    self.min_timestep = read_dtype(self.file, DataType.float)
+                else:
+                    self.ObjectStateStructDat[float_map[p_id]] = read_dtype(self.file, DataType.float)
 
             # Any integer packet
             elif p_id in integer_map:
