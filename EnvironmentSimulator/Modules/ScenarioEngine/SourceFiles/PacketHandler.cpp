@@ -46,8 +46,6 @@ int Dat::DatLogger::Init(const std::string& file_name, const std::string& odr_na
 
 int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states)
 {
-    this->ResetCurrentIds();
-
     // PacketId::DT
     if (!NEAR_NUMBERSF(object_state_cache_.dt_, fixed_timestep_))
     {
@@ -56,6 +54,7 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
     }
 
     // Write objects
+    this->ResetCurrentIds();
     for (const auto& object_state : object_states)
     {
         // New object state, check if it exists in the cache, else we add it
