@@ -22,6 +22,13 @@
 
 namespace scenarioengine
 {
+    template <typename T>
+    struct ReplayValue
+    {
+        float timestamp;
+        T     value;
+    };
+
     typedef struct
     {
         ObjectStateStructDat state;
@@ -35,7 +42,6 @@ namespace scenarioengine
         std::vector<ReplayEntry> data_;
 
         Replay(std::string filename, bool clean, float fixed_timestep = 0.0f);
-        // Replay(const std::string directory, const std::string scenario, bool clean);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
 
@@ -128,10 +134,45 @@ namespace scenarioengine
         std::unordered_map<int, std::string>              id_to_name_;  // Keep track of object IDs
         std::unordered_map<int, size_t>                   id_to_search_idx_;
         float                                             timestamp_             = 0.0f;
-        std::optional<float>                              min_timestep_          = std::nullopt;  // Minimum timestep in data
-        float                                             fixed_timestep_        = -1.0f;         // Fixed timestep for replay, if specified
-        bool                                              logged_timestep_fixed_ = true;          // Deduced from fixed_timestep_ or dt in data
-        id_t                                              previous_p_id_         = 22;            // 22 outside length of PacketId
+        float                                             fixed_timestep_        = -1.0f;  // Fixed timestep for replay, if specified
+        bool                                              logged_timestep_fixed_ = true;   // Deduced from fixed_timestep_ or dt in data
+        id_t                                              previous_p_id_         = 22;     // 22 outside length of PacketId
+
+        // Reworked data structures to hold properties over time
+        template <typename T>
+        struct Timeline
+        {
+            std::vector<std::pair<float, T>> values;  // Pairs of timestamp and value
+        };
+
+        struct PropertyTimeline
+        {
+            Timeline<int>            model_id_;
+            Timeline<int>            obj_type_;
+            Timeline<int>            obj_category_;
+            Timeline<int>            ctrl_type_;
+            Timeline<std::string>    name_;
+            Timeline<float>          speed_;
+            Timeline<float>          wheel_angle_;
+            Timeline<float>          wheel_rot_;
+            Timeline<OSCBoundingBox> bounding_box_;
+            Timeline<int>            scale_mode_;
+            Timeline<int>            visibility_mask_;
+            Timeline<Dat::Pose>      pose_;
+            Timeline<id_t>           road_id_;
+            Timeline<int>            lane_id_;
+            Timeline<float>          pos_offset_;
+            Timeline<float>          pos_t_;
+            Timeline<float>          pos_s_;
+            Timeline<bool>           active_;
+        };
+
+        std::unordered_map<int, PropertyTimeline> objects_timeline_;
+        Timeline<float>                           dt_timeline_;
+        Timeline<float>                           timestamps_;
+        int                                       current_object_id_;
+        scenarioengine::Replay::PropertyTimeline* current_object_timeline_;
+        std::optional<float>                      min_timestep_ = std::nullopt;  // Minimum timestep in data
 
         int FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
     };
