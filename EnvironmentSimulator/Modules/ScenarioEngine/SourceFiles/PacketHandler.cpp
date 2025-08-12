@@ -211,11 +211,18 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
             Write(PacketId::POS_S, cache_it->second.pos_s_);
         }
 
+        // PacketId::DT
+        if (!NEAR_NUMBERSF(cache_it->second.dt_, fixed_timestep_))
+        {
+            cache_it->second.dt_ = fixed_timestep_;
+            Write(PacketId::DT, cache_it->second.dt_);
+        }
+
         this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state
     }
 
     // In case we have variable timestep, we need to write every time packet
-    if (!timestamp_written_ && !fixed_timestep_)
+    if (!timestamp_written_ && fixed_timestep_ != -1.0f)
     {
         PacketGeneric packet;
         packet.header.id        = static_cast<id_t>(PacketId::TIMESTAMP);
