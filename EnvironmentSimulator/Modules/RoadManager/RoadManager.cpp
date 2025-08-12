@@ -4585,13 +4585,36 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
                 }
                 std::string          type_str = object.attribute("type").value();
                 RMObject::ObjectType type     = RMObject::Str2Type(type_str);
-                double               z_offset = atof(object.attribute("zOffset").value());
-                double               length   = atof(object.attribute("length").value());
-                double               height   = atof(object.attribute("height").value());
-                double               width    = atof(object.attribute("width").value());
-                double               heading  = atof(object.attribute("hdg").value());
-                double               pitch    = atof(object.attribute("pitch").value());
-                double               roll     = atof(object.attribute("roll").value());
+
+                double length = object.attribute("length").as_double();
+                double width  = object.attribute("width").as_double();
+                double radius = object.attribute("radius").as_double();
+
+                if (!object.attribute("radius").empty())
+                {
+                    if (!object.attribute("length").empty() || !object.attribute("width").empty())
+                    {
+                        LOG_WARN("Found object {} radius {:.2f}. Circular objects not supported yet. Using length and width attributes instead",
+                                 name,
+                                 radius);
+                    }
+                    else
+                    {
+                        LOG_WARN(
+                            "Found object {} radius {:.2f}. Circular objects not supported yet. Setting length and width attributes to 2 * radius = {:.2f}",
+                            name,
+                            radius,
+                            2 * radius);
+                        width  = 2 * radius;
+                        length = 2 * radius;
+                    }
+                }
+
+                double z_offset = object.attribute("zOffset").as_double();
+                double height   = object.attribute("height").as_double();
+                double heading  = object.attribute("hdg").as_double();
+                double pitch    = object.attribute("pitch").as_double();
+                double roll     = object.attribute("roll").as_double();
 
                 // Read any repeat elements
 

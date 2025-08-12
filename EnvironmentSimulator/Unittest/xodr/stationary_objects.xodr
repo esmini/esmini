@@ -42,7 +42,7 @@
             </object>
             <object type="building" name="Box2" dynamic="no" id="8" s="40" t="-7" zOffset="-1.0" orientation="none" length="4.0" width="4.0" height="10.0" hdg="0.78" pitch="0.0" roll="0.0" validLength="25.0">
             </object>
-            <object type="pole" name="pole" dynamic="no" id="5" s="5.0" t="0.5" zOffset="-0.2" validLength="0.06" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+            <object type="pole" name="pole" dynamic="no" id="5" s="5.0" t="0.5" zOffset="-0.2" validLength="0.06" orientation="+" radius="0.03" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
             <object type="parkingSpace" name="parking_slot" dynamic="no" id="6" s="7.0" t="-4.5" zOffset="0.0" validLength="5.0" length="5.0" width="3.0" height="2.0" hdg="0.0" pitch="0.0" roll="0.0">
                <parkingSpace access="car" restrictions="5_kalle"/>
             </object>
