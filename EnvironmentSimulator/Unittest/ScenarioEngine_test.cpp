@@ -5775,6 +5775,101 @@ TEST(LatDistAction, EntityCoordinates)
     EXPECT_NEAR(pos_4.GetH(), 6.2821, 1e-3);
 }
 
+TEST(LaneChange, InternalPositionHandling)
+{
+    std::unique_ptr<ScenarioEngine> se = std::make_unique<ScenarioEngine>("../../../EnvironmentSimulator/Unittest/xosc/lane_change_road_split.xosc");
+    ASSERT_NE(se, nullptr);
+    const double dt = 0.1;
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 1);
+
+    roadmanager::Position& pos = entities->object_[0]->pos_;
+
+    EXPECT_NEAR(pos.GetX(), 50.0, 1e-3);
+    EXPECT_NEAR(pos.GetY(), -1.5, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos.GetTrackId(), 0);
+    EXPECT_EQ(pos.GetLaneId(), -1);
+
+    while (se->getSimulationTime() < 3.5 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    // Lane change ongoing, still on original lane -1
+    EXPECT_NEAR(pos.GetX(), 166.6489, 1e-3);
+    EXPECT_NEAR(pos.GetY(), -2.882, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 6.2482, 1e-3);
+    EXPECT_EQ(pos.GetTrackId(), 0);
+    EXPECT_EQ(pos.GetLaneId(), -1);
+
+    se->step(dt);
+    se->prepareGroundTruth(0.0);
+
+    // Lane change still ongoing, passed lane border, snapped to lane -2
+    EXPECT_NEAR(pos.GetX(), 169.98, 1e-3);
+    EXPECT_NEAR(pos.GetY(), -3.0, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 6.2482, 1e-3);
+    EXPECT_EQ(pos.GetTrackId(), 0);
+    EXPECT_EQ(pos.GetLaneId(), -2);
+
+    while (se->getSimulationTime() < 7.5 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    // Second lane change started, still on road 0, lane -2
+    EXPECT_NEAR(pos.GetX(), 299.9557, 1e-3);
+    EXPECT_NEAR(pos.GetY(), -4.9545, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 6.2658, 1e-3);
+    EXPECT_EQ(pos.GetTrackId(), 0);
+    EXPECT_EQ(pos.GetLaneId(), -2);
+
+    se->step(dt);
+    se->prepareGroundTruth(0.0);
+
+    // Second lane change still ongoing, on road 11, lane -1
+    EXPECT_NEAR(pos.GetX(), 303.2898, 1e-3);
+    EXPECT_NEAR(pos.GetY(), -5.0192, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 6.2633, 1e-3);
+    EXPECT_EQ(pos.GetTrackId(), 11);
+    EXPECT_EQ(pos.GetLaneId(), -1);
+
+    while (se->getSimulationTime() < 10.5 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    // Second lane change almost done, now on connected road 2, lane -1 with less lane offset
+    EXPECT_NEAR(pos.GetX(), 396.1240, 1e-3);
+    EXPECT_NEAR(pos.GetY(), -28.9264, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 5.9165, 1e-3);
+    EXPECT_EQ(pos.GetTrackId(), 2);
+    EXPECT_EQ(pos.GetLaneId(), -1);
+    EXPECT_NEAR(pos.GetOffset(), 0.2864, 1e-3);
+
+    while (se->getSimulationTime() < 11.8 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    // Second lane change done, still on road 2, lane -1 zero lane offset
+    EXPECT_NEAR(pos.GetX(), 436.7251, 1e-3);
+    EXPECT_NEAR(pos.GetY(), -44.0680, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 5.9328, 1e-3);
+    EXPECT_EQ(pos.GetTrackId(), 2);
+    EXPECT_EQ(pos.GetLaneId(), -1);
+    EXPECT_NEAR(pos.GetOffset(), 0.0, 1e-3);
+}
+
 int main(int argc, char** argv)
 {
 #if 0  // set to 1 and modify filter to run one single test
