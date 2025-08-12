@@ -47,6 +47,15 @@ int Dat::DatLogger::Init(const std::string& file_name, const std::string& odr_na
 int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states)
 {
     this->ResetCurrentIds();
+
+    // PacketId::DT
+    if (!NEAR_NUMBERSF(object_state_cache_.dt_, fixed_timestep_))
+    {
+        object_state_cache_.dt_ = fixed_timestep_;
+        Write(PacketId::DT, object_state_cache_.dt_);
+    }
+
+    // Write objects
     for (const auto& object_state : object_states)
     {
         // New object state, check if it exists in the cache, else we add it
@@ -211,13 +220,6 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
             Write(PacketId::POS_S, cache_it->second.pos_s_);
         }
 
-        // PacketId::DT
-        if (!NEAR_NUMBERSF(cache_it->second.dt_, fixed_timestep_))
-        {
-            cache_it->second.dt_ = fixed_timestep_;
-            Write(PacketId::DT, cache_it->second.dt_);
-        }
-
         this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state
     }
 
@@ -269,8 +271,8 @@ int Dat::DatLogger::Write(PacketId p_id, const Data&... data)
      In the end, TIMESTAMP is written, then OBJ_ID, then data
   */
 
-    // PacketId::OBJ_ID (we want to always write the object ID )
-    if (!object_id_written_ && p_id != PacketId::END_OF_SCENARIO)
+    // PacketId::OBJ_ID (we want to always write the object ID, with some exceptions)
+    if (!object_id_written_ && ShouldWriteObjId(p_id))
     {
         object_id_written_ = true;
         Write(PacketId::OBJ_ID, current_object_id_);
@@ -365,4 +367,16 @@ void Dat::DatLogger::WriteToBuffer(char*& write_ptr, const T& val)
 {
     memcpy(write_ptr, &val, sizeof(T));
     write_ptr += sizeof(T);
+}
+
+constexpr bool Dat::DatLogger::ShouldWriteObjId(PacketId p_id) const noexcept
+{
+    static_assert(static_cast<int>(PacketId::END_OF_SCENARIO) < 64, "PacketId values must be < 64");
+
+    constexpr uint64_t skip_mask = (uint64_t{1} << static_cast<unsigned int>(PacketId::END_OF_SCENARIO)) |
+                                   (uint64_t{1} << static_cast<unsigned int>(PacketId::DT)) |
+                                   (uint64_t{1} << static_cast<unsigned int>(PacketId::TIMESTAMP));
+
+    // If the bit for p_id is set, we skip writing
+    return ((skip_mask >> static_cast<unsigned int>(p_id)) & uint64_t{1}) == 0;
 }
