@@ -599,7 +599,7 @@ RoadGeom::RoadGeom(roadmanager::OpenDrive* odr, osg::Vec3d origin)
 
                         for (size_t l = lane_osi_index[k]; l < osiPoints.size(); l++)
                         {
-                            if (osiPoints[l].s > section_current_s + SMALL_NUMBER)
+                            if (l == osiPoints.size() - 1 || osiPoints[l].s > section_current_s + SMALL_NUMBER)
                             {
                                 lane_osi_index[k]     = l;
                                 s_value_candidates[k] = osiPoints[l].s;
