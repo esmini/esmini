@@ -217,7 +217,7 @@ int ParseEntities(Replay* player)
         OdoInfo odo_entry = {};
         for (size_t i = 0; i < player->timestamps_.size(); i++)
         {
-            ReplayEntry entry          = player->GetReplayEntryAtTime(id, player->timestamps_[i]);
+            ReplayEntry entry          = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i]);
             entry.state.info.id        = id;
             entry.state.info.timeStamp = player->timestamps_[i];
 
@@ -1009,7 +1009,6 @@ int main(int argc, char** argv)
 #endif  // _USE_OSG
 
                 // Fetch states of scenario objects
-                ReplayEntry*          entry = nullptr;
                 ObjectStateStructDat* state = nullptr;
                 for (int index = 0; index < static_cast<int>(scenarioEntity.size()); index++)
                 {
@@ -1019,10 +1018,10 @@ int main(int argc, char** argv)
                         throw std::runtime_error(std::string("Unexpected entity found: ").append(std::to_string(state->info.id)));
                     }
 
-                    entry = player->GetEntry(sc->id);
-                    if (entry)
+                    ReplayEntry entry = player->GetReplayEntryAtTimeIncremental(sc->id, static_cast<float>(simTime));
+                    if (entry.state.info.active)
                     {
-                        state              = &entry->state;
+                        state              = &entry.state;
                         sc->pos            = state->pos;
                         sc->wheel_angle    = state->info.wheel_angle;
                         sc->wheel_rotation = state->info.wheel_rot;
@@ -1059,7 +1058,7 @@ int main(int argc, char** argv)
                              " %s (%d) %.2fm\n %.2fkm/h road %d lane %d/%.2f s %.2f\n x %.2f y %.2f hdg %.2f\n osi x %.2f y %.2f \n|",
                              state->info.name,
                              state->info.id,
-                             entry->odometer,
+                             entry.odometer,
                              3.6 * static_cast<double>(state->info.speed),
                              sc->pos.roadId,
                              sc->pos.laneId,
@@ -1084,7 +1083,7 @@ int main(int argc, char** argv)
                                  state->info.id,
                                  static_cast<double>(state->info.timeStamp),
                                  3.6 * static_cast<double>(state->info.speed),
-                                 entry->odometer,
+                                 entry.odometer,
                                  sc->pos.roadId,
                                  sc->pos.laneId,
                                  static_cast<double>(fabs(sc->pos.offset)) < SMALL_NUMBER ? 0 : static_cast<double>(sc->pos.offset),
