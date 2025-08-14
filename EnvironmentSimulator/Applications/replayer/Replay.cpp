@@ -133,8 +133,6 @@ int Replay::ParsePackets(const std::string& filename)
              header_.odr_filename.string,
              header_.model_filename.string);
 
-    ReplayEntry replay_entry;
-
     // Now parse packets
     while (file_.tellg() < file_size)
     {
@@ -167,6 +165,8 @@ int Replay::ParsePackets(const std::string& filename)
                     // Initialize timelines for this object
                     objects_timeline_[current_object_id_] = {};
                     current_object_timeline_              = &objects_timeline_[current_object_id_];
+                    current_object_timeline_->active_.values.emplace_back(timestamp_, true);
+                    current_object_timeline_->odometer_.values.emplace_back(timestamp_, 0.0f);
                 }
                 else
                 {
