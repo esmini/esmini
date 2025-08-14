@@ -22,11 +22,83 @@
 
 namespace scenarioengine
 {
+    // Reworked data structures to hold properties over time
     template <typename T>
-    struct ReplayValue
+    struct Timeline
     {
-        float timestamp;
-        T     value;
+        std::vector<std::pair<float, T>> values;          // Pairs of timestamp and value
+        mutable size_t                   last_index = 0;  // Set as mutable to allow modification in const methods
+
+        const T& get_value_incremental(float time) const noexcept
+        {
+            if (values.empty())
+            {
+                LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+            }
+
+            size_t idx = last_index;
+
+            if (time >= values[idx].first)  // Requested time is after last searched value, we increment
+            {
+                while (idx + 1 < values.size() && values[idx + 1].first <= time)
+                {
+                    idx++;
+                }
+            }
+            else  // Requested time is before last searched value, we decrement
+            {
+                while (idx > 0 && values[idx].first > time)
+                {
+                    idx--;
+                }
+            }
+
+            last_index = idx;  // Save the index for next call
+
+            return values[idx].second;
+        }
+
+        const T& get_value_binary(float time) const noexcept
+        {
+            if (values.empty())
+            {
+                LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+            }
+
+            auto it = std::upper_bound(values.begin(), values.end(), time, [](float t, const std::pair<float, T>& v) { return t < v.first; });
+
+            if (it == values.begin())
+            {
+                return it->second;  // Return first value if time is before the first entry
+            }
+
+            it--;  // Move back to the last valid entry
+
+            return it->second;
+        }
+    };
+
+    struct PropertyTimeline
+    {
+        Timeline<int>            model_id_;
+        Timeline<int>            obj_type_;
+        Timeline<int>            obj_category_;
+        Timeline<int>            ctrl_type_;
+        Timeline<std::string>    name_;
+        Timeline<float>          speed_;
+        Timeline<float>          wheel_angle_;
+        Timeline<float>          wheel_rot_;
+        Timeline<OSCBoundingBox> bounding_box_;
+        Timeline<int>            scale_mode_;
+        Timeline<int>            visibility_mask_;
+        Timeline<Dat::Pose>      pose_;
+        Timeline<id_t>           road_id_;
+        Timeline<int>            lane_id_;
+        Timeline<float>          pos_offset_;
+        Timeline<float>          pos_t_;
+        Timeline<float>          pos_s_;
+        Timeline<bool>           active_;
+        Timeline<float>          odometer_;
     };
 
     typedef struct
@@ -38,8 +110,11 @@ namespace scenarioengine
     class Replay
     {
     public:
-        Dat::DatHeader           header_;
-        std::vector<ReplayEntry> data_;
+        Dat::DatHeader                            header_;
+        std::vector<ReplayEntry>                  data_;
+        std::unordered_map<int, PropertyTimeline> objects_timeline_;
+        std::vector<float>                        timestamps_;
+        std::unordered_map<int, ReplayEntry>      object_state_cache_;
 
         Replay(std::string filename, bool clean, float fixed_timestep = 0.0f);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
@@ -114,6 +189,40 @@ namespace scenarioengine
 
         void ClearData();
 
+        ReplayEntry GetReplayEntryAtTime(int id, float t) const
+        {
+            ReplayEntry entry;
+
+            const auto& timeline = objects_timeline_.at(id);
+
+            entry.state.info.model_id       = timeline.model_id_.get_value_incremental(t);
+            entry.state.info.obj_type       = timeline.obj_type_.get_value_incremental(t);
+            entry.state.info.obj_category   = timeline.obj_category_.get_value_incremental(t);
+            entry.state.info.ctrl_type      = timeline.ctrl_type_.get_value_incremental(t);
+            entry.state.info.name           = timeline.name_.get_value_incremental(t).c_str();
+            entry.state.info.speed          = timeline.speed_.get_value_incremental(t);
+            entry.state.info.wheel_angle    = timeline.wheel_angle_.get_value_incremental(t);
+            entry.state.info.wheel_rot      = timeline.wheel_rot_.get_value_incremental(t);
+            entry.state.info.boundingbox    = timeline.bounding_box_.get_value_incremental(t);
+            entry.state.info.scaleMode      = timeline.scale_mode_.get_value_incremental(t);
+            entry.state.info.visibilityMask = timeline.visibility_mask_.get_value_incremental(t);
+            entry.state.info.active         = timeline.active_.get_value_incremental(t);
+            entry.state.pos.x               = timeline.pose_.get_value_incremental(t).x;
+            entry.state.pos.y               = timeline.pose_.get_value_incremental(t).y;
+            entry.state.pos.z               = timeline.pose_.get_value_incremental(t).z;
+            entry.state.pos.h               = timeline.pose_.get_value_incremental(t).h;
+            entry.state.pos.p               = timeline.pose_.get_value_incremental(t).p;
+            entry.state.pos.r               = timeline.pose_.get_value_incremental(t).r;
+            entry.state.pos.roadId          = timeline.road_id_.get_value_incremental(t);
+            entry.state.pos.laneId          = timeline.lane_id_.get_value_incremental(t);
+            entry.state.pos.offset          = timeline.pos_offset_.get_value_incremental(t);
+            entry.state.pos.t               = timeline.pos_t_.get_value_incremental(t);
+            entry.state.pos.s               = timeline.pos_s_.get_value_incremental(t);
+            entry.odometer                  = timeline.odometer_.get_value_incremental(t);
+
+            return entry;
+        }
+
     private:
         std::ifstream            file_;
         std::vector<std::string> scenarios_;
@@ -129,7 +238,6 @@ namespace scenarioengine
 
         /* PacketHandler stuff */
         std::unordered_map<int, std::vector<ReplayEntry>> obj_events_map_;
-        std::unordered_map<int, ReplayEntry>              object_state_cache_;
         std::set<int>                                     object_ids_;  // Keep track of object IDs
         std::unordered_map<int, std::string>              id_to_name_;  // Keep track of object IDs
         std::unordered_map<int, size_t>                   id_to_search_idx_;
@@ -138,41 +246,10 @@ namespace scenarioengine
         bool                                              logged_timestep_fixed_ = true;   // Deduced from fixed_timestep_ or dt in data
         id_t                                              previous_p_id_         = 22;     // 22 outside length of PacketId
 
-        // Reworked data structures to hold properties over time
-        template <typename T>
-        struct Timeline
-        {
-            std::vector<std::pair<float, T>> values;  // Pairs of timestamp and value
-        };
-
-        struct PropertyTimeline
-        {
-            Timeline<int>            model_id_;
-            Timeline<int>            obj_type_;
-            Timeline<int>            obj_category_;
-            Timeline<int>            ctrl_type_;
-            Timeline<std::string>    name_;
-            Timeline<float>          speed_;
-            Timeline<float>          wheel_angle_;
-            Timeline<float>          wheel_rot_;
-            Timeline<OSCBoundingBox> bounding_box_;
-            Timeline<int>            scale_mode_;
-            Timeline<int>            visibility_mask_;
-            Timeline<Dat::Pose>      pose_;
-            Timeline<id_t>           road_id_;
-            Timeline<int>            lane_id_;
-            Timeline<float>          pos_offset_;
-            Timeline<float>          pos_t_;
-            Timeline<float>          pos_s_;
-            Timeline<bool>           active_;
-        };
-
-        std::unordered_map<int, PropertyTimeline> objects_timeline_;
-        Timeline<float>                           dt_timeline_;
-        Timeline<float>                           timestamps_;
-        int                                       current_object_id_;
-        scenarioengine::Replay::PropertyTimeline* current_object_timeline_;
-        std::optional<float>                      min_timestep_ = std::nullopt;  // Minimum timestep in data
+        Timeline<float>                   dt_timeline_;
+        int                               current_object_id_;
+        scenarioengine::PropertyTimeline* current_object_timeline_;
+        std::optional<float>              min_timestep_ = std::nullopt;  // Minimum timestep in data
 
         int FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
     };
