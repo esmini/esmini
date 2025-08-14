@@ -201,138 +201,146 @@ ScenarioEntity* getScenarioEntityById(int id)
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 int ParseEntities(Replay* player)
 {
     struct OdoInfo
     {
-        double x, y, odometer;
+        float x, y, odometer;
     };
-    std::map<int, OdoInfo> odo_info;  // temporary keep track of entity odometers
+    // std::map<int, OdoInfo> odo_info;  // temporary keep track of entity odometers
 
-    for (int i = 0; i < static_cast<int>(player->data_.size()); i++)
+    for (auto& [id, timelines] : player->objects_timeline_)
     {
-        ReplayEntry*          entry = &player->data_[static_cast<unsigned int>(i)];
-        ObjectStateStructDat* state = &entry->state;
-        OdoInfo               odo_entry;
-
-        if (no_ghost && state->info.ctrl_type == GHOST_CTRL_TYPE)
+        OdoInfo odo_entry = {};
+        for (size_t i = 0; i < player->timestamps_.size(); i++)
         {
-            continue;
-        }
+            ReplayEntry entry          = player->GetReplayEntryAtTime(id, player->timestamps_[i]);
+            entry.state.info.id        = id;
+            entry.state.info.timeStamp = player->timestamps_[i];
 
-        if (std::find(removeObjects.begin(), removeObjects.end(), state->info.id) != removeObjects.end())
-        {
-            continue;
-        }
+            if (no_ghost && timelines.ctrl_type_.values[0].second == GHOST_CTRL_TYPE)
+            {
+                continue;
+            }
 
-        ScenarioEntity* sc = getScenarioEntityById(state->info.id);
+            if (std::find(removeObjects.begin(), removeObjects.end(), id) != removeObjects.end())
+            {
+                continue;
+            }
 
-        // If not available, create it
-        if (sc == 0)
-        {
-            ScenarioEntity new_sc;
+            ScenarioEntity* sc = getScenarioEntityById(id);
 
-            new_sc.id             = state->info.id;
-            new_sc.pos            = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f, 0.0f, 0.0f};
-            new_sc.wheel_angle    = 0.0f;
-            new_sc.wheel_rotation = 0.0f;
-            new_sc.name           = state->info.name;
-            new_sc.visible        = true;
-            new_sc.bounding_box   = state->info.boundingbox;
+            // If not available, create it
+            if (sc == nullptr)
+            {
+                ScenarioEntity new_sc;
 
-            odo_entry.x        = state->pos.x;
-            odo_entry.y        = state->pos.y;
-            odo_entry.odometer = 0.0;
-            odo_info.insert(std::make_pair(new_sc.id, odo_entry));  // Set inital odometer value for the entity
+                new_sc.id             = id;
+                new_sc.pos            = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f, 0.0f, 0.0f};
+                new_sc.wheel_angle    = 0.0f;
+                new_sc.wheel_rotation = 0.0f;
+                new_sc.name           = timelines.name_.values.front().second;
+                new_sc.visible        = true;
+                new_sc.bounding_box   = timelines.bounding_box_.values.front().second;
+
+                odo_entry.x        = timelines.pose_.values.front().second.x;
+                odo_entry.y        = timelines.pose_.values.front().second.y;
+                odo_entry.odometer = timelines.odometer_.values.front().second;
 
 #ifdef _USE_OSG
-            new_sc.trajectory = nullptr;
-            new_sc.trajPoints = 0;
+                new_sc.trajectory = nullptr;
+                new_sc.trajPoints = 0;
 
-            std::string filename;
-            if (state->info.model_id >= 0)
-            {
-                filename = SE_Env::Inst().GetModelFilenameById(state->info.model_id);
-            }
+                std::string filename;
+                if (timelines.model_id_.values.front().second >= 0)
+                {
+                    filename = SE_Env::Inst().GetModelFilenameById(timelines.model_id_.values.front().second);
+                }
 
-            if ((new_sc.entityModel = viewer_->CreateEntityModel(filename.c_str(),
-                                                                 osg::Vec4(0.5, 0.5, 0.5, 1.0),
-                                                                 viewer::EntityModel::EntityType::VEHICLE,
-                                                                 false,
-                                                                 state->info.name,
-                                                                 &state->info.boundingbox,
-                                                                 static_cast<EntityScaleMode>(state->info.scaleMode))) == 0)
-            {
-                return -1;
-            }
-            else
-            {
-                if (viewer_->AddEntityModel(new_sc.entityModel) != 0)
+                if ((new_sc.entityModel = viewer_->CreateEntityModel(filename.c_str(),
+                                                                     osg::Vec4(0.5, 0.5, 0.5, 1.0),
+                                                                     viewer::EntityModel::EntityType::VEHICLE,
+                                                                     false,
+                                                                     timelines.name_.values.front().second,
+                                                                     &timelines.bounding_box_.values.front().second,
+                                                                     static_cast<EntityScaleMode>(timelines.scale_mode_.values.front().second))) == 0)
                 {
                     return -1;
                 }
-            }
+                else
+                {
+                    if (viewer_->AddEntityModel(new_sc.entityModel) != 0)
+                    {
+                        return -1;
+                    }
+                }
 
-            if (state->info.ctrl_type == GHOST_CTRL_TYPE && no_ghost_model)
-            {
-                new_sc.entityModel->txNode_->setNodeMask(0x0);
-            }
+                if (timelines.ctrl_type_.values.front().second == GHOST_CTRL_TYPE && no_ghost_model)
+                {
+                    new_sc.entityModel->txNode_->setNodeMask(0x0);
+                }
 #endif  // _USE_OSG
 
-            // Add it to the list of scenario cars
-            scenarioEntity.push_back(new_sc);
-            sc = &scenarioEntity.back();
-        }
+                // Add it to the list of scenario cars
+                scenarioEntity.push_back(new_sc);
+                // cppcheck-suppress unreadVariable
+                // This variable is used if we compile with OSG
+                sc = &scenarioEntity.back();
+            }
 
 #ifdef _USE_OSG
-        if (sc->trajPoints == 0)
-        {
-            sc->trajPoints = new osg::Vec3Array;
-        }
-
-        double z_offset = 0.2;
-
-        if (sc->trajPoints->size() == 0)
-        {
-            sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer_->origin_[0]),
-                                                 static_cast<float>(static_cast<double>(state->pos.y) - viewer_->origin_[1]),
-                                                 state->pos.z + static_cast<float>(z_offset)));
-        }
-        else
-        {
-            double minTrajPointDist = 1;
-
-            if (sc->trajPoints->size() > 2 && GetLengthOfLine2D(state->pos.x,
-                                                                state->pos.y,
-                                                                (*sc->trajPoints)[sc->trajPoints->size() - 2][0],
-                                                                (*sc->trajPoints)[sc->trajPoints->size() - 2][1]) < minTrajPointDist)
+            if (sc->trajPoints == 0)
             {
-                // Replace last point until distance is above threshold
-                sc->trajPoints->back() = osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer_->origin_[0]),
-                                                    static_cast<float>(static_cast<double>(state->pos.y) - viewer_->origin_[1]),
-                                                    state->pos.z + static_cast<float>(z_offset));
+                sc->trajPoints = new osg::Vec3Array;
+            }
+
+            double z_offset = 0.2;
+
+            if (sc->trajPoints->size() == 0)
+            {
+                sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(entry.state.pos.x) - viewer_->origin_[0]),
+                                                     static_cast<float>(static_cast<double>(entry.state.pos.y) - viewer_->origin_[1]),
+                                                     entry.state.pos.z + static_cast<float>(z_offset)));
             }
             else
             {
-                sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(state->pos.x) - viewer_->origin_[0]),
-                                                     static_cast<float>(static_cast<double>(state->pos.y) - viewer_->origin_[1]),
-                                                     state->pos.z + static_cast<float>(z_offset)));
+                double minTrajPointDist = 1;
+
+                if (sc->trajPoints->size() > 2 && GetLengthOfLine2D(entry.state.pos.x,
+                                                                    entry.state.pos.y,
+                                                                    (*sc->trajPoints)[sc->trajPoints->size() - 2][0],
+                                                                    (*sc->trajPoints)[sc->trajPoints->size() - 2][1]) < minTrajPointDist)
+                {
+                    // Replace last point until distance is above threshold
+                    sc->trajPoints->back() =
+                        osg::Vec3f(static_cast<float>(static_cast<double>(timelines.pose_.values[0].second.x) - viewer_->origin_[0]),
+                                   static_cast<float>(static_cast<double>(entry.state.pos.y) - viewer_->origin_[1]),
+                                   entry.state.pos.z + static_cast<float>(z_offset));
+                }
+                else
+                {
+                    sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(entry.state.pos.x) - viewer_->origin_[0]),
+                                                         static_cast<float>(static_cast<double>(entry.state.pos.y) - viewer_->origin_[1]),
+                                                         entry.state.pos.z + static_cast<float>(z_offset)));
+                }
             }
-        }
 #endif  // _USE_OSG
 
-        // calculate odometer
-        odo_entry    = odo_info[sc->id];
-        double delta = GetLengthOfLine2D(odo_entry.x, odo_entry.y, state->pos.x, state->pos.y);
-        odo_entry.odometer += delta;
-        odo_entry.x      = state->pos.x;
-        odo_entry.y      = state->pos.y;
-        odo_info[sc->id] = odo_entry;  // save updated odo info for next calculation
+            // calculate odometer
+            double delta = GetLengthOfLine2D(odo_entry.x, odo_entry.y, entry.state.pos.x, entry.state.pos.y);
+            odo_entry.odometer += static_cast<float>(delta);
+            odo_entry.x = entry.state.pos.x;
+            odo_entry.y = entry.state.pos.y;
 
-        entry->odometer = odo_entry.odometer;  // update odometer
+            // Add it to the odometer timeline if it has increased
+            if (odo_entry.odometer > timelines.odometer_.values.back().second)
+            {
+                timelines.odometer_.values.emplace_back(player->timestamps_[i], odo_entry.odometer);
+            }
+        }
     }
 
 #ifdef _USE_OSG
