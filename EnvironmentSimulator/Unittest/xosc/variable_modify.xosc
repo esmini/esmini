@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+   <FileHeader description="Brake when variable becomes 19 by modification" author="esmini team" revMajor="1" revMinor="3" date="2025-08-14T10:00:00"/>
+   <VariableDeclarations>
+      <VariableDeclaration name="MyVariable1" variableType="integer" value="4"/>
+   </VariableDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" s="50"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${50/3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="MyStory">
+         <Act name="MyAct">
+            <ManeuverGroup name="MyManeuverGroup" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="MyManeuver">
+                  <Event maximumExecutionCount="1" name="ModifyVariableEvent" priority="overwrite">
+                     <Action name="MultiplyAction">
+                        <GlobalAction>
+                           <VariableAction variableRef="MyVariable1">
+                              <ModifyAction>
+                                 <Rule>
+                                    <MultiplyByValue value="3"/>
+                                 </Rule>
+                              </ModifyAction>
+                           </VariableAction>
+                        </GlobalAction>
+                     </Action>
+                     <Action name="AddAction">
+                        <GlobalAction>
+                           <VariableAction variableRef="MyVariable1">
+                              <ModifyAction>
+                                 <Rule>
+                                    <AddValue value="7"/>
+                                 </Rule>
+                              </ModifyAction>
+                           </VariableAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition conditionEdge="none" delay="0.0" name="TrigVariableModification">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition rule="greaterOrEqual" value="2"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event maximumExecutionCount="1" name="BrakeEvent" priority="overwrite">
+                     <Action name="BrakeAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="8.0" dynamicsDimension="rate"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="0.0"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition conditionEdge="none" delay="0.0" name="BrakeTrigger">
+                              <ByValueCondition>
+                                 <VariableCondition variableRef="MyVariable1" value="19" rule="equalTo"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition conditionEdge="none" delay="0" name="StopTrigger">
+               <ByValueCondition>
+                  <SimulationTimeCondition rule="greaterOrEqual" value="5"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

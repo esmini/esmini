@@ -1329,6 +1329,37 @@ TEST(ParameterTest, KeepLastParameterValueTest)
     delete se;
 }
 
+// Verify modification of variables via actions
+TEST(VariableTest, TestMultipleAndAddVariableValue)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/variable_modify.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities_.object_.size(), 1);
+    ASSERT_EQ(se->GetScenarioReader()->variables.GetNumberOfParameters(), 1);
+    EXPECT_STREQ(se->GetScenarioReader()->variables.parameterDeclarations_.Parameter[0].name.c_str(), "MyVariable1");
+    EXPECT_EQ(se->GetScenarioReader()->variables.parameterDeclarations_.Parameter[0].value._int, 4);
+
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 50.0, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.5349, 1e-3);
+
+    double dt = 0.1;
+    while (se->getSimulationTime() < 4.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+
+    EXPECT_EQ(se->GetScenarioReader()->variables.parameterDeclarations_.Parameter[0].value._int, 19);  // 4 * 3 + 7
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 89.1488, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.5349, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->GetSpeed(), 0.0, 1e-3);
+
+    delete se;
+}
+
 // Test junction selector functionality
 // Utilizing fabriksgatan 4 way intersection
 // Car will always drive on road 0, north towards the intersection
