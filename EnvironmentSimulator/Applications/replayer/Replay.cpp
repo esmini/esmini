@@ -701,53 +701,12 @@ void Replay::GoToTime(double time, bool stop_at_next_frame)
         }
         else
         {
-            index_ = static_cast<unsigned int>(FindIndexAtTimestamp(time, static_cast<int>(index_)));
-            time_  = time;
+            time_ = time;
         }
     }
     else
     {
-        if (time > time_)
-        {
-            size_t next_index = FindNextTimestamp();
-            if (next_index > index_ && time > static_cast<double>(data_[next_index].state.info.timeStamp) &&
-                static_cast<double>(data_[next_index].state.info.timeStamp) <= GetStopTime())
-            {
-                index_ = static_cast<unsigned int>(next_index);
-                time_  = data_[index_].state.info.timeStamp;
-            }
-            else
-            {
-                if (time > GetStopTime())
-                {
-                    GoToEnd();
-                }
-                else
-                {
-                    time_ = time;
-                }
-            }
-        }
-        else if (time < time_)
-        {
-            size_t next_index = FindPreviousTimestamp();
-            if (next_index < index_ && time < static_cast<double>(data_[next_index].state.info.timeStamp))
-            {
-                index_ = static_cast<unsigned int>(next_index);
-                time_  = data_[index_].state.info.timeStamp;
-            }
-            else
-            {
-                if (time < GetStartTime())
-                {
-                    GoToStart();
-                }
-                else
-                {
-                    time_ = time;
-                }
-            }
-        }
+        /* TODO */
     }
 }
 
@@ -758,28 +717,35 @@ void Replay::GoToDeltaTime(double dt, bool stop_at_next_frame)
 
 int Replay::GoToNextFrame()
 {
-    if (data_.empty())
+    if (timestamps_.empty())
     {
         return -1;
     }
 
-    float ctime = data_[index_].state.info.timeStamp;
-    for (size_t i = index_ + 1; i < data_.size(); i++)
+    auto it = std::upper_bound(timestamps_.begin(), timestamps_.end(), time_);
+
+    if (it != timestamps_.end())
     {
-        if (data_[i].state.info.timeStamp > ctime)
-        {
-            GoToTime(data_[i].state.info.timeStamp);
-            return static_cast<int>(i);
-        }
+        time_ = *it;
+        return 0;
     }
+
     return -1;
 }
 
 void Replay::GoToPreviousFrame()
 {
-    if (index_ > 0)
+    if (timestamps_.empty())
     {
-        GoToTime(data_[index_ - 1].state.info.timeStamp);
+        return;
+    }
+
+    auto it = std::lower_bound(timestamps_.begin(), timestamps_.end(), time_);
+
+    if (it != timestamps_.begin())
+    {
+        --it;  // Move to the previous timestamp
+        time_ = *it;
     }
 }
 
