@@ -1001,7 +1001,7 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
                 if (!(pause_player || viewer_->GetSaveImagesToFile()))
                 {
-                    player->GoToDeltaTime(deltaSimTime, true);
+                    player->GoToDeltaTime(deltaSimTime, false);
                     simTime = player->GetTime();  // potentially wrapped for repeat
                 }
 #else
@@ -1025,6 +1025,9 @@ int main(int argc, char** argv)
                         sc->pos            = state->pos;
                         sc->wheel_angle    = state->info.wheel_angle;
                         sc->wheel_rotation = state->info.wheel_rot;
+                        // id and time are not stored in the timelines, so we set them here
+                        state->info.id        = sc->id;  // ensure id is set
+                        state->info.timeStamp = static_cast<float>(simTime);
                     }
                     else
                     {
