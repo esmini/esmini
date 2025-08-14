@@ -189,7 +189,7 @@ namespace scenarioengine
 
         void ClearData();
 
-        ReplayEntry GetReplayEntryAtTime(int id, float t) const
+        ReplayEntry GetReplayEntryAtTimeIncremental(int id, float t) const
         {
             ReplayEntry entry;
 
@@ -219,6 +219,40 @@ namespace scenarioengine
             entry.state.pos.t               = timeline.pos_t_.get_value_incremental(t);
             entry.state.pos.s               = timeline.pos_s_.get_value_incremental(t);
             entry.odometer                  = timeline.odometer_.get_value_incremental(t);
+
+            return entry;
+        }
+
+        ReplayEntry GetReplayEntryAtTimeBinary(int id, float t) const
+        {
+            ReplayEntry entry;
+
+            const auto& timeline = objects_timeline_.at(id);
+
+            entry.state.info.model_id       = timeline.model_id_.get_value_binary(t);
+            entry.state.info.obj_type       = timeline.obj_type_.get_value_binary(t);
+            entry.state.info.obj_category   = timeline.obj_category_.get_value_binary(t);
+            entry.state.info.ctrl_type      = timeline.ctrl_type_.get_value_binary(t);
+            entry.state.info.name           = timeline.name_.get_value_binary(t).c_str();
+            entry.state.info.speed          = timeline.speed_.get_value_binary(t);
+            entry.state.info.wheel_angle    = timeline.wheel_angle_.get_value_binary(t);
+            entry.state.info.wheel_rot      = timeline.wheel_rot_.get_value_binary(t);
+            entry.state.info.boundingbox    = timeline.bounding_box_.get_value_binary(t);
+            entry.state.info.scaleMode      = timeline.scale_mode_.get_value_binary(t);
+            entry.state.info.visibilityMask = timeline.visibility_mask_.get_value_binary(t);
+            entry.state.info.active         = timeline.active_.get_value_binary(t);
+            entry.state.pos.x               = timeline.pose_.get_value_binary(t).x;
+            entry.state.pos.y               = timeline.pose_.get_value_binary(t).y;
+            entry.state.pos.z               = timeline.pose_.get_value_binary(t).z;
+            entry.state.pos.h               = timeline.pose_.get_value_binary(t).h;
+            entry.state.pos.p               = timeline.pose_.get_value_binary(t).p;
+            entry.state.pos.r               = timeline.pose_.get_value_binary(t).r;
+            entry.state.pos.roadId          = timeline.road_id_.get_value_binary(t);
+            entry.state.pos.laneId          = timeline.lane_id_.get_value_binary(t);
+            entry.state.pos.offset          = timeline.pos_offset_.get_value_binary(t);
+            entry.state.pos.t               = timeline.pos_t_.get_value_binary(t);
+            entry.state.pos.s               = timeline.pos_s_.get_value_binary(t);
+            entry.odometer                  = timeline.odometer_.get_value_binary(t);
 
             return entry;
         }
