@@ -2331,22 +2331,6 @@ void TeleportAction::Start(double simTime)
     OSCAction::Start(simTime);
     LOG_INFO("Starting teleport Action");
 
-    if (object_->IsGhost() && IsGhostRestart() && scenarioEngine_->getSimulationTime() > SMALL_NUMBER)
-    {
-        SE_Env::Inst().SetGhostMode(GhostMode::RESTART);
-
-        object_->trail_.Reset(true);
-        object_->trail_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT);
-
-        // The following code will copy speed from the Ego that ghost relates to
-        if (object_->ghost_Ego_ != nullptr)
-        {
-            object_->SetSpeed(object_->ghost_Ego_->GetSpeed());
-        }
-
-        scenarioEngine_->ResetEvents();  // Ghost-project. Reset events finished by ghost.
-    }
-
     if (object_->IsControllerModeOnAnyOfDomains(ControlOperationMode::MODE_OVERRIDE,
                                                 static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT_AND_LONG)))
     {
@@ -2359,15 +2343,42 @@ void TeleportAction::Start(double simTime)
         return;  // position controlled by tow vehicle
     }
 
-    // layout trajectory if defined
-    if (position_.GetTrajectory() != nullptr)
+    if (object_->IsGhost() && IsGhostRestart() && scenarioEngine_->getSimulationTime() > SMALL_NUMBER)
     {
-        position_.GetTrajectory()->Freeze(FollowingMode::POSITION, 0);
-    }
+        SE_Env::Inst().SetGhostMode(GhostMode::RESTART);
 
-    // consider any assigned route for relative positions
-    position_.CopyRoute(object_->pos_);
-    object_->pos_.TeleportTo(&position_);
+        object_->trail_.Reset(true);
+        object_->trail_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_SEGMENT);
+
+        // The following code will copy speed from the Ego that ghost relates to
+        if (object_->ghost_Ego_ != nullptr)
+        {
+            object_->SetSpeed(object_->ghost_Ego_->GetSpeed());
+
+            // simply duplicate the position of host/ego vehicle
+            object_->pos_.Duplicate(object_->ghost_Ego_->pos_);
+        }
+        else
+        {
+            LOG_ERROR("TeleportAction::Start Missing ghost ego/host object");
+        }
+
+        scenarioEngine_->ResetEvents();  // Ghost-project. Reset events finished by ghost.
+    }
+    else
+    {
+        // layout trajectory if defined
+        if (position_.GetTrajectory() != nullptr)
+        {
+            position_.GetTrajectory()->Freeze(FollowingMode::POSITION, 0);
+        }
+
+        // consider any assigned route for relative positions
+        position_.CopyRoute(object_->pos_);
+
+        // do the relocation
+        object_->pos_.TeleportTo(&position_);
+    }
 
     if (!object_->TowVehicle() && object_->TrailerVehicle())
     {
