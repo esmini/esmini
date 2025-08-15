@@ -2496,19 +2496,32 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
         std::string label;
     };
 
+    std::vector<std::string> labels = {"maxSpeed", "maxAcceleration", "maxAccelerationRate", "maxDeceleration", "maxDecelerationRate"};
+
     value values[] = {
-        {&dc.max_speed_, 250.0 / 3.6, obj ? obj->performance_.maxSpeed : LARGE_NUMBER, "maxSpeed"},
-        {&dc.max_acceleration_, 5.0, obj ? obj->performance_.maxAcceleration : LARGE_NUMBER, "maxAcceleration"},
-        {&dc.max_acceleration_rate_, LARGE_NUMBER, dc.max_acceleration_rate_, "maxAccelerationRate"},
-        {&dc.max_deceleration_, 10.0, obj ? obj->performance_.maxDeceleration : LARGE_NUMBER, "maxDeceleration"},
-        {&dc.max_deceleration_rate_, LARGE_NUMBER, dc.max_deceleration_rate_, "maxDecelerationRate"},
+        {&dc.max_speed_, 250.0 / 3.6, obj ? obj->performance_.maxSpeed : LARGE_NUMBER, labels[0]},
+        {&dc.max_acceleration_, 5.0, obj ? obj->performance_.maxAcceleration : LARGE_NUMBER, labels[1]},
+        {&dc.max_acceleration_rate_, LARGE_NUMBER, dc.max_acceleration_rate_, labels[2]},
+        {&dc.max_deceleration_, 10.0, obj ? obj->performance_.maxDeceleration : LARGE_NUMBER, labels[3]},
+        {&dc.max_deceleration_rate_, LARGE_NUMBER, dc.max_deceleration_rate_, labels[4]},
     };
+
+    for (pugi::xml_attribute a : dynamics_node.attributes())
+    {
+        auto it = std::find(labels.begin(), labels.end(), a.name());
+        if (it == labels.end())
+        {
+            LOG_WARN("parseDynamicConstraints: Ignoring unexpected attribute {}. Misspelled?", a.name());
+        }
+    }
 
     for (unsigned int i = 0; i < sizeof(values) / sizeof(value); i++)
     {
         if (dynamics_node.attribute(values[i].label.c_str()).empty())
         {
-            *values[i].variable = LARGE_NUMBER;  // Default
+            // If the attribute is not specified, set to any vehicle defined value or last resort default infinity
+            LOG_DEBUG("parseDynamicConstraints: {} not specified, use vehicle setting: {}", values[i].label, values[i].performance_value);
+            *values[i].variable = values[i].performance_value;
         }
         else
         {
@@ -2530,6 +2543,10 @@ int ScenarioReader::parseDynamicConstraints(pugi::xml_node dynamics_node, Dynami
                          *values[i].variable,
                          values[i].performance_value);
                 *values[i].variable = values[i].performance_value;
+            }
+            else
+            {
+                LOG_DEBUG("parseDynamicConstraints: {} value = {:.2f}", values[i].label, *values[i].variable);
             }
         }
     }
