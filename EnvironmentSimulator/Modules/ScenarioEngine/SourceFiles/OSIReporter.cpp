@@ -1037,16 +1037,6 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
                     objectState->state_.info.wheel_data[i].rotation_rate);
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->set_number_wheels(
                     static_cast<unsigned int>(objectState->state_.info.wheel_data.size()));
-
-                LOG_DEBUG("obj {} length {:.2f} x {:.2f} axle {} axle_x {:.2f} wheel {} x_local {:.2f} x_global {:.2f}",
-                          objectState->state_.info.id,
-                          objectState->state_.info.boundingbox.dimensions_.length_,
-                          objectState->state_.pos.GetX(),
-                          objectState->state_.info.wheel_data[i].axle,
-                          objectState->state_.info.wheel_data[i].axle == 0 ? objectState->state_.info.front_axle_x_pos : 0.0,
-                          i,
-                          objectState->state_.info.wheel_data[i].x,
-                          objectState->state_.pos.GetX() + objectState->state_.info.wheel_data[i].x);
             }
         }
     }
