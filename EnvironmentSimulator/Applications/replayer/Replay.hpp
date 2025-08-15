@@ -65,15 +65,30 @@ namespace scenarioengine
                 LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
             }
 
-            auto it = std::upper_bound(values.begin(), values.end(), time, [](float t, const std::pair<float, T>& v) { return t < v.first; });
+            auto search_begin = values.begin();
+            auto search_end   = values.end();
+
+            if (time >= values[last_index].first)
+            {
+                // Time moved forward — only search ahead
+                search_begin = values.begin() + static_cast<typename std::vector<std::pair<float, T>>::difference_type>(last_index);
+            }
+            else
+            {
+                // Time moved backward — only search behind
+                search_end = values.begin() + static_cast<typename std::vector<std::pair<float, T>>::difference_type>(last_index) + 1;
+            }
+
+            auto it = std::upper_bound(search_begin, search_end, time, [](float t, const std::pair<float, T>& v) { return t < v.first; });
 
             if (it == values.begin())
             {
-                return it->second;  // Return first value if time is before the first entry
+                last_index = 0;
+                return it->second;
             }
 
-            it--;  // Move back to the last valid entry
-
+            --it;
+            last_index = static_cast<size_t>(std::distance(values.begin(), it));
             return it->second;
         }
     };
