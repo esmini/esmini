@@ -315,10 +315,9 @@ int ParseEntities(Replay* player)
                                                                     (*sc->trajPoints)[sc->trajPoints->size() - 2][1]) < minTrajPointDist)
                 {
                     // Replace last point until distance is above threshold
-                    sc->trajPoints->back() =
-                        osg::Vec3f(static_cast<float>(static_cast<double>(timelines.pose_.values[0].second.x) - viewer_->origin_[0]),
-                                   static_cast<float>(static_cast<double>(entry.state.pos.y) - viewer_->origin_[1]),
-                                   entry.state.pos.z + static_cast<float>(z_offset));
+                    sc->trajPoints->back() = osg::Vec3f(static_cast<float>(static_cast<double>(entry.state.pos.x) - viewer_->origin_[0]),
+                                                        static_cast<float>(static_cast<double>(entry.state.pos.y) - viewer_->origin_[1]),
+                                                        entry.state.pos.z + static_cast<float>(z_offset));
                 }
                 else
                 {
