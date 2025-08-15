@@ -1,5 +1,30 @@
 ## esmini release notes
 
+### 2025-08-15 Version 2.50.1
+
+Improvements and fixes:
+- Establish correct bounding box dimensions already first frame
+  - by doing viewer frame before OSI
+  - for the case where bounding box scales to 3D model
+- Add ctrl property ([OverrideVehicleScaleMode](https://github.com/esmini/esmini/blob/6c89429fd28149b460ac1aec18ffd268def7fb35/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc#L137-L138)) for SUMO vehicles scale mode
+  - to adapt model to bounding or the opposite, or not at all
+  - or go with setting in the vehicle definition (typically catalog entry)
+- Fix missing wheel rotations in OSI ([issue #706](https://github.com/esmini/esmini/issues/706))
+- Parse odr object radius attribute ([issue #719](https://github.com/esmini/esmini/issues/719))
+  - limited support, affects only rectangular bounding box dimension
+- Road id str properly converts to int, supporting expressions ([issue #718](https://github.com/esmini/esmini/issues/718))
+- Restore RM_SetLogFilePath correct behavior ([issue #723](https://github.com/esmini/esmini/issues/723))
+- Fix bug causing rare infinite loop during road meshing
+- Add variable modify demo scenario ([variable_modify.xosc](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/variable_modify.xosc)) and test case
+- Fix ghost restart teleport lost route issue
+- Fix maxAcceleration not respected by SpeedProfile action
+  - for case when dt is too small and more than two entries
+- Improve logging of dynamics constraints
+  - warn when specified attribute not identified, probably misspelled
+  - log all applied values (debug log level)
+- Some debug log level cleanup
+- Add test case to check and [illustrate](https://youtu.be/fVg10b6lDXY) lane change behavior ([issue #724](https://github.com/esmini/esmini/issues/724))
+
 ### 2025-07-08 Version 2.50.0
 
 New features:
