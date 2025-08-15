@@ -148,8 +148,10 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::TIMESTAMP):
             {
                 if (ReadPacket(header, timestamp_) != 0)
-                    LOG_ERROR("Failed reading speed data.");
-                timestamps_.push_back(timestamp_);  // Needed for variable timestep?
+                {
+                    LOG_ERROR("Failed reading timestamp data.");
+                }
+                timestamps_.push_back(timestamp_);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_ID):
@@ -165,13 +167,13 @@ int Replay::ParsePackets(const std::string& filename)
                     // Initialize timelines for this object
                     objects_timeline_[current_object_id_] = {};
                     current_object_timeline_              = &objects_timeline_[current_object_id_];
-                    current_object_timeline_->active_.values.emplace_back(timestamp_, true);
                     current_object_timeline_->odometer_.values.emplace_back(timestamp_, 0.0f);
                 }
                 else
                 {
                     current_object_timeline_ = &objects_timeline_[current_object_id_];
                 }
+                current_object_timeline_->active_.values.emplace_back(timestamp_, true);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::SPEED):
