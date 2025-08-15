@@ -260,7 +260,6 @@ namespace scenarioengine
             entry.state.info.boundingbox    = timeline.bounding_box_.get_value_binary(t);
             entry.state.info.scaleMode      = timeline.scale_mode_.get_value_binary(t);
             entry.state.info.visibilityMask = timeline.visibility_mask_.get_value_binary(t);
-            entry.state.info.active         = timeline.active_.get_value_binary(t);
             entry.state.pos.x               = timeline.pose_.get_value_binary(t).x;
             entry.state.pos.y               = timeline.pose_.get_value_binary(t).y;
             entry.state.pos.z               = timeline.pose_.get_value_binary(t).z;
@@ -273,6 +272,12 @@ namespace scenarioengine
             entry.state.pos.t               = timeline.pos_t_.get_value_binary(t);
             entry.state.pos.s               = timeline.pos_s_.get_value_binary(t);
             entry.odometer                  = timeline.odometer_.get_value_binary(t);
+
+            entry.state.info.active = timeline.active_.get_value_incremental(t);
+            if (t < timeline.active_.values.front().first)
+            {
+                entry.state.info.active = false;  // If time is before the first active timestamp, set active to false
+            }
 
             return entry;
         }
