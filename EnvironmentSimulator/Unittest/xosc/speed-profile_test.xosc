@@ -200,7 +200,7 @@
                                     </Condition>
                                 </ConditionGroup>
                             </StartTrigger>
-                        </Event>                        
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup maximumExecutionCount="1" name="SpeedProfileManeuverGroup2">
@@ -232,6 +232,40 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="SpeedProfileEvent8" priority="overwrite">
+                            <Action name="Stop">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="0.0"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="SpeedProfileAction8">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedProfileAction followingMode="follow">
+                                            <DynamicConstraints maxAcceleration="1.0" maxAccelerationRate="2.0" maxDecelerationRate="1.0"/>
+                                            <SpeedProfileEntry speed="10.0" time="2.0"/>
+                                            <SpeedProfileEntry speed="10.0" time="10.0"/>
+                                        </SpeedProfileAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="EventTrigger8" delay="1" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="SpeedProfileEvent2" state="endTransition"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                     </Maneuver>
                 </ManeuverGroup>
                 <StartTrigger/>
@@ -241,7 +275,7 @@
             <ConditionGroup>
                 <Condition name="StopSimulationCondition" delay="3" conditionEdge="rising">
                     <ByValueCondition>
-                        <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="SpeedProfileEvent7" state="completeState"/>
+                        <StoryboardElementStateCondition storyboardElementType="act" storyboardElementRef="SpeedProfileAct" state="completeState"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

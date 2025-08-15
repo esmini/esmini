@@ -1342,34 +1342,45 @@ void LongSpeedProfileAction::Start(double simTime)
     double delta_k, j = 0.0, time = init_time_;
     for (; index < entry_.size(); index++)
     {
-        if (entry_[index].time_ < -SMALL_NUMBER)
+        double dt    = entry_[index].time_;
+        double k_tmp = (entry_[index].speed_ + speed_offset - (vertex.back().v_)) / dt;
+
+        if (entry_[index].time_ < -SMALL_NUMBER ||                                         // negative delta time
+            (k_tmp < -dynamics_.max_deceleration_ || k_tmp > dynamics_.max_acceleration_)  // required acceleration out of bounds
+        )
         {
-            if (abs(entry_[index].speed_ + speed_offset - vertex.back().v_) < SMALL_NUMBER)
+            double dv = entry_[index].speed_ + speed_offset - vertex.back().v_;
+            if (abs(dv) < SMALL_NUMBER)
             {
                 // same speed as previous vertex, skip entry
                 continue;
             }
-            // negative time is interpreted as missing time stamp
-            double dv  = entry_[index].speed_ + speed_offset - vertex.back().v_;
-            double acc = 0.0;
-            if (dv < 0)
+
+            if (entry_[index].time_ < -SMALL_NUMBER)
             {
-                acc = MIN(-SMALL_NUMBER, -dynamics_.max_deceleration_);
+                // negative time is interpreted as missing time stamp
+                if (dv < 0)
+                {
+                    k_tmp = MIN(-SMALL_NUMBER, -dynamics_.max_deceleration_);
+                }
+                else
+                {
+                    k_tmp = MAX(SMALL_NUMBER, dynamics_.max_acceleration_);
+                }
             }
             else
             {
-                acc = MAX(SMALL_NUMBER, dynamics_.max_acceleration_);
+                // Limit acceleration / deceleration to max values
+                k_tmp < 0 ? k_tmp = MAX(k_tmp, -dynamics_.max_deceleration_) : k_tmp = MIN(k_tmp, dynamics_.max_acceleration_);
             }
 
             vertex.back().t_ = time;
-            time += dv / acc;
+            time += dv / k_tmp;
         }
         else
         {
             time += entry_[index].time_;
         }
-
-        double dt = time - vertex.back().t_;
 
         if (index < entry_.size() - 1)
         {
@@ -1381,7 +1392,7 @@ void LongSpeedProfileAction::Start(double simTime)
             }
         }
 
-        vertex.back().SetK((entry_[index].speed_ + speed_offset - (vertex.back().v_)) / dt);
+        vertex.back().SetK(k_tmp);
 
         if (index > 1)
         {
