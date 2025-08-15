@@ -1615,9 +1615,12 @@ bool ConditionDelay::RegisterValue(double time, bool value)
     }
     else if (time < values_.back().time_ + SMALL_NUMBER)
     {
-        LOG_DEBUG("Unexpected time value {:.2f} <= lastest registered {:.2f}. Probably ghost restart. Insert value based on timestamp.",
-                  time,
-                  values_.back().time_);
+        if (time < values_.back().time_ - SMALL_NUMBER)
+        {
+            LOG_DEBUG("Unexpected time value {:.2f} < latest registered {:.2f}. Probably ghost restart. Insert value based on timestamp.",
+                      time,
+                      values_.back().time_);
+        }
 
         auto it = std::lower_bound(values_.begin(),
                                    values_.end(),
@@ -1677,14 +1680,6 @@ bool ConditionDelay::RegisterValue(double time, bool value)
             values_.push_back({time, value});
         }
         return true;
-    }
-    else if (time < values_.back().time_ + SMALL_NUMBER)
-    {
-        // ignore value at already registered time
-        if (value != values_.back().value_)
-        {
-            LOG_ERROR("Ignoring unexpected value changed ({} -> {}) at same time value {:.2f}", values_.back().value_, value, values_.back().time_);
-        }
     }
     else if (value != values_.back().value_)
     {
