@@ -168,12 +168,23 @@ int Replay::ParsePackets(const std::string& filename)
                     objects_timeline_[current_object_id_] = {};
                     current_object_timeline_              = &objects_timeline_[current_object_id_];
                     current_object_timeline_->odometer_.values.emplace_back(timestamp_, 0.0f);
+                    if (timestamp_ > 0.0f)
+                    {
+                        current_object_timeline_->active_.values.emplace_back(0.0f, false);  // Object was inactive from start of simulation
+                    }
+                    else
+                    {
+                        current_object_timeline_->active_.values.emplace_back(timestamp_, true);  // Object is active at the start of simulation
+                    }
                 }
                 else
                 {
                     current_object_timeline_ = &objects_timeline_[current_object_id_];
+                    if (current_object_timeline_->active_.values.back().second != true)
+                    {
+                        current_object_timeline_->active_.values.emplace_back(timestamp_, true);
+                    }
                 }
-                current_object_timeline_->active_.values.emplace_back(timestamp_, true);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::SPEED):
