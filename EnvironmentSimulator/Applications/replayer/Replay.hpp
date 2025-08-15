@@ -125,11 +125,11 @@ namespace scenarioengine
     class Replay
     {
     public:
-        Dat::DatHeader                            header_;
-        std::vector<ReplayEntry>                  data_;
-        std::unordered_map<int, PropertyTimeline> objects_timeline_;
-        std::vector<float>                        timestamps_;
-        std::unordered_map<int, ReplayEntry>      object_state_cache_;
+        Dat::DatHeader                       header_;
+        std::vector<ReplayEntry>             data_;
+        std::map<int, PropertyTimeline>      objects_timeline_;
+        std::vector<float>                   timestamps_;
+        std::unordered_map<int, ReplayEntry> object_state_cache_;
 
         Replay(std::string filename, bool clean, float fixed_timestep = 0.0f);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
@@ -273,7 +273,7 @@ namespace scenarioengine
             entry.state.pos.s               = timeline.pos_s_.get_value_binary(t);
             entry.odometer                  = timeline.odometer_.get_value_binary(t);
 
-            entry.state.info.active = timeline.active_.get_value_incremental(t);
+            entry.state.info.active = timeline.active_.get_value_binary(t);
             if (t < timeline.active_.values.front().first)
             {
                 entry.state.info.active = false;  // If time is before the first active timestamp, set active to false
