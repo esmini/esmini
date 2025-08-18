@@ -26,8 +26,11 @@ namespace scenarioengine
     template <typename T>
     struct Timeline
     {
-        std::vector<std::pair<float, T>> values;          // Pairs of timestamp and value
-        mutable size_t                   last_index = 0;  // Set as mutable to allow modification in const methods
+        std::vector<std::pair<float, T>>       values;          // Pairs of timestamp and value
+        mutable size_t                         last_index = 0;  // Set as mutable to allow modification in const methods
+        std::vector<std::pair<size_t, size_t>> ghost_restarts_;
+        float                                  ghost_restart_time_ = 0.0f;
+        bool                                   in_ghost_restart_   = false;
 
         const T& get_value_incremental(float time) const noexcept
         {
@@ -36,19 +39,31 @@ namespace scenarioengine
                 LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
             }
 
-            size_t idx = last_index;
+            size_t idx        = last_index;
+            float  moved_dt   = 0.0f;
+            float  desired_dt = time - values[last_index].first;
 
             if (time >= values[idx].first)  // Requested time is after last searched value, we increment
             {
-                while (idx + 1 < values.size() && values[idx + 1].first <= time)
+                while (idx + 1 < values.size())
                 {
+                    float step = values[idx + 1].first - values[idx].first;
+                    if (moved_dt + step > desired_dt)
+                        break;
+
+                    moved_dt += step;
                     idx++;
                 }
             }
             else  // Requested time is before last searched value, we decrement
             {
-                while (idx > 0 && values[idx].first > time)
+                while (idx > 0)
                 {
+                    float step = values[idx].first - values[idx - 1].first;
+                    if (moved_dt + step > -desired_dt)
+                        break;
+
+                    moved_dt += step;
                     idx--;
                 }
             }
@@ -129,6 +144,7 @@ namespace scenarioengine
         std::vector<ReplayEntry>             data_;
         std::map<int, PropertyTimeline>      objects_timeline_;
         std::vector<float>                   timestamps_;
+        std::set<std::pair<size_t, float>>   ghost_restarts_;
         std::unordered_map<int, ReplayEntry> object_state_cache_;
 
         Replay(std::string filename, bool clean, float fixed_timestep = 0.0f);
@@ -189,6 +205,8 @@ namespace scenarioengine
 
         template <typename... Data>
         int ReadPacket(const Dat::PacketHeader& header, Data&... data);
+        template <typename T, typename D>
+        void AddToTimeline(Timeline<T>& timeline, float timestamp, D data);
 
         int ReadStringPacket(std::string& str);
 
@@ -203,6 +221,11 @@ namespace scenarioengine
         void IsDataFixedTimestep(const std::vector<scenarioengine::ReplayEntry>* entry);
 
         void ClearData();
+
+        // void SetIncludeGhostReset(bool include)
+        // {
+        //     include_ghost_reset_ = include;
+        // }
 
         ReplayEntry GetReplayEntryAtTimeIncremental(int id, float t) const
         {
@@ -299,6 +322,7 @@ namespace scenarioengine
         int                               current_object_id_;
         scenarioengine::PropertyTimeline* current_object_timeline_;
         std::optional<float>              min_timestep_ = std::nullopt;  // Minimum timestep in data
+        // bool                              include_ghost_reset_;
 
         int FindIndexAtTimestamp(double timestamp, int startSearchIndex = 0);
     };
