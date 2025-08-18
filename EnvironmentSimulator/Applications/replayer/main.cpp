@@ -212,11 +212,21 @@ int ParseEntities(Replay* player)
     };
     // std::map<int, OdoInfo> odo_info;  // temporary keep track of entity odometers
 
+    float temp_timestamp = player->timestamps_.front();
     for (auto& [id, timelines] : player->objects_timeline_)
     {
         OdoInfo odo_entry = {};
         for (size_t i = 0; i < player->timestamps_.size(); i++)
         {
+            if (player->timestamps_[i] > 0.0f)  // No need to check for restart during negative timestamps
+            {
+                if (player->timestamps_[i] < temp_timestamp)  // current timestamp is less than previous timestamp, we have reset
+                {
+                    player->ghost_restarts_.insert({i, player->timestamps_[i]});
+                }
+            }
+            temp_timestamp = player->timestamps_[i];
+
             ReplayEntry entry          = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i]);
             entry.state.info.id        = id;
             entry.state.info.timeStamp = player->timestamps_[i];
@@ -284,11 +294,21 @@ int ParseEntities(Replay* player)
                 }
 #endif  // _USE_OSG
 
-                // Add it to the list of scenario cars
-                scenarioEntity.push_back(new_sc);
-                // cppcheck-suppress unreadVariable
-                // This variable is used if we compile with OSG
-                sc = &scenarioEntity.back();
+                // Add it to the list of scenario cars, ensure ghost is first if it exists
+                if (timelines.ctrl_type_.values.front().second == GHOST_CTRL_TYPE)
+                {
+                    scenarioEntity.insert(scenarioEntity.begin(), new_sc);
+                    // cppcheck-suppress unreadVariable
+                    // This variable is used if we compile with OSG
+                    sc = &scenarioEntity.front();
+                }
+                else
+                {
+                    scenarioEntity.push_back(new_sc);
+                    // cppcheck-suppress unreadVariable
+                    // This variable is used if we compile with OSG
+                    sc = &scenarioEntity.back();
+                }
             }
 
 #ifdef _USE_OSG
@@ -421,19 +441,22 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
     opt.AddOption("ground_plane", "Add a large flat ground surface");
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
-#endif  // _USEOSG
+#endif  // _USE_OSG
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("help", "Show this help message (-h works as well)");
 #ifdef _USE_OSG
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
+#endif  // _USE_OSG
+    // opt.AddOption("include_ghost_reset", "Include ghost reset in the replay or not");
+#ifdef _USE_OSG
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
-#endif  // _USEOSG
+#endif  // _USE_OSG
     opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", REPLAYER_LOG_FILENAME, true);
 #ifdef _USE_OSG
     opt.AddOption("no_ghost", "Remove ghost entities");
     opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
     opt.AddOption("osg_screenshot_event_handler", "Revert to OSG default jpg images ('c'/'C' keys handler)");
-#endif  // _USEOSG
+#endif  // _USE_OSG
     opt.AddOption("path", "Search path prefix for assets, e.g. OpenDRIVE files.", "path", "", false, false);
     opt.AddOption("quit_at_end", "Quit application when reaching end of scenario");
 #ifdef _USE_OSG
@@ -789,6 +812,15 @@ int main(int argc, char** argv)
 #endif                  // _USE_OSG
             return -1;  // we harmonize all applications to quit on unknown arguments
         }
+
+        // if (opt.GetOptionSet("include_ghost_reset"))
+        // {
+        //     player->SetIncludeGhostReset(true);
+        // }
+        // else
+        // {
+        //     player->SetIncludeGhostReset(false);
+        // }
 
         if (opt.GetOptionSet("time_scale"))
         {
