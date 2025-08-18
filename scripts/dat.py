@@ -114,7 +114,7 @@ class DATFile():
         return 'time, id, name, x, y, z, h, p, r, roadId, laneId, offset, t, s, speed, wheel_angle, wheel_rot'
 
     def get_data_line_extended(self, data):
-        return '{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}'.format(
+        return '{:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {:.3f}, {}, {}'.format(
                 data.time,
                 data.id,
                 data.name.decode('utf-8'),
@@ -131,7 +131,15 @@ class DATFile():
                 data.s,
                 data.speed,
                 data.wheel_angle,
-                data.wheel_rot
+                data.wheel_rot,
+                data.centerOffsetX,
+                data.centerOffsetY,
+                data.centerOffsetZ,
+                data.width,
+                data.length,
+                data.height,
+                data.scaleMode,
+                data.visibilityMask
             )
 
     def get_labels_line_array(self):
