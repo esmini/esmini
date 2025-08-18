@@ -1,5 +1,13 @@
 ## esmini release notes
 
+### 2025-08-18 Version 2.50.2
+
+Improvements and fixes:
+- Restore .dat backward compatibility
+  - fix issue playing a dat file from previous versions in v2.50.1
+  - bounding box can look wrong caused by scale mode redefinition
+- Add some entries to dat2csv extended mode (see slight usage info [here](https://esmini.github.io/#_scenario_recording_dat))
+
 ### 2025-08-15 Version 2.50.1
 
 Improvements and fixes:
