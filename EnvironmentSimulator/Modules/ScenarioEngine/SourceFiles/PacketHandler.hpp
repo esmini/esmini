@@ -88,24 +88,24 @@ namespace Dat
         int         obj_id_      = -1;
         bool        active_      = false;
         bool        obj_written_ = false;  // denotes object added pkg written or not
-        float       speed_       = SMALL_NUMBERF;
+        float       speed_       = LARGE_NUMBERF;
         Pose        pose_;
         int         model_id_        = -1;
         int         obj_type_        = -1;
         int         obj_category_    = -1;
         int         ctrl_type_       = -1;
-        float       wheel_angle_     = SMALL_NUMBERF;
-        float       wheel_rot_       = SMALL_NUMBERF;
+        float       wheel_angle_     = LARGE_NUMBERF;
+        float       wheel_rot_       = LARGE_NUMBERF;
         BoundingBox bounding_box_    = {};
         int         scale_mode_      = -1;
         int         visibility_mask_ = -1;
         std::string name_            = {};
         id_t        road_id_         = ID_UNDEFINED;
         int         lane_id_         = -LARGE_NUMBER_INT;
-        float       pos_offset_      = SMALL_NUMBERF;
-        float       pos_t_           = SMALL_NUMBERF;
-        float       pos_s_           = SMALL_NUMBERF;
-        float       dt_              = SMALL_NUMBERF;
+        float       pos_offset_      = LARGE_NUMBERF;
+        float       pos_t_           = LARGE_NUMBERF;
+        float       pos_s_           = LARGE_NUMBERF;
+        float       dt_              = LARGE_NUMBERF;
     };
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?
