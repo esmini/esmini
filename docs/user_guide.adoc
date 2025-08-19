@@ -2983,6 +2983,75 @@ Now you can convert the exported .obj file back to .osgb format using osgconv.
 
 This will create a new .osgb file that you can use in your application.
 
+=== Using OpenX assets library
+
+https://github.com/bounverif/openx-assets is a collection of low- and medium-polygon 3D vehicle assets.
+
+video::UWjQ8Ai83Cc[youtube,width=800,height=450,opts="autoplay,nocontrols,loop"]
+
+==== How to use with esmini
+
+. Download and extract openx-assets release, for example: +
+https://github.com/bounverif/openx-assets/releases/tag/20250821 +
+the following examples assumes extracted to folder `/tmp` but it can be placed anywhere.
+. In the scenario, add catalog location. Example:
+```xml
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="/tmp/openx-assets/catalogs"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+```
+[start=3]
+. and for scenario objects, refer to catalog entries. Example:
+```xml
+        <ScenarioObject name="car1">
+            <CatalogReference catalogName="openx_assets_3d.catalog" entryName="m1_audi_q7_2015"/>
+        </ScenarioObject>
+```
+[start=4]
+. Full demo/example scenario (shown in video clip above) found here: +
+https://github.com/esmini/esmini/blob/dev/resources/xosc/car_walk.xosc[resources/xosc/car_walk.xosc] +
+Run from esmini root as: +
+   `./bin/esmini --osc ./resources/xosc/car_walk.xosc --aa_mode 9 --path /tmp/openx-assets/model3d --custom_fixed_camera 235,4,2,5.9,0.1 --window 60 60 1024 512`
+
+==== Comment on rear axle non zero position
+
+In the OpenSCENARIO XML standard the vehicle reference point is defined as the center of the rear axle projected on ground (see https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/06_general_concepts/06_03_coordinate_systems.html#_vehicle_coordinate_system_xv_yv_zv[here]). Hence, the x coordinate of the https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/Axles.html[rear axle], defined in terms of vehicle coordinate system, normally should be zero.
+
+Now, for 3D models there is no universal standard how to place origin/reference point. This is especially true for vehicle models. Some models have origin at geometric center, some projected on ground. Ideally, for use with OpenSCENARIO the x coordinate of the center should be aligned with the rear axle.
+
+The authors of the OpenX assets library decided to not prepare multiple variants with different origins. Instead, only one variant with origin at geometric center projected on ground is provided.
+
+In order to still enable use with OpenSCENARIO the offset, the reference point can be moved along the x-axis. The affected vehicle attributes are:
+
+- rearAxle.positionX (becoming non zero)
+- frontAxle.positionX
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/BoundingBox.html[BoundingBox].center.x (becoming zero)
+
+The offset is coded directly in rearAxle positionX (difference from zero). So, in esmini, from version 2.50.3, any non zero rearAxle positionX is interpreted as a request to offset the 3D model accordingly. The axles and bounding box center are adjusted according to comply with the OpenSCENARIO XML standard.
+
+Example:
+
+```xml
+<Vehicle name="m1_bmw_x1_2016" vehicleCategory="car" mass="1800" model3d="../model3d/m1_bmw_x1_2016/m1_bmw_x1_2016.osgb">
+   <BoundingBox>
+      <Center x="0.000" y="0.000" z="0.832"/>
+      <Dimensions length="4.747" width="2.091" height="1.645"/>
+   </BoundingBox>
+   <Performance maxSpeed="56.0" maxDeceleration="8.0" maxAcceleration="4.0"/>
+   <Axles>
+      <FrontAxle maxSteering="0.6" wheelDiameter="0.7585" trackWidth="1.5426" positionX="1.4851" positionZ="0.3792"/>
+      <RearAxle maxSteering="0.0" wheelDiameter="0.7585" trackWidth="1.5426" positionX="-1.3749" positionZ="0.3792"/>
+   </Axles>
+</Vehicle>
+```
+
+3D model should be translated -1.3749 along the x-axis, while the axles and bounding box are translated +1.3749 so that rear axle ends up at x = 0.
+
+In summary: This small feature enables not only use of openx-asset vehicle models, but enables use of other models where origin does not align with rear axle - without need for editing or processing.
+
+Note: This feature is NOT supported by the OpenSCENARIO XML standard, which requires axles to be at non-negative X coordinate (pass:[>=0]).
 
 == Support / Q&A
 

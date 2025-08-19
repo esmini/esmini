@@ -853,46 +853,91 @@ void RouteWayPoints::SetWayPoints(roadmanager::Route* route)
 #endif
 }
 
-osg::ref_ptr<osg::PositionAttitudeTransform> CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName)
+int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheelName, bool front)
 {
-    osg::ref_ptr<osg::PositionAttitudeTransform> tx_node = 0;
-
     // Find wheel node
     std::vector<osg::Node*> nodes;
     FindNamedNodes          fnn(wheelName, nodes);
     carNode->accept(fnn);
 
-    for (size_t i = 0; i < nodes.size(); i++)
+    if (nodes.size() == 1)
     {
-        // Assume wheel is a tranformation node
-        osg::MatrixTransform* node = dynamic_cast<osg::MatrixTransform*>(nodes[i]);
-        if (node != NULL)
+        WheelCompound wc;
+
+        osg::Group* group = dynamic_cast<osg::Group*>(nodes[0]);
+
+        std::string find_str("Grp_Wheel_");
+        if (wheelName.compare(0, find_str.length(), find_str) == 0)
         {
-            tx_node = new osg::PositionAttitudeTransform;
-            // We found the wheel. Put it under a useful transform node
-            tx_node->addChild(node);
-
-            // reset pivot point
-            osg::Vec3 pos = node->getMatrix().getTrans();
-            tx_node->setPivotPoint(pos);
-            tx_node->setPosition(pos);
-
-            osg::ref_ptr<osg::Group> parent = node->getParent(0);  // assume the wheel node only belongs to one vehicle
-            parent->removeChild(node);
-            parent->addChild(tx_node);
-
-            if (std::string(wheelName).find("wheel_r") != std::string::npos)
+            // Assume OpenMATERIAL3D structure
+            if (group->getNumChildren() > 0 && group->getNumChildren() < 3)
             {
-                rear_wheel_.push_back(tx_node);
+                wc.steering_part = new osg::MatrixTransform();
+                wc.rolling_part  = new osg::MatrixTransform();
+                if (group->getNumChildren() == 1)
+                {
+                    // assume non rolling part missing, e.g. caliper
+                    wc.rolling_part->addChild(group->getChild(0));
+                }
+                else
+                {
+                    // two wheel nodes, assume first is non rolling parts, second is the rest
+                    wc.steering_part->addChild(group->getChild(0));
+                    wc.rolling_part->addChild(group->getChild(1));
+                }
+                wc.steering_part->addChild(wc.rolling_part);
+                group->removeChildren(0, group->getNumChildren());
+                group->addChild(wc.steering_part);
             }
-            else if (std::string(wheelName).find("wheel_f") != std::string::npos)
+            else
             {
-                front_wheel_.push_back(tx_node);
+                LOG_WARN("Expected 1 or 2 wheel children of OpenMATERIAL3D wheel structure, found {}", group->getNumChildren());
+                return -1;
             }
         }
-    }
+        else
+        {
+            // assume esmini native wheel structure
+            // create three matrix nodes: Wheel position, Steering, Rolling
 
-    return tx_node;
+            osg::MatrixTransform* node = dynamic_cast<osg::MatrixTransform*>(nodes[0]);
+            if (node == nullptr)
+            {
+                LOG_WARN("Expected osg::MatrixTransform wheel node, found {}", nodes[0]->className());
+                return -1;
+            }
+
+            osg::ref_ptr<osg::MatrixTransform> wpos = new osg::MatrixTransform;
+            wc.steering_part                        = new osg::MatrixTransform();
+            wc.rolling_part                         = new osg::MatrixTransform();
+
+            // move translation from wheel node to parent position node
+            osg::Matrix m = node->getMatrix();
+            wpos->setMatrix(osg::Matrix::translate(m.getTrans()));
+            m.setTrans(0.0, 0.0, 0.0);
+            node->setMatrix(m);
+
+            wc.rolling_part->addChild(nodes[0]);
+            wc.steering_part->addChild(wc.rolling_part);
+            wpos->addChild(wc.steering_part);
+
+            // replace original wheel node with the new structure
+            group->getParent(0)->addChild(wpos);
+            group->getParent(0)->removeChild(nodes[0]);
+        }
+
+        if (front)
+        {
+            front_wheel_.push_back(wc);
+        }
+        else
+        {
+            rear_wheel_.push_back(wc);
+        }
+
+        return 0;
+    }
+    return -1;
 }
 
 EntityModel::EntityModel(Viewer*                  viewer,
@@ -981,32 +1026,46 @@ CarModel::CarModel(Viewer*                  viewer,
     wheel_angle_ = 0;
     wheel_rot_   = 0;
 
-    osg::ref_ptr<osg::Group> retval[4];
-    osg::ref_ptr<osg::Node>  car_node = txNode_->getChild(0);
-    retval[0]                         = AddWheel(car_node, "wheel_fl");
-    retval[1]                         = AddWheel(car_node, "wheel_fr");
-    retval[2]                         = AddWheel(car_node, "wheel_rr");
-    retval[3]                         = AddWheel(car_node, "wheel_rl");
+    static const std::vector<std::vector<std::pair<std::string, bool>>> wheel_groups = {
+        {{"wheel_fl", true}, {"wheel_fr", true}, {"wheel_rr", false}, {"wheel_rl", false}},
+        {{"Grp_Wheel_0_0", true}, {"Grp_Wheel_0_1", true}, {"Grp_Wheel_1_0", false}, {"Grp_Wheel_1_1", false}},
+    };
+    osg::ref_ptr<osg::Group> retval;
+    osg::ref_ptr<osg::Node>  car_node    = txNode_->getChild(0);
+    bool                     wheel_found = false;
 
-    // Print message only if some wheel nodes are missing
-    if (retval[0] || retval[1] || retval[2] || retval[3])
+    for (auto const& wheel_group : wheel_groups)
     {
-        if (!retval[0])
+        for (auto const& wheel : wheel_group)
         {
-            LOG_WARN_ONCE("Missing wheel node {} in vehicle model {} - ignoring", "wheel_fl", car_node->getName());
+            if (AddWheel(car_node, wheel.first, wheel.second) != 0)
+            {
+                if (wheel_found)
+                {
+                    LOG_WARN("Failed to find additional wheel {}", wheel.first);
+                }
+                else
+                {
+                    // If we cannot find first wheel in group, continue to the next group
+                    break;
+                }
+            }
+            else
+            {
+                wheel_found = true;
+            }
         }
-        if (!retval[1])
+
+        if (wheel_found)
         {
-            LOG_WARN_ONCE("Missing wheel node {} in vehicle model {} - ignoring", "wheel_fr", car_node->getName());
+            // done when found at least one wheel in group
+            break;
         }
-        if (!retval[2])
-        {
-            LOG_WARN_ONCE("Missing wheel node {} in vehicle model {} - ignoring", "wheel_rr", car_node->getName());
-        }
-        if (!retval[3])
-        {
-            LOG_WARN_ONCE("Missing wheel node {} in vehicle model {} - ignoring", "wheel_rl", car_node->getName());
-        }
+    }
+
+    if (!wheel_found)
+    {
+        LOG_DEBUG("No wheels found on {}. If unexpected, check first wheel element name in model structure", car_node->getName());
     }
 }
 
@@ -1095,29 +1154,16 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
     // Update wheel angles and rotation for front wheels
     wheel_angle_ = wheel_angle;
     wheel_rot_   = wheel_rotation;
-    osg::Quat quat;
 
     for (size_t i = 0; i < front_wheel_.size(); i++)
     {
-        quat.makeRotate(0,
-                        osg::Vec3(1, 0, 0),  // Roll
-                        wheel_rotation,
-                        osg::Vec3(0, 1, 0),  // Pitch
-                        wheel_angle,
-                        osg::Vec3(0, 0, 1));  // Heading
-        front_wheel_[i]->setAttitude(quat);
+        front_wheel_[i].steering_part->setMatrix(osg::Matrix::rotate(wheel_angle_, 0, 0, 1));
+        front_wheel_[i].rolling_part->setMatrix(osg::Matrix::rotate(wheel_rot_, 0, 1, 0));
     }
 
     for (size_t i = 0; i < rear_wheel_.size(); i++)
     {
-        // Update rotation for rear wheels
-        quat.makeRotate(0,
-                        osg::Vec3(1, 0, 0),  // Roll
-                        wheel_rotation,
-                        osg::Vec3(0, 1, 0),  // Pitch
-                        0,
-                        osg::Vec3(0, 0, 1));  // Heading
-        rear_wheel_[i]->setAttitude(quat);
+        rear_wheel_[i].rolling_part->setMatrix(osg::Matrix::rotate(wheel_rot_, 0, 1, 0));
     }
 }
 
@@ -2049,6 +2095,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
                                        bool                    road_sensor,
                                        std::string             name,
                                        OSCBoundingBox*         boundingBox,
+                                       double                  x_offset,
                                        EntityScaleMode         scaleMode)
 {
     // Load 3D model
@@ -2219,8 +2266,14 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         }
     }
 
-    if (scaleMode == EntityScaleMode::BB_TO_MODEL)
+    if (scaleMode == EntityScaleMode::NONE)
     {
+        modeltx->setPosition(osg::Vec3(x_offset, 0.0, 0.0));
+    }
+    else if (scaleMode == EntityScaleMode::BB_TO_MODEL)
+    {
+        modeltx->setPosition(osg::Vec3(x_offset, 0.0, 0.0));
+
         // Create visual model of object bounding box, copy values from model bounding box
         bbGeode->addDrawable(new osg::ShapeDrawable(new osg::Box(modelBB.center(),
                                                                  modelBB._max.x() - modelBB._min.x(),
@@ -2313,7 +2366,6 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
 
     emodel->state_set_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
     emodel->state_set_->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
-    emodel->state_set_->setRenderBinDetails(10, "DepthSortedBin", osg::StateSet::RenderBinMode::OVERRIDE_RENDERBIN_DETAILS);
 
     emodel->modelBB_ = modelBB;
     emodel->model_   = modelgroup;

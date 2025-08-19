@@ -327,11 +327,16 @@ namespace viewer
     class CarModel : public MovingModel
     {
     public:
-        std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> front_wheel_;
-        std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> rear_wheel_;
-        double                                                    wheel_angle_;
-        double                                                    wheel_rot_;
-        virtual EntityType                                        GetType() override
+        struct WheelCompound
+        {
+            osg::ref_ptr<osg::MatrixTransform> steering_part;
+            osg::ref_ptr<osg::MatrixTransform> rolling_part;
+        };
+        std::vector<WheelCompound> front_wheel_;
+        std::vector<WheelCompound> rear_wheel_;
+        double                     wheel_angle_;
+        double                     wheel_rot_;
+        virtual EntityType         GetType() override
         {
             return EntityType::VEHICLE;
         }
@@ -346,9 +351,9 @@ namespace viewer
                  osg::Vec4                trail_color,
                  std::string              name);
         ~CarModel();
-        osg::ref_ptr<osg::PositionAttitudeTransform> AddWheel(osg::ref_ptr<osg::Node> carNode, const char* wheelName);
-        void                                         UpdateWheels(double wheel_angle, double wheel_rotation);
-        void                                         UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
+        int  AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheelName, bool front);
+        void UpdateWheels(double wheel_angle, double wheel_rotation);
+        void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
     };
 
     class VisibilityCallback : public osg::NodeCallback
@@ -495,6 +500,7 @@ namespace viewer
                                                    bool                    road_sensor,
                                                    std::string             name,
                                                    OSCBoundingBox*         boundingBox,
+                                                   double                  x_offset,
                                                    EntityScaleMode         scaleMode = EntityScaleMode::NONE);
         int                      AddEntityModel(EntityModel* model);
         void                     RemoveCar(int index);

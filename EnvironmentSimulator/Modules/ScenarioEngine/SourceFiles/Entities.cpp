@@ -74,8 +74,9 @@ Object::Object(Type type)
         SetJunctionSelectorAngleRandom();
     }
 
-    front_axle_ = {0.0, 0.0, 0.0, 0.0, 0.0};
-    rear_axle_  = {0.0, 0.0, 0.0, 0.0, 0.0};
+    front_axle_       = {0.0, 0.0, 0.0, 0.0, 0.0};
+    rear_axle_        = {0.0, 0.0, 0.0, 0.0, 0.0};
+    model3d_x_offset_ = 0.0;
 }
 
 void Object::SetEndOfRoad(bool state, double time)

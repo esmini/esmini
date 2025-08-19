@@ -264,6 +264,7 @@ int ParseEntities(Replay* player)
                                                                  false,
                                                                  state->info.name,
                                                                  &state->info.boundingbox,
+                                                                 0.0,
                                                                  static_cast<EntityScaleMode>(state->info.scaleMode))) == 0)
             {
                 return -1;

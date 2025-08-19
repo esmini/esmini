@@ -377,6 +377,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
                                                            false,
                                                            obj->name_,
                                                            &obj->boundingbox_,
+                                                           obj->model3d_x_offset_,
                                                            obj->scaleMode_));
 
         if (obj->scaleMode_ == EntityScaleMode::BB_TO_MODEL)
@@ -987,6 +988,7 @@ int ScenarioPlayer::InitViewer()
                                                                road_sensor,
                                                                obj->name_,
                                                                &obj->boundingbox_,
+                                                               obj->model3d_x_offset_,
                                                                obj->scaleMode_)) != 0)
         {
             CloseViewer();

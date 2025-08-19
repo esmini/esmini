@@ -649,6 +649,18 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                 axle->wheelDiameter = std::stof(parameters.ReadAttribute(axle_node, "wheelDiameter"));
             }
         }
+
+        // if rear axle is not at x=0, then use that offset for shifting 3D model along x-axis
+        if (!NEAR_NUMBERS(vehicle->rear_axle_.positionX, 0))
+        {
+            LOG_INFO("Non zero vehicle rear axle x offset: {:.2f} found for {}. Shift 3D model and adjust axles and bounding box accordingly.",
+                     -vehicle->rear_axle_.positionX,
+                     vehicle->GetTypeName());
+            vehicle->model3d_x_offset_ = -vehicle->rear_axle_.positionX;
+            vehicle->boundingbox_.center_.x_ -= static_cast<float>(vehicle->rear_axle_.positionX);
+            vehicle->front_axle_.positionX -= vehicle->rear_axle_.positionX;
+            vehicle->rear_axle_.positionX = 0.0;
+        }
     }
 
     vehicle->SetCategory(parameters.ReadAttribute(vehicleNode, "vehicleCategory"));

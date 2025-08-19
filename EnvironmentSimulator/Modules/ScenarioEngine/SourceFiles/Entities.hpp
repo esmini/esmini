@@ -206,6 +206,7 @@ namespace scenarioengine
         Performance               performance_;
         Axle                      front_axle_;
         Axle                      rear_axle_;
+        double                    model3d_x_offset_ = 0.0;
 
         // Rel2abs Controller addition
         std::vector<Event*>            objectEvents_;  // Events that contains privateactions applied to this object
