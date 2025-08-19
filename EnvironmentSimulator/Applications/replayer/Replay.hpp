@@ -26,11 +26,8 @@ namespace scenarioengine
     template <typename T>
     struct Timeline
     {
-        std::vector<std::pair<float, T>>       values;          // Pairs of timestamp and value
-        mutable size_t                         last_index = 0;  // Set as mutable to allow modification in const methods
-        std::vector<std::pair<size_t, size_t>> ghost_restarts_;
-        float                                  ghost_restart_time_ = 0.0f;
-        bool                                   in_ghost_restart_   = false;
+        std::vector<std::pair<float, T>> values;          // Pairs of timestamp and value
+        mutable size_t                   last_index = 0;  // Set as mutable to allow modification in const methods
 
         const T& get_value_incremental(float time) const noexcept
         {
@@ -48,7 +45,7 @@ namespace scenarioengine
                 while (idx + 1 < values.size())
                 {
                     float step = values[idx + 1].first - values[idx].first;
-                    if (moved_dt + step > desired_dt)
+                    if (moved_dt + step > desired_dt + SMALL_NUMBERF)
                         break;
 
                     moved_dt += step;
@@ -60,8 +57,11 @@ namespace scenarioengine
                 while (idx > 0)
                 {
                     float step = values[idx].first - values[idx - 1].first;
-                    if (moved_dt + step > -desired_dt)
+                    if (moved_dt + step > -desired_dt - SMALL_NUMBERF)
+                    {
+                        idx--;
                         break;
+                    }
 
                     moved_dt += step;
                     idx--;
@@ -106,6 +106,37 @@ namespace scenarioengine
             last_index = static_cast<size_t>(std::distance(values.begin(), it));
             return it->second;
         }
+
+        size_t get_index_binary(float time) const noexcept
+        {
+            if (values.empty())
+            {
+                LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+            }
+
+            auto search_begin = values.begin();
+            auto search_end   = values.end();
+
+            if (time >= values[last_index].first)
+            {
+                // Time moved forward — only search ahead
+                search_begin = values.begin();
+            }
+            else
+            {
+                // Time moved backward — only search behind
+                search_end = values.begin() + 1;
+            }
+
+            auto it = std::upper_bound(search_begin, search_end, time, [](float t, const std::pair<float, T>& v) { return t < v.first; });
+
+            if (it == values.begin())
+            {
+                return 0;
+            }
+
+            return static_cast<size_t>(std::distance(values.begin(), it));
+        }
     };
 
     struct PropertyTimeline
@@ -144,7 +175,6 @@ namespace scenarioengine
         std::vector<ReplayEntry>             data_;
         std::map<int, PropertyTimeline>      objects_timeline_;
         std::vector<float>                   timestamps_;
-        std::set<std::pair<size_t, float>>   ghost_restarts_;
         std::unordered_map<int, ReplayEntry> object_state_cache_;
 
         Replay(std::string filename, bool clean, float fixed_timestep = 0.0f);
