@@ -33,15 +33,12 @@ Replay::Replay(std::string filename, bool clean, float fixed_timestep)
         return;
     }
 
-    // Add entries to data_ vector
-    BuildDataFromPackets();
-
-    stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stopTime_));  // Needs data_ to be filled before this can be called
-
-    if (clean)
+    if (timestamps_.empty())
     {
-        CleanEntries(data_);
+        LOG_ERROR("No timestamps found in file: {}", filename);
+        return;
     }
+    startTime_ = static_cast<float>(timestamps_[0]);
 }
 
 Replay::Replay(const std::string directory, const std::string scenario, std::string create_datfile)
