@@ -82,8 +82,9 @@ std::string Parameters::getParameter(std::string name)
             return parameters[i].value._string;
         }
     }
-    LOG_ERROR("Failed to resolve parameter {}", name);
-    throw std::runtime_error("Failed to resolve parameter");
+    LOG_ERROR_AND_QUIT("Failed to resolve parameter {}", name);
+
+    return "";  // will not be reached, but added to avoid compiler warning
 }
 
 OSCParameterDeclarations::ParameterStruct* Parameters::getParameterEntry(std::string name)

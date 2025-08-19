@@ -186,6 +186,7 @@ template <class... ARGS>
 void __LOG_ERROR__AND__QUIT__(char const* function, char const* file, long line, const std::string& log, ARGS... args)
 {
     txtLogger.Log(LogLevel::error, "error", function, file, line, log, args...);
+    txtLogger.SetLoggerTime(nullptr);  // stop logging time since pointer will be dangling with throw
     throw std::runtime_error(fmt::format(txtLogger.AddTimeAndMetaData(function, file, line, "error", log), args...));
 }
 
