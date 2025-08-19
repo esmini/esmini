@@ -213,21 +213,11 @@ int ParseEntities(Replay* player)
     };
     // std::map<int, OdoInfo> odo_info;  // temporary keep track of entity odometers
 
-    float temp_timestamp = player->timestamps_.front();
     for (auto& [id, timelines] : player->objects_timeline_)
     {
         OdoInfo odo_entry = {};
         for (size_t i = 0; i < player->timestamps_.size(); i++)
         {
-            if (player->timestamps_[i] > 0.0f)  // No need to check for restart during negative timestamps
-            {
-                if (player->timestamps_[i] < temp_timestamp)  // current timestamp is less than previous timestamp, we have reset
-                {
-                    player->ghost_restarts_.insert({i, player->timestamps_[i]});
-                }
-            }
-            temp_timestamp = player->timestamps_[i];
-
             ReplayEntry entry          = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i]);
             entry.state.info.id        = id;
             entry.state.info.timeStamp = player->timestamps_[i];
@@ -302,21 +292,10 @@ int ParseEntities(Replay* player)
             }
 #endif  // _USE_OSG
 
-                // Add it to the list of scenario cars, ensure ghost is first if it exists
-                if (timelines.ctrl_type_.values.front().second == GHOST_CTRL_TYPE)
-                {
-                    scenarioEntity.insert(scenarioEntity.begin(), new_sc);
-                    // cppcheck-suppress unreadVariable
-                    // This variable is used if we compile with OSG
-                    sc = &scenarioEntity.front();
-                }
-                else
-                {
-                    scenarioEntity.push_back(new_sc);
-                    // cppcheck-suppress unreadVariable
-                    // This variable is used if we compile with OSG
-                    sc = &scenarioEntity.back();
-                }
+                scenarioEntity.push_back(new_sc);
+                // cppcheck-suppress unreadVariable
+                // This variable is used if we compile with OSG
+                sc = &scenarioEntity.back();
             }
 
 #ifdef _USE_OSG

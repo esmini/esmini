@@ -151,12 +151,11 @@ int Replay::ParsePackets(const std::string& filename)
                 {
                     LOG_ERROR("Failed reading timestamp data.");
                 }
-                // if (include_ghost_reset_)
-                // {
-                //     timestamps_.push_back(timestamp_);
-                // }
-                // else if (timestamps_.empty() || timestamp_ <= SMALL_NUMBERF || timestamp_ > timestamps_.back())
-                timestamps_.push_back(timestamp_);
+
+                if (timestamps_.empty() || timestamp_ <= SMALL_NUMBERF || timestamp_ > timestamps_.back())
+                {
+                    timestamps_.push_back(timestamp_);
+                }
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_ID):
@@ -1094,17 +1093,9 @@ void Replay::AddToTimeline(Timeline<T>& timeline, float timestamp, D data)
         return;
     }
 
-    if (!timeline.in_ghost_restart_ && !timeline.values.empty() && timestamp_ < timeline.values.back().first)
+    if (!timeline.values.empty() && timestamp_ < timeline.values.back().first)
     {
-        timeline.ghost_restart_time_ = timeline.values.back().first;
-        size_t last_index            = static_cast<size_t>(timeline.values.size() - 1);
-        timeline.ghost_restarts_.emplace_back(last_index, last_index);  // Second index a placeholder
-        timeline.in_ghost_restart_ = true;
-    }
-    else if (timeline.in_ghost_restart_ && timestamp_ > timeline.ghost_restart_time_)
-    {
-        timeline.ghost_restarts_.back().second = static_cast<size_t>(timeline.values.size());
-        timeline.in_ghost_restart_             = false;
+        timeline.values.resize(timeline.get_index_binary(timestamp));
     }
     timeline.values.emplace_back(timestamp, data);
 }
