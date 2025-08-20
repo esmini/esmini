@@ -1110,7 +1110,8 @@ void Replay::AddToTimeline(Timeline<T>& timeline, D data)
                 if (inserted)
                 {
                     it->second.active_.values.front().second = false;  // Object starts as inactive, as we assume no restart happens at start
-                    // Object active from restart time until latest timestamp
+
+                    // Ghosts ghost active from ghost restart time until latest timestamp
                     it->second.active_.values.emplace_back(timestamp_, true);
                     it->second.active_.values.emplace_back(timestamps_.back(), false);
 
