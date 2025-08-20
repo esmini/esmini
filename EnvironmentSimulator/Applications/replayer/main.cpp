@@ -372,16 +372,17 @@ int ParseEntities(Replay* player)
     return 0;
 }
 
-int GetGhostIdx()
+std::vector<int> GetGhostIdx()
 {
+    std::vector<int> ghostIndices;
     for (size_t i = 0; i < scenarioEntity.size(); i++)
     {
         if (scenarioEntity[i].name.find("_ghost") != std::string::npos)
         {
-            return static_cast<int>(i);
+            ghostIndices.push_back(static_cast<int>(i));
         }
     }
-    return -1;  // No ghost
+    return ghostIndices;
 }
 
 int main(int argc, char** argv)
@@ -915,7 +916,7 @@ int main(int argc, char** argv)
             return -1;
         }
 
-        const int ghost_idx = GetGhostIdx();
+        const std::vector<int> ghost_indices = GetGhostIdx();
 
         std::string start_time_str = opt.GetOptionValue("start_time");
         if (!start_time_str.empty())
@@ -936,7 +937,7 @@ int main(int argc, char** argv)
                 startTime = static_cast<double>(player->timestamps_.back());
             }
             player->SetStartTime(startTime);
-            player->GoToTime(startTime, false);
+            player->GoToTime(startTime);
         }
 
         std::string stop_time_str = opt.GetOptionValue("stop_time");
@@ -1017,7 +1018,7 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
                 if (!(pause_player || viewer_->GetSaveImagesToFile()))
                 {
-                    player->GoToDeltaTime(deltaSimTime, false);
+                    player->GoToDeltaTime(deltaSimTime, true);
                     simTime = player->GetTime();  // potentially wrapped for repeat
                 }
 #else
@@ -1133,7 +1134,7 @@ int main(int argc, char** argv)
                     {
                         for (size_t i = 0; i < scenarioEntity.size(); i++)
                         {
-                            if (static_cast<int>(i) != ghost_idx)  // Ignore ghost
+                            if (std::find(ghost_indices.begin(), ghost_indices.end(), static_cast<int>(i)) == ghost_indices.end())
                             {
                                 updateCorners(scenarioEntity[i]);
                             }
@@ -1141,13 +1142,13 @@ int main(int argc, char** argv)
 
                         for (size_t i = 0; i < scenarioEntity.size(); i++)
                         {
-                            if (static_cast<int>(i) == ghost_idx)
+                            if (std::find(ghost_indices.begin(), ghost_indices.end(), static_cast<int>(i)) != ghost_indices.end())
                             {
                                 continue;
                             }
                             for (size_t j = i + 1; j < scenarioEntity.size(); j++)
                             {
-                                if (static_cast<int>(j) == ghost_idx)
+                                if (std::find(ghost_indices.begin(), ghost_indices.end(), static_cast<int>(i)) != ghost_indices.end())
                                 {
                                     continue;
                                 }

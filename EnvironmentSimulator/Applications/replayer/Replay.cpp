@@ -695,19 +695,79 @@ void Replay::GoToEnd()
     }
 }
 
-void Replay::GoToTime(double time, bool stop_at_next_frame)
+void Replay::GoToTime(double target_time, bool stop_at_next_frame)
 {
-    if (time > stopTime_)
+    // We dont stop searching until we found the closes timestamp
+    if (!stop_at_next_frame)
     {
-        GoToEnd();
-    }
-    else if (time < GetStartTime())
-    {
-        GoToStart();
+        if (target_time >= stopTime_)
+        {
+            GoToEnd();
+            return;
+        }
+        else if (target_time <= GetStartTime())
+        {
+            GoToStart();
+            return;
+        }
+        else
+        {
+            auto start = timestamps_.begin();
+            auto end   = timestamps_.end();
+            if (target_time > time_)  // We look ahead, can start to search from current index_
+            {
+                start += index_;
+            }
+            else  // else we start from beginning and stop at index + 1 (lower_bound excludes last, so we add +1)
+            {
+                end = timestamps_.begin() + index_ + 1;
+            }
+            auto it = std::lower_bound(start, end, static_cast<float>(target_time));
+            index_  = static_cast<size_t>(std::distance(timestamps_.begin(), it));
+            time_   = static_cast<float>(target_time);
+        }
     }
     else
     {
-        time_ = time;
+        if (target_time > time_)  // Looking ahead, stopping as soon as we find time greater than current time
+        {
+            size_t next_index = index_ + 1;
+            if (next_index < timestamps_.size() && static_cast<float>(target_time) >= timestamps_[next_index])
+            {
+                index_ = next_index;
+                time_  = timestamps_[index_];
+            }
+            else
+            {
+                if (target_time > stopTime_)
+                {
+                    GoToEnd();
+                }
+                else
+                {
+                    time_ = static_cast<float>(target_time);
+                }
+            }
+        }
+        else if (target_time < time_)  // Same for backwards, but we stop when we find a timestamp less than current time
+        {
+            if (index_ > 0 && static_cast<float>(target_time) <= timestamps_[index_ - 1])
+            {
+                index_--;
+                time_ = timestamps_[index_];
+            }
+            else
+            {
+                if (target_time < GetStartTime())
+                {
+                    GoToStart();
+                }
+                else
+                {
+                    time_ = static_cast<float>(target_time);
+                }
+            }
+        }
     }
 }
 
@@ -727,7 +787,8 @@ int Replay::GoToNextFrame()
 
     if (it != timestamps_.end() && *it <= static_cast<float>(stopTime_) + SMALL_NUMBERF)
     {
-        time_ = *it;
+        index_ = std::distance(timestamps_.begin(), it);
+        time_  = *it;
         return 0;
     }
 
@@ -746,7 +807,8 @@ void Replay::GoToPreviousFrame()
     if (it != timestamps_.begin())
     {
         --it;  // Move to the previous timestamp
-        time_ = *it;
+        index_ = std::distance(timestamps_.begin(), it);
+        time_  = *it;
     }
 }
 

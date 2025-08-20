@@ -203,7 +203,7 @@ namespace scenarioengine
                 @param time timestamp (0 = beginning, -1 end)
                 @param stop_at_next_frame If true move max to next/previous time frame
         */
-        void                  GoToTime(double time, bool stop_at_next_frame = false);
+        void                  GoToTime(double target_time, bool stop_at_next_frame = false);
         void                  GoToDeltaTime(double dt, bool stop_at_next_frame = false);
         void                  GetReplaysFromDirectory(const std::string dir, const std::string sce);
         size_t                GetNumberOfScenarios() const;
