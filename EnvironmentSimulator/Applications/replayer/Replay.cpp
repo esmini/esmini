@@ -697,24 +697,17 @@ void Replay::GoToEnd()
 
 void Replay::GoToTime(double time, bool stop_at_next_frame)
 {
-    if (!stop_at_next_frame)
+    if (time > stopTime_)
     {
-        if (time > stopTime_)
-        {
-            GoToEnd();
-        }
-        else if (time < GetStartTime())
-        {
-            GoToStart();
-        }
-        else
-        {
-            time_ = time;
-        }
+        GoToEnd();
+    }
+    else if (time < GetStartTime())
+    {
+        GoToStart();
     }
     else
     {
-        /* TODO */
+        time_ = time;
     }
 }
 
@@ -732,7 +725,7 @@ int Replay::GoToNextFrame()
 
     auto it = std::upper_bound(timestamps_.begin(), timestamps_.end(), time_);
 
-    if (it != timestamps_.end())
+    if (it != timestamps_.end() && *it <= static_cast<float>(stopTime_) + SMALL_NUMBERF)
     {
         time_ = *it;
         return 0;
@@ -881,7 +874,7 @@ void Replay::SetStartTime(double time)
         time_ = startTime_;
     }
 
-    startIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(startTime_));
+    // startIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(startTime_));
 }
 
 void Replay::SetStopTime(double time)
