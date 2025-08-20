@@ -3,6 +3,7 @@
     <FileHeader description="enforce ghost restart" author="Mandolin" revMajor="1" revMinor="1" date="2022-02-09T09:10:49.911313"/>
     <ParameterDeclarations>
         <ParameterDeclaration name="myparam" parameterType="boolean" value="false"/>
+        <ParameterDeclaration name="myparam2" parameterType="boolean" value="false"/>
     </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
@@ -89,6 +90,31 @@
                             </StartTrigger>
                         </Event>
                     </Maneuver>
+                    <Maneuver name="drifting2">
+                        <Event name="parameter triggered event" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="newspeed2">
+                                <PrivateAction>
+                                    <LateralAction>
+                                        <LaneChangeAction>
+                                            <LaneChangeActionDynamics dynamicsShape="linear" value="2.0" dynamicsDimension="time"/>
+                                            <LaneChangeTarget>
+                                                <AbsoluteTargetLane value="-4"/>
+                                            </LaneChangeTarget>
+                                        </LaneChangeAction>
+                                    </LateralAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="new parameter" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <ParameterCondition parameterRef="myparam2" value="true" rule="equalTo"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
                 </ManeuverGroup>
                 <ManeuverGroup name="parameterchange_mg" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false"/>
@@ -106,6 +132,26 @@
                                     <Condition name="time_trigger1" delay="0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="5.0" rule="greaterOrEqual"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                    <Maneuver name="parameterchange2">
+                        <Event name="parameterchange_event" priority="parallel" maximumExecutionCount="1">
+                            <Action name="parameter_change_action">
+                                <GlobalAction>
+                                    <ParameterAction parameterRef="myparam2">
+                                        <SetAction value="true"/>
+                                    </ParameterAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="time_trigger1" delay="0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="9.0" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
