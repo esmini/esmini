@@ -913,41 +913,39 @@ int main(int argc, char** argv)
         if (!start_time_str.empty())
         {
             double startTime = 1E-3 * strtod(start_time_str);
-            if (static_cast<float>(startTime) < player->data_[0].state.info.timeStamp)
+            if (static_cast<float>(startTime) < player->timestamps_.front())
             {
                 printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n",
                        startTime,
-                       static_cast<double>(player->data_[0].state.info.timeStamp));
-                startTime = static_cast<double>(player->data_[0].state.info.timeStamp);
+                       static_cast<double>(player->timestamps_.front()));
+                startTime = static_cast<double>(player->timestamps_.front());
             }
-            else if (static_cast<float>(startTime) > player->data_.back().state.info.timeStamp)
+            else if (static_cast<float>(startTime) > player->timestamps_.back())
             {
                 printf("Specified start time (%.2f) > last timestamp (%.2f), adapting.\n",
                        startTime,
-                       static_cast<double>(player->data_.back().state.info.timeStamp));
-                startTime = static_cast<double>(player->data_.back().state.info.timeStamp);
+                       static_cast<double>(player->timestamps_.back()));
+                startTime = static_cast<double>(player->timestamps_.back());
             }
             player->SetStartTime(startTime);
-            player->GoToTime(startTime);
+            player->GoToTime(startTime, false);
         }
 
         std::string stop_time_str = opt.GetOptionArg("stop_time");
         if (!stop_time_str.empty())
         {
             double stopTime = 1E-3 * strtod(stop_time_str);
-            if (static_cast<float>(stopTime) > player->data_.back().state.info.timeStamp)
+            if (static_cast<float>(stopTime) > player->timestamps_.back())
             {
-                printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n",
-                       stopTime,
-                       static_cast<double>(player->data_.back().state.info.timeStamp));
-                stopTime = static_cast<double>(player->data_.back().state.info.timeStamp);
+                printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, static_cast<double>(player->timestamps_.back()));
+                stopTime = static_cast<double>(player->timestamps_.back());
             }
-            else if (static_cast<float>(stopTime) < player->data_[0].state.info.timeStamp)
+            else if (static_cast<float>(stopTime) < player->timestamps_.front())
             {
                 printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n",
                        stopTime,
-                       static_cast<double>(player->data_[0].state.info.timeStamp));
-                stopTime = static_cast<double>(player->data_[0].state.info.timeStamp);
+                       static_cast<double>(player->timestamps_.front()));
+                stopTime = static_cast<double>(player->timestamps_.front());
             }
             player->SetStopTime(stopTime);
         }
