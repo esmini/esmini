@@ -164,6 +164,20 @@ namespace scenarioengine
         float last_restart_time = -1.0f;
     };
 
+    struct MapComparator
+    {
+        bool operator()(int lhs, int rhs) const
+        {
+            if (lhs >= 0 && rhs < 0)
+                return true;
+            if (lhs < 0 && rhs >= 0)
+                return false;
+            if (lhs >= 0 && rhs >= 0)
+                return lhs < rhs;
+            return lhs > rhs;
+        }
+    };
+
     typedef struct
     {
         ObjectStateStructDat state;
@@ -173,12 +187,12 @@ namespace scenarioengine
     class Replay
     {
     public:
-        Dat::DatHeader                       header_;
-        std::vector<ReplayEntry>             data_;
-        std::map<int, PropertyTimeline>      objects_timeline_;
-        std::vector<float>                   timestamps_;
-        std::unordered_map<int, ReplayEntry> object_state_cache_;
-        int                                  ghost_ghost_counter_ = -1;
+        Dat::DatHeader                                 header_;
+        std::vector<ReplayEntry>                       data_;
+        std::map<int, PropertyTimeline, MapComparator> objects_timeline_;
+        std::vector<float>                             timestamps_;
+        std::unordered_map<int, ReplayEntry>           object_state_cache_;
+        int                                            ghost_ghost_counter_ = -1;
 
         Replay(std::string filename, bool clean, float fixed_timestep = 0.0f);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
