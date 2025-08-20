@@ -88,7 +88,7 @@ int ShowGhosts(Replay* player, bool show)
         }
 
         state = player->GetState(entity->id);
-        if (state == nullptr)
+        if (state == nullptr || !state->info.active)
         {
             continue;
         }
@@ -1028,16 +1028,14 @@ int main(int argc, char** argv)
                         throw std::runtime_error(std::string("Unexpected entity found: ").append(std::to_string(state->info.id)));
                     }
 
-                    ReplayEntry entry = player->GetReplayEntryAtTimeIncremental(sc->id, static_cast<float>(simTime));
+                    ReplayEntry entry                   = player->GetReplayEntryAtTimeIncremental(sc->id, static_cast<float>(simTime));
+                    player->object_state_cache_[sc->id] = entry;  // Update cache
                     if (entry.state.info.active)
                     {
                         state              = &entry.state;
                         sc->pos            = state->pos;
                         sc->wheel_angle    = state->info.wheel_angle;
                         sc->wheel_rotation = state->info.wheel_rot;
-                        // id and time are not stored in the timelines, so we set them here
-                        state->info.id        = sc->id;  // ensure id is set
-                        state->info.timeStamp = static_cast<float>(simTime);
                     }
                     else
                     {
