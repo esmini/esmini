@@ -2485,7 +2485,7 @@ osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char* filename, osg::Boun
     {
         shadow_tx = new osg::PositionAttitudeTransform;
         shadow_tx->setName("shadow_tx");
-        shadow_tx->setPosition(osg::Vec3d(xc, yc, 0.05 * elev));
+        shadow_tx->setPosition(osg::Vec3d(xc, yc, 0.05 * elev + bb._min.z()));
         shadow_tx->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
         shadow_tx->setScale(osg::Vec3d(SHADOW_SCALE * (dx / 2), SHADOW_SCALE * (dy / 2), 1.0));
         shadow_tx->addChild(shadow_node_);
@@ -3553,22 +3553,35 @@ void Viewer::UpdateSensor(PointSensor* sensor)
 
 int Viewer::LoadShadowfile(std::string vehicleModelFilename)
 {
-    // Load shadow geometry - assume it resides in the same resource folder as the vehicle model
-    std::string shadowFilename = DirNameOf(vehicleModelFilename).append("/" + std::string(SHADOW_MODEL_FILEPATH));
-    if (FileExists(shadowFilename.c_str()))
+    std::vector<std::string> file_name_candidates;
+
+    // First look in same folder as the vehicle model
+    file_name_candidates.push_back(DirNameOf(vehicleModelFilename).append("/" + std::string(SHADOW_MODEL_FILEPATH)));
+
+    // Then check registered paths
+    for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
     {
-        shadow_node_ = osgDB::readNodeFile(shadowFilename);
+        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], std::string(SHADOW_MODEL_FILEPATH)));
     }
 
-    if (!shadow_node_)
+    for (size_t i = 0; i < file_name_candidates.size(); i++)
     {
-        LOG_WARN("Failed to locate shadow model {} based on vehicle model filename {} - continue without",
-                 SHADOW_MODEL_FILEPATH,
-                 vehicleModelFilename.c_str());
-        return -1;
+        if (FileExists(file_name_candidates[i].c_str()))
+        {
+            // Load shadow geometry
+            shadow_node_ = osgDB::readNodeFile(file_name_candidates[i]);
+            if (shadow_node_ != nullptr)
+            {
+                return 0;
+            }
+        }
     }
 
-    return 0;
+    LOG_WARN("Failed to locate shadow model {} based on vehicle model file path {} - continue without",
+             SHADOW_MODEL_FILEPATH,
+             vehicleModelFilename.c_str());
+
+    return -1;
 }
 
 int Viewer::AddEnvironment(const char* filename)
