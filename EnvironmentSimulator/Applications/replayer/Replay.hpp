@@ -160,6 +160,8 @@ namespace scenarioengine
         Timeline<float>          pos_s_;
         Timeline<bool>           active_;
         Timeline<float>          odometer_;
+
+        float last_restart_time = -1.0f;
     };
 
     typedef struct
@@ -176,6 +178,7 @@ namespace scenarioengine
         std::map<int, PropertyTimeline>      objects_timeline_;
         std::vector<float>                   timestamps_;
         std::unordered_map<int, ReplayEntry> object_state_cache_;
+        int                                  ghost_ghost_counter_ = -1;
 
         Replay(std::string filename, bool clean, float fixed_timestep = 0.0f);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
@@ -236,7 +239,7 @@ namespace scenarioengine
         template <typename... Data>
         int ReadPacket(const Dat::PacketHeader& header, Data&... data);
         template <typename T, typename D>
-        void AddToTimeline(Timeline<T>& timeline, float timestamp, D data);
+        void AddToTimeline(Timeline<T>& timeline, D data);
 
         int ReadStringPacket(std::string& str);
 
@@ -263,6 +266,8 @@ namespace scenarioengine
 
             const auto& timeline = objects_timeline_.at(id);
 
+            entry.state.info.id             = id;
+            entry.state.info.timeStamp      = t;
             entry.state.info.model_id       = timeline.model_id_.get_value_incremental(t);
             entry.state.info.obj_type       = timeline.obj_type_.get_value_incremental(t);
             entry.state.info.obj_category   = timeline.obj_category_.get_value_incremental(t);
@@ -297,6 +302,7 @@ namespace scenarioengine
 
             const auto& timeline = objects_timeline_.at(id);
 
+            entry.state.info.id             = id;
             entry.state.info.model_id       = timeline.model_id_.get_value_binary(t);
             entry.state.info.obj_type       = timeline.obj_type_.get_value_binary(t);
             entry.state.info.obj_category   = timeline.obj_category_.get_value_binary(t);

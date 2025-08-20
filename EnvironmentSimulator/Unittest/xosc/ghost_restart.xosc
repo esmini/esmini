@@ -21,7 +21,7 @@
             <ObjectController>
                 <CatalogReference catalogName="ControllerCatalog" entryName="followGhost">
                     <ParameterAssignments>
-                        <ParameterAssignment parameterRef="HeadStartTime" value="0.5"/>
+                        <ParameterAssignment parameterRef="HeadStartTime" value="3.0"/>
                         <ParameterAssignment parameterRef="LookaheadSteering" value="0.3"/>
                     </ParameterAssignments>
                 </CatalogReference>
@@ -105,7 +105,7 @@
                                 <ConditionGroup>
                                     <Condition name="time_trigger1" delay="0" conditionEdge="none">
                                         <ByValueCondition>
-                                            <SimulationTimeCondition value="1.0" rule="greaterOrEqual"/>
+                                            <SimulationTimeCondition value="5.0" rule="greaterOrEqual"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -129,7 +129,7 @@
             <ConditionGroup>
                 <Condition name="start_trigger " delay="0" conditionEdge="none">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="5" rule="greaterThan"/>
+                        <SimulationTimeCondition value="15" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>
