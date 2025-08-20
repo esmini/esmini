@@ -1096,7 +1096,6 @@ void Replay::AddToTimeline(Timeline<T>& timeline, D data)
         // first decrement the ghost_ghost_counter to ensure every ghost ghost gets a unique ID.
         // then copy the current object's timeline to the new ghost object's timeline and sets the last state to inactive
         // finally, we need to clear the current ghost object's timeline down to the time where ghost reset began
-        auto  idx    = timeline.get_index_binary(timestamp_);
         auto& obj_tl = objects_timeline_.at(current_object_id_);
 
         if (!NEAR_NUMBERSF(obj_tl.last_restart_time, timestamp_))
@@ -1110,14 +1109,18 @@ void Replay::AddToTimeline(Timeline<T>& timeline, D data)
 
                 if (inserted)
                 {
+                    it->second.active_.values.front().second = false;  // Object starts as inactive, as we assume no restart happens at start
+                    // Object active from restart time until latest timestamp
+                    it->second.active_.values.emplace_back(timestamp_, true);
                     it->second.active_.values.emplace_back(timestamps_.back(), false);
-                    ghost_ghost_counter_ -= 1;
+
+                    ghost_ghost_counter_ -= 1;  // Next ghost will have a new id
                 }
 
                 obj_tl.last_restart_time = timestamp_;
             }
         }
-        timeline.values.resize(idx);
+        timeline.values.resize(timeline.get_index_binary(timestamp_));
     }
     timeline.values.emplace_back(timestamp_, data);
 }
