@@ -38,6 +38,7 @@ Replay::Replay(std::string filename, bool clean, float fixed_timestep)
         LOG_ERROR("No timestamps found in file: {}", filename);
         return;
     }
+
     startTime_ = static_cast<float>(timestamps_[0]);
 }
 
@@ -58,7 +59,6 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     for (size_t i = 0; i < scenarios_.size(); i++)
     {
         ParsePackets(scenarios_[i]);
-        BuildDataFromPackets();
         scenarioData.emplace_back(scenarios_[i], data_);
     }
 
@@ -74,27 +74,6 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         LOG_INFO("Scenarios corresponding to IDs ({}:{}): {}", i * 100, (i + 1) * 100 - 1, FileNameOf(scenario_tmp));
     }
 
-    // Ensure increasing timestamps. Remove any other entries.
-    for (auto& sce : scenarioData)
-    {
-        CleanEntries(sce.second);
-    }
-
-    // Build remaining data in order.
-    BuildData(scenarioData);
-
-    if (data_.size() > 0)
-    {
-        // Register first entry timestamp as starting time
-        time_       = data_[0].state.info.timeStamp;
-        startTime_  = time_;
-        startIndex_ = 0;
-
-        // Register last entry timestamp as stop time
-        stopTime_  = data_.back().state.info.timeStamp;
-        stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stopTime_));
-    }
-
     if (!create_datfile_.empty())
     {
         CreateMergedDatfile(create_datfile_);
@@ -103,8 +82,6 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
 
 int Replay::ParsePackets(const std::string& filename)
 {
-    ClearData();
-
     file_.open(filename, std::ifstream::binary);
     if (file_.fail())
     {
@@ -416,173 +393,11 @@ int Replay::ParsePackets(const std::string& filename)
                 return -1;
             }
         }
-        previous_p_id_ = header.id;
     }
 
     file_.close();
 
     return 0;
-}
-
-void Replay::BuildDataFromPackets()
-{
-    object_state_cache_.clear();
-
-    // Find start time, maybe its earlier than 0.0s
-    for (const auto& [id, entry] : obj_events_map_)
-    {
-        startTime_  = static_cast<double>(std::min(static_cast<float>(startTime_), entry.front().state.info.timeStamp));
-        time_       = startTime_;
-        startIndex_ = 0;
-
-        if (fixed_timestep_ == 0.0f)  // We dont have fixed timestep from commandline
-        {
-            IsDataFixedTimestep(&entry);  // Check if the data has a fixed timestep or not
-        }
-    }
-
-    if (!logged_timestep_fixed_)
-    {
-        // If the replay has variable timestep, we build data based on the timestamps found in the packets
-        BuildDataVariableTimestep();
-    }
-    else
-    {
-        // If the replay has a fixed timestep, we can build data directly
-        BuildDataFixedTimestep();
-    }
-}
-
-void Replay::BuildDataFixedTimestep()
-{
-    // If fixed timestep is specified, use it, otherwise use the minimum timestep found in the data
-    float dt = min_timestep_.value_or(0.01f);  // Default to 10ms if no minimum timestep is found
-    if (fixed_timestep_ > 0.0f)
-    {
-        dt = fixed_timestep_;
-    }
-
-    for (const auto& id : object_ids_)
-    {
-        id_to_search_idx_[id] = 0;  // Initialize search index for each object ID
-    }
-
-    float ghost_dt = 0.05f;
-    for (float t = static_cast<float>(startTime_); t <= static_cast<float>(stopTime_) + 0.001f;)
-    {
-        for (const int obj_id : object_ids_)
-        {
-            const auto& events = obj_events_map_[obj_id];
-
-            auto& last_state = object_state_cache_[obj_id];  // Its ok to be empty, all values will be filled first time object appears
-
-            if (!events.empty())
-            {
-                for (size_t i = id_to_search_idx_[obj_id]; i < events.size(); i++)
-                {
-                    if (events[i].state.info.timeStamp <= static_cast<float>(t) + 0.001f)
-                    {
-                        last_state                = events[i];  // Update the last state to the most recent event before or at time t
-                        id_to_search_idx_[obj_id] = i;          // Store the index of the last event for this object
-                    }
-                    else
-                    {
-                        break;  // No need to check further, as events are sorted by timestamp
-                    }
-                }
-            }
-
-            ReplayEntry entry = last_state;
-            if (entry.state.info.active)
-            {
-                entry.state.info.timeStamp = static_cast<float>(t);
-                data_.push_back(entry);
-            }
-        }
-        if (t < 0.0f - SMALL_NUMBERF)  // If t is negative, we use ghost_dt to avoid going backwards in time
-        {
-            t += ghost_dt;
-        }
-        else
-        {
-            t += dt;
-        }
-    }
-}
-
-void Replay::BuildDataVariableTimestep()
-{
-    std::set<float> all_timestamps;  // Sorted, unique timestamps
-
-    // Step 1: Collect all timestamps
-    for (const auto& [obj_id, events] : obj_events_map_)
-    {
-        for (const auto& entry : events)
-        {
-            all_timestamps.insert(entry.state.info.timeStamp);
-        }
-    }
-
-    // Step 2: Process each timestamp
-    for (float t : all_timestamps)
-    {
-        for (int obj_id : object_ids_)
-        {
-            const auto& events     = obj_events_map_[obj_id];
-            auto&       last_state = object_state_cache_[obj_id];  // OK to be empty initially
-
-            // Update last known state if there's an event at or before time `t`
-            for (size_t i = id_to_search_idx_[obj_id]; i < events.size(); ++i)
-            {
-                if (events[i].state.info.timeStamp <= t + SMALL_NUMBERF)
-                {
-                    last_state                = events[i];
-                    id_to_search_idx_[obj_id] = i;
-                }
-                else
-                {
-                    break;  // Since events are sorted
-                }
-            }
-
-            // Emit entry
-            if (last_state.state.info.active)
-            {
-                ReplayEntry entry          = last_state;
-                entry.state.info.timeStamp = t;  // Set current time explicitly
-                data_.push_back(entry);
-            }
-        }
-    }
-}
-
-void Replay::IsDataFixedTimestep(const std::vector<scenarioengine::ReplayEntry>* entry)
-{
-    // Code below to deduce if the replay has a fixed timestep or not...
-    float dt;
-    for (size_t i = 0; i < entry->size() - 1; i++)
-    {
-        float timestamp = entry->at(i).state.info.timeStamp;
-        if (timestamp < 0.0f)
-        {
-            continue;
-        }
-        float next_timestamp = entry->at(i + 1).state.info.timeStamp;
-        float current_dt     = next_timestamp - timestamp;
-        if (i == 0)
-        {
-            dt = current_dt;
-        }
-        else
-        {
-            // If the delta differs by more than a small tolerance, it's not fixed
-            if (std::abs(current_dt - dt) > 0.001f)
-            {
-                logged_timestep_fixed_ = false;
-                break;  // No need to check further
-            }
-        }
-    }
 }
 
 int Replay::FillHeader()
@@ -672,7 +487,7 @@ size_t Replay::GetNumberOfScenarios() const
 
 Replay::~Replay()
 {
-    data_.clear();
+    objects_timeline_.clear();
 }
 
 void Replay::GoToStart()
@@ -712,19 +527,8 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
         }
         else
         {
-            auto start = timestamps_.begin();
-            auto end   = timestamps_.end();
-            if (target_time > time_)  // We look ahead, can start to search from current index_
-            {
-                start += index_;
-            }
-            else  // else we start from beginning and stop at index + 1 (lower_bound excludes last, so we add +1)
-            {
-                end = timestamps_.begin() + index_ + 1;
-            }
-            auto it = std::lower_bound(start, end, static_cast<float>(target_time));
-            index_  = static_cast<size_t>(std::distance(timestamps_.begin(), it));
-            time_   = static_cast<float>(target_time);
+            index_ = FindIndexAtTimestamp(target_time);
+            time_  = static_cast<float>(target_time);
         }
     }
     else
@@ -812,107 +616,20 @@ void Replay::GoToPreviousFrame()
     }
 }
 
-int Replay::FindIndexAtTimestamp(double timestamp, int startSearchIndex)
+size_t Replay::FindIndexAtTimestamp(double timestamp)
 {
-    int i = 0;
-
-    if (timestamp > stopTime_)
+    auto start = timestamps_.begin();
+    auto end   = timestamps_.end();
+    if (timestamp > time_)  // We look ahead, can start to search from current index_
     {
-        GoToEnd();
-        return static_cast<int>(index_);
+        start += index_;
     }
-    else if (timestamp < GetStartTime())
+    else  // else we start from beginning and stop at index + 1 (lower_bound excludes last, so we add +1)
     {
-        return static_cast<int>(index_);
+        end = timestamps_.begin() + index_ + 1;
     }
-
-    if (timestamp < time_)
-    {
-        // start search from beginning
-        startSearchIndex = 0;
-    }
-
-    for (i = startSearchIndex; i < static_cast<int>(data_.size()); i++)
-    {
-        if (static_cast<double>(data_[static_cast<unsigned int>(i)].state.info.timeStamp) >= timestamp)
-        {
-            break;
-        }
-    }
-
-    return MIN(i, static_cast<int>(data_.size()) - 1);
-}
-
-unsigned int Replay::FindNextTimestamp(bool wrap) const
-{
-    unsigned int index = index_ + 1;
-    for (; index < data_.size(); index++)
-    {
-        if (data_[index].state.info.timeStamp > data_[index_].state.info.timeStamp)
-        {
-            break;
-        }
-    }
-
-    if (index >= data_.size())
-    {
-        if (wrap)
-        {
-            return 0;
-        }
-        else
-        {
-            return index_;  // stay on current index
-        }
-    }
-
-    return index;
-}
-
-unsigned int Replay::FindPreviousTimestamp(bool wrap) const
-{
-    int index = static_cast<int>(index_) - 1;
-
-    if (index < 0)
-    {
-        if (wrap)
-        {
-            index = static_cast<int>(data_.size()) - 1;
-        }
-        else
-        {
-            return 0;
-        }
-    }
-
-    for (int i = index - 1; i >= 0; i--)
-    {
-        // go backwards until we identify the first entry with same timestamp
-        if (data_[static_cast<unsigned int>(i)].state.info.timeStamp < data_[static_cast<unsigned int>(index)].state.info.timeStamp)
-        {
-            break;
-        }
-        index = i;
-    }
-
-    return static_cast<unsigned int>(index);
-}
-
-ReplayEntry* Replay::GetEntry(int id)
-{
-    // Read all vehicles at current timestamp
-    float timestamp = data_[index_].state.info.timeStamp;
-    int   i         = 0;
-    while (index_ + static_cast<unsigned int>(i) < data_.size() && !(data_[index_ + static_cast<unsigned int>(i)].state.info.timeStamp > timestamp))
-    {
-        if (data_[index_ + static_cast<unsigned int>(i)].state.info.id == id)
-        {
-            return &data_[index_ + static_cast<unsigned int>(i)];
-        }
-        i++;
-    }
-
-    return nullptr;
+    auto it = std::lower_bound(start, end, static_cast<float>(timestamp));
+    return static_cast<size_t>(std::distance(timestamps_.begin(), it));
 }
 
 ObjectStateStructDat* Replay::GetState(int id)
@@ -936,7 +653,7 @@ void Replay::SetStartTime(double time)
         time_ = startTime_;
     }
 
-    // startIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(startTime_));
+    startIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(startTime_));
 }
 
 void Replay::SetStopTime(double time)
@@ -948,114 +665,6 @@ void Replay::SetStopTime(double time)
     }
 
     stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stopTime_));
-}
-
-void Replay::CleanEntries(std::vector<ReplayEntry>& entries)
-{
-    if (entries.empty())
-    {
-        return;
-    }
-
-    for (unsigned int i = 0; i < entries.size() - 1; i++)
-    {
-        if (entries[i + 1].state.info.timeStamp < entries[i].state.info.timeStamp)
-        {
-            entries.erase(entries.begin() + i + 1);
-            i--;
-        }
-
-        for (unsigned int j = 1; (i + j < entries.size()) && NEAR_NUMBERSF(entries[i + j].state.info.timeStamp, entries[i].state.info.timeStamp); j++)
-        {
-            // Keep the latest instance of entries with same timestamp
-            if (entries[i + j].state.info.id == entries[i].state.info.id)
-            {
-                entries.erase(entries.begin() + i);
-                i--;
-                break;
-            }
-        }
-    }
-}
-
-void Replay::BuildData(std::vector<std::pair<std::string, std::vector<ReplayEntry>>>& scenarios)
-{
-    if (scenarios.empty() || scenarios[0].second.empty())
-    {
-        LOG_ERROR("BuildData: No scenario data to process.");
-        return;
-    }
-
-    data_.clear();  // Rebuilding data_ from scratch
-
-    // Keep track of current index of each scenario
-    std::vector<int> cur_idx;
-    std::vector<int> next_idx;
-
-    for (size_t j = 0; j < scenarios.size(); j++)
-    {
-        cur_idx.push_back(0);
-        next_idx.push_back(0);
-    }
-
-    // Set scenario ID-group (0, 100, 200 etc.)
-    for (size_t j = 0; j < scenarios.size(); j++)
-    {
-        for (size_t k = 0; k < scenarios[j].second.size(); k++)
-        {
-            // Set scenario ID-group (0, 100, 200 etc.)
-            scenarios[j].second[k].state.info.id += static_cast<int>(j) * 100;
-        }
-    }
-
-    // Populate data_ based on first (with lowest timestamp) scenario
-    double cur_timestamp = static_cast<double>(scenarios[0].second[0].state.info.timeStamp);
-    while (cur_timestamp < LARGE_NUMBER - SMALL_NUMBER)
-    {
-        // populate entries if all scenarios at current time step
-        double min_time_stamp = LARGE_NUMBER;
-        for (size_t j = 0; j < scenarios.size(); j++)
-        {
-            if (next_idx[j] != -1)
-            {
-                unsigned int k = static_cast<unsigned int>(cur_idx[j]);
-                for (; k < scenarios[j].second.size() && static_cast<double>(scenarios[j].second[k].state.info.timeStamp) < cur_timestamp + 1e-6; k++)
-                {
-                    // push entry with modified timestamp
-                    scenarios[j].second[k].state.info.timeStamp = static_cast<float>(cur_timestamp);
-                    data_.push_back(scenarios[j].second[k]);
-                }
-
-                if (k < scenarios[j].second.size())
-                {
-                    next_idx[j] = static_cast<int>(k);
-                    if (static_cast<double>(scenarios[j].second[k].state.info.timeStamp) < min_time_stamp)
-                    {
-                        min_time_stamp = static_cast<double>(scenarios[j].second[k].state.info.timeStamp);
-                    }
-                }
-                else
-                {
-                    next_idx[j] = -1;
-                }
-            }
-        }
-
-        if (min_time_stamp < LARGE_NUMBER - SMALL_NUMBER)
-        {
-            for (size_t j = 0; j < scenarios.size(); j++)
-            {
-                if (next_idx[j] > 0 && static_cast<double>(scenarios[j].second[static_cast<unsigned int>(next_idx[j])].state.info.timeStamp) <
-                                           min_time_stamp + SMALL_NUMBER)
-                {
-                    // time has reached next entry, step this scenario
-                    cur_idx[j] = next_idx[j];
-                }
-            }
-        }
-
-        cur_timestamp = min_time_stamp;
-    }
 }
 
 void Replay::CreateMergedDatfile(const std::string filename) const
@@ -1117,6 +726,77 @@ void Replay::CreateMergedDatfile(const std::string filename) const
     }
 }
 
+ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, float t) const
+{
+    ReplayEntry entry;
+
+    const auto& timeline = objects_timeline_.at(id);
+
+    entry.state.info.id             = id;
+    entry.state.info.timeStamp      = t;
+    entry.state.info.model_id       = timeline.model_id_.get_value_incremental(t);
+    entry.state.info.obj_type       = timeline.obj_type_.get_value_incremental(t);
+    entry.state.info.obj_category   = timeline.obj_category_.get_value_incremental(t);
+    entry.state.info.ctrl_type      = timeline.ctrl_type_.get_value_incremental(t);
+    entry.state.info.name           = timeline.name_.get_value_incremental(t).c_str();
+    entry.state.info.speed          = timeline.speed_.get_value_incremental(t);
+    entry.state.info.wheel_angle    = timeline.wheel_angle_.get_value_incremental(t);
+    entry.state.info.wheel_rot      = timeline.wheel_rot_.get_value_incremental(t);
+    entry.state.info.boundingbox    = timeline.bounding_box_.get_value_incremental(t);
+    entry.state.info.scaleMode      = timeline.scale_mode_.get_value_incremental(t);
+    entry.state.info.visibilityMask = timeline.visibility_mask_.get_value_incremental(t);
+    entry.state.info.active         = timeline.active_.get_value_incremental(t);
+    entry.state.pos.x               = timeline.pose_.get_value_incremental(t).x;
+    entry.state.pos.y               = timeline.pose_.get_value_incremental(t).y;
+    entry.state.pos.z               = timeline.pose_.get_value_incremental(t).z;
+    entry.state.pos.h               = timeline.pose_.get_value_incremental(t).h;
+    entry.state.pos.p               = timeline.pose_.get_value_incremental(t).p;
+    entry.state.pos.r               = timeline.pose_.get_value_incremental(t).r;
+    entry.state.pos.roadId          = timeline.road_id_.get_value_incremental(t);
+    entry.state.pos.laneId          = timeline.lane_id_.get_value_incremental(t);
+    entry.state.pos.offset          = timeline.pos_offset_.get_value_incremental(t);
+    entry.state.pos.t               = timeline.pos_t_.get_value_incremental(t);
+    entry.state.pos.s               = timeline.pos_s_.get_value_incremental(t);
+    entry.odometer                  = timeline.odometer_.get_value_incremental(t);
+
+    return entry;
+}
+
+ReplayEntry Replay::GetReplayEntryAtTimeBinary(int id, float t) const
+{
+    ReplayEntry entry;
+
+    const auto& timeline = objects_timeline_.at(id);
+
+    entry.state.info.id             = id;
+    entry.state.info.model_id       = timeline.model_id_.get_value_binary(t);
+    entry.state.info.obj_type       = timeline.obj_type_.get_value_binary(t);
+    entry.state.info.obj_category   = timeline.obj_category_.get_value_binary(t);
+    entry.state.info.ctrl_type      = timeline.ctrl_type_.get_value_binary(t);
+    entry.state.info.name           = timeline.name_.get_value_binary(t).c_str();
+    entry.state.info.speed          = timeline.speed_.get_value_binary(t);
+    entry.state.info.wheel_angle    = timeline.wheel_angle_.get_value_binary(t);
+    entry.state.info.wheel_rot      = timeline.wheel_rot_.get_value_binary(t);
+    entry.state.info.boundingbox    = timeline.bounding_box_.get_value_binary(t);
+    entry.state.info.scaleMode      = timeline.scale_mode_.get_value_binary(t);
+    entry.state.info.visibilityMask = timeline.visibility_mask_.get_value_binary(t);
+    entry.state.info.active         = timeline.active_.get_value_binary(t);
+    entry.state.pos.x               = timeline.pose_.get_value_binary(t).x;
+    entry.state.pos.y               = timeline.pose_.get_value_binary(t).y;
+    entry.state.pos.z               = timeline.pose_.get_value_binary(t).z;
+    entry.state.pos.h               = timeline.pose_.get_value_binary(t).h;
+    entry.state.pos.p               = timeline.pose_.get_value_binary(t).p;
+    entry.state.pos.r               = timeline.pose_.get_value_binary(t).r;
+    entry.state.pos.roadId          = timeline.road_id_.get_value_binary(t);
+    entry.state.pos.laneId          = timeline.lane_id_.get_value_binary(t);
+    entry.state.pos.offset          = timeline.pos_offset_.get_value_binary(t);
+    entry.state.pos.t               = timeline.pos_t_.get_value_binary(t);
+    entry.state.pos.s               = timeline.pos_s_.get_value_binary(t);
+    entry.odometer                  = timeline.odometer_.get_value_binary(t);
+
+    return entry;
+}
+
 template <typename... Data>
 int Replay::ReadPacket(const Dat::PacketHeader& header, Data&... data)
 {
@@ -1135,8 +815,8 @@ int Replay::ReadPacket(const Dat::PacketHeader& header, Data&... data)
     return 0;
 }
 
-template <typename T, typename D>
-void Replay::AddToTimeline(Timeline<T>& timeline, D data)
+template <typename T, typename Data>
+void Replay::AddToTimeline(Timeline<T>& timeline, Data data)
 {
     // Check if the current object is ghost, if its not, just add the data
     if (!current_object_timeline_->ctrl_type_.values.empty() && current_object_timeline_->ctrl_type_.values.front().second != 100)
@@ -1197,14 +877,114 @@ int Replay::ReadStringPacket(std::string& str)
     return 0;
 }
 
-void Replay::ClearData()
+template <typename T>
+const T& Timeline<T>::get_value_incremental(float time) const noexcept
 {
-    data_.clear();
-    obj_events_map_.clear();
-    object_state_cache_.clear();
-    object_ids_.clear();
-    id_to_name_.clear();
-    id_to_search_idx_.clear();
-    timestamp_ = 0.0;
-    min_timestep_.reset();
+    if (values.empty())
+    {
+        LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+    }
+
+    size_t idx        = last_index;
+    float  moved_dt   = 0.0f;
+    float  desired_dt = time - values[last_index].first;
+
+    if (time >= values[idx].first)  // Requested time is after last searched value, we increment
+    {
+        while (idx + 1 < values.size())
+        {
+            float step = values[idx + 1].first - values[idx].first;
+            if (moved_dt + step > desired_dt + SMALL_NUMBERF)
+                break;
+
+            moved_dt += step;
+            idx++;
+        }
+    }
+    else  // Requested time is before last searched value, we decrement
+    {
+        while (idx > 0)
+        {
+            float step = values[idx].first - values[idx - 1].first;
+            if (moved_dt + step > -desired_dt - SMALL_NUMBERF)
+            {
+                idx--;
+                break;
+            }
+
+            moved_dt += step;
+            idx--;
+        }
+    }
+
+    last_index = idx;  // Save the index for next call
+
+    return values[idx].second;
+}
+
+template <typename T>
+const T& Timeline<T>::get_value_binary(float time) const noexcept
+{
+    if (values.empty())
+    {
+        LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+    }
+
+    auto search_begin = values.begin();
+    auto search_end   = values.end();
+
+    if (time >= values[last_index].first)
+    {
+        // Time moved forward — only search ahead
+        search_begin = values.begin() + static_cast<typename std::vector<std::pair<float, T>>::difference_type>(last_index);
+    }
+    else
+    {
+        // Time moved backward — only search behind
+        search_end = values.begin() + static_cast<typename std::vector<std::pair<float, T>>::difference_type>(last_index) + 1;
+    }
+
+    auto it = std::upper_bound(search_begin, search_end, time, [](float t, const std::pair<float, T>& v) { return t < v.first; });
+
+    if (it == values.begin())
+    {
+        last_index = 0;
+        return it->second;
+    }
+
+    --it;
+    last_index = static_cast<size_t>(std::distance(values.begin(), it));
+    return it->second;
+}
+
+template <typename T>
+size_t Timeline<T>::get_index_binary(float time) const noexcept
+{
+    if (values.empty())
+    {
+        LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+    }
+
+    auto search_begin = values.begin();
+    auto search_end   = values.end();
+
+    if (time >= values[last_index].first)
+    {
+        // Time moved forward — only search ahead
+        search_begin = values.begin();
+    }
+    else
+    {
+        // Time moved backward — only search behind
+        search_end = values.begin() + 1;
+    }
+
+    auto it = std::upper_bound(search_begin, search_end, time, [](float t, const std::pair<float, T>& v) { return t < v.first; });
+
+    if (it == values.begin())
+    {
+        return 0;
+    }
+
+    return static_cast<size_t>(std::distance(values.begin(), it));
 }
