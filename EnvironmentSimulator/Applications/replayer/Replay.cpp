@@ -128,7 +128,7 @@ int Replay::ParsePackets(const std::string& filename)
 
                 if (timestamps_.empty() || timestamp_ <= SMALL_NUMBERF || timestamp_ > timestamps_.back().first)
                 {
-                    timestamps_.emplace_back(timestamp_, header.id == previous_packet_id_);
+                    timestamps_.emplace_back(timestamp_, header.id != previous_packet_id_);
                 }
                 break;
             }
