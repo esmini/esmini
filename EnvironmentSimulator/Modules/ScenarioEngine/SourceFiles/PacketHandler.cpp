@@ -223,7 +223,7 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
     }
 
     // In case we have variable timestep, we need to write every time packet
-    if (!timestamp_written_ && fixed_timestep_ != -1.0f)
+    if (!timestamp_written_ && fixed_timestep_ == -1.0f)
     {
         PacketGeneric packet;
         packet.header.id        = static_cast<id_t>(PacketId::TIMESTAMP);
