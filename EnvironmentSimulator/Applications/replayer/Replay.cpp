@@ -39,7 +39,7 @@ Replay::Replay(std::string filename, bool clean, float fixed_timestep)
         return;
     }
 
-    startTime_ = static_cast<float>(timestamps_[0]);
+    startTime_ = static_cast<float>(timestamps_[0].first);
 }
 
 Replay::Replay(const std::string directory, const std::string scenario, std::string create_datfile)
@@ -126,9 +126,9 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading timestamp data.");
                 }
 
-                if (timestamps_.empty() || timestamp_ <= SMALL_NUMBERF || timestamp_ > timestamps_.back())
+                if (timestamps_.empty() || timestamp_ <= SMALL_NUMBERF || timestamp_ > timestamps_.back().first)
                 {
-                    timestamps_.push_back(timestamp_);
+                    timestamps_.emplace_back(timestamp_, header.id == previous_packet_id_);
                 }
                 break;
             }
@@ -393,6 +393,7 @@ int Replay::ParsePackets(const std::string& filename)
                 return -1;
             }
         }
+        previous_packet_id_ = header.id;
     }
 
     file_.close();
@@ -536,10 +537,11 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
         if (target_time > time_)  // Looking ahead, stopping as soon as we find time greater than current time
         {
             size_t next_index = index_ + 1;
-            if (next_index < timestamps_.size() && static_cast<float>(target_time) >= timestamps_[next_index])
+            // Subtract small number so we don't accidentally step ahead of intended time
+            if (next_index < timestamps_.size() && static_cast<float>(target_time) >= timestamps_[next_index].first - SMALL_NUMBERF)
             {
                 index_ = next_index;
-                time_  = timestamps_[index_];
+                time_  = timestamps_[index_].first;
             }
             else
             {
@@ -555,10 +557,10 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
         }
         else if (target_time < time_)  // Same for backwards, but we stop when we find a timestamp less than current time
         {
-            if (index_ > 0 && static_cast<float>(target_time) <= timestamps_[index_ - 1])
+            if (index_ > 0 && static_cast<float>(target_time) <= timestamps_[index_ - 1].first)
             {
                 index_--;
-                time_ = timestamps_[index_];
+                time_ = timestamps_[index_].first;
             }
             else
             {
@@ -587,12 +589,13 @@ int Replay::GoToNextFrame()
         return -1;
     }
 
-    auto it = std::upper_bound(timestamps_.begin(), timestamps_.end(), time_);
+    auto it =
+        std::upper_bound(timestamps_.begin(), timestamps_.end(), time_, [](float value, const std::pair<float, bool>& p) { return value < p.first; });
 
-    if (it != timestamps_.end() && *it <= static_cast<float>(stopTime_) + SMALL_NUMBERF)
+    if (it != timestamps_.end() && it->first <= static_cast<float>(stopTime_) + SMALL_NUMBERF)
     {
-        index_ = std::distance(timestamps_.begin(), it);
-        time_  = *it;
+        index_ = static_cast<size_t>(std::distance(timestamps_.begin(), it));
+        time_  = it->first;
         return 0;
     }
 
@@ -606,13 +609,14 @@ void Replay::GoToPreviousFrame()
         return;
     }
 
-    auto it = std::lower_bound(timestamps_.begin(), timestamps_.end(), time_);
+    auto it =
+        std::lower_bound(timestamps_.begin(), timestamps_.end(), time_, [](const std::pair<float, bool>& p, float value) { return p.first < value; });
 
     if (it != timestamps_.begin())
     {
         --it;  // Move to the previous timestamp
-        index_ = std::distance(timestamps_.begin(), it);
-        time_  = *it;
+        index_ = static_cast<size_t>(std::distance(timestamps_.begin(), it));
+        time_  = it->first;
     }
 }
 
@@ -628,7 +632,11 @@ size_t Replay::FindIndexAtTimestamp(double timestamp)
     {
         end = timestamps_.begin() + index_ + 1;
     }
-    auto it = std::lower_bound(start, end, static_cast<float>(timestamp));
+    // Subtract small number so we don't accidentally find index ahead of intended time
+    auto it = std::lower_bound(start,
+                               end,
+                               static_cast<float>(timestamp) - SMALL_NUMBERF,
+                               [](const std::pair<float, bool>& p, float value) { return p.first < value; });
     return static_cast<size_t>(std::distance(timestamps_.begin(), it));
 }
 
@@ -848,7 +856,7 @@ void Replay::AddToTimeline(Timeline<T>& timeline, Data data)
 
                     // Ghosts ghost active from ghost restart time until latest timestamp
                     it->second.active_.values.emplace_back(timestamp_, true);
-                    it->second.active_.values.emplace_back(timestamps_.back(), false);
+                    it->second.active_.values.emplace_back(timestamps_.back().first, false);
 
                     ghost_ghost_counter_ -= 1;  // Next ghost will have a new id
                 }

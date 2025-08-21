@@ -85,7 +85,7 @@ namespace scenarioengine
         Dat::DatHeader                                 header_;
         std::vector<ReplayEntry>                       data_;
         std::map<int, PropertyTimeline, MapComparator> objects_timeline_;
-        std::vector<float>                             timestamps_;
+        std::vector<std::pair<float, bool>>            timestamps_;
         std::unordered_map<int, ReplayEntry>           object_state_cache_;
         int                                            ghost_ghost_counter_ = -1;
 
@@ -163,8 +163,9 @@ namespace scenarioengine
         std::string              create_datfile_;
 
         /* PacketHandler stuff */
-        float                             timestamp_      = 0.0f;
-        float                             fixed_timestep_ = -1.0f;  // Fixed timestep for replay, if specified
+        float                             timestamp_          = 0.0f;
+        float                             fixed_timestep_     = -1.0f;  // Fixed timestep for replay, if specified
+        id_t                              previous_packet_id_ = static_cast<id_t>(Dat::PacketId::PACKET_ID_SIZE);
         Timeline<float>                   dt_timeline_;
         int                               current_object_id_;
         scenarioengine::PropertyTimeline* current_object_timeline_;
