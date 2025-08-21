@@ -35,6 +35,7 @@ namespace Dat
         OBJ_ADDED       = 20,
         DT              = 21,
         END_OF_SCENARIO = 22,
+        PACKET_ID_SIZE  = 23,  // Keep this last
     };
 
     struct PacketString
