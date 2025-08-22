@@ -89,7 +89,7 @@ namespace scenarioengine
         std::unordered_map<int, ReplayEntry>           object_state_cache_;
         int                                            ghost_ghost_counter_ = -1;
 
-        Replay(std::string filename, bool clean, float fixed_timestep = 0.0f);
+        Replay(std::string filename, bool clean);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
 
@@ -110,8 +110,9 @@ namespace scenarioengine
                 @param time timestamp (0 = beginning, -1 end)
                 @param stop_at_next_frame If true move max to next/previous time frame
         */
+        void                  RoundTime();
         size_t                FindIndexAtTimestamp(double timestamp);
-        void                  FindSignificantTimestamp(bool search_forward);
+        void                  GoToSignificantTimestamp(bool search_forward);
         void                  GoToTime(double target_time, bool stop_at_next_frame = false);
         void                  GoToDeltaTime(double dt, bool stop_at_next_frame = false);
         void                  GetReplaysFromDirectory(const std::string dir, const std::string sce);
@@ -147,7 +148,7 @@ namespace scenarioengine
         }
         float GetFixedTimestep() const
         {
-            return fixed_timestep_.value_or(-1.0f);
+            return fixed_timestep_;
         }
         // void SetIncludeGhostReset(bool include)
         // {
@@ -171,7 +172,7 @@ namespace scenarioengine
         float                             timestamp_                       = 0.0f;
         id_t                              previous_packet_id_              = static_cast<id_t>(Dat::PacketId::PACKET_ID_SIZE);
         std::vector<size_t>               significant_event_start_indices_ = {0};
-        std::optional<float>              fixed_timestep_;
+        float                             fixed_timestep_                  = -1.0f;
         int                               current_object_id_;
         scenarioengine::PropertyTimeline* current_object_timeline_;
     };
