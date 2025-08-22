@@ -119,6 +119,18 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             {
                 player->GoToDeltaTime(JUMP_DELTA_TIME_SMALL);
             }
+            else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_ALT))
+            {
+                float jump_delta = player->GetFixedTimestep();
+                if (jump_delta < 0.0f)
+                {
+                    player->FindSignificantTimestamp(true);
+                }
+                else
+                {
+                    player->GoToDeltaTime(jump_delta);
+                }
+            }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
                 player->GoToEnd();
@@ -140,6 +152,18 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
             {
                 player->GoToDeltaTime(-JUMP_DELTA_TIME_SMALL);
+            }
+            else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_ALT))
+            {
+                float jump_delta = player->GetFixedTimestep();
+                if (jump_delta < 0.0f)
+                {
+                    player->FindSignificantTimestamp(false);
+                }
+                else
+                {
+                    player->GoToDeltaTime(-jump_delta);
+                }
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
