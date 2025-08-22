@@ -18,12 +18,7 @@
 
 using namespace scenarioengine;
 
-Replay::Replay(std::string filename, bool clean, float fixed_timestep)
-    : time_(0.0),
-      index_(0),
-      repeat_(false),
-      clean_(clean),
-      fixed_timestep_(fixed_timestep)
+Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat_(false), clean_(clean)
 {
     // Parse the packets from the file
     int ret = ParsePackets(filename);
@@ -128,12 +123,8 @@ int Replay::ParsePackets(const std::string& filename)
 
                 if (timestamps_.empty() || timestamp_ <= SMALL_NUMBERF || timestamp_ > timestamps_.back().first)
                 {
-                    timestamps_.emplace_back(timestamp_, header.id != previous_packet_id_);
-                    if (timestamps_.size() > 1 && timestamps_[timestamps_.size() - 2].second == false &&
-                        timestamps_[timestamps_.size() - 1].second == true)
-                    {
-                        significant_event_start_indices_.emplace_back(timestamps_.size() - 2);
-                    }
+                    bool significant = (header.id != previous_packet_id_);
+                    timestamps_.emplace_back(timestamp_, significant);
                 }
                 break;
             }
@@ -517,6 +508,19 @@ void Replay::GoToEnd()
     }
 }
 
+void Replay::RoundTime()
+{
+    if (fixed_timestep_ == 1.0f)
+    {
+        time_ = std::floor(time_);
+    }
+    else if (fixed_timestep_ > 0.0f)
+    {
+        auto divisor = static_cast<int>(static_cast<float>(time_) / fixed_timestep_);
+        time_        = divisor * fixed_timestep_;
+    }
+}
+
 void Replay::GoToTime(double target_time, bool stop_at_next_frame)
 {
     // We dont stop searching until we found the closes timestamp
@@ -598,13 +602,17 @@ int Replay::GoToNextFrame()
     auto it =
         std::upper_bound(timestamps_.begin(), timestamps_.end(), time_, [](float value, const std::pair<float, bool>& p) { return value < p.first; });
 
-    if (it != timestamps_.end() && it->first <= static_cast<float>(stopTime_) + SMALL_NUMBERF)
+    if (it == timestamps_.end())
+    {
+        GoToEnd();
+        return 0;
+    }
+    if (it->first <= static_cast<float>(stopTime_) + SMALL_NUMBERF)
     {
         index_ = static_cast<size_t>(std::distance(timestamps_.begin(), it));
         time_  = it->first;
         return 0;
     }
-
     return -1;
 }
 
@@ -618,7 +626,12 @@ void Replay::GoToPreviousFrame()
     auto it =
         std::lower_bound(timestamps_.begin(), timestamps_.end(), time_, [](const std::pair<float, bool>& p, float value) { return p.first < value; });
 
-    if (it != timestamps_.begin())
+    if (it == timestamps_.begin())
+    {
+        GoToStart();
+        return;
+    }
+    else
     {
         --it;  // Move to the previous timestamp
         index_ = static_cast<size_t>(std::distance(timestamps_.begin(), it));
@@ -740,10 +753,8 @@ void Replay::CreateMergedDatfile(const std::string filename) const
     }
 }
 
-void Replay::FindSignificantTimestamp(bool search_forward)
+void Replay::GoToSignificantTimestamp(bool search_forward)
 {
-    /*TODO implement on parsing to save start of every significant event then just jump to that index*/
-
     if (search_forward)
     {
         auto it = significant_event_start_indices_.begin();

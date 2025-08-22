@@ -107,6 +107,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 
     if (keyEvent->down_)
     {
+        float fixed_timestep = player->GetFixedTimestep();
         if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Right))
         {
             if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL) &&
@@ -120,23 +121,26 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_ALT))
             {
-                float jump_delta = player->GetFixedTimestep();
-                if (jump_delta < 0.0f)
+                if (fixed_timestep < 0.0f)
                 {
-                    player->FindSignificantTimestamp(true);
+                    player->GoToSignificantTimestamp(true);
                 }
                 else
                 {
-                    player->GoToDeltaTime(jump_delta);
+                    player->GoToNextFrame();
                 }
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
                 player->GoToEnd();
             }
-            else
+            else if (fixed_timestep < 0.0f)  // We dont have a fixed timestep, so we have saved all timestamps and can just move to them
             {
                 player->GoToNextFrame();
+            }
+            else
+            {
+                player->GoToDeltaTime(fixed_timestep);
             }
 
             pause_player = true;  // step by step
@@ -154,14 +158,13 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_ALT))
             {
-                float jump_delta = player->GetFixedTimestep();
-                if (jump_delta < 0.0f)
+                if (fixed_timestep < 0.0f)
                 {
-                    player->FindSignificantTimestamp(false);
+                    player->GoToSignificantTimestamp(false);
                 }
                 else
                 {
-                    player->GoToDeltaTime(-jump_delta);
+                    player->GoToPreviousFrame();
                 }
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
@@ -169,9 +172,13 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
                 // rewind to beginning
                 player->GoToStart();
             }
-            else
+            else if (fixed_timestep < 0.0f)  // We dont have a fixed timestep, so we have saved all timestamps and can just move to them
             {
                 player->GoToPreviousFrame();
+            }
+            else
+            {
+                player->GoToDeltaTime(-fixed_timestep);
             }
 
             pause_player = true;  // step by step
@@ -557,12 +564,12 @@ int main(int argc, char** argv)
     }
 
     // Get the timestep
-    float fixed_timestep = 0.0f;
-    arg_str              = opt.GetOptionArg("fixed_timestep");
-    if (!arg_str.empty())
-    {
-        fixed_timestep = std::stof(arg_str);
-    }
+    // float fixed_timestep = -1.0f;
+    // arg_str              = opt.GetOptionArg("fixed_timestep");
+    // if (!arg_str.empty())
+    // {
+    //     fixed_timestep = std::stof(arg_str);
+    // }
 
     // Create player
     arg_str = opt.GetOptionArg("dir");
@@ -587,7 +594,7 @@ int main(int argc, char** argv)
                 LOG_ERROR("\"--saved_merged\" works only in combination with \"--dir\" argument, combining multiple dat files");
                 return -1;
             }
-            player = new Replay(opt.GetOptionArg("file"), true, fixed_timestep);
+            player = new Replay(opt.GetOptionArg("file"), true);
         }
     }
     catch (const std::exception& e)
@@ -1029,6 +1036,13 @@ int main(int argc, char** argv)
 #else
                 player->GoToNextFrame();
 #endif  // _USE_OSG
+            }
+            else
+            {
+                if (player->GetFixedTimestep() > 0.0f)
+                {
+                    player->RoundTime();
+                }
             }
 
             do
