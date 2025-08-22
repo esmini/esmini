@@ -111,6 +111,7 @@ namespace scenarioengine
                 @param stop_at_next_frame If true move max to next/previous time frame
         */
         size_t                FindIndexAtTimestamp(double timestamp);
+        void                  FindSignificantTimestamp(bool search_forward);
         void                  GoToTime(double target_time, bool stop_at_next_frame = false);
         void                  GoToDeltaTime(double dt, bool stop_at_next_frame = false);
         void                  GetReplaysFromDirectory(const std::string dir, const std::string sce);
@@ -144,6 +145,10 @@ namespace scenarioengine
         {
             repeat_ = repeat;
         }
+        float GetFixedTimestep() const
+        {
+            return fixed_timestep_.value_or(-1.0f);
+        }
         // void SetIncludeGhostReset(bool include)
         // {
         //     include_ghost_reset_ = include;
@@ -163,13 +168,12 @@ namespace scenarioengine
         std::string              create_datfile_;
 
         /* PacketHandler stuff */
-        float                             timestamp_          = 0.0f;
-        float                             fixed_timestep_     = -1.0f;  // Fixed timestep for replay, if specified
-        id_t                              previous_packet_id_ = static_cast<id_t>(Dat::PacketId::PACKET_ID_SIZE);
-        Timeline<float>                   dt_timeline_;
+        float                             timestamp_                       = 0.0f;
+        id_t                              previous_packet_id_              = static_cast<id_t>(Dat::PacketId::PACKET_ID_SIZE);
+        std::vector<size_t>               significant_event_start_indices_ = {0};
+        std::optional<float>              fixed_timestep_;
         int                               current_object_id_;
         scenarioengine::PropertyTimeline* current_object_timeline_;
-        // bool                              include_ghost_reset_;
     };
 
 }  // namespace scenarioengine
