@@ -129,6 +129,11 @@ int Replay::ParsePackets(const std::string& filename)
                 if (timestamps_.empty() || timestamp_ <= SMALL_NUMBERF || timestamp_ > timestamps_.back().first)
                 {
                     timestamps_.emplace_back(timestamp_, header.id != previous_packet_id_);
+                    if (timestamps_.size() > 1 && timestamps_[timestamps_.size() - 2].second == false &&
+                        timestamps_[timestamps_.size() - 1].second == true)
+                    {
+                        significant_event_start_indices_.emplace_back(timestamps_.size() - 2);
+                    }
                 }
                 break;
             }
@@ -372,7 +377,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading fixed timestep.");
                     return -1;
                 }
-                dt_timeline_.values.emplace_back(timestamp_, dt);
+                fixed_timestep_ = dt;
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
@@ -383,7 +388,8 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading end of scenario timestamp.");
                     return -1;
                 }
-                stopTime_ = static_cast<double>(stop_time);
+                stopTime_  = static_cast<double>(stop_time);
+                stopIndex_ = timestamps_.size() - 1;
                 break;
             }
             default:
@@ -730,6 +736,48 @@ void Replay::CreateMergedDatfile(const std::string filename) const
             dat_logger.WriteToDat(object_states);
 
             object_states.clear();  // Clear the states for the next timestamp
+        }
+    }
+}
+
+void Replay::FindSignificantTimestamp(bool search_forward)
+{
+    /*TODO implement on parsing to save start of every significant event then just jump to that index*/
+
+    if (search_forward)
+    {
+        auto it = significant_event_start_indices_.begin();
+        for (; it != significant_event_start_indices_.end(); ++it)
+        {
+            if (*it > index_)
+            {
+                index_ = *it;
+                time_  = timestamps_[index_].first;
+                return;
+            }
+        }
+        if (it == significant_event_start_indices_.end())
+        {
+            index_ = timestamps_.size() - 1;
+            time_  = timestamps_[index_].first;
+        }
+    }
+    else  // Search backward
+    {
+        auto it = significant_event_start_indices_.rbegin();
+        for (; it != significant_event_start_indices_.rend(); ++it)
+        {
+            if (*it < index_)
+            {
+                index_ = *it;
+                time_  = timestamps_[index_].first;
+                return;
+            }
+        }
+        if (it == significant_event_start_indices_.rend())
+        {
+            index_ = 0;
+            time_  = timestamps_[index_].first;
         }
     }
 }
