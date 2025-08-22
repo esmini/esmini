@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2025-08-22 Version 2.50.3
+
+New features:
+- Support [openx-assets](https://github.com/bounverif/openx-assets) - collection of vehicle 3D models
+  - see [User guide - Using OpenX assets library](https://esmini.github.io/#_using_openx_assets_library) for info and [video clip](https://youtu.be/UWjQ8Ai83Cc)
+
+Improvements and fixes:
+- Fix some vehicle shadow z issues
+- Suppress invalid timestamp in throw log entry
+
 ### 2025-08-18 Version 2.50.2
 
 Improvements and fixes:
