@@ -3015,6 +3015,12 @@ https://github.com/esmini/esmini/blob/dev/resources/xosc/car_walk.xosc[resources
 Run from esmini root as: +
    `./bin/esmini --osc ./resources/xosc/car_walk.xosc --aa_mode 9 --path /tmp/openx-assets/model3d --custom_fixed_camera 235,4,2,5.9,0.1 --window 60 60 1024 512`
 
+[Note]
+====
+*Note:*
+These 3D models currently only works in esmini. Support for generic 3D models with shifted origin will come with a reworked replayer during 2025 Q4.
+====
+
 ==== Comment on rear axle non zero position
 
 In the OpenSCENARIO XML standard the vehicle reference point is defined as the center of the rear axle projected on ground (see https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/06_general_concepts/06_03_coordinate_systems.html#_vehicle_coordinate_system_xv_yv_zv[here]). Hence, the x coordinate of the https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/Axles.html[rear axle], defined in terms of vehicle coordinate system, normally should be zero.
@@ -3051,7 +3057,7 @@ Example:
 
 In summary: This small feature enables not only use of openx-asset vehicle models, but enables use of other models where origin does not align with rear axle - without need for editing or processing.
 
-Note: This feature is NOT supported by the OpenSCENARIO XML standard, which requires axles to be at non-negative X coordinate (pass:[>=0]).
+*Note:* This feature is NOT supported by the OpenSCENARIO XML standard, which requires axles to be at non-negative X coordinate (pass:[>=0]).
 
 == Support / Q&A
 
