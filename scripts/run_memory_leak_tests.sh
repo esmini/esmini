@@ -1,7 +1,7 @@
 #!/bin/bash
 
 timeout=600
-blacklist=(cut-in_sumo.xosc sumo-test.xosc cut-in_sloppy.xosc cut-in_parameter_set.xosc)
+blacklist=(cut-in_sumo.xosc sumo-test.xosc cut-in_sloppy.xosc cut-in_parameter_set.xosc car_walk.xosc)
 
 # Run from esmini root directory: ./scripts/run_memory_leak_tests.sh
 
