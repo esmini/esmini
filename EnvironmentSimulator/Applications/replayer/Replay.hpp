@@ -118,8 +118,8 @@ namespace scenarioengine
         void                  GoToDeltaTime(double dt, bool stop_at_next_frame = false);
         void                  GetReplaysFromDirectory(const std::string dir, const std::string sce);
         size_t                GetNumberOfScenarios() const;
-        void                  GoToStart();
-        void                  GoToEnd();
+        void                  GoToStart(bool ignore_repeat = false);
+        void                  GoToEnd(bool ignore_repeat = false);
         int                   GoToNextFrame();
         void                  GoToPreviousFrame();
         ObjectStateStructDat* GetState(int id);
