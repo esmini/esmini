@@ -956,6 +956,11 @@ const T& Timeline<T>::get_value_incremental(float time) const noexcept
     float  moved_dt   = 0.0f;
     float  desired_dt = time - values[last_index].first;
 
+    if (NEAR_NUMBERSF(last_time, time))
+    {
+        return values[last_index].second;
+    }
+
     if (time >= values[idx].first)  // Requested time is after last searched value, we increment
     {
         while (idx + 1 < values.size())
@@ -985,6 +990,7 @@ const T& Timeline<T>::get_value_incremental(float time) const noexcept
     }
 
     last_index = idx;  // Save the index for next call
+    last_time  = time;
 
     return values[idx].second;
 }
@@ -995,6 +1001,11 @@ const T& Timeline<T>::get_value_binary(float time) const noexcept
     if (values.empty())
     {
         LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+    }
+
+    if (NEAR_NUMBERSF(last_time, time))
+    {
+        return values[last_index].second;
     }
 
     auto search_begin = values.begin();
@@ -1021,6 +1032,8 @@ const T& Timeline<T>::get_value_binary(float time) const noexcept
 
     --it;
     last_index = static_cast<size_t>(std::distance(values.begin(), it));
+    last_time  = time;
+
     return it->second;
 }
 
@@ -1030,6 +1043,11 @@ size_t Timeline<T>::get_index_binary(float time) const noexcept
     if (values.empty())
     {
         LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+    }
+
+    if (NEAR_NUMBERSF(last_time, time))
+    {
+        return last_index;
     }
 
     auto search_begin = values.begin();
