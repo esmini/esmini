@@ -912,6 +912,7 @@ void Replay::AddToTimeline(Timeline<T>& timeline, Data data)
                 if (inserted)
                 {
                     it->second.active_.values.front().second = false;  // Object starts as inactive, as we assume no restart happens at start
+                    it->second.name_.values.front().second += "_" + std::to_string(ghost_ghost_counter_);
 
                     // Ghosts ghost active from ghost restart time until latest timestamp
                     it->second.active_.values.emplace_back(timestamp_, true);
