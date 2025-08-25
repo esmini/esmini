@@ -1183,13 +1183,15 @@ int main(int argc, char** argv)
 
                         for (size_t i = 0; i < scenarioEntity.size(); i++)
                         {
-                            if (std::find(ghost_indices.begin(), ghost_indices.end(), static_cast<int>(i)) != ghost_indices.end())
+                            bool is_ghost = std::find(ghost_indices.begin(), ghost_indices.end(), static_cast<int>(i)) != ghost_indices.end();
+                            if (is_ghost || !scenarioEntity[i].visible)
                             {
                                 continue;
                             }
                             for (size_t j = i + 1; j < scenarioEntity.size(); j++)
                             {
-                                if (std::find(ghost_indices.begin(), ghost_indices.end(), static_cast<int>(i)) != ghost_indices.end())
+                                is_ghost = std::find(ghost_indices.begin(), ghost_indices.end(), static_cast<int>(j)) != ghost_indices.end();
+                                if (is_ghost || !scenarioEntity[j].visible)
                                 {
                                     continue;
                                 }
