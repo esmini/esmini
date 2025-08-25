@@ -28,6 +28,7 @@ namespace scenarioengine
     {
         std::vector<std::pair<float, T>> values;          // Pairs of timestamp and value
         mutable size_t                   last_index = 0;  // Set as mutable to allow modification in const methods
+        mutable float                    last_time  = LARGE_NUMBERF;
 
         const T& get_value_incremental(float time) const noexcept;
         const T& get_value_binary(float time) const noexcept;
