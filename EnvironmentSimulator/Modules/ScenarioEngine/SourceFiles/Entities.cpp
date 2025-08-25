@@ -26,7 +26,7 @@ Object::Object(Type type)
       speed_(0),
       wheel_angle_(0),
       wheel_rot_(0),
-      model3d_(""),
+      model3d_full_path_(""),
       ghost_trail_s_(0),
       trail_follow_index_(0),
       odometer_(0),

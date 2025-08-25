@@ -406,7 +406,6 @@ Vehicle *ScenarioReader::createRandomOSCVehicle(std::string name)
     vehicle->name_     = name;
     vehicle->category_ = Vehicle::Category::CAR;
     vehicle->model_id_ = -1;
-    vehicle->model3d_  = "";
 
     // Set some default bounding box just to avoid division-by-zero-problems
     vehicle->boundingbox_                     = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
@@ -678,33 +677,33 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     if (vehicle->category_ == Vehicle::Category::BICYCLE)
     {
         vehicle->model_id_ = 9;  // magic number for cyclist, set as default
-        vehicle->model3d_  = "cyclist.osgb";
+        vehicle->SetModel3DFullPath("cyclist.osgb");
     }
     else if (vehicle->category_ == Vehicle::Category::MOTORBIKE)
     {
         vehicle->model_id_ = 10;  // magic number for motorcyclist, set as default
-        vehicle->model3d_  = "mc.osgb";
+        vehicle->SetModel3DFullPath("mc.osgb");
     }
     else if (vehicle->category_ == Vehicle::Category::TRAILER)
     {
         vehicle->model_id_ = 11;  // magic number for car trailer, set as default
-        vehicle->model3d_  = "car_trailer.osgb";
+        vehicle->SetModel3DFullPath("car_trailer.osgb");
     }
     else
     {
         // magic numbers: If first vehicle make it white, else red
         vehicle->model_id_ = entities_->object_.size() == 0 ? 0 : 2;
-        vehicle->model3d_  = entities_->object_.size() == 0 ? "car_white.osgb" : "car_red.osgb";
+        vehicle->SetModel3DFullPath(entities_->object_.size() == 0 ? "car_white.osgb" : "car_red.osgb");
     }
 
     // Overwrite default values if 3D model specified
     if (!vehicleNode.attribute("model3d").empty())
     {
-        vehicle->model3d_ = parameters.ReadAttribute(vehicleNode, "model3d");
+        vehicle->SetModel3DFullPath(parameters.ReadAttribute(vehicleNode, "model3d"));
     }
     else if (vehicle->properties_.file_.filepath_ != "")
     {
-        vehicle->model3d_ = vehicle->properties_.file_.filepath_;
+        vehicle->SetModel3DFullPath(vehicle->properties_.file_.filepath_);
     }
 
     std::string modelIdStr = vehicle->properties_.GetValueStr("model_id");
@@ -859,12 +858,12 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
     if (pedestrian->category_ == Pedestrian::Category::ANIMAL)
     {
         pedestrian->model_id_ = 8;  // magic number for moose, set as default
-        pedestrian->model3d_  = "moose_cc0.osgb";
+        pedestrian->SetModel3DFullPath("moose_cc0.osgb");
     }
     else
     {
         pedestrian->model_id_ = 7;  // magic number for pedestrian, set as default
-        pedestrian->model3d_  = "walkman.osgb";
+        pedestrian->SetModel3DFullPath("walkman.osgb");
     }
 
     ParseOSCProperties(pedestrian->properties_, pedestrianNode);
@@ -872,11 +871,11 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
     // Overwrite default values if 3D model specified
     if (!pedestrianNode.attribute("model3d").empty())
     {
-        pedestrian->model3d_ = parameters.ReadAttribute(pedestrianNode, "model3d");
+        pedestrian->SetModel3DFullPath(parameters.ReadAttribute(pedestrianNode, "model3d"));
     }
     else if (pedestrian->properties_.file_.filepath_ != "")
     {
-        pedestrian->model3d_ = pedestrian->properties_.file_.filepath_;
+        pedestrian->SetModel3DFullPath(pedestrian->properties_.file_.filepath_);
     }
 
     std::string modelIdStr = pedestrian->properties_.GetValueStr("model_id");
@@ -944,11 +943,11 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
     // Overwrite default values if 3D model specified
     if (!miscObjectNode.attribute("model3d").empty())
     {
-        miscObject->model3d_ = parameters.ReadAttribute(miscObjectNode, "model3d");
+        miscObject->SetModel3DFullPath(parameters.ReadAttribute(miscObjectNode, "model3d"));
     }
     else if (miscObject->properties_.file_.filepath_ != "")
     {
-        miscObject->model3d_ = miscObject->properties_.file_.filepath_;
+        miscObject->SetModel3DFullPath(miscObject->properties_.file_.filepath_);
     }
 
     std::string modelIdStr = miscObject->properties_.GetValueStr("model_id");
@@ -1446,14 +1445,14 @@ Entry *ScenarioReader::ResolveCatalogReference(pugi::xml_node node)
 bool scenarioengine::ScenarioReader::CheckModelId(Object *object)
 {
     std::string filename = SE_Env::Inst().GetModelFilenameById(object->model_id_).c_str();
-    if (filename != FileNameOf(object->model3d_))
+    if (filename != object->GetModelFileName())
     {
         LOG_WARN("Warning: {} {} model_id {} correponds to {}, not specified 3D model {}",
                  Object::Type2String(object->GetType()),
                  object->GetTypeName(),
                  object->model_id_,
                  filename.empty() ? "Unknown" : filename,
-                 FileNameOf(object->model3d_));
+                 FileNameOf(object->GetModelFileName()));
         return false;
     }
 

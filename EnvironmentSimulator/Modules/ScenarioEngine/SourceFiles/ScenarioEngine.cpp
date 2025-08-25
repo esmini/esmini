@@ -440,7 +440,7 @@ int ScenarioEngine::step(double deltaSimTime)
                                          obj->category_,
                                          obj->role_,
                                          obj->model_id_,
-                                         obj->model3d_,
+                                         obj->GetModel3DFullPath(),
                                          obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
                                          obj->boundingbox_,
                                          static_cast<int>(obj->scaleMode_),

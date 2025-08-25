@@ -364,7 +364,8 @@ int ScenarioGateway::reportObject(int                    id,
             std::string file_name_candidate = CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], model3d);
             if (FileExists(file_name_candidate.c_str()))
             {
-                model3d_abs_path = fs::canonical(file_name_candidate).string();
+                // register absolute path to model3d file with generic '/' folder separator
+                model3d_abs_path = fs::canonical(file_name_candidate).generic_string();
                 break;
             }
         }

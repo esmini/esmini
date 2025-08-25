@@ -2106,6 +2106,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     std::vector<std::string> file_name_candidates;
     double                   carStdDim[]  = {4.5, 1.8, 1.5};
     double                   carStdOrig[] = {1.5, 0.0, 0.75};
+    std::string              filepath;
 
     // Check if model already loaded
     for (size_t i = 0; i < entities_.size(); i++)
@@ -2137,6 +2138,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
             {
                 if (modelgroup = LoadEntityModel(file_name_candidates[i].c_str(), modelBB))
                 {
+                    filepath = file_name_candidates[i];
                     break;
                 }
             }
@@ -2354,7 +2356,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         emodel = new EntityModel(this, group, root_origin2odr_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name);
     }
 
-    emodel->filename_ = modelFilepath;
+    emodel->filename_ = filepath.empty() ? modelFilepath : filepath;
 
     emodel->blend_color_ = new osg::BlendColor(osg::Vec4(1, 1, 1, 1));
     emodel->blend_color_->setDataVariance(osg::Object::DYNAMIC);
