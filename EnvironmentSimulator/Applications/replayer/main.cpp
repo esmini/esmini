@@ -1050,6 +1050,7 @@ int main(int argc, char** argv)
                 if (player->GetFixedTimestep() > 0.0f)
                 {
                     player->RoundTime();
+                    simTime = player->GetTime();
                 }
             }
 
