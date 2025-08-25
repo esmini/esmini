@@ -132,7 +132,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
-                player->GoToEnd();
+                player->GoToEnd(true);
             }
             else if (fixed_timestep < 0.0f)  // We dont have a fixed timestep, so we have saved all timestamps and can just move to them
             {
@@ -170,7 +170,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
                 // rewind to beginning
-                player->GoToStart();
+                player->GoToStart(true);
             }
             else if (fixed_timestep < 0.0f)  // We dont have a fixed timestep, so we have saved all timestamps and can just move to them
             {
