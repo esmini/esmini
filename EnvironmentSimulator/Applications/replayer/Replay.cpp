@@ -516,7 +516,7 @@ void Replay::RoundTime()
     }
     else if (fixed_timestep_ > 0.0f)
     {
-        auto divisor = static_cast<int>(static_cast<float>(time_) / fixed_timestep_);
+        auto divisor = std::round((static_cast<float>(time_) / fixed_timestep_));
         time_        = divisor * fixed_timestep_;
     }
 }
