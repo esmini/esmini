@@ -26,7 +26,6 @@ Object::Object(Type type)
       speed_(0),
       wheel_angle_(0),
       wheel_rot_(0),
-      model3d_(""),
       ghost_trail_s_(0),
       trail_follow_index_(0),
       odometer_(0),
@@ -43,7 +42,8 @@ Object::Object(Type type)
       nextJunctionSelectorAngle_(0.0),
       scaleMode_(EntityScaleMode::NONE),
       dirty_(0),
-      is_active_(false)
+      is_active_(false),
+      model3d_full_path_("")
 {
     sensor_pos_[0] = 0;
     sensor_pos_[1] = 0;

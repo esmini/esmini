@@ -165,19 +165,18 @@ namespace scenarioengine
         // Allocate vector for all possible override status
         OverrideActionStatus overrideActionList[OverrideType::OVERRIDE_NR_TYPES];
 
-        Type        type_;
-        int         id_;
-        double      speed_;
-        double      wheel_angle_;
-        double      wheel_rot_;
-        std::string model3d_;
-        int         ghost_trail_s_;       // closest point on ghost trail
-        idx_t       trail_follow_index_;  // Index of closest segment
-        double      odometer_;
-        double      end_of_road_timestamp_;
-        double      off_road_timestamp_;
-        double      stand_still_timestamp_;
-        bool        reset_;  // indicate discreet movement, teleporting, no odometer update
+        Type   type_;
+        int    id_;
+        double speed_;
+        double wheel_angle_;
+        double wheel_rot_;
+        int    ghost_trail_s_;       // closest point on ghost trail
+        idx_t  trail_follow_index_;  // Index of closest segment
+        double odometer_;
+        double end_of_road_timestamp_;
+        double off_road_timestamp_;
+        double stand_still_timestamp_;
+        bool   reset_;  // indicate discreet movement, teleporting, no odometer update
 
         std::vector<Controller*>                    controllers_;  // reference to all assigned controller objects
         double                                      headstart_time_;
@@ -490,11 +489,11 @@ namespace scenarioengine
         }
         std::string GetModelFileName()
         {
-            return FileNameOf(model3d_);
+            return FileNameOf(model3d_full_path_);
         }
         std::string GetModelFilePath() const
         {
-            return model3d_;
+            return model3d_full_path_;
         }
 
         /**
@@ -624,9 +623,25 @@ namespace scenarioengine
         static std::string Type2String(int type);
         static std::string Role2String(int role);
 
+        void SetModel3DFullPath(const std::string& path)
+        {
+            model3d_full_path_ = path;
+        }
+
+        const std::string& GetModel3DFullPath() const
+        {
+            return model3d_full_path_;
+        }
+
+        std::string GetModel3DFilename() const
+        {
+            return FileNameOf(model3d_full_path_);
+        }
+
     private:
-        int  dirty_;
-        bool is_active_;
+        int         dirty_;
+        bool        is_active_;
+        std::string model3d_full_path_;
     };
 
     class Vehicle : public Object

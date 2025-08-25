@@ -359,7 +359,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
     for (size_t i = 0; i < viewer_->entities_.size() && i < scenarioEngine->entities_.object_.size(); i++)
     {
         if (scenarioEngine->entities_.object_[i]->name_ != viewer_->entities_[i]->name_ ||
-            scenarioEngine->entities_.object_[i]->model3d_ != viewer_->entities_[i]->filename_)
+            scenarioEngine->entities_.object_[i]->GetModel3DFilename() != viewer_->entities_[i]->filename_)
         {
             // Object has most probably been deleted from the entity list
             viewer_->RemoveCar(static_cast<int>(i));
@@ -371,14 +371,18 @@ void ScenarioPlayer::ViewerFrame(bool init)
     while (viewer_->entities_.size() < scenarioEngine->entities_.object_.size())
     {
         Object* obj = scenarioEngine->entities_.object_[viewer_->entities_.size()];
-        viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_,
-                                                           trail_color,
-                                                           viewer::EntityModel::EntityType::VEHICLE,
-                                                           false,
-                                                           obj->name_,
-                                                           &obj->boundingbox_,
-                                                           obj->model3d_x_offset_,
-                                                           obj->scaleMode_));
+        if (viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->GetModel3DFilename(),
+                                                               trail_color,
+                                                               viewer::EntityModel::EntityType::VEHICLE,
+                                                               false,
+                                                               obj->name_,
+                                                               &obj->boundingbox_,
+                                                               obj->model3d_x_offset_,
+                                                               obj->scaleMode_)) == 0)
+        {
+            // register actual full file path used
+            obj->SetModel3DFullPath(viewer_->entities_.back()->filename_);
+        }
 
         if (obj->scaleMode_ == EntityScaleMode::BB_TO_MODEL)
         {
@@ -980,7 +984,7 @@ int ScenarioPlayer::InitViewer()
             road_sensor = true;
         }
 
-        if (viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->model3d_,
+        if (viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->GetModel3DFullPath(),
                                                                trail_color,
                                                                obj->type_ == Object::Type::VEHICLE      ? viewer::EntityModel::EntityType::VEHICLE
                                                                : obj->type_ == Object::Type::PEDESTRIAN ? viewer::EntityModel::EntityType::MOVING
@@ -989,7 +993,12 @@ int ScenarioPlayer::InitViewer()
                                                                obj->name_,
                                                                &obj->boundingbox_,
                                                                obj->model3d_x_offset_,
-                                                               obj->scaleMode_)) != 0)
+                                                               obj->scaleMode_)) == 0)
+        {
+            // register actual full file path used
+            obj->SetModel3DFullPath(viewer_->entities_.back()->filename_);
+        }
+        else
         {
             CloseViewer();
             return -1;

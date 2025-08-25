@@ -1088,12 +1088,12 @@ extern "C"
 
             if (object_type == scenarioengine::Object::Type::VEHICLE)
             {
-                vehicle               = new Vehicle();
-                object_id             = player->scenarioEngine->entities_.addObject(vehicle, true);
-                vehicle->name_        = name;
-                vehicle->scaleMode_   = static_cast<EntityScaleMode>(scale_mode);
-                vehicle->model_id_    = model_id;
-                vehicle->model3d_     = SE_Env::Inst().GetModelFilenameById(model_id);
+                vehicle             = new Vehicle();
+                object_id           = player->scenarioEngine->entities_.addObject(vehicle, true);
+                vehicle->name_      = name;
+                vehicle->scaleMode_ = static_cast<EntityScaleMode>(scale_mode);
+                vehicle->model_id_  = model_id;
+                vehicle->SetModel3DFullPath(SE_Env::Inst().GetModelFilenameById(model_id));
                 vehicle->category_    = object_category;
                 vehicle->role_        = object_role;
                 vehicle->boundingbox_ = bb;

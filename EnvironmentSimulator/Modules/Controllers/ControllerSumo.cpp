@@ -154,7 +154,7 @@ void ControllerSumo::Step(double timeStep)
                     LOG_INFO("SUMO controller: No vehicles available in pool, use host 3D model");
                     vehicle = new Vehicle();
                     // copy the default vehicle stuff here (add bounding box and so on)
-                    vehicle->model3d_ = template_vehicle_->model3d_;
+                    vehicle->SetModel3DFullPath(template_vehicle_->GetModel3DFullPath());
                 }
                 else
                 {
@@ -183,7 +183,7 @@ void ControllerSumo::Step(double timeStep)
                                            vehicle->category_,
                                            vehicle->role_,
                                            vehicle->model_id_,
-                                           vehicle->model3d_,
+                                           vehicle->GetModel3DFullPath(),
                                            vehicle->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
                                            vehicle->boundingbox_,
                                            static_cast<int>(vehicle->scaleMode_),

@@ -33,6 +33,16 @@
 #include <osg/Fog>
 #include "OSCEnvironment.hpp"
 
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
+
 #define SHADOW_SCALE                       1.20
 #define SHADOW_MODEL_FILEPATH              "shadow_face.osgb"
 #define ARROW_MODEL_FILEPATH               "arrow.osgb"
@@ -2106,6 +2116,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     std::vector<std::string> file_name_candidates;
     double                   carStdDim[]  = {4.5, 1.8, 1.5};
     double                   carStdOrig[] = {1.5, 0.0, 0.75};
+    std::string              filepath;
 
     // Check if model already loaded
     for (size_t i = 0; i < entities_.size(); i++)
@@ -2137,6 +2148,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
             {
                 if (modelgroup = LoadEntityModel(file_name_candidates[i].c_str(), modelBB))
                 {
+                    filepath = fs::path(file_name_candidates[i]).lexically_normal().generic_string();
                     break;
                 }
             }
@@ -2354,7 +2366,8 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         emodel = new EntityModel(this, group, root_origin2odr_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name);
     }
 
-    emodel->filename_ = modelFilepath;
+    // if file found, set full path, else use the requested filename
+    emodel->filename_ = filepath.empty() ? modelFilepath : filepath;
 
     emodel->blend_color_ = new osg::BlendColor(osg::Vec4(1, 1, 1, 1));
     emodel->blend_color_->setDataVariance(osg::Object::DYNAMIC);

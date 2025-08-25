@@ -347,18 +347,6 @@ int ScenarioGateway::reportObject(int                    id,
 
     if (obj_state == 0)
     {
-        // Check registered paths for model3d
-        std::string model3d_abs_path;
-        for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
-        {
-            std::string file_name_candidate = CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], model3d);
-            if (FileExists(file_name_candidate.c_str()))
-            {
-                model3d_abs_path = file_name_candidate;
-                break;
-            }
-        }
-
         // Create state and set permanent information
         obj_state = new ObjectState(id,
                                     name,
@@ -366,7 +354,7 @@ int ScenarioGateway::reportObject(int                    id,
                                     obj_category,
                                     obj_role,
                                     model_id,
-                                    model3d_abs_path,
+                                    model3d,
                                     ctrl_type,
                                     boundingbox,
                                     scaleMode,
