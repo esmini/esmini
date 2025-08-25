@@ -35,6 +35,7 @@ Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat
     }
 
     startTime_ = static_cast<float>(timestamps_[0].first);
+    time_      = startTime_;
 }
 
 Replay::Replay(const std::string directory, const std::string scenario, std::string create_datfile)
@@ -488,15 +489,23 @@ Replay::~Replay()
     objects_timeline_.clear();
 }
 
-void Replay::GoToStart()
+void Replay::GoToStart(bool ignore_repeat)
 {
-    index_ = startIndex_;
-    time_  = startTime_;
+    if (repeat_ && !ignore_repeat)
+    {
+        index_ = stopIndex_;
+        time_  = stopTime_;
+    }
+    else
+    {
+        index_ = startIndex_;
+        time_  = startTime_;
+    }
 }
 
-void Replay::GoToEnd()
+void Replay::GoToEnd(bool ignore_repeat)
 {
-    if (repeat_)
+    if (repeat_ && !ignore_repeat)
     {
         index_ = startIndex_;
         time_  = startTime_;
@@ -544,6 +553,16 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
     }
     else
     {
+        if (target_time > stopTime_)
+        {
+            GoToEnd();
+            return;
+        }
+        if (target_time < GetStartTime())
+        {
+            GoToStart();
+            return;
+        }
         if (target_time > time_)  // Looking ahead, stopping as soon as we find time greater than current time
         {
             size_t next_index = index_ + 1;
@@ -551,18 +570,11 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
             if (next_index < timestamps_.size() && static_cast<float>(target_time) >= timestamps_[next_index].first - SMALL_NUMBERF)
             {
                 index_ = next_index;
-                time_  = timestamps_[index_].first;
+                time_  = static_cast<float>(target_time);
             }
             else
             {
-                if (target_time > stopTime_)
-                {
-                    GoToEnd();
-                }
-                else
-                {
-                    time_ = static_cast<float>(target_time);
-                }
+                time_ = static_cast<float>(target_time);
             }
         }
         else if (target_time < time_)  // Same for backwards, but we stop when we find a timestamp less than current time
@@ -574,14 +586,7 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
             }
             else
             {
-                if (target_time < GetStartTime())
-                {
-                    GoToStart();
-                }
-                else
-                {
-                    time_ = static_cast<float>(target_time);
-                }
+                time_ = static_cast<float>(target_time);
             }
         }
     }
@@ -681,6 +686,7 @@ void Replay::SetStartTime(double time)
     }
 
     startIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(startTime_));
+    index_      = startIndex_;
 }
 
 void Replay::SetStopTime(double time)
