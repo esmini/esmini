@@ -993,7 +993,12 @@ int ScenarioPlayer::InitViewer()
                                                                obj->name_,
                                                                &obj->boundingbox_,
                                                                obj->model3d_x_offset_,
-                                                               obj->scaleMode_)) != 0)
+                                                               obj->scaleMode_)) == 0)
+        {
+            // register actual full file path used
+            obj->SetModel3DFullPath(viewer_->entities_.back()->filename_);
+        }
+        else
         {
             CloseViewer();
             return -1;

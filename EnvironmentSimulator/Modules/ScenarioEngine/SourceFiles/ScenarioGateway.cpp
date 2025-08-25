@@ -26,16 +26,6 @@
 #include <utility>
 #endif
 
-#if __has_include(<filesystem>)
-#include <filesystem>
-namespace fs = std::filesystem;
-#elif __has_include(<experimental/filesystem>)
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#else
-#error "Missing <filesystem> header"
-#endif
-
 using namespace scenarioengine;
 
 ObjectState::ObjectState()
@@ -357,19 +347,6 @@ int ScenarioGateway::reportObject(int                    id,
 
     if (obj_state == 0)
     {
-        // Check registered paths for model3d
-        std::string model3d_abs_path = model3d;  // set filename as default, then try find absolute path
-        for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
-        {
-            std::string file_name_candidate = CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], model3d);
-            if (FileExists(file_name_candidate.c_str()))
-            {
-                // register absolute path to model3d file with generic '/' folder separator
-                model3d_abs_path = fs::canonical(file_name_candidate).generic_string();
-                break;
-            }
-        }
-
         // Create state and set permanent information
         obj_state = new ObjectState(id,
                                     name,
@@ -377,7 +354,7 @@ int ScenarioGateway::reportObject(int                    id,
                                     obj_category,
                                     obj_role,
                                     model_id,
-                                    model3d_abs_path,
+                                    model3d,
                                     ctrl_type,
                                     boundingbox,
                                     scaleMode,

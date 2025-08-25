@@ -33,6 +33,16 @@
 #include <osg/Fog>
 #include "OSCEnvironment.hpp"
 
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
+
 #define SHADOW_SCALE                       1.20
 #define SHADOW_MODEL_FILEPATH              "shadow_face.osgb"
 #define ARROW_MODEL_FILEPATH               "arrow.osgb"
@@ -2138,7 +2148,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
             {
                 if (modelgroup = LoadEntityModel(file_name_candidates[i].c_str(), modelBB))
                 {
-                    filepath = file_name_candidates[i];
+                    filepath = fs::path(file_name_candidates[i]).lexically_normal().generic_string();
                     break;
                 }
             }
@@ -2356,6 +2366,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         emodel = new EntityModel(this, group, root_origin2odr_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name);
     }
 
+    // if file found, set full path, else use the requested filename
     emodel->filename_ = filepath.empty() ? modelFilepath : filepath;
 
     emodel->blend_color_ = new osg::BlendColor(osg::Vec4(1, 1, 1, 1));
