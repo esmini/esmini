@@ -1100,10 +1100,11 @@ void ScenarioGateway::removeObject(std::string name)
 
 void ScenarioGateway::WriteStatesToFile(const double simulation_time)
 {
-    if (dat_logger_.IsWriteFileOpen())
+    if (dat_writer_.IsWriteFileOpen())
     {
-        dat_logger_.SetSimulationTime(simulation_time);
-        dat_logger_.WriteToDat(objectState_);
+        dat_writer_.SetSimulationTime(simulation_time);
+        dat_writer_.WriteGenericDataToDat();
+        dat_writer_.WriteObjectStatesToDat(objectState_);
     }
 }
 
@@ -1115,5 +1116,5 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
         return -1;
     }
 
-    return dat_logger_.Init(filename, odr_filename, model_filename);
+    return dat_writer_.Init(filename, odr_filename, model_filename);
 }

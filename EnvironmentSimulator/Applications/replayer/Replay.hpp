@@ -83,8 +83,8 @@ namespace scenarioengine
     class Replay
     {
     public:
-        Dat::DatHeader                                 header_;
         std::vector<ReplayEntry>                       data_;
+        Dat::DatHeader                                 dat_header_;
         std::map<int, PropertyTimeline, MapComparator> objects_timeline_;
         std::vector<std::pair<float, bool>>            timestamps_;
         std::unordered_map<int, ReplayEntry>           object_state_cache_;
@@ -94,17 +94,12 @@ namespace scenarioengine
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
 
-        void CreateMergedDatfile(const std::string filename) const;
-
-        template <typename... Data>
-        int ReadPacket(const Dat::PacketHeader& header, Data&... data);
-        int ReadStringPacket(std::string& str);
+        // void CreateMergedDatfile(const std::string filename) const;
 
         template <typename T, typename Data>
         void AddToTimeline(Timeline<T>& timeline, Data data);
 
         int ParsePackets(const std::string& filename);
-        int FillHeader();
 
         /**
                 Go to specific time
@@ -157,7 +152,6 @@ namespace scenarioengine
         // }
 
     private:
-        std::ifstream            file_;
         std::vector<std::string> scenarios_;
         double                   time_;
         double                   startTime_  = 0.0;
