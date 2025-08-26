@@ -1,0 +1,75 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+    <FileHeader description="traffic source example" author="hlindst9" revMajor="1" revMinor="3" date="2025-08-25T10:06:23.244169"/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/full_junction0.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Ego">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <GlobalAction>
+                    <TrafficAction>
+                        <TrafficAreaAction continuous="true" numberOfEntities="10">
+                            <TrafficArea>
+                                <Polygon>
+                                    <Position>
+                                        <WorldPosition x="50.0" y="-70.0" z="0.0"/>
+                                    </Position>
+                                    <Position>
+                                        <WorldPosition x="190.0" y="-70.0" z="0.0"/>
+                                    </Position>
+                                    <Position>
+                                        <WorldPosition x="190.0" y="70.0" z="0.0"/>
+                                    </Position>
+                                    <Position>
+                                        <WorldPosition x="50.0" y="7.0" z="0.0"/>
+                                    </Position>
+                                </Polygon>
+                            </TrafficArea>
+                            <TrafficDistribution>
+                                <TrafficDistributionEntry weight="0.5">
+                                    <EntityDistribution>
+                                        <EntityDistributionEntry weight="0.33">
+                                            <ScenarioObjectTemplate>
+                                                <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+                                            </ScenarioObjectTemplate>
+                                        </EntityDistributionEntry>
+                                        <EntityDistributionEntry weight="0.33">
+                                            <ScenarioObjectTemplate>
+                                                <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+                                            </ScenarioObjectTemplate>
+                                        </EntityDistributionEntry>
+                                        <EntityDistributionEntry weight="03">
+                                            <ScenarioObjectTemplate>
+                                                <CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
+                                            </ScenarioObjectTemplate>
+                                        </EntityDistributionEntry>
+                                    </EntityDistribution>
+                                </TrafficDistributionEntry>
+                            </TrafficDistribution>
+                        </TrafficAreaAction>
+                    </TrafficAction>
+                </GlobalAction>
+            </Actions>
+        </Init>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="60.0" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

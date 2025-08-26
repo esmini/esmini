@@ -334,6 +334,34 @@ namespace scenarioengine
         OSCEnvironment* environment_;
     };
 
+    struct EntityWithController
+    {
+        Object*     object     = nullptr;
+        Controller* controller = nullptr;
+    };
+
+    class EntityDistributionEntry
+    {
+    public:
+        double                   weight{1.0};
+        Object*                  object{nullptr};
+        std::vector<Controller*> controllers;
+    };
+
+    class EntityDistribution
+    {
+    public:
+        std::vector<EntityDistributionEntry> entries;
+    };
+
+    class TrafficDistributionEntry
+    {
+    public:
+        double               weight{1.0};
+        EntityDistribution   entityDistribution;
+        EntityWithController GetRandomEntity() const;
+    };
+
     class ScenarioReader;
     class ScenarioEngine;
 
@@ -411,7 +439,7 @@ namespace scenarioengine
         void Setvelocity(double velocity)
         {
             speedRange = false;
-            velocity_ = velocity;
+            velocity_  = velocity;
         }
         void SetInitialSpeedRange(double lowerLimit, double upperLimit)
         {
@@ -420,19 +448,23 @@ namespace scenarioengine
         }
         void SetDirectionOfTravelDistribution(double opposite, double same)
         {
-            dot_set_ = true;
+            dot_set_     = true;
             dotOpposite_ = opposite;
-            dotSame_ = same;
-        }   
+            dotSame_     = same;
+        }
+        void SetName(std::string name)
+        {
+            name_ = name;
+        }
 
     private:
         double                  velocity_;
         double                  initialSpeedLowerLimit_;
         double                  initialSpeedUpperLimit_;
-        bool speedRange = true;
+        bool                    speedRange = true;
         double                  dotOpposite_;
         double                  dotSame_;
-        bool dot_set_ = false;
+        bool                    dot_set_ = false;
         Entities*               entities_;
         ScenarioGateway*        gateway_;
         ScenarioReader*         reader_;
@@ -445,6 +477,7 @@ namespace scenarioengine
         double                  innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
         VehiclePool             vehicle_pool_;
         static int              counter_;
+        std::string             name_;
 
         int         despawn(double simTime);
         void        createRoadSegments(aabbTree::BBoxVec& vec);
@@ -452,31 +485,13 @@ namespace scenarioengine
         inline bool ensureDistance(roadmanager::Position pos, int lane, double dist);
         void        createEllipseSegments(aabbTree::BBoxVec& vec, double SMjA, double SMnA);
         inline void sampleRoads(int minN, int maxN, Solutions& sols, vector<SelectInfo>& info);
-        double getInitialSpeed() const;
+        double      getInitialSpeed() const;
     };
 
     class TrafficSourceAction : public OSCGlobalAction
     {
-        public:
-        struct SpawnInfo
-        {
-            int    vehicleID;
-            int    outMidAreaCount;
-            id_t   roadID;
-            int    lane;
-            double simTime;
-        };
-
-        typedef struct
-        {
-            roadmanager::Position pos;
-            roadmanager::Road*    road;
-            unsigned int          nLanes;
-        } SelectInfo;
-
-        TrafficSourceAction(StoryBoardElement* parent);
-
-        TrafficSourceAction(const TrafficSourceAction& action, StoryBoardElement* parent) : OSCGlobalAction(ActionType::SOURCE_TRAFFIC, parent)
+    public:
+        TrafficSourceAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::SOURCE_TRAFFIC, parent)
         {
         }
 
@@ -496,7 +511,10 @@ namespace scenarioengine
 
         void SpawnEntity();
 
-        void SetScenarioEngine(ScenarioEngine* scenario_engine);
+        void SetScenarioEngine(ScenarioEngine* scenario_engine)
+        {
+            scenario_engine_ = scenario_engine;
+        }
 
         void SetGateway(ScenarioGateway* gateway)
         {
@@ -523,20 +541,309 @@ namespace scenarioengine
         {
             speed_ = speed;
         }
-        roadmanager::Position* pos_;
+        void SetPosition(roadmanager::Position* pos)
+        {
+            pos_ = pos;
+        }
+        void SetName(std::string name)
+        {
+            name_ = name;
+        }
+        roadmanager::Position* GetRandomSpawnPosition();
+
+        std::vector<TrafficDistributionEntry> traffic_distribution_entry_;
 
     private:
-        double action_trigger_time_;
-        double                  radius_;
-        double rate_;
-        double speed_;
-        Entities*               entities_;
-        ScenarioGateway*        gateway_;
-        ScenarioReader*         reader_;
-        ScenarioEngine*         scenario_engine_;
-        int spawned_count_;
-        VehiclePool             vehicle_pool_;
-        
+        double                 action_trigger_time_;
+        double                 radius_;
+        double                 rate_;
+        double                 speed_;
+        ScenarioGateway*       gateway_;
+        ScenarioReader*        reader_;
+        ScenarioEngine*        scenario_engine_;
+        int                    spawned_count_ = 0;
+        VehiclePool            vehicle_pool_;
+        roadmanager::Position* pos_;
+        std::string            name_;
+    };
+
+    class TrafficSinkAction : public OSCGlobalAction
+    {
+    public:
+        TrafficSinkAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::SINK_TRAFFIC, parent)
+        {
+        }
+
+        OSCGlobalAction* Copy()
+        {
+            TrafficSinkAction* new_action = new TrafficSinkAction(*this);
+            return new_action;
+        }
+
+        void Start(double simTime);
+
+        void Step(double simTime, double dt);
+
+        void print()
+        {
+        }
+
+        void SetScenarioEngine(ScenarioEngine* scenario_engine)
+        {
+            scenario_engine_ = scenario_engine;
+        }
+
+        void SetGateway(ScenarioGateway* gateway)
+        {
+            gateway_ = gateway;
+        }
+        void SetReader(ScenarioReader* reader)
+        {
+            reader_ = reader;
+        }
+
+        void SetActionTriggerTime(double simTime)
+        {
+            action_trigger_time_ = simTime;
+        }
+        void SetRadius(double radius)
+        {
+            radius_ = radius;
+        }
+        void SetRate(double rate, bool constantDespawn = false)
+        {
+            rate_             = rate;
+            constant_despawn_ = constantDespawn;
+        }
+        void SetPosition(roadmanager::Position* pos)
+        {
+            pos_ = pos;
+        }
+        void SetName(std::string name)
+        {
+            name_ = name;
+        }
+
+        void DespawnEntity();
+        bool InsideSink(roadmanager::Position object_pos);
+
+    private:
+        double                 action_trigger_time_;
+        double                 radius_;
+        double                 rate_;
+        ScenarioGateway*       gateway_;
+        ScenarioReader*        reader_;
+        ScenarioEngine*        scenario_engine_;
+        roadmanager::Position* pos_;
+        bool                   constant_despawn_ = true;
+        double                 time_accumulator_ = 0.0;
+        std::string            name_;
+    };
+
+    // helper for floating-point comparison
+    inline bool almost_equal(double a, double b, double eps = 1e-9)
+    {
+        return std::fabs(a - b) < eps;
+    }
+
+    typedef struct
+    {
+        int    roadId;
+        int    laneId;
+        double minS;
+        double maxS;
+        double length;
+    } LaneSegment;
+
+    inline bool operator==(const LaneSegment& a, const LaneSegment& b)
+    {
+        return a.roadId == b.roadId && a.laneId == b.laneId && almost_equal(a.minS, b.minS) && almost_equal(a.maxS, b.maxS) &&
+               almost_equal(a.length, b.length);
+    }
+
+    typedef struct
+    {
+        int              roadId;
+        double           s = 0.0;
+        std::vector<int> laneIds;
+        bool             last = false;
+        double           road_length;
+    } RoadCursor;
+
+    inline bool operator==(const RoadCursor& a, const RoadCursor& b)
+    {
+        return a.roadId == b.roadId && almost_equal(a.s, b.s) && a.laneIds == b.laneIds && a.last == b.last &&
+               almost_equal(a.road_length, b.road_length);
+    }
+
+    typedef struct
+    {
+        double                  length;
+        std::vector<RoadCursor> roadCursors;
+    } RoadRange;
+
+    inline bool operator==(const RoadRange& a, const RoadRange& b)
+    {
+        return almost_equal(a.length, b.length) && a.roadCursors == b.roadCursors;
+    }
+
+    class TrafficAreaAction : public OSCGlobalAction
+    {
+    public:
+        TrafficAreaAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::AREA_TRAFFIC, parent)
+        {
+        }
+
+        OSCGlobalAction* Copy()
+        {
+            TrafficAreaAction* new_action = new TrafficAreaAction(*this);
+            return new_action;
+        }
+
+        void Start(double simTime);
+
+        void Step(double simTime, double dt);
+
+        void print()
+        {
+        }
+
+        void SetScenarioEngine(ScenarioEngine* scenario_engine)
+        {
+            scenario_engine_ = scenario_engine;
+        }
+
+        void SetGateway(ScenarioGateway* gateway)
+        {
+            gateway_ = gateway;
+        }
+        void SetReader(ScenarioReader* reader)
+        {
+            reader_ = reader;
+        }
+        void SetOpenDriveManager(roadmanager::OpenDrive* odrManager)
+        {
+            odrManager_ = odrManager;
+        }
+
+        void SpawnEntities(int number_of_entities_to_spawn);
+
+        void SpawnEntity(roadmanager::Position* pos);
+
+        int DespawnEntities();
+
+        bool InsideArea(roadmanager::Position object_pos);
+
+        void SetContinuous(bool continuous)
+        {
+            continuous_ = continuous;
+        }
+
+        void SetNumberOfEntities(int number_of_entities)
+        {
+            number_of_entities_ = number_of_entities;
+        }
+
+        void SetPolygonPoints(const std::vector<roadmanager::Position> points)
+        {
+            polygon_points_ = points;
+        }
+
+        void SortPolygonPoints(std::vector<roadmanager::Position>& points);
+
+        void SetRoadRanges(const std::vector<RoadRange> road_ranges)
+        {
+            road_ranges_ = road_ranges;
+        }
+        std::vector<RoadRange> GetRoadRanges() const
+        {
+            return road_ranges_;
+        }
+        std::vector<LaneSegment> GetLaneSegments() const
+        {
+            return lane_segments_;
+        }
+        void SetName(std::string name)
+        {
+            name_ = name;
+        }
+
+        void UpdateRoadRanges();
+        void SetRoadRangeLength();
+        void SetAdditionalRoadCursorInfo(RoadCursor& road_cursor);
+        void AddComplementaryRoadCursors();
+        void SetLaneSegments();
+        void LaneSegmentsForRoad(std::vector<RoadCursor> road_cursors_to_road, double& accumulated_length, const double max_length);
+        void HandleLastRoadCursor(std::vector<RoadCursor> last_road_cursors, double& accumulated_length, const double max_length);
+
+        roadmanager::Position* GetRandomSpawnPosition();
+
+        roadmanager::Position*                pos_;
+        std::vector<TrafficDistributionEntry> traffic_distribution_entry_;
+
+    private:
+        double ClampMax(double value, double accumulated, double max_length);
+
+        bool                               continuous_;
+        int                                number_of_entities_;
+        std::vector<roadmanager::Position> polygon_points_;
+        std::vector<RoadRange>             road_ranges_;
+        std::vector<LaneSegment>           lane_segments_;
+        ScenarioGateway*                   gateway_;
+        ScenarioReader*                    reader_;
+        ScenarioEngine*                    scenario_engine_;
+        roadmanager::OpenDrive*            odrManager_;
+        VehiclePool                        vehicle_pool_;
+        bool                               first_spawn_ = false;
+        std::vector<int>                   spawned_entity_ids_;
+        int                                spawned_count_ = 0;
+        std::string                        name_;
+    };
+
+    class TrafficStopAction : public OSCGlobalAction
+    {
+    public:
+        TrafficStopAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::STOP_TRAFFIC, parent)
+        {
+        }
+
+        OSCGlobalAction* Copy()
+        {
+            TrafficStopAction* new_action = new TrafficStopAction(*this);
+            return new_action;
+        }
+
+        void Start(double simTime);
+
+        void Step(double simTime, double dt);
+
+        void print()
+        {
+        }
+
+        void SetScenarioEngine(ScenarioEngine* scenario_engine)
+        {
+            scenario_engine_ = scenario_engine;
+        }
+
+        void SetGateway(ScenarioGateway* gateway)
+        {
+            gateway_ = gateway;
+        }
+        void SetReader(ScenarioReader* reader)
+        {
+            reader_ = reader;
+        }
+        void SetTrafficActionToStop(const std::string& action)
+        {
+            traffic_action_to_stop_ = action;
+        }
+
+    private:
+        ScenarioGateway* gateway_;
+        ScenarioReader*  reader_;
+        ScenarioEngine*  scenario_engine_;
+        std::string      traffic_action_to_stop_;
     };
 
 }  // namespace scenarioengine

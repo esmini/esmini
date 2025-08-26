@@ -1,16 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
-    <FileHeader description="traffic source example" author="hlindst9" revMajor="1" revMinor="3" date="2025-08-25T10:06:23.244169"/>
+    <FileHeader description="traffic area example" author="hlindst9" revMajor="1" revMinor="3" date="2025-08-27T14:58:05.899682"/>
+    <VariableDeclarations/>
     <CatalogLocations>
         <VehicleCatalog>
             <Directory path="../xosc/Catalogs/Vehicles"/>
         </VehicleCatalog>
-        <ControllerCatalog>
-            <Directory path="../xosc/Catalogs/Controllers"/>
-        </ControllerCatalog>
     </CatalogLocations>
     <RoadNetwork>
-        <LogicFile filepath="../xodr/trafficsource.xodr"/>
+        <LogicFile filepath="../xodr/trafficarea.xodr"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">
@@ -26,7 +24,7 @@
                             <SpeedAction>
                                 <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="30.0"/>
+                                    <AbsoluteTargetSpeed value="0.0"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -34,35 +32,55 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="0" laneId="-1" s="25.0" offset="0.0"/>
+                                <LanePosition roadId="0" laneId="-1" s="120.0" offset="0.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                 </Private>
             </Actions>
         </Init>
-        <Story name="story_act_maneuvuergroup_traffic source maneuver">
-            <Act name="act_maneuvuergroup_traffic source maneuver">
-                <ManeuverGroup name="maneuvuergroup_traffic source maneuver" maximumExecutionCount="1">
+        <Story name="story_act_maneuvuergroup_traffic area maneuver">
+            <Act name="act_maneuvuergroup_traffic area maneuver">
+                <ManeuverGroup name="maneuvuergroup_traffic area maneuver" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false"/>
-                    <Maneuver name="traffic source maneuver">
-                        <Event name="traffic source event" priority="overwrite" maximumExecutionCount="1">
-                            <Action name="traffic source action">
+                    <Maneuver name="traffic area maneuver">
+                        <Event name="traffic area event" priority="override" maximumExecutionCount="1">
+                            <Action name="traffic_area_action">
                                 <GlobalAction>
-                                    <TrafficAction>
-                                        <TrafficSourceAction rate="0.5" radius="4.0" speed="30.0">
-                                            <Position>
-                                                <LanePosition roadId="0" laneId="-2" s="100.0" offset="0.0"/>
-                                            </Position>
+                                    <TrafficAction trafficName="traffic_source">
+                                        <TrafficAreaAction continuous="true" numberOfEntities="10">
+                                            <TrafficArea>
+                                                <!-- <Polygon>
+                                                    <Position>
+                                                        <WorldPosition x="150.0" y="-12.0" z="0.0"/>
+                                                    </Position>
+                                                    <Position>
+                                                        <WorldPosition x="200.0" y="-12.0" z="0.0"/>
+                                                    </Position>
+                                                    <Position>
+                                                        <WorldPosition x="150.0" y="12.0" z="0.0"/>
+                                                    </Position>
+                                                    <Position>
+                                                        <WorldPosition x="200.0" y="12.0" z="0.0"/>
+                                                    </Position>
+                                                </Polygon> -->
+                                                <!-- <RoadRange length="50.0"> -->
+                                                <RoadRange length="250">
+                                                    <RoadCursor roadId="0" s="100">
+                                                        <Lane id="-1"/>
+                                                        <Lane id="-2"/>
+                                                    </RoadCursor>
+                                                    <RoadCursor roadId="1" s="100"/>
+                                                    <RoadCursor roadId="2" s="50"/>
+                                                    <RoadCursor roadId="2" s="100"/>
+                                                </RoadRange>
+                                            </TrafficArea>
                                             <TrafficDistribution>
                                                 <TrafficDistributionEntry weight="1">
                                                     <EntityDistribution>
                                                         <EntityDistributionEntry weight="0.5">
                                                             <ScenarioObjectTemplate>
                                                                 <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
-                                                                <ObjectController>
-                                                                    <CatalogReference catalogName="ControllerCatalog" entryName="sloppyDriver"/>
-                                                                </ObjectController>
                                                             </ScenarioObjectTemplate>
                                                         </EntityDistributionEntry>
                                                         <EntityDistributionEntry weight="0.5">
@@ -73,15 +91,33 @@
                                                     </EntityDistribution>
                                                 </TrafficDistributionEntry>
                                             </TrafficDistribution>
-                                        </TrafficSourceAction>
+                                        </TrafficAreaAction>
                                     </TrafficAction>
                                 </GlobalAction>
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="traffic source trigger" delay="0.0" conditionEdge="none">
+                                    <Condition name="traffic area trigger" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="2.0" rule="greaterThan"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                        <Event name="traffic stop event" priority="parallel" maximumExecutionCount="1">
+                            <Action name="traffic stop action">
+                                <GlobalAction>
+                                    <TrafficAction trafficName="traffic_area_action">
+                                        <TrafficStopAction/>
+                                    </TrafficAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition name="traffic source stop trigger" delay="0.0" conditionEdge="none">
+                                        <ByValueCondition>
+                                            <SimulationTimeCondition value="6.0" rule="greaterThan"/>
                                         </ByValueCondition>
                                     </Condition>
                                 </ConditionGroup>
@@ -105,7 +141,7 @@
             <ConditionGroup>
                 <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="60.0" rule="greaterThan"/>
+                        <SimulationTimeCondition value="30.0" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

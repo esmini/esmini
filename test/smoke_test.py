@@ -310,7 +310,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^.0.00.*Init Ego LongitudinalAction runningState -> endTransition -> completeState', log, re.MULTILINE))
 
         # Check some scenario events
-        self.assertTrue(re.search('^.0.00.* Swarm IR: 200.00, SMjA: 300.00, SMnA: 500.00, maxV: 75 vel: 30.00', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.* Swarm IR: 200.00, SMjA: 300.00, SMnA: 500.00, maxV: 75, initialSpeedLowerLimit: 20.00, initialSpeedUpperLimit: 30.00', log, re.MULTILINE))
         self.assertTrue(re.search('^.60.10.* SwarmStopTrigger: true, delay: 0.00, 60.1000 > 60.0000, edge: none', log, re.MULTILINE))
         # Check vehicle key positions
         csv = generate_csv()

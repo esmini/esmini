@@ -1,13 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
 <OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
-    <FileHeader description="traffic source example" author="hlindst9" revMajor="1" revMinor="3" date="2025-08-25T10:06:23.244169"/>
+    <FileHeader description="traffic sink example" author="hlindst9" revMajor="1" revMinor="3" date="2025-08-25T10:06:23.244169"/>
     <CatalogLocations>
         <VehicleCatalog>
             <Directory path="../xosc/Catalogs/Vehicles"/>
         </VehicleCatalog>
-        <ControllerCatalog>
-            <Directory path="../xosc/Catalogs/Controllers"/>
-        </ControllerCatalog>
     </CatalogLocations>
     <RoadNetwork>
         <LogicFile filepath="../xodr/trafficsource.xodr"/>
@@ -15,6 +12,12 @@
     <Entities>
         <ScenarioObject name="Ego">
             <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="RedCar">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+        <ScenarioObject name="BlueCar">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
         </ScenarioObject>
     </Entities>
     <Storyboard>
@@ -26,7 +29,7 @@
                             <SpeedAction>
                                 <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="30.0"/>
+                                    <AbsoluteTargetSpeed value="0.0"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -34,52 +37,71 @@
                     <PrivateAction>
                         <TeleportAction>
                             <Position>
-                                <LanePosition roadId="0" laneId="-1" s="25.0" offset="0.0"/>
+                                <LanePosition roadId="0" laneId="-1" s="50.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="RedCar">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="20.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-2" s="50.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="BlueCar">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="20.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-2" s="70.0" offset="0.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>
                 </Private>
             </Actions>
         </Init>
-        <Story name="story_act_maneuvuergroup_traffic source maneuver">
-            <Act name="act_maneuvuergroup_traffic source maneuver">
-                <ManeuverGroup name="maneuvuergroup_traffic source maneuver" maximumExecutionCount="1">
+        <Story name="story_act_maneuvuergroup_traffic sink maneuver">
+            <Act name="act_maneuvuergroup_traffic sink maneuver">
+                <ManeuverGroup name="maneuvuergroup_traffic sink maneuver" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false"/>
-                    <Maneuver name="traffic source maneuver">
-                        <Event name="traffic source event" priority="overwrite" maximumExecutionCount="1">
-                            <Action name="traffic source action">
+                    <Maneuver name="traffic sink maneuver">
+                        <Event name="traffic sink event" priority="overwrite" maximumExecutionCount="1">
+                            <Action name="traffic sink action">
                                 <GlobalAction>
                                     <TrafficAction>
-                                        <TrafficSourceAction rate="0.5" radius="4.0" speed="30.0">
+                                        <TrafficSinkAction radius="1.0">
                                             <Position>
-                                                <LanePosition roadId="0" laneId="-2" s="100.0" offset="0.0"/>
+                                                <LanePosition roadId="0" laneId="-2" s="150.0" offset="0.0"/>
                                             </Position>
-                                            <TrafficDistribution>
-                                                <TrafficDistributionEntry weight="1">
-                                                    <EntityDistribution>
-                                                        <EntityDistributionEntry weight="0.5">
-                                                            <ScenarioObjectTemplate>
-                                                                <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
-                                                                <ObjectController>
-                                                                    <CatalogReference catalogName="ControllerCatalog" entryName="sloppyDriver"/>
-                                                                </ObjectController>
-                                                            </ScenarioObjectTemplate>
-                                                        </EntityDistributionEntry>
-                                                        <EntityDistributionEntry weight="0.5">
-                                                            <ScenarioObjectTemplate>
-                                                                <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
-                                                            </ScenarioObjectTemplate>
-                                                        </EntityDistributionEntry>
-                                                    </EntityDistribution>
-                                                </TrafficDistributionEntry>
-                                            </TrafficDistribution>
-                                        </TrafficSourceAction>
+                                        </TrafficSinkAction>
                                     </TrafficAction>
                                 </GlobalAction>
                             </Action>
                             <StartTrigger>
                                 <ConditionGroup>
-                                    <Condition name="traffic source trigger" delay="0.0" conditionEdge="none">
+                                    <Condition name="traffic sink trigger" delay="0.0" conditionEdge="none">
                                         <ByValueCondition>
                                             <SimulationTimeCondition value="2.0" rule="greaterThan"/>
                                         </ByValueCondition>

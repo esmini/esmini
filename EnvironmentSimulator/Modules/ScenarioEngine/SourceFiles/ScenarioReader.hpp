@@ -119,6 +119,8 @@ namespace scenarioengine
             variables.parseGlobalParameterDeclarations(osc_root_.child("VariableDeclarations"));
         }
 
+        Object* ChooseCatalogEntry(Entry* entry);
+
         // Enitites
         int    parseEntities();
         Entry* ResolveCatalogReference(pugi::xml_node node);
@@ -210,6 +212,7 @@ namespace scenarioengine
         int             ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
         ConditionGroup* ParseConditionGroup(pugi::xml_node node);
         Object*         ResolveObjectReference(std::string name);
+        void            ParseTrafficDistribution(pugi::xml_node traffic_dist_node, std::vector<TrafficDistributionEntry>& distribution_entries);
     };
 
 }  // namespace scenarioengine
