@@ -613,31 +613,32 @@ int main(int argc, char** argv)
 
     try
     {
-        if (strcmp(player->header_.odr_filename.string.c_str(), ""))
+        if (strcmp(player->dat_header_.odr_filename.string.c_str(), ""))
         {
             // find and OpenDRIVE file. Test some combinations of paths and filename
             std::vector<std::string> file_name_candidates;
 
             // just filepath as stated in .dat file
-            file_name_candidates.push_back(player->header_.odr_filename.string);
+            file_name_candidates.push_back(player->dat_header_.odr_filename.string);
 
             // Check registered paths
             for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
             {
                 // Including file path
-                file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], player->header_.odr_filename.string));
+                file_name_candidates.push_back(
+                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], player->dat_header_.odr_filename.string));
 
                 // Excluding file path
                 file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(player->header_.odr_filename.string)));
+                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(player->dat_header_.odr_filename.string)));
 
                 // Including file path and xodr sub folder
                 file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", FileNameOf(player->header_.odr_filename.string)));
+                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", FileNameOf(player->dat_header_.odr_filename.string)));
 
                 // Excluding file path but add xodr sub folder
                 file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", player->header_.odr_filename.string));
+                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", player->dat_header_.odr_filename.string));
             }
 
             size_t i;
@@ -654,7 +655,7 @@ int main(int argc, char** argv)
 
             if (i == file_name_candidates.size())
             {
-                printf("Failed to load OpenDRIVE file %s. Tried:\n", player->header_.odr_filename.string.c_str());
+                printf("Failed to load OpenDRIVE file %s. Tried:\n", player->dat_header_.odr_filename.string.c_str());
                 for (int j = 0; j < static_cast<int>(file_name_candidates.size()); j++)
                 {
                     printf("   %s\n", file_name_candidates[static_cast<unsigned int>(j)].c_str());
@@ -668,7 +669,7 @@ int main(int argc, char** argv)
         double                  targetSimTime = simTime;
         roadmanager::OpenDrive* odrManager    = roadmanager::Position::GetOpenDrive();
         osg::ArgumentParser     arguments(&argc_, argv_);
-        viewer_ = new viewer::Viewer(odrManager, player->header_.model_filename.string.c_str(), NULL, argv_[0], arguments, &opt);
+        viewer_ = new viewer::Viewer(odrManager, player->dat_header_.model_filename.string.c_str(), NULL, argv_[0], arguments, &opt);
 
         if (viewer_ == nullptr)
         {
