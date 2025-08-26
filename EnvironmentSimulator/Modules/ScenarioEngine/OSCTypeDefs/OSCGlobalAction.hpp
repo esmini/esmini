@@ -337,7 +337,7 @@ namespace scenarioengine
     class ScenarioReader;
     class ScenarioEngine;
 
-    class SwarmTrafficAction : public OSCGlobalAction
+    class TrafficSwarmAction : public OSCGlobalAction
     {
     public:
         struct SpawnInfo
@@ -356,9 +356,9 @@ namespace scenarioengine
             unsigned int          nLanes;
         } SelectInfo;
 
-        SwarmTrafficAction(StoryBoardElement* parent);
+        TrafficSwarmAction(StoryBoardElement* parent);
 
-        SwarmTrafficAction(const SwarmTrafficAction& action, StoryBoardElement* parent) : OSCGlobalAction(ActionType::SWARM_TRAFFIC, parent)
+        TrafficSwarmAction(const TrafficSwarmAction& action, StoryBoardElement* parent) : OSCGlobalAction(ActionType::SWARM_TRAFFIC, parent)
         {
             spawnedV.clear();
             centralObject_ = action.centralObject_;
@@ -366,7 +366,7 @@ namespace scenarioengine
 
         OSCGlobalAction* Copy()
         {
-            SwarmTrafficAction* new_action = new SwarmTrafficAction(*this);
+            TrafficSwarmAction* new_action = new TrafficSwarmAction(*this);
             return new_action;
         }
 
@@ -410,11 +410,29 @@ namespace scenarioengine
         }
         void Setvelocity(double velocity)
         {
+            speedRange = false;
             velocity_ = velocity;
         }
+        void SetInitialSpeedRange(double lowerLimit, double upperLimit)
+        {
+            initialSpeedLowerLimit_ = lowerLimit;
+            initialSpeedUpperLimit_ = upperLimit;
+        }
+        void SetDirectionOfTravelDistribution(double opposite, double same)
+        {
+            dot_set_ = true;
+            dotOpposite_ = opposite;
+            dotSame_ = same;
+        }   
 
     private:
         double                  velocity_;
+        double                  initialSpeedLowerLimit_;
+        double                  initialSpeedUpperLimit_;
+        bool speedRange = true;
+        double                  dotOpposite_;
+        double                  dotSame_;
+        bool dot_set_ = false;
         Entities*               entities_;
         ScenarioGateway*        gateway_;
         ScenarioReader*         reader_;
@@ -434,6 +452,91 @@ namespace scenarioengine
         inline bool ensureDistance(roadmanager::Position pos, int lane, double dist);
         void        createEllipseSegments(aabbTree::BBoxVec& vec, double SMjA, double SMnA);
         inline void sampleRoads(int minN, int maxN, Solutions& sols, vector<SelectInfo>& info);
+        double getInitialSpeed() const;
+    };
+
+    class TrafficSourceAction : public OSCGlobalAction
+    {
+        public:
+        struct SpawnInfo
+        {
+            int    vehicleID;
+            int    outMidAreaCount;
+            id_t   roadID;
+            int    lane;
+            double simTime;
+        };
+
+        typedef struct
+        {
+            roadmanager::Position pos;
+            roadmanager::Road*    road;
+            unsigned int          nLanes;
+        } SelectInfo;
+
+        TrafficSourceAction(StoryBoardElement* parent);
+
+        TrafficSourceAction(const TrafficSourceAction& action, StoryBoardElement* parent) : OSCGlobalAction(ActionType::SOURCE_TRAFFIC, parent)
+        {
+        }
+
+        OSCGlobalAction* Copy()
+        {
+            TrafficSourceAction* new_action = new TrafficSourceAction(*this);
+            return new_action;
+        }
+
+        void Start(double simTime);
+
+        void Step(double simTime, double dt);
+
+        void print()
+        {
+        }
+
+        void SpawnEntity();
+
+        void SetScenarioEngine(ScenarioEngine* scenario_engine);
+
+        void SetGateway(ScenarioGateway* gateway)
+        {
+            gateway_ = gateway;
+        }
+        void SetReader(ScenarioReader* reader)
+        {
+            reader_ = reader;
+        }
+
+        void SetActionTriggerTime(double simTime)
+        {
+            action_trigger_time_ = simTime;
+        }
+        void SetRadius(double radius)
+        {
+            radius_ = radius;
+        }
+        void SetRate(double rate)
+        {
+            rate_ = rate;
+        }
+        void SetSpeed(double speed)
+        {
+            speed_ = speed;
+        }
+        roadmanager::Position* pos_;
+
+    private:
+        double action_trigger_time_;
+        double                  radius_;
+        double rate_;
+        double speed_;
+        Entities*               entities_;
+        ScenarioGateway*        gateway_;
+        ScenarioReader*         reader_;
+        ScenarioEngine*         scenario_engine_;
+        int spawned_count_;
+        VehiclePool             vehicle_pool_;
+        
     };
 
 }  // namespace scenarioengine

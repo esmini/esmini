@@ -2268,10 +2268,52 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
         }
         else if (actionChild.name() == std::string("TrafficAction"))
         {
+            std::cout << "TrafficAction" << std::endl;
             pugi::xml_node trafficChild = actionChild.first_child();
-            if (!strcmp(trafficChild.name(), "TrafficSwarmAction"))
+
+            if (!strcmp(trafficChild.name(), "TrafficSourceAction"))
             {
-                SwarmTrafficAction *trafficSwarmAction = new SwarmTrafficAction(parent);
+                TrafficSourceAction *trafficSourceAction = new TrafficSourceAction(parent);
+
+                trafficSourceAction->SetScenarioEngine(scenarioEngine_);
+                trafficSourceAction->SetGateway(gateway_);
+                trafficSourceAction->SetReader(this);
+
+                std::string radius, rate, speed;
+
+                // Traffic surce radius
+                radius = parameters.ReadAttribute(trafficChild, "radius", true);
+                trafficSourceAction->SetRadius(std::stod(radius));
+
+                // Traffic spawn rate
+                rate = parameters.ReadAttribute(trafficChild, "rate", true);
+                trafficSourceAction->SetRate(std::stod(rate));
+
+                speed = parameters.ReadAttribute(trafficChild, "velocity");
+                if (!speed.empty() && GetVersionMajor() == 1 && GetVersionMinor() < 3)
+                {
+                    LOG_WARN("velocity attribute is depricated from v1.3. Reading it anyway.");
+                    trafficSourceAction->SetSpeed(std::stod(speed));
+                }
+                else
+                {
+                    speed = parameters.ReadAttribute(trafficChild, "speed");
+                    trafficSourceAction->SetSpeed(std::stod(speed));
+                }
+                
+                OSCPosition     *oscPosition     = parseOSCPosition(trafficChild.child("Position"));
+                trafficSourceAction->pos_            = new roadmanager::Position(*oscPosition->GetRMPos());
+                delete oscPosition;
+
+
+            }
+            else if (!strcmp(trafficChild.name(), "TrafficSinkAction"))
+            {
+                LOG_INFO("TrafficSinkAction not implemented yet");
+            }
+            else if (!strcmp(trafficChild.name(), "TrafficSwarmAction"))
+            {
+                TrafficSwarmAction *trafficSwarmAction = new TrafficSwarmAction(parent);
 
                 pugi::xml_node childNode = trafficChild.child("CentralObject");
                 if (childNode.empty())
@@ -2293,15 +2335,15 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 std::string radius, numberOfVehicles, velocity;
 
                 // Inner radius (Circle)
-                radius = parameters.ReadAttribute(trafficChild, "innerRadius");
+                radius = parameters.ReadAttribute(trafficChild, "innerRadius", true);
                 trafficSwarmAction->SetInnerRadius(std::stod(radius));
 
                 // Semi major axis
-                radius = parameters.ReadAttribute(trafficChild, "semiMajorAxis");
+                radius = parameters.ReadAttribute(trafficChild, "semiMajorAxis", true);
                 trafficSwarmAction->SetSemiMajorAxes(std::stod(radius));
 
                 // Semi major axis
-                radius = parameters.ReadAttribute(trafficChild, "semiMinorAxis");
+                radius = parameters.ReadAttribute(trafficChild, "semiMinorAxis", true);
                 trafficSwarmAction->SetSemiMinorAxes(std::stod(radius));
 
                 trafficSwarmAction->SetScenarioEngine(scenarioEngine_);
@@ -2309,14 +2351,72 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 trafficSwarmAction->SetReader(this);
 
                 // Number of vehicles
-                numberOfVehicles = parameters.ReadAttribute(trafficChild, "numberOfVehicles");
+                numberOfVehicles = parameters.ReadAttribute(trafficChild, "numberOfVehicles", true);
                 trafficSwarmAction->SetNumberOfVehicles(static_cast<int>(std::stoul(numberOfVehicles)));
 
-                // Velocity
-                velocity = parameters.ReadAttribute(trafficChild, "velocity");
-                trafficSwarmAction->Setvelocity(std::stod(velocity));
+                pugi::xml_node dotNode = trafficChild.child("DirectionOfTravelDistribution");
+                if (!dotNode.empty())
+                {
+                    std::string opposite = parameters.ReadAttribute(dotNode, "opposite", true);
+                    std::string same = parameters.ReadAttribute(dotNode, "same", true);
+                    std::cout << "opposite: " << opposite << ", same: " << same << std::endl;
+                }
+
+                // Velocity or Range handling
+                // Is 0 really a good default for below values? Suggestion is reference vehicles speed
+
+                if (GetVersionMajor() == 1 && GetVersionMinor() < 2)
+                {
+                    // Velocity
+                    velocity = parameters.ReadAttribute(trafficChild, "velocity");
+                    if(velocity.empty())
+                    {
+                        LOG_WARN("Warning: Missing swarm velocity! Using default value 0.0");
+                        velocity = "0.0";
+                    }
+                    trafficSwarmAction->Setvelocity(std::stod(velocity));
+
+                }
+                else if (GetVersionMajor() == 1 && GetVersionMinor() >= 2)
+                {
+                    // InitialSpeedRange
+                    pugi::xml_node rangeNode = trafficChild.child("InitialSpeedRange");
+                    std::string lowerLimit, upperLimit;
+                    if (rangeNode.empty())
+                    {
+                        LOG_WARN("Warning: Missing swarm InitialSpeedRange! Using default value 0.0 for both limits.");
+                        lowerLimit = "0.0";
+                        upperLimit = "0.0";
+                    }
+                    else
+                    {
+                        lowerLimit = parameters.ReadAttribute(rangeNode, "lowerLimit", true);
+                        upperLimit = parameters.ReadAttribute(rangeNode, "upperLimit", true);
+                    }
+                    trafficSwarmAction->SetInitialSpeedRange(std::stod(lowerLimit), std::stod(upperLimit));
+
+                }
+
+                // TrafficDefinition or TrafficDistribution handling
+                pugi::xml_node trafficNode;
+                if (GetVersionMajor() == 1 && GetVersionMinor() < 3)
+                {
+                    trafficNode = trafficChild.child("TrafficDefinition");
+                }
+                else if (GetVersionMajor() == 1 && GetVersionMinor() >= 3)
+                {
+                    trafficNode = trafficChild.child("TrafficDistribution");
+                }
 
                 action = trafficSwarmAction;
+            }
+            else if (!strcmp(trafficChild.name(), "TrafficAreaAction"))
+            {
+                LOG_INFO("TrafficAreaAction not implemented yet");
+            }
+            else if (!strcmp(trafficChild.name(), "TrafficStopAction"))
+            {
+                LOG_INFO("TrafficStopAction not implemented yet");
             }
         }
         else if (actionChild.name() == std::string("EntityAction"))

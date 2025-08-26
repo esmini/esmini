@@ -56,6 +56,10 @@ namespace scenarioengine
             SWARM_TRAFFIC            = 37,
             VARIABLE_ADD             = 38,
             VARIABLE_MULTIPLY_BY     = 39,
+            SOURCE_TRAFFIC           = 40,
+            SINK_TRAFFIC             = 41,
+            AREA_TRAFFIC             = 42,
+            STOP_TRAFFIC             = 43,
 
             // User defined action
             USER_DEFINED_ACTION_BASE_INDEX = 50,
