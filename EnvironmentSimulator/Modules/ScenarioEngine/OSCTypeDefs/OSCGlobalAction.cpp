@@ -42,7 +42,7 @@ using std::vector;
 #define MAX_CARS              1000
 #define MAX_LANES             32
 
-int SwarmTrafficAction::counter_ = 0;
+int TrafficSwarmAction::counter_ = 0;
 
 void EnvironmentAction::Start(double simTime)
 {
@@ -281,13 +281,13 @@ void printTree(aabbTree::Tree& tree, const char filename[])
     file.close();
 }
 
-SwarmTrafficAction::SwarmTrafficAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::SWARM_TRAFFIC, parent), centralObject_(0)
+TrafficSwarmAction::TrafficSwarmAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::SWARM_TRAFFIC, parent), centralObject_(0)
 {
     spawnedV.clear();
     counter_ = 0;
 }
 
-void SwarmTrafficAction::Start(double simTime)
+void TrafficSwarmAction::Start(double simTime)
 {
     LOG_INFO("Swarm IR: {:.2f}, SMjA: {:.2f}, SMnA: {:.2f}, maxV: {} vel: {:.2f}",
              innerRadius_,
@@ -349,7 +349,7 @@ void SwarmTrafficAction::Start(double simTime)
     OSCAction::Start(simTime);
 }
 
-void SwarmTrafficAction::Step(double simTime, double dt)
+void TrafficSwarmAction::Step(double simTime, double dt)
 {
     (void)simTime;
     (void)dt;
@@ -383,13 +383,13 @@ void SwarmTrafficAction::Step(double simTime, double dt)
     }
 }
 
-void scenarioengine::SwarmTrafficAction::SetScenarioEngine(ScenarioEngine* scenario_engine)
+void scenarioengine::TrafficSwarmAction::SetScenarioEngine(ScenarioEngine* scenario_engine)
 {
     scenario_engine_ = scenario_engine;
     entities_        = scenario_engine_ != nullptr ? &scenario_engine_->entities_ : nullptr;
 }
 
-void SwarmTrafficAction::createRoadSegments(BBoxVec& vec)
+void TrafficSwarmAction::createRoadSegments(BBoxVec& vec)
 {
     for (unsigned int i = 0; i < odrManager_->GetNumOfRoads(); i++)
     {
@@ -442,7 +442,7 @@ void SwarmTrafficAction::createRoadSegments(BBoxVec& vec)
     }
 }
 
-void SwarmTrafficAction::createEllipseSegments(aabbTree::BBoxVec& vec, double SMjA, double SMnA)
+void TrafficSwarmAction::createEllipseSegments(aabbTree::BBoxVec& vec, double SMjA, double SMnA)
 {
     double alpha  = -M_PI / 72.0;
     double dAlpha = M_PI / 36.0;
@@ -473,7 +473,7 @@ void SwarmTrafficAction::createEllipseSegments(aabbTree::BBoxVec& vec, double SM
     }
 }
 
-inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions& sols, vector<SelectInfo>& info)
+inline void TrafficSwarmAction::sampleRoads(int minN, int maxN, Solutions& sols, vector<SelectInfo>& info)
 {
     // printf("Entered road selection\n");
     // printf("Min: %d, Max: %d\n", minN, maxN);
@@ -561,7 +561,7 @@ inline void SwarmTrafficAction::sampleRoads(int minN, int maxN, Solutions& sols,
     }
 }
 
-void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
+void TrafficSwarmAction::spawn(Solutions sols, int replace, double simTime)
 {
     int maxCars = static_cast<int>(
         MIN(MAX_CARS, static_cast<unsigned int>(numberOfVehicles) - spawnedV.size()));  // Remove MIN check when/if found a solution for dynamic array
@@ -588,6 +588,8 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             auto Lane = inf.road->GetDrivingLaneByIdx(inf.pos.GetS(), lanes[i]);
             int  laneID;
 
+            double vel = getInitialSpeed();
+
             if (!Lane)
             {
                 LOG_WARN("Warning: invalid lane index");
@@ -598,7 +600,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
                 laneID = Lane->GetId();
             }
 
-            if (!ensureDistance(inf.pos, laneID, MIN(MAX(40.0, velocity_ * 2.0), 0.7 * semiMajorAxis_)))
+            if (!ensureDistance(inf.pos, laneID, MIN(MAX(40.0, vel * 2.0), 0.7 * semiMajorAxis_)))
                 continue;  // distance = speed * 2 seconds
 
             Controller::InitArgs args;
@@ -613,13 +615,13 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             args.properties = new OSCProperties();
             OSCProperties::Property property;
             property.name_ = "setSpeed";
-            property.value_ = std::to_string(velocity_);
+            property.value_ = std::to_string(vel);
             args.properties->property_.push_back(property);
 #endif
             Controller* acc = InstantiateControllerACC(&args);
 
 #if 1  // This is another way of setting the ACC setSpeed property
-            (static_cast<ControllerACC*>(acc))->SetSetSpeed(velocity_);
+            (static_cast<ControllerACC*>(acc))->SetSetSpeed(vel);
 #endif
             reader_->AddController(acc);
 
@@ -648,7 +650,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
                 vehicle->pos_.SetHeadingRelativeRoadDirection(laneID < 0 ? 0.0 : M_PI);
             }
 
-            vehicle->SetSpeed(velocity_);
+            vehicle->SetSpeed(vel);
             // vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
             vehicle->name_ = "swarm_" + std::to_string(counter_++);
             int id         = entities_->addObject(vehicle, true);
@@ -676,7 +678,7 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
     }
 }
 
-inline bool SwarmTrafficAction::ensureDistance(roadmanager::Position pos, int lane, double dist)
+inline bool TrafficSwarmAction::ensureDistance(roadmanager::Position pos, int lane, double dist)
 {
     for (SpawnInfo info : spawnedV)
     {
@@ -703,7 +705,7 @@ inline bool SwarmTrafficAction::ensureDistance(roadmanager::Position pos, int la
     return true;
 }
 
-int SwarmTrafficAction::despawn(double simTime)
+int TrafficSwarmAction::despawn(double simTime)
 {
     (void)simTime;
     auto infoPtr       = spawnedV.begin();
@@ -805,4 +807,141 @@ int SwarmTrafficAction::despawn(double simTime)
     }
 
     return count;
+}
+
+double TrafficSwarmAction::getInitialSpeed() const
+{   
+    if (!speedRange)
+    {
+        return velocity_;
+    }
+    return SE_Env::Inst().GetRand().GetRealBetween(initialSpeedLowerLimit_, initialSpeedUpperLimit_);
+}
+
+TrafficSourceAction::TrafficSourceAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::SOURCE_TRAFFIC, parent)
+{
+}
+
+void scenarioengine::TrafficSourceAction::SetScenarioEngine(ScenarioEngine* scenario_engine)
+{
+    scenario_engine_ = scenario_engine;
+    entities_        = scenario_engine_ != nullptr ? &scenario_engine_->entities_ : nullptr;
+}
+
+void TrafficSourceAction::Start(double simTime)
+{
+    LOG_INFO("Traffic Source Radius: {:.2f}, Rate: {:.2f}, Speed: {:.2f}",
+             radius_,
+             rate_,
+             speed_);
+    
+    SetActionTriggerTime(simTime);
+
+    // Should be exchanged for the vehicle definition/distribution
+    vehicle_pool_.Initialize(reader_, nullptr, true);
+
+    if (vehicle_pool_.GetVehicles().size() == 0)
+    {
+        LOG_ERROR("TrafficSwarmAction: No vehicles available to populate swarm traffic. Missing both Vehicle catalog and central vehicle object");
+    }
+
+    OSCAction::Start(simTime);
+}
+
+void TrafficSourceAction::Step(double simTime, double dt)
+{
+    LOG_INFO("Stepping Source");
+    if (simTime > action_trigger_time_ + (1/rate_) * spawned_count_)
+    {
+        SpawnEntity();
+    }
+    
+}
+
+void TrafficSourceAction::SpawnEntity()
+{
+    // int maxCars = static_cast<int>(
+    //     MIN(MAX_CARS, static_cast<unsigned int>(numberOfVehicles) - spawnedV.size()));  // Remove MIN check when/if found a solution for dynamic array
+    // if (maxCars <= 0)
+    // {
+    //     return;
+    // }
+
+    // vector<SelectInfo> info;
+    // sampleRoads(replace, maxCars, sols, info);
+
+    // for (SelectInfo inf : info)
+    // {
+    //     unsigned int        lanesNo = MIN(MAX_LANES, inf.road->GetNumberOfDrivingLanes(inf.pos.GetS()));
+    //     static unsigned int elements[MAX_LANES];
+    //     std::iota(elements, elements + lanesNo, 0);
+
+    //     static idx_t lanes[MAX_LANES];
+
+    //     sample(elements, elements + lanesNo, lanes, MIN(MAX_LANES, inf.nLanes), SE_Env::Inst().GetRand().GetGenerator());
+
+        // for (unsigned int i = 0; i < MIN(MAX_LANES, inf.nLanes); i++)
+        // {
+        //     auto Lane = inf.road->GetDrivingLaneByIdx(inf.pos.GetS(), lanes[i]);
+        //     int  laneID;
+
+        //     if (!Lane)
+        //     {
+        //         LOG_WARN("Warning: invalid lane index");
+        //         continue;
+        //     }
+        //     else
+        //     {
+        //         laneID = Lane->GetId();
+        //     }
+            int laneID = pos_->GetLaneId();
+            Controller::InitArgs args;
+            args.name            = "Source ACC controller";
+            args.type            = CONTROLLER_ACC_TYPE_NAME;
+            args.scenario_engine = scenario_engine_;
+            args.gateway         = gateway_;
+            args.parameters      = 0;
+            args.properties      = 0;
+            
+            Controller* acc = InstantiateControllerACC(&args);
+            (static_cast<ControllerACC*>(acc))->SetSetSpeed(speed_);
+            reader_->AddController(acc);
+
+            // Pick random model from vehicle catalog
+            Vehicle* vehicle = new Vehicle(*vehicle_pool_.GetRandomVehicle());
+            vehicle->pos_.SetLanePos(pos_->GetTrackId(), laneID, pos_->GetS(), 0.0);
+
+            // Set swarm traffic direction based on RHT or LHT
+            // if (inf.road->GetRule() == roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC)
+            // {
+            //     vehicle->pos_.SetHeadingRelativeRoadDirection(laneID < 0 ? 0.0 : M_PI);
+            // }
+            // else if (inf.road->GetRule() == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC)
+            // {
+            //     vehicle->pos_.SetHeadingRelativeRoadDirection(laneID > 0 ? 0.0 : M_PI);
+            // }
+            // else
+            // {
+                // do something if undefined... maybe default to RHT?
+                vehicle->pos_.SetHeadingRelativeRoadDirection(laneID < 0 ? 0.0 : M_PI);
+            // }
+
+            vehicle->SetSpeed(speed_);
+            vehicle->name_ = "source_" + std::to_string(spawned_count_);
+            int id         = entities_->addObject(vehicle, true);
+
+            // align trailers
+            Vehicle* v = vehicle;
+            if (!v->TowVehicle() && v->TrailerVehicle())
+            {
+                v->AlignTrailers();
+            }
+
+            vehicle->AssignController(acc);
+            acc->LinkObject(vehicle);
+            acc->Activate({ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF, ControlActivationMode::OFF});
+
+            spawned_count_++;
+    //     }
+    // }
 }
