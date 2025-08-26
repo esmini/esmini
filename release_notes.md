@@ -1,5 +1,20 @@
 ## esmini release notes
 
+### 2025-08-26 Version 2.50.4
+
+Improvements and fixes:
+- Update OSI model_reference setting
+  - set relative path to any loaded 3D model
+  - fallback to requested filename as default
+- Populate OSI source_reference
+  - map scenario object property source_reference
+  - both stationary and moving objects
+- Constrain stepsize for non fixed timestep mode
+  - avoid steps less than 1ms by injecting naps
+  - scenarios will run in realtime with less CPU load
+- Remove space before comma in csv_logger header ([issue #722](https://github.com/esmini/esmini/issues/722))
+  - but keep post comma space, for human readability
+
 ### 2025-08-22 Version 2.50.3
 
 New features:
