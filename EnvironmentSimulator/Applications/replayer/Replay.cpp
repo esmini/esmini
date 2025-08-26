@@ -45,7 +45,7 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
       create_datfile_(create_datfile)
 {
     GetReplaysFromDirectory(directory, scenario);
-    std::vector<std::pair<std::string, std::vector<ReplayEntry>>> scenarioData;
+    std::vector<std::pair<std::string, std::map<int, PropertyTimeline, MapComparator>>> scenarioData;
 
     if (scenarios_.size() < 2)
     {
@@ -54,26 +54,27 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
 
     for (size_t i = 0; i < scenarios_.size(); i++)
     {
+        timestamps_.clear();
         ParsePackets(scenarios_[i]);
-        scenarioData.emplace_back(scenarios_[i], data_);
+        scenarioData.emplace_back(scenarios_[i], objects_timeline_);
+        objects_timeline_.clear();
     }
-
-    // Scenario with smallest start time first
-    std::sort(scenarioData.begin(),
-              scenarioData.end(),
-              [](const auto& sce1, const auto& sce2) { return sce1.second[0].state.info.timeStamp < sce2.second[0].state.info.timeStamp; });
 
     // Log which scenario belongs to what ID-group (0, 100, 200 etc.)
     for (size_t i = 0; i < scenarioData.size(); i++)
     {
         std::string scenario_tmp = scenarioData[i].first;
         LOG_INFO("Scenarios corresponding to IDs ({}:{}): {}", i * 100, (i + 1) * 100 - 1, FileNameOf(scenario_tmp));
+        for (auto& [id, timeline] : scenarioData[i].second)
+        {
+            int new_id = id + static_cast<int>(i * 100);
+            objects_timeline_.emplace(new_id, std::move(timeline));
+        }
     }
 
-    // if (!create_datfile_.empty())
-    // {
-    //     CreateMergedDatfile(create_datfile_);
-    // }
+    scenarioData.clear();
+    startTime_ = static_cast<float>(timestamps_[0].first);
+    time_      = startTime_;
 }
 
 int Replay::ParsePackets(const std::string& filename)
