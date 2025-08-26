@@ -1825,18 +1825,18 @@ void CSV_Logger::Open(std::string scenario_filename, int numvehicles, std::strin
     // Index and TimeStamp are included in this first set of columns
     snprintf(message,
              max_csv_entry_length,
-             "Index [-] , TimeStamp [s] , #1 Entity_Name [-] , "
-             "#1 Entity_ID [-] , #1 Current_Speed [m/s] , #1 Wheel_Angle [deg] , #1 Wheel_Rotation [-] , "
-             "#1 bb_x [m] , #1 bb_y [m] , #1 bb_z [m] , "
-             "#1 bb_length [m] , #1 bb_width [m] , #1 bb_height [m] , "
-             "#1 World_Position_X [m] , #1 World_Position_Y [m] , "
-             "#1 World_Position_Z [m] , #1 Vel_X [m/s] , #1 Vel_Y [m/s] , #1 Vel_Z [m/s] , "
-             "#1 Acc_X [m/s2] , #1 Acc_Y [m/s2] , #1 Acc_Z [m/s2] , "
-             "#1 Distance_Travelled_Along_Road_Segment [m] , #1 Lateral_Distance_Lanem [m] , "
-             "#1 lane_id, #1 lane_offset[m] , #1 World_Heading_Angle [rad] , "
-             "#1 Heading_Angle_Rate [rad/s] , #1 Relative_Heading_Angle [rad] , "
-             "#1 Relative_Heading_Angle_Drive_Direction [rad] , #1 World_Pitch_Angle [rad] , "
-             "#1 Road_Curvature [1/m] , #1 collision_ids , ");
+             "Index [-], TimeStamp [s], #1 Entity_Name [-], "
+             "#1 Entity_ID [-], #1 Current_Speed [m/s], #1 Wheel_Angle [deg], #1 Wheel_Rotation [-], "
+             "#1 bb_x [m], #1 bb_y [m], #1 bb_z [m], "
+             "#1 bb_length [m], #1 bb_width [m], #1 bb_height [m], "
+             "#1 World_Position_X [m], #1 World_Position_Y [m], "
+             "#1 World_Position_Z [m], #1 Vel_X [m/s], #1 Vel_Y [m/s], #1 Vel_Z [m/s], "
+             "#1 Acc_X [m/s2], #1 Acc_Y [m/s2], #1 Acc_Z [m/s2], "
+             "#1 Distance_Travelled_Along_Road_Segment [m], #1 Lateral_Distance_Lanem [m], "
+             "#1 lane_id, #1 lane_offset[m], #1 World_Heading_Angle [rad], "
+             "#1 Heading_Angle_Rate [rad/s], #1 Relative_Heading_Angle [rad], "
+             "#1 Relative_Heading_Angle_Drive_Direction [rad], #1 World_Pitch_Angle [rad], "
+             "#1 Road_Curvature [1/m], #1 collision_ids, ");
     file_ << message;
 
     // Based on number of vehicels in the Entities vector, extend the header accordingly
@@ -1844,17 +1844,17 @@ void CSV_Logger::Open(std::string scenario_filename, int numvehicles, std::strin
     {
         snprintf(message,
                  max_csv_entry_length,
-                 "#%d Entity_Name [-] , #%d Entity_ID [-] , "
-                 "#%d Current_Speed [m/s] , #%d Wheel_Angle [deg] , #%d Wheel_Rotation [-] , "
-                 "#%d bb_x [m] , #%d bb_y [m] , #%d bb_z [m] , "
-                 "#%d bb_length [m] , #%d bb_width [m] , #%d bb_height [m] , "
-                 "#%d World_Position_X [m] , #%d World_Position_Y [m] , #%d World_Position_Z [m] , "
-                 "#%d Vel_X [m/s] , #%d Vel_Y [m/s] , #%d Vel_Z [m/s] , #%d Acc_X [m/s2] , #%d Acc_Y [m/s2] , #%d Acc_Z [m/s2] , "
-                 "#%d Distance_Travelled_Along_Road_Segment [m] , #%d Lateral_Distance_Lanem [m] , "
-                 "#%d lane_id, #%d lane_offset [m] , "
-                 "#%d World_Heading_Angle [rad] , #%d Heading_Angle_Rate [rad/s] , #%d Relative_Heading_Angle [rad] , "
-                 "#%d Relative_Heading_Angle_Drive_Direction [rad] , #%d World_Pitch_Angle [rad] , "
-                 "#%d Road_Curvature [1/m] , #%d collision_ids , ",
+                 "#%d Entity_Name [-], #%d Entity_ID [-],"
+                 "#%d Current_Speed [m/s], #%d Wheel_Angle [deg], #%d Wheel_Rotation [-],"
+                 "#%d bb_x [m], #%d bb_y [m], #%d bb_z [m], "
+                 "#%d bb_length [m], #%d bb_width [m], #%d bb_height [m], "
+                 "#%d World_Position_X [m], #%d World_Position_Y [m], #%d World_Position_Z [m], "
+                 "#%d Vel_X [m/s], #%d Vel_Y [m/s], #%d Vel_Z [m/s], #%d Acc_X [m/s2], #%d Acc_Y [m/s2], #%d Acc_Z [m/s2], "
+                 "#%d Distance_Travelled_Along_Road_Segment [m], #%d Lateral_Distance_Lanem [m], "
+                 "#%d lane_id, #%d lane_offset [m], "
+                 "#%d World_Heading_Angle [rad], #%d Heading_Angle_Rate [rad/s], #%d Relative_Heading_Angle [rad], "
+                 "#%d Relative_Heading_Angle_Drive_Direction [rad], #%d World_Pitch_Angle [rad], "
+                 "#%d Road_Curvature [1/m], #%d collision_ids, ",
                  i,
                  i,
                  i,
