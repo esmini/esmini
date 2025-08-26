@@ -788,7 +788,7 @@ TEST(OSI, TestStationaryObjects)
     ASSERT_EQ(retval, 0);
 
     ScenarioEngine* se = player->scenarioEngine;
-    ASSERT_EQ(se->entities_.object_.size(), 1);
+    ASSERT_EQ(se->entities_.object_.size(), 2);
 
     const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
     ASSERT_NE(osi_gt_ptr, nullptr);
@@ -854,7 +854,7 @@ TEST(OSI, TestStationaryObjects)
     ASSERT_EQ(osi_gt_ptr->stationary_object(3).source_reference().Get(0).identifier().size(), 1);
     EXPECT_STREQ(osi_gt_ptr->stationary_object(3).source_reference().Get(0).identifier().Get(0).c_str(), "5_kalle");
 
-    // verify correct location of OSC box object
+    // verify correct location of first OSC box object
     EXPECT_EQ(osi_gt_ptr->stationary_object(4).id().value(), 4);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(4).base().dimension().length(), 2.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(4).base().dimension().width(), 1.0, 1e-3);
@@ -865,6 +865,28 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(4).base().orientation().yaw(), 0.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(4).base().orientation().pitch(), 0.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(4).base().orientation().roll(), 0.0, 1e-3);
+
+    EXPECT_EQ(osi_gt_ptr->stationary_object(4).model_reference(), "");
+    ASSERT_EQ(osi_gt_ptr->stationary_object(4).source_reference_size(), 1);
+    ASSERT_EQ(osi_gt_ptr->stationary_object(4).source_reference(0).identifier_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(4).source_reference(0).identifier(0), "box_123XY");
+
+    // verify correct location of second OSC box object
+    EXPECT_EQ(osi_gt_ptr->stationary_object(5).id().value(), 5);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().dimension().length(), 1.2, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().dimension().width(), 0.8, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().dimension().height(), 0.5, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().position().x(), 8.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().position().y(), 2.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().position().z(), 0.25, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().orientation().yaw(), 0.9, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().orientation().roll(), 0.0, 1e-3);
+
+    EXPECT_EQ(osi_gt_ptr->stationary_object(5).model_reference(), "../models/box_cc_by.osgb");
+    EXPECT_EQ(osi_gt_ptr->stationary_object(5).source_reference_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(5).source_reference(0).identifier_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(5).source_reference(0).identifier(0), "box_123XZ");
 
     // verify correct location of OpenDRIVE traffic sign
     EXPECT_EQ(osi_gt_ptr->traffic_sign(0).id().value(), 1);

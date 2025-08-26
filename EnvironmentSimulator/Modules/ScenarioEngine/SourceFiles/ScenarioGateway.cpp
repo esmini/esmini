@@ -51,7 +51,8 @@ ObjectState::ObjectState(int                          id,
                          double                       rear_axle_z_pos,
                          double                       front_axle_x_pos,
                          double                       front_axle_z_pos,
-                         const roadmanager::Position* pos)
+                         const roadmanager::Position* pos,
+                         std::string                  source_reference)
     : dirty_(0)
 {
     state_.info.id           = id;
@@ -77,6 +78,8 @@ ObjectState::ObjectState(int                          id,
         w.h = static_cast<float>(wheel_angle);
         w.p = static_cast<float>(wheel_rot);
     }
+
+    state_.info.source_reference = source_reference;
 
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
              Object::DirtyBit::WHEEL_ROTATION;
@@ -341,7 +344,8 @@ int ScenarioGateway::reportObject(int                    id,
                                   double                 rear_axle_z_pos,
                                   double                 front_axle_x_pos,
                                   double                 front_axle_z_pos,
-                                  roadmanager::Position* pos)
+                                  roadmanager::Position* pos,
+                                  std::string            source_reference)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -366,7 +370,8 @@ int ScenarioGateway::reportObject(int                    id,
                                     rear_axle_z_pos,
                                     front_axle_x_pos,
                                     front_axle_z_pos,
-                                    pos);
+                                    pos,
+                                    source_reference);
 
         // Add object to collection
         objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});

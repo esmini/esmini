@@ -43,6 +43,8 @@
                 <Property name="model_id" value="$EgoModelId"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="$ScaleMode"/>
+                <!-- source_reference is populated to OSI moving object -->
+                <Property name="source_reference" value="generic_sedan_car"/>
             </Properties>
         </Vehicle>
 

@@ -195,7 +195,8 @@ void ControllerSumo::Step(double timeStep)
                                            vehicle->rear_axle_.positionZ,
                                            vehicle->front_axle_.positionX,
                                            vehicle->front_axle_.positionZ,
-                                           &vehicle->pos_);
+                                           &vehicle->pos_,
+                                           vehicle->GetSourceReference());
                 }
             }
         }

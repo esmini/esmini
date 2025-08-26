@@ -452,7 +452,8 @@ int ScenarioEngine::step(double deltaSimTime)
                                          obj->rear_axle_.positionZ,
                                          obj->front_axle_.positionX,
                                          obj->front_axle_.positionZ,
-                                         &obj->pos_);
+                                         &obj->pos_,
+                                         obj->GetSourceReference());
 
             if (obj->type_ == Object::Type::VEHICLE)
             {

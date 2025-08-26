@@ -17,6 +17,21 @@
                 <Properties>
                     <Property name="scaleMode" value="ModelToBB"/>
                     <Property name="model_id" value="15"/>
+                    <Property name="source_reference" value="box_123XY"/>
+                </Properties>
+            </MiscObject>
+        </ScenarioObject>
+        <ScenarioObject name="Box4">
+            <MiscObject name="box4" miscObjectCategory="obstacle" mass="50.0" model3d="../models/box_cc_by.osgb">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="0.0" y="0.0" z="0.25"/>
+                    <Dimensions width="0.8" length="1.2" height="0.5"/>
+                </BoundingBox>
+                <Properties>
+                    <Property name="scaleMode" value="ModelToBB"/>
+                    <Property name="model_id" value="15"/>
+                    <Property name="source_reference" value="box_123XZ"/>
                 </Properties>
             </MiscObject>
         </ScenarioObject>
@@ -29,6 +44,15 @@
                         <TeleportAction>
                             <Position>
                                 <WorldPosition x="10.0" y="-5.0" h="0.0" z="0.5"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="Box4">
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <WorldPosition x="8.0" y="2.0" h="0.9" z="0.0"/>
                             </Position>
                         </TeleportAction>
                     </PrivateAction>

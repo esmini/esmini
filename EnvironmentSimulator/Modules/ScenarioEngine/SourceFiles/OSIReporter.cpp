@@ -669,9 +669,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
         obj_osi_internal.sobj->mutable_classification()->set_color(
             osi3::StationaryObject_Classification_Color::StationaryObject_Classification_Color_COLOR_GREY);
 
-        osi3::ExternalReference *scource_reference = obj_osi_internal.sobj->add_source_reference();
-        std::string             *identifier_string = scource_reference->add_identifier();
-        identifier_string->assign(object->GetParkingSpace().GetRestrictions());
+        obj_osi_internal.sobj->add_source_reference()->add_identifier()->assign(object->GetParkingSpace().GetRestrictions());
     }
     else if (object->GetType() == roadmanager::RMObject::ObjectType::OBSTACLE || object->GetType() == roadmanager::RMObject::ObjectType::RAILING ||
              object->GetType() == roadmanager::RMObject::ObjectType::PATCH || object->GetType() == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||
@@ -817,6 +815,15 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
     obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetR()));
     obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetP()));
     obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetH()));
+
+    // Set 3D model file as OSI model reference
+    obj_osi_internal.sobj->set_model_reference(objectState->state_.info.model3d);
+
+    // Set source reference if available
+    if (!objectState->state_.info.source_reference.empty())
+    {
+        obj_osi_internal.sobj->add_source_reference()->add_identifier()->assign(objectState->state_.info.source_reference);
+    }
 
     return 0;
 }
@@ -1043,6 +1050,12 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 
     // Set 3D model file as OSI model reference
     obj_osi_internal.mobj->set_model_reference(objectState->state_.info.model3d);
+
+    // Set source reference if available
+    if (!objectState->state_.info.source_reference.empty())
+    {
+        obj_osi_internal.mobj->add_source_reference()->add_identifier()->assign(objectState->state_.info.source_reference);
+    }
 
     return 0;
 }

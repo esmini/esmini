@@ -638,10 +638,21 @@ namespace scenarioengine
             return FileNameOf(model3d_full_path_);
         }
 
+        void SetSourceReference(const std::string& source_reference)
+        {
+            source_reference_ = source_reference;
+        }
+
+        const std::string& GetSourceReference() const
+        {
+            return source_reference_;
+        }
+
     private:
         int         dirty_;
         bool        is_active_;
         std::string model3d_full_path_;
+        std::string source_reference_;
     };
 
     class Vehicle : public Object

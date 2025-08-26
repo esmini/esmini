@@ -602,7 +602,8 @@ void ControllerRel2Abs::Step(double timeStep)
                            object_->rear_axle_.positionZ,
                            object_->front_axle_.positionX,
                            object_->front_axle_.positionZ,
-                           &object_->pos_);
+                           &object_->pos_,
+                           object_->GetSourceReference());
 
     Controller::Step(timeStep);
 }

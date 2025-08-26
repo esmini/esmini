@@ -716,6 +716,12 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         }
     }
 
+    std::string source_reference = vehicle->properties_.GetValueStr("source_reference");
+    if (!source_reference.empty())
+    {
+        vehicle->SetSourceReference(source_reference);
+    }
+
     // Trailer related elements
     pugi::xml_node trailer_hitch_node = vehicleNode.child("TrailerHitch");
     if (!trailer_hitch_node.empty())
@@ -979,6 +985,12 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
         {
             LOG_ERROR_AND_QUIT("Unrecognized entity scale mode: {}", scaleModeStr);
         }
+    }
+
+    std::string source_reference = miscObject->properties_.GetValueStr("source_reference");
+    if (!source_reference.empty())
+    {
+        miscObject->SetSourceReference(source_reference);
     }
 
     parameters.RestoreParameterDeclarations();
