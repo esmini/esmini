@@ -20,8 +20,7 @@ set(TARGET1_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Replay.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/helpText.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/collision.hpp
-    ${SCENARIO_ENGINE_PATH}/SourceFiles/PacketHandler.cpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/collision.hpp)
 
 set(TARGET1_INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}/Replay.hpp)

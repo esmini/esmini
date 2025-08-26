@@ -116,36 +116,20 @@ namespace Dat
         std::unordered_map<int, ObjState> state_;
     };
 
-    class DatLogger
+    class DatWriter
     {
     public:
-        template <typename... Data>
-        int            Write(PacketId p_id, const Data&... data);
         void           WritePacket(PacketGeneric& packet);
-        int            WriteToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states);
+        int            WriteGenericDataToDat();
+        int            WriteObjectStatesToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states);
         constexpr bool ShouldWriteObjId(PacketId p_id) const noexcept;
 
         size_t SerializedSize(const std::string& str);
 
-        template <typename T>
-        size_t SerializedSize(const T& val);
-
-        template <typename T>
-        void WriteToBuffer(char*& write_ptr, const T& val);
-
         void WriteToBuffer(char*& write_ptr, const std::string& str);
 
-        template <typename... Data>
-        int ReadPacket(const Dat::PacketHeader& header, Data&... data);
-
-        DatLogger()
-        {
-            if (SE_Env::Inst().GetOptions().GetOptionSet("fixed_timestep"))
-            {
-                fixed_timestep_ = std::stof(SE_Env::Inst().GetOptions().GetOptionArg("fixed_timestep"));
-            }
-        }
-        ~DatLogger();
+        DatWriter();
+        ~DatWriter();
 
         int Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name);
 
@@ -158,6 +142,62 @@ namespace Dat
         void ResetCurrentIds();
         void CheckDeletedObjects();
 
+        /* Template definition kept in the header, otherwise symbols might not be resolved properly.
+        Maybe it can be resolved during the build process somehow, but for now they are here. */
+
+        template <typename... Data>
+        int Write(PacketId p_id, const Data&... data)
+        {
+            /*
+                Some recursion below, we'll try to write OBJ_ID, at which point we'll call this function again.
+                Once inside the second call we'll try to Write timestamp and call function again.
+                In the end, TIMESTAMP is written, then OBJ_ID, then data
+            */
+
+            // PacketId::OBJ_ID (we want to always write the object ID, with some exceptions)
+            if (!object_id_written_ && ShouldWriteObjId(p_id))
+            {
+                object_id_written_ = true;
+                Write(PacketId::OBJ_ID, current_object_id_);
+            }
+
+            // Write Time packet, but only once
+            if (!timestamp_written_ && p_id != PacketId::END_OF_SCENARIO)
+            {
+                // Write with simulation time, object_states might be empty, then we have no time-reference
+                timestamp_written_ = true;
+                Write(PacketId::TIMESTAMP, static_cast<float>(simulation_time_));
+            }
+
+            size_t total_size = (SerializedSize(data) + ... + 0);  // +0 incase we want to write without data
+
+            // Create the packet
+            PacketGeneric packet;
+            packet.header.id        = static_cast<id_t>(p_id);
+            packet.header.data_size = static_cast<unsigned int>(total_size);
+            packet.data.resize(packet.header.data_size);
+
+            [[maybe_unused]] char* write_ptr = packet.data.data();
+            (WriteToBuffer(write_ptr, data), ...);
+
+            WritePacket(packet);
+
+            return 0;
+        }
+
+        template <typename T>
+        size_t SerializedSize(const T& val)
+        {
+            return sizeof(val);
+        }
+
+        template <typename T>
+        void WriteToBuffer(char*& write_ptr, const T& val)
+        {
+            memcpy(write_ptr, &val, sizeof(T));
+            write_ptr += sizeof(T);
+        }
+
     private:
         std::ofstream           write_file_;
         ObjectStateCache        object_state_cache_;
@@ -168,6 +208,51 @@ namespace Dat
         std::unordered_set<int> previous_ids_;  // Keep track of object IDs
         std::unordered_set<int> current_ids_;   // Keep track of object IDs for the current state
         float                   fixed_timestep_ = -1.0f;
+    };
+
+    class DatReader
+    {
+    public:
+        DatReader(const std::string& filename);
+        ~DatReader() = default;
+
+        int ReadStringPacket(std::string& str);
+
+        int            FillDatHeader();
+        Dat::DatHeader GetDatHeader() const
+        {
+            return header_;
+        }
+
+        void SetFileSize();
+        bool ReadFile(Dat::PacketHeader& header);
+        void UnknownPacket(const Dat::PacketHeader& header);
+        void CloseFile();
+
+        /* Template definition kept in the header, otherwise symbols might not be resolved properly.
+        Maybe it can be resolved during the build process somehow, but for now they are here. */
+        template <typename... Data>
+        int ReadPacket(const Dat::PacketHeader& header, Data&... data)
+        {
+            Dat::PacketGeneric packet;
+            packet.header = header;
+            packet.data.resize(packet.header.data_size);
+            if (!file_.read(packet.data.data(), packet.header.data_size))
+            {
+                return -1;
+            }
+
+            const char* read_ptr = packet.data.data();
+
+            (..., (memcpy(&data, read_ptr, sizeof(data)), read_ptr += sizeof(data)));
+
+            return 0;
+        }
+
+    private:
+        std::ifstream  file_;
+        std::streampos file_size_;
+        Dat::DatHeader header_;
     };
 
 }  // namespace Dat

@@ -5,9 +5,17 @@
 #include "CommonMini.cpp"
 #include "PacketHandler.hpp"
 
-Dat::DatLogger::~DatLogger()
+Dat::DatWriter::DatWriter()
 {
-    // Seems GateWay which owns DatLogger is destroyed before the scenario ends...
+    if (SE_Env::Inst().GetOptions().GetOptionSet("fixed_timestep"))
+    {
+        fixed_timestep_ = std::stof(SE_Env::Inst().GetOptions().GetOptionArg("fixed_timestep"));
+    }
+}
+
+Dat::DatWriter::~DatWriter()
+{
+    // Seems GateWay which owns DatWriter is destroyed before the scenario ends...
     if (IsWriteFileOpen())
     {
         Write(PacketId::END_OF_SCENARIO, static_cast<float>(simulation_time_));
@@ -16,7 +24,7 @@ Dat::DatLogger::~DatLogger()
     }
 }
 
-int Dat::DatLogger::Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name)
+int Dat::DatWriter::Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name)
 {
     write_file_.open(file_name, std::ios::binary);
     if (write_file_.fail())
@@ -44,7 +52,8 @@ int Dat::DatLogger::Init(const std::string& file_name, const std::string& odr_na
     return 0;
 }
 
-int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states)
+// Write data not specific to object states (don't forget to update ShouldWriteObjId)
+int Dat::DatWriter::WriteGenericDataToDat()
 {
     // PacketId::DT
     if (!NEAR_NUMBERSF(object_state_cache_.dt_, fixed_timestep_))
@@ -53,6 +62,11 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
         Write(PacketId::DT, object_state_cache_.dt_);
     }
 
+    return 0;
+}
+
+int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states)
+{
     // Write objects
     this->ResetCurrentIds();
     for (const auto& object_state : object_states)
@@ -240,7 +254,7 @@ int Dat::DatLogger::WriteToDat(const std::vector<std::unique_ptr<scenarioengine:
     return 0;
 }
 
-void Dat::DatLogger::CheckDeletedObjects()
+void Dat::DatWriter::CheckDeletedObjects()
 {
     // Will be empty before first iteration, so we ignore that case
     if (!previous_ids_.empty())
@@ -262,113 +276,61 @@ void Dat::DatLogger::CheckDeletedObjects()
     previous_ids_ = std::move(current_ids_);
 }
 
-template <typename... Data>
-int Dat::DatLogger::Write(PacketId p_id, const Data&... data)
-{ /*
-     Some recursion below, we'll try to write OBJ_ID, at which point we'll call this function again.
-     Once inside the second call we'll try to Write timestamp and call function again.
-     In the end, TIMESTAMP is written, then OBJ_ID, then data
-  */
-
-    // PacketId::OBJ_ID (we want to always write the object ID, with some exceptions)
-    if (!object_id_written_ && ShouldWriteObjId(p_id))
-    {
-        object_id_written_ = true;
-        Write(PacketId::OBJ_ID, current_object_id_);
-    }
-
-    // Write Time packet, but only once
-    if (!timestamp_written_ && p_id != PacketId::END_OF_SCENARIO)
-    {
-        // Write with simulation time, object_states might be empty, then we have no time-reference
-        timestamp_written_ = true;
-        Write(PacketId::TIMESTAMP, static_cast<float>(simulation_time_));
-    }
-
-    size_t total_size = (SerializedSize(data) + ... + 0);  // +0 incase we want to write without data
-
-    // Create the packet
-    PacketGeneric packet;
-    packet.header.id        = static_cast<id_t>(p_id);
-    packet.header.data_size = static_cast<unsigned int>(total_size);
-    packet.data.resize(packet.header.data_size);
-
-    [[maybe_unused]] char* write_ptr = packet.data.data();
-    (WriteToBuffer(write_ptr, data), ...);
-
-    WritePacket(packet);
-
-    return 0;
-}
-
-void Dat::DatLogger::WritePacket(PacketGeneric& packet)
+void Dat::DatWriter::WritePacket(PacketGeneric& packet)
 {
     write_file_.write(reinterpret_cast<char*>(&packet.header), sizeof(PacketHeader));
     write_file_.write(packet.data.data(), static_cast<std::streamsize>(packet.data.size()));
 }
 
-bool Dat::DatLogger::IsWriteFileOpen() const
+bool Dat::DatWriter::IsWriteFileOpen() const
 {
     return write_file_.is_open();
 }
 
-void Dat::DatLogger::SetTimestampWritten(bool state)
+void Dat::DatWriter::SetTimestampWritten(bool state)
 {
     timestamp_written_ = state;
 }
 
-void Dat::DatLogger::SetObjectIdWritten(bool state)
+void Dat::DatWriter::SetObjectIdWritten(bool state)
 {
     object_id_written_ = state;
 }
 
-void Dat::DatLogger::SetSimulationTime(const double simulation_time)
+void Dat::DatWriter::SetSimulationTime(const double simulation_time)
 {
     simulation_time_ = simulation_time;
 }
 
-void Dat::DatLogger::ResetCurrentIds()
+void Dat::DatWriter::ResetCurrentIds()
 {
     current_ids_.clear();
 }
 
-bool Dat::DatLogger::IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const
+bool Dat::DatWriter::IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const
 {
     return (pose.x == static_cast<float>(pos.GetX()) && pose.y == static_cast<float>(pos.GetY()) && pose.z == static_cast<float>(pos.GetZ()) &&
             pose.h == static_cast<float>(pos.GetH()) && pose.p == static_cast<float>(pos.GetP()) && pose.r == static_cast<float>(pos.GetR()));
 }
 
-bool Dat::DatLogger::IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const
+bool Dat::DatWriter::IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const
 {
     return (bb.x == osc_bb.center_.x_ && bb.y == osc_bb.center_.y_ && bb.z == osc_bb.center_.z_ && bb.length == osc_bb.dimensions_.length_ &&
             bb.width == osc_bb.dimensions_.width_ && bb.height == osc_bb.dimensions_.height_);
 }
 
-size_t Dat::DatLogger::SerializedSize(const std::string& str)
+size_t Dat::DatWriter::SerializedSize(const std::string& str)
 {
     return str.size();
 }
 
-void Dat::DatLogger::WriteToBuffer(char*& write_ptr, const std::string& str)
+void Dat::DatWriter::WriteToBuffer(char*& write_ptr, const std::string& str)
 {
     memcpy(write_ptr, str.data(), str.size());
     write_ptr += str.size();
 }
 
-template <typename T>
-size_t Dat::DatLogger::SerializedSize(const T& val)
-{
-    return sizeof(val);
-}
-
-template <typename T>
-void Dat::DatLogger::WriteToBuffer(char*& write_ptr, const T& val)
-{
-    memcpy(write_ptr, &val, sizeof(T));
-    write_ptr += sizeof(T);
-}
-
-constexpr bool Dat::DatLogger::ShouldWriteObjId(PacketId p_id) const noexcept
+constexpr bool Dat::DatWriter::ShouldWriteObjId(PacketId p_id) const noexcept
 {
     static_assert(static_cast<int>(PacketId::END_OF_SCENARIO) < 64, "PacketId values must be < 64");
 
@@ -378,4 +340,96 @@ constexpr bool Dat::DatLogger::ShouldWriteObjId(PacketId p_id) const noexcept
 
     // If the bit for p_id is set, we skip writing
     return ((skip_mask >> static_cast<unsigned int>(p_id)) & uint64_t{1}) == 0;
+}
+
+/* DAT READER */
+
+Dat::DatReader::DatReader(const std::string& filename)
+{
+    file_.open(filename, std::ifstream::binary);
+    if (file_.fail())
+    {
+        LOG_ERROR_AND_QUIT("Cannot open file: {}", filename);
+    }
+
+    LOG_INFO("Datfile {} opened.", FileNameOf(filename));
+
+    SetFileSize();
+}
+
+void Dat::DatReader::SetFileSize()
+{
+    file_.seekg(0, std::ios::end);
+    file_size_ = file_.tellg();
+    file_.seekg(0, std::ios::beg);  // jump back to start
+}
+
+bool Dat::DatReader::ReadFile(Dat::PacketHeader& header)
+{
+    if (file_.tellg() >= file_size_)
+    {
+        return false;
+    }
+
+    if (!file_.read(reinterpret_cast<char*>(&header), sizeof(header)))
+    {
+        LOG_ERROR("Failed to read packet header.");
+        return false;
+    }
+
+    return true;
+}
+
+void Dat::DatReader::UnknownPacket(const Dat::PacketHeader& header)
+{
+    LOG_ERROR("Unknown packet id: {}", header.id);
+    file_.seekg(header.data_size, std::ios::cur);  // Skips the packet by moving cursor ahead
+}
+
+void Dat::DatReader::CloseFile()
+{
+    if (file_.is_open())
+    {
+        file_.close();
+    }
+}
+
+int Dat::DatReader::ReadStringPacket(std::string& str)
+{
+    unsigned int size;
+    if (!file_.read(reinterpret_cast<char*>(&size), sizeof(size)))
+    {
+        return -1;
+    }
+    str.resize(size);
+    if (!file_.read(str.data(), size))
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
+int Dat::DatReader::FillDatHeader()
+{
+    if (!file_.read(reinterpret_cast<char*>(&header_.version_major), sizeof(header_.version_major)) ||
+        !file_.read(reinterpret_cast<char*>(&header_.version_minor), sizeof(header_.version_minor)))
+    {
+        LOG_ERROR("Failed reading header versions.");
+        return -1;
+    }
+
+    if (ReadStringPacket(header_.odr_filename.string) != 0)
+    {
+        LOG_ERROR("Failed reading odr filename.");
+        return -1;
+    }
+
+    if (ReadStringPacket(header_.model_filename.string) != 0)
+    {
+        LOG_ERROR("Failed reading model filename.");
+        return -1;
+    }
+
+    return 0;
 }
