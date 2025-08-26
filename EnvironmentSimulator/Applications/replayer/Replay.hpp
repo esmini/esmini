@@ -164,10 +164,9 @@ namespace scenarioengine
         std::string              create_datfile_;
 
         /* PacketHandler stuff */
-        float                             timestamp_                       = 0.0f;
-        id_t                              previous_packet_id_              = static_cast<id_t>(Dat::PacketId::PACKET_ID_SIZE);
-        std::vector<size_t>               significant_event_start_indices_ = {0};
-        float                             fixed_timestep_                  = -1.0f;
+        float                             timestamp_          = 0.0f;
+        id_t                              previous_packet_id_ = static_cast<id_t>(Dat::PacketId::PACKET_ID_SIZE);
+        float                             fixed_timestep_     = -1.0f;
         int                               current_object_id_;
         scenarioengine::PropertyTimeline* current_object_timeline_;
     };
