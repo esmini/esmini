@@ -95,6 +95,7 @@ foreach(
         target_link_libraries(
             ${TARGET}
             PRIVATE ViewerBase
+                    RoadGeom
                     ${OSG_LIBRARIES})
     endif()
 

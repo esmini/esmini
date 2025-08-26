@@ -111,4 +111,7 @@ if(USE_OSG)
     set_folder(
         ViewerBase
         ${ModulesFolder})
+    set_folder(
+        RoadGeom
+        ${ModulesFolder})
 endif(USE_OSG)

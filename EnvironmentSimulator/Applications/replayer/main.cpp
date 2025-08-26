@@ -753,8 +753,8 @@ int main(int argc, char** argv)
             {
                 LOG_ERROR_AND_QUIT("Invalid on-screen info mode {}. Valid range is 0-3", mask);
             }
-            viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO | viewer::NodeMask::NODE_MASK_INFO_PER_OBJ,
-                                     mask * viewer::NodeMask::NODE_MASK_INFO);
+            viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_INFO | roadgeom::NodeMask::NODE_MASK_INFO_PER_OBJ,
+                                     mask * roadgeom::NodeMask::NODE_MASK_INFO);
         }
 
         viewer_->RegisterKeyEventCallback(ReportKeyEvent, player);
@@ -801,29 +801,29 @@ int main(int argc, char** argv)
 
         if (opt.GetOptionSet("road_features"))
         {
-            viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+            viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ODR_FEATURES);
         }
         else
         {
-            viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES, 0x0);
+            viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ODR_FEATURES, 0x0);
         }
 
         // Set visual representation of entities
-        int         view_mode        = viewer::NodeMask::NODE_MASK_ENTITY_MODEL;
+        int         view_mode        = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL;
         std::string view_mode_string = opt.GetOptionArg("view_mode");
         if (view_mode_string == "boundingbox")
         {
-            view_mode = viewer::NodeMask::NODE_MASK_ENTITY_BB;
+            view_mode = roadgeom::NodeMask::NODE_MASK_ENTITY_BB;
         }
         else if (view_mode_string == "both")
         {
-            view_mode = viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB;
+            view_mode = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL | roadgeom::NodeMask::NODE_MASK_ENTITY_BB;
         }
-        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL | viewer::NodeMask::NODE_MASK_ENTITY_BB, view_mode);
+        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL | roadgeom::NodeMask::NODE_MASK_ENTITY_BB, view_mode);
 
         if (opt.GetOptionSet("hide_trajectories"))
         {
-            viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAJECTORY_LINES);
+            viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_TRAJECTORY_LINES);
         }
 #endif  // _USE_OSG
 

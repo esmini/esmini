@@ -15,11 +15,6 @@ set(SOURCES
 
 # ############################### Creating executable ################################################################
 
-if(USE_OSG)
-    set(VIEWER_BASE
-        ViewerBase)
-endif()
-
 add_executable(
     ${TARGET}
     ${SOURCES})
@@ -67,7 +62,6 @@ target_link_libraries(
             CommonMini
             Controllers
             RoadManager
-            ${VIEWER_BASE}
             ${OSI_LIBRARIES}
             ${SUMO_LIBRARIES}
             ${IMPLOT_LIBRARIES}
@@ -79,6 +73,7 @@ if(USE_OSG)
     target_link_libraries(
         ${TARGET}
         PRIVATE ViewerBase
+                RoadGeom
                 ${OSG_LIBRARIES})
 endif()
 

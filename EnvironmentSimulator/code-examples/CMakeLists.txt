@@ -14,6 +14,14 @@ if(NOT
         "osi-traffic_command")
 endif()
 
+if(NOT
+   USE_OSG)
+    list(
+        REMOVE_ITEM
+        subdirectories
+        "road-model")
+endif()
+
 # ############################### Building code-examples ###############################################################
 
 foreach(

@@ -3059,6 +3059,79 @@ In summary: This small feature enables not only use of openx-asset vehicle model
 
 *Note:* This feature is NOT supported by the OpenSCENARIO XML standard, which requires axles to be at non-negative X coordinate (pass:[>=0]).
 
+=== Export generated 3D model
+
+The 3D model created by esmini, based on the input OpenDRIVE file, can be saved in the `.osgb` (OpenSceneGraph binary) format.
+
+==== Command line
+By command line argument `--save_generated_model`, example:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/lane_change_crest.xosc --save_generated_model`
+
+The model will be saved as `generated_road.osgb`. It can be viewed using any OpenSceneGraph compatible viewer, e.g:
+
+`osgviewer --window 60 60 1200 600 generated_road.osgb`
+
+==== API
+Using esmini internal API, the 3D model can be saved programmatically. Here is a simplified example in C++:
+
+[source,c++]
+----
+#include "RoadGeom.hpp"
+
+if (!roadmanager::Position::LoadOpenDrive("my_road.xodr"))
+{
+    return -1;
+}
+
+// Create road geometry from OpenDRIVE file
+roadgeom::RoadGeom road_geom = roadgeom::RoadGeom(roadmanager::Position::GetOpenDrive(), osg::Vec3(0, 0, 0), true, true, false, argv[0], false);
+
+// the osg tree can be accessed in road_geom.root_
+
+// Save as OpenSceneGraph binary file
+road_geom.SaveToFile("my_road.osgb");
+----
+
+For explanation of the `RoadGeom`  constructor parameters, see the API documentation or the source code in https://github.com/esmini/esmini/blob/295aa1a09aa9786b4906300496b55f6f4f820148/EnvironmentSimulator/Modules/ViewerBase/roadgeom.hpp#L66-L82[`RoadGeom.hpp`].
+
+The code needs to link the following esmini modules/libraries:
+
+* RoadManager
+* CommonMini
+* RoadGeom
+
+Full code example here: https://github.com/esmini/esmini/blob/feature/refactor_road_obj_tesselation_rb/EnvironmentSimulator/code-examples/road-model[code-examples/road-model]
+
+==== Node naming
+
+For post processing the esmini generated nodes are named as following example:
+
+[souce]
+----
+esmini_generated_road_model
+  roadmarks
+    roadmark_0
+    roadmark_1
+    roadmark_2
+  roads
+    road_0_1
+    road_0_2
+    road_0_3
+    road_1_0
+    road_1_2
+  road_objects
+    road_object_0
+    no-name
+      road_object_1
+    road_object_2
+    road_object_3
+----
+
+The second number in road nodes indicate just subsegment of the road, i.e. one road will typically have a number of separate segments.
+
+`no-name` are structural nodes, e.g. transformation or just group.
+
 == Support / Q&A
 
 === Various issues

@@ -77,6 +77,7 @@ if(BUILD_REPLAYER)
         target_link_libraries(
             ${TARGET1}
             PRIVATE ViewerBase
+                    RoadGeom
                     ScenarioEngine
                     ${OSG_LIBRARIES})
     endif()

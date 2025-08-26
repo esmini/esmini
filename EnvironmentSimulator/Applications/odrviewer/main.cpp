@@ -650,21 +650,21 @@ int main(int argc, char **argv)
 
         if (opt.GetOptionSet("road_features"))
         {
-            viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+            viewer->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ODR_FEATURES);
         }
         else
         {
-            viewer->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+            viewer->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ODR_FEATURES);
         }
 
         if (opt.GetOptionSet("osi_lines"))
         {
-            viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_LINES);
+            viewer->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_OSI_LINES);
         }
 
         if (opt.GetOptionSet("osi_points"))
         {
-            viewer->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_POINTS);
+            viewer->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_OSI_POINTS);
         }
 
         if (opt.GetOptionSet("stop_at_end_of_road"))
@@ -737,8 +737,8 @@ int main(int argc, char **argv)
         }
 
         LOG_INFO("osi_features: lines {} points {}",
-                 viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_LINES) ? "on" : "off",
-                 viewer->GetNodeMaskBit(viewer::NodeMask::NODE_MASK_OSI_POINTS) ? "on" : "off");
+                 viewer->GetNodeMaskBit(roadgeom::NodeMask::NODE_MASK_OSI_LINES) ? "on" : "off",
+                 viewer->GetNodeMaskBit(roadgeom::NodeMask::NODE_MASK_OSI_POINTS) ? "on" : "off");
 
         if (SetupCars(odrManager, viewer) == -1)
         {

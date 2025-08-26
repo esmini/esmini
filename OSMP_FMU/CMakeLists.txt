@@ -154,6 +154,7 @@ if(STATIC_LINKING)
                 ScenarioEngine${LIB_POSTFIX}
                 Controllers${LIB_POSTFIX}
                 ViewerBase${LIB_POSTFIX}
+                RoadGeom${LIB_POSTFIX}
                 RoadManager${LIB_POSTFIX}
                 CommonMini${LIB_POSTFIX}
                 ${OSI_LIBRARIES}

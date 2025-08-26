@@ -727,8 +727,8 @@ int ScenarioPlayer::InitViewer()
         {
             LOG_ERROR_AND_QUIT("Invalid on-screen info mode {}. Valid range is 0-3", mask);
         }
-        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_INFO | viewer::NodeMask::NODE_MASK_INFO_PER_OBJ,
-                                 mask * viewer::NodeMask::NODE_MASK_INFO);
+        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_INFO | roadgeom::NodeMask::NODE_MASK_INFO_PER_OBJ,
+                                 mask * roadgeom::NodeMask::NODE_MASK_INFO);
     }
 
     viewer_->RegisterImageCallback(imageCallback.func, imageCallback.data);
@@ -746,44 +746,44 @@ int ScenarioPlayer::InitViewer()
         {
             LOG_ERROR_AND_QUIT("Invalid trail_mode {}. Valid range is 0-3", mask);
         }
-        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAIL_LINES | viewer::NodeMask::NODE_MASK_TRAIL_DOTS,
-                                 mask * viewer::NodeMask::NODE_MASK_TRAIL_LINES);
+        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_TRAIL_LINES | roadgeom::NodeMask::NODE_MASK_TRAIL_DOTS,
+                                 mask * roadgeom::NodeMask::NODE_MASK_TRAIL_LINES);
     }
 
     if (opt.GetOptionSet("hide_trajectories"))
     {
         LOG_INFO("Hide trajectories");
-        viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_TRAJECTORY_LINES);
+        viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_TRAJECTORY_LINES);
     }
 
     if (opt.GetOptionArg("road_features") == "on")
     {
-        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ODR_FEATURES);
     }
     else if (opt.GetOptionArg("road_features") == "off")
     {
-        viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ODR_FEATURES);
+        viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ODR_FEATURES);
     }
 
     if (opt.GetOptionSet("hide_route_waypoints"))
     {
         LOG_INFO("Disable route waypoint visualization");
-        viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+        viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
     }
 
     if (opt.GetOptionSet("osi_lines"))
     {
-        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_LINES);
+        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_OSI_LINES);
     }
 
     if (opt.GetOptionSet("osi_points"))
     {
-        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OSI_POINTS);
+        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_OSI_POINTS);
     }
 
     if (opt.GetOptionSet("sensors"))
     {
-        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OBJECT_SENSORS);
+        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_OBJECT_SENSORS);
     }
 
     if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
@@ -937,8 +937,8 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("bounding_boxes"))
     {
-        viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_MODEL);
-        viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_ENTITY_BB);
+        viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL);
+        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ENTITY_BB);
     }
 
     //  Create visual models
@@ -1266,11 +1266,11 @@ void ScenarioPlayer::ShowObjectSensors(bool mode)
         mutex.Lock();
         if (mode == false)
         {
-            viewer_->ClearNodeMaskBits(viewer::NodeMask::NODE_MASK_OBJECT_SENSORS);
+            viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_OBJECT_SENSORS);
         }
         else
         {
-            viewer_->SetNodeMaskBits(viewer::NodeMask::NODE_MASK_OBJECT_SENSORS);
+            viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_OBJECT_SENSORS);
         }
         mutex.Unlock();
     }

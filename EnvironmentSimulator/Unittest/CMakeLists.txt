@@ -11,7 +11,8 @@ include(${CMAKE_SOURCE_DIR}/support/cmake/common/unittest.cmake)
 
 if(USE_OSG)
     set(VIEWER_LIBS_FOR_TEST
-        ViewerBase)
+        ViewerBase
+        RoadGeom)
 endif()
 
 set(OperatingSystem_test_sources

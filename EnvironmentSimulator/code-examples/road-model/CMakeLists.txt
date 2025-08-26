@@ -1,7 +1,7 @@
 # ############################### Setting targets ####################################################################
 
 set(TARGET
-    odrviewer)
+    road-model)
 
 # ############################### Loading desired rules ##############################################################
 
@@ -11,8 +11,7 @@ include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 # ############################### Setting target files ###############################################################
 
 set(SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/helpText.hpp)
+    ${CMAKE_CURRENT_SOURCE_DIR}/road-model.cpp)
 
 # ############################### Creating executable ################################################################
 
@@ -22,18 +21,10 @@ add_executable(
 
 target_include_directories(
     ${TARGET}
-    PRIVATE ${SCENARIO_ENGINE_PATH}/SourceFiles
-            ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
-            ${VIEWER_BASE_PATH}
-            ${COMMON_MINI_PATH}
-            ${CONTROLLERS_PATH})
-
-target_include_directories(
-    ${TARGET}
     SYSTEM
     PUBLIC ${ROAD_MANAGER_PATH}
-           ${EXTERNALS_OSI_INCLUDES}
-           ${EXTERNALS_PUGIXML_PATH}
+           ${VIEWER_BASE_PATH}
+           ${COMMON_MINI_PATH}
            ${EXTERNALS_OSG_INCLUDES})
 
 target_link_libraries(
@@ -41,29 +32,20 @@ target_link_libraries(
     PRIVATE project_options
             RoadManager
             CommonMini
+            RoadGeom
+            ${OSG_LIBRARIES}
             ${TIME_LIB})
 
-if(USE_OSG)
-    target_link_libraries(
-        ${TARGET}
-        PRIVATE ViewerBase
-                RoadGeom
-                ScenarioEngine
-                Controllers
-                ${OSG_LIBRARIES})
-endif()
-
-if(USE_OSI)
-    target_link_libraries(
-        ${TARGET}
-        PRIVATE ${OSI_LIBRARIES})
-endif()
-
-disable_static_analysis(${TARGET})
-disable_iwyu(${TARGET})
+# embed $origin (location of exe file) and linked lib dirs as execution dyn lib search paths
+set_target_properties(
+    ${TARGET}
+    PROPERTIES BUILD_WITH_INSTALL_RPATH
+               true
+               INSTALL_RPATH
+               $ORIGIN:${INSTALL_PATH})
 
 # ############################### Install ############################################################################
 
 install(
     TARGETS ${TARGET}
-    DESTINATION "${INSTALL_PATH}")
+    DESTINATION "${CODE_EXAMPLES_BIN_PATH}")
