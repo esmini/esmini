@@ -46,20 +46,29 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
 {
     GetReplaysFromDirectory(directory, scenario);
     std::vector<std::pair<std::string, std::map<int, PropertyTimeline, MapComparator>>> scenarioData;
+    std::vector<std::vector<std::pair<float, bool>>>                                    timestamps;
 
     if (scenarios_.size() < 2)
     {
         LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
     }
 
+    float temp_fixed_timestep = LARGE_NUMBERF;
     for (size_t i = 0; i < scenarios_.size(); i++)
     {
-        timestamps_.clear();
         ParsePackets(scenarios_[i]);
+        timestamps.push_back(timestamps_);
         scenarioData.emplace_back(scenarios_[i], objects_timeline_);
+        if (fixed_timestep_ < temp_fixed_timestep)
+        {
+            temp_fixed_timestep = fixed_timestep_;
+        }
+
         objects_timeline_.clear();
+        timestamps_.clear();
     }
 
+    // Build the objects timeline data structure
     // Log which scenario belongs to what ID-group (0, 100, 200 etc.)
     for (size_t i = 0; i < scenarioData.size(); i++)
     {
@@ -71,10 +80,22 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
             objects_timeline_.emplace(new_id, std::move(timeline));
         }
     }
-
     scenarioData.clear();
-    startTime_ = static_cast<float>(timestamps_[0].first);
-    time_      = startTime_;
+
+    // Build the final timestamps_ vector
+    size_t total_size = std::accumulate(timestamps.begin(), timestamps.end(), size_t{0}, [](size_t sum, const auto& v) { return sum + v.size(); });
+    timestamps_.reserve(total_size);
+
+    for (const auto& v : timestamps)
+    {
+        timestamps_.insert(timestamps_.end(), v.begin(), v.end());
+    }
+
+    std::sort(timestamps_.begin(), timestamps_.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
+
+    fixed_timestep_ = temp_fixed_timestep;
+    startTime_      = static_cast<float>(timestamps_[0].first);
+    time_           = startTime_;
 }
 
 int Replay::ParsePackets(const std::string& filename)
@@ -512,16 +533,6 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
     }
     else
     {
-        if (target_time > stopTime_)
-        {
-            GoToEnd();
-            return;
-        }
-        if (target_time < GetStartTime())
-        {
-            GoToStart();
-            return;
-        }
         if (target_time > time_)  // Looking ahead, stopping as soon as we find time greater than current time
         {
             size_t next_index = index_ + 1;
@@ -529,11 +540,18 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
             if (next_index < timestamps_.size() && static_cast<float>(target_time) >= timestamps_[next_index].first - SMALL_NUMBERF)
             {
                 index_ = next_index;
-                time_  = static_cast<float>(target_time);
+                time_  = timestamps_[index_].first;
             }
             else
             {
-                time_ = static_cast<float>(target_time);
+                if (target_time > stopTime_)
+                {
+                    GoToEnd();
+                }
+                else
+                {
+                    time_ = static_cast<float>(target_time);
+                }
             }
         }
         else if (target_time < time_)  // Same for backwards, but we stop when we find a timestamp less than current time
@@ -545,9 +563,24 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
             }
             else
             {
-                time_ = static_cast<float>(target_time);
+                if (target_time < GetStartTime())
+                {
+                    GoToStart();
+                }
+                else
+                {
+                    time_ = static_cast<float>(target_time);
+                }
             }
         }
+    }
+    if (time_ > GetStopTime())
+    {
+        GoToEnd();
+    }
+    else if (time_ < GetStartTime())
+    {
+        GoToStart();
     }
 }
 
@@ -563,8 +596,10 @@ int Replay::GoToNextFrame()
         return -1;
     }
 
-    auto it =
-        std::upper_bound(timestamps_.begin(), timestamps_.end(), time_, [](float value, const std::pair<float, bool>& p) { return value < p.first; });
+    auto it = std::upper_bound(timestamps_.begin(),
+                               timestamps_.end(),
+                               time_ + SMALL_NUMBER,
+                               [](float value, const std::pair<float, bool>& p) { return value < p.first; });
 
     if (it == timestamps_.end())
     {
@@ -576,6 +611,10 @@ int Replay::GoToNextFrame()
         index_ = static_cast<size_t>(std::distance(timestamps_.begin(), it));
         time_  = it->first;
         return 0;
+    }
+    else
+    {
+        GoToEnd();
     }
     return -1;
 }
@@ -600,6 +639,10 @@ void Replay::GoToPreviousFrame()
         --it;  // Move to the previous timestamp
         index_ = static_cast<size_t>(std::distance(timestamps_.begin(), it));
         time_  = it->first;
+        if (time_ < startTime_)
+        {
+            GoToStart();
+        }
     }
 }
 
@@ -607,7 +650,7 @@ size_t Replay::FindIndexAtTimestamp(double timestamp)
 {
     auto start = timestamps_.begin();
     auto end   = timestamps_.end();
-    if (timestamp > time_)  // We look ahead, can start to search from current index_
+    if (timestamp >= time_ - SMALL_NUMBER)  // We look ahead, can start to search from current index_
     {
         start += index_;
     }
@@ -722,38 +765,48 @@ void Replay::GoToSignificantTimestamp(bool search_forward)
 {
     if (search_forward)
     {
-        auto it = significant_event_start_indices_.begin();
-        for (; it != significant_event_start_indices_.end(); ++it)
+        size_t i;
+        for (i = index_ + 1; i < timestamps_.size(); i++)
         {
-            if (*it > index_)
+            if (timestamps_[i].second)
             {
-                index_ = *it;
+                index_ = i;
                 time_  = timestamps_[index_].first;
-                return;
+                break;
             }
         }
-        if (it == significant_event_start_indices_.end())
+        if (i == timestamps_.size())
         {
             index_ = timestamps_.size() - 1;
             time_  = timestamps_[index_].first;
         }
+        if (time_ > stopTime_)
+        {
+            GoToEnd();
+            return;
+        }
     }
     else  // Search backward
     {
-        auto it = significant_event_start_indices_.rbegin();
-        for (; it != significant_event_start_indices_.rend(); ++it)
+        size_t i;
+        for (i = index_ - 1; i > 0; i--)
         {
-            if (*it < index_)
+            if (timestamps_[i].second)
             {
-                index_ = *it;
+                index_ = i;
                 time_  = timestamps_[index_].first;
-                return;
+                break;
             }
         }
-        if (it == significant_event_start_indices_.rend())
+        if (i == 0)
         {
             index_ = 0;
             time_  = timestamps_[index_].first;
+        }
+        if (time_ < startTime_)
+        {
+            GoToStart();
+            return;
         }
     }
 }
