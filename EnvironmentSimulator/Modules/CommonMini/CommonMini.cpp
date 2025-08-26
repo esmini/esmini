@@ -956,14 +956,24 @@ void SE_sleep(unsigned int msec)
 
 #else
 
-__int64 SE_getSystemTime()
+__int64 SE_getSystemTimeMilliseconds()
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
-void SE_sleep(unsigned int msec)
+__int64 SE_getSystemTimeMicroseconds()
+{
+    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
+void SE_sleepMilliseconds(unsigned int msec)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(msec)));
+}
+
+void SE_sleepMicroseconds(unsigned int usec)
+{
+    std::this_thread::sleep_for(std::chrono::microseconds(static_cast<int>(usec)));
 }
 
 #endif
@@ -972,7 +982,7 @@ double SE_getSimTimeStep(__int64& time_stamp, double min_time_step, double max_t
 {
     double dt;
 
-    __int64 now = SE_getSystemTime();
+    __int64 now = SE_getSystemTimeMicroseconds();
 
     if (time_stamp == 0)
     {
@@ -981,17 +991,20 @@ double SE_getSimTimeStep(__int64& time_stamp, double min_time_step, double max_t
     }
     else
     {
-        dt = static_cast<double>(now - time_stamp) * 0.001;  // step size in seconds
+        dt = (now - time_stamp) * 1e-6;  // step size in seconds
 
         if (dt > max_time_step)  // limit step size
         {
+            LOG_DEBUG("Limit stepsize (dt) from {} to {}", dt, max_time_step);
             dt = max_time_step;
         }
         else if (dt < min_time_step)  // avoid CPU rush, sleep for a while
         {
-            SE_sleep(static_cast<unsigned int>(static_cast<int>(min_time_step - dt) * 1000));
-            now = SE_getSystemTime();
-            dt  = static_cast<double>(now - time_stamp) * 0.001;
+            double nap_duration = min_time_step - dt;
+            LOG_DEBUG("dt {:.10f} < minimum {} ms ({}s), take minimal nap", dt, min_time_step * 1e+3, min_time_step);
+            SE_sleepMicroseconds(static_cast<unsigned int>(nap_duration * 1e+6));  // sleep microseconds
+            now = SE_getSystemTimeMicroseconds();
+            dt  = (now - time_stamp) * 1e-6;
         }
     }
     time_stamp = now;

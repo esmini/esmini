@@ -1945,7 +1945,7 @@ Viewer::~Viewer()
         while (!osgViewer_->done() || osgViewer_->areThreadsRunning())
         {
             osgViewer_->stopThreading();
-            SE_sleep(100);  // In case viewer still not closed
+            SE_sleepMilliseconds(100);  // In case viewer still not closed
         }
     }
 

@@ -77,8 +77,8 @@ const std::string CONFIG_FILE_OPTION_NAME = "config_file_path";
 const std::string DEFAULT_CONFIG_FILE     = "config.yml";
 
 // Time functions
-__int64 SE_getSystemTime();
-void    SE_sleep(unsigned int msec);
+__int64 SE_getSystemTimeMilliseconds();           // get systemtime in ms
+void    SE_sleepMilliseconds(unsigned int msec);  // sleep msec
 double  SE_getSimTimeStep(__int64& time_stamp, double min_time_step, double max_time_step);
 
 // Useful types
@@ -1021,16 +1021,16 @@ class SE_SystemTime
 public:
     __int64 start_time_;
 
-    SE_SystemTime() : start_time_(SE_getSystemTime())
+    SE_SystemTime() : start_time_(SE_getSystemTimeMilliseconds())
     {
     }
     void Reset()
     {
-        start_time_ = SE_getSystemTime();
+        start_time_ = SE_getSystemTimeMilliseconds();
     }
     double GetS() const
     {
-        return 1E-3 * static_cast<double>((SE_getSystemTime() - start_time_));
+        return 1E-3 * static_cast<double>((SE_getSystemTimeMilliseconds() - start_time_));
     }
 };
 
@@ -1045,11 +1045,11 @@ public:
     }
     void Start()
     {
-        start_time_ = SE_getSystemTime();
+        start_time_ = SE_getSystemTimeMilliseconds();
     }
     void Start(double duration)
     {
-        start_time_ = SE_getSystemTime();
+        start_time_ = SE_getSystemTimeMilliseconds();
         duration_   = duration;
     }
 
@@ -1067,7 +1067,7 @@ public:
     }
     double Elapsed() const
     {
-        return 1E-3 * static_cast<double>((SE_getSystemTime() - start_time_));
+        return 1E-3 * static_cast<double>((SE_getSystemTimeMilliseconds() - start_time_));
     }
     double Remaining() const
     {

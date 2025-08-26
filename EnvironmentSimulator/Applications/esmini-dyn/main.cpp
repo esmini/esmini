@@ -390,12 +390,12 @@ int main(int argc, const char* argv[])
                     // when running viewer in a separate thread
                     // Only Linux and Win supported (due to OSG and MacOS issue)
                     printf("Taking a 4 sec nap - if running with threads (Win/Linux) you can move camera around meanwhile\n");
-                    SE_sleep(4000);
+                    SE_sleepMilliseconds(4000);
                 }
                 else
                 {
                     // Normal case, sleep until its time for next simulation step
-                    SE_sleep(static_cast<unsigned int>(TIME_STEP * 1000));
+                    SE_sleepMilliseconds(static_cast<unsigned int>(TIME_STEP * 1000));
                 }
             }
         }

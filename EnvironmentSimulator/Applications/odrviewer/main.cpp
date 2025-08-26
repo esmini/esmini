@@ -754,7 +754,7 @@ int main(int argc, char **argv)
         txtLogger.SetLoggerTime(&system_time);
         while (!viewer->osgViewer_->done())
         {
-            __int64 now = SE_getSystemTime();
+            __int64 now = SE_getSystemTimeMilliseconds();
             if (first_time)
             {
                 firstTimeStamp = now;
@@ -778,7 +778,7 @@ int main(int argc, char **argv)
                     }
                     else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
                     {
-                        SE_sleep(static_cast<unsigned int>(now - lastTimeStamp));
+                        SE_sleepMilliseconds(static_cast<unsigned int>(now - lastTimeStamp));
                         deltaSimTime = minStepSize;
                     }
                 }

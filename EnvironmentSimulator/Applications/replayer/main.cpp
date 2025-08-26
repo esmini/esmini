@@ -960,7 +960,7 @@ int main(int argc, char** argv)
                 else
                 {
                     // Get milliseconds since Jan 1 1970
-                    now           = SE_getSystemTime();
+                    now           = SE_getSystemTimeMilliseconds();
                     deltaSimTime  = static_cast<double>(now - lastTimeStamp) / 1000.0;  // step size in seconds
                     lastTimeStamp = now;
                     if (deltaSimTime > maxStepSize)  // limit step size
@@ -969,7 +969,7 @@ int main(int argc, char** argv)
                     }
                     else if (deltaSimTime < minStepSize)  // avoid CPU rush, sleep for a while
                     {
-                        SE_sleep(static_cast<unsigned int>(minStepSize - deltaSimTime));
+                        SE_sleepMilliseconds(static_cast<unsigned int>(minStepSize - deltaSimTime));
                         deltaSimTime = minStepSize;
                     }
                     deltaSimTime *= time_scale;

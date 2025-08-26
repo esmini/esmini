@@ -4674,7 +4674,7 @@ TEST(APITest, TestFetchImage)
     // Run a few steps to create the screenshot images
     for (int i = 0; i < 3; i++)
         SE_StepDT(0.1f);
-    SE_sleep(100);  // Allow for last image to be created (running in a separate thread)
+    SE_sleepMilliseconds(100);  // Allow for last image to be created (running in a separate thread)
 
     EXPECT_EQ(CheckFileExists(screenshotFilename0, oldModTime), true);
     ASSERT_EQ(stat(screenshotFilename0.c_str(), &fileStatus), 0);
@@ -4687,8 +4687,8 @@ TEST(APITest, TestFetchImage)
     EXPECT_EQ(SE_SaveImagesToFile(-1), 0);
 
     for (int i = 0; i < 3; i++)
-        SE_StepDT(0.1f);  // step to create three additional screenshots
-    SE_sleep(100);        // Allow for last image to be created (running in a separate thread)
+        SE_StepDT(0.1f);        // step to create three additional screenshots
+    SE_sleepMilliseconds(100);  // Allow for last image to be created (running in a separate thread)
     EXPECT_EQ(CheckFileExists(screenshotFilename2, oldModTime - 1), true);
     EXPECT_EQ(CheckFileExists(screenshotFilename3, oldModTime - 1), true);
     EXPECT_EQ(CheckFileExists(screenshotFilename4, oldModTime - 1), true);
@@ -5212,7 +5212,7 @@ TEST(ParamDistTest, TestRunAll)
         }
     }
 
-    SE_sleep(20);
+    SE_sleepMilliseconds(20);
 
     // specify start at 4:th permutation, then expect automatic increment from there
     SE_SelectPermutation(3);
