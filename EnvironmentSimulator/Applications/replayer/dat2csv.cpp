@@ -119,6 +119,7 @@ int main(int argc, char** argv)
             {
                 auto                  entry = player->GetReplayEntryAtTimeIncremental(id, time);
                 ObjectStateStructDat* state = &entry.state;
+
                 if (!state->info.active)
                 {
                     continue;
