@@ -96,6 +96,12 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     fixed_timestep_ = temp_fixed_timestep;
     startTime_      = static_cast<float>(timestamps_[0].first);
     time_           = startTime_;
+
+    if (!create_datfile_.empty())
+    {
+        LOG_INFO("Creating merged dat file: {}", create_datfile_);
+        CreateMergedDatfile(create_datfile_);
+    }
 }
 
 int Replay::ParsePackets(const std::string& filename)
@@ -703,64 +709,66 @@ void Replay::SetStopTime(double time)
     stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stopTime_));
 }
 
-// void Replay::CreateMergedDatfile(const std::string filename) const
-// {
-//     Dat::DatLogger dat_logger;
-//     dat_logger.Init(filename, header_.odr_filename.string, header_.model_filename.string);
+void Replay::CreateMergedDatfile(const std::string filename) const
+{
+    Dat::DatWriter dat_writer;
+    dat_writer.Init(filename, dat_header_.odr_filename.string, dat_header_.model_filename.string);
+    dat_writer.SetFixedTimestep(fixed_timestep_);
 
-//     if (!dat_logger.IsWriteFileOpen())
-//     {
-//         LOG_ERROR("Failed to open dat file for writing: {}", filename);
-//         return;
-//     }
+    if (!dat_writer.IsWriteFileOpen())
+    {
+        LOG_ERROR("Failed to open dat file for writing: {}", filename);
+        return;
+    }
 
-//     std::vector<std::unique_ptr<scenarioengine::ObjectState>> object_states;
-//     for (size_t i = 0; i < data_.size() - 1; i++)
-//     {
-//         auto state = &data_[i].state;
-//         auto obj   = std::make_unique<scenarioengine::ObjectState>(state->info.id,
-//                                                                  state->info.name,
-//                                                                  state->info.obj_type,
-//                                                                  state->info.obj_category,
-//                                                                  0,  // No role
-//                                                                  state->info.model_id,
-//                                                                  state->info.ctrl_type,
-//                                                                  state->info.boundingbox,
-//                                                                  state->info.scaleMode,
-//                                                                  state->info.visibilityMask,
-//                                                                  static_cast<double>(state->info.timeStamp),
-//                                                                  static_cast<double>(state->info.speed),
-//                                                                  static_cast<double>(state->info.wheel_angle),
-//                                                                  static_cast<double>(state->info.wheel_rot),
-//                                                                  0.0,  // No rear axle z pos
-//                                                                  static_cast<double>(state->pos.x),
-//                                                                  static_cast<double>(state->pos.y),
-//                                                                  static_cast<double>(state->pos.z),
-//                                                                  static_cast<double>(state->pos.h),
-//                                                                  static_cast<double>(state->pos.p),
-//                                                                  static_cast<double>(state->pos.r));
+    std::vector<std::unique_ptr<scenarioengine::ObjectState>> object_states;
+    for (size_t i = 0; i < timestamps_.size() - 1; i++)
+    {
+        for (const auto& [id, _] : objects_timeline_)
+        {
+            ReplayEntry entry = GetReplayEntryAtTimeIncremental(id, timestamps_[i].first);
+            auto        state = &entry.state;
+            auto        obj   = std::make_unique<scenarioengine::ObjectState>(state->info.id,
+                                                                     state->info.name,
+                                                                     state->info.obj_type,
+                                                                     state->info.obj_category,
+                                                                     0,  // No role
+                                                                     state->info.model_id,
+                                                                     state->info.ctrl_type,
+                                                                     state->info.boundingbox,
+                                                                     state->info.scaleMode,
+                                                                     state->info.visibilityMask,
+                                                                     static_cast<double>(state->info.timeStamp),
+                                                                     static_cast<double>(state->info.speed),
+                                                                     static_cast<double>(state->info.wheel_angle),
+                                                                     static_cast<double>(state->info.wheel_rot),
+                                                                     0.0,  // No rear axle z pos
+                                                                     static_cast<double>(state->pos.x),
+                                                                     static_cast<double>(state->pos.y),
+                                                                     static_cast<double>(state->pos.z),
+                                                                     static_cast<double>(state->pos.h),
+                                                                     static_cast<double>(state->pos.p),
+                                                                     static_cast<double>(state->pos.r));
 
-//         obj->state_.info.wheel_data.emplace_back();  // Initialize wheel_data vector
-//         obj->state_.info.wheel_data[0].h = static_cast<double>(state->info.wheel_angle);
-//         obj->state_.info.wheel_data[0].p = static_cast<double>(state->info.wheel_rot);
-//         obj->state_.pos.SetTrackId(state->pos.roadId);
-//         obj->state_.pos.SetLaneId(state->pos.laneId);
-//         obj->state_.pos.SetOffset(static_cast<double>(state->pos.offset));
-//         obj->state_.pos.SetT(static_cast<double>(state->pos.t));
-//         obj->state_.pos.SetS(static_cast<double>(state->pos.s));
+            obj->state_.info.wheel_data.emplace_back();  // Initialize wheel_data vector
+            obj->state_.info.wheel_data[0].h = static_cast<double>(state->info.wheel_angle);
+            obj->state_.info.wheel_data[0].p = static_cast<double>(state->info.wheel_rot);
+            obj->state_.pos.SetTrackId(state->pos.roadId);
+            obj->state_.pos.SetLaneId(state->pos.laneId);
+            obj->state_.pos.SetOffset(static_cast<double>(state->pos.offset));
+            obj->state_.pos.SetT(static_cast<double>(state->pos.t));
+            obj->state_.pos.SetS(static_cast<double>(state->pos.s));
 
-//         object_states.emplace_back(std::move(obj));
+            object_states.emplace_back(std::move(obj));
+        }
 
-//         // If the next timestamp is a new entry, we need to send it to PacketHandler for dat creation
-//         if (data_[i + 1].state.info.timeStamp != data_[i].state.info.timeStamp)
-//         {
-//             dat_logger.SetSimulationTime(data_[i].state.info.timeStamp);
-//             dat_logger.WriteToDat(object_states);
+        dat_writer.SetSimulationTime(timestamps_[i].first);
+        dat_writer.WriteGenericDataToDat();  // Writes the fixed timestep
+        dat_writer.WriteObjectStatesToDat(object_states);
 
-//             object_states.clear();  // Clear the states for the next timestamp
-//         }
-//     }
-// }
+        object_states.clear();  // Clear the states for the next timestamp
+    }
+}
 
 void Replay::GoToSignificantTimestamp(bool search_forward)
 {
