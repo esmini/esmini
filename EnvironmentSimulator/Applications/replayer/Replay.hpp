@@ -99,7 +99,8 @@ namespace scenarioengine
         template <typename T, typename Data>
         void AddToTimeline(Timeline<T>& timeline, Data data);
 
-        int ParsePackets(const std::string& filename);
+        int  ParsePackets(const std::string& filename);
+        void CreateMergedDatfile(const std::string filename) const;
 
         /**
                 Go to specific time
