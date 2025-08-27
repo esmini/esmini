@@ -359,7 +359,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
     for (size_t i = 0; i < viewer_->entities_.size() && i < scenarioEngine->entities_.object_.size(); i++)
     {
         if (scenarioEngine->entities_.object_[i]->name_ != viewer_->entities_[i]->name_ ||
-            scenarioEngine->entities_.object_[i]->GetModel3DFilename() != viewer_->entities_[i]->filename_)
+            scenarioEngine->entities_.object_[i]->GetModel3DFilename() != FileNameOf(viewer_->entities_[i]->filename_))
         {
             // Object has most probably been deleted from the entity list
             viewer_->RemoveCar(static_cast<int>(i));
