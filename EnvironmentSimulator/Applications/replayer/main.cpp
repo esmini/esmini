@@ -594,7 +594,7 @@ int main(int argc, char** argv)
                 LOG_ERROR("\"--saved_merged\" works only in combination with \"--dir\" argument, combining multiple dat files");
                 return -1;
             }
-            player = new Replay(opt.GetOptionArg("file"), true);
+            player = new Replay(opt.GetOptionArg("file"));
         }
     }
     catch (const std::exception& e)
