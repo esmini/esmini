@@ -71,6 +71,7 @@ int main(int argc, char** argv)
 
     float fixed_timestep = player->GetFixedTimestep();
 
+    // If not fixed timestep in log, we loop over all timestamps_
     if (fixed_timestep < 0.0f)
     {
         for (size_t i = 0; i < player->timestamps_.size(); i++)
@@ -79,11 +80,13 @@ int main(int argc, char** argv)
             {
                 auto                  entry = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i].first);
                 ObjectStateStructDat* state = &entry.state;
+
                 if (!state->info.active)
                 {
                     continue;
                 }
 
+                // Output all entries with comma separated values
                 snprintf(line,
                          MAX_LINE_LEN,
                          "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
@@ -104,13 +107,12 @@ int main(int argc, char** argv)
             }
         }
     }
-    else
+    else  // Fixed timesteps, we increment time with the fixed timestep
     {
-        // Fixed timesteps, we calculate amount of steps to avoid floating point issues
         float start_time = player->timestamps_.begin()->first;
         float end_time   = player->timestamps_.rbegin()->first;
 
-        int steps = static_cast<int>((end_time - start_time) / fixed_timestep);
+        int steps = static_cast<int>((end_time - start_time) / fixed_timestep);  // Avoid floating point precision issues
 
         for (int i = 0; i <= steps; i++)
         {
@@ -125,6 +127,7 @@ int main(int argc, char** argv)
                     continue;
                 }
 
+                // Output all entries with comma separated values
                 snprintf(line,
                          MAX_LINE_LEN,
                          "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
@@ -147,7 +150,6 @@ int main(int argc, char** argv)
             time += fixed_timestep;
         }
     }
-    // Then output all entries with comma separated values
 
     file.close();
 
