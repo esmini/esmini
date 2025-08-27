@@ -153,6 +153,7 @@ int Replay::ParsePackets(const std::string& filename)
                     if (timestamp_ > 0.0f)
                     {
                         current_object_timeline_->active_.values.emplace_back(0.0f, false);  // Object was inactive from start of simulation
+                        current_object_timeline_->active_.values.emplace_back(timestamp_, true);
                     }
                     else
                     {
