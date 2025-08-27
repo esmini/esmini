@@ -18,7 +18,7 @@
 
 using namespace scenarioengine;
 
-Replay::Replay(std::string filename, bool clean) : time_(0.0), index_(0), repeat_(false), clean_(clean)
+Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 {
     // Parse the packets from the file
     int ret = ParsePackets(filename);
