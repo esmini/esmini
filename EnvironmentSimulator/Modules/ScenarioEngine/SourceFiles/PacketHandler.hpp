@@ -141,6 +141,10 @@ namespace Dat
         bool IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const;
         void ResetCurrentIds();
         void CheckDeletedObjects();
+        void SetFixedTimestep(float fixed_timestep)  // Needed to set when merging datfiles
+        {
+            fixed_timestep_ = fixed_timestep;
+        }
 
         /* Template definition kept in the header, otherwise symbols might not be resolved properly.
         Maybe it can be resolved during the build process somehow, but for now they are here. */
