@@ -90,7 +90,7 @@ namespace scenarioengine
         std::unordered_map<int, ReplayEntry>           object_state_cache_;
         int                                            ghost_ghost_counter_ = -1;
 
-        Replay(std::string filename, bool clean);
+        Replay(std::string filename);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
 
@@ -161,7 +161,6 @@ namespace scenarioengine
         unsigned int             stopIndex_  = 0;
         unsigned int             index_      = 0;
         bool                     repeat_     = false;
-        bool                     clean_      = true;
         std::string              create_datfile_;
 
         /* PacketHandler stuff */
