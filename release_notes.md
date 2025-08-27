@@ -112,6 +112,8 @@ Improvements and fixes:
 - Improve smoke test performance and include scenario run time in output
 - Clarify focus on environment and all entities in overlay info text
 - Remove unintended ghost related OSI warning
+### New Dat Format mentions
+- Changing fixed timestep on ghost from 0.05 -> GetFixedTimestep() will cause any scenario using followGhost to be slightly different (also at svadds!)
 
 ### 2025-06-24 Version 2.49.0
 
