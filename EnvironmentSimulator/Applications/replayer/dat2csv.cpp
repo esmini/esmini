@@ -69,33 +69,84 @@ int main(int argc, char** argv)
     snprintf(line, MAX_LINE_LEN, "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot\n");
     file << line;
 
-    // Then output all entries with comma separated values
-    for (size_t i = 0; i < player->timestamps_.size(); i++)
+    float fixed_timestep = player->GetFixedTimestep();
+
+    if (fixed_timestep < 0.0f)
     {
-        for (const auto& [id, _] : player->objects_timeline_)
+        for (size_t i = 0; i < player->timestamps_.size(); i++)
         {
-            auto                  entry = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i].first);
-            ObjectStateStructDat* state = &entry.state;
+            for (const auto& [id, _] : player->objects_timeline_)
+            {
+                auto                  entry = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i].first);
+                ObjectStateStructDat* state = &entry.state;
+                if (!state->info.active)
+                {
+                    continue;
+                }
 
-            snprintf(line,
-                     MAX_LINE_LEN,
-                     "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
-                     static_cast<double>(state->info.timeStamp),
-                     state->info.id,
-                     state->info.name,
-                     static_cast<double>(state->pos.x),
-                     static_cast<double>(state->pos.y),
-                     static_cast<double>(state->pos.z),
-                     static_cast<double>(state->pos.h),
-                     static_cast<double>(state->pos.p),
-                     static_cast<double>(state->pos.r),
-                     static_cast<double>(state->info.speed),
-                     static_cast<double>(state->info.wheel_angle),
-                     static_cast<double>(state->info.wheel_rot));
+                snprintf(line,
+                         MAX_LINE_LEN,
+                         "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
+                         static_cast<double>(state->info.timeStamp),
+                         state->info.id,
+                         state->info.name,
+                         static_cast<double>(state->pos.x),
+                         static_cast<double>(state->pos.y),
+                         static_cast<double>(state->pos.z),
+                         static_cast<double>(state->pos.h),
+                         static_cast<double>(state->pos.p),
+                         static_cast<double>(state->pos.r),
+                         static_cast<double>(state->info.speed),
+                         static_cast<double>(state->info.wheel_angle),
+                         static_cast<double>(state->info.wheel_rot));
 
-            file << line;
+                file << line;
+            }
         }
     }
+    else
+    {
+        // Fixed timesteps, we calculate amount of steps to avoid floating point issues
+        float start_time = player->timestamps_.begin()->first;
+        float end_time   = player->timestamps_.rbegin()->first;
+
+        int steps = static_cast<int>((end_time - start_time) / fixed_timestep);
+
+        for (int i = 0; i <= steps; i++)
+        {
+            float time = start_time + i * fixed_timestep;
+            for (const auto& [id, _] : player->objects_timeline_)
+            {
+                auto                  entry = player->GetReplayEntryAtTimeIncremental(id, time);
+                ObjectStateStructDat* state = &entry.state;
+                if (!state->info.active)
+                {
+                    continue;
+                }
+
+                snprintf(line,
+                         MAX_LINE_LEN,
+                         "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
+                         static_cast<double>(state->info.timeStamp),
+                         state->info.id,
+                         state->info.name,
+                         static_cast<double>(state->pos.x),
+                         static_cast<double>(state->pos.y),
+                         static_cast<double>(state->pos.z),
+                         static_cast<double>(state->pos.h),
+                         static_cast<double>(state->pos.p),
+                         static_cast<double>(state->pos.r),
+                         static_cast<double>(state->info.speed),
+                         static_cast<double>(state->info.wheel_angle),
+                         static_cast<double>(state->info.wheel_rot));
+
+                file << line;
+            }
+
+            time += fixed_timestep;
+        }
+    }
+    // Then output all entries with comma separated values
 
     file.close();
 
