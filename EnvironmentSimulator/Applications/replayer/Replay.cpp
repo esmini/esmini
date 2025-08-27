@@ -1026,7 +1026,13 @@ void Replay::CreateMergedDatfile(const std::string filename) const
         {
             ReplayEntry entry = GetReplayEntryAtTimeIncremental(id, timestamps_[i].first);
             auto        state = &entry.state;
-            auto        obj   = std::make_unique<scenarioengine::ObjectState>(state->info.id,
+
+            if (!state->info.active)
+            {
+                continue;
+            }
+
+            auto obj = std::make_unique<scenarioengine::ObjectState>(state->info.id,
                                                                      state->info.name,
                                                                      state->info.obj_type,
                                                                      state->info.obj_category,
