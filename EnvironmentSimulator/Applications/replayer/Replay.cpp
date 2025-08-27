@@ -1011,6 +1011,8 @@ void Replay::CreateMergedDatfile(const std::string filename) const
 {
     Dat::DatWriter dat_writer;
     dat_writer.Init(filename, dat_header_.odr_filename.string, dat_header_.model_filename.string);
+
+    // We have fixed_timestep from earlier parsing, now we need to set it in the DAT writer
     dat_writer.SetFixedTimestep(fixed_timestep_);
 
     if (!dat_writer.IsWriteFileOpen())
@@ -1019,6 +1021,7 @@ void Replay::CreateMergedDatfile(const std::string filename) const
         return;
     }
 
+    // We re-create the object states vector which then is written to the DAT file
     std::vector<std::unique_ptr<scenarioengine::ObjectState>> object_states;
     for (size_t i = 0; i < timestamps_.size() - 1; i++)
     {
@@ -1027,7 +1030,7 @@ void Replay::CreateMergedDatfile(const std::string filename) const
             ReplayEntry entry = GetReplayEntryAtTimeIncremental(id, timestamps_[i].first);
             auto        state = &entry.state;
 
-            if (!state->info.active)
+            if (!state->info.active)  // Ignore entities which are inactive in the current time
             {
                 continue;
             }
@@ -1066,6 +1069,7 @@ void Replay::CreateMergedDatfile(const std::string filename) const
             object_states.emplace_back(std::move(obj));
         }
 
+        // Same flow as in ScenarioGateway.cpp
         dat_writer.SetSimulationTime(timestamps_[i].first);
         dat_writer.WriteGenericDataToDat();  // Writes the fixed timestep
         dat_writer.WriteObjectStatesToDat(object_states);
