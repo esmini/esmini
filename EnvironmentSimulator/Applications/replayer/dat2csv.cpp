@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     // Create replayer object for parsing the binary data file
     try
     {
-        player = new Replay(argv[1], false);
+        player = new Replay(argv[1]);
     }
     catch (const std::exception& e)
     {
@@ -70,27 +70,31 @@ int main(int argc, char** argv)
     file << line;
 
     // Then output all entries with comma separated values
-    for (size_t i = 0; i < player->data_.size(); i++)
+    for (size_t i = 0; i < player->timestamps_.size(); i++)
     {
-        ObjectStateStructDat* state = &player->data_[i].state;
+        for (const auto& [id, _] : player->objects_timeline_)
+        {
+            auto                  entry = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i].first);
+            ObjectStateStructDat* state = &entry.state;
 
-        snprintf(line,
-                 MAX_LINE_LEN,
-                 "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
-                 static_cast<double>(state->info.timeStamp),
-                 state->info.id,
-                 state->info.name,
-                 static_cast<double>(state->pos.x),
-                 static_cast<double>(state->pos.y),
-                 static_cast<double>(state->pos.z),
-                 static_cast<double>(state->pos.h),
-                 static_cast<double>(state->pos.p),
-                 static_cast<double>(state->pos.r),
-                 static_cast<double>(state->info.speed),
-                 static_cast<double>(state->info.wheel_angle),
-                 static_cast<double>(state->info.wheel_rot));
+            snprintf(line,
+                     MAX_LINE_LEN,
+                     "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
+                     static_cast<double>(state->info.timeStamp),
+                     state->info.id,
+                     state->info.name,
+                     static_cast<double>(state->pos.x),
+                     static_cast<double>(state->pos.y),
+                     static_cast<double>(state->pos.z),
+                     static_cast<double>(state->pos.h),
+                     static_cast<double>(state->pos.p),
+                     static_cast<double>(state->pos.r),
+                     static_cast<double>(state->info.speed),
+                     static_cast<double>(state->info.wheel_angle),
+                     static_cast<double>(state->info.wheel_rot));
 
-        file << line;
+            file << line;
+        }
     }
 
     file.close();
