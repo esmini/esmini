@@ -1,5 +1,8 @@
 ## esmini release notes
 
+### New Dat Format mentions
+- Changing fixed timestep on ghost from 0.05 -> GetFixedTimestep() will cause any scenario using followGhost to be slightly different (also at svadds!)
+
 ### 2025-06-24 Version 2.49.0
 
 New features:
