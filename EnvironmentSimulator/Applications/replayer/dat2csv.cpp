@@ -110,7 +110,7 @@ int main(int argc, char** argv)
     else  // Fixed timesteps, we increment time with the fixed timestep
     {
         float start_time = player->timestamps_.begin()->first;
-        float end_time   = player->timestamps_.rbegin()->first;
+        float end_time   = static_cast<float>(player->GetStopTime());
 
         int steps = static_cast<int>((end_time - start_time) / fixed_timestep);  // Avoid floating point precision issues
 
