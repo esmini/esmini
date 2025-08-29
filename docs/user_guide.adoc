@@ -3077,7 +3077,7 @@ Using esmini internal API, the 3D model can be saved programmatically. Here is a
 
 [source,c++]
 ----
-#include "RoadGeom.hpp"
+#include "roadgeom.hpp"
 
 if (!roadmanager::Position::LoadOpenDrive("my_road.xodr"))
 {
@@ -3093,7 +3093,7 @@ roadgeom::RoadGeom road_geom = roadgeom::RoadGeom(roadmanager::Position::GetOpen
 road_geom.SaveToFile("my_road.osgb");
 ----
 
-For explanation of the `RoadGeom`  constructor parameters, see the API documentation or the source code in https://github.com/esmini/esmini/blob/295aa1a09aa9786b4906300496b55f6f4f820148/EnvironmentSimulator/Modules/ViewerBase/roadgeom.hpp#L66-L82[`RoadGeom.hpp`].
+For explanation of the `RoadGeom`  constructor parameters, see the API documentation or the source code in https://github.com/esmini/esmini/blob/6810e35a71d80aa708aa6092fccc7da1a5a6db0f/EnvironmentSimulator/Modules/ViewerBase/roadgeom.hpp#L66-L82[`roadgeom.hpp`].
 
 The code needs to link the following esmini modules/libraries:
 
@@ -3101,7 +3101,7 @@ The code needs to link the following esmini modules/libraries:
 * CommonMini
 * RoadGeom
 
-Full code example here: https://github.com/esmini/esmini/blob/feature/refactor_road_obj_tesselation_rb/EnvironmentSimulator/code-examples/road-model[code-examples/road-model]
+Full code example here: https://github.com/esmini/esmini/tree/refs/heads/dev/EnvironmentSimulator/code-examples/road-model[code-examples/road-model]
 
 ==== Node naming
 

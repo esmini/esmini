@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2025-08-29 Version 2.50.5
+
+Improvements and fixes:
+- Fix bug repeatedly reloading model
+    - bug introduced in v2.50.4 (handling of 3D model paths)
+- Refactor road 3D model generator into a separate module and lib
+    - for standalone use
+    - add simple names to osg nodes
+    - add code example [road-model](https://github.com/esmini/esmini/tree/refs/heads/dev/EnvironmentSimulator/code-examples/road-model)
+    - add documentation [User guide - Export generated 3D model](https://esmini.github.io/#_export_generated_3d_model)
+- Fix a few steering angles from deg to radians in vehicle catalog
+
 ### 2025-08-26 Version 2.50.4
 
 Improvements and fixes:
