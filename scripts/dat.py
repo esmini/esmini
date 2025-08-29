@@ -3,11 +3,14 @@ import struct
 import os
 import enum
 from collections import defaultdict
+import copy
+import bisect
 
 VERSION_MAJOR = 1
 VERSION_MINOR = 0
         
-EPSILON = 0.001
+SMALL_NUMBER = 1e-6
+LARGE_NUMBER = 1e10
 
 class PacketId(enum.Enum):
     """Enum for packet IDs."""
@@ -34,6 +37,25 @@ class PacketId(enum.Enum):
     OBJ_ADDED       = 20
     DT              = 21
     END_OF_SCENARIO = 22
+    PACKET_ID_SIZE  = 23
+
+class Pose:
+    def __init__(self):
+        self.x = None
+        self.y = None
+        self.z = None
+        self.h = None
+        self.p = None
+        self.r = None
+
+class BoundingBox:
+    def __init__(self):
+        self.center_offset_x = None
+        self.center_offset_y = None
+        self.center_offset_z = None
+        self.width = None
+        self.length = None
+        self.height = None
 
 class DataType:
     """Class for data types used in the .dat file."""
@@ -88,26 +110,90 @@ def read_dat_header(file):
     model_filename = read_string_packet(file)
     return (version_major, version_minor, odr_filename, model_filename)
 
-float_map = {
-        PacketId.SPEED.value: "speed",
-        PacketId.WHEEL_ANGLE.value: "wheel_angle",
-        PacketId.WHEEL_ROT.value: "wheel_rot",
-        PacketId.POS_OFFSET.value: "offset",
-        PacketId.POS_T.value: "t",
-        PacketId.POS_S.value: "s",
-        PacketId.DT.value: "dt",
-        }
+def is_near(x, y):
+    return abs(x - y) < SMALL_NUMBER
 
-integer_map = {
-    PacketId.MODEL_ID.value: ("model_id", DataType.int32),
-    PacketId.OBJ_TYPE.value: ("obj_type", DataType.int32),
-    PacketId.OBJ_CATEGORY.value: ("obj_category", DataType.int32),
-    PacketId.CTRL_TYPE.value: ("ctrl_type", DataType.int32),
-    PacketId.SCALE_MODE.value: ("scaleMode", DataType.int32),
-    PacketId.VISIBILITY_MASK.value: ("visibilityMask", DataType.int32),
-    PacketId.ROAD_ID.value: ("roadId", DataType.uint32),
-    PacketId.LANE_ID.value: ("laneId", DataType.int32),
-}
+class Timeline():
+    """
+    Contains all the timeline data for a specific variable
+    """
+    def __init__(self):
+        self.values = []
+        self.last_index = 0
+        self.last_time = LARGE_NUMBER
+
+    def get_value_incremental(self, time):
+        if (len(self.values) == 0):
+            print("ERROR, no values available")
+            exit(-1)
+
+        idx = self.last_index
+        desired_dt = time - self.values[self.last_index][0]
+
+        if is_near(self.last_time, time):
+            return self.values[self.last_index][1]
+        
+        if time >= self.values[idx][0]: # We search forward in time
+            while idx + 1 < len(self.values):
+                step = self.values[idx + 1][0] - self.values[self.last_index][0]
+                if desired_dt + SMALL_NUMBER < step - SMALL_NUMBER:
+                    break
+                idx += 1
+        
+        self.last_index = idx
+        self.last_time = time
+
+        return self.values[idx][1]
+    
+    def get_index_binary(self, time):
+        if not self.values:
+            raise ValueError(f"Timeline is empty, cannot get value at time {time}")
+
+        if self.last_time is not None and is_near(self.last_time, time):
+            return self.last_index
+
+        times = [t for t, _ in self.values]
+
+        # Choose search range depending on direction
+        if time >= self.values[self.last_index][0]:
+            # searching forward
+            search_start = self.last_index
+        else:
+            # searching backward
+            search_start = 0
+
+        # upper_bound equivalent in Python
+        # bisect_right returns the first index > time
+        idx = bisect.bisect_right(times, time, lo=search_start)
+
+        return idx
+
+
+class PropertyTimeline():
+    """
+    Contains all the timelines
+    """
+    def __init__(self):
+        self.model_id = Timeline()
+        self.obj_type = Timeline()
+        self.obj_category = Timeline()
+        self.ctrl_type = Timeline()
+        self.name = Timeline()
+        self.speed = Timeline()
+        self.wheel_angle = Timeline()
+        self.wheel_rot = Timeline()
+        self.bounding_box = Timeline()
+        self.scale_mode = Timeline()
+        self.visibility_mask = Timeline()
+        self.pose = Timeline()
+        self.road_id = Timeline()
+        self.lane_id = Timeline()
+        self.pos_offset = Timeline()
+        self.pos_t = Timeline()
+        self.pos_s = Timeline()
+        self.active = Timeline()
+
+        self.last_restart_time = -1.0
 
 class DATFile():
     ObjectStateStructDat = {
@@ -166,64 +252,21 @@ class DATFile():
         self.file_size = os.path.getsize(filename)
 
         self.labels = self.ObjectStateStructDat.keys()
-        self.object_ids = set()
-        self.object_events_map = defaultdict(list)
+        self.current_object_id = None
+        self.current_object_timeline = None
+        self.objects_timeline = defaultdict()
         self.object_state_cache = defaultdict()
-        self.min_timestep = float('inf')
-        self.timestamp = 0.0
+        self.fixed_timestep = -1.0
+        self.current_timestamp = 0.0
+        self.ghost_ghost_counter = -1
+        self.timestamps = []
         self.end_time = 0.0
-        self.id_to_search_idx = {}
-        self.ghost_dt = 0.05
 
         self.data = []
 
         self.parse_data()
 
-        self.build_data()
-
-    def build_data(self):
-        self.object_state_cache.clear()
-        dt = self.min_timestep
-        # TODO: Allow custom argument for dt
-        start_time = 0.0
-        for _, events in self.object_events_map.items():
-            start_time = min(start_time, events[0]["time"])
-        
-        for obj_id in self.object_ids:
-            self.id_to_search_idx[obj_id] = 0
-        
-        template = self.ObjectStateStructDat
-        if self.extended:
-            labels = self.get_labels_line_extended()
-        else:
-            labels = self.get_labels_line()
-        
-        t = start_time
-        while t <= self.end_time + EPSILON:
-            for obj_id in self.object_ids:
-                events = self.object_events_map.get(obj_id, [])
-                last_state = self.object_state_cache.get(obj_id, template.copy())
-
-                if events:
-                    start_idx = self.id_to_search_idx.get(obj_id, 0)
-                    for i in range(start_idx, len(events)):
-                        if events[i]["time"] <= t + EPSILON:
-                            last_state = events[i]
-                            self.id_to_search_idx[obj_id] = i
-                        else:
-                            break
-
-                self.object_state_cache[obj_id] = last_state # Save last state to cache
-
-                state = last_state.copy()
-                if state["active"]:
-                    state["time"] = t
-                    self.data.append([state[label] for label in labels])
-
-            if t < 0.0 - EPSILON:  # If t is negative, we use ghost_dt to avoid going backwards in time
-                t += self.ghost_dt
-            else:
-                t += dt
+        self.build_csv()
 
     def parse_data(self):
         """Parse the .dat file and extract object states.
@@ -234,65 +277,171 @@ class DATFile():
 
             # TIMESTAMP packet
             if p_id == PacketId.TIMESTAMP.value:
-                self.timestamp = read_dtype(self.file, DataType.float)
+                self.current_timestamp = read_dtype(self.file, DataType.float)
+
+                if len(self.timestamps) == 0 or self.current_timestamp < SMALL_NUMBER or self.current_timestamp > self.timestamps[-1]:
+                    self.timestamps.append(self.current_timestamp)
 
             # OBJ_ID packet
             elif p_id == PacketId.OBJ_ID.value:
-                if self.ObjectStateStructDat["id"] in self.object_ids:
-                    self.object_events_map[self.ObjectStateStructDat["id"]].append(self.ObjectStateStructDat.copy())
-                    self.object_state_cache[self.ObjectStateStructDat["id"]] = self.ObjectStateStructDat.copy()
+                self.current_object_id = read_dtype(self.file, DataType.int32)
 
-                obj_id = read_dtype(self.file, DataType.int32)
-                self.ObjectStateStructDat["id"] = obj_id
-
-                if obj_id in self.object_state_cache:
-                    self.ObjectStateStructDat = self.object_state_cache[obj_id]
-                    
-                    dt = abs(self.timestamp - self.ObjectStateStructDat["time"])
-                    if not (abs(dt) < 0.001):
-                        dt = round(dt * 1000.0) / 1000.0  # Avoid floating point precision issues
-                        self.min_timestep = min(self.min_timestep, dt) if self.min_timestep != -1.0 else dt
-                
-                self.ObjectStateStructDat["time"] = self.timestamp
-                self.ObjectStateStructDat["active"] = True
-                self.ObjectStateStructDat["id"] = obj_id
-                self.object_ids.add(obj_id)
+                if self.objects_timeline.get(self.current_object_id) is None:
+                    self.objects_timeline[self.current_object_id] = PropertyTimeline()
+                    self.current_object_timeline = self.objects_timeline[self.current_object_id]
+                    if self.current_timestamp > 0.0:
+                        self.current_object_timeline.active.values.append([0.0, False])
+                        self.current_object_timeline.active.values.append([self.current_timestamp, True])
+                    else:
+                        self.current_object_timeline.active.values.append([self.current_timestamp, True])
+                else:
+                    self.current_object_timeline = self.objects_timeline[self.current_object_id]
+                    if self.current_object_timeline.active.values[-1][1] == False:
+                        self.current_object_timeline.active.values.append([self.current_timestamp, True])
 
             # POSE packet
             elif p_id == PacketId.POSE.value:
+                pose = Pose()
                 for k in ["x", "y", "z", "h", "p", "r"]:
-                    self.ObjectStateStructDat[k] = read_dtype(self.file, DataType.float)
-            
-            # Any float packet
-            elif p_id in float_map:
-                if p_id == PacketId.DT.value:
-                    self.min_timestep = read_dtype(self.file, DataType.float)
-                else:
-                    self.ObjectStateStructDat[float_map[p_id]] = read_dtype(self.file, DataType.float)
+                    setattr(pose, k, read_dtype(self.file, DataType.float))
+                self.add_to_timeline(self.current_object_timeline.pose, pose)
 
-            # Any integer packet
-            elif p_id in integer_map:
-                self.ObjectStateStructDat[integer_map[p_id][0]] = read_dtype(self.file, integer_map[p_id][1])
-            
-            # NAME packet
+            elif p_id == PacketId.DT.value:
+                self.fixed_timestep = read_dtype(self.file, DataType.float)
+            elif p_id == PacketId.SPEED.value:
+                self.add_to_timeline(self.current_object_timeline.speed, read_dtype(self.file, DataType.float))
+            elif p_id == PacketId.WHEEL_ANGLE.value:
+                self.add_to_timeline(self.current_object_timeline.wheel_angle, read_dtype(self.file, DataType.float))
+            elif p_id == PacketId.WHEEL_ROT.value:
+                self.add_to_timeline(self.current_object_timeline.wheel_rot, read_dtype(self.file, DataType.float))
+            elif p_id == PacketId.POS_OFFSET.value:
+                self.add_to_timeline(self.current_object_timeline.pos_offset, read_dtype(self.file, DataType.float))
+            elif p_id == PacketId.POS_T.value:
+                self.add_to_timeline(self.current_object_timeline.pos_t, read_dtype(self.file, DataType.float))
+            elif p_id == PacketId.POS_S.value:
+                self.add_to_timeline(self.current_object_timeline.pos_s, read_dtype(self.file, DataType.float))
+            elif p_id == PacketId.MODEL_ID.value:
+                self.current_object_timeline.model_id.values.append([self.current_timestamp, read_dtype(self.file, DataType.int32)])
+            elif p_id == PacketId.OBJ_TYPE.value:
+                self.current_object_timeline.obj_type.values.append([self.current_timestamp, read_dtype(self.file, DataType.int32)])
+            elif p_id == PacketId.OBJ_CATEGORY.value:
+                self.current_object_timeline.obj_category.values.append([self.current_timestamp, read_dtype(self.file, DataType.int32)])
+            elif p_id == PacketId.CTRL_TYPE.value:
+                self.current_object_timeline.ctrl_type.values.append([self.current_timestamp, read_dtype(self.file, DataType.int32)])
+            elif p_id == PacketId.SCALE_MODE.value:
+                self.current_object_timeline.scale_mode.values.append([self.current_timestamp, read_dtype(self.file, DataType.int32)])
+            elif p_id == PacketId.VISIBILITY_MASK.value:
+                self.add_to_timeline(self.current_object_timeline.visibility_mask, read_dtype(self.file, DataType.int32))
+            elif p_id == PacketId.ROAD_ID.value:
+                self.add_to_timeline(self.current_object_timeline.road_id, read_dtype(self.file, DataType.uint32))
+            elif p_id == PacketId.LANE_ID.value:
+                self.add_to_timeline(self.current_object_timeline.lane_id, read_dtype(self.file, DataType.int32))
             elif p_id == PacketId.NAME.value:
                 name = read_string_packet(self.file)
-                self.ObjectStateStructDat["name"] = name
-            
-            # BOUNDING_BOX packet
+                self.current_object_timeline.name.values.append([self.current_timestamp, name])
             elif p_id == PacketId.BOUNDING_BOX.value:
-                keys = ["centerOffsetX", "centerOffsetY", "centerOffsetZ", "width", "length", "height"]
-                for k in keys:
-                    self.ObjectStateStructDat[k] = read_dtype(self.file, DataType.float)
-            
+                bb = BoundingBox()
+                for k in ["center_offset_x", "center_offset_y", "center_offset_z", "width", "length", "height"]:
+                    setattr(bb, k, read_dtype(self.file, DataType.float))
+                self.current_object_timeline.bounding_box.values.append([self.current_timestamp, bb])
+
             # OBJ_DELETED packet
             elif p_id == PacketId.OBJ_DELETED.value:
-                self.ObjectStateStructDat["active"] = False
+                self.current_object_timeline.active.values.append([self.current_timestamp, False])
             
             # END_OF_SCENARIO packet
             elif p_id == PacketId.END_OF_SCENARIO.value:
-                self.object_events_map[self.ObjectStateStructDat["id"]].append(self.ObjectStateStructDat.copy())
                 self.end_time = read_dtype(self.file, DataType.float)
+            #     self.object_events_map[self.ObjectStateStructDat["id"]].append(self.ObjectStateStructDat.copy())
+
+    def add_to_timeline(self, timeline: PropertyTimeline, data):
+        if len(self.current_object_timeline.ctrl_type.values) != 0 and self.current_object_timeline.ctrl_type.values[-1][1] != 100:
+            timeline.values.append([self.current_timestamp, data])
+            return
+        
+        if len(timeline.values) != 0 and self.current_timestamp < timeline.values[-1][0]:
+            obj_tl = self.objects_timeline.get(self.current_object_id)
+
+            if not is_near(obj_tl.last_restart_time, self.current_timestamp):
+                ghost_ghost_id = self.current_object_id * self.ghost_ghost_counter
+                
+                if self.objects_timeline.get(ghost_ghost_id) is None:
+                    self.objects_timeline[ghost_ghost_id] = copy.deepcopy(obj_tl)
+                    ghost_tl = self.objects_timeline[ghost_ghost_id]
+                    ghost_tl.active.values[0][1] = False
+                    ghost_tl.name.values[0][1] += f"_{self.ghost_ghost_counter}"
+                    ghost_tl.active.values.append([self.current_timestamp, True])
+                    ghost_tl.active.values.append([self.timestamps[-1], False])
+
+                    self.ghost_ghost_counter -= 1
+                    
+                obj_tl.last_restart_time = self.current_timestamp        
+
+            slice_idx = timeline.get_index_binary(self.current_timestamp)
+            timeline.values = timeline.values[0:slice_idx]
+        
+        timeline.values.append([self.current_timestamp, data])
+
+    def get_object_state_struct_at_time(self, obj_id, t):
+        timeline = self.objects_timeline.get(obj_id)
+
+        self.ObjectStateStructDat["id"] = obj_id
+        self.ObjectStateStructDat["time"] = t
+        self.ObjectStateStructDat["model_id"] = timeline.model_id.get_value_incremental(t)
+        self.ObjectStateStructDat["obj_type"] = timeline.obj_type.get_value_incremental(t)
+        self.ObjectStateStructDat["obj_category"] = timeline.obj_category.get_value_incremental(t)
+        self.ObjectStateStructDat["ctrl_type"] = timeline.ctrl_type.get_value_incremental(t)
+        self.ObjectStateStructDat["name"] = timeline.name.get_value_incremental(t)
+        self.ObjectStateStructDat["speed"] = timeline.speed.get_value_incremental(t)
+        self.ObjectStateStructDat["wheel_angle"] = timeline.wheel_angle.get_value_incremental(t)
+        self.ObjectStateStructDat["wheel_rot"] = timeline.wheel_rot.get_value_incremental(t)
+        self.ObjectStateStructDat["centerOffsetX"] = timeline.bounding_box.get_value_incremental(t).center_offset_x
+        self.ObjectStateStructDat["centerOffsetY"] = timeline.bounding_box.get_value_incremental(t).center_offset_y
+        self.ObjectStateStructDat["centerOffsetZ"] = timeline.bounding_box.get_value_incremental(t).center_offset_z
+        self.ObjectStateStructDat["width"] = timeline.bounding_box.get_value_incremental(t).width
+        self.ObjectStateStructDat["length"] = timeline.bounding_box.get_value_incremental(t).length
+        self.ObjectStateStructDat["height"] = timeline.bounding_box.get_value_incremental(t).height
+        self.ObjectStateStructDat["scaleMode"] = timeline.scale_mode.get_value_incremental(t)
+        self.ObjectStateStructDat["visibilityMask"] = timeline.visibility_mask.get_value_incremental(t)
+        self.ObjectStateStructDat["active"] = timeline.active.get_value_incremental(t)
+        self.ObjectStateStructDat["x"] = timeline.pose.get_value_incremental(t).x
+        self.ObjectStateStructDat["y"] = timeline.pose.get_value_incremental(t).y
+        self.ObjectStateStructDat["z"] = timeline.pose.get_value_incremental(t).z
+        self.ObjectStateStructDat["h"] = timeline.pose.get_value_incremental(t).h
+        self.ObjectStateStructDat["p"] = timeline.pose.get_value_incremental(t).p
+        self.ObjectStateStructDat["r"] = timeline.pose.get_value_incremental(t).r
+        self.ObjectStateStructDat["roadId"] = timeline.road_id.get_value_incremental(t)
+        self.ObjectStateStructDat["laneId"] = timeline.lane_id.get_value_incremental(t)
+        self.ObjectStateStructDat["offset"] = timeline.pos_offset.get_value_incremental(t)
+        self.ObjectStateStructDat["t"] = timeline.pos_t.get_value_incremental(t)
+        self.ObjectStateStructDat["s"] = timeline.pos_s.get_value_incremental(t)
+
+        return self.ObjectStateStructDat
+
+    def build_csv(self):
+        if self.extended:
+            labels = self.get_labels_line_extended()
+        else:
+            labels = self.get_labels_line()
+
+        if self.fixed_timestep < 0.0:
+            for t in self.timestamps:
+                for obj_id in self.objects_timeline.keys():
+                    state = self.get_object_state_struct_at_time(obj_id, t).copy()
+                    if not state["active"]:
+                        continue
+                    self.data.append(state)
+        else:
+            start_time = self.timestamps[0]
+            steps = int((self.end_time - start_time) / self.fixed_timestep) + 1 # add 1 since int rounds down
+
+            for i in range(steps + 1):
+                t = start_time + i * self.fixed_timestep
+                for obj_id in self.objects_timeline.keys():
+                    state = self.get_object_state_struct_at_time(obj_id, t).copy()
+                    if not state["active"]:
+                        continue
+                    self.data.append([state[label] for label in labels])
 
     def get_header_line(self):
         return f'Version: {self.version_major}.{self.version_minor}, OpenDRIVE: {self.odr_filename}, 3DModel: {self.model_filename}'
