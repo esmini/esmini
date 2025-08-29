@@ -278,7 +278,7 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
 
         scenarioEngine->prepareGroundTruth(timestep_s);
 
-        scenarioGateway->WriteStatesToFile(scenarioEngine->getSimulationTime());
+        scenarioGateway->WriteStatesToFile(scenarioEngine->getSimulationTime(), timestep_s);
 
         if (CSV_Log)
         {
