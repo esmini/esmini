@@ -863,7 +863,7 @@ void Replay::AddToTimeline(Timeline<T>& timeline, Data data)
                     it->second.name_.values.front().second += "_" + std::to_string(ghost_ghost_counter_);
 
                     // Ghosts ghost active from ghost restart time until latest timestamp
-                    it->second.active_.values.emplace_back(timestamp_, true);
+                    it->second.active_.values.emplace_back(timestamp_, true);  // timestamp_ contains the new rewinded time
                     it->second.active_.values.emplace_back(timestamps_.back().first, false);
 
                     ghost_ghost_counter_ -= 1;  // Next ghost will have a new id
@@ -886,7 +886,6 @@ const T& Timeline<T>::get_value_incremental(float time) const noexcept
     }
 
     size_t idx        = last_index;
-    float  moved_dt   = 0.0f;
     float  desired_dt = time - values[last_index].first;
 
     if (NEAR_NUMBERSF(last_time, time))
@@ -898,11 +897,12 @@ const T& Timeline<T>::get_value_incremental(float time) const noexcept
     {
         while (idx + 1 < values.size())
         {
-            float step = values[idx + 1].first - values[idx].first;
-            if (moved_dt + step > desired_dt + SMALL_NUMBERF)
+            float step = values[idx + 1].first - values[last_index].first;
+            if (desired_dt + SMALL_NUMBERF < step - SMALL_NUMBERF)
+            {
                 break;
+            }
 
-            moved_dt += step;
             idx++;
         }
     }
@@ -910,14 +910,13 @@ const T& Timeline<T>::get_value_incremental(float time) const noexcept
     {
         while (idx > 0)
         {
-            float step = values[idx].first - values[idx - 1].first;
-            if (moved_dt + step > -desired_dt - SMALL_NUMBERF)
+            float step = values[last_index].first - values[idx - 1].first;
+            if (-desired_dt - SMALL_NUMBERF < step - SMALL_NUMBERF)
             {
                 idx--;
                 break;
             }
 
-            moved_dt += step;
             idx--;
         }
     }
