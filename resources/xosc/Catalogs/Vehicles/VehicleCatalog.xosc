@@ -183,8 +183,8 @@
             </BoundingBox>
             <Performance maxSpeed="40" maxDeceleration="10" maxAcceleration="5"/>
             <Axles>
-                <FrontAxle maxSteering="30" wheelDiameter="0.7" trackWidth="0.7" positionX="2.7" positionZ="0.35"/>
-                <RearAxle maxSteering="30" wheelDiameter="0.7" trackWidth="0.7" positionX="0" positionZ="0.35"/>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.7" trackWidth="0.7" positionX="2.7" positionZ="0.35"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.7" trackWidth="0.7" positionX="0" positionZ="0.35"/>
             </Axles>
             <Properties>
                 <Property name="model_id" value="9"/>
@@ -201,8 +201,8 @@
             </BoundingBox>
             <Performance maxSpeed="100" maxDeceleration="10" maxAcceleration="5"/>
             <Axles>
-                <FrontAxle maxSteering="30" wheelDiameter="0.7" trackWidth="0.7" positionX="2.7" positionZ="0.35"/>
-                <RearAxle maxSteering="30" wheelDiameter="0.7" trackWidth="0.7" positionX="0" positionZ="0.35"/>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.7" trackWidth="0.7" positionX="2.7" positionZ="0.35"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.7" trackWidth="0.7" positionX="0" positionZ="0.35"/>
             </Axles>
             <Properties>
                 <Property name="model_id" value="10"/>
