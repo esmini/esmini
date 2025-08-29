@@ -70,12 +70,12 @@ namespace Dat
 
     struct BoundingBox
     {
-        float x;
-        float y;
-        float z;
-        float length;
-        float width;
-        float height;
+        float x      = LARGE_NUMBERF;
+        float y      = LARGE_NUMBERF;
+        float z      = LARGE_NUMBERF;
+        float length = LARGE_NUMBERF;
+        float width  = LARGE_NUMBERF;
+        float height = LARGE_NUMBERF;
     };
 
     struct PacketGeneric
@@ -106,7 +106,6 @@ namespace Dat
         float       pos_offset_      = LARGE_NUMBERF;
         float       pos_t_           = LARGE_NUMBERF;
         float       pos_s_           = LARGE_NUMBERF;
-        float       dt_              = LARGE_NUMBERF;
     };
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?
@@ -120,7 +119,7 @@ namespace Dat
     {
     public:
         void           WritePacket(PacketGeneric& packet);
-        int            WriteGenericDataToDat();
+        int            WriteDtToDat(const double dt);
         int            WriteObjectStatesToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states);
         constexpr bool ShouldWriteObjId(PacketId p_id) const noexcept;
 
@@ -141,10 +140,6 @@ namespace Dat
         bool IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const;
         void ResetCurrentIds();
         void CheckDeletedObjects();
-        void SetFixedTimestep(float fixed_timestep)  // Needed to set when merging datfiles
-        {
-            fixed_timestep_ = fixed_timestep;
-        }
 
         /* Template definition kept in the header, otherwise symbols might not be resolved properly.
         Maybe it can be resolved during the build process somehow, but for now they are here. */
@@ -211,7 +206,6 @@ namespace Dat
         double                  simulation_time_   = 0.0;
         std::unordered_set<int> previous_ids_;  // Keep track of object IDs
         std::unordered_set<int> current_ids_;   // Keep track of object IDs for the current state
-        float                   fixed_timestep_ = -1.0f;
     };
 
     class DatReader

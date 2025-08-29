@@ -424,6 +424,7 @@ class DATFile():
         else:
             labels = self.get_labels_line()
 
+        import pdb; pdb.set_trace()
         if self.fixed_timestep < 0.0:
             for t in self.timestamps:
                 for obj_id in self.objects_timeline.keys():

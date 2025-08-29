@@ -7,10 +7,6 @@
 
 Dat::DatWriter::DatWriter()
 {
-    if (SE_Env::Inst().GetOptions().GetOptionSet("fixed_timestep"))
-    {
-        fixed_timestep_ = std::stof(SE_Env::Inst().GetOptions().GetOptionArg("fixed_timestep"));
-    }
 }
 
 Dat::DatWriter::~DatWriter()
@@ -53,12 +49,12 @@ int Dat::DatWriter::Init(const std::string& file_name, const std::string& odr_na
 }
 
 // Write data not specific to object states (don't forget to update ShouldWriteObjId)
-int Dat::DatWriter::WriteGenericDataToDat()
+int Dat::DatWriter::WriteDtToDat(const double dt)
 {
     // PacketId::DT
-    if (!NEAR_NUMBERSF(object_state_cache_.dt_, fixed_timestep_))
+    if (!NEAR_NUMBERSF(object_state_cache_.dt_, static_cast<float>(dt)))
     {
-        object_state_cache_.dt_ = fixed_timestep_;
+        object_state_cache_.dt_ = static_cast<float>(dt);
         Write(PacketId::DT, object_state_cache_.dt_);
     }
 
@@ -237,16 +233,16 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
     }
 
     // In case we have variable timestep, we need to write every time packet
-    if (!timestamp_written_ && fixed_timestep_ == -1.0f)
-    {
-        PacketGeneric packet;
-        packet.header.id        = static_cast<id_t>(PacketId::TIMESTAMP);
-        packet.header.data_size = sizeof(float);
-        packet.data.resize(packet.header.data_size);
-        char* write_ptr = packet.data.data();
-        WriteToBuffer(write_ptr, static_cast<float>(simulation_time_));
-        WritePacket(packet);  // Direct write, avoids recursion and repeated flags
-    }
+    // if (!timestamp_written_ && fixed_timestep_ == -1.0f)
+    // {
+    //     PacketGeneric packet;
+    //     packet.header.id        = static_cast<id_t>(PacketId::TIMESTAMP);
+    //     packet.header.data_size = sizeof(float);
+    //     packet.data.resize(packet.header.data_size);
+    //     char* write_ptr = packet.data.data();
+    //     WriteToBuffer(write_ptr, static_cast<float>(simulation_time_));
+    //     WritePacket(packet);  // Direct write, avoids recursion and repeated flags
+    // }
 
     this->CheckDeletedObjects();
     this->SetTimestampWritten(false);  // Reset timestamp written flag after writing all states

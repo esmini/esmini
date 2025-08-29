@@ -85,6 +85,7 @@ namespace scenarioengine
     public:
         std::vector<ReplayEntry>                       data_;
         Dat::DatHeader                                 dat_header_;
+        Timeline<float>                                dt_;
         std::map<int, PropertyTimeline, MapComparator> objects_timeline_;
         std::vector<std::pair<float, bool>>            timestamps_;
         std::unordered_map<int, ReplayEntry>           object_state_cache_;
