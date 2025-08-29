@@ -383,7 +383,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading fixed timestep.");
                     return -1;
                 }
-                fixed_timestep_ = dt;
+                dt_.values.emplace_back(timestamp_, dt);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
@@ -1011,9 +1011,6 @@ void Replay::CreateMergedDatfile(const std::string filename) const
     Dat::DatWriter dat_writer;
     dat_writer.Init(filename, dat_header_.odr_filename.string, dat_header_.model_filename.string);
 
-    // We have fixed_timestep from earlier parsing, now we need to set it in the DAT writer
-    dat_writer.SetFixedTimestep(fixed_timestep_);
-
     if (!dat_writer.IsWriteFileOpen())
     {
         LOG_ERROR("Failed to open dat file for writing: {}", filename);
@@ -1069,8 +1066,8 @@ void Replay::CreateMergedDatfile(const std::string filename) const
         }
 
         // Same flow as in ScenarioGateway.cpp
-        dat_writer.SetSimulationTime(timestamps_[i].first);
-        dat_writer.WriteGenericDataToDat();  // Writes the fixed timestep
+        // dat_writer.SetSimulationTime(timestamps_[i].first, dt);
+        // dat_writer.WriteGenericDataToDat();  // Writes the fixed timestep
         dat_writer.WriteObjectStatesToDat(object_states);
 
         object_states.clear();  // Clear the states for the next timestamp
