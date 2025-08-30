@@ -1,19 +1,40 @@
 #include <stdio.h>
+#include <osg/Node>
+#include <osg/StateSet>
 #include "roadgeom.hpp"
 
 void PrintNodeRecursive(const osg::Node* node)
 {
-    static int        indent = 0;
-    const osg::Group* group  = dynamic_cast<const osg::Group*>(node);
-    if (group != nullptr)
+    static int indent = 0;
+
+    if (node == nullptr)
     {
-        printf("%*s%s\n", 2 * indent, "", group->getName().empty() ? "no-name" : group->getName().c_str());
-        indent++;
-        for (unsigned int i = 0; i < group->getNumChildren(); i++)
+        return;
+    }
+    else
+    {
+        printf("%*s%s\n", 2 * indent, "", node->getName().empty() ? "no-name" : node->getName().c_str());
+
+        const osg::StateSet* ss = node->getStateSet();
+        if (ss != nullptr)
         {
-            PrintNodeRecursive(group->getChild(i));
+            const osg::Material* material = dynamic_cast<const osg::Material*>(ss->getAttribute(osg::StateAttribute::MATERIAL));
+            if (material)
+            {
+                printf("%*smaterial: %s\n", 2 * (indent + 1), "", material->getName().empty() ? "no-name" : material->getName().c_str());
+            }
         }
-        indent--;
+
+        const osg::Group* group = dynamic_cast<const osg::Group*>(node);
+        if (group != nullptr)
+        {
+            indent++;
+            for (unsigned int i = 0; i < group->getNumChildren(); i++)
+            {
+                PrintNodeRecursive(group->getChild(i));
+            }
+            indent--;
+        }
     }
 }
 
@@ -25,6 +46,8 @@ int main(int argc, char* argv[])
     {
         filename = argv[1];
     }
+
+    SE_Env::Inst().GetOptions().SetOptionValue("path", DirNameOf(filename), true, true);
 
     if (!roadmanager::Position::LoadOpenDrive(filename.c_str()))
     {

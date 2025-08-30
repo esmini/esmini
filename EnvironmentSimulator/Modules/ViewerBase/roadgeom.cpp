@@ -60,6 +60,8 @@ const static double      friction_max       = 5.0;
 const static double      friction_default   = 1.0;
 const static std::string prefix_road        = "road_";
 const static std::string prefix_road_object = "road_object_";
+const static std::string prefix_tunnel_wall = "tunnel_wall_";
+const static std::string prefix_tunnel_roof = "tunnel_roof_";
 const static std::string prefix_road_signal = "road_signal_";
 const static std::string prefix_roadmark    = "roadmark_";
 
@@ -172,7 +174,7 @@ namespace roadgeom
         return tex;
     }
 
-    const osg::Vec4 RoadGeom::GetFrictionColor(const double friction)
+    osg::Vec4 RoadGeom::GetFrictionColor(const double friction)
     {
         osg::Vec4 new_color = color_asphalt_->at(0);
         if (friction < friction_default - SMALL_NUMBER)  // low friction, make it blueish
@@ -200,11 +202,11 @@ namespace roadgeom
     void RoadGeom::AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array>        vertices,
                                    osg::ref_ptr<osg::DrawElementsUInt> indices,
                                    osg::Group*                         rm_group,
-                                   roadmanager::RoadMarkColor          color,
+                                   const roadmanager::LaneRoadMark&    road_mark,
                                    double                              fade)
     {
         osg::ref_ptr<osg::Vec4Array> color_array = new osg::Vec4Array;
-        color_array->push_back(ODR2OSGColor(color));
+        color_array->push_back(ODR2OSGColor(road_mark.GetColor()));
         color_array->back()[3] = 1.0 - fade;  // Set alpha value
 
         // Finally create and add geometry
@@ -219,9 +221,10 @@ namespace roadgeom
         osg::ref_ptr<osg::Geode> geode = new osg::Geode;
 
         // create material with unique name
-        osg::ref_ptr<osg::Material> materialRoadmark_ = GetOrCreateMaterial("RoadMark_" + roadmanager::LaneRoadMark::RoadMarkColor2Str(color),
-                                                                            color_array->back(),
-                                                                            static_cast<uint8_t>(RoadGeom::MaterialType::ROADMARK));
+        osg::ref_ptr<osg::Material> materialRoadmark_ =
+            GetOrCreateMaterial("RoadMark_" + roadmanager::LaneRoadMark::RoadMarkColor2Str(road_mark.GetColor()),
+                                color_array->back(),
+                                static_cast<uint8_t>(RoadGeom::MaterialType::ROADMARK));
 
         // also embed color in geometry, e.g. for post processing in full stack simulations
         geom->setColorArray(color_array.get());
@@ -261,7 +264,7 @@ namespace roadgeom
 
         osgUtil::SmoothingVisitor::smooth(*geom, 0.0);
         geode->addDrawable(geom.get());
-        geode->setName(prefix_roadmark + std::to_string(rm_group->getNumChildren()));
+        SetNodeName(*geode, prefix_roadmark, rm_group->getNumChildren(), road_mark.Type2Str());
         rm_group->addChild(geode);
     }
 
@@ -313,7 +316,7 @@ namespace roadgeom
                                                       static_cast<float>(osi_point0.y - origin[1]),
                                                       static_cast<float>(osi_point0.z + ROADMARK_Z_OFFSET)));
                             tx->addChild(dot);
-                            tx->setName(prefix_roadmark + std::to_string(rm_group->getNumChildren()));
+                            SetNodeName(*tx, prefix_roadmark, rm_group->getNumChildren(), lane_roadmark->Type2Str());
                             rm_group->addChild(tx);
                         }
                     }
@@ -470,7 +473,7 @@ namespace roadgeom
                             if (osi_points[q].endpoint)
                             {
                                 // create and add OSG geometry for the line sequence
-                                AddRoadMarkGeom(vertices, indices, rm_group, lane_roadmarktypeline->GetColor(), lane_roadmark->GetFade());
+                                AddRoadMarkGeom(vertices, indices, rm_group, *lane_roadmark, lane_roadmark->GetFade());
                                 startpoint = q + 1;
                             }
                         }
@@ -990,8 +993,7 @@ namespace roadgeom
 
                                 // osgUtil::Optimizer optimizer;
                                 // optimizer.optimize(geode);
-
-                                geode->setName(prefix_road + std::to_string(road->GetId()) + "_" + std::to_string(k));
+                                SetNodeName(*geode, prefix_road, road->GetId(), std::to_string(k - 1) + "_" + std::to_string(m));
                                 r_group_->addChild(geode);
                             }
                         }
@@ -1030,9 +1032,9 @@ namespace roadgeom
             for (unsigned int s = 0; s < road->GetNumberOfSignals(); s++)
             {
                 osg::ref_ptr<osg::Group> signGroup = new osg::Group;
-                signGroup->setName(prefix_road_signal + std::to_string(s));
-                tx                          = nullptr;
-                roadmanager::Signal* signal = road->GetSignal(s);
+                tx                                 = nullptr;
+                roadmanager::Signal* signal        = road->GetSignal(s);
+                SetNodeName(*signGroup, prefix_road_signal, s, signal->GetName());
 
                 // create a bounding for the sign
                 osg::ref_ptr<osg::PositionAttitudeTransform> tx_bb = new osg::PositionAttitudeTransform;
@@ -1105,7 +1107,17 @@ namespace roadgeom
             {
                 roadmanager::RMObject* object = road->GetRoadObject(o);
                 osg::Vec4              color;
-                tx = nullptr;
+                tx                   = nullptr;
+                std::string obj_type = prefix_road_object;  // road object is default
+                switch (object->GetTunnelComponentType())
+                {
+                    case roadmanager::RMObject::TunnelComponentType::TUNNEL_WALL:
+                        obj_type = prefix_tunnel_wall;
+                        break;
+                    case roadmanager::RMObject::TunnelComponentType::TUNNEL_ROOF:
+                        obj_type = prefix_tunnel_roof;
+                        break;
+                }
 
                 for (unsigned int c = 0; c < 4; c++)
                 {
@@ -1117,8 +1129,13 @@ namespace roadgeom
                 {
                     for (size_t j = 0; j < static_cast<unsigned int>(object->GetNumberOfOutlines()); j++)
                     {
-                        roadmanager::Outline* outline = object->GetOutline(j);
-                        CreateOutlineObject(outline, color, origin, objGroup, object->GetId());
+                        roadmanager::Outline*    outline = object->GetOutline(j);
+                        osg::ref_ptr<osg::Group> olgroup = CreateOutlineObject(outline, color, origin);
+                        if (olgroup != nullptr)
+                        {
+                            SetNodeName(*olgroup, obj_type, object->GetId(), object->GetName() + "_" + std::to_string(j));
+                            objGroup->addChild(olgroup);
+                        }
                     }
                     LOG_INFO("Created outline geometry for object {}.", object->GetName());
                     LOG_DEBUG("  if it looks strange, e.g.faces too dark or light color, ");
@@ -1167,8 +1184,13 @@ namespace roadgeom
                             {
                                 for (unsigned int j = 0; j < object->GetNumberOfOutlines(); j++)
                                 {
-                                    roadmanager::Outline* outline = object->GetOutline(j);
-                                    CreateOutlineObject(outline, color, origin, objGroup, object->GetId());
+                                    roadmanager::Outline*    outline = object->GetOutline(j);
+                                    osg::ref_ptr<osg::Group> olgroup = CreateOutlineObject(outline, color, origin);
+                                    if (olgroup != nullptr)
+                                    {
+                                        SetNodeName(*olgroup, obj_type, object->GetId(), object->GetName() + "_" + std::to_string(j));
+                                        objGroup->addChild(olgroup);
+                                    }
                                 }
                                 continue;
                             }
@@ -1257,6 +1279,11 @@ namespace roadgeom
                         {
                             clone = tx != nullptr ? dynamic_cast<osg::PositionAttitudeTransform*>(tx->clone(osg::CopyOp::DEEP_COPY_ALL)) : nullptr;
                             clone->setDataVariance(osg::Object::STATIC);
+                        }
+
+                        if (clone != nullptr)
+                        {
+                            SetNodeName(*clone, obj_type, object->GetId(), object->GetName() + "_" + std::to_string(nCopies));
                         }
 
                         if (rep == nullptr)
@@ -1461,11 +1488,8 @@ namespace roadgeom
                                       LOD_DIST_ROAD_FEATURES + MAX(boundingBox.xMax() - boundingBox.xMin(), boundingBox.yMax() - boundingBox.yMin()));
                         objGroup->addChild(lod);
                     }
-                    if (tx != nullptr)
-                    {
-                        tx->setName(prefix_road_object + std::to_string(object->GetId()));
-                    }
-                    else
+
+                    if (tx == nullptr)
                     {
                         LOG_WARN("No tx");
                     }
@@ -1496,11 +1520,13 @@ namespace roadgeom
         file_name_candidates.push_back(filename);
         file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path) + "/../resources/models", filename));
         // Finally check registered paths
-        for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+
+        std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionArgs("path");
+        for (size_t i = 0; i < paths.size(); i++)
         {
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], filename));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../models/" + filename));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(filename)));
+            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(paths[i], filename));
+            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(paths[i], "../models/" + filename));
+            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(paths[i], FileNameOf(filename)));
         }
         for (size_t i = 0; i < file_name_candidates.size(); i++)
         {
@@ -1520,21 +1546,19 @@ namespace roadgeom
         return xform;
     }
 
-    int RoadGeom::CreateOutlineObject(roadmanager::Outline*    outline,
-                                      osg::Vec4                color,
-                                      const osg::Vec3d&        origin,
-                                      osg::ref_ptr<osg::Group> parent,
-                                      id_t                     id)
+    osg::ref_ptr<osg::Group> RoadGeom::CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color, const osg::Vec3d& origin)
     {
         if (outline == 0)
-            return -1;
+        {
+            return nullptr;
+        }
+
         bool roof = outline->roof_ ? true : false;
 
         // nrPoints will be corners + 1 if the outline should be closed, reusing first corner as last
         int nrPoints = outline->closed_ ? static_cast<int>(outline->corner_.size()) + 1 : static_cast<int>(outline->corner_.size());
 
         osg::ref_ptr<osg::Group> group = new osg::Group();
-        group->setName(prefix_road_object + std::to_string(id));
 
         osg::ref_ptr<osg::Vec3Array> vertices_sides =
             new osg::Vec3Array(static_cast<unsigned int>(nrPoints) * 2);                                         // one set at bottom and one at top
@@ -1639,12 +1663,16 @@ namespace roadgeom
         geode->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
 
         group->addChild(geode);
-        parent->addChild(group);
 
-        return 0;
+        return group;
     }
 
-    int RoadGeom::SaveToFile(std::string filename)
+    void RoadGeom::SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label)
+    {
+        node.setName(prefix + std::to_string(id) + "_" + label);
+    }
+
+    int RoadGeom::SaveToFile(const std::string& filename)
     {
         osgDB::writeNodeFile(*root_, filename);
         return 0;

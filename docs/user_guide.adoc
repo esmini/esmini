@@ -3105,30 +3105,49 @@ Full code example here: https://github.com/esmini/esmini/tree/refs/heads/dev/Env
 
 ==== Node naming
 
-For post processing the esmini generated nodes are named as following example:
+For post processing the esmini generated nodes are named.
+
+Name structure: `<object type>_<id>_<context dependent info>`
+
+Context dependent info:
+
+[horizontal]
+roadmark :: `<type>`
+road :: `<lane>_<segment>` (segment per friction value)
+road_object :: `<name>[_index]` (index corresponding to outline)
+tunnel :: `<type: wall|roof>_<name>_<index>`
+road_signal :: `<name>`
+
+Note:
+
+Example: Tunnels have three sub objects, two walls and one roof)
 
 [souce]
 ----
 esmini_generated_road_model
   roadmarks
-    roadmark_0
-    roadmark_1
-    roadmark_2
+    roadmark_0_solid
+    roadmark_1_broken
+    roadmark_2_broken
   roads
-    road_0_1
-    road_0_2
-    road_0_3
-    road_1_0
-    road_1_2
+    road_0_0_0
+    road_0_1_0
+    road_1_0_0
+    road_1_1_0
+    road_1_2_0
+    road_1_2_1
+    road_1_2_2
   road_objects
-    road_object_0
+    road_object_0_railing
+    road_object_1_railing
     no-name
-      road_object_1
-    road_object_2
-    road_object_3
+      road_object_2_   (object in OpenDRIVE has empty name)
+    road_object_3_0
+    road_object_3_1
+    tunnel_wall_4_0
+    tunnel_wall_4_0
+    tunnel_roof_4_0
 ----
-
-The second number in road nodes indicate just subsegment of the road, i.e. one road will typically have a number of separate segments.
 
 `no-name` are structural nodes, e.g. transformation or just group.
 

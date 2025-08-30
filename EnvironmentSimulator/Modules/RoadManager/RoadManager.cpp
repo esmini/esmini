@@ -1285,6 +1285,41 @@ std::string LaneRoadMark::RoadMarkColor2Str(RoadMarkColor color)
     return SE_Color::ColorIdx2Str(ODRColor2SEColor(color));
 }
 
+std::string LaneRoadMark::RoadMarkType2Str(RoadMarkType type)
+{
+    switch (type)
+    {
+        case RoadMarkType::NONE_TYPE:
+            return "none";
+        case RoadMarkType::SOLID:
+            return "solid";
+        case RoadMarkType::BROKEN:
+            return "broken";
+        case RoadMarkType::SOLID_SOLID:
+            return "solid_solid";
+        case RoadMarkType::SOLID_BROKEN:
+            return "solid_broken";
+        case RoadMarkType::BROKEN_SOLID:
+            return "broken_solid";
+        case RoadMarkType::BROKEN_BROKEN:
+            return "broken_broken";
+        case RoadMarkType::BOTTS_DOTS:
+            return "botts_dots";
+        case RoadMarkType::GRASS:
+            return "grass";
+        case RoadMarkType::CURB:
+            return "curb";
+        default:
+            LOG_ERROR("Unexpected roadmark type id: {}", type);
+    }
+    return "unknown";
+}
+
+std::string LaneRoadMark::Type2Str() const
+{
+    return RoadMarkType2Str(type_);
+}
+
 LaneRoadMarkType* LaneRoadMark::GetLaneRoadMarkTypeByIdx(unsigned int idx) const
 {
     if (idx < lane_roadMarkType_.size())
@@ -7824,6 +7859,7 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
                                                  0.0,
                                                  0.0);
                         rm_obj[i]->AddOutline(outline);
+                        rm_obj[i]->SetTunnelComponentType(RMObject::TunnelComponentType::TUNNEL_WALL);
                         road->AddObject(rm_obj[i]);
                     }
                 }
@@ -7875,6 +7911,7 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
                                              0.0,
                                              0.0);
                     rm_obj[2]->AddOutline(outline);
+                    rm_obj[2]->SetTunnelComponentType(RMObject::TunnelComponentType::TUNNEL_ROOF);
                     road->AddObject(rm_obj[2]);
 
                     for (auto o : rm_obj)

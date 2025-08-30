@@ -85,11 +85,11 @@ namespace roadgeom
         void                        AddRoadMarkGeom(osg::ref_ptr<osg::Vec3Array>        vertices,
                                                     osg::ref_ptr<osg::DrawElementsUInt> indices,
                                                     osg::Group*                         rm_group,
-                                                    roadmanager::RoadMarkColor          color,
+                                                    const roadmanager::LaneRoadMark&    road_mark,
                                                     double                              fade);
         osg::ref_ptr<osg::Material> GetOrCreateMaterial(const std::string& basename, osg::Vec4 color, uint8_t texture_type, uint8_t has_friction = 0);
         osg::ref_ptr<osg::Texture2D> ReadTexture(std::string filename);
-        const osg::Vec4              GetFrictionColor(const double friction);
+        osg::Vec4                    GetFrictionColor(const double friction);
 
         int                                          CreateRoadSignsAndObjects(roadmanager::OpenDrive*  od,
                                                                                const osg::Vec3d&        origin,
@@ -97,8 +97,9 @@ namespace roadgeom
                                                                                osg::ref_ptr<osg::Group> parent,
                                                                                std::string              exe_path);
         osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string filename, std::string exe_path);
-        int CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color, const osg::Vec3d& origin, osg::ref_ptr<osg::Group> parent, id_t id);
-        int SaveToFile(std::string filename);
+        osg::ref_ptr<osg::Group>                     CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color, const osg::Vec3d& origin);
+        void                                         SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label);
+        int                                          SaveToFile(const std::string& filename);
 
     private:
         unsigned int                                                   number_of_materials = 0;

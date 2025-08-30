@@ -152,7 +152,7 @@
          <elevation s="70" a="0.0" b="0.0" c="0.006" d="-0.00004"/>
          <elevation s="170" a="20.0" b="0.0" c="-0.006" d="0.00004"/>
          <elevation s="270" a="0.0" b="0.0" c="0.0" d="0.0"/>
-      </elevationProfile>      
+      </elevationProfile>
       <lateralProfile/>
       <lanes>
          <laneSection s="0">
