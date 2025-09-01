@@ -144,9 +144,9 @@ namespace scenarioengine
         {
             repeat_ = repeat;
         }
-        float GetFixedTimestep() const
+        float GetTimestepAtTime(float time) const
         {
-            return fixed_timestep_;
+            return dt_.get_value_incremental(time);
         }
         // void SetIncludeGhostReset(bool include)
         // {
