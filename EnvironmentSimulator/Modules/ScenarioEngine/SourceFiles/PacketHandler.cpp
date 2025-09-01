@@ -10,7 +10,7 @@ Dat::DatWriter::~DatWriter()
     // Seems GateWay which owns DatWriter is destroyed before the scenario ends...
     if (IsWriteFileOpen())
     {
-        Write(PacketId::END_OF_SCENARIO, static_cast<float>(simulation_time_));
+        Write(PacketId::END_OF_SCENARIO, simulation_time_);
         write_file_.flush();
         write_file_.close();
     }
@@ -79,7 +79,7 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
         }
 
         // We might want to write a state to datfile, so we set the timestamp
-        object_state_cache_.timestamp_ = static_cast<float>(simulation_time_);
+        object_state_cache_.timestamp_ = simulation_time_;
 
         // PacketId::SPEED
         if (!NEAR_NUMBERSF(cache_it->second.speed_, static_cast<float>(state->info.speed)))
@@ -228,18 +228,6 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
         this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state
     }
 
-    // In case we have variable timestep, we need to write every time packet
-    // if (!timestamp_written_ && fixed_timestep_ == -1.0f)
-    // {
-    //     PacketGeneric packet;
-    //     packet.header.id        = static_cast<id_t>(PacketId::TIMESTAMP);
-    //     packet.header.data_size = sizeof(float);
-    //     packet.data.resize(packet.header.data_size);
-    //     char* write_ptr = packet.data.data();
-    //     WriteToBuffer(write_ptr, static_cast<float>(simulation_time_));
-    //     WritePacket(packet);  // Direct write, avoids recursion and repeated flags
-    // }
-
     this->CheckDeletedObjects();
 
     return 0;
@@ -292,7 +280,6 @@ void Dat::DatWriter::SetSimulationTime(const double simulation_time, const doubl
 {
     simulation_time_ = simulation_time;
     dt_              = dt;
-    SetTimestampWritten(false);
 }
 
 void Dat::DatWriter::ResetCurrentIds()

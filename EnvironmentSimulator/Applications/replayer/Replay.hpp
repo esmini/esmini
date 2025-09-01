@@ -26,11 +26,11 @@ namespace scenarioengine
     template <typename T>
     struct Timeline
     {
-        std::vector<std::pair<float, T>> values;          // Pairs of timestamp and value
-        mutable size_t                   last_index = 0;  // Set as mutable to allow modification in const methods
-        mutable float                    last_time  = LARGE_NUMBERF;
+        std::vector<std::pair<double, T>> values;          // Pairs of timestamp and value
+        mutable size_t                    last_index = 0;  // Set as mutable to allow modification in const methods
+        mutable double                    last_time  = LARGE_NUMBER;
 
-        const T& get_value_incremental(float time) const noexcept
+        const T& get_value_incremental(double time) const noexcept
         {
             if (values.empty())
             {
@@ -38,9 +38,9 @@ namespace scenarioengine
             }
 
             size_t idx        = last_index;
-            float  desired_dt = time - values[last_index].first;
+            double desired_dt = time - values[last_index].first;
 
-            if (NEAR_NUMBERSF(last_time, time))
+            if (NEAR_NUMBERS(last_time, time))
             {
                 return values[last_index].second;
             }
@@ -49,8 +49,8 @@ namespace scenarioengine
             {
                 while (idx + 1 < values.size())
                 {
-                    float step = values[idx + 1].first - values[last_index].first;
-                    if (desired_dt + SMALL_NUMBERF < step - SMALL_NUMBERF)
+                    double step = values[idx + 1].first - values[last_index].first;
+                    if (desired_dt + SMALL_NUMBER < step - SMALL_NUMBER)
                     {
                         break;
                     }
@@ -62,8 +62,8 @@ namespace scenarioengine
             {
                 while (idx > 0)
                 {
-                    float step = values[last_index].first - values[idx - 1].first;
-                    if (-desired_dt - SMALL_NUMBERF < step - SMALL_NUMBERF)
+                    double step = values[last_index].first - values[idx - 1].first;
+                    if (-desired_dt - SMALL_NUMBER < step - SMALL_NUMBER)
                     {
                         idx--;
                         break;
@@ -79,55 +79,58 @@ namespace scenarioengine
             return values[idx].second;
         }
 
-        const T& get_value_binary(float time) const noexcept
+        const T& get_value_binary(double time, bool upper = false) const noexcept
         {
             if (values.empty())
             {
                 LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
             }
 
-            if (NEAR_NUMBERSF(last_time, time))
-            {
-                return values[last_index].second;
-            }
+            // if (NEAR_NUMBERS(last_time, time))
+            // {
+            //     return values[last_index].second;
+            // }
 
             auto search_begin = values.begin();
             auto search_end   = values.end();
 
-            if (time >= values[last_index].first)
-            {
-                // Time moved forward — only search ahead
-                search_begin = values.begin() + static_cast<typename std::vector<std::pair<float, T>>::difference_type>(last_index);
-            }
-            else
-            {
-                // Time moved backward — only search behind
-                search_end = values.begin() + static_cast<typename std::vector<std::pair<float, T>>::difference_type>(last_index) + 1;
-            }
+            // if (time >= values[last_index].first)
+            // {
+            //     // Time moved forward — only search ahead
+            //     search_begin = values.begin() + static_cast<typename std::vector<std::pair<double, T>>::difference_type>(last_index) - 1;
+            // }
+            // else
+            // {
+            //     // Time moved backward — only search behind
+            //     search_end = values.begin() + static_cast<typename std::vector<std::pair<double, T>>::difference_type>(last_index) + 1;
+            // }
 
-            auto it = std::upper_bound(search_begin, search_end, time, [](float t, const std::pair<float, T>& v) { return t < v.first; });
+            auto it = std::upper_bound(search_begin, search_end, time, [](double t, const std::pair<double, T>& v) { return t < v.first; });
 
             if (it == values.begin())
             {
-                last_index = 0;
+                // last_index = 0;
                 return it->second;
             }
 
-            --it;
-            last_index = static_cast<size_t>(std::distance(values.begin(), it));
-            last_time  = time;
+            if (!upper)  // We snap to lowest value, which is default
+            {
+                --it;
+            }
+            // last_index = static_cast<size_t>(std::distance(values.begin(), it));
+            // last_time  = time;
 
             return it->second;
         }
 
-        size_t get_index_binary(float time) const noexcept
+        size_t get_index_binary(double time) const noexcept
         {
             if (values.empty())
             {
                 LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
             }
 
-            if (NEAR_NUMBERSF(last_time, time))
+            if (NEAR_NUMBERS(last_time, time))
             {
                 return last_index;
             }
@@ -146,7 +149,7 @@ namespace scenarioengine
                 search_end = values.begin() + 1;
             }
 
-            auto it = std::upper_bound(search_begin, search_end, time, [](float t, const std::pair<float, T>& v) { return t < v.first; });
+            auto it = std::upper_bound(search_begin, search_end, time, [](double t, const std::pair<double, T>& v) { return t < v.first; });
 
             if (it == values.begin())
             {
@@ -179,7 +182,7 @@ namespace scenarioengine
         Timeline<bool>           active_;
         Timeline<float>          odometer_;
 
-        float last_restart_time = -1.0f;
+        double last_restart_time = -1.0f;
     };
 
     struct MapComparator
@@ -209,7 +212,7 @@ namespace scenarioengine
         Dat::DatHeader                                 dat_header_;
         Timeline<double>                               dt_;
         std::map<int, PropertyTimeline, MapComparator> objects_timeline_;
-        std::vector<std::pair<float, bool>>            timestamps_;
+        std::vector<std::pair<double, bool>>           timestamps_;
         std::unordered_map<int, ReplayEntry>           object_state_cache_;
         int                                            ghost_ghost_counter_ = -1;
 
@@ -245,8 +248,8 @@ namespace scenarioengine
         ObjectStateStructDat* GetState(int id);
         void                  SetStartTime(double time);
         void                  SetStopTime(double time);
-        ReplayEntry           GetReplayEntryAtTimeIncremental(int id, float t) const;
-        ReplayEntry           GetReplayEntryAtTimeBinary(int id, float t) const;
+        ReplayEntry           GetReplayEntryAtTimeIncremental(int id, double t) const;
+        ReplayEntry           GetReplayEntryAtTimeBinary(int id, double t) const;
         double                GetStartTime() const
         {
             return startTime_;
@@ -288,10 +291,10 @@ namespace scenarioengine
         std::string              create_datfile_;
 
         /* PacketHandler stuff */
-        float                             timestamp_          = 0.0f;
-        std::optional<float>              first_timestamp_    = std::nullopt;
+        double                            timestamp_          = 0.0;
+        std::optional<double>             first_timestamp_    = std::nullopt;
         id_t                              previous_packet_id_ = static_cast<id_t>(Dat::PacketId::PACKET_ID_SIZE);
-        float                             fixed_timestep_     = -1.0f;
+        double                            fixed_timestep_     = -1.0;
         int                               current_object_id_;
         scenarioengine::PropertyTimeline* current_object_timeline_;
     };
