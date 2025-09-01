@@ -110,7 +110,7 @@ namespace Dat
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?
     {
-        float                             dt_;
+        double                            dt_;
         float                             timestamp_;
         std::unordered_map<int, ObjState> state_;
     };
@@ -206,7 +206,7 @@ namespace Dat
         double                  simulation_time_   = 0.0;
         std::unordered_set<int> previous_ids_;  // Keep track of object IDs
         std::unordered_set<int> current_ids_;   // Keep track of object IDs for the current state
-        float                   dt_;
+        double                  dt_;
     };
 
     class DatReader
