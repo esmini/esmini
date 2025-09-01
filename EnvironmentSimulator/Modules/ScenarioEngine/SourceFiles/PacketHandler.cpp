@@ -5,10 +5,6 @@
 #include "CommonMini.cpp"
 #include "PacketHandler.hpp"
 
-Dat::DatWriter::DatWriter()
-{
-}
-
 Dat::DatWriter::~DatWriter()
 {
     // Seems GateWay which owns DatWriter is destroyed before the scenario ends...
@@ -49,12 +45,12 @@ int Dat::DatWriter::Init(const std::string& file_name, const std::string& odr_na
 }
 
 // Write data not specific to object states (don't forget to update ShouldWriteObjId)
-int Dat::DatWriter::WriteDtToDat(const double dt)
+int Dat::DatWriter::WriteGenericDataToDat()
 {
     // PacketId::DT
-    if (!NEAR_NUMBERSF(object_state_cache_.dt_, static_cast<float>(dt)))
+    if (!NEAR_NUMBERSF(object_state_cache_.dt_, static_cast<float>(dt_)))
     {
-        object_state_cache_.dt_ = static_cast<float>(dt);
+        object_state_cache_.dt_ = static_cast<float>(dt_);
         Write(PacketId::DT, object_state_cache_.dt_);
     }
 
@@ -245,7 +241,6 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
     // }
 
     this->CheckDeletedObjects();
-    this->SetTimestampWritten(false);  // Reset timestamp written flag after writing all states
 
     return 0;
 }
@@ -293,9 +288,11 @@ void Dat::DatWriter::SetObjectIdWritten(bool state)
     object_id_written_ = state;
 }
 
-void Dat::DatWriter::SetSimulationTime(const double simulation_time)
+void Dat::DatWriter::SetSimulationTime(const double simulation_time, const double dt)
 {
     simulation_time_ = simulation_time;
+    dt_              = static_cast<float>(dt);
+    SetTimestampWritten(false);
 }
 
 void Dat::DatWriter::ResetCurrentIds()

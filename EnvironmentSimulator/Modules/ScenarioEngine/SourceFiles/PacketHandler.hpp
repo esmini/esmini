@@ -119,7 +119,7 @@ namespace Dat
     {
     public:
         void           WritePacket(PacketGeneric& packet);
-        int            WriteDtToDat(const double dt);
+        int            WriteGenericDataToDat();
         int            WriteObjectStatesToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states);
         constexpr bool ShouldWriteObjId(PacketId p_id) const noexcept;
 
@@ -127,7 +127,7 @@ namespace Dat
 
         void WriteToBuffer(char*& write_ptr, const std::string& str);
 
-        DatWriter();
+        DatWriter() = default;
         ~DatWriter();
 
         int Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name);
@@ -135,7 +135,7 @@ namespace Dat
         bool IsWriteFileOpen() const;
         void SetTimestampWritten(bool state);
         void SetObjectIdWritten(bool state);
-        void SetSimulationTime(const double simulation_time);
+        void SetSimulationTime(const double simulation_time, const double dt);
         bool IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const;
         bool IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const;
         void ResetCurrentIds();
@@ -206,6 +206,7 @@ namespace Dat
         double                  simulation_time_   = 0.0;
         std::unordered_set<int> previous_ids_;  // Keep track of object IDs
         std::unordered_set<int> current_ids_;   // Keep track of object IDs for the current state
+        float                   dt_;
     };
 
     class DatReader

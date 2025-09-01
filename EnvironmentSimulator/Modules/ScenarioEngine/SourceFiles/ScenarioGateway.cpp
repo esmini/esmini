@@ -1102,8 +1102,8 @@ void ScenarioGateway::WriteStatesToFile(const double simulation_time, const doub
 {
     if (dat_writer_.IsWriteFileOpen())
     {
-        dat_writer_.WriteDtToDat(dt);
-        dat_writer_.SetSimulationTime(simulation_time);
+        dat_writer_.SetSimulationTime(simulation_time, dt);
+        dat_writer_.WriteGenericDataToDat();
         dat_writer_.WriteObjectStatesToDat(objectState_);
     }
 }
