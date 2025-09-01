@@ -107,7 +107,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 
     if (keyEvent->down_)
     {
-        float fixed_timestep = player->GetFixedTimestep();
+        float fixed_timestep = player->GetTimestepAtTime(player->GetTime());
         if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Right))
         {
             if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL) &&
@@ -1040,7 +1040,7 @@ int main(int argc, char** argv)
             }
             else
             {
-                if (player->GetFixedTimestep() > 0.0f)
+                if (player->GetTimestepAtTime(simTime) > 0.0f)
                 {
                     player->RoundTime();
                     simTime = player->GetTime();
