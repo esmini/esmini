@@ -30,9 +30,131 @@ namespace scenarioengine
         mutable size_t                   last_index = 0;  // Set as mutable to allow modification in const methods
         mutable float                    last_time  = LARGE_NUMBERF;
 
-        const T& get_value_incremental(float time) const noexcept;
-        const T& get_value_binary(float time) const noexcept;
-        size_t   get_index_binary(float time) const noexcept;
+        const T& get_value_incremental(float time) const noexcept
+        {
+            if (values.empty())
+            {
+                LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+            }
+
+            size_t idx        = last_index;
+            float  desired_dt = time - values[last_index].first;
+
+            if (NEAR_NUMBERSF(last_time, time))
+            {
+                return values[last_index].second;
+            }
+
+            if (time >= values[idx].first)  // Requested time is after last searched value, we increment
+            {
+                while (idx + 1 < values.size())
+                {
+                    float step = values[idx + 1].first - values[last_index].first;
+                    if (desired_dt + SMALL_NUMBERF < step - SMALL_NUMBERF)
+                    {
+                        break;
+                    }
+
+                    idx++;
+                }
+            }
+            else  // Requested time is before last searched value, we decrement
+            {
+                while (idx > 0)
+                {
+                    float step = values[last_index].first - values[idx - 1].first;
+                    if (-desired_dt - SMALL_NUMBERF < step - SMALL_NUMBERF)
+                    {
+                        idx--;
+                        break;
+                    }
+
+                    idx--;
+                }
+            }
+
+            last_index = idx;  // Save the index for next call
+            last_time  = time;
+
+            return values[idx].second;
+        }
+
+        const T& get_value_binary(float time) const noexcept
+        {
+            if (values.empty())
+            {
+                LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+            }
+
+            if (NEAR_NUMBERSF(last_time, time))
+            {
+                return values[last_index].second;
+            }
+
+            auto search_begin = values.begin();
+            auto search_end   = values.end();
+
+            if (time >= values[last_index].first)
+            {
+                // Time moved forward — only search ahead
+                search_begin = values.begin() + static_cast<typename std::vector<std::pair<float, T>>::difference_type>(last_index);
+            }
+            else
+            {
+                // Time moved backward — only search behind
+                search_end = values.begin() + static_cast<typename std::vector<std::pair<float, T>>::difference_type>(last_index) + 1;
+            }
+
+            auto it = std::upper_bound(search_begin, search_end, time, [](float t, const std::pair<float, T>& v) { return t < v.first; });
+
+            if (it == values.begin())
+            {
+                last_index = 0;
+                return it->second;
+            }
+
+            --it;
+            last_index = static_cast<size_t>(std::distance(values.begin(), it));
+            last_time  = time;
+
+            return it->second;
+        }
+
+        size_t get_index_binary(float time) const noexcept
+        {
+            if (values.empty())
+            {
+                LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+            }
+
+            if (NEAR_NUMBERSF(last_time, time))
+            {
+                return last_index;
+            }
+
+            auto search_begin = values.begin();
+            auto search_end   = values.end();
+
+            if (time >= values[last_index].first)
+            {
+                // Time moved forward — only search ahead
+                search_begin = values.begin();
+            }
+            else
+            {
+                // Time moved backward — only search behind
+                search_end = values.begin() + 1;
+            }
+
+            auto it = std::upper_bound(search_begin, search_end, time, [](float t, const std::pair<float, T>& v) { return t < v.first; });
+
+            if (it == values.begin())
+            {
+                return 0;
+            }
+
+            return static_cast<size_t>(std::distance(values.begin(), it));
+        }
     };
 
     struct PropertyTimeline
@@ -85,7 +207,7 @@ namespace scenarioengine
     public:
         std::vector<ReplayEntry>                       data_;
         Dat::DatHeader                                 dat_header_;
-        Timeline<float>                                dt_;
+        Timeline<double>                               dt_;
         std::map<int, PropertyTimeline, MapComparator> objects_timeline_;
         std::vector<std::pair<float, bool>>            timestamps_;
         std::unordered_map<int, ReplayEntry>           object_state_cache_;
@@ -144,7 +266,7 @@ namespace scenarioengine
         {
             repeat_ = repeat;
         }
-        float GetTimestepAtTime(float time) const
+        double GetTimestepAtTime(float time) const
         {
             return dt_.get_value_incremental(time);
         }

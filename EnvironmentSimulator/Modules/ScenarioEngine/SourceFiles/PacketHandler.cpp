@@ -48,9 +48,9 @@ int Dat::DatWriter::Init(const std::string& file_name, const std::string& odr_na
 int Dat::DatWriter::WriteGenericDataToDat()
 {
     // PacketId::DT
-    if (!NEAR_NUMBERSF(object_state_cache_.dt_, static_cast<float>(dt_)))
+    if (!NEAR_NUMBERS(object_state_cache_.dt_, dt_))
     {
-        object_state_cache_.dt_ = static_cast<float>(dt_);
+        object_state_cache_.dt_ = dt_;
         Write(PacketId::DT, object_state_cache_.dt_);
     }
 
@@ -291,7 +291,7 @@ void Dat::DatWriter::SetObjectIdWritten(bool state)
 void Dat::DatWriter::SetSimulationTime(const double simulation_time, const double dt)
 {
     simulation_time_ = simulation_time;
-    dt_              = static_cast<float>(dt);
+    dt_              = dt;
     SetTimestampWritten(false);
 }
 
