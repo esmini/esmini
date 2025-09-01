@@ -48,14 +48,14 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
 {
     GetReplaysFromDirectory(directory, scenario);
     std::vector<std::pair<std::string, std::map<int, PropertyTimeline, MapComparator>>> scenarioData;
-    std::vector<std::vector<std::pair<float, bool>>>                                    timestamps;
+    std::vector<std::vector<std::pair<double, bool>>>                                   timestamps;
 
     if (scenarios_.size() < 2)
     {
         LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
     }
 
-    float temp_fixed_timestep = LARGE_NUMBERF;
+    double temp_fixed_timestep = LARGE_NUMBER;
     for (size_t i = 0; i < scenarios_.size(); i++)
     {
         ParsePackets(scenarios_[i]);
@@ -142,15 +142,15 @@ int Replay::ParsePackets(const std::string& filename)
                     first_timestamp_ = timestamp_;
                 }
 
-                if (timestamps_.empty() || timestamp_ <= SMALL_NUMBERF || timestamp_ > timestamps_.back().first)
+                if (timestamps_.empty() || timestamp_ <= SMALL_NUMBER || timestamp_ > timestamps_.back().first)
                 {
-                    if (previous_packet_id_ == header.id)
+                    if (previous_packet_id_ != header.id)
                     {
-                        timestamps_.emplace_back(timestamp_, false);
+                        timestamps_.emplace_back(timestamp_, true);
                     }
                     else
                     {
-                        timestamps_.emplace_back(timestamp_, true);
+                        timestamps_.emplace_back(timestamp_, false);
                     }
                 }
                 break;
@@ -169,7 +169,7 @@ int Replay::ParsePackets(const std::string& filename)
                     objects_timeline_[current_object_id_] = {};
                     current_object_timeline_              = &objects_timeline_[current_object_id_];
                     current_object_timeline_->odometer_.values.emplace_back(timestamp_, 0.0f);
-                    if (timestamp_ > 0.0f)
+                    if (timestamp_ > 0.0)
                     {
                         current_object_timeline_->active_.values.emplace_back(0.0f, false);  // Object was inactive from start of simulation
                         current_object_timeline_->active_.values.emplace_back(timestamp_, true);
@@ -405,14 +405,21 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
             {
-                float stop_time;
+                double stop_time;
                 if (dat_reader.ReadPacket(header, stop_time) != 0)
                 {
                     LOG_ERROR("Failed reading end of scenario timestamp.");
                     return -1;
                 }
-                stopTime_ = static_cast<double>(stop_time);
-                timestamps_.emplace_back(stopTime_, true);
+                stopTime_ = stop_time;
+                if (!NEAR_NUMBERS(stopTime_, timestamps_.back().first))
+                {
+                    timestamps_.emplace_back(stopTime_, true);
+                }
+                else
+                {
+                    timestamps_.back().second = true;
+                }
                 // stopIndex_ = timestamps_.size() - 1;
                 break;
             }
@@ -432,17 +439,44 @@ int Replay::ParsePackets(const std::string& filename)
 
 void Replay::FillInTimestamps()
 {
-    for (const auto& [timestamp, dt] : dt_.values)
+    std::vector<std::pair<double, bool>> filled;
+
+    size_t i         = 0;
+    double curr_time = first_timestamp_.value();
+
+    while (i < timestamps_.size() - 1 && curr_time < static_cast<double>(stopTime_) - SMALL_NUMBER)
     {
-        for (size_t i = 0; i < timestamps_.size() - 1; i++)
+        filled.emplace_back(curr_time, timestamps_[i].second);  // Save current timestamp
+
+        double next_logged_time = timestamps_[i + 1].first;
+
+        double dt        = dt_.get_value_binary(curr_time, true);  // Get next delta time
+        double next_time = curr_time + dt;
+
+        // Case 1: next_time is very close to next_logged_time -> snap
+        if (NEAR_NUMBERS(next_time, next_logged_time))
         {
-            float next_time = timestamps_[i].first + static_cast<float>(dt);
-            if (!NEAR_NUMBERSF(timestamps_[i + 1].first, next_time))
-            {
-                timestamps_.insert(timestamps_.begin() + i + 1, {next_time, false});
-            }
+            i++;
+            curr_time = next_logged_time;
+        }
+        // Case 2: next_time goes beyond the next logged timestamp
+        else if (next_time > next_logged_time)
+        {
+            LOG_WARN("Some mismatch in timestamps, overshooting at {}", curr_time);
+        }
+        // Case 3: Inside a gap bigger than 1 sample -> We need to fill from last known dt
+        else
+        {
+            double prev_dt = dt_.get_value_binary(curr_time);
+            curr_time += prev_dt;
         }
     }
+
+    // Always add the last explicit one
+    filled.emplace_back(timestamps_.back().first, timestamps_.back().second);
+    filled.begin()->second = true;  // Start of scenario is significant
+
+    timestamps_.swap(filled);
 }
 
 // Browse through replay-folder and appends strings of absolute path to matching scenario
@@ -539,13 +573,13 @@ void Replay::GoToEnd(bool ignore_repeat)
 
 void Replay::RoundTime()
 {
-    if (fixed_timestep_ == 1.0f)
+    if (fixed_timestep_ == 1.0)
     {
         time_ = std::floor(time_);
     }
-    else if (fixed_timestep_ > 0.0f)
+    else if (fixed_timestep_ > 0.0)
     {
-        auto divisor = std::round((static_cast<float>(time_) / fixed_timestep_));
+        auto divisor = std::round(time_ / fixed_timestep_);
         time_        = divisor * fixed_timestep_;
     }
 }
@@ -568,7 +602,7 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
         else
         {
             index_ = FindIndexAtTimestamp(target_time);
-            time_  = static_cast<float>(target_time);
+            time_  = target_time;
         }
     }
     else
@@ -577,7 +611,7 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
         {
             size_t next_index = index_ + 1;
             // Subtract small number so we don't accidentally step ahead of intended time
-            if (next_index < timestamps_.size() && static_cast<float>(target_time) >= timestamps_[next_index].first - SMALL_NUMBERF)
+            if (next_index < timestamps_.size() && target_time >= timestamps_[next_index].first - SMALL_NUMBER)
             {
                 index_ = next_index;
                 time_  = timestamps_[index_].first;
@@ -590,13 +624,13 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
                 }
                 else
                 {
-                    time_ = static_cast<float>(target_time);
+                    time_ = target_time;
                 }
             }
         }
         else if (target_time < time_)  // Same for backwards, but we stop when we find a timestamp less than current time
         {
-            if (index_ > 0 && static_cast<float>(target_time) <= timestamps_[index_ - 1].first)
+            if (index_ > 0 && target_time <= timestamps_[index_ - 1].first)
             {
                 index_--;
                 time_ = timestamps_[index_].first;
@@ -639,14 +673,14 @@ int Replay::GoToNextFrame()
     auto it = std::upper_bound(timestamps_.begin(),
                                timestamps_.end(),
                                time_ + SMALL_NUMBER,
-                               [](float value, const std::pair<float, bool>& p) { return value < p.first; });
+                               [](double value, const std::pair<double, bool>& p) { return value < p.first; });
 
     if (it == timestamps_.end())
     {
         GoToEnd();
         return 0;
     }
-    if (it->first <= static_cast<float>(stopTime_) + SMALL_NUMBERF)
+    if (it->first <= stopTime_ + SMALL_NUMBER)
     {
         index_ = static_cast<size_t>(std::distance(timestamps_.begin(), it));
         time_  = it->first;
@@ -792,7 +826,7 @@ void Replay::GoToSignificantTimestamp(bool search_forward)
     }
 }
 
-ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, float t) const
+ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, double t) const
 {
     ReplayEntry entry;
 
@@ -828,7 +862,7 @@ ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, float t) const
     return entry;
 }
 
-ReplayEntry Replay::GetReplayEntryAtTimeBinary(int id, float t) const
+ReplayEntry Replay::GetReplayEntryAtTimeBinary(int id, double t) const
 {
     ReplayEntry entry;
 
