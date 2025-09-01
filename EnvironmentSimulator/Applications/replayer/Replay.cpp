@@ -28,6 +28,8 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
         return;
     }
 
+    FillInTimestamps();  // Create timestamps from dt
+
     if (timestamps_.empty())
     {
         LOG_ERROR("No timestamps found in file: {}", filename);
@@ -135,10 +137,21 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading timestamp data.");
                 }
 
+                if (!first_timestamp_.has_value())
+                {
+                    first_timestamp_ = timestamp_;
+                }
+
                 if (timestamps_.empty() || timestamp_ <= SMALL_NUMBERF || timestamp_ > timestamps_.back().first)
                 {
-                    bool significant = (header.id != previous_packet_id_);
-                    timestamps_.emplace_back(timestamp_, significant);
+                    if (previous_packet_id_ == header.id)
+                    {
+                        timestamps_.emplace_back(timestamp_, false);
+                    }
+                    else
+                    {
+                        timestamps_.emplace_back(timestamp_, true);
+                    }
                 }
                 break;
             }
@@ -377,13 +390,17 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::DT):
             {
-                float dt;
+                double dt;
                 if (dat_reader.ReadPacket(header, dt) != 0)
                 {
                     LOG_ERROR("Failed reading fixed timestep.");
                     return -1;
                 }
                 dt_.values.emplace_back(timestamp_, dt);
+
+                // Receiving a new DT is not significant,
+                // but we dont know we'll get dt after adding the timestamp
+                timestamps_.back().second = false;
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
@@ -394,8 +411,9 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading end of scenario timestamp.");
                     return -1;
                 }
-                stopTime_  = static_cast<double>(stop_time);
-                stopIndex_ = timestamps_.size() - 1;
+                stopTime_ = static_cast<double>(stop_time);
+                timestamps_.emplace_back(stopTime_, true);
+                // stopIndex_ = timestamps_.size() - 1;
                 break;
             }
             default:
@@ -410,6 +428,21 @@ int Replay::ParsePackets(const std::string& filename)
     dat_reader.CloseFile();
 
     return 0;
+}
+
+void Replay::FillInTimestamps()
+{
+    for (const auto& [timestamp, dt] : dt_.values)
+    {
+        for (size_t i = 0; i < timestamps_.size() - 1; i++)
+        {
+            float next_time = timestamps_[i].first + static_cast<float>(dt);
+            if (!NEAR_NUMBERSF(timestamps_[i + 1].first, next_time))
+            {
+                timestamps_.insert(timestamps_.begin() + i + 1, {next_time, false});
+            }
+        }
+    }
 }
 
 // Browse through replay-folder and appends strings of absolute path to matching scenario
