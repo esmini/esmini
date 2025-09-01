@@ -294,6 +294,7 @@ Catalog *ScenarioReader::LoadCatalog(std::string name)
         // Then assume relative path to scenario directory - which perhaps should be the expected location
         file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), catalogs_->catalog_dirs_[i].dir_name_) + "/" + name +
                                        ".xosc");
+
         // Check registered paths
         for (size_t j = 0; j < SE_Env::Inst().GetPaths().size(); j++)
         {

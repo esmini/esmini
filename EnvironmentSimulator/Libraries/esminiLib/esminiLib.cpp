@@ -493,6 +493,16 @@ extern "C"
         return val.c_str();
     }
 
+    SE_DLL_API const char *SE_GetOptionValueByIndex(const char *name, unsigned int index)
+    {
+        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name) || index >= SE_Env::Inst().GetOptions().GetOptionArgs(name).size())
+        {
+            return 0;
+        }
+        std::vector<std::string> &vals = SE_Env::Inst().GetOptions().GetOptionArgs(name);
+        return vals[index].c_str();
+    }
+
     SE_DLL_API int SE_GetOptionValuesCount(const char *name)
     {
         if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name))

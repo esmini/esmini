@@ -116,11 +116,12 @@ std::map<int, std::string> ParseModelIds()
     file_name_candidates.push_back(filename);
 
     // Check registered paths
-    for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+    std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionArgs("path");
+    for (size_t i = 0; i < paths.size(); i++)
     {
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], filename));
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/../resources", filename));
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/..", filename));
+        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(paths[i], filename));
+        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(paths[i] + "/../resources", filename));
+        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(paths[i] + "/..", filename));
     }
 
     size_t i;
@@ -1530,14 +1531,15 @@ void RotateVec3d(const double h0,
 int SE_Env::AddPath(std::string path)
 {
     // Check if path already in list
-    for (size_t i = 0; i < paths_.size(); i++)
+    std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionArgs("path");
+    for (size_t i = 0; i < paths.size(); i++)
     {
-        if (paths_[i] == path)
+        if (paths[i] == path)
         {
             return -1;
         }
     }
-    paths_.push_back(path);
+    SE_Env::Inst().GetOptions().SetOptionValue("path", path, true);
 
     return 0;
 }
@@ -2058,13 +2060,14 @@ bool SE_Options::IsOptionArgumentSet(std::string opt)
     return false;
 }
 
-std::vector<std::string> SE_Options::GetOptionArgs(std::string opt)
+std::vector<std::string>& SE_Options::GetOptionArgs(std::string opt)
 {
     SE_Option* option = GetOption(opt);
 
     if (option == nullptr)
     {
-        return {};
+        static std::vector<std::string> empty_list = {};
+        return empty_list;
     }
 
     return option->arg_value_;

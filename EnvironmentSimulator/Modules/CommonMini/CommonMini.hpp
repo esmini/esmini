@@ -984,8 +984,8 @@ public:
     bool        IsOptionArgumentSet(std::string opt);
     std::string GetOptionArg(std::string opt, int index = 0);
     // returns all the values set for the option
-    std::vector<std::string> GetOptionArgs(std::string opt);
-    int                      ParseArgs(int argc, const char* const argv[]);
+    std::vector<std::string>& GetOptionArgs(std::string opt);
+    int                       ParseArgs(int argc, const char* const argv[]);
     // sets default values to options which are auto defaulted and are unset
     void                      ApplyDefaultValues();
     std::vector<std::string>& GetOriginalArgs()
@@ -1351,12 +1351,12 @@ public:
     }
     std::vector<std::string>& GetPaths()
     {
-        return paths_;
+        return SE_Env::Inst().GetOptions().GetOptionArgs("path");
     }
     int  AddPath(std::string path);
     void ClearPaths()
     {
-        paths_.clear();
+        SE_Env::Inst().GetOptions().ClearOption("path");
     }
     double GetSystemTime() const
     {
@@ -1456,7 +1456,6 @@ public:
     };
 
 private:
-    std::vector<std::string>   paths_;
     double                     osiMaxLongitudinalDistance_;
     double                     osiMaxLateralDeviation_;
     std::string                logFilePath_;

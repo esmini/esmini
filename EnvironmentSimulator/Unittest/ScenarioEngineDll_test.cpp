@@ -573,11 +573,22 @@ TEST(ProgramOptions, MultipleOptionValuesHandled)
     EXPECT_EQ(value, expectedValue);
     EXPECT_EQ(SE_GetOptionValuesCount("osc"), 1);
 
+    ASSERT_EQ(SE_GetOptionValuesCount("path"), 4);
     value = SE_GetOptionValue("path");
+    ASSERT_NE(value, nullptr);
+    expectedValue = "../../../resources/xosc";
+    EXPECT_EQ(value, expectedValue);
+
+    value = SE_GetOptionValueByIndex("path", 1);
     ASSERT_NE(value, nullptr);
     expectedValue = "b.txt";
     EXPECT_EQ(value, expectedValue);
-    EXPECT_EQ(SE_GetOptionValuesCount("path"), 2);
+
+    value = SE_GetOptionValueByIndex("path", 2);
+    ASSERT_NE(value, nullptr);
+    expectedValue = "a.txt";
+    EXPECT_EQ(value, expectedValue);
+
     SE_Close();
 
     value = SE_GetOptionValue("logfile_path");
@@ -632,11 +643,22 @@ TEST(ProgramOptions, PicksValueFromAppendIndexAsWell)
     EXPECT_EQ(value, expectedValue);
     EXPECT_EQ(SE_GetOptionValuesCount("osc"), 1);
 
+    EXPECT_EQ(SE_GetOptionValuesCount("path"), 4);
     value = SE_GetOptionValue("path");
+    ASSERT_NE(value, nullptr);
+    expectedValue = "../../../resources/xosc";
+    EXPECT_EQ(value, expectedValue);
+
+    value = SE_GetOptionValueByIndex("path", 1);
     ASSERT_NE(value, nullptr);
     expectedValue = "b.txt";
     EXPECT_EQ(value, expectedValue);
-    EXPECT_EQ(SE_GetOptionValuesCount("path"), 2);
+
+    value = SE_GetOptionValueByIndex("path", 2);
+    ASSERT_NE(value, nullptr);
+    expectedValue = "a.txt";
+    EXPECT_EQ(value, expectedValue);
+
     SE_Close();
 
     value = SE_GetOptionValue("logfile_path");
@@ -3058,10 +3080,10 @@ TEST(ExternalControlTest, TestTimings)
                                 "--osi_file",
                                 "gt.osi"}};
 
-    SE_AddPath("../../../resources/xodr");
-
     for (int j = 0; j < 2; j++)
     {
+        SE_AddPath("../../../resources/xodr");
+
         ASSERT_EQ(SE_InitWithArgs(sizeof(args[j]) / sizeof(char*), args[j]), 0);
         ASSERT_EQ(SE_GetNumberOfObjects(), 3);
 
@@ -4004,11 +4026,11 @@ TEST(ExternalController, TestExternalDriver)
     SE_ScenarioObjectState objectState;
     SE_RoadInfo            roadInfo;
 
-    SE_AddPath("../../../resources/xodr");
-    SE_AddPath("../../../resources/xosc/Catalogs/Vehicles");
-
     for (int i = 0; i < 3; i++)
     {
+        SE_AddPath("../../../resources/xodr");
+        SE_AddPath("../../../resources/xosc/Catalogs/Vehicles");
+
         SE_RegisterParameterDeclarationCallback(ghostParamDeclCB, &ghostMode[i]);
 
         ASSERT_EQ(SE_Init("../../../EnvironmentSimulator/code-examples/test-driver/test-driver.xosc", 0, 0, 0, 0), 0);
