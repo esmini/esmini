@@ -110,8 +110,8 @@ namespace Dat
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?
     {
-        double                            dt_;
-        float                             timestamp_;
+        double                            dt_ = LARGE_NUMBER;
+        double                            timestamp_;
         std::unordered_map<int, ObjState> state_;
     };
 
@@ -165,7 +165,7 @@ namespace Dat
             {
                 // Write with simulation time, object_states might be empty, then we have no time-reference
                 timestamp_written_ = true;
-                Write(PacketId::TIMESTAMP, static_cast<float>(simulation_time_));
+                Write(PacketId::TIMESTAMP, simulation_time_);
             }
 
             size_t total_size = (SerializedSize(data) + ... + 0);  // +0 incase we want to write without data
@@ -206,7 +206,7 @@ namespace Dat
         double                  simulation_time_   = 0.0;
         std::unordered_set<int> previous_ids_;  // Keep track of object IDs
         std::unordered_set<int> current_ids_;   // Keep track of object IDs for the current state
-        double                  dt_;
+        double                  dt_ = -1.0;
     };
 
     class DatReader
