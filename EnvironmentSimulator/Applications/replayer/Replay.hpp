@@ -223,6 +223,7 @@ namespace scenarioengine
         void AddToTimeline(Timeline<T>& timeline, Data data);
 
         int  ParsePackets(const std::string& filename);
+        void FillInTimestamps();
         void CreateMergedDatfile(const std::string filename) const;
 
         /**
@@ -288,6 +289,7 @@ namespace scenarioengine
 
         /* PacketHandler stuff */
         float                             timestamp_          = 0.0f;
+        std::optional<float>              first_timestamp_    = std::nullopt;
         id_t                              previous_packet_id_ = static_cast<id_t>(Dat::PacketId::PACKET_ID_SIZE);
         float                             fixed_timestep_     = -1.0f;
         int                               current_object_id_;
