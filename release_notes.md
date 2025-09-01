@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2025-09-01 Version 2.50.6
+
+Improvements and fixes:
+- Elaborate node names
+  - add tunnel component to osg node name
+  - add instance index to name (e.g. for object repeats)
+  - update [code example](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/road-model/road-model.cpp) to print material names
+- Add lib function [`SE_GetOptionValueByIndex()`](https://github.com/esmini/esmini/blob/f52e6b875727c0a1311300e9367ca7c0b0c5a1ab/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L471-L477)
+  - useful for options with multiple values
+- Fix path handling issue
+  - migrate path fully to option handling, skipping separate list
+
 ### 2025-08-29 Version 2.50.5
 
 Improvements and fixes:
