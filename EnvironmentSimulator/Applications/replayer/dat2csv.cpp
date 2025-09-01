@@ -69,7 +69,7 @@ int main(int argc, char** argv)
     snprintf(line, MAX_LINE_LEN, "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot\n");
     file << line;
 
-    float fixed_timestep = player->GetFixedTimestep();
+    float fixed_timestep = 0.0;
 
     // If not fixed timestep in log, we loop over all timestamps_
     if (fixed_timestep < 0.0f)
