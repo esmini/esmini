@@ -672,7 +672,7 @@ extern "C"
     /**
             Get the name of a named parameter
             @param index The index of the parameter, range [0:numberOfParameters-1]
-            @param Output parameter type 0=int, 1=double, 2=string (const char*), 3=bool, see OSCParameterDeclarations/ParameterType
+            @param Output parameter type 1=int, 2=double, 3=string (const char*), 4=bool, see OSCParameterDeclarations/ParameterType
             @return name if found, else 0
     */
     SE_DLL_API const char *SE_GetParameterName(int index, int *type);
@@ -686,7 +686,7 @@ extern "C"
     /**
             Get the name of a named variable
             @param index The index of the variable, range [0:numberOfVariables-1]
-            @param Output variable type 0=int, 1=double, 2=string (const char*), 3=bool, see OSCParameterDeclarations/ParameterType
+            @param Output variable type 1=int, 2=double, 3=string (const char*), 4=bool, see OSCParameterDeclarations/ParameterType
             @return name if found, else 0
     */
     SE_DLL_API const char *SE_GetVariableName(int index, int *type);
