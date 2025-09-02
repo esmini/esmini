@@ -108,7 +108,6 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 
     if (keyEvent->down_)
     {
-        double fixed_timestep = player->GetTimestepAtTime(player->GetTime());
         if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Right))
         {
             if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL) &&
@@ -122,26 +121,15 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_ALT))
             {
-                if (fixed_timestep < 0.0f)
-                {
-                    player->GoToSignificantTimestamp(true);
-                }
-                else
-                {
-                    player->GoToNextFrame();
-                }
+                player->GoToSignificantTimestamp(true);
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
                 player->GoToEnd(true);
             }
-            else if (fixed_timestep < 0.0f)  // We dont have a fixed timestep, so we have saved all timestamps and can just move to them
-            {
-                player->GoToNextFrame();
-            }
             else
             {
-                player->GoToDeltaTime(fixed_timestep);
+                player->GoToNextFrame();
             }
 
             pause_player = true;  // step by step
@@ -159,27 +147,16 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_ALT))
             {
-                if (fixed_timestep < 0.0f)
-                {
-                    player->GoToSignificantTimestamp(false);
-                }
-                else
-                {
-                    player->GoToPreviousFrame();
-                }
+                player->GoToSignificantTimestamp(false);
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
                 // rewind to beginning
                 player->GoToStart(true);
             }
-            else if (fixed_timestep < 0.0f)  // We dont have a fixed timestep, so we have saved all timestamps and can just move to them
-            {
-                player->GoToPreviousFrame();
-            }
             else
             {
-                player->GoToDeltaTime(-fixed_timestep);
+                player->GoToPreviousFrame();
             }
 
             pause_player = true;  // step by step
@@ -1048,11 +1025,8 @@ int main(int argc, char** argv)
             }
             else
             {
-                if (player->GetTimestepAtTime(simTime) > 0.0f)
-                {
-                    player->RoundTime();
-                    simTime = player->GetTime();
-                }
+                player->SetNearestTimestepAtTime(simTime);
+                simTime = player->GetTime();
             }
 
             do

@@ -55,16 +55,16 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
     }
 
-    double temp_fixed_timestep = LARGE_NUMBER;
+    // double temp_fixed_timestep = LARGE_NUMBER;
     for (size_t i = 0; i < scenarios_.size(); i++)
     {
         ParsePackets(scenarios_[i]);
         timestamps.push_back(timestamps_);
         scenarioData.emplace_back(scenarios_[i], objects_timeline_);
-        if (fixed_timestep_ < temp_fixed_timestep)
-        {
-            temp_fixed_timestep = fixed_timestep_;
-        }
+        // if (fixed_timestep_ < temp_fixed_timestep)
+        // {
+        //     temp_fixed_timestep = fixed_timestep_;
+        // }
 
         objects_timeline_.clear();
         timestamps_.clear();
@@ -95,9 +95,9 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
 
     std::sort(timestamps_.begin(), timestamps_.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
 
-    fixed_timestep_ = temp_fixed_timestep;
-    startTime_      = static_cast<float>(timestamps_[0].first);
-    time_           = startTime_;
+    // fixed_timestep_ = temp_fixed_timestep;
+    startTime_ = static_cast<float>(timestamps_[0].first);
+    time_      = startTime_;
 
     if (!create_datfile_.empty())
     {
@@ -449,8 +449,17 @@ void Replay::FillInTimestamps()
         filled.emplace_back(curr_time, timestamps_[i].second);  // Save current timestamp
 
         double next_logged_time = timestamps_[i + 1].first;
+        double dt;
 
-        double dt        = dt_.get_value_binary(curr_time, true);  // Get next delta time
+        if (dt_.values.size() == 2)
+        {
+            dt = dt_.values[1].second;
+        }
+        else
+        {
+            dt = dt_.get_value_binary(curr_time, true);  // Get next delta time
+        }
+
         double next_time = curr_time + dt;
 
         // Case 1: next_time is very close to next_logged_time -> snap
@@ -459,17 +468,14 @@ void Replay::FillInTimestamps()
             i++;
             curr_time = next_logged_time;
         }
-        // Case 2: next_time goes beyond the next logged timestamp
-        else if (next_time > next_logged_time)
-        {
-            LOG_WARN("Some mismatch in timestamps, overshooting at {}", curr_time);
-        }
         // Case 3: Inside a gap bigger than 1 sample -> We need to fill from last known dt
         else
         {
             double prev_dt = dt_.get_value_binary(curr_time);
             curr_time += prev_dt;
         }
+
+        prev_dt_ = dt;
     }
 
     // Always add the last explicit one
@@ -568,19 +574,6 @@ void Replay::GoToEnd(bool ignore_repeat)
     {
         index_ = stopIndex_;
         time_  = stopTime_;
-    }
-}
-
-void Replay::RoundTime()
-{
-    if (fixed_timestep_ == 1.0)
-    {
-        time_ = std::floor(time_);
-    }
-    else if (fixed_timestep_ > 0.0)
-    {
-        auto divisor = std::round(time_ / fixed_timestep_);
-        time_        = divisor * fixed_timestep_;
     }
 }
 
@@ -833,7 +826,7 @@ ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, double t) const
     const auto& timeline = objects_timeline_.at(id);
 
     entry.state.info.id             = id;
-    entry.state.info.timeStamp      = t;
+    entry.state.info.timeStamp      = static_cast<float>(t);
     entry.state.info.model_id       = timeline.model_id_.get_value_incremental(t);
     entry.state.info.obj_type       = timeline.obj_type_.get_value_incremental(t);
     entry.state.info.obj_category   = timeline.obj_category_.get_value_incremental(t);
