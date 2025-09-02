@@ -60,10 +60,11 @@ namespace scenarioengine
             }
             else  // Requested time is before last searched value, we decrement
             {
+                last_index++;
                 while (idx > 0)
                 {
                     double step = values[last_index].first - values[idx - 1].first;
-                    if (-desired_dt - SMALL_NUMBER < step - SMALL_NUMBER)
+                    if (-desired_dt < step - SMALL_NUMBER)
                     {
                         idx--;
                         break;
@@ -86,24 +87,8 @@ namespace scenarioengine
                 LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
             }
 
-            // if (NEAR_NUMBERS(last_time, time))
-            // {
-            //     return values[last_index].second;
-            // }
-
             auto search_begin = values.begin();
             auto search_end   = values.end();
-
-            // if (time >= values[last_index].first)
-            // {
-            //     // Time moved forward — only search ahead
-            //     search_begin = values.begin() + static_cast<typename std::vector<std::pair<double, T>>::difference_type>(last_index) - 1;
-            // }
-            // else
-            // {
-            //     // Time moved backward — only search behind
-            //     search_end = values.begin() + static_cast<typename std::vector<std::pair<double, T>>::difference_type>(last_index) + 1;
-            // }
 
             auto it = std::upper_bound(search_begin, search_end, time, [](double t, const std::pair<double, T>& v) { return t < v.first; });
 
@@ -117,8 +102,6 @@ namespace scenarioengine
             {
                 --it;
             }
-            // last_index = static_cast<size_t>(std::distance(values.begin(), it));
-            // last_time  = time;
 
             return it->second;
         }
@@ -270,9 +253,30 @@ namespace scenarioengine
         {
             repeat_ = repeat;
         }
-        double GetTimestepAtTime(float time) const
+        void SetNearestTimestepAtTime(double time)
         {
-            return dt_.get_value_incremental(time);
+            if (timestamps_.empty())
+            {
+                return;
+            }
+
+            auto it = std::lower_bound(timestamps_.begin(),
+                                       timestamps_.end(),
+                                       time,
+                                       [](const std::pair<float, bool>& p, float value) { return p.first < value; });
+
+            if (it == timestamps_.begin())
+            {
+                time_ = timestamps_.begin()->first;
+            }
+            else if (it == timestamps_.end())
+            {
+                time_ = timestamps_.back().first;
+            }
+            else
+            {
+                time_ = it->first;
+            }
         }
         // void SetIncludeGhostReset(bool include)
         // {
@@ -294,7 +298,7 @@ namespace scenarioengine
         double                            timestamp_          = 0.0;
         std::optional<double>             first_timestamp_    = std::nullopt;
         id_t                              previous_packet_id_ = static_cast<id_t>(Dat::PacketId::PACKET_ID_SIZE);
-        double                            fixed_timestep_     = -1.0;
+        double                            prev_dt_            = -1.0;
         int                               current_object_id_;
         scenarioengine::PropertyTimeline* current_object_timeline_;
     };
