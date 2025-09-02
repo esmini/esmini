@@ -687,8 +687,9 @@ void ScenarioPlayer::CloseViewer()
 {
     if (viewer_ != nullptr)
     {
-        delete viewer_;
-        viewer_ = nullptr;
+        viewer::Viewer* viewer_tmp = viewer_;
+        viewer_                    = nullptr;
+        delete viewer_tmp;
     }
     viewerState_ = ScenarioPlayer::ViewerState::VIEWER_STATE_DONE;
 }
