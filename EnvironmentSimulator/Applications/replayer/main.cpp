@@ -163,6 +163,11 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
         else if (keyEvent->key_ == static_cast<int>(KeyType::KEY_Space))
         {
             pause_player = !pause_player;
+
+            if (pause_player)
+            {
+                player->SetNearestTimestepAtTime();
+            }
         }
         else if (keyEvent->key_ == 'H')
         {
@@ -1014,11 +1019,6 @@ int main(int argc, char** argv)
 #else
                 player->GoToNextFrame();
 #endif  // _USE_OSG
-            }
-            else
-            {
-                player->SetNearestTimestepAtTime(simTime);
-                simTime = player->GetTime();
             }
 
             do
