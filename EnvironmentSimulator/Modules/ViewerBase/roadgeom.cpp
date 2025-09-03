@@ -1582,7 +1582,9 @@ namespace roadgeom
                 (*vertices_top)[i].set(static_cast<float>(x - origin[0]),
                                        static_cast<float>(y - origin[1]),
                                        static_cast<float>(z + corner->GetHeight()));
-                (*vertices_bottom)[i].set(static_cast<float>(x - origin[0]), static_cast<float>(y - origin[1]), static_cast<float>(z));
+                (*vertices_bottom)[outline->corner_.size() - 1 - i].set(static_cast<float>(x - origin[0]),
+                                                                        static_cast<float>(y - origin[1]),
+                                                                        static_cast<float>(z));
             }
         }
 
@@ -1591,7 +1593,7 @@ namespace roadgeom
             // rearrange vertices for quad strip
             for (size_t i = 0; i < outline->corner_.size(); i++)
             {
-                // points are starting at right side
+                // top points are starting at right side
                 double                      x, y, z;
                 unsigned                    index  = ((i % 2) == 0) ? outline->corner_.size() - 1 - (i / 2) : i / 2;
                 roadmanager::OutlineCorner* corner = outline->corner_[index];
@@ -1600,6 +1602,11 @@ namespace roadgeom
                 (*vertices_top)[i].set(static_cast<float>(x - origin[0]),
                                        static_cast<float>(y - origin[1]),
                                        static_cast<float>(z + corner->GetHeight()));
+
+                // bottom points are starting at left side
+                index  = ((i % 2) == 1) ? outline->corner_.size() - 1 - (i / 2) : i / 2;
+                corner = outline->corner_[index];
+                corner->GetPos(x, y, z);
                 (*vertices_bottom)[i].set(static_cast<float>(x - origin[0]), static_cast<float>(y - origin[1]), static_cast<float>(z));
             }
         }
@@ -1629,7 +1636,6 @@ namespace roadgeom
                 osgUtil::Tessellator tessellator;
                 tessellator.retessellatePolygons(*geom[1]);
 
-                // then also add bottom
                 geom[2]->setVertexArray(vertices_bottom.get());
                 geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
                 tessellator.retessellatePolygons(*geom[2]);
