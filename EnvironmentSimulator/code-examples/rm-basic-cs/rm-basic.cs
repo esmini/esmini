@@ -45,32 +45,33 @@ namespace esmini_csharp
             PrintInfo(p0);
 
             // try out get lane methods
+            int lane_id = 0;
             int nlanes = RoadManagerLibraryCS.GetRoadNumberOfLanes(1, 10.0f, -1);
             Console.WriteLine("total nr lanes: {0}", nlanes);
             for (int i = 0; i < nlanes; i++)
             {
-                Console.WriteLine("lane {0}: {1}", i, RoadManagerLibraryCS.GetLaneIdByIndex(1, i, 10.0f, -1));
+                Console.WriteLine("lane {0}: {1}, {2}", i, RoadManagerLibraryCS.GetLaneIdByIndex(1, i, 10.0f, -1, out lane_id), lane_id);
             }
 
             nlanes = RoadManagerLibraryCS.GetRoadNumberOfLanes(1, 10.0f, 64);
             Console.WriteLine("nr border lanes: {0}", nlanes);
             for (int i = 0; i < nlanes; i++)
             {
-                Console.WriteLine("lane {0}: {1}", i, RoadManagerLibraryCS.GetLaneIdByIndex(1, i, 10.0f, 64));
+                Console.WriteLine("lane {0}: {1}, {2}", i, RoadManagerLibraryCS.GetLaneIdByIndex(1, i, 10.0f, 64, out lane_id), lane_id);
             }
 
             nlanes = RoadManagerLibraryCS.GetRoadNumberOfLanes(1, 10.0f, 1966594);
             Console.WriteLine("any drivable nr lanes: {0}", nlanes);
             for (int i = 0; i < nlanes; i++)
             {
-                Console.WriteLine("lane {0}: {1}", i, RoadManagerLibraryCS.GetLaneIdByIndex(1, i, 10.0f, 1966594));
+                Console.WriteLine("lane {0}: {1}, {2}", i, RoadManagerLibraryCS.GetLaneIdByIndex(1, i, 10.0f, 1966594, out lane_id), lane_id);
             }
 
             nlanes = RoadManagerLibraryCS.GetRoadNumberOfDrivableLanes(1, 10.0f);
             Console.WriteLine("nr drivable lanes: {0}", nlanes);
             for (int i = 0; i < nlanes; i++)
             {
-                Console.WriteLine("lane {0}: {1}", i, RoadManagerLibraryCS.GetDrivableLaneIdByIndex(1, i, 1000.0f));
+                Console.WriteLine("lane {0}: {1}, {2}", i, RoadManagerLibraryCS.GetDrivableLaneIdByIndex(1, i, 1000.0f, out lane_id), lane_id);
             }
 
             RoadManagerLibraryCS.Close();
