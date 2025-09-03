@@ -231,9 +231,7 @@ int ParseEntities(Replay* player)
         OdoInfo odo_entry = {};
         for (size_t i = 0; i < player->timestamps_.size(); i++)
         {
-            ReplayEntry entry          = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i].first);
-            entry.state.info.id        = id;
-            entry.state.info.timeStamp = player->timestamps_[i].first;
+            ReplayEntry entry = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i].first);
 
             if (no_ghost && timelines.ctrl_type_.values[0].second == GHOST_CTRL_TYPE)
             {
@@ -936,19 +934,15 @@ int main(int argc, char** argv)
         if (!start_time_str.empty())
         {
             double startTime = 1E-3 * strtod(start_time_str);
-            if (static_cast<float>(startTime) < player->timestamps_.front().first)
+            if (startTime < player->timestamps_.front().first)
             {
-                printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n",
-                       startTime,
-                       static_cast<double>(player->timestamps_.front().first));
-                startTime = static_cast<double>(player->timestamps_.front().first);
+                printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n", startTime, player->timestamps_.front().first);
+                startTime = player->timestamps_.front().first;
             }
-            else if (static_cast<float>(startTime) > player->timestamps_.back().first)
+            else if (startTime > player->timestamps_.back().first)
             {
-                printf("Specified start time (%.2f) > last timestamp (%.2f), adapting.\n",
-                       startTime,
-                       static_cast<double>(player->timestamps_.back().first));
-                startTime = static_cast<double>(player->timestamps_.back().first);
+                printf("Specified start time (%.2f) > last timestamp (%.2f), adapting.\n", startTime, player->timestamps_.back().first);
+                startTime = player->timestamps_.back().first;
             }
             player->SetStartTime(startTime);
             player->GoToTime(startTime);
@@ -958,19 +952,15 @@ int main(int argc, char** argv)
         if (!stop_time_str.empty())
         {
             double stopTime = 1E-3 * strtod(stop_time_str);
-            if (static_cast<float>(stopTime) > player->timestamps_.back().first)
+            if (stopTime > player->timestamps_.back().first)
             {
-                printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n",
-                       stopTime,
-                       static_cast<double>(player->timestamps_.back().first));
-                stopTime = static_cast<double>(player->timestamps_.back().first);
+                printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->timestamps_.back().first);
+                stopTime = player->timestamps_.back().first;
             }
-            else if (static_cast<float>(stopTime) < player->timestamps_.front().first)
+            else if (stopTime < player->timestamps_.front().first)
             {
-                printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n",
-                       stopTime,
-                       static_cast<double>(player->timestamps_.front().first));
-                stopTime = static_cast<double>(player->timestamps_.front().first);
+                printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n", stopTime, player->timestamps_.front().first);
+                stopTime = player->timestamps_.front().first;
             }
             player->SetStopTime(stopTime);
         }
