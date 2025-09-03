@@ -167,6 +167,26 @@ class Timeline():
         idx = bisect.bisect_right(times, time, lo=search_start)
 
         return idx
+    
+    def get_value_binary(self, time, upper):
+        if len(self.values) == 0:
+            print("ERROR, no values available")
+            exit(-1)
+
+        if upper:
+            # Get the upper bound
+            idx = bisect.bisect_right(self.values, (time, float('inf')))
+        else:
+            # Get the lower bound
+            idx = bisect.bisect_left(self.values, (time, float('-inf')))
+
+        if idx == 0:
+            return self.values[0][1]
+        elif idx == len(self.values):
+            return self.values[-1][1]
+        else:
+            return self.values[idx][1]
+
 
 
 class PropertyTimeline():
@@ -256,7 +276,7 @@ class DATFile():
         self.current_object_timeline = None
         self.objects_timeline = defaultdict()
         self.object_state_cache = defaultdict()
-        self.fixed_timestep = -1.0
+        self.dt = Timeline()
         self.current_timestamp = 0.0
         self.ghost_ghost_counter = -1
         self.timestamps = []
@@ -265,7 +285,7 @@ class DATFile():
         self.data = []
 
         self.parse_data()
-
+        self.fill_timestamps()
         self.build_csv()
 
     def parse_data(self):
@@ -277,7 +297,7 @@ class DATFile():
 
             # TIMESTAMP packet
             if p_id == PacketId.TIMESTAMP.value:
-                self.current_timestamp = read_dtype(self.file, DataType.float)
+                self.current_timestamp = read_dtype(self.file, DataType.double)
 
                 if len(self.timestamps) == 0 or self.current_timestamp < SMALL_NUMBER or self.current_timestamp > self.timestamps[-1]:
                     self.timestamps.append(self.current_timestamp)
@@ -307,7 +327,7 @@ class DATFile():
                 self.add_to_timeline(self.current_object_timeline.pose, pose)
 
             elif p_id == PacketId.DT.value:
-                self.fixed_timestep = read_dtype(self.file, DataType.float)
+                self.dt.values.append([self.current_timestamp, read_dtype(self.file, DataType.double)])
             elif p_id == PacketId.SPEED.value:
                 self.add_to_timeline(self.current_object_timeline.speed, read_dtype(self.file, DataType.float))
             elif p_id == PacketId.WHEEL_ANGLE.value:
@@ -351,8 +371,7 @@ class DATFile():
             
             # END_OF_SCENARIO packet
             elif p_id == PacketId.END_OF_SCENARIO.value:
-                self.end_time = read_dtype(self.file, DataType.float)
-            #     self.object_events_map[self.ObjectStateStructDat["id"]].append(self.ObjectStateStructDat.copy())
+                self.end_time = read_dtype(self.file, DataType.double)
 
     def add_to_timeline(self, timeline: PropertyTimeline, data):
         if len(self.current_object_timeline.ctrl_type.values) != 0 and self.current_object_timeline.ctrl_type.values[-1][1] != 100:
@@ -424,25 +443,40 @@ class DATFile():
         else:
             labels = self.get_labels_line()
 
-        import pdb; pdb.set_trace()
-        if self.fixed_timestep < 0.0:
-            for t in self.timestamps:
-                for obj_id in self.objects_timeline.keys():
-                    state = self.get_object_state_struct_at_time(obj_id, t).copy()
-                    if not state["active"]:
-                        continue
-                    self.data.append(state)
-        else:
-            start_time = self.timestamps[0]
-            steps = int((self.end_time - start_time) / self.fixed_timestep) + 1 # add 1 since int rounds down
+        for t in self.timestamps:
+            for obj_id in self.objects_timeline.keys():
+                state = self.get_object_state_struct_at_time(obj_id, t).copy()
+                if not state["active"]:
+                    continue
+                self.data.append([state[label] for label in labels])
 
-            for i in range(steps + 1):
-                t = start_time + i * self.fixed_timestep
-                for obj_id in self.objects_timeline.keys():
-                    state = self.get_object_state_struct_at_time(obj_id, t).copy()
-                    if not state["active"]:
-                        continue
-                    self.data.append([state[label] for label in labels])
+    def fill_timestamps(self):
+        filled = []
+        i = 0
+        curr_time = self.timestamps[0]
+
+        while i < len(self.timestamps) - 1 and curr_time < self.end_time - SMALL_NUMBER:
+            filled.append(curr_time)
+
+            next_logged_time = self.timestamps[i + 1]
+
+            if len(self.dt.values) == 2:
+                dt = self.dt.values[1][1]
+            else:
+                dt = self.dt.get_value_binary(curr_time, True)
+
+            next_time = curr_time + dt
+
+            if is_near(next_time, next_logged_time):
+                i += 1
+                curr_time = next_logged_time
+            else:
+                prev_dt = dt.get_value_binary(curr_time)
+                curr_time += prev_dt
+
+        filled.append(self.timestamps[-1]) # Add last index
+        
+        self.timestamps = filled
 
     def get_header_line(self):
         return f'Version: {self.version_major}.{self.version_minor}, OpenDRIVE: {self.odr_filename}, 3DModel: {self.model_filename}'
