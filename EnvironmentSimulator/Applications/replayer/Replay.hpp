@@ -247,7 +247,7 @@ namespace scenarioengine
         {
             repeat_ = repeat;
         }
-        void SetNearestTimestepAtTime(double time)
+        void SetNearestTimestepAtTime()
         {
             if (timestamps_.empty())
             {
@@ -256,7 +256,7 @@ namespace scenarioengine
 
             auto it = std::lower_bound(timestamps_.begin(),
                                        timestamps_.end(),
-                                       time,
+                                       time_,
                                        [](const std::pair<float, bool>& p, float value) { return p.first < value; });
 
             if (it == timestamps_.begin())
