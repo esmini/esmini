@@ -4293,6 +4293,39 @@ TEST(PositionTest, TestClosestRoadPosFromXY)
     EXPECT_NEAR(pos.GetS(), 171.34, 1e-2);
 }
 
+TEST(LaneType, TestLaneTypeMasks)
+{
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_NONE, 1 << 0);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_DRIVING, 1 << 1);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_STOP, 1 << 2);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_SHOULDER, 1 << 3);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_BIKING, 1 << 4);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_SIDEWALK, 1 << 5);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_BORDER, 1 << 6);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_RESTRICTED, 1 << 7);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_PARKING, 1 << 8);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_BIDIRECTIONAL, 1 << 9);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_MEDIAN, 1 << 10);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL1, 1 << 11);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL2, 1 << 12);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_SPECIAL3, 1 << 13);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ROADWORKS, 1 << 14);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_TRAM, 1 << 15);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_RAIL, 1 << 16);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ENTRY, 1 << 17);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_EXIT, 1 << 18);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_OFF_RAMP, 1 << 19);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ON_RAMP, 1 << 20);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_CURB, 1 << 21);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_CONNECTING_RAMP, 1 << 22);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_REFERENCE_LINE, 1 << 0);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_DRIVING, 1966594);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_DRIVING, 1966594);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD, 1966726);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY, -1);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_TUNNEL, -2);
+}
+
 int main(int argc, char **argv)
 {
     // testing::GTEST_FLAG(filter) = "*RoadWidthAllLanes*";
