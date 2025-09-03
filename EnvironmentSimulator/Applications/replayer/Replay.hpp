@@ -38,37 +38,31 @@ namespace scenarioengine
             }
 
             size_t idx        = last_index;
-            double desired_dt = time - values[last_index].first;
+            double desired_dt = time - values[idx].first;
 
             if (NEAR_NUMBERS(last_time, time))
             {
-                return values[last_index].second;
+                return values[idx].second;
             }
 
-            if (time >= values[idx].first)  // Requested time is after last searched value, we increment
+            if (time >= values[idx].first)  // Requested time is after last searched value
             {
                 while (idx + 1 < values.size())
                 {
                     double step = values[idx + 1].first - values[last_index].first;
-                    if (desired_dt + SMALL_NUMBER < step - SMALL_NUMBER)
-                    {
+                    if (desired_dt < step - SMALL_NUMBER)
                         break;
-                    }
 
                     idx++;
                 }
             }
-            else  // Requested time is before last searched value, we decrement
+            else  // Requested time is before last searched value
             {
-                last_index++;
                 while (idx > 0)
                 {
                     double step = values[last_index].first - values[idx - 1].first;
                     if (-desired_dt < step - SMALL_NUMBER)
-                    {
-                        idx--;
                         break;
-                    }
 
                     idx--;
                 }
