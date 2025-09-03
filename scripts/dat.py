@@ -163,29 +163,27 @@ class Timeline():
             search_start = 0
 
         # upper_bound equivalent in Python
-        # bisect_right returns the first index > time
         idx = bisect.bisect_right(times, time, lo=search_start)
 
         return idx
     
-    def get_value_binary(self, time, upper):
+    def get_value_binary(self, time, upper = False):
         if len(self.values) == 0:
             print("ERROR, no values available")
             exit(-1)
 
-        if upper:
-            # Get the upper bound
-            idx = bisect.bisect_right(self.values, (time, float('inf')))
-        else:
-            # Get the lower bound
-            idx = bisect.bisect_left(self.values, (time, float('-inf')))
+        timestamps = [v[0] for v in self.values]
+        idx = bisect.bisect_right(timestamps, time)
 
         if idx == 0:
             return self.values[0][1]
         elif idx == len(self.values):
             return self.values[-1][1]
-        else:
-            return self.values[idx][1]
+        
+        if not upper:
+            idx -= 1
+
+        return self.values[idx][1]
 
 
 
@@ -471,7 +469,7 @@ class DATFile():
                 i += 1
                 curr_time = next_logged_time
             else:
-                prev_dt = dt.get_value_binary(curr_time)
+                prev_dt = self.dt.get_value_binary(curr_time)
                 curr_time += prev_dt
 
         filled.append(self.timestamps[-1]) # Add last index
