@@ -211,7 +211,7 @@ namespace scenarioengine
                 @param time timestamp (0 = beginning, -1 end)
                 @param stop_at_next_frame If true move max to next/previous time frame
         */
-        void                  RoundTime();
+        void                  SetTimeToNearestTimestamp();
         size_t                FindIndexAtTimestamp(double timestamp);
         void                  GoToSignificantTimestamp(bool search_forward);
         void                  GoToTime(double target_time, bool stop_at_next_frame = false);
@@ -246,31 +246,6 @@ namespace scenarioengine
         void SetRepeat(bool repeat)
         {
             repeat_ = repeat;
-        }
-        void SetNearestTimestepAtTime()
-        {
-            if (timestamps_.empty())
-            {
-                return;
-            }
-
-            auto it = std::lower_bound(timestamps_.begin(),
-                                       timestamps_.end(),
-                                       time_,
-                                       [](const std::pair<float, bool>& p, float value) { return p.first < value; });
-
-            if (it == timestamps_.begin())
-            {
-                time_ = timestamps_.begin()->first;
-            }
-            else if (it == timestamps_.end())
-            {
-                time_ = timestamps_.back().first;
-            }
-            else
-            {
-                time_ = it->first;
-            }
         }
         // void SetIncludeGhostReset(bool include)
         // {
