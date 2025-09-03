@@ -419,7 +419,7 @@ extern "C"
         return numberOfMatchedLanes;
     }
 
-    RM_DLL_API int RM_GetLaneIdByIndex(id_t roadId, int laneIndex, float s, int type_mask)
+    RM_DLL_API int RM_GetLaneIdByIndex(id_t roadId, int laneIndex, float s, int type_mask, int* lane_id)
     {
         if (odrManager == nullptr)
         {
@@ -430,13 +430,13 @@ extern "C"
             roadmanager::Road* road = odrManager->GetRoadById(roadId);
             if (road == nullptr)
             {
-                return RM_ID_UNDEFINED;
+                return -1;
             }
 
             roadmanager::LaneSection* laneSection = road->GetLaneSectionByS(s);
             if (laneSection == nullptr)
             {
-                return RM_ID_UNDEFINED;
+                return -1;
             }
 
             int numberOfMatchedLanes = 0;
@@ -447,7 +447,8 @@ extern "C"
                 {
                     if (numberOfMatchedLanes == laneIndex)
                     {
-                        return laneSection->GetLaneByIdx(i)->GetId();
+                        *lane_id = laneSection->GetLaneByIdx(i)->GetId();
+                        return 0;
                     }
                     else
                     {
@@ -457,7 +458,7 @@ extern "C"
             }
         }
 
-        return RM_ID_UNDEFINED;
+        return -1;
     }
 
     RM_DLL_API int RM_GetRoadNumberOfDrivableLanes(id_t roadId, float s)
@@ -465,9 +466,9 @@ extern "C"
         return RM_GetRoadNumberOfLanes(roadId, s, 1966594);
     }
 
-    RM_DLL_API int RM_GetDrivableLaneIdByIndex(id_t roadId, int laneIndex, float s)
+    RM_DLL_API int RM_GetDrivableLaneIdByIndex(id_t roadId, int laneIndex, float s, int* lane_id)
     {
-        return RM_GetLaneIdByIndex(roadId, laneIndex, s, 1966594);
+        return RM_GetLaneIdByIndex(roadId, laneIndex, s, 1966594, lane_id);
     }
 
     RM_DLL_API int RM_GetNumberOfRoadsOverlapping(int handle)

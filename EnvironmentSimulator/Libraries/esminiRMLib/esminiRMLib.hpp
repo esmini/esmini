@@ -309,9 +309,10 @@ extern "C"
     @param roadId The road ID
     @param laneIndex The index of the lane
     @param s The distance along the road at what point to look up the lane ID
-    @return The lane ID, RM_ID_UNDEFINED indicates error e.g. no roadnetwork loaded or index out of range
+    @param lane_id Pointer to store the lane ID
+    @return 0 on success, -1 indicates error e.g. no roadnetwork loaded or index out of range
     */
-    RM_DLL_API int RM_GetLaneIdByIndex(id_t roadId, int laneIndex, float s, int type_mask);
+    RM_DLL_API int RM_GetLaneIdByIndex(id_t roadId, int laneIndex, float s, int type_mask, int* lane_id);
 
     /**
     Get the number of drivable lanes of given road (like RM_GetRoadNumberOfLanes with type_mask for any drivable)
@@ -326,9 +327,10 @@ extern "C"
     @param roadId The road ID
     @param laneIndex The index of the lane
     @param s The distance along the road at what point to look up the lane ID
-    @return The lane ID, RM_ID_UNDEFINED indicates error e.g. no roadnetwork loaded or index out of range
+    @param lane_id Pointer to store the lane ID
+    @return 0 on success, -1 indicates error e.g. no roadnetwork loaded or index out of range
     */
-    RM_DLL_API int RM_GetDrivableLaneIdByIndex(id_t roadId, int laneIndex, float s);
+    RM_DLL_API int RM_GetDrivableLaneIdByIndex(id_t roadId, int laneIndex, float s, int* lane_id);
 
     /**
     Get the number of roads overlapping the given position

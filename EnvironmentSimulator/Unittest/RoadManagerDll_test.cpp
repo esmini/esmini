@@ -539,56 +539,80 @@ TEST(TestSetMethods, TestSetH)
 TEST(TestGetMethods, TestGetLaneMethods)
 {
     const char* odr_file = "../../../resources/xodr/fabriksgatan.xodr";
+    int         lane_id  = 0;
 
     ASSERT_EQ(RM_Init(odr_file), 0);
     ASSERT_EQ(RM_GetNumberOfRoads(), 16);
 
     EXPECT_EQ(RM_GetRoadNumberOfLanes(3, 100.0, -1), 7);  // -1 = any/all lanes
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 100.0, -1), 3);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 1, 100.0, -1), 2);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 2, 100.0, -1), 1);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 3, 100.0, -1), 0);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 4, 100.0, -1), -1);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 5, 100.0, -1), -2);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 6, 100.0, -1), -3);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 7, 100.0, -1), RM_ID_UNDEFINED);  // does not exist
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 100.0, -1, &lane_id), 0);
+    EXPECT_EQ(lane_id, 3);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 1, 100.0, -1, &lane_id), 0);
+    EXPECT_EQ(lane_id, 2);
+
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 2, 100.0, -1, &lane_id), 0);
+    EXPECT_EQ(lane_id, 1);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 3, 100.0, -1, &lane_id), 0);
+    EXPECT_EQ(lane_id, 0);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 4, 100.0, -1, &lane_id), 0);
+    EXPECT_EQ(lane_id, -1);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 5, 100.0, -1, &lane_id), 0);
+    EXPECT_EQ(lane_id, -2);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 6, 100.0, -1, &lane_id), 0);
+    EXPECT_EQ(lane_id, -3);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 7, 100.0, -1, &lane_id), -1);  // does not exist
+    EXPECT_EQ(lane_id, -3);                                         // not changed
 
     EXPECT_EQ(RM_GetRoadNumberOfLanes(3, 100.0, 32), 2);  // 32 = sidewalk
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 100.0, 32), 3);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 1, 100.0, 32), -3);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 2, 100.0, 32), RM_ID_UNDEFINED);  // does not exist
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 100.0, 32, &lane_id), 0);
+    EXPECT_EQ(lane_id, 3);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 1, 100.0, 32, &lane_id), 0);
+    EXPECT_EQ(lane_id, -3);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 2, 100.0, 32, &lane_id), -1);  // does not exist
 
     EXPECT_EQ(RM_GetRoadNumberOfLanes(3, 100.0, 64), 2);  // 64 = border
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 100.0, 64), 2);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 1, 100.0, 64), -2);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 2, 100.0, 64), RM_ID_UNDEFINED);  // does not exist
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 100.0, 64, &lane_id), 0);
+    EXPECT_EQ(lane_id, 2);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 1, 100.0, 64, &lane_id), 0);
+    EXPECT_EQ(lane_id, -2);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 2, 100.0, 64, &lane_id), -1);  // does not exist
 
     EXPECT_EQ(RM_GetRoadNumberOfLanes(3, 100.0, 2), 2);  // 2 = driving
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 100.0, 2), 1);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 1, 100.0, 2), -1);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 2, 100.0, 2), RM_ID_UNDEFINED);  // does not exist
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 100.0, 2, &lane_id), 0);
+    EXPECT_EQ(lane_id, 1);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 1, 100.0, 2, &lane_id), 0);
+    EXPECT_EQ(lane_id, -1);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 2, 100.0, 2, &lane_id), -1);  // does not exist
 
     EXPECT_EQ(RM_GetRoadNumberOfLanes(3, 100.0, 1966594), 2);  // 1966594 = any driving
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 100.0, 1966594), 1);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 1, 100.0, 1966594), -1);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 2, 100.0, 1966594), RM_ID_UNDEFINED);  // does not exist
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 100.0, 1966594, &lane_id), 0);
+    EXPECT_EQ(lane_id, 1);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 1, 100.0, 1966594, &lane_id), 0);
+    EXPECT_EQ(lane_id, -1);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 2, 100.0, 1966594, &lane_id), -1);  // does not exist
 
     EXPECT_EQ(RM_GetRoadNumberOfDrivableLanes(3, 100.0), 2);
-    EXPECT_EQ(RM_GetDrivableLaneIdByIndex(3, 0, 100.0), 1);
-    EXPECT_EQ(RM_GetDrivableLaneIdByIndex(3, 1, 100.0), -1);
-    EXPECT_EQ(RM_GetDrivableLaneIdByIndex(3, 2, 100.0), RM_ID_UNDEFINED);  // does not exist
+    EXPECT_EQ(RM_GetDrivableLaneIdByIndex(3, 0, 100.0, &lane_id), 0);
+    EXPECT_EQ(lane_id, 1);
+    EXPECT_EQ(RM_GetDrivableLaneIdByIndex(3, 1, 100.0, &lane_id), 0);
+    EXPECT_EQ(lane_id, -1);
+    EXPECT_EQ(RM_GetDrivableLaneIdByIndex(3, 2, 100.0, &lane_id), -1);  // does not exist
 
     EXPECT_EQ(RM_GetRoadNumberOfLanes(3, 100.0, 96), 4);  // 32 + 64 = sidewalk + border
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 100.0, 96), 3);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 1, 100.0, 96), 2);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 2, 100.0, 96), -2);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 3, 100.0, 96), -3);
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 4, 100.0, 96), RM_ID_UNDEFINED);  // does not exist
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 100.0, 96, &lane_id), 0);
+    EXPECT_EQ(lane_id, 3);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 1, 100.0, 96, &lane_id), 0);
+    EXPECT_EQ(lane_id, 2);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 2, 100.0, 96, &lane_id), 0);
+    EXPECT_EQ(lane_id, -2);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 3, 100.0, 96, &lane_id), 0);
+    EXPECT_EQ(lane_id, -3);
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 4, 100.0, 96, &lane_id), -1);  // does not exist
 
-    EXPECT_EQ(RM_GetRoadNumberOfLanes(3, 1000.0, 2), RM_ID_UNDEFINED);       // s out of range
-    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 1000.0, 2), RM_ID_UNDEFINED);        // s out of range
-    EXPECT_EQ(RM_GetRoadNumberOfDrivableLanes(3, 1000.0), RM_ID_UNDEFINED);  // s out of range
-    EXPECT_EQ(RM_GetDrivableLaneIdByIndex(3, 0, 1000.0), RM_ID_UNDEFINED);   // s out of range
+    EXPECT_EQ(RM_GetRoadNumberOfLanes(3, 1000.0, 2), -1);                // s out of range
+    EXPECT_EQ(RM_GetLaneIdByIndex(3, 0, 1000.0, 2, &lane_id), -1);       // s out of range
+    EXPECT_EQ(RM_GetRoadNumberOfDrivableLanes(3, 1000.0), -1);           // s out of range
+    EXPECT_EQ(RM_GetDrivableLaneIdByIndex(3, 0, 1000.0, &lane_id), -1);  // s out of range
 
     RM_Close();
 }

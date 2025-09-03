@@ -296,9 +296,10 @@ namespace OpenDRIVE
         /// <param name="laneIndex">The index of the lane</param>
         /// <param name="s">The distance along the road at what point to look up the lane ID</param>
         /// <param name="type_mask">The lane type according to roadmanager::Lane::LaneType (e.g. -1 = any, 1966594 = any drivable)</param>
-        /// <returns>The lane ID, RM_ID_UNDEFINED indicates error e.g. no roadnetwork loaded or index out of range</returns>
+        /// <param name="lane_id">Reference to store the lane ID</param>
+        /// <returns>0 on success, -1 indicates error e.g. no roadnetwork loaded or index out of range</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneIdByIndex")]
-        public static extern int GetLaneIdByIndex(int roadId, int laneIndex, float s, int type_mask);
+        public static extern int GetLaneIdByIndex(int roadId, int laneIndex, float s, int type_mask, ref int lane_id);
 
         /// <summary>
         /// Get the number of drivable lanes of given road (like RM_GetRoadNumberOfLanes with type_mask for any drivable)
@@ -315,9 +316,10 @@ namespace OpenDRIVE
         /// <param name="roadId">The road ID</param>
         /// <param name="laneIndex">The index of the lane</param>
         /// <param name="s">The distance along the road at what point to look up the lane ID</param>
-        /// <returns>The lane ID, RM_ID_UNDEFINED indicates error e.g. no roadnetwork loaded or index out of range</returns>
+        /// <param name="lane_id">Reference to store the lane ID</param>
+        /// <returns>0 on success, -1 indicates error e.g. no roadnetwork loaded or index out of range</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetDrivableLaneIdByIndex")]
-        public static extern int GetDrivableLaneIdByIndex(int roadId, int laneIndex, float s);
+        public static extern int GetDrivableLaneIdByIndex(int roadId, int laneIndex, float s, ref int lane_id);
 
         /// <summary>
         /// Get the number of roads overlapping the given position
