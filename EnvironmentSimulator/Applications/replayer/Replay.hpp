@@ -256,7 +256,6 @@ namespace scenarioengine
 
         /* PacketHandler stuff */
         double                            timestamp_          = 0.0;
-        std::optional<double>             first_timestamp_    = std::nullopt;
         id_t                              previous_packet_id_ = static_cast<id_t>(Dat::PacketId::PACKET_ID_SIZE);
         int                               current_object_id_;
         scenarioengine::PropertyTimeline* current_object_timeline_;
