@@ -296,12 +296,41 @@ extern "C"
     RM_DLL_API id_t RM_GetJunctionIdFromString(const char* junction_id_str);
 
     /**
-    Get the number of drivable lanes of specified road
+    Get the number of lanes of given type for given road. Reference lane will be included if matching the type.
     @param roadId The road ID
     @param s The distance along the road at what point to check number of lanes (which can vary along the road)
-    @return The number of drivable lanes, -1 indicates error e.g. no roadnetwork loaded
+    @param type The lane type according to roadmanager::Lane::LaneType (e.g. -1 = any, 1966594 = any drivable)
+    @return The number of matched lanes, -1 indicates error, e.g. no roadnetwork loaded
     */
-    RM_DLL_API int RM_GetRoadNumberOfLanes(id_t roadId, float s);
+    RM_DLL_API int RM_GetRoadNumberOfLanes(id_t roadId, float s, int type_mask);
+
+    /**
+    Get ID of the lane given by index and type. Reference lane will be included if matching the type.
+    @param roadId The road ID
+    @param laneIndex The index of the lane
+    @param s The distance along the road at what point to look up the lane ID
+    @param lane_id Pointer to store the lane ID
+    @return 0 on success, -1 indicates error e.g. no roadnetwork loaded or index out of range
+    */
+    RM_DLL_API int RM_GetLaneIdByIndex(id_t roadId, int laneIndex, float s, int type_mask, int* lane_id);
+
+    /**
+    Get the number of drivable lanes of given road (like RM_GetRoadNumberOfLanes with type_mask for any drivable)
+    @param roadId The road ID
+    @param s The distance along the road at what point to check number of lanes (which can vary along the road)
+    @return The number of lanes, -1 indicates error, e.g. no roadnetwork loaded
+    */
+    RM_DLL_API int RM_GetRoadNumberOfDrivableLanes(id_t roadId, float s);
+
+    /**
+    Get ID of the drivable lane given by index (like RM_GetLaneIdByIndex with type_mask for any drivable)
+    @param roadId The road ID
+    @param laneIndex The index of the lane
+    @param s The distance along the road at what point to look up the lane ID
+    @param lane_id Pointer to store the lane ID
+    @return 0 on success, -1 indicates error e.g. no roadnetwork loaded or index out of range
+    */
+    RM_DLL_API int RM_GetDrivableLaneIdByIndex(id_t roadId, int laneIndex, float s, int* lane_id);
 
     /**
     Get the number of roads overlapping the given position
@@ -317,15 +346,6 @@ extern "C"
     @return Id of specified overlapping road
     */
     RM_DLL_API id_t RM_GetOverlappingRoadId(int handle, unsigned int index);
-
-    /**
-    Get the ID of the lane given by index
-    @param roadId The road ID
-    @param laneIndex The index of the lane
-    @param s The distance along the road at what point to look up the lane ID
-    @return The lane ID, -1 indicates error e.g. no roadnetwork loaded
-    */
-    RM_DLL_API int RM_GetLaneIdByIndex(id_t roadId, int laneIndex, float s);
 
     /**
     Set position from road coordinates, world coordinates being calculated
@@ -477,18 +497,20 @@ extern "C"
     Get width of lane with specified lane id, at current longitudinal position
     @param handle Handle to the position object from which to measure
     @param lane_id Id of the lane to measure
-    @return Lane width or 0.0 if lane does not exists or any other error
+    @param Pointer to store the lane width
+    @return 0 on success, -1 on any error, e.g. lane with specified id is missing
     */
-    RM_DLL_API float RM_GetLaneWidth(int handle, int lane_id);
+    RM_DLL_API int RM_GetLaneWidth(int handle, int lane_id, float* width);
 
     /**
     Get width of lane with specified lane id, at specified road and longitudinal position
     @param road_id Id of the road
     @param lane_id Id of the lane to measure
     @param s Longitudinal position along the road
-    @return Lane width or 0.0 if lane does not exists or any other error
+    @param width Pointer to store the lane width
+    @return 0 on success, -1 on any error, e.g. specified road is missing
     */
-    RM_DLL_API float RM_GetLaneWidthByRoadId(id_t road_id, int lane_id, float s);
+    RM_DLL_API int RM_GetLaneWidthByRoadId(id_t road_id, int lane_id, float s, float* width);
 
     /**
     Get type of lane with specified lane id, at current longitudinal position

@@ -382,9 +382,9 @@ extern "C"
         return RM_ID_UNDEFINED;
     }
 
-    RM_DLL_API int RM_GetRoadNumberOfLanes(id_t roadId, float s)
+    RM_DLL_API int RM_GetRoadNumberOfLanes(id_t roadId, float s, int type_mask)
     {
-        int numberOfDrivableLanes = 0;
+        int numberOfMatchedLanes = 0;
 
         if (odrManager == nullptr)
         {
@@ -393,26 +393,82 @@ extern "C"
         else
         {
             roadmanager::Road* road = odrManager->GetRoadById(roadId);
-
-            // Consider only drivable lanes
-            if (road)
-            {
-                roadmanager::LaneSection* laneSection = road->GetLaneSectionByS(s);
-                for (unsigned int i = 0; i < laneSection->GetNumberOfLanes(); i++)
-                {
-                    if (laneSection->GetLaneByIdx(i)->IsDriving())
-                    {
-                        numberOfDrivableLanes++;
-                    }
-                }
-            }
-            else
+            if (road == nullptr)
             {
                 return -1;
             }
+            else
+            {
+                roadmanager::LaneSection* laneSection = road->GetLaneSectionByS(s);
+                if (laneSection == nullptr)
+                {
+                    return -1;
+                }
+
+                for (unsigned int i = 0; i < laneSection->GetNumberOfLanes(); i++)
+                {
+                    // Consider only lanes of given types
+                    if (laneSection->GetLaneByIdx(i)->GetLaneType() & type_mask)
+                    {
+                        numberOfMatchedLanes++;
+                    }
+                }
+            }
         }
 
-        return numberOfDrivableLanes;
+        return numberOfMatchedLanes;
+    }
+
+    RM_DLL_API int RM_GetLaneIdByIndex(id_t roadId, int laneIndex, float s, int type_mask, int* lane_id)
+    {
+        if (odrManager == nullptr)
+        {
+            return -1;
+        }
+        else
+        {
+            roadmanager::Road* road = odrManager->GetRoadById(roadId);
+            if (road == nullptr)
+            {
+                return -1;
+            }
+
+            roadmanager::LaneSection* laneSection = road->GetLaneSectionByS(s);
+            if (laneSection == nullptr)
+            {
+                return -1;
+            }
+
+            int numberOfMatchedLanes = 0;
+            for (unsigned int i = 0; i < laneSection->GetNumberOfLanes(); i++)
+            {
+                // Consider only lanes of specified types
+                if (laneSection->GetLaneByIdx(i)->GetLaneType() & type_mask)
+                {
+                    if (numberOfMatchedLanes == laneIndex)
+                    {
+                        *lane_id = laneSection->GetLaneByIdx(i)->GetId();
+                        return 0;
+                    }
+                    else
+                    {
+                        numberOfMatchedLanes++;
+                    }
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    RM_DLL_API int RM_GetRoadNumberOfDrivableLanes(id_t roadId, float s)
+    {
+        return RM_GetRoadNumberOfLanes(roadId, s, 1966594);
+    }
+
+    RM_DLL_API int RM_GetDrivableLaneIdByIndex(id_t roadId, int laneIndex, float s, int* lane_id)
+    {
+        return RM_GetLaneIdByIndex(roadId, laneIndex, s, 1966594, lane_id);
     }
 
     RM_DLL_API int RM_GetNumberOfRoadsOverlapping(int handle)
@@ -437,36 +493,6 @@ extern "C"
         roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
 
         return pos->GetOverlappingRoadId(index);
-    }
-
-    RM_DLL_API int RM_GetLaneIdByIndex(id_t roadId, int laneIndex, float s)
-    {
-        if (odrManager == nullptr)
-        {
-            return -1;
-        }
-        else
-        {
-            roadmanager::Road* road                  = odrManager->GetRoadById(roadId);
-            int                numberOfDrivableLanes = 0;
-            // Consider only drivable lanes
-            roadmanager::LaneSection* laneSection = road->GetLaneSectionByS(s);
-            for (unsigned int i = 0; i < laneSection->GetNumberOfLanes(); i++)
-            {
-                if (laneSection->GetLaneByIdx(i)->IsDriving())
-                {
-                    if (numberOfDrivableLanes == laneIndex)
-                    {
-                        return laneSection->GetLaneByIdx(i)->GetId();
-                    }
-                    else
-                    {
-                        numberOfDrivableLanes++;
-                    }
-                }
-            }
-        }
-        return 0;
     }
 
     RM_DLL_API int RM_SetLanePosition(int handle, id_t roadId, int laneId, float laneOffset, float s, bool align)
@@ -806,36 +832,40 @@ extern "C"
         return GetProbeInfo(handle, lookahead_distance, data, lookAheadMode, inRoadDrivingDirection);
     }
 
-    RM_DLL_API float RM_GetLaneWidth(int handle, int lane_id)
+    RM_DLL_API int RM_GetLaneWidth(int handle, int lane_id, float* width)
     {
-        if (odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
+        if (width == nullptr || odrManager == nullptr || handle < 0 || handle >= static_cast<int>(position.size()))
         {
-            return 0.0;
+            return -1;
         }
 
         roadmanager::Road* road = odrManager->GetRoadById(position[static_cast<unsigned int>(handle)].GetTrackId());
         if (road == nullptr)
         {
-            return 0.0;
+            return -1;
         }
 
-        return static_cast<float>(road->GetLaneWidthByS(position[static_cast<unsigned int>(handle)].GetS(), lane_id));
+        *width = static_cast<float>(road->GetLaneWidthByS(position[static_cast<unsigned int>(handle)].GetS(), lane_id));
+
+        return 0;
     }
 
-    RM_DLL_API float RM_GetLaneWidthByRoadId(id_t road_id, int lane_id, float s)
+    RM_DLL_API int RM_GetLaneWidthByRoadId(id_t road_id, int lane_id, float s, float* width)
     {
-        if (odrManager == nullptr)
+        if (width == nullptr || odrManager == nullptr)
         {
-            return 0.0;
+            return -1;
         }
 
         roadmanager::Road* road = odrManager->GetRoadById(road_id);
         if (road == nullptr)
         {
-            return 0.0;
+            return -1;
         }
 
-        return static_cast<float>(road->GetLaneWidthByS(s, lane_id));
+        *width = static_cast<float>(road->GetLaneWidthByS(s, lane_id));
+
+        return 0;
     }
 
     RM_DLL_API int RM_GetLaneType(int handle, int lane_id)

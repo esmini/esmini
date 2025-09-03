@@ -280,13 +280,46 @@ namespace OpenDRIVE
         public static extern float GetRoadLength(int id);
 
         /// <summary>
-        /// Get the number of drivable lanes of specified road
+        /// Get the number of lanes of given type for given road. Reference lane will be included if matching the type.
         /// </summary>
-        /// <param name="roadId">The OpenDRIVE road ID</param>
+        /// <param name="roadId">The road ID</param>
         /// <param name="s">The distance along the road at what point to check number of lanes (which can vary along the road)</param>
-        /// <returns>The number of drivable lanes, -1 indicates error e.g. no roadnetwork loaded</returns>
+        /// <param name="type_mask">The lane type according to roadmanager::Lane::LaneType (e.g. -1 = any, 1966594 = any drivable)</param>
+        /// <returns>The number of matched lanes, -1 indicates error, e.g. no roadnetwork loaded</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetRoadNumberOfLanes")]
-        public static extern int GetRoadNumberOfLanes(int roadId, float s);
+        public static extern int GetRoadNumberOfLanes(int roadId, float s, int type_mask);
+
+        /// <summary>
+        /// Get ID of the lane given by index and type. Reference lane will be included if matching the type.
+        /// </summary>
+        /// <param name="roadId">The road ID</param>
+        /// <param name="laneIndex">The index of the lane</param>
+        /// <param name="s">The distance along the road at what point to look up the lane ID</param>
+        /// <param name="type_mask">The lane type according to roadmanager::Lane::LaneType (e.g. -1 = any, 1966594 = any drivable)</param>
+        /// <param name="lane_id">Out parameter to store the lane ID</param>
+        /// <returns>0 on success, -1 indicates error e.g. no roadnetwork loaded or index out of range</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneIdByIndex")]
+        public static extern int GetLaneIdByIndex(int roadId, int laneIndex, float s, int type_mask, out int lane_id);
+
+        /// <summary>
+        /// Get the number of drivable lanes of given road (like RM_GetRoadNumberOfLanes with type_mask for any drivable)
+        /// </summary>
+        /// <param name="roadId">The road ID</param>
+        /// <param name="s">The distance along the road at what point to check number of lanes (which can vary along the road)</param>
+        /// <returns>The number of lanes, -1 indicates error, e.g. no roadnetwork loaded</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetRoadNumberOfDrivableLanes")]
+        public static extern int GetRoadNumberOfDrivableLanes(int roadId, float s);
+
+        /// <summary>
+        /// Get ID of the drivable lane given by index (like RM_GetLaneIdByIndex with type_mask for any drivable)
+        /// </summary>
+        /// <param name="roadId">The road ID</param>
+        /// <param name="laneIndex">The index of the lane</param>
+        /// <param name="s">The distance along the road at what point to look up the lane ID</param>
+        /// <param name="lane_id">Out parameter to store the lane ID</param>
+        /// <returns>0 on success, -1 indicates error e.g. no roadnetwork loaded or index out of range</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_GetDrivableLaneIdByIndex")]
+        public static extern int GetDrivableLaneIdByIndex(int roadId, int laneIndex, float s, out int lane_id);
 
         /// <summary>
         /// Get the number of roads overlapping the given position
@@ -304,16 +337,6 @@ namespace OpenDRIVE
         /// <returns>Id of specified overlapping road</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetOverlappingRoadId")]
         public static extern int GetOverlappingRoadId(int handle, int index);
-
-        /// <summary>
-        /// Get the OpenDRIVE ID of the lane given by index
-        /// </summary>
-        /// <param name="roadId">The OpenDRIVE road ID</param>
-        /// <param name="laneIndex">The index of the lane </param>
-        /// <param name="s">The distance along the road at what point to look up the lane ID</param>
-        /// <returns>The lane ID - as specified in the OpenDRIVE description, -1 on error</returns>
-        [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneIdByIndex")]
-        public static extern int GetLaneIdByIndex(int roadId, int laneIndex, float s);
 
         /// <summary>
         /// Set position from road coordinates, world coordinates being calculated
@@ -485,9 +508,10 @@ namespace OpenDRIVE
         /// </summary>
         /// <param name="handle">Handle to the position object from which to measure</param>
         /// <param name="lane_id">Id of the lane to measure</param>
-        /// <returns>Lane width or 0.0 if lane does not exists or any other error</returns>
+        /// <param name="width">Out parameter to store the lane width</param>
+        /// <returns>0 on success, -1 on any error</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneWidth")]
-        public static extern float GetLaneWidth(int handle, int lane_id);
+        public static extern int GetLaneWidth(int handle, int lane_id, out float width);
 
         /// <summary>
         /// Get width of lane with specified lane id, at specified road and longitudinal position
@@ -496,9 +520,10 @@ namespace OpenDRIVE
         /// <param name="road_id">Id of the road</param>
         /// <param name="lane_id">Id of the lane to measure</param>
         /// <param name="s">Longitudinal position along the road</param>
-        /// <returns>Lane width or 0.0 if lane does not exists or any other error</returns>
+        /// <param name="width">Out parameter to store the lane width</param>
+        /// <returns>0 on success, -1 on any error</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneWidthByRoadId")]
-        public static extern float GetLaneWidthByRoadId(int road_id, int lane_id, float s);
+        public static extern int GetLaneWidthByRoadId(int road_id, int lane_id, float s, out float width);
 
         /// <summary>
         /// Get type of lane with specified lane id, at current longitudinal position

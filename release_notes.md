@@ -1,5 +1,16 @@
 ## esmini release notes
 
+Improvements and fixes:
+- Refactor some esminiRMLib functions making use of out/ref parameter
+  - dedicating return value for success/error indication (0/-1)
+  - also add lane type(s) argument for following functions:
+    - `RM_GetRoadNumberOfLanes()`
+    - `RM_GetLaneIdByIndex()`
+  - rename old variants, only considering drivable lanes, into:
+    - `RM_GetRoadNumberOfDrivableLanes()`
+    - `RM_GetDrivableLaneIdByIndex()`
+  - update [C# wrapper](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs) and code example ([rm-basic.cs](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/rm-basic-cs/rm-basic.cs))
+
 ### 2025-09-01 Version 2.50.6
 
 Improvements and fixes:
