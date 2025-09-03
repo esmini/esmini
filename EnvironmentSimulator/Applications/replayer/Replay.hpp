@@ -37,38 +37,29 @@ namespace scenarioengine
                 LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
             }
 
-            size_t idx        = last_index;
-            double desired_dt = time - values[idx].first;
+            size_t idx = last_index;
 
             if (NEAR_NUMBERS(last_time, time))
             {
                 return values[idx].second;
             }
 
-            if (time >= values[idx].first)  // Requested time is after last searched value
+            if (time >= values[idx].first)  // moving forward
             {
-                while (idx + 1 < values.size())
+                while (idx + 1 < values.size() && values[idx + 1].first <= time + SMALL_NUMBER)
                 {
-                    double step = values[idx + 1].first - values[last_index].first;
-                    if (desired_dt < step - SMALL_NUMBER)
-                        break;
-
                     idx++;
                 }
             }
-            else  // Requested time is before last searched value
+            else  // moving backward
             {
-                while (idx > 0)
+                while (idx > 0 && values[idx].first > time + SMALL_NUMBER)
                 {
-                    double step = values[last_index].first - values[idx - 1].first;
-                    if (-desired_dt < step - SMALL_NUMBER)
-                        break;
-
                     idx--;
                 }
             }
 
-            last_index = idx;  // Save the index for next call
+            last_index = idx;
             last_time  = time;
 
             return values[idx].second;
