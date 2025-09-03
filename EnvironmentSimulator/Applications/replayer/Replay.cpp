@@ -153,11 +153,6 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading timestamp data.");
                 }
 
-                if (!first_timestamp_.has_value())
-                {
-                    first_timestamp_ = timestamp_;
-                }
-
                 if (timestamps_.empty() || timestamp_ <= SMALL_NUMBER || timestamp_ > timestamps_.back().first)
                 {
                     if (previous_packet_id_ != header.id)
@@ -456,9 +451,9 @@ void Replay::FillInTimestamps()
     std::vector<std::pair<double, bool>> filled;
 
     size_t i         = 0;
-    double curr_time = first_timestamp_.value();
+    double curr_time = timestamps_.begin()->first;
 
-    while (i < timestamps_.size() - 1 && curr_time < static_cast<double>(stopTime_) - SMALL_NUMBER)
+    while (i < timestamps_.size() - 1 && curr_time < stopTime_ - SMALL_NUMBER)
     {
         filled.emplace_back(curr_time, timestamps_[i].second);  // Save current timestamp
 
