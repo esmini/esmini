@@ -397,10 +397,7 @@ int Replay::ParsePackets(const std::string& filename)
                     return -1;
                 }
                 dt_.values.emplace_back(timestamp_, dt);
-
-                // Receiving a new DT is not significant,
-                // but we dont know we'll get dt after adding the timestamp
-                timestamps_.back().second = false;
+                timestamps_.back().second = false;  // Mark last timestamp as non-significant
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
@@ -411,7 +408,9 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading end of scenario timestamp.");
                     return -1;
                 }
+
                 stopTime_ = stop_time;
+
                 if (!NEAR_NUMBERS(stopTime_, timestamps_.back().first))
                 {
                     timestamps_.emplace_back(stopTime_, true);
@@ -420,7 +419,6 @@ int Replay::ParsePackets(const std::string& filename)
                 {
                     timestamps_.back().second = true;
                 }
-                // stopIndex_ = timestamps_.size() - 1;
                 break;
             }
             default:
@@ -462,13 +460,13 @@ void Replay::FillInTimestamps()
 
         double next_time = curr_time + dt;
 
-        // Case 1: next_time is very close to next_logged_time -> snap
+        // next_time is very close to next_logged_time -> snap
         if (NEAR_NUMBERS(next_time, next_logged_time))
         {
             i++;
             curr_time = next_logged_time;
         }
-        // Case 3: Inside a gap bigger than 1 sample -> We need to fill from last known dt
+        // inside a gap bigger than 1 sample -> We need to fill from last known dt
         else
         {
             double prev_dt = dt_.get_value_binary(curr_time);
