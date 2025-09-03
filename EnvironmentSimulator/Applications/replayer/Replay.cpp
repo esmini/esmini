@@ -36,8 +36,11 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
         return;
     }
 
-    startTime_ = static_cast<float>(timestamps_[0].first);
-    time_      = startTime_;
+    startTime_ = timestamps_[0].first;
+    stopIndex_ = timestamps_.size() - 1;
+    // stopTime_ set in END_OF_SCENARIO packet
+
+    time_ = startTime_;
 }
 
 Replay::Replay(const std::string directory, const std::string scenario, std::string create_datfile)
@@ -59,15 +62,13 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     for (size_t i = 0; i < scenarios_.size(); i++)
     {
         ParsePackets(scenarios_[i]);
+        FillInTimestamps();
         timestamps.push_back(timestamps_);
         scenarioData.emplace_back(scenarios_[i], objects_timeline_);
-        // if (fixed_timestep_ < temp_fixed_timestep)
-        // {
-        //     temp_fixed_timestep = fixed_timestep_;
-        // }
 
         objects_timeline_.clear();
         timestamps_.clear();
+        dt_ = {};
     }
 
     // Build the objects timeline data structure
@@ -82,7 +83,10 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
             objects_timeline_.emplace(new_id, std::move(timeline));
         }
     }
+
+    // Completely delete scenarioData, its not useful anymore
     scenarioData.clear();
+    std::vector<std::pair<std::string, std::map<int, PropertyTimeline, MapComparator>>>().swap(scenarioData);
 
     // Build the final timestamps_ vector
     size_t total_size = std::accumulate(timestamps.begin(), timestamps.end(), size_t{0}, [](size_t sum, const auto& v) { return sum + v.size(); });
@@ -93,11 +97,23 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         timestamps_.insert(timestamps_.end(), v.begin(), v.end());
     }
 
+    // Completely delete timestamps, its not useful anymore
+    timestamps.clear();
+    std::vector<std::vector<std::pair<double, bool>>>().swap(timestamps);
+
     std::sort(timestamps_.begin(), timestamps_.end(), [](const auto& a, const auto& b) { return a.first < b.first; });
 
+    // Remove duplicated timestamps
+    timestamps_.erase(
+        std::unique(timestamps_.begin(), timestamps_.end(), [](const auto& a, const auto& b) { return NEAR_NUMBERS(a.first, b.first); }),
+        timestamps_.end());
+
     // fixed_timestep_ = temp_fixed_timestep;
-    startTime_ = static_cast<float>(timestamps_[0].first);
-    time_      = startTime_;
+    startTime_ = timestamps_[0].first;
+    stopIndex_ = timestamps_.size() - 1;
+    stopTime_  = timestamps_[stopIndex_].first;
+
+    time_ = startTime_;
 
     if (!create_datfile_.empty())
     {
@@ -481,7 +497,6 @@ void Replay::FillInTimestamps()
     filled.begin()->second = true;  // Start of scenario is significant
 
     timestamps_.swap(filled);
-    stopIndex_ = timestamps_.size() - 1;
 }
 
 // Browse through replay-folder and appends strings of absolute path to matching scenario
@@ -823,6 +838,30 @@ void Replay::GoToSignificantTimestamp(bool search_forward)
     }
 }
 
+void Replay::SetTimeToNearestTimestamp()
+{
+    if (timestamps_.empty())
+    {
+        return;
+    }
+
+    auto it =
+        std::lower_bound(timestamps_.begin(), timestamps_.end(), time_, [](const std::pair<float, bool>& p, float value) { return p.first < value; });
+
+    if (it == timestamps_.begin())
+    {
+        time_ = timestamps_.begin()->first;
+    }
+    else if (it == timestamps_.end())
+    {
+        time_ = timestamps_.back().first;
+    }
+    else
+    {
+        time_ = it->first;
+    }
+}
+
 ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, double t) const
 {
     ReplayEntry entry;
@@ -912,7 +951,7 @@ void Replay::AddToTimeline(Timeline<T>& timeline, Data data)
         // finally, we need to clear the current ghost object's timeline down to the time where ghost reset began
         auto& obj_tl = objects_timeline_.at(current_object_id_);
 
-        if (!NEAR_NUMBERSF(obj_tl.last_restart_time, timestamp_))
+        if (!NEAR_NUMBERS(obj_tl.last_restart_time, timestamp_))
         {
             int  ghost_ghost_id = current_object_id_ * ghost_ghost_counter_;
             auto it             = objects_timeline_.find(ghost_ghost_id);

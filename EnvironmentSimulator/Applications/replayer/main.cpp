@@ -166,7 +166,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 
             if (pause_player)
             {
-                player->SetNearestTimestepAtTime();
+                player->SetTimeToNearestTimestamp();
             }
         }
         else if (keyEvent->key_ == 'H')
