@@ -483,6 +483,7 @@ void Replay::FillInTimestamps()
     filled.begin()->second = true;  // Start of scenario is significant
 
     timestamps_.swap(filled);
+    stopIndex_ = timestamps_.size() - 1;
 }
 
 // Browse through replay-folder and appends strings of absolute path to matching scenario
@@ -790,12 +791,17 @@ void Replay::GoToSignificantTimestamp(bool search_forward)
         }
         if (time_ > stopTime_)
         {
-            GoToEnd();
+            GoToEnd(true);
             return;
         }
     }
     else  // Search backward
     {
+        if (index_ == 0)
+        {
+            GoToStart(true);
+            return;
+        }
         size_t i;
         for (i = index_ - 1; i > 0; i--)
         {
@@ -813,7 +819,7 @@ void Replay::GoToSignificantTimestamp(bool search_forward)
         }
         if (time_ < startTime_)
         {
-            GoToStart();
+            GoToStart(true);
             return;
         }
     }
