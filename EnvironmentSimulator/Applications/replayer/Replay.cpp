@@ -488,8 +488,6 @@ void Replay::FillInTimestamps()
             double prev_dt = dt_.get_value_binary(curr_time);
             curr_time += prev_dt;
         }
-
-        prev_dt_ = dt;
     }
 
     // Always add the last explicit one
@@ -992,6 +990,7 @@ void Replay::CreateMergedDatfile(const std::string filename) const
     }
 
     // We re-create the object states vector which then is written to the DAT file
+    double                                                    prev_timestamp = timestamps_[0].first;
     std::vector<std::unique_ptr<scenarioengine::ObjectState>> object_states;
     for (size_t i = 0; i < timestamps_.size() - 1; i++)
     {
@@ -1040,10 +1039,13 @@ void Replay::CreateMergedDatfile(const std::string filename) const
         }
 
         // Same flow as in ScenarioGateway.cpp
-        // dat_writer.SetSimulationTime(timestamps_[i].first, dt);
-        // dat_writer.WriteGenericDataToDat();  // Writes the fixed timestep
+        auto dt = timestamps_[i].first - prev_timestamp;
+        dat_writer.SetSimulationTime(timestamps_[i].first, dt);
+        dat_writer.WriteGenericDataToDat();  // Writes the fixed timestep
         dat_writer.WriteObjectStatesToDat(object_states);
+        dat_writer.SetTimestampWritten(false);
 
         object_states.clear();  // Clear the states for the next timestamp
+        prev_timestamp = timestamps_[i].first;
     }
 }
