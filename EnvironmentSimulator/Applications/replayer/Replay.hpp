@@ -30,11 +30,11 @@ namespace scenarioengine
         mutable size_t                    last_index = 0;  // Set as mutable to allow modification in const methods
         mutable double                    last_time  = LARGE_NUMBER;
 
-        const T& get_value_incremental(double time) const noexcept
+        std::optional<T> get_value_incremental(double time) const noexcept
         {
             if (values.empty())
             {
-                LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+                return std::nullopt;
             }
 
             size_t idx = last_index;
@@ -65,11 +65,11 @@ namespace scenarioengine
             return values[idx].second;
         }
 
-        const T& get_value_binary(double time, bool upper = false) const noexcept
+        std::optional<T> get_value_binary(double time, bool upper = false) const noexcept
         {
             if (values.empty())
             {
-                LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+                return std::nullopt;
             }
 
             auto search_begin = values.begin();
@@ -91,11 +91,11 @@ namespace scenarioengine
             return it->second;
         }
 
-        size_t get_index_binary(double time) const noexcept
+        std::optional<size_t> get_index_binary(double time) const noexcept
         {
             if (values.empty())
             {
-                LOG_ERROR_AND_QUIT("Timeline is empty, cannot get value at time {}", time);
+                return std::nullopt;
             }
 
             if (NEAR_NUMBERS(last_time, time))

@@ -453,6 +453,11 @@ void Replay::FillInTimestamps()
     size_t i         = 0;
     double curr_time = timestamps_.begin()->first;
 
+    if (dt_.values.empty())
+    {
+        LOG_ERROR_AND_QUIT("No delta time (DT) information found in dat file, cannot fill timestamps.");
+    }
+
     while (i < timestamps_.size() - 1 && curr_time < stopTime_ - SMALL_NUMBER)
     {
         filled.emplace_back(curr_time, timestamps_[i].second);  // Save current timestamp
@@ -466,7 +471,7 @@ void Replay::FillInTimestamps()
         }
         else
         {
-            dt = dt_.get_value_binary(curr_time, true);  // Get next delta time
+            dt = dt_.get_value_binary(curr_time, true).value();  // Get next delta time
         }
 
         double next_time = curr_time + dt;
@@ -480,7 +485,7 @@ void Replay::FillInTimestamps()
         // inside a gap bigger than 1 sample -> We need to fill from last known dt
         else
         {
-            double prev_dt = dt_.get_value_binary(curr_time);
+            double prev_dt = dt_.get_value_binary(curr_time).value();
             curr_time += prev_dt;
         }
     }
@@ -863,30 +868,30 @@ ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, double t) const
 
     entry.state.info.id             = id;
     entry.state.info.timeStamp      = static_cast<float>(t);
-    entry.state.info.model_id       = timeline.model_id_.get_value_incremental(t);
-    entry.state.info.obj_type       = timeline.obj_type_.get_value_incremental(t);
-    entry.state.info.obj_category   = timeline.obj_category_.get_value_incremental(t);
-    entry.state.info.ctrl_type      = timeline.ctrl_type_.get_value_incremental(t);
-    entry.state.info.name           = timeline.name_.get_value_incremental(t).c_str();
-    entry.state.info.speed          = timeline.speed_.get_value_incremental(t);
-    entry.state.info.wheel_angle    = timeline.wheel_angle_.get_value_incremental(t);
-    entry.state.info.wheel_rot      = timeline.wheel_rot_.get_value_incremental(t);
-    entry.state.info.boundingbox    = timeline.bounding_box_.get_value_incremental(t);
-    entry.state.info.scaleMode      = timeline.scale_mode_.get_value_incremental(t);
-    entry.state.info.visibilityMask = timeline.visibility_mask_.get_value_incremental(t);
-    entry.state.info.active         = timeline.active_.get_value_incremental(t);
-    entry.state.pos.x               = timeline.pose_.get_value_incremental(t).x;
-    entry.state.pos.y               = timeline.pose_.get_value_incremental(t).y;
-    entry.state.pos.z               = timeline.pose_.get_value_incremental(t).z;
-    entry.state.pos.h               = timeline.pose_.get_value_incremental(t).h;
-    entry.state.pos.p               = timeline.pose_.get_value_incremental(t).p;
-    entry.state.pos.r               = timeline.pose_.get_value_incremental(t).r;
-    entry.state.pos.roadId          = timeline.road_id_.get_value_incremental(t);
-    entry.state.pos.laneId          = timeline.lane_id_.get_value_incremental(t);
-    entry.state.pos.offset          = timeline.pos_offset_.get_value_incremental(t);
-    entry.state.pos.t               = timeline.pos_t_.get_value_incremental(t);
-    entry.state.pos.s               = timeline.pos_s_.get_value_incremental(t);
-    entry.odometer                  = timeline.odometer_.get_value_incremental(t);
+    entry.state.info.model_id       = timeline.model_id_.get_value_incremental(t).value();
+    entry.state.info.obj_type       = timeline.obj_type_.get_value_incremental(t).value();
+    entry.state.info.obj_category   = timeline.obj_category_.get_value_incremental(t).value();
+    entry.state.info.ctrl_type      = timeline.ctrl_type_.get_value_incremental(t).value();
+    entry.state.info.name           = timeline.name_.get_value_incremental(t).value();
+    entry.state.info.speed          = timeline.speed_.get_value_incremental(t).value();
+    entry.state.info.wheel_angle    = timeline.wheel_angle_.get_value_incremental(t).value();
+    entry.state.info.wheel_rot      = timeline.wheel_rot_.get_value_incremental(t).value();
+    entry.state.info.boundingbox    = timeline.bounding_box_.get_value_incremental(t).value();
+    entry.state.info.scaleMode      = timeline.scale_mode_.get_value_incremental(t).value();
+    entry.state.info.visibilityMask = timeline.visibility_mask_.get_value_incremental(t).value();
+    entry.state.info.active         = timeline.active_.get_value_incremental(t).value();
+    entry.state.pos.x               = timeline.pose_.get_value_incremental(t).value().x;
+    entry.state.pos.y               = timeline.pose_.get_value_incremental(t).value().y;
+    entry.state.pos.z               = timeline.pose_.get_value_incremental(t).value().z;
+    entry.state.pos.h               = timeline.pose_.get_value_incremental(t).value().h;
+    entry.state.pos.p               = timeline.pose_.get_value_incremental(t).value().p;
+    entry.state.pos.r               = timeline.pose_.get_value_incremental(t).value().r;
+    entry.state.pos.roadId          = timeline.road_id_.get_value_incremental(t).value_or(ID_UNDEFINED);
+    entry.state.pos.laneId          = timeline.lane_id_.get_value_incremental(t).value();
+    entry.state.pos.offset          = timeline.pos_offset_.get_value_incremental(t).value();
+    entry.state.pos.t               = timeline.pos_t_.get_value_incremental(t).value();
+    entry.state.pos.s               = timeline.pos_s_.get_value_incremental(t).value();
+    entry.odometer                  = timeline.odometer_.get_value_incremental(t).value();
 
     return entry;
 }
@@ -898,30 +903,30 @@ ReplayEntry Replay::GetReplayEntryAtTimeBinary(int id, double t) const
     const auto& timeline = objects_timeline_.at(id);
 
     entry.state.info.id             = id;
-    entry.state.info.model_id       = timeline.model_id_.get_value_binary(t);
-    entry.state.info.obj_type       = timeline.obj_type_.get_value_binary(t);
-    entry.state.info.obj_category   = timeline.obj_category_.get_value_binary(t);
-    entry.state.info.ctrl_type      = timeline.ctrl_type_.get_value_binary(t);
-    entry.state.info.name           = timeline.name_.get_value_binary(t).c_str();
-    entry.state.info.speed          = timeline.speed_.get_value_binary(t);
-    entry.state.info.wheel_angle    = timeline.wheel_angle_.get_value_binary(t);
-    entry.state.info.wheel_rot      = timeline.wheel_rot_.get_value_binary(t);
-    entry.state.info.boundingbox    = timeline.bounding_box_.get_value_binary(t);
-    entry.state.info.scaleMode      = timeline.scale_mode_.get_value_binary(t);
-    entry.state.info.visibilityMask = timeline.visibility_mask_.get_value_binary(t);
-    entry.state.info.active         = timeline.active_.get_value_binary(t);
-    entry.state.pos.x               = timeline.pose_.get_value_binary(t).x;
-    entry.state.pos.y               = timeline.pose_.get_value_binary(t).y;
-    entry.state.pos.z               = timeline.pose_.get_value_binary(t).z;
-    entry.state.pos.h               = timeline.pose_.get_value_binary(t).h;
-    entry.state.pos.p               = timeline.pose_.get_value_binary(t).p;
-    entry.state.pos.r               = timeline.pose_.get_value_binary(t).r;
-    entry.state.pos.roadId          = timeline.road_id_.get_value_binary(t);
-    entry.state.pos.laneId          = timeline.lane_id_.get_value_binary(t);
-    entry.state.pos.offset          = timeline.pos_offset_.get_value_binary(t);
-    entry.state.pos.t               = timeline.pos_t_.get_value_binary(t);
-    entry.state.pos.s               = timeline.pos_s_.get_value_binary(t);
-    entry.odometer                  = timeline.odometer_.get_value_binary(t);
+    entry.state.info.model_id       = timeline.model_id_.get_value_binary(t).value();
+    entry.state.info.obj_type       = timeline.obj_type_.get_value_binary(t).value();
+    entry.state.info.obj_category   = timeline.obj_category_.get_value_binary(t).value();
+    entry.state.info.ctrl_type      = timeline.ctrl_type_.get_value_binary(t).value();
+    entry.state.info.name           = timeline.name_.get_value_binary(t).value().c_str();
+    entry.state.info.speed          = timeline.speed_.get_value_binary(t).value();
+    entry.state.info.wheel_angle    = timeline.wheel_angle_.get_value_binary(t).value();
+    entry.state.info.wheel_rot      = timeline.wheel_rot_.get_value_binary(t).value();
+    entry.state.info.boundingbox    = timeline.bounding_box_.get_value_binary(t).value();
+    entry.state.info.scaleMode      = timeline.scale_mode_.get_value_binary(t).value();
+    entry.state.info.visibilityMask = timeline.visibility_mask_.get_value_binary(t).value();
+    entry.state.info.active         = timeline.active_.get_value_binary(t).value();
+    entry.state.pos.x               = timeline.pose_.get_value_binary(t).value().x;
+    entry.state.pos.y               = timeline.pose_.get_value_binary(t).value().y;
+    entry.state.pos.z               = timeline.pose_.get_value_binary(t).value().z;
+    entry.state.pos.h               = timeline.pose_.get_value_binary(t).value().h;
+    entry.state.pos.p               = timeline.pose_.get_value_binary(t).value().p;
+    entry.state.pos.r               = timeline.pose_.get_value_binary(t).value().r;
+    entry.state.pos.roadId          = timeline.road_id_.get_value_binary(t).value_or(ID_UNDEFINED);
+    entry.state.pos.laneId          = timeline.lane_id_.get_value_binary(t).value();
+    entry.state.pos.offset          = timeline.pos_offset_.get_value_binary(t).value();
+    entry.state.pos.t               = timeline.pos_t_.get_value_binary(t).value();
+    entry.state.pos.s               = timeline.pos_s_.get_value_binary(t).value();
+    entry.odometer                  = timeline.odometer_.get_value_binary(t).value();
 
     return entry;
 }
@@ -968,7 +973,7 @@ void Replay::AddToTimeline(Timeline<T>& timeline, Data data)
                 obj_tl.last_restart_time = timestamp_;
             }
         }
-        timeline.values.resize(timeline.get_index_binary(timestamp_));
+        timeline.values.resize(timeline.get_index_binary(timestamp_).value());
     }
     timeline.values.emplace_back(timestamp_, data);
 }
