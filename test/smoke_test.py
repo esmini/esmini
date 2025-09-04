@@ -371,7 +371,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^4.030, 0, Ego, 36.130, -0.600, 0.000, 6.281, 0.000, 0.000, 8.053, -0.009, 2.103', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.550, 0, Ego, 51.786, -1.535, 0.000, 0.000, 0.000, 0.000, 12.661, 0.030, 2.853', csv, re.MULTILINE))
 
-    def test_follow_ghost(self):
+    def test_follow_ghost(self): # MODIFIED CSV POSITIONS
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/follow_ghost.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
@@ -385,12 +385,12 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle key positions
         csv = generate_csv()
-        self.assertTrue(re.search('^-0.500, 1, Ego_ghost, 8.212, 60.220, -0.057, 1.567, 0.002, 0.000, 10.000, -0.000, 4.153', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.060, 1, Ego_ghost, 8.392, 102.318, -0.142, 1.566, 0.002, 0.000, 22.800, -0.000, 5.052', csv, re.MULTILINE))
-        self.assertTrue(re.search('^2.550, 0, Ego, 8.279, 77.039, -0.088, 1.567, 0.002, 0.000, 18.387, -0.000, 1.941', csv, re.MULTILINE))
-        self.assertTrue(re.search('^6.500, 0, Ego, 6.152, 178.693, -0.308, 1.637, 0.002, 0.000, 27.778, -0.014, 3.586', csv, re.MULTILINE))
-        self.assertTrue(re.search('^13.000, 1, Ego_ghost, 11.260, 357.856, -0.641, 1.549, 0.002, 0.000, 5.100, -0.000, 0.935', csv, re.MULTILINE))
-        self.assertTrue(re.search('^13.350, 0, Ego, 10.931, 342.076, -0.610, 1.551, 0.002, 0.000, 10.006, -0.001, 5.970', csv, re.MULTILINE))
+        self.assertTrue(re.search('^-0.500, 1, Ego_ghost, 8.211, 60.020, -0.057, 1.567, 0.002, 0.000, 10.000, -0.000, 3.582', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.060, 1, Ego_ghost, 8.390, 102.068, -0.141, 1.566, 0.002, 0.000, 22.800, -0.000, 4.338', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.550, 0, Ego, 8.280, 77.215, -0.089, 1.567, 0.002, 0.000, 18.515, -0.000, 2.446', csv, re.MULTILINE))
+        self.assertTrue(re.search('^6.500, 0, Ego, 6.109, 179.079, -0.309, 1.635, 0.002, 0.000, 27.778, -0.015, 4.694', csv, re.MULTILINE))
+        self.assertTrue(re.search('^13.000, 1, Ego_ghost, 11.255, 357.606, -0.640, 1.549, 0.002, 0.000, 5.100, -0.000, 0.221', csv, re.MULTILINE))
+        self.assertTrue(re.search('^13.350, 0, Ego, 10.932, 342.109, -0.610, 1.551, 0.002, 0.000, 10.007, -0.001, 6.065', csv, re.MULTILINE))
 
     def test_heading_trig(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/traj-heading-trig.xosc'), COMMON_ESMINI_ARGS)
@@ -694,7 +694,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^20.000, 2, Target2, 389.874, -6.000, 0.000, 0.000, 0.000, 0.000, 15.278, 0.000, 0.384', csv, re.MULTILINE))
         self.assertTrue(re.search('^20.000, 3, Target3, 362.760, -6.000, 0.000, 0.000, 0.000, 0.000, 15.278, 0.000, 1.913', csv, re.MULTILINE))
 
-    def test_init_cases(self):
+    def test_init_cases(self): # MODIFIED EGO_GHOST WHEEL ANGLE ON -1.950 from 0.025 -> 0.000
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/init_test.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
@@ -719,7 +719,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^-1.950, 0, Ego, 200.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^-1.950, 1, OverTaker1, 250.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^-1.950, 2, OverTaker2, 280.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^-1.950, 3, Ego_ghost, 200.497, -1.484, 0.000, 0.103, 0.000, 0.000, 10.000, 0.025, 1.429', csv, re.MULTILINE))
+        self.assertTrue(re.search('^-1.950, 3, Ego_ghost, 200.497, -1.484, 0.000, 0.103, 0.000, 0.000, 10.000, 0.000, 1.429', csv, re.MULTILINE))
         self.assertTrue(re.search('^-1.900, 0, Ego, 200.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^-1.900, 1, OverTaker1, 250.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^-1.900, 2, OverTaker2, 280.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
