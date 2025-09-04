@@ -776,7 +776,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^7.000, 0, Ego, 241.403, 0.725, 0.000, 6.184, 0.000, 0.000, -13.889, -0.011, -6.019', csv, re.MULTILINE))
         self.assertTrue(re.search('^10.000, 0, Ego, 199.766, 1.535, 0.000, 0.000, 0.000, 0.000, -13.889, 0.000, -5.686', csv, re.MULTILINE))
 
-    def test_ghost_restart(self):
+    def test_ghost_restart(self): # MODIFIED GHOST POSITION AT 1.010 AND EGO POS AT 5.000
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart.xosc'), COMMON_ESMINI_ARGS)
 
         # Check some initialization steps
@@ -795,11 +795,12 @@ class TestSuite(unittest.TestCase):
         csv = generate_csv()
         self.assertTrue(re.search('^-0.500, 0, Ego, 50.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^-0.500, 1, Ego_ghost, 50.000, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^1.010, 1, Ego_ghost, 65.100, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 5.444', csv, re.MULTILINE))
+        self.assertTrue(re.search('^1.010, 1, Ego_ghost, 65.023, -10.625, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 0.594', csv, re.MULTILINE))
+        self.assertTrue(re.search('^1.010, -1, Ego_ghost_-1, 65.100, -11.500, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 5.444', csv, re.MULTILINE))
         self.assertTrue(re.search('^1.020, 1, Ego_ghost, 65.121, -10.608, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 0.880', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.000, 0, Ego, 69.847, -9.937, 0.000, 0.222, 0.000, 0.000, 10.000, 0.009, 0.566', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.000, 1, Ego_ghost, 74.770, -8.892, 0.000, 0.176, 0.000, 0.000, 10.000, 0.000, 3.747', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.000, 0, Ego, 99.647, -8.042, 0.000, 6.283, 0.000, 0.000, 10.000, 0.014, 4.598', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 0, Ego, 99.646, -8.043, 0.000, 6.283, 0.000, 0.000, 10.000, 0.014, 4.598', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.000, 1, Ego_ghost, 104.691, -8.000, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 1.497', csv, re.MULTILINE))
 
     def test_ghost_restart2(self):
@@ -833,20 +834,21 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^0.010, 2, Car_ghost, 40.100, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.880', csv, re.MULTILINE))
         self.assertTrue(re.search('^3.010, 0, Car, 50.100, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, -?0.000, 4.319', csv, re.MULTILINE))
         self.assertTrue(re.search('^3.010, 1, Car2, 55.410, 1.535, 0.000, 6.283, 0.000, 0.000, 8.550, -?0.000, 0.642', csv, re.MULTILINE))
-        self.assertTrue(re.search('^3.010, 2, Car_ghost, 70.100, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, -?0.000, 4.913', csv, re.MULTILINE))
-        # TODO: The new dat format writes values incrementally, dat plays exactly the same, maybe its OK to skip these values in logfile
-        # self.assertTrue(re.search('^1.070, 0, Car, 50.199, -1.535, 0.000, 0.001, 0.000, 0.000, 9.900, 0.031, 4.601', csv, re.MULTILINE))
-        # self.assertTrue(re.search('^1.070, 1, Car2, 55.496, 1.535, 0.000, 6.283, 0.000, 0.000, 8.529, 0.000, 0.886', csv, re.MULTILINE))
-        # self.assertTrue(re.search('^1.070, 2, Car_ghost, 50.596, -1.535, 0.000, 0.000, 0.000, 0.000, 9.914, 0.000, 0.046', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.010, 0, Car, 65.363, -1.534, 0.000, 6.283, 0.000, 0.000, 6.135, 0.000, 3.945', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.010, 2, Car_ghost, 67.129, -1.535, 0.000, 0.000, 0.000, 0.000, 7.143, 0.000, 3.301', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.010, -2, Car_ghost_-1, 70.100, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, -?0.000, 4.913', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.020, 0, Car, 50.199, -1.535, 0.000, 0.001, 0.000, 0.000, 9.900, 0.031, 4.601', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.020, 1, Car2, 55.496, 1.535, 0.000, 6.283, 0.000, 0.000, 8.529, 0.000, 0.886', csv, re.MULTILINE))
+        self.assertTrue(re.search('^3.020, 2, Car_ghost, 67.200, -1.535, 0.000, 0.000, 0.000, 0.000, 7.129, 0.000, 3.504', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.010, 0, Car, 65.379, -1.534, 0.000, 6.283, 0.000, 0.000, 6.145, 0.000, 3.991', csv, re.MULTILINE))
         self.assertTrue(re.search('^5.010, 1, Car2, 68.203, 1.535, 0.000, 6.283, 0.000, 0.000, 4.264, 0.000, 5.777', csv, re.MULTILINE))
-        self.assertTrue(re.search('^5.010, 2, Car_ghost, 78.486, -1.535, 0.000, 0.000, 0.000, 0.000, 4.286, 0.000, 4.334', csv, re.MULTILINE))
-        # self.assertTrue(re.search('^3.070, 0, Car, 65.424, -1.534, 0.000, 0.000, 0.000, 0.000, 6.035, 0.023, 4.118', csv, re.MULTILINE))
-        # self.assertTrue(re.search('^3.070, 1, Car2, 68.246, 1.535, 0.000, 6.283, 0.000, 0.000, 4.243, 0.000, 5.898', csv, re.MULTILINE))
-        # self.assertTrue(re.search('^3.070, 2, Car_ghost, 65.661, -1.534, 0.000, 6.283, 0.000, 0.000, 5.951, -0.001, 5.184', csv, re.MULTILINE))
-        self.assertTrue(re.search('^8.010, 0, Car, 67.260, -1.534, 0.000, 0.000, 0.000, 0.000, 0.000, -0.000, 3.081', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.010, 2, Car_ghost, 71.433, -1.534, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 2.943', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.010, -4, Car_ghost_-2, 78.543, -1.535, 0.000, 0.000, 0.000, 0.000, 4.286, 0.000, 4.497', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.020, 0, Car, 65.440, -1.534, 0.000, 0.000, 0.000, 0.000, 6.045, 0.023, 4.164', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.020, 1, Car2, 68.246, 1.535, 0.000, 6.283, 0.000, 0.000, 4.243, 0.000, 5.898', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.020, 2, Car_ghost, 71.433, -1.534, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 2.943', csv, re.MULTILINE))
+        self.assertTrue(re.search('^8.010, 0, Car, 67.282, -1.534, 0.000, 0.000, 0.000, 0.000, 0.000, -0.000, 3.144', csv, re.MULTILINE))
         self.assertTrue(re.search('^8.010, 1, Car2, 72.425, 1.535, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 5.272', csv, re.MULTILINE))
-        self.assertTrue(re.search('^8.010, 2, Car_ghost, 71.285, -1.534, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 2.405', csv, re.MULTILINE))
+        self.assertTrue(re.search('^8.010, 2, Car_ghost, 71.433, -1.534, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 2.943', csv, re.MULTILINE))
 
     def test_ghost_restart_on_override_deactivation(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart_on_override_deactivation.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
