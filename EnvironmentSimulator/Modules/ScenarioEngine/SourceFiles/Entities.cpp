@@ -1754,25 +1754,25 @@ std::string Vehicle::Category2String(int category)
     switch (category)
     {
         case Category::BICYCLE:
-            return "BICYCLE";
+            return "bicycle";
         case Category::BUS:
-            return "BUS";
+            return "bus";
         case Category::CAR:
-            return "CAR";
+            return "car";
         case Category::MOTORBIKE:
-            return "MOTORBIKE";
+            return "motorbike";
         case Category::SEMITRAILER:
-            return "SEMITRAILER";
+            return "semitrailer";
         case Category::TRAILER:
-            return "TRAILER";
+            return "trailer";
         case Category::TRAIN:
-            return "TRAIN";
+            return "train";
         case Category::TRAM:
-            return "TRAM";
+            return "tram";
         case Category::TRUCK:
-            return "TRUCK";
+            return "truck";
         case Category::VAN:
-            return "VAN";
+            return "van";
         default:
             return "Unknown";
     }
@@ -1783,21 +1783,21 @@ std::string Object::Role2String(int role)
     switch (static_cast<Object::Role>(role))
     {
         case Role::AMBULANCE:
-            return "AMBULANCE";
+            return "ambulance";
         case Role::CIVIL:
-            return "CIVIL";
+            return "civil";
         case Role::FIRE:
-            return "FIRE";
+            return "fire";
         case Role::MILITARY:
-            return "MILITARY";
+            return "military";
         case Role::NONE:
-            return "NONE";
+            return "none";
         case Role::POLICE:
-            return "POLICE";
+            return "police";
         case Role::PUBLIC_TRANSPORT:
-            return "PUBLIC_TRANSPORT";
+            return "public_transport";
         case Role::ROAD_ASSISTANCE:
-            return "ROAD_ASSISTANCE";
+            return "road_assistance";
         default:
             return "Unknown";
     }
@@ -1950,13 +1950,13 @@ std::string Object::Type2String(int type)
     switch (type)
     {
         case Type::MISC_OBJECT:
-            return "MISC_OBJEC";
+            return "misc_objec";
         case Type::PEDESTRIAN:
-            return "PEDESTRIAN";
+            return "pedestrian";
         case Type::VEHICLE:
-            return "VEHICLE";
+            return "vehicle";
         case Type::TYPE_NONE:
-            return "NONE";
+            return "none";
         default:
             return "Unknown";
     }
@@ -1967,11 +1967,11 @@ std::string Pedestrian::Category2String(int category)
     switch (category)
     {
         case Category::ANIMAL:
-            return "ANIMAL";
+            return "animal";
         case Category::PEDESTRIAN:
-            return "PEDESTRIAN";
+            return "pedestrian";
         case Category::WHEELCHAIR:
-            return "WHEELCHAIR";
+            return "wheelchair";
         default:
             return "Unknown";
     }
@@ -1982,39 +1982,39 @@ std::string MiscObject::Category2String(int category)
     switch (category)
     {
         case Category::BARRIER:
-            return "BARRIER";
+            return "barrier";
         case Category::BUILDING:
-            return "BUILDING";
+            return "building";
         case Category::CROSSWALK:
-            return "CROSSWALK";
+            return "crosswalk";
         case Category::GANTRY:
-            return "GANTRY";
+            return "gantry";
         case Category::NONE:
-            return "NONE";
+            return "none";
         case Category::OBSTACLE:
-            return "OBSTACLE";
+            return "obstacle";
         case Category::PARKINGSPACE:
-            return "PARKINGSPACE";
+            return "parkingspace";
         case Category::PATCH:
-            return "PATCH";
+            return "patch";
         case Category::POLE:
-            return "POLE";
+            return "pole";
         case Category::RAILING:
-            return "RAILING";
+            return "railing";
         case Category::ROADMARK:
-            return "ROADMARK";
+            return "roadmark";
         case Category::SOUNDBARRIER:
-            return "SOUNDBARRIER";
+            return "soundbarrier";
         case Category::STREETLAMP:
-            return "STREETLAMP";
+            return "streetlamp";
         case Category::TRAFFICISLAND:
-            return "TRAFFICISLAND";
+            return "trafficisland";
         case Category::TREE:
-            return "TREE";
+            return "tree";
         case Category::VEGETATION:
-            return "VEGETATION";
+            return "vegetation";
         case Category::WIND:
-            return "WIND";
+            return "wind";
         default:
             return "Unknown";
     }
