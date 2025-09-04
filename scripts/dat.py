@@ -370,6 +370,8 @@ class DATFile():
             # END_OF_SCENARIO packet
             elif p_id == PacketId.END_OF_SCENARIO.value:
                 self.end_time = read_dtype(self.file, DataType.double)
+                if not is_near(self.end_time, self.timestamps[-1]):
+                    self.timestamps.append(self.end_time)
 
     def add_to_timeline(self, timeline: PropertyTimeline, data):
         if len(self.current_object_timeline.ctrl_type.values) != 0 and self.current_object_timeline.ctrl_type.values[-1][1] != 100:
