@@ -124,8 +124,7 @@ class Timeline():
 
     def get_value_incremental(self, time):
         if (len(self.values) == 0):
-            print("ERROR, no values available")
-            exit(-1)
+            return None
 
         idx = self.last_index
         desired_dt = time - self.values[self.last_index][0]

@@ -88,7 +88,7 @@ int main(int argc, char** argv)
                      "%.3f, %d, %s, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f\n",
                      static_cast<double>(state->info.timeStamp),
                      state->info.id,
-                     state->info.name,
+                     state->info.name.c_str(),
                      static_cast<double>(state->pos.x),
                      static_cast<double>(state->pos.y),
                      static_cast<double>(state->pos.z),
