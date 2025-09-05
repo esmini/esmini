@@ -79,7 +79,6 @@ namespace scenarioengine
 
             if (it == values.begin())
             {
-                // last_index = 0;
                 return it->second;
             }
 
@@ -98,24 +97,8 @@ namespace scenarioengine
                 return std::nullopt;
             }
 
-            if (NEAR_NUMBERS(last_time, time))
-            {
-                return last_index;
-            }
-
             auto search_begin = values.begin();
             auto search_end   = values.end();
-
-            if (time >= values[last_index].first)
-            {
-                // Time moved forward — only search ahead
-                search_begin = values.begin();
-            }
-            else
-            {
-                // Time moved backward — only search behind
-                search_end = values.begin() + 1;
-            }
 
             auto it = std::upper_bound(search_begin, search_end, time, [](double t, const std::pair<double, T>& v) { return t < v.first; });
 
