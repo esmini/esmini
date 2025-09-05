@@ -951,11 +951,10 @@ void Replay::AddToTimeline(Timeline<T>& timeline, Data data)
 
         if (!NEAR_NUMBERS(obj_tl.last_restart_time, timestamp_))
         {
-            int  ghost_ghost_id = current_object_id_ * ghost_ghost_counter_;
-            auto it             = objects_timeline_.find(ghost_ghost_id);
+            auto it = objects_timeline_.find(ghost_ghost_counter_);
             if (it == objects_timeline_.end())
             {
-                auto [new_it, inserted] = objects_timeline_.emplace(ghost_ghost_id, objects_timeline_[current_object_id_]);
+                auto [new_it, inserted] = objects_timeline_.emplace(ghost_ghost_counter_, objects_timeline_[current_object_id_]);
                 it                      = new_it;
 
                 if (inserted)
