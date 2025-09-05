@@ -11819,17 +11819,29 @@ PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, 
         index = 0;
         return GhostTrailReturnCode::GHOST_TRAIL_OK;
     }
-    else if (time < vertex_[0].time)
+    else if (time < vertex_[0].time - SMALL_NUMBER)
     {
         s     = 0.0;
         index = 0;
         return GhostTrailReturnCode::GHOST_TRAIL_TIME_PRIOR;
     }
-    else if (time > vertex_.back().time)
+    else if (time < vertex_[0].time + SMALL_NUMBER)
+    {
+        s     = 0.0;
+        index = 0;
+        return GhostTrailReturnCode::GHOST_TRAIL_OK;
+    }
+    else if (time > vertex_.back().time + SMALL_NUMBER)
     {
         s     = vertex_.back().s;
-        index = vertex_.size() > 0 ? static_cast<unsigned int>(vertex_.size()) - 1 : IDX_UNDEFINED;
+        index = static_cast<unsigned int>(vertex_.size()) - 1;
         return GhostTrailReturnCode::GHOST_TRAIL_TIME_PAST;
+    }
+    else if (time > vertex_.back().time - SMALL_NUMBER)
+    {
+        s     = vertex_.back().s;
+        index = static_cast<unsigned int>(vertex_.size()) - 1;
+        return GhostTrailReturnCode::GHOST_TRAIL_OK;
     }
 
     // start looking from current index by default
@@ -11841,52 +11853,39 @@ PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, 
         i = index;
     }
 
-    if (time < vertex_[i].time)
+    // If given time is less than time at current index, its probably more efficient to search backwards
+    if (time < vertex_[i].time - SMALL_NUMBER)
     {
         direction = -1;  // Search backwards
+        i--;             // since we always interpolate forward, we start on previous vertex (first potential candidate)
     }
 
-    for (size_t j = 0; j < GetNumberOfVertices(); j++)
+    if (direction == 1)
     {
-        if (vertex_[i].time <= time && vertex_[i + 1].time > time)
+        for (; i < GetNumberOfVertices() - 1; i++)
         {
-            double w = (time - vertex_[i].time) / (vertex_[i + 1].time - vertex_[i].time);
-            s        = vertex_[i].s + w * (vertex_[i + 1].s - vertex_[i].s);
-            index    = i;
-            return GhostTrailReturnCode::GHOST_TRAIL_OK;
-        }
-
-        if (direction < 0)
-        {
-            if (i > 0)
+            if (time < vertex_[i + 1].time - SMALL_NUMBER)
             {
-                i--;
-            }
-            else
-            {
-                // wrap from start to end
-                i = GetNumberOfVertices() - 1;
+                break;
             }
         }
-        else
+    }
+    else
+    {
+        for (; i > 0; i--)
         {
-            if (i < GetNumberOfVertices() - 1)
+            if (time > vertex_[i].time - SMALL_NUMBER)
             {
-                i++;
-            }
-            else
-            {
-                // wrap from end to start
-                i = 0;
+                break;
             }
         }
     }
 
-    // s seems out of range, grab last element
-    s     = vertex_.back().s;
-    index = static_cast<unsigned int>(vertex_.size() - 1);
+    double w = (time - vertex_[i].time) / (vertex_[i + 1].time - vertex_[i].time);
+    s        = MAX(0.0, vertex_[i].s + w * (vertex_[i + 1].s - vertex_[i].s));
+    index    = i;
 
-    return GhostTrailReturnCode::GHOST_TRAIL_TIME_PAST;
+    return GhostTrailReturnCode::GHOST_TRAIL_OK;
 }
 
 void PolyLineBase::SetInterpolationMode(InterpolationMode mode)
