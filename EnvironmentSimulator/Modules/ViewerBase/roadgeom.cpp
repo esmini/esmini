@@ -1565,7 +1565,12 @@ namespace roadgeom
         osg::ref_ptr<osg::Vec3Array> vertices_top    = new osg::Vec3Array(static_cast<unsigned int>(nrPoints));  // top
         osg::ref_ptr<osg::Vec3Array> vertices_bottom = new osg::Vec3Array(static_cast<unsigned int>(nrPoints));  // bottom
 
+        osg::ref_ptr<osg::Vec2Array> tex_coords_sides  = new osg::Vec2Array(static_cast<unsigned int>(nrPoints) * 2);
+        osg::ref_ptr<osg::Vec2Array> tex_coords_top    = new osg::Vec2Array(static_cast<unsigned int>(nrPoints));
+        osg::ref_ptr<osg::Vec2Array> tex_coords_bottom = new osg::Vec2Array(static_cast<unsigned int>(nrPoints));
+
         // Set vertices
+        float cumulative_side_dist = 0.0f;
         for (size_t i = 0; i < outline->corner_.size(); i++)
         {
             double                      x, y, z;
@@ -1576,6 +1581,18 @@ namespace roadgeom
                                              static_cast<float>(z + corner->GetHeight()));
             (*vertices_sides)[i * 2 + 1].set(static_cast<float>(x - origin[0]), static_cast<float>(y - origin[1]), static_cast<float>(z));
 
+            if (i > 0)
+            {
+                double x1, y1, z1;
+                outline->corner_[i - 1]->GetPos(x1, y1, z1);
+                float dx = x1 - x;
+                float dy = y1 - y;
+                cumulative_side_dist += std::sqrt(dx * dx + dy * dy);
+            }
+
+            (*tex_coords_sides)[i * 2 + 0].set(cumulative_side_dist, corner->GetHeight());
+            (*tex_coords_sides)[i * 2 + 1].set(cumulative_side_dist, 0.0f);
+
             // top and bottom shapes
             if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_POLYGON)
             {
@@ -1585,39 +1602,85 @@ namespace roadgeom
                 (*vertices_bottom)[outline->corner_.size() - 1 - i].set(static_cast<float>(x - origin[0]),
                                                                         static_cast<float>(y - origin[1]),
                                                                         static_cast<float>(z));
+
+                double x2, y2, z2;
+                outline->corner_[outline->corner_.size() - 1 - i]->GetPos(x2, y2, z2);
+                float dx    = x2 - x;
+                float dy    = y2 - y;
+                float width = std::sqrt(dx * dx + dy * dy);
+
+                (*tex_coords_top)[i].set(0.0, cumulative_side_dist);
+                (*tex_coords_top)[outline->corner_.size() - 1 - i].set(width, cumulative_side_dist);
+                (*tex_coords_bottom)[i].set(0.0, cumulative_side_dist);
+                (*tex_coords_bottom)[outline->corner_.size() - 1 - i].set(width, cumulative_side_dist);
             }
         }
 
         if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_QUAD_STRIP)
         {
+            float cumulative_roof_dist = 0.0f;
             // rearrange vertices for quad strip
-            for (size_t i = 0; i < outline->corner_.size(); i++)
+            for (size_t i = 0; i < outline->corner_.size(); i += 2)
             {
-                // top points are starting at right side
-                double                      x, y, z;
-                unsigned                    index  = ((i % 2) == 0) ? outline->corner_.size() - 1 - (i / 2) : i / 2;
-                roadmanager::OutlineCorner* corner = outline->corner_[index];
-                corner->GetPos(x, y, z);
+                unsigned right_index = outline->corner_.size() - 1 - (i / 2);
+                unsigned left_index  = i / 2;
 
-                (*vertices_top)[i].set(static_cast<float>(x - origin[0]),
-                                       static_cast<float>(y - origin[1]),
-                                       static_cast<float>(z + corner->GetHeight()));
+                double xl, yl, zl, xr, yr, zr;
+                outline->corner_[left_index]->GetPos(xl, yl, zl);
+                outline->corner_[right_index]->GetPos(xr, yr, zr);
 
-                // bottom points are starting at left side
-                index  = ((i % 2) == 1) ? outline->corner_.size() - 1 - (i / 2) : i / 2;
-                corner = outline->corner_[index];
-                corner->GetPos(x, y, z);
-                (*vertices_bottom)[i].set(static_cast<float>(x - origin[0]), static_cast<float>(y - origin[1]), static_cast<float>(z));
+                (*vertices_top)[i].set(static_cast<float>(xr - origin[0]),
+                                       static_cast<float>(yr - origin[1]),
+                                       static_cast<float>(zr + outline->corner_[right_index]->GetHeight()));
+                (*vertices_top)[i + 1].set(static_cast<float>(xl - origin[0]),
+                                           static_cast<float>(yl - origin[1]),
+                                           static_cast<float>(zl + outline->corner_[right_index]->GetHeight()));
+                (*vertices_bottom)[i].set(static_cast<float>(xl - origin[0]), static_cast<float>(yl - origin[1]), static_cast<float>(zl));
+                (*vertices_bottom)[i + 1].set(static_cast<float>(xr - origin[0]), static_cast<float>(yr - origin[1]), static_cast<float>(zr));
+
+                osg::Vec3f left(xl, yl, zl);
+                osg::Vec3f right(xr, yr, zr);
+                float      width = (right - left).length();
+
+                if (i >= 2)
+                {
+                    unsigned left_index_prev  = (i - 1) / 2;
+                    unsigned right_index_prev = outline->corner_.size() - 1 - ((i - 2) / 2);
+
+                    double xl_prev, yl_prev, zl_prev, xr_prev, yr_prev, zr_prev;
+                    outline->corner_[left_index_prev]->GetPos(xl_prev, yl_prev, zl_prev);
+                    outline->corner_[right_index_prev]->GetPos(xr_prev, yr_prev, zr_prev);
+
+                    osg::Vec3f left_prev(xl_prev, yl_prev, zl_prev);
+                    osg::Vec3f right_prev(xr_prev, yr_prev, zr_prev);
+
+                    osg::Vec3f center_prev = (left_prev + right_prev) * 0.5f;
+                    osg::Vec3f center      = (left + right) * 0.5f;
+
+                    cumulative_roof_dist += (center - center_prev).length();
+                }
+
+                (*tex_coords_top)[i].set(width, cumulative_roof_dist);
+                (*tex_coords_top)[i + 1].set(0.0f, cumulative_roof_dist);
+                (*tex_coords_bottom)[i].set(width, cumulative_roof_dist);
+                (*tex_coords_bottom)[i + 1].set(0.0f, cumulative_roof_dist);
             }
         }
 
         // Close geometry
         if (outline->closed_)
         {
+            cumulative_side_dist += ((*vertices_sides)[0] - (*vertices_sides)[2 * (nrPoints - 2)]).length();
+
             (*vertices_sides)[2 * static_cast<unsigned int>(nrPoints) - 2].set((*vertices_sides)[0]);
             (*vertices_sides)[2 * static_cast<unsigned int>(nrPoints) - 1].set((*vertices_sides)[1]);
+            (*tex_coords_sides)[2 * static_cast<unsigned int>(nrPoints) - 2].set(cumulative_side_dist, (*tex_coords_sides)[0].y());
+            (*tex_coords_sides)[2 * static_cast<unsigned int>(nrPoints) - 1].set(cumulative_side_dist, (*tex_coords_sides)[1].y());
+
             (*vertices_top)[static_cast<unsigned int>(nrPoints) - 1].set((*vertices_top)[0]);
             (*vertices_bottom)[static_cast<unsigned int>(nrPoints) - 1].set((*vertices_bottom)[0]);
+            (*tex_coords_top)[static_cast<unsigned int>(nrPoints) - 1].set((*tex_coords_top)[0]);
+            (*tex_coords_bottom)[static_cast<unsigned int>(nrPoints) - 1].set((*tex_coords_bottom)[0]);
         }
 
         // Finally create and add geometry
@@ -1625,27 +1688,27 @@ namespace roadgeom
         osg::ref_ptr<osg::Geometry> geom[] = {new osg::Geometry, new osg::Geometry, new osg::Geometry};
 
         geom[0]->setVertexArray(vertices_sides.get());
+        geom[0]->setTexCoordArray(0, tex_coords_sides.get());
         geom[0]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, 2 * nrPoints));
 
         if (roof)
         {
+            geom[1]->setVertexArray(vertices_top.get());
+            geom[1]->setTexCoordArray(0, tex_coords_top.get());
+            geom[2]->setVertexArray(vertices_bottom.get());
+            geom[2]->setTexCoordArray(0, tex_coords_bottom.get());
             if (outline->GetCountourType() == roadmanager::Outline::ContourType::CONTOUR_TYPE_POLYGON)
             {
-                geom[1]->setVertexArray(vertices_top.get());
                 geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
                 osgUtil::Tessellator tessellator;
                 tessellator.retessellatePolygons(*geom[1]);
 
-                geom[2]->setVertexArray(vertices_bottom.get());
                 geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_POLYGON, 0, nrPoints));
                 tessellator.retessellatePolygons(*geom[2]);
             }
             else
             {
-                geom[1]->setVertexArray(vertices_top.get());
                 geom[1]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, nrPoints - 1));
-
-                geom[2]->setVertexArray(vertices_bottom.get());
                 geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, nrPoints - 1));
             }
         }
