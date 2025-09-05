@@ -11677,13 +11677,13 @@ PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, 
         index = 0;
         return GhostTrailReturnCode::GHOST_TRAIL_OK;
     }
-    else if (time < vertex_[0].time)
+    else if (time < vertex_[0].time - SMALL_NUMBER)
     {
         s     = 0.0;
         index = 0;
         return GhostTrailReturnCode::GHOST_TRAIL_TIME_PRIOR;
     }
-    else if (time > vertex_.back().time)
+    else if (time > vertex_.back().time + SMALL_NUMBER)
     {
         s     = vertex_.back().s;
         index = vertex_.size() > 0 ? static_cast<unsigned int>(vertex_.size()) - 1 : IDX_UNDEFINED;
@@ -11699,14 +11699,14 @@ PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, 
         i = index;
     }
 
-    if (time < vertex_[i].time)
+    if (time < vertex_[i].time - SMALL_NUMBER)
     {
         direction = -1;  // Search backwards
     }
 
     for (size_t j = 0; j < GetNumberOfVertices(); j++)
     {
-        if (vertex_[i].time <= time && vertex_[i + 1].time > time)
+        if (time > vertex_[i].time - SMALL_NUMBER && time < vertex_[i + 1].time - SMALL_NUMBER)
         {
             double w = (time - vertex_[i].time) / (vertex_[i + 1].time - vertex_[i].time);
             s        = vertex_[i].s + w * (vertex_[i + 1].s - vertex_[i].s);
