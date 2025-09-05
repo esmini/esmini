@@ -3100,16 +3100,13 @@ TEST(ExternalControlTest, TestTimings)
             if (j == 1 && NEAR_NUMBERS(SE_GetSimulationTimeDouble(), 2.2))
             {
                 // try too small timestamp not preset in ghost trail which is now defined between 2.25 and 5.1
-                EXPECT_EQ(SE_GetRoadInfoGhostTrailTime(0, 2.25f - SMALL_NUMBERF, &road_info, &ghost_speed),
-                          SE_GhostTrailReturnCode::SE_GHOST_TRAIL_TIME_PRIOR);
+                EXPECT_EQ(SE_GetRoadInfoGhostTrailTime(0, 2.24f, &road_info, &ghost_speed), SE_GhostTrailReturnCode::SE_GHOST_TRAIL_TIME_PRIOR);
 
                 // try too large timestamp
-                EXPECT_EQ(SE_GetRoadInfoGhostTrailTime(0, 5.10f + SMALL_NUMBERF, &road_info, &ghost_speed),
-                          SE_GhostTrailReturnCode::SE_GHOST_TRAIL_TIME_PAST);
+                EXPECT_EQ(SE_GetRoadInfoGhostTrailTime(0, 5.11f, &road_info, &ghost_speed), SE_GhostTrailReturnCode::SE_GHOST_TRAIL_TIME_PAST);
 
                 // try non existing ghost
-                EXPECT_EQ(SE_GetRoadInfoGhostTrailTime(1, 5.10f + SMALL_NUMBERF, &road_info, &ghost_speed),
-                          SE_GhostTrailReturnCode::SE_GHOST_TRAIL_ERROR);
+                EXPECT_EQ(SE_GetRoadInfoGhostTrailTime(1, 5.0f, &road_info, &ghost_speed), SE_GhostTrailReturnCode::SE_GHOST_TRAIL_ERROR);
             }
 
             // Copy position and heading from ghost at next timestamp
