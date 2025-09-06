@@ -155,14 +155,7 @@ int Replay::ParsePackets(const std::string& filename)
 
                 if (timestamps_.empty() || timestamp_ <= SMALL_NUMBER || timestamp_ > timestamps_.back().first)
                 {
-                    if (previous_packet_id_ != header.id)
-                    {
-                        timestamps_.emplace_back(timestamp_, true);
-                    }
-                    else
-                    {
-                        timestamps_.emplace_back(timestamp_, false);
-                    }
+                    timestamps_.emplace_back(timestamp_, false);
                 }
                 break;
             }
@@ -408,7 +401,6 @@ int Replay::ParsePackets(const std::string& filename)
                     return -1;
                 }
                 dt_.values.emplace_back(timestamp_, dt);
-                timestamps_.back().second = false;  // Mark last timestamp as non-significant
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
@@ -438,7 +430,6 @@ int Replay::ParsePackets(const std::string& filename)
                 return -1;
             }
         }
-        previous_packet_id_ = header.id;
     }
 
     dat_reader.CloseFile();
@@ -462,21 +453,24 @@ void Replay::FillInTimestamps()
     {
         filled.emplace_back(curr_time, timestamps_[i].second);  // Save current timestamp
 
-        double next_logged_time = timestamps_[i + 1].first;
+        // Get the upcoming dt
         double dt;
-
         if (dt_.values.size() == 2)
         {
+            // only 2 values exist, its dt 0 at t=0 and whatever dt we specified after that
             dt = dt_.values[1].second;
         }
         else
         {
-            dt = dt_.get_value_binary(curr_time, true).value();  // Get next delta time
+            // We find the next dt after current time
+            dt = dt_.get_value_binary(curr_time, true).value();
         }
 
+        // What should be the next time in timestamps_
         double next_time = curr_time + dt;
 
-        // next_time is very close to next_logged_time -> snap
+        // next_time is very close to next_logged_time, we are done this step
+        double next_logged_time = timestamps_[i + 1].first;
         if (NEAR_NUMBERS(next_time, next_logged_time))
         {
             i++;
@@ -485,8 +479,16 @@ void Replay::FillInTimestamps()
         // inside a gap bigger than 1 sample -> We need to fill from last known dt
         else
         {
-            double prev_dt = dt_.get_value_binary(curr_time).value();
-            curr_time += prev_dt;
+            // Fill with dt at current time until next_logged_time - dt
+            double prev_dt  = dt_.get_value_binary(curr_time).value();
+            double end_time = next_logged_time - dt;
+            double steps    = std::llround(((end_time - curr_time) / prev_dt) + SMALL_NUMBER);  // llround, returns a size_t
+
+            for (size_t j = 1; j < steps; ++j)
+            {
+                filled.emplace_back(j * prev_dt + curr_time, timestamps_[i].second);
+            }
+            curr_time = filled.back().first + prev_dt;  // Set current time so it can be appended in next iteration
         }
     }
 
@@ -758,6 +760,17 @@ ObjectStateStructDat* Replay::GetState(int id)
     }
 }
 
+std::vector<int> Replay::GetAllObjectIDs() const
+{
+    std::vector<int> ids;
+    ids.reserve(objects_timeline_.size());
+    for (const auto& [id, _] : objects_timeline_)
+    {
+        ids.push_back(id);
+    }
+    return ids;
+}
+
 void Replay::SetStartTime(double time)
 {
     startTime_ = time;
@@ -935,6 +948,9 @@ ReplayEntry Replay::GetReplayEntryAtTimeBinary(int id, double t) const
 template <typename T, typename Data>
 void Replay::AddToTimeline(Timeline<T>& timeline, Data data)
 {
+    // Significant timestamp received
+    timestamps_.back().second = true;
+
     // Check if the current object is ghost, if its not, just add the data
     if (!current_object_timeline_->ctrl_type_.values.empty() && current_object_timeline_->ctrl_type_.values.front().second != 100)
     {

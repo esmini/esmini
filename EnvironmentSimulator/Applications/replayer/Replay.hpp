@@ -201,6 +201,7 @@ namespace scenarioengine
         void                  SetStopTime(double time);
         ReplayEntry           GetReplayEntryAtTimeIncremental(int id, double t) const;
         ReplayEntry           GetReplayEntryAtTimeBinary(int id, double t) const;
+        std::vector<int>      GetAllObjectIDs() const;
         double                GetStartTime() const
         {
             return startTime_;
@@ -238,8 +239,7 @@ namespace scenarioengine
         std::string              create_datfile_;
 
         /* PacketHandler stuff */
-        double                            timestamp_          = 0.0;
-        id_t                              previous_packet_id_ = static_cast<id_t>(Dat::PacketId::PACKET_ID_SIZE);
+        double                            timestamp_ = 0.0;
         int                               current_object_id_;
         scenarioengine::PropertyTimeline* current_object_timeline_;
     };
