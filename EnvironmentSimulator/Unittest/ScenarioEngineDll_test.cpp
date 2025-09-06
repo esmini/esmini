@@ -3022,31 +3022,6 @@ TEST(OSILaneParing, Signs)
     SE_Close();
 }
 
-/*
-static void ReadDat(std::string filename, std::vector<scenarioengine::ReplayEntry>& entries)
-{
-    std::ifstream             file;
-    scenarioengine::DatHeader header;
-
-    file.open(filename, std::ofstream::binary);
-    ASSERT_EQ(file.fail(), false);
-
-    file.read(reinterpret_cast<char*>(&header), sizeof(header));
-
-    scenarioengine::ReplayEntry entry;
-
-    while (!file.eof())
-    {
-        file.read(reinterpret_cast<char*>(&entry.state), sizeof(entry.state));
-
-        if (!file.eof())
-        {
-            entries.push_back(entry);
-        }
-    }
-    file.close();
-}
-
 TEST(ExternalControlTest, TestTimings)
 {
     // This test case imitates a custom application controlling the Ego vehicle
@@ -3065,7 +3040,7 @@ TEST(ExternalControlTest, TestTimings)
                                 "sim.dat",
                                 "--fixed_timestep",
                                 "0.1",
-                                //"--window", "60", "60", "800", "400",
+                                // "--window", "60", "60", "800", "400",
                                 "--csv_logger",
                                 "csv_log.csv",
                                 "--osi_file",
@@ -3076,7 +3051,7 @@ TEST(ExternalControlTest, TestTimings)
                                 "sim.dat",
                                 "--fixed_timestep",
                                 "0.1",
-                                //"--window", "60", "60", "800", "400",
+                                // "--window", "60", "60", "800", "400",
                                 "--csv_logger",
                                 "csv_log.csv",
                                 "--osi_file",
@@ -3128,27 +3103,30 @@ TEST(ExternalControlTest, TestTimings)
         SE_Close();
 
         // Check .dat file
-        std::vector<scenarioengine::ReplayEntry> entries;
-        ReadDat("sim.dat", entries);
+        scenarioengine::Replay replay("sim.dat");
+        std::vector<int>       ids = replay.GetAllObjectIDs();
 
-        // Check first timestep (-3.0)
-        size_t i = 0;
-        EXPECT_NEAR(entries[i].state.info.timeStamp, -3.0, 1E-3);
-        EXPECT_STREQ(entries[i].state.info.name, "Ego");
-        EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
-        EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
-        i++;
-        EXPECT_NEAR(entries[i].state.info.timeStamp, -3.0, 1E-3);
-        EXPECT_STREQ(entries[i].state.info.name, "Target");
-        EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
-        EXPECT_NEAR(entries[i].state.pos.y, -4.5, 1E-3);
-        i++;
-        EXPECT_NEAR(entries[i].state.info.timeStamp, -3.0, 1E-3);
-        EXPECT_STREQ(entries[i].state.info.name, "Ego_ghost");
-        EXPECT_NEAR(entries[i].state.pos.x, 10.0, 1E-3);
-        EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
+        double                      time  = -3.0;
+        scenarioengine::ReplayEntry entry = replay.GetReplayEntryAtTimeBinary(ids[0], time);
+        EXPECT_NEAR(entry.state.info.timeStamp, time, 1E-3);
+        EXPECT_STREQ(entry.state.info.name.c_str(), "Ego");
+        EXPECT_NEAR(entry.state.pos.x, 10.0, 1E-3);
+        EXPECT_NEAR(entry.state.pos.y, -1.5, 1E-3);
+
+        entry = replay.GetReplayEntryAtTimeBinary(ids[1], time);
+        EXPECT_NEAR(entry.state.info.timeStamp, time, 1E-3);
+        EXPECT_STREQ(entry.state.info.name.c_str(), "Target");
+        EXPECT_NEAR(entry.state.pos.x, 10.0, 1E-3);
+        EXPECT_NEAR(entry.state.pos.y, -4.5, 1E-3);
+
+        entry = replay.GetReplayEntryAtTimeBinary(ids[2], time);
+        EXPECT_NEAR(entry.state.info.timeStamp, time, 1E-3);
+        EXPECT_STREQ(entry.state.info.name.c_str(), "Ego_ghost");
+        EXPECT_NEAR(entry.state.pos.x, 10.0, 1E-3);
+        EXPECT_NEAR(entry.state.pos.y, -1.5, 1E-3);
 
         // Check timestep before 0.0
+        /*
         while (i < entries.size() - 1 && entries[i].state.info.timeStamp < static_cast<float>(-SMALL_NUMBER))
             i++;
         i -= 3;
@@ -3383,7 +3361,6 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_NEAR(std::stod(csv[142][44]), 54.0, 1E-3);
             EXPECT_NEAR(std::stod(csv[142][47]), 20.0, 1E-3);
             EXPECT_NEAR(std::stod(csv[142][50]), 0.0, 1E-3);
-
             // Read OSI file
             FILE* file = FileOpen("gt.osi", "rb");
             ASSERT_NE(file, nullptr);
@@ -3480,9 +3457,9 @@ TEST(ExternalControlTest, TestTimings)
 
             fclose(file);
         }
+        */
     }
 }
-*/
 
 TEST(TestOsiReporter, AssignRoleTest)
 {
