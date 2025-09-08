@@ -152,7 +152,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading timestamp data.");
                 }
 
-                if (timestamps_.empty() || timestamp_ <= SMALL_NUMBER || timestamp_ > timestamps_.back())
+                if (timestamps_.empty() || timestamp_ > timestamps_.back())
                 {
                     timestamps_.emplace_back(timestamp_);
                 }
