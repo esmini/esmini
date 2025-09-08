@@ -75,7 +75,8 @@ namespace scenarioengine
             auto search_begin = values.begin();
             auto search_end   = values.end();
 
-            auto it = std::upper_bound(search_begin, search_end, time, [](double t, const std::pair<double, T>& v) { return t < v.first; });
+            auto it =
+                std::upper_bound(search_begin, search_end, time - SMALL_NUMBER, [](double t, const std::pair<double, T>& v) { return t < v.first; });
 
             if (it == values.begin())
             {
