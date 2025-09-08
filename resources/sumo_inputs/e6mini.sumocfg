@@ -8,7 +8,7 @@
     <time>
         <begin value="0"/>
         <end value="1000"/>
-        <step-length value="0.01" />
+        <step-length value="0.05" />
     </time>
     <time-to-teleport value="-1"/>
     <lateral-resolution value="0.5"/>

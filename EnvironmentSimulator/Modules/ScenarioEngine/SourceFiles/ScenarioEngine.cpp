@@ -487,22 +487,30 @@ int ScenarioEngine::step(double deltaSimTime)
             {
                 // Calculate new trailer position and orientation
                 ObjectState* o = scenarioGateway.getObjectStatePtrById(tow_vehicle->id_);
-                SE_Vector    v0(tow_vehicle->trailer_hitch_->dx_, 0.0);
+                if (o != nullptr)
+                {
+                    SE_Vector v0(tow_vehicle->trailer_hitch_->dx_, 0.0);
 
-                // Fetch updated state of tow vehicle from gateway
-                roadmanager::Position* tow_pos = &o->state_.pos;
-                v0                             = v0.Rotate(tow_pos->GetH()) + SE_Vector(tow_pos->GetX(), tow_pos->GetY());
-                SE_Vector v1                   = SE_Vector(trailer->pos_.GetX(), trailer->pos_.GetY()) - v0;
-                v1.SetLength(trailer->trailer_coupler_->dx_);
-                scenarioGateway.updateObjectWorldPosXYH(trailer->GetId(),
-                                                        getSimulationTime(),
-                                                        v0.x() + v1.x(),
-                                                        v0.y() + v1.y(),
-                                                        GetAngleInInterval2PI(atan2(v1.y(), v1.x()) + M_PI));
-                trailer->SetSpeed(tow_vehicle->GetSpeed());
+                    // Fetch updated state of tow vehicle from gateway
+                    roadmanager::Position* tow_pos = &o->state_.pos;
+                    v0                             = v0.Rotate(tow_pos->GetH()) + SE_Vector(tow_pos->GetX(), tow_pos->GetY());
+                    SE_Vector v1                   = SE_Vector(trailer->pos_.GetX(), trailer->pos_.GetY()) - v0;
+                    v1.SetLength(trailer->trailer_coupler_->dx_);
+                    scenarioGateway.updateObjectWorldPosXYH(trailer->GetId(),
+                                                            getSimulationTime(),
+                                                            v0.x() + v1.x(),
+                                                            v0.y() + v1.y(),
+                                                            GetAngleInInterval2PI(atan2(v1.y(), v1.x()) + M_PI));
+                    trailer->SetSpeed(tow_vehicle->GetSpeed());
 
-                tow_vehicle = trailer;
-                trailer     = static_cast<Vehicle*>(trailer->TrailerVehicle());
+                    tow_vehicle = trailer;
+                    trailer     = static_cast<Vehicle*>(trailer->TrailerVehicle());
+                }
+                else
+                {
+                    LOG_ERROR("Unexpected missing tow vehicle of vehicle {} with id {}", obj->GetName(), obj->GetId());
+                    break;
+                }
             }
         }
     }

@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <routes>
-  <vType accel="3.0" decel="6.0" id="CarA" length="5.0" minGap="2.5" maxSpeed="50.0" sigma="0.5" />
-  <vType accel="2.0" decel="6.0" id="CarB" length="7.5" minGap="2.5" maxSpeed="50.0" sigma="0.5" />
-  <vType accel="3.0" decel="5.0" id="CarC" length="5.0" minGap="2.5" maxSpeed="40.0" sigma="0.5" />
-  <vType accel="3.0" decel="5.0" id="CarD" length="7.5" minGap="2.5" maxSpeed="30.0" sigma="0.5" />
-  <route id="route01" edges="-0.0.00 0.0.00"/>
-  <route id="route02" edges="0.0.00 -0.0.00"/>
-   <vehicle depart="0" id="veh0" route="route01" type="CarD" color="1,0,0" />
-   <vehicle depart="0" id="veh1" route="route01" type="CarC" color="1,0,0" />
-
-   <vehicle depart="0" id="veh2" route="route01" type="CarA" color="1,0,0" />
-   <vehicle depart="0" id="veh3" route="route01" type="CarA" color="1,0,0" />
+   <vType accel="3.0" decel="6.0" id="car_type1" length="5.0" minGap="2.5" maxSpeed="50.0" sigma="0.5"/>
+   <vType accel="2.0" decel="6.0" id="car_type2" length="7.5" minGap="2.5" maxSpeed="50.0" sigma="0.5"/>
+   <vType accel="3.0" decel="5.0" id="car_type3" length="5.0" minGap="2.5" maxSpeed="40.0" sigma="0.5" />
+   <vType accel="3.0" decel="5.0" id="car_type4" length="7.5" minGap="2.5" maxSpeed="30.0" sigma="0.5" />
+   <vType accel="3.0" decel="5.0" id="bus_type" vClass="bus" length="8.0" minGap="2.5" maxSpeed="40.0" sigma="0.5"/>
+   <vType accel="3.0" decel="5.0" id="truck_type" vClass="truck" length="12" minGap="2.5" maxSpeed="30.0" sigma="0.5"/>
+   <route id="route01" edges="-0.0.00 0.0.00"/>
+   <route id="route02" edges="0.0.00 -0.0.00"/>
+   <vehicle depart="0" id="car1" route="route01" type="car_type4" color="1,0,0" vClass="passenger"/>
+   <vehicle depart="0" id="car2" route="route01" type="car_type3" color="1,0,0" vClass="passenger"/>
+   <vehicle depart="0" id="car3" route="route01" type="car_type1" color="1,0,0" vClass="passenger"/>
+   <vehicle depart="0" id="car4" route="route01" type="car_type1" color="1,0,0" vClass="passenger"/>
+   <vehicle depart="0" id="bus1" route="route02" type="bus_type" color="1,0,0" departPos="1100.0" departLane="1" laneChangeMode="0b00000000"/>
+   <vehicle depart="0" id="truck1" route="route02" type="truck_type" color="1,0,0" departPos="1000.0" departLane="1" laneChangeMode="0b00000000"/>
 </routes>

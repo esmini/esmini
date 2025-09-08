@@ -1253,6 +1253,7 @@ public:
     // cppcheck-suppress functionConst
     // This function is intentionally not marked as const because it calls gen_ (std::mt19937), which modifies internal state each time a number is
     // generated. Although no visible state is changed, the Random Number Generator state must be advanced, so the function is not logically const.
+    // Get an integer in the range (min, max) NOTE: including max
     int GetNumberBetween(int min, int max)
     {
         if (max < min)

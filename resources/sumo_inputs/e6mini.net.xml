@@ -78,7 +78,7 @@
     </junction>
 
     <connection from="-0.0.00" to="0.0.00" fromLane="3" toLane="3" via=":0.end_0_0" dir="t" state="M"/>
-    <connection from="0.0.00" to="-0.0.00" fromLane="3" toLane="3" via=":0.begin_0_0" dir="t" state="M"/>
+    <connection from="0.0.00" to="-0.0.00" fromLane="2" toLane="2" via=":0.begin_0_0" dir="t" state="M"/>
 
     <connection from=":0.begin_0" to="-0.0.00" fromLane="0" toLane="3" dir="t" state="M"/>
     <connection from=":0.end_0" to="0.0.00" fromLane="0" toLane="3" dir="t" state="M"/>

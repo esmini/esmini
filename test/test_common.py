@@ -44,6 +44,9 @@ def run_scenario(osc_filename = None, esmini_arguments = None, xosc_str = None, 
     else:
         app = application
 
+    # add postfix .exe for windows search path, allowing for parallel build existence
+    app += '.exe' if sys.platform == "win32" else ''
+
     if osc_filename is not None:
         args = [app, '--osc', osc_filename] + esmini_arguments.split()
     else:

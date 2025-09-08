@@ -319,9 +319,16 @@ void SwarmTrafficAction::Start(double simTime)
 
     // Register model filenames from vehicle catalog
     // if no catalog loaded, use same model as central object
-    vehicle_pool_.Initialize(reader_, nullptr, true);
+    std::vector<std::pair<int, double>> categories = {{Vehicle::Category::CAR, 5.0},
+                                                      {Vehicle::Category::TRAILER, 0.0},  // allow trailers but no single trailers
+                                                      {Vehicle::Category::VAN, 2.0},
+                                                      {Vehicle::Category::BUS, 1.0},
+                                                      {Vehicle::Category::TRUCK, 2.0},
+                                                      {Vehicle::Category::MOTORBIKE, 1.0}};
 
-    if (vehicle_pool_.GetVehicles().size() == 0)
+    vehicle_pool_.Initialize(reader_, &categories, true);
+
+    if (vehicle_pool_.Empty())
     {
         if (centralObject_ && centralObject_->type_ == Object::Type::VEHICLE)
         {
@@ -617,7 +624,13 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             reader_->AddController(acc);
 
             // Pick random model from vehicle catalog
-            Vehicle* vehicle = new Vehicle(*vehicle_pool_.GetRandomVehicle());
+            Vehicle* vehicle_tmp = vehicle_pool_.GetRandomVehicle();
+            if (vehicle_tmp == nullptr)
+            {
+                LOG_ERROR("No vehicle");
+                continue;
+            }
+            Vehicle* vehicle = new Vehicle(*vehicle_tmp);
             vehicle->pos_.SetLanePos(inf.pos.GetTrackId(), laneID, inf.pos.GetS(), 0.0);
 
             // Set swarm traffic direction based on RHT or LHT

@@ -41,7 +41,8 @@ namespace scenarioengine
         void Step(double timeStep);
         int  Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)]);
 
-        void SetSumoVehicle(Object* object);
+        void               SetSumoVehicle(Object* object);
+        static std::string SUMOVClass2OSCVehicleCategory(const std::string& vclass);
 
     private:
         float              sumo_x_offset_ = 0.0f;

@@ -111,7 +111,12 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
     options.push_back("--xml-validation");
     options.push_back("never");
 
-    std::vector<unsigned int> categories = {Vehicle::Category::CAR, Vehicle::Category::VAN};
+    std::vector<std::pair<int, double>> categories = {{Vehicle::Category::CAR, 5.0},
+                                                      {Vehicle::Category::VAN, 2.0},
+                                                      {Vehicle::Category::BUS, 1.0},
+                                                      {Vehicle::Category::TRUCK, 2.0},
+                                                      {Vehicle::Category::TRAILER, 0.0},  // allow trailsers, but no single trailers
+                                                      {Vehicle::Category::MOTORBIKE, 1.0}};
     vehicle_pool_.Initialize(scenario_engine_->GetScenarioReader(), &categories, false);
 
     libsumo::Simulation::load(options);
@@ -148,8 +153,10 @@ void ControllerSumo::Step(double timeStep)
         {
             if (!entities_->nameExists(deplist[i]))
             {
+                std::string vclass = libsumo::Vehicle::getVehicleClass(deplist[i]);
+
                 Vehicle* vehicle = nullptr;
-                if (vehicle_pool_.GetVehicles().empty())
+                if (vehicle_pool_.GetVehicles(SUMOVClass2OSCVehicleCategory(vclass)).empty())
                 {
                     LOG_INFO("SUMO controller: No vehicles available in pool, use host 3D model");
                     vehicle = new Vehicle();
@@ -158,8 +165,22 @@ void ControllerSumo::Step(double timeStep)
                 }
                 else
                 {
-                    // pick vehicle randomly from pool
-                    vehicle = new Vehicle(*vehicle_pool_.GetRandomVehicle());
+                    Vehicle* v_tmp = nullptr;
+
+                    if (vclass != "ignoring")
+                    {
+                        // pick vehicle randomly, based on any set vehicle class, from pool
+                        v_tmp = vehicle_pool_.GetRandomVehicle(SUMOVClass2OSCVehicleCategory(vclass));
+                    }
+                    else
+                    {
+                        // pick random
+                        v_tmp = vehicle = vehicle_pool_.GetRandomVehicle();
+                    }
+                    if (v_tmp != nullptr)
+                    {
+                        vehicle = new Vehicle(*v_tmp);
+                    }
                 }
                 if (vehicle != nullptr)
                 {
@@ -173,30 +194,36 @@ void ControllerSumo::Step(double timeStep)
                     vehicle->role_     = static_cast<int>(Object::Role::CIVIL);
                     vehicle->category_ = Vehicle::Category::CAR;
                     vehicle->odometer_ = 0.0;
+                    vehicle->reset_    = true;
                     LOG_INFO("SUMO controller: Add vehicle {} to scenario", vehicle->name_);
                     entities_->addObject(vehicle, true);
 
-                    // report to gateway
-                    gateway_->reportObject(vehicle->id_,
-                                           vehicle->name_,
-                                           static_cast<int>(vehicle->type_),
-                                           vehicle->category_,
-                                           vehicle->role_,
-                                           vehicle->model_id_,
-                                           vehicle->GetModel3DFullPath(),
-                                           vehicle->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
-                                           vehicle->boundingbox_,
-                                           static_cast<int>(vehicle->scaleMode_),
-                                           0xff,
-                                           time_,
-                                           vehicle->speed_,
-                                           vehicle->wheel_angle_,
-                                           vehicle->wheel_rot_,
-                                           vehicle->rear_axle_.positionZ,
-                                           vehicle->front_axle_.positionX,
-                                           vehicle->front_axle_.positionZ,
-                                           &vehicle->pos_,
-                                           vehicle->GetSourceReference());
+                    // report vehicle and any trailers to gateway
+                    while (vehicle != nullptr)
+                    {
+                        gateway_->reportObject(vehicle->id_,
+                                               vehicle->name_,
+                                               static_cast<int>(vehicle->type_),
+                                               vehicle->category_,
+                                               vehicle->role_,
+                                               vehicle->model_id_,
+                                               vehicle->GetModel3DFullPath(),
+                                               vehicle->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
+                                               vehicle->boundingbox_,
+                                               static_cast<int>(vehicle->scaleMode_),
+                                               0xff,
+                                               time_,
+                                               vehicle->speed_,
+                                               vehicle->wheel_angle_,
+                                               vehicle->wheel_rot_,
+                                               vehicle->rear_axle_.positionZ,
+                                               vehicle->front_axle_.positionX,
+                                               vehicle->front_axle_.positionZ,
+                                               &vehicle->pos_,
+                                               vehicle->GetSourceReference());
+
+                        vehicle = static_cast<Vehicle*>(vehicle->TrailerVehicle());
+                    }
                 }
             }
         }
@@ -239,32 +266,32 @@ void ControllerSumo::Step(double timeStep)
     std::vector<std::string> idlist = libsumo::Vehicle::getIDList();
     for (size_t i = 0; i < entities_->object_.size(); i++)
     {
-        if (entities_->object_[i]->IsActive() && !entities_->object_[i]->IsGhost() &&
-            std::find(idlist.begin(), idlist.end(), entities_->object_[i]->GetName()) == idlist.end())  // not already in sumo list
+        Object* obj = entities_->object_[i];
+        if (obj->IsActive() && !obj->IsGhost() && obj->TowVehicle() == nullptr &&     // do not add trailers to sumo
+            std::find(idlist.begin(), idlist.end(), obj->GetName()) == idlist.end())  // not already in sumo list
         {
-            std::string id = entities_->object_[i]->name_;
+            std::string id = obj->name_;
             LOG_INFO("SUMO controller: Add vehicle {} to SUMO", id);
             libsumo::Vehicle::add(id, "", "DEFAULT_VEHTYPE");
             libsumo::Vehicle::moveToXY(id,
                                        "random",
                                        0,
-                                       entities_->object_[i]->pos_.GetX() + static_cast<double>(sumo_x_offset_),
-                                       entities_->object_[i]->pos_.GetY() + static_cast<double>(sumo_y_offset_),
-                                       entities_->object_[i]->pos_.GetH(),
+                                       obj->pos_.GetX() + static_cast<double>(sumo_x_offset_),
+                                       obj->pos_.GetY() + static_cast<double>(sumo_y_offset_),
+                                       obj->pos_.GetH(),
                                        0);
-            libsumo::Vehicle::setSpeed(id, entities_->object_[i]->speed_);
+            libsumo::Vehicle::setSpeed(id, obj->speed_);
         }
     }
 
     // Update the position of all cars controlled by sumo
     for (size_t i = 0; i < entities_->object_.size(); i++)
     {
-        if (entities_->object_[i]->IsActive())
+        Object* obj = entities_->object_[i];
+        if (obj->IsActive())
         {
-            if (entities_->object_[i]->IsAnyActiveControllerOfType(Controller::Type::CONTROLLER_TYPE_SUMO))
+            if (obj->IsAnyActiveControllerOfType(Controller::Type::CONTROLLER_TYPE_SUMO))
             {
-                Object* obj = entities_->object_[i];
-
                 std::string            sumoid = obj->name_;
                 libsumo::TraCIPosition pos    = libsumo::Vehicle::getPosition3D(sumoid);
                 obj->speed_                   = libsumo::Vehicle::getSpeed(sumoid);
@@ -276,6 +303,11 @@ void ControllerSumo::Step(double timeStep)
                                             0,
                                             roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS |
                                                 roadmanager::Position::PosMode::P_ABS | roadmanager::Position::PosMode::R_REL);
+
+                if (obj->reset_ && !obj->TowVehicle() && obj->TrailerVehicle())
+                {
+                    static_cast<Vehicle*>(obj)->AlignTrailers();
+                }
 
                 obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 
@@ -289,17 +321,17 @@ void ControllerSumo::Step(double timeStep)
                     gateway_->updateObjectBoundingBox(obj->id_, obj->boundingbox_);
                 }
             }
-            else if (!entities_->object_[i]->IsGhost())
+            else if (!obj->IsGhost() && obj->TowVehicle() == nullptr)  // skip ghosts and trailers
             {
                 // Updates all positions for non-sumo controlled vehicles
-                libsumo::Vehicle::moveToXY(entities_->object_[i]->name_,
+                libsumo::Vehicle::moveToXY(obj->name_,
                                            "random",
                                            0,
-                                           entities_->object_[i]->pos_.GetX() + static_cast<double>(sumo_x_offset_),
-                                           entities_->object_[i]->pos_.GetY() + static_cast<double>(sumo_y_offset_),
-                                           entities_->object_[i]->pos_.GetH(),
+                                           obj->pos_.GetX() + static_cast<double>(sumo_x_offset_),
+                                           obj->pos_.GetY() + static_cast<double>(sumo_y_offset_),
+                                           obj->pos_.GetH(),
                                            0);
-                libsumo::Vehicle::setSpeed(entities_->object_[i]->name_, entities_->object_[i]->speed_);
+                libsumo::Vehicle::setSpeed(obj->name_, obj->speed_);
             }
         }
     }
@@ -327,4 +359,31 @@ void ControllerSumo::SetSumoVehicle(Object* object)
     template_vehicle_ = object;
     object_           = object;
     object_->AssignController(this);
+}
+
+std::string scenarioengine::ControllerSumo::SUMOVClass2OSCVehicleCategory(const std::string& vclass)
+{
+    if (vclass == "passenger")
+    {
+        return "car";
+    }
+    else if (vclass == "bus")
+    {
+        return "bus";
+    }
+    else if (vclass == "truck")
+    {
+        return "truck";
+    }
+    else if (vclass == "motorcycle")
+    {
+        return "motorcycle";
+    }
+    else if (vclass == "bicycle")
+    {
+        return "bicycle";
+    }
+
+    // default
+    return "car";
 }
