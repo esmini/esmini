@@ -119,10 +119,6 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             {
                 player->GoToDeltaTime(JUMP_DELTA_TIME_SMALL);
             }
-            else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_ALT))
-            {
-                player->GoToSignificantTimestamp(true);
-            }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
                 player->GoToEnd(true);
@@ -144,10 +140,6 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_SHIFT))
             {
                 player->GoToDeltaTime(-JUMP_DELTA_TIME_SMALL);
-            }
-            else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_ALT))
-            {
-                player->GoToSignificantTimestamp(false);
             }
             else if (keyEvent->modKeyMask_ & static_cast<int>(ModKeyMask::MODKEY_CTRL))
             {
@@ -231,7 +223,7 @@ int ParseEntities(Replay* player)
         OdoInfo odo_entry = {};
         for (size_t i = 0; i < player->timestamps_.size(); i++)
         {
-            ReplayEntry entry = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i].first);
+            ReplayEntry entry = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i]);
 
             if (no_ghost && timelines.ctrl_type_.values[0].second == GHOST_CTRL_TYPE)
             {
@@ -355,7 +347,7 @@ int ParseEntities(Replay* player)
             // Add it to the odometer timeline if it has increased
             if (odo_entry.odometer > timelines.odometer_.values.back().second)
             {
-                timelines.odometer_.values.emplace_back(player->timestamps_[i].first, odo_entry.odometer);
+                timelines.odometer_.values.emplace_back(player->timestamps_[i], odo_entry.odometer);
             }
         }
     }
@@ -934,15 +926,15 @@ int main(int argc, char** argv)
         if (!start_time_str.empty())
         {
             double startTime = 1E-3 * strtod(start_time_str);
-            if (startTime < player->timestamps_.front().first)
+            if (startTime < player->timestamps_.front())
             {
-                printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n", startTime, player->timestamps_.front().first);
-                startTime = player->timestamps_.front().first;
+                printf("Specified start time (%.2f) < first timestamp (%.2f), adapting.\n", startTime, player->timestamps_.front());
+                startTime = player->timestamps_.front();
             }
-            else if (startTime > player->timestamps_.back().first)
+            else if (startTime > player->timestamps_.back())
             {
-                printf("Specified start time (%.2f) > last timestamp (%.2f), adapting.\n", startTime, player->timestamps_.back().first);
-                startTime = player->timestamps_.back().first;
+                printf("Specified start time (%.2f) > last timestamp (%.2f), adapting.\n", startTime, player->timestamps_.back());
+                startTime = player->timestamps_.back();
             }
             player->SetStartTime(startTime);
             player->GoToTime(startTime);
@@ -952,15 +944,15 @@ int main(int argc, char** argv)
         if (!stop_time_str.empty())
         {
             double stopTime = 1E-3 * strtod(stop_time_str);
-            if (stopTime > player->timestamps_.back().first)
+            if (stopTime > player->timestamps_.back())
             {
-                printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->timestamps_.back().first);
-                stopTime = player->timestamps_.back().first;
+                printf("Specified stop time (%.2f) > last timestamp (%.2f), adapting.\n", stopTime, player->timestamps_.back());
+                stopTime = player->timestamps_.back();
             }
-            else if (stopTime < player->timestamps_.front().first)
+            else if (stopTime < player->timestamps_.front())
             {
-                printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n", stopTime, player->timestamps_.front().first);
-                stopTime = player->timestamps_.front().first;
+                printf("Specified stop time (%.2f) < first timestamp (%.2f), adapting.\n", stopTime, player->timestamps_.front());
+                stopTime = player->timestamps_.front();
             }
             player->SetStopTime(stopTime);
         }

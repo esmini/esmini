@@ -163,7 +163,7 @@ namespace scenarioengine
         Dat::DatHeader                                 dat_header_;
         Timeline<double>                               dt_;
         std::map<int, PropertyTimeline, MapComparator> objects_timeline_;
-        std::vector<std::pair<double, bool>>           timestamps_;
+        std::vector<double>                            timestamps_;
         std::unordered_map<int, ReplayEntry>           object_state_cache_;
         int                                            ghost_ghost_counter_ = -1;
 
@@ -187,7 +187,6 @@ namespace scenarioengine
         */
         void                  SetTimeToNearestTimestamp();
         size_t                FindIndexAtTimestamp(double timestamp);
-        void                  GoToSignificantTimestamp(bool search_forward);
         void                  GoToTime(double target_time, bool stop_at_next_frame = false);
         void                  GoToDeltaTime(double dt, bool stop_at_next_frame = false);
         void                  GetReplaysFromDirectory(const std::string dir, const std::string sce);
