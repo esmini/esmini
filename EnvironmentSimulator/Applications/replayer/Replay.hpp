@@ -72,11 +72,16 @@ namespace scenarioengine
                 return std::nullopt;
             }
 
+            if (values.size() == 1)
+            {
+                return values.front().second;
+            }
+
             auto search_begin = values.begin();
             auto search_end   = values.end();
 
             auto it =
-                std::upper_bound(search_begin, search_end, time - SMALL_NUMBER, [](double t, const std::pair<double, T>& v) { return t < v.first; });
+                std::upper_bound(search_begin, search_end, time + SMALL_NUMBER, [](double t, const std::pair<double, T>& v) { return t < v.first; });
 
             if (it == values.begin())
             {
