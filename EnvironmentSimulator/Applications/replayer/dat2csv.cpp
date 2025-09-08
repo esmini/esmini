@@ -74,7 +74,7 @@ int main(int argc, char** argv)
     {
         for (const auto& [id, _] : player->objects_timeline_)
         {
-            auto                  entry = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i].first);
+            auto                  entry = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i]);
             ObjectStateStructDat* state = &entry.state;
 
             if (!state->info.active)
