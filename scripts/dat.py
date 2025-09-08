@@ -171,6 +171,9 @@ class Timeline():
             print("ERROR, no values available")
             exit(-1)
 
+        if (len(self.values) == 1):
+            return self.values[0][1]
+
         timestamps = [v[0] for v in self.values]
         idx = bisect.bisect_right(timestamps, time)
 
