@@ -242,8 +242,9 @@ namespace Dat
                 return -1;
             }
 
-            const char* read_ptr = packet.data.data();
-            const char* end_ptr  = read_ptr + header.data_size;
+            const char* read_ptr        = packet.data.data();
+            const char* end_ptr         = read_ptr + header.data_size;
+            bool        exceeded_bounds = false;
 
             // A lambda that safely copies data from the read_ptr to the provided field,
             // ensuring we don't read out of bounds.
@@ -258,12 +259,24 @@ namespace Dat
                 }
                 else
                 {
-                    field = {};  // Initialized to default value
-                    LOG_ERROR("Failed to read full packet data for packet id: {}", header.id);
+                    field           = {};  // Initialized to default value
+                    exceeded_bounds = true;
                 }
             };
 
             (safe_copy(data), ...);
+
+            size_t remaining_data = static_cast<size_t>(end_ptr - read_ptr);
+
+            // Give an error for the packet if we have remaining data or exceeded bounds
+            if (remaining_data > 0)
+            {
+                LOG_ERROR("Unused data remaining in packet for packet id: {}", header.id);
+            }
+            else if (exceeded_bounds)
+            {
+                LOG_ERROR("Failed to read full packet data for packet id: {}", header.id);
+            }
 
             return 0;
         }
