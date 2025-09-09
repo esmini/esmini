@@ -123,6 +123,9 @@ class Timeline():
         self.last_time = LARGE_NUMBER
 
     def get_value_incremental(self, time):
+        """ 
+        Get last valid value at time, searching incrementally from last known index
+        """
         if (len(self.values) == 0):
             return None
 
@@ -145,6 +148,9 @@ class Timeline():
         return self.values[idx][1]
     
     def get_index_binary(self, time):
+        """
+        Get index of last valid data at time using binary search
+        """
         if not self.values:
             raise ValueError(f"Timeline is empty, cannot get value at time {time}")
 
@@ -167,6 +173,10 @@ class Timeline():
         return idx
     
     def get_value_binary(self, time, upper = False):
+        """
+        Get last valid value at time using binary search.
+        If upper is True, get the next value after time if available.
+        """
         if len(self.values) == 0:
             print("ERROR, no values available")
             exit(-1)
@@ -191,7 +201,7 @@ class Timeline():
 
 class PropertyTimeline():
     """
-    Contains all the timelines
+    Contains all the timelines and ghost restart time for a specific object
     """
     def __init__(self):
         self.model_id = Timeline()
@@ -216,6 +226,9 @@ class PropertyTimeline():
         self.last_restart_time = -1.0
 
 class DATFile():
+    """
+    Functionality to read .dat files and populate the states of all objects over time.
+    """
     ObjectStateStructDat = {
         "id": None,
         "model_id": None,
@@ -289,8 +302,9 @@ class DATFile():
         self.build_csv()
 
     def parse_data(self):
-        """Parse the .dat file and extract object states.
-           Packets are read in the order they are likely to appear in the file.
+        """
+        Parse the .dat file and extract object states.
+        Packets are read in the order they are likely to appear in the file.
         """
         while self.file.tell() < self.file_size:
             p_id = read_packet_header(self.file)
@@ -376,6 +390,9 @@ class DATFile():
                     self.timestamps.append(self.end_time)
 
     def add_to_timeline(self, timeline: PropertyTimeline, data):
+        """
+        Adds data to the timeline, handling ghost restarts if necessary.
+        """
         if len(self.current_object_timeline.ctrl_type.values) != 0 and self.current_object_timeline.ctrl_type.values[-1][1] != 100:
             timeline.values.append([self.current_timestamp, data])
             return
