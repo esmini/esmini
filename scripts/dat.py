@@ -273,11 +273,15 @@ class DATFile():
 
         self.version_major, self.version_minor, self.odr_filename, self.model_filename = read_dat_header(self.file)
 
-        if (self.version_major != VERSION_MAJOR or self.version_minor != VERSION_MINOR):
-            print('Version mismatch. {} is version {}.{} while supported version is: {}.{}'.format(
-                filename, self.version_major, self.version_minor, VERSION_MAJOR, VERSION_MINOR)
-            )
+        if self.version_major != VERSION_MAJOR:
+            print(f'ERROR: Incompatible DAT major file version: {self.version_major}, supporting: {VERSION_MAJOR}')
             exit(-1)
+
+        print( f"DAT file version: {self.version_major}.{self.version_minor}, odr_filename: {self.odr_filename}, model_filename: {self.model_filename}" )
+        
+        if self.version_minor != VERSION_MINOR:
+            print(f"Warning: DAT-file has version {self.version_major}.{self.version_minor}. Some inconsistencies are expected.")
+        
 
         self.extended = extended
 
