@@ -16,10 +16,6 @@
 #include "Entities.hpp"
 #include "PacketHandler.hpp"
 
-#define DAT_FILE_FORMAT_VERSION_MAJOR 1
-#define DAT_FILE_FORMAT_VERSION_MINOR 0
-#define DAT_FILENAME_SIZE             512
-
 namespace scenarioengine
 {
 
@@ -90,13 +86,6 @@ namespace scenarioengine
         struct ObjectInfoStructDat     info;
         struct ObjectPositionStructDat pos;
     };
-
-    typedef struct
-    {
-        int  version;
-        char odr_filename[DAT_FILENAME_SIZE];
-        char model_filename[DAT_FILENAME_SIZE];
-    } DatHeader;
 
     class ObjectState
     {
