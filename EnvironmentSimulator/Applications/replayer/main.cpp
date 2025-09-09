@@ -443,6 +443,7 @@ int main(int argc, char** argv)
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
 #endif  // _USE_OSG
     opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", REPLAYER_LOG_FILENAME, true);
+    opt.AddOption("log_level", "Log level debug, info, warn, error", "mode", "info", true);
 #ifdef _USE_OSG
     opt.AddOption("no_ghost", "Remove ghost entities");
     opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
@@ -506,6 +507,7 @@ int main(int argc, char** argv)
 
     txtLogger.LogTimeOnly();
     txtLogger.SetLoggerTime(&simTime);
+    txtLogger.SetLoggerVerbosity();
 
 #ifndef _USE_OSG
     LOG_INFO("Compiled with USE_OSG=FALSE, limited functionality available");
@@ -542,14 +544,6 @@ int main(int argc, char** argv)
     {
         LOG_INFO("Use sign models in external scene graph model, skip creating sign models");
     }
-
-    // Get the timestep
-    // float fixed_timestep = -1.0f;
-    // arg_str              = opt.GetOptionArg("fixed_timestep");
-    // if (!arg_str.empty())
-    // {
-    //     fixed_timestep = std::stof(arg_str);
-    // }
 
     // Create player
     arg_str = opt.GetOptionValue("dir");
