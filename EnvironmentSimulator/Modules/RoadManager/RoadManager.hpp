@@ -2784,11 +2784,20 @@ namespace roadmanager
         void Clear();
 
         /**
-                Load a road network, specified in the OpenDRIVE file format
+                Load a road network, specified in an OpenDRIVE XML file
                 @param filename OpenDRIVE file
                 @param replace If true any old road data will be erased, else new will be added to the old
+                @return true on success, false on failure
         */
         bool LoadOpenDriveFile(const char *filename, bool replace = true);
+
+        /**
+                Load a road network, specified in an OpenDRIVE XML string
+                @param xml_string OpenDRIVE content
+                @param replace If true any old road data will be erased, else new will be added to the old
+                @return true on success, false on failure
+        */
+        bool LoadOpenDriveFromXMLString(const char *xml_string, bool replace = true);
 
         /**
                 Initialize the global ids for lanes
@@ -2997,6 +3006,7 @@ namespace roadmanager
         std::vector<std::pair<id_t, std::string>> road_ids_;
         std::vector<std::pair<id_t, std::string>> junction_ids_;
         id_t                                      LookupIdFromStr(std::vector<std::pair<id_t, std::string>> &ids, std::string id_str);
+        bool                                      ParseOpenDriveXML(const pugi::xml_document &doc);
     };
 
     typedef struct
@@ -3222,6 +3232,7 @@ namespace roadmanager
         void              Init();
         static bool       LoadOpenDrive(const char *filename);
         static bool       LoadOpenDrive(const OpenDrive *odr);
+        static bool       LoadOpenDriveFromXMLString(const char *xml_string);
         static OpenDrive *GetOpenDrive();
         int               GotoClosestDrivingLaneAtCurrentPosition();
 

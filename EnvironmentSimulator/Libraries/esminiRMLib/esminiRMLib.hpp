@@ -162,7 +162,19 @@ extern "C"
 {
 #endif
 
+    /**
+    Initialize the RoadManager library with specified OpenDRIVE file
+    @param odrFilename Path to OpenDRIVE file
+    @return 0 on success, -1 on failure
+    */
     RM_DLL_API int RM_Init(const char* odrFilename);
+
+    /**
+    Initialize the RoadManager library with specified OpenDRIVE XML string
+    @param odrAsXMLString xml content
+    @return 0 on success, -1 on failure
+    */
+    RM_DLL_API int RM_InitWithString(const char* odrAsXMLString);
 
     RM_DLL_API int RM_Close();
 

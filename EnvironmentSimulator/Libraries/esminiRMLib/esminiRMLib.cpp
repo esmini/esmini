@@ -176,6 +176,18 @@ extern "C"
         return 0;
     }
 
+    RM_DLL_API int RM_InitWithString(const char* odrAsXMLString)
+    {
+        if (!roadmanager::Position::LoadOpenDriveFromXMLString(odrAsXMLString))
+        {
+            LOG_ERROR("Failed to load ODR {}", odrAsXMLString);
+            return -1;
+        }
+        odrManager = roadmanager::Position::GetOpenDrive();
+
+        return 0;
+    }
+
     RM_DLL_API int RM_Close()
     {
         odrManager = nullptr;

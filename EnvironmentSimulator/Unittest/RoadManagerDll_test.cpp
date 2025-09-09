@@ -617,6 +617,55 @@ TEST(TestGetMethods, TestGetLaneMethods)
     RM_Close();
 }
 
+TEST(TestLoadRoad, TestLoadFromXMLString)
+{
+    std::string xml =
+        R"(<?xml version='1.0' encoding='utf-8'?>
+            <OpenDRIVE>
+                <header name="tunnel_example" revMajor="1" revMinor="5" date="2025-09-09 09:40:00." north="0.0" south="0.0" east="0.0" west="0.0"/>
+                <road rule="RHT" id="1" junction="-1" length="100">
+                    <link/>
+                    <planView>
+                        <geometry s="0" x="0" y="0" hdg="0" length="100">
+                            <line/>
+                        </geometry>
+                    </planView>
+                    <elevationProfile/>
+                    <lateralProfile/>
+                    <lanes>
+                        <laneSection s="0">
+                            <left>
+                                <lane id="1" type="driving" level="false">
+                                    <link/>
+                                    <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                                    <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                                </lane>
+                            </left>
+                            <center>
+                                <lane id="0" type="none" level="false">
+                                    <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
+                                </lane>
+                            </center>
+                            <right>
+                                <lane id="-1" type="driving" level="false">
+                                    <link/>
+                                    <width a="3.0" b="0.0" c="-0.0" d="0.0" sOffset="0"/>
+                                    <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+                                </lane>
+                            </right>
+                        </laneSection>
+                    </lanes>
+                </road>
+            </OpenDRIVE>
+        )";
+
+    ASSERT_EQ(RM_InitWithString(xml.c_str()), 0);
+    ASSERT_EQ(RM_GetNumberOfRoads(), 1);
+    EXPECT_EQ(RM_GetRoadNumberOfLanes(1, 100.0, -1), 3);  // -1 = any/all lanes
+
+    RM_Close();
+}
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);

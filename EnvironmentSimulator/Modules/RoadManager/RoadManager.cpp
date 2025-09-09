@@ -3402,30 +3402,8 @@ void OpenDrive::Clear()
     friction_.Reset();
 }
 
-bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
+bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
 {
-    if (replace)
-    {
-        Reset();
-    }
-
-    odr_filename_ = filename;
-
-    if (odr_filename_ == "")
-    {
-        return false;
-    }
-
-    pugi::xml_document doc;
-
-    // First assume absolute path
-    pugi::xml_parse_result result = doc.load_file(filename);
-    if (!result)
-    {
-        LOG_WARN("{} at offset (character position): {}", result.description(), result.offset);
-        return false;
-    }
-
     pugi::xml_node node = doc.child("OpenDRIVE");
     if (node == NULL)
     {
@@ -5037,6 +5015,54 @@ bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
     }
 
     return true;
+}
+
+bool OpenDrive::LoadOpenDriveFromXMLString(const char* xml_string, bool replace)
+{
+    if (replace)
+    {
+        Reset();
+    }
+
+    // parse XML string as document
+    pugi::xml_document doc;
+
+    pugi::xml_parse_result result = doc.load_buffer(xml_string, strlen(xml_string));
+
+    if (!result)
+    {
+        LOG_WARN("{} at offset (character position): {}", result.description(), result.offset);
+        return false;
+    }
+
+    return ParseOpenDriveXML(doc);
+}
+
+bool OpenDrive::LoadOpenDriveFile(const char* filename, bool replace)
+{
+    if (replace)
+    {
+        Reset();
+    }
+
+    odr_filename_ = filename;
+
+    if (odr_filename_ == "")
+    {
+        return false;
+    }
+
+    pugi::xml_document doc;
+
+    // First assume absolute path
+    pugi::xml_parse_result result = doc.load_file(filename);
+    if (!result)
+    {
+        LOG_WARN("{} at offset (character position): {}", result.description(), result.offset);
+        return false;
+    }
+
+    return ParseOpenDriveXML(doc);
 }
 
 void RMObject::SetRepeat(Repeat* repeat)
@@ -6897,13 +6923,18 @@ void Position::Clean()
 
 bool Position::LoadOpenDrive(const char* filename)
 {
-    return (GetOpenDrive()->LoadOpenDriveFile(filename));
+    return GetOpenDrive()->LoadOpenDriveFile(filename);
 }
 
 bool Position::LoadOpenDrive(const OpenDrive* odr)
 {
     *GetOpenDrive() = *odr;
     return (GetOpenDrive() != nullptr);
+}
+
+bool Position::LoadOpenDriveFromXMLString(const char* xml_string)
+{
+    return GetOpenDrive()->LoadOpenDriveFromXMLString(xml_string);
 }
 
 OpenDrive* Position::GetOpenDrive()
