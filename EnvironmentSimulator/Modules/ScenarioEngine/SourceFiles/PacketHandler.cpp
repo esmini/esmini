@@ -362,7 +362,7 @@ bool Dat::DatReader::ReadFile(Dat::PacketHeader& header)
 
 void Dat::DatReader::UnknownPacket(const Dat::PacketHeader& header)
 {
-    LOG_ERROR("Unknown packet id: {}", header.id);
+    LOG_DEBUG("Unknown packet with id: {}", header.id);
     file_.seekg(header.data_size, std::ios::cur);  // Skips the packet by moving cursor ahead
 }
 
