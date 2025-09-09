@@ -204,6 +204,9 @@ Improvements and fixes:
 - Remove unintended ghost related OSI warning
 ### New Dat Format mentions
 - Changing fixed timestep on ghost from 0.05 -> GetFixedTimestep() will cause any scenario using followGhost to be slightly different (also at svadds!)
+- Following python code eliminated due to currently not compatible with new dat-format
+  - csv2dat functionality in dat.py
+  - dat2xosc script
 
 ### 2025-06-24 Version 2.49.0
 
