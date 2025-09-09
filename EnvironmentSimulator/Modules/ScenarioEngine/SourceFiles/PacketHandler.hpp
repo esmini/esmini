@@ -236,14 +236,34 @@ namespace Dat
             Dat::PacketGeneric packet;
             packet.header = header;
             packet.data.resize(packet.header.data_size);
+
             if (!file_.read(packet.data.data(), packet.header.data_size))
             {
                 return -1;
             }
 
             const char* read_ptr = packet.data.data();
+            const char* end_ptr  = read_ptr + header.data_size;
 
-            (..., (memcpy(&data, read_ptr, sizeof(data)), read_ptr += sizeof(data)));
+            // A lambda that safely copies data from the read_ptr to the provided field,
+            // ensuring we don't read out of bounds.
+            // If we send in too little data (data < header.size), we just silently ignore the rest of the data.
+            // If we exceed bounds (header.size > data), we set the input field to default value.
+            auto safe_copy = [&](auto& field)
+            {
+                if (read_ptr + sizeof(field) <= end_ptr)
+                {
+                    memcpy(&field, read_ptr, sizeof(field));
+                    read_ptr += sizeof(field);
+                }
+                else
+                {
+                    field = {};  // Initialized to default value
+                    LOG_ERROR("Failed to read full packet data for packet id: {}", header.id);
+                }
+            };
+
+            (safe_copy(data), ...);
 
             return 0;
         }
