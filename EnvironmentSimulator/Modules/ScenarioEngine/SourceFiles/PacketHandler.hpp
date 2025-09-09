@@ -3,6 +3,9 @@
 #include <fstream>
 #include "CommonMini.hpp"
 
+#define DAT_FILE_FORMAT_VERSION_MAJOR 1
+#define DAT_FILE_FORMAT_VERSION_MINOR 1
+
 namespace scenarioengine
 {
     struct ObjectState;
@@ -60,22 +63,22 @@ namespace Dat
 
     struct Pose
     {
-        float x;
-        float y;
-        float z;
-        float h;
-        float p;
-        float r;
+        float x = std::nanf("");
+        float y = std::nanf("");
+        float z = std::nanf("");
+        float h = std::nanf("");
+        float p = std::nanf("");
+        float r = std::nanf("");
     };
 
     struct BoundingBox
     {
-        float x      = LARGE_NUMBERF;
-        float y      = LARGE_NUMBERF;
-        float z      = LARGE_NUMBERF;
-        float length = LARGE_NUMBERF;
-        float width  = LARGE_NUMBERF;
-        float height = LARGE_NUMBERF;
+        float x      = std::nanf("");
+        float y      = std::nanf("");
+        float z      = std::nanf("");
+        float length = std::nanf("");
+        float width  = std::nanf("");
+        float height = std::nanf("");
     };
 
     struct PacketGeneric
@@ -86,26 +89,26 @@ namespace Dat
 
     struct ObjState  // Could this be ObjectStateStruct with some additional fields?
     {
-        int         obj_id_      = -1;
-        bool        active_      = false;
-        bool        obj_written_ = false;  // denotes object added pkg written or not
-        float       speed_       = LARGE_NUMBERF;
-        Pose        pose_;
+        int         obj_id_          = -1;
+        bool        active_          = false;
+        bool        obj_written_     = false;  // denotes object added pkg written or not
+        float       speed_           = std::nanf("");
+        Pose        pose_            = {};
         int         model_id_        = -1;
         int         obj_type_        = -1;
         int         obj_category_    = -1;
         int         ctrl_type_       = -1;
-        float       wheel_angle_     = LARGE_NUMBERF;
-        float       wheel_rot_       = LARGE_NUMBERF;
+        float       wheel_angle_     = std::nanf("");
+        float       wheel_rot_       = std::nanf("");
         BoundingBox bounding_box_    = {};
         int         scale_mode_      = -1;
         int         visibility_mask_ = -1;
         std::string name_            = {};
         id_t        road_id_         = ID_UNDEFINED;
         int         lane_id_         = -LARGE_NUMBER_INT;
-        float       pos_offset_      = LARGE_NUMBERF;
-        float       pos_t_           = LARGE_NUMBERF;
-        float       pos_s_           = LARGE_NUMBERF;
+        float       pos_offset_      = std::nanf("");
+        float       pos_t_           = std::nanf("");
+        float       pos_s_           = std::nanf("");
     };
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?
@@ -271,11 +274,11 @@ namespace Dat
             // Give an error for the packet if we have remaining data or exceeded bounds
             if (remaining_data > 0)
             {
-                LOG_ERROR("Unused data remaining in packet for packet id: {}", header.id);
+                LOG_DEBUG("Unused data remaining in packet with id: {}", header.id);
             }
             else if (exceeded_bounds)
             {
-                LOG_ERROR("Failed to read full packet data for packet id: {}", header.id);
+                LOG_DEBUG("Reading previous partial version of packet id: {}", header.id);
             }
 
             return 0;
