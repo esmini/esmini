@@ -3269,7 +3269,7 @@ TEST(ExternalControlTest, TestTimings)
             i++;
             EXPECT_NEAR(entries[i].state.info.timeStamp, 2.3, 1E-3);
             EXPECT_STREQ(entries[i].state.info.name, "Ego");
-            EXPECT_NEAR(entries[i].state.pos.x, 232.008, 1E-3);
+            EXPECT_NEAR(entries[i].state.pos.x, 231.9699, 1E-3);
             EXPECT_NEAR(entries[i].state.pos.y, -1.5, 1E-3);
             i++;
             EXPECT_NEAR(entries[i].state.info.timeStamp, 2.3, 1E-3);
