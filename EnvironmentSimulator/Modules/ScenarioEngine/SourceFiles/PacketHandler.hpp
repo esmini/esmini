@@ -3,8 +3,8 @@
 #include <fstream>
 #include "CommonMini.hpp"
 
-#define DAT_FILE_FORMAT_VERSION_MAJOR 1
-#define DAT_FILE_FORMAT_VERSION_MINOR 1
+#define DAT_FILE_FORMAT_VERSION_MAJOR 3
+#define DAT_FILE_FORMAT_VERSION_MINOR 0
 
 namespace scenarioengine
 {
@@ -216,7 +216,7 @@ namespace Dat
     {
     public:
         DatReader(const std::string& filename);
-        ~DatReader() = default;
+        ~DatReader();
 
         int ReadStringPacket(std::string& str);
 

@@ -37,6 +37,13 @@ namespace scenarioengine
                 return std::nullopt;
             }
 
+            if (values.size() == 1)
+            {
+                last_index = 0;
+                last_time  = values[0].first;
+                return values[0].second;
+            }
+
             size_t idx = last_index;
 
             if (NEAR_NUMBERS(last_time, time))
@@ -142,6 +149,8 @@ namespace scenarioengine
         double last_restart_time = -1.0f;
     };
 
+    // Custom comparator ensuring map has ids ordered as:
+    // <0, 1, 2, 3, -1, -2, -3, ...>
     struct MapComparator
     {
         bool operator()(int lhs, int rhs) const
@@ -185,6 +194,7 @@ namespace scenarioengine
         int  ParsePackets(const std::string& filename);
         void FillInTimestamps();
         void CreateMergedDatfile(const std::string filename) const;
+        void ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filename);
 
         /**
                 Go to specific time
@@ -202,6 +212,7 @@ namespace scenarioengine
         int                   GoToNextFrame();
         void                  GoToPreviousFrame();
         ObjectStateStructDat* GetState(int id);
+        int                   ReadOldDatHeader(const std::string& filename);
         void                  SetStartTime(double time);
         void                  SetStopTime(double time);
         ReplayEntry           GetReplayEntryAtTimeIncremental(int id, double t) const;
