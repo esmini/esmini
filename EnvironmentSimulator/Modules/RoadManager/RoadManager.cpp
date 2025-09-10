@@ -3798,7 +3798,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                         {
                             if (!strcmp(child2->name(), "userData"))
                             {
-                                LOG_WARN("Lane side userData is note supported");
+                                LOG_DEBUG("Lane side userData not supported");
                                 continue;
                             }
                             else
@@ -9728,6 +9728,18 @@ Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double
         lane_section_idx_ = lane_section_idx;
         lane_section      = road->GetLaneSectionByIdx(lane_section_idx_);
 
+        if (lane_section == nullptr)
+        {
+            LOG_ERROR("Lane section idx {} does not exist on road {} at s {}", lane_section_idx, road->GetId(), s);
+            return ReturnCode::ERROR_GENERIC;
+        }
+
+        if (lane_section->GetLaneById(lane_id) == nullptr)  // just to check if lane exists
+        {
+            LOG_ERROR("Lane id {} does not exist on road {} on laneSection {}", lane_id, road->GetId(), lane_section_idx);
+            return ReturnCode::ERROR_GENERIC;
+        }
+
         lane_id_ = lane_id;
     }
     else  // Find LaneSection and info according to s
@@ -9750,7 +9762,7 @@ Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double
         if (lane_idx_ == IDX_UNDEFINED)
         {
             LOG_ERROR("lane_idx {} fail for lane id {}", lane_idx_, lane_id_);
-            lane_idx_ = 0;
+            return ReturnCode::ERROR_GENERIC;
         }
     }
     else
@@ -11181,7 +11193,7 @@ int Position::GetRoadLaneInfo(RoadLaneInfo* data) const
         data->road_type   = road->GetRoadTypeByS(GetS());
         data->road_rule   = road->GetRule();
         Lane::Material* m = road->GetLaneMaterialByS(GetS(), GetLaneId());
-        data->friction    = m->friction;
+        data->friction    = m != nullptr ? m->friction : FRICTION_DEFAULT;
     }
 
     return 0;

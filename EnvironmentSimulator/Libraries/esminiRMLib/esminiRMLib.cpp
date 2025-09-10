@@ -519,7 +519,7 @@ extern "C"
             if (pos)
             {
                 int retval = static_cast<int>(pos->SetLanePos(roadId, laneId, s, laneOffset));
-                if (align)
+                if (retval >= 0 && align)
                 {
                     roadmanager::OpenDrive* odr = roadmanager::Position::GetOpenDrive();
                     if (odr == nullptr)
