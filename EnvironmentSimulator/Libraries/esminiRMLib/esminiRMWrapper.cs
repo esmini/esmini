@@ -202,7 +202,7 @@ namespace OpenDRIVE
         /// <summary>Get the number of created position objects</summary>
         /// <returns>Number of created position objects or -1 on error</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetNrOfPositions")]
-        public static extern int GetNrOfPositions(int index);
+        public static extern int GetNrOfPositions();
 
         /// <summary>Delete one or all position object(s)</summary>
         /// <param name="handle">Handle to the position object. Set -1 to delete all.</param>
@@ -269,7 +269,7 @@ namespace OpenDRIVE
         /// <param name="index">The index of the road</param>
         /// <returns>The OpenDRIVE ID of the road</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetIdOfRoadFromIndex")]
-        public static extern int GetIdOfRoadFromIndex(int index);
+        public static extern int GetIdOfRoadFromIndex(uint index);
 
         /// <summary>
         /// Get the lenght of road with specified ID
@@ -277,7 +277,7 @@ namespace OpenDRIVE
         /// <param name="id">The OpenDRIVE road ID</param>
         /// <returns> The length of the road if ID exists, else 0.0</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetRoadLength")]
-        public static extern float GetRoadLength(int id);
+        public static extern float GetRoadLength(uint id);
 
         /// <summary>
         /// Get the number of lanes of given type for given road. Reference lane will be included if matching the type.
@@ -287,7 +287,7 @@ namespace OpenDRIVE
         /// <param name="type_mask">The lane type according to roadmanager::Lane::LaneType (e.g. -1 = any, 1966594 = any drivable)</param>
         /// <returns>The number of matched lanes, -1 indicates error, e.g. no roadnetwork loaded</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetRoadNumberOfLanes")]
-        public static extern int GetRoadNumberOfLanes(int roadId, float s, int type_mask);
+        public static extern int GetRoadNumberOfLanes(uint roadId, float s, int type_mask);
 
         /// <summary>
         /// Get ID of the lane given by index and type. Reference lane will be included if matching the type.
@@ -299,7 +299,7 @@ namespace OpenDRIVE
         /// <param name="lane_id">Out parameter to store the lane ID</param>
         /// <returns>0 on success, -1 indicates error e.g. no roadnetwork loaded or index out of range</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneIdByIndex")]
-        public static extern int GetLaneIdByIndex(int roadId, int laneIndex, float s, int type_mask, out int lane_id);
+        public static extern int GetLaneIdByIndex(uint roadId, int laneIndex, float s, int type_mask, out int lane_id);
 
         /// <summary>
         /// Get the number of drivable lanes of given road (like RM_GetRoadNumberOfLanes with type_mask for any drivable)
@@ -308,7 +308,7 @@ namespace OpenDRIVE
         /// <param name="s">The distance along the road at what point to check number of lanes (which can vary along the road)</param>
         /// <returns>The number of lanes, -1 indicates error, e.g. no roadnetwork loaded</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetRoadNumberOfDrivableLanes")]
-        public static extern int GetRoadNumberOfDrivableLanes(int roadId, float s);
+        public static extern int GetRoadNumberOfDrivableLanes(uint roadId, float s);
 
         /// <summary>
         /// Get ID of the drivable lane given by index (like RM_GetLaneIdByIndex with type_mask for any drivable)
@@ -319,7 +319,7 @@ namespace OpenDRIVE
         /// <param name="lane_id">Out parameter to store the lane ID</param>
         /// <returns>0 on success, -1 indicates error e.g. no roadnetwork loaded or index out of range</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetDrivableLaneIdByIndex")]
-        public static extern int GetDrivableLaneIdByIndex(int roadId, int laneIndex, float s, out int lane_id);
+        public static extern int GetDrivableLaneIdByIndex(uint roadId, int laneIndex, float s, out int lane_id);
 
         /// <summary>
         /// Get the number of roads overlapping the given position
@@ -341,7 +341,7 @@ namespace OpenDRIVE
         /// <summary>
         /// Set position from road coordinates, world coordinates being calculated
         /// </summary>
-        /// <param name="index">Handle to the position object</param>
+        /// <param name="handle">Handle to the position object</param>
         /// <param name="roadId">The OpenDRIVE road ID</param>
         /// <param name="laneID">Lane specifier</param>
         /// <param name="laneOffset">Offset from lane center</param>
@@ -349,22 +349,22 @@ namespace OpenDRIVE
         /// <param name="align">If true the heading will be reset to the lane driving direction (typically only at initialization)</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_SetLanePosition")]
-        public static extern int SetLanePosition(int index, int roadId, int laneId, float laneOffset, float s, bool align);
+        public static extern int SetLanePosition(int handle, int roadId, int laneId, float laneOffset, float s, bool align);
 
         /// <summary>
         /// Set s (distance) part of a lane position, world coordinates being calculated
         /// </summary>
-        /// <param name="index">Handle to the position object</param>
+        /// <param name="handle">Handle to the position object</param>
         /// <param name="s">Distance along the specified road</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_SetS")]
-        public static extern int SetS(int index, float s);
+        public static extern int SetS(int handle, float s);
 
         /// <summary>
         /// Set position from world coordinates in the OpenDRIVE coordinate system.
         /// Any value set to float.NaN will be ignored/no change
         /// </summary>
-        /// <param name="index">Handle to the position object</param>
+        /// <param name="handle">Handle to the position object</param>
         /// <param name="x">cartesian coordinate x value</param>
         /// <param name="y">cartesian coordinate y value</param>
         /// <param name="z">cartesian coordinate z value</param>
@@ -373,33 +373,33 @@ namespace OpenDRIVE
         /// <param name="r">rotation roll value</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_SetWorldPosition")]
-        public static extern int SetWorldPosition(int index, float x, float y, float z, float h, float p, float r);
+        public static extern int SetWorldPosition(int handle, float x, float y, float z, float h, float p, float r);
 
         /// <summary>
         /// Set position from world X, Y and heading coordinates; Z, pitch and road coordinates being calculated
         /// Any value set to float.NaN will be ignored/no change
         /// </summary>
-        /// <param name="index">Handle to the position object</param>
+        /// <param name="handle">Handle to the position object</param>
         /// <param name="x">cartesian coordinate x value</param>
         /// <param name="y">cartesian coordinate y value</param>
         /// <param name="h">rotation heading value</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_SetWorldXYHPosition")]
-        public static extern int SetWorldXYHPosition(int index, float x, float y, float h);
+        public static extern int SetWorldXYHPosition(int handle, float x, float y, float h);
 
         /// <summary>
         /// Set position from world X, Y, Z and heading coordinates; pitch and road coordinates being calculated
         /// Setting a Z value may have effect in mapping the position to the closest road, e.g. overpass
         /// Any value set to float.NaN will be ignored/no change
         /// </summary>
-        /// <param name="index">Handle to the position object</param>
+        /// <param name="handle">Handle to the position object</param>
         /// <param name="x">cartesian coordinate x value</param>
         /// <param name="y">cartesian coordinate y value</param>
         /// <param name="z">cartesian coordinate z value</param>
         /// <param name="h">rotation heading value</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_SetWorldXYZHPosition")]
-        public static extern int SetWorldXYZHPosition(int index, float x, float y, float z, float h);
+        public static extern int SetWorldXYZHPosition(int handle, float x, float y, float z, float h);
 
         /// <summary>
         /// Set position from world coordinates in the OpenDRIVE coordinate system.
@@ -422,7 +422,7 @@ namespace OpenDRIVE
         /// </code>
         /// </example>
         [DllImport(LIB_NAME, EntryPoint = "RM_SetWorldPositionMode")]
-        public static extern int SetWorldPositionMode(int index, float x, float y, float z, float h, float p, float r, int mode);
+        public static extern int SetWorldPositionMode(int handle, float x, float y, float z, float h, float p, float r, int mode);
 
         /// <summary>
         /// Set heading (yaw), mode (relative/absolute) given by current setting for the object
@@ -446,62 +446,62 @@ namespace OpenDRIVE
         /// <summary>
         /// Change road belonging of position object, keeping actual x,y location, regardless other roads being closer
         /// </summary>
-        /// <param name="index">Handle to the position object</param>
+        /// <param name="handle">Handle to the position object</param>
         /// <param name="roadId">Id of the road to belong to</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_SetRoadId")]
-        public static extern int SetRoadId(int index, int roadId);
+        public static extern int SetRoadId(int handle, int roadId);
 
         /// <summary>
         /// Move position forward along the road network
         /// </summary>
-        /// <param name="index">Handle to the position object</param>
+        /// <param name="handle">Handle to the position object</param>
         /// <param name="dist">Distance (in meter) to move</param>
         /// <param name="junctionSelectorAngle">Desired direction [0:2pi] from incoming road direction (angle = 0), set -1 to randomize</param>
         /// <returns>@return >= 0 if successful, < 0 on error. For all codes see esmini roadmanager::Position::enum class ReturnCode</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_PositionMoveForward")]
-        public static extern int PositionMoveForward(int index, float dist, float junctionSelectorAngle);
+        public static extern int PositionMoveForward(int handle, float dist, float junctionSelectorAngle);
 
         /// <summary>
         /// Get the fields of the position of specified index
         /// </summary>
-        /// <param name="index">Handle to the position object</param>
+        /// <param name="handle">Handle to the position object</param>
         /// <param name="data">Struct to fill in the values</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetPositionData")]
-        public static extern int GetPositionData(int index, ref OpenDrivePositionData data);
+        public static extern int GetPositionData(int handle, ref OpenDrivePositionData data);
 
         /// <summary>
         /// Retrieve current speed limit (at current road, s-value and lane) based on ODR type elements or nr of lanes
         /// </summary>
-        /// <param name="index">Handle to the position object from which to measure</param>
+        /// <param name="handle">Handle to the position object from which to measure</param>
         /// <returns>SpeedLimit in m/s</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetSpeedLimit")]
-        public static extern float GetSpeedLimit(int index);
+        public static extern float GetSpeedLimit(int handle);
 
         /// <summary>
         /// Retrieve lane information from the position object (at current road, s-value and lane)
         /// </summary>
-        /// <param name="index">Handle to the position object from which to measure</param>
+        /// <param name="handle">Handle to the position object from which to measure</param>
         /// <param name="lookahead_distance">The distance, along the road, to the point of interest</param>
         /// <param name="data">Struct including all result values, see RoadLaneInfo typedef</param>
         /// <param name="lookAheadMode">Measurement strategy: 0=Along lane center, 1=road center, 2=current lane offset. See roadmanager::Position::LookAheadMode enum</param>
         /// <param name="inRoadDrivingDirection">If true always look along primary driving direction. If false, look in most straightforward direction according to object heading.</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneInfo")]
-        public static extern int GetLaneInfo(int index, float lookahead_distance, ref RoadLaneInfo data, int lookAheadMode, bool inRoadDrivingDirection);
+        public static extern int GetLaneInfo(int handle, float lookahead_distance, ref RoadLaneInfo data, int lookAheadMode, bool inRoadDrivingDirection);
 
         /// <summary>
         /// As GetLaneInfo plus relative location of point of interest (probe) from current position
         /// </summary>
-        /// <param name="index">Handle to the position object from which to measure</param>
+        /// <param name="handle">Handle to the position object from which to measure</param>
         /// <param name="lookahead_distance">The distance, along the road, to the point of interest</param>
         /// <param name="data">Struct including all result values, see RoadProbeInfo typedef</param>
         /// <param name="lookAheadMode">Measurement strategy: 0=Along lane center, 1=road center, 2=current lane offset. See roadmanager::Position::LookAheadMode enum</param>
         /// <param name="inRoadDrivingDirection">If true always look along primary driving direction. If false, look in most straightforward direction according to object heading.</param>
         /// <returns>0 if successful, 1 if probe reached end of road, 2 if end ouf route, -1 if some error</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetProbeInfo")]
-        public static extern int GetProbeInfo(int index, float lookahead_distance, ref RoadProbeInfo data, int lookAheadMode, bool inRoadDrivingDirection);
+        public static extern int GetProbeInfo(int handle, float lookahead_distance, ref RoadProbeInfo data, int lookAheadMode, bool inRoadDrivingDirection);
 
         /// <summary>
         /// Get width of lane with specified lane id, at current longitudinal position
