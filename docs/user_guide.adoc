@@ -4319,6 +4319,27 @@ First exit will escape the latter bash environment, the second reverts effect of
 
 Source of setarch tip: https://stackoverflow.com/questions/77894856/possible-bug-in-gcc-sanitizers
 
+=== Implementation guidelines
+
+==== Floating point precision
+To achieve consistent results, esmini applies a tolerance of 1e-6 (0.000001) for floating point comparisons, allowing for slight differences due to precision limitations. Examples:
+
+[horizontal]
+x > y :: is considered true if x > y + 1e-6
+
+x ≥ y :: is considered true if x > y - 1e-6
+
+x == y :: is considered true if abs(x - y) < 1e-6
+
+
+In code the macros `SMALL_NUMBER`, for doubles, and `SMALL_NUMBERF`, for floats should be used for this purpose. Example:
+
+`if (x > y + SMALL_NUMBER)`
+
+There is also macros `NEAR_NUMBERS(x, y)` and `NEAR_NUMBERSF(x, y)`, that can be used for checking if numbers are effectively equal. It utilizes the same tolerance. Example:
+
+`if (NEAR_NUMBERS(x, y))`
+
 == esmini lib programming
 
 === About the lib itself
