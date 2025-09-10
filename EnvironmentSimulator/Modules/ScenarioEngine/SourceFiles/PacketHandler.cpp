@@ -1,6 +1,3 @@
-#define DAT_VERSION_MAJOR 1
-#define DAT_VERSION_MINOR 0
-
 #include "ScenarioGateway.hpp"
 #include "CommonMini.cpp"
 #include "PacketHandler.hpp"
@@ -26,8 +23,8 @@ int Dat::DatWriter::Init(const std::string& file_name, const std::string& odr_na
     }
 
     // Write version
-    unsigned int version_major = DAT_VERSION_MAJOR;
-    unsigned int version_minor = DAT_VERSION_MINOR;
+    unsigned int version_major = DAT_FILE_FORMAT_VERSION_MAJOR;
+    unsigned int version_minor = DAT_FILE_FORMAT_VERSION_MINOR;
     write_file_.write(reinterpret_cast<char*>(&version_major), sizeof(version_major));
     write_file_.write(reinterpret_cast<char*>(&version_minor), sizeof(version_minor));
 
@@ -335,6 +332,11 @@ Dat::DatReader::DatReader(const std::string& filename)
     LOG_INFO("Datfile {} opened.", FileNameOf(filename));
 
     SetFileSize();
+}
+
+Dat::DatReader::~DatReader()
+{
+    CloseFile();
 }
 
 void Dat::DatReader::SetFileSize()
