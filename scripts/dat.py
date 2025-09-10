@@ -6,7 +6,7 @@ from collections import defaultdict
 import copy
 import bisect
 
-VERSION_MAJOR = 1
+VERSION_MAJOR = 3
 VERSION_MINOR = 0
         
 SMALL_NUMBER = 1e-6
@@ -102,14 +102,6 @@ def read_string_packet(file):
     string_bytes = file.read(size)
     return string_bytes.decode('utf-8')
 
-def read_dat_header(file):
-    """Read the header of a .dat file."""
-    version_major = read_dtype(file, DataType.uint32)
-    version_minor = read_dtype(file, DataType.uint32)
-    odr_filename = read_string_packet(file)
-    model_filename = read_string_packet(file)
-    return (version_major, version_minor, odr_filename, model_filename)
-
 def is_near(x, y):
     return abs(x - y) < SMALL_NUMBER
 
@@ -126,8 +118,13 @@ class Timeline():
         """ 
         Get last valid value at time, searching incrementally from last known index
         """
-        if (len(self.values) == 0):
+        if len(self.values) == 0:
             return None
+        
+        if len(self.values) == 1:
+            self.last_index = 0
+            self.last_time  = self.values[0][0]
+            return self.values[0][1]
 
         idx = self.last_index
         desired_dt = time - self.values[self.last_index][0]
@@ -262,27 +259,7 @@ class DATFile():
         "s": None
     }
     def __init__(self, filename, extended=False):
-        if not os.path.isfile(filename):
-            print('ERROR: dat-file not found: {}'.format(filename))
-            return
-        try:
-            self.file = open(filename, 'rb')
-        except OSError:
-            print('ERROR: Could not open file {} for reading'.format(filename))
-            raise
-
-        self.version_major, self.version_minor, self.odr_filename, self.model_filename = read_dat_header(self.file)
-
-        if self.version_major != VERSION_MAJOR:
-            print(f'ERROR: Incompatible DAT major file version: {self.version_major}, supporting: {VERSION_MAJOR}')
-            exit(-1)
-
-        print( f"DAT file version: {self.version_major}.{self.version_minor}, odr_filename: {self.odr_filename}, model_filename: {self.model_filename}" )
-        
-        if self.version_minor != VERSION_MINOR:
-            print(f"Warning: DAT-file has version {self.version_major}.{self.version_minor}. Some inconsistencies are expected.")
-        
-
+        self.check_header(filename)
         self.extended = extended
 
         self.filename = filename
@@ -304,6 +281,69 @@ class DATFile():
         self.parse_data()
         self.fill_timestamps()
         self.build_csv()
+    
+    def check_header(self, filename):
+        if not os.path.isfile(filename):
+            print(f'ERROR: dat-file not found: {filename}')
+            return
+        try:
+            self.file = open(filename, 'rb')
+        except OSError:
+            print(f'ERROR: Could not open file {filename} for reading')
+            raise
+
+        ret = self.read_dat_header(self.file)
+
+        if ret != 0:
+            old_header = self.check_old_header(filename)
+            if old_header != -1:
+                print(f"ERROR: Old DAT file version {old_header} found which is not supported.")
+            else:
+                print("ERROR: Unable to read DAT file header, is it really a DAT file?")
+
+            print("ERROR: Failed to read DAT header.")
+            exit(-1)
+
+        if self.version_major != VERSION_MAJOR:
+            print(f'ERROR: Incompatible DAT major file version: {self.version_major}, supporting: {VERSION_MAJOR}')
+            exit(-1)
+
+        if self.version_minor != VERSION_MINOR:
+            print(f"Warning: DAT-file has version {self.version_major}.{self.version_minor}. Some inconsistencies are expected.")
+
+    def check_old_header(self, filename):
+        """
+        Check for old DAT file header.
+        """
+        import ctypes
+        class DATHeader(ctypes.Structure):
+            _fields_ = [
+                ('version', ctypes.c_int),
+                ('odr_filename', ctypes.c_char * 512),
+                ('model_filename', ctypes.c_char * 512),
+            ]
+
+        try:
+            file = open(filename, 'rb')
+        except OSError:
+            print(f'ERROR: Could not open file {filename} for reading')
+            return -1
+
+        header = DATHeader.from_buffer_copy(file.read(ctypes.sizeof(DATHeader)))
+        file.close()
+        return header.version
+
+    def read_dat_header(self, file):
+        """Read the header of a .dat file."""
+        try:
+            self.version_major = read_dtype(file, DataType.uint32)
+            self.version_minor = read_dtype(file, DataType.uint32)
+            self.odr_filename = read_string_packet(file)
+            self.model_filename = read_string_packet(file)
+            return 0
+        except:
+            return -1
+
 
     def parse_data(self):
         """

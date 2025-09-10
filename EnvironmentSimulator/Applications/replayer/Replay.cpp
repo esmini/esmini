@@ -123,33 +123,9 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
 
 int Replay::ParsePackets(const std::string& filename)
 {
-    // Get the file size
     auto dat_reader = Dat::DatReader(filename);
 
-    // Read raw header BEFORE reading packets
-    if (dat_reader.FillDatHeader() != 0)
-    {
-        LOG_ERROR_AND_QUIT("Failed to read DAT header.");
-    }
-
-    dat_header_ = dat_reader.GetDatHeader();
-    if (dat_header_.version_major != DAT_FILE_FORMAT_VERSION_MAJOR)
-    {
-        LOG_ERROR_AND_QUIT("Incompatible DAT major file version: {}, supporting: {}", dat_header_.version_major, DAT_FILE_FORMAT_VERSION_MAJOR);
-    }
-
-    LOG_INFO("Datfile: version {}.{}, odr_filename: {}, model_filename: {}",
-             dat_header_.version_major,
-             dat_header_.version_minor,
-             dat_header_.odr_filename.string,
-             dat_header_.model_filename.string);
-
-    if (dat_header_.version_minor != DAT_FILE_FORMAT_VERSION_MINOR)
-    {
-        LOG_WARN("replayer compiled for version {}.{}. Some inconsistencies are expected.",
-                 DAT_FILE_FORMAT_VERSION_MAJOR,
-                 DAT_FILE_FORMAT_VERSION_MINOR);
-    }
+    ParseDatHeader(dat_reader, filename);
 
     // Now parse packets
     Dat::PacketHeader header;
@@ -439,9 +415,45 @@ int Replay::ParsePackets(const std::string& filename)
         }
     }
 
-    dat_reader.CloseFile();
-
     return 0;
+}
+
+void Replay::ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filename)
+{
+    // Read raw header BEFORE reading packets
+    if (dat_reader.FillDatHeader() != 0)
+    {
+        int old_header = ReadOldDatHeader(filename);
+        if (old_header != -1)
+        {
+            LOG_ERROR_AND_QUIT("Old DAT file version {} found which is not supported.", old_header, DAT_FILE_FORMAT_VERSION_MAJOR);
+        }
+        else
+        {
+            LOG_ERROR_AND_QUIT("Unable to read DAT file header, is it really a DAT file?");
+        }
+
+        LOG_ERROR_AND_QUIT("Failed to read DAT header.");
+    }
+
+    dat_header_ = dat_reader.GetDatHeader();
+    if (dat_header_.version_major != DAT_FILE_FORMAT_VERSION_MAJOR)
+    {
+        LOG_ERROR_AND_QUIT("Incompatible DAT major file version: {}, supporting: {}", dat_header_.version_major, DAT_FILE_FORMAT_VERSION_MAJOR);
+    }
+
+    LOG_INFO("Datfile: version {}.{}, odr_filename: {}, model_filename: {}",
+             dat_header_.version_major,
+             dat_header_.version_minor,
+             dat_header_.odr_filename.string,
+             dat_header_.model_filename.string);
+
+    if (dat_header_.version_minor != DAT_FILE_FORMAT_VERSION_MINOR)
+    {
+        LOG_WARN("replayer compiled for version {}.{}. Some inconsistencies are expected.",
+                 DAT_FILE_FORMAT_VERSION_MAJOR,
+                 DAT_FILE_FORMAT_VERSION_MINOR);
+    }
 }
 
 void Replay::FillInTimestamps()
@@ -1006,4 +1018,27 @@ void Replay::CreateMergedDatfile(const std::string filename) const
         object_states.clear();  // Clear the states for the next timestamp
         prev_timestamp = timestamps_[i];
     }
+}
+
+int Replay::ReadOldDatHeader(const std::string& filename)
+{
+    std::ifstream file;
+    file.open(filename, std::ofstream::binary);
+    if (file.fail())
+    {
+        return -1;
+    }
+
+    typedef struct
+    {
+        int  version;
+        char odr_filename[512];
+        char model_filename[512];
+    } OldDatHeader;
+
+    OldDatHeader old_header;
+    file.read(reinterpret_cast<char*>(&old_header), sizeof(old_header));
+    file.close();
+
+    return old_header.version;
 }
