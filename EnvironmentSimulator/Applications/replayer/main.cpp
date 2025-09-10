@@ -269,6 +269,7 @@ int ParseEntities(Replay* player)
                                                                      false,
                                                                      timelines.name_.values.front().second,
                                                                      &timelines.bounding_box_.values.front().second,
+                                                                     0.0,
                                                                      static_cast<EntityScaleMode>(timelines.scale_mode_.values.front().second))) == 0)
                 {
                     return -1;
