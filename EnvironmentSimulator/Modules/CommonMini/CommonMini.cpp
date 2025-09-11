@@ -116,7 +116,7 @@ std::map<int, std::string> ParseModelIds()
     file_name_candidates.push_back(filename);
 
     // Check registered paths
-    std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionArgs("path");
+    std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionValues("path");
     for (size_t i = 0; i < paths.size(); i++)
     {
         file_name_candidates.push_back(CombineDirectoryPathAndFilepath(paths[i], filename));
@@ -1531,7 +1531,7 @@ void RotateVec3d(const double h0,
 int SE_Env::AddPath(std::string path)
 {
     // Check if path already in list
-    std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionArgs("path");
+    std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionValues("path");
     for (size_t i = 0; i < paths.size(); i++)
     {
         if (paths[i] == path)
@@ -1987,6 +1987,18 @@ void SE_Option::Usage() const
     printf("\n      %s\n", opt_desc_.c_str());
 }
 
+std::string SE_Option::GetValue(int index) const
+{
+    if (!(opt_arg_.empty()) && static_cast<unsigned int>(index) < arg_value_.size())
+    {
+        return arg_value_[static_cast<unsigned int>(index)];
+    }
+    else
+    {
+        return "";
+    }
+}
+
 void SE_Options::AddOption(std::string opt_str,
                            std::string opt_desc,
                            std::string opt_arg,
@@ -2074,7 +2086,7 @@ bool SE_Options::IsOptionArgumentSet(std::string opt)
     return false;
 }
 
-std::vector<std::string>& SE_Options::GetOptionArgs(std::string opt)
+std::vector<std::string>& SE_Options::GetOptionValues(std::string opt)
 {
     SE_Option* option = GetOption(opt);
 
@@ -2085,49 +2097,6 @@ std::vector<std::string>& SE_Options::GetOptionArgs(std::string opt)
     }
 
     return option->arg_value_;
-}
-
-std::string SE_Options::GetOptionArg(std::string opt, int index)
-{
-    SE_Option* option = GetOption(opt);
-
-    if (option == nullptr)
-    {
-        return "";
-    }
-
-    if (!(option->opt_arg_.empty()) && static_cast<unsigned int>(index) < option->arg_value_.size())
-    {
-        return option->arg_value_[static_cast<unsigned int>(index)];
-    }
-    else
-    {
-        return "";
-    }
-}
-
-std::string SE_Options::GetOptionArgByEnum(CONFIG_ENUM opt, int index)
-{
-    if (opt < 0 || opt >= CONFIG_ENUM::CONFIGS_COUNT)
-    {
-        return "";
-    }
-
-    SE_Option* option = &option_[opt];
-
-    if (option == nullptr)
-    {
-        return "";
-    }
-
-    if (!(option->opt_arg_.empty()) && static_cast<unsigned int>(index) < option->arg_value_.size())
-    {
-        return option->arg_value_[static_cast<unsigned int>(index)];
-    }
-    else
-    {
-        return "";
-    }
 }
 
 static constexpr std::array<const char*, 10> OSG_ARGS = {"--clear-color",
@@ -2363,6 +2332,40 @@ SE_Option* SE_Options::GetOption(std::string opt)
         }
     }
     return nullptr;
+}
+
+std::string SE_Options::GetOptionValue(std::string opt, unsigned int index)
+{
+    SE_Option* option = GetOption(opt);
+
+    if (option == nullptr)
+    {
+        return "";
+    }
+
+    return option->GetValue(index);
+}
+
+SE_Option* SE_Options::GetOptionByEnum(CONFIG_ENUM opt)
+{
+    if (opt < 0 || opt >= CONFIG_ENUM::CONFIGS_COUNT)
+    {
+        return nullptr;
+    }
+
+    return &option_[opt];
+}
+
+std::string SE_Options::GetOptionValueByEnum(CONFIG_ENUM opt, unsigned int index)
+{
+    SE_Option* option = GetOptionByEnum(opt);
+
+    if (opt < 0 || opt >= CONFIG_ENUM::CONFIGS_COUNT)
+    {
+        return "";
+    }
+
+    return option->GetValue();
 }
 
 bool SE_Options::IsInOriginalArgs(std::string opt)

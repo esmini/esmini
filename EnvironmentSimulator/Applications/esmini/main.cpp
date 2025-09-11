@@ -80,7 +80,7 @@ static int execute_scenario(int argc, char* argv[])
     if (opt.GetOptionSet("plot"))
     {
         // Create and run plot in a separate thread as default
-        plot = std::make_unique<Plot>(player->scenarioEngine, opt.GetOptionArg("plot") == "synchronous");
+        plot = std::make_unique<Plot>(player->scenarioEngine, opt.GetOptionValue("plot") == "synchronous");
     }
 #endif  // _USE_IMPLOT
 

@@ -1113,7 +1113,7 @@ extern "C"
         {
             return 0;
         }
-        static std::string val = SE_Env::Inst().GetOptions().GetOptionArg(name);
+        static std::string val = SE_Env::Inst().GetOptions().GetOptionValue(name);
         return val.c_str();
     }
 

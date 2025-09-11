@@ -103,7 +103,7 @@ namespace esmini::common
         void
         Log(LogLevel msgLogLevel, const std::string& logStr, char const* function, char const* file, long line, const std::string& log, ARGS... args)
         {
-            if (GetVerbosityLevelFromStr(SE_Env::Inst().GetOptions().GetOptionArgByEnum(CONFIG_ENUM::LOG_LEVEL)) > msgLogLevel)
+            if (GetVerbosityLevelFromStr(SE_Env::Inst().GetOptions().GetOptionValueByEnum(CONFIG_ENUM::LOG_LEVEL)) > msgLogLevel)
             {
                 return;
             }

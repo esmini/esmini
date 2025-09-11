@@ -1234,12 +1234,12 @@ TEST(OptionsTest, TestOptionHandling)
     ASSERT_EQ(opt.GetOptionSet("option3"), true);
     ASSERT_EQ(opt.GetOptionSet("option4"), true);
     ASSERT_EQ(opt.GetOptionSet("option5"), false);
-    ASSERT_EQ(opt.GetOptionArg("window"), "");
-    ASSERT_EQ(opt.GetOptionArg("osc_file"), "my_scenario.xosc");
-    ASSERT_EQ(opt.GetOptionArg("odr_file"), "my_road_second.xodr");
-    ASSERT_EQ(opt.GetOptionArg("option2"), "option2Value2");
-    ASSERT_EQ(opt.GetOptionArg("option2", 1), "option2Value");
-    ASSERT_EQ(opt.GetOptionArg("option3"), "55");
+    ASSERT_EQ(opt.GetOptionValue("window"), "");
+    ASSERT_EQ(opt.GetOptionValue("osc_file"), "my_scenario.xosc");
+    ASSERT_EQ(opt.GetOptionValue("odr_file"), "my_road_second.xodr");
+    ASSERT_EQ(opt.GetOptionValue("option2"), "option2Value2");
+    ASSERT_EQ(opt.GetOptionValue("option2", 1), "option2Value");
+    ASSERT_EQ(opt.GetOptionValue("option3"), "55");
 
     // test without last argument, should return OK
     int argc_minus_one = static_cast<int>(args.size() - 1);

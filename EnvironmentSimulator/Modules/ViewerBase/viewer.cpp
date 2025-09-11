@@ -1399,7 +1399,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     int  screenNum  = -1;
 
     int aa_mode = DEFAULT_AA_MULTISAMPLES;
-    if (opt && (arg_str = opt->GetOptionArg("aa_mode")) != "")
+    if (opt && (arg_str = opt->GetOptionValue("aa_mode")) != "")
     {
         aa_mode = atoi(arg_str.c_str());
     }
@@ -1761,7 +1761,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     float font_size = 12.0f;
     if (opt->IsOptionArgumentSet("text_scale"))
     {
-        font_size *= atof(opt->GetOptionArg("text_scale").c_str());
+        font_size *= atof(opt->GetOptionValue("text_scale").c_str());
     }
     osg::ref_ptr<osg::Geode> textGeode = new osg::Geode;
     infoText                           = new osgText::Text;
@@ -2365,7 +2365,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     float font_size = 10.0f;
     if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("text_scale"))
     {
-        font_size *= atof(SE_Env::Inst().GetOptions().GetOptionArg("text_scale").c_str());
+        font_size *= atof(SE_Env::Inst().GetOptions().GetOptionValue("text_scale").c_str());
     }
     emodel->on_screen_info_.osg_text_->setCharacterSize(font_size);
     emodel->on_screen_info_.osg_text_->setCharacterSizeMode(osgText::TextBase::CharacterSizeMode::SCREEN_COORDS);
@@ -3146,7 +3146,7 @@ void Viewer::SetWindowTitleFromArgs(std::vector<std::string>& args)
             i++;
             if (opt.IsOptionArgumentSet("osc"))
             {
-                titleString += FileNameOf(opt.GetOptionArg("osc")) + " ";
+                titleString += FileNameOf(opt.GetOptionValue("osc")) + " ";
             }
             else
             {
@@ -3172,7 +3172,7 @@ void Viewer::SetWindowTitleFromArgs(std::vector<std::string>& args)
             {
                 arg = "--osc";
                 titleString += arg + " ";
-                titleString += FileNameOf(opt.GetOptionArg("osc")) + " ";
+                titleString += FileNameOf(opt.GetOptionValue("osc")) + " ";
             }
             i += 1;
             OSCParameterDistribution& dist = OSCParameterDistribution::Inst();

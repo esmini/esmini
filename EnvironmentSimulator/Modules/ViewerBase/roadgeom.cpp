@@ -1521,7 +1521,7 @@ namespace roadgeom
         file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path) + "/../resources/models", filename));
         // Finally check registered paths
 
-        std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionArgs("path");
+        std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionValues("path");
         for (size_t i = 0; i < paths.size(); i++)
         {
             file_name_candidates.push_back(CombineDirectoryPathAndFilepath(paths[i], filename));
