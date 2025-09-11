@@ -2106,6 +2106,30 @@ std::string SE_Options::GetOptionArg(std::string opt, int index)
     }
 }
 
+std::string SE_Options::GetOptionArgByEnum(CONFIG_ENUM opt, int index)
+{
+    if (opt < 0 || opt >= CONFIG_ENUM::CONFIGS_COUNT)
+    {
+        return "";
+    }
+
+    SE_Option* option = &option_[opt];
+
+    if (option == nullptr)
+    {
+        return "";
+    }
+
+    if (!(option->opt_arg_.empty()) && static_cast<unsigned int>(index) < option->arg_value_.size())
+    {
+        return option->arg_value_[static_cast<unsigned int>(index)];
+    }
+    else
+    {
+        return "";
+    }
+}
+
 static constexpr std::array<const char*, 10> OSG_ARGS = {"--clear-color",
                                                          "--screen",
                                                          "--window",

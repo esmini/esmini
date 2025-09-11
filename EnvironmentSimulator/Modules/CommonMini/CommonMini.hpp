@@ -989,11 +989,14 @@ public:
                    bool        autoApply           = false,
                    bool        isSingleValueOption = true);
 
-    void        PrintUsage();
-    void        PrintUnknownArgs(std::string message = "Unrecognized arguments:") const;
-    bool        GetOptionSet(std::string opt);
-    bool        IsOptionArgumentSet(std::string opt);
+    void PrintUsage();
+    void PrintUnknownArgs(std::string message = "Unrecognized arguments:") const;
+    bool GetOptionSet(std::string opt);
+    bool IsOptionArgumentSet(std::string opt);
+    // returns first value, or given index, of the option
     std::string GetOptionArg(std::string opt, int index = 0);
+    // returns first value, or given index, of the option, given by its enum position
+    std::string GetOptionArgByEnum(CONFIG_ENUM opt, int index = 0);
     // returns all the values set for the option
     std::vector<std::string>& GetOptionArgs(std::string opt);
     int                       ParseArgs(int argc, const char* const argv[]);
