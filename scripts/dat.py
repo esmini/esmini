@@ -5,10 +5,19 @@ import enum
 from collections import defaultdict
 import copy
 import bisect
+import ctypes
+
+class OldDATHeader(ctypes.Structure):
+    """ Structure for old DAT file header."""
+    _fields_ = [
+        ('version', ctypes.c_int),
+        ('odr_filename', ctypes.c_char * 512),
+        ('model_filename', ctypes.c_char * 512),
+            ]
+
 
 VERSION_MAJOR = 3
 VERSION_MINOR = 0
-        
 SMALL_NUMBER = 1e-6
 LARGE_NUMBER = 1e10
 
@@ -102,7 +111,8 @@ def read_string_packet(file):
     string_bytes = file.read(size)
     return string_bytes.decode('utf-8')
 
-def is_near(x, y):
+def is_near(x: float, y: float) -> bool:
+    """ Check if two floating point numbers are nearly equal """
     return abs(x - y) < SMALL_NUMBER
 
 class Timeline():
@@ -114,7 +124,7 @@ class Timeline():
         self.last_index = 0
         self.last_time = LARGE_NUMBER
 
-    def get_value_incremental(self, time):
+    def get_value_incremental(self, time: float) -> any:
         """ 
         Get last valid value at time, searching incrementally from last known index
         """
@@ -143,8 +153,8 @@ class Timeline():
         self.last_time = time
 
         return self.values[idx][1]
-    
-    def get_index_binary(self, time):
+
+    def get_index_binary(self, time: float) -> int:
         """
         Get index of last valid data at time using binary search
         """
@@ -168,8 +178,8 @@ class Timeline():
         idx = bisect.bisect_right(times, time, lo=search_start)
 
         return idx
-    
-    def get_value_binary(self, time, upper = False):
+
+    def get_value_binary(self, time: float, upper: bool = False) -> any:
         """
         Get last valid value at time using binary search.
         If upper is True, get the next value after time if available.
@@ -282,7 +292,9 @@ class DATFile():
         self.fill_timestamps()
         self.build_csv()
     
-    def check_header(self, filename):
+    def check_header(self, filename: str) -> None:
+        """ Check the header of the .dat file and open it for reading.
+        """
         if not os.path.isfile(filename):
             print(f'ERROR: dat-file not found: {filename}')
             return
@@ -311,41 +323,33 @@ class DATFile():
         if self.version_minor != VERSION_MINOR:
             print(f"Warning: DAT-file has version {self.version_major}.{self.version_minor}. Some inconsistencies are expected.")
 
-    def check_old_header(self, filename):
+    def check_old_header(self, filename: str) -> int:
         """
         Check for old DAT file header.
         """
-        import ctypes
-        class DATHeader(ctypes.Structure):
-            _fields_ = [
-                ('version', ctypes.c_int),
-                ('odr_filename', ctypes.c_char * 512),
-                ('model_filename', ctypes.c_char * 512),
-            ]
-
         try:
             file = open(filename, 'rb')
         except OSError:
             print(f'ERROR: Could not open file {filename} for reading')
             return -1
 
-        header = DATHeader.from_buffer_copy(file.read(ctypes.sizeof(DATHeader)))
+        header = OldDATHeader.from_buffer_copy(file.read(ctypes.sizeof(OldDATHeader)))
         file.close()
         return header.version
 
-    def read_dat_header(self, file):
+    def read_dat_header(self, file) -> int:
         """Read the header of a .dat file."""
         try:
-            self.version_major = read_dtype(file, DataType.uint32)
-            self.version_minor = read_dtype(file, DataType.uint32)
-            self.odr_filename = read_string_packet(file)
+            self.version_major  = read_dtype(file, DataType.uint32)
+            self.version_minor  = read_dtype(file, DataType.uint32)
+            self.odr_filename   = read_string_packet(file)
             self.model_filename = read_string_packet(file)
             return 0
         except:
             return -1
 
 
-    def parse_data(self):
+    def parse_data(self) -> None:
         """
         Parse the .dat file and extract object states.
         Packets are read in the order they are likely to appear in the file.
@@ -357,7 +361,7 @@ class DATFile():
             if p_id == PacketId.TIMESTAMP.value:
                 self.current_timestamp = read_dtype(self.file, DataType.double)
 
-                if len(self.timestamps) == 0 or self.current_timestamp < SMALL_NUMBER or self.current_timestamp > self.timestamps[-1]:
+                if len(self.timestamps) == 0 or self.current_timestamp > self.timestamps[-1]:
                     self.timestamps.append(self.current_timestamp)
 
             # OBJ_ID packet
@@ -433,7 +437,7 @@ class DATFile():
                 if not is_near(self.end_time, self.timestamps[-1]):
                     self.timestamps.append(self.end_time)
 
-    def add_to_timeline(self, timeline: PropertyTimeline, data):
+    def add_to_timeline(self, timeline: PropertyTimeline, data) -> None:
         """
         Adds data to the timeline, handling ghost restarts if necessary.
         """
@@ -445,11 +449,9 @@ class DATFile():
             obj_tl = self.objects_timeline.get(self.current_object_id)
 
             if not is_near(obj_tl.last_restart_time, self.current_timestamp):
-                ghost_ghost_id = self.current_object_id * self.ghost_ghost_counter
-                
-                if self.objects_timeline.get(ghost_ghost_id) is None:
-                    self.objects_timeline[ghost_ghost_id] = copy.deepcopy(obj_tl)
-                    ghost_tl = self.objects_timeline[ghost_ghost_id]
+                if self.objects_timeline.get(self.ghost_ghost_counter) is None:
+                    self.objects_timeline[self.ghost_ghost_counter] = copy.deepcopy(obj_tl)
+                    ghost_tl = self.objects_timeline[self.ghost_ghost_counter]
                     ghost_tl.active.values[0][1] = False
                     ghost_tl.name.values[0][1] += f"_{self.ghost_ghost_counter}"
                     ghost_tl.active.values.append([self.current_timestamp, True])
@@ -464,7 +466,8 @@ class DATFile():
         
         timeline.values.append([self.current_timestamp, data])
 
-    def get_object_state_struct_at_time(self, obj_id, t):
+    def get_object_state_struct_at_time(self, obj_id: int, t: float) -> dict:
+        """ Get the state of an object at a specific time."""
         timeline = self.objects_timeline.get(obj_id)
 
         self.ObjectStateStructDat["id"] = obj_id
@@ -500,7 +503,10 @@ class DATFile():
 
         return self.ObjectStateStructDat
 
-    def build_csv(self):
+    def build_csv(self) -> None:
+        """
+        Build the CSV data from the parsed object states.
+        """
         if self.extended:
             labels = self.get_labels_line_extended()
         else:
@@ -514,6 +520,9 @@ class DATFile():
                 self.data.append([state[label] for label in labels])
 
     def fill_timestamps(self):
+        """
+        Fill in missing timestamps based on dt values.
+        """
         filled = []
         i = 0
         curr_time = self.timestamps[0]
@@ -547,20 +556,24 @@ class DATFile():
         
         self.timestamps = filled
 
-    def get_header_line(self):
+    def get_header_line(self) -> str:
+        """Get the header line with version and file references."""
         return f'Version: {self.version_major}.{self.version_minor}, OpenDRIVE: {self.odr_filename}, 3DModel: {self.model_filename}'
 
-    def get_labels_line(self):
+    def get_labels_line(self) -> list[str]:
+        """ Get the standard labels line """
         return ['time', 'id', 'name', 'x', 'y', 'z', 'h', 'p', 'r', 'speed', 'wheel_angle', 'wheel_rot']
 
-    def get_data_line(self, data):
+    def get_data_line(self, data) -> str:
         """ Will contain extended data if self.extended is True """
         return ', '.join(f"{x:.3f}" if isinstance(x, float) else str(x) for x in data)
 
-    def get_labels_line_extended(self):
+    def get_labels_line_extended(self) -> list[str]:
+        """ Get the extended labels line """
         return ['time', 'id', 'name', 'x', 'y', 'z', 'h', 'p', 'r', 'roadId', 'laneId', 'offset', 't', 's', 'speed', 'wheel_angle', 'wheel_rot']
 
-    def get_labels_line_array(self):
+    def get_labels_line_array(self) -> list[str]:
+        """ Get the standard labels line as an array """
         return [
             "time",
             "id",
@@ -592,7 +605,10 @@ class DATFile():
             "t",
             "s"];
 
-    def get_data_line_array(self, data):
+    def get_data_line_array(self, data) -> list:
+        """
+        Get the data line as an array.
+        """
         return [
             data["time"],
             data["id"],
@@ -624,7 +640,7 @@ class DATFile():
             data["t"],
             data["s"]];
 
-    def print_csv(self, extended = False, include_file_refs = True):
+    def print_csv(self, extended = False, include_file_refs = True) -> None:
         """Print the contents of the .dat file in CSV format to the console."""
         # Print header
         if include_file_refs:
@@ -640,7 +656,8 @@ class DATFile():
         for data in self.data:
             print(self.get_data_line(data))
 
-    def save_csv(self, extended = False, include_file_refs = True):
+    def save_csv(self, extended = False, include_file_refs = True) -> None:
+        """Save the contents of the .dat file in CSV format to a file."""
         csvfile = os.path.splitext(self.filename)[0] + '.csv'
         try:
             fcsv = open(csvfile, 'w')
@@ -664,22 +681,8 @@ class DATFile():
 
         fcsv.close()
 
-    # TODO
-    # def save_dat(self, filename):
-    #     try:
-    #         fdat = open(filename, 'wb')
-    #     except OSError:
-    #         print('ERROR: Could not open file {} for writing'.format(filename))
-    #         raise
-
-    #     fdat.write(self.header)
-
-    #     for d in self.data:
-    #         fdat.write(d)
-
-    #     fdat.close()
-
-    def close(self):
+    def close(self) -> None:
+        """Close the .dat file."""
         self.file.close()
 
 if __name__ == "__main__":
