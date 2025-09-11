@@ -502,7 +502,7 @@ int main(int argc, char** argv)
 
     if (opt.GetOptionValue("path") != "")
     {
-        int counter = 0;
+        unsigned int counter = 0;
         while ((arg_str = opt.GetOptionValue("path", counter)) != "")
         {
             SE_Env::Inst().AddPath(arg_str);
@@ -652,7 +652,7 @@ int main(int argc, char** argv)
         }
         if (opt.GetOptionSet("custom_camera") == true)
         {
-            int counter = 0;
+            unsigned int counter = 0;
 
             while ((arg_str = opt.GetOptionValue("custom_camera", counter)) != "")
             {
@@ -691,7 +691,7 @@ int main(int argc, char** argv)
 
         if (opt.GetOptionSet("custom_fixed_camera") == true)
         {
-            int counter = 0;
+            unsigned int counter = 0;
 
             while ((arg_str = opt.GetOptionValue("custom_fixed_camera", counter)) != "")
             {
@@ -729,7 +729,7 @@ int main(int argc, char** argv)
 
         if (opt.GetOptionSet("custom_fixed_top_camera") == true)
         {
-            int counter = 0;
+            unsigned int counter = 0;
 
             while ((arg_str = opt.GetOptionValue("custom_fixed_top_camera", counter)) != "")
             {

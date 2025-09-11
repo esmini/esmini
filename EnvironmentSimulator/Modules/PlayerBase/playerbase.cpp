@@ -825,7 +825,7 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("custom_camera") == true)
     {
-        int counter = 0;
+        unsigned int counter = 0;
 
         while ((arg_str = opt.GetOptionValue("custom_camera", counter)) != "")
         {
@@ -858,7 +858,7 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("custom_fixed_camera") == true)
     {
-        int counter = 0;
+        unsigned int counter = 0;
 
         while ((arg_str = opt.GetOptionValue("custom_fixed_camera", counter)) != "")
         {
@@ -890,7 +890,7 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("custom_fixed_top_camera") == true)
     {
-        int counter = 0;
+        unsigned int counter = 0;
 
         while ((arg_str = opt.GetOptionValue("custom_fixed_top_camera", counter)) != "")
         {
@@ -908,8 +908,8 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("custom_light") == true)
     {
-        int counter      = 0;
-        int lightCounter = 0;
+        unsigned int counter      = 0;
+        int          lightCounter = 0;
 
         while ((arg_str = opt.GetOptionValue("custom_light", counter)) != "")
         {
@@ -1565,7 +1565,7 @@ int ScenarioPlayer::Init()
         LOG_INFO("Launch server to receive state of external Ego simulator");
     }
 
-    int index = 0;
+    unsigned int index = 0;
     for (; (arg_str = opt.GetOptionValue("fixed_timestep", index)) != ""; index++)
     {
         double timestep = std::stod(arg_str);
@@ -1586,7 +1586,7 @@ int ScenarioPlayer::Init()
 
     if (opt.GetOptionValue("path") != "")
     {
-        int counter = 0;
+        unsigned int counter = 0;
         while ((arg_str = opt.GetOptionValue("path", counter)) != "")
         {
             SE_Env::Inst().AddPath(arg_str);
@@ -1735,7 +1735,7 @@ int ScenarioPlayer::Init()
 
     if (opt.GetOptionSet("osi_crop_dynamic") == true)
     {
-        int counter = 0;
+        unsigned int counter = 0;
 
         while ((arg_str = opt.GetOptionValue("osi_crop_dynamic", counter)) != "")
         {
