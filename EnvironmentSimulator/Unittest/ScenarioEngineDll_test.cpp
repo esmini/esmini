@@ -271,9 +271,9 @@ TEST(LoggerTests, check_log_append)
     fclose(file);
 }
 
-TEST(ProgramOptions, TestNonPersisted)
+TEST(ProgramOptions, TestNonPersistent)
 {
-    std::string paramName  = "density";
+    std::string paramName  = "trail_mode";  // operate on a defined/existing option
     std::string paramValue = "10";
     const char* args[]     = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
@@ -290,10 +290,10 @@ TEST(ProgramOptions, TestNonPersisted)
     SE_Close();
 }
 
-TEST(ProgramOptions, TestPersisted)
+TEST(ProgramOptions, TestPersistent)
 {
     std::string paramValue = "10";
-    std::string paramName  = "density";
+    std::string paramName  = "trail_mode";  // operate on a defined/existing option
     const char* args[]     = {"--osc", "../../../resources/xosc/cut-in_simple.xosc"};
     ASSERT_EQ(SE_InitWithArgs(sizeof(args) / sizeof(char*), args), 0);
     SE_SetOptionValuePersistent(paramName.c_str(), paramValue.c_str());

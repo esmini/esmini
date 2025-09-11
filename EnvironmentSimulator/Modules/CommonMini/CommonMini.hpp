@@ -970,6 +970,7 @@ public:
     }
 
     void Usage() const;
+    bool IsSpecified() const;
 };
 
 class SE_Options
