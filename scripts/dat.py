@@ -3,6 +3,7 @@ import struct
 import os
 import enum
 from collections import defaultdict
+from typing import List
 import copy
 import bisect
 import ctypes
@@ -560,7 +561,7 @@ class DATFile():
         """Get the header line with version and file references."""
         return f'Version: {self.version_major}.{self.version_minor}, OpenDRIVE: {self.odr_filename}, 3DModel: {self.model_filename}'
 
-    def get_labels_line(self) -> list[str]:
+    def get_labels_line(self) -> List[str]:
         """ Get the standard labels line """
         return ['time', 'id', 'name', 'x', 'y', 'z', 'h', 'p', 'r', 'speed', 'wheel_angle', 'wheel_rot']
 
@@ -568,11 +569,11 @@ class DATFile():
         """ Will contain extended data if self.extended is True """
         return ', '.join(f"{x:.3f}" if isinstance(x, float) else str(x) for x in data)
 
-    def get_labels_line_extended(self) -> list[str]:
+    def get_labels_line_extended(self) -> List[str]:
         """ Get the extended labels line """
         return ['time', 'id', 'name', 'x', 'y', 'z', 'h', 'p', 'r', 'roadId', 'laneId', 'offset', 't', 's', 'speed', 'wheel_angle', 'wheel_rot']
 
-    def get_labels_line_array(self) -> list[str]:
+    def get_labels_line_array(self) -> List[str]:
         """ Get the standard labels line as an array """
         return [
             "time",
@@ -605,7 +606,7 @@ class DATFile():
             "t",
             "s"];
 
-    def get_data_line_array(self, data) -> list:
+    def get_data_line_array(self, data) -> List:
         """
         Get the data line as an array.
         """
