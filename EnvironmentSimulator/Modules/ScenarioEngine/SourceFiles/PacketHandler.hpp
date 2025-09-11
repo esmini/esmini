@@ -8,7 +8,7 @@
 
 namespace scenarioengine
 {
-    struct ObjectState;
+    class ObjectState;
 }
 
 namespace Dat
