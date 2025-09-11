@@ -116,7 +116,7 @@ std::map<int, std::string> ParseModelIds()
     file_name_candidates.push_back(filename);
 
     // Check registered paths
-    std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionArgs("path");
+    std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionValues("path");
     for (size_t i = 0; i < paths.size(); i++)
     {
         file_name_candidates.push_back(CombineDirectoryPathAndFilepath(paths[i], filename));
@@ -1531,7 +1531,7 @@ void RotateVec3d(const double h0,
 int SE_Env::AddPath(std::string path)
 {
     // Check if path already in list
-    std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionArgs("path");
+    std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionValues("path");
     for (size_t i = 0; i < paths.size(); i++)
     {
         if (paths[i] == path)
@@ -1987,6 +1987,18 @@ void SE_Option::Usage() const
     printf("\n      %s\n", opt_desc_.c_str());
 }
 
+std::string SE_Option::GetValue(int index) const
+{
+    if (!(opt_arg_.empty()) && static_cast<unsigned int>(index) < arg_value_.size())
+    {
+        return arg_value_[static_cast<unsigned int>(index)];
+    }
+    else
+    {
+        return "";
+    }
+}
+
 void SE_Options::AddOption(std::string opt_str,
                            std::string opt_desc,
                            std::string opt_arg,
@@ -1995,9 +2007,11 @@ void SE_Options::AddOption(std::string opt_str,
                            bool        isSingleValueOption)
 {
     SE_Option* option = GetOption(opt_str);
+
     if (option)
     {
         // there can be option already added, maybe the api has done it. which don't have values for str, desc, arg, default value, auto apply
+        LOG_DEBUG("Adding info to existing option {}", opt_str);
         option->opt_str_             = opt_str;
         option->opt_desc_            = opt_desc;
         option->opt_arg_             = opt_arg;
@@ -2011,9 +2025,20 @@ void SE_Options::AddOption(std::string opt_str,
         auto      index = ConvertStrKeyToEnum(opt_str);
         if (index != CONFIG_ENUM::CONFIGS_COUNT)
         {
+            // option placeholder exists (enum defined)
+            LOG_DEBUG("Adding known option {}", opt_str);
             option_[index] = opt;
+            option         = &option_[index];
         }
-        optionOrder_.push_back(&opt);
+        else
+        {
+            // option placeholder does not exist (enum not defined), add to the end of the vector
+            LOG_INFO("Adding custom option {}", opt_str);
+            option_.push_back(opt);
+            option = &option_.back();
+        }
+
+        optionOrder_.push_back(option);
     }
 }
 
@@ -2061,7 +2086,7 @@ bool SE_Options::IsOptionArgumentSet(std::string opt)
     return false;
 }
 
-std::vector<std::string>& SE_Options::GetOptionArgs(std::string opt)
+std::vector<std::string>& SE_Options::GetOptionValues(std::string opt)
 {
     SE_Option* option = GetOption(opt);
 
@@ -2072,25 +2097,6 @@ std::vector<std::string>& SE_Options::GetOptionArgs(std::string opt)
     }
 
     return option->arg_value_;
-}
-
-std::string SE_Options::GetOptionArg(std::string opt, int index)
-{
-    SE_Option* option = GetOption(opt);
-
-    if (option == nullptr)
-    {
-        return "";
-    }
-
-    if (!(option->opt_arg_.empty()) && static_cast<unsigned int>(index) < option->arg_value_.size())
-    {
-        return option->arg_value_[static_cast<unsigned int>(index)];
-    }
-    else
-    {
-        return "";
-    }
 }
 
 static constexpr std::array<const char*, 10> OSG_ARGS = {"--clear-color",
@@ -2128,8 +2134,9 @@ int SE_Options::SetOptionValue(std::string opt, std::string value, bool add, boo
         return -1;
     }
 
-    if (!option->set_)
+    if (!option->IsSpecified())
     {
+        // option placeholder exists, but it has not added/specified yet. Add preliminary specification.
         AddOption(opt, opt, value);
         option = GetOption(opt);
     }
@@ -2206,6 +2213,11 @@ std::string SE_Options::GetSetOptionsAsStr() const
         }
     }
     return strAllSetOptions;
+}
+
+bool SE_Option::IsSpecified() const
+{
+    return !opt_str_.empty();
 }
 
 int SE_Options::ParseArgs(int argc, const char* const argv[])
@@ -2304,11 +2316,56 @@ void SE_Options::ApplyDefaultValues()
 SE_Option* SE_Options::GetOption(std::string opt)
 {
     auto index = ConvertStrKeyToEnum(opt);
-    if (index == CONFIG_ENUM::CONFIGS_COUNT)
+    if (index < CONFIG_ENUM::CONFIGS_COUNT)
+    {
+        return &option_[index];
+    }
+    else
+    {
+        // look at the additional options beyond enums
+        for (unsigned int i = CONFIG_ENUM::CONFIGS_COUNT; i < option_.size(); i++)
+        {
+            if (option_[i].opt_str_ == opt)
+            {
+                return &option_[i];
+            }
+        }
+    }
+    return nullptr;
+}
+
+std::string SE_Options::GetOptionValue(std::string opt, unsigned int index)
+{
+    SE_Option* option = GetOption(opt);
+
+    if (option == nullptr)
+    {
+        return "";
+    }
+
+    return option->GetValue(index);
+}
+
+SE_Option* SE_Options::GetOptionByEnum(CONFIG_ENUM opt)
+{
+    if (opt < 0 || opt >= CONFIG_ENUM::CONFIGS_COUNT)
     {
         return nullptr;
     }
-    return &option_[index];
+
+    return &option_[opt];
+}
+
+std::string SE_Options::GetOptionValueByEnum(CONFIG_ENUM opt, unsigned int index)
+{
+    SE_Option* option = GetOptionByEnum(opt);
+
+    if (opt < 0 || opt >= CONFIG_ENUM::CONFIGS_COUNT)
+    {
+        return "";
+    }
+
+    return option->GetValue();
 }
 
 bool SE_Options::IsInOriginalArgs(std::string opt)

@@ -4876,7 +4876,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                 tunnel->generate_3D_model = strcmp(ReadUserData(tunnel_node, "generate3DModel", "true"), "false");
 
                 // optionally make tunnel more or less transparent, to allow seing what's going on inside
-                tunnel->transparency_ = atof(SE_Env::Inst().GetOptions().GetOptionArg("tunnel_transparency").c_str());
+                tunnel->transparency_ = atof(SE_Env::Inst().GetOptions().GetOptionValue("tunnel_transparency").c_str());
 
                 r->AddTunnel(tunnel);
             }
@@ -12100,7 +12100,7 @@ void PolyLineShape::FinalizeVertices()
 
     if (vertex_.size() > 2)  // only apply filter on more than 2 points
     {
-        double filter_radius = strtod(SE_Env::Inst().GetOptions().GetOptionArg("traj_filter"));
+        double filter_radius = strtod(SE_Env::Inst().GetOptions().GetOptionValue("traj_filter"));
         if (filter_radius > SMALL_NUMBER)
         {
             unsigned int a_idx          = 0;

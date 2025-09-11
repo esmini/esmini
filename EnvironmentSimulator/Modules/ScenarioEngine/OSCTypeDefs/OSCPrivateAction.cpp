@@ -349,7 +349,7 @@ void FollowTrajectoryAction::Start(double simTime)
     // global interpolation option highest prio, then per object property, then based on action followingMode
     if (SE_Env::Inst().GetOptions().GetOptionSet("pline_interpolation"))
     {
-        std::string interp_mode = SE_Env::Inst().GetOptions().GetOptionArg("pline_interpolation");
+        std::string interp_mode = SE_Env::Inst().GetOptions().GetOptionValue("pline_interpolation");
         if (interp_mode == "off")
         {
             traj_->shape_->pline_.SetInterpolationMode(roadmanager::PolyLineBase::InterpolationMode::INTERPOLATE_NONE);

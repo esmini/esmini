@@ -490,7 +490,7 @@ int main(int argc, char** argv)
     LOG_INFO("Compiled with USE_OSG=FALSE, limited functionality available");
 #endif  // _USE_OSG
 
-    if (opt.GetOptionArg("file").empty() || argc_ < 2)
+    if (opt.GetOptionValue("file").empty() || argc_ < 2)
     {
         printf("Missing required file argument\n");
         opt.PrintUsage();
@@ -500,10 +500,10 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    if (opt.GetOptionArg("path") != "")
+    if (opt.GetOptionValue("path") != "")
     {
-        int counter = 0;
-        while ((arg_str = opt.GetOptionArg("path", counter)) != "")
+        unsigned int counter = 0;
+        while ((arg_str = opt.GetOptionValue("path", counter)) != "")
         {
             SE_Env::Inst().AddPath(arg_str);
             LOG_INFO("Added path {}", arg_str);
@@ -511,7 +511,7 @@ int main(int argc, char** argv)
         }
     }
 
-    arg_str = opt.GetOptionArg("res_path");
+    arg_str = opt.GetOptionValue("res_path");
     if (!arg_str.empty())
     {
         SE_Env::Inst().AddPath(arg_str);
@@ -523,14 +523,14 @@ int main(int argc, char** argv)
     }
 
     // Create player
-    arg_str = opt.GetOptionArg("dir");
+    arg_str = opt.GetOptionValue("dir");
 
-    std::string save_merged = opt.GetOptionArg("save_merged");  // name of new dat file
+    std::string save_merged = opt.GetOptionValue("save_merged");  // name of new dat file
     try
     {
         if (!arg_str.empty())
         {
-            player = new Replay(arg_str, opt.GetOptionArg("file"), save_merged);
+            player = new Replay(arg_str, opt.GetOptionValue("file"), save_merged);
 
             if (!save_merged.empty())
             {
@@ -545,7 +545,7 @@ int main(int argc, char** argv)
                 LOG_ERROR("\"--saved_merged\" works only in combination with \"--dir\" argument, combining multiple dat files");
                 return -1;
             }
-            player = new Replay(opt.GetOptionArg("file"), true);
+            player = new Replay(opt.GetOptionValue("file"), true);
         }
     }
     catch (const std::exception& e)
@@ -619,7 +619,7 @@ int main(int argc, char** argv)
             return -1;
         }
 
-        if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
+        if ((arg_str = opt.GetOptionValue("camera_mode")) != "")
         {
             if (arg_str == "orbit")
             {
@@ -652,9 +652,9 @@ int main(int argc, char** argv)
         }
         if (opt.GetOptionSet("custom_camera") == true)
         {
-            int counter = 0;
+            unsigned int counter = 0;
 
-            while ((arg_str = opt.GetOptionArg("custom_camera", counter)) != "")
+            while ((arg_str = opt.GetOptionValue("custom_camera", counter)) != "")
             {
                 const auto splitted = SplitString(arg_str, ',');
 
@@ -691,9 +691,9 @@ int main(int argc, char** argv)
 
         if (opt.GetOptionSet("custom_fixed_camera") == true)
         {
-            int counter = 0;
+            unsigned int counter = 0;
 
-            while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
+            while ((arg_str = opt.GetOptionValue("custom_fixed_camera", counter)) != "")
             {
                 const auto splitted = SplitString(arg_str, ',');
 
@@ -729,9 +729,9 @@ int main(int argc, char** argv)
 
         if (opt.GetOptionSet("custom_fixed_top_camera") == true)
         {
-            int counter = 0;
+            unsigned int counter = 0;
 
-            while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
+            while ((arg_str = opt.GetOptionValue("custom_fixed_top_camera", counter)) != "")
             {
                 const auto splitted = SplitString(arg_str, ',');
                 if (splitted.size() != 4)
@@ -746,7 +746,7 @@ int main(int argc, char** argv)
             }
         }
 
-        if ((arg_str = opt.GetOptionArg("info_text")) != "")
+        if ((arg_str = opt.GetOptionValue("info_text")) != "")
         {
             int mask = strtoi(arg_str);
             if (mask < 0 || mask > 3)
@@ -758,7 +758,7 @@ int main(int argc, char** argv)
         }
 
         viewer_->RegisterKeyEventCallback(ReportKeyEvent, player);
-        viewer_->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv_[0]) + " " + (FileNameOf(opt.GetOptionArg("file"))));
+        viewer_->SetWindowTitle("esmini - " + FileNameWithoutExtOf(argv_[0]) + " " + (FileNameOf(opt.GetOptionValue("file"))));
 
         __int64 now           = 0;
         __int64 lastTimeStamp = 0;
@@ -778,7 +778,7 @@ int main(int argc, char** argv)
         if (opt.GetOptionSet("time_scale"))
         {
 #ifdef _USE_OSG
-            time_scale = atof(opt.GetOptionArg("time_scale").c_str());
+            time_scale = atof(opt.GetOptionValue("time_scale").c_str());
             if (time_scale < SMALL_NUMBER)
             {
                 time_scale = SMALL_NUMBER;
@@ -810,7 +810,7 @@ int main(int argc, char** argv)
 
         // Set visual representation of entities
         int         view_mode        = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL;
-        std::string view_mode_string = opt.GetOptionArg("view_mode");
+        std::string view_mode_string = opt.GetOptionValue("view_mode");
         if (view_mode_string == "boundingbox")
         {
             view_mode = roadgeom::NodeMask::NODE_MASK_ENTITY_BB;
@@ -849,7 +849,7 @@ int main(int argc, char** argv)
 
         if (opt.GetOptionSet("remove_object"))
         {
-            std::string ids       = opt.GetOptionArg("remove_object");
+            std::string ids       = opt.GetOptionValue("remove_object");
             std::string delimiter = ",";
             size_t      pivot     = 0;
             size_t      pos       = 0;
@@ -883,7 +883,7 @@ int main(int argc, char** argv)
 
         const int ghost_idx = GetGhostIdx();
 
-        std::string start_time_str = opt.GetOptionArg("start_time");
+        std::string start_time_str = opt.GetOptionValue("start_time");
         if (!start_time_str.empty())
         {
             double startTime = 1E-3 * strtod(start_time_str);
@@ -905,7 +905,7 @@ int main(int argc, char** argv)
             player->GoToTime(startTime);
         }
 
-        std::string stop_time_str = opt.GetOptionArg("stop_time");
+        std::string stop_time_str = opt.GetOptionValue("stop_time");
         if (!stop_time_str.empty())
         {
             double stopTime = 1E-3 * strtod(stop_time_str);
@@ -936,7 +936,7 @@ int main(int argc, char** argv)
         if (opt.GetOptionSet("collision"))
         {
             col_analysis = true;
-            if (opt.GetOptionArg("collision") == "continue")
+            if (opt.GetOptionValue("collision") == "continue")
             {
                 col_pause = false;
             }

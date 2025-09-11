@@ -970,6 +970,9 @@ public:
     }
 
     void Usage() const;
+    bool IsSpecified() const;
+    // returns first value, or given index, of the option
+    std::string GetValue(int index = 0) const;
 };
 
 class SE_Options
@@ -988,13 +991,19 @@ public:
                    bool        autoApply           = false,
                    bool        isSingleValueOption = true);
 
-    void        PrintUsage();
-    void        PrintUnknownArgs(std::string message = "Unrecognized arguments:") const;
-    bool        GetOptionSet(std::string opt);
-    bool        IsOptionArgumentSet(std::string opt);
-    std::string GetOptionArg(std::string opt, int index = 0);
+    void PrintUsage();
+    void PrintUnknownArgs(std::string message = "Unrecognized arguments:") const;
+    bool GetOptionSet(std::string opt);
+    bool IsOptionArgumentSet(std::string opt);
+
+    // Get option value by name and index if present otherwise will return empty string
+    std::string GetOptionValue(std::string opt, unsigned int index = 0);
+
+    // Get option value by enum and index if present otherwise will return empty string
+    std::string GetOptionValueByEnum(CONFIG_ENUM opt, unsigned int index = 0);
+
     // returns all the values set for the option
-    std::vector<std::string>& GetOptionArgs(std::string opt);
+    std::vector<std::string>& GetOptionValues(std::string opt);
     int                       ParseArgs(int argc, const char* const argv[]);
     // sets default values to options which are auto defaulted and are unset
     void                      ApplyDefaultValues();
@@ -1014,6 +1023,12 @@ public:
     int         ClearOption(const std::string& opt);
     std::string GetSetOptionsAsStr() const;
 
+    // Get option by name if present otherwise will return null
+    SE_Option* GetOption(std::string opt);
+
+    // Get option by name if present otherwise will return null
+    SE_Option* GetOptionByEnum(CONFIG_ENUM opt);
+
 private:
     // std::unordered_map<std::string, SE_Option> option_;
     std::vector<SE_Option>   option_;
@@ -1021,9 +1036,6 @@ private:
     std::string              app_name_;
     std::vector<std::string> originalArgs_;
     std::vector<std::string> unknown_args_;
-
-    // Get option by name if present otherwise will return null
-    SE_Option* GetOption(std::string opt);
 };
 
 class SE_SystemTime
@@ -1362,7 +1374,7 @@ public:
     }
     std::vector<std::string>& GetPaths()
     {
-        return SE_Env::Inst().GetOptions().GetOptionArgs("path");
+        return SE_Env::Inst().GetOptions().GetOptionValues("path");
     }
     int  AddPath(std::string path);
     void ClearPaths()

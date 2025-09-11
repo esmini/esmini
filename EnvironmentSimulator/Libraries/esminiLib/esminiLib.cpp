@@ -489,17 +489,30 @@ extern "C"
             return 0;
         }
         static std::string val;
-        val = SE_Env::Inst().GetOptions().GetOptionArg(name);
+        val = SE_Env::Inst().GetOptions().GetOptionValue(name);
+        return val.c_str();
+    }
+
+    SE_DLL_API const char *SE_GetOptionValueByEnum(unsigned int enum_value)
+    {
+        SE_Option *option = SE_Env::Inst().GetOptions().GetOptionByEnum(static_cast<CONFIG_ENUM>(enum_value));
+
+        if (option == nullptr)
+        {
+            return 0;
+        }
+        static std::string val;
+        val = option->GetValue();
         return val.c_str();
     }
 
     SE_DLL_API const char *SE_GetOptionValueByIndex(const char *name, unsigned int index)
     {
-        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name) || index >= SE_Env::Inst().GetOptions().GetOptionArgs(name).size())
+        if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name) || index >= SE_Env::Inst().GetOptions().GetOptionValues(name).size())
         {
             return 0;
         }
-        std::vector<std::string> &vals = SE_Env::Inst().GetOptions().GetOptionArgs(name);
+        std::vector<std::string> &vals = SE_Env::Inst().GetOptions().GetOptionValues(name);
         return vals[index].c_str();
     }
 
@@ -509,7 +522,7 @@ extern "C"
         {
             return 0;
         }
-        return static_cast<int>(SE_Env::Inst().GetOptions().GetOptionArgs(name).size());
+        return static_cast<int>(SE_Env::Inst().GetOptions().GetOptionValues(name).size());
     }
 
     SE_DLL_API bool SE_GetOptionSet(const char *name)

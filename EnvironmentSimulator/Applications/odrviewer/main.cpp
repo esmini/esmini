@@ -504,7 +504,7 @@ int main(int argc, char **argv)
     }
     else if (opt.IsOptionArgumentSet("logfile_path"))
     {
-        arg_str = opt.GetOptionArg("logfile_path");
+        arg_str = opt.GetOptionValue("logfile_path");
         if (arg_str.empty())
         {
             printf("Custom logfile path empty, disable logfile\n");
@@ -515,7 +515,7 @@ int main(int argc, char **argv)
     txtLogger.LogTimeOnly();
     txtLogger.SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
 
-    if ((arg_str = opt.GetOptionArg("fixed_timestep")) != "")
+    if ((arg_str = opt.GetOptionValue("fixed_timestep")) != "")
     {
         fixed_timestep = atof(arg_str.c_str());
         LOG_INFO("Run simulation decoupled from realtime, with fixed timestep: {:.3f}", fixed_timestep);
@@ -529,7 +529,7 @@ int main(int argc, char **argv)
 
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
-        arg_str             = opt.GetOptionArg("log_only_modules");
+        arg_str             = opt.GetOptionValue("log_only_modules");
         const auto splitted = SplitString(arg_str, ',');
         if (!splitted.empty())
         {
@@ -541,7 +541,7 @@ int main(int argc, char **argv)
 
     if (opt.IsOptionArgumentSet("log_skip_modules"))
     {
-        arg_str             = opt.GetOptionArg("log_skip_modules");
+        arg_str             = opt.GetOptionValue("log_skip_modules");
         const auto splitted = SplitString(arg_str, ',');
         if (!splitted.empty())
         {
@@ -550,15 +550,17 @@ int main(int argc, char **argv)
             txtLogger.SetLogSkipModules(logSkipModules);
         }
     }
+
     txtLogger.SetLoggerVerbosity();
-    if ((arg_str = opt.GetOptionArg("path")) != "")
+
+    if ((arg_str = opt.GetOptionValue("path")) != "")
     {
         SE_Env::Inst().AddPath(arg_str);
         LOG_INFO("Added path {}", arg_str);
     }
 
     // Use specific seed for repeatable scenarios?
-    if ((arg_str = opt.GetOptionArg("seed")) != "")
+    if ((arg_str = opt.GetOptionValue("seed")) != "")
     {
         unsigned int seed = static_cast<unsigned int>(std::stoul(arg_str));
         LOG_INFO("Using specified seed {}", seed);
@@ -569,7 +571,7 @@ int main(int argc, char **argv)
         LOG_INFO("Generated seed {}", SE_Env::Inst().GetRand().GetSeed());
     }
 
-    std::string odrFilename = opt.GetOptionArg("odr");
+    std::string odrFilename = opt.GetOptionValue("odr");
     if (odrFilename.empty())
     {
         printf("Missing required argument --odr\n");
@@ -578,11 +580,11 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    std::string modelFilename = opt.GetOptionArg("model");
+    std::string modelFilename = opt.GetOptionValue("model");
 
-    if (opt.GetOptionArg("density") != "")
+    if (opt.GetOptionValue("density") != "")
     {
-        density  = strtod(opt.GetOptionArg("density"));
+        density  = strtod(opt.GetOptionValue("density"));
         avg_dist = density < SMALL_NUMBER ? LARGE_NUMBER : 100.0 / density;
     }
 
@@ -595,21 +597,21 @@ int main(int argc, char **argv)
         LOG_INFO("density: 0 cars");
     }
 
-    if (opt.GetOptionArg("speed_factor") != "")
+    if (opt.GetOptionValue("speed_factor") != "")
     {
-        global_speed_factor = strtod(opt.GetOptionArg("speed_factor"));
+        global_speed_factor = strtod(opt.GetOptionValue("speed_factor"));
     }
     LOG_INFO("global speed factor: {:.2f}", global_speed_factor);
 
-    if (opt.GetOptionArg("traffic_rule") != "")
+    if (opt.GetOptionValue("traffic_rule") != "")
     {
-        if (opt.GetOptionArg("traffic_rule") == "left")
+        if (opt.GetOptionValue("traffic_rule") == "left")
         {
             rule                   = roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC;
             enforcing_traffic_rule = true;
             LOG_INFO("Enforce left hand traffic");
         }
-        else if (opt.GetOptionArg("traffic_rule") == "right")
+        else if (opt.GetOptionValue("traffic_rule") == "right")
         {
             rule                   = roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC;
             enforcing_traffic_rule = true;
@@ -617,9 +619,9 @@ int main(int argc, char **argv)
         }
     }
 
-    if (opt.GetOptionArg("duration") != "")
+    if (opt.GetOptionValue("duration") != "")
     {
-        duration = strtod(opt.GetOptionArg("duration"));
+        duration = strtod(opt.GetOptionValue("duration"));
     }
 
     if (opt.GetOptionSet("use_signs_in_external_model"))
@@ -674,9 +676,9 @@ int main(int argc, char **argv)
 
         if (opt.GetOptionSet("custom_fixed_camera") == true)
         {
-            int counter = 0;
+            unsigned int counter = 0;
 
-            while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
+            while ((arg_str = opt.GetOptionValue("custom_fixed_camera", counter)) != "")
             {
                 const auto splitted = SplitString(arg_str, ',');
 
@@ -712,9 +714,9 @@ int main(int argc, char **argv)
 
         if (opt.GetOptionSet("custom_fixed_top_camera") == true)
         {
-            int counter = 0;
+            unsigned int counter = 0;
 
-            while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
+            while ((arg_str = opt.GetOptionValue("custom_fixed_top_camera", counter)) != "")
             {
                 const auto splitted = SplitString(arg_str, ',');
                 if (splitted.size() != 4)

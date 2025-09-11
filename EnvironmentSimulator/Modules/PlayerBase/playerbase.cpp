@@ -721,7 +721,7 @@ int ScenarioPlayer::InitViewer()
 
     viewer_->osgViewer_->setKeyEventSetsDone(0);  // Disable default Escape key event handler, take over control
 
-    if ((arg_str = opt.GetOptionArg("info_text")) != "")
+    if ((arg_str = opt.GetOptionValue("info_text")) != "")
     {
         int mask = strtoi(arg_str);
         if (mask < 0 || mask > 3)
@@ -740,7 +740,7 @@ int ScenarioPlayer::InitViewer()
         viewer_->SaveImagesToFile(-1);
     }
 
-    if ((arg_str = opt.GetOptionArg("trail_mode")) != "")
+    if ((arg_str = opt.GetOptionValue("trail_mode")) != "")
     {
         int mask = strtoi(arg_str);
         if (mask < 0 || mask > 3)
@@ -757,11 +757,11 @@ int ScenarioPlayer::InitViewer()
         viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_TRAJECTORY_LINES);
     }
 
-    if (opt.GetOptionArg("road_features") == "on")
+    if (opt.GetOptionValue("road_features") == "on")
     {
         viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ODR_FEATURES);
     }
-    else if (opt.GetOptionArg("road_features") == "off")
+    else if (opt.GetOptionValue("road_features") == "off")
     {
         viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ODR_FEATURES);
     }
@@ -787,7 +787,7 @@ int ScenarioPlayer::InitViewer()
         viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_OBJECT_SENSORS);
     }
 
-    if ((arg_str = opt.GetOptionArg("camera_mode")) != "")
+    if ((arg_str = opt.GetOptionValue("camera_mode")) != "")
     {
         if (arg_str == "orbit")
         {
@@ -825,9 +825,9 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("custom_camera") == true)
     {
-        int counter = 0;
+        unsigned int counter = 0;
 
-        while ((arg_str = opt.GetOptionArg("custom_camera", counter)) != "")
+        while ((arg_str = opt.GetOptionValue("custom_camera", counter)) != "")
         {
             const auto splitted = SplitString(arg_str, ',');
 
@@ -858,9 +858,9 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("custom_fixed_camera") == true)
     {
-        int counter = 0;
+        unsigned int counter = 0;
 
-        while ((arg_str = opt.GetOptionArg("custom_fixed_camera", counter)) != "")
+        while ((arg_str = opt.GetOptionValue("custom_fixed_camera", counter)) != "")
         {
             const auto splitted = SplitString(arg_str, ',');
 
@@ -890,9 +890,9 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("custom_fixed_top_camera") == true)
     {
-        int counter = 0;
+        unsigned int counter = 0;
 
-        while ((arg_str = opt.GetOptionArg("custom_fixed_top_camera", counter)) != "")
+        while ((arg_str = opt.GetOptionValue("custom_fixed_top_camera", counter)) != "")
         {
             const auto splitted = SplitString(arg_str, ',');
             if (splitted.size() != 4)
@@ -908,10 +908,10 @@ int ScenarioPlayer::InitViewer()
 
     if (opt.GetOptionSet("custom_light") == true)
     {
-        int counter      = 0;
-        int lightCounter = 0;
+        unsigned int counter      = 0;
+        int          lightCounter = 0;
 
-        while ((arg_str = opt.GetOptionArg("custom_light", counter)) != "")
+        while ((arg_str = opt.GetOptionValue("custom_light", counter)) != "")
         {
             const auto splitted = SplitString(arg_str, ',');
             if (splitted.size() != 4)
@@ -1019,8 +1019,8 @@ int ScenarioPlayer::InitViewer()
     if (opt.GetOptionSet("follow_object"))
     {
         int follow_object_idx = 0;
-        LOG_INFO("Follow object {}", strtoi(opt.GetOptionArg("follow_object")));
-        std::string follow_object = opt.GetOptionArg("follow_object");
+        LOG_INFO("Follow object {}", strtoi(opt.GetOptionValue("follow_object")));
+        std::string follow_object = opt.GetOptionValue("follow_object");
         if (follow_object == "ALL")
         {
             if (scenarioEngine->entities_.object_.size() > 0)
@@ -1037,7 +1037,7 @@ int ScenarioPlayer::InitViewer()
         }
         else
         {
-            follow_object_idx = strtoi(opt.GetOptionArg("follow_object"));
+            follow_object_idx = strtoi(opt.GetOptionValue("follow_object"));
         }
         viewer_->SetVehicleInFocus(follow_object_idx);
     }
@@ -1424,7 +1424,7 @@ int ScenarioPlayer::Init()
     txtLogger.SetMetaDataEnabled(opt.IsOptionArgumentSet("log_meta_data"));
     if (opt.IsOptionArgumentSet("log_only_modules"))
     {
-        arg_str             = opt.GetOptionArg("log_only_modules");
+        arg_str             = opt.GetOptionValue("log_only_modules");
         const auto splitted = SplitString(arg_str, ',');
         if (!splitted.empty())
         {
@@ -1434,7 +1434,7 @@ int ScenarioPlayer::Init()
     }
     if (opt.IsOptionArgumentSet("log_skip_modules"))
     {
-        arg_str             = opt.GetOptionArg("log_skip_modules");
+        arg_str             = opt.GetOptionValue("log_skip_modules");
         const auto splitted = SplitString(arg_str, ',');
         if (!splitted.empty())
         {
@@ -1456,11 +1456,11 @@ int ScenarioPlayer::Init()
             std::string strParamDist = "";
             if (opt.IsOptionArgumentSet("param_dist"))
             {  // use the param_dist to read the distribution and scenario file
-                strParamDist = opt.GetOptionArg("param_dist");
+                strParamDist = opt.GetOptionValue("param_dist");
             }
             else if (opt.IsOptionArgumentSet("osc"))
             {  // use osc to read the distribution and scenario file
-                strParamDist     = opt.GetOptionArg("osc");
+                strParamDist     = opt.GetOptionValue("osc");
                 dist.IsParamDist = false;
             }
 
@@ -1476,7 +1476,7 @@ int ScenarioPlayer::Init()
         // User provided only param_dist file, as --osc option. Resolve --osc scenario file and --param_dist distribution file
 
         // move the param dist from --osc to --param_dist option
-        opt.SetOptionValue("param_dist", opt.GetOptionArg("osc"));
+        opt.SetOptionValue("param_dist", opt.GetOptionValue("osc"));
 
         // scenario file is resolved from within the param_dist file
         opt.SetOptionValue("osc", dist.GetScenarioFileName());
@@ -1492,7 +1492,7 @@ int ScenarioPlayer::Init()
 
     if (opt.IsOptionArgumentSet("param_permutation"))  // permutation index set by argument
     {
-        int permutation_index = strtoi(opt.GetOptionArg("param_permutation"));
+        int permutation_index = strtoi(opt.GetOptionValue("param_permutation"));
 
         if (dist.GetNumPermutations() > 0)
         {
@@ -1565,8 +1565,8 @@ int ScenarioPlayer::Init()
         LOG_INFO("Launch server to receive state of external Ego simulator");
     }
 
-    int index = 0;
-    for (; (arg_str = opt.GetOptionArg("fixed_timestep", index)) != ""; index++)
+    unsigned int index = 0;
+    for (; (arg_str = opt.GetOptionValue("fixed_timestep", index)) != ""; index++)
     {
         double timestep = std::stod(arg_str);
         if (timestep > SMALL_NUMBER)
@@ -1584,10 +1584,10 @@ int ScenarioPlayer::Init()
         LOG_INFO("No fixed timestep specified - running in realtime speed");
     }
 
-    if (opt.GetOptionArg("path") != "")
+    if (opt.GetOptionValue("path") != "")
     {
-        int counter = 0;
-        while ((arg_str = opt.GetOptionArg("path", counter)) != "")
+        unsigned int counter = 0;
+        while ((arg_str = opt.GetOptionValue("path", counter)) != "")
         {
             SE_Env::Inst().AddPath(arg_str);
             LOG_INFO("Added path {}", arg_str);
@@ -1617,7 +1617,7 @@ int ScenarioPlayer::Init()
     }
 
     // Use specific seed for repeatable scenarios?
-    if ((arg_str = opt.GetOptionArg("seed")) != "")
+    if ((arg_str = opt.GetOptionValue("seed")) != "")
     {
         unsigned int seed = static_cast<unsigned int>(std::stoul(arg_str));
         LOG_INFO("Using specified seed {}", seed);
@@ -1635,33 +1635,33 @@ int ScenarioPlayer::Init()
 
     if (opt.GetOptionSet("plot"))
     {
-        if (opt.GetOptionArg("plot") != "synchronous")
+        if (opt.GetOptionValue("plot") != "synchronous")
         {
 #ifdef __APPLE__
             LOG_INFO("Plot mode {} not supported on mac systems (OpenGL graphics must run in main thread), applying synchronous mode",
-                     opt.GetOptionArg("plot"));
+                     opt.GetOptionValue("plot"));
             opt.ChangeOptionArg("plot", "synchronous");
 #else
-            if (opt.GetOptionArg("plot") != "asynchronous")
+            if (opt.GetOptionValue("plot") != "asynchronous")
             {
-                LOG_WARN("Plot mode {} not recognized. applying default asynchronous mode", opt.GetOptionArg("plot"));
+                LOG_WARN("Plot mode {} not recognized. applying default asynchronous mode", opt.GetOptionValue("plot"));
                 opt.ChangeOptionArg("plot", "asynchronous");
             }
 #endif  // __APPLE__
         }
-        LOG_INFO("Plot mode: {}", opt.GetOptionArg("plot"));
+        LOG_INFO("Plot mode: {}", opt.GetOptionValue("plot"));
     }
 
     // Create scenario engine
     try
     {
-        if ((arg_str = opt.GetOptionArg("osc")) != "")
+        if ((arg_str = opt.GetOptionValue("osc")) != "")
         {
             SE_Env::Inst().AddPath(DirNameOf(arg_str));  // add scenario directory to list pf paths
             scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
             txtLogger.SetLoggerTime(scenarioEngine->GetSimulationTimePtr());
         }
-        else if ((arg_str = opt.GetOptionArg("osc_str")) != "")
+        else if ((arg_str = opt.GetOptionValue("osc_str")) != "")
         {
             // parse XML string as document
             pugi::xml_document doc;
@@ -1707,7 +1707,7 @@ int ScenarioPlayer::Init()
             xml_doc->save_file(filename.c_str());
         }
 
-        if (opt.GetOptionArg("save_xosc") == "quit")
+        if (opt.GetOptionValue("save_xosc") == "quit")
         {
             SetQuitRequest(true);
             return 0;
@@ -1726,7 +1726,7 @@ int ScenarioPlayer::Init()
 
     if (opt.GetOptionSet("osi_receiver_ip"))
     {
-        osiReporter->OpenSocket(opt.GetOptionArg("osi_receiver_ip"));
+        osiReporter->OpenSocket(opt.GetOptionValue("osi_receiver_ip"));
         if (osiReporter->GetOSIFrequency() == 0)
         {
             osiReporter->SetOSIFrequency(1);
@@ -1735,9 +1735,9 @@ int ScenarioPlayer::Init()
 
     if (opt.GetOptionSet("osi_crop_dynamic") == true)
     {
-        int counter = 0;
+        unsigned int counter = 0;
 
-        while ((arg_str = opt.GetOptionArg("osi_crop_dynamic", counter)) != "")
+        while ((arg_str = opt.GetOptionValue("osi_crop_dynamic", counter)) != "")
         {
             const auto splitted = SplitString(arg_str, ',');
             if (splitted.size() == 2)
@@ -1762,7 +1762,7 @@ int ScenarioPlayer::Init()
     // First check arguments
     if (opt.GetOptionSet("osi_file"))
     {
-        osi_filename = opt.GetOptionArg("osi_file");
+        osi_filename = opt.GetOptionValue("osi_file");
         if (osiReporter->GetOSIFrequency() == 0)
         {
             osiReporter->SetOSIFrequency(1);
@@ -1770,13 +1770,13 @@ int ScenarioPlayer::Init()
         SetOSIFileStatus(true, osi_filename.c_str());
     }
 
-    if ((arg_str = opt.GetOptionArg("osi_freq")) != "")
+    if ((arg_str = opt.GetOptionValue("osi_freq")) != "")
     {
         osiReporter->SetOSIFrequency(atoi(arg_str.c_str()));
         LOG_INFO("Run simulation decoupled from realtime, with fixed timestep: {:.2f}", GetFixedTimestep());
     }
 
-    if ((arg_str = opt.GetOptionArg("osi_static_reporting")) != "")
+    if ((arg_str = opt.GetOptionValue("osi_static_reporting")) != "")
     {
         osiReporter->SetOSIStaticReportMode(static_cast<OSIReporter::OSIStaticReportMode>(atoi(arg_str.c_str())));
         LOG_INFO("OSI static data reporting mode: {}", arg_str);
@@ -1789,7 +1789,7 @@ int ScenarioPlayer::Init()
         CSV_Log = &CSV_Logger::Inst();
         if (CSV_Log)
         {
-            std::string filename = opt.GetOptionArg("csv_logger");
+            std::string filename = opt.GetOptionValue("csv_logger");
 
             if (dist.GetNumPermutations() > 0)
             {
@@ -1806,7 +1806,7 @@ int ScenarioPlayer::Init()
     }
 
     // Create a data file for later replay?
-    if ((arg_str = opt.GetOptionArg("record")) != "")
+    if ((arg_str = opt.GetOptionValue("record")) != "")
     {
         std::string filename;
 

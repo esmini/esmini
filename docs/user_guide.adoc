@@ -4340,6 +4340,57 @@ There is also macros `NEAR_NUMBERS(x, y)` and `NEAR_NUMBERSF(x, y)`, that can be
 
 `if (NEAR_NUMBERS(x, y))`
 
+==== Options
+
+===== Using options (in code)
+
+You can fetch the value of an option basically in two ways:
+
+`std::string GetOptionValue(std::string option_name)` +
+or +
+`std::string GetOptionValueByEnum(CONFIG_ENUM option_enum);`
+
+The Enum variant should be preferred whenever an option is frequently accessed. Otherwise, e.g. in a setup phase, the difference in terms of performance is negligible.
+
+===== Adding options (in code)
+
+Steps:
+
+1. Create the option
+2. Add the option to desired applications
+3. Document the option
+
+Details of each step:
+
+===== Create the option
+
+In https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Modules/CommonMini/EnumConfig.hpp[EnumConfig.hpp]:
+
+ - Add the option to the `CONFIG_ENUM`
+ - Connect the option name to the enum in `configStrKeyEnumMap`
+
+===== Add the option to desired applications
+
+using the function `opt.AddOption()`
+
+ - esmini: in https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Modules/PlayerBase/playerbase.cpp[playerbase.cpp], `PlayerBase::Init()`
+ - replayer: in https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Applications/replayer/main.cpp[replayer/main.cpp], `main()`
+ - odrviewer: in https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Applications/odrviewer/main.cpp[odrviewer/main.cpp], `main()`
+
+===== Document the option
+Update:
+
+- esmini: update https://github.com/esmini/esmini/blob/dev/docs/commands.txt[docs/commands.txt]
+- replayer: update https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Applications/replayer/readme.txt[replayer/readme.txt]
+- odrviewer: update https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Applications/odrviewer/readme.txt[odrviewer/readme.txt] +
+
+Two tips to get the text:
+
+1. Run corresponding application with no args or `--help` and copy the content from console output
+2. Press `H` (`shift-h`) key in the application window to output the same help info to console
+
+By adding the option to the .txt files, the option will automatically be added in next generation of <<Command reference>> as well.
+
 == esmini lib programming
 
 === About the lib itself
@@ -4556,17 +4607,19 @@ OSI groundtruth will be up to date automatically after each `SE_Step*` depending
 
 On top of setting options from command line, esmini (from v2.41.0) supports setting options from esminiLib and esminiRMLib as well. This new functionality is added to set and unset options during runtime. This is useful, for example, to enable or disable logging to console, or to change log level etc between scenario runs via API. In addition, it is now possible to make option settings persistent over multiple runs of scenarios. There are two variants of the API functions i.e. one to set option value with persistence and one without. The API functions are:
 
-SE_DLL_API int SE_SetOption(const char *name);
+`SE_DLL_API int SE_SetOption(const char *name);`
 
-SE_DLL_API int SE_SetOptionPersistent(const char *name);
+`SE_DLL_API int SE_SetOptionPersistent(const char *name);`
 
-SE_DLL_API int SE_SetOptionValue(const char *name, const char *value);
+`SE_DLL_API int SE_SetOptionValue(const char *name, const char *value);`
 
-SE_DLL_API int SE_SetOptionValuePersistent(const char *name, const char *value);
+`SE_DLL_API int SE_SetOptionValuePersistent(const char *name, const char *value);`
 
-SE_DLL_API int SE_UnsetOption(const char *name);
+`SE_DLL_API int SE_UnsetOption(const char *name);`
 
-SE_DLL_API const char *SE_GetOptionValue(const char *name);
+`SE_DLL_API const char *SE_GetOptionValue(const char *name);`
+
+`SE_DLL_API const char *SE_GetOptionValueByEnum(unsigned int);` (see <<Using options (in code)>>)
 
 Any setting done in between runs, i.e. after any SE_Close() and before SE_Init(), will apply to the next run, at least. The persistent variant will apply for all future runs until unset or other setting overrides it. The effect of settings done during a scenario run will depend on the option itself. For example, anti-aliasing mode for the rendering will not change during a scenario, while logfile path can change during a scenario run (which will close current and open a new file with specified path and name). So, to be sure, set options before SE_Init() and after any SE_Close().
 

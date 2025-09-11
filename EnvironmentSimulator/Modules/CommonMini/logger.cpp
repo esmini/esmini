@@ -100,7 +100,7 @@ namespace esmini::common
     {
         if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_level"))
         {
-            logLevel_ = GetVerbosityLevelFromStr(SE_Env::Inst().GetOptions().GetOptionArg("log_level"));
+            logLevel_ = GetVerbosityLevelFromStr(SE_Env::Inst().GetOptions().GetOptionValue("log_level"));
         }
     }
 
@@ -110,7 +110,7 @@ namespace esmini::common
         {
             return "";
         }
-        std::string filePath = SE_Env::Inst().GetOptions().GetOptionArg("logfile_path");
+        std::string filePath = SE_Env::Inst().GetOptions().GetOptionValue("logfile_path");
         if (filePath.empty())
         {
             return "";
@@ -172,7 +172,7 @@ namespace esmini::common
             return;
         }
         StopFileLogging();
-        if (filePath != SE_Env::Inst().GetOptions().GetOptionArg("logfile_path"))
+        if (filePath != SE_Env::Inst().GetOptions().GetOptionValue("logfile_path"))
         {
             SE_Env::Inst().GetOptions().SetOptionValue("logfile_path", filePath);
         }
