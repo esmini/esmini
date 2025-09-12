@@ -11835,6 +11835,7 @@ PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, 
     if (time < vertex_[i].time - SMALL_NUMBER)
     {
         direction = -1;  // Search backwards
+        i--;             // since we always interpolate forward, we start on previous vertex (first potential candidate)
     }
 
     if (direction == 1)
@@ -11851,7 +11852,7 @@ PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, 
     {
         for (; i > 0; i--)
         {
-            if (time > vertex_[i - 1].time - SMALL_NUMBER)
+            if (time > vertex_[i].time - SMALL_NUMBER)
             {
                 break;
             }
