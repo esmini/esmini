@@ -503,7 +503,7 @@ void Replay::FillInTimestamps()
             // Fill with dt at current time until next_logged_time - dt
             double prev_dt  = dt_.get_value_binary(curr_time).value();
             double end_time = next_logged_time - dt;
-            size_t steps    = static_cast<size_t>(std::llround(((curr_time - end_time) / prev_dt) + SMALL_NUMBER));
+            size_t steps    = static_cast<size_t>(std::llround(((end_time - curr_time) / prev_dt) + SMALL_NUMBER));
 
             for (size_t j = 1; j < steps; ++j)
             {
