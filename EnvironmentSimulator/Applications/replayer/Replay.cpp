@@ -10,6 +10,8 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
+#include <numeric>
+
 #include "Replay.hpp"
 #include "ScenarioGateway.hpp"
 #include "CommonMini.hpp"
@@ -37,7 +39,7 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
     }
 
     startTime_ = timestamps_[0];
-    stopIndex_ = timestamps_.size() - 1;
+    stopIndex_ = static_cast<unsigned int>(timestamps_.size() - 1);
     // stopTime_ set in END_OF_SCENARIO packet
 
     time_ = startTime_;
@@ -109,7 +111,7 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
 
     // fixed_timestep_ = temp_fixed_timestep;
     startTime_ = timestamps_[0];
-    stopIndex_ = timestamps_.size() - 1;
+    stopIndex_ = static_cast<unsigned int>(timestamps_.size() - 1);
     stopTime_  = timestamps_[stopIndex_];
 
     time_ = startTime_;
