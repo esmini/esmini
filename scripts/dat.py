@@ -546,7 +546,7 @@ class DATFile():
             else:
                 prev_dt = self.dt.get_value_binary(curr_time)
                 end_time = next_logged_time - dt
-                steps = int(round(((end_time - curr_time) / prev_dt) + SMALL_NUMBER))
+                steps = int(round(((curr_time - end_time) / prev_dt) + SMALL_NUMBER))
 
                 for j in range(1, steps):
                     filled.append(curr_time + j * prev_dt)
