@@ -99,11 +99,16 @@ namespace esmini::common
         // creates and validates log file path
         std::string CreateLogFilePath();
 
+        // sets verbosity level for all loggers, there might be a situation when logger is instantiated before parsing of options
+        // with default log level i.e. info. This function should be called after parsing of options to set verbosity level
+        // for all loggers based on the option i.e. log_level
+        void SetLoggerVerbosity();
+
         template <class... ARGS>
         void
         Log(LogLevel msgLogLevel, const std::string& logStr, char const* function, char const* file, long line, const std::string& log, ARGS... args)
         {
-            if (GetVerbosityLevelFromStr(SE_Env::Inst().GetOptions().GetOptionValueByEnum(CONFIG_ENUM::LOG_LEVEL)) > msgLogLevel)
+            if (logLevel_ > msgLogLevel)
             {
                 return;
             }
@@ -136,6 +141,8 @@ namespace esmini::common
         bool metaDataEnabled_ = false;
         // time of the scenario
         double* time_ = nullptr;
+        // log verbosity level
+        LogLevel logLevel_ = LogLevel::info;
         // log file
         FILE* logFile_               = nullptr;
         bool  firstConsoleLog_       = true;

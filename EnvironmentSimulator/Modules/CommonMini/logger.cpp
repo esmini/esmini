@@ -96,6 +96,14 @@ namespace esmini::common
         logSkipModules_ = logSkipModules;
     }
 
+    void TxtLogger::SetLoggerVerbosity()
+    {
+        if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("log_level"))
+        {
+            logLevel_ = GetVerbosityLevelFromStr(SE_Env::Inst().GetOptions().GetOptionValue("log_level"));
+        }
+    }
+
     std::string TxtLogger::CreateLogFilePath()
     {
         if (SE_Env::Inst().GetOptions().GetOptionSet("disable_log"))

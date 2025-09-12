@@ -551,6 +551,8 @@ int main(int argc, char **argv)
         }
     }
 
+    txtLogger.SetLoggerVerbosity();
+
     if ((arg_str = opt.GetOptionValue("path")) != "")
     {
         SE_Env::Inst().AddPath(arg_str);
