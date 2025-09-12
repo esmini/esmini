@@ -640,7 +640,7 @@ void Replay::GoToTime(double target_time, bool stop_at_next_frame)
             // Subtract small number so we don't accidentally step ahead of intended time
             if (next_index < timestamps_.size() && target_time >= timestamps_[next_index] - SMALL_NUMBER)
             {
-                index_ = next_index;
+                index_ = static_cast<unsigned int>(next_index);
                 time_  = timestamps_[index_];
             }
             else
@@ -706,7 +706,7 @@ int Replay::GoToNextFrame()
     }
     if (*it <= stopTime_ + SMALL_NUMBER)
     {
-        index_ = static_cast<size_t>(std::distance(timestamps_.begin(), it));
+        index_ = static_cast<unsigned int>(std::distance(timestamps_.begin(), it));
         time_  = *it;
         return 0;
     }
@@ -734,7 +734,7 @@ void Replay::GoToPreviousFrame()
     else
     {
         --it;  // Move to the previous timestamp
-        index_ = static_cast<size_t>(std::distance(timestamps_.begin(), it));
+        index_ = static_cast<unsigned int>(std::distance(timestamps_.begin(), it));
         time_  = *it;
         if (time_ < startTime_)
         {
