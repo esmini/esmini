@@ -11819,29 +11819,39 @@ PolyLineBase::GhostTrailReturnCode PolyLineBase::Time2S(double time, double& s, 
         index = 0;
         return GhostTrailReturnCode::GHOST_TRAIL_OK;
     }
-    else if (time < vertex_[0].time - SMALL_NUMBER)
-    {
-        s     = 0.0;
-        index = 0;
-        return GhostTrailReturnCode::GHOST_TRAIL_TIME_PRIOR;
-    }
     else if (time < vertex_[0].time + SMALL_NUMBER)
     {
+        // snap to first vertex
         s     = 0.0;
         index = 0;
-        return GhostTrailReturnCode::GHOST_TRAIL_OK;
-    }
-    else if (time > vertex_.back().time + SMALL_NUMBER)
-    {
-        s     = vertex_.back().s;
-        index = static_cast<unsigned int>(vertex_.size()) - 1;
-        return GhostTrailReturnCode::GHOST_TRAIL_TIME_PAST;
+
+        if (time > vertex_[0].time - SMALL_NUMBER)
+        {
+            // very close, accepted
+            return GhostTrailReturnCode::GHOST_TRAIL_OK;
+        }
+        else
+        {
+            // significantly prior, indicate time out of range
+            return GhostTrailReturnCode::GHOST_TRAIL_TIME_PRIOR;
+        }
     }
     else if (time > vertex_.back().time - SMALL_NUMBER)
     {
+        // snap to last vertex
         s     = vertex_.back().s;
         index = static_cast<unsigned int>(vertex_.size()) - 1;
-        return GhostTrailReturnCode::GHOST_TRAIL_OK;
+
+        if (time < vertex_.back().time + SMALL_NUMBER)
+        {
+            // very close, accepted
+            return GhostTrailReturnCode::GHOST_TRAIL_OK;
+        }
+        else
+        {
+            // significantly past, indicate time out of range
+            return GhostTrailReturnCode::GHOST_TRAIL_TIME_PAST;
+        }
     }
 
     // start looking from current index by default
