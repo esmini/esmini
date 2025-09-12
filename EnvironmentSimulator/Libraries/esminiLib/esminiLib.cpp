@@ -493,6 +493,19 @@ extern "C"
         return val.c_str();
     }
 
+    SE_DLL_API const char *SE_GetOptionValueByEnum(unsigned int enum_value)
+    {
+        SE_Option *option = SE_Env::Inst().GetOptions().GetOptionByEnum(static_cast<CONFIG_ENUM>(enum_value));
+
+        if (option == nullptr)
+        {
+            return 0;
+        }
+        static std::string val;
+        val = option->GetValue();
+        return val.c_str();
+    }
+
     SE_DLL_API const char *SE_GetOptionValueByIndex(const char *name, unsigned int index)
     {
         if (!SE_Env::Inst().GetOptions().IsOptionArgumentSet(name) || index >= SE_Env::Inst().GetOptions().GetOptionValues(name).size())

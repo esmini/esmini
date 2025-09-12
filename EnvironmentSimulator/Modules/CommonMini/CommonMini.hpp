@@ -1023,6 +1023,12 @@ public:
     int         ClearOption(const std::string& opt);
     std::string GetSetOptionsAsStr() const;
 
+    // Get option by name if present otherwise will return null
+    SE_Option* GetOption(std::string opt);
+
+    // Get option by name if present otherwise will return null
+    SE_Option* GetOptionByEnum(CONFIG_ENUM opt);
+
 private:
     // std::unordered_map<std::string, SE_Option> option_;
     std::vector<SE_Option>   option_;
@@ -1030,12 +1036,6 @@ private:
     std::string              app_name_;
     std::vector<std::string> originalArgs_;
     std::vector<std::string> unknown_args_;
-
-    // Get option by name if present otherwise will return null
-    SE_Option* GetOption(std::string opt);
-
-    // Get option by name if present otherwise will return null
-    SE_Option* GetOptionByEnum(CONFIG_ENUM opt);
 };
 
 class SE_SystemTime
