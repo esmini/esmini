@@ -202,7 +202,7 @@ namespace scenarioengine
                 @param stop_at_next_frame If true move max to next/previous time frame
         */
         void                  SetTimeToNearestTimestamp();
-        size_t                FindIndexAtTimestamp(double timestamp);
+        unsigned int          FindIndexAtTimestamp(double timestamp);
         void                  GoToTime(double target_time, bool stop_at_next_frame = false);
         void                  GoToDeltaTime(double dt, bool stop_at_next_frame = false);
         void                  GetReplaysFromDirectory(const std::string dir, const std::string sce);

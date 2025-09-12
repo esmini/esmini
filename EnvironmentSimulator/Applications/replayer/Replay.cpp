@@ -503,7 +503,7 @@ void Replay::FillInTimestamps()
             // Fill with dt at current time until next_logged_time - dt
             double prev_dt  = dt_.get_value_binary(curr_time).value();
             double end_time = next_logged_time - dt;
-            double steps    = std::llround(((end_time - curr_time) / prev_dt) + SMALL_NUMBER);  // llround, returns a size_t
+            size_t steps    = static_cast<size_t>(std::llround(((curr_time - end_time) / prev_dt) + SMALL_NUMBER));
 
             for (size_t j = 1; j < steps; ++j)
             {
@@ -743,7 +743,7 @@ void Replay::GoToPreviousFrame()
     }
 }
 
-size_t Replay::FindIndexAtTimestamp(double timestamp)
+unsigned int Replay::FindIndexAtTimestamp(double timestamp)
 {
     auto start = timestamps_.begin();
     auto end   = timestamps_.end();
@@ -757,7 +757,7 @@ size_t Replay::FindIndexAtTimestamp(double timestamp)
     }
     // Subtract small number so we don't accidentally find index ahead of intended time
     auto it = std::lower_bound(start, end, timestamp - SMALL_NUMBER);
-    return static_cast<size_t>(std::distance(timestamps_.begin(), it));
+    return static_cast<unsigned int>(std::distance(timestamps_.begin(), it));
 }
 
 ObjectStateStructDat* Replay::GetState(int id)
@@ -792,7 +792,7 @@ void Replay::SetStartTime(double time)
         time_ = startTime_;
     }
 
-    startIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(startTime_));
+    startIndex_ = FindIndexAtTimestamp(startTime_);
     index_      = startIndex_;
 }
 
@@ -804,7 +804,7 @@ void Replay::SetStopTime(double time)
         time_ = stopTime_;
     }
 
-    stopIndex_ = static_cast<unsigned int>(FindIndexAtTimestamp(stopTime_));
+    stopIndex_ = FindIndexAtTimestamp(stopTime_);
 }
 
 void Replay::SetTimeToNearestTimestamp()
