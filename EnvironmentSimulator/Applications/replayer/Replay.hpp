@@ -95,6 +95,12 @@ namespace scenarioengine
                 return it->second;
             }
 
+            // end is past-the-end, so go to last element
+            if (it == values.end())
+            {
+                --it;
+            }
+
             if (!upper)  // We snap to lowest value, which is default
             {
                 --it;
