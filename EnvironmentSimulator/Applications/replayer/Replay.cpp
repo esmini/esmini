@@ -389,6 +389,10 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading fixed timestep.");
                     return -1;
                 }
+                if (NEAR_NUMBERS(dt, 0.0))
+                {
+                    break;
+                }
                 dt_.values.emplace_back(timestamp_, dt);
                 break;
             }
@@ -472,20 +476,14 @@ void Replay::FillInTimestamps()
 
     while (i < timestamps_.size() - 1 && curr_time < stopTime_ - SMALL_NUMBER)
     {
-        filled.emplace_back(curr_time);  // Save current timestamp
-
         // Get the upcoming dt
-        double dt;
-        if (dt_.values.size() == 2)
+        double dt = dt_.get_value_binary(curr_time, true).value();
+        if (NEAR_NUMBERS(dt, 0.0))
         {
-            // only 2 values exist, its dt 0 at t=0 and whatever dt we specified after that
-            dt = dt_.values[1].second;
+            LOG_ERROR_AND_QUIT("Invalid DT value of 0.0 found, skipping.");
         }
-        else
-        {
-            // We find the next dt after current time
-            dt = dt_.get_value_binary(curr_time, true).value();
-        }
+
+        filled.emplace_back(curr_time);  // Save current timestamp
 
         // What should be the next time in timestamps_
         double next_time = curr_time + dt;
@@ -496,6 +494,12 @@ void Replay::FillInTimestamps()
         {
             i++;
             curr_time = next_logged_time;
+        }
+        // next time is just 1 sample away from next logged time, we are done this step
+        else if (NEAR_NUMBERS(next_time, next_logged_time - dt))
+        {
+            i++;
+            curr_time = next_logged_time - dt;
         }
         // inside a gap bigger than 1 sample -> We need to fill from last known dt
         else
@@ -581,6 +585,9 @@ size_t Replay::GetNumberOfScenarios() const
 Replay::~Replay()
 {
     objects_timeline_.clear();
+    timestamps_.clear();
+    object_state_cache_.clear();
+    dt_ = {};
 }
 
 void Replay::GoToStart(bool ignore_repeat)
