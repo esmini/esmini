@@ -1020,7 +1020,7 @@ int main(int argc, char** argv)
                         throw std::runtime_error(std::string("Unexpected entity found: ").append(std::to_string(state->info.id)));
                     }
 
-                    ReplayEntry entry                   = player->GetReplayEntryAtTimeIncremental(sc->id, static_cast<float>(simTime));
+                    ReplayEntry entry                   = player->GetReplayEntryAtTimeIncremental(sc->id, simTime);
                     player->object_state_cache_[sc->id] = entry;  // Update cache
                     if (entry.state.info.active)
                     {

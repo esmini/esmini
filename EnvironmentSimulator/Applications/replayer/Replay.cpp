@@ -509,11 +509,12 @@ void Replay::FillInTimestamps()
             double end_time = next_logged_time - dt;
             size_t steps    = static_cast<size_t>(std::llround(((end_time - curr_time) / prev_dt) + SMALL_NUMBER));
 
-            for (size_t j = 1; j < steps; ++j)
+            for (size_t j = 0; j < steps; ++j)
             {
-                filled.emplace_back(j * prev_dt + curr_time);
+                filled.emplace_back((j + 1) * prev_dt + curr_time);
             }
-            curr_time = filled.back() + prev_dt;  // Set current time so it can be appended in next iteration
+            i++;
+            curr_time = timestamps_[i];  // Set current time so it can be appended in next iteration
         }
     }
 
