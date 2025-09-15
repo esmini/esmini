@@ -2037,9 +2037,8 @@ void SE_Options::AddOption(std::string opt_str,
             option_.push_back(opt);
             option = &option_.back();
         }
-
-        optionOrder_.push_back(option);
     }
+    optionOrder_.push_back(option);
 }
 
 void SE_Options::PrintUsage()
