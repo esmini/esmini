@@ -186,6 +186,21 @@ void Vehicle::DrivingControlAnalog(double dt, double throttle, double steering)
     Update(dt);
 }
 
+void vehicle::Vehicle::DrivingControlAccAndSteer(double dt, double acceleration, double steering_angle)
+{
+    if (!throttle_disabled_)
+    {
+        speed_ += acceleration * dt;
+        speed_ = CLAMP(speed_, -max_speed_, max_speed_);
+    }
+    if (!steering_disabled_)
+    {
+        wheelAngle_ = steering_angle;
+        wheelAngle_ = CLAMP(wheelAngle_, -MAX_WHEEL_ANGLE, MAX_WHEEL_ANGLE);
+    }
+    Update(dt);
+}
+
 void Vehicle::Update(double dt)
 {
     // Calculate wheel rot: https://en.wikipedia.org/wiki/Arc_(geometry)

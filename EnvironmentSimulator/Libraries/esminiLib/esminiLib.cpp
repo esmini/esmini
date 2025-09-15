@@ -2575,6 +2575,16 @@ extern "C"
         ((vehicle::Vehicle *)handleSimpleVehicle)->DrivingControlAnalog(dt, throttle, steering);
     }
 
+    SE_DLL_API void SE_SimpleVehicleControlAccAndSteer(void *handleSimpleVehicle, double dt, double acceleration, double steering_angle)
+    {
+        if (handleSimpleVehicle == 0)
+        {
+            return;
+        }
+
+        ((vehicle::Vehicle *)handleSimpleVehicle)->DrivingControlAccAndSteer(dt, acceleration, steering_angle);
+    }
+
     SE_DLL_API void SE_SimpleVehicleSetSpeed(void *handleSimpleVehicle, float speed)
     {
         if (handleSimpleVehicle == 0)
