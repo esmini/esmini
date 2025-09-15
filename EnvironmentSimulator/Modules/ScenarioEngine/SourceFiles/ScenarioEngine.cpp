@@ -16,6 +16,7 @@
 #include "ControllerExternal.hpp"
 #include "ControllerRel2Abs.hpp"
 #include "ControllerFollowRoute.hpp"
+#include "ControllerFollowReference.hpp"
 #include "Entities.hpp"
 #include "OSCParameterDistribution.hpp"
 
@@ -715,6 +716,10 @@ int ScenarioEngine::parseScenario()
             Object* obj = entities_.object_[i];
 
             if (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_FOLLOW_GHOST) ||
+                (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_FOLLOW_REFERENCE) &&
+                 static_cast<ControllerFollowReference*>(obj->GetAssignedControllerOftype(Controller::Type::CONTROLLER_TYPE_FOLLOW_REFERENCE))
+                     ->GetReferenceName()
+                     .empty()) ||
                 (obj->IsAnyAssignedControllerOfType(Controller::Type::CONTROLLER_TYPE_EXTERNAL) &&
                  (static_cast<ControllerExternal*>(obj->GetAssignedControllerOftype(Controller::Type::CONTROLLER_TYPE_EXTERNAL))->UseGhost())))
             {
@@ -722,8 +727,8 @@ int ScenarioEngine::parseScenario()
 
                 if (obj->ghost_)
                 {
-                    LOG_INFO("NOTE: Ghost feature activated. Consider headstart time offset (-{:.2f} s) when reading log.",
-                             obj->ghost_->GetHeadstartTime());
+                    LOG_INFO("NOTE: Ghost feature activated. Consider headstart time offset ({:.2f} s) when reading log.",
+                             obj->ghost_->GetHeadstartTime() < 0 ? -obj->ghost_->GetHeadstartTime() : 0.0);
 
                     if (obj->ghost_->GetHeadstartTime() > SE_Env::Inst().GetGhostHeadstart())
                     {

@@ -31,6 +31,7 @@
 #include "ControllerLooming.hpp"
 #include "ControllerOffroadFollower.hpp"
 #include "ControllerHID.hpp"
+#include "ControllerFollowReference.hpp"
 
 #include <cstdlib>
 
@@ -100,6 +101,7 @@ void ScenarioReader::LoadControllers()
     RegisterController(CONTROLLER_LOOMING_TYPE_NAME, InstantiateControllerLooming);
     RegisterController(CONTROLLER_OFFROAD_FOLLOWER_TYPE_NAME, InstantiateControllerOffroadFollower);
     RegisterController(CONTROLLER_HID_TYPE_NAME, InstantiateControllerHID);
+    RegisterController(CONTROLLER_FOLLOW_REFERENCE_TYPE_NAME, InstantiateControllerFollowReference);
 }
 
 void ScenarioReader::UnloadControllers()
@@ -1063,7 +1065,7 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
     }
     else
     {
-        LOG_WARN("Unsupported controller type: {}. Falling back to default controller", ctrlType);
+        LOG_ERROR("Unsupported controller type: {}. Falling back to default controller", ctrlType);
         controller = 0;
     }
 

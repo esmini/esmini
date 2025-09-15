@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2025-09-12T10:00:00" description="Random trajectory" author="esmini team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="speed" parameterType="double" value="${50/3.6}"/>
+      <ParameterDeclaration name="lane_change_duration" parameterType="double" value="2"/>
+      <ParameterDeclaration name="acceleration_duration" parameterType="double" value="5"/>
+      <ParameterDeclaration name="event_pause" parameterType="double" value="3"/>
+      <ParameterDeclaration name="interactive" parameterType="boolean" value="false"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+         <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="externalController"/>
+         </ObjectController>
+      </ScenarioObject>
+      <ScenarioObject name="John">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
+        </ObjectController>         
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" s="10.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ActivateControllerAction longitudinal="true" lateral="true"/>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="John">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" s="10.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                    <ActivateControllerAction longitudinal="$interactive" lateral="$interactive" />
+               </PrivateAction>               
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="linear" value="5.0" dynamicsDimension="rate"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="$speed"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story">
+         <Act name="Act">
+            <ManeuverGroup name="ManeuverGroup" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="John"/>
+               </Actors>
+               <Maneuver name="Maneuver1">
+                  <Event name="Event1" priority="override">
+                     <Action name="LaneChangeAction1">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="step" value="$lane_change_duration" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="start_trigger1" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="${$acceleration_duration + 0 * $lane_change_duration + 0 * $event_pause}" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="Event2" priority="override">
+                     <Action name="LaneChangeAction2">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="linear" value="$lane_change_duration" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="start_trigger2" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="${$acceleration_duration + 1 * ($lane_change_duration + $event_pause)}" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="Event3" priority="override">
+                     <Action name="LaneChangeAction3">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="$lane_change_duration" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="start_trigger3" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="${$acceleration_duration + 2 * ($lane_change_duration + $event_pause)}" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="Event4" priority="override">
+                     <Action name="LaneChangeAction4">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="cubic" value="$lane_change_duration" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="start_trigger4" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="${$acceleration_duration + 3 * ($lane_change_duration + $event_pause)}" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="Event5" priority="override">
+                     <Action name="SpeedAction2">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="5.0" dynamicsDimension="rate"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${70/3.6}"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="start_trigger4" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="${$acceleration_duration + 4 * ($lane_change_duration + $event_pause)}" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="Event6" priority="override">
+                     <Action name="SpeedAction3">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="8.0" dynamicsDimension="rate"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="0.0"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="start_trigger4" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="${$acceleration_duration + 5 * ($lane_change_duration + $event_pause)}" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StopTrigger" delay="10.0" conditionEdge="none">
+               <ByValueCondition>
+                  <StoryboardElementStateCondition storyboardElementType="story" storyboardElementRef="Story" state="endTransition"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

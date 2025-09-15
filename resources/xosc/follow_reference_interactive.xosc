@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2025-09-22T10:00:00" description="Follow interactive reference car" author="esmini team"/>
+   <ParameterDeclarations/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <SceneGraphFile filepath="../models/parking_lot.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="ReferenceCar">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+         <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver"/>
+         </ObjectController>
+      </ScenarioObject>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+         <ObjectController name="RelaxedFollower">
+            <CatalogReference catalogName="ControllerCatalog" entryName="followReference">
+               <ParameterAssignments>
+                  <ParameterAssignment parameterRef="StanleyCrossTrackErrorGain" value="0.5"/>
+                  <ParameterAssignment parameterRef="StanleyHeadingGain" value="0.3"/>
+                  <ParameterAssignment parameterRef="StanleyCurvatureGain" value="0.2"/>
+                  <ParameterAssignment parameterRef="StanleySpeedStabilizer" value="0.5"/>
+                  <ParameterAssignment parameterRef="SpeedControlStiffness" value="3.0"/>
+                  <ParameterAssignment parameterRef="ReferenceEntity" value="ReferenceCar"/>
+               </ParameterAssignments>
+            </CatalogReference>
+         </ObjectController>
+         <ObjectController name="StiffFollower">
+            <CatalogReference catalogName="ControllerCatalog" entryName="followReference">
+               <ParameterAssignments>
+                  <ParameterAssignment parameterRef="StanleyCrossTrackErrorGain" value="3.0"/>
+                  <ParameterAssignment parameterRef="StanleySpeedStabilizer" value="1.0"/>
+                  <ParameterAssignment parameterRef="StanleyCurvatureGain" value="1.0"/>
+                  <ParameterAssignment parameterRef="SpeedControlStiffness" value="4.0"/>
+                  <ParameterAssignment parameterRef="ReferenceEntity" value="ReferenceCar"/>
+               </ParameterAssignments>
+            </CatalogReference>
+         </ObjectController>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="ReferenceCar">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="1.8" y="-358" z="0" h="1.57" p="0" r="0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ActivateControllerAction longitudinal="true" lateral="true"/>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="1.8" y="-358" z="0" h="1.57" p="0" r="0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ActivateControllerAction objectControllerRef="RelaxedFollower" longitudinal="true" lateral="true"/>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story">
+         <Act name="Act">
+            <ManeuverGroup name="ManeuverGroup" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="Maneuver1">
+                  <Event name="Event1" priority="override">
+                     <Action name="ChangeControllerSettings">
+                        <PrivateAction>
+                           <ActivateControllerAction objectControllerRef="StiffFollower" longitudinal="true" lateral="true"/>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="start_trigger1" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="15.0" rule="greaterOrEqual"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StopTrigger" delay="0.0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="120.0" rule="greaterOrEqual"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

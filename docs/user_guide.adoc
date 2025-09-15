@@ -2646,6 +2646,49 @@ Demo (running scenario https://github.com/esmini/esmini/blob/master/resources/xo
 
 video::JV31gvCCe3Y[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
+==== FollowReferenceController
+
+The esmini implementation of the OpenSCENARIO XML default controller executes the scenario exactly as defined, without smoothing or other influence from vehicle dynamics or driver modeling. It will even perform discontinuities like step shaped lane- or speed change actions. In other words, it goes beyond kinematics, into "kinemagics".
+
+The result can be seen as a `blueprint` or reference of the specified scenario.
+
+The FollowReferenceController can be used to smoothen the blueprint, or transform it from "kinemagic" to kinematic, by follow the reference position closely with a simple bicycle kinematic model inspired by the well known Stanley controller: https://ai.stanford.edu/~gabeh/papers/hoffmann_stanley_control07.pdf. For longitudinal control a simple critically damped spring model with parameterized stiffness is used.
+
+The result becomes a smooth and continuous version of the original scenario, with a more realistic vehicle motion.
+
+Example scenario:
+https://github.com/esmini/esmini/blob/master/resources/xosc/follow_reference.xosc
+
+image::follow_reference.png[]
+
+video::icozF90XZDQ[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+The scenario triggers four lane changes with different https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/DynamicsShape.html[shapes]:
+
+. step
+. linear
+. sinusoidal
+. cubic
+
+The cross-track error gain is sligthly stiff, 2.5, but results in quite good tracking capability, also for challenging maneuvers.
+
+By default the controller will create a ghost reference entity executing the original scenario, while the main entity, to which the controller is assign, will follow the ghost in real time. Note that no head-start will happen like with the followGhost controller. Alternatively, instead of creating a ghost from the own entity, any other existing scenario object can be set as reference entity.
+
+Some controller tuning parameters:
+
+* Stanley cross error gain
+* delta heading gain
+* curvature gain
+
+For details see `followReference` in https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc[Controllers/ControllerCatalog.xosc]
+
+Another scenario example:
+https://github.com/esmini/esmini/blob/master/resources/xosc/follow_reference_interactive.xosc
+
+This scenario allows to interactively drive the reference entity (red) by arrow keys. The white car tries to follow using the FollowReferenceController. Initially relaxed settings. After 15 seconds stiffer settings are applied.
+
+video::1bKpl1dseHs[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
 ==== HIDcontroller
 
 From v2.47.0 esmini supports game controllers, allowing interactive control of one or multiple entities in a simulation. Any joystick compatible device should work, e.g. joystick, gamepad, racing wheel, etc.

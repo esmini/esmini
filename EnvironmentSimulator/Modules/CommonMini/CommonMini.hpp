@@ -994,6 +994,7 @@ public:
     void PrintUsage();
     void PrintUnknownArgs(std::string message = "Unrecognized arguments:") const;
     bool GetOptionSet(std::string opt);
+    bool GetOptionSetByEnum(esmini_options::CONFIG_ENUM opt);
     bool IsOptionArgumentSet(std::string opt);
 
     // Get option value by name and index if present otherwise will return empty string

@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2025-09-22T10:00:00" description="Follow reference along a few actions" author="esmini team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="speed" parameterType="double" value="${50/3.6}"/>
+      <ParameterDeclaration name="lane_change_duration" parameterType="double" value="2"/>
+      <ParameterDeclaration name="cross_track_error_gain" parameterType="double" value="2.5"/>
+      <ParameterDeclaration name="heading_gain" parameterType="double" value="1"/>
+      <ParameterDeclaration name="lane_change_duration" parameterType="double" value="2"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+         <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="followReference">
+               <ParameterAssignments>
+                  <ParameterAssignment parameterRef="StanleyCrossTrackErrorGain" value="$cross_track_error_gain"/>
+                  <ParameterAssignment parameterRef="StanleyHeadingGain" value="$heading_gain"/>
+                  <ParameterAssignment parameterRef="StanleyCurvatureGain" value="1.0"/>
+                  <ParameterAssignment parameterRef="StanleySpeedStabilizer" value="0.5"/>
+                  <ParameterAssignment parameterRef="SpeedControlStiffness" value="3.0"/>
+               </ParameterAssignments>
+            </CatalogReference>
+         </ObjectController>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" s="10.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="linear" value="5.0" dynamicsDimension="rate"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="$speed"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ActivateControllerAction longitudinal="true" lateral="true"/>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story">
+         <Act name="Act1">
+            <ManeuverGroup name="ManeuverGroup1" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="Maneuver1">
+                  <Event name="Event1" priority="override">
+                     <Action name="LaneChangeAction1">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="step" value="$lane_change_duration" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="startTrigger1" delay="2.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="0.0" rule="greaterOrEqual"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="Event2" priority="override">
+                     <Action name="LaneChangeAction2">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="linear" value="$lane_change_duration" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="startTrigger2" delay="4" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="Event1" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="Event3" priority="override">
+                     <Action name="LaneChangeAction3">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="$lane_change_duration" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="startTrigger3" delay="2" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="Event2" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="Event4" priority="override">
+                     <Action name="LaneChangeAction4">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="cubic" value="$lane_change_duration" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="startTrigger4" delay="2" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="Event3" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="ActStartTrigger" delay="3.0" conditionEdge="none">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0.0" rule="greaterOrEqual"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>
+         <Act name="Act2">
+            <ManeuverGroup name="ManeuverGroup3" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="ManeuverSpeedChanges">
+                  <Event name="EventSpeedChange1" priority="override">
+                     <Action name="SpeedAction1">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="5.0" dynamicsDimension="rate"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${70/3.6}"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                  </Event>
+                  <Event name="EventSpeedChange2" priority="override">
+                     <Action name="SpeedAction2">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="8.0" dynamicsDimension="rate"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="0.0"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="startTrigger6" delay="2" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="EventSpeedChange1" state="endTransition"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="ActStartTrigger" delay="2" conditionEdge="none">
+                     <ByValueCondition>
+                        <StoryboardElementStateCondition storyboardElementType="act" storyboardElementRef="Act1" state="endTransition"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StopTrigger" delay="10.0" conditionEdge="none">
+               <ByValueCondition>
+                  <StoryboardElementStateCondition storyboardElementType="story" storyboardElementRef="Story" state="endTransition"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

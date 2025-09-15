@@ -311,5 +311,30 @@
                 <Property name="speedFactor" value="$SpeedFactor" />
             </Properties>
         </Controller>
+        <Controller name="followReference">
+            <ParameterDeclarations>
+                <!-- Stanley controller cross track error gain, recommended range [0.5:3] -->
+                <ParameterDeclaration name="StanleyCrossTrackErrorGain" parameterType="double" value="1.0" />
+                <!-- Stanley controller speed stabilizer term, recommended range [0.5:2] -->
+                <ParameterDeclaration name="StanleySpeedStabilizer" parameterType="double" value="1.0" />
+                <!-- Stanley controller heading gain, recommended value 1.0 -->
+                <ParameterDeclaration name="StanleyHeadingGain" parameterType="double" value="1.0" />
+                <!-- Stanley controller curvature gain, recommended value 1.0 -->
+                <ParameterDeclaration name="StanleyCurvatureGain" parameterType="double" value="1.0" />
+                <!-- Speed controller stiffness -->
+                <ParameterDeclaration name="SpeedControlStiffness" parameterType="double" value="1.0" />
+                <!-- ReferenceEntity, specify what entity to follow. Default/empty: ghost will be created -->
+                <ParameterDeclaration name="ReferenceEntity" parameterType="string" value="" />
+            </ParameterDeclarations>
+            <Properties>
+                <Property name="esminiController" value="FollowReferenceController" />
+                <Property name="stanleyCrossTrackErrorGain"  value="$StanleyCrossTrackErrorGain" />
+                <Property name="stanleySpeedStabilizer"  value="$StanleySpeedStabilizer" />
+                <Property name="stanleyHeadingGain"  value="$StanleyHeadingGain" />
+                <Property name="stanleyCurvatureGain"  value="$StanleyCurvatureGain" />
+                <Property name="speedControlStiffness"  value="$SpeedControlStiffness" />
+                <Property name="referenceEntity"  value="$ReferenceEntity" />
+            </Properties>
+        </Controller>
     </Catalog>
 </OpenSCENARIO>

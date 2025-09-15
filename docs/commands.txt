@@ -52,6 +52,8 @@ Options:
       Disable route waypoint visualization. Toggle key 'R'
   --hide_trajectories
       Hide trajectories from start. Toggle key 'n'
+  --hide_ghost
+      Do not visualize ghost
   --ignore_heading_for_traj_motion
       Ignore heading when deciding motion direction along trajectory
   --ignore_odr_offset

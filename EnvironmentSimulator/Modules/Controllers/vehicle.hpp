@@ -47,6 +47,14 @@ namespace vehicle
                 @param steering Steering output left (>0) or right (<0) in the range(-1, 1)
         */
         void DrivingControlAnalog(double dt, double throttle, double steering);
+
+        /**
+                Update vehicle in terms of explicit acceleration and steering angle
+                @param dt Timestep (sec)
+                @param acceleration Longitudinal acceleration
+                @param steering_angle Lateral steering angle
+        */
+        void DrivingControlAccAndSteer(double dt, double acceleration, double steering_angle);
         void SetWheelAngle(double angle);
         void SetWheelRotation(double rotation);
         void SetSpeed(double speed);

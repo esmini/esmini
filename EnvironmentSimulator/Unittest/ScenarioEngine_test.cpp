@@ -1768,6 +1768,41 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
+TEST(ControllerTest, TestFollowReferenceController)
+{
+    double dt = 0.05;
+
+    ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/follow_reference.xosc");
+    ASSERT_NE(se, nullptr);
+    ASSERT_EQ(se->entities_.object_.size(), 2);
+
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    // check initial state of Ego and reference/ghost
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 10.0, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.5349, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->GetSpeed(), 0.0, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetX(), 10.0, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetY(), -1.5349, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[1]->GetSpeed(), 0.0, 1e-3);
+
+    // move forward to just after the linear lane change started, check state sample at that point
+    while (se->getSimulationTime() < 9.2 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(dt);
+    }
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 119.5249, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 1.4171, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[0]->GetSpeed(), 13.8862, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetX(), 118.8205, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[1]->pos_.GetY(), 1.3047, 1e-3);
+    EXPECT_NEAR(se->entities_.object_[1]->GetSpeed(), 13.8888, 1e-3);
+
+    delete se;
+}
+
 TEST(RoadOrientationTest, TestElevationPitchRoll)
 {
     double dt = 0.1;

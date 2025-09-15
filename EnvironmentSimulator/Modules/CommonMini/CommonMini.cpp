@@ -541,8 +541,7 @@ double DistanceFromPointToLine2D(double x3, double y3, double x1, double y1, dou
 
 double DistanceFromPointToLine2DWithAngle(double x3, double y3, double x1, double y1, double angle)
 {
-    // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line
-    return abs(cos(angle) * (y1 - y3) - sin(angle) * (x1 - x3));
+    return (x3 - x1) * std::sin(angle) - (y3 - y1) * std::cos(angle);
 }
 
 int PointSideOfVec(double px, double py, double vx1, double vy1, double vx2, double vy2)
@@ -2066,6 +2065,20 @@ void SE_Options::PrintUnknownArgs(std::string message) const
 bool SE_Options::GetOptionSet(std::string opt)
 {
     SE_Option* option = GetOption(opt);
+
+    if (option)
+    {
+        return option->set_;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool SE_Options::GetOptionSetByEnum(esmini_options::CONFIG_ENUM opt)
+{
+    SE_Option* option = GetOptionByEnum(opt);
 
     if (option)
     {

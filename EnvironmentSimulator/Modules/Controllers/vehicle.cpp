@@ -186,13 +186,28 @@ void Vehicle::DrivingControlAnalog(double dt, double throttle, double steering)
     Update(dt);
 }
 
+void vehicle::Vehicle::DrivingControlAccAndSteer(double dt, double acceleration, double steering_angle)
+{
+    if (!throttle_disabled_)
+    {
+        speed_ += acceleration * dt;
+        speed_ = CLAMP(speed_, -max_speed_, max_speed_);
+    }
+    if (!steering_disabled_)
+    {
+        wheelAngle_ = steering_angle;
+        wheelAngle_ = CLAMP(wheelAngle_, -MAX_WHEEL_ANGLE, MAX_WHEEL_ANGLE);
+    }
+    Update(dt);
+}
+
 void Vehicle::Update(double dt)
 {
     // Calculate wheel rot: https://en.wikipedia.org/wiki/Arc_(geometry)
     wheelRotation_ = fmod(wheelRotation_ + speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
 
     // Calculate vehicle kinematics according to simple bicycle model, see
-    // https://github.com/philbort/udacity_self_driving_car/blob/master/Term2/Lab_Model_Predictive_Control/IV_KinematicMPC_jason.pdf
+    // https://nuhuo08.github.io/control/IV_KinematicMPC_jason.pdf
 
     velAngleRelVehicleLongAxis_ = atan(0.15 * tan(wheelAngle_));  // Origo is between rear wheel axles on ground level, estimated 15% along X axis
     velAngle_                   = velAngleRelVehicleLongAxis_ + heading_;

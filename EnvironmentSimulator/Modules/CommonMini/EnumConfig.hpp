@@ -99,6 +99,7 @@ namespace esmini_options
         STOP_TIME,                       // 88
         TIME_SCALE,                      // 89
         VIEW_MODE,                       // 90
+        HIDE_GHOST,                      // 91
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -193,7 +194,8 @@ namespace esmini_options
         {"start_time", START_TIME},
         {"stop_time", STOP_TIME},
         {"time_scale", TIME_SCALE},
-        {"view_mode", VIEW_MODE}};
+        {"view_mode", VIEW_MODE},
+        {"hide_ghost", HIDE_GHOST}};
 
     CONFIG_ENUM ConvertStrKeyToEnum(const std::string& key);
 }  // namespace esmini_options

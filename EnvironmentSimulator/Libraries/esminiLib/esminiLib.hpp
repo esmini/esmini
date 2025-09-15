@@ -1611,7 +1611,7 @@ extern "C"
     // Viewer settings
     /**
             Switch on/off visualization of specified features
-            @param featureType Type of the features, see viewer::NodeMask typedef
+            @param featureType Type of the features, see roadgeom::NodeMask typedef
             @param enable Set true to show features, false to hide
     */
     SE_DLL_API void SE_ViewerShowFeature(int featureType, bool enable);
@@ -1656,6 +1656,14 @@ extern "C"
                                                   double dt,
                                                   double throttle,
                                                   double steering);  // throttle and steering [-1, 0 or 1]
+
+    /**
+            Update vehicle state in terms of explicit acceleration and steering angle
+            @param dt timesStep (s)
+            @param acceleration Longitudinal acceleration
+            @param steering_angle Lateral steering angle
+    */
+    SE_DLL_API void SE_SimpleVehicleControlAccAndSteer(void *handleSimpleVehicle, double dt, double acceleration, double steering_angle);
 
     /**
             Set speed, use together with control binary/analog with throttle set to zero
