@@ -1198,48 +1198,49 @@ TEST(OptionsTest, TestOptionHandling)
 {
     SE_Options opt;
 
-    // define arguments
-    opt.AddOption("osc_file", "Scenario file", "filename");
-    opt.AddOption("odr_file", "Roadnetwork file", "filename", "default_road.xodr");
-    opt.AddOption("option2", "Some value", "value", "", false, false);
-    opt.AddOption("option3", "Some rate", "rate", "55");
-    opt.AddOption("option4", "Some temp");
-    opt.AddOption("option5", "Some speed", "speed");
-    opt.AddOption("window", "Visualize the scenario");
+    // define arguments - need to use registered option names
+    opt.AddOption("osc", "Scenario file", "filename");
+    opt.AddOption("odr", "Roadnetwork file", "filename", "default_road.xodr");
+    opt.AddOption("trail_mode", "Car trail mode", "mode", "", false, false);
+    opt.AddOption("density", "Car density", "density", "5", true);
+    opt.AddOption("text_scale", "Text scale");
+    opt.AddOption("traj_filter", "Trajectory filter", "size");
+    opt.AddOption("collision", "Activate collision detection");
     // opt.PrintUsage();
 
     // set arguments
     std::array<const char*, 14> args = {"my_app",
-                                        "--osc_file",
+                                        "--osc",
                                         "my_scenario.xosc",
-                                        "--odr_file",
+                                        "--odr",
                                         "my_road_first.xodr",
-                                        "--odr_file",
+                                        "--odr",
                                         "my_road_second.xodr",
-                                        "--window",
-                                        "--option2",
-                                        "option2Value",
-                                        "--option2",
-                                        "option2Value2",
-                                        "--option3",
-                                        "--option4"};
+                                        "--collision",
+                                        "--trail_mode",
+                                        "TrailMode",
+                                        "--trail_mode",
+                                        "TrailMode2",
+                                        "--car_density",
+                                        "--text_scale"};
     int                         argc = static_cast<int>(args.size());
 
+    ASSERT_EQ(argc, 14);
     ASSERT_EQ(opt.ParseArgs(argc, args.data()), 0);
 
     ASSERT_EQ(opt.GetOptionSet("no_arg"), false);
-    ASSERT_EQ(opt.GetOptionSet("osc_file"), true);
-    ASSERT_EQ(opt.GetOptionSet("window"), true);
-    ASSERT_EQ(opt.GetOptionSet("option2"), true);
-    ASSERT_EQ(opt.GetOptionSet("option3"), true);
-    ASSERT_EQ(opt.GetOptionSet("option4"), true);
-    ASSERT_EQ(opt.GetOptionSet("option5"), false);
+    ASSERT_EQ(opt.GetOptionSet("osc"), true);
+    ASSERT_EQ(opt.GetOptionSet("collision"), true);
+    ASSERT_EQ(opt.GetOptionSet("trail_mode"), true);
+    ASSERT_EQ(opt.GetOptionSet("density"), true);
+    ASSERT_EQ(opt.GetOptionSet("text_scale"), true);
+    ASSERT_EQ(opt.GetOptionSet("traj_filter"), false);
     ASSERT_EQ(opt.GetOptionValue("window"), "");
-    ASSERT_EQ(opt.GetOptionValue("osc_file"), "my_scenario.xosc");
-    ASSERT_EQ(opt.GetOptionValue("odr_file"), "my_road_second.xodr");
-    ASSERT_EQ(opt.GetOptionValue("option2"), "option2Value2");
-    ASSERT_EQ(opt.GetOptionValue("option2", 1), "option2Value");
-    ASSERT_EQ(opt.GetOptionValue("option3"), "55");
+    ASSERT_EQ(opt.GetOptionValue("osc"), "my_scenario.xosc");
+    ASSERT_EQ(opt.GetOptionValue("odr"), "my_road_second.xodr");
+    ASSERT_EQ(opt.GetOptionValue("trail_mode"), "TrailMode2");
+    ASSERT_EQ(opt.GetOptionValue("trail_mode", 1), "TrailMode");
+    ASSERT_EQ(opt.GetOptionValue("density"), "5");
 
     // test without last argument, should return OK
     int argc_minus_one = static_cast<int>(args.size() - 1);

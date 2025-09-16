@@ -6,6 +6,8 @@ Application is launched from command line (or batch file).
 
 Usage: odrviewer [options]
 Options:
+  --path <path>...
+      Search path prefix for assets, e.g. OpenDRIVE files.
   --help
       Show this help message (-h works as well)
   --odr <odr_filename>

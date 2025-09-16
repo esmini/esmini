@@ -463,7 +463,7 @@ extern "C"
 
     /**
     Get option value
-    @param enum_value (index) value option whose value to fetch (see CommonMini/EnumConfig.hpp::CONFIG_ENUM)
+    @param enum_value (index) value option whose value to fetch (see CommonMini/EnumConfig.hpp::esmini_options::CONFIG_ENUM)
     @return value of the option
     */
     SE_DLL_API const char *SE_GetOptionValueByEnum(unsigned int enum_value);

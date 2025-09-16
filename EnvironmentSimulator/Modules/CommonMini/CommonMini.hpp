@@ -982,7 +982,7 @@ class SE_Options
 public:
     SE_Options()
     {
-        option_.resize(CONFIG_ENUM::CONFIGS_COUNT);
+        option_.resize(esmini_options::CONFIG_ENUM::CONFIGS_COUNT);
     }
     void AddOption(std::string opt_str,
                    std::string opt_desc,
@@ -1000,7 +1000,7 @@ public:
     std::string GetOptionValue(std::string opt, unsigned int index = 0);
 
     // Get option value by enum and index if present otherwise will return empty string
-    std::string GetOptionValueByEnum(CONFIG_ENUM opt, unsigned int index = 0);
+    std::string GetOptionValueByEnum(esmini_options::CONFIG_ENUM opt, unsigned int index = 0);
 
     // returns all the values set for the option
     std::vector<std::string>& GetOptionValues(std::string opt);
@@ -1027,7 +1027,10 @@ public:
     SE_Option* GetOption(std::string opt);
 
     // Get option by name if present otherwise will return null
-    SE_Option* GetOptionByEnum(CONFIG_ENUM opt);
+    SE_Option* GetOptionByEnum(esmini_options::CONFIG_ENUM opt);
+
+    void        SetAppName(std::string app_name);
+    std::string GetAppName() const;
 
 private:
     // std::unordered_map<std::string, SE_Option> option_;

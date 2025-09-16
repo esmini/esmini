@@ -1,7 +1,9 @@
 #include "EnumConfig.hpp"
 #include "logger.hpp"
 
-CONFIG_ENUM ConvertStrKeyToEnum(const std::string& key)
+using namespace esmini_options;
+
+CONFIG_ENUM esmini_options::ConvertStrKeyToEnum(const std::string& key)
 {
     if (auto itr = configStrKeyEnumMap.find(key); itr == configStrKeyEnumMap.end())
     {

@@ -495,7 +495,7 @@ extern "C"
 
     SE_DLL_API const char *SE_GetOptionValueByEnum(unsigned int enum_value)
     {
-        SE_Option *option = SE_Env::Inst().GetOptions().GetOptionByEnum(static_cast<CONFIG_ENUM>(enum_value));
+        SE_Option *option = SE_Env::Inst().GetOptions().GetOptionByEnum(static_cast<esmini_options::CONFIG_ENUM>(enum_value));
 
         if (option == nullptr)
         {

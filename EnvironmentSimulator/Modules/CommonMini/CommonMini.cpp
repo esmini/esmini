@@ -1551,6 +1551,10 @@ int OnRequestShowHelpOrVersion(int argc, char** argv, SE_Options& opt)
     {
         if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
         {
+            if (opt.GetAppName().empty())
+            {
+                opt.SetAppName(FileNameWithoutExtOf(argv[0]));
+            }
             opt.PrintUsage();
 #ifdef _USE_OSG
             PrintOSGUsage();
@@ -2022,8 +2026,8 @@ void SE_Options::AddOption(std::string opt_str,
     else
     {
         SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply, isSingleValueOption);
-        auto      index = ConvertStrKeyToEnum(opt_str);
-        if (index != CONFIG_ENUM::CONFIGS_COUNT)
+        auto      index = esmini_options::ConvertStrKeyToEnum(opt_str);
+        if (index != esmini_options::CONFIG_ENUM::CONFIGS_COUNT)
         {
             // option placeholder exists (enum defined)
             LOG_DEBUG("Adding known option {}", opt_str);
@@ -2033,9 +2037,7 @@ void SE_Options::AddOption(std::string opt_str,
         else
         {
             // option placeholder does not exist (enum not defined), add to the end of the vector
-            LOG_INFO("Adding custom option {}", opt_str);
-            option_.push_back(opt);
-            option = &option_.back();
+            LOG_ERROR_AND_QUIT("Option {} not availble, add it to config enum", opt_str);
         }
     }
     optionOrder_.push_back(option);
@@ -2314,15 +2316,15 @@ void SE_Options::ApplyDefaultValues()
 
 SE_Option* SE_Options::GetOption(std::string opt)
 {
-    auto index = ConvertStrKeyToEnum(opt);
-    if (index < CONFIG_ENUM::CONFIGS_COUNT)
+    auto index = esmini_options::ConvertStrKeyToEnum(opt);
+    if (index < esmini_options::CONFIG_ENUM::CONFIGS_COUNT)
     {
         return &option_[index];
     }
     else
     {
         // look at the additional options beyond enums
-        for (unsigned int i = CONFIG_ENUM::CONFIGS_COUNT; i < option_.size(); i++)
+        for (unsigned int i = esmini_options::CONFIG_ENUM::CONFIGS_COUNT; i < option_.size(); i++)
         {
             if (option_[i].opt_str_ == opt)
             {
@@ -2345,9 +2347,9 @@ std::string SE_Options::GetOptionValue(std::string opt, unsigned int index)
     return option->GetValue(index);
 }
 
-SE_Option* SE_Options::GetOptionByEnum(CONFIG_ENUM opt)
+SE_Option* SE_Options::GetOptionByEnum(esmini_options::CONFIG_ENUM opt)
 {
-    if (opt < 0 || opt >= CONFIG_ENUM::CONFIGS_COUNT)
+    if (opt < 0 || opt >= esmini_options::CONFIG_ENUM::CONFIGS_COUNT)
     {
         return nullptr;
     }
@@ -2355,11 +2357,25 @@ SE_Option* SE_Options::GetOptionByEnum(CONFIG_ENUM opt)
     return &option_[opt];
 }
 
-std::string SE_Options::GetOptionValueByEnum(CONFIG_ENUM opt, unsigned int index)
+void SE_Options::SetAppName(std::string app_name)
+{
+    if (!app_name_.empty() && app_name != app_name_)
+    {
+        LOG_WARN("Unexpected option operation: Replacing appname {} with {}", app_name_, app_name);
+    }
+    app_name_ = app_name;
+}
+
+std::string SE_Options::GetAppName() const
+{
+    return app_name_;
+}
+
+std::string SE_Options::GetOptionValueByEnum(esmini_options::CONFIG_ENUM opt, unsigned int index)
 {
     SE_Option* option = GetOptionByEnum(opt);
 
-    if (opt < 0 || opt >= CONFIG_ENUM::CONFIGS_COUNT)
+    if (opt < 0 || opt >= esmini_options::CONFIG_ENUM::CONFIGS_COUNT)
     {
         return "";
     }
