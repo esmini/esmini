@@ -112,7 +112,7 @@ int main(int argc, char* argv[])
     int ref_id = 1;
 
     // initialize esmini, establish initial states for given scenario
-    if (SE_Init("../../../../EnvironmentSimulator/code-examples/follow_john/follow_john.xosc", 0, 1, 0, 1) != 0)
+    if (SE_Init("../EnvironmentSimulator/code-examples/follow_reference/follow_reference.xosc", 0, 1, 0, 1) != 0)
     {
         SE_LogMessage("Failed to initialize the scenario, quit\n");
         return -1;
