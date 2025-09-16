@@ -821,10 +821,7 @@ EntityWithController TrafficDistributionEntry::GetRandomEntity() const
                                          0.0,
                                          [](double sum, const EntityDistributionEntry& ede) { return sum + ede.weight; });
 
-    static thread_local std::mt19937       rng(std::random_device{}());
-    std::uniform_real_distribution<double> dist(0.0, totalWeight);
-
-    double pick = dist(rng);
+    double pick = SE_Env::Inst().GetRand().GetRealBetween(0.0, totalWeight);
 
     for (const auto& ede : entityDistribution.entries)
     {
@@ -863,7 +860,7 @@ void TrafficSourceAction::Step(double simTime, double dt)
 {
     (void)dt;
 
-    if (simTime > action_trigger_time_ + (1 / rate_) * spawned_count_)
+    if (std::abs(simTime - (action_trigger_time_ + (1 / rate_) * spawned_count_)) < SMALL_NUMBER)
     {
         SpawnEntity();
     }
@@ -874,13 +871,8 @@ roadmanager::Position* TrafficSourceAction::GetRandomSpawnPosition()
     double x = pos_->GetX();
     double y = pos_->GetY();
 
-    static std::random_device        rd;
-    static std::mt19937              gen(rd());
-    std::uniform_real_distribution<> distAngle(0, 2 * M_PI);
-    std::uniform_real_distribution<> distRadius(0, 1);
-
-    double angle  = distAngle(gen);
-    double radius = std::sqrt(distRadius(gen)) * radius_;
+    double angle  = SE_Env::Inst().GetRand().GetRealBetween(0, 2 * M_PI);
+    double radius = SE_Env::Inst().GetRand().GetRealBetween(0, 1) * radius_;
 
     double newX = x + radius * std::cos(angle);
     double newY = y + radius * std::sin(angle);
@@ -989,6 +981,8 @@ void TrafficSinkAction::DespawnEntity()
 
     if (it != scenario_engine_->entities_.object_.end())
     {
+        LOG_INFO("Despawning entity inside sink area {}", (*it)->name_);
+
         for (auto& ctrl : (*it)->controllers_)
         {
             (*it)->UnassignController(ctrl);
@@ -1004,8 +998,6 @@ void TrafficSinkAction::DespawnEntity()
 void TrafficAreaAction::Start(double simTime)
 {
     LOG_INFO("Traffic Area Continuous: {}, Number of entities: {}", continuous_, number_of_entities_);
-
-    // odrManager_ = roadmanager::Position::GetOpenDrive();
 
     // Should be exchanged for the vehicle definition/distribution
     vehicle_pool_.Initialize(reader_, nullptr, true);
@@ -1664,9 +1656,7 @@ roadmanager::Position* TrafficAreaAction::GetRandomSpawnPosition()
         }
 
         // Pick a triangle weighted by area
-        static thread_local std::mt19937       rng(std::random_device{}());
-        std::uniform_real_distribution<double> dist_area(0.0, total_area);
-        double                                 pick = dist_area(rng);
+        double pick = SE_Env::Inst().GetRand().GetRealBetween(0.0, total_area);
 
         size_t tri_idx = 0;
         for (; tri_idx < triangles.size(); ++tri_idx)
@@ -1680,9 +1670,8 @@ roadmanager::Position* TrafficAreaAction::GetRandomSpawnPosition()
         const Triangle& tri = triangles[tri_idx];
 
         // Pick a random point inside the triangle using barycentric coordinates
-        std::uniform_real_distribution<double> dist(0.0, 1.0);
-        double                                 u = dist(rng);
-        double                                 v = dist(rng);
+        double u = SE_Env::Inst().GetRand().GetReal();
+        double v = SE_Env::Inst().GetRand().GetReal();
         if (u + v > 1.0)
         {
             u = 1.0 - u;
@@ -1700,12 +1689,8 @@ roadmanager::Position* TrafficAreaAction::GetRandomSpawnPosition()
     {
         if (!lane_segments_.empty())
         {
-            static thread_local std::mt19937      rng(std::random_device{}());
-            std::uniform_int_distribution<size_t> dist_seg(0, lane_segments_.size() - 1);
-            const LaneSegment&                    seg = lane_segments_[dist_seg(rng)];
-
-            std::uniform_real_distribution<double> dist_s(seg.minS, seg.maxS);
-            double                                 s = dist_s(rng);
+            const LaneSegment& seg = lane_segments_[SE_Env::Inst().GetRand().GetNumberBetween(0, lane_segments_.size() - 1)];
+            double             s   = SE_Env::Inst().GetRand().GetRealBetween(seg.minS, seg.maxS);
 
             return new roadmanager::Position(seg.roadId, seg.laneId, s, 0.0);
         }

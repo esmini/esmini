@@ -10,7 +10,7 @@
         </ControllerCatalog>
     </CatalogLocations>
     <RoadNetwork>
-        <LogicFile filepath="../xodr/trafficsource.xodr"/>
+        <LogicFile filepath="../xodr/trafficarea.xodr"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">
@@ -20,6 +20,31 @@
     <Storyboard>
         <Init>
             <Actions>
+                <GlobalAction>
+                        <TrafficAction>
+                            <TrafficSourceAction rate="0.5" radius="0.7" speed="30.0">
+                                <Position>
+                                    <LanePosition roadId="1" laneId="-2" s="10.0" offset="0.0"/>
+                                </Position>
+                                <TrafficDistribution>
+                                    <TrafficDistributionEntry weight="1">
+                                        <EntityDistribution>
+                                            <EntityDistributionEntry weight="0.5">
+                                                <ScenarioObjectTemplate>
+                                                    <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
+                                                </ScenarioObjectTemplate>
+                                            </EntityDistributionEntry>
+                                            <EntityDistributionEntry weight="0.5">
+                                                <ScenarioObjectTemplate>
+                                                    <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+                                                </ScenarioObjectTemplate>
+                                            </EntityDistributionEntry>
+                                        </EntityDistribution>
+                                    </TrafficDistributionEntry>
+                                </TrafficDistribution>
+                            </TrafficSourceAction>
+                        </TrafficAction>
+                    </GlobalAction>
                 <Private entityRef="Ego">
                     <PrivateAction>
                         <LongitudinalAction>
@@ -42,70 +67,13 @@
             </Actions>
         </Init>
         <Story name="story_act_maneuvuergroup_traffic source maneuver">
-            <Act name="act_maneuvuergroup_traffic source maneuver">
-                <ManeuverGroup name="maneuvuergroup_traffic source maneuver" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false"/>
-                    <Maneuver name="traffic source maneuver">
-                        <Event name="traffic source event" priority="overwrite" maximumExecutionCount="1">
-                            <Action name="traffic source action">
-                                <GlobalAction>
-                                    <TrafficAction>
-                                        <TrafficSourceAction rate="0.5" radius="4.0" speed="30.0">
-                                            <Position>
-                                                <LanePosition roadId="0" laneId="-2" s="100.0" offset="0.0"/>
-                                            </Position>
-                                            <TrafficDistribution>
-                                                <TrafficDistributionEntry weight="1">
-                                                    <EntityDistribution>
-                                                        <EntityDistributionEntry weight="0.5">
-                                                            <ScenarioObjectTemplate>
-                                                                <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
-                                                                <ObjectController>
-                                                                    <CatalogReference catalogName="ControllerCatalog" entryName="sloppyDriver"/>
-                                                                </ObjectController>
-                                                            </ScenarioObjectTemplate>
-                                                        </EntityDistributionEntry>
-                                                        <EntityDistributionEntry weight="0.5">
-                                                            <ScenarioObjectTemplate>
-                                                                <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
-                                                            </ScenarioObjectTemplate>
-                                                        </EntityDistributionEntry>
-                                                    </EntityDistribution>
-                                                </TrafficDistributionEntry>
-                                            </TrafficDistribution>
-                                        </TrafficSourceAction>
-                                    </TrafficAction>
-                                </GlobalAction>
-                            </Action>
-                            <StartTrigger>
-                                <ConditionGroup>
-                                    <Condition name="traffic source trigger" delay="0.0" conditionEdge="none">
-                                        <ByValueCondition>
-                                            <SimulationTimeCondition value="2.0" rule="greaterThan"/>
-                                        </ByValueCondition>
-                                    </Condition>
-                                </ConditionGroup>
-                            </StartTrigger>
-                        </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <StartTrigger>
-                    <ConditionGroup>
-                        <Condition name="act_start" delay="0.0" conditionEdge="rising">
-                            <ByValueCondition>
-                                <SimulationTimeCondition value="0.0" rule="greaterThan"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StartTrigger>
-                <StopTrigger/>
-            </Act>
+
         </Story>
         <StopTrigger>
             <ConditionGroup>
                 <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="60.0" rule="greaterThan"/>
+                        <SimulationTimeCondition value="11.0" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

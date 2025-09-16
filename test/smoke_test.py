@@ -5,6 +5,7 @@ from test_common import *
 import unittest
 import argparse
 import os.path
+import pandas as pd
 
 ESMINI_PATH = '../'
 COMMON_ESMINI_ARGS = '--headless --fixed_timestep 0.01 --record sim.dat '
@@ -310,7 +311,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^.0.00.*Init Ego LongitudinalAction runningState -> endTransition -> completeState', log, re.MULTILINE))
 
         # Check some scenario events
-        self.assertTrue(re.search('^.0.00.* Swarm IR: 200.00, SMjA: 300.00, SMnA: 500.00, maxV: 75, initialSpeedLowerLimit: 20.00, initialSpeedUpperLimit: 30.00', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.* Swarm IR: 200.00, SMjA: 300.00, SMnA: 500.00, maxV: 75, initialSpeedLowerLimit: 30.00, initialSpeedUpperLimit: 30.00', log, re.MULTILINE))
         self.assertTrue(re.search('^.60.10.* SwarmStopTrigger: true, delay: 0.00, 60.1000 > 60.0000, edge: none', log, re.MULTILINE))
         # Check vehicle key positions
         csv = generate_csv()
@@ -334,10 +335,220 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^10.000, 43, swarm_23, 3.667, 600.323, -0.827, 4.626, 0.000, 6.283, 30.000, 0.001, 0.619', csv, re.MULTILINE))
         elif platform == "linux" or platform == "linux2":
             self.assertTrue(re.search('^10.000, 0, Ego, 12.312, 399.846, -0.719, 1.542, 0.002, 0.000, 10.000, -0.001, 2.971', csv, re.MULTILINE))
-            self.assertTrue(re.search('^10.000, 30, swarm_23, 8.836, 176.039, -0.303, 1.563, 0.002, 0.000, 30.000, -0.000, 2.326', csv, re.MULTILINE))
-            self.assertTrue(re.search('^14.000, 43, swarm_35, 11.685, 646.668, -0.842, 4.614, 6.282, 0.000, 30.000, 0.001, 4.033', csv, re.MULTILINE))
-            self.assertTrue(re.search('^14.000, 44, swarm_35\\+, 12.290, 652.637, -0.848, 4.612, 6.282, 0.000, 30.000, 0.001, 4.033', csv, re.MULTILINE))
-            self.assertTrue(re.search('^14.000, 45, swarm_35\\+\\+, 13.591, 665.270, -0.867, 4.609, 6.281, 6.283, 30.000, 0.001, 4.033', csv, re.MULTILINE))
+            self.assertTrue(re.search('^10.000, 30, swarm_23\\+, 8.765, 166.040, -0.283, 1.564, 0.002, 0.000, 30.000, -0.000, 4.033', csv, re.MULTILINE))
+            self.assertTrue(re.search('^14.000, 28, swarm_22\\+\\+, -3.463, 497.994, -0.839, 4.659, 6.283, 0.000, 30.000, 0.001, 5.891', csv, re.MULTILINE))
+            self.assertTrue(re.search('^15.000, 26, swarm_22, -5.730, 449.347, -0.794, 4.673, 6.282, 0.000, 30.000, 0.001, 3.641', csv, re.MULTILINE))
+            self.assertTrue(re.search('^20.000, 72, swarm_50, 19.084, 746.780, -1.083, 4.591, 6.281, 0.000, 30.000, 0.000, 0.000', csv, re.MULTILINE))
+
+    def test_traffic_source_action(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/source.xosc'), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.1')
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*source.xosc', log)  is not None)
+        self.assertTrue(re.search('Using specified seed 0', log)  is not None)
+        self.assertTrue(re.search('^.0.00.*Ego New position:.*$\\n^.*Pos\\(25.00, -1.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -1 s 25.00 offset 0.00 t -1.50', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*Init Ego TeleportAction initState -> startTransition -> runningState', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*Init Ego LongitudinalAction runningState -> endTransition -> completeState', log, re.MULTILINE))
+
+        # Check some scenario events
+        self.assertTrue(re.search('^.0.00.*Traffic Source Radius: 0.70, Rate: 0.50, Speed: 30.00', log, re.MULTILINE))
+        # Check vehicle key positions
+        csv = generate_csv()
+
+        # Read CSV, skipping metadata line(s)
+        df = pd.read_csv('sim.csv', comment="V", skip_blank_lines=True, sep=r",\s+", engine="python")
+
+        # Ensure correct types
+        df["time"] = df["time"].astype(float)
+        df["id"] = df["id"].astype(int)
+        df["name"] = df["name"].astype(str)
+
+        check = {
+            0.100:[[0,1],['Ego', 'source_0']],
+            2.100:[[0,1,2],['Ego', 'source_0', 'source_1']],
+            4.100:[[0,1,2,3],['Ego', 'source_0', 'source_1', 'source_2']],
+            6.100:[[0,1,2,3,4],['Ego', 'source_0', 'source_1', 'source_2', 'source_3']],
+            8.100:[[0,1,2,3,4,5],['Ego', 'source_0', 'source_1', 'source_2', 'source_3', 'source_4']],
+            10.100:[[0,1,2,3,4,5,6],['Ego', 'source_0', 'source_1', 'source_2', 'source_3', 'source_4', 'source_5']]
+            }
+        
+        for t, (expected_ids, expected_names) in check.items():
+            sub = df[df["time"] == t]
+
+            # Compare sets to ensure exact match (ignores order)
+            assert set(sub["id"]) == set(expected_ids), f"Mismatch in ids at time {t}"
+            assert set(sub["name"]) == set(expected_names), f"Mismatch in names at time {t}"
+
+        # Random generators differ on platforms => random traffic will be repeatable only per platform
+        # Need to add suitable test for windows
+        if platform == "win32":
+            pass
+
+        elif platform == "linux" or platform == "linux2":
+            self.assertTrue(re.search('^0.000, 0, Ego, 25.000, -1.500, 0.000, 0.000, 0.000, 0.000, 30.000, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^1.000, 1, source_0, 239.988, -4.500, 0.000, 0.000, 0.000, 0.000, 30.000, 0.000, 4.033', csv, re.MULTILINE))
+            self.assertTrue(re.search('^2.100, 2, source_1, 212.953, -4.500, 0.000, 0.000, 0.000, 0.000, 30.000, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^8.100, 0, Ego, 268.000, -1.500, 0.000, 0.000, 0.000, 0.000, 30.000, 0.000, 3.135', csv, re.MULTILINE))
+            self.assertTrue(re.search('^8.100, 5, source_4, 213.449, -4.500, 0.000, 0.000, 0.000, 0.000, 30.000, 0.000, 0.000', csv, re.MULTILINE))
+
+    def test_traffic_sink_action(self):
+
+        # Need to add tests for windows
+
+        # Time step set to 0.01 to ensure vehicles is detected by the sink area
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/sink.xosc'), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.01')
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*sink.xosc', log)  is not None)
+        self.assertTrue(re.search('Using specified seed 0', log)  is not None)
+        self.assertTrue(re.search('^.0.00.*sink_0 New position:.*$\\n^.*Pos\\(20.00, -1.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -1 s 20.00 offset 0.00 t -1.50', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*sink_1 New position:.*$\\n^.*Pos\\(40.00, -1.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -1 s 40.00 offset 0.00 t -1.50', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*sink_2 New position:.*$\\n^.*Pos\\(60.00, -1.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -1 s 60.00 offset 0.00 t -1.50', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*sink_3 New position:.*$\\n^.*Pos\\(20.00, -4.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -2 s 20.00 offset 0.00 t -4.50', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*sink_4 New position:.*$\\n^.*Pos\\(40.00, -4.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -2 s 40.00 offset 0.00 t -4.50', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.00.*sink_5 New position:.*$\\n^.*Pos\\(60.00, -4.50, 0.00\\) Rot\\(0.00, 0.00, 0.00\\) roadId 0 laneId -2 s 60.00 offset 0.00 t -4.50', log, re.MULTILINE))
+
+        self.assertTrue(re.search(r'Despawning entity inside sink area sink_5', log))
+        self.assertTrue(re.search(r'Despawning entity inside sink area sink_4', log))
+        self.assertTrue(re.search(r'Despawning entity inside sink area sink_3', log))
+
+        # Check some scenario events
+        # self.assertTrue(re.search('^.0.00.*Traffic Source Radius: 0.70, Rate: 0.50, Speed: 30.00', log, re.MULTILINE))
+        # Check vehicle key positions
+        csv = generate_csv()
+        df = pd.read_csv('sim.csv', comment="V", skip_blank_lines=True, sep=r",\s+", engine="python")
+
+        # Ensure correct types
+        df["time"] = df["time"].astype(float)
+        df["id"] = df["id"].astype(int)
+        df["name"] = df["name"].astype(str)
+
+        # Set your cutoff time and target name
+        cutoff_time_sink_5 = 12.980
+        sink_5 = "sink_5"
+        cutoff_time_sink_4 = 13.650
+        sink_4 = "sink_4"
+        cutoff_time_sink_3 = 14.310
+        sink_3 = "sink_3"
+
+        # Filter rows after specified time and check if target_name is still present
+        assert sink_5 in df[df["time"] < cutoff_time_sink_5]["name"].values
+        assert sink_5 not in df[df["time"] > cutoff_time_sink_5]["name"].values
+        assert sink_4 in df[df["time"] < cutoff_time_sink_4]["name"].values
+        assert sink_4 not in df[df["time"] > cutoff_time_sink_4]["name"].values
+        assert sink_3 in df[df["time"] < cutoff_time_sink_3]["name"].values
+        assert sink_3 not in df[df["time"] > cutoff_time_sink_3]["name"].values
+
+
+    def test_traffic_area_action_polygon(self):
+        # Need to add tests for windows
+
+        # Time step set to 0.01 to ensure vehicles is detected by the sink area
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/trafficareapolygonjunction.xosc'), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.01')
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*trafficareapolygonjunction.xosc', log)  is not None)
+        self.assertTrue(re.search('Using specified seed 0', log)  is not None)
+
+        # Check some scenario events
+        # self.assertTrue(re.search('^.0.00.*Traffic Source Radius: 0.70, Rate: 0.50, Speed: 30.00', log, re.MULTILINE))
+
+        csv = generate_csv()
+        df = pd.read_csv('sim.csv', comment="V", skip_blank_lines=True, sep=r",\s+", engine="python")
+
+        # <Position>
+        #     <WorldPosition x="50.0" y="-70.0" z="0.0"/>
+        # </Position>
+        # <Position>
+        #     <WorldPosition x="190.0" y="-70.0" z="0.0"/>
+        # </Position>
+        # <Position>
+        #     <WorldPosition x="190.0" y="70.0" z="0.0"/>
+        # </Position>
+        # <Position>
+        #     <WorldPosition x="50.0" y="7.0" z="0.0"/>
+        # </Position>
+        
+        # Ensure correct types
+        df["time"] = df["time"].astype(float)
+        df["id"] = df["id"].astype(int)
+        df["name"] = df["name"].astype(str)
+        df["x"] = df["x"].astype(float)
+        df["y"] = df["y"].astype(float)
+
+        # .5 diff cause of how it spawn/despawn I guess
+        assert (df["x"] >= 49.5).all()
+        assert (df["x"] <= 190.5).all()
+        assert (df["y"] >= -70.5).all()
+        assert (df["y"] <= 70.5).all()
+
+        # Always 10 entities present
+        assert (df.groupby("time")["name"].nunique() == 10).all()
+        assert (df.groupby("time")["id"].nunique() == 10).all()
+
+    def test_traffic_area_action_road_range(self):
+        # Need to add tests for windows
+
+        # Time step set to 0.01 to ensure vehicles is detected by the sink area
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/trafficarearoadrange.xosc'), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.01')
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*trafficarearoadrange.xosc', log)  is not None)
+        self.assertTrue(re.search('Using specified seed 0', log)  is not None)
+
+        # Check some scenario events
+        # self.assertTrue(re.search('^.0.00.*Traffic Source Radius: 0.70, Rate: 0.50, Speed: 30.00', log, re.MULTILINE))
+
+        csv = generate_csv()
+        df = pd.read_csv('sim.csv', comment="V", skip_blank_lines=True, sep=r",\s+", engine="python")
+
+        df["time"] = df["time"].astype(float)
+        df["id"] = df["id"].astype(int)
+        df["name"] = df["name"].astype(str)
+        df["x"] = df["x"].astype(float)
+        df["y"] = df["y"].astype(float)
+
+        # <RoadRange length="250">
+        #     <RoadCursor roadId="0" s="50"/>
+        #     <RoadCursor roadId="1" s="0">
+        #         <Lane id="1"/>
+        #         <Lane id="-1"/>
+        #     </RoadCursor>
+        #     <RoadCursor roadId="1" s="75">
+        #         <Lane id="-1"/>
+        #         <Lane id="-2"/>
+        #     </RoadCursor>
+        #     <RoadCursor roadId="2" s="100">
+        #         <Lane id="-1"/>
+        #         <Lane id="-2"/>
+        #     </RoadCursor>
+        # </RoadRange>
+
+        # The four roadcursors as rrX = [(xmin, xmax), (ymin, ymax)]
+        rc1 = [(100,200),(-6, 6)]
+        rc2 = [(200,300),(-3,3)]
+        rc3 = [(300, 400),(-6, 0)]
+        rc4 = [(400, 450),(-6, 0)]
+        roadcursors = [rc1, rc2, rc3, rc4]
+
+        # .5 diff cause of how it spawn/despawn I guess
+        diff = 0.5
+        for index in df.index:
+            x = df.at[index, "x"]
+            y = df.at[index, "y"]
+            in_any = False
+            for rc in roadcursors:
+                if (x >= rc[0][0]-diff) and (x <= rc[0][1]+diff) and (y >= rc[1][0]-diff) and (y <= rc[1][1]+diff):
+                    in_any = True
+                    break
+            if not in_any:
+                print(index, x, y)
+                assert False
+
+        # Always 10 entities present
+        assert (df.groupby("time")["name"].nunique() == 10).all()
+        assert (df.groupby("time")["id"].nunique() == 10).all()
+
 
     def test_conflicting_domains(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ESMINI_ARGS)

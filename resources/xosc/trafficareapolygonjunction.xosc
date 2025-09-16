@@ -7,7 +7,7 @@
         </VehicleCatalog>
     </CatalogLocations>
     <RoadNetwork>
-        <LogicFile filepath="../xodr/full_junction0.xodr"/>
+        <LogicFile filepath="../xodr/full_junction.xodr"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">
@@ -46,10 +46,10 @@
                                         </EntityDistributionEntry>
                                         <EntityDistributionEntry weight="0.33">
                                             <ScenarioObjectTemplate>
-                                                <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+                                                <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
                                             </ScenarioObjectTemplate>
                                         </EntityDistributionEntry>
-                                        <EntityDistributionEntry weight="03">
+                                        <EntityDistributionEntry weight="0.33">
                                             <ScenarioObjectTemplate>
                                                 <CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
                                             </ScenarioObjectTemplate>
@@ -66,7 +66,7 @@
             <ConditionGroup>
                 <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="60.0" rule="greaterThan"/>
+                        <SimulationTimeCondition value="20.0" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>
