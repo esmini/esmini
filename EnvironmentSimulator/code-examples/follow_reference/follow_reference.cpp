@@ -65,39 +65,19 @@ private:
 class CriticallyDampedSpring
 {
 public:
-    CriticallyDampedSpring(double stiffness, double pos_init, double vel_init) : k_(stiffness), pos_(pos_init), vel_(vel_init), acc_(0.0)
+    CriticallyDampedSpring(double stiffness) : k_(stiffness)
     {
         d_ = 2.0 * std::sqrt(stiffness);
     }
 
-    void setPosition(double pos)
+    double computeAcceleration(double pos, double vel, double dt) const
     {
-        pos_ = pos;
-    }
-
-    void setVelocity(double velocity)
-    {
-        vel_ = velocity;
-    }
-
-    void update(double dt)
-    {
-        acc_ = -k_ * pos_ - d_ * vel_;
-        vel_ += acc_ * dt;
-        pos_ += vel_ * dt;
-    }
-
-    double getAcceleration() const
-    {
-        return acc_;
+        return -k_ * pos - d_ * vel;
     }
 
 private:
-    double d_;    // damping coefficient
-    double k_;    // stiffness coefficient
-    double pos_;  // position
-    double vel_;  // velocity
-    double acc_;  // acceleration
+    double d_;  // damping coefficient
+    double k_;  // stiffness coefficient
 };
 
 int main(int argc, char* argv[])
@@ -111,7 +91,7 @@ int main(int argc, char* argv[])
     const bool   visualize    = true;
 
     // create controllers for longitudinal and lateral operations
-    CriticallyDampedSpring speed_ctrl(1, 0.0, 0.0);
+    CriticallyDampedSpring speed_ctrl(1.0);
     StanleyController      steer_ctrl(10.0, 1.0);
 
     // use fixed IDs for ego and the reference vehicle
@@ -159,13 +139,9 @@ int main(int argc, char* argv[])
             double dx = distance_point_to_line(ego_state.x, ego_state.y, ref_state.x, ref_state.y, static_cast<double>(ref_state.h) + M_PI_2);
             double dh = normalize_angle(ref_state.h - ego_state.h);
 
-            speed_ctrl.setPosition(dx);
-            speed_ctrl.setVelocity(ego_state.speed - ref_state.speed);
-            speed_ctrl.update(dt);
-
             SE_SimpleVehicleControlAccAndSteer(ego_handle,
                                                dt,
-                                               speed_ctrl.getAcceleration(),
+                                               speed_ctrl.computeAcceleration(dx, ego_state.speed - ref_state.speed, dt),
                                                steer_ctrl.computeSteering(dy, dh * SIGN(ego_state.speed), ego_state.speed));
 
             // Fetch updated Ego state and report to scenario engine
