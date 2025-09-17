@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.25)
 
 project(
-    rm-basic
+    rm-basic-cs
     CSharp)
 
 set(TARGET
-    rm-basic)
+    rm-basic-cs)
 
 set(SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/rm-basic.cs
