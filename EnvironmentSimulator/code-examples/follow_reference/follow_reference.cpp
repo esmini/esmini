@@ -1,3 +1,9 @@
+/*
+ * This code example demonstrates a simple vehicle following a reference vehicle in realtime
+ * using a Stanley controller for the steering angle and a simple critically damped spring model
+ * for the longitudinal acceleration.
+ */
+
 #define _USE_MATH_DEFINES
 #include <stdio.h>
 #include <math.h>
@@ -113,7 +119,7 @@ int main(int argc, char* argv[])
     int ref_id = 1;
 
     // initialize esmini, establish initial states for given scenario
-    if (SE_Init("../../../../EnvironmentSimulator/code-examples/follow_reference/follow_reference.xosc", 0, visualize ? 1 : 0, 0, 1) != 0)
+    if (SE_Init("../EnvironmentSimulator/code-examples/follow_reference/follow_reference.xosc", 0, visualize ? 1 : 0, 0, 1) != 0)
     {
         printf("Failed to initialize the scenario, quit\n");
         SE_LogMessage("Failed to initialize the scenario, quit\n");
