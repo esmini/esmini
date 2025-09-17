@@ -48,11 +48,7 @@ public:
 
     double computeSteering(double dy, double dh, double speed) const
     {
-        double psi_e          = normalize_angle(dh);
-        double e_t            = dy;
-        double steering_angle = psi_e + std::atan2(k_e_ * e_t, k_psi_ + speed);
-
-        return steering_angle;
+        return dh + std::atan2(k_e_ * dy, k_psi_ + speed);
     }
 
 private:
@@ -103,17 +99,23 @@ int main(int argc, char* argv[])
     (void)argc;
     (void)argv;
 
+    const double x_offset     = 2.8;  // Distance from the reference point at the rear axle to the front axle which is used for steering control
+    const float  fixed_dt     = 1.0f / 60.0f;
+    const bool   use_fixed_dt = false;
+    const bool   visualize    = true;
+
     // create controllers for longitudinal and lateral operations
     CriticallyDampedSpring speed_ctrl(1, 0.0, 0.0);
-    StanleyController      steer_ctrl(1.0, 1.0);
+    StanleyController      steer_ctrl(10.0, 1.0);
 
     // use fixed IDs for ego and the reference vehicle
     int ego_id = 0;
     int ref_id = 1;
 
     // initialize esmini, establish initial states for given scenario
-    if (SE_Init("../EnvironmentSimulator/code-examples/follow_reference/follow_reference.xosc", 0, 1, 0, 1) != 0)
+    if (SE_Init("../../../../EnvironmentSimulator/code-examples/follow_reference/follow_reference.xosc", 0, visualize ? 1 : 0, 0, 1) != 0)
     {
+        printf("Failed to initialize the scenario, quit\n");
         SE_LogMessage("Failed to initialize the scenario, quit\n");
         return -1;
     }
@@ -122,7 +124,7 @@ int main(int argc, char* argv[])
     SE_ScenarioObjectState ref_state;
     SE_GetObjectState(ref_id, &ref_state);
     SE_SimpleVehicleState ego_state;
-    void*                 ego_handle = SE_SimpleVehicleCreate(ref_state.x, ref_state.y, ref_state.h, 4.0, 0.0);
+    void*                 ego_handle = SE_SimpleVehicleCreate(ref_state.x, ref_state.y, ref_state.h, 4.0, ref_state.speed);
     SE_SimpleVehicleGetState(ego_handle, &ego_state);
 
     // show some road features, including road sensor
@@ -131,13 +133,19 @@ int main(int argc, char* argv[])
     // Run for specified duration or until 'Esc' button is pressed
     while (SE_GetQuitFlag() == 0)
     {
-        // float dt = SE_GetSimTimeStep();  // Get simulation delta time since last call
-        static float dt = 1.0f / 60.0f;  // 60 fps
-
+        float dt = use_fixed_dt ? fixed_dt : SE_GetSimTimeStep();
         if (!SE_GetPauseFlag())
         {
-            // find lateral diff
-            double dy = distance_point_to_line(ego_state.x, ego_state.y, ref_state.x, ref_state.y, ref_state.h);
+            // find lateral distance between Ego and reference vehicle x-axis
+            double front_axle[2] = {0.0, 0.0};
+            if (ego_state.speed >= 0.0)
+            {
+                // measure from Ego front axle when driving forward
+                rotate_vec(x_offset, 0.0, ego_state.h, front_axle[0], front_axle[1]);
+            }
+            double dy = distance_point_to_line(ego_state.x + front_axle[0], ego_state.y + front_axle[1], ref_state.x, ref_state.y, ref_state.h);
+
+            // find longitudinal distance and heading difference between Ego and reference vehicle
             double dx = distance_point_to_line(ego_state.x, ego_state.y, ref_state.x, ref_state.y, static_cast<double>(ref_state.h) + M_PI_2);
             double dh = normalize_angle(ref_state.h - ego_state.h);
 

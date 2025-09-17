@@ -4,8 +4,9 @@
    <ParameterDeclarations>
       <ParameterDeclaration name="speed" parameterType="double" value="${50/3.6}"/>
       <ParameterDeclaration name="lane_change_duration" parameterType="double" value="2"/>
-      <ParameterDeclaration name="acceleration_duration" parameterType="double" value="4"/>
+      <ParameterDeclaration name="acceleration_duration" parameterType="double" value="5"/>
       <ParameterDeclaration name="event_pause" parameterType="double" value="3"/>
+      <ParameterDeclaration name="interactive" parameterType="boolean" value="false"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>
@@ -27,6 +28,9 @@
       </ScenarioObject>
       <ScenarioObject name="John">
          <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
+        </ObjectController>         
       </ScenarioObject>
    </Entities>
    <Storyboard>
@@ -53,6 +57,9 @@
                   </TeleportAction>
                </PrivateAction>
                <PrivateAction>
+                    <ActivateControllerAction longitudinal="$interactive" lateral="$interactive" />
+               </PrivateAction>               
+               <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="linear" value="5.0" dynamicsDimension="rate"/>
@@ -73,7 +80,7 @@
                </Actors>
                <Maneuver name="Maneuver1">
                   <Event name="Event1" priority="override">
-                     <Action name="TrajectoryAction">
+                     <Action name="LaneChangeAction1">
                         <PrivateAction>
                            <LateralAction>
                               <LaneChangeAction>
@@ -96,7 +103,7 @@
                      </StartTrigger>
                   </Event>
                   <Event name="Event2" priority="override">
-                     <Action name="TrajectoryAction">
+                     <Action name="LaneChangeAction2">
                         <PrivateAction>
                            <LateralAction>
                               <LaneChangeAction>
@@ -119,7 +126,7 @@
                      </StartTrigger>
                   </Event>
                   <Event name="Event3" priority="override">
-                     <Action name="TrajectoryAction">
+                     <Action name="LaneChangeAction3">
                         <PrivateAction>
                            <LateralAction>
                               <LaneChangeAction>
@@ -142,7 +149,7 @@
                      </StartTrigger>
                   </Event>
                   <Event name="Event4" priority="override">
-                     <Action name="TrajectoryAction">
+                     <Action name="LaneChangeAction4">
                         <PrivateAction>
                            <LateralAction>
                               <LaneChangeAction>
