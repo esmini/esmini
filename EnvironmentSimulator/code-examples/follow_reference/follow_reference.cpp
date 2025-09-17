@@ -70,7 +70,7 @@ public:
         d_ = 2.0 * std::sqrt(stiffness);
     }
 
-    double computeAcceleration(double pos, double vel, double dt) const
+    double computeAcceleration(double pos, double vel) const
     {
         return -k_ * pos - d_ * vel;
     }
@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
 
             SE_SimpleVehicleControlAccAndSteer(ego_handle,
                                                dt,
-                                               speed_ctrl.computeAcceleration(dx, ego_state.speed - ref_state.speed, dt),
+                                               speed_ctrl.computeAcceleration(dx, ego_state.speed - ref_state.speed),
                                                steer_ctrl.computeSteering(dy, dh * SIGN(ego_state.speed), ego_state.speed));
 
             // Fetch updated Ego state and report to scenario engine
