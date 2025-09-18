@@ -2370,6 +2370,8 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
         }
         else if (actionChild.name() == std::string("TrafficAction"))
         {
+
+            std::shared_ptr<TrafficActionContext> trafficActionContext = std::make_shared<TrafficActionContext>(*scenarioEngine_, *gateway_, *this, *roadmanager::Position::GetOpenDrive());
             std::string traffic_name;
             traffic_name = parameters.ReadAttribute(actionChild, "trafficName");
 
@@ -2377,11 +2379,8 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
 
             if (!strcmp(trafficChild.name(), "TrafficSourceAction"))
             {
-                TrafficSourceAction *trafficSourceAction = new TrafficSourceAction(parent);
+                TrafficSourceAction *trafficSourceAction = new TrafficSourceAction(parent, trafficActionContext);
 
-                trafficSourceAction->SetScenarioEngine(scenarioEngine_);
-                trafficSourceAction->SetGateway(gateway_);
-                trafficSourceAction->SetReader(this);
                 if (!traffic_name.empty())
                 {
                     trafficSourceAction->SetName(traffic_name);
@@ -2424,11 +2423,8 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
             }
             else if (!strcmp(trafficChild.name(), "TrafficSinkAction"))
             {
-                TrafficSinkAction *trafficSinkAction = new TrafficSinkAction(parent);
+                TrafficSinkAction *trafficSinkAction = new TrafficSinkAction(parent, trafficActionContext);
 
-                trafficSinkAction->SetScenarioEngine(scenarioEngine_);
-                trafficSinkAction->SetGateway(gateway_);
-                trafficSinkAction->SetReader(this);
                 if (!traffic_name.empty())
                 {
                     trafficSinkAction->SetName(traffic_name);
@@ -2460,7 +2456,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
             }
             else if (!strcmp(trafficChild.name(), "TrafficSwarmAction"))
             {
-                TrafficSwarmAction *trafficSwarmAction = new TrafficSwarmAction(parent);
+                TrafficSwarmAction *trafficSwarmAction = new TrafficSwarmAction(parent, trafficActionContext);
 
                 pugi::xml_node childNode = trafficChild.child("CentralObject");
                 if (childNode.empty())
@@ -2477,7 +2473,6 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 }
 
                 trafficSwarmAction->SetCentralObject(entities_->GetObjectByName(parameters.ReadAttribute(childNode, "entityRef")));
-                // childNode = trafficChild.child("")
 
                 std::string radius, numberOfVehicles, velocity;
 
@@ -2492,10 +2487,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 // Semi major axis
                 radius = parameters.ReadAttribute(trafficChild, "semiMinorAxis", true);
                 trafficSwarmAction->SetSemiMinorAxes(std::stod(radius));
-
-                trafficSwarmAction->SetScenarioEngine(scenarioEngine_);
-                trafficSwarmAction->SetGateway(gateway_);
-                trafficSwarmAction->SetReader(this);
+                
                 if (!traffic_name.empty())
                 {
                     trafficSwarmAction->SetName(traffic_name);
@@ -2561,12 +2553,8 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
             }
             else if (!strcmp(trafficChild.name(), "TrafficAreaAction"))
             {
-                TrafficAreaAction *trafficAreaAction = new TrafficAreaAction(parent);
+                TrafficAreaAction *trafficAreaAction = new TrafficAreaAction(parent, trafficActionContext);
 
-                trafficAreaAction->SetScenarioEngine(scenarioEngine_);
-                trafficAreaAction->SetGateway(gateway_);
-                trafficAreaAction->SetReader(this);
-                trafficAreaAction->SetOpenDriveManager(roadmanager::Position::GetOpenDrive());
                 if (!traffic_name.empty())
                 {
                     trafficAreaAction->SetName(traffic_name);
@@ -2671,11 +2659,8 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
             {
                 LOG_INFO("TrafficStopAction not implemented yet");
 
-                TrafficStopAction *trafficStopAction = new TrafficStopAction(parent);
+                TrafficStopAction *trafficStopAction = new TrafficStopAction(parent, trafficActionContext);
 
-                trafficStopAction->SetScenarioEngine(scenarioEngine_);
-                trafficStopAction->SetGateway(gateway_);
-                trafficStopAction->SetReader(this);
                 if (!traffic_name.empty())
                 {
                     trafficStopAction->SetTrafficActionToStop(traffic_name);

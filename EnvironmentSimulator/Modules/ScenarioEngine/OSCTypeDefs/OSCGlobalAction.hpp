@@ -365,7 +365,84 @@ namespace scenarioengine
     class ScenarioReader;
     class ScenarioEngine;
 
-    class TrafficSwarmAction : public OSCGlobalAction
+    class TrafficActionContext
+    {
+        public:
+        TrafficActionContext(ScenarioEngine& engine, ScenarioGateway& gateway, ScenarioReader& reader, roadmanager::OpenDrive& odrManager)
+            : scenario_engine_(&engine), gateway_(&gateway), reader_(&reader), odrManager_(&odrManager){};
+
+        ScenarioEngine& GetScenarioEngine()
+        {
+            return *scenario_engine_;
+        };
+
+        ScenarioGateway& GetScenarioGateway()
+        {
+            return *gateway_;
+        };
+        ScenarioReader& GetScenarioReader()
+        {
+            return *reader_;
+        };
+        roadmanager::OpenDrive& GetOdrManager()
+        {
+            return *odrManager_;
+        };
+
+        private:
+            ScenarioEngine*   scenario_engine_{};
+            ScenarioGateway*  gateway_{};
+            ScenarioReader*   reader_{};
+            roadmanager::OpenDrive* odrManager_{};
+        
+    };
+
+    class TrafficAction : public OSCGlobalAction
+    {
+        public:
+            TrafficAction(ActionType type, StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context)
+                : OSCGlobalAction(type, parent), context_(context) {
+                }
+
+            ~TrafficAction() = default;
+
+            void SetName(std::string_view name) { name_ = name; }
+            void Print(){}
+
+            /**
+             * Tries to spawn an entity at the given position, if there is enough free space.
+             * @param pos Position to spawn the entity at.
+             */
+            void SpawnEntity(roadmanager::Position* pos);
+            
+            /**
+             * Checks if there is enough free space at the given position to spawn an entity.
+             * @param pos Position to check.
+             * @return True if there is enough free space, false otherwise.
+             */
+            bool FreePositionToSpawn(roadmanager::Position* pos);
+
+            /**
+             * Despawns the given entity, along with controllers attached.
+             * @param object Entity to despawn.
+             */
+            void DespawnEntity(Object* object);
+
+            std::vector<TrafficDistributionEntry> traffic_distribution_entry_;
+
+        protected:
+            std::shared_ptr<TrafficActionContext> context_;
+            std::string       name_;
+            int spawned_count_ = 0;
+            std::vector<int> spawned_entity_ids_;
+            std::string action_type_;
+            VehiclePool                        vehicle_pool_;
+            double                             spawn_speed_ = 0.0;
+            Entities               entities_;
+    };
+
+
+    class TrafficSwarmAction : public TrafficAction
     {
     public:
         struct SpawnInfo
@@ -384,27 +461,18 @@ namespace scenarioengine
             unsigned int          nLanes;
         } SelectInfo;
 
-        TrafficSwarmAction(StoryBoardElement* parent);
-
-        TrafficSwarmAction(const TrafficSwarmAction& action, StoryBoardElement* parent) : OSCGlobalAction(ActionType::SWARM_TRAFFIC, parent)
+        TrafficSwarmAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context) : TrafficAction(ActionType::SWARM_TRAFFIC, parent, context)
         {
-            spawnedV.clear();
-            centralObject_ = action.centralObject_;
         }
 
         OSCGlobalAction* Copy()
         {
-            TrafficSwarmAction* new_action = new TrafficSwarmAction(*this);
-            return new_action;
+            return new TrafficSwarmAction(*this);
         }
 
         void Start(double simTime);
 
         void Step(double simTime, double dt);
-
-        void print()
-        {
-        }
 
         void SetCentralObject(Object* centralObj)
         {
@@ -421,16 +489,6 @@ namespace scenarioengine
         void SetSemiMinorAxes(double axes)
         {
             semiMinorAxis_ = axes;
-        }
-        void SetScenarioEngine(ScenarioEngine* scenario_engine);
-
-        void SetGateway(ScenarioGateway* gateway)
-        {
-            gateway_ = gateway;
-        }
-        void SetReader(ScenarioReader* reader)
-        {
-            reader_ = reader;
         }
         void SetNumberOfVehicles(int number)
         {
@@ -466,14 +524,10 @@ namespace scenarioengine
         double                  dotSame_;
         bool                    dot_set_ = false;
         Entities*               entities_;
-        ScenarioGateway*        gateway_;
-        ScenarioReader*         reader_;
-        ScenarioEngine*         scenario_engine_;
         Object*                 centralObject_;
         aabbTree::ptTree        rTree;
         unsigned long           numberOfVehicles;
         std::vector<SpawnInfo>  spawnedV;
-        roadmanager::OpenDrive* odrManager_;
         double                  innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
         VehiclePool             vehicle_pool_;
         static int              counter_;
@@ -488,42 +542,19 @@ namespace scenarioengine
         double      getInitialSpeed() const;
     };
 
-    class TrafficSourceAction : public OSCGlobalAction
+    class TrafficSourceAction : public TrafficAction
     {
     public:
-        TrafficSourceAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::SOURCE_TRAFFIC, parent)
-        {
-        }
+        TrafficSourceAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context) : TrafficAction(ActionType::SOURCE_TRAFFIC, parent, context){}
 
         OSCGlobalAction* Copy()
         {
-            TrafficSourceAction* new_action = new TrafficSourceAction(*this);
-            return new_action;
+            return new TrafficSourceAction(*this);
         }
 
         void Start(double simTime);
 
         void Step(double simTime, double dt);
-
-        void print()
-        {
-        }
-
-        void SpawnEntity();
-
-        void SetScenarioEngine(ScenarioEngine* scenario_engine)
-        {
-            scenario_engine_ = scenario_engine;
-        }
-
-        void SetGateway(ScenarioGateway* gateway)
-        {
-            gateway_ = gateway;
-        }
-        void SetReader(ScenarioReader* reader)
-        {
-            reader_ = reader;
-        }
 
         void SetActionTriggerTime(double simTime)
         {
@@ -539,7 +570,7 @@ namespace scenarioengine
         }
         void SetSpeed(double speed)
         {
-            speed_ = speed;
+            spawn_speed_ = speed;
         }
         void SetPosition(roadmanager::Position* pos)
         {
@@ -549,58 +580,37 @@ namespace scenarioengine
         {
             name_ = name;
         }
+
+        /**
+         * Get a random position within the spawn radius from the source position.
+         * @return A pointer to the random spawn position.
+         */
         roadmanager::Position* GetRandomSpawnPosition();
 
-        std::vector<TrafficDistributionEntry> traffic_distribution_entry_;
+        // std::vector<TrafficDistributionEntry> traffic_distribution_entry_;
 
     private:
         double                 action_trigger_time_;
         double                 radius_;
         double                 rate_;
-        double                 speed_;
-        ScenarioGateway*       gateway_;
-        ScenarioReader*        reader_;
-        ScenarioEngine*        scenario_engine_;
-        int                    spawned_count_ = 0;
         VehiclePool            vehicle_pool_;
         roadmanager::Position* pos_;
         std::string            name_;
     };
 
-    class TrafficSinkAction : public OSCGlobalAction
+    class TrafficSinkAction : public TrafficAction
     {
     public:
-        TrafficSinkAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::SINK_TRAFFIC, parent)
-        {
-        }
+        TrafficSinkAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context) : TrafficAction(ActionType::SINK_TRAFFIC, parent, context){}
 
         OSCGlobalAction* Copy()
         {
-            TrafficSinkAction* new_action = new TrafficSinkAction(*this);
-            return new_action;
+            return new TrafficSinkAction(*this);
         }
 
         void Start(double simTime);
 
         void Step(double simTime, double dt);
-
-        void print()
-        {
-        }
-
-        void SetScenarioEngine(ScenarioEngine* scenario_engine)
-        {
-            scenario_engine_ = scenario_engine;
-        }
-
-        void SetGateway(ScenarioGateway* gateway)
-        {
-            gateway_ = gateway;
-        }
-        void SetReader(ScenarioReader* reader)
-        {
-            reader_ = reader;
-        }
 
         void SetActionTriggerTime(double simTime)
         {
@@ -624,16 +634,22 @@ namespace scenarioengine
             name_ = name;
         }
 
-        void DespawnEntity();
+        /**
+         * Despawn entities that are within the sink radius.
+         */
+        void FindPossibleDespawn();
+
+        /**
+         * Check if a given position is inside the sink radius.
+         * @param object_pos The position to check.
+         * @return True if the position is inside the sink radius, false otherwise.
+         */
         bool InsideSink(roadmanager::Position object_pos);
 
     private:
         double                 action_trigger_time_;
         double                 radius_;
         double                 rate_;
-        ScenarioGateway*       gateway_;
-        ScenarioReader*        reader_;
-        ScenarioEngine*        scenario_engine_;
         roadmanager::Position* pos_;
         bool                   constant_despawn_ = true;
         double                 time_accumulator_ = 0.0;
@@ -687,50 +703,25 @@ namespace scenarioengine
         return almost_equal(a.length, b.length) && a.roadCursors == b.roadCursors;
     }
 
-    class TrafficAreaAction : public OSCGlobalAction
+    class TrafficAreaAction : public TrafficAction
     {
     public:
-        TrafficAreaAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::AREA_TRAFFIC, parent)
+        TrafficAreaAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context) : TrafficAction(ActionType::AREA_TRAFFIC, parent, context)
         {
         }
 
         OSCGlobalAction* Copy()
         {
-            TrafficAreaAction* new_action = new TrafficAreaAction(*this);
-            return new_action;
+            return new TrafficAreaAction(*this);
         }
 
         void Start(double simTime);
 
         void Step(double simTime, double dt);
 
-        void print()
-        {
-        }
-
-        void SetScenarioEngine(ScenarioEngine* scenario_engine)
-        {
-            scenario_engine_ = scenario_engine;
-        }
-
-        void SetGateway(ScenarioGateway* gateway)
-        {
-            gateway_ = gateway;
-        }
-        void SetReader(ScenarioReader* reader)
-        {
-            reader_ = reader;
-        }
-        void SetOpenDriveManager(roadmanager::OpenDrive* odrManager)
-        {
-            odrManager_ = odrManager;
-        }
-
         void SpawnEntities(int number_of_entities_to_spawn);
 
-        void SpawnEntity(roadmanager::Position* pos);
-
-        int DespawnEntities();
+        void DespawnEntities();
 
         bool InsideArea(roadmanager::Position object_pos);
 
@@ -769,17 +760,16 @@ namespace scenarioengine
         }
 
         void UpdateRoadRanges();
-        void SetRoadRangeLength();
+        void SetRoadRangeLength(RoadRange& road_range);
         void SetAdditionalRoadCursorInfo(RoadCursor& road_cursor);
         void AddComplementaryRoadCursors();
-        void SetLaneSegments();
+        void SetLaneSegments(RoadRange& road_range);
+        void LaneSegments();
         void LaneSegmentsForRoad(std::vector<RoadCursor> road_cursors_to_road, double& accumulated_length, const double max_length);
         void HandleLastRoadCursor(std::vector<RoadCursor> last_road_cursors, double& accumulated_length, const double max_length);
 
         roadmanager::Position* GetRandomSpawnPosition();
-
         roadmanager::Position*                pos_;
-        std::vector<TrafficDistributionEntry> traffic_distribution_entry_;
 
     private:
         double ClampMax(double value, double accumulated, double max_length);
@@ -789,28 +779,20 @@ namespace scenarioengine
         std::vector<roadmanager::Position> polygon_points_;
         std::vector<RoadRange>             road_ranges_;
         std::vector<LaneSegment>           lane_segments_;
-        ScenarioGateway*                   gateway_;
-        ScenarioReader*                    reader_;
-        ScenarioEngine*                    scenario_engine_;
-        roadmanager::OpenDrive*            odrManager_;
-        VehiclePool                        vehicle_pool_;
         bool                               first_spawn_ = false;
-        std::vector<int>                   spawned_entity_ids_;
-        int                                spawned_count_ = 0;
         std::string                        name_;
     };
 
-    class TrafficStopAction : public OSCGlobalAction
+    class TrafficStopAction : public TrafficAction
     {
     public:
-        TrafficStopAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::STOP_TRAFFIC, parent)
+        TrafficStopAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context) : TrafficAction(ActionType::STOP_TRAFFIC, parent, context)
         {
         }
 
         OSCGlobalAction* Copy()
         {
-            TrafficStopAction* new_action = new TrafficStopAction(*this);
-            return new_action;
+            return new TrafficStopAction(*this);
         }
 
         void Start(double simTime);
@@ -821,28 +803,12 @@ namespace scenarioengine
         {
         }
 
-        void SetScenarioEngine(ScenarioEngine* scenario_engine)
-        {
-            scenario_engine_ = scenario_engine;
-        }
-
-        void SetGateway(ScenarioGateway* gateway)
-        {
-            gateway_ = gateway;
-        }
-        void SetReader(ScenarioReader* reader)
-        {
-            reader_ = reader;
-        }
         void SetTrafficActionToStop(const std::string& action)
         {
             traffic_action_to_stop_ = action;
         }
 
     private:
-        ScenarioGateway* gateway_;
-        ScenarioReader*  reader_;
-        ScenarioEngine*  scenario_engine_;
         std::string      traffic_action_to_stop_;
     };
 
