@@ -1,28 +1,49 @@
-# Distribution Guide for Cpp2CSWrapperCreator
+## Introduction
 
-## Available Distribution Options
+Generates a C# wrapper for esminiRMLib based on its ANSI C header.
 
-You now have two versions of your application ready for distribution:
+## Simple build for local use
+
+`dotnet build -c Release`
+
+The executable ends up in:
+
+`.\bin\Release\net8.0\win-x64\Cpp2CSWrapperCreator.exe`
+
+Run without argument for usage info.
+
+## Build for publish
+To build the distribution files:
+
+For self-contained:
+```powershell
+dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish
+```
+
+For framework-dependent:
+```powershell
+dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:SelfContained=false -o publish-framework-dependent
+```
 
 ### 1. Self-Contained Executable (Recommended for most users)
 - **Location**: `publish\Cpp2CSWrapperCreator.exe`
 - **Size**: ~188 MB
 - **Requirements**: None - includes .NET runtime
-- **Pros**: 
+- **Pros**:
   - Users don't need .NET installed
   - Single file distribution
   - Works on any Windows x64 machine
-- **Cons**: 
+- **Cons**:
   - Larger file size
 
 ### 2. Framework-Dependent Executable
 - **Location**: `publish-framework-dependent\Cpp2CSWrapperCreator.exe`
 - **Size**: ~121 MB
 - **Requirements**: .NET 8.0 Runtime must be installed
-- **Pros**: 
+- **Pros**:
   - Smaller file size
   - Better for environments where .NET is already available
-- **Cons**: 
+- **Cons**:
   - Requires users to install .NET 8.0 Runtime
 
 ## How to Share
@@ -47,16 +68,3 @@ Cpp2CSWrapperCreator.exe <input.h> <output.cs>
 - Both executables include the ClangSharp native libraries needed for C++ parsing
 - The applications are compiled for Windows x64 architecture
 - The .pdb files are debug symbols and are not required for distribution
-
-## Rebuilding
-To rebuild the distribution files:
-
-For self-contained:
-```powershell
-dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish
-```
-
-For framework-dependent:
-```powershell
-dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:SelfContained=false -o publish-framework-dependent
-```
