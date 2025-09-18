@@ -1125,14 +1125,15 @@ void ScenarioEngine::SetupGhost(Object* object)
     // Create a new (ghost) vehicle and copy all actions from base object
 
     Vehicle* ghost = new Vehicle(*(static_cast<Vehicle*>(object)));
-    
+
     // Clear out all ghost trailers' names (if any), so that they get reassigned a correct name and not duplicate name with non-ghost trailers.
-    // Name setting is done in Entities.cpp, in addObject() https://github.com/esmini/esmini/blob/3d07b60934cb0824a58cfe2bbafca3b36b0171a2/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/Entities.cpp#L1456C9-L1456C44.
+    // Name setting is done in Entities.cpp, in addObject()
+    // https://github.com/esmini/esmini/blob/3d07b60934cb0824a58cfe2bbafca3b36b0171a2/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/Entities.cpp#L1456C9-L1456C44.
     Vehicle* trailerVehicle = static_cast<Vehicle*>(ghost->TrailerVehicle());
-    while (trailerVehicle && trailerVehicle != ghost) 
+    while (trailerVehicle && trailerVehicle != ghost)
     {
         trailerVehicle->name_ = "";
-        trailerVehicle = static_cast<Vehicle*>(trailerVehicle->TrailerVehicle());
+        trailerVehicle        = static_cast<Vehicle*>(trailerVehicle->TrailerVehicle());
     }
 
     object->SetGhost(ghost);
