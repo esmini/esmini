@@ -583,7 +583,6 @@ namespace viewer
         bool CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
         bool CreateRoadMarkLines(roadmanager::OpenDrive* od);
         void CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
-        int  AddGroundSurface();
         void SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
 
         bool                                  keyUp_;

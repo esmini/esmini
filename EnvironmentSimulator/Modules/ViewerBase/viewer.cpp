@@ -1313,40 +1313,6 @@ int Viewer::InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
     return 0;
 }
 
-int Viewer::AddGroundSurface()
-{
-    const double margin   = 1E4;
-    const double z_offset = -1.0;
-    // const osg::BoundingSphere bs = environment_->getBound();
-
-    osg::ComputeBoundsVisitor cbv;
-    osg::BoundingBox          bb;
-    if (environment_ != nullptr)
-    {
-        environment_->accept(cbv);
-        bb = cbv.getBoundingBox();
-    }
-    else
-    {
-        bb.set(osg::Vec3d(0.0, 0.0, 0.0), osg::Vec3d(1e4, 1e4, 1e4));
-    }
-
-    osg::ref_ptr<osg::Geode>    ground = new osg::Geode;
-    osg::ref_ptr<osg::Geometry> geom   = osg::createTexturedQuadGeometry(
-        osg::Vec3(bb.xMin() - static_cast<float>(margin), bb.yMin() - static_cast<float>(margin), bb.zMin() + static_cast<float>(z_offset)),
-        osg::Vec3(0.0f, 2.0f * static_cast<float>(margin) + (bb.yMax() - bb.yMin()), bb.zMin() + static_cast<float>(z_offset)),
-        osg::Vec3(2.0f * static_cast<float>(margin) + (bb.xMax() - bb.xMin()), 0.0f, bb.zMin() + static_cast<float>(z_offset)));
-    osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
-    color->push_back(osg::Vec4(0.8f, 0.8f, 0.8f, 1.0f));
-    geom->setColorArray(color.get());
-    geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
-    ground->addDrawable(geom);
-
-    envGroup_->addChild(ground.get());
-
-    return 0;
-}
-
 Viewer::Viewer(roadmanager::OpenDrive* odrManager,
                const char*             modelFilename,
                const char*             scenarioFilename,
@@ -1596,8 +1562,14 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     bool gen_road_surface = (environment_ == nullptr || opt->GetOptionSet("enforce_generate_model")) && odrManager->GetNumOfRoads() > 0;
     bool gen_road_objects = !(opt && opt->GetOptionSet("generate_no_road_objects"));
     bool optimize         = !SE_Env::Inst().GetOptions().GetOptionSet("save_generated_model");
-    roadGeom =
-        std::make_unique<RoadGeom>(odrManager, origin_, gen_road_surface, gen_road_objects, opt->GetOptionSet("ground_plane"), exe_path_, optimize);
+    roadGeom              = std::make_unique<RoadGeom>(odrManager,
+                                          environment_,
+                                          origin_,
+                                          gen_road_surface,
+                                          gen_road_objects,
+                                          opt->GetOptionSet("ground_plane"),
+                                          exe_path_,
+                                          optimize);
     if (roadGeom->root_ != nullptr)
     {
         environment_ = roadGeom->root_;

@@ -66,6 +66,7 @@ namespace roadgeom
         /**
             Create 3D model of the road network from OpenDRIVE data
             @param odr Pointer to OpenDRIVE object
+            @param environment Pointer to environment model node, parent of the world model
             @param origin Origin offset to apply to all coordinates
             @param generate_road_surface If true, generate road surface geometry
             @param generate_road_objects If true, generate road objects (signs, barriers, etc.)
@@ -74,6 +75,7 @@ namespace roadgeom
             @param optimize Set to false if model will be saved to file, true if used for immediate visualization
         */
         RoadGeom(roadmanager::OpenDrive* odr,
+                 osg::Node*              environment,
                  osg::Vec3d              origin,
                  bool                    generate_road_surface,
                  bool                    generate_road_objects,
@@ -98,6 +100,7 @@ namespace roadgeom
                                                                                std::string              exe_path);
         osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string filename, std::string exe_path);
         osg::ref_ptr<osg::Group>                     CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color, const osg::Vec3d& origin);
+        int                                          AddGroundSurface();
         void                                         SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label);
         int                                          SaveToFile(const std::string& filename);
 
@@ -107,6 +110,7 @@ namespace roadgeom
         double                                                         lane_friction_      = 1.0;
         roadmanager::OpenDrive*                                        odrManager_         = nullptr;
         bool                                                           optimize_           = true;
+        osg::Node*                                                     environment_        = nullptr;
     };
 
 }  // namespace roadgeom

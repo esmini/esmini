@@ -486,13 +486,15 @@ namespace roadgeom
     }
 
     RoadGeom::RoadGeom(roadmanager::OpenDrive* odr,
+                       osg::Node*              environment,
                        osg::Vec3d              origin,
                        bool                    generate_road_surface,
                        bool                    generate_road_objects,
                        bool                    add_ground_plane,
                        std::string             exe_path,
                        bool                    optimize)
-        : optimize_(optimize)
+        : environment_(environment),
+          optimize_(optimize)
     {
         if (!generate_road_surface && !generate_road_objects)
         {
@@ -1009,6 +1011,11 @@ namespace roadgeom
             {
                 LOG_ERROR("Viewer::Viewer Failed to create road signs and objects!");
             }
+        }
+
+        if (add_ground_plane)
+        {
+            AddGroundSurface();
         }
     }
 
@@ -1734,6 +1741,40 @@ namespace roadgeom
         group->addChild(geode);
 
         return group;
+    }
+
+    int RoadGeom::AddGroundSurface()
+    {
+        const double margin   = 1E4;
+        const double z_offset = -1.0;
+        // const osg::BoundingSphere bs = environment_->getBound();
+
+        osg::ComputeBoundsVisitor cbv;
+        osg::BoundingBox          bb;
+        if (environment_ != nullptr)
+        {
+            environment_->accept(cbv);
+            bb = cbv.getBoundingBox();
+        }
+        else
+        {
+            bb.set(osg::Vec3d(0.0, 0.0, 0.0), osg::Vec3d(1e4, 1e4, 1e4));
+        }
+
+        osg::ref_ptr<osg::Geode>    ground = new osg::Geode;
+        osg::ref_ptr<osg::Geometry> geom   = osg::createTexturedQuadGeometry(
+            osg::Vec3(bb.xMin() - static_cast<float>(margin), bb.yMin() - static_cast<float>(margin), bb.zMin() + static_cast<float>(z_offset)),
+            osg::Vec3(0.0f, 2.0f * static_cast<float>(margin) + (bb.yMax() - bb.yMin()), bb.zMin() + static_cast<float>(z_offset)),
+            osg::Vec3(2.0f * static_cast<float>(margin) + (bb.xMax() - bb.xMin()), 0.0f, bb.zMin() + static_cast<float>(z_offset)));
+        osg::ref_ptr<osg::Vec4Array> color = new osg::Vec4Array;
+        color->push_back(osg::Vec4(0.8f, 0.8f, 0.8f, 1.0f));
+        geom->setColorArray(color.get());
+        geom->setColorBinding(osg::Geometry::BIND_PER_PRIMITIVE_SET);
+        ground->addDrawable(geom);
+
+        root_->addChild(ground.get());
+
+        return 0;
     }
 
     void RoadGeom::SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label)
