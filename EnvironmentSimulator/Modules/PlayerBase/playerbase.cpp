@@ -1203,7 +1203,9 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
     }
     else if (obj->IsGhost())
     {
-        obj->SetVisibilityMask(obj->visibilityMask_ &= ~(Object::Visibility::SENSORS));
+        obj->SetVisibilityMask(SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::HIDE_GHOST)
+                                   ? 0x0
+                                   : obj->visibilityMask_ &= ~(Object::Visibility::SENSORS));
     }
 
     viewer_->entities_.back()->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
@@ -1335,6 +1337,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("help", "Show this help message (-h works as well)");
     opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization. Toggle key 'R'");
     opt.AddOption("hide_trajectories", "Hide trajectories from start. Toggle key 'n'");
+    opt.AddOption("hide_ghost", "Do not visualize ghost");
     opt.AddOption("ignore_heading_for_traj_motion", "Ignore heading when deciding motion direction along trajectory");
     opt.AddOption("ignore_odr_offset", "Ignore any offset specified in the OpenDRIVE file header");
     opt.AddOption("ignore_z", "Ignore provided z values from OSC file and place vehicle relative to road");
