@@ -3906,6 +3906,7 @@ void ScenarioReader::parseInit(Init &init)
 
             if (entityRef != NULL)
             {
+                bool teleport = false;
                 for (pugi::xml_node privateChild = actionsChild.first_child(); privateChild; privateChild = privateChild.next_sibling())
                 {
                     // Assume children are PrivateActions
@@ -3913,13 +3914,11 @@ void ScenarioReader::parseInit(Init &init)
                     if (action != 0)
                     {
                         action->SetName("Init " + entityRef->name_ + " " + privateChild.first_child().name());
-                        // bool teleport = false;
-                        // if (action->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
-                        // {
-                        //     teleport = true;
-                        // }
-                        // else if (action->action_type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
-                        if (action->action_type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER)
+                        if (action->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
+                        {
+                            teleport = true;
+                        }
+                        else if (action->action_type_ == OSCPrivateAction::ActionType::ACTIVATE_CONTROLLER && teleport == false)
                         {
                             LOG_WARN("WARNING: Controller activated before positioning (TeleportAction) the entity {}", entityRef->GetName());
                         }
