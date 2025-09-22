@@ -96,6 +96,7 @@ int ShowGhosts(Replay* player, bool show)
         if (entity->entityModel != nullptr && state->info.ctrl_type == GHOST_CTRL_TYPE)
         {
             entity->entityModel->txNode_->setNodeMask(show ? 0xffffffff : 0x0);
+            entity->entityModel->SetTransparency(0.6);
         }
     }
     return 0;
@@ -277,9 +278,16 @@ int ParseEntities(Replay* player)
                 }
             }
 
-            if (state->info.ctrl_type == GHOST_CTRL_TYPE && no_ghost_model)
+            if (state->info.ctrl_type == GHOST_CTRL_TYPE)
             {
-                new_sc.entityModel->txNode_->setNodeMask(0x0);
+                if (no_ghost_model)
+                {
+                    new_sc.entityModel->txNode_->setNodeMask(0x0);
+                }
+                else
+                {
+                    new_sc.entityModel->SetTransparency(0.6);
+                }
             }
 #endif  // _USE_OSG
 
