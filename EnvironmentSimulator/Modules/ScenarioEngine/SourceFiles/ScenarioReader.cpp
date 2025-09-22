@@ -2507,6 +2507,11 @@ ActivateControllerAction *ScenarioReader::parseActivateControllerAction(pugi::xm
 
     ActivateControllerAction *activateControllerAction = new ActivateControllerAction(name_str, lat_mode, long_mode, light_mode, anim_mode, parent);
 
+    if (GetVersionMinor() >= 3)
+    {
+        activateControllerAction->ctrl_name_ = parameters.ReadAttribute(actionNode, "objectControllerRef");
+    }
+
     return activateControllerAction;
 }
 
@@ -3798,14 +3803,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         LOG_WARN("In OSC 1.0 ActivateControllerAction should be placed under PrivateAction. Accepting anyway.");
                     }
 
-                    std::string ctrl_name;
-                    if (GetVersionMinor() >= 3)
-                    {
-                        ctrl_name = parameters.ReadAttribute(controllerChild, "objectControllerRef");
-                    }
-
                     ActivateControllerAction *activateControllerAction = parseActivateControllerAction(controllerChild, parent);
-                    activateControllerAction->ctrl_name_               = ctrl_name;
 
                     action = activateControllerAction;
                 }
