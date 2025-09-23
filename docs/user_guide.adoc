@@ -3319,8 +3319,7 @@ In esmini, the behavior of the two position types https://www.asam.net/static_do
 - `RoadPosition`: When not specified, the heading will align to the direction of the road (s-axis)
 - `LanePosition`: When not specified, the heading will align to the driving direction of the lane
 
-In the image below, the white cars are positioned by `RoadPosition` with `t=-1.5` and `t=1.5` respectively while the red cars are positioned by `LanePosition` with `laneId="-1"` and `laneId="1"` respectively.
-
+In the image below, the white cars are positioned by `LanePosition` with `laneId=-1` and `laneId=1` respectively while the red cars are positioned by `RoadPosition` with `t=-1.5` and `t=1.5` respectively.
 
 .Positioning with RoadPosition (white) and LanePosition (red) - heading omitted
 image::no-heading.jpg[]
