@@ -46,6 +46,7 @@ resources/xosc/truck_with_rotating_axle.xosc \
 resources/xosc/trailer_connect.xosc \
 resources/xosc/bicycle_fall_over.xosc \
 resources/xosc/tunnels.xosc \
+resources/xosc/follow_reference.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \

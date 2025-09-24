@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2025-09-24 Version 2.51.0
+
+New features:
+- Support initialize road network from OpenDRIVE XML string
+  - as alternative to OpenDRIVE filename
+- Add option, `--hide_ghost`, to hide any ghost in viewer
+- Add follow reference code example and controller
+  - based on classic Stanley controller for steering
+  - and critically damped spring model for speed control
+  - more info in [User guide - FollowReferenceController](https://esmini.github.io/#_followreferencecontroller)
+  - controller example scenario: [follow_reference.xosc](https://github.com/esmini/esmini/blob/dev/resources/xosc/follow_reference.xosc)
+  - video clip: https://youtu.be/icozF90XZDQ
+  - external app code example: [follow_reference](https://github.com/esmini/esmini/tree/dev/EnvironmentSimulator/code-examples/follow_reference)
+
 Improvements and fixes:
 - Refactor some esminiRMLib functions making use of out/ref parameter
   - dedicating return value for success/error indication (0/-1)
@@ -9,7 +23,23 @@ Improvements and fixes:
   - rename old variants, only considering drivable lanes, into:
     - `RM_GetRoadNumberOfDrivableLanes()`
     - `RM_GetDrivableLaneIdByIndex()`
-  - update [C# wrapper](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs) and code example ([rm-basic.cs](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/rm-basic-cs/rm-basic.cs))
+- Add esminiRMLib [C# wrapper](https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMWrapper.cs) generator ([CSWrapperGenerator](https://github.com/esmini/esmini/tree/dev/EnvironmentSimulator/Libraries/esminiRMLib/CSWrapperGenerator))
+  - add nightly job to check wrapper consistency
+- Implement vehicle pool categories and support sumo vClass ([issue #728](https://github.com/esmini/esmini/issues/728))
+- Generate texture coords for outline objects, including tunnels
+- Make ghost semi-transparent in replayer
+- Add enum for options, enabling direct lookup of frequently referred options
+- Fix missing ground plane (bug introduced in v2.50.5)
+- Fix ghost trailer wrong naming ([PR #731](https://github.com/esmini/esmini/pull/731))
+- Fix car color mix-up in [User guide - Heading behavior](https://esmini.github.io/#_heading_behavior_in_road_vs_lane_position)
+- Fix ignored name for ActivateControllerAction
+  - activateControllerAction without ControllerAction is now deprecated
+  - nonetheless fix bug ignoring name in that case
+- Fix wrong controller/teleport warning
+- Fix wrong type indices in lib header documentation ([PR #727](https://github.com/esmini/esmini/pull/727))
+- Fix reverse ordered tunnel roof bottom face
+- Bugfix: Ensure correct speed sign for relative time followTrajectoryAction
+- Some additional minor fixes
 
 ### 2025-09-01 Version 2.50.6
 
