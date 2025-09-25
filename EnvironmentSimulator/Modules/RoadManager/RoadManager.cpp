@@ -10675,7 +10675,8 @@ bool Position::IsOffRoad() const
     if (road)
     {
         // Check whether outside road width
-        if (fabs(t_) > road->GetWidth(GetS(), SIGN(t_), ~Lane::LaneType::LANE_TYPE_NONE))
+        double center_offset = t_ - road->GetLaneOffset(s_);
+        if (fabs(center_offset) > road->GetWidth(GetS(), SIGN(center_offset), ~Lane::LaneType::LANE_TYPE_NONE))
         {
             return true;
         }
