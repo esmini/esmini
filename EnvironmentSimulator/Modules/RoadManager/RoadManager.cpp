@@ -10695,7 +10695,7 @@ int Position::GetInLaneType() const
             Position pos;
             pos.SetSnapLaneTypes(Lane::LaneType::LANE_TYPE_ANY);
             pos.SetTrackPos(GetTrackId(), GetS(), GetT());
-            LaneSection* lsec = road->GetLaneSectionByS(lane_section_idx_);
+            LaneSection* lsec = road->GetLaneSectionByS(GetS(), lane_section_idx_);
             if (lsec != nullptr)
             {
                 Lane* lane = lsec->GetLaneById(pos.GetLaneId());
