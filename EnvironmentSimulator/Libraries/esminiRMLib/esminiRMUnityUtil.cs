@@ -89,24 +89,25 @@ namespace OpenDRIVE
         #region Public Methods
 
         /// <summary>
-        /// Set position from world coordinates in the Unity coordinate system.
+        /// Set position from world coordinates in the Unity coordinate system. Returns the sum of the return values from RoadManagerLibraryCS.SetWorldXYHPosition, RoadManagerLibraryCS.GetPositionData, and RoadManagerLibraryCS.SetLanePosition. Please see those methods for details.
         /// </summary>
-        public static void SetWorldPosition(int openDriveIndex, Vector3 position)
+        public static int SetWorldPosition(int openDriveIndex, Vector3 position)
         {
             Vector3 odrPos = GetOpenDrivePosition(position);
-            RoadManagerLibraryCS.SetWorldXYHPosition(openDriveIndex, odrPos.x, odrPos.y, 0);
-            RoadManagerLibraryCS.GetPositionData(openDriveIndex, ref tmpPosData);
-            RoadManagerLibraryCS.SetLanePosition(openDriveIndex, tmpPosData.roadId, tmpPosData.laneId, tmpPosData.laneOffset, tmpPosData.s, true);
+            int retVal = RoadManagerLibraryCS.SetWorldXYHPosition(openDriveIndex, odrPos.x, odrPos.y, 0);
+            retVal += RoadManagerLibraryCS.GetPositionData(openDriveIndex, ref tmpPosData);
+            retVal += RoadManagerLibraryCS.SetLanePosition(openDriveIndex, tmpPosData.roadId, tmpPosData.laneId, tmpPosData.laneOffset, tmpPosData.s, true);
+            return retVal;
         }
 
         /// <summary>
-        /// Set position and rotation from world coordinates in the Unity coordinate system.
+        /// Set position and rotation from world coordinates in the Unity coordinate system. Please see RoadManagerLibraryCS.SetWorldPosition for return values.
         /// </summary>
-        public static void SetWorldPosition(int openDriveIndex, Vector3 position, Vector3 rotationEuler)
+        public static int SetWorldPosition(int openDriveIndex, Vector3 position, Vector3 rotationEuler)
         {
             Vector3 odrPos = GetOpenDrivePosition(position);
             Vector3 odrRot = GetOpenDriveRotation(rotationEuler);
-            RoadManagerLibraryCS.SetWorldPosition(openDriveIndex, odrPos.x, odrPos.y, odrPos.z, odrRot.x, odrRot.y, odrRot.z);
+            return RoadManagerLibraryCS.SetWorldPosition(openDriveIndex, odrPos.x, odrPos.y, odrPos.z, odrRot.x, odrRot.y, odrRot.z);
         }
 
         /// <summary>
@@ -124,51 +125,89 @@ namespace OpenDRIVE
             return pose;
         }
 
-        public static void GetOpenDrivePositionDataUnityCoordinates(int openDriveIndex, ref OpenDrivePositionDataUnityCoordinates unityPosData)
+        /// <summary>
+        /// Please see RoadManagerLibraryCS.GetPositionData for details.
+        /// </summary>
+        /// <param name="openDriveIndex"></param>
+        /// <param name="unityPosData"></param>
+        /// <returns>0 if successful, -1 if not</returns>
+        public static int GetOpenDrivePositionDataUnityCoordinates(int openDriveIndex, ref OpenDrivePositionDataUnityCoordinates unityPosData)
         {
-            RoadManagerLibraryCS.GetPositionData(openDriveIndex, ref tmpPosData);
-            unityPosData.position = GetUnityPosition(tmpPosData);
-            unityPosData.rotation = GetUnityRotation(tmpPosData);
-            unityPosData.hRelative = tmpPosData.hRelative;
-            unityPosData.laneId = tmpPosData.laneId;
-            unityPosData.laneOffset = tmpPosData.laneOffset;
-            unityPosData.roadId = tmpPosData.roadId;
-            unityPosData.s = tmpPosData.s;
-            unityPosData.junctionId = tmpPosData.junctionId;
+            int retVal = RoadManagerLibraryCS.GetPositionData(openDriveIndex, ref tmpPosData);
+            if (retVal == 0)
+            {
+	            unityPosData.position = GetUnityPosition(tmpPosData);
+	            unityPosData.rotation = GetUnityRotation(tmpPosData);
+	            unityPosData.hRelative = tmpPosData.hRelative;
+	            unityPosData.laneId = tmpPosData.laneId;
+	            unityPosData.laneOffset = tmpPosData.laneOffset;
+	            unityPosData.roadId = tmpPosData.roadId;
+	            unityPosData.s = tmpPosData.s;
+	            unityPosData.junctionId = tmpPosData.junctionId;
+	        }
+            return retVal;
         }
 
-        public static void GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo, LookAheadMode lookAheadMode = LookAheadMode.LaneCenter, int laneId = 0, bool inRoadDrivingDirection = false)
+        /// <summary>
+        /// Please see RoadManagerLibraryCS.GetLaneInfo for details.
+        /// </summary>
+        /// <param name="openDriveIndex"></param>
+        /// <param name="lookAheadDistance"></param>
+        /// <param name="laneInfo"></param>
+        /// <param name="lookAheadMode"></param>
+        /// <param name="laneId"></param>
+        /// <param name="inRoadDrivingDirection"></param>
+        /// <returns>0 if successful, -1 if not</returns>
+        public static int GetLaneInfo(int openDriveIndex, float lookAheadDistance, ref RoadLaneInfoUnityCoordinates laneInfo, LookAheadMode lookAheadMode = LookAheadMode.LaneCenter, int laneId = 0, bool inRoadDrivingDirection = false)
         {
-            RoadManagerLibraryCS.GetLaneInfo(openDriveIndex, lookAheadDistance, ref tmpLaneInfo, (int)lookAheadMode, inRoadDrivingDirection);
-            laneInfo.position = GetUnityPosition(tmpLaneInfo.pos.x, tmpLaneInfo.pos.y, tmpLaneInfo.pos.z);
-            laneInfo.rotation = GetUnityRotation(tmpLaneInfo.heading, tmpLaneInfo.pitch, tmpLaneInfo.roll);
-            laneInfo.curvature = -Mathf.Sign(laneId) * tmpLaneInfo.curvature;
-            laneInfo.speedLimit = tmpLaneInfo.speed_limit;
-            laneInfo.width = tmpLaneInfo.width;
-            laneInfo.roadId = tmpLaneInfo.roadId;
-            laneInfo.laneId = tmpLaneInfo.laneId;
-            laneInfo.laneOffset = tmpLaneInfo.laneOffset;
-            laneInfo.s = tmpLaneInfo.s;
-            laneInfo.t = tmpLaneInfo.t;
-            laneInfo.junctionId = tmpLaneInfo.junctionId;
+            int retVal = RoadManagerLibraryCS.GetLaneInfo(openDriveIndex, lookAheadDistance, ref tmpLaneInfo, (int)lookAheadMode, inRoadDrivingDirection);
+            if (retVal == 0)
+            {
+	            if (tmpLaneInfo.pitch == float.NaN) tmpLaneInfo.pitch = 0;
+	            laneInfo.position = GetUnityPosition(tmpLaneInfo.pos.x, tmpLaneInfo.pos.y, tmpLaneInfo.pos.z);
+	            laneInfo.rotation = GetUnityRotation(tmpLaneInfo.heading, tmpLaneInfo.pitch, tmpLaneInfo.roll);
+	            laneInfo.curvature = -Mathf.Sign(laneId) * tmpLaneInfo.curvature;
+	            laneInfo.speedLimit = tmpLaneInfo.speed_limit;
+	            laneInfo.width = tmpLaneInfo.width;
+	            laneInfo.roadId = tmpLaneInfo.roadId;
+	            laneInfo.laneId = tmpLaneInfo.laneId;
+	            laneInfo.laneOffset = tmpLaneInfo.laneOffset;
+	            laneInfo.s = tmpLaneInfo.s;
+	            laneInfo.t = tmpLaneInfo.t;
+	            laneInfo.junctionId = tmpLaneInfo.junctionId;
+	        }
+            return retVal; 
         }
 
-        public static void GetProbeInfo(int openDriveIndex, float lookAheadDistance, ref RoadProbeInfoUnityCoordinates probeInfo, int lookAheadMode, bool inRoadDrivingDirection = false)
+        /// <summary>
+        /// Please see RoadManagerLibraryCS.GetProbeInfo for details.
+        /// </summary>
+        /// <param name="openDriveIndex"></param>
+        /// <param name="lookAheadDistance"></param>
+        /// <param name="probeInfo"></param>
+        /// <param name="lookAheadMode"></param>
+        /// <param name="inRoadDrivingDirection"></param>
+        /// <returns>0 if successful, -1 if not</returns>
+        public static int GetProbeInfo(int openDriveIndex, float lookAheadDistance, ref RoadProbeInfoUnityCoordinates probeInfo, int lookAheadMode, bool inRoadDrivingDirection = false)
         {
-            RoadManagerLibraryCS.GetProbeInfo(openDriveIndex, lookAheadDistance, ref tmpProbeInfo, lookAheadMode, inRoadDrivingDirection);
-            probeInfo.roadLaneInfo.position = GetUnityPosition(tmpProbeInfo.laneInfo.pos.x, tmpProbeInfo.laneInfo.pos.y, tmpProbeInfo.laneInfo.pos.z);
-            probeInfo.roadLaneInfo.rotation = GetUnityRotation(tmpProbeInfo.laneInfo.heading, tmpProbeInfo.laneInfo.pitch, tmpProbeInfo.laneInfo.roll);
-            probeInfo.roadLaneInfo.curvature = tmpProbeInfo.laneInfo.curvature;
-            probeInfo.roadLaneInfo.speedLimit = tmpProbeInfo.laneInfo.speed_limit;
-            probeInfo.roadLaneInfo.width = tmpProbeInfo.laneInfo.width;
-            probeInfo.roadLaneInfo.roadId = tmpProbeInfo.laneInfo.roadId;
-            probeInfo.roadLaneInfo.laneId = tmpProbeInfo.laneInfo.laneId;
-            probeInfo.roadLaneInfo.laneOffset = tmpProbeInfo.laneInfo.laneOffset;
-            probeInfo.roadLaneInfo.s = tmpProbeInfo.laneInfo.s;
-            probeInfo.roadLaneInfo.t = tmpProbeInfo.laneInfo.t;
-            probeInfo.roadLaneInfo.junctionId = tmpProbeInfo.laneInfo.junctionId;
-            probeInfo.relativePosition = GetUnityPosition(tmpProbeInfo.relativePos.x, tmpProbeInfo.relativePos.y, tmpProbeInfo.relativePos.z);
-            probeInfo.relativeHeading = tmpProbeInfo.relativeHeading;
+            int retVal = RoadManagerLibraryCS.GetProbeInfo(openDriveIndex, lookAheadDistance, ref tmpProbeInfo, lookAheadMode, inRoadDrivingDirection);
+            if (retVal == 0)
+            {
+	            probeInfo.roadLaneInfo.position = GetUnityPosition(tmpProbeInfo.laneInfo.pos.x, tmpProbeInfo.laneInfo.pos.y, tmpProbeInfo.laneInfo.pos.z);
+	            probeInfo.roadLaneInfo.rotation = GetUnityRotation(tmpProbeInfo.laneInfo.heading, tmpProbeInfo.laneInfo.pitch, tmpProbeInfo.laneInfo.roll);
+	            probeInfo.roadLaneInfo.curvature = tmpProbeInfo.laneInfo.curvature;
+	            probeInfo.roadLaneInfo.speedLimit = tmpProbeInfo.laneInfo.speed_limit;
+	            probeInfo.roadLaneInfo.width = tmpProbeInfo.laneInfo.width;
+	            probeInfo.roadLaneInfo.roadId = tmpProbeInfo.laneInfo.roadId;
+	            probeInfo.roadLaneInfo.laneId = tmpProbeInfo.laneInfo.laneId;
+	            probeInfo.roadLaneInfo.laneOffset = tmpProbeInfo.laneInfo.laneOffset;
+	            probeInfo.roadLaneInfo.s = tmpProbeInfo.laneInfo.s;
+	            probeInfo.roadLaneInfo.t = tmpProbeInfo.laneInfo.t;
+	            probeInfo.roadLaneInfo.junctionId = tmpProbeInfo.laneInfo.junctionId;
+	            probeInfo.relativePosition = GetUnityPosition(tmpProbeInfo.relativePos.x, tmpProbeInfo.relativePos.y, tmpProbeInfo.relativePos.z);
+	            probeInfo.relativeHeading = tmpProbeInfo.relativeHeading;
+	        }
+	        return retVal;
         }
 
 #if ESMini
