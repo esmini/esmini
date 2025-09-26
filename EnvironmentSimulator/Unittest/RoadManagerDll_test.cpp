@@ -666,6 +666,201 @@ TEST(TestLoadRoad, TestLoadFromXMLString)
     RM_Close();
 }
 
+TEST(TestGetMethods, TestGetPosMethodsWithLaneOffset)
+{
+    ASSERT_EQ(RM_Init("../../../EnvironmentSimulator/Unittest/xodr/four_lanes_with_offset.xodr"), 0);
+    ASSERT_EQ(RM_GetNumberOfRoads(), 1);
+
+    // Create a position object
+    int p0 = RM_CreatePosition();
+
+    RM_RoadLaneInfo laneInfo;
+    RM_PositionData posData;
+
+    id_t  road_id = 1;
+    int   lane_id;
+    int   lookahead_mode;
+    float s      = 9.0f;
+    float offset = 0.0f;
+
+    // reference line (lane 0) at far left, look along center of current lane
+    lane_id        = 0;
+    lookahead_mode = 0;
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    // Closest to lane -1 (shoulder), but belongs to 0 (none)
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);                   // shoulder
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 1);            // none
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 1);  // none
+    EXPECT_EQ(laneInfo.laneId, 0);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    lane_id        = -1;
+    lookahead_mode = 0;  // lookahead center current lane
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    // Closest to lane -1 (shoulder), and belongs to the same
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 8);
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 8);
+    EXPECT_EQ(laneInfo.laneId, -1);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    lookahead_mode = 1;  // lookahead road center
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);                   // shoulder
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 8);            // shoulder
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 8);  // shoulder
+    EXPECT_EQ(laneInfo.laneId, -2);
+    EXPECT_NEAR(laneInfo.laneOffset, -1.5, 1e-3);  // offset from lane center
+
+    lookahead_mode = 2;  // lookahead current lane offset
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);                   // shoulder
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 8);            // shoulder
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 8);  // shoulder
+    EXPECT_EQ(laneInfo.laneId, -1);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    lane_id        = -3;
+    lookahead_mode = 0;  // lookahead center current lane
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 2);                   // driving
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 2);            // driving
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 2);  // driving
+    EXPECT_EQ(laneInfo.laneId, -3);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    lookahead_mode = 1;  // lookahead road center
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 2);                   // driving
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 2);            // driving
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 2);  // driving
+    EXPECT_EQ(laneInfo.laneId, -3);
+    EXPECT_NEAR(laneInfo.laneOffset, 1.5, 1e-3);  // offset from lane center
+
+    lookahead_mode = 2;  // lookahead current lane offset
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 2);                   // driving
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 2);            // driving
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 2);  // driving
+    EXPECT_EQ(laneInfo.laneId, -3);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    lane_id        = -4;
+    lookahead_mode = 0;  // lookahead center current lane
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);                   // shoulder
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 8);            // shoulder
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 8);  // shoulder
+    EXPECT_EQ(laneInfo.laneId, -4);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    lookahead_mode = 1;  // lookahead road center
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);                   // shoulder
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 8);            // shoulder
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 8);  // shoulder
+    EXPECT_EQ(laneInfo.laneId, -3);
+    EXPECT_NEAR(laneInfo.laneOffset, 1.5, 1e-3);  // offset from lane center
+
+    lookahead_mode = 2;  // lookahead current lane offset
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);                   // shoulder
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 8);            // shoulder
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 8);  // shoulder
+    EXPECT_EQ(laneInfo.laneId, -4);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    RM_Close();
+}
+
+TEST(TestGetMethods, TestGetPosMethodsWithLaneOffsetOutsideRoad)
+{
+    ASSERT_EQ(RM_Init("../../../EnvironmentSimulator/Unittest/xodr/four_lanes_with_offset.xodr"), 0);
+    ASSERT_EQ(RM_GetNumberOfRoads(), 1);
+
+    // Create a position object
+    int p0 = RM_CreatePosition();
+
+    RM_RoadLaneInfo laneInfo;
+    RM_PositionData posData;
+
+    id_t  road_id = 1;
+    int   lookahead_mode;
+    float s = 9.0f;
+    float t;
+
+    // to the right of road boundary
+    t              = 6.0f;
+    lookahead_mode = 0;  // lookahead center current lane
+    RM_SetRoadPosition(p0, road_id, s, t, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    // Snaps to lane -2 (shoulder)
+    EXPECT_EQ(RM_GetInLaneType(p0), 1);  // actual position outside road, type none
+    EXPECT_EQ(laneInfo.laneId, -2);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);
+    EXPECT_EQ(posData.laneId, -2);
+    EXPECT_NEAR(posData.laneOffset, 4.5, 1e-3);
+
+    lookahead_mode = 1;  // lookahead road center
+    RM_SetRoadPosition(p0, road_id, s, t, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    // Closest to lane -1 (shoulder), but belongs to 0 (none)
+    EXPECT_EQ(RM_GetInLaneType(p0), 1);  // closest to lane 0, type none
+    EXPECT_EQ(laneInfo.laneId, -2);      // snapped to leftmost drivable lane
+    EXPECT_NEAR(laneInfo.laneOffset, -1.5, 1e-3);
+    EXPECT_EQ(posData.laneId, -2);
+    EXPECT_NEAR(posData.laneOffset, 4.5, 1e-3);
+
+    t              = -6.0f;
+    lookahead_mode = 0;  // lookahead center current lane
+    RM_SetRoadPosition(p0, road_id, s, t, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    // Snaps to lane 4 (shoulder)
+    EXPECT_EQ(RM_GetInLaneType(p0), 1);  // actual position outside road, type none
+    EXPECT_EQ(laneInfo.laneId, -3);      // snapped to rightmost drivable lane
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);
+    EXPECT_EQ(posData.laneId, -3);
+    EXPECT_NEAR(posData.laneOffset, -4.5, 1e-3);
+
+    RM_Close();
+}
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);

@@ -548,7 +548,7 @@ extern "C"
         return -1;
     }
 
-    RM_DLL_API int RM_SetRoadPosition(int handle, id_t roadId, float s, float t, bool align) RM_DLL_API
+    RM_DLL_API int RM_SetRoadPosition(int handle, id_t roadId, float s, float t, bool align)
     {
         if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
         {
