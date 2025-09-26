@@ -548,6 +548,47 @@ extern "C"
         return -1;
     }
 
+    RM_DLL_API int RM_SetRoadPosition(int handle, id_t roadId, float s, float t, bool align)
+    {
+        if (odrManager == nullptr || handle >= static_cast<int>(position.size()))
+        {
+            return -1;
+        }
+        else
+        {
+            roadmanager::Position* pos = &position[static_cast<unsigned int>(handle)];
+            if (pos)
+            {
+                int retval = static_cast<int>(pos->SetTrackPos(roadId, s, t));
+                if (retval >= 0 && align)
+                {
+                    roadmanager::OpenDrive* odr = roadmanager::Position::GetOpenDrive();
+                    if (odr == nullptr)
+                    {
+                        return -1;
+                    }
+                    roadmanager::Road* road = odr->GetRoadById(roadId);
+                    if (road == nullptr)
+                    {
+                        return -1;
+                    }
+                    if ((t < 0 && road->GetRule() == roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC) ||
+                        (t > 0 && road->GetRule() == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC))
+                    {
+                        pos->SetHeadingRelative(0);
+                    }
+                    else
+                    {
+                        pos->SetHeadingRelative(M_PI);
+                    }
+                }
+                return retval;
+            }
+        }
+
+        return -1;
+    }
+
     RM_DLL_API int RM_SetWorldPosition(int handle, float x, float y, float z, float h, float p, float r)
     {
         if (odrManager == nullptr || handle >= static_cast<int>(position.size()))

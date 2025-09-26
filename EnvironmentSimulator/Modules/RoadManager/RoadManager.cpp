@@ -11215,7 +11215,7 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo* data, Loo
     {
         // Look along reference lane requested, move pivot position to t=0 plus a small number in order to
         // fall into the right direction
-        target.SetTrackPos(target.GetTrackId(), target.GetS(), SMALL_NUMBER * SIGN(GetLaneId()));
+        target.SetTrackPos(target.GetTrackId(), target.GetS(), SMALL_NUMBER * SIGN(GetT()));
     }
     else if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER)
     {

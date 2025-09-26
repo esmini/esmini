@@ -666,6 +666,477 @@ TEST(TestLoadRoad, TestLoadFromXMLString)
     RM_Close();
 }
 
+TEST(TestGetMethods, TestGetPosMethodsWithLaneOffset)
+{
+    ASSERT_EQ(RM_Init("../../../EnvironmentSimulator/Unittest/xodr/four_lanes_with_offset.xodr"), 0);
+    ASSERT_EQ(RM_GetNumberOfRoads(), 1);
+
+    // Create a position object
+    int p0 = RM_CreatePosition();
+
+    RM_RoadLaneInfo laneInfo;
+    RM_PositionData posData;
+
+    id_t  road_id = 1;
+    int   lane_id;
+    int   lookahead_mode;
+    float s      = 9.0f;
+    float offset = 0.0f;
+
+    // reference line (lane 0) at far left, look along center of current lane
+    lane_id        = 0;
+    lookahead_mode = 0;
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    // Closest to lane -1 (shoulder), but belongs to 0 (none)
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);                   // shoulder
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 1);            // none
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 1);  // none
+    EXPECT_EQ(laneInfo.laneId, 0);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    lane_id        = -1;
+    lookahead_mode = 0;  // lookahead center current lane
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    // Closest to lane -1 (shoulder), and belongs to the same
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 8);
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 8);
+    EXPECT_EQ(laneInfo.laneId, -1);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    lookahead_mode = 1;  // lookahead road center
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);                   // shoulder
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 8);            // shoulder
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 8);  // shoulder
+    EXPECT_EQ(laneInfo.laneId, -2);
+    EXPECT_NEAR(laneInfo.laneOffset, -1.5, 1e-3);  // offset from lane center
+
+    lookahead_mode = 2;  // lookahead current lane offset
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);                   // shoulder
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 8);            // shoulder
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 8);  // shoulder
+    EXPECT_EQ(laneInfo.laneId, -1);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    lane_id        = -3;
+    lookahead_mode = 0;  // lookahead center current lane
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 2);                   // driving
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 2);            // driving
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 2);  // driving
+    EXPECT_EQ(laneInfo.laneId, -3);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    lookahead_mode = 1;  // lookahead road center
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 2);                   // driving
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 2);            // driving
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 2);  // driving
+    EXPECT_EQ(laneInfo.laneId, -3);
+    EXPECT_NEAR(laneInfo.laneOffset, 1.5, 1e-3);  // offset from lane center
+
+    lookahead_mode = 2;  // lookahead current lane offset
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 2);                   // driving
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 2);            // driving
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 2);  // driving
+    EXPECT_EQ(laneInfo.laneId, -3);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    lane_id        = -4;
+    lookahead_mode = 0;  // lookahead center current lane
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);                   // shoulder
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 8);            // shoulder
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 8);  // shoulder
+    EXPECT_EQ(laneInfo.laneId, -4);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    lookahead_mode = 1;  // lookahead road center
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);                   // shoulder
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 8);            // shoulder
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 8);  // shoulder
+    EXPECT_EQ(laneInfo.laneId, -3);
+    EXPECT_NEAR(laneInfo.laneOffset, 1.5, 1e-3);  // offset from lane center
+
+    lookahead_mode = 2;  // lookahead current lane offset
+    RM_SetLanePosition(p0, road_id, lane_id, offset, s, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    EXPECT_EQ(RM_GetInLaneType(p0), 8);                   // shoulder
+    EXPECT_EQ(RM_GetLaneType(p0, lane_id), 8);            // shoulder
+    EXPECT_EQ(RM_GetLaneTypeByRoadId(1, lane_id, s), 8);  // shoulder
+    EXPECT_EQ(laneInfo.laneId, -4);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);  // offset from lane center
+
+    RM_Close();
+}
+
+TEST(TestGetMethods, TestGetPosMethodsWithLaneOffsetOutsideRoad)
+{
+    ASSERT_EQ(RM_Init("../../../EnvironmentSimulator/Unittest/xodr/four_lanes_with_offset.xodr"), 0);
+    ASSERT_EQ(RM_GetNumberOfRoads(), 1);
+
+    // Create a position object
+    int p0 = RM_CreatePosition();
+
+    RM_RoadLaneInfo laneInfo;
+    RM_PositionData posData;
+
+    id_t  road_id = 1;
+    int   lookahead_mode;
+    float s = 9.0f;
+    float t;
+
+    // to the left of road boundary
+    t              = 6.0f;
+    lookahead_mode = 0;  // lookahead center current lane
+    RM_SetRoadPosition(p0, road_id, s, t, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    // Snaps to lane -2 (shoulder)
+    EXPECT_EQ(RM_GetInLaneType(p0), 1);  // actual position outside road, type none
+    EXPECT_EQ(laneInfo.laneId, -2);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);
+    EXPECT_EQ(posData.laneId, -2);
+    EXPECT_NEAR(posData.laneOffset, 4.5, 1e-3);
+
+    // verify same result using lane pos
+    RM_SetLanePosition(p0, road_id, -2, 4.5, s, true);  // t = 6 is same as lane -2 offset 4.5
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    // Snaps to lane -2 (shoulder)
+    EXPECT_EQ(RM_GetInLaneType(p0), 1);
+    EXPECT_EQ(laneInfo.laneId, -2);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);
+    EXPECT_EQ(posData.laneId, -2);
+    EXPECT_NEAR(posData.laneOffset, 4.5, 1e-3);
+
+    lookahead_mode = 1;  // lookahead road center
+    RM_SetRoadPosition(p0, road_id, s, t, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    // Closest to lane -1 (shoulder), but belongs to 0 (none)
+    EXPECT_EQ(RM_GetInLaneType(p0), 1);  // closest to lane 0, type none
+    EXPECT_EQ(laneInfo.laneId, -2);      // snapped to leftmost drivable lane
+    EXPECT_NEAR(laneInfo.laneOffset, -1.5, 1e-3);
+    EXPECT_EQ(posData.laneId, -2);
+    EXPECT_NEAR(posData.laneOffset, 4.5, 1e-3);
+
+    t              = -6.0f;
+    lookahead_mode = 0;  // lookahead center current lane
+    RM_SetRoadPosition(p0, road_id, s, t, true);
+    RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(p0, &posData);
+
+    // Snaps to lane 4 (shoulder)
+    EXPECT_EQ(RM_GetInLaneType(p0), 1);  // actual position outside road, type none
+    EXPECT_EQ(laneInfo.laneId, -3);      // snapped to rightmost drivable lane
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);
+    EXPECT_EQ(posData.laneId, -3);
+    EXPECT_NEAR(posData.laneOffset, -4.5, 1e-3);
+
+    RM_Close();
+}
+
+TEST(TestGetMethods, TestGetPosMethodsVariousLookaheadModes)
+{
+    ASSERT_EQ(RM_Init("../../../EnvironmentSimulator/Unittest/xodr/four_lanes_with_offset.xodr"), 0);
+    ASSERT_EQ(RM_GetNumberOfRoads(), 1);
+
+    // Create a position object
+    int p0 = RM_CreatePosition();
+
+    RM_RoadLaneInfo laneInfo;
+    RM_PositionData posData;
+
+    id_t  road_id = 1;
+    int   lane_id = -2;
+    int   lookahead_mode;
+    float s           = 5.0f;
+    float lane_offset = 0.4f;
+
+    // set a position 0.4 to the right of lane center (3.0/2 + 0.5 = 1.9 from road center)
+    RM_SetLanePosition(p0, road_id, lane_id, lane_offset, s, true);
+
+    RM_GetPositionData(p0, &posData);
+    EXPECT_EQ(posData.laneId, -2);
+    EXPECT_NEAR(posData.laneOffset, 0.4, 1e-3);
+    EXPECT_EQ(RM_GetInLaneType(p0), 2);  // lane is drivable
+
+    lookahead_mode = 0;  // lookahead center current lane
+    RM_GetLaneInfo(p0, 3.0, &laneInfo, lookahead_mode, false);
+    EXPECT_EQ(laneInfo.laneId, -2);
+    EXPECT_EQ(laneInfo.s, s + 3.0f);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);
+
+    lookahead_mode = 1;  // lookahead center road
+    RM_GetLaneInfo(p0, 3.0, &laneInfo, lookahead_mode, false);
+    EXPECT_EQ(laneInfo.laneId, -2);
+    EXPECT_NEAR(laneInfo.laneOffset, -1.5, 1e-3);  // road center is at offset -1.5 from lane -2 center
+
+    lookahead_mode = 2;  // lookahead current lane and offset
+    RM_GetLaneInfo(p0, 3.0, &laneInfo, lookahead_mode, false);
+    EXPECT_EQ(laneInfo.laneId, -2);
+    EXPECT_NEAR(laneInfo.laneOffset, 0.4, 1e-3);  // maintain lane offset
+
+    RM_Close();
+}
+
+static std::string
+GetRoadLaneInfo_PrintLaneInfo(int pos_id, id_t road_id, int lane_id, float offset, float s, int lookahead_mode, float t = std::nan(""))
+{
+    RM_RoadLaneInfo laneInfo;
+    RM_PositionData posData;
+    char            buffer[1000];
+
+    if (std::isnan(t))
+    {
+        RM_SetLanePosition(pos_id, road_id, lane_id, offset, s, true);
+    }
+    else
+    {
+        RM_SetRoadPosition(pos_id, road_id, s, t, true);
+    }
+
+    RM_GetLaneInfo(pos_id, 0.0, &laneInfo, lookahead_mode, false);
+    RM_GetPositionData(pos_id, &posData);
+
+    int l3 = RM_GetInLaneType(pos_id);
+    int l4 = RM_GetLaneType(pos_id, lane_id);
+    int l5 = RM_GetLaneTypeByRoadId(road_id, lane_id, s);
+
+    if (std::isnan(t))
+    {
+        // lateral position given in terms of lane id and offset
+        sprintf(
+            buffer,
+            "s %3.1f lid % d offset % 2.1f -> pos: lid % 2d offset % 2.1f x % 3.1f y % 3.1f | lookhead_mode %d -> laneInfo: t % 3.1f x % 3.1f y % 3.1f lid % 2d offset % 4.1f RM_GetInLaneType %d RM_GetLaneType %d RM_GetLaneTypeByRoadId %d\n",
+            static_cast<double>(posData.s),
+            posData.laneId,
+            static_cast<double>(offset),
+            posData.laneId,
+            static_cast<double>(posData.laneOffset),
+            static_cast<double>(posData.x),
+            static_cast<double>(posData.y),
+            lookahead_mode,
+            static_cast<double>(laneInfo.t),
+            static_cast<double>(laneInfo.pos.x),
+            static_cast<double>(laneInfo.pos.y),
+            laneInfo.laneId,
+            static_cast<double>(laneInfo.laneOffset),
+            l3,
+            l4,
+            l5);
+    }
+    else
+    {
+        // lateral position given in terms of t
+        sprintf(
+            buffer,
+            "s %3.1f t % 3.1f -> pos: lid % 2d offset % 2.1f x % 3.1f y % 3.1f | lookhead_mode %d -> laneInfo: lid % 2d offset % 2.1f x % 3.1f y % 3.1f RM_GetInLaneType %d RM_GetLaneType %d RM_GetLaneTypeByRoadId %d\n",
+            static_cast<double>(posData.s),
+            static_cast<double>(t),
+            posData.laneId,
+            static_cast<double>(posData.laneOffset),
+            static_cast<double>(posData.x),
+            static_cast<double>(posData.y),
+            lookahead_mode,
+            laneInfo.laneId,
+            static_cast<double>(laneInfo.laneOffset),
+            static_cast<double>(laneInfo.pos.x),
+            static_cast<double>(laneInfo.pos.y),
+            l3,
+            l4,
+            l5);
+    }
+
+    return std::string(buffer);
+}
+
+TEST(TestGetMethods, TestGetLaneInfoExtensive)
+{
+    static const char* expected_std_out =
+        R"(s 9.0 lid  0 offset  0.0 -> pos: lid  0 offset  0.0 x  9.0 y  5.0 | lookhead_mode 0 -> laneInfo: t  5.0 x  9.0 y  5.0 lid  0 offset  0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 lid -1 offset  0.0 -> pos: lid -1 offset  0.0 x  9.0 y  4.0 | lookhead_mode 0 -> laneInfo: t  4.0 x  9.0 y  4.0 lid -1 offset  0.0 RM_GetInLaneType 8 RM_GetLaneType 8 RM_GetLaneTypeByRoadId 8
+s 9.0 lid -2 offset  0.0 -> pos: lid -2 offset  0.0 x  9.0 y  1.5 | lookhead_mode 0 -> laneInfo: t  1.5 x  9.0 y  1.5 lid -2 offset  0.0 RM_GetInLaneType 2 RM_GetLaneType 2 RM_GetLaneTypeByRoadId 2
+s 9.0 lid -3 offset  0.0 -> pos: lid -3 offset  0.0 x  9.0 y -1.5 | lookhead_mode 0 -> laneInfo: t -1.5 x  9.0 y -1.5 lid -3 offset  0.0 RM_GetInLaneType 2 RM_GetLaneType 2 RM_GetLaneTypeByRoadId 2
+s 9.0 lid -4 offset  0.0 -> pos: lid -4 offset  0.0 x  9.0 y -4.0 | lookhead_mode 0 -> laneInfo: t -4.0 x  9.0 y -4.0 lid -4 offset  0.0 RM_GetInLaneType 8 RM_GetLaneType 8 RM_GetLaneTypeByRoadId 8
+s 9.0 lid  0 offset  0.0 -> pos: lid  0 offset  0.0 x  9.0 y  5.0 | lookhead_mode 1 -> laneInfo: t  0.0 x  9.0 y  0.0 lid -2 offset -1.5 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 lid -1 offset  0.0 -> pos: lid -1 offset  0.0 x  9.0 y  4.0 | lookhead_mode 1 -> laneInfo: t  0.0 x  9.0 y  0.0 lid -2 offset -1.5 RM_GetInLaneType 8 RM_GetLaneType 8 RM_GetLaneTypeByRoadId 8
+s 9.0 lid -2 offset  0.0 -> pos: lid -2 offset  0.0 x  9.0 y  1.5 | lookhead_mode 1 -> laneInfo: t  0.0 x  9.0 y  0.0 lid -2 offset -1.5 RM_GetInLaneType 2 RM_GetLaneType 2 RM_GetLaneTypeByRoadId 2
+s 9.0 lid -3 offset  0.0 -> pos: lid -3 offset  0.0 x  9.0 y -1.5 | lookhead_mode 1 -> laneInfo: t -0.0 x  9.0 y -0.0 lid -3 offset  1.5 RM_GetInLaneType 2 RM_GetLaneType 2 RM_GetLaneTypeByRoadId 2
+s 9.0 lid -4 offset  0.0 -> pos: lid -4 offset  0.0 x  9.0 y -4.0 | lookhead_mode 1 -> laneInfo: t -0.0 x  9.0 y -0.0 lid -3 offset  1.5 RM_GetInLaneType 8 RM_GetLaneType 8 RM_GetLaneTypeByRoadId 8
+s 9.0 lid  0 offset  0.0 -> pos: lid  0 offset  0.0 x  9.0 y  5.0 | lookhead_mode 2 -> laneInfo: t  5.0 x  9.0 y  5.0 lid  0 offset  0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 lid -1 offset  0.0 -> pos: lid -1 offset  0.0 x  9.0 y  4.0 | lookhead_mode 2 -> laneInfo: t  4.0 x  9.0 y  4.0 lid -1 offset  0.0 RM_GetInLaneType 8 RM_GetLaneType 8 RM_GetLaneTypeByRoadId 8
+s 9.0 lid -2 offset  0.0 -> pos: lid -2 offset  0.0 x  9.0 y  1.5 | lookhead_mode 2 -> laneInfo: t  1.5 x  9.0 y  1.5 lid -2 offset  0.0 RM_GetInLaneType 2 RM_GetLaneType 2 RM_GetLaneTypeByRoadId 2
+s 9.0 lid -3 offset  0.0 -> pos: lid -3 offset  0.0 x  9.0 y -1.5 | lookhead_mode 2 -> laneInfo: t -1.5 x  9.0 y -1.5 lid -3 offset  0.0 RM_GetInLaneType 2 RM_GetLaneType 2 RM_GetLaneTypeByRoadId 2
+s 9.0 lid -4 offset  0.0 -> pos: lid -4 offset  0.0 x  9.0 y -4.0 | lookhead_mode 2 -> laneInfo: t -4.0 x  9.0 y -4.0 lid -4 offset  0.0 RM_GetInLaneType 8 RM_GetLaneType 8 RM_GetLaneTypeByRoadId 8
+s 9.0 lid  0 offset -0.3 -> pos: lid  0 offset -0.3 x  9.0 y  4.7 | lookhead_mode 0 -> laneInfo: t  5.0 x  9.0 y  5.0 lid  0 offset  0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 lid -1 offset -0.3 -> pos: lid -1 offset -0.3 x  9.0 y  3.7 | lookhead_mode 0 -> laneInfo: t  4.0 x  9.0 y  4.0 lid -1 offset  0.0 RM_GetInLaneType 8 RM_GetLaneType 8 RM_GetLaneTypeByRoadId 8
+s 9.0 lid -2 offset -0.3 -> pos: lid -2 offset -0.3 x  9.0 y  1.2 | lookhead_mode 0 -> laneInfo: t  1.5 x  9.0 y  1.5 lid -2 offset  0.0 RM_GetInLaneType 2 RM_GetLaneType 2 RM_GetLaneTypeByRoadId 2
+s 9.0 lid -3 offset -0.3 -> pos: lid -3 offset -0.3 x  9.0 y -1.8 | lookhead_mode 0 -> laneInfo: t -1.5 x  9.0 y -1.5 lid -3 offset  0.0 RM_GetInLaneType 2 RM_GetLaneType 2 RM_GetLaneTypeByRoadId 2
+s 9.0 lid -4 offset -0.3 -> pos: lid -4 offset -0.3 x  9.0 y -4.3 | lookhead_mode 0 -> laneInfo: t -4.0 x  9.0 y -4.0 lid -4 offset  0.0 RM_GetInLaneType 8 RM_GetLaneType 8 RM_GetLaneTypeByRoadId 8
+s 9.0 lid  0 offset -0.3 -> pos: lid  0 offset -0.3 x  9.0 y  4.7 | lookhead_mode 1 -> laneInfo: t  0.0 x  9.0 y  0.0 lid -2 offset -1.5 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 lid -1 offset -0.3 -> pos: lid -1 offset -0.3 x  9.0 y  3.7 | lookhead_mode 1 -> laneInfo: t  0.0 x  9.0 y  0.0 lid -2 offset -1.5 RM_GetInLaneType 8 RM_GetLaneType 8 RM_GetLaneTypeByRoadId 8
+s 9.0 lid -2 offset -0.3 -> pos: lid -2 offset -0.3 x  9.0 y  1.2 | lookhead_mode 1 -> laneInfo: t  0.0 x  9.0 y  0.0 lid -2 offset -1.5 RM_GetInLaneType 2 RM_GetLaneType 2 RM_GetLaneTypeByRoadId 2
+s 9.0 lid -3 offset -0.3 -> pos: lid -3 offset -0.3 x  9.0 y -1.8 | lookhead_mode 1 -> laneInfo: t -0.0 x  9.0 y -0.0 lid -3 offset  1.5 RM_GetInLaneType 2 RM_GetLaneType 2 RM_GetLaneTypeByRoadId 2
+s 9.0 lid -4 offset -0.3 -> pos: lid -4 offset -0.3 x  9.0 y -4.3 | lookhead_mode 1 -> laneInfo: t -0.0 x  9.0 y -0.0 lid -3 offset  1.5 RM_GetInLaneType 8 RM_GetLaneType 8 RM_GetLaneTypeByRoadId 8
+s 9.0 lid  0 offset -0.3 -> pos: lid  0 offset -0.3 x  9.0 y  4.7 | lookhead_mode 2 -> laneInfo: t  4.7 x  9.0 y  4.7 lid  0 offset -0.3 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 lid -1 offset -0.3 -> pos: lid -1 offset -0.3 x  9.0 y  3.7 | lookhead_mode 2 -> laneInfo: t  3.7 x  9.0 y  3.7 lid -1 offset -0.3 RM_GetInLaneType 8 RM_GetLaneType 8 RM_GetLaneTypeByRoadId 8
+s 9.0 lid -2 offset -0.3 -> pos: lid -2 offset -0.3 x  9.0 y  1.2 | lookhead_mode 2 -> laneInfo: t  1.2 x  9.0 y  1.2 lid -2 offset -0.3 RM_GetInLaneType 2 RM_GetLaneType 2 RM_GetLaneTypeByRoadId 2
+s 9.0 lid -3 offset -0.3 -> pos: lid -3 offset -0.3 x  9.0 y -1.8 | lookhead_mode 2 -> laneInfo: t -1.8 x  9.0 y -1.8 lid -3 offset -0.3 RM_GetInLaneType 2 RM_GetLaneType 2 RM_GetLaneTypeByRoadId 2
+s 9.0 lid -4 offset -0.3 -> pos: lid -4 offset -0.3 x  9.0 y -4.3 | lookhead_mode 2 -> laneInfo: t -4.3 x  9.0 y -4.3 lid -4 offset -0.3 RM_GetInLaneType 8 RM_GetLaneType 8 RM_GetLaneTypeByRoadId 8
+)"
+        R"(s 9.0 t  6.0 -> pos: lid -2 offset  4.5 x  9.0 y  6.0 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  5.0 -> pos: lid -2 offset  3.5 x  9.0 y  5.0 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  4.0 -> pos: lid -2 offset  2.5 x  9.0 y  4.0 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  3.0 -> pos: lid -2 offset  1.5 x  9.0 y  3.0 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  2.0 -> pos: lid -2 offset  0.5 x  9.0 y  2.0 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  1.0 -> pos: lid -2 offset -0.5 x  9.0 y  1.0 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  0.0 -> pos: lid -2 offset -1.5 x  9.0 y  0.0 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -1.0 -> pos: lid -3 offset  0.5 x  9.0 y -1.0 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -2.0 -> pos: lid -3 offset -0.5 x  9.0 y -2.0 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -3.0 -> pos: lid -3 offset -1.5 x  9.0 y -3.0 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -4.0 -> pos: lid -3 offset -2.5 x  9.0 y -4.0 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -5.0 -> pos: lid -3 offset -3.5 x  9.0 y -5.0 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -6.0 -> pos: lid -3 offset -4.5 x  9.0 y -6.0 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  6.0 -> pos: lid -2 offset  4.5 x  9.0 y  6.0 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  5.0 -> pos: lid -2 offset  3.5 x  9.0 y  5.0 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  4.0 -> pos: lid -2 offset  2.5 x  9.0 y  4.0 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  3.0 -> pos: lid -2 offset  1.5 x  9.0 y  3.0 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  2.0 -> pos: lid -2 offset  0.5 x  9.0 y  2.0 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  1.0 -> pos: lid -2 offset -0.5 x  9.0 y  1.0 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  0.0 -> pos: lid -2 offset -1.5 x  9.0 y  0.0 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -1.0 -> pos: lid -3 offset  0.5 x  9.0 y -1.0 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -2.0 -> pos: lid -3 offset -0.5 x  9.0 y -2.0 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -3.0 -> pos: lid -3 offset -1.5 x  9.0 y -3.0 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -4.0 -> pos: lid -3 offset -2.5 x  9.0 y -4.0 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -5.0 -> pos: lid -3 offset -3.5 x  9.0 y -5.0 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -6.0 -> pos: lid -3 offset -4.5 x  9.0 y -6.0 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  6.0 -> pos: lid -2 offset  4.5 x  9.0 y  6.0 | lookhead_mode 2 -> laneInfo: lid -2 offset  4.5 x  9.0 y  6.0 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  5.0 -> pos: lid -2 offset  3.5 x  9.0 y  5.0 | lookhead_mode 2 -> laneInfo: lid -2 offset  3.5 x  9.0 y  5.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  4.0 -> pos: lid -2 offset  2.5 x  9.0 y  4.0 | lookhead_mode 2 -> laneInfo: lid -2 offset  2.5 x  9.0 y  4.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  3.0 -> pos: lid -2 offset  1.5 x  9.0 y  3.0 | lookhead_mode 2 -> laneInfo: lid -2 offset  1.5 x  9.0 y  3.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  2.0 -> pos: lid -2 offset  0.5 x  9.0 y  2.0 | lookhead_mode 2 -> laneInfo: lid -2 offset  0.5 x  9.0 y  2.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  1.0 -> pos: lid -2 offset -0.5 x  9.0 y  1.0 | lookhead_mode 2 -> laneInfo: lid -2 offset -0.5 x  9.0 y  1.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  0.0 -> pos: lid -2 offset -1.5 x  9.0 y  0.0 | lookhead_mode 2 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -1.0 -> pos: lid -3 offset  0.5 x  9.0 y -1.0 | lookhead_mode 2 -> laneInfo: lid -3 offset  0.5 x  9.0 y -1.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -2.0 -> pos: lid -3 offset -0.5 x  9.0 y -2.0 | lookhead_mode 2 -> laneInfo: lid -3 offset -0.5 x  9.0 y -2.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -3.0 -> pos: lid -3 offset -1.5 x  9.0 y -3.0 | lookhead_mode 2 -> laneInfo: lid -3 offset -1.5 x  9.0 y -3.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -4.0 -> pos: lid -3 offset -2.5 x  9.0 y -4.0 | lookhead_mode 2 -> laneInfo: lid -3 offset -2.5 x  9.0 y -4.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -5.0 -> pos: lid -3 offset -3.5 x  9.0 y -5.0 | lookhead_mode 2 -> laneInfo: lid -3 offset -3.5 x  9.0 y -5.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -6.0 -> pos: lid -3 offset -4.5 x  9.0 y -6.0 | lookhead_mode 2 -> laneInfo: lid -3 offset -4.5 x  9.0 y -6.0 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+)"
+        R"(s 9.0 t  5.7 -> pos: lid -2 offset  4.2 x  9.0 y  5.7 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  4.7 -> pos: lid -2 offset  3.2 x  9.0 y  4.7 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  3.7 -> pos: lid -2 offset  2.2 x  9.0 y  3.7 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  2.7 -> pos: lid -2 offset  1.2 x  9.0 y  2.7 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  1.7 -> pos: lid -2 offset  0.2 x  9.0 y  1.7 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  0.7 -> pos: lid -2 offset -0.8 x  9.0 y  0.7 | lookhead_mode 0 -> laneInfo: lid -2 offset  0.0 x  9.0 y  1.5 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -0.3 -> pos: lid -3 offset  1.2 x  9.0 y -0.3 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -1.3 -> pos: lid -3 offset  0.2 x  9.0 y -1.3 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -2.3 -> pos: lid -3 offset -0.8 x  9.0 y -2.3 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -3.3 -> pos: lid -3 offset -1.8 x  9.0 y -3.3 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -4.3 -> pos: lid -3 offset -2.8 x  9.0 y -4.3 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -5.3 -> pos: lid -3 offset -3.8 x  9.0 y -5.3 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -6.3 -> pos: lid -3 offset -4.8 x  9.0 y -6.3 | lookhead_mode 0 -> laneInfo: lid -3 offset  0.0 x  9.0 y -1.5 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  5.7 -> pos: lid -2 offset  4.2 x  9.0 y  5.7 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  4.7 -> pos: lid -2 offset  3.2 x  9.0 y  4.7 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  3.7 -> pos: lid -2 offset  2.2 x  9.0 y  3.7 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  2.7 -> pos: lid -2 offset  1.2 x  9.0 y  2.7 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  1.7 -> pos: lid -2 offset  0.2 x  9.0 y  1.7 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  0.7 -> pos: lid -2 offset -0.8 x  9.0 y  0.7 | lookhead_mode 1 -> laneInfo: lid -2 offset -1.5 x  9.0 y  0.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -0.3 -> pos: lid -3 offset  1.2 x  9.0 y -0.3 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -1.3 -> pos: lid -3 offset  0.2 x  9.0 y -1.3 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -2.3 -> pos: lid -3 offset -0.8 x  9.0 y -2.3 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -3.3 -> pos: lid -3 offset -1.8 x  9.0 y -3.3 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -4.3 -> pos: lid -3 offset -2.8 x  9.0 y -4.3 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -5.3 -> pos: lid -3 offset -3.8 x  9.0 y -5.3 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -6.3 -> pos: lid -3 offset -4.8 x  9.0 y -6.3 | lookhead_mode 1 -> laneInfo: lid -3 offset  1.5 x  9.0 y -0.0 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  5.7 -> pos: lid -2 offset  4.2 x  9.0 y  5.7 | lookhead_mode 2 -> laneInfo: lid -2 offset  4.2 x  9.0 y  5.7 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  4.7 -> pos: lid -2 offset  3.2 x  9.0 y  4.7 | lookhead_mode 2 -> laneInfo: lid -2 offset  3.2 x  9.0 y  4.7 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  3.7 -> pos: lid -2 offset  2.2 x  9.0 y  3.7 | lookhead_mode 2 -> laneInfo: lid -2 offset  2.2 x  9.0 y  3.7 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  2.7 -> pos: lid -2 offset  1.2 x  9.0 y  2.7 | lookhead_mode 2 -> laneInfo: lid -2 offset  1.2 x  9.0 y  2.7 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  1.7 -> pos: lid -2 offset  0.2 x  9.0 y  1.7 | lookhead_mode 2 -> laneInfo: lid -2 offset  0.2 x  9.0 y  1.7 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t  0.7 -> pos: lid -2 offset -0.8 x  9.0 y  0.7 | lookhead_mode 2 -> laneInfo: lid -2 offset -0.8 x  9.0 y  0.7 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -0.3 -> pos: lid -3 offset  1.2 x  9.0 y -0.3 | lookhead_mode 2 -> laneInfo: lid -3 offset  1.2 x  9.0 y -0.3 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -1.3 -> pos: lid -3 offset  0.2 x  9.0 y -1.3 | lookhead_mode 2 -> laneInfo: lid -3 offset  0.2 x  9.0 y -1.3 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -2.3 -> pos: lid -3 offset -0.8 x  9.0 y -2.3 | lookhead_mode 2 -> laneInfo: lid -3 offset -0.8 x  9.0 y -2.3 RM_GetInLaneType 2 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -3.3 -> pos: lid -3 offset -1.8 x  9.0 y -3.3 | lookhead_mode 2 -> laneInfo: lid -3 offset -1.8 x  9.0 y -3.3 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -4.3 -> pos: lid -3 offset -2.8 x  9.0 y -4.3 | lookhead_mode 2 -> laneInfo: lid -3 offset -2.8 x  9.0 y -4.3 RM_GetInLaneType 8 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -5.3 -> pos: lid -3 offset -3.8 x  9.0 y -5.3 | lookhead_mode 2 -> laneInfo: lid -3 offset -3.8 x  9.0 y -5.3 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+s 9.0 t -6.3 -> pos: lid -3 offset -4.8 x  9.0 y -6.3 | lookhead_mode 2 -> laneInfo: lid -3 offset -4.8 x  9.0 y -6.3 RM_GetInLaneType 1 RM_GetLaneType 1 RM_GetLaneTypeByRoadId 1
+)";
+
+    ASSERT_EQ(RM_Init("../../../EnvironmentSimulator/Unittest/xodr/four_lanes_with_offset.xodr"), 0);
+
+    std::string log;
+
+    int p0 = RM_CreatePosition();
+
+    std::vector<float> offset = {0.0f, -0.3f};
+    for (auto& o : offset)
+    {
+        for (int lookahead_mode = 0; lookahead_mode < 3; lookahead_mode++)
+        {
+            for (int i = 0; i > -5; i--)
+            {
+                log.append(GetRoadLaneInfo_PrintLaneInfo(p0, 1, i, o, 9, lookahead_mode));
+            }
+        }
+    }
+
+    for (auto& o : offset)
+    {
+        for (int lookahead_mode = 0; lookahead_mode < 3; lookahead_mode++)
+        {
+            for (float t = 6.0f; t > -6.1f; t -= 1.0f)
+            {
+                log.append(GetRoadLaneInfo_PrintLaneInfo(p0, 1, 0, std::nanf(""), 9, lookahead_mode, t + o));
+            }
+        }
+    }
+
+    RM_Close();
+
+    EXPECT_EQ(expected_std_out, log);
+}
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);

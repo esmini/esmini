@@ -372,6 +372,17 @@ extern "C"
     RM_DLL_API int RM_SetLanePosition(int handle, id_t roadId, int laneId, float laneOffset, float s, bool align);
 
     /**
+    Set position from road coordinates, world coordinates being calculated
+    @param handle Handle to the position object
+    @param roadId Road specifier
+    @param s Distance along the specified road
+    @param t Lateral position in the road s/t coordinate system
+    @param align If true the heading will be reset to the lane driving direction (typically only at initialization)
+    @return >= 0 on success. For all codes see roadmanager::Position::ReturnCode
+    */
+    RM_DLL_API int RM_SetRoadPosition(int handle, id_t roadId, float s, float t, bool align);
+
+    /**
     Set s (distance) part of a lane position, world coordinates being calculated
     @param handle Handle to the position object
     @param s Distance along the specified road
