@@ -709,11 +709,11 @@ namespace roadgeom
 
                                     // calculate horizontal error at this s value
                                     // find out heading of the previous calculated vertex point
-                                    double h = lane_osi_index[l] > 0 ? GetAngleOfVector(candidates_pos[l].x - geom_cache[l].point.x,
+                                    double h                = lane_osi_index[l] > 0 ? GetAngleOfVector(candidates_pos[l].x - geom_cache[l].point.x,
                                                                                         candidates_pos[l].y - geom_cache[l].point.y)
-                                                                     : geom_cache[l].point.h;
-                                    double error_horizontal =
-                                        DistanceFromPointToLine2DWithAngle(pos.GetX(), pos.GetY(), geom_cache[l].point.x, geom_cache[l].point.y, h);
+                                                                                    : geom_cache[l].point.h;
+                                    double error_horizontal = abs(
+                                        DistanceFromPointToLine2DWithAngle(pos.GetX(), pos.GetY(), geom_cache[l].point.x, geom_cache[l].point.y, h));
 
                                     // calculate vertical error at this s value
                                     double error_vertical =

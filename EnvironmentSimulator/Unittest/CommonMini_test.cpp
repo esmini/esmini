@@ -320,6 +320,17 @@ TEST(MathFunctions, TestGetIntersectionsOfLineAndCircle)
     EXPECT_EQ(GetIntersectionsOfLineAndCircle({-1.0, 0.0}, {-1.0, 5.0}, {1.0, 1.0}, 2.01, i0, i1), 2);  // two intersection points
 }
 
+TEST(MathFunctions, TestGetDistanceFromPointToLine2DWithAngle)
+{
+    EXPECT_NEAR(DistanceFromPointToLine2DWithAngle(0.1, 0.9, 10.0, 10.0, M_PI_4), -0.5656, 1e-3);
+    EXPECT_NEAR(DistanceFromPointToLine2DWithAngle(0.1, 0.1, 10.0, 10.0, M_PI_4), 0.0, 1e-3);
+    EXPECT_NEAR(DistanceFromPointToLine2DWithAngle(0.9, 0.1, 10.0, 10.0, M_PI_4), 0.5656, 1e-3);
+
+    EXPECT_NEAR(DistanceFromPointToLine2DWithAngle(-0.1, 0.9, -10.0, 10.0, 3 * M_PI_4), 0.5656, 1e-3);
+    EXPECT_NEAR(DistanceFromPointToLine2DWithAngle(-0.1, 0.1, -10.0, 10.0, 3 * M_PI_4), 0.0, 1e-3);
+    EXPECT_NEAR(DistanceFromPointToLine2DWithAngle(-0.9, 0.1, -10.0, 10.0, 3 * M_PI_4), -0.5656, 1e-3);
+}
+
 int main(int argc, char** argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";
