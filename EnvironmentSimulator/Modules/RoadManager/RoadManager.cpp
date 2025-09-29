@@ -6077,8 +6077,10 @@ int OpenDrive::CheckJunctionConnection(Junction* junction, Connection* connectio
                                         Connection* newConnection =
                                             new Connection(GetRoadById(newLink->GetElementId()), connection->GetConnectingRoad(), new_contact_point);
 
-                                        // Add lane links - assume only one lane section in the connecting road
-                                        LaneSection* ls = newConnection->GetConnectingRoad()->GetLaneSectionByIdx(0);
+                                        // Add lane links
+                                        LaneSection* ls = newConnection->GetConnectingRoad()->GetLaneSectionByIdx(
+                                            newLinkType == LinkType::PREDECESSOR ? 0
+                                                                                 : newConnection->GetConnectingRoad()->GetNumberOfLaneSections() - 1);
                                         for (unsigned int l = 0; l < ls->GetNumberOfLanes(); l++)
                                         {
                                             Lane* lane = ls->GetLaneByIdx(l);
