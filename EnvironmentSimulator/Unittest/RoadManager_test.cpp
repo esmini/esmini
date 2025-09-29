@@ -4326,6 +4326,25 @@ TEST(LaneType, TestLaneTypeMasks)
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_TUNNEL, -2);
 }
 
+TEST(LaneOffset, TestGetClosestLaneIdxWithLaneOffsetAndLocKOnLane)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../EnvironmentSimulator/Unittest/xodr/four_lanes_with_offset.xodr");
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+
+    // establish initial position
+    Position pos;
+    pos.SetInertiaPos(1.0, 1.9, 0.0);
+
+    // stay in lane
+    pos.SetLockOnLane(true);
+    pos.SetInertiaPos(5.0, 1.9, 0.0);
+
+    EXPECT_EQ(pos.GetTrackId(), 1);
+    EXPECT_EQ(pos.GetLaneId(), -2);
+}
+
 int main(int argc, char **argv)
 {
     // testing::GTEST_FLAG(filter) = "*RoadWidthAllLanes*";

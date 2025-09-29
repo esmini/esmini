@@ -8734,9 +8734,9 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         LOG_ERROR("Unexpected: No closest OSI point found!");
     }
 
-    double fixedLaneOffset = 0;
-    int    fixedLaneId     = 0;
-    if (lockOnLane_)
+    double fixed_t     = 0;
+    int    fixedLaneId = 0;
+    if (lockOnLane_ && current_road != nullptr && roadMin != nullptr)
     {
         // Register lateral position of previous lane
         LaneSection* lsec = current_road->GetLaneSectionByIdx(lane_section_idx_);
@@ -8755,13 +8755,17 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
                 }
             }
 
-            fixedLaneOffset = (change_direction ? -1 : 1) * SIGN(lane_id_) * lsec->GetCenterOffset(s_, lane_id_);
-
             // Now find cloest lane at that lateral position, at updated s value
-            double offset;
-            double lane_offset = current_road->GetLaneOffset(closestS);
-            idx_t  lane_idx    = lsec->GetClosestLaneIdx(closestS, fixedLaneOffset, lane_offset, 0, offset, true, snapToLaneTypes_);
-            fixedLaneId        = lsec->GetLaneIdByIdx(lane_idx);
+            double lane_offset = roadMin->GetLaneOffset(closestS);
+            fixed_t            = (change_direction ? -1 : 1) * SIGN(lane_id_) * lsec->GetCenterOffset(s_, lane_id_) + lane_offset;
+
+            LaneSection* lsec_new = roadMin->GetLaneSectionByS(closestS);
+            if (lsec_new)
+            {
+                double offset;
+                idx_t  lane_idx = lsec_new->GetClosestLaneIdx(closestS, fixed_t, lane_offset, 0, offset, true, snapToLaneTypes_);
+                fixedLaneId     = lsec_new->GetLaneIdByIdx(lane_idx);
+            }
         }
     }
 
@@ -8777,7 +8781,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
     // Update lateral offsets
     if (lockOnLane_)
     {
-        SetLanePosMode(roadMin->GetId(), fixedLaneId, closestS, latOffset - fixedLaneOffset, 0);  // skip z, h, p, r
+        SetLanePosMode(roadMin->GetId(), fixedLaneId, closestS, latOffset - fixed_t, 0);  // skip z, h, p, r
     }
     else
     {
