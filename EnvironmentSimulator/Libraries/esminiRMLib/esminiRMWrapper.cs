@@ -433,6 +433,18 @@ namespace OpenDRIVE
         public static extern int SetLanePosition(int handle, int roadId, int laneId, float laneOffset, float s, bool align);
 
         /// <summary>
+        /// * Set position from road coordinates, world coordinates being calculated /
+        /// </summary>
+        /// <param name="handle">Handle to the position object</param>
+        /// <param name="roadId">Road specifier</param>
+        /// <param name="s">Distance along the specified road</param>
+        /// <param name="t">Lateral position in the road s/t coordinate system</param>
+        /// <param name="align">If true the heading will be reset to the lane driving direction (typically only at initialization)</param>
+        /// <returns>>= 0 on success. For all codes see roadmanager::Position::ReturnCode</returns>
+        [DllImport(LIB_NAME, EntryPoint = "RM_SetRoadPosition")]
+        public static extern int SetRoadPosition(int handle, int roadId, float s, float t, bool align);
+
+        /// <summary>
         /// * Set s (distance) part of a lane position, world coordinates being calculated /
         /// </summary>
         /// <param name="handle">Handle to the position object</param>
