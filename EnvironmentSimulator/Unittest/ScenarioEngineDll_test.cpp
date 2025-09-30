@@ -3978,7 +3978,7 @@ TEST(RoadSign, TestValidityRecord)
     int n_Objects = SE_GetNumberOfObjects();
     EXPECT_EQ(n_Objects, 2);
 
-    EXPECT_EQ(SE_GetNumberOfRoadSigns(1), 17);
+    EXPECT_EQ(SE_GetNumberOfRoadSigns(1), 18);
     EXPECT_EQ(SE_GetNumberOfRoadSignValidityRecords(1, 0), 2);
 
     SE_RoadObjValidity validityRec;

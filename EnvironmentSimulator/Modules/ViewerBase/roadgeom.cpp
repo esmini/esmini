@@ -17,6 +17,7 @@
 
 #include <osg/StateSet>
 #include <osg/Group>
+#include <osg/Switch>
 #include <osg/TexEnv>
 #include <osg/LOD>
 #include <osg/MatrixTransform>
@@ -67,6 +68,38 @@ const static std::string prefix_roadmark    = "roadmark_";
 
 namespace roadgeom
 {
+    class FindNamedNode : public osg::NodeVisitor
+    {
+    public:
+        FindNamedNode(const std::string& name) : osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN), _name(name)
+        {
+        }
+
+        // This method gets called for every node in the scene graph. Check each node
+        // to see if its name matches out target. If so, save the node's address.
+        using osg::NodeVisitor::apply;
+        void apply(osg::Group& node) override
+        {
+            if (node.getName().find(_name) != std::string::npos)
+            {
+                _node = &node;
+            }
+            else
+            {
+                // Keep traversing the rest of the scene graph.
+                traverse(node);
+            }
+        }
+
+        osg::Node* getNode()
+        {
+            return _node.get();
+        }
+
+    protected:
+        std::string              _name;
+        osg::ref_ptr<osg::Group> _node;
+    };
 
     bool compare_s_values(double s0, double s1)
     {
@@ -1063,7 +1096,7 @@ namespace roadgeom
                         filename += "_" + signal->GetSubType();
                     }
 
-                    if (!NEAR_NUMBERS(signal->GetValue(), -1.0))
+                    if (!(NEAR_NUMBERS(signal->GetValue(), -1.0) || signal->GetValueStr().empty()))
                     {
                         filename += "-" + signal->GetValueStr();
                     }
@@ -1115,6 +1148,13 @@ namespace roadgeom
                             dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
                         obj_standin->setNodeMask(NODE_MASK_SIGN);
                         signGroup->addChild(obj_standin);
+                    }
+
+                    if (tx != nullptr && signal->GetType() == "1.000.001" || signal->GetType() == "1000001")
+                    {
+                        TrafficLightRedYellowGreen tl;
+                        tl.SetNode(tx);
+                        traffic_light_red_yellow_green_[signal->GetId()] = tl;
                     }
                 }
 
@@ -1797,6 +1837,33 @@ namespace roadgeom
     {
         osgDB::writeNodeFile(*root_, filename);
         return 0;
+    }
+
+    void TrafficLightRedYellowGreen::SetNode(osg::Group* node)
+    {
+        // find and register expected switches
+        const std::string switch_names[] = {"lamp1_switch", "lamp2_switch", "lamp3_switch"};
+
+        for (unsigned int i = 0; i < 3; i++)
+        {
+            FindNamedNode fnn(switch_names[i]);
+            node->accept(fnn);
+            switches_[i] = static_cast<osg::Switch*>(fnn.getNode());
+        }
+    }
+
+    void TrafficLightRedYellowGreen::SetState(unsigned int light_index, bool state)
+    {
+        if (light_index < 3 && switches_[light_index] != nullptr)
+        {
+            switches_[light_index]->setAllChildrenOff();
+            switches_[light_index]->setValueList({!state, state});
+        }
+    }
+
+    bool TrafficLightRedYellowGreen::GetState(unsigned int light_index) const
+    {
+        return switches_[light_index]->getValue(1);
     }
 
 }  // namespace roadgeom

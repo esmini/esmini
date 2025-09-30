@@ -4463,11 +4463,30 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     double      z_offset = atof(signal.attribute("zOffset").value());
                     std::string country  = ToLower(signal.attribute("country").value());
 
+                    unsigned int country_revision = 2013;  // default
+
+                    if (signal.attribute("countryRevision").empty())
+                    {
+                        country_revision = signal.attribute("countryRevision").as_uint();
+                    }
+
                     // Load the country file for types
                     if (!country.empty() && (!country_file_loaded || current_country != country))
                     {
                         current_country     = country;
                         country_file_loaded = LoadSignalsByCountry(country);
+                    }
+
+                    // if special country OpenDRIVE, check for various supported traffic light types
+                    if (country == "opendrive")
+                    {
+                        std::string signal_type = signal.attribute("type").value();
+
+                        if ((country_revision <= 2013 && signal_type == "1.000.001") || signal_type == "1000001")
+                        {
+                            // traffic light
+                            LOG_INFO("traffic light found!");
+                        }
                     }
 
                     std::string type;
@@ -4477,7 +4496,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     type         = signal.attribute("type").value();
                     subtype      = signal.attribute("subtype").value();
                     value        = signal.attribute("value").value();
-                    int osi_type = static_cast<int>(Signal::OSIType::TYPE_UNKNOWN);
+                    int osi_type = static_cast<int>(Signal::OSIType::TrafficSign_MainSign_Classification_Type_INT_MAX_SENTINEL_DO_NOT_USE_);
 
                     if (!type.empty() && type != "-1" && type != "none")
                     {
@@ -4488,20 +4507,28 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                             std::string enum_string = signals_types_.find(country + type_to_find)->second;
                             osi_type                = static_cast<int>(Signal::GetOSITypeFromString(enum_string));
                         }
-
-                        if (osi_type == static_cast<int>(Signal::OSIType::TYPE_UNKNOWN))
+                        else
                         {
                             // Try without value
                             if (signals_types_.count(country + type + (subtype.empty() ? "" : "." + subtype)) != 0)
                             {
-                                std::string enum_string = signals_types_.find(country + type + (subtype.empty() ? "" : "." + subtype))->second;
-                                osi_type                = static_cast<int>(Signal::GetOSITypeFromString(enum_string));
+                                std::string enum_string =
+                                    signals_types_.find(country + type + ((subtype.empty() || subtype == "-1") ? "" : "." + subtype))->second;
+                                osi_type = static_cast<int>(Signal::GetOSITypeFromString(enum_string));
                             }
-                            if (osi_type == static_cast<int>(Signal::OSIType::TYPE_UNKNOWN))
+                            else
                             {
                                 LOG_INFO("Signal Type {} doesn't exists for country {}", type_to_find, country);
                             }
                         }
+                        if (osi_type == static_cast<int>(Signal::OSIType::TYPE_UNKNOWN))
+                        {
+                            LOG_INFO("Signal Type {} exists for country {} - but no OSI type defined", type_to_find, country);
+                        }
+                    }
+                    else
+                    {
+                        osi_type = static_cast<int>(Signal::OSIType::TYPE_UNKNOWN);
                     }
 
                     std::string unit     = signal.attribute("unit").value();
