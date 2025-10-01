@@ -72,7 +72,7 @@ using idx_t = uint32_t;
 #define ODRVIEWER_LOG_FILENAME        "odrviewer_log.txt"
 #define REPLAYER_LOG_FILENAME         "replayer_log.txt"
 #define DAT_FILENAME                  "sim.dat"
-#define GHOST_TRAIL_SAMPLE_TIME       0.2
+#define GHOST_TRAIL_SAMPLE_TIME       0.2  // default value, can be overridden by ghost_trail_dt option
 #define LOGICAL_OR(X, Y)              ((X || Y) && !(X && Y))
 
 const std::string CONFIG_FILE_OPTION_NAME = "config_file_path";

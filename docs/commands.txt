@@ -42,6 +42,8 @@ Options:
       Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)
   --generate_without_textures
       Do not apply textures on any generated road model (set colors instead as for missing textures)
+  --ghost_trail_dt [dt]  (default if value omitted: 0.200000)
+      Ghost trail sample delta time
   --ground_plane
       Add a large flat ground surface
   --headless

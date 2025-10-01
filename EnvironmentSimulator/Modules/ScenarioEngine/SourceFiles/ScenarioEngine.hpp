@@ -183,6 +183,7 @@ namespace scenarioengine
         Vehicle         sumotemplate;
         ScenarioGateway scenarioGateway;
         Object         *ghost_;
+        double          ghost_trail_dt_;
 
         // Distance map
         struct DistanceMeasurement

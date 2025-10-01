@@ -58,6 +58,9 @@ void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
     scenarioReader       = new ScenarioReader(&entities_, &catalogs, &environment, disable_controllers);
     injected_actions_    = nullptr;
     ghost_               = nullptr;
+    ghost_trail_dt_      = SE_Env::Inst().GetOptions().GetOptionSet("ghost_trail_dt")
+                               ? strtod(SE_Env::Inst().GetOptions().GetOptionValue("ghost_trail_dt"))
+                               : GHOST_TRAIL_SAMPLE_TIME;
     SE_Env::Inst().SetGhostMode(GhostMode::NORMAL);
     SE_Env::Inst().SetGhostHeadstart(0.0);
 }
@@ -936,18 +939,18 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 
             if (!(obj->IsGhost() && SE_Env::Inst().GetGhostMode() == GhostMode::RESTART))  // skip ghost sample during restart
             {
-                if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertices().back().time > GHOST_TRAIL_SAMPLE_TIME)
+                if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertices().back().time > ghost_trail_dt_)
                 {
                     // Only add trail vertex when speed is not stable at 0
                     if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertices().back().speed) > SMALL_NUMBER ||
                         fabs(obj->GetSpeed()) > SMALL_NUMBER)
                     {
                         // If considerable time has passed, copy previous steady-state sample
-                        if (obj->trail_.vertex_.size() > 0 && simulationTime_ - obj->trail_.GetVertices().back().time > 2 * GHOST_TRAIL_SAMPLE_TIME)
+                        if (obj->trail_.vertex_.size() > 0 && simulationTime_ - obj->trail_.GetVertices().back().time > 2 * ghost_trail_dt_)
                         {
                             obj->trail_.AddVertex(obj->trail_.vertex_.back());
                             // with modified timestamp
-                            obj->trail_.vertex_.back().time = simulationTime_ - GHOST_TRAIL_SAMPLE_TIME;
+                            obj->trail_.vertex_.back().time = simulationTime_ - ghost_trail_dt_;
                         }
                         obj->trail_.AddVertex({std::nan(""),
                                                obj->pos_.GetX(),
