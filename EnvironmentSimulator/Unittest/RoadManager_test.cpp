@@ -1539,6 +1539,36 @@ TEST(RoadTest, RoadWidthAllLanes)
     odr->Clear();
 }
 
+TEST(RoadTest, RoadWidthWithLaneOffset)
+{
+    ASSERT_EQ(roadmanager::Position::LoadOpenDrive("../../../EnvironmentSimulator/Unittest/xodr/four_lanes_with_offset.xodr"), true);
+    roadmanager::OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 1);
+
+    Road *road = odr->GetRoadById(1);
+    EXPECT_EQ(road->GetId(), 1);
+
+    EXPECT_NEAR(road->GetWidth(1.0, -1), 10.0, 1e-5);
+    EXPECT_NEAR(road->GetWidth(1.0, 1), 0.0, 1e-5);
+    EXPECT_NEAR(road->GetWidth(1.0, 0), 10.0, 1e-5);
+
+    Position pos;
+    pos.SetLanePos(1, -4, 1.0, -0.9);
+    EXPECT_EQ(pos.IsOffRoad(), false);
+    pos.SetLanePos(1, -4, 1.0, -1.1);
+    EXPECT_EQ(pos.IsOffRoad(), true);
+
+    pos.SetLanePos(1, -1, 1.0, 0.9);
+    EXPECT_EQ(pos.IsOffRoad(), false);
+    pos.SetLanePos(1, -1, 1.0, 1.1);
+    EXPECT_EQ(pos.IsOffRoad(), true);
+
+    odr->Clear();
+}
+
 TEST(RoadTest, RoadWidthDrivingLanes)
 {
     roadmanager::OpenDrive *odr = new OpenDrive("../../../resources/xodr/soderleden.xodr");

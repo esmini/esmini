@@ -2452,7 +2452,7 @@ namespace roadmanager
         bool IsPredecessor(const Road *road, ContactPointType *contact_point = 0, int fromLaneId = 0) const;
 
         /**
-                Get width of road
+                Get width of road or one side of the road with respect to road reference line
                 @param s Longitudinal position/distance along the road
                 @param side Side of the road: -1=right, 1=left, 0=both
                 @param laneTypeMask Bitmask specifying what lane types to consider - see Lane::LaneType

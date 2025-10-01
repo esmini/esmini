@@ -1,5 +1,19 @@
 ## esmini release notes
 
+### 2025-10-01 Version 2.51.1
+
+Improvements and fixes:
+- Fix road tesselation bug introduced in v2.51.0
+- Add RM_SetRoadPosition() function, complementing RM_SetLanePosition()
+- Update RM unity util wrt return types
+- Fully support multiple lane sections in connecting roads
+- Fix bug causing GetInLaneType() return wrong lane type
+- Fix off-road check to correctly consider lane offset
+- Fix lock-on-lane bug
+
+Build improvements:
+- Aim for faster package download by switching source order
+
 ### 2025-09-24 Version 2.51.0
 
 New features:
