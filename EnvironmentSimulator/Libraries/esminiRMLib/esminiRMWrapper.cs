@@ -78,6 +78,8 @@ namespace OpenDRIVE
         public int roadType;
         /// <summary>road rule given by OpenDRIVE rule entry, maps to roadmanager::Road::RoadRule</summary>
         public int roadRule;
+        /// <summary>lane type given by OpenDRIVE type entry, maps to roadmanager::Road::LaneType</summary>
+        public int laneType;
     }
 
     [StructLayout(LayoutKind.Sequential), Serializable]

@@ -143,6 +143,7 @@ static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo*
     r_data->s           = static_cast<float>(s_data.s);
     r_data->road_type   = static_cast<int>(s_data.road_type);
     r_data->road_rule   = static_cast<int>(s_data.road_rule);
+    r_data->lane_type   = static_cast<int>(s_data.lane_type);
 
     return 0;
 }

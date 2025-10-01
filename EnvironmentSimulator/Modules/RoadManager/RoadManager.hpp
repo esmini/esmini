@@ -3027,6 +3027,7 @@ namespace roadmanager
         double         s;           // s (longitudinal distance along reference line)
         double         t;           // t (lateral distance from reference line)
         double         friction;    // lane material friction
+        Lane::LaneType lane_type;
     } RoadLaneInfo;
 
     typedef struct

@@ -99,8 +99,9 @@ typedef struct
     float laneOffset;     // target position, lane offset (lateral distance from lane center)
     float s;              // target position, s (longitudinal distance along reference line)
     float t;              // target position, t (lateral distance from reference line)
-    int   road_type;      // road type given by OpenDRIVE type entry, maps to roadmanager::Road::RoadType
+    int   road_type;      // road type given by OpenDRIVE road type, maps to roadmanager::Road::RoadType
     int   road_rule;      // road rule given by OpenDRIVE rule entry, maps to roadmanager::Road::RoadRule
+    int   lane_type;      // lane type given by OpenDRIVE lane type, maps to roadmanager::Road::LaneType
 } SE_RoadInfo;
 // asciidoc end::SE_RoadInfo_struct[]
 

@@ -64,6 +64,7 @@ typedef struct
     float          t;            // target position, t (lateral distance from reference line)
     int            road_type;    // road type given by OpenDRIVE type entry, maps to roadmanager::Road::RoadType
     int            road_rule;    // road rule given by OpenDRIVE rule entry, maps to roadmanager::Road::RoadRule
+    int            lane_type;    // lane type given by OpenDRIVE type entry, maps to roadmanager::Road::LaneType
 } RM_RoadLaneInfo;
 
 typedef struct

@@ -11201,6 +11201,7 @@ int Position::GetRoadLaneInfo(RoadLaneInfo* data) const
         data->road_rule   = road->GetRule();
         Lane::Material* m = road->GetLaneMaterialByS(GetS(), GetLaneId());
         data->friction    = m != nullptr ? m->friction : FRICTION_DEFAULT;
+        data->lane_type   = road->GetLaneTypeByS(GetS(), GetLaneId());
     }
 
     return 0;
