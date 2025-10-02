@@ -71,10 +71,7 @@ namespace roadgeom
     class FindNamedNode : public osg::NodeVisitor
     {
     public:
-        FindNamedNode(const std::string& name)
-            : osg::NodeVisitor(
-                  osg::NodeVisitor::TRAVERSE_ALL_CHILDREN),
-              _name(name)
+        FindNamedNode(const std::string& name) : osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN), _name(name)
         {
         }
 
@@ -1100,7 +1097,7 @@ namespace roadgeom
                         filename += "_" + signal->GetSubType();
                     }
 
-                    if (!NEAR_NUMBERS(signal->GetValue(), -1.0))
+                    if (!(NEAR_NUMBERS(signal->GetValue(), -1.0) || signal->GetValueStr().empty()))
                     {
                         filename += "-" + signal->GetValueStr();
                     }
@@ -1136,19 +1133,6 @@ namespace roadgeom
                         signal->SetModel3DFullPath(located_file_path);
                     }
 
-                    if (tx == nullptr)
-                    {
-                        // still not found, check special cases where esmini can provide a model
-                        if (signal->GetType() == "1.000.001" || signal->GetType() == "1000001")
-                        {
-
-                            tx = LoadRoadFeature(road, "traffic_light_red_yellow_green.osgb", exe_path);
-                            TrafficLightRedYellowGreen tl;
-                            tl.SetNode(tx);
-                            traffic_light_red_yellow_green_[signal->GetId()] = tl;
-                        }
-                    }
-
                     if (tx != nullptr)
                     {
                         tx->setPosition(osg::Vec3(static_cast<float>(signal->GetX() - origin[0]),
@@ -1165,6 +1149,13 @@ namespace roadgeom
                             dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
                         obj_standin->setNodeMask(NODE_MASK_SIGN);
                         signGroup->addChild(obj_standin);
+                    }
+
+                    if (tx != nullptr && signal->GetType() == "1.000.001" || signal->GetType() == "1000001")
+                    {
+                        TrafficLightRedYellowGreen tl;
+                        tl.SetNode(tx);
+                        traffic_light_red_yellow_green_[signal->GetId()] = tl;
                     }
                 }
 
@@ -1860,6 +1851,20 @@ namespace roadgeom
             node->accept(fnn);
             switches_[i] = static_cast<osg::Switch*>(fnn.getNode());
         }
+    }
+
+    void TrafficLightRedYellowGreen::SetState(unsigned int light_index, bool state)
+    {
+        if (light_index < 3 && switches_[light_index] != nullptr)
+        {
+            switches_[light_index]->setAllChildrenOff();
+            switches_[light_index]->setValueList({!state, state});
+        }
+    }
+
+    bool TrafficLightRedYellowGreen::GetState(unsigned int light_index) const
+    {
+        return switches_[light_index]->getValue(1);
     }
 
 }  // namespace roadgeom

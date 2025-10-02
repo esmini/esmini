@@ -4463,7 +4463,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     double      z_offset = atof(signal.attribute("zOffset").value());
                     std::string country  = ToLower(signal.attribute("country").value());
 
-                    int country_revision = 2013;  // default
+                    unsigned int country_revision = 2013;  // default
 
                     if (signal.attribute("countryRevision").empty())
                     {
@@ -4525,6 +4525,10 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                         {
                             LOG_INFO("Signal Type {} exists for country {} - but no OSI type defined", type_to_find, country);
                         }
+                    }
+                    else
+                    {
+                        osi_type = static_cast<int>(Signal::OSIType::TYPE_UNKNOWN);
                     }
 
                     std::string unit     = signal.attribute("unit").value();

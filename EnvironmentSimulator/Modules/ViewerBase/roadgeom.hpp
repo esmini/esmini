@@ -52,6 +52,10 @@ namespace roadgeom
     public:
         TrafficLightRedYellowGreen() = default;
         void SetNode(osg::Group* node);
+        void SetState(unsigned int light_index, bool on);
+        bool GetState(unsigned int light_index) const;
+
+    private:
         osg::Switch* switches_[3];
     };
 
@@ -113,16 +117,15 @@ namespace roadgeom
         void                                         SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label);
         int                                          SaveToFile(const std::string& filename);
 
+        std::unordered_map<int, TrafficLightRedYellowGreen> traffic_light_red_yellow_green_;
+
     private:
-        unsigned int                                                   number_of_materials     = 0;
-        std::unordered_map<MaterialType, osg::ref_ptr<osg::Texture2D>> texture_map_            = {};
-        double                                                         lane_friction_          = 1.0;
-        roadmanager::OpenDrive*                                        odrManager_             = nullptr;
-        bool                                                           optimize_               = true;
-        osg::Node*                                                     environment_            = nullptr;
-        std::string                                                    exe_dir_                = "";
-        int                                                            roadmark_texture_found_ = -1;
-        std::unordered_map<int, TrafficLightRedYellowGreen>            traffic_light_red_yellow_green_;
+        unsigned int                                                   number_of_materials = 0;
+        std::unordered_map<MaterialType, osg::ref_ptr<osg::Texture2D>> texture_map_        = {};
+        double                                                         lane_friction_      = 1.0;
+        roadmanager::OpenDrive*                                        odrManager_         = nullptr;
+        bool                                                           optimize_           = true;
+        osg::Node*                                                     environment_        = nullptr;
     };
 
 }  // namespace roadgeom
