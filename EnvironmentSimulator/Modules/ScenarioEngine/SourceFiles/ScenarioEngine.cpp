@@ -731,7 +731,7 @@ int ScenarioEngine::parseScenario()
                 if (obj->ghost_)
                 {
                     LOG_INFO("NOTE: Ghost feature activated. Consider headstart time offset ({:.2f} s) when reading log.",
-                             obj->ghost_->GetHeadstartTime() < 0 ? -obj->ghost_->GetHeadstartTime() : 0.0);
+                             obj->ghost_->GetHeadstartTime() > 0 ? -obj->ghost_->GetHeadstartTime() : 0.0);
 
                     if (obj->ghost_->GetHeadstartTime() > SE_Env::Inst().GetGhostHeadstart())
                     {
