@@ -258,6 +258,10 @@ int ScenarioEngine::step(double deltaSimTime)
                 {
                     obj->boundingbox_ = o->state_.info.boundingbox;
                 }
+                if (o->dirty_ & Object::DirtyBit::LANE_TYPE_SNAP_MASK)
+                {
+                    obj->pos_.SetSnapLaneTypes(o->state_.pos.GetSnapLaneTypes());
+                }
             }
         }
     }

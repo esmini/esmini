@@ -886,6 +886,23 @@ int ScenarioGateway::updateObjectWheelAngle(int id, double timestamp, double whe
     return 0;
 }
 
+int ScenarioGateway::updateObjectLaneTypeSnapMask(int id, double timestamp, int laneTypeMask)
+{
+    (void)timestamp;
+    ObjectState* obj_state = getObjectStatePtrById(id);
+
+    if (obj_state == nullptr)
+    {
+        LOG_ERROR("Can't set lane type mask for object {} yet. Please register object using reportObject() first.", id);
+        return -1;
+    }
+
+    obj_state->state_.pos.SetSnapLaneTypes(laneTypeMask);
+    obj_state->dirty_ |= Object::DirtyBit::LANE_TYPE_SNAP_MASK;
+
+    return 0;
+}
+
 int ScenarioGateway::updateObjectWheelRotation(int id, double timestamp, double wheelRotation)
 {
     (void)timestamp;

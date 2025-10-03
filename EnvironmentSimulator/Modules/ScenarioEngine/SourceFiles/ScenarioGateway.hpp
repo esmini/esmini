@@ -320,6 +320,7 @@ namespace scenarioengine
         int updateObjectAngularVel(int id, double timestamp, double h_rate, double p_rate, double r_rate);
         int updateObjectAngularAcc(int id, double timestamp, double h_acc, double p_acc, double r_acc);
         int updateObjectWheelAngle(int id, double timestamp, double wheelAngle);
+        int updateObjectLaneTypeSnapMask(int id, double timestamp, int laneTypeMask);
         int updateObjectWheelRotation(int id, double timestamp, double wheelRotation);
         int updateObjectVisibilityMask(int id, int visibilityMask);
         int updateObjectControllerType(int id, int controllerType);

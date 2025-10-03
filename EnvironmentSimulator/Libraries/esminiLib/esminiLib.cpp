@@ -1400,7 +1400,7 @@ extern "C"
 
         if (object_id >= 0 && object_id < static_cast<int>(player->scenarioEngine->entities_.object_.size()))
         {
-            player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos.SetSnapLaneTypes(laneTypes);
+            player->scenarioGateway->updateObjectLaneTypeSnapMask(object_id, 0.0, laneTypes);
         }
         else
         {
