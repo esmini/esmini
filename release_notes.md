@@ -3,17 +3,23 @@
 ### 2025-10-03 Version 2.52.0
 
 Braking API changes:
-- Extend RoadLaneInfo struct in esminiRMLib with:
+- Extend esminiRMLib RoadLaneInfo struct with:
   - lane type
-- Extend RoadInfo struct in esminiLib with:
+- Extend esminiLib RoadInfo struct with:
   - lane type
   - trail wheel angle, e.g. for ghost tracking
 - Extend aggregated lane type "ANY_ROAD" to include SHOULDER
-  - as side effect it will be colored as asphalt instead of grass
+  - as side effect shoulder will be colored as asphalt instead of grass
 
 Note: The above changes might require updates in user applications
 
 Improvements and fixes:
+- Make ghost trail sample rate configurable, examples:
+  - `--ghost_trail_dt 0.5`
+  - `SE_SetOptionValue("ghost_trail_dt", "0.5")`
+- Fix esmini lib SE_SetSnapLaneTypes() has no effect
+- Use main object lane type mask for trail lookahead
+- Some additional minor fixes
 
 ### 2025-10-01 Version 2.51.1
 
