@@ -303,7 +303,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
         return returncode;
     }
 
-    roadmanager::Position pos;
+    roadmanager::Position pos(obj->pos_);
     if (trailPos.road_id != SE_ID_UNDEFINED)
     {
         pos.XYZ2TrackPos(trailPos.x, trailPos.y, 0.0, roadmanager::Position::PosMode::UNDEFINED, false, trailPos.road_id, false);
