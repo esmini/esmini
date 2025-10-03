@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2025-10-02T10:00:00" description="Follow ghost driving over various lane types" author="esmini team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="ghost_follow_mode" parameterType="string" value="position"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+         <ObjectController name="FollowGhostByMode">
+            <CatalogReference catalogName="ControllerCatalog" entryName="followGhost">
+               <ParameterAssignments>
+                  <ParameterAssignment parameterRef="HeadStartTime" value="2.5"/>
+                  <ParameterAssignment parameterRef="FollowMode" value="$ghost_follow_mode"/>
+                  <ParameterAssignment parameterRef="LookaheadSpeed" value="1.0"/>
+                  <ParameterAssignment parameterRef="MinLookaheadSpeed" value="7.0"/>
+                  <ParameterAssignment parameterRef="LookaheadSteering" value="1.0"/>
+                  <ParameterAssignment parameterRef="MinLookaheadSteering" value="7.0"/>
+               </ParameterAssignments>
+            </CatalogReference>
+         </ObjectController>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <RoutingAction>
+                     <FollowTrajectoryAction>
+                        <TrajectoryRef>
+                           <Trajectory name="LaneChangePart1" closed="false">
+                              <ParameterDeclarations/>
+                              <Shape>
+                                 <ClothoidSpline>
+                                    <ClothoidSplineSegment curvatureStart="0.0" curvatureEnd="0.0" length="30">
+                                       <PositionStart>
+                                          <RoadPosition roadId="1" t="-6.0" s="50"/>
+                                       </PositionStart>
+                                    </ClothoidSplineSegment>
+                                    <ClothoidSplineSegment curvatureStart="0.0" curvatureEnd="0.1" length="5.0"/>
+                                    <ClothoidSplineSegment curvatureStart="0.1" curvatureEnd="-0.1" length="20.0"/>
+                                    <ClothoidSplineSegment curvatureStart="-0.1" curvatureEnd="0.0" length="5"/>
+                                    <ClothoidSplineSegment curvatureStart="0.0" curvatureEnd="0.0" length="20"/>
+                                 </ClothoidSpline>
+                              </Shape>
+                           </Trajectory>
+                        </TrajectoryRef>
+                        <TimeReference>
+                           <None/>
+                        </TimeReference>
+                        <TrajectoryFollowingMode followingMode="position"/>
+                     </FollowTrajectoryAction>
+                  </RoutingAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="10.0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story">
+         <Act name="Act">
+            <ManeuverGroup name="ManeuverGroup" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="Maneuver">
+                  <Event name="Event" priority="override">
+                     <Action name="Action">
+                        <PrivateAction>
+                           <ActivateControllerAction objectControllerRef="FollowGhostByMode" longitudinal="true" lateral="true"/>
+                        </PrivateAction>
+                     </Action>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StopTrigger" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="8" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

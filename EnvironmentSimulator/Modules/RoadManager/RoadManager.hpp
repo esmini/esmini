@@ -3074,20 +3074,21 @@ namespace roadmanager
 
     struct TrajVertex
     {
-        double s        = 0;
-        double x        = 0;
-        double y        = 0;
-        double z        = 0;
-        double h        = 0;
-        double pitch    = 0;
-        double r        = 0;
-        id_t   road_id  = ID_UNDEFINED;  // ID_UNDEFINED indicates no valid road position. Use X, Y instead.
-        double time     = 0;
-        double speed    = 0;  // speed at vertex point/start of segment
-        double acc      = 0;  // acceleration along the segment
-        double param    = 0;
-        int    pos_mode = 0;  // resolved alignment bitmask after calculation, see Position::PosMode enum
-        double h_true   = 0;  // true trajectory heading, calculated based on polyline approximation
+        double s           = 0;
+        double x           = 0;
+        double y           = 0;
+        double z           = 0;
+        double h           = 0;
+        double pitch       = 0;
+        double r           = 0;
+        id_t   road_id     = ID_UNDEFINED;  // ID_UNDEFINED indicates no valid road position. Use X, Y instead.
+        double time        = 0;
+        double speed       = 0;  // speed at vertex point/start of segment
+        double acc         = 0;  // acceleration along the segment
+        double param       = 0;
+        int    pos_mode    = 0;  // resolved alignment bitmask after calculation, see Position::PosMode enum
+        double h_true      = 0;  // true trajectory heading, calculated based on polyline approximation
+        double wheel_angle = 0;  // wheel angle at vertex point/start of segment
     };
 
     class Position

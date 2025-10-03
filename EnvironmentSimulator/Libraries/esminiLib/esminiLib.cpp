@@ -247,6 +247,7 @@ static void CopyRoadInfo(SE_RoadInfo *r_data, roadmanager::RoadProbeInfo *s_data
         r_data->t            = static_cast<float>(s_data->road_lane_info.t);
         r_data->road_type    = static_cast<int>(s_data->road_lane_info.road_type);
         r_data->road_rule    = static_cast<int>(s_data->road_lane_info.road_rule);
+        r_data->lane_type    = static_cast<int>(s_data->road_lane_info.lane_type);
     }
 }
 
@@ -316,7 +317,8 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     obj->pos_.CalcProbeTarget(&pos, &s_data);
 
     CopyRoadInfo(r_data, &s_data);
-    r_data->trail_heading = static_cast<float>(trailPos.h);
+    r_data->trail_heading     = static_cast<float>(trailPos.h);
+    r_data->trail_wheel_angle = static_cast<float>(trailPos.wheel_angle);
 
     *speed_ghost = static_cast<float>(trailPos.speed);
     *timestamp   = static_cast<float>(trailPos.time);
@@ -375,7 +377,8 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     obj->pos_.CalcProbeTarget(&pos, &s_data);
 
     CopyRoadInfo(r_data, &s_data);
-    r_data->trail_heading = static_cast<float>(trailPos.h);
+    r_data->trail_heading     = static_cast<float>(trailPos.h);
+    r_data->trail_wheel_angle = static_cast<float>(trailPos.wheel_angle);
 
     *speed_ghost = static_cast<float>(trailPos.speed);
 

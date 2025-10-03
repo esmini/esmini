@@ -80,28 +80,29 @@ typedef struct
 // asciidoc tag::SE_RoadInfo_struct[]
 typedef struct
 {
-    float global_pos_x;   // target position, in global coordinate system
-    float global_pos_y;   // target position, in global coordinate system
-    float global_pos_z;   // target position, in global coordinate system
-    float local_pos_x;    // target position, relative vehicle (pivot position object) coordinate system
-    float local_pos_y;    // target position, relative vehicle (pivot position object) coordinate system
-    float local_pos_z;    // target position, relative vehicle (pivot position object) coordinate system
-    float angle;          // heading angle to target from and relative vehicle (pivot position object) coordinate system
-    float road_heading;   // road heading at steering target point
-    float road_pitch;     // road pitch (inclination) at steering target point
-    float road_roll;      // road roll (camber) at target point
-    float trail_heading;  // trail heading (only when used for trail lookups, else equals road_heading)
-    float curvature;      // road curvature at steering target point
-    float speed_limit;    // speed limit given by OpenDRIVE speed max entry in m/s
-    id_t  roadId;         // target position, road ID
-    id_t  junctionId;     // target position, junction ID (SE_ID_UNDEFINED if not in a junction)
-    int   laneId;         // target position, lane ID
-    float laneOffset;     // target position, lane offset (lateral distance from lane center)
-    float s;              // target position, s (longitudinal distance along reference line)
-    float t;              // target position, t (lateral distance from reference line)
-    int   road_type;      // road type given by OpenDRIVE road type, maps to roadmanager::Road::RoadType
-    int   road_rule;      // road rule given by OpenDRIVE rule entry, maps to roadmanager::Road::RoadRule
-    int   lane_type;      // lane type given by OpenDRIVE lane type, maps to roadmanager::Road::LaneType
+    float global_pos_x;       // target position, in global coordinate system
+    float global_pos_y;       // target position, in global coordinate system
+    float global_pos_z;       // target position, in global coordinate system
+    float local_pos_x;        // target position, relative vehicle (pivot position object) coordinate system
+    float local_pos_y;        // target position, relative vehicle (pivot position object) coordinate system
+    float local_pos_z;        // target position, relative vehicle (pivot position object) coordinate system
+    float angle;              // heading angle to target from and relative vehicle (pivot position object) coordinate system
+    float road_heading;       // road heading at steering target point
+    float road_pitch;         // road pitch (inclination) at steering target point
+    float road_roll;          // road roll (camber) at target point
+    float trail_heading;      // trail heading (only when used for trail lookups, else equals road_heading)
+    float curvature;          // road curvature at steering target point
+    float speed_limit;        // speed limit given by OpenDRIVE speed max entry in m/s
+    id_t  roadId;             // target position, road ID
+    id_t  junctionId;         // target position, junction ID (SE_ID_UNDEFINED if not in a junction)
+    int   laneId;             // target position, lane ID
+    float laneOffset;         // target position, lane offset (lateral distance from lane center)
+    float s;                  // target position, s (longitudinal distance along reference line)
+    float t;                  // target position, t (lateral distance from reference line)
+    int   road_type;          // road type given by OpenDRIVE road type, maps to roadmanager::Road::RoadType
+    int   road_rule;          // road rule given by OpenDRIVE rule entry, maps to roadmanager::Road::RoadRule
+    int   lane_type;          // lane type given by OpenDRIVE lane type, maps to roadmanager::Road::LaneType
+    float trail_wheel_angle;  // trail wheel angle (only when used for trail lookups, e.g. ghost, else 0)
 } SE_RoadInfo;
 // asciidoc end::SE_RoadInfo_struct[]
 

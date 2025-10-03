@@ -11599,20 +11599,21 @@ int PolyLineBase::EvaluateSegmentByLocalS(idx_t i, double local_s, TrajVertex& p
 
     if (i >= GetNumberOfVertices() - 1)
     {
-        pos.s        = vp0->s;
-        pos.x        = vp0->x;
-        pos.y        = vp0->y;
-        pos.z        = vp0->z;
-        pos.h        = vp0->h;
-        pos.pitch    = vp0->pitch;
-        pos.r        = vp0->r;
-        pos.road_id  = vp0->road_id;
-        pos.time     = vp0->time;
-        pos.speed    = vp0->speed;
-        pos.acc      = vp0->acc;
-        pos.param    = vp0->param;
-        pos.pos_mode = vp0->pos_mode;
-        pos.h_true   = vp0->h_true;
+        pos.s           = vp0->s;
+        pos.x           = vp0->x;
+        pos.y           = vp0->y;
+        pos.z           = vp0->z;
+        pos.h           = vp0->h;
+        pos.pitch       = vp0->pitch;
+        pos.r           = vp0->r;
+        pos.road_id     = vp0->road_id;
+        pos.time        = vp0->time;
+        pos.speed       = vp0->speed;
+        pos.acc         = vp0->acc;
+        pos.param       = vp0->param;
+        pos.pos_mode    = vp0->pos_mode;
+        pos.h_true      = vp0->h_true;
+        pos.wheel_angle = vp0->wheel_angle;
     }
     else if (i != IDX_UNDEFINED)
     {
@@ -11624,17 +11625,18 @@ int PolyLineBase::EvaluateSegmentByLocalS(idx_t i, double local_s, TrajVertex& p
 
         double a = local_s / length;  // a = interpolation factor
 
-        pos.s        = (1 - a) * vp0->s + a * vp1->s;
-        pos.x        = (1 - a) * vp0->x + a * vp1->x;
-        pos.y        = (1 - a) * vp0->y + a * vp1->y;
-        pos.z        = (1 - a) * vp0->z + a * vp1->z;
-        pos.road_id  = vp0->road_id;
-        pos.time     = (1 - a) * vp0->time + a * vp1->time;
-        pos.speed    = (1 - a) * vp0->speed + a * vp1->speed;
-        pos.acc      = (1 - a) * vp0->acc + a * vp1->acc;
-        pos.param    = (1 - a) * vp0->param + a * vp1->param;
-        pos.h_true   = vp0->h_true;
-        pos.pos_mode = vp0->pos_mode;
+        pos.s           = (1 - a) * vp0->s + a * vp1->s;
+        pos.x           = (1 - a) * vp0->x + a * vp1->x;
+        pos.y           = (1 - a) * vp0->y + a * vp1->y;
+        pos.z           = (1 - a) * vp0->z + a * vp1->z;
+        pos.road_id     = vp0->road_id;
+        pos.time        = (1 - a) * vp0->time + a * vp1->time;
+        pos.speed       = (1 - a) * vp0->speed + a * vp1->speed;
+        pos.acc         = (1 - a) * vp0->acc + a * vp1->acc;
+        pos.param       = (1 - a) * vp0->param + a * vp1->param;
+        pos.h_true      = vp0->h_true;
+        pos.pos_mode    = vp0->pos_mode;
+        pos.wheel_angle = (1 - a) * vp0->wheel_angle + a * vp1->wheel_angle;
 
         for (int j = 0; j < 3; j++)
         {

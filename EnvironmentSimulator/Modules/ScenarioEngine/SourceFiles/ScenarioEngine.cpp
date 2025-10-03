@@ -969,7 +969,8 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                                                obj->pos_.GetAcc(),
                                                0.0,
                                                roadmanager::Position::PosMode::H_REL,
-                                               0.0});
+                                               0.0,
+                                               obj->GetWheelAngle()});
                     }
                 }
             }

@@ -87,7 +87,8 @@ namespace scenarioengine
             ALIGN_MODE_P_UPDATE = (1 << 19),
             ALIGN_MODE_R_UPDATE = (1 << 20),
             CONTROLLER          = (1 << 21),
-            BOUNDING_BOX        = (1 << 22)
+            BOUNDING_BOX        = (1 << 22),
+            LANE_TYPE_SNAP_MASK = (1 << 23)
         } DirtyBit;
 
         typedef enum
@@ -442,6 +443,11 @@ namespace scenarioengine
         bool IsGhost() const
         {
             return isGhost_;
+        }
+
+        double GetWheelAngle() const
+        {
+            return wheel_angle_;
         }
         void SetVel(double x_vel, double y_vel, double z_vel);
         void SetAcc(double x_acc, double y_acc, double z_acc);

@@ -18,6 +18,7 @@
 #include <stdexcept>
 #include <fstream>
 #include <stdio.h>
+#include <tuple>
 
 #if __has_include(<filesystem>)
 #include <filesystem>
@@ -5567,6 +5568,88 @@ TEST(RoutingTest, TestRoutePointsWithGhost)
 
     SE_Close();
 }
+
+class TrailTest
+    : public testing::TestWithParam<std::tuple<std::string, double, double, int, double, double, double, int, double, double, double, int, double>>
+{
+protected:
+    TrailTest()
+    {
+        SE_RegisterParameterDeclarationCallback(paramDeclCallback, nullptr);
+    }
+    static void paramDeclCallback(void*)
+    {
+        SE_SetParameterString("ghost_follow_mode", std::get<0>(GetParam()).c_str());
+    }
+    ~TrailTest()
+    {
+        SE_RegisterParameterDeclarationCallback(nullptr, nullptr);
+    }
+};
+
+// Verify that trail lookahead function identifies various lane types and wheel angle
+TEST_P(TrailTest, TrailTestPositionMode)
+{
+    SE_SetOption("disable_stdout");
+    EXPECT_EQ(SE_Init("../../../EnvironmentSimulator/Unittest/xosc/trail_test.xosc", 0, 0, 0, 0), 0);
+
+    int ego_id = SE_GetId(0);
+    EXPECT_EQ(ego_id, 0);
+
+    SE_SetSnapLaneTypes(ego_id, -1);
+
+    SE_RoadInfo road_info;
+    float       speed, timestamp;
+
+    // in border lane
+    while (SE_GetSimulationTime() < (std::get<0>(GetParam()) == "position" ? 2.0f : 1.0f) + SMALL_NUMBERF)
+    {
+        SE_StepDT(0.1f);
+    }
+
+    SE_ScenarioObjectState obj_state;
+    SE_GetObjectState(ego_id, &obj_state);
+    EXPECT_NEAR(obj_state.x, std::get<1>(GetParam()), 1e-3);
+    EXPECT_NEAR(obj_state.y, std::get<2>(GetParam()), 1e-3);
+
+    SE_GetRoadInfoAlongGhostTrail(ego_id, 10.0, &road_info, &speed, &timestamp);
+    EXPECT_EQ(road_info.lane_type, std::get<3>(GetParam()));
+    EXPECT_NEAR(road_info.trail_wheel_angle, std::get<4>(GetParam()), 1e-3);
+
+    // in shoulder lane
+    while (SE_GetSimulationTime() < (std::get<0>(GetParam()) == "position" ? 2.9f : 1.5f) + SMALL_NUMBERF)
+    {
+        SE_StepDT(0.1f);
+    }
+
+    SE_GetObjectState(ego_id, &obj_state);
+    EXPECT_NEAR(obj_state.x, std::get<5>(GetParam()), 1e-3);
+    EXPECT_NEAR(obj_state.y, std::get<6>(GetParam()), 1e-3);
+
+    SE_GetRoadInfoAlongGhostTrail(ego_id, 10.0, &road_info, &speed, &timestamp);
+    EXPECT_EQ(road_info.lane_type, std::get<7>(GetParam()));
+    EXPECT_NEAR(road_info.trail_wheel_angle, std::get<8>(GetParam()), 1e-3);
+
+    // in driving lane
+    while (SE_GetSimulationTime() < (std::get<0>(GetParam()) == "position" ? 3.4f : 2.0f) + SMALL_NUMBERF)
+    {
+        SE_StepDT(0.1f);
+    }
+
+    SE_GetObjectState(ego_id, &obj_state);
+    EXPECT_NEAR(obj_state.x, std::get<9>(GetParam()), 1e-3);
+    EXPECT_NEAR(obj_state.y, std::get<10>(GetParam()), 1e-3);
+
+    SE_GetRoadInfoAlongGhostTrail(ego_id, 10.0, &road_info, &speed, &timestamp);
+    EXPECT_EQ(road_info.lane_type, std::get<11>(GetParam()));
+    EXPECT_NEAR(road_info.trail_wheel_angle, std::get<12>(GetParam()), 1e-3);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    TrailTestPositionModePosition,
+    TrailTest,
+    testing::Values(std::make_tuple("position", 71.0, -6.0, 64, 0.0407, 79.9937, -5.7766, 8, 0.1727, 84.8936, -4.8236, 2, 0.0118),
+                    std::make_tuple("time", 60.9999, -5.994, 64, 0.2814, 65.9984, -5.8872, 8, 0.1727, 70.9764, -5.4374, 2, -0.0157)));
 
 int main(int argc, char** argv)
 {
