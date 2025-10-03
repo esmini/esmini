@@ -1751,9 +1751,11 @@ namespace roadgeom
 
         osg::ComputeBoundsVisitor cbv;
         osg::BoundingBox          bb;
-        if (environment_ != nullptr)
+
+        osg::Node* bb_node = environment_ != nullptr ? environment_ : root_->asNode();
+        if (bb_node != nullptr)
         {
-            environment_->accept(cbv);
+            bb_node->accept(cbv);
             bb = cbv.getBoundingBox();
         }
         else
