@@ -848,11 +848,16 @@ int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheel
     FindNamedNodes          fnn(wheelName, nodes);
     carNode->accept(fnn);
 
-    if (nodes.size() == 1)
+    if (nodes.size() == 0)
+    {
+        return -1;
+    }
+
+    for (auto& node : nodes)
     {
         WheelCompound wc;
 
-        osg::Group* group = dynamic_cast<osg::Group*>(nodes[0]);
+        osg::Group* group = dynamic_cast<osg::Group*>(node);
 
         std::string find_str("Grp_Wheel_");
         if (wheelName.compare(0, find_str.length(), find_str) == 0)
@@ -888,8 +893,8 @@ int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheel
             // assume esmini native wheel structure
             // create three matrix nodes: Wheel position, Steering, Rolling
 
-            osg::MatrixTransform* node = dynamic_cast<osg::MatrixTransform*>(nodes[0]);
-            if (node == nullptr)
+            osg::MatrixTransform* mt = dynamic_cast<osg::MatrixTransform*>(node);
+            if (mt == nullptr)
             {
                 LOG_WARN("Expected osg::MatrixTransform wheel node, found {}", nodes[0]->className());
                 return -1;
@@ -900,18 +905,18 @@ int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheel
             wc.rolling_part                         = new osg::MatrixTransform();
 
             // move translation from wheel node to parent position node
-            osg::Matrix m = node->getMatrix();
+            osg::Matrix m = mt->getMatrix();
             wpos->setMatrix(osg::Matrix::translate(m.getTrans()));
             m.setTrans(0.0, 0.0, 0.0);
-            node->setMatrix(m);
+            mt->setMatrix(m);
 
-            wc.rolling_part->addChild(nodes[0]);
+            wc.rolling_part->addChild(node);
             wc.steering_part->addChild(wc.rolling_part);
             wpos->addChild(wc.steering_part);
 
             // replace original wheel node with the new structure
             group->getParent(0)->addChild(wpos);
-            group->getParent(0)->removeChild(nodes[0]);
+            group->getParent(0)->removeChild(node);
         }
 
         if (front)
@@ -922,10 +927,9 @@ int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheel
         {
             rear_wheel_.push_back(wc);
         }
-
-        return 0;
     }
-    return -1;
+
+    return 0;
 }
 
 EntityModel::EntityModel(Viewer*                  viewer,
@@ -1034,8 +1038,7 @@ CarModel::CarModel(Viewer*                  viewer,
                 }
                 else
                 {
-                    // If we cannot find first wheel in group, continue to the next group
-                    break;
+                    LOG_DEBUG("Failed to find first wheel in group {}", wheel.first);
                 }
             }
             else
