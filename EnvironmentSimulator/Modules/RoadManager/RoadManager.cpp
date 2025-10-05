@@ -12515,14 +12515,7 @@ void ClothoidSplineShape::AddSegment(Position* posStart, double curvStart, doubl
         curvEnd = curvStart;
     }
 
-    Position* pos = nullptr;
-
-    if (posStart != nullptr)
-    {
-        pos = posStart;
-    }
-
-    segments_.emplace_back(pos, curvStart, curvEnd, length, h_offset, time);
+    segments_.emplace_back(posStart, curvStart, curvEnd, length, h_offset, time);
     spirals_.emplace_back(Spiral());  // Add one spiral per trajectory segment
 }
 
@@ -12745,7 +12738,7 @@ Shape* ClothoidSplineShape::Copy()
     shape->segments_.clear();
     for (auto& s : segments_)
     {
-        shape->AddSegment(s.posStart_ != nullptr ? new Position(*s.posStart_) : nullptr, s.curvStart_, s.curvEnd_, s.length_, s.h_offset_, s.time_);
+        shape->AddSegment(s.posStart_, s.curvStart_, s.curvEnd_, s.length_, s.h_offset_, s.time_);
     }
     shape->spirals_ = spirals_;
     shape->CalculatePolyLine();

@@ -5643,6 +5643,8 @@ TEST_P(TrailTest, TrailTestPositionMode)
     SE_GetRoadInfoAlongGhostTrail(ego_id, 10.0, &road_info, &speed, &timestamp);
     EXPECT_EQ(road_info.lane_type, std::get<11>(GetParam()));
     EXPECT_NEAR(road_info.trail_wheel_angle, std::get<12>(GetParam()), 1e-3);
+
+    SE_Close();
 }
 
 INSTANTIATE_TEST_SUITE_P(
