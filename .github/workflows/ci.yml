@@ -226,9 +226,6 @@ jobs:
         shell: pwsh
         run: cmake "--preset=ci-$("${{ matrix.os }}".split("-")[0])-test-no-external-modules" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
 
-      - name: CMake Build
-        run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
-
       # run xml validation only here.
       # 1. Only needs to run once
       # 2. It's not dependent on configuration, so it can be run by any config
@@ -236,6 +233,13 @@ jobs:
       - name: Run schema validation
         if: runner.os == 'Linux' && matrix.configuration == 'Release'
         run: python3 scripts/run_schema_comply.py resources EnvironmentSimulator
+
+      - name: Run C# wrapper check
+        if: runner.os == 'Windows' && matrix.configuration == 'Release'
+        uses: ./.github/actions/wrapper_check
+
+      - name: CMake Build
+        run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'

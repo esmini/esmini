@@ -1,0 +1,42 @@
+name: WrapperCheck
+description: Check consistency of esminiRMLib C# wrapper
+
+runs:
+  using: 'composite'
+
+  steps:
+  - name: Build wrapper
+    shell: bash
+    run: |
+      cd EnvironmentSimulator/Libraries/esminiRMLib/CSWrapperGenerator
+      dotnet build --configuration Release
+
+  - name: Generate wrapper
+    shell: bash
+    run: |
+      cd EnvironmentSimulator/Libraries/esminiRMLib/CSWrapperGenerator
+      ./bin/Release/net8.0/win-x64/Cpp2CSWrapperCreator.exe ../esminiRMLib.hpp esminiRMWrapper.cs
+
+  - name: Upload generated wrapper
+    uses: actions/upload-artifact@v4.3.6
+    with:
+      name: esminiRMWrapper
+      path: EnvironmentSimulator/Libraries/esminiRMLib/CSWrapperGenerator/esminiRMWrapper.cs
+
+  - name: Check
+    # Check that generated wrapper is identical to the checked in one
+    shell: bash
+    run: |
+      cd EnvironmentSimulator/Libraries/esminiRMLib/CSWrapperGenerator
+      diff ../esminiRMWrapper.cs esminiRMWrapper.cs
+
+  - name: What to do
+    shell: bash
+    if: ${{ failure() }}
+    run: |
+      echo "Warning::If this job fails, check the diff output above."
+      echo "The wrapper needs to be regenerated and committed"
+      echo "On Windows, run from CSWrapperGenerator:"
+      echo "dotnet build --configuration Release"
+      echo ".\bin\Release\net8.0\win-x64\Cpp2CSWrapperCreator.exe ./esminiRMLib.hpp ../esminiRMWrapper.cs"
+      echo "Alternatively, use the generated one in the 'Upload generated wrapper' job"
