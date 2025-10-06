@@ -1,5 +1,15 @@
 ## esmini release notes
 
+### 2025-10-06 Version 2.52.1
+
+Improvements and fixes:
+- Ensure ground plane correct size and elevation
+- Fix non rotating wheels
+- Some additional minor fixes
+
+CI improvements:
+- Run wrapper check always, not only nightly
+
 ### 2025-10-03 Version 2.52.0
 
 Braking API changes:
