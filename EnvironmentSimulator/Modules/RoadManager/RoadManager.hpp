@@ -3559,7 +3559,7 @@ namespace roadmanager
         @param data Struct to fill in calculated values, see typdef for details
         @param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode
         enum
-        @return 0 if successful, other codes see Position::ErrorCode
+        @return 0 if successful, other codes see Position::ReturnCode
         */
         ReturnCode GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookAheadMode lookAheadMode) const;
 
@@ -3567,7 +3567,7 @@ namespace roadmanager
         Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
         @param target_pos The target position
         @param data Struct to fill in calculated values, see typdef for details
-        @return 0 if successful, other codes see Position::ErrorCode
+        @return 0 if successful, other codes see Position::ReturnCode
         */
         ReturnCode GetProbeInfo(Position *target_pos, RoadProbeInfo *data) const;
 

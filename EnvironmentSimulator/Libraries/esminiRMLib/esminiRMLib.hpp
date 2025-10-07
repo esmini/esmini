@@ -513,7 +513,7 @@ extern "C"
     @param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
     @param inRoadDrivingDirection If true always look along primary driving direction. If false, look in most straightforward direction according to
     object heading.
-    @return 0 if successful, 1 if probe reached end of road, 2 if end ouf route, -1 if some error
+    @return 0 if successful, other codes see roadmanager::Position::ReturnCode
     */
     RM_DLL_API int RM_GetProbeInfo(int handle, float lookahead_distance, RM_RoadProbeInfo* data, int lookAheadMode, bool inRoadDrivingDirection);
 

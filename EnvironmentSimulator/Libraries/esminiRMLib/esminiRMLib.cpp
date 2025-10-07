@@ -74,6 +74,7 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo* r
         r_data->road_lane_info.t           = static_cast<float>(s_data.road_lane_info.t);
         r_data->road_lane_info.road_type   = static_cast<int>(s_data.road_lane_info.road_type);
         r_data->road_lane_info.road_rule   = static_cast<int>(s_data.road_lane_info.road_rule);
+        r_data->road_lane_info.lane_type   = static_cast<int>(s_data.road_lane_info.lane_type);
         r_data->relative_pos.x             = static_cast<float>(s_data.relative_pos[0]);
         r_data->relative_pos.y             = static_cast<float>(s_data.relative_pos[1]);
         r_data->relative_pos.z             = static_cast<float>(s_data.relative_pos[2]);

@@ -582,7 +582,7 @@ namespace OpenDRIVE
         /// <param name="data">Struct including all result values, see RM_RoadProbeInfo typedef</param>
         /// <param name="lookAheadMode">Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum</param>
         /// <param name="inRoadDrivingDirection">If true always look along primary driving direction. If false, look in most straightforward direction according to</param>
-        /// <returns>0 if successful, 1 if probe reached end of road, 2 if end ouf route, -1 if some error</returns>
+        /// <returns>0 if successful, other codes see roadmanager::Position::ReturnCode</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetProbeInfo")]
         public static extern int GetProbeInfo(int handle, float lookaheadDistance, ref RoadProbeInfo data, int lookAheadMode, bool inRoadDrivingDirection);
 
