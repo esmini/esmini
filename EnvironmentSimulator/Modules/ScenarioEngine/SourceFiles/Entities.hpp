@@ -166,6 +166,30 @@ namespace scenarioengine
         // Allocate vector for all possible override status
         OverrideActionStatus overrideActionList[OverrideType::OVERRIDE_NR_TYPES];
 
+        static std::string OverrideType2Str(OverrideType type)
+        {
+            switch (type)
+            {
+                case OVERRIDE_THROTTLE:
+                    return "OVERRIDE_THROTTLE";
+                case OVERRIDE_BRAKE:
+                    return "OVERRIDE_BRAKE";
+                case OVERRIDE_CLUTCH:
+                    return "OVERRIDE_CLUTCH";
+                case OVERRIDE_PARKING_BRAKE:
+                    return "OVERRIDE_PARKING_BRAKE";
+                case OVERRIDE_STEERING_WHEEL:
+                    return "OVERRIDE_STEERING_WHEEL";
+                case OVERRIDE_GEAR:
+                    return "OVERRIDE_GEAR";
+                case OVERRIDE_UNDEFINED:
+                    return "OVERRIDE_UNDEFINED";
+                default:
+                    break;
+            }
+            return "UNKNOWN_TYPE";
+        }
+
         Type   type_;
         int    id_;
         double speed_;

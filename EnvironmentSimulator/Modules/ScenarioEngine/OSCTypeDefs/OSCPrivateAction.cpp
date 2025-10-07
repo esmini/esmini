@@ -3130,6 +3130,13 @@ void OverrideControlAction::Start(double simTime)
 {
     for (size_t i = 0; i < overrideActionList.size(); i++)
     {
+        if (object_->GetGhost() && overrideActionList[i].active == false && object_->overrideActionList[overrideActionList[i].type].active == true)
+        {
+            // trig ghost restart
+            LOG_INFO("Trigging ghost restart on OverrideControllerAction inactivating {}",
+                     Object::OverrideType2Str(static_cast<Object::OverrideType>(overrideActionList[i].type)));
+            scenarioEngine_->InjectGhostRestart(object_->GetGhost(), static_cast<Event*>(this->parent_));
+        }
         object_->overrideActionList[overrideActionList[i].type] = overrideActionList[i];
     }
     OSCAction::Start(simTime);

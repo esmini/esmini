@@ -1117,7 +1117,7 @@ void ScenarioEngine::ReplaceObjectInTrigger(Trigger* trigger, Object* obj1, Obje
     }
 }
 
-void ScenarioEngine::CreateGhostTeleport(Object* obj1, Object* obj2, Event* event)
+void ScenarioEngine::CreateGhostTeleport(Object* host, Object* ghost, Event* event)
 {
     TeleportAction*        myNewAction = new TeleportAction(nullptr);
     roadmanager::Position* pos         = &myNewAction->position_;
@@ -1130,15 +1130,29 @@ void ScenarioEngine::CreateGhostTeleport(Object* obj1, Object* obj2, Event* even
     pos->relative_.dh = 0.0;
     pos->relative_.dp = 0.0;
     pos->relative_.dr = 0.0;
-    pos->SetRelativePosition(&obj1->pos_, roadmanager::Position::PositionType::RELATIVE_OBJECT);
+    pos->SetRelativePosition(&host->pos_, roadmanager::Position::PositionType::RELATIVE_OBJECT);
 
     myNewAction->action_type_    = OSCPrivateAction::ActionType::TELEPORT;
-    myNewAction->object_         = obj2;
+    myNewAction->object_         = ghost;
     myNewAction->scenarioEngine_ = this;
     myNewAction->SetName("AddedGhostTeleport");
     myNewAction->SetGhostRestart(true);
 
     event->action_.insert(event->action_.begin(), myNewAction);
+}
+
+int scenarioengine::ScenarioEngine::InjectGhostRestart(Object* ghost, Event* event)
+{
+    if (ghost == nullptr || ghost->ghost_Ego_ == nullptr || event == nullptr || event->parent_ == nullptr)
+    {
+        LOG_ERROR("Failed to inject ghost restart teleport action");
+        return -1;
+    }
+
+    CreateGhostTeleport(ghost->ghost_Ego_, ghost, event);
+    event->action_[0]->Start(getSimulationTime());
+
+    return 0;
 }
 
 void ScenarioEngine::SetupGhost(Object* object)

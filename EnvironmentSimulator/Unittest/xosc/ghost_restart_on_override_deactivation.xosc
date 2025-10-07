@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2025-10-07T08:00:00" description="Restart ghost on override deactivation" author="esmini team"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="ghost_follow_mode" parameterType="string" value="position"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <ControllerCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
+      </ControllerCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+         <ObjectController name="FollowGhostByMode">
+            <CatalogReference catalogName="ControllerCatalog" entryName="followGhost">
+               <ParameterAssignments>
+                  <ParameterAssignment parameterRef="HeadStartTime" value="2.0"/>
+                  <ParameterAssignment parameterRef="FollowMode" value="$ghost_follow_mode"/>
+                  <ParameterAssignment parameterRef="LookaheadSpeed" value="1.0"/>
+                  <ParameterAssignment parameterRef="MinLookaheadSpeed" value="7.0"/>
+                  <ParameterAssignment parameterRef="LookaheadSteering" value="1.0"/>
+                  <ParameterAssignment parameterRef="MinLookaheadSteering" value="7.0"/>
+               </ParameterAssignments>
+            </CatalogReference>
+         </ObjectController>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="0.0" dynamicsDimension="time"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="10.0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <ControllerAction>
+                     <ActivateControllerAction longitudinal="false" lateral="true"/>
+                  </ControllerAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="Story">
+         <Act name="Act">
+            <ManeuverGroup name="ManeuverGroup" maximumExecutionCount="1">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="FirstLaneChangeManeuver">
+                  <Event name="FirstLaneChangeEvent" priority="override">
+                     <Action name="FirstLaneChangeAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2.0" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LaneChangeCondition" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="3.0" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="SteerManeuver">
+                  <Event name="ActivateSteeringEvent" maximumExecutionCount="1" priority="override">
+                     <Action name="ActivateSteeringAction">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <OverrideControllerValueAction>
+                                 <SteeringWheel value="0.5" active="true"/>
+                              </OverrideControllerValueAction>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="ActivateSteeringTrigger" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="1" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="DeactivateSteeringEvent" maximumExecutionCount="1" priority="override">
+                     <Action name="DeactivateSteeringAction">
+                        <PrivateAction>
+                           <ControllerAction>
+                              <OverrideControllerValueAction>
+                                 <SteeringWheel value="0.0" active="false"/>
+                              </OverrideControllerValueAction>
+                           </ControllerAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="DeactivateSteeringTrigger" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="4.2" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="ReturnToLaneEvent" priority="override">
+                     <Action name="ReturnToLaneAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="2.0" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <AbsoluteTargetLane value="-1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>                     
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="ReturnToLaneCondition" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementRef="DeactivateSteeringEvent" storyboardElementType="event" state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StopTrigger" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="8" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

@@ -847,6 +847,37 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^8.010, 1, Car2, 72.425, 1.535, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 5.272', csv, re.MULTILINE))
         self.assertTrue(re.search('^8.010, 2, Car_ghost, 71.285, -1.534, 0.000, 6.283, 0.000, 0.000, 0.000, 0.000, 2.405', csv, re.MULTILINE))
 
+    def test_ghost_restart_on_override_deactivation(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/ghost_restart_on_override_deactivation.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*ghost_restart_on_override_deactivation.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('^.-2.000.* FirstLaneChangeManeuver initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.1.100.* ActivateSteeringAction runningState -> endTransition -> completeState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.300.* DeactivateSteeringEvent standbyState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.300.* Trigging ghost restart on OverrideControllerAction inactivating OVERRIDE_STEERING_WHEEL', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.2.400.* ReturnToLaneAction initState -> startTransition -> runningState', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.8.100.* StopTrigger: true, delay: 0.00, 8.1000 > 8.0000, edge: none', log, re.MULTILINE)  is not None)
+
+        # Check vehicle key positions
+        csv = generate_csv()
+        self.assertTrue(re.search('^-2.000, 0, Ego, 50.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^-2.000, 1, Ego_ghost, 50.000, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.700, 0, Ego, 93.753, 0.597, 0.000, 0.181, 0.000, 0.000, 9.000, 0.150, 6.048', csv, re.MULTILINE))
+        self.assertTrue(re.search('^2.700, 1, Ego_ghost, 95.865, 0.331, 0.000, 6.224, 0.000, 0.000, 10.000, -0.072, 0.076', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.200, 0, Ego, 91.879, 0.283, 0.000, 0.162, 0.000, 0.000, 10.000, -0.024, 0.619', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.200, 1, Ego_ghost, 111.706, 1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 1.214', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.300, 0, Ego, 92.867, 0.439, 0.000, 0.155, 0.000, 0.000, 10.000, -0.035, 3.477', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.300, 1, Ego_ghost, 112.706, 1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 4.071', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.300, 0, Ego, 93.753, 0.597, 0.000, 0.181, 0.000, 0.000, 9.000, 0.150, 6.048', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.300, 1, Ego_ghost, 111.747, -1.523, 0.000, 6.247, 0.000, 0.000, 10.000, 0.074, 1.808', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 0, Ego, 99.735, 0.639, 0.000, 6.184, 0.000, 0.000, 10.000, -0.143, 4.341', csv, re.MULTILINE))
+        self.assertTrue(re.search('^5.000, 1, Ego_ghost, 118.746, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 2.958', csv, re.MULTILINE))
+        self.assertTrue(re.search('^8.100, 0, Ego, 130.601, -1.614, 0.000, 0.004, 0.000, 0.000, 10.000, 0.005, 4.948', csv, re.MULTILINE))
+        self.assertTrue(re.search('^8.100, 1, Ego_ghost, 149.746, -1.535, 0.000, 0.000, 0.000, 0.000, 10.000, 0.000, 3.565', csv, re.MULTILINE))
+
     def test_maneuver_groups_x_3(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/maneuver_groups_x_3.xosc'), COMMON_ESMINI_ARGS)
 

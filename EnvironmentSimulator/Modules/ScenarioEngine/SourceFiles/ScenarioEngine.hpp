@@ -150,7 +150,8 @@ namespace scenarioengine
         {
             return &trueTime_;
         }
-        void CreateGhostTeleport(Object *obj1, Object *obj2, Event *event);
+        void CreateGhostTeleport(Object *host, Object *ghost, Event *event);
+        int  InjectGhostRestart(Object *ghost, Event *event);
 
         void UpdateGhostMode();
         int  GetInitStatus() const
