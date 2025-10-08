@@ -314,7 +314,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
         pos.XYZ2TrackPos(trailPos.x, trailPos.y, 0.0);
     }
 
-    obj->pos_.CalcProbeTarget(&pos, &s_data);
+    obj->pos_.CalcProbeInfo(&pos, &s_data);
 
     CopyRoadInfo(r_data, &s_data);
     r_data->trail_heading     = static_cast<float>(trailPos.h);
@@ -374,7 +374,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
         pos.XYZ2TrackPos(trailPos.x, trailPos.y, 0.0);
     }
 
-    obj->pos_.CalcProbeTarget(&pos, &s_data);
+    obj->pos_.CalcProbeInfo(&pos, &s_data);
 
     CopyRoadInfo(r_data, &s_data);
     r_data->trail_heading     = static_cast<float>(trailPos.h);

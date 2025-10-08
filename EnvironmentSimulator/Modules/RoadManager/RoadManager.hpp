@@ -3578,18 +3578,18 @@ namespace roadmanager
         @param data Struct to fill in calculated values, see typdef for details
         @param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode
         enum
-        @return 0 if successful, -1 if not
+        @return 0 if successful and normal, < 0 on some error, > 0 indicating some status, e.g. end of road. See Position::ReturnCode.
         */
-        int GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, LookAheadMode lookAheadMode) const;
-        int GetRoadLaneInfo(RoadLaneInfo *data) const;
+        ReturnCode GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo *data, LookAheadMode lookAheadMode) const;
+        ReturnCode GetRoadLaneInfo(RoadLaneInfo *data) const;
 
         /**
         Get information of current lane at a specified distance from object along the road ahead
         @param lookahead_distance The distance, along the road, to the point
         @param data Struct to fill in calculated values, see typdef for details
-        @return 0 if successful, -1 if not
+        @return 0 if successful, -1 if not. See Position::ReturnCode for further info.
         */
-        int CalcProbeTarget(Position *target, RoadProbeInfo *data) const;
+        ReturnCode CalcProbeInfo(Position *target, RoadProbeInfo *data) const;
 
         double DistanceToDS(double ds);
 

@@ -22,10 +22,8 @@ static roadmanager::OpenDrive* odrManager = nullptr;
 static std::vector<Position>   position;
 static std::string             returnString;  // use this for returning strings
 
-static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo* r_data, int lookAheadMode, bool inRoadDrivingDirection)
+static int GetRoadInfo(int index, float lookahead_distance, void* data, int lookAheadMode, bool inRoadDrivingDirection, bool probe_extension)
 {
-    roadmanager::RoadProbeInfo s_data;
-
     if (index < 0 || odrManager == 0)
     {
         return -1;
@@ -42,21 +40,34 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo* r
     if (inRoadDrivingDirection)
     {
         // Look in the driving direction of current lane
-        if (position[static_cast<unsigned int>(index)].GetHRelativeDrivingDirection() > M_PI_2 &&
-            position[static_cast<unsigned int>(index)].GetHRelativeDrivingDirection() < 3 * M_PI_2)
+        if (fabs(GetAngleInIntervalMinusPIPlusPI(position[static_cast<unsigned int>(index)].GetHRelativeDrivingDirection()) > M_PI_2))
         {
             adjustedLookaheadDistance = -lookahead_distance;
         }
     }
 
-    Position::ReturnCode retval =
-        position[static_cast<unsigned int>(index)].GetProbeInfo(adjustedLookaheadDistance,
-                                                                &s_data,
-                                                                static_cast<roadmanager::Position::LookAheadMode>(lookAheadMode));
+    Position::ReturnCode       retval = Position::ReturnCode::OK;
+    roadmanager::RoadProbeInfo s_data;
+
+    if (probe_extension)
+    {
+        // full top struct including additional probe info
+        retval = position[static_cast<unsigned int>(index)].GetProbeInfo(adjustedLookaheadDistance,
+                                                                         &s_data,
+                                                                         static_cast<roadmanager::Position::LookAheadMode>(lookAheadMode));
+    }
+    else
+    {
+        // only road lane info requested
+        retval = position[static_cast<unsigned int>(index)].GetRoadLaneInfo(adjustedLookaheadDistance,
+                                                                            &s_data.road_lane_info,
+                                                                            static_cast<roadmanager::Position::LookAheadMode>(lookAheadMode));
+    }
+
+    RM_RoadProbeInfo* r_data = static_cast<RM_RoadProbeInfo*>(data);
 
     if (retval != roadmanager::Position::ReturnCode::ERROR_GENERIC)
     {
-        // Copy data
         r_data->road_lane_info.pos.x       = static_cast<float>(s_data.road_lane_info.pos[0]);
         r_data->road_lane_info.pos.y       = static_cast<float>(s_data.road_lane_info.pos[1]);
         r_data->road_lane_info.pos.z       = static_cast<float>(s_data.road_lane_info.pos[2]);
@@ -70,73 +81,22 @@ static int GetProbeInfo(int index, float lookahead_distance, RM_RoadProbeInfo* r
         r_data->road_lane_info.junctionId  = s_data.road_lane_info.junctionId;
         r_data->road_lane_info.laneId      = s_data.road_lane_info.laneId;
         r_data->road_lane_info.laneOffset  = static_cast<float>(s_data.road_lane_info.laneOffset);
-        r_data->road_lane_info.s           = static_cast<float>(s_data.road_lane_info.s);
         r_data->road_lane_info.t           = static_cast<float>(s_data.road_lane_info.t);
+        r_data->road_lane_info.s           = static_cast<float>(s_data.road_lane_info.s);
         r_data->road_lane_info.road_type   = static_cast<int>(s_data.road_lane_info.road_type);
         r_data->road_lane_info.road_rule   = static_cast<int>(s_data.road_lane_info.road_rule);
         r_data->road_lane_info.lane_type   = static_cast<int>(s_data.road_lane_info.lane_type);
-        r_data->relative_pos.x             = static_cast<float>(s_data.relative_pos[0]);
-        r_data->relative_pos.y             = static_cast<float>(s_data.relative_pos[1]);
-        r_data->relative_pos.z             = static_cast<float>(s_data.relative_pos[2]);
-        r_data->relative_h                 = static_cast<float>(s_data.relative_h);
-    }
 
-    return static_cast<int>(retval);
-}
-
-static int GetRoadLaneInfo(int index, float lookahead_distance, RM_RoadLaneInfo* r_data, int lookAheadMode, bool inRoadDrivingDirection)
-{
-    roadmanager::RoadLaneInfo s_data;
-
-    if (index < 0 || odrManager == 0)
-    {
-        return -1;
-    }
-
-    if (index >= static_cast<int>(position.size()))
-    {
-        LOG_ERROR("Object {} not available, only {} registered", index, position.size());
-        return -1;
-    }
-
-    double adjustedLookaheadDistance = lookahead_distance;
-
-    if (!inRoadDrivingDirection)
-    {
-        // Find out what direction to look in
-        if (fabs(position[static_cast<unsigned int>(index)].GetHRelativeDrivingDirection()) > M_PI_2)
+        if (probe_extension)
         {
-            adjustedLookaheadDistance = -lookahead_distance;
+            r_data->relative_pos.x = static_cast<float>(s_data.relative_pos[0]);
+            r_data->relative_pos.y = static_cast<float>(s_data.relative_pos[1]);
+            r_data->relative_pos.z = static_cast<float>(s_data.relative_pos[2]);
+            r_data->relative_h     = static_cast<float>(s_data.relative_h);
         }
     }
 
-    if (position[static_cast<unsigned int>(index)].GetRoadLaneInfo(adjustedLookaheadDistance,
-                                                                   &s_data,
-                                                                   static_cast<roadmanager::Position::LookAheadMode>(lookAheadMode)) != 0)
-    {
-        return -1;
-    }
-
-    r_data->pos.x       = static_cast<float>(s_data.pos[0]);
-    r_data->pos.y       = static_cast<float>(s_data.pos[1]);
-    r_data->pos.z       = static_cast<float>(s_data.pos[2]);
-    r_data->heading     = static_cast<float>(s_data.heading);
-    r_data->pitch       = static_cast<float>(s_data.pitch);
-    r_data->roll        = static_cast<float>(s_data.roll);
-    r_data->width       = static_cast<float>(s_data.width);
-    r_data->curvature   = static_cast<float>(s_data.curvature);
-    r_data->speed_limit = static_cast<float>(s_data.speed_limit);
-    r_data->roadId      = s_data.roadId;
-    r_data->junctionId  = s_data.junctionId;
-    r_data->laneId      = s_data.laneId;
-    r_data->laneOffset  = static_cast<float>(s_data.laneOffset);
-    r_data->t           = static_cast<float>(s_data.t);
-    r_data->s           = static_cast<float>(s_data.s);
-    r_data->road_type   = static_cast<int>(s_data.road_type);
-    r_data->road_rule   = static_cast<int>(s_data.road_rule);
-    r_data->lane_type   = static_cast<int>(s_data.lane_type);
-
-    return 0;
+    return static_cast<int>(retval);
 }
 
 extern "C"
@@ -852,7 +812,7 @@ extern "C"
             return -1;
         }
 
-        return GetRoadLaneInfo(handle, lookahead_distance, data, lookAheadMode, inRoadDrivingDirection);
+        return GetRoadInfo(handle, lookahead_distance, data, lookAheadMode, inRoadDrivingDirection, false);
     }
 
     RM_DLL_API float RM_GetSpeedLimit(int handle)
@@ -872,7 +832,7 @@ extern "C"
             return -1;
         }
 
-        return GetProbeInfo(handle, lookahead_distance, data, lookAheadMode, inRoadDrivingDirection);
+        return GetRoadInfo(handle, lookahead_distance, data, lookAheadMode, inRoadDrivingDirection, true);
     }
 
     RM_DLL_API int RM_GetLaneWidth(int handle, int lane_id, float* width)

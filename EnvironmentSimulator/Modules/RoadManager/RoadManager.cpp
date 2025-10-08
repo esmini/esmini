@@ -9678,9 +9678,9 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
                         }
                     }
                 }
-                else
+                else if (ret_val == ReturnCode::OK)
                 {
-                    ret_val = ret_val2;  // propagate previous informative return code
+                    ret_val = ret_val2;  // propagate previous informative return code, but only if no errors occurred
                 }
             }
         }
@@ -9767,7 +9767,13 @@ Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double
     else  // Find LaneSection and info according to s
     {
         LaneInfo li;
-        retvalue = static_cast<ReturnCode>(road->GetLaneInfoByS(GetS(), lane_section_idx_, lane_id_, li, snapToLaneTypes_));
+
+        int retval_tmp = road->GetLaneInfoByS(GetS(), lane_section_idx_, lane_id_, li, snapToLaneTypes_);
+        if (retvalue == ReturnCode::OK)
+        {
+            // previous returncode prevails
+            retvalue = static_cast<ReturnCode>(retval_tmp);
+        }
 
         lane_section_idx_ = li.lane_section_idx_;
         lane_id_          = li.lane_id_;
@@ -11176,7 +11182,7 @@ bool Position::IsAheadOf(Position target_position) const
     return (diff_x0 < 0);
 }
 
-int Position::GetRoadLaneInfo(RoadLaneInfo* data) const
+Position::ReturnCode Position::GetRoadLaneInfo(RoadLaneInfo* data) const
 {
     double curvature = GetCurvature();
     if (fabs(curvature) > SMALL_NUMBER)
@@ -11217,13 +11223,14 @@ int Position::GetRoadLaneInfo(RoadLaneInfo* data) const
         data->lane_type   = road->GetLaneTypeByS(GetS(), GetLaneId());
     }
 
-    return 0;
+    return ReturnCode::OK;
 }
 
-int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo* data, LookAheadMode lookAheadMode) const
+Position::ReturnCode Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo* data, LookAheadMode lookAheadMode) const
 {
     Position target;  // Make a copy of current position
     target.Duplicate(*this);
+    ReturnCode ret_val = ReturnCode::OK;
 
     Route route_backup;
     if (GetRoute())
@@ -11245,10 +11252,7 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo* data, Loo
 
     if (fabs(lookahead_distance) > SMALL_NUMBER)
     {
-        if (target.MoveAlongS(lookahead_distance, 0.0, 0.0, true, MoveDirectionMode::HEADING_DIRECTION, true) < ReturnCode::OK)
-        {
-            return -1;
-        }
+        ret_val = target.MoveAlongS(lookahead_distance, 0.0, 0.0, true, MoveDirectionMode::HEADING_DIRECTION, true);
     }
 
     target.GetRoadLaneInfo(data);
@@ -11258,14 +11262,14 @@ int Position::GetRoadLaneInfo(double lookahead_distance, RoadLaneInfo* data, Loo
         route_->CopyFrom(route_backup);
     }
 
-    return 0;
+    return ret_val;
 }
 
-int Position::CalcProbeTarget(Position* target, RoadProbeInfo* data) const
+Position::ReturnCode Position::CalcProbeInfo(Position* target, RoadProbeInfo* data) const
 {
-    int retval = target->GetRoadLaneInfo(&data->road_lane_info);
+    ReturnCode retval = target->GetRoadLaneInfo(&data->road_lane_info);
 
-    if (retval == 0)
+    if (retval == ReturnCode::OK)
     {
         // find out local x, y, z
         double diff_x = target->GetX() - GetX();
@@ -11341,7 +11345,7 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
 
     if (retval != ReturnCode::ERROR_GENERIC)
     {
-        CalcProbeTarget(&target, data);
+        CalcProbeInfo(&target, data);
     }
 
     if (route_)
@@ -11350,16 +11354,6 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
     }
 
     return retval;
-}
-
-Position::ReturnCode Position::GetProbeInfo(Position* target_pos, RoadProbeInfo* data) const
-{
-    if (CalcProbeTarget(target_pos, data) != 0)
-    {
-        return ReturnCode::ERROR_GENERIC;
-    }
-
-    return ReturnCode::OK;
 }
 
 id_t Position::GetTrackId() const
