@@ -1602,6 +1602,8 @@ int Road::GetLaneInfoByS(double s, idx_t start_lane_section_idx, int start_lane_
 
                 lane_info.lane_id_ = lane_section->GetLaneByIdx(new_lane_index)->GetId();
                 LOG_INFO("GetLaneInfoByS: Moved to {}", lane_info.lane_id_);
+
+                return static_cast<int>(Position::ReturnCode::REACHED_END_OF_LANE);
             }
         }
     }
@@ -9410,6 +9412,16 @@ Position::ReturnCode Position::MoveToConnectingRoad(RoadLink* road_link, Contact
 
         LOG_INFO("{}onnection found (rid {} lid {})", ret_val < ReturnCode::OK ? "No c" : "C", GetTrackId(), GetLaneId());
 
+        if (ret_val >= ReturnCode::OK)
+        {
+            // Indicate we reached end of lane and found no connection, possibly snapped to another lane
+            ret_val = ReturnCode::REACHED_END_OF_LANE;
+        }
+        else
+        {
+            LOG_ERROR("Failed to move to next road {} - cannot find closest lane", next_road->GetId());
+        }
+
         offset_ = 0;  // Reset lane offset when new move to new lane was enforced
 
         return ret_val;
@@ -9666,6 +9678,10 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
                         }
                     }
                 }
+                else
+                {
+                    ret_val = ret_val2;  // propagate previous informative return code
+                }
             }
         }
         else
@@ -9751,10 +9767,7 @@ Position::ReturnCode Position::SetLanePosMode(id_t track_id, int lane_id, double
     else  // Find LaneSection and info according to s
     {
         LaneInfo li;
-        if (road->GetLaneInfoByS(GetS(), lane_section_idx_, lane_id_, li, snapToLaneTypes_) != 0)
-        {
-            retvalue = ReturnCode::ERROR_GENERIC;
-        }
+        retvalue = static_cast<ReturnCode>(road->GetLaneInfoByS(GetS(), lane_section_idx_, lane_id_, li, snapToLaneTypes_));
 
         lane_section_idx_ = li.lane_section_idx_;
         lane_id_          = li.lane_id_;

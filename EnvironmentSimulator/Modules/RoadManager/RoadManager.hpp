@@ -3134,6 +3134,7 @@ namespace roadmanager
             OK                   = 0,
             ENTERED_NEW_ROAD     = 1,  // position moved into a new road segment
             MADE_JUNCTION_CHOICE = 2,  // position moved into a junction and made a choice
+            REACHED_END_OF_LANE  = 3,  // position reached end of lane with no connection, possibly snapped to neighbor lane
         };
 
         enum class UpdateTrackPosMode
