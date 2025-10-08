@@ -9518,7 +9518,7 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
     int              max_links = 8;  // limit lookahead through junctions/links
     ContactPointType contact_point_type;
     ReturnCode       ret_val = ReturnCode::OK;
-    Road*            road    = nullptr;
+    Road*            road    = GetOpenDrive()->GetRoadById(track_id_);
 
     // find out ds along road s-axis
     double ds_road = ds;
@@ -9533,7 +9533,6 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
     }
     else if (mode == MoveDirectionMode::LANE_DIRECTION)
     {
-        road = GetOpenDrive()->GetRoadById(track_id_);
         if (road->GetRule() == Road::RoadRule::LEFT_HAND_TRAFFIC)
         {
             ds_road = ds_road * SIGN(GetLaneId());
@@ -9578,6 +9577,9 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
     {
         if (s_ + ds_road > GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength())
         {
+            // beyond end of road, ensure last lane section
+            lane_section_idx_ = road->GetNumberOfLaneSections() - 1;
+
             // Calculate remaining s-value once we moved to the connected road
             ds_road = s_ + ds_road - GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLength();
             link    = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(SUCCESSOR);
@@ -9587,6 +9589,9 @@ Position::ReturnCode Position::MoveAlongS(double            ds,
         }
         else if (s_ + ds_road < 0)
         {
+            // beyond start of road, ensure first lane section
+            lane_section_idx_ = 0;
+
             // Calculate remaining s-value once we moved to the connected road
             ds_road = s_ + ds_road;
             link    = GetOpenDrive()->GetRoadByIdx(track_idx_)->GetLink(PREDECESSOR);

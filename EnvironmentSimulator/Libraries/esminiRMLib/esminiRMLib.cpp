@@ -46,7 +46,7 @@ static int GetRoadInfo(int index, float lookahead_distance, void* data, int look
         }
     }
 
-    Position::ReturnCode       retval = Position::ReturnCode::OK;
+    Position::ReturnCode       retval;
     roadmanager::RoadProbeInfo s_data;
 
     if (probe_extension)

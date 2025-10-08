@@ -346,6 +346,84 @@ TEST(TestProbe, TestSimpleRoadTypes)
     RM_Close();
 }
 
+TEST(TestProbe, TestProbeReturnCodes)
+{
+    const char* odr_file = "../../../EnvironmentSimulator/Unittest/xodr/highway_example_with_merge_and_split.xodr";
+
+    ASSERT_EQ(RM_Init(odr_file), 0);
+    ASSERT_EQ(RM_GetNumberOfRoads(), 9);
+
+    int pos_handle = RM_CreatePosition();
+
+    EXPECT_EQ(pos_handle, 0);
+
+    RM_SetLanePosition(pos_handle, 7, 1, 0.0, 10, true);
+    RM_PositionData pos_data;
+    RM_GetPositionData(pos_handle, &pos_data);
+    EXPECT_NEAR(pos_data.x, 357.8739, 1E-3);
+    EXPECT_NEAR(pos_data.y, 49.1398, 1E-3);
+    EXPECT_NEAR(pos_data.h, 3.6568, 1E-3);
+    EXPECT_EQ(pos_data.laneId, 1);
+    EXPECT_NEAR(pos_data.laneOffset, 0.0, 1E-3);
+    EXPECT_NEAR(pos_data.s, 10.0, 1E-3);
+
+    RM_RoadProbeInfo info;
+
+    // look into next road
+    EXPECT_EQ(RM_GetProbeInfo(0, 20, &info, 0, true), 1);  // entered new road
+    EXPECT_EQ(info.road_lane_info.roadId, 1);
+    EXPECT_NEAR(info.road_lane_info.pos.x, 340.1930, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.pos.y, 39.7547, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.heading, 0.4761, 1E-3);
+    EXPECT_EQ(info.road_lane_info.laneId, 3);
+    EXPECT_NEAR(info.road_lane_info.laneOffset, 0.0, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.s, 104.9035, 1E-3);
+
+    // look into next lane section
+    EXPECT_EQ(RM_GetProbeInfo(0, 120, &info, 0, true), 1);  // entered new road
+    EXPECT_EQ(info.road_lane_info.roadId, 1);
+    EXPECT_NEAR(info.road_lane_info.pos.x, 249.2472, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.pos.y, -0.1154, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.heading, 0.3041, 1E-3);
+    EXPECT_EQ(info.road_lane_info.laneId, 2);
+    EXPECT_NEAR(info.road_lane_info.laneOffset, 0.0, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.s, 4.4211, 1E-3);
+
+    // look into next next road
+    EXPECT_EQ(RM_GetProbeInfo(0, 140, &info, 0, true), 2);  // made junction choice
+    EXPECT_EQ(info.road_lane_info.roadId, 3);
+    EXPECT_NEAR(info.road_lane_info.pos.x, 230.1083, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.pos.y, -6.0273, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.heading, 0.2896, 1E-3);
+    EXPECT_EQ(info.road_lane_info.laneId, 2);
+    EXPECT_NEAR(info.road_lane_info.laneOffset, 0.0, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.s, 34.3247, 1E-3);
+
+    // look into same road but from a closer point at preceeding road
+    RM_SetLanePosition(pos_handle, 1, 2, 0.0, 5, true);
+    EXPECT_EQ(RM_GetProbeInfo(0, 10, &info, 0, true), 2);  // made junction choice
+    EXPECT_EQ(info.road_lane_info.roadId, 3);
+    EXPECT_NEAR(info.road_lane_info.pos.x, 240.2527, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.pos.y, -2.92806, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.heading, 0.3015, 1E-3);
+    EXPECT_EQ(info.road_lane_info.laneId, 2);
+    EXPECT_NEAR(info.road_lane_info.laneOffset, 0.0, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.s, 44.9854, 1E-3);
+
+    // look further, beyond end of road
+    RM_SetLanePosition(pos_handle, 1, 2, 0.0, 5, true);
+    EXPECT_EQ(RM_GetProbeInfo(0, 300, &info, 0, true), -2);  // beyond end of road
+    EXPECT_EQ(info.road_lane_info.roadId, 0);
+    EXPECT_NEAR(info.road_lane_info.pos.x, 0.0, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.pos.y, 4.5, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.heading, 0.0, 1E-3);
+    EXPECT_EQ(info.road_lane_info.laneId, 2);
+    EXPECT_NEAR(info.road_lane_info.laneOffset, 0.0, 1E-3);
+    EXPECT_NEAR(info.road_lane_info.s, 0.0, 1E-3);
+
+    RM_Close();
+}
+
 TEST(TestLaneType, TestDetailedLaneType)
 {
     const char* odr_file = "../../../EnvironmentSimulator/Unittest/xodr/mw_100m.xodr";

@@ -3565,14 +3565,6 @@ namespace roadmanager
         ReturnCode GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookAheadMode lookAheadMode) const;
 
         /**
-        Get information suitable for driver modeling of a point at a specified distance from object along the road ahead
-        @param target_pos The target position
-        @param data Struct to fill in calculated values, see typdef for details
-        @return 0 if successful, other codes see Position::ReturnCode
-        */
-        ReturnCode GetProbeInfo(Position *target_pos, RoadProbeInfo *data) const;
-
-        /**
         Get information of current lane at a specified distance from object along the road ahead
         @param lookahead_distance The distance, along the road, to the point
         @param data Struct to fill in calculated values, see typdef for details
