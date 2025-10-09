@@ -1,5 +1,20 @@
 ## esmini release notes
 
+### 2025-10-09 Version 2.52.2
+
+New behaviors:
+- Restart ghost on overrideControllerAction deactivation
+  - e.g. restore scenario from Ego location after avoidance maneuver
+
+Improvements and fixes:
+- Add roadmanager ReturnCode indicating reached end of lane
+  - potentially snapped to neighbor drivable lane
+- Fix incorrect stop on road end in moveAlongS
+  - for long steps over multiple roads and lane sections
+- Add missing laneType for RM_GetProbeInfo()
+- Elaborate return code of RMLib lookahead functions
+  - basically propagate roadmanager ReturnCode
+
 ### 2025-10-06 Version 2.52.1
 
 Improvements and fixes:
