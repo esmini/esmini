@@ -1007,7 +1007,7 @@ public:
     std::string GetOptionValue(std::string opt, unsigned int index = 0);
 
     // Get option value by enum and index if present otherwise will return empty string
-    std::string GetOptionValueByEnum(esmini_options::CONFIG_ENUM opt, unsigned int index = 0);
+    std::string GetOptionValueByEnum(esmini_options::CONFIG_ENUM opt);
 
     // returns all the values set for the option
     std::vector<std::string>& GetOptionValues(std::string opt);
