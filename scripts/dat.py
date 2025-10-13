@@ -270,6 +270,11 @@ class DATFile():
         "s": None
     }
     def __init__(self, filename, extended=False):
+        self.version_major  = 0
+        self.version_minor  = 0
+        self.odr_filename   = ""
+        self.model_filename = ""
+
         self.check_header(filename)
         self.extended = extended
 
@@ -663,7 +668,7 @@ class DATFile():
         try:
             fcsv = open(csvfile, 'w')
         except OSError:
-            print('ERROR: Could not open file {} for writing'.format(csvfile))
+            print(f'ERROR: Could not open file {csvfile} for writing')
             raise
 
         # Save column headings / value types
