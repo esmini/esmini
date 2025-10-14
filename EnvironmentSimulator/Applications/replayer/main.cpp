@@ -283,17 +283,17 @@ int ParseEntities(Replay* player)
                     }
                 }
 
-            if (timelines.ctrl_type_.values.front().second == GHOST_CTRL_TYPE)
-            {
-                if (no_ghost_model)
+                if (timelines.ctrl_type_.values.front().second == GHOST_CTRL_TYPE)
                 {
-                    new_sc.entityModel->txNode_->setNodeMask(0x0);
+                    if (no_ghost_model)
+                    {
+                        new_sc.entityModel->txNode_->setNodeMask(0x0);
+                    }
+                    else
+                    {
+                        new_sc.entityModel->SetTransparency(0.6);
+                    }
                 }
-                else
-                {
-                    new_sc.entityModel->SetTransparency(0.6);
-                }
-            }
 #endif  // _USE_OSG
 
                 scenarioEntity.push_back(new_sc);

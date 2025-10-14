@@ -231,8 +231,6 @@ class PropertyTimeline():
         self.pos_s = Timeline()
         self.active = Timeline()
 
-        self.last_restart_time = -1.0
-
 class DATFile():
     """
     Functionality to read .dat files and populate the states of all objects over time.
@@ -283,6 +281,8 @@ class DATFile():
 
         self.labels = self.ObjectStateStructDat.keys()
         self.current_object_id = None
+        self.ghost_controller_id = None
+        self.ghost_timeline_setup = False
         self.current_object_timeline = None
         self.objects_timeline = defaultdict()
         self.object_state_cache = defaultdict()
@@ -369,6 +369,10 @@ class DATFile():
 
                 if len(self.timestamps) == 0 or self.current_timestamp > self.timestamps[-1]:
                     self.timestamps.append(self.current_timestamp)
+                    self.ghost_timeline_setup = False
+                elif self.current_timestamp < self.timestamps[-1] and not self.ghost_timeline_setup:
+                    self.setup_ghosts_timeline()
+                    self.ghost_timeline_setup = True
 
             # OBJ_ID packet
             elif p_id == PacketId.OBJ_ID.value:
@@ -392,22 +396,22 @@ class DATFile():
                 pose = Pose()
                 for k in ["x", "y", "z", "h", "p", "r"]:
                     setattr(pose, k, read_dtype(self.file, DataType.float))
-                self.add_to_timeline(self.current_object_timeline.pose, pose)
+                self.current_object_timeline.pose.values.append([self.current_timestamp, pose])
 
             elif p_id == PacketId.DT.value:
                 self.dt.values.append([self.current_timestamp, read_dtype(self.file, DataType.double)])
             elif p_id == PacketId.SPEED.value:
-                self.add_to_timeline(self.current_object_timeline.speed, read_dtype(self.file, DataType.float))
+                self.current_object_timeline.speed.values.append([self.current_timestamp, read_dtype(self.file, DataType.float)])
             elif p_id == PacketId.WHEEL_ANGLE.value:
-                self.add_to_timeline(self.current_object_timeline.wheel_angle, read_dtype(self.file, DataType.float))
+                self.current_object_timeline.wheel_angle.values.append([self.current_timestamp, read_dtype(self.file, DataType.float)])
             elif p_id == PacketId.WHEEL_ROT.value:
-                self.add_to_timeline(self.current_object_timeline.wheel_rot, read_dtype(self.file, DataType.float))
+                self.current_object_timeline.wheel_rot.values.append([self.current_timestamp, read_dtype(self.file, DataType.float)])
             elif p_id == PacketId.POS_OFFSET.value:
-                self.add_to_timeline(self.current_object_timeline.pos_offset, read_dtype(self.file, DataType.float))
+                self.current_object_timeline.pos_offset.values.append([self.current_timestamp, read_dtype(self.file, DataType.float)])
             elif p_id == PacketId.POS_T.value:
-                self.add_to_timeline(self.current_object_timeline.pos_t, read_dtype(self.file, DataType.float))
+                self.current_object_timeline.pos_t.values.append([self.current_timestamp, read_dtype(self.file, DataType.float)])
             elif p_id == PacketId.POS_S.value:
-                self.add_to_timeline(self.current_object_timeline.pos_s, read_dtype(self.file, DataType.float))
+                self.current_object_timeline.pos_s.values.append([self.current_timestamp, read_dtype(self.file, DataType.float)])
             elif p_id == PacketId.MODEL_ID.value:
                 self.current_object_timeline.model_id.values.append([self.current_timestamp, read_dtype(self.file, DataType.int32)])
             elif p_id == PacketId.OBJ_TYPE.value:
@@ -415,15 +419,18 @@ class DATFile():
             elif p_id == PacketId.OBJ_CATEGORY.value:
                 self.current_object_timeline.obj_category.values.append([self.current_timestamp, read_dtype(self.file, DataType.int32)])
             elif p_id == PacketId.CTRL_TYPE.value:
-                self.current_object_timeline.ctrl_type.values.append([self.current_timestamp, read_dtype(self.file, DataType.int32)])
+                ctrl_type = read_dtype(self.file, DataType.int32)
+                self.current_object_timeline.ctrl_type.values.append([self.current_timestamp, ctrl_type])
+                if ctrl_type == 100:
+                    self.ghost_controller_id = self.current_object_id
             elif p_id == PacketId.SCALE_MODE.value:
                 self.current_object_timeline.scale_mode.values.append([self.current_timestamp, read_dtype(self.file, DataType.int32)])
             elif p_id == PacketId.VISIBILITY_MASK.value:
-                self.add_to_timeline(self.current_object_timeline.visibility_mask, read_dtype(self.file, DataType.int32))
+                self.current_object_timeline.visibility_mask.values.append([self.current_timestamp, read_dtype(self.file, DataType.int32)])
             elif p_id == PacketId.ROAD_ID.value:
-                self.add_to_timeline(self.current_object_timeline.road_id, read_dtype(self.file, DataType.uint32))
+                self.current_object_timeline.road_id.values.append([self.current_timestamp, read_dtype(self.file, DataType.uint32)])
             elif p_id == PacketId.LANE_ID.value:
-                self.add_to_timeline(self.current_object_timeline.lane_id, read_dtype(self.file, DataType.int32))
+                self.current_object_timeline.lane_id.values.append([self.current_timestamp, read_dtype(self.file, DataType.int32)])
             elif p_id == PacketId.NAME.value:
                 name = read_string_packet(self.file)
                 self.current_object_timeline.name.values.append([self.current_timestamp, name])
@@ -443,34 +450,57 @@ class DATFile():
                 if not is_near(self.end_time, self.timestamps[-1]):
                     self.timestamps.append(self.end_time)
 
-    def add_to_timeline(self, timeline: PropertyTimeline, data) -> None:
-        """
-        Adds data to the timeline, handling ghost restarts if necessary.
-        """
-        if len(self.current_object_timeline.ctrl_type.values) != 0 and self.current_object_timeline.ctrl_type.values[-1][1] != 100:
-            timeline.values.append([self.current_timestamp, data])
-            return
-        
-        if len(timeline.values) != 0 and self.current_timestamp < timeline.values[-1][0]:
-            obj_tl = self.objects_timeline.get(self.current_object_id)
+    def setup_ghosts_timeline(self):
+        obj_tl = self.objects_timeline.get(self.ghost_controller_id)
 
-            if not is_near(obj_tl.last_restart_time, self.current_timestamp):
-                if self.objects_timeline.get(self.ghost_ghost_counter) is None:
-                    self.objects_timeline[self.ghost_ghost_counter] = copy.deepcopy(obj_tl)
-                    ghost_tl = self.objects_timeline[self.ghost_ghost_counter]
-                    ghost_tl.active.values[0][1] = False
-                    ghost_tl.name.values[0][1] += f"_{self.ghost_ghost_counter}"
-                    ghost_tl.active.values.append([self.current_timestamp, True])
-                    ghost_tl.active.values.append([self.timestamps[-1], False])
+        if obj_tl is None:
+            print("ERROR: No ghost controller found even though a ghost restart was detected. Quitting.")
+            exit(-1)
 
-                    self.ghost_ghost_counter -= 1
-                    
-                obj_tl.last_restart_time = self.current_timestamp        
+        it = self.objects_timeline.get(self.ghost_ghost_counter)
 
-            slice_idx = timeline.get_index_binary(self.current_timestamp)
-            timeline.values = timeline.values[0:slice_idx]
-        
-        timeline.values.append([self.current_timestamp, data])
+        if it is None:
+            self.objects_timeline[self.ghost_ghost_counter] = copy.deepcopy(self.objects_timeline[self.ghost_controller_id])
+            it = self.objects_timeline[self.ghost_ghost_counter]
+
+            it.active.values[0][1] = False
+            it.name.values[0][1] += f"_{self.ghost_ghost_counter}"
+            it.active.values.append([self.current_timestamp, True])
+            it.active.values.append([self.timestamps[-1], False])
+
+            self.ghost_ghost_counter -= 1
+
+            obj_tl.last_restart_time = self.current_timestamp
+
+        slice_idx = obj_tl.lane_id.get_index_binary(self.current_timestamp)
+        obj_tl.lane_id.values = obj_tl.lane_id.values[0:slice_idx]
+
+        slice_idx = obj_tl.road_id.get_index_binary(self.current_timestamp)
+        obj_tl.road_id.values = obj_tl.road_id.values[0:slice_idx]
+
+        slice_idx = obj_tl.pos_offset.get_index_binary(self.current_timestamp)
+        obj_tl.pos_offset.values = obj_tl.pos_offset.values[0:slice_idx]
+
+        slice_idx = obj_tl.pos_t.get_index_binary(self.current_timestamp)
+        obj_tl.pos_t.values = obj_tl.pos_t.values[0:slice_idx]
+
+        slice_idx = obj_tl.pos_s.get_index_binary(self.current_timestamp)
+        obj_tl.pos_s.values = obj_tl.pos_s.values[0:slice_idx]
+
+        slice_idx = obj_tl.pose.get_index_binary(self.current_timestamp)
+        obj_tl.pose.values = obj_tl.pose.values[0:slice_idx]
+
+        slice_idx = obj_tl.speed.get_index_binary(self.current_timestamp)
+        obj_tl.speed.values = obj_tl.speed.values[0:slice_idx]
+
+        slice_idx = obj_tl.wheel_angle.get_index_binary(self.current_timestamp)
+        obj_tl.wheel_angle.values = obj_tl.wheel_angle.values[0:slice_idx]
+
+        slice_idx = obj_tl.wheel_rot.get_index_binary(self.current_timestamp)
+        obj_tl.wheel_rot.values = obj_tl.wheel_rot.values[0:slice_idx]
+
+        slice_idx = obj_tl.visibility_mask.get_index_binary(self.current_timestamp)
+        obj_tl.visibility_mask.values = obj_tl.visibility_mask.values[0:slice_idx]
 
     def get_object_state_struct_at_time(self, obj_id: int, t: float) -> dict:
         """ Get the state of an object at a specific time."""

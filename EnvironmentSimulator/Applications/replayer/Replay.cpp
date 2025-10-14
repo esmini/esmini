@@ -145,6 +145,13 @@ int Replay::ParsePackets(const std::string& filename)
                 if (timestamps_.empty() || timestamp_ > timestamps_.back())
                 {
                     timestamps_.emplace_back(timestamp_);
+                    ghost_timeline_setup_ = false;
+                }
+                else if (timestamp_ < timestamps_.back() && !ghost_timeline_setup_)
+                {
+                    LOG_INFO("Ghost reset detected at time: {}", timestamps_.back());
+                    SetupGhostsTimeline();
+                    ghost_timeline_setup_ = true;
                 }
                 break;
             }
@@ -190,7 +197,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading speed data.");
                     return -1;
                 }
-                AddToTimeline(current_object_timeline_->speed_, speed);
+                current_object_timeline_->speed_.values.emplace_back(timestamp_, speed);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POSE):
@@ -202,7 +209,7 @@ int Replay::ParsePackets(const std::string& filename)
                     return -1;
                 }
 
-                AddToTimeline(current_object_timeline_->pose_, pose);
+                current_object_timeline_->pose_.values.emplace_back(timestamp_, pose);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::MODEL_ID):
@@ -247,6 +254,10 @@ int Replay::ParsePackets(const std::string& filename)
                     return -1;
                 }
                 current_object_timeline_->ctrl_type_.values.emplace_back(timestamp_, ctrl_type);
+                if (ctrl_type == 100)  // Ghost controller, save the id
+                {
+                    ghost_controller_id_ = current_object_id_;
+                }
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::WHEEL_ANGLE):
@@ -257,7 +268,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading wheel angle.");
                     return -1;
                 }
-                AddToTimeline(current_object_timeline_->wheel_angle_, wheel_angle);
+                current_object_timeline_->wheel_angle_.values.emplace_back(timestamp_, wheel_angle);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::WHEEL_ROT):
@@ -268,7 +279,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading wheel rotation.");
                     return -1;
                 }
-                AddToTimeline(current_object_timeline_->wheel_rot_, wheel_rot);
+                current_object_timeline_->wheel_rot_.values.emplace_back(timestamp_, wheel_rot);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::BOUNDING_BOX):
@@ -307,7 +318,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading visibility mask.");
                     return -1;
                 }
-                AddToTimeline(current_object_timeline_->visibility_mask_, visibility_mask);
+                current_object_timeline_->visibility_mask_.values.emplace_back(timestamp_, visibility_mask);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::NAME):
@@ -329,7 +340,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading road ID.");
                     return -1;
                 }
-                AddToTimeline(current_object_timeline_->road_id_, road_id);
+                current_object_timeline_->road_id_.values.emplace_back(timestamp_, road_id);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::LANE_ID):
@@ -340,7 +351,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading lane ID.");
                     return -1;
                 }
-                AddToTimeline(current_object_timeline_->lane_id_, lane_id);
+                current_object_timeline_->lane_id_.values.emplace_back(timestamp_, lane_id);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POS_OFFSET):
@@ -351,7 +362,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading position offset.");
                     return -1;
                 }
-                AddToTimeline(current_object_timeline_->pos_offset_, offset);
+                current_object_timeline_->pos_offset_.values.emplace_back(timestamp_, offset);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POS_T):
@@ -362,7 +373,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading position T.");
                     return -1;
                 }
-                AddToTimeline(current_object_timeline_->pos_t_, t);
+                current_object_timeline_->pos_t_.values.emplace_back(timestamp_, t);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::POS_S):
@@ -373,7 +384,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading position S.");
                     return -1;
                 }
-                AddToTimeline(current_object_timeline_->pos_s_, s);
+                current_object_timeline_->pos_s_.values.emplace_back(timestamp_, s);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_DELETED):
@@ -910,52 +921,48 @@ ReplayEntry Replay::GetReplayEntryAtTimeBinary(int id, double t) const
     return entry;
 }
 
-// This function adds certain data likely to change during the simulation to the timeline and also
-// handles ghost object if there is a ghost restart event
-template <typename T, typename Data>
-void Replay::AddToTimeline(Timeline<T>& timeline, Data data)
+void Replay::SetupGhostsTimeline()
 {
-    // If the current object is NOT ghost, just add the data and return
-    if (!current_object_timeline_->ctrl_type_.values.empty() && current_object_timeline_->ctrl_type_.values.front().second != 100)
+    auto ghost_timeline = objects_timeline_.find(ghost_controller_id_);
+    if (ghost_timeline == objects_timeline_.end())
     {
-        timeline.values.emplace_back(timestamp_, data);
-        return;
+        LOG_ERROR_AND_QUIT("No ghost controller found even though a ghost restart was detected. Quitting.");
     }
 
-    if (!timeline.values.empty() && timestamp_ < timeline.values.back().first)
+    // We have detected a ghost restart, thus we:
+    // first decrement the ghost_ghost_counter to ensure every ghost ghost gets a unique ID.
+    // then copy the current object's timeline to the new ghost object's timeline and sets the last state to inactive
+    // finally, we need to clear the current ghost object's timeline down to the time where ghost reset began
+    auto it = objects_timeline_.find(ghost_ghost_counter_);
+    if (it == objects_timeline_.end())
     {
-        // We have detected a ghost restart, thus we:
-        // first decrement the ghost_ghost_counter to ensure every ghost ghost gets a unique ID.
-        // then copy the current object's timeline to the new ghost object's timeline and sets the last state to inactive
-        // finally, we need to clear the current ghost object's timeline down to the time where ghost reset began
-        auto& obj_tl = objects_timeline_.at(current_object_id_);
+        auto [new_it, inserted] = objects_timeline_.emplace(ghost_ghost_counter_, objects_timeline_[ghost_controller_id_]);
+        it                      = new_it;
 
-        if (!NEAR_NUMBERS(obj_tl.last_restart_time, timestamp_))
+        if (inserted)
         {
-            auto it = objects_timeline_.find(ghost_ghost_counter_);
-            if (it == objects_timeline_.end())
-            {
-                auto [new_it, inserted] = objects_timeline_.emplace(ghost_ghost_counter_, objects_timeline_[current_object_id_]);
-                it                      = new_it;
+            it->second.active_.values.front().second = false;  // Object starts as inactive, as we assume no restart happens at start
+            it->second.name_.values.front().second += "_" + std::to_string(ghost_ghost_counter_);
 
-                if (inserted)
-                {
-                    it->second.active_.values.front().second = false;  // Object starts as inactive, as we assume no restart happens at start
-                    it->second.name_.values.front().second += "_" + std::to_string(ghost_ghost_counter_);
+            // Ghosts ghost active from ghost restart time until latest timestamp
+            it->second.active_.values.emplace_back(timestamp_, true);  // timestamp_ contains the new rewinded time
+            it->second.active_.values.emplace_back(timestamps_.back(), false);
 
-                    // Ghosts ghost active from ghost restart time until latest timestamp
-                    it->second.active_.values.emplace_back(timestamp_, true);  // timestamp_ contains the new rewinded time
-                    it->second.active_.values.emplace_back(timestamps_.back(), false);
-
-                    ghost_ghost_counter_ -= 1;  // Next ghost will have a new id
-                }
-
-                obj_tl.last_restart_time = timestamp_;
-            }
+            ghost_ghost_counter_ -= 1;  // Next ghost will have a new id
         }
-        timeline.values.resize(timeline.get_index_binary(timestamp_).value());
     }
-    timeline.values.emplace_back(timestamp_, data);
+
+    // Then we slice the ghost controller timeline to the time where ghost reset began
+    ghost_timeline->second.lane_id_.values.resize(ghost_timeline->second.lane_id_.get_index_binary(timestamp_).value());
+    ghost_timeline->second.road_id_.values.resize(ghost_timeline->second.road_id_.get_index_binary(timestamp_).value());
+    ghost_timeline->second.pos_offset_.values.resize(ghost_timeline->second.pos_offset_.get_index_binary(timestamp_).value());
+    ghost_timeline->second.pos_t_.values.resize(ghost_timeline->second.pos_t_.get_index_binary(timestamp_).value());
+    ghost_timeline->second.pos_s_.values.resize(ghost_timeline->second.pos_s_.get_index_binary(timestamp_).value());
+    ghost_timeline->second.pose_.values.resize(ghost_timeline->second.pose_.get_index_binary(timestamp_).value());
+    ghost_timeline->second.speed_.values.resize(ghost_timeline->second.speed_.get_index_binary(timestamp_).value());
+    ghost_timeline->second.wheel_angle_.values.resize(ghost_timeline->second.wheel_angle_.get_index_binary(timestamp_).value());
+    ghost_timeline->second.wheel_rot_.values.resize(ghost_timeline->second.wheel_rot_.get_index_binary(timestamp_).value());
+    ghost_timeline->second.visibility_mask_.values.resize(ghost_timeline->second.visibility_mask_.get_index_binary(timestamp_).value());
 }
 
 void Replay::CreateMergedDatfile(const std::string filename) const

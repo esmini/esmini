@@ -116,6 +116,11 @@ namespace scenarioengine
                 return std::nullopt;
             }
 
+            if (values.size() == 1)
+            {
+                return 1;
+            }
+
             auto search_begin = values.begin();
             auto search_end   = values.end();
 
@@ -151,8 +156,6 @@ namespace scenarioengine
         Timeline<float>          pos_s_;
         Timeline<bool>           active_;
         Timeline<float>          odometer_;
-
-        double last_restart_time = -1.0f;
     };
 
     // Custom comparator ensuring map has ids ordered as:
@@ -192,11 +195,7 @@ namespace scenarioengine
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
 
-        // void CreateMergedDatfile(const std::string filename) const;
-
-        template <typename T, typename Data>
-        void AddToTimeline(Timeline<T>& timeline, Data data);
-
+        void SetupGhostsTimeline();
         int  ParsePackets(const std::string& filename);
         void FillInTimestamps();
         void CreateMergedDatfile(const std::string filename) const;
@@ -261,8 +260,10 @@ namespace scenarioengine
         std::string              create_datfile_;
 
         /* PacketHandler stuff */
-        double                            timestamp_ = 0.0;
+        double                            timestamp_            = 0.0;
+        bool                              ghost_timeline_setup_ = false;
         int                               current_object_id_;
+        int                               ghost_controller_id_;
         scenarioengine::PropertyTimeline* current_object_timeline_;
     };
 
