@@ -2362,7 +2362,7 @@ std::string SE_Options::GetOptionValue(std::string opt, unsigned int index)
         return "";
     }
 
-    return option->GetValue(index);
+    return option->GetValue(static_cast<int>(index));
 }
 
 SE_Option* SE_Options::GetOptionByEnum(esmini_options::CONFIG_ENUM opt)
@@ -2389,7 +2389,7 @@ std::string SE_Options::GetAppName() const
     return app_name_;
 }
 
-std::string SE_Options::GetOptionValueByEnum(esmini_options::CONFIG_ENUM opt, unsigned int index)
+std::string SE_Options::GetOptionValueByEnum(esmini_options::CONFIG_ENUM opt)
 {
     SE_Option* option = GetOptionByEnum(opt);
 
