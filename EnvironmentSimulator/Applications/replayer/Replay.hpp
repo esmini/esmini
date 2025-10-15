@@ -198,6 +198,7 @@ namespace scenarioengine
         void SetupGhostsTimeline();
         int  ParsePackets(const std::string& filename);
         void FillInTimestamps();
+        void FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);
         void CreateMergedDatfile(const std::string filename) const;
         void ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filename);
 

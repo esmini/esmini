@@ -62,8 +62,8 @@ using idx_t = uint32_t;
 #define CLAMP(x, lo, hi)              MIN(hi, MAX(lo, x))
 #define AVOID_ZERO(x)                 (SIGN(x) * MAX(SMALL_NUMBER, fabs(x)))
 #define NEAR_ZERO(x)                  (abs(x) < SMALL_NUMBER)
-#define NEAR_NUMBERS(x, y)            (abs(x - y) < SMALL_NUMBER)
-#define NEAR_NUMBERSF(x, y)           (abs(x - y) < SMALL_NUMBERF)
+#define NEAR_NUMBERS(x, y)            (abs((x) - (y)) < SMALL_NUMBER)
+#define NEAR_NUMBERSF(x, y)           (abs((x) - (y)) < SMALL_NUMBERF)
 #define IS_IN_SPAN(x, y, z)           ((x) >= (y) && (x) <= (z))
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION     0.05

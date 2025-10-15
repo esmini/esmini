@@ -60,7 +60,6 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
     }
 
-    // double temp_fixed_timestep = LARGE_NUMBER;
     for (size_t i = 0; i < scenarios_.size(); i++)
     {
         ParsePackets(scenarios_[i]);
@@ -109,7 +108,6 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     timestamps_.erase(std::unique(timestamps_.begin(), timestamps_.end(), [](const auto& a, const auto& b) { return NEAR_NUMBERS(a, b); }),
                       timestamps_.end());
 
-    // fixed_timestep_ = temp_fixed_timestep;
     startTime_ = timestamps_[0];
     stopIndex_ = static_cast<unsigned int>(timestamps_.size() - 1);
     stopTime_  = timestamps_[stopIndex_];
@@ -475,57 +473,83 @@ void Replay::ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filen
 
 void Replay::FillInTimestamps()
 {
-    std::vector<double> filled;
-
-    size_t i         = 0;
-    double curr_time = timestamps_.front();
-
     if (dt_.values.empty())
     {
-        LOG_ERROR_AND_QUIT("No delta time (DT) information found in dat file, cannot fill timestamps.");
+        LOG_ERROR_AND_QUIT("No delta time (DT) information found in dat file, can not create timestamps vector.");
     }
 
-    while (i < timestamps_.size() - 1 && curr_time < stopTime_ - SMALL_NUMBER)
+    double              curr_time = timestamps_.front();
+    std::vector<double> filled    = {curr_time};
+
+    // Fixed timestep entire scenario
+    if (dt_.values.size() == 1)
     {
-        // Get the upcoming dt
-        double dt = dt_.get_value_binary(curr_time, true).value();
-        if (NEAR_NUMBERS(dt, 0.0))
+        double dt = dt_.values.front().second;
+        FillEmptyTimestamps(curr_time, timestamps_.back(), dt, filled);
+    }
+    // Mixed timesteps in the scenario
+    else
+    {
+        size_t i = 0;
+        while (curr_time < stopTime_ - SMALL_NUMBER && i < timestamps_.size() - 1)
         {
-            LOG_ERROR_AND_QUIT("Invalid DT value of 0.0 found, skipping.");
-        }
-
-        filled.emplace_back(curr_time);  // Save current timestamp
-
-        // What should be the next time in timestamps_
-        double next_time = curr_time + dt;
-
-        // next_time is very close to next_logged_time, we are done this step
-        double next_logged_time = timestamps_[i + 1];
-        if (NEAR_NUMBERS(next_time, next_logged_time))
-        {
-            i++;
-            curr_time = next_logged_time;
-        }
-        // next time is just 1 sample away from next logged time, we are done this step
-        else if (NEAR_NUMBERS(next_time, next_logged_time - dt))
-        {
-            i++;
-            curr_time = next_logged_time - dt;
-        }
-        // inside a gap bigger than 1 sample -> We need to fill from last known dt
-        else
-        {
-            // Fill with dt at current time until next_logged_time - dt
-            double prev_dt  = dt_.get_value_binary(curr_time).value();
-            double end_time = next_logged_time - dt;
-            size_t steps    = static_cast<size_t>(std::llround(((end_time - curr_time) / prev_dt) + SMALL_NUMBER));
-
-            for (size_t j = 0; j < steps; ++j)
+            for (size_t j = 0; j < dt_.values.size() - 1;)
             {
-                filled.emplace_back((j + 1) * prev_dt + curr_time);
+                double next_timestamp = timestamps_[i + 1];
+                double next_dt        = dt_.values[j + 1].second;
+                double dt             = dt_.values[j].second;
+
+                // We have reached the time where the next dt should be used
+                // Increment j so we get next dt in next iteration
+                if (NEAR_NUMBERS(curr_time, dt_.values[j + 1].first - next_dt))
+                {
+                    j++;
+                }
+                // The next timestamp of a dt change is before our current time
+                // We have a ghost reset
+                else if (curr_time - SMALL_NUMBER > dt_.values[j + 1].first)
+                {
+                    // stitch together the timestamps
+                    double start_time = dt_.values[j + 1].first;
+                    double end_time   = curr_time;
+                    double restart_dt = dt_.values[j + 1].second;
+
+                    auto   it        = std::upper_bound(filled.begin(), filled.end(), start_time);
+                    size_t start_idx = static_cast<size_t>(std::distance(filled.begin(), (--it)));
+                    size_t steps     = static_cast<size_t>(std::llround(((end_time - start_time) / restart_dt) + SMALL_NUMBER));
+                    for (size_t k = 0; k < steps; k++)
+                    {
+                        double t = k * restart_dt + start_time;
+                        for (size_t m = start_idx; m < filled.size(); m++)
+                        {
+                            if (t > filled[m] + SMALL_NUMBER && t < filled[m + 1] - SMALL_NUMBER)
+                            {
+                                filled.insert(filled.begin() + static_cast<ptrdiff_t>(m) + 1, t);
+                                start_idx = m + 1;
+                                break;
+                            }
+                        }
+                    }
+                    j++;
+                    continue;
+                }
+
+                // The gap to the next timestamp is more than 1 sample away, we should fill it
+                if (curr_time + next_dt < next_timestamp - SMALL_NUMBER && curr_time + dt < next_timestamp - SMALL_NUMBER)
+                {
+                    // We have a large gap
+                    double end_time = next_timestamp - next_dt;
+                    FillEmptyTimestamps(curr_time, end_time, dt, filled);
+                }
+                // We are one sample away, just add it
+                else
+                {
+                    // There's no gap
+                    filled.emplace_back(next_timestamp);
+                }
+                i++;
+                curr_time = filled.back();
             }
-            i++;
-            curr_time = timestamps_[i];  // Set current time so it can be appended in next iteration
         }
     }
 
@@ -533,6 +557,15 @@ void Replay::FillInTimestamps()
     filled.emplace_back(timestamps_.back());
 
     timestamps_.swap(filled);
+}
+
+void Replay::FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v)
+{
+    size_t steps = static_cast<size_t>(std::llround(((end - start) / dt) + SMALL_NUMBER));
+    for (size_t k = 0; k < steps; k++)
+    {
+        v.emplace_back((k + 1) * dt + start);
+    }
 }
 
 // Browse through replay-folder and appends strings of absolute path to matching scenario
