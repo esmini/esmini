@@ -277,9 +277,9 @@ void print_triangles(const BBoxVec& vec, char const filename[])
 
 void print_bbx(const BBoxVec& vec, char const filename[])
 {
-    entities_ = &context_->GetScenarioEngine().entities_;
-    double x  = pos->GetX();
-    double y  = pos->GetY();
+    entities_        = &context_->GetScenarioEngine().entities_;
+    double x = pos->GetX();
+    double y = pos->GetY();
     double latDist;
     double longDist;
 

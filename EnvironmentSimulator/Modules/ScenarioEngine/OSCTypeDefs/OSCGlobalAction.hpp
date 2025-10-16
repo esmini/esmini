@@ -410,17 +410,15 @@ namespace scenarioengine
          */
         void DespawnEntity(Object* object);
 
-        std::vector<TrafficDistributionEntry> traffic_distribution_entry_;
-
-    protected:
-        std::shared_ptr<TrafficActionContext> context_;
-        std::string                           name_;
-        int                                   spawned_count_ = 0;
-        std::vector<int>                      spawned_entity_ids_;
-        std::string                           action_type_;
-        VehiclePool                           vehicle_pool_;
-        double                                spawn_speed_ = 0.0;
-        Entities*                             entities_;
+        protected:
+            std::shared_ptr<TrafficActionContext> context_;
+            std::string       name_;
+            int spawned_count_ = 0;
+            std::vector<int> spawned_entity_ids_;
+            std::string action_type_;
+            VehiclePool                        vehicle_pool_;
+            double                             spawn_speed_ = 0.0;
+            Entities*              entities_;
     };
     class TrafficSwarmAction : public TrafficAction
     {
