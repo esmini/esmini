@@ -539,4 +539,160 @@ namespace scenarioengine
         
     };
 
+    // helper for floating-point comparison
+    inline bool almost_equal(double a, double b, double eps = 1e-9)
+    {
+        return std::fabs(a - b) < eps;
+    }
+
+    struct LaneSegment
+    {
+        int    roadId;
+        int    laneId;
+        double minS;
+        double maxS;
+        double length;
+    };
+
+    inline bool operator==(const LaneSegment& a, const LaneSegment& b)
+    {
+        return a.roadId == b.roadId && a.laneId == b.laneId && almost_equal(a.minS, b.minS) && almost_equal(a.maxS, b.maxS) &&
+               almost_equal(a.length, b.length);
+    }
+
+    struct RoadCursor
+    {
+        int              roadId;
+        double           s = 0.0;
+        std::vector<int> laneIds;
+        bool             last = false;
+        double           road_length;
+    };
+
+    inline bool operator==(const RoadCursor& a, const RoadCursor& b)
+    {
+        return a.roadId == b.roadId && almost_equal(a.s, b.s) && a.laneIds == b.laneIds && a.last == b.last &&
+               almost_equal(a.road_length, b.road_length);
+    }
+
+    struct RoadRange
+    {
+        double                  length;
+        std::vector<RoadCursor> roadCursors;
+    };
+
+    inline bool operator==(const RoadRange& a, const RoadRange& b)
+    {
+        return almost_equal(a.length, b.length) && a.roadCursors == b.roadCursors;
+    }
+
+    class TrafficAreaAction : public TrafficAction
+    {
+    public:
+        TrafficAreaAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context) : TrafficAction(ActionType::AREA_TRAFFIC, parent, context)
+        {
+        }
+
+        OSCGlobalAction* Copy()
+        {
+            return new TrafficAreaAction(*this);
+        }
+
+        void Start(double simTime);
+
+        void Step(double simTime, double dt);
+
+        void SpawnEntities(int number_of_entities_to_spawn);
+
+        void DespawnEntities();
+
+        bool InsideArea(roadmanager::Position object_pos);
+
+        void SetContinuous(bool continuous)
+        {
+            continuous_ = continuous;
+        }
+
+        void SetNumberOfEntities(int number_of_entities)
+        {
+            number_of_entities_ = number_of_entities;
+        }
+
+        void SetPolygonPoints(const std::vector<roadmanager::Position> points)
+        {
+            polygon_points_ = points;
+        }
+
+        void SortPolygonPoints(std::vector<roadmanager::Position>& points);
+
+        void SetRoadRanges(const std::vector<RoadRange> road_ranges)
+        {
+            road_ranges_ = road_ranges;
+        }
+        std::vector<RoadRange> GetRoadRanges() const
+        {
+            return road_ranges_;
+        }
+        std::vector<LaneSegment> GetLaneSegments() const
+        {
+            return lane_segments_;
+        }
+        void SetName(std::string name)
+        {
+            name_ = name;
+        }
+
+        void UpdateRoadRanges();
+        void SetRoadRangeLength(RoadRange& road_range);
+        void SetAdditionalRoadCursorInfo(RoadCursor& road_cursor);
+        void AddComplementaryRoadCursors();
+        void SetLaneSegments(RoadRange& road_range);
+        void LaneSegments();
+        void LaneSegmentsForRoad(std::vector<RoadCursor> road_cursors_to_road, double& accumulated_length, const double max_length);
+        void HandleLastRoadCursor(std::vector<RoadCursor> last_road_cursors, double& accumulated_length, const double max_length);
+
+        roadmanager::Position* GetRandomSpawnPosition();
+        roadmanager::Position*                pos_;
+
+    private:
+        double ClampMax(double value, double accumulated, double max_length);
+
+        bool                               continuous_;
+        int                                number_of_entities_;
+        std::vector<roadmanager::Position> polygon_points_;
+        std::vector<RoadRange>             road_ranges_;
+        std::vector<LaneSegment>           lane_segments_;
+        bool                               first_spawn_ = false;
+        std::string                        name_;
+    };
+
+    class TrafficStopAction : public TrafficAction
+    {
+    public:
+        TrafficStopAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context) : TrafficAction(ActionType::STOP_TRAFFIC, parent, context)
+        {
+        }
+
+        OSCGlobalAction* Copy()
+        {
+            return new TrafficStopAction(*this);
+        }
+
+        void Start(double simTime);
+
+        void Step(double simTime, double dt);
+
+        void print()
+        {
+        }
+
+        void SetTrafficActionToStop(const std::string& action)
+        {
+            traffic_action_to_stop_ = action;
+        }
+
+    private:
+        std::string      traffic_action_to_stop_;
+    };
+
 }  // namespace scenarioengine
