@@ -662,14 +662,14 @@ namespace scenarioengine
         return std::fabs(a - b) < eps;
     }
 
-    typedef struct
+    struct LaneSegment
     {
         int    roadId;
         int    laneId;
         double minS;
         double maxS;
         double length;
-    } LaneSegment;
+    };
 
     inline bool operator==(const LaneSegment& a, const LaneSegment& b)
     {
@@ -677,14 +677,14 @@ namespace scenarioengine
                almost_equal(a.length, b.length);
     }
 
-    typedef struct
+    struct RoadCursor
     {
         int              roadId;
         double           s = 0.0;
         std::vector<int> laneIds;
         bool             last = false;
         double           road_length;
-    } RoadCursor;
+    };
 
     inline bool operator==(const RoadCursor& a, const RoadCursor& b)
     {
@@ -692,11 +692,11 @@ namespace scenarioengine
                almost_equal(a.road_length, b.road_length);
     }
 
-    typedef struct
+    struct RoadRange
     {
         double                  length;
         std::vector<RoadCursor> roadCursors;
-    } RoadRange;
+    };
 
     inline bool operator==(const RoadRange& a, const RoadRange& b)
     {
