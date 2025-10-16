@@ -398,7 +398,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading fixed timestep.");
                     return -1;
                 }
-                if (NEAR_NUMBERS(dt, 0.0))
+                if (NEAR_NUMBERS(dt, 0.0))  // skip first step with 0 dt
                 {
                     break;
                 }
@@ -491,80 +491,75 @@ void Replay::FillInTimestamps()
     else
     {
         size_t i = 0;
-        while (curr_time < stopTime_ - SMALL_NUMBER && i < timestamps_.size() - 1)
+        for (size_t j = 0; j < dt_.values.size() - 1;)
         {
-            for (size_t j = 0; j < dt_.values.size() - 1;)
+            double next_timestamp = timestamps_[i + 1];
+            double next_dt        = dt_.values[j + 1].second;
+
+            // We have reached the time where the next dt should be used
+            // Increment j so we get next dt in next iteration
+            if (NEAR_NUMBERS(curr_time, dt_.values[j + 1].first - next_dt))
             {
-                double next_timestamp = timestamps_[i + 1];
-                double next_dt        = dt_.values[j + 1].second;
-                double dt             = dt_.values[j].second;
+                j++;
+            }
+            // The next timestamp of a dt change is before our current time
+            // We have a ghost reset
+            else if (curr_time - SMALL_NUMBER > dt_.values[j + 1].first)
+            {
+                // stitch together the timestamps
+                double start_time = dt_.values[j + 1].first;
+                double end_time   = curr_time;
+                double restart_dt = dt_.values[j + 1].second;
 
-                // We have reached the time where the next dt should be used
-                // Increment j so we get next dt in next iteration
-                if (NEAR_NUMBERS(curr_time, dt_.values[j + 1].first - next_dt))
+                auto   it        = std::upper_bound(filled.begin(), filled.end(), start_time);
+                size_t start_idx = static_cast<size_t>(std::distance(filled.begin(), (--it)));
+                size_t steps     = static_cast<size_t>(std::llround(((end_time - start_time) / restart_dt) + SMALL_NUMBER));
+                for (size_t k = 0; k < steps; k++)
                 {
-                    j++;
-                }
-                // The next timestamp of a dt change is before our current time
-                // We have a ghost reset
-                else if (curr_time - SMALL_NUMBER > dt_.values[j + 1].first)
-                {
-                    // stitch together the timestamps
-                    double start_time = dt_.values[j + 1].first;
-                    double end_time   = curr_time;
-                    double restart_dt = dt_.values[j + 1].second;
-
-                    auto   it        = std::upper_bound(filled.begin(), filled.end(), start_time);
-                    size_t start_idx = static_cast<size_t>(std::distance(filled.begin(), (--it)));
-                    size_t steps     = static_cast<size_t>(std::llround(((end_time - start_time) / restart_dt) + SMALL_NUMBER));
-                    for (size_t k = 0; k < steps; k++)
+                    double t = k * restart_dt + start_time;
+                    for (size_t m = start_idx; m < filled.size(); m++)
                     {
-                        double t = k * restart_dt + start_time;
-                        for (size_t m = start_idx; m < filled.size(); m++)
+                        if (t > filled[m] + SMALL_NUMBER && t < filled[m + 1] - SMALL_NUMBER)
                         {
-                            if (t > filled[m] + SMALL_NUMBER && t < filled[m + 1] - SMALL_NUMBER)
-                            {
-                                filled.insert(filled.begin() + static_cast<ptrdiff_t>(m) + 1, t);
-                                start_idx = m + 1;
-                                break;
-                            }
+                            filled.insert(filled.begin() + static_cast<ptrdiff_t>(m) + 1, t);
+                            start_idx = m + 1;
+                            break;
                         }
                     }
-                    j++;
-                    continue;
                 }
-
-                // The gap to the next timestamp is more than 1 sample away, we should fill it
-                if (curr_time + next_dt < next_timestamp - SMALL_NUMBER && curr_time + dt < next_timestamp - SMALL_NUMBER)
-                {
-                    // We have a large gap
-                    double end_time = next_timestamp - next_dt;
-                    FillEmptyTimestamps(curr_time, end_time, dt, filled);
-                }
-                // We are one sample away, just add it
-                else
-                {
-                    // There's no gap
-                    filled.emplace_back(next_timestamp);
-                }
-                i++;
-                curr_time = filled.back();
+                j++;
+                continue;
             }
+
+            double dt = dt_.values[j].second;
+            // The gap to the next timestamp is more than 1 sample away, we should fill it
+            if (curr_time + next_dt < next_timestamp - SMALL_NUMBER && curr_time + dt < next_timestamp - SMALL_NUMBER)
+            {
+                // We have a large gap
+                double end_time = next_timestamp - next_dt;
+                FillEmptyTimestamps(curr_time, end_time, dt, filled);
+            }
+            // We are one sample away, just add it
+            else
+            {
+                filled.emplace_back(next_timestamp);
+            }
+            i++;
+            curr_time = filled.back();
         }
     }
 
     // Always add the last explicit one
     filled.emplace_back(timestamps_.back());
-
     timestamps_.swap(filled);
 }
 
 void Replay::FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v)
 {
     size_t steps = static_cast<size_t>(std::llround(((end - start) / dt) + SMALL_NUMBER));
-    for (size_t k = 0; k < steps; k++)
+    for (size_t i = 0; i < steps; i++)
     {
-        v.emplace_back((k + 1) * dt + start);
+        v.emplace_back((i + 1) * dt + start);
     }
 }
 

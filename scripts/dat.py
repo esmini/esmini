@@ -399,7 +399,9 @@ class DATFile():
                 self.current_object_timeline.pose.values.append([self.current_timestamp, pose])
 
             elif p_id == PacketId.DT.value:
-                self.dt.values.append([self.current_timestamp, read_dtype(self.file, DataType.double)])
+                dt = read_dtype(self.file, DataType.double)
+                if not is_near(dt, 0.0):
+                    self.dt.values.append([self.current_timestamp, dt])
             elif p_id == PacketId.SPEED.value:
                 self.current_object_timeline.speed.values.append([self.current_timestamp, read_dtype(self.file, DataType.float)])
             elif p_id == PacketId.WHEEL_ANGLE.value:
@@ -559,38 +561,59 @@ class DATFile():
         """
         Fill in missing timestamps based on dt values.
         """
-        filled = []
-        i = 0
+        if len(self.dt.values) == 0:
+            print("ERROR: No dt values found, cannot fill timestamps.")
+            return
+
         curr_time = self.timestamps[0]
+        filled = [curr_time]
 
-        while i < len(self.timestamps) - 1 and curr_time < self.end_time - SMALL_NUMBER:
-            filled.append(curr_time)
+        if len(self.dt.values) == 1:
+            dt = self.dt.values[0][1]
+            self.fill_empty_timestamps(curr_time, self.timestamps[-1], dt, filled)
+        else:
+            i = 0
+            j = 0
+            while j < len(self.dt.values) - 1:
+                next_timestamp = self.timestamps[i + 1]
+                next_dt = self.dt.values[j + 1][1]
 
-            next_logged_time = self.timestamps[i + 1]
+                if is_near(curr_time, (self.dt.values[j + 1][0] - next_dt)):
+                    j += 1
+                elif curr_time - SMALL_NUMBER > self.dt.values[j + 1][0]:
+                    start_time = self.dt.values[j + 1][0]
+                    end_time = curr_time
+                    restart_dt = self.dt.values[j + 1][1]
 
-            if len(self.dt.values) == 2:
-                dt = self.dt.values[1][1]
-            else:
-                dt = self.dt.get_value_binary(curr_time, True)
+                    start_idx = bisect.bisect_right(filled, start_time)
+                    start_idx -= 1
+                    steps = int(round(((end_time - start_time) / restart_dt) + SMALL_NUMBER))
+                    for k in range(steps):
+                        t = k * restart_dt + start_time
+                        for m in range(start_idx, len(len(filled))):
+                            if t > filled[m] + SMALL_NUMBER and t < filled[m + 1] - SMALL_NUMBER:
+                                filled.insert(m + 1, t)
+                                start_idx = m + 1
+                                break
+                    j += 1
+                    continue
 
-            next_time = curr_time + dt
-
-            if is_near(next_time, next_logged_time):
+                dt = self.dt.values[j][1]
+                if curr_time + next_dt < next_timestamp - SMALL_NUMBER and curr_time + dt < next_timestamp - SMALL_NUMBER:
+                    end_time = next_timestamp - next_dt
+                    self.fill_empty_timestamps(curr_time, end_time, dt, filled)
+                else:
+                    filled.append(next_timestamp)
                 i += 1
-                curr_time = next_logged_time
-            else:
-                prev_dt = self.dt.get_value_binary(curr_time)
-                end_time = next_logged_time - dt
-                steps = int(round(((end_time - curr_time) / prev_dt) + SMALL_NUMBER))
-
-                for j in range(1, steps):
-                    filled.append(curr_time + j * prev_dt)
-            
-                curr_time = filled[-1] + prev_dt
+                curr_time = filled[-1]
 
         filled.append(self.timestamps[-1]) # Add last index
-        
         self.timestamps = filled
+    
+    def fill_empty_timestamps(self, start: float, end: float, dt: float, v: List[float]) -> None:
+        steps = int(round(((end - start) / dt) + SMALL_NUMBER))
+        for i in range(steps):
+            v.append((i + 1) * dt + start)
 
     def get_header_line(self) -> str:
         """Get the header line with version and file references."""
