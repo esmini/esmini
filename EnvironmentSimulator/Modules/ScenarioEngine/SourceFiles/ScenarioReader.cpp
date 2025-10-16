@@ -2296,7 +2296,11 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
         }
         else if (actionChild.name() == std::string("TrafficAction"))
         {
-            std::cout << "TrafficAction" << std::endl;
+            std::shared_ptr<TrafficActionContext> trafficActionContext =
+                std::make_shared<TrafficActionContext>(*scenarioEngine_, *gateway_, *this, *roadmanager::Position::GetOpenDrive());
+            std::string traffic_name;
+            traffic_name = parameters.ReadAttribute(actionChild, "trafficName");
+
             pugi::xml_node trafficChild = actionChild.first_child();
 
             if (!strcmp(trafficChild.name(), "TrafficSourceAction"))
@@ -2374,9 +2378,10 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 radius = parameters.ReadAttribute(trafficChild, "semiMinorAxis", true);
                 trafficSwarmAction->SetSemiMinorAxes(std::stod(radius));
 
-                trafficSwarmAction->SetScenarioEngine(scenarioEngine_);
-                trafficSwarmAction->SetGateway(gateway_);
-                trafficSwarmAction->SetReader(this);
+                if (!traffic_name.empty())
+                {
+                    trafficSwarmAction->SetName(traffic_name);
+                }
 
                 // Number of vehicles
                 numberOfVehicles = parameters.ReadAttribute(trafficChild, "numberOfVehicles", true);
