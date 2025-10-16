@@ -438,7 +438,7 @@ namespace scenarioengine
             std::string action_type_;
             VehiclePool                        vehicle_pool_;
             double                             spawn_speed_ = 0.0;
-            Entities               entities_;
+            Entities*              entities_;
     };
 
 

@@ -276,14 +276,14 @@ void TrafficAction::SpawnEntity(roadmanager::Position* pos)
 
 bool TrafficAction::FreePositionToSpawn(roadmanager::Position* pos)
 {
-    entities_        = context_->GetScenarioEngine().entities_;
+    entities_        = &context_->GetScenarioEngine().entities_;
     double x = pos->GetX();
     double y = pos->GetY();
     double latDist;
     double longDist;
     double freespacedistance;
 
-    for (auto& entity : entities_.object_)
+    for (auto& entity : entities_->object_)
     {
         freespacedistance = entity->FreeSpaceDistancePoint(x, y, &latDist, &longDist);
         if (freespacedistance < VEHICLE_DISTANCE)
