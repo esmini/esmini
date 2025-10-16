@@ -296,7 +296,6 @@ class DATFile():
 
         self.parse_data()
         self.fill_timestamps()
-        self.build_csv()
     
     def check_header(self, filename: str) -> None:
         """ Check the header of the .dat file and open it for reading.
@@ -541,14 +540,19 @@ class DATFile():
 
         return self.ObjectStateStructDat
 
-    def build_csv(self) -> None:
+    def build_data(self, usage: str = 'csv') -> None:
         """
         Build the CSV data from the parsed object states.
         """
-        if self.extended:
-            labels = self.get_labels_line_extended()
+        if usage == 'csv':
+            if self.extended:
+                labels = self.get_labels_line_extended()
+            else:
+                labels = self.get_labels_line()
+        elif usage == 'plot':
+            labels = self.labels
         else:
-            labels = self.get_labels_line()
+            raise ValueError(f"Unsupported usage type: {usage}, only supported are 'csv' and 'plot'.")
 
         for t in self.timestamps:
             for obj_id in self.objects_timeline.keys():
@@ -590,7 +594,7 @@ class DATFile():
                     steps = int(round(((end_time - start_time) / restart_dt) + SMALL_NUMBER))
                     for k in range(steps):
                         t = k * restart_dt + start_time
-                        for m in range(start_idx, len(len(filled))):
+                        for m in range(start_idx, len(filled)):
                             if t > filled[m] + SMALL_NUMBER and t < filled[m + 1] - SMALL_NUMBER:
                                 filled.insert(m + 1, t)
                                 start_idx = m + 1
@@ -607,7 +611,6 @@ class DATFile():
                 i += 1
                 curr_time = filled[-1]
 
-        filled.append(self.timestamps[-1]) # Add last index
         self.timestamps = filled
     
     def fill_empty_timestamps(self, start: float, end: float, dt: float, v: List[float]) -> None:
@@ -631,77 +634,10 @@ class DATFile():
         """ Get the extended labels line """
         return ['time', 'id', 'name', 'x', 'y', 'z', 'h', 'p', 'r', 'roadId', 'laneId', 'offset', 't', 's', 'speed', 'wheel_angle', 'wheel_rot']
 
-    def get_labels_line_array(self) -> List[str]:
-        """ Get the standard labels line as an array """
-        return [
-            "time",
-            "id",
-            "name",
-            "model_id",
-            "obj_type",
-            "obj_category",
-            "ctrl_type",
-            "x",
-            "y",
-            "z",
-            "h",
-            "p",
-            "r",
-            "speed",
-            "wheel_angle",
-            "wheel_rot",
-            "centerOffsetX",
-            "centerOffsetY",
-            "centerOffsetZ",
-            "width",
-            "length",
-            "height",
-            "scaleMode",
-            "visibilityMask",
-            "roadId",
-            "laneId",
-            "offset",
-            "t",
-            "s"];
-
-    def get_data_line_array(self, data) -> List:
-        """
-        Get the data line as an array.
-        """
-        return [
-            data["time"],
-            data["id"],
-            data["name"].decode('utf-8'),
-            data["modelId"],
-            data["objType"],
-            data["objCategory"],
-            data["ctrlType"],
-            data["x"],
-            data["y"],
-            data["z"],
-            data["h"],
-            data["p"],
-            data["r"],
-            data["speed"],
-            data["wheel_angle"],
-            data["wheel_rot"],
-            data["centerOffsetX"],
-            data["centerOffsetY"],
-            data["centerOffsetZ"],
-            data["width"],
-            data["length"],
-            data["height"],
-            data["scaleMode"],
-            data["visibilityMask"],
-            data["roadId"],
-            data["laneId"],
-            data["offset"],
-            data["t"],
-            data["s"]];
-
     def print_csv(self, extended = False, include_file_refs = True) -> None:
         """Print the contents of the .dat file in CSV format to the console."""
         # Print header
+        self.build_data()
         if include_file_refs:
             print(self.get_header_line())
 
@@ -717,6 +653,7 @@ class DATFile():
 
     def save_csv(self, extended = False, include_file_refs = True) -> None:
         """Save the contents of the .dat file in CSV format to a file."""
+        self.build_data()
         csvfile = os.path.splitext(self.filename)[0] + '.csv'
         try:
             fcsv = open(csvfile, 'w')

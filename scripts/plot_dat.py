@@ -23,12 +23,8 @@ if __name__ == "__main__":
     # Read the dat file
     dat = DATFile(args.filename)
 
-    rows = []
-    for data in dat.data:
-        rows.append(dat.get_data_line_array(data))
-
     plot.plot(
-        rows, dat.get_labels_line_array(),
+        dat,
         args.param,
         args.x_axis,
         args.derive,
