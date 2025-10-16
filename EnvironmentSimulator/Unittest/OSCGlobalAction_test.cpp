@@ -13,11 +13,25 @@ protected:
     void SetUpBase()
     {
         roadmanager::Position::GetOpenDrive()->LoadOpenDriveFile("../../../EnvironmentSimulator/Unittest/xodr/trafficarea.xodr");
-        ScenarioEngine* scenarioEngine = nullptr;
-        ScenarioGateway*  gateway        = nullptr;
-        ScenarioReader*   reader         = nullptr;
-        std::shared_ptr<TrafficActionContext> trafficActionContext = std::make_shared<TrafficActionContext>(*scenarioEngine, *gateway, *reader, *roadmanager::Position::GetOpenDrive());
-        
+        // ScenarioEngine* scenarioEngine;// = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/four_roads.xosc");
+        // ScenarioGateway* gateway;// = new ScenarioGateway();
+        // // Entities* entities;
+        // // Catalogs* catalogs;
+        // // OSCEnvironment* environment;
+        // ScenarioReader* reader; // = new ScenarioReader(entities, catalogs,environment);
+
+        // class DummyScenarioEngine : public ScenarioEngine {};
+        // class DummyGateway : public ScenarioGateway { };
+        // class DummyReader : public ScenarioReader {};
+
+        // auto scenarioEngine = std::make_unique<DummyScenarioEngine>();
+        // auto gateway = std::make_unique<DummyGateway>();
+        // auto reader = std::make_unique<DummyReader>();
+
+        std::shared_ptr<TrafficActionContext> trafficActionContext = std::make_shared<TrafficActionContext>(*roadmanager::Position::GetOpenDrive());
+        // std::shared_ptr<TrafficActionContext> trafficActionContext =
+        // std::make_shared<TrafficActionContext>(nullptr, nullptr, nullptr, *roadmanager::Position::GetOpenDrive());
+
         trafficAreaAction = new TrafficAreaAction(nullptr, trafficActionContext);
         trafficAreaAction->SetNumberOfEntities(10);
 
@@ -180,8 +194,8 @@ struct RoadRangeTestParam
 //                        RoadCursor{2, 200, {2, 1, -1, -2}, true, 200}}},
 //         },
 //         RoadRangeTestParam{
-//             RoadRange{0, {RoadCursor{0, 50, {-1, -2}, false, 100}, RoadCursor{1, 10, {1, -1, -2}, false, 150}, RoadCursor{1, 20, {-1}, true, 150}}},
-//             RoadRange{0,
+//             RoadRange{0, {RoadCursor{0, 50, {-1, -2}, false, 100}, RoadCursor{1, 10, {1, -1, -2}, false, 150}, RoadCursor{1, 20, {-1}, true,
+//             150}}}, RoadRange{0,
 //                       {RoadCursor{0, 50, {-1, -2}, false, 100},
 //                        RoadCursor{1, 0, {-1, -2}, false, 150},
 //                        RoadCursor{1, 10, {1, -1, -2}, false, 150},
@@ -350,7 +364,7 @@ TEST_P(TrafficAreaActionSetLaneSegmentsTest, SetLaneSegmentsTest)
     {
         bool found = std::any_of(expected_lane_segments.begin(),
                                  expected_lane_segments.end(),
-                                 [&](const LaneSegment& expected_ls) { return ls == expected_ls; });        
+                                 [&](const LaneSegment& expected_ls) { return ls == expected_ls; });
         ASSERT_TRUE(found) << "LaneSegment not found in expected_lane_segments";
     }
 
@@ -367,80 +381,33 @@ INSTANTIATE_TEST_SUITE_P(
     SetLaneSegmentsTest,
     TrafficAreaActionSetLaneSegmentsTest,
     ::testing::Values(
-        LaneSegmentsTestParam{
-            RoadRange{25,
-                {
-                    RoadCursor{1, 50, {-1, -2}, false, 150},
-                    RoadCursor{1, 75, {-1, -2}, true, 150}
-                }
-            },
-            {
-                LaneSegment{1, -1, 50, 75, 25},
-                LaneSegment{1, -2, 50, 75, 25}}},
-        LaneSegmentsTestParam{
-            RoadRange{20,
-                {
-                    RoadCursor{1, 50, {-1, -2}, false, 150},
-                    RoadCursor{1, 75, {-1, -2}, true, 150}
-                }
-            },
-            {
-                LaneSegment{1, -1, 50, 70, 20},
-                LaneSegment{1, -2, 50, 70, 20}}},
+        LaneSegmentsTestParam{RoadRange{25, {RoadCursor{1, 50, {-1, -2}, false, 150}, RoadCursor{1, 75, {-1, -2}, true, 150}}},
+                              {LaneSegment{1, -1, 50, 75, 25}, LaneSegment{1, -2, 50, 75, 25}}},
+        LaneSegmentsTestParam{RoadRange{20, {RoadCursor{1, 50, {-1, -2}, false, 150}, RoadCursor{1, 75, {-1, -2}, true, 150}}},
+                              {LaneSegment{1, -1, 50, 70, 20}, LaneSegment{1, -2, 50, 70, 20}}},
 
+        LaneSegmentsTestParam{
+            RoadRange{125, {RoadCursor{0, 50, {-1, -2}, false, 100}, RoadCursor{1, 0, {-1, -2}, false, 150}, RoadCursor{1, 75, {-1, -2}, true, 150}}},
+            {LaneSegment{0, -1, 50, 100, 50}, LaneSegment{0, -2, 50, 100, 50}, LaneSegment{1, -1, 0, 75, 75}, LaneSegment{1, -2, 0, 75, 75}}},
         LaneSegmentsTestParam{
             RoadRange{
                 125,
-                {
-                    RoadCursor{0, 50, {-1, -2}, false, 100},
-                    RoadCursor{1, 0, {-1, -2}, false, 150},
-                    RoadCursor{1, 75, {-1, -2}, true, 150}
-                }
-            },
-            {
-                LaneSegment{0, -1, 50, 100, 50},
-                LaneSegment{0, -2, 50, 100, 50},
-                LaneSegment{1, -1, 0, 75, 75},
-                LaneSegment{1, -2, 0, 75, 75}}},
+                {RoadCursor{0, 50, {2, 1, -1, -2}, false, 100}, RoadCursor{1, 0, {-1, -2}, false, 150}, RoadCursor{1, 75, {-1, -2}, true, 150}}},
+            {LaneSegment{0, 2, 50, 100, 50},
+             LaneSegment{0, 1, 50, 100, 50},
+             LaneSegment{0, -1, 50, 100, 50},
+             LaneSegment{0, -2, 50, 100, 50},
+             LaneSegment{1, -1, 0, 75, 75},
+             LaneSegment{1, -2, 0, 75, 75}}},
         LaneSegmentsTestParam{
-            RoadRange{
-                125,
-                {
-                    RoadCursor{0, 50, {2, 1, -1, -2}, false, 100},
-                    RoadCursor{1, 0, {-1, -2}, false, 150},
-                    RoadCursor{1, 75, {-1, -2}, true, 150}
-                }
-            },
-            {
-                LaneSegment{0, 2, 50, 100, 50},
-                LaneSegment{0, 1, 50, 100, 50},
-                LaneSegment{0, -1, 50, 100, 50},
-                LaneSegment{0, -2, 50, 100, 50},
-                LaneSegment{1, -1, 0, 75, 75},
-                LaneSegment{1, -2, 0, 75, 75}}},
-        LaneSegmentsTestParam{
-            RoadRange{
-                100,
-                {
-                    RoadCursor{0, 50, {-1, -2}, false, 100},
-                    RoadCursor{1, 0, {-1, -2}, false, 150},
-                    RoadCursor{1, 75, {-1, -2}, true, 150}
-                }
-            },
-            {
-                LaneSegment{0, -1, 50, 100, 50},
-                LaneSegment{0, -2, 50, 100, 50},
-                LaneSegment{1, -1, 0, 50, 50},
-                LaneSegment{1, -2, 0, 50, 50}}},
+            RoadRange{100, {RoadCursor{0, 50, {-1, -2}, false, 100}, RoadCursor{1, 0, {-1, -2}, false, 150}, RoadCursor{1, 75, {-1, -2}, true, 150}}},
+            {LaneSegment{0, -1, 50, 100, 50}, LaneSegment{0, -2, 50, 100, 50}, LaneSegment{1, -1, 0, 50, 50}, LaneSegment{1, -2, 0, 50, 50}}},
 
-        LaneSegmentsTestParam{
-            RoadRange{
-                450,
-                {
-                    RoadCursor{0, 0, {-1}, false, 100},
-                    RoadCursor{1, 0, {-1, -2}, false, 150},
-                    RoadCursor{2, 0, {-1, -2}, false, 200},
-                    RoadCursor{2, 200, {-1, -2}, true, 200}}},
+        LaneSegmentsTestParam{RoadRange{450,
+                                        {RoadCursor{0, 0, {-1}, false, 100},
+                                         RoadCursor{1, 0, {-1, -2}, false, 150},
+                                         RoadCursor{2, 0, {-1, -2}, false, 200},
+                                         RoadCursor{2, 200, {-1, -2}, true, 200}}},
                               {LaneSegment{0, -1, 0, 100, 100},
                                LaneSegment{1, -1, 0, 150, 150},
                                LaneSegment{1, -2, 0, 150, 150},
@@ -458,20 +425,14 @@ INSTANTIATE_TEST_SUITE_P(
                                LaneSegment{2, -1, 0, 100, 100},
                                LaneSegment{2, -2, 0, 100, 100}}},
 
-
-
-        LaneSegmentsTestParam{RoadRange{300,
-                                        {RoadCursor{0, 50, {-1, -2}, false, 100},
-                                         RoadCursor{1, 50, {-1, -2}, true, 150}}},
-                              {LaneSegment{0, -1, 50, 100, 50},
-                               LaneSegment{0, -2, 50, 100, 50},
-                               LaneSegment{1, -1, 0, 50, 50},
-                               LaneSegment{1, -2, 0, 50, 50}}},
+        LaneSegmentsTestParam{
+            RoadRange{300, {RoadCursor{0, 50, {-1, -2}, false, 100}, RoadCursor{1, 50, {-1, -2}, true, 150}}},
+            {LaneSegment{0, -1, 50, 100, 50}, LaneSegment{0, -2, 50, 100, 50}, LaneSegment{1, -1, 0, 50, 50}, LaneSegment{1, -2, 0, 50, 50}}},
 
         LaneSegmentsTestParam{RoadRange{500,
-                                        {RoadCursor{0, 0, {2,1,-1, -2}, false, 100},
-                                         RoadCursor{1, 0, {2,1,-1, -2}, false, 150},
-                                         RoadCursor{2, 0, {2,1,-1, -2}, true, 200}}},
+                                        {RoadCursor{0, 0, {2, 1, -1, -2}, false, 100},
+                                         RoadCursor{1, 0, {2, 1, -1, -2}, false, 150},
+                                         RoadCursor{2, 0, {2, 1, -1, -2}, true, 200}}},
                               {LaneSegment{0, 2, 0, 100, 100},
                                LaneSegment{0, 1, 0, 100, 100},
                                LaneSegment{0, -1, 0, 100, 100},
@@ -486,9 +447,9 @@ INSTANTIATE_TEST_SUITE_P(
                                LaneSegment{2, -2, 0, 200, 200}}},
 
         LaneSegmentsTestParam{RoadRange{500,
-                                        {RoadCursor{0, 0, {2,1,-1, -2}, false, 100},
-                                         RoadCursor{1, 75, {2,1,-1, -2}, false, 150},
-                                         RoadCursor{2, 0, {2,1,-1, -2}, true, 200}}},
+                                        {RoadCursor{0, 0, {2, 1, -1, -2}, false, 100},
+                                         RoadCursor{1, 75, {2, 1, -1, -2}, false, 150},
+                                         RoadCursor{2, 0, {2, 1, -1, -2}, true, 200}}},
                               {LaneSegment{0, 2, 0, 100, 100},
                                LaneSegment{0, 1, 0, 100, 100},
                                LaneSegment{0, -1, 0, 100, 100},
@@ -500,5 +461,4 @@ INSTANTIATE_TEST_SUITE_P(
                                LaneSegment{2, 2, 0, 200, 200},
                                LaneSegment{2, 1, 0, 200, 200},
                                LaneSegment{2, -1, 0, 200, 200},
-                               LaneSegment{2, -2, 0, 200, 200}}}
-                            ));
+                               LaneSegment{2, -2, 0, 200, 200}}}));

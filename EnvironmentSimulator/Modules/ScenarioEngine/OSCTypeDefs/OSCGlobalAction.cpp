@@ -38,7 +38,7 @@ using std::make_shared;
 using std::vector;
 
 #define USELESS_THRESHOLD     5    // Max check count before deleting uneffective vehicles
-#define VEHICLE_DISTANCE      7   // Freespace needed to a potential spawn point to allow vehicle spawn
+#define VEHICLE_DISTANCE      7    // Freespace needed to a potential spawn point to allow vehicle spawn
 #define SWARM_TIME_INTERVAL   0.1  // Sleep time between update steps
 #define SWARM_SPAWN_FREQUENCY 1.1  // Sleep time between spawns
 #define MAX_CARS              1000
@@ -220,7 +220,7 @@ void DeleteEntityAction::Step(double simTime, double dt)
 void TrafficAction::SpawnEntity(roadmanager::Position* pos)
 {
     EntityWithController ewc;
-    int laneID = pos->GetLaneId();
+    int                  laneID = pos->GetLaneId();
 
     if (traffic_distribution_entry_.empty())
     {
@@ -229,7 +229,7 @@ void TrafficAction::SpawnEntity(roadmanager::Position* pos)
     }
     else
     {
-        size_t idx = rand() % traffic_distribution_entry_.size();
+        size_t idx = static_cast<size_t>(rand()) % traffic_distribution_entry_.size();
         ewc        = traffic_distribution_entry_[idx].GetRandomEntity();
 
         if (ewc.object)
@@ -276,16 +276,15 @@ void TrafficAction::SpawnEntity(roadmanager::Position* pos)
 
 bool TrafficAction::FreePositionToSpawn(roadmanager::Position* pos)
 {
-    entities_        = context_->GetScenarioEngine().entities_;
-    double x = pos->GetX();
-    double y = pos->GetY();
+    entities_ = &context_->GetScenarioEngine().entities_;
+    double x  = pos->GetX();
+    double y  = pos->GetY();
     double latDist;
     double longDist;
-    double freespacedistance;
 
-    for (auto& entity : entities_.object_)
+    for (auto& entity : entities_->object_)
     {
-        freespacedistance = entity->FreeSpaceDistancePoint(x, y, &latDist, &longDist);
+        double freespacedistance = entity->FreeSpaceDistancePoint(x, y, &latDist, &longDist);
         if (freespacedistance < VEHICLE_DISTANCE)
         {
             return false;
@@ -319,7 +318,7 @@ void TrafficSwarmAction::Start(double simTime)
              initialSpeedLowerLimit_,
              initialSpeedUpperLimit_);
     double x0, y0, x1, y1;
-    entities_        = &context_->GetScenarioEngine().entities_;
+    swarm_entities_ = &context_->GetScenarioEngine().entities_;
     spawnedV.clear();
 
     midSMjA  = (semiMajorAxis_ + innerRadius_) / 2.0;
@@ -329,7 +328,7 @@ void TrafficSwarmAction::Start(double simTime)
     paramEllipse(0, 0, 0, midSMjA, midSMnA, 0, x0, y0);
     paramEllipse(M_PI / 36, 0, 0, midSMjA, midSMnA, 0, x1, y1);
 
-    minSize_    = ceil(sqrt(pow(x1 - x0, 2) + pow(y1 - y0, 2)) * 100) / 100.0;
+    minSize_ = ceil(sqrt(pow(x1 - x0, 2) + pow(y1 - y0, 2)) * 100) / 100.0;
     if (minSize_ == 0)
         minSize_ = 1.0;
 
@@ -658,7 +657,7 @@ void TrafficSwarmAction::spawn(Solutions sols, int replace, double simTime)
             vehicle->SetSpeed(vel);
             // vehicle->scaleMode_ = EntityScaleMode::BB_TO_MODEL;
             vehicle->name_ = "swarm_" + std::to_string(counter_++);
-            int id         = entities_->addObject(vehicle, true);
+            int id         = swarm_entities_->addObject(vehicle, true);
 
             // align trailers
             Vehicle* v = vehicle;
@@ -687,7 +686,7 @@ inline bool TrafficSwarmAction::ensureDistance(roadmanager::Position pos, int la
 {
     for (SpawnInfo info : spawnedV)
     {
-        Object* vehicle = entities_->GetObjectById(info.vehicleID);
+        Object* vehicle = swarm_entities_->GetObjectById(info.vehicleID);
 
         // First apply minimal radius filter to avoid vehicles appear too close, e.g. next to each other in neighbor lanes
         if (PointDistance2D(pos.GetX(), pos.GetY(), vehicle->pos_.GetX(), vehicle->pos_.GetY()) < 20)
@@ -722,7 +721,7 @@ int TrafficSwarmAction::despawn(double simTime)
 
     while (infoPtr != spawnedV.end())
     {
-        Object* vehicle = entities_->GetObjectById(infoPtr->vehicleID);
+        Object* vehicle = swarm_entities_->GetObjectById(infoPtr->vehicleID);
 
         if (vehicle->IsOffRoad() || vehicle->IsEndOfRoad())
         {
@@ -773,11 +772,11 @@ int TrafficSwarmAction::despawn(double simTime)
 
                     if (v->objectEvents_.size() > 0 || v->initActions_.size() > 0)
                     {
-                        entities_->deactivateObject(v);
+                        swarm_entities_->deactivateObject(v);
                     }
                     else
                     {
-                        entities_->removeObject(v, false);
+                        swarm_entities_->removeObject(v, false);
                     }
                     v = trailer;
 
@@ -790,11 +789,11 @@ int TrafficSwarmAction::despawn(double simTime)
                 context_->GetScenarioGateway().removeObject(vehicle->name_);
                 if (vehicle->objectEvents_.size() > 0 || vehicle->initActions_.size() > 0)
                 {
-                    entities_->deactivateObject(vehicle);
+                    swarm_entities_->deactivateObject(vehicle);
                 }
                 else
                 {
-                    entities_->removeObject(vehicle, false);
+                    swarm_entities_->removeObject(vehicle, false);
                 }
             }
 
@@ -877,7 +876,8 @@ void TrafficSourceAction::Step(double simTime, double dt)
     (void)dt;
 
     double next_spawn_time = action_trigger_time_ + spawned_count_ / rate_;
-    if (simTime >= next_spawn_time) {
+    if (simTime >= next_spawn_time)
+    {
         SpawnEntity(GetRandomSpawnPosition());
     }
 }
@@ -907,6 +907,7 @@ void TrafficSinkAction::Start(double simTime)
 
 void TrafficSinkAction::Step(double simTime, double dt)
 {
+    (void)simTime;
     if (constant_despawn_)
     {
         FindPossibleDespawn();
@@ -978,7 +979,8 @@ void TrafficAreaAction::Step(double simTime, double dt)
     else
     {
         DespawnEntities();
-        SpawnEntities(number_of_entities_ - spawned_entity_ids_.size());
+        int remaining = number_of_entities_ - static_cast<int>(spawned_entity_ids_.size());
+        SpawnEntities(remaining);
     }
 }
 
@@ -1018,58 +1020,57 @@ void TrafficAreaAction::UpdateRoadRanges()
         SetLaneSegments(rr);
     }
     // AddComplementaryRoadCursors();
-    
 }
 
 void TrafficAreaAction::SetRoadRangeLength(RoadRange& road_range)
 {
-        std::unordered_set<int> road_ids_in_range;
+    std::unordered_set<int> road_ids_in_range;
+    for (const auto& rc : road_range.roadCursors)
+    {
+        road_ids_in_range.insert(rc.roadId);
+    }
+
+    if (road_ids_in_range.size() == 1)
+    {
+        double minS = std::numeric_limits<double>::max();
+        double maxS = 0;
         for (const auto& rc : road_range.roadCursors)
         {
-            road_ids_in_range.insert(rc.roadId);
+            if (rc.s < minS)
+                minS = rc.s;
+            if (rc.s > maxS)
+                maxS = rc.s;
         }
-
-        if (road_ids_in_range.size() == 1)
+        road_range.length = road_range.length == 0 ? maxS - minS : std::min(road_range.length, maxS - minS);
+    }
+    else
+    {
+        double total_length = 0.0;
+        for (const auto& road_id : road_ids_in_range)
         {
             double minS = std::numeric_limits<double>::max();
-            double maxS = 0;
+            double maxS;
+            double lastS = 0.0;
             for (const auto& rc : road_range.roadCursors)
             {
-                if (rc.s < minS)
-                    minS = rc.s;
-                if (rc.s > maxS)
-                    maxS = rc.s;
-            }
-            road_range.length = road_range.length == 0 ? maxS - minS : std::min(road_range.length, maxS - minS);
-        }
-        else
-        {
-            double total_length = 0.0;
-            for (const auto& road_id : road_ids_in_range)
-            {
-                double minS = std::numeric_limits<double>::max();
-                double maxS;
-                double lastS = 0.0;
-                for (const auto& rc : road_range.roadCursors)
+                if (rc.roadId == road_id)
                 {
-                    if (rc.roadId == road_id)
-                    {
-                        maxS = rc.road_length;
-                        if (rc.s < minS)
-                            minS = rc.s;
-                        if (rc.last)
-                            lastS = maxS - rc.s;
-                    }
+                    maxS = rc.road_length;
+                    if (rc.s < minS)
+                        minS = rc.s;
+                    if (rc.last)
+                        lastS = maxS - rc.s;
                 }
-                total_length += maxS - minS - lastS;
             }
-            road_range.length = road_range.length == 0 ? total_length : std::min(road_range.length, total_length);
+            total_length += maxS - minS - lastS;
         }
+        road_range.length = road_range.length == 0 ? total_length : std::min(road_range.length, total_length);
+    }
 }
 
 void TrafficAreaAction::SetAdditionalRoadCursorInfo(RoadCursor& road_cursor)
 {
-    roadmanager::Road* road = context_->GetOdrManager().GetRoadById(road_cursor.roadId);
+    roadmanager::Road* road = context_->GetOdrManager().GetRoadById(static_cast<id_t>(road_cursor.roadId));
     if (!road)
     {
         LOG_ERROR("TrafficAreaAction: Road ID '{}' not found in OpenDRIVE data", road_cursor.roadId);
@@ -1176,8 +1177,8 @@ void TrafficAreaAction::AddComplementaryRoadCursors()
                     if (visited_roads.count(next_road_id))
                         continue;
 
-                    roadmanager::Road* current_road = context_->GetOdrManager().GetRoadById(current_road_id);
-                    roadmanager::Road* next_road    = context_->GetOdrManager().GetRoadById(next_road_id);
+                    roadmanager::Road* current_road = context_->GetOdrManager().GetRoadById(static_cast<id_t>(current_road_id));
+                    roadmanager::Road* next_road    = context_->GetOdrManager().GetRoadById(static_cast<id_t>(next_road_id));
                     if (!current_road->IsSuccessor(next_road))
                     {
                         continue;
@@ -1432,7 +1433,7 @@ void TrafficAreaAction::DespawnEntities()
     for (auto it = spawned_entity_ids_.begin(); it != spawned_entity_ids_.end();)
     {
         Object* obj = context_->GetScenarioEngine().entities_.GetObjectById(*it);
-        if (!obj || !InsideArea(obj->pos_))
+        if (obj && !InsideArea(obj->pos_))
         {
             DespawnEntity(obj);
             it = spawned_entity_ids_.erase(it);
@@ -1557,7 +1558,7 @@ roadmanager::Position* TrafficAreaAction::GetRandomSpawnPosition()
         roadmanager::Position* spawn_position = new roadmanager::Position(x, y, 0.0, 0.0, 0.0, 0.0);
 
         spawn_position->GotoClosestDrivingLaneAtCurrentPosition();
-        
+
         spawn_position->SetLanePos(spawn_position->GetTrackId(), spawn_position->GetLaneId(), spawn_position->GetS(), 0.0);
 
         if (!InsideArea(*spawn_position) || !FreePositionToSpawn(spawn_position))
@@ -1577,12 +1578,12 @@ roadmanager::Position* TrafficAreaAction::GetRandomSpawnPosition()
 
             roadmanager::Position* spawn_position = new roadmanager::Position(seg.roadId, seg.laneId, s, 0.0);
             if (!FreePositionToSpawn(spawn_position))
-        {
-            LOG_INFO("Generated spawn position is to close to other vehicle. Skipping spawn");
-            delete spawn_position;
-            return nullptr;
-        }
-        return spawn_position;
+            {
+                LOG_INFO("Generated spawn position is to close to other vehicle. Skipping spawn");
+                delete spawn_position;
+                return nullptr;
+            }
+            return spawn_position;
         }
     }
 
