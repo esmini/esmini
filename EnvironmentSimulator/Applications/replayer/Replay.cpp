@@ -549,8 +549,6 @@ void Replay::FillInTimestamps()
         }
     }
 
-    // Always add the last explicit one
-    filled.emplace_back(timestamps_.back());
     timestamps_.swap(filled);
 }
 
@@ -981,16 +979,17 @@ void Replay::SetupGhostsTimeline()
     }
 
     // Then we slice the ghost controller timeline to the time where ghost reset began
-    ghost_timeline->second.lane_id_.values.resize(ghost_timeline->second.lane_id_.get_index_binary(timestamp_).value());
-    ghost_timeline->second.road_id_.values.resize(ghost_timeline->second.road_id_.get_index_binary(timestamp_).value());
-    ghost_timeline->second.pos_offset_.values.resize(ghost_timeline->second.pos_offset_.get_index_binary(timestamp_).value());
-    ghost_timeline->second.pos_t_.values.resize(ghost_timeline->second.pos_t_.get_index_binary(timestamp_).value());
-    ghost_timeline->second.pos_s_.values.resize(ghost_timeline->second.pos_s_.get_index_binary(timestamp_).value());
-    ghost_timeline->second.pose_.values.resize(ghost_timeline->second.pose_.get_index_binary(timestamp_).value());
-    ghost_timeline->second.speed_.values.resize(ghost_timeline->second.speed_.get_index_binary(timestamp_).value());
-    ghost_timeline->second.wheel_angle_.values.resize(ghost_timeline->second.wheel_angle_.get_index_binary(timestamp_).value());
-    ghost_timeline->second.wheel_rot_.values.resize(ghost_timeline->second.wheel_rot_.get_index_binary(timestamp_).value());
-    ghost_timeline->second.visibility_mask_.values.resize(ghost_timeline->second.visibility_mask_.get_index_binary(timestamp_).value());
+    auto ghost_timeline_properties = &ghost_timeline->second;
+    ghost_timeline_properties->lane_id_.values.resize(ghost_timeline_properties->lane_id_.get_index_binary(timestamp_).value());
+    ghost_timeline_properties->road_id_.values.resize(ghost_timeline_properties->road_id_.get_index_binary(timestamp_).value());
+    ghost_timeline_properties->pos_offset_.values.resize(ghost_timeline_properties->pos_offset_.get_index_binary(timestamp_).value());
+    ghost_timeline_properties->pos_t_.values.resize(ghost_timeline_properties->pos_t_.get_index_binary(timestamp_).value());
+    ghost_timeline_properties->pos_s_.values.resize(ghost_timeline_properties->pos_s_.get_index_binary(timestamp_).value());
+    ghost_timeline_properties->pose_.values.resize(ghost_timeline_properties->pose_.get_index_binary(timestamp_).value());
+    ghost_timeline_properties->speed_.values.resize(ghost_timeline_properties->speed_.get_index_binary(timestamp_).value());
+    ghost_timeline_properties->wheel_angle_.values.resize(ghost_timeline_properties->wheel_angle_.get_index_binary(timestamp_).value());
+    ghost_timeline_properties->wheel_rot_.values.resize(ghost_timeline_properties->wheel_rot_.get_index_binary(timestamp_).value());
+    ghost_timeline_properties->visibility_mask_.values.resize(ghost_timeline_properties->visibility_mask_.get_index_binary(timestamp_).value());
 }
 
 void Replay::CreateMergedDatfile(const std::string filename) const

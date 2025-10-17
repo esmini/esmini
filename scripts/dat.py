@@ -8,6 +8,12 @@ import copy
 import bisect
 import ctypes
 
+VERSION_MAJOR = 3
+VERSION_MINOR = 0
+SMALL_NUMBER = 1e-6
+LARGE_NUMBER = 1e10
+
+
 class OldDATHeader(ctypes.Structure):
     """ Structure for old DAT file header."""
     _fields_ = [
@@ -15,12 +21,6 @@ class OldDATHeader(ctypes.Structure):
         ('odr_filename', ctypes.c_char * 512),
         ('model_filename', ctypes.c_char * 512),
             ]
-
-
-VERSION_MAJOR = 3
-VERSION_MINOR = 0
-SMALL_NUMBER = 1e-6
-LARGE_NUMBER = 1e10
 
 class PacketId(enum.Enum):
     """Enum for packet IDs."""
@@ -267,6 +267,7 @@ class DATFile():
         "t": None,
         "s": None
     }
+
     def __init__(self, filename, extended=False):
         self.version_major  = 0
         self.version_minor  = 0
@@ -298,8 +299,7 @@ class DATFile():
         self.fill_timestamps()
     
     def check_header(self, filename: str) -> None:
-        """ Check the header of the .dat file and open it for reading.
-        """
+        """ Check the header of the .dat file and open it for reading. """
         if not os.path.isfile(filename):
             print(f'ERROR: dat-file not found: {filename}')
             return
@@ -350,7 +350,7 @@ class DATFile():
             self.odr_filename   = read_string_packet(file)
             self.model_filename = read_string_packet(file)
             return 0
-        except:
+        except ValueError:
             return -1
 
 
@@ -380,20 +380,20 @@ class DATFile():
                 if self.objects_timeline.get(self.current_object_id) is None:
                     self.objects_timeline[self.current_object_id] = PropertyTimeline()
                     self.current_object_timeline = self.objects_timeline[self.current_object_id]
+
                     if self.current_timestamp > 0.0:
                         self.current_object_timeline.active.values.append([0.0, False])
-                        self.current_object_timeline.active.values.append([self.current_timestamp, True])
-                    else:
-                        self.current_object_timeline.active.values.append([self.current_timestamp, True])
+                    self.current_object_timeline.active.values.append([self.current_timestamp, True])
                 else:
                     self.current_object_timeline = self.objects_timeline[self.current_object_id]
+
                     if self.current_object_timeline.active.values[-1][1] == False:
                         self.current_object_timeline.active.values.append([self.current_timestamp, True])
 
             # POSE packet
             elif p_id == PacketId.POSE.value:
                 pose = Pose()
-                for k in ["x", "y", "z", "h", "p", "r"]:
+                for k in list(pose.__dict__.keys()):
                     setattr(pose, k, read_dtype(self.file, DataType.float))
                 self.current_object_timeline.pose.values.append([self.current_timestamp, pose])
 
@@ -437,7 +437,7 @@ class DATFile():
                 self.current_object_timeline.name.values.append([self.current_timestamp, name])
             elif p_id == PacketId.BOUNDING_BOX.value:
                 bb = BoundingBox()
-                for k in ["center_offset_x", "center_offset_y", "center_offset_z", "width", "length", "height"]:
+                for k in list(bb.__dict__.keys()):
                     setattr(bb, k, read_dtype(self.file, DataType.float))
                 self.current_object_timeline.bounding_box.values.append([self.current_timestamp, bb])
 
@@ -452,6 +452,7 @@ class DATFile():
                     self.timestamps.append(self.end_time)
 
     def setup_ghosts_timeline(self):
+        """ Setup timelines for ghost objects upon ghost restart"""
         obj_tl = self.objects_timeline.get(self.ghost_controller_id)
 
         if obj_tl is None:
@@ -614,6 +615,7 @@ class DATFile():
         self.timestamps = filled
     
     def fill_empty_timestamps(self, start: float, end: float, dt: float, v: List[float]) -> None:
+        """ Fill in missing timestamps between start and end using dt """
         steps = int(round(((end - start) / dt) + SMALL_NUMBER))
         for i in range(steps):
             v.append((i + 1) * dt + start)
@@ -626,13 +628,14 @@ class DATFile():
         """ Get the standard labels line """
         return ['time', 'id', 'name', 'x', 'y', 'z', 'h', 'p', 'r', 'speed', 'wheel_angle', 'wheel_rot']
 
+    def get_labels_line_extended(self) -> List[str]:
+        """ Get the extended labels line """
+        return ['time', 'id', 'name', 'x', 'y', 'z', 'h', 'p', 'r', 'roadId', 'laneId', 'offset', 't', 's', 'speed', 'wheel_angle', 'wheel_rot']
+
     def get_data_line(self, data) -> str:
         """ Will contain extended data if self.extended is True """
         return ', '.join(f"{x:.3f}" if isinstance(x, float) else str(x) for x in data)
 
-    def get_labels_line_extended(self) -> List[str]:
-        """ Get the extended labels line """
-        return ['time', 'id', 'name', 'x', 'y', 'z', 'h', 'p', 'r', 'roadId', 'laneId', 'offset', 't', 's', 'speed', 'wheel_angle', 'wheel_rot']
 
     def print_csv(self, extended = False, include_file_refs = True) -> None:
         """Print the contents of the .dat file in CSV format to the console."""
