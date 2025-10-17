@@ -44,7 +44,6 @@ using namespace scenarioengine;
 #define JUMP_DELTA_TIME_LARGE 1.0
 #define JUMP_DELTA_TIME_SMALL 0.1
 
-static const double                stepSize    = 0.01;
 static const double                maxStepSize = 0.1;
 static const double                minStepSize = 0.001;
 static std::vector<int>            removeObjects;
@@ -216,7 +215,6 @@ int ParseEntities(Replay* player)
     {
         float x, y, odometer;
     };
-    // std::map<int, OdoInfo> odo_info;  // temporary keep track of entity odometers
 
     for (auto& [id, timelines] : player->objects_timeline_)
     {
@@ -799,15 +797,6 @@ int main(int argc, char** argv)
 #endif                  // _USE_OSG
             return -1;  // we harmonize all applications to quit on unknown arguments
         }
-
-        // if (opt.GetOptionSet("include_ghost_reset"))
-        // {
-        //     player->SetIncludeGhostReset(true);
-        // }
-        // else
-        // {
-        //     player->SetIncludeGhostReset(false);
-        // }
 
         if (opt.GetOptionSet("time_scale"))
         {

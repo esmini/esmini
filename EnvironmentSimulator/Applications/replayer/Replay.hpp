@@ -244,10 +244,6 @@ namespace scenarioengine
         {
             repeat_ = repeat;
         }
-        // void SetIncludeGhostReset(bool include)
-        // {
-        //     include_ghost_reset_ = include;
-        // }
 
     private:
         std::vector<std::string> scenarios_;

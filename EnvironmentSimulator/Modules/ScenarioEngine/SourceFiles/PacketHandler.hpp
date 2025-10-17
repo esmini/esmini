@@ -91,7 +91,6 @@ namespace Dat
     {
         int         obj_id_          = -1;
         bool        active_          = false;
-        bool        obj_written_     = false;  // denotes object added pkg written or not
         float       speed_           = std::nanf("");
         Pose        pose_            = {};
         int         model_id_        = -1;
