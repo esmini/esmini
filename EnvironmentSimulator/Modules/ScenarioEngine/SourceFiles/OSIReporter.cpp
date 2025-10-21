@@ -726,6 +726,12 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
         }
     }
 
+    if (!object->GetModel3DFullPath().empty())
+    {
+        // Set 3D model file as OSI model reference
+        obj_osi_internal.sobj->set_model_reference(object->GetModel3DFullPath());
+    }
+
     return 0;
 }
 
@@ -2659,6 +2665,12 @@ int OSIReporter::UpdateTrafficSignals()
                     trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_y(signal->GetY());
                     trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_z(signal->GetZ() + signal->GetZOffset() +
                                                                                                 signal->GetHeight() / 2.0);
+
+                    if (!signal->GetModel3DFullPath().empty())
+                    {
+                        // Set 3D model file as OSI model reference
+                        obj_osi_internal.sobj->set_model_reference(signal->GetModel3DFullPath());
+                    }
                 }
             }
         }
