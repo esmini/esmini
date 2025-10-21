@@ -50,6 +50,7 @@ static const double                minStepSize = 0.001;
 static std::vector<int>            removeObjects;
 static bool                        quit_request = false;
 static std::vector<ScenarioEntity> scenarioEntity;
+static std::string                 res_path;
 
 static bool pause_player   = false;  // continuous play
 static bool no_ghost       = false;
@@ -259,14 +260,16 @@ int ParseEntities(Replay* player)
                 filename = SE_Env::Inst().GetModelFilenameById(state->info.model_id);
             }
 
-            if ((new_sc.entityModel = viewer_->CreateEntityModel(filename.c_str(),
-                                                                 osg::Vec4(0.5, 0.5, 0.5, 1.0),
-                                                                 viewer::EntityModel::EntityType::VEHICLE,
-                                                                 false,
-                                                                 state->info.name,
-                                                                 &state->info.boundingbox,
-                                                                 0.0,
-                                                                 static_cast<EntityScaleMode>(state->info.scaleMode))) == 0)
+            bool found = false;
+            if ((new_sc.entityModel =
+                     viewer_->CreateEntityModel(LocateFile(filename, {CombineDirectoryPathAndFilepath(res_path, "models")}, "Entity 3D model", found),
+                                                osg::Vec4(0.5, 0.5, 0.5, 1.0),
+                                                viewer::EntityModel::EntityType::VEHICLE,
+                                                false,
+                                                state->info.name,
+                                                &state->info.boundingbox,
+                                                0.0,
+                                                static_cast<EntityScaleMode>(state->info.scaleMode))) == 0)
             {
                 return -1;
             }
@@ -430,6 +433,7 @@ int main(int argc, char** argv)
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
 #endif  // _USEOSG
     opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", REPLAYER_LOG_FILENAME, true);
+    opt.AddOption("log_level", "Log level debug, info, warn, error", "mode", "info", true);
 #ifdef _USE_OSG
     opt.AddOption("no_ghost", "Remove ghost entities");
     opt.AddOption("no_ghost_model", "Remove only ghost model, show trajectory (toggle with key 'g')");
@@ -491,6 +495,7 @@ int main(int argc, char** argv)
     std::string strAllSetOptions = opt.GetSetOptionsAsStr();
     LOG_INFO("replayer options: {}", strAllSetOptions);
 
+    txtLogger.SetLoggerVerbosity();
     txtLogger.LogTimeOnly();
     txtLogger.SetLoggerTime(&simTime);
 
@@ -523,6 +528,7 @@ int main(int argc, char** argv)
     if (!arg_str.empty())
     {
         SE_Env::Inst().AddPath(arg_str);
+        res_path = arg_str;
     }
 
     if (opt.GetOptionSet("use_signs_in_external_model"))
@@ -564,57 +570,15 @@ int main(int argc, char** argv)
 
     try
     {
+#ifdef _USE_OSG
+
         if (strcmp(player->header_.odr_filename, ""))
         {
-            // find and OpenDRIVE file. Test some combinations of paths and filename
-            std::vector<std::string> file_name_candidates;
-
-            // just filepath as stated in .dat file
-            file_name_candidates.push_back(player->header_.odr_filename);
-
-            // Check registered paths
-            for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
-            {
-                // Including file path
-                file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], player->header_.odr_filename));
-
-                // Excluding file path
-                file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(player->header_.odr_filename)));
-
-                // Including file path and xodr sub folder
-                file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", FileNameOf(player->header_.odr_filename)));
-
-                // Excluding file path but add xodr sub folder
-                file_name_candidates.push_back(
-                    CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i] + "/xodr/", player->header_.odr_filename));
-            }
-
-            size_t i;
-            for (i = 0; i < file_name_candidates.size(); i++)
-            {
-                if (FileExists(file_name_candidates[i].c_str()))
-                {
-                    if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()))
-                    {
-                        break;
-                    }
-                }
-            }
-
-            if (i == file_name_candidates.size())
-            {
-                printf("Failed to load OpenDRIVE file %s. Tried:\n", player->header_.odr_filename);
-                for (int j = 0; j < static_cast<int>(file_name_candidates.size()); j++)
-                {
-                    printf("   %s\n", file_name_candidates[static_cast<unsigned int>(j)].c_str());
-                }
-                printf("continue without road description\n");
-            }
+            bool found = false;
+            roadmanager::Position::LoadOpenDrive(
+                LocateFile(player->header_.odr_filename, {CombineDirectoryPathAndFilepath(res_path, "xodr")}, "OpenDRIVE file", found).c_str());
         }
-        simTime = player->GetTime();
-#ifdef _USE_OSG
+
         char                    info_str_buf[256];
         double                  targetSimTime = simTime;
         roadmanager::OpenDrive* odrManager    = roadmanager::Position::GetOpenDrive();
@@ -772,6 +736,8 @@ int main(int argc, char** argv)
         __int64 lastTimeStamp = 0;
 
 #endif  // _USE_OSG
+
+        simTime = player->GetTime();
 
         if (opt.HasUnknownArgs())
         {

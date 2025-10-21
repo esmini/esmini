@@ -98,7 +98,7 @@ namespace roadgeom
                                                                                bool                     stand_in_model,
                                                                                osg::ref_ptr<osg::Group> parent,
                                                                                std::string              exe_path);
-        osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string filename, std::string exe_path);
+        osg::ref_ptr<osg::PositionAttitudeTransform> LoadRoadFeature(roadmanager::Road* road, std::string file_path);
         osg::ref_ptr<osg::Group>                     CreateOutlineObject(roadmanager::Outline* outline, osg::Vec4 color, const osg::Vec3d& origin);
         int                                          AddGroundSurface();
         void                                         SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label);

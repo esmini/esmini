@@ -574,18 +574,13 @@ TEST(ProgramOptions, MultipleOptionValuesHandled)
     EXPECT_EQ(value, expectedValue);
     EXPECT_EQ(SE_GetOptionValuesCount("osc"), 1);
 
-    ASSERT_EQ(SE_GetOptionValuesCount("path"), 4);
+    ASSERT_EQ(SE_GetOptionValuesCount("path"), 2);
     value = SE_GetOptionValue("path");
-    ASSERT_NE(value, nullptr);
-    expectedValue = "../../../resources/xosc";
-    EXPECT_EQ(value, expectedValue);
-
-    value = SE_GetOptionValueByIndex("path", 1);
     ASSERT_NE(value, nullptr);
     expectedValue = "b.txt";
     EXPECT_EQ(value, expectedValue);
 
-    value = SE_GetOptionValueByIndex("path", 2);
+    value = SE_GetOptionValueByIndex("path", 1);
     ASSERT_NE(value, nullptr);
     expectedValue = "a.txt";
     EXPECT_EQ(value, expectedValue);
@@ -644,18 +639,13 @@ TEST(ProgramOptions, PicksValueFromAppendIndexAsWell)
     EXPECT_EQ(value, expectedValue);
     EXPECT_EQ(SE_GetOptionValuesCount("osc"), 1);
 
-    EXPECT_EQ(SE_GetOptionValuesCount("path"), 4);
+    EXPECT_EQ(SE_GetOptionValuesCount("path"), 2);
     value = SE_GetOptionValue("path");
-    ASSERT_NE(value, nullptr);
-    expectedValue = "../../../resources/xosc";
-    EXPECT_EQ(value, expectedValue);
-
-    value = SE_GetOptionValueByIndex("path", 1);
     ASSERT_NE(value, nullptr);
     expectedValue = "b.txt";
     EXPECT_EQ(value, expectedValue);
 
-    value = SE_GetOptionValueByIndex("path", 2);
+    value = SE_GetOptionValueByIndex("path", 1);
     ASSERT_NE(value, nullptr);
     expectedValue = "a.txt";
     EXPECT_EQ(value, expectedValue);
@@ -981,12 +971,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 84957);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 84941);  // initial OSI size, including static content
 
     SE_StepDT(0.001f);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 85927);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 85943);  // slight growth due to only dynamic updates
 
     int road_lane_size;
 
@@ -998,12 +988,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 87060);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 87108);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 88194);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 88274);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -1478,7 +1468,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 
     // verify model_reference and source_reference are populated from the ,xosc file
     EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
-    ASSERT_EQ(osi_gt_ptr->moving_object(0).model_reference(), "../models/car_white.osgb");
+    ASSERT_EQ(osi_gt_ptr->moving_object(0).model_reference(), "../../../resources/models/car_white.osgb");
     ASSERT_EQ(osi_gt_ptr->moving_object(0).source_reference_size(), 1);
     ASSERT_EQ(osi_gt_ptr->moving_object(0).source_reference(0).identifier_size(), 1);
     EXPECT_EQ(osi_gt_ptr->moving_object(0).source_reference(0).identifier(0), "generic_sedan_car");
@@ -1506,7 +1496,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
     SE_DisableOSIFile();
 
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9045);
+    EXPECT_EQ(fileStatus.st_size, 9086);
 
     // Read OSI file
     FILE* file = FileOpen("gt.osi", "rb");
@@ -1577,7 +1567,7 @@ TEST(GroundTruthTests, check_frequency_implicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_implicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9045);
+    EXPECT_EQ(fileStatus.st_size, 9086);
 
     // Read OSI file
     FILE* file = FileOpen("gt_implicit.osi", "rb");
@@ -1647,7 +1637,7 @@ TEST(GroundTruthTests, check_frequency_explicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_explicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9045);
+    EXPECT_EQ(fileStatus.st_size, 9086);
 
     // Read OSI file
     FILE* file = FileOpen("gt_explicit.osi", "rb");
@@ -1787,7 +1777,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9979);
+    EXPECT_EQ(fileStatus.st_size, 10052);
 }
 
 TEST(GroundTruthTests, check_update_gt_twice_same_frame)
@@ -1805,7 +1795,7 @@ TEST(GroundTruthTests, check_update_gt_twice_same_frame)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 7177);
+    EXPECT_EQ(fileStatus.st_size, 7154);
 }
 
 TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
@@ -4783,13 +4773,25 @@ TEST(DirectJunctionTest, TestVariousRoutes)
 
 TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 {
-    const char* args[2][2][6] = {
+    const char* args[2][2][7] = {
         // First run with smaller timsteps in first scenario
-        {{"--osc", "../../../resources/xosc/follow_ghost.xosc", "--record", "multirep_test1.dat", "--fixed_timestep", "0.01"},
-         {"--osc", "../../../resources/xosc/left-hand-traffic_using_road_rule.xosc", "--record", "multirep_test2.dat", "--fixed_timestep", "0.1"}},
+        {{"--osc", "../../../resources/xosc/follow_ghost.xosc", "--headless", "--record", "multirep_test1.dat", "--fixed_timestep", "0.01"},
+         {"--osc",
+          "../../../resources/xosc/left-hand-traffic_using_road_rule.xosc",
+          "--headless",
+          "--record",
+          "multirep_test2.dat",
+          "--fixed_timestep",
+          "0.1"}},
         // Then run with smaller timsteps in second scenario
-        {{"--osc", "../../../resources/xosc/follow_ghost.xosc", "--record", "multirep_test1.dat", "--fixed_timestep", "0.1"},
-         {"--osc", "../../../resources/xosc/left-hand-traffic_using_road_rule.xosc", "--record", "multirep_test2.dat", "--fixed_timestep", "0.01"}}};
+        {{"--osc", "../../../resources/xosc/follow_ghost.xosc", "--headless", "--record", "multirep_test1.dat", "--fixed_timestep", "0.1"},
+         {"--osc",
+          "../../../resources/xosc/left-hand-traffic_using_road_rule.xosc",
+          "--headless",
+          "--record",
+          "multirep_test2.dat",
+          "--fixed_timestep",
+          "0.01"}}};
 
     SE_AddPath("../../../resources/models");
 

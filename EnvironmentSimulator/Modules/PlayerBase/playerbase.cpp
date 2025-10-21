@@ -371,18 +371,14 @@ void ScenarioPlayer::ViewerFrame(bool init)
     while (viewer_->entities_.size() < scenarioEngine->entities_.object_.size())
     {
         Object* obj = scenarioEngine->entities_.object_[viewer_->entities_.size()];
-        if (viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->GetModel3DFilename(),
-                                                               trail_color,
-                                                               viewer::EntityModel::EntityType::VEHICLE,
-                                                               false,
-                                                               obj->name_,
-                                                               &obj->boundingbox_,
-                                                               obj->model3d_x_offset_,
-                                                               obj->scaleMode_)) == 0)
-        {
-            // register actual full file path used
-            obj->SetModel3DFullPath(viewer_->entities_.back()->filename_);
-        }
+        viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->GetModel3DFilename(),
+                                                           trail_color,
+                                                           viewer::EntityModel::EntityType::VEHICLE,
+                                                           false,
+                                                           obj->name_,
+                                                           &obj->boundingbox_,
+                                                           obj->model3d_x_offset_,
+                                                           obj->scaleMode_));
 
         if (obj->scaleMode_ == EntityScaleMode::BB_TO_MODEL)
         {
@@ -994,12 +990,7 @@ int ScenarioPlayer::InitViewer()
                                                                obj->name_,
                                                                &obj->boundingbox_,
                                                                obj->model3d_x_offset_,
-                                                               obj->scaleMode_)) == 0)
-        {
-            // register actual full file path used
-            obj->SetModel3DFullPath(viewer_->entities_.back()->filename_);
-        }
-        else
+                                                               obj->scaleMode_)) != 0)
         {
             CloseViewer();
             return -1;
@@ -1402,8 +1393,7 @@ int ScenarioPlayer::Init()
         return ret;
     }
 
-    exe_path_ = argv_[0];
-    SE_Env::Inst().AddPath(DirNameOf(exe_path_));  // Add location of exe file to search paths
+    exe_path_ = SE_Env::Inst().GetEXEFilePath();
 
     esmini::common::Config config("esmini", argc_, argv_);
     std::tie(argc_, argv_) = config.Load();
@@ -1661,7 +1651,6 @@ int ScenarioPlayer::Init()
     {
         if ((arg_str = opt.GetOptionValue("osc")) != "")
         {
-            SE_Env::Inst().AddPath(DirNameOf(arg_str));  // add scenario directory to list pf paths
             scenarioEngine = new ScenarioEngine(arg_str, disable_controllers_);
         }
         else if ((arg_str = opt.GetOptionValue("osc_str")) != "")

@@ -82,7 +82,7 @@ std::vector<OpenEnd> openEnds;
 
 // Car models used for populating the road network
 // path should be relative the OpenDRIVE file
-static const char *carModelsFiles_[] = {
+static std::vector<std::string> carModelsFiles_ = {
     "car_white.osgb",
     "car_blue.osgb",
     "car_red.osgb",
@@ -131,7 +131,7 @@ void UpdateCarPose(Car *car)
 int SpawnCar(viewer::Viewer *viewer, const roadmanager::Road *road, const roadmanager::Lane *lane, double s, roadmanager::Road::RoadRule rrule)
 {
     // randomly choose model
-    int carModelID = SE_Env::Inst().GetRand().GetNumberBetween(0, (sizeof(carModelsFiles_) / sizeof(carModelsFiles_[0])) - 1);
+    unsigned int carModelID = static_cast<unsigned int>(SE_Env::Inst().GetRand().GetNumberBetween(0, carModelsFiles_.size() - 1));
 
     Car *car_ = new Car;
     // Higher speeds in lanes closer to reference lane
@@ -190,6 +190,17 @@ int SetupCars(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
     {
         // no scenario vehicles
         return 0;
+    }
+
+    // locate models
+    for (auto &modelFile : carModelsFiles_)
+    {
+        bool found = false;
+        // look in default model folder relative executable, and from current folder assuming esmini root
+        modelFile = LocateFile(modelFile,
+                               {DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/models", "./resources/models"},
+                               "Vehicle 3D model",
+                               found);
     }
 
     for (unsigned int r = 0; r < odrManager->GetNumOfRoads(); r++)
@@ -631,11 +642,23 @@ int main(int argc, char **argv)
 
     try
     {
-        if (!roadmanager::Position::LoadOpenDrive(odrFilename.c_str()))
+        bool        found     = false;
+        std::string file_path = LocateFile(odrFilename, {DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/xodr"}, "OpenDRIVE file", found);
+        if (found)
         {
-            printf("Failed to load ODR %s\n", odrFilename.c_str());
+            if (!roadmanager::Position::LoadOpenDrive(file_path.c_str()))
+            {
+                LOG_ERROR("Failed to load OpenDRIVE file {}", file_path);
+                return -1;
+            }
+            LOG_INFO("Loaded OpenDRIVE file: {}", file_path);
+        }
+        else
+        {
+            LOG_ERROR("OpenDRIVE file {} not located", odrFilename);
             return -1;
         }
+
         roadmanager::OpenDrive *odrManager = roadmanager::Position::GetOpenDrive();
 
         osg::ArgumentParser arguments(&argc_, argv_);

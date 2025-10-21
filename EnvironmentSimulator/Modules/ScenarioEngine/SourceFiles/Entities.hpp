@@ -653,10 +653,9 @@ namespace scenarioengine
         static std::string Type2String(int type);
         static std::string Role2String(int role);
 
-        void SetModel3DFullPath(const std::string& path)
-        {
-            model3d_full_path_ = path;
-        }
+        // Resolve and set path to 3D model file
+        // Return 0 if file exists, else -1
+        int SetModel3DFullPath(const std::string& file_path);
 
         const std::string& GetModel3DFullPath() const
         {
@@ -818,6 +817,7 @@ namespace scenarioengine
         std::shared_ptr<TrailerCoupler> trailer_coupler_;  // mounting point to any tow vehicle
         std::shared_ptr<TrailerHitch>   trailer_hitch_;    // mounting point to any tow vehicle
         std::vector<WheelData>          wheel_data;
+        std::string                     catalog_dir_;  // if vehicle is from a catalog, store the catalog dir here
     };
 
     class Pedestrian : public Object

@@ -359,11 +359,6 @@ void PrintOSGUsage();
 std::string GetDefaultPath();
 
 /**
-        Get model filename from model_id.
-*/
-std::string GetModelFilenameById(int model_id);
-
-/**
         Checks whether file with given path exists or not
 */
 bool FileExists(const char* fileName);
@@ -372,6 +367,16 @@ bool FileExists(const char* fileName);
         Concatenate a directory path and a file path
 */
 std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path);
+
+/**
+        Resolve file path by searching in given directories and added paths
+        @param file_path File to locate, can be just filename or path
+        @param dirs Directories to search in
+        @param label Message label, e.g. type of file, to show in log messages
+        @param found Reference parameter, set to true if file found, else false
+        Returns resolved path to located file if found, else given file_path
+ */
+std::string LocateFile(const std::string& file_path, const std::vector<std::string>& dirs, const std::string& label, bool& found);
 
 /**
         Retrieve the angle of a vector
@@ -1326,6 +1331,8 @@ public:
           osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION),
           logFilePath_(LOG_FILENAME),
           datFilePath_(""),
+          exeFilePath_(""),
+          oscFilePath_(""),
           collisionDetection_(false),
           saveImagesToRAM_(false),
           ghost_mode_(GhostMode::NORMAL),
@@ -1432,6 +1439,26 @@ public:
         return datFilePath_;
     }
 
+    void SetOSCFilePath(std::string oscFilePath)
+    {
+        oscFilePath_ = oscFilePath;
+    }
+
+    std::string GetOSCFilePath() const
+    {
+        return oscFilePath_;
+    }
+
+    std::string GetEXEFilePath()
+    {
+        if (exeFilePath_.empty())
+        {
+            exeFilePath_ = GetDefaultPath();
+        }
+
+        return exeFilePath_;
+    }
+
     /**
         Set flag controlling whether rendered images are saved and hence can be fetched
         @param state true/false
@@ -1487,6 +1514,8 @@ private:
     double                     osiMaxLateralDeviation_;
     std::string                logFilePath_;
     std::string                datFilePath_;
+    std::string                exeFilePath_;  // path to executable or library
+    std::string                oscFilePath_;  // resolved osc file path
     SE_SystemTime              systemTime_;
     SE_Rand                    rand_;
     bool                       collisionDetection_;

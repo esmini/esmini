@@ -1074,12 +1074,36 @@ namespace roadgeom
                     {
                         filename += "-" + signal->GetValueStr();
                     }
-                    tx = LoadRoadFeature(road, filename + ".osgb", exe_path);
+
+                    bool        found = false;
+                    std::string located_file_path =
+                        LocateFile(filename + ".osgb",
+                                   {DirNameOf(odrManager_->GetOpenDriveFilename()) + "/../models", DirNameOf(exe_path) + "/../resources/models"},
+                                   "Road signal 3D model",
+                                   found);
+
+                    if (found)
+                    {
+                        tx = LoadRoadFeature(road, located_file_path);
+                    }
 
                     if (tx == nullptr)
                     {
                         // if file according to type, subtype and value could not be resolved, try from name
-                        tx = LoadRoadFeature(road, signal->GetName() + ".osgb", exe_path);
+                        located_file_path =
+                            LocateFile(signal->GetName() + ".osgb",
+                                       {DirNameOf(odrManager_->GetOpenDriveFilename()) + "/../models", DirNameOf(exe_path) + "/../resources/models"},
+                                       "Road signal 3D model",
+                                       found);
+                        if (found)
+                        {
+                            tx = LoadRoadFeature(road, signal->GetName() + ".osgb");
+                        }
+                    }
+
+                    if (found)
+                    {
+                        signal->SetModel3DFullPath(located_file_path);
                     }
 
                     if (tx != nullptr)
@@ -1093,7 +1117,7 @@ namespace roadgeom
                     }
                     else
                     {
-                        LOG_DEBUG("Failed to load signal {}.osgb / {}.osgb - use simple bounding box", filename, signal->GetName());
+                        LOG_DEBUG("Failed to load signal {}.osgb / {}.osgb - use simple bounding box", FileNameOf(filename), signal->GetName());
                         osg::ref_ptr<osg::PositionAttitudeTransform> obj_standin =
                             dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
                         obj_standin->setNodeMask(NODE_MASK_SIGN);
@@ -1163,12 +1187,23 @@ namespace roadgeom
                             filename += ".osgb";  // add missing extension
                         }
 
-                        tx = LoadRoadFeature(road, filename, exe_path);
+                        bool        found = false;
+                        std::string located_file_path =
+                            LocateFile(filename,
+                                       {DirNameOf(odrManager_->GetOpenDriveFilename()) + "/../models", DirNameOf(exe_path) + "/../resources/models"},
+                                       "Road object 3D model",
+                                       found);
+
+                        if (found)
+                        {
+                            tx = LoadRoadFeature(road, located_file_path);
+                            object->SetModel3DFullPath(located_file_path);
+                        }
 
                         if (tx == nullptr)
                         {
                             LOG_WARN("Failed to load road object model file: {} ({}). Creating a bounding box as stand in.",
-                                     filename,
+                                     FileNameOf(filename),
                                      object->GetName());
                         }
                     }
@@ -1516,39 +1551,20 @@ namespace roadgeom
         return 0;
     }
 
-    osg::ref_ptr<osg::PositionAttitudeTransform> RoadGeom::LoadRoadFeature(roadmanager::Road* road, std::string filename, std::string exe_path)
+    osg::ref_ptr<osg::PositionAttitudeTransform> RoadGeom::LoadRoadFeature(roadmanager::Road* road, std::string file_path)
     {
         (void)road;
         osg::ref_ptr<osg::Node>                      node;
         osg::ref_ptr<osg::PositionAttitudeTransform> xform = 0;
 
-        // Load file, try multiple paths
-        std::vector<std::string> file_name_candidates;
-        file_name_candidates.push_back(filename);
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(exe_path) + "/../resources/models", filename));
-        // Finally check registered paths
-
-        std::vector<std::string>& paths = SE_Env::Inst().GetOptions().GetOptionValues("path");
-        for (size_t i = 0; i < paths.size(); i++)
+        node = osgDB::readNodeFile(file_path);
+        if (!node)
         {
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(paths[i], filename));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(paths[i], "../models/" + filename));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(paths[i], FileNameOf(filename)));
+            return 0;
         }
-        for (size_t i = 0; i < file_name_candidates.size(); i++)
-        {
-            if (FileExists(file_name_candidates[i].c_str()))
-            {
-                node = osgDB::readNodeFile(file_name_candidates[i]);
-                if (!node)
-                {
-                    return 0;
-                }
 
-                xform = new osg::PositionAttitudeTransform;
-                xform->addChild(node);
-            }
-        }
+        xform = new osg::PositionAttitudeTransform;
+        xform->addChild(node);
 
         return xform;
     }

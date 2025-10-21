@@ -6611,75 +6611,45 @@ std::string OpenDrive::GetGeoOffsetOriginalString() const
 
 bool OpenDrive::LoadSignalsByCountry(const std::string& country)
 {
-    std::string              sign_filename = country + "_traffic_signals.txt";
-    std::vector<std::string> file_name_candidates;
+    std::string sign_filename = "traffic_signals/" + country + "_traffic_signals.txt";
+    bool        found         = false;
 
-    // absolute path or relative to current directory
-    file_name_candidates.push_back(sign_filename);
-    // Remove all directories from path and look in current directory
-    file_name_candidates.push_back(FileNameOf(sign_filename));
-    // assume OpenDRIVE file directory is on same level as traffic_signals directory
-    file_name_candidates.push_back(DirNameOf(odr_filename_) + "/../../traffic_signals/" + sign_filename);
+    std::string file_path =
+        LocateFile(sign_filename, {DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources", "./resources"}, "Traffic sign mapping file", found);
 
-    for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+    if (found)
     {
-        // Also check registered paths
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], sign_filename));
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "traffic_signals/" + sign_filename));
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "resources/traffic_signals/" + sign_filename));
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../traffic_signals/" + sign_filename));
-        file_name_candidates.push_back(
-            CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../resources/traffic_signals/" + sign_filename));
-    }
+        // assuming the file is text
+        std::ifstream fs;
+        fs.open(file_path.c_str());
 
-    size_t i;
-    for (i = 0; i < file_name_candidates.size(); i++)
-    {
-        if (FileExists(file_name_candidates[i].c_str()))
+        if (fs.fail())
         {
-            // assuming the file is text
-            std::ifstream fs;
-            fs.open(file_name_candidates[i].c_str());
-
-            if (fs.fail())
+            LOG_ERROR("Failed to load traffic signals file {}", file_path);
+        }
+        else
+        {
+            const char  delimiter = '=';
+            std::string line;
+            // process each line in turn
+            while (std::getline(fs, line))
             {
-                LOG_ERROR("Signal: Error to load traffic signals file - {}", file_name_candidates[i]);
-                if (i < file_name_candidates.size() - 1)
-                {
-                    LOG_INFO("  -> trying: {}", file_name_candidates[i + 1]);
-                }
+                std::stringstream sstream(country + line);
+                std::string       key   = "";
+                std::string       value = "";
+
+                std::getline(sstream, key, delimiter);
+                std::getline(sstream, value, delimiter);
+
+                signals_types_.emplace(key, value);
             }
-            else
-            {
-                const char  delimiter = '=';
-                std::string line;
-                // process each line in turn
-                while (std::getline(fs, line))
-                {
-                    std::stringstream sstream(country + line);
-                    std::string       key   = "";
-                    std::string       value = "";
 
-                    std::getline(sstream, key, delimiter);
-                    std::getline(sstream, value, delimiter);
-
-                    signals_types_.emplace(key, value);
-                }
-
-                fs.close();
-
-                break;
-            }
+            fs.close();
         }
     }
-
-    if (i == file_name_candidates.size())
+    else
     {
-        LOG_ERROR("Failed to load {} file. Tried:", sign_filename);
-        for (unsigned int j = 0; j < file_name_candidates.size(); j++)
-        {
-            LOG_INFO("  {}", file_name_candidates[j]);
-        }
+        LOG_WARN("Traffic sign mapping file {} not located", sign_filename);
         return false;
     }
 

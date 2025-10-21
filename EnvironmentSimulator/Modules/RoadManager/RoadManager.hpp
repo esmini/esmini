@@ -1646,6 +1646,14 @@ namespace roadmanager
         }
         static OSIType     GetOSITypeFromString(const std::string &type);
         static std::string GetCombinedTypeSubtypeValueStr(std::string type, std::string subtype, std::string value);
+        std::string        GetModel3DFullPath() const
+        {
+            return model3d_full_path_;
+        }
+        void SetModel3DFullPath(const std::string &path)
+        {
+            model3d_full_path_ = path;
+        }
 
     private:
         double                                      s_;
@@ -1671,6 +1679,7 @@ namespace roadmanager
         double                                      length_ = 0.0;
         double                                      value_  = 0.0;
         static const std::map<std::string, OSIType> types_mapping_;
+        std::string                                 model3d_full_path_;
     };
 
     class OutlineCorner
@@ -2150,6 +2159,14 @@ namespace roadmanager
         {
             tunnel_component_type_ = tunnel_component_type;
         }
+        std::string GetModel3DFullPath() const
+        {
+            return model3d_full_path_;
+        }
+        void SetModel3DFullPath(const std::string &path)
+        {
+            model3d_full_path_ = path;
+        }
 
     private:
         std::string            name_;
@@ -2171,6 +2188,7 @@ namespace roadmanager
         ParkingSpace           parking_space_;
         float                  color_[4]              = {0.0, 0.0, 0.0, 0.0};
         TunnelComponentType    tunnel_component_type_ = TunnelComponentType::NO_TUNNEL;
+        std::string            model3d_full_path_;
     };
 
     enum class SpeedUnit

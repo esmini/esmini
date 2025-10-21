@@ -439,18 +439,20 @@ TEST(AlignmentTest, TestSetOrientationOnly)
 
 TEST(Controllers, TestSeparateControllersOnLatLong)
 {
-    const char*     args[] = {"esmini",
-                              "--osc",
-                              "../../../EnvironmentSimulator/Unittest/xosc/acc_with_interactive_steering.xosc",
-                              "--headless",
-                              "--window",
-                              "60",
-                              "60",
-                              "800",
-                              "600",
-                              "--disable_stdout"};
-    int             argc   = sizeof(args) / sizeof(char*);
-    double          dt     = 0.1f;
+    const char* args[] = {"esmini",
+                          "--osc",
+                          "../../../EnvironmentSimulator/Unittest/xosc/acc_with_interactive_steering.xosc",
+                          "--headless",
+                          "--window",
+                          "60",
+                          "60",
+                          "800",
+                          "600",
+                          "--disable_stdout"};
+    int         argc   = sizeof(args) / sizeof(char*);
+    double      dt     = 0.1f;
+
+    SE_Env::Inst().AddPath("../../../resources/models");
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
 
     ASSERT_NE(player, nullptr);

@@ -68,47 +68,29 @@ void ScenarioEngine::InitScenarioCommon(bool disable_controllers)
 int ScenarioEngine::InitScenario(std::string oscFilename, bool disable_controllers)
 {
     InitScenarioCommon(disable_controllers);
+    bool        found     = false;
+    std::string file_path = LocateFile(oscFilename, {DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/xosc"}, "OpenSCENARIO file", found);
 
-    std::string oscFilename_no_path = FileNameOf(oscFilename);
-
-    std::vector<std::string> file_name_candidates;
-
-    // Filename as is - look in current directory or absolute path if provided
-    file_name_candidates.push_back(oscFilename);
-
-    // Also check registered paths
-    for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+    if (!found)
     {
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], oscFilename_no_path));
-    }
-    size_t i;
-    for (i = 0; i < file_name_candidates.size(); i++)
-    {
-        if (FileExists(file_name_candidates[i].c_str()))
-        {
-            if (scenarioReader->loadOSCFile(file_name_candidates[i].c_str()) != 0)
-            {
-                LOG_ERROR("Failed to load OpenSCENARIO file {}", oscFilename_no_path);
-                return -3;
-            }
-            else
-            {
-                break;
-            }
-        }
-    }
-
-    if (i == file_name_candidates.size())
-    {
-        LOG_ERROR("Couldn't locate OpenSCENARIO file {}", oscFilename_no_path);
+        LOG_ERROR("Couldn't locate OpenSCENARIO file {}", FileNameOf(oscFilename));
         return -1;
+    }
+
+    if (scenarioReader->loadOSCFile(file_path.c_str()) != 0)
+    {
+        LOG_ERROR("Failed to load OpenSCENARIO file {}", file_path);
+        return -3;
     }
 
     if (!scenarioReader->IsLoaded())
     {
-        LOG_ERROR("Couldn't load OpenSCENARIO file {}", oscFilename_no_path);
+        LOG_ERROR("Couldn't load OpenSCENARIO file {}", file_path);
         return -2;
     }
+
+    // register loaded scenario file path
+    SE_Env::Inst().SetOSCFilePath(file_path);
 
     return parseScenario();
 }
@@ -130,6 +112,7 @@ ScenarioEngine::~ScenarioEngine()
     scenarioReader->UnloadControllers();
     delete scenarioReader;
     scenarioReader = 0;
+    SE_Env::Inst().SetOSCFilePath("");
     LOG_INFO("Closing");
     txtLogger.SetLoggerTime(nullptr);
 }
@@ -654,46 +637,30 @@ int ScenarioEngine::parseScenario()
     }
     else
     {
-        std::vector<std::string> file_name_candidates;
-        // absolute path or relative to current directory
-        file_name_candidates.push_back(getOdrFilename());
-        // relative path to scenario directory
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(scenarioReader->getScenarioFilename()), getOdrFilename()));
-        // Remove all directories from path and look in current directory
-        file_name_candidates.push_back(FileNameOf(getOdrFilename()));
-        // Finally check registered paths
-        for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+        bool        found = false;
+        std::string file_path =
+            LocateFile(getOdrFilename(),
+                       {DirNameOf(scenarioReader->getScenarioFilename()), DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/xodr"},
+                       "OpenDRIVE file",
+                       found);
+
+        if (found)
         {
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], getOdrFilename()));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(getOdrFilename())));
-        }
-        size_t i;
-        bool   located = false;
-        for (i = 0; i < file_name_candidates.size(); i++)
-        {
-            if (FileExists(file_name_candidates[i].c_str()))
+            // Load OpenDRIVE file, add scenario file directory as additional search path
+            if (roadmanager::Position::LoadOpenDrive(file_path.c_str()) == true)
             {
-                located = true;
-                if (roadmanager::Position::LoadOpenDrive(file_name_candidates[i].c_str()) == true)
-                {
-                    LOG_INFO("Loaded OpenDRIVE: {}", file_name_candidates[i]);
-                    break;
-                }
-                else
-                {
-                    LOG_ERROR("Failed to load OpenDRIVE file: {}", file_name_candidates[i]);
-                    if (i < file_name_candidates.size() - 1)
-                    {
-                        LOG_INFO("  -> trying: {}", file_name_candidates[i + 1]);
-                    }
-                }
+                // update file reference to actual resolved path
+                roadNetwork.logicFile.filepath = file_path;
+                LOG_INFO("Loaded OpenDRIVE: {}", getOdrFilename());
+            }
+            else
+            {
+                LOG_ERROR_AND_QUIT("Failed to load OpenDRIVE file {}", file_path);
             }
         }
-
-        if (i == file_name_candidates.size())
+        else
         {
-            LOG_ERROR("Failed to {} OpenDRIVE file {}", located ? "load" : "find", getOdrFilename());
-            return -1;
+            LOG_ERROR_AND_QUIT("Failed to locate OpenDRIVE file {}", getOdrFilename());
         }
     }
 

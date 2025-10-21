@@ -676,30 +676,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         vehicle->SetRole(parameters.ReadAttribute(vehicleNode, "role"));
     }
 
-    // get File based on Category, and set default 3D model id
-    if (vehicle->category_ == Vehicle::Category::BICYCLE)
-    {
-        vehicle->model_id_ = 9;  // magic number for cyclist, set as default
-        vehicle->SetModel3DFullPath("cyclist.osgb");
-    }
-    else if (vehicle->category_ == Vehicle::Category::MOTORBIKE)
-    {
-        vehicle->model_id_ = 10;  // magic number for motorcyclist, set as default
-        vehicle->SetModel3DFullPath("mc.osgb");
-    }
-    else if (vehicle->category_ == Vehicle::Category::TRAILER)
-    {
-        vehicle->model_id_ = 11;  // magic number for car trailer, set as default
-        vehicle->SetModel3DFullPath("car_trailer.osgb");
-    }
-    else
-    {
-        // magic numbers: If first vehicle make it white, else red
-        vehicle->model_id_ = entities_->object_.size() == 0 ? 0 : 2;
-        vehicle->SetModel3DFullPath(entities_->object_.size() == 0 ? "car_white.osgb" : "car_red.osgb");
-    }
-
-    // Overwrite default values if 3D model specified
+    // Prioritize specified 3D models via model3d attribute or filepath property
     if (!vehicleNode.attribute("model3d").empty())
     {
         vehicle->SetModel3DFullPath(parameters.ReadAttribute(vehicleNode, "model3d"));
@@ -707,6 +684,31 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     else if (vehicle->properties_.file_.filepath_ != "")
     {
         vehicle->SetModel3DFullPath(vehicle->properties_.file_.filepath_);
+    }
+    else
+    {
+        // As fallback, get model file based on Category, and set default 3D model id
+        if (vehicle->category_ == Vehicle::Category::BICYCLE)
+        {
+            vehicle->model_id_ = 9;  // magic number for cyclist, set as default
+            vehicle->SetModel3DFullPath("cyclist.osgb");
+        }
+        else if (vehicle->category_ == Vehicle::Category::MOTORBIKE)
+        {
+            vehicle->model_id_ = 10;  // magic number for motorcyclist, set as default
+            vehicle->SetModel3DFullPath("mc.osgb");
+        }
+        else if (vehicle->category_ == Vehicle::Category::TRAILER)
+        {
+            vehicle->model_id_ = 11;  // magic number for car trailer, set as default
+            vehicle->SetModel3DFullPath("car_trailer.osgb");
+        }
+        else
+        {
+            // magic numbers: If first vehicle make it white, else red
+            vehicle->model_id_ = entities_->object_.size() == 0 ? 0 : 2;
+            vehicle->SetModel3DFullPath(entities_->object_.size() == 0 ? "car_white.osgb" : "car_red.osgb");
+        }
     }
 
     std::string modelIdStr = vehicle->properties_.GetValueStr("model_id");

@@ -1803,6 +1803,20 @@ std::string Object::Role2String(int role)
     }
 }
 
+int Object::SetModel3DFullPath(const std::string& file_path)
+{
+    bool found = false;
+
+    // add search paths to scenario file location and default model directory
+    model3d_full_path_ =
+        LocateFile(file_path,
+                   {DirNameOf(SE_Env::Inst().GetOSCFilePath()), DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/models/"},
+                   "3D model",
+                   found);
+
+    return found ? 0 : -1;
+}
+
 Object* Entities::GetObjectByName(std::string name)
 {
     for (size_t i = 0; i < object_.size(); i++)

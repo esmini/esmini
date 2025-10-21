@@ -1328,16 +1328,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     bool        clear_color = false;
     std::string arg_str;
 
-    if (odrManager != NULL)
-    {
-        SE_Env::Inst().AddPath(DirNameOf(odrManager->GetOpenDriveFilename()));
-    }
-
-    if (modelFilename != NULL && strcmp(modelFilename, ""))
-    {
-        SE_Env::Inst().AddPath(DirNameOf(modelFilename));
-    }
-
     // suppress OSG info messages
     osg::setNotifyLevel(osg::NotifySeverity::WARN);
 
@@ -1525,40 +1515,26 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     // add environment
     if (modelFilename != 0 && strcmp(modelFilename, ""))
     {
-        std::vector<std::string> file_name_candidates;
-
-        // absolute path or relative to current directory
-        file_name_candidates.push_back(modelFilename);
-
-        // Remove all directories from path and look in current directory
-        file_name_candidates.push_back(FileNameOf(modelFilename));
-
-        // Finally check registered paths
-        for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+        bool        found     = false;
+        std::string file_path = LocateFile(modelFilename,
+                                           {CombineDirectoryPathAndFilepath(DirNameOf(odrManager->GetOpenDriveFilename()), "../models"),
+                                            SE_Env::Inst().GetEXEFilePath() + "/../resources/models"},
+                                           "Environment 3D model",
+                                           found);
+        if (found)
         {
-            // Including file path
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], modelFilename));
-
-            // Excluding file path
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(modelFilename)));
-        }
-
-        size_t i;
-        for (i = 0; i < file_name_candidates.size(); i++)
-        {
-            if (FileExists(file_name_candidates[i].c_str()))
+            if (AddEnvironment(file_path.c_str()) == 0)
             {
-                if (AddEnvironment(file_name_candidates[i].c_str()) == 0)
-                {
-                    LOG_INFO("Loaded scenegraph: {}", file_name_candidates[i]);
-                    break;
-                }
+                LOG_INFO("Loaded scenegraph: {}", file_path);
+            }
+            else
+            {
+                LOG_ERROR("Environment 3D model file {} found, but failed to load", file_path);
             }
         }
-
-        if (i == file_name_candidates.size())
+        else
         {
-            LOG_ERROR("Failed to read environment model {}", modelFilename);
+            LOG_WARN("Environment 3D model file {} not found", modelFilename);
         }
     }
 
@@ -2066,30 +2042,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     // First try to load 3d model
     if (modelgroup == nullptr && !modelFilepath.empty())
     {
-        file_name_candidates.push_back(modelFilepath);
-
-        // Finally check registered paths
-        for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
-        {
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], modelFilepath));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../models/" + modelFilepath));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../resources/models/" + modelFilepath));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(modelFilepath)));
-        }
-        for (size_t i = 0; i < file_name_candidates.size(); i++)
-        {
-            if (FileExists(file_name_candidates[i].c_str()))
-            {
-                // found file, register the filepath regardless of success of loading
-                filepath = fs::path(file_name_candidates[i]).lexically_normal().generic_string();
-
-                // try load found file
-                modelgroup = LoadEntityModel(file_name_candidates[i].c_str(), modelBB);
-
-                // do no more attempts
-                break;
-            }
-        }
+        modelgroup = LoadEntityModel(modelFilepath.c_str(), modelBB);
     }
 
     // Make sure we have a 3D model
@@ -2123,16 +2076,11 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     {
         if (modelFilepath.empty())
         {
-            LOG_WARN("No filename specified for model! - creating a dummy model");
+            LOG_WARN("No filename specified for model - show as bounding box");
         }
         else
         {
-            LOG_ERROR("Failed to load visual model {}. {}", modelFilepath, file_name_candidates.size() > 1 ? "Also tried the following paths:" : "");
-            for (size_t i = 1; i < file_name_candidates.size(); i++)
-            {
-                LOG_INFO("    {}", file_name_candidates[i]);
-            }
-            LOG_WARN("Creating a dummy model instead");
+            LOG_ERROR("Failed to load {} - show as bounding box ", FileNameOf(modelFilepath));
         }
 
         // Create a dummy cuboid
@@ -2304,7 +2252,7 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     }
 
     // if file found, set full path, else use the requested filename
-    emodel->filename_ = filepath.empty() ? modelFilepath : filepath;
+    emodel->filename_ = modelFilepath;
 
     emodel->blend_color_ = new osg::BlendColor(osg::Vec4(1, 1, 1, 1));
     emodel->blend_color_->setDataVariance(osg::Object::DYNAMIC);
