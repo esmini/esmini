@@ -53,20 +53,21 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
       argv_(argv),
       state_(PlayerState::PLAYER_STATE_PLAYING)
 {
-    quit_request         = false;
-    threads              = false;
-    launch_server        = false;
-    fixed_timestep_      = -1.0;
-    osi_receiver_addr    = "";
-    osi_updated_         = false;
-    CSV_Log              = NULL;
-    osiReporter          = NULL;
-    disable_controllers_ = false;
-    frame_counter_       = 0;
-    scenarioEngine       = nullptr;
-    osiReporter          = nullptr;
-    viewer_              = nullptr;
-    player_server_       = nullptr;
+    quit_request              = false;
+    threads                   = false;
+    launch_server             = false;
+    fixed_timestep_           = -1.0;
+    osi_receiver_addr         = "";
+    osi_updated_              = false;
+    CSV_Log                   = NULL;
+    osiReporter               = NULL;
+    disable_controllers_      = false;
+    frame_counter_            = 0;
+    scenarioEngine            = nullptr;
+    osiReporter               = nullptr;
+    viewer_                   = nullptr;
+    player_server_            = nullptr;
+    vehicle_dynamics_enabled_ = false;
 
 #ifdef _USE_OSG
     viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
@@ -408,11 +409,27 @@ void ScenarioPlayer::ViewerFrame(bool init)
         // Visualize entities
         for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
         {
-            viewer::EntityModel* entity = viewer_->entities_[i];
-            Object*              obj    = scenarioEngine->entities_.object_[i];
+            viewer::EntityModel* entity    = viewer_->entities_[i];
+            Object*              obj       = scenarioEngine->entities_.object_[i];
+            double               wheelbase = obj->front_axle_.positionX - obj->rear_axle_.positionX;
 
             entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-            entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP(), obj->pos_.GetR());
+
+            double dt = GetFixedTimestep();
+            if (dt < 0.0)
+            {
+                static __int64 time_stamp = 0;
+                dt                        = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
+            }
+
+            if (vehicle_dynamics_enabled_)
+            {
+                SetAllowedPitch(obj, wheelbase);
+                DynamicPitchUpdate(obj, dt);
+                DynamicRollUpdate(obj, dt);
+            }
+
+            entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP() + pitch_spring_.GetValue(), obj->pos_.GetR() + roll_spring_.GetValue());
 
             if (obj->pos_.GetTrajectory() && obj->pos_.GetTrajectory() != entity->trajectory_->activeRMTrajectory_)
             {
@@ -438,8 +455,9 @@ void ScenarioPlayer::ViewerFrame(bool init)
             {
                 if (entity->IsVehicle())
                 {
-                    viewer::CarModel* car = static_cast<viewer::CarModel*>(entity);
-                    car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
+                    viewer::CarModel* car        = static_cast<viewer::CarModel*>(entity);
+                    double            wheeltrack = obj->front_axle_.trackWidth;
+                    car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_, wheelbase, wheeltrack, pitch_spring_.GetValue(), roll_spring_.GetValue());
                 }
 
                 viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);
@@ -552,6 +570,53 @@ void ScenarioPlayer::ViewerFrame(bool init)
     {
         viewer_->Frame(scenarioEngine->getSimulationTime());
     }
+}
+
+void ScenarioPlayer::SetAllowedPitch(Object* obj, const double wheelbase)
+{
+    // Cap pitching to 35% (tuned for esmini models) of front wheel diameter to avoid hitting the ground
+    double max_pitch_angle = atan((obj->front_axle_.wheelDiameter * 0.35) / wheelbase);
+    pitch_limit_           = MIN(pitch_limit_, max_pitch_angle);
+}
+
+void ScenarioPlayer::DynamicPitchUpdate(Object* obj, double dt, double a_min, double a_max)
+{
+    // Rolling window to average acceleration for pitch calculation
+    obj->long_accelerations_.erase(obj->long_accelerations_.begin());
+    obj->long_accelerations_.push_back(obj->pos_.GetAccLong());
+    auto acc =
+        std::accumulate(obj->long_accelerations_.begin(), obj->long_accelerations_.end(), 0.0) / static_cast<double>(obj->long_accelerations_.size());
+    double a_clamped = CLAMP(acc, a_min, a_max);
+
+    // Linear map
+    double pitch_target = -(a_clamped / a_max) * pitch_limit_;
+    if (NEAR_NUMBERS(acc, 0.0) || obj->pos_.GetVelLong() < 1.0)
+    {
+        pitch_target = 0.0;
+    }
+
+    pitch_spring_.SetTargetValue(pitch_target);
+    pitch_spring_.Update(dt);
+}
+
+void ScenarioPlayer::DynamicRollUpdate(Object* obj, double dt, double a_min, double a_max)
+{
+    // Rolling window to average acceleration for roll calculation
+    obj->lat_accelerations_.erase(obj->lat_accelerations_.begin());
+    obj->lat_accelerations_.push_back(obj->pos_.GetAccLat());
+    auto acc =
+        std::accumulate(obj->lat_accelerations_.begin(), obj->lat_accelerations_.end(), 0.0) / static_cast<double>(obj->lat_accelerations_.size());
+    double a_clamped = CLAMP(acc, a_min, a_max);
+
+    // Linear map
+    double roll_target = a_clamped / a_max * roll_limit_;
+    if (NEAR_NUMBERS(acc, 0.0) || obj->pos_.GetVelLong() < 1.0)
+    {
+        roll_target = 0.0;
+    }
+
+    roll_spring_.SetTargetValue(roll_target);
+    roll_spring_.Update(dt);
 }
 
 int ScenarioPlayer::SaveImagesToRAM(bool state)
@@ -1386,6 +1451,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("traj_filter", "Simple filter merging close points. Set 0.0 to disable", "radius", "0.1", true);
     opt.AddOption("tunnel_transparency", "Set level of transparency for generated tunnels [0:1]", "transparency", "0.0");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
+    opt.AddOption("vehicle_dynamics", "Visualize simple vehicle dynamics", "<pitch,roll,tension,damping>", "2,5,25,10", false, false);
     opt.AddOption("version", "Show version and quit");
 
     if (int ret = OnRequestShowHelpOrVersion(argc_, argv_, opt); ret > 0)
@@ -1774,7 +1840,29 @@ int ScenarioPlayer::Init()
         LOG_INFO("OSI static data reporting mode: {}", arg_str);
     }
 #endif  // _USE_OSI
+    if (opt.GetOptionSet("vehicle_dynamics") == true)
+    {
+        EnableVehicleDynamics();
+        unsigned int counter = 0;
 
+        while ((arg_str = opt.GetOptionValue("vehicle_dynamics", counter)) != "")
+        {
+            const auto splitted = SplitString(arg_str, ',');
+            if (splitted.size() == 4)
+            {
+                SetPitchLimit(strtod(splitted[0]));
+                SetRollLimit(strtod(splitted[1]));
+                SetTension(strtod(splitted[2]));
+                SetDamping(strtod(splitted[3]));
+            }
+            else
+            {
+                LOG_ERROR("vehicle_dynamics maximum 4 values <pitch,roll,tension,damping>. Got {} values.", splitted.size());
+            }
+
+            counter++;
+        }
+    }
     // Initialize CSV logger for recording vehicle data
     if (opt.GetOptionSet("csv_logger"))
     {

@@ -203,6 +203,10 @@ namespace scenarioengine
         double stand_still_timestamp_;
         bool   reset_;  // indicate discreet movement, teleporting, no odometer update
 
+        // Used for rolling window average calculations
+        std::vector<double> long_accelerations_ = std::vector<double>(5, 0.0);
+        std::vector<double> lat_accelerations_  = std::vector<double>(5, 0.0);
+
         std::vector<Controller*>                    controllers_;  // reference to all assigned controller objects
         double                                      headstart_time_;
         Object*                                     ghost_;

@@ -304,10 +304,18 @@ namespace viewer
     class CarModel : public MovingModel
     {
     public:
+        struct WheelInfo
+        {
+            std::string name;
+            bool        front_wheel;
+            size_t      index;
+        };
         struct WheelCompound
         {
+            osg::ref_ptr<osg::MatrixTransform> wpos;
             osg::ref_ptr<osg::MatrixTransform> steering_part;
             osg::ref_ptr<osg::MatrixTransform> rolling_part;
+            double                             wheel_z_offset;
         };
         std::vector<WheelCompound> front_wheel_;
         std::vector<WheelCompound> rear_wheel_;
@@ -328,8 +336,13 @@ namespace viewer
                  osg::Vec4                trail_color,
                  std::string              name);
         ~CarModel();
-        int  AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheelName, bool front);
-        void UpdateWheels(double wheel_angle, double wheel_rotation);
+        int  AddWheel(osg::ref_ptr<osg::Node> carNode, const WheelInfo& wheelInfo);
+        void UpdateWheels(double wheel_angle,
+                          double wheel_rotation,
+                          double wheelbase   = 0.0,
+                          double wheeltrack  = 0.0,
+                          double pitch_angle = 0.0,
+                          double roll_angle  = 0.0);
         void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
     };
 

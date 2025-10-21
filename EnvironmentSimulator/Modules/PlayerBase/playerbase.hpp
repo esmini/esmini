@@ -103,6 +103,35 @@ namespace scenarioengine
         int  ScenarioFrame(double timestep_s, bool keyframe);
         void ShowObjectSensors(bool mode);
 
+        void DynamicPitchUpdate(Object *obj, double dt, double a_min = -12.0, double a_max = 10.0);
+        void DynamicRollUpdate(Object *obj, double dt, double a_min = -12.0, double a_max = 10.0);
+
+        void EnableVehicleDynamics()
+        {
+            vehicle_dynamics_enabled_ = true;
+        }
+
+        void SetAllowedPitch(Object *obj, const double wheelbase);
+
+        void SetPitchLimit(double limit)
+        {
+            pitch_limit_ = osg::DegreesToRadians(limit);
+        }
+        void SetRollLimit(double limit)
+        {
+            roll_limit_ = osg::DegreesToRadians(limit);
+        }
+        void SetTension(double tension)
+        {
+            pitch_spring_.SetTension(tension);
+            roll_spring_.SetTension(tension);
+        }
+        void SetDamping(double damping)
+        {
+            pitch_spring_.SetDamping(damping);
+            roll_spring_.SetDamping(damping);
+        }
+
         /**
         Add an ideal sensor to an object
         @param obj Pointer to the object
@@ -254,21 +283,26 @@ namespace scenarioengine
         SE_Semaphore                viewer_init_semaphore;
 
     private:
-        double      trail_dt;
-        SE_Thread   thread;
-        SE_Mutex    mutex;
-        bool        quit_request;
-        bool        threads;
-        bool        launch_server;
-        bool        disable_controllers_;
-        double      fixed_timestep_;
-        int         frame_counter_;
-        std::string osi_receiver_addr;
-        bool        osi_updated_;
-        int         argc_;
-        char      **argv_;
-        std::string titleString;
-        PlayerState state_;
+        double       trail_dt;
+        SE_Thread    thread;
+        SE_Mutex     mutex;
+        bool         quit_request;
+        bool         threads;
+        bool         launch_server;
+        bool         disable_controllers_;
+        double       fixed_timestep_;
+        int          frame_counter_;
+        std::string  osi_receiver_addr;
+        bool         osi_updated_;
+        int          argc_;
+        char       **argv_;
+        std::string  titleString;
+        PlayerState  state_;
+        bool         vehicle_dynamics_enabled_;
+        DampedSpring pitch_spring_;
+        DampedSpring roll_spring_;
+        double       pitch_limit_;
+        double       roll_limit_;
     };
 
 }  // namespace scenarioengine

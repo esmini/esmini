@@ -841,11 +841,11 @@ void RouteWayPoints::SetWayPoints(roadmanager::Route* route)
 #endif
 }
 
-int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheelName, bool front)
+int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const WheelInfo& wheelInfo)
 {
     // Find wheel node
     std::vector<osg::Node*> nodes;
-    FindNamedNodes          fnn(wheelName, nodes);
+    FindNamedNodes          fnn(wheelInfo.name, nodes);
     carNode->accept(fnn);
 
     if (nodes.size() == 0)
@@ -860,27 +860,40 @@ int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheel
         osg::Group* group = dynamic_cast<osg::Group*>(node);
 
         std::string find_str("Grp_Wheel_");
-        if (wheelName.compare(0, find_str.length(), find_str) == 0)
+        if (wheelInfo.name.compare(0, find_str.length(), find_str) == 0)
         {
             // Assume OpenMATERIAL3D structure
             if (group->getNumChildren() > 0 && group->getNumChildren() < 3)
             {
+                wc.wpos          = new osg::MatrixTransform();
                 wc.steering_part = new osg::MatrixTransform();
                 wc.rolling_part  = new osg::MatrixTransform();
+
+                // Determine Z offset from the first child's position
+                auto wheel_pos    = group->getBound().center();
+                wc.wheel_z_offset = wheel_pos.z();
+
+                // Build wheel structure
                 if (group->getNumChildren() == 1)
                 {
-                    // assume non rolling part missing, e.g. caliper
                     wc.rolling_part->addChild(group->getChild(0));
                 }
                 else
                 {
-                    // two wheel nodes, assume first is non rolling parts, second is the rest
-                    wc.steering_part->addChild(group->getChild(0));
-                    wc.rolling_part->addChild(group->getChild(1));
+                    wc.steering_part->addChild(group->getChild(0));  // non-rolling parts (e.g., brake)
+                    wc.rolling_part->addChild(group->getChild(1));   // rolling geometry
                 }
+
                 wc.steering_part->addChild(wc.rolling_part);
-                group->removeChildren(0, group->getNumChildren());
-                group->addChild(wc.steering_part);
+                wc.wpos->addChild(wc.steering_part);
+
+                // Apply translation to wpos so we can pitch/roll it later
+                wc.wpos->setMatrix(osg::Matrix::translate(wheel_pos));
+
+                // Replace original group node
+                osg::Group* parent = group->getParent(0);
+                parent->addChild(wc.wpos);
+                parent->removeChild(group);
             }
             else
             {
@@ -892,7 +905,6 @@ int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheel
         {
             // assume esmini native wheel structure
             // create three matrix nodes: Wheel position, Steering, Rolling
-
             osg::MatrixTransform* mt = dynamic_cast<osg::MatrixTransform*>(node);
             if (mt == nullptr)
             {
@@ -900,32 +912,58 @@ int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheel
                 return -1;
             }
 
-            osg::ref_ptr<osg::MatrixTransform> wpos = new osg::MatrixTransform;
-            wc.steering_part                        = new osg::MatrixTransform();
-            wc.rolling_part                         = new osg::MatrixTransform();
+            // osg::ref_ptr<osg::MatrixTransform> wpos = new osg::MatrixTransform;
+            wc.wpos          = new osg::MatrixTransform();
+            wc.steering_part = new osg::MatrixTransform();
+            wc.rolling_part  = new osg::MatrixTransform();
 
             // move translation from wheel node to parent position node
             osg::Matrix m = mt->getMatrix();
-            wpos->setMatrix(osg::Matrix::translate(m.getTrans()));
+            wc.wpos->setMatrix(osg::Matrix::translate(m.getTrans()));
+            wc.wheel_z_offset = m.getTrans().z();
             m.setTrans(0.0, 0.0, 0.0);
             mt->setMatrix(m);
 
             wc.rolling_part->addChild(node);
             wc.steering_part->addChild(wc.rolling_part);
-            wpos->addChild(wc.steering_part);
+            wc.wpos->addChild(wc.steering_part);
 
             // replace original wheel node with the new structure
-            group->getParent(0)->addChild(wpos);
+            group->getParent(0)->addChild(wc.wpos);
             group->getParent(0)->removeChild(node);
         }
 
-        if (front)
+        // Some logic to assure that front/rear wheels are in correct order
+        // (left to right when looking forward)
+        if (wheelInfo.front_wheel)
         {
-            front_wheel_.push_back(wc);
+            if (front_wheel_.empty())
+            {
+                front_wheel_.push_back(wc);
+            }
+            else if (wheelInfo.index == 0)
+            {
+                front_wheel_.insert(front_wheel_.begin(), wc);
+            }
+            else
+            {
+                front_wheel_.push_back(wc);
+            }
         }
         else
         {
-            rear_wheel_.push_back(wc);
+            if (rear_wheel_.empty())
+            {
+                rear_wheel_.push_back(wc);
+            }
+            else if (wheelInfo.index == 0)
+            {
+                rear_wheel_.insert(rear_wheel_.begin(), wc);
+            }
+            else
+            {
+                rear_wheel_.push_back(wc);
+            }
         }
     }
 
@@ -1018,9 +1056,9 @@ CarModel::CarModel(Viewer*                  viewer,
     wheel_angle_ = 0;
     wheel_rot_   = 0;
 
-    static const std::vector<std::vector<std::pair<std::string, bool>>> wheel_groups = {
-        {{"wheel_fl", true}, {"wheel_fr", true}, {"wheel_rr", false}, {"wheel_rl", false}},
-        {{"Grp_Wheel_0_0", true}, {"Grp_Wheel_0_1", true}, {"Grp_Wheel_1_0", false}, {"Grp_Wheel_1_1", false}},
+    const std::vector<std::vector<WheelInfo>> wheel_groups = {
+        {{"wheel_fl", true, 0}, {"wheel_fr", true, 1}, {"wheel_rr", false, 1}, {"wheel_rl", false, 0}},
+        {{"Grp_Wheel_0_0", true, 1}, {"Grp_Wheel_0_1", true, 0}, {"Grp_Wheel_1_0", false, 1}, {"Grp_Wheel_1_1", false, 0}},
     };
     osg::ref_ptr<osg::Group> retval;
     osg::ref_ptr<osg::Node>  car_node    = txNode_->getChild(0);
@@ -1030,15 +1068,15 @@ CarModel::CarModel(Viewer*                  viewer,
     {
         for (auto const& wheel : wheel_group)
         {
-            if (AddWheel(car_node, wheel.first, wheel.second) != 0)
+            if (AddWheel(car_node, wheel) != 0)
             {
                 if (wheel_found)
                 {
-                    LOG_WARN("Failed to find additional wheel {}", wheel.first);
+                    LOG_WARN("Failed to find additional wheel {}", wheel.name);
                 }
                 else
                 {
-                    LOG_DEBUG("Failed to find first wheel in group {}", wheel.first);
+                    LOG_DEBUG("Failed to find first wheel in group {}", wheel.name);
                 }
             }
             else
@@ -1140,20 +1178,51 @@ const osg::Vec3d* viewer::EntityModel::GetPosition() const
     return nullptr;
 }
 
-void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation)
+void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wheelbase, double wheeltrack, double pitch_angle, double roll_angle)
 {
     // Update wheel angles and rotation for front wheels
     wheel_angle_ = wheel_angle;
     wheel_rot_   = wheel_rotation;
 
+    double roll_z_offset = tan(roll_angle) * wheeltrack / 2;
+
     for (size_t i = 0; i < front_wheel_.size(); i++)
     {
+        auto   fw_m           = front_wheel_[i].wpos->getMatrix();
+        auto   pos            = fw_m.getTrans();
+        double pitch_z_offset = tan(pitch_angle) * wheelbase;
+
+        if (i == 0)
+        {
+            pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset - roll_z_offset;
+        }
+        else
+        {
+            pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset + roll_z_offset;
+        }
+
+        fw_m.setTrans(pos);
+        front_wheel_[i].wpos->setMatrix(fw_m);
         front_wheel_[i].steering_part->setMatrix(osg::Matrix::rotate(wheel_angle_, 0, 0, 1));
         front_wheel_[i].rolling_part->setMatrix(osg::Matrix::rotate(wheel_rot_, 0, 1, 0));
     }
 
     for (size_t i = 0; i < rear_wheel_.size(); i++)
     {
+        auto rw_m = rear_wheel_[i].wpos->getMatrix();
+        auto pos  = rw_m.getTrans();
+
+        if (i == 0)
+        {
+            pos.z() = rear_wheel_[i].wheel_z_offset - roll_z_offset;
+        }
+        else
+        {
+            pos.z() = rear_wheel_[i].wheel_z_offset + roll_z_offset;
+        }
+
+        rw_m.setTrans(pos);
+        rear_wheel_[i].wpos->setMatrix(rw_m);
         rear_wheel_[i].rolling_part->setMatrix(osg::Matrix::rotate(wheel_rot_, 0, 1, 0));
     }
 }
