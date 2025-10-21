@@ -860,12 +860,16 @@ void TrafficSourceAction::Start(double simTime)
 
     SetActionTriggerTime(simTime);
 
-    // Should be exchanged for the vehicle definition/distribution
-    vehicle_pool_.Initialize(&context_->GetScenarioReader(), nullptr, true);
-
-    if (vehicle_pool_.GetVehicles().size() == 0)
+    if (traffic_distribution_entry_.empty())
     {
-        LOG_ERROR("TrafficSwarmAction: No vehicles available to populate swarm traffic. Missing both Vehicle catalog and central vehicle object");
+        LOG_WARN("TrafficSourceAction: No traffic distribution entry defined, using vehicle pool for spawning.");
+        vehicle_pool_.Initialize(&context_->GetScenarioReader(), nullptr, true);
+
+        if (vehicle_pool_.GetVehicles().size() == 0)
+        {
+            LOG_ERROR(
+                "TrafficSourceAction: No vehicles available to populate source traffic. Missing both Vehicle catalog and traffic distribution entry.");
+        }
     }
 
     OSCAction::Start(simTime);

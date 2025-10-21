@@ -13,24 +13,7 @@ protected:
     void SetUpBase()
     {
         roadmanager::Position::GetOpenDrive()->LoadOpenDriveFile("../../../EnvironmentSimulator/Unittest/xodr/trafficarea.xodr");
-        // ScenarioEngine* scenarioEngine;// = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/four_roads.xosc");
-        // ScenarioGateway* gateway;// = new ScenarioGateway();
-        // // Entities* entities;
-        // // Catalogs* catalogs;
-        // // OSCEnvironment* environment;
-        // ScenarioReader* reader; // = new ScenarioReader(entities, catalogs,environment);
-
-        // class DummyScenarioEngine : public ScenarioEngine {};
-        // class DummyGateway : public ScenarioGateway { };
-        // class DummyReader : public ScenarioReader {};
-
-        // auto scenarioEngine = std::make_unique<DummyScenarioEngine>();
-        // auto gateway = std::make_unique<DummyGateway>();
-        // auto reader = std::make_unique<DummyReader>();
-
         std::shared_ptr<TrafficActionContext> trafficActionContext = std::make_shared<TrafficActionContext>(*roadmanager::Position::GetOpenDrive());
-        // std::shared_ptr<TrafficActionContext> trafficActionContext =
-        // std::make_shared<TrafficActionContext>(nullptr, nullptr, nullptr, *roadmanager::Position::GetOpenDrive());
 
         trafficAreaAction = new TrafficAreaAction(nullptr, trafficActionContext);
         trafficAreaAction->SetNumberOfEntities(10);
