@@ -269,6 +269,8 @@ namespace scenarioengine
         char      **argv_;
         std::string titleString;
         PlayerState state_;
+        double      pitch_     = 0.0;
+        double      pitch_vel_ = 0.0;
     };
 
 }  // namespace scenarioengine

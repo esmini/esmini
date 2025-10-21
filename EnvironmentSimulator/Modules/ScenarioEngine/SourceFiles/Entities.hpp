@@ -190,18 +190,19 @@ namespace scenarioengine
             return "UNKNOWN_TYPE";
         }
 
-        Type   type_;
-        int    id_;
-        double speed_;
-        double wheel_angle_;
-        double wheel_rot_;
-        int    ghost_trail_s_;       // closest point on ghost trail
-        idx_t  trail_follow_index_;  // Index of closest segment
-        double odometer_;
-        double end_of_road_timestamp_;
-        double off_road_timestamp_;
-        double stand_still_timestamp_;
-        bool   reset_;  // indicate discreet movement, teleporting, no odometer update
+        Type                type_;
+        int                 id_;
+        double              speed_;
+        std::vector<double> accelerations_ = std::vector<double>(5, 0.0);
+        double              wheel_angle_;
+        double              wheel_rot_;
+        int                 ghost_trail_s_;       // closest point on ghost trail
+        idx_t               trail_follow_index_;  // Index of closest segment
+        double              odometer_;
+        double              end_of_road_timestamp_;
+        double              off_road_timestamp_;
+        double              stand_still_timestamp_;
+        bool                reset_;  // indicate discreet movement, teleporting, no odometer update
 
         std::vector<Controller*>                    controllers_;  // reference to all assigned controller objects
         double                                      headstart_time_;

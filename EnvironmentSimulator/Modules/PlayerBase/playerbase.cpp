@@ -416,7 +416,48 @@ void ScenarioPlayer::ViewerFrame(bool init)
             Object*              obj    = scenarioEngine->entities_.object_[i];
 
             entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-            entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP(), obj->pos_.GetR());
+
+            // Rolling window to average acceleration for pitch calculation
+            obj->accelerations_.erase(obj->accelerations_.begin());  // Remove first element
+            obj->accelerations_.push_back(obj->pos_.GetAccLong());
+            auto acc = std::accumulate(obj->accelerations_.begin(), obj->accelerations_.end(), 0.0) / static_cast<double>(obj->accelerations_.size());
+
+            const double a_min = -10.0;
+            const double a_max = 10.0;
+            double       pitch_max;
+            if (acc > 0)
+            {
+                pitch_max = M_PI / 30.0;  // 2 degrees
+            }
+            else
+            {
+                pitch_max = M_PI / 30.0;  // 4 degrees
+            }
+
+            // Clamp acceleration
+            double a_clamped = CLAMP(acc, a_min, a_max);
+
+            // Parameters
+            double omega = 5.0;   // natural frequency
+            double zeta  = 0.7;   // damping ratio
+            double dt    = 0.01;  // delta time per frame
+
+            // Linear map
+            double pitch_target = -(a_clamped / a_max) * pitch_max;
+            if (NEAR_NUMBERS(acc, 0.0) || obj->pos_.GetVelLong() < 1.0)
+            {
+                pitch_target = 0.0;
+            }
+
+            // Damped spring physics
+            double spring     = omega * omega * (pitch_target - pitch_);
+            double damping    = 2.0 * zeta * omega * pitch_vel_;
+            double accelPitch = spring - damping;
+
+            pitch_vel_ += accelPitch * dt;
+            pitch_ += pitch_vel_ * dt;
+
+            entity->SetRotation(obj->pos_.GetH(), pitch_, obj->pos_.GetR());
 
             if (obj->pos_.GetTrajectory() && obj->pos_.GetTrajectory() != entity->trajectory_->activeRMTrajectory_)
             {
@@ -442,8 +483,9 @@ void ScenarioPlayer::ViewerFrame(bool init)
             {
                 if (entity->IsVehicle())
                 {
-                    viewer::CarModel* car = static_cast<viewer::CarModel*>(entity);
-                    car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
+                    viewer::CarModel* car       = static_cast<viewer::CarModel*>(entity);
+                    double            wheelbase = obj->front_axle_.positionX - obj->rear_axle_.positionX;
+                    car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_, wheelbase, pitch_);
                 }
 
                 viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);
