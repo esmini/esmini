@@ -103,6 +103,8 @@ namespace scenarioengine
         int  ScenarioFrame(double timestep_s, bool keyframe);
         void ShowObjectSensors(bool mode);
 
+        void DynamicPitchUpdate(Object *obj);
+
         /**
         Add an ideal sensor to an object
         @param obj Pointer to the object
