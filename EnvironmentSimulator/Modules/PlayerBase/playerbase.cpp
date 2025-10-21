@@ -419,7 +419,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
 
             DynamicPitchUpdate(obj);
 
-            entity->SetRotation(obj->pos_.GetH(), pitch_, obj->pos_.GetR());
+            entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP() + pitch_, obj->pos_.GetR());
 
             if (obj->pos_.GetTrajectory() && obj->pos_.GetTrajectory() != entity->trajectory_->activeRMTrajectory_)
             {
