@@ -2080,11 +2080,14 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         {
             if (FileExists(file_name_candidates[i].c_str()))
             {
-                if (modelgroup = LoadEntityModel(file_name_candidates[i].c_str(), modelBB))
-                {
-                    filepath = fs::path(file_name_candidates[i]).lexically_normal().generic_string();
-                    break;
-                }
+                // found file, register the filepath regardless of success of loading
+                filepath = fs::path(file_name_candidates[i]).lexically_normal().generic_string();
+
+                // try load found file
+                modelgroup = LoadEntityModel(file_name_candidates[i].c_str(), modelBB);
+
+                // do no more attempts
+                break;
             }
         }
     }
