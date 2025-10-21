@@ -333,7 +333,12 @@ namespace viewer
                  std::string              name);
         ~CarModel();
         int  AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheelName, bool front);
-        void UpdateWheels(double wheel_angle, double wheel_rotation, double wheelbase = 0.0, double pitch_angle = 0.0);
+        void UpdateWheels(double wheel_angle,
+                          double wheel_rotation,
+                          double wheelbase   = 0.0,
+                          double wheeltrack  = 0.0,
+                          double pitch_angle = 0.0,
+                          double roll_angle  = 0.0);
         void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
     };
 

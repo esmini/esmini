@@ -418,8 +418,9 @@ void ScenarioPlayer::ViewerFrame(bool init)
             entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 
             DynamicPitchUpdate(obj);
+            DynamicRollUpdate(obj);
 
-            entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP() + pitch_, obj->pos_.GetR());
+            entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP() + pitch_, obj->pos_.GetR() + roll_);
 
             if (obj->pos_.GetTrajectory() && obj->pos_.GetTrajectory() != entity->trajectory_->activeRMTrajectory_)
             {
@@ -445,9 +446,10 @@ void ScenarioPlayer::ViewerFrame(bool init)
             {
                 if (entity->IsVehicle())
                 {
-                    viewer::CarModel* car       = static_cast<viewer::CarModel*>(entity);
-                    double            wheelbase = obj->front_axle_.positionX - obj->rear_axle_.positionX;
-                    car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_, wheelbase, pitch_);
+                    viewer::CarModel* car        = static_cast<viewer::CarModel*>(entity);
+                    double            wheelbase  = obj->front_axle_.positionX - obj->rear_axle_.positionX;
+                    double            wheeltrack = obj->front_axle_.trackWidth;
+                    car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_, wheelbase, wheeltrack, pitch_, roll_);
                 }
 
                 viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);
@@ -574,11 +576,11 @@ void ScenarioPlayer::DynamicPitchUpdate(Object* obj)
     double       pitch_max;
     if (acc > 0)
     {
-        pitch_max = M_PI / 30.0;  // 2 degrees
+        pitch_max = M_PI / 60.0;  // 2 degrees
     }
     else
     {
-        pitch_max = M_PI / 30.0;  // 4 degrees
+        pitch_max = M_PI / 60.0;  // 4 degrees
     }
 
     // Clamp acceleration
@@ -586,7 +588,7 @@ void ScenarioPlayer::DynamicPitchUpdate(Object* obj)
 
     // Parameters
     double omega = 5.0;   // natural frequency
-    double zeta  = 0.7;   // damping ratio
+    double zeta  = 0.2;   // damping ratio
     double dt    = 0.01;  // delta time per frame
 
     // Linear map
@@ -603,6 +605,50 @@ void ScenarioPlayer::DynamicPitchUpdate(Object* obj)
 
     pitch_vel_ += accelPitch * dt;
     pitch_ += pitch_vel_ * dt;
+}
+
+void ScenarioPlayer::DynamicRollUpdate(Object* obj)
+{
+    // Rolling window to average acceleration for roll calculation
+    obj->lat_accelerations_.erase(obj->lat_accelerations_.begin());  // Remove first element
+    obj->lat_accelerations_.push_back(obj->pos_.GetAccLat());
+    auto acc =
+        std::accumulate(obj->lat_accelerations_.begin(), obj->lat_accelerations_.end(), 0.0) / static_cast<double>(obj->lat_accelerations_.size());
+
+    const double a_min = -10.0;
+    const double a_max = 10.0;
+    double       roll_max;
+    if (acc > 0)
+    {
+        roll_max = M_PI / 18.0;  // 10 degrees
+    }
+    else
+    {
+        roll_max = M_PI / 18.0;  // 10 degrees
+    }
+
+    // Clamp acceleration
+    double a_clamped = CLAMP(acc, a_min, a_max);
+
+    // Parameters
+    double omega = 5.0;   // natural frequency
+    double zeta  = 0.2;   // damping ratio
+    double dt    = 0.01;  // delta time per frame
+
+    // Linear map
+    double roll_target = a_clamped / a_max * roll_max;
+    if (NEAR_NUMBERS(acc, 0.0) || obj->pos_.GetVelLong() < 1.0)
+    {
+        roll_target = 0.0;
+    }
+
+    // Damped spring physics
+    double spring    = omega * omega * (roll_target - roll_);
+    double damping   = 2.0 * zeta * omega * roll_vel_;
+    double accelRoll = spring - damping;
+
+    roll_vel_ += accelRoll * dt;
+    roll_ += roll_vel_ * dt;
 }
 
 int ScenarioPlayer::SaveImagesToRAM(bool state)

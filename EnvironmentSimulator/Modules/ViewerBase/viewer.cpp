@@ -1142,18 +1142,30 @@ const osg::Vec3d* viewer::EntityModel::GetPosition() const
     return nullptr;
 }
 
-void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wheelbase, double pitch_angle)
+void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wheelbase, double wheeltrack, double pitch_angle, double roll_angle)
 {
     // Update wheel angles and rotation for front wheels
     wheel_angle_ = wheel_angle;
     wheel_rot_   = wheel_rotation;
 
+    double roll_z_offset = tan(roll_angle) * wheeltrack / 2;
+
     for (size_t i = 0; i < front_wheel_.size(); i++)
     {
-        auto fw_m = front_wheel_[i].wpos->getMatrix();
-        auto pos  = fw_m.getTrans();
-        pos.z()   = front_wheel_[i].wheel_z_offset + tan(pitch_angle) * wheelbase;
+        auto   fw_m           = front_wheel_[i].wpos->getMatrix();
+        auto   pos            = fw_m.getTrans();
+        double pitch_z_offset = tan(pitch_angle) * wheelbase;
+
+        if (i == 0)
+        {
+            pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset - roll_z_offset;
+        }
+        else
+        {
+            pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset + roll_z_offset;
+        }
         fw_m.setTrans(pos);
+
         front_wheel_[i].wpos->setMatrix(fw_m);
         front_wheel_[i].steering_part->setMatrix(osg::Matrix::rotate(wheel_angle_, 0, 0, 1));
         front_wheel_[i].rolling_part->setMatrix(osg::Matrix::rotate(wheel_rot_, 0, 1, 0));
@@ -1161,6 +1173,20 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wh
 
     for (size_t i = 0; i < rear_wheel_.size(); i++)
     {
+        auto rw_m = rear_wheel_[i].wpos->getMatrix();
+        auto pos  = rw_m.getTrans();
+        // + -> wheel goes up
+        // - -> wheel goes down
+        if (i == 0)
+        {
+            pos.z() = rear_wheel_[i].wheel_z_offset + roll_z_offset;
+        }
+        else
+        {
+            pos.z() = rear_wheel_[i].wheel_z_offset - roll_z_offset;
+        }
+        rw_m.setTrans(pos);
+        rear_wheel_[i].wpos->setMatrix(rw_m);
         rear_wheel_[i].rolling_part->setMatrix(osg::Matrix::rotate(wheel_rot_, 0, 1, 0));
     }
 }

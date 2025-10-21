@@ -104,6 +104,7 @@ namespace scenarioengine
         void ShowObjectSensors(bool mode);
 
         void DynamicPitchUpdate(Object *obj);
+        void DynamicRollUpdate(Object *obj);
 
         /**
         Add an ideal sensor to an object
@@ -273,6 +274,8 @@ namespace scenarioengine
         PlayerState state_;
         double      pitch_     = 0.0;
         double      pitch_vel_ = 0.0;
+        double      roll_      = 0.0;
+        double      roll_vel_  = 0.0;
     };
 
 }  // namespace scenarioengine

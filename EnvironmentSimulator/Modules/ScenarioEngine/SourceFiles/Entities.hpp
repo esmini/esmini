@@ -193,7 +193,8 @@ namespace scenarioengine
         Type                type_;
         int                 id_;
         double              speed_;
-        std::vector<double> accelerations_ = std::vector<double>(5, 0.0);
+        std::vector<double> accelerations_     = std::vector<double>(5, 0.0);
+        std::vector<double> lat_accelerations_ = std::vector<double>(5, 0.0);
         double              wheel_angle_;
         double              wheel_rot_;
         int                 ghost_trail_s_;       // closest point on ghost trail
