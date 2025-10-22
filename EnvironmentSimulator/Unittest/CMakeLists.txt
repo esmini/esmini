@@ -149,9 +149,10 @@ set(OSCGlobalAction_test_sources
 unittest(
     OSCGlobalAction_test
     "${OSCGlobalAction_test_sources}"
-    PlayerBase
     ScenarioEngine
     Controllers
+    PlayerBase
+    ScenarioEngine
     RoadManager
     CommonMini
     ${VIEWER_LIBS_FOR_TEST}
