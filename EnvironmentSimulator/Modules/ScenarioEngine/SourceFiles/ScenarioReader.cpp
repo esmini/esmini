@@ -2364,7 +2364,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 trafficSwarmAction->SetCentralObject(entities_->GetObjectByName(parameters.ReadAttribute(childNode, "entityRef")));
                 // childNode = trafficChild.child("")
 
-                std::string radius, numberOfVehicles, velocity;
+                std::string radius, numberOfVehicles;
 
                 // Inner radius (Circle)
                 radius = parameters.ReadAttribute(trafficChild, "innerRadius", true);
@@ -2401,8 +2401,8 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 if (GetVersionMajor() == 1 && GetVersionMinor() < 2)
                 {
                     // Velocity
-                    velocity = parameters.ReadAttribute(trafficChild, "velocity");
-                    if(velocity.empty())
+                    std::string velocity = parameters.ReadAttribute(trafficChild, "velocity");
+                    if (velocity.empty())
                     {
                         LOG_WARN("Warning: Missing swarm velocity! Using default value 0.0");
                         velocity = "0.0";
@@ -2445,7 +2445,107 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
             }
             else if (!strcmp(trafficChild.name(), "TrafficAreaAction"))
             {
-                LOG_INFO("TrafficAreaAction not implemented yet");
+                TrafficAreaAction *trafficAreaAction = new TrafficAreaAction(parent, trafficActionContext);
+
+                if (!traffic_name.empty())
+                {
+                    trafficAreaAction->SetName(traffic_name);
+                }
+
+                std::string continuous, number_of_entites;
+
+                continuous = parameters.ReadAttribute(trafficChild, "continuous", true);
+                bool cont  = continuous == "true" || continuous == "1" || continuous == "True";
+                trafficAreaAction->SetContinuous(cont);
+
+                number_of_entites = parameters.ReadAttribute(trafficChild, "numberOfEntities", true);
+                trafficAreaAction->SetNumberOfEntities(std::stoi(number_of_entites));
+
+                if (trafficChild.child("TrafficDistribution"))
+                {
+                    auto traffic_dist_node = trafficChild.child("TrafficDistribution");
+                    ParseTrafficDistribution(traffic_dist_node, trafficAreaAction->traffic_distribution_entry_);
+                }
+
+                pugi::xml_node trafficAreaNode = trafficChild.child("TrafficArea");
+                if (!trafficAreaNode.empty())
+                {
+                    for (pugi::xml_node areaChild = trafficAreaNode.first_child(); areaChild; areaChild = areaChild.next_sibling())
+                    {
+                        std::string            areaChildName(areaChild.name());
+                        std::vector<RoadRange> road_ranges;
+                        if (areaChildName == "Polygon")
+                        {
+                            LOG_INFO("Assuming a convex Polygon");
+                            // Read polygon points
+                            std::vector<roadmanager::Position> polygon_points;
+                            for (auto positionNode : areaChild.children("Position"))
+                            {
+                                if (!positionNode)
+                                {
+                                    throw std::runtime_error("Missing Position node");
+                                }
+                                std::unique_ptr<OSCPosition> pos    = std::unique_ptr<OSCPosition>(parseOSCPosition(positionNode));
+                                roadmanager::Position       *rm_pos = pos->GetRMPos();
+                                polygon_points.push_back(*rm_pos);
+                            }
+                            trafficAreaAction->SetPolygonPoints(polygon_points);
+                        }
+                        else if (areaChildName == "RoadRange")
+                        {
+                            RoadRange   road_range;
+                            std::string length, laneId;
+
+                            length = parameters.ReadAttribute(areaChild, "length");
+                            if (!length.empty() && std::stod(length) < 0.0)
+                            {
+                                LOG_ERROR("RoadRange length must be non-negative");
+                                LOG_INFO("RoadRange length set to 0.0");
+                                length = "0.0";
+                            }
+                            road_range.length = !length.empty() ? std::stod(length) : 0.0;
+
+                            std::vector<RoadCursor> road_cursors;
+
+                            for (pugi::xml_node cursorNode : areaChild.children("RoadCursor"))
+                            {
+                                RoadCursor  road_cursor;
+                                std::string roadId = parameters.ReadAttribute(cursorNode, "roadId", true);
+                                if (!roadId.empty())
+                                {
+                                    road_cursor.roadId = std::stoi(roadId);
+                                }
+                                std::string s = parameters.ReadAttribute(cursorNode, "s");
+                                road_cursor.s = !s.empty() ? std::stod(s) : 0.0;
+                                for (pugi::xml_node laneNode : cursorNode.children("Lane"))
+                                {
+                                    laneId = parameters.ReadAttribute(laneNode, "id", true);
+                                    road_cursor.laneIds.push_back(std::stoi(laneId));
+                                }
+                                road_cursors.push_back(road_cursor);
+                            }
+                            if (road_cursors.size() < 2)
+                            {
+                                LOG_ERROR("RoadRange must have at least two RoadCursors");
+                            }
+                            road_cursors.back().last = true;
+                            road_range.roadCursors   = road_cursors;
+
+                            road_ranges.push_back(road_range);
+                        }
+                        else
+                        {
+                            LOG_ERROR("Missing area definition (Polygon or RoadRange)");
+                        }
+                        trafficAreaAction->SetRoadRanges(road_ranges);
+                    }
+                }
+                else
+                {
+                    LOG_ERROR("Missing TrafficArea object");
+                }
+
+                action = trafficAreaAction;
             }
             else if (!strcmp(trafficChild.name(), "TrafficStopAction"))
             {
