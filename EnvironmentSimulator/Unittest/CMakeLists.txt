@@ -141,3 +141,24 @@ unittest(
     ${SUMO_LIBRARIES}
     ${FMT_LIBRARIES}
     ${SOCK_LIB})
+
+# ############################### Creating executable (OSCGlobalAction_test) ##########################################
+set(OSCGlobalAction_test_sources
+    OSCGlobalAction_test.cpp
+    ${UNITTEST_COMMON_SRC})
+
+unittest(
+    OSCGlobalAction_test
+    "${OSCGlobalAction_test_sources}"
+    ScenarioEngine
+    Controllers
+    PlayerBase
+    ScenarioEngine
+    RoadManager
+    CommonMini
+    ${VIEWER_LIBS_FOR_TEST}
+    ${OSG_LIBRARIES}
+    ${OSI_LIBRARIES}
+    ${SUMO_LIBRARIES}
+    ${FMT_LIBRARIES}
+    ${SOCK_LIB})

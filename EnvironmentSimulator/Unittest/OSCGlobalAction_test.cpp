@@ -1,5 +1,5 @@
 #include "OSCGlobalAction.hpp"
-#include "playerbase.cpp"
+#include "playerbase.hpp"
 #include <gtest/gtest.h>
 
 using namespace scenarioengine;
