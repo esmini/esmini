@@ -1076,8 +1076,8 @@ void TrafficSourceAction::SpawnEntity()
         double total_length = 0.0;
         for (const auto& road_id : road_ids_in_range)
         {
-            double minS = std::numeric_limits<double>::max();
-            double maxS = 0.0;
+            double minS  = std::numeric_limits<double>::max();
+            double maxS  = 0.0;
             double lastS = 0.0;
             for (const auto& rc : road_range.roadCursors)
             {
@@ -1412,7 +1412,7 @@ void TrafficAreaAction::HandleLastRoadCursor(std::vector<RoadCursor> last_road_c
         // Sort the road cursors by their s value
         std::sort(last_road_cursors.begin(), last_road_cursors.end(), [](const RoadCursor& a, const RoadCursor& b) { return a.s < b.s; });
         double second_last_s = 0.0;
-        double add_length = 0.0;
+        double add_length    = 0.0;
         for (size_t i = 0; i < last_road_cursors.size() - 1; ++i)
         {
             const auto& current = last_road_cursors[i];
@@ -1584,8 +1584,9 @@ roadmanager::Position* TrafficAreaAction::GetRandomSpawnPosition()
     {
         if (!lane_segments_.empty())
         {
-            const LaneSegment& seg = lane_segments_[static_cast<size_t>(SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(lane_segments_.size()) - 1))];
-            double             s   = SE_Env::Inst().GetRand().GetRealBetween(seg.minS, seg.maxS);
+            const LaneSegment& seg =
+                lane_segments_[static_cast<size_t>(SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(lane_segments_.size()) - 1))];
+            double s = SE_Env::Inst().GetRand().GetRealBetween(seg.minS, seg.maxS);
 
             roadmanager::Position* spawn_position = new roadmanager::Position(seg.roadId, seg.laneId, s, 0.0);
             if (!FreePositionToSpawn(spawn_position))
