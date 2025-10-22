@@ -1324,7 +1324,7 @@ void TrafficAreaAction::LaneSegmentsForRoad(std::vector<RoadCursor> road_cursors
         return;
     }
 
-    double add_length;
+    double add_length = 0.0;
 
     if (road_cursors_to_road.size() == 1)
     {

@@ -687,6 +687,23 @@ namespace scenarioengine
         std::vector<int> laneIds;
         bool             last = false;
         double           road_length;
+
+        explicit RoadCursor() : roadId(), s(0.0), laneIds{}, last(false), road_length(-1)
+        {
+        }
+
+        explicit RoadCursor(int id) : roadId(id), s(0.0), laneIds{}, last(false), road_length(-1)
+        {
+        }
+
+        RoadCursor(int id, double s_, std::vector<int> lanes = {}, bool last_ = false, double len = 0.0)
+            : roadId(id),
+              s(s_),
+              laneIds(std::move(lanes)),
+              last(last_),
+              road_length(len)
+        {
+        }
     };
 
     inline bool operator==(const RoadCursor& a, const RoadCursor& b)
