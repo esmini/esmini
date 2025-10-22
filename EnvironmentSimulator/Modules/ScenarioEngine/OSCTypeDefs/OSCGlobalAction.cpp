@@ -1454,10 +1454,10 @@ bool TrafficAreaAction::InsideArea(roadmanager::Position object_pos)
     if (!polygon_points_.empty())
     {
         // Ray-casting algorithm to determine if the point is inside the polygon
-        int  n      = polygon_points_.size();
-        bool inside = false;
+        size_t n      = polygon_points_.size();
+        bool   inside = false;
 
-        for (int i = 0, j = n - 1; i < n; j = i++)
+        for (size_t i = 0, j = n - 1; i < n; j = i++)
         {
             double xi = polygon_points_[i].GetX(), yi = polygon_points_[i].GetY();
             double xj = polygon_points_[j].GetX(), yj = polygon_points_[j].GetY();
@@ -1472,14 +1472,14 @@ bool TrafficAreaAction::InsideArea(roadmanager::Position object_pos)
     }
     else if (!road_ranges_.empty())
     {
-        int    obj_current_road = object_pos.GetTrackId();
-        int    obj_current_lane = object_pos.GetLaneId();
+        auto   obj_current_road = object_pos.GetTrackId();
+        auto   obj_current_lane = object_pos.GetLaneId();
         double obj_current_s    = object_pos.GetS();
         return std::any_of(
             lane_segments_.begin(),
             lane_segments_.end(),
             [obj_current_road, obj_current_lane, obj_current_s](const LaneSegment& ls)
-            { return ls.roadId == obj_current_road && ls.laneId == obj_current_lane && obj_current_s >= ls.minS && obj_current_s <= ls.maxS; });
+            { return ls.roadId == static_cast<int>(obj_current_road) && ls.laneId == obj_current_lane && obj_current_s >= ls.minS && obj_current_s <= ls.maxS; });
     }
     LOG_ERROR("Both polygon points and road range are empty in TrafficAreaAction");
     return false;
@@ -1571,10 +1571,10 @@ roadmanager::Position* TrafficAreaAction::GetRandomSpawnPosition()
     {
         if (!lane_segments_.empty())
         {
-            const LaneSegment& seg = lane_segments_[SE_Env::Inst().GetRand().GetNumberBetween(0, lane_segments_.size() - 1)];
+            const LaneSegment& seg = lane_segments_[SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(lane_segments_.size()) - 1)];
             double             s   = SE_Env::Inst().GetRand().GetRealBetween(seg.minS, seg.maxS);
 
-            roadmanager::Position* spawn_position = new roadmanager::Position(seg.roadId, seg.laneId, s, 0.0);
+            roadmanager::Position* spawn_position = new roadmanager::Position(static_cast<id_t>(seg.roadId), seg.laneId, s, 0.0);
             if (!FreePositionToSpawn(spawn_position))
             {
                 LOG_INFO("Generated spawn position is to close to other vehicle. Skipping spawn");
