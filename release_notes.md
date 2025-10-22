@@ -1,5 +1,20 @@
 ## esmini release notes
 
+### 2025-10-22 Version 2.53.0
+
+New features:
+- Add [Dockerfile](https://github.com/esmini/esmini/tree/dev/resources/dockers) ([issue #735](https://github.com/esmini/esmini/issues/735))
+- Add OSI `model_reference` for OpenDRIVE objects and signals
+
+Improvements and fixes:
+- Update OSI `model_reference` handling ([issue #738](https://github.com/esmini/esmini/issues/738))
+  - put resolved path for found files, regardless loaded or not
+- Update file search path handling in general
+  - see [User guide - File search paths](https://esmini.github.io/#_file_search_paths)
+  - **NOTE:** Might cause files not found, set paths as needed
+- Fix incorrect return type of roadmanager GetCountourType() ([PR #740](https://github.com/esmini/esmini/issues/740))
+- Some additional minor fixes
+
 ### 2025-10-09 Version 2.52.2
 
 New behaviors:
