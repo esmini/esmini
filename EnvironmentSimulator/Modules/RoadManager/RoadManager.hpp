@@ -1769,7 +1769,7 @@ namespace roadmanager
         {
             contourType_ = contourType;
         }
-        bool GetCountourType() const
+        ContourType GetCountourType() const
         {
             return contourType_;
         }
