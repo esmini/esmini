@@ -59,7 +59,7 @@ TEST_P(TrafficAreaActionRoadCursorInfoTest, SetAdditionalRoadCursorInfoTest)
 
     ASSERT_TRUE(road_cursor == expected_road_cursor);
     ASSERT_EQ(output, GetParam().log_output);
-};
+}
 
 // Example parameters
 INSTANTIATE_TEST_SUITE_P(
@@ -220,7 +220,7 @@ TEST_P(TrafficAreaActionSetRoadRangeLengthTest, SetRoadRangeLengthTest)
     // road_range = trafficAreaAction->GetRoadRanges()[0];
 
     ASSERT_DOUBLE_EQ(road_range.length, expected_road_range_length);
-};
+}
 
 // Example parameters
 INSTANTIATE_TEST_SUITE_P(
@@ -357,7 +357,7 @@ TEST_P(TrafficAreaActionSetLaneSegmentsTest, SetLaneSegmentsTest)
             std::any_of(generated_lane_segments.begin(), generated_lane_segments.end(), [&](const LaneSegment& ls) { return ls == expected_ls; });
         ASSERT_TRUE(found) << "Expected RoadCursor not found in road_range.roadCursors";
     }
-};
+}
 
 // Example parameters
 INSTANTIATE_TEST_SUITE_P(
