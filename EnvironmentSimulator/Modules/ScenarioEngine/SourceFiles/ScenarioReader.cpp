@@ -2617,13 +2617,13 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
 
                             for (pugi::xml_node cursorNode : areaChild.children("RoadCursor"))
                             {
-                                RoadCursor  road_cursor;
+                                RoadCursor road_cursor;
                                 std::string roadId = parameters.ReadAttribute(cursorNode, "roadId", true);
                                 if (!roadId.empty())
                                 {
                                     road_cursor.roadId = std::stoi(roadId);
                                 }
-                                std::string s = parameters.ReadAttribute(cursorNode, "s");
+                                std::string s             = parameters.ReadAttribute(cursorNode, "s");
                                 road_cursor.s = !s.empty() ? std::stod(s) : 0.0;
                                 for (pugi::xml_node laneNode : cursorNode.children("Lane"))
                                 {
