@@ -2474,7 +2474,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
 
                 trafficSwarmAction->SetCentralObject(entities_->GetObjectByName(parameters.ReadAttribute(childNode, "entityRef")));
 
-                std::string radius, numberOfVehicles, velocity;
+                std::string radius, numberOfVehicles;
 
                 // Inner radius (Circle)
                 radius = parameters.ReadAttribute(trafficChild, "innerRadius", true);
@@ -2511,7 +2511,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 if (GetVersionMajor() == 1 && GetVersionMinor() < 2)
                 {
                     // Velocity
-                    velocity = parameters.ReadAttribute(trafficChild, "velocity");
+                    std::string velocity = parameters.ReadAttribute(trafficChild, "velocity");
                     if (velocity.empty())
                     {
                         LOG_WARN("Warning: Missing swarm velocity! Using default value 0.0");
@@ -2602,7 +2602,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                         else if (areaChildName == "RoadRange")
                         {
                             RoadRange   road_range;
-                            std::string length, roadId, s, laneId;
+                            std::string length, laneId;
 
                             length = parameters.ReadAttribute(areaChild, "length");
                             if (!length.empty() && std::stod(length) < 0.0)
@@ -2617,13 +2617,13 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
 
                             for (pugi::xml_node cursorNode : areaChild.children("RoadCursor"))
                             {
-                                RoadCursor road_cursor;
-                                roadId = parameters.ReadAttribute(cursorNode, "roadId", true);
+                                RoadCursor  road_cursor;
+                                std::string roadId = parameters.ReadAttribute(cursorNode, "roadId", true);
                                 if (!roadId.empty())
                                 {
                                     road_cursor.roadId = std::stoi(roadId);
                                 }
-                                s             = parameters.ReadAttribute(cursorNode, "s");
+                                std::string s = parameters.ReadAttribute(cursorNode, "s");
                                 road_cursor.s = !s.empty() ? std::stod(s) : 0.0;
                                 for (pugi::xml_node laneNode : cursorNode.children("Lane"))
                                 {

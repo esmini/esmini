@@ -1475,17 +1475,11 @@ bool TrafficAreaAction::InsideArea(roadmanager::Position object_pos)
         int    obj_current_road = object_pos.GetTrackId();
         int    obj_current_lane = object_pos.GetLaneId();
         double obj_current_s    = object_pos.GetS();
-        for (const auto& ls : lane_segments_)
-        {
-            if (ls.roadId == obj_current_road && ls.laneId == obj_current_lane)
-            {
-                if (obj_current_s >= ls.minS && obj_current_s <= ls.maxS)
-                {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return std::any_of(
+            lane_segments_.begin(),
+            lane_segments_.end(),
+            [obj_current_road, obj_current_lane, obj_current_s](const LaneSegment& ls)
+            { return ls.roadId == obj_current_road && ls.laneId == obj_current_lane && obj_current_s >= ls.minS && obj_current_s <= ls.maxS; });
     }
     LOG_ERROR("Both polygon points and road range are empty in TrafficAreaAction");
     return false;
