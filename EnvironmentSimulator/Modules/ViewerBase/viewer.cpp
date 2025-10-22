@@ -862,25 +862,39 @@ int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheel
         std::string find_str("Grp_Wheel_");
         if (wheelName.compare(0, find_str.length(), find_str) == 0)
         {
+            modeltype_ = ModelType3D::OPENMATERIAL;
             // Assume OpenMATERIAL3D structure
             if (group->getNumChildren() > 0 && group->getNumChildren() < 3)
             {
+                wc.wpos          = new osg::MatrixTransform();
                 wc.steering_part = new osg::MatrixTransform();
                 wc.rolling_part  = new osg::MatrixTransform();
+
+                // Determine Z offset from the first child's position
+                auto wheel_pos    = group->getBound().center();
+                wc.wheel_z_offset = wheel_pos.z();
+
+                // Build wheel structure
                 if (group->getNumChildren() == 1)
                 {
-                    // assume non rolling part missing, e.g. caliper
                     wc.rolling_part->addChild(group->getChild(0));
                 }
                 else
                 {
-                    // two wheel nodes, assume first is non rolling parts, second is the rest
-                    wc.steering_part->addChild(group->getChild(0));
-                    wc.rolling_part->addChild(group->getChild(1));
+                    wc.steering_part->addChild(group->getChild(0));  // non-rolling parts (e.g., brake)
+                    wc.rolling_part->addChild(group->getChild(1));   // rolling geometry
                 }
+
                 wc.steering_part->addChild(wc.rolling_part);
-                group->removeChildren(0, group->getNumChildren());
-                group->addChild(wc.steering_part);
+                wc.wpos->addChild(wc.steering_part);
+
+                // Apply translation to wpos so we can pitch/roll it later
+                wc.wpos->setMatrix(osg::Matrix::translate(wheel_pos));
+
+                // Replace original group node
+                osg::Group* parent = group->getParent(0);
+                parent->addChild(wc.wpos);
+                parent->removeChild(group);
             }
             else
             {
@@ -892,7 +906,7 @@ int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheel
         {
             // assume esmini native wheel structure
             // create three matrix nodes: Wheel position, Steering, Rolling
-
+            modeltype_               = ModelType3D::ESMINI;
             osg::MatrixTransform* mt = dynamic_cast<osg::MatrixTransform*>(node);
             if (mt == nullptr)
             {
@@ -1156,13 +1170,27 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wh
         auto   pos            = fw_m.getTrans();
         double pitch_z_offset = tan(pitch_angle) * wheelbase;
 
-        if (i == 0)
+        if (GetModelType3D() == ModelType3D::ESMINI)
         {
-            pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset - roll_z_offset;
+            if (i == 0)
+            {
+                pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset - roll_z_offset;
+            }
+            else
+            {
+                pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset + roll_z_offset;
+            }
         }
         else
         {
-            pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset + roll_z_offset;
+            if (i == 0)
+            {
+                pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset + roll_z_offset;
+            }
+            else
+            {
+                pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset - roll_z_offset;
+            }
         }
 
         fw_m.setTrans(pos);
