@@ -103,8 +103,8 @@ namespace scenarioengine
         int  ScenarioFrame(double timestep_s, bool keyframe);
         void ShowObjectSensors(bool mode);
 
-        void DynamicPitchUpdate(Object *obj);
-        void DynamicRollUpdate(Object *obj);
+        void DynamicPitchUpdate(Object *obj, double dt, double pitch_limit = 3.0, double a_min = -12.0, double a_max = 10.0);
+        void DynamicRollUpdate(Object *obj, double dt, double roll_limit = 10.0, double a_min = -12.0, double a_max = 10.0);
 
         /**
         Add an ideal sensor to an object
@@ -257,25 +257,27 @@ namespace scenarioengine
         SE_Semaphore                viewer_init_semaphore;
 
     private:
-        double      trail_dt;
-        SE_Thread   thread;
-        SE_Mutex    mutex;
-        bool        quit_request;
-        bool        threads;
-        bool        launch_server;
-        bool        disable_controllers_;
-        double      fixed_timestep_;
-        int         frame_counter_;
-        std::string osi_receiver_addr;
-        bool        osi_updated_;
-        int         argc_;
-        char      **argv_;
-        std::string titleString;
-        PlayerState state_;
-        double      pitch_     = 0.0;
-        double      pitch_vel_ = 0.0;
-        double      roll_      = 0.0;
-        double      roll_vel_  = 0.0;
+        double       trail_dt;
+        SE_Thread    thread;
+        SE_Mutex     mutex;
+        bool         quit_request;
+        bool         threads;
+        bool         launch_server;
+        bool         disable_controllers_;
+        double       fixed_timestep_;
+        int          frame_counter_;
+        std::string  osi_receiver_addr;
+        bool         osi_updated_;
+        int          argc_;
+        char       **argv_;
+        std::string  titleString;
+        PlayerState  state_;
+        DampedSpring pitch_spring_;
+        DampedSpring roll_spring_;
+        double       pitch_     = 0.0;
+        double       pitch_vel_ = 0.0;
+        double       roll_      = 0.0;
+        double       roll_vel_  = 0.0;
     };
 
 }  // namespace scenarioengine

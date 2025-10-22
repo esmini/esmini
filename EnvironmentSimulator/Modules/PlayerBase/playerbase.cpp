@@ -69,7 +69,9 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     player_server_       = nullptr;
 
 #ifdef _USE_OSG
-    viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
+    viewerState_  = ViewerState::VIEWER_STATE_NOT_STARTED;
+    pitch_spring_ = DampedSpring(0.0, 0.0, 25.0);
+    roll_spring_  = DampedSpring(0.0, 0.0, 25.0);
 #ifdef _USE_OSI
     OSISensorDetection = nullptr;
 #endif  // _USE_OSI
@@ -417,8 +419,15 @@ void ScenarioPlayer::ViewerFrame(bool init)
 
             entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 
-            DynamicPitchUpdate(obj);
-            DynamicRollUpdate(obj);
+            double dt = GetFixedTimestep();
+            if (dt < 0.0)
+            {
+                static __int64 time_stamp = 0;
+                dt                        = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
+            }
+
+            DynamicPitchUpdate(obj, dt);
+            DynamicRollUpdate(obj, dt);
 
             entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP() + pitch_, obj->pos_.GetR() + roll_);
 
@@ -564,32 +573,15 @@ void ScenarioPlayer::ViewerFrame(bool init)
     }
 }
 
-void ScenarioPlayer::DynamicPitchUpdate(Object* obj)
+void ScenarioPlayer::DynamicPitchUpdate(Object* obj, double dt, double pitch_limit, double a_min, double a_max)
 {
     // Rolling window to average acceleration for pitch calculation
-    obj->accelerations_.erase(obj->accelerations_.begin());  // Remove first element
+    obj->accelerations_.erase(obj->accelerations_.begin());
     obj->accelerations_.push_back(obj->pos_.GetAccLong());
     auto acc = std::accumulate(obj->accelerations_.begin(), obj->accelerations_.end(), 0.0) / static_cast<double>(obj->accelerations_.size());
 
-    const double a_min = -10.0;
-    const double a_max = 10.0;
-    double       pitch_max;
-    if (acc > 0)
-    {
-        pitch_max = M_PI / 60.0;  // 2 degrees
-    }
-    else
-    {
-        pitch_max = M_PI / 60.0;  // 4 degrees
-    }
-
-    // Clamp acceleration
+    double pitch_max = osg::DegreesToRadians(pitch_limit);
     double a_clamped = CLAMP(acc, a_min, a_max);
-
-    // Parameters
-    double omega = 5.0;   // natural frequency
-    double zeta  = 0.2;   // damping ratio
-    double dt    = 0.01;  // delta time per frame
 
     // Linear map
     double pitch_target = -(a_clamped / a_max) * pitch_max;
@@ -598,42 +590,22 @@ void ScenarioPlayer::DynamicPitchUpdate(Object* obj)
         pitch_target = 0.0;
     }
 
-    // Damped spring physics
-    double spring     = omega * omega * (pitch_target - pitch_);
-    double damping    = 2.0 * zeta * omega * pitch_vel_;
-    double accelPitch = spring - damping;
-
-    pitch_vel_ += accelPitch * dt;
-    pitch_ += pitch_vel_ * dt;
+    pitch_spring_.SetTargetValue(pitch_target);
+    pitch_spring_.Update(dt);
+    pitch_     = pitch_spring_.GetValue();
+    pitch_vel_ = pitch_spring_.GetV();
 }
 
-void ScenarioPlayer::DynamicRollUpdate(Object* obj)
+void ScenarioPlayer::DynamicRollUpdate(Object* obj, double dt, double roll_limit, double a_min, double a_max)
 {
     // Rolling window to average acceleration for roll calculation
-    obj->lat_accelerations_.erase(obj->lat_accelerations_.begin());  // Remove first element
+    obj->lat_accelerations_.erase(obj->lat_accelerations_.begin());
     obj->lat_accelerations_.push_back(obj->pos_.GetAccLat());
     auto acc =
         std::accumulate(obj->lat_accelerations_.begin(), obj->lat_accelerations_.end(), 0.0) / static_cast<double>(obj->lat_accelerations_.size());
 
-    const double a_min = -10.0;
-    const double a_max = 10.0;
-    double       roll_max;
-    if (acc > 0)
-    {
-        roll_max = M_PI / 18.0;  // 10 degrees
-    }
-    else
-    {
-        roll_max = M_PI / 18.0;  // 10 degrees
-    }
-
-    // Clamp acceleration
+    double roll_max  = osg::DegreesToRadians(roll_limit);
     double a_clamped = CLAMP(acc, a_min, a_max);
-
-    // Parameters
-    double omega = 5.0;   // natural frequency
-    double zeta  = 0.2;   // damping ratio
-    double dt    = 0.01;  // delta time per frame
 
     // Linear map
     double roll_target = a_clamped / a_max * roll_max;
@@ -642,13 +614,10 @@ void ScenarioPlayer::DynamicRollUpdate(Object* obj)
         roll_target = 0.0;
     }
 
-    // Damped spring physics
-    double spring    = omega * omega * (roll_target - roll_);
-    double damping   = 2.0 * zeta * omega * roll_vel_;
-    double accelRoll = spring - damping;
-
-    roll_vel_ += accelRoll * dt;
-    roll_ += roll_vel_ * dt;
+    roll_spring_.SetTargetValue(roll_target);
+    roll_spring_.Update(dt);
+    roll_     = roll_spring_.GetValue();
+    roll_vel_ = roll_spring_.GetV();
 }
 
 int ScenarioPlayer::SaveImagesToRAM(bool state)

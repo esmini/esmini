@@ -1164,8 +1164,8 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wh
         {
             pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset + roll_z_offset;
         }
-        fw_m.setTrans(pos);
 
+        fw_m.setTrans(pos);
         front_wheel_[i].wpos->setMatrix(fw_m);
         front_wheel_[i].steering_part->setMatrix(osg::Matrix::rotate(wheel_angle_, 0, 0, 1));
         front_wheel_[i].rolling_part->setMatrix(osg::Matrix::rotate(wheel_rot_, 0, 1, 0));
@@ -1175,8 +1175,7 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wh
     {
         auto rw_m = rear_wheel_[i].wpos->getMatrix();
         auto pos  = rw_m.getTrans();
-        // + -> wheel goes up
-        // - -> wheel goes down
+
         if (i == 0)
         {
             pos.z() = rear_wheel_[i].wheel_z_offset + roll_z_offset;
@@ -1185,6 +1184,7 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wh
         {
             pos.z() = rear_wheel_[i].wheel_z_offset - roll_z_offset;
         }
+
         rw_m.setTrans(pos);
         rear_wheel_[i].wpos->setMatrix(rw_m);
         rear_wheel_[i].rolling_part->setMatrix(osg::Matrix::rotate(wheel_rot_, 0, 1, 0));
