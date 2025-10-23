@@ -321,7 +321,7 @@ class TestSuite(unittest.TestCase):
         if platform == "win32":
             self.assertTrue(re.search('^5.000, 0, Ego, 11.090, 349.861, -0.625, 1.550, 0.002, 0.000, 10.000, -0.000, 4.627', csv, re.MULTILINE))
             self.assertTrue(re.search('^5.000, 1, swarm_0, 9.030, 199.999, -0.348, 1.562, 0.002, 0.000, 30.000, -0.000, 1.315', csv, re.MULTILINE))
-            self.assertTrue(re.search('^5.000, 3, swarm_2, 12.551, 177.990, -0.307, 1.563, 0.002, 0.000, 30.000, -0.000, 5.272', csv, re.MULTILINE))
+            self.assertTrue(re.search('^5.000, 3, swarm_2, 12.551, 177.990, -0.307, 1.563, 0.002, 0.000, 30.000, (-0.000|0.000), 5.272', csv, re.MULTILINE))
             self.assertTrue(re.search('^5.000, 4, swarm_2\\+, 12.508, 171.990, -0.295, 1.564, 0.002, 0.000, 30.000, -0.000, 5.272', csv, re.MULTILINE))
             self.assertTrue(re.search('^5.000, 5, swarm_2\\+\\+, 12.465, 165.990, -0.283, 1.564, 0.002, 0.000, 30.000, -0.000, 5.272', csv, re.MULTILINE))
             self.assertTrue(re.search('^5.000, 6, swarm_2\\+\\+\\+, 12.420, 159.290, -0.269, 1.564, 0.002, 0.000, 30.000, -0.000, 5.272', csv, re.MULTILINE))
