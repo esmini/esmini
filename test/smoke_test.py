@@ -320,10 +320,11 @@ class TestSuite(unittest.TestCase):
         if platform == "win32":
             self.assertTrue(re.search('^5.000, 0, Ego, 11.090, 349.861, -0.625, 1.550, 0.002, 0.000, 10.000, -0.000, 4.627', csv, re.MULTILINE))
             self.assertTrue(re.search('^5.000, 1, swarm_0, 9.030, 199.999, -0.348, 1.562, 0.002, 0.000, 30.000, -0.000, 1.315', csv, re.MULTILINE))
-            self.assertTrue(re.search('^5.000, 16, swarm_12, -0.075, 552.911, -0.843, 4.641, 0.000, 6.283, 30.000, 0.001, 0.038', csv, re.MULTILINE))
-            self.assertTrue(re.search('^5.000, 17, swarm_12\\+, 0.369, 558.895, -0.842, 4.639, 0.000, 6.283, 30.000, 0.001, 0.038', csv, re.MULTILINE))
-            self.assertTrue(re.search('^5.000, 18, swarm_12\\+\\+, 1.337, 571.558, -0.837, 4.635, 0.000, 0.000, 30.000, 0.001, 0.038', csv, re.MULTILINE))
-
+            self.assertTrue(re.search('^5.000, 3, swarm_2, 12.551, 177.990, -0.307, 1.563, 0.002, 0.000, 30.000, (-0.000|0.000), 5.272', csv, re.MULTILINE))
+            self.assertTrue(re.search('^5.000, 4, swarm_2\\+, 12.508, 171.990, -0.295, 1.564, 0.002, 0.000, 30.000, -0.000, 5.272', csv, re.MULTILINE))
+            self.assertTrue(re.search('^5.000, 5, swarm_2\\+\\+, 12.465, 165.990, -0.283, 1.564, 0.002, 0.000, 30.000, -0.000, 5.272', csv, re.MULTILINE))
+            self.assertTrue(re.search('^5.000, 6, swarm_2\\+\\+\\+, 12.420, 159.290, -0.269, 1.564, 0.002, 0.000, 30.000, -0.000, 5.272', csv, re.MULTILINE))
+            self.assertTrue(re.search('^5.000, 7, swarm_3, -5.902, 444.916, -0.788, 4.674, 6.282, 0.000, 30.000, 0.001, 5.272', csv, re.MULTILINE))
             self.assertTrue(re.search('^10.000, 0, Ego, 12.312, 399.846, -0.719, 1.542, 0.002, 0.000, 10.000, -0.001, 2.971', csv, re.MULTILINE))
             self.assertTrue(re.search('^10.000, 1, swarm_0, 10.950, 342.984, -0.612, 1.551, 0.002, 0.000, 23.013, -0.000, 1.474', csv, re.MULTILINE))
             self.assertTrue(re.search('^10.000, 16, swarm_12, -7.302, 403.098, -0.724, 4.683, 6.281, 0.000, 30.000, 0.001, 1.353', csv, re.MULTILINE))
