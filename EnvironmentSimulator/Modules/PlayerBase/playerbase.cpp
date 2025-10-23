@@ -53,20 +53,25 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
       argv_(argv),
       state_(PlayerState::PLAYER_STATE_PLAYING)
 {
-    quit_request         = false;
-    threads              = false;
-    launch_server        = false;
-    fixed_timestep_      = -1.0;
-    osi_receiver_addr    = "";
-    osi_updated_         = false;
-    CSV_Log              = NULL;
-    osiReporter          = NULL;
-    disable_controllers_ = false;
-    frame_counter_       = 0;
-    scenarioEngine       = nullptr;
-    osiReporter          = nullptr;
-    viewer_              = nullptr;
-    player_server_       = nullptr;
+    quit_request              = false;
+    threads                   = false;
+    launch_server             = false;
+    fixed_timestep_           = -1.0;
+    osi_receiver_addr         = "";
+    osi_updated_              = false;
+    CSV_Log                   = NULL;
+    osiReporter               = NULL;
+    disable_controllers_      = false;
+    frame_counter_            = 0;
+    scenarioEngine            = nullptr;
+    osiReporter               = nullptr;
+    viewer_                   = nullptr;
+    player_server_            = nullptr;
+    vehicle_dynamics_enabled_ = false;
+    pitch_                    = 0.0;
+    pitch_vel_                = 0.0;
+    roll_                     = 0.0;
+    roll_vel_                 = 0.0;
 
 #ifdef _USE_OSG
     viewerState_  = ViewerState::VIEWER_STATE_NOT_STARTED;
@@ -426,8 +431,11 @@ void ScenarioPlayer::ViewerFrame(bool init)
                 dt                        = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
             }
 
-            DynamicPitchUpdate(obj, dt);
-            DynamicRollUpdate(obj, dt);
+            if (vehicle_dynamics_enabled_)
+            {
+                DynamicPitchUpdate(obj, dt, pitch_limit_);
+                DynamicRollUpdate(obj, dt, roll_limit_);
+            }
 
             entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP() + pitch_, obj->pos_.GetR() + roll_);
 
@@ -1457,6 +1465,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("traj_filter", "Simple filter merging close points. Set 0.0 to disable", "radius", "0.1", true);
     opt.AddOption("tunnel_transparency", "Set level of transparency for generated tunnels [0:1]", "transparency", "0.0");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
+    opt.AddOption("vehicle_dynamics", "Visualize simple vehicle dynamics", "<pitch,roll,tension,damping>", "2,5,25,10", false, false);
     opt.AddOption("version", "Show version and quit");
 
     if (int ret = OnRequestShowHelpOrVersion(argc_, argv_, opt); ret > 0)
@@ -1847,7 +1856,29 @@ int ScenarioPlayer::Init()
         LOG_INFO("OSI static data reporting mode: {}", arg_str);
     }
 #endif  // _USE_OSI
+    if (opt.GetOptionSet("vehicle_dynamics") == true)
+    {
+        EnableVehicleDynamics();
+        unsigned int counter = 0;
 
+        while ((arg_str = opt.GetOptionValue("vehicle_dynamics", counter)) != "")
+        {
+            const auto splitted = SplitString(arg_str, ',');
+            if (splitted.size() == 4)
+            {
+                SetPitchLimit(strtod(splitted[0]));
+                SetRollLimit(strtod(splitted[1]));
+                SetTension(strtod(splitted[2]));
+                SetDamping(strtod(splitted[3]));
+            }
+            else
+            {
+                LOG_ERROR("vehicle_dynamics maximum 4 values <pitch,roll,tension,damping>. Got {} values.", splitted.size());
+            }
+
+            counter++;
+        }
+    }
     // Initialize CSV logger for recording vehicle data
     if (opt.GetOptionSet("csv_logger"))
     {

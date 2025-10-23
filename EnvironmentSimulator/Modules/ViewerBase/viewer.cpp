@@ -841,11 +841,11 @@ void RouteWayPoints::SetWayPoints(roadmanager::Route* route)
 #endif
 }
 
-int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheelName, bool front)
+int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const WheelInfo& wheelInfo)
 {
     // Find wheel node
     std::vector<osg::Node*> nodes;
-    FindNamedNodes          fnn(wheelName, nodes);
+    FindNamedNodes          fnn(wheelInfo.name, nodes);
     carNode->accept(fnn);
 
     if (nodes.size() == 0)
@@ -860,9 +860,8 @@ int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheel
         osg::Group* group = dynamic_cast<osg::Group*>(node);
 
         std::string find_str("Grp_Wheel_");
-        if (wheelName.compare(0, find_str.length(), find_str) == 0)
+        if (wheelInfo.name.compare(0, find_str.length(), find_str) == 0)
         {
-            modeltype_ = ModelType3D::OPENMATERIAL;
             // Assume OpenMATERIAL3D structure
             if (group->getNumChildren() > 0 && group->getNumChildren() < 3)
             {
@@ -906,7 +905,6 @@ int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheel
         {
             // assume esmini native wheel structure
             // create three matrix nodes: Wheel position, Steering, Rolling
-            modeltype_               = ModelType3D::ESMINI;
             osg::MatrixTransform* mt = dynamic_cast<osg::MatrixTransform*>(node);
             if (mt == nullptr)
             {
@@ -935,13 +933,37 @@ int CarModel::AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheel
             group->getParent(0)->removeChild(node);
         }
 
-        if (front)
+        // Some logic to assure that front/rear wheels are in correct order
+        // (left to right when looking forward)
+        if (wheelInfo.front_wheel)
         {
-            front_wheel_.push_back(wc);
+            if (front_wheel_.empty())
+            {
+                front_wheel_.push_back(wc);
+            }
+            else if (wheelInfo.index == 0)
+            {
+                front_wheel_.insert(front_wheel_.begin(), wc);
+            }
+            else
+            {
+                front_wheel_.push_back(wc);
+            }
         }
         else
         {
-            rear_wheel_.push_back(wc);
+            if (rear_wheel_.empty())
+            {
+                rear_wheel_.push_back(wc);
+            }
+            else if (wheelInfo.index == 0)
+            {
+                rear_wheel_.insert(rear_wheel_.begin(), wc);
+            }
+            else
+            {
+                rear_wheel_.push_back(wc);
+            }
         }
     }
 
@@ -1034,9 +1056,9 @@ CarModel::CarModel(Viewer*                  viewer,
     wheel_angle_ = 0;
     wheel_rot_   = 0;
 
-    static const std::vector<std::vector<std::pair<std::string, bool>>> wheel_groups = {
-        {{"wheel_fl", true}, {"wheel_fr", true}, {"wheel_rr", false}, {"wheel_rl", false}},
-        {{"Grp_Wheel_0_0", true}, {"Grp_Wheel_0_1", true}, {"Grp_Wheel_1_0", false}, {"Grp_Wheel_1_1", false}},
+    static const std::vector<std::vector<WheelInfo>> wheel_groups = {
+        {{"wheel_fl", true, 0}, {"wheel_fr", true, 1}, {"wheel_rr", false, 1}, {"wheel_rl", false, 0}},
+        {{"Grp_Wheel_0_0", true, 1}, {"Grp_Wheel_0_1", true, 0}, {"Grp_Wheel_1_0", false, 1}, {"Grp_Wheel_1_1", false, 0}},
     };
     osg::ref_ptr<osg::Group> retval;
     osg::ref_ptr<osg::Node>  car_node    = txNode_->getChild(0);
@@ -1046,15 +1068,15 @@ CarModel::CarModel(Viewer*                  viewer,
     {
         for (auto const& wheel : wheel_group)
         {
-            if (AddWheel(car_node, wheel.first, wheel.second) != 0)
+            if (AddWheel(car_node, wheel) != 0)
             {
                 if (wheel_found)
                 {
-                    LOG_WARN("Failed to find additional wheel {}", wheel.first);
+                    LOG_WARN("Failed to find additional wheel {}", wheel.name);
                 }
                 else
                 {
-                    LOG_DEBUG("Failed to find first wheel in group {}", wheel.first);
+                    LOG_DEBUG("Failed to find first wheel in group {}", wheel.name);
                 }
             }
             else
@@ -1170,27 +1192,13 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wh
         auto   pos            = fw_m.getTrans();
         double pitch_z_offset = tan(pitch_angle) * wheelbase;
 
-        if (GetModelType3D() == ModelType3D::ESMINI)
+        if (i == 0)
         {
-            if (i == 0)
-            {
-                pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset - roll_z_offset;
-            }
-            else
-            {
-                pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset + roll_z_offset;
-            }
+            pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset - roll_z_offset;
         }
         else
         {
-            if (i == 0)
-            {
-                pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset + roll_z_offset;
-            }
-            else
-            {
-                pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset - roll_z_offset;
-            }
+            pos.z() = front_wheel_[i].wheel_z_offset + pitch_z_offset + roll_z_offset;
         }
 
         fw_m.setTrans(pos);
@@ -1206,11 +1214,11 @@ void CarModel::UpdateWheels(double wheel_angle, double wheel_rotation, double wh
 
         if (i == 0)
         {
-            pos.z() = rear_wheel_[i].wheel_z_offset + roll_z_offset;
+            pos.z() = rear_wheel_[i].wheel_z_offset - roll_z_offset;
         }
         else
         {
-            pos.z() = rear_wheel_[i].wheel_z_offset - roll_z_offset;
+            pos.z() = rear_wheel_[i].wheel_z_offset + roll_z_offset;
         }
 
         rw_m.setTrans(pos);

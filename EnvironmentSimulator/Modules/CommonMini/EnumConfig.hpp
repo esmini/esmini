@@ -101,6 +101,7 @@ namespace esmini_options
         VIEW_MODE,                       // 90
         HIDE_GHOST,                      // 91
         GHOST_TRAIL_DT,                  // 92
+        VEHICLE_DYNAMICS,                // 93
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -174,6 +175,7 @@ namespace esmini_options
         {"traj_filter", TRAJ_FILTER},
         {"tunnel_transparency", TUNNEL_TRANSPARENCY},
         {"use_signs_in_external_model", USE_SIGNS_IN_EXTERNAL_MODEL},
+        {"vehicle_dynamics", VEHICLE_DYNAMICS},
         {"version", VERSION},
         {"odr", ODR_STR},
         {"density", DENSITY},

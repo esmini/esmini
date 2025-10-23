@@ -103,8 +103,32 @@ namespace scenarioengine
         int  ScenarioFrame(double timestep_s, bool keyframe);
         void ShowObjectSensors(bool mode);
 
-        void DynamicPitchUpdate(Object *obj, double dt, double pitch_limit = 3.0, double a_min = -12.0, double a_max = 10.0);
-        void DynamicRollUpdate(Object *obj, double dt, double roll_limit = 10.0, double a_min = -12.0, double a_max = 10.0);
+        void DynamicPitchUpdate(Object *obj, double dt, double pitch_limit, double a_min = -12.0, double a_max = 10.0);
+        void DynamicRollUpdate(Object *obj, double dt, double roll_limit, double a_min = -12.0, double a_max = 10.0);
+
+        void EnableVehicleDynamics()
+        {
+            vehicle_dynamics_enabled_ = true;
+        }
+
+        void SetPitchLimit(double limit)
+        {
+            pitch_limit_ = limit;
+        }
+        void SetRollLimit(double limit)
+        {
+            roll_limit_ = limit;
+        }
+        void SetTension(double tension)
+        {
+            pitch_spring_.SetTension(tension);
+            roll_spring_.SetTension(tension);
+        }
+        void SetDamping(double damping)
+        {
+            pitch_spring_.SetDamping(damping);
+            roll_spring_.SetDamping(damping);
+        }
 
         /**
         Add an ideal sensor to an object
@@ -274,10 +298,13 @@ namespace scenarioengine
         PlayerState  state_;
         DampedSpring pitch_spring_;
         DampedSpring roll_spring_;
-        double       pitch_     = 0.0;
-        double       pitch_vel_ = 0.0;
-        double       roll_      = 0.0;
-        double       roll_vel_  = 0.0;
+        bool         vehicle_dynamics_enabled_;
+        double       pitch_;
+        double       pitch_vel_;
+        double       pitch_limit_;
+        double       roll_;
+        double       roll_vel_;
+        double       roll_limit_;
     };
 
 }  // namespace scenarioengine

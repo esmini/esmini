@@ -304,12 +304,12 @@ namespace viewer
     class CarModel : public MovingModel
     {
     public:
-        enum ModelType3D
+        struct WheelInfo
         {
-            ESMINI       = 0,
-            OPENMATERIAL = 1
+            std::string name;
+            bool        front_wheel;
+            size_t      index;
         };
-
         struct WheelCompound
         {
             osg::ref_ptr<osg::MatrixTransform> wpos;
@@ -338,21 +338,14 @@ namespace viewer
                  osg::Vec4                trail_color,
                  std::string              name);
         ~CarModel();
-        int         AddWheel(osg::ref_ptr<osg::Node> carNode, const std::string& wheelName, bool front);
-        void        UpdateWheels(double wheel_angle,
-                                 double wheel_rotation,
-                                 double wheelbase   = 0.0,
-                                 double wheeltrack  = 0.0,
-                                 double pitch_angle = 0.0,
-                                 double roll_angle  = 0.0);
-        void        UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
-        ModelType3D GetModelType3D() const
-        {
-            return modeltype_;
-        }
-
-    private:
-        ModelType3D modeltype_;
+        int  AddWheel(osg::ref_ptr<osg::Node> carNode, const WheelInfo& wheelInfo);
+        void UpdateWheels(double wheel_angle,
+                          double wheel_rotation,
+                          double wheelbase   = 0.0,
+                          double wheeltrack  = 0.0,
+                          double pitch_angle = 0.0,
+                          double roll_angle  = 0.0);
+        void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
     };
 
     class VisibilityCallback : public osg::NodeCallback
