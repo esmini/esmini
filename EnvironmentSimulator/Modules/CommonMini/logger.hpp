@@ -104,6 +104,18 @@ namespace esmini::common
         // for all loggers based on the option i.e. log_level
         void SetLoggerVerbosity();
 
+        // function type declaration for callbacks
+        typedef void (*CallbackFuncPtr)(const std::string& msg);
+
+        // register a callback function for receiving log messages
+        void RegisterCallback(CallbackFuncPtr callback);
+
+        // unregister all callbacks
+        void ClearCallbacks();
+
+        // get the number of registered callbacks
+        unsigned int GetNumberOfCallbacks();
+
         template <class... ARGS>
         void
         Log(LogLevel msgLogLevel, const std::string& logStr, char const* function, char const* file, long line, const std::string& log, ARGS... args)
@@ -144,11 +156,12 @@ namespace esmini::common
         // log verbosity level
         LogLevel logLevel_ = LogLevel::info;
         // log file
-        FILE* logFile_               = nullptr;
-        bool  firstConsoleLog_       = true;
-        bool  firstFileLog_          = true;
-        bool  consoleLoggingEnabled_ = true;
-        bool  fileLoggingEnabled_    = true;
+        FILE*                        logFile_               = nullptr;
+        bool                         firstConsoleLog_       = true;
+        bool                         firstFileLog_          = true;
+        bool                         consoleLoggingEnabled_ = true;
+        bool                         fileLoggingEnabled_    = true;
+        std::vector<CallbackFuncPtr> callbacks_;
 
     };  // class TxtLogger
 

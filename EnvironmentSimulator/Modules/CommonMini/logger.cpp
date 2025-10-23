@@ -104,6 +104,24 @@ namespace esmini::common
         }
     }
 
+    void TxtLogger::RegisterCallback(CallbackFuncPtr callback)
+    {
+        if (callback != nullptr && callbacks_.size() < 100)  // limit to 100
+        {
+            callbacks_.push_back(callback);
+        }
+    }
+
+    void TxtLogger::ClearCallbacks()
+    {
+        callbacks_.clear();
+    }
+
+    unsigned int TxtLogger::GetNumberOfCallbacks()
+    {
+        return static_cast<unsigned int>(callbacks_.size());
+    }
+
     std::string TxtLogger::CreateLogFilePath()
     {
         if (SE_Env::Inst().GetOptions().GetOptionSet("disable_log"))
@@ -311,6 +329,16 @@ namespace esmini::common
     {
         try
         {
+            if (callbacks_.size() > 0)
+            {
+                for (auto& callback : callbacks_)
+                {
+                    if (callback != nullptr)
+                    {
+                        callback(msg);
+                    }
+                }
+            }
             if (consoleLoggingEnabled_)
             {
                 if (firstConsoleLog_)

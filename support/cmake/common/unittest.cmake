@@ -20,7 +20,8 @@ macro(
 
     target_include_directories(
         ${TARGET}
-        PRIVATE ${SCENARIO_ENGINE_PATH}/SourceFiles
+        PRIVATE ${ROAD_MANAGER_PATH}
+                ${SCENARIO_ENGINE_PATH}/SourceFiles
                 ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
                 ${ESMINI_LIB_PATH}
                 ${ESMINI_RM_LIB_PATH}
@@ -33,7 +34,7 @@ macro(
     target_include_directories(
         ${TARGET}
         SYSTEM
-        PUBLIC ${ROAD_MANAGER_PATH}
+        PUBLIC ${EXTERNALS_FMT_INCLUDES}
                ${EXTERNALS_GOOGLETEST_INCLUDES}
                ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_OSG_INCLUDES}

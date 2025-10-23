@@ -1,6 +1,8 @@
+
 #include <gtest/gtest.h>
 
 #include "CommonMini.hpp"
+#include "logger.hpp"
 #include "esminiLib.hpp"
 #include "Config.hpp"
 
@@ -329,6 +331,28 @@ TEST(MathFunctions, TestGetDistanceFromPointToLine2DWithAngle)
     EXPECT_NEAR(DistanceFromPointToLine2DWithAngle(-0.1, 0.9, -10.0, 10.0, 3 * M_PI_4), 0.5656, 1e-3);
     EXPECT_NEAR(DistanceFromPointToLine2DWithAngle(-0.1, 0.1, -10.0, 10.0, 3 * M_PI_4), 0.0, 1e-3);
     EXPECT_NEAR(DistanceFromPointToLine2DWithAngle(-0.9, 0.1, -10.0, 10.0, 3 * M_PI_4), -0.5656, 1e-3);
+}
+
+static bool log_msg_received = false;
+
+static void log_callback(const std::string& msg)
+{
+    EXPECT_EQ(msg, "[] [warn] Expected message\n");
+    log_msg_received = true;
+}
+
+TEST(LogFeatures, TestLogCallback)
+{
+    EXPECT_EQ(txtLogger.GetNumberOfCallbacks(), 0);
+
+    txtLogger.RegisterCallback(log_callback);
+    EXPECT_EQ(txtLogger.GetNumberOfCallbacks(), 1);
+
+    LOG_WARN("Expected message");
+    EXPECT_EQ(log_msg_received, true);
+
+    txtLogger.ClearCallbacks();
+    EXPECT_EQ(txtLogger.GetNumberOfCallbacks(), 0);
 }
 
 int main(int argc, char** argv)
