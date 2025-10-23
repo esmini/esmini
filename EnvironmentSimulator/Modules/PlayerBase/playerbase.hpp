@@ -103,8 +103,8 @@ namespace scenarioengine
         int  ScenarioFrame(double timestep_s, bool keyframe);
         void ShowObjectSensors(bool mode);
 
-        void DynamicPitchUpdate(Object *obj, double dt, double pitch_limit, double a_min = -12.0, double a_max = 10.0);
-        void DynamicRollUpdate(Object *obj, double dt, double roll_limit, double a_min = -12.0, double a_max = 10.0);
+        void DynamicPitchUpdate(Object *obj, double dt, double a_min = -12.0, double a_max = 10.0);
+        void DynamicRollUpdate(Object *obj, double dt, double a_min = -12.0, double a_max = 10.0);
 
         void EnableVehicleDynamics()
         {
@@ -113,11 +113,11 @@ namespace scenarioengine
 
         void SetPitchLimit(double limit)
         {
-            pitch_limit_ = limit;
+            pitch_limit_ = osg::DegreesToRadians(limit);
         }
         void SetRollLimit(double limit)
         {
-            roll_limit_ = limit;
+            roll_limit_ = osg::DegreesToRadians(limit);
         }
         void SetTension(double tension)
         {
@@ -296,14 +296,10 @@ namespace scenarioengine
         char       **argv_;
         std::string  titleString;
         PlayerState  state_;
+        bool         vehicle_dynamics_enabled_;
         DampedSpring pitch_spring_;
         DampedSpring roll_spring_;
-        bool         vehicle_dynamics_enabled_;
-        double       pitch_;
-        double       pitch_vel_;
         double       pitch_limit_;
-        double       roll_;
-        double       roll_vel_;
         double       roll_limit_;
     };
 

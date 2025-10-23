@@ -68,15 +68,9 @@ ScenarioPlayer::ScenarioPlayer(int argc, char* argv[])
     viewer_                   = nullptr;
     player_server_            = nullptr;
     vehicle_dynamics_enabled_ = false;
-    pitch_                    = 0.0;
-    pitch_vel_                = 0.0;
-    roll_                     = 0.0;
-    roll_vel_                 = 0.0;
 
 #ifdef _USE_OSG
-    viewerState_  = ViewerState::VIEWER_STATE_NOT_STARTED;
-    pitch_spring_ = DampedSpring(0.0, 0.0, 25.0);
-    roll_spring_  = DampedSpring(0.0, 0.0, 25.0);
+    viewerState_ = ViewerState::VIEWER_STATE_NOT_STARTED;
 #ifdef _USE_OSI
     OSISensorDetection = nullptr;
 #endif  // _USE_OSI
@@ -433,11 +427,11 @@ void ScenarioPlayer::ViewerFrame(bool init)
 
             if (vehicle_dynamics_enabled_)
             {
-                DynamicPitchUpdate(obj, dt, pitch_limit_);
-                DynamicRollUpdate(obj, dt, roll_limit_);
+                DynamicPitchUpdate(obj, dt);
+                DynamicRollUpdate(obj, dt);
             }
 
-            entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP() + pitch_, obj->pos_.GetR() + roll_);
+            entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP() + pitch_spring_.GetValue(), obj->pos_.GetR() + roll_spring_.GetValue());
 
             if (obj->pos_.GetTrajectory() && obj->pos_.GetTrajectory() != entity->trajectory_->activeRMTrajectory_)
             {
@@ -466,7 +460,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
                     viewer::CarModel* car        = static_cast<viewer::CarModel*>(entity);
                     double            wheelbase  = obj->front_axle_.positionX - obj->rear_axle_.positionX;
                     double            wheeltrack = obj->front_axle_.trackWidth;
-                    car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_, wheelbase, wheeltrack, pitch_, roll_);
+                    car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_, wheelbase, wheeltrack, pitch_spring_.GetValue(), roll_spring_.GetValue());
                 }
 
                 viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);
@@ -581,18 +575,17 @@ void ScenarioPlayer::ViewerFrame(bool init)
     }
 }
 
-void ScenarioPlayer::DynamicPitchUpdate(Object* obj, double dt, double pitch_limit, double a_min, double a_max)
+void ScenarioPlayer::DynamicPitchUpdate(Object* obj, double dt, double a_min, double a_max)
 {
     // Rolling window to average acceleration for pitch calculation
-    obj->accelerations_.erase(obj->accelerations_.begin());
-    obj->accelerations_.push_back(obj->pos_.GetAccLong());
-    auto acc = std::accumulate(obj->accelerations_.begin(), obj->accelerations_.end(), 0.0) / static_cast<double>(obj->accelerations_.size());
-
-    double pitch_max = osg::DegreesToRadians(pitch_limit);
+    obj->long_accelerations_.erase(obj->long_accelerations_.begin());
+    obj->long_accelerations_.push_back(obj->pos_.GetAccLong());
+    auto acc =
+        std::accumulate(obj->long_accelerations_.begin(), obj->long_accelerations_.end(), 0.0) / static_cast<double>(obj->long_accelerations_.size());
     double a_clamped = CLAMP(acc, a_min, a_max);
 
     // Linear map
-    double pitch_target = -(a_clamped / a_max) * pitch_max;
+    double pitch_target = -(a_clamped / a_max) * pitch_limit_;
     if (NEAR_NUMBERS(acc, 0.0) || obj->pos_.GetVelLong() < 1.0)
     {
         pitch_target = 0.0;
@@ -600,23 +593,19 @@ void ScenarioPlayer::DynamicPitchUpdate(Object* obj, double dt, double pitch_lim
 
     pitch_spring_.SetTargetValue(pitch_target);
     pitch_spring_.Update(dt);
-    pitch_     = pitch_spring_.GetValue();
-    pitch_vel_ = pitch_spring_.GetV();
 }
 
-void ScenarioPlayer::DynamicRollUpdate(Object* obj, double dt, double roll_limit, double a_min, double a_max)
+void ScenarioPlayer::DynamicRollUpdate(Object* obj, double dt, double a_min, double a_max)
 {
     // Rolling window to average acceleration for roll calculation
     obj->lat_accelerations_.erase(obj->lat_accelerations_.begin());
     obj->lat_accelerations_.push_back(obj->pos_.GetAccLat());
     auto acc =
         std::accumulate(obj->lat_accelerations_.begin(), obj->lat_accelerations_.end(), 0.0) / static_cast<double>(obj->lat_accelerations_.size());
-
-    double roll_max  = osg::DegreesToRadians(roll_limit);
     double a_clamped = CLAMP(acc, a_min, a_max);
 
     // Linear map
-    double roll_target = a_clamped / a_max * roll_max;
+    double roll_target = a_clamped / a_max * roll_limit_;
     if (NEAR_NUMBERS(acc, 0.0) || obj->pos_.GetVelLong() < 1.0)
     {
         roll_target = 0.0;
@@ -624,8 +613,6 @@ void ScenarioPlayer::DynamicRollUpdate(Object* obj, double dt, double roll_limit
 
     roll_spring_.SetTargetValue(roll_target);
     roll_spring_.Update(dt);
-    roll_     = roll_spring_.GetValue();
-    roll_vel_ = roll_spring_.GetV();
 }
 
 int ScenarioPlayer::SaveImagesToRAM(bool state)
