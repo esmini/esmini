@@ -413,8 +413,9 @@ void ScenarioPlayer::ViewerFrame(bool init)
         // Visualize entities
         for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
         {
-            viewer::EntityModel* entity = viewer_->entities_[i];
-            Object*              obj    = scenarioEngine->entities_.object_[i];
+            viewer::EntityModel* entity    = viewer_->entities_[i];
+            Object*              obj       = scenarioEngine->entities_.object_[i];
+            double               wheelbase = obj->front_axle_.positionX - obj->rear_axle_.positionX;
 
             entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
 
@@ -427,6 +428,7 @@ void ScenarioPlayer::ViewerFrame(bool init)
 
             if (vehicle_dynamics_enabled_)
             {
+                SetAllowedPitch(obj, wheelbase);
                 DynamicPitchUpdate(obj, dt);
                 DynamicRollUpdate(obj, dt);
             }
@@ -458,7 +460,6 @@ void ScenarioPlayer::ViewerFrame(bool init)
                 if (entity->IsVehicle())
                 {
                     viewer::CarModel* car        = static_cast<viewer::CarModel*>(entity);
-                    double            wheelbase  = obj->front_axle_.positionX - obj->rear_axle_.positionX;
                     double            wheeltrack = obj->front_axle_.trackWidth;
                     car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_, wheelbase, wheeltrack, pitch_spring_.GetValue(), roll_spring_.GetValue());
                 }
@@ -573,6 +574,13 @@ void ScenarioPlayer::ViewerFrame(bool init)
     {
         viewer_->Frame(scenarioEngine->getSimulationTime());
     }
+}
+
+void ScenarioPlayer::SetAllowedPitch(Object* obj, const double wheelbase)
+{
+    // Cap pitching to 35% (tuned for esmini models) of front wheel diameter to avoid hitting the ground
+    double max_pitch_angle = atan((obj->front_axle_.wheelDiameter * 0.35) / wheelbase);
+    pitch_limit_           = MIN(pitch_limit_, max_pitch_angle);
 }
 
 void ScenarioPlayer::DynamicPitchUpdate(Object* obj, double dt, double a_min, double a_max)

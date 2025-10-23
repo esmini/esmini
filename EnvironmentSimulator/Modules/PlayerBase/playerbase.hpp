@@ -111,6 +111,8 @@ namespace scenarioengine
             vehicle_dynamics_enabled_ = true;
         }
 
+        void SetAllowedPitch(Object *obj, const double wheelbase);
+
         void SetPitchLimit(double limit)
         {
             pitch_limit_ = osg::DegreesToRadians(limit);
