@@ -1,5 +1,20 @@
 ## esmini release notes
 
+### 2025-10-24 Version 2.53.1
+
+New features:
+- Add option `vehicle_dynamics` for simple cosmetic vehicle dynamics
+  - damped spring model based on lat/long accelerations
+  - only affecting visual model
+  - video clip: https://youtu.be/QqjhY-euhrY
+- Add logger callback and buffer mechanisms
+  - see these [test cases](https://github.com/esmini/esmini/blob/8ddfa99d352d94c925fd688830b907be72dbdee2/EnvironmentSimulator/Unittest/CommonMini_test.cpp#L336-L397) for example usage
+
+Improvements and fixes:
+- Fix environment model OSI path ([issue #738](https://github.com/esmini/esmini/issues/738))
+- Add `view_mode` option for finer entity visualization control
+- Fix textures not found issue introduced in v2.53.0
+
 ### 2025-10-22 Version 2.53.0
 
 New features:
