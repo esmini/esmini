@@ -336,7 +336,7 @@ void ScenarioPlayer::ScenarioPostFrame()
 }
 
 #ifdef _USE_OSG
-void ScenarioPlayer::ViewerFrame(bool init)
+void ScenarioPlayer::ViewerFrame()
 {
     if (viewer_ == nullptr)
     {
@@ -404,147 +404,157 @@ void ScenarioPlayer::ViewerFrame(bool init)
         viewer_->RemoveCar(static_cast<int>(viewer_->entities_.size() - 1));
     }
 
-    if (!init)
+    // Visualize entities
+    for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
     {
-        // Visualize entities
-        for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
+        viewer::EntityModel* entity = viewer_->entities_[i];
+        Object*              obj    = scenarioEngine->entities_.object_[i];
+
+        entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+
+        double dt = GetFixedTimestep();
+        if (dt < 0.0)
         {
-            viewer::EntityModel* entity    = viewer_->entities_[i];
-            Object*              obj       = scenarioEngine->entities_.object_[i];
-            double               wheelbase = obj->front_axle_.positionX - obj->rear_axle_.positionX;
-
-            entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-
-            double dt = GetFixedTimestep();
-            if (dt < 0.0)
-            {
-                static __int64 time_stamp = 0;
-                dt                        = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
-            }
-
-            if (vehicle_dynamics_enabled_)
-            {
-                SetAllowedPitch(obj, wheelbase);
-                DynamicPitchUpdate(obj, dt);
-                DynamicRollUpdate(obj, dt);
-            }
-
-            entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP() + pitch_spring_.GetValue(), obj->pos_.GetR() + roll_spring_.GetValue());
-
-            if (obj->pos_.GetTrajectory() && obj->pos_.GetTrajectory() != entity->trajectory_->activeRMTrajectory_)
-            {
-                entity->trajectory_->SetActiveRMTrajectory(obj->pos_.GetTrajectory());
-            }
-            else if (entity->trajectory_->activeRMTrajectory_ && !obj->pos_.GetTrajectory())
-            {
-                // Trajectory has been deactivated on the entity, disable visualization
-                entity->trajectory_->Disable();
-            }
-
-            if (obj->CheckDirtyBits(Object::DirtyBit::ROUTE))
-            {
-                entity->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
-                obj->ClearDirtyBits(Object::DirtyBit::ROUTE);
-            }
-            else if (entity->routewaypoints_->group_all_wp_->getNumChildren() && obj->pos_.GetRoute() == nullptr)
-            {
-                entity->routewaypoints_->SetWayPoints(nullptr);
-            }
-
-            if (entity->IsMoving())
-            {
-                if (entity->IsVehicle())
-                {
-                    viewer::CarModel* car        = static_cast<viewer::CarModel*>(entity);
-                    double            wheeltrack = obj->front_axle_.trackWidth;
-                    car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_, wheelbase, wheeltrack, pitch_spring_.GetValue(), roll_spring_.GetValue());
-                }
-
-                viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);
-
-                if (mov->steering_sensor_ && mov->steering_sensor_->IsVisible())
-                {
-                    viewer_->SensorSetPivotPos(mov->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-                    viewer_->SensorSetTargetPos(mov->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
-                    viewer_->UpdateSensor(mov->steering_sensor_);
-                }
-                if (mov->trail_sensor_ && mov->steering_sensor_->IsVisible())
-                {
-                    viewer_->SensorSetPivotPos(mov->trail_sensor_, obj->trail_closest_pos_.x, obj->trail_closest_pos_.y, obj->trail_closest_pos_.z);
-                    viewer_->SensorSetTargetPos(mov->trail_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-                    viewer_->UpdateSensor(mov->trail_sensor_);
-                }
-
-                if (odr_manager->GetNumOfRoads() > 0 && mov->road_sensor_)
-                {
-                    mov->ShowRouteSensor(obj->pos_.GetRoute() ? true : false);
-                    viewer_->UpdateRoadSensors(mov->road_sensor_, mov->route_sensor_, mov->lane_sensor_, &obj->pos_);
-                }
-            }
-
-            if (entity->trail_->pline_vertex_data_->size() > obj->trail_.GetNumberOfVertices())
-            {
-                // Reset the trail, probably there has been a ghost restart
-                entity->trail_->Reset();
-                for (unsigned int j = 0; j < obj->trail_.GetNumberOfVertices(); j++)
-                {
-                    entity->trail_->AddPoint(obj->trail_.vertex_[j].x,
-                                             obj->trail_.vertex_[j].y,
-                                             obj->trail_.vertex_[j].z + (obj->GetId() + 1) * TRAIL_Z_OFFSET);
-                }
-            }
-
-            if (obj->trail_.GetNumberOfVertices() > entity->trail_->pline_vertex_data_->size())
-            {
-                entity->trail_->AddPoint(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ() + (obj->GetId() + 1) * TRAIL_Z_OFFSET);
-            }
-
-            // on screen text following each entity
-            snprintf(entity->on_screen_info_.string_,
-                     sizeof(entity->on_screen_info_.string_),
-                     " %s (%d) %.2fm\n %.2fkm/h road %d lane %d/%.2f s %.2f\n x %.2f y %.2f hdg %.2f\n osi x %.2f y %.2f \n|",
-                     obj->name_.c_str(),
-                     obj->GetId(),
-                     obj->odometer_,
-                     3.6 * obj->speed_,
-                     obj->pos_.GetTrackId(),
-                     obj->pos_.GetLaneId(),
-                     fabs(obj->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj->pos_.GetOffset(),
-                     obj->pos_.GetS(),
-                     obj->pos_.GetX(),
-                     obj->pos_.GetY(),
-                     obj->pos_.GetH(),
-                     obj->pos_.GetX() + static_cast<double>(obj->boundingbox_.center_.x_) * cos(obj->pos_.GetH()),
-                     obj->pos_.GetY() + static_cast<double>(obj->boundingbox_.center_.x_) * sin(obj->pos_.GetH()));
-            entity->on_screen_info_.osg_text_->setText(entity->on_screen_info_.string_);
+            static __int64 time_stamp = 0;
+            dt                        = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
         }
 
-        for (size_t i = 0; i < sensorFrustum.size(); i++)
+        if (vehicle_dynamics_enabled_)
         {
-            sensorFrustum[i]->Update();
+            DynamicPitchUpdate(obj, dt);
+            DynamicRollUpdate(obj, dt);
+        }
+
+        entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP(), obj->pos_.GetR());
+
+        if (obj->pos_.GetTrajectory() && obj->pos_.GetTrajectory() != entity->trajectory_->activeRMTrajectory_)
+        {
+            entity->trajectory_->SetActiveRMTrajectory(obj->pos_.GetTrajectory());
+        }
+        else if (entity->trajectory_->activeRMTrajectory_ && !obj->pos_.GetTrajectory())
+        {
+            // Trajectory has been deactivated on the entity, disable visualization
+            entity->trajectory_->Disable();
+        }
+
+        if (obj->CheckDirtyBits(Object::DirtyBit::ROUTE))
+        {
+            entity->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
+            obj->ClearDirtyBits(Object::DirtyBit::ROUTE);
+        }
+        else if (entity->routewaypoints_->group_all_wp_->getNumChildren() && obj->pos_.GetRoute() == nullptr)
+        {
+            entity->routewaypoints_->SetWayPoints(nullptr);
+        }
+
+        if (entity->IsMoving())
+        {
+            if (entity->IsVehicle())
+            {
+                viewer::CarModel* car = static_cast<viewer::CarModel*>(entity);
+
+                if (vehicle_dynamics_enabled_ && static_cast<Vehicle*>(obj)->TowVehicle() == nullptr)  // skip trailers
+                {
+                    double pitch_capped = ABS_LIMIT(pitch_spring_.GetValue(), static_cast<Vehicle*>(obj)->GetAllowedPitch());
+                    car->UpdateWheels(obj->wheel_angle_,
+                                      obj->wheel_rot_,
+                                      obj->front_axle_.positionX - obj->rear_axle_.positionX,
+                                      obj->front_axle_.trackWidth,
+                                      pitch_capped,
+                                      roll_spring_.GetValue());
+
+                    car->UpdatePitchAndRoll(pitch_capped, roll_spring_.GetValue());
+                }
+                else
+                {
+                    car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
+                }
+            }
+
+            viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);
+
+            if (mov->steering_sensor_ && mov->steering_sensor_->IsVisible())
+            {
+                viewer_->SensorSetPivotPos(mov->steering_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+                viewer_->SensorSetTargetPos(mov->steering_sensor_, obj->sensor_pos_[0], obj->sensor_pos_[1], obj->sensor_pos_[2]);
+                viewer_->UpdateSensor(mov->steering_sensor_);
+            }
+            if (mov->trail_sensor_ && mov->steering_sensor_->IsVisible())
+            {
+                viewer_->SensorSetPivotPos(mov->trail_sensor_, obj->trail_closest_pos_.x, obj->trail_closest_pos_.y, obj->trail_closest_pos_.z);
+                viewer_->SensorSetTargetPos(mov->trail_sensor_, obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+                viewer_->UpdateSensor(mov->trail_sensor_);
+            }
+
+            if (odr_manager->GetNumOfRoads() > 0 && mov->road_sensor_)
+            {
+                mov->ShowRouteSensor(obj->pos_.GetRoute() ? true : false);
+                viewer_->UpdateRoadSensors(mov->road_sensor_, mov->route_sensor_, mov->lane_sensor_, &obj->pos_);
+            }
+        }
+
+        if (entity->trail_->pline_vertex_data_->size() > obj->trail_.GetNumberOfVertices())
+        {
+            // Reset the trail, probably there has been a ghost restart
+            entity->trail_->Reset();
+            for (unsigned int j = 0; j < obj->trail_.GetNumberOfVertices(); j++)
+            {
+                entity->trail_->AddPoint(obj->trail_.vertex_[j].x,
+                                         obj->trail_.vertex_[j].y,
+                                         obj->trail_.vertex_[j].z + (obj->GetId() + 1) * TRAIL_Z_OFFSET);
+            }
+        }
+
+        if (obj->trail_.GetNumberOfVertices() > entity->trail_->pline_vertex_data_->size())
+        {
+            entity->trail_->AddPoint(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ() + (obj->GetId() + 1) * TRAIL_Z_OFFSET);
+        }
+
+        // on screen text following each entity
+        snprintf(entity->on_screen_info_.string_,
+                 sizeof(entity->on_screen_info_.string_),
+                 " %s (%d) %.2fm\n %.2fkm/h road %d lane %d/%.2f s %.2f\n x %.2f y %.2f hdg %.2f\n osi x %.2f y %.2f \n|",
+                 obj->name_.c_str(),
+                 obj->GetId(),
+                 obj->odometer_,
+                 3.6 * obj->speed_,
+                 obj->pos_.GetTrackId(),
+                 obj->pos_.GetLaneId(),
+                 fabs(obj->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj->pos_.GetOffset(),
+                 obj->pos_.GetS(),
+                 obj->pos_.GetX(),
+                 obj->pos_.GetY(),
+                 obj->pos_.GetH(),
+                 obj->pos_.GetX() + static_cast<double>(obj->boundingbox_.center_.x_) * cos(obj->pos_.GetH()),
+                 obj->pos_.GetY() + static_cast<double>(obj->boundingbox_.center_.x_) * sin(obj->pos_.GetH()));
+        entity->on_screen_info_.osg_text_->setText(entity->on_screen_info_.string_);
+
+        for (size_t j = 0; j < sensorFrustum.size(); j++)
+        {
+            sensorFrustum[j]->Update();
         }
 
         // Update info text
         static char str_buf[128];
         if (viewer_->currentCarInFocus_ >= 0 && static_cast<unsigned int>(viewer_->currentCarInFocus_) < viewer_->entities_.size())
         {
-            Object* obj = scenarioEngine->entities_.object_[static_cast<unsigned int>(viewer_->currentCarInFocus_)];
+            Object* obj_in_focus = scenarioEngine->entities_.object_[static_cast<unsigned int>(viewer_->currentCarInFocus_)];
             snprintf(str_buf,
                      sizeof(str_buf),
                      "%.2fs entity[%d]: %s (%d) %.2fkm/h %.2fm (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)",
                      scenarioEngine->getSimulationTime(),
                      viewer_->currentCarInFocus_,
-                     obj->name_.c_str(),
-                     obj->GetId(),
-                     3.6 * obj->speed_,
-                     obj->odometer_,
-                     obj->pos_.GetTrackId(),
-                     obj->pos_.GetLaneId(),
-                     fabs(obj->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj->pos_.GetOffset(),
-                     obj->pos_.GetS(),
-                     obj->pos_.GetX(),
-                     obj->pos_.GetY(),
-                     obj->pos_.GetH());
+                     obj_in_focus->name_.c_str(),
+                     obj_in_focus->GetId(),
+                     3.6 * obj_in_focus->speed_,
+                     obj_in_focus->odometer_,
+                     obj_in_focus->pos_.GetTrackId(),
+                     obj_in_focus->pos_.GetLaneId(),
+                     fabs(obj_in_focus->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj_in_focus->pos_.GetOffset(),
+                     obj_in_focus->pos_.GetS(),
+                     obj_in_focus->pos_.GetX(),
+                     obj_in_focus->pos_.GetY(),
+                     obj_in_focus->pos_.GetH());
         }
         else
         {
@@ -566,31 +576,16 @@ void ScenarioPlayer::ViewerFrame(bool init)
 
     mutex.Unlock();
 
-    if (!init)
-    {
-        viewer_->Frame(scenarioEngine->getSimulationTime());
-    }
-}
-
-void ScenarioPlayer::SetAllowedPitch(Object* obj, const double wheelbase)
-{
-    // Cap pitching to 35% (tuned for esmini models) of front wheel diameter to avoid hitting the ground
-    double max_pitch_angle = atan((obj->front_axle_.wheelDiameter * 0.35) / wheelbase);
-    pitch_limit_           = MIN(pitch_limit_, max_pitch_angle);
+    viewer_->Frame(scenarioEngine->getSimulationTime());
 }
 
 void ScenarioPlayer::DynamicPitchUpdate(Object* obj, double dt, double a_min, double a_max)
 {
-    // Rolling window to average acceleration for pitch calculation
-    obj->long_accelerations_.erase(obj->long_accelerations_.begin());
-    obj->long_accelerations_.push_back(obj->pos_.GetAccLong());
-    auto acc =
-        std::accumulate(obj->long_accelerations_.begin(), obj->long_accelerations_.end(), 0.0) / static_cast<double>(obj->long_accelerations_.size());
-    double a_clamped = CLAMP(acc, a_min, a_max);
+    double a_clamped = CLAMP(obj->pos_.GetAccLong(), a_min, a_max);
 
     // Linear map
     double pitch_target = -(a_clamped / a_max) * pitch_limit_;
-    if (NEAR_NUMBERS(acc, 0.0) || obj->pos_.GetVelLong() < 1.0)
+    if (NEAR_NUMBERS(obj->pos_.GetAccLong(), 0.0) || obj->pos_.GetVelLong() < 1.0)
     {
         pitch_target = 0.0;
     }
@@ -601,16 +596,11 @@ void ScenarioPlayer::DynamicPitchUpdate(Object* obj, double dt, double a_min, do
 
 void ScenarioPlayer::DynamicRollUpdate(Object* obj, double dt, double a_min, double a_max)
 {
-    // Rolling window to average acceleration for roll calculation
-    obj->lat_accelerations_.erase(obj->lat_accelerations_.begin());
-    obj->lat_accelerations_.push_back(obj->pos_.GetAccLat());
-    auto acc =
-        std::accumulate(obj->lat_accelerations_.begin(), obj->lat_accelerations_.end(), 0.0) / static_cast<double>(obj->lat_accelerations_.size());
-    double a_clamped = CLAMP(acc, a_min, a_max);
+    double a_clamped = CLAMP(obj->pos_.GetAccLat(), a_min, a_max);
 
     // Linear map
     double roll_target = a_clamped / a_max * roll_limit_;
-    if (NEAR_NUMBERS(acc, 0.0) || obj->pos_.GetVelLong() < 1.0)
+    if (NEAR_NUMBERS(obj->pos_.GetAccLat(), 0.0) || obj->pos_.GetVelLong() < 1.0)
     {
         roll_target = 0.0;
     }
@@ -1068,6 +1058,10 @@ int ScenarioPlayer::InitViewer()
         if (viewer_->entities_.back()->IsVehicle())
         {
             InitVehicleModel(obj, static_cast<viewer::CarModel*>(viewer_->entities_.back()));
+            if (vehicle_dynamics_enabled_)
+            {
+                static_cast<Vehicle*>(obj)->SetAllowedPitch();
+            }
         }
     }
 
@@ -1451,7 +1445,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("traj_filter", "Simple filter merging close points. Set 0.0 to disable", "radius", "0.1", true);
     opt.AddOption("tunnel_transparency", "Set level of transparency for generated tunnels [0:1]", "transparency", "0.0");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
-    opt.AddOption("vehicle_dynamics", "Visualize simple vehicle dynamics", "<pitch,roll,tension,damping>", "2,5,25,10", false, false);
+    opt.AddOption("vehicle_dynamics", "Visualize simple vehicle dynamics", "<pitch,roll,tension>[,damping]", "2,5,25", false, false);
     opt.AddOption("version", "Show version and quit");
 
     if (int ret = OnRequestShowHelpOrVersion(argc_, argv_, opt); ret > 0)
@@ -1848,16 +1842,24 @@ int ScenarioPlayer::Init()
         while ((arg_str = opt.GetOptionValue("vehicle_dynamics", counter)) != "")
         {
             const auto splitted = SplitString(arg_str, ',');
-            if (splitted.size() == 4)
+            if (splitted.size() > 2 && splitted.size() < 5)
             {
                 SetPitchLimit(strtod(splitted[0]));
                 SetRollLimit(strtod(splitted[1]));
                 SetTension(strtod(splitted[2]));
-                SetDamping(strtod(splitted[3]));
+                if (splitted.size() > 3)
+                {
+                    SetDamping(strtod(splitted[3]));
+                }
+                else
+                {
+                    LOG_INFO("vehicle_dynamics: Applying critical, optimal damping");
+                    SetOptimalDamping();
+                }
             }
             else
             {
-                LOG_ERROR("vehicle_dynamics maximum 4 values <pitch,roll,tension,damping>. Got {} values.", splitted.size());
+                LOG_ERROR_AND_QUIT("vehicle_dynamics needs 0, 3 or 4 values <pitch,roll,tension>[,damping]. Got {} values.", splitted.size());
             }
 
             counter++;

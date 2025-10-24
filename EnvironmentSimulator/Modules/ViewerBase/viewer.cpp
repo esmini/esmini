@@ -1232,6 +1232,16 @@ void CarModel::UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta
     UpdateWheels(wheel_angle, wheel_rot_ + wheel_rotation_delta);
 }
 
+void CarModel::UpdatePitchAndRoll(double pitch, double roll)
+{
+    txVehicleDynamics_->setAttitude(osg::Quat(roll,
+                                              osg::Vec3(osg::X_AXIS),  // Roll
+                                              pitch,
+                                              osg::Vec3(osg::Y_AXIS),  // Pitch
+                                              0,
+                                              osg::Vec3(osg::Z_AXIS)));  // Heading
+}
+
 void MovingModel::ShowRouteSensor(bool mode)
 {
     if (mode == true)
@@ -2088,14 +2098,16 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
                                        EntityScaleMode         scaleMode)
 {
     // Load 3D model
-    osg::ref_ptr<osg::Group> group      = new osg::Group;
-    osg::ref_ptr<osg::Group> modelgroup = nullptr;
-    osg::ref_ptr<osg::Group> bbGroup    = nullptr;
-    osg::BoundingBox         modelBB;
-    std::vector<std::string> file_name_candidates;
-    double                   carStdDim[]  = {4.5, 1.8, 1.5};
-    double                   carStdOrig[] = {1.5, 0.0, 0.75};
-    std::string              filepath;
+    osg::ref_ptr<osg::Group>                     group             = new osg::Group;
+    osg::ref_ptr<osg::Group>                     modelgroup        = nullptr;
+    osg::ref_ptr<osg::Group>                     bbGroup           = nullptr;
+    osg::ref_ptr<osg::Node>                      shadow_node       = nullptr;
+    osg::ref_ptr<osg::PositionAttitudeTransform> txVehicleDynamics = new osg::PositionAttitudeTransform;
+    osg::BoundingBox                             modelBB;
+    std::vector<std::string>                     file_name_candidates;
+    double                                       carStdDim[]  = {4.5, 1.8, 1.5};
+    double                                       carStdOrig[] = {1.5, 0.0, 0.75};
+    std::string                                  filepath;
 
     // Check if model already loaded
     for (size_t i = 0; i < entities_.size(); i++)
@@ -2112,6 +2124,12 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     if (modelgroup == nullptr && !modelFilepath.empty())
     {
         modelgroup = LoadEntityModel(modelFilepath.c_str(), modelBB);
+        if (modelgroup != nullptr)
+        {
+            txVehicleDynamics->addChild(modelgroup->getChild(0));
+            modelgroup->addChild(txVehicleDynamics);
+            modelgroup->removeChild(0, 1);
+        }
     }
 
     // Make sure we have a 3D model
@@ -2337,6 +2355,8 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
     emodel->modelBB_ = modelBB;
     emodel->model_   = modelgroup;
     emodel->bbGroup_ = bbGroup;
+
+    emodel->txVehicleDynamics_ = txVehicleDynamics;
 
     if (emodel->IsMoving())
     {

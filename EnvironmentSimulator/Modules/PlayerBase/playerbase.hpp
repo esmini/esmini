@@ -111,15 +111,13 @@ namespace scenarioengine
             vehicle_dynamics_enabled_ = true;
         }
 
-        void SetAllowedPitch(Object *obj, const double wheelbase);
-
         void SetPitchLimit(double limit)
         {
-            pitch_limit_ = osg::DegreesToRadians(limit);
+            pitch_limit_ = limit * M_PI / 180.0;  // degrees to radians
         }
         void SetRollLimit(double limit)
         {
-            roll_limit_ = osg::DegreesToRadians(limit);
+            roll_limit_ = limit * M_PI / 180.0;  // degrees to radians
         }
         void SetTension(double tension)
         {
@@ -130,6 +128,11 @@ namespace scenarioengine
         {
             pitch_spring_.SetDamping(damping);
             roll_spring_.SetDamping(damping);
+        }
+        void SetOptimalDamping()
+        {
+            pitch_spring_.SetOptimalDamping();
+            roll_spring_.SetOptimalDamping();
         }
 
         /**
@@ -260,7 +263,7 @@ namespace scenarioengine
         ViewerState viewerState_;
         int         InitViewer();
         void        CloseViewer();
-        void        ViewerFrame(bool init = false);
+        void        ViewerFrame();
 
         int SaveImagesToRAM(bool state);
         int SaveImagesToFile(int nrOfFrames);

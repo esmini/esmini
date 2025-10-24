@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+   <FileHeader description="basic maneuvers for vehicle dynamics demo" author="esmini team" revMajor="1" revMinor="3" date="2025-10-24T15:00:00"/>
+   <ParameterDeclarations/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/curve_r100.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="0" laneId="-1" s="101"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="CutInAndBrakeStory">
+         <Act name="CutInAndBrakeAct">
+            <ManeuverGroup maximumExecutionCount="2" name="MG">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="Maneuver">
+                  <Event name="Event" priority="overwrite">
+                     <Action name="Action">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="5.0" dynamicsDimension="rate"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${100/3.6}"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Trigger1" delay="0" conditionEdge="none">
+                             <ByValueCondition>
+                                <SimulationTimeCondition value="1" rule="greaterThan"/>
+                             </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="LaneChangeEvent" priority="overwrite">
+                     <Action name="LaneChangeAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="sinusoidal" value="1.5" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <RelativeTargetLane entityRef="Ego" value="1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="LaneChangeCondition" delay="0" conditionEdge="rising">
+                             <ByValueCondition>
+                                <SimulationTimeCondition value="8" rule="greaterThan"/>
+                             </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="Event2" priority="overwrite">
+                     <Action name="Action2">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="8.0" dynamicsDimension="rate"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="${0/3.6}"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="Trigger2" delay="0" conditionEdge="none">
+                             <ByValueCondition>
+                                <SimulationTimeCondition value="11" rule="greaterThan"/>
+                             </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition conditionEdge="none" delay="0" name="stoptrigger">
+               <ByValueCondition>
+                  <SimulationTimeCondition rule="greaterOrEqual" value="17"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

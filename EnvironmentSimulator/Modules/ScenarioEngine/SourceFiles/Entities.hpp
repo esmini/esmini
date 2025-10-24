@@ -203,10 +203,6 @@ namespace scenarioengine
         double stand_still_timestamp_;
         bool   reset_;  // indicate discreet movement, teleporting, no odometer update
 
-        // Used for rolling window average calculations
-        std::vector<double> long_accelerations_ = std::vector<double>(5, 0.0);
-        std::vector<double> lat_accelerations_  = std::vector<double>(5, 0.0);
-
         std::vector<Controller*>                    controllers_;  // reference to all assigned controller objects
         double                                      headstart_time_;
         Object*                                     ghost_;
@@ -814,6 +810,12 @@ namespace scenarioengine
             return wheel_data;
         }
 
+        void   SetAllowedPitch();
+        double GetAllowedPitch() const
+        {
+            return max_pitch_angle_;
+        }
+
         int                             ConnectTrailer(Vehicle* trailer);
         int                             DisconnectTrailer();
         void                            AlignTrailers();
@@ -821,7 +823,7 @@ namespace scenarioengine
         std::shared_ptr<TrailerCoupler> trailer_coupler_;  // mounting point to any tow vehicle
         std::shared_ptr<TrailerHitch>   trailer_hitch_;    // mounting point to any tow vehicle
         std::vector<WheelData>          wheel_data;
-        std::string                     catalog_dir_;  // if vehicle is from a catalog, store the catalog dir here
+        double                          max_pitch_angle_;
     };
 
     class Pedestrian : public Object

@@ -1699,6 +1699,12 @@ Vehicle::~Vehicle()
 {
 }
 
+void Vehicle::SetAllowedPitch()
+{
+    // Cap pitching to 35% (tuned for esmini models) of front wheel diameter to avoid hitting the ground
+    max_pitch_angle_ = atan((front_axle_.wheelDiameter * 0.25) / (front_axle_.positionX - rear_axle_.positionX));
+}
+
 int Vehicle::ConnectTrailer(Vehicle* trailer)
 {
     if (trailer && trailer->trailer_coupler_)

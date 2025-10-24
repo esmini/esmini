@@ -220,6 +220,7 @@ namespace viewer
         osg::ref_ptr<osg::Group>                     model_;
         osg::ref_ptr<osg::LOD>                       lod_;
         osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
+        osg::ref_ptr<osg::PositionAttitudeTransform> txVehicleDynamics_;
         osg::PositionAttitudeTransform*              txShadow_;
         osg::Quat                                    quat_;
         osg::ref_ptr<osg::Group>                     parent_;
@@ -344,6 +345,7 @@ namespace viewer
                           double pitch_angle = 0.0,
                           double roll_angle  = 0.0);
         void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
+        void UpdatePitchAndRoll(double pitch, double roll);
     };
 
     class VisibilityCallback : public osg::NodeCallback
