@@ -666,6 +666,17 @@ int ScenarioEngine::parseScenario()
 
     odrManager = roadmanager::Position::GetOpenDrive();
 
+    // locate scene graph file
+    if (!roadNetwork.sceneGraphFile.filepath.empty())
+    {
+        bool found = false;
+        roadNetwork.sceneGraphFile.filepath =
+            LocateFile(roadNetwork.sceneGraphFile.filepath,
+                       {DirNameOf(scenarioReader->getScenarioFilename()), DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/models"},
+                       "scene graph file",
+                       found);
+    }
+
     scenarioReader->parseCatalogs();
     scenarioReader->parseEntities();
 

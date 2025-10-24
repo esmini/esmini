@@ -1595,11 +1595,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     if (modelFilename != 0 && strcmp(modelFilename, ""))
     {
         bool        found     = false;
-        std::string file_path = LocateFile(modelFilename,
-                                           {CombineDirectoryPathAndFilepath(DirNameOf(odrManager->GetOpenDriveFilename()), "../models"),
-                                            SE_Env::Inst().GetEXEFilePath() + "/../resources/models"},
-                                           "Environment 3D model",
-                                           found);
+        std::string file_path = LocateFile(modelFilename, {}, "Environment 3D model", found);
         if (found)
         {
             if (AddEnvironment(file_path.c_str()) == 0)
@@ -1610,10 +1606,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
             {
                 LOG_ERROR("Environment 3D model file {} found, but failed to load", file_path);
             }
-        }
-        else
-        {
-            LOG_WARN("Environment 3D model file {} not found", modelFilename);
         }
     }
 
