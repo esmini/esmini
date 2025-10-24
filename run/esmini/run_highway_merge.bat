@@ -1,1 +1,1 @@
-"../../bin/esmini" --window 60 60 800 400 --osc ../../resources/xosc/highway_merge.xosc --bounding_boxes
+"../../bin/esmini" --window 60 60 800 400 --osc ../../resources/xosc/highway_merge.xosc --view_mode boundingbox

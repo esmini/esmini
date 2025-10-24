@@ -987,7 +987,22 @@ int ScenarioPlayer::InitViewer()
         }
     }
 
-    if (opt.GetOptionSet("bounding_boxes"))
+    if (opt.GetOptionSet("view_mode"))
+    {
+        // Set visual representation of entities
+        int         view_mode        = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL;
+        std::string view_mode_string = opt.GetOptionValue("view_mode");
+        if (view_mode_string == "boundingbox")
+        {
+            view_mode = roadgeom::NodeMask::NODE_MASK_ENTITY_BB;
+        }
+        else if (view_mode_string == "both")
+        {
+            view_mode = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL | roadgeom::NodeMask::NODE_MASK_ENTITY_BB;
+        }
+        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL | roadgeom::NodeMask::NODE_MASK_ENTITY_BB, view_mode);
+    }
+    else if (opt.GetOptionSet("bounding_boxes"))
     {
         viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL);
         viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ENTITY_BB);
@@ -1447,6 +1462,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("vehicle_dynamics", "Visualize simple vehicle dynamics", "<pitch,roll,tension>[,damping]", "2,5,25", false, false);
     opt.AddOption("version", "Show version and quit");
+    opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\" toggle key ','", "view_mode");
 
     if (int ret = OnRequestShowHelpOrVersion(argc_, argv_, opt); ret > 0)
     {
