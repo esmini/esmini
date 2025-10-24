@@ -339,6 +339,14 @@ namespace esmini::common
                     }
                 }
             }
+            if (buffer_capacity_ > 0)
+            {
+                buffer_.push_back(msg);
+                if (buffer_.size() > buffer_capacity_)
+                {
+                    buffer_.pop_front();
+                }
+            }
             if (consoleLoggingEnabled_)
             {
                 if (firstConsoleLog_)

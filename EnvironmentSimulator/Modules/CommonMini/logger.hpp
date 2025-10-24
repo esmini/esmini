@@ -18,6 +18,7 @@
 #include <unordered_set>
 #include <string>
 #include <iostream>
+#include <deque>
 #include <cstdio>
 
 // Converts enum to its underlying integer type and formats it
@@ -116,6 +117,27 @@ namespace esmini::common
         // get the number of registered callbacks
         unsigned int GetNumberOfCallbacks();
 
+        void SetBufferCapacity(unsigned int capacity)
+        {
+            buffer_capacity_ = capacity;
+        }
+
+        unsigned int GetBufferCapacity() const
+        {
+            return buffer_capacity_;
+        }
+
+        const std::deque<std::string>& GetBuffer() const
+        {
+            return buffer_;
+        }
+
+        void ClearBufferAndCApacity()
+        {
+            buffer_.clear();
+            SetBufferCapacity(0);
+        }
+
         template <class... ARGS>
         void
         Log(LogLevel msgLogLevel, const std::string& logStr, char const* function, char const* file, long line, const std::string& log, ARGS... args)
@@ -162,6 +184,8 @@ namespace esmini::common
         bool                         consoleLoggingEnabled_ = true;
         bool                         fileLoggingEnabled_    = true;
         std::vector<CallbackFuncPtr> callbacks_;
+        std::deque<std::string>      buffer_;
+        unsigned int                 buffer_capacity_ = 0;
 
     };  // class TxtLogger
 

@@ -355,6 +355,47 @@ TEST(LogFeatures, TestLogCallback)
     EXPECT_EQ(txtLogger.GetNumberOfCallbacks(), 0);
 }
 
+TEST(LogFeatures, TestLogBuffer)
+{
+    const std::deque<std::string>& buffer = txtLogger.GetBuffer();
+    EXPECT_EQ(buffer.size(), 0);
+    EXPECT_EQ(txtLogger.GetBufferCapacity(), 0);
+
+    LOG_INFO("Should not be stored in buffer");
+    EXPECT_EQ(buffer.size(), 0);
+    EXPECT_EQ(txtLogger.GetBufferCapacity(), 0);
+
+    txtLogger.SetBufferCapacity(3);
+    LOG_INFO("Should be stored in buffer");
+    EXPECT_EQ(buffer.size(), 1);
+    EXPECT_EQ(txtLogger.GetBufferCapacity(), 3);
+    EXPECT_EQ(buffer[0], "[] [info] Should be stored in buffer\n");
+
+    LOG_INFO("Should also be stored in buffer");
+    EXPECT_EQ(buffer.size(), 2);
+    EXPECT_EQ(txtLogger.GetBufferCapacity(), 3);
+    EXPECT_EQ(buffer[0], "[] [info] Should be stored in buffer\n");
+    EXPECT_EQ(buffer[1], "[] [info] Should also be stored in buffer\n");
+
+    LOG_INFO("Should also, again, be stored in buffer");
+    EXPECT_EQ(buffer.size(), 3);
+    EXPECT_EQ(txtLogger.GetBufferCapacity(), 3);
+    EXPECT_EQ(buffer[0], "[] [info] Should be stored in buffer\n");
+    EXPECT_EQ(buffer[1], "[] [info] Should also be stored in buffer\n");
+    EXPECT_EQ(buffer[2], "[] [info] Should also, again, be stored in buffer\n");
+
+    LOG_INFO("Should replace first message");
+    EXPECT_EQ(buffer.size(), 3);
+    EXPECT_EQ(txtLogger.GetBufferCapacity(), 3);
+    EXPECT_EQ(buffer[0], "[] [info] Should also be stored in buffer\n");
+    EXPECT_EQ(buffer[1], "[] [info] Should also, again, be stored in buffer\n");
+    EXPECT_EQ(buffer[2], "[] [info] Should replace first message\n");
+
+    txtLogger.ClearBufferAndCApacity();
+    EXPECT_EQ(buffer.size(), 0);
+    EXPECT_EQ(txtLogger.GetBufferCapacity(), 0);
+}
+
 int main(int argc, char** argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";
