@@ -376,7 +376,11 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string fi
         @param found Reference parameter, set to true if file found, else false
         Returns resolved path to located file if found, else given file_path
  */
-std::string LocateFile(const std::string& file_path, const std::vector<std::string>& dirs, const std::string& label, bool& found);
+std::string LocateFile(const std::string&              file_path,
+                       const std::vector<std::string>& dirs,
+                       const std::string&              label,
+                       bool&                           found,
+                       bool                            log_not_found = true);
 
 /**
         Retrieve the angle of a vector

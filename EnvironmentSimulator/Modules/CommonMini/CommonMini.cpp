@@ -237,7 +237,7 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string fi
     return path;
 }
 
-std::string LocateFile(const std::string& file_path, const std::vector<std::string>& dirs, const std::string& label, bool& found)
+std::string LocateFile(const std::string& file_path, const std::vector<std::string>& dirs, const std::string& label, bool& found, bool log_not_found)
 {
     std::string location = file_path;
     found                = false;
@@ -292,14 +292,17 @@ std::string LocateFile(const std::string& file_path, const std::vector<std::stri
         }
     }
 
-    LOG_INFO("{} search paths attempted for file {}:", label, filename);
-    for (auto& candidate : file_name_candidates)
+    if (log_not_found)
     {
-        LOG_INFO("  {}", candidate);
-    }
+        LOG_INFO("{} search paths attempted for file {}:", label, filename);
+        for (auto& candidate : file_name_candidates)
+        {
+            LOG_INFO("  {}", candidate);
+        }
 
-    // fallback to given path
-    LOG_WARN("{} {} not located, using specified file path", label, file_path);
+        // fallback to given path
+        LOG_WARN("{} {} not located, using specified file path", label, file_path);
+    }
 
     return location;
 }

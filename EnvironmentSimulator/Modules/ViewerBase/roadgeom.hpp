@@ -90,7 +90,7 @@ namespace roadgeom
                                                     const roadmanager::LaneRoadMark&    road_mark,
                                                     double                              fade);
         osg::ref_ptr<osg::Material> GetOrCreateMaterial(const std::string& basename, osg::Vec4 color, uint8_t texture_type, uint8_t has_friction = 0);
-        osg::ref_ptr<osg::Texture2D> ReadTexture(std::string filename);
+        osg::ref_ptr<osg::Texture2D> ReadTexture(std::string filename, bool log_missing_file = true);
         osg::Vec4                    GetFrictionColor(const double friction);
 
         int                                          CreateRoadSignsAndObjects(roadmanager::OpenDrive*  od,
@@ -105,12 +105,14 @@ namespace roadgeom
         int                                          SaveToFile(const std::string& filename);
 
     private:
-        unsigned int                                                   number_of_materials = 0;
-        std::unordered_map<MaterialType, osg::ref_ptr<osg::Texture2D>> texture_map_        = {};
-        double                                                         lane_friction_      = 1.0;
-        roadmanager::OpenDrive*                                        odrManager_         = nullptr;
-        bool                                                           optimize_           = true;
-        osg::Node*                                                     environment_        = nullptr;
+        unsigned int                                                   number_of_materials     = 0;
+        std::unordered_map<MaterialType, osg::ref_ptr<osg::Texture2D>> texture_map_            = {};
+        double                                                         lane_friction_          = 1.0;
+        roadmanager::OpenDrive*                                        odrManager_             = nullptr;
+        bool                                                           optimize_               = true;
+        osg::Node*                                                     environment_            = nullptr;
+        std::string                                                    exe_dir_                = "";
+        int                                                            roadmark_texture_found_ = -1;
     };
 
 }  // namespace roadgeom

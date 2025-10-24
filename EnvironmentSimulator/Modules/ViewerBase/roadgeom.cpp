@@ -137,38 +137,32 @@ namespace roadgeom
         }
     }
 
-    osg::ref_ptr<osg::Texture2D> RoadGeom::ReadTexture(std::string filename)
+    osg::ref_ptr<osg::Texture2D> RoadGeom::ReadTexture(std::string filename, bool log_missing_file)
     {
         osg::ref_ptr<osg::Texture2D> tex = 0;
         osg::ref_ptr<osg::Image>     img = 0;
+        bool                         found;
+        std::string                  file_path = LocateFile(filename,
+                                                            {DirNameOf(odrManager_->GetOpenDriveFilename()) + "/../models", exe_dir_ + "/../resources/models"},
+                                           "Texture file",
+                                           found,
+                                           log_missing_file);
 
-        std::vector<std::string> file_name_candidates;
-        file_name_candidates.push_back(filename);
+        if (found)
+        {
+            img = osgDB::readImageFile(file_path);
 
-        // Check registered paths
-        for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
-        {
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], filename));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], "../models/" + filename));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], FileNameOf(filename)));
-        }
-        for (size_t i = 0; i < file_name_candidates.size(); i++)
-        {
-            if (FileExists(file_name_candidates[i].c_str()))
+            if (img)
             {
-                if (img = osgDB::readImageFile(file_name_candidates[i].c_str()))
-                {
-                    break;
-                }
+                tex = new osg::Texture2D(img.get());
+                tex->setUnRefImageDataAfterApply(true);
+                tex->setWrap(osg::Texture2D::WrapParameter::WRAP_S, osg::Texture2D::WrapMode::REPEAT);
+                tex->setWrap(osg::Texture2D::WrapParameter::WRAP_T, osg::Texture2D::WrapMode::REPEAT);
             }
-        }
-
-        if (img)
-        {
-            tex = new osg::Texture2D(img.get());
-            tex->setUnRefImageDataAfterApply(true);
-            tex->setWrap(osg::Texture2D::WrapParameter::WRAP_S, osg::Texture2D::WrapMode::REPEAT);
-            tex->setWrap(osg::Texture2D::WrapParameter::WRAP_T, osg::Texture2D::WrapMode::REPEAT);
+            else
+            {
+                LOG_WARN("Failed to load texture file: {}", filename);
+            }
         }
 
         return tex;
@@ -238,7 +232,6 @@ namespace roadgeom
 
         geode->getOrCreateStateSet()->setAttributeAndModes(materialRoadmark_.get());
 
-        osg::ref_ptr<osg::Texture2D> tex_roadmark;
         if (!SE_Env::Inst().GetOptions().GetOptionSet("generate_without_textures"))
         {
             // set texture coordinates anyway, for potential post processing
@@ -251,14 +244,13 @@ namespace roadgeom
             }
             geom->setTexCoordArray(0, texcoords.get());
 
-            tex_roadmark = ReadTexture("roadmark.jpg");
-            if (tex_roadmark)
+            if (texture_map_[MaterialType::ROADMARK])
             {
                 // set color to white for texture mapping. but keep alpha
                 color_array->back()[0] = 1.0f;
                 color_array->back()[1] = 1.0f;
                 color_array->back()[2] = 1.0f;
-                geode->getOrCreateStateSet()->setTextureAttributeAndModes(0, tex_roadmark.get());
+                geode->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture_map_[MaterialType::ROADMARK].get());
             }
         }
 
@@ -501,6 +493,7 @@ namespace roadgeom
             return;
         }
 
+        exe_dir_                          = DirNameOf(exe_path);
         root_                             = new osg::Group;
         osg::ref_ptr<osg::Group> r_group_ = new osg::Group;
         r_group_->setName("roads");
@@ -519,8 +512,9 @@ namespace roadgeom
 
             if (!SE_Env::Inst().GetOptions().GetOptionSet("generate_without_textures"))
             {
-                texture_map_[MaterialType::ASPHALT] = ReadTexture("asphalt.jpg");
-                texture_map_[MaterialType::GRASS]   = ReadTexture("grass.jpg");
+                texture_map_[MaterialType::ASPHALT]  = ReadTexture("asphalt.jpg");
+                texture_map_[MaterialType::GRASS]    = ReadTexture("grass.jpg");
+                texture_map_[MaterialType::ROADMARK] = ReadTexture("roadmark.jpg", false);  // optional texture, not part of esmini
             }
 
             osg::ref_ptr<osg::Vec4Array> color_concrete     = new osg::Vec4Array;
