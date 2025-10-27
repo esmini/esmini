@@ -75,25 +75,6 @@ extern const char* ESMINI_BUILD_VERSION;
 static SE_SystemTime systemTime_;
 static const int     max_csv_entry_length = 1024;
 
-// Fallback list of 3D models where model_id is index in list
-static const char* entityModelsFilesFallbackList_[] = {
-    "car_white.osgb",
-    "car_blue.osgb",
-    "car_red.osgb",
-    "car_yellow.osgb",
-    "truck_yellow.osgb",
-    "van_red.osgb",
-    "bus_blue.osgb",
-    "walkman.osgb",
-    "moose_cc0.osgb",
-    "cyclist.osgb",
-    "mc.osgb",
-    "car_trailer.osgb",
-    "semi_tractor.osgb",
-    "semi_trailer.osgb",
-    "truck_trailer.osgb",
-};
-
 const char* esmini_git_tag(void)
 {
     return ESMINI_GIT_TAG;
