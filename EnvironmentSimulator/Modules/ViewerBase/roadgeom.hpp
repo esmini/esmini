@@ -120,12 +120,14 @@ namespace roadgeom
         std::unordered_map<int, TrafficLightRedYellowGreen> traffic_light_red_yellow_green_;
 
     private:
-        unsigned int                                                   number_of_materials = 0;
-        std::unordered_map<MaterialType, osg::ref_ptr<osg::Texture2D>> texture_map_        = {};
-        double                                                         lane_friction_      = 1.0;
-        roadmanager::OpenDrive*                                        odrManager_         = nullptr;
-        bool                                                           optimize_           = true;
-        osg::Node*                                                     environment_        = nullptr;
+        unsigned int                                                   number_of_materials     = 0;
+        std::unordered_map<MaterialType, osg::ref_ptr<osg::Texture2D>> texture_map_            = {};
+        double                                                         lane_friction_          = 1.0;
+        roadmanager::OpenDrive*                                        odrManager_             = nullptr;
+        bool                                                           optimize_               = true;
+        osg::Node*                                                     environment_            = nullptr;
+        std::string                                                    exe_dir_                = "";
+        int                                                            roadmark_texture_found_ = -1;
     };
 
 }  // namespace roadgeom

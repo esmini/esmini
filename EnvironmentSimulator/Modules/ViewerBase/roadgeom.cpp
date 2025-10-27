@@ -1150,11 +1150,24 @@ namespace roadgeom
                         signGroup->addChild(obj_standin);
                     }
 
-                    if (tx != nullptr && signal->GetType() == "1.000.001" || signal->GetType() == "1000001")
+                    if (tx != nullptr && typeid(*signal) == typeid(roadmanager::TrafficLight))
                     {
-                        TrafficLightRedYellowGreen tl;
-                        tl.SetNode(tx);
-                        traffic_light_red_yellow_green_[signal->GetId()] = tl;
+                        auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
+                        switch (tl->GetTrafficLightType())
+                        {
+                            case roadmanager::TrafficLightType::TYPE_1000001:
+                            {
+                                TrafficLightRedYellowGreen tl_ryg;
+                                tl_ryg.SetNode(tx);
+                                traffic_light_red_yellow_green_[signal->GetId()] = tl_ryg;
+                                break;
+                            }
+                            default:
+                            {
+                                LOG_ERROR("Unsupport traffic signal type, can't view");
+                                break;
+                            }
+                        }
                     }
                 }
 
