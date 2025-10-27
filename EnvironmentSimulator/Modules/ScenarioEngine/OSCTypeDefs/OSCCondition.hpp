@@ -547,6 +547,7 @@ namespace scenarioengine
             VARIABLE,
             TIME_OF_DAY,
             SIMULATION_TIME,
+            TRAFFIC_SIGNAL,
             UNDEFINED
         } Type;
 
@@ -596,6 +597,21 @@ namespace scenarioengine
 
         bool CheckCondition(double sim_time);
         TrigByVariable() : TrigByValue(TrigByValue::Type::VARIABLE)
+        {
+        }
+        std::string GetAdditionalLogInfo() override;
+    };
+
+    class TrigByTrafficSignal : public TrigByValue
+    {
+    public:
+        std::string                signalName_;               // Id of the referenced signal in the roadnetwork
+        std::string                signalState_;              // State of the signal for condition to be true
+        roadmanager::TrafficLight* traffic_light_ = nullptr;  // Which signal has the trigger assigned
+
+        void SetSignal();
+        bool CheckCondition(double sim_time);
+        TrigByTrafficSignal() : TrigByValue(TrigByValue::Type::TRAFFIC_SIGNAL)
         {
         }
         std::string GetAdditionalLogInfo() override;

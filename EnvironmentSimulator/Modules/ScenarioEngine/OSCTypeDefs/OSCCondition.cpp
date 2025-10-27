@@ -10,6 +10,7 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
+#include <sstream>
 #include "OSCCondition.hpp"
 #include "Storyboard.hpp"
 #include "logger.hpp"
@@ -687,6 +688,44 @@ std::string TrigByVariable::GetAdditionalLogInfo()
 {
     OSCParameterDeclarations::ParameterStruct* ve = variables_->getParameterEntry(variableRef_);
     return fmt::format("variable {} {} {} {}, edge: {}", variableRef_, ve ? ve->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
+}
+
+void TrigByTrafficSignal::SetSignal()
+{
+    auto odr = roadmanager::Position::GetOpenDrive();
+    for (const auto& signal : odr->GetDynamicSignals())
+    {
+        if (signal == nullptr)
+        {
+            continue;
+        }
+
+        if (signal->GetId() == std::stoi(this->signalName_))
+        {
+            // Add some switch here to cast to other type depending on tl->GetTrafficSignalType() if necessary
+            this->traffic_light_ = dynamic_cast<roadmanager::TrafficLight*>(signal);
+            if (traffic_light_ == nullptr)
+            {
+                LOG_ERROR_AND_QUIT("TrafficSignalCondition: Traffic signal with id {} isn't a valid signal", this->signalName_);
+            }
+
+            traffic_light_->CheckValidLampModes(this->signalState_);
+            return;
+        }
+    }
+    LOG_ERROR_AND_QUIT("TrafficSignalCondition: Couldn't find traffic signal with id {}", this->signalName_);
+}
+
+bool TrigByTrafficSignal::CheckCondition(double sim_time)
+{
+    (void)sim_time;
+
+    return signalState_ == traffic_light_->GetStateString();
+}
+
+std::string TrigByTrafficSignal::GetAdditionalLogInfo()
+{
+    return fmt::format("TrafficSignal signalName={} signalState={}", signalName_, signalState_);
 }
 
 bool TrigByTimeHeadway::CheckCondition(double sim_time)

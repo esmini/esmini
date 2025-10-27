@@ -18,6 +18,7 @@
 #include <map>
 #include <vector>
 #include <list>
+#include <sstream>
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
 #include "logger.hpp"
@@ -28,8 +29,10 @@
 
 namespace roadmanager
 {
-    id_t        GetNewGlobalLaneId();
-    id_t        GetNewGlobalLaneBoundaryId();
+    id_t GetNewGlobalLaneId();
+    id_t GetNewGlobalLaneBoundaryId();
+    id_t GetNewGlobalTrafficLightId();
+
     const char *ReadUserData(pugi::xml_node node, const std::string &code, const std::string &default_value = "");
 
     /**
@@ -1246,6 +1249,8 @@ namespace roadmanager
             NONE,
         };
 
+        virtual ~RoadObject() = default;
+
         RoadObject() : x_(0.0), y_(0.0), z_(0.0), h_(0.0)
         {
         }
@@ -1276,6 +1281,241 @@ namespace roadmanager
         double                      z_;
         double                      h_;
     };
+
+    enum TrafficLightType : int
+    {
+        TYPE_1000001 = 0,
+        TYPE_1000009_10,
+        TYPE_1000011_10,
+        TYPE_1000002,
+        TYPE_1000009_20,
+        TYPE_1000011_20,
+        TYPE_1000002_10,
+        TYPE_1000009_30,
+        TYPE_1000011_30,
+        TYPE_1000002_20,
+        TYPE_1000010_10,
+        TYPE_1000011_40,
+        TYPE_1000002_30,
+        TYPE_1000010_20,
+        TYPE_1000011_50,
+        TYPE_1000007,
+        TYPE_1000014_10,
+        TYPE_1000013,
+        TYPE_1000007_10,
+        TYPE_1000013_10,
+        TYPE_1000007_20,
+        TYPE_1000013_20,
+        TYPE_1000007_30,
+        TYPE_1000013_30,
+        TYPE_1000013_40,
+        TYPE_1000015,
+        TYPE_1000013_50,
+        TYPE_1000013_60,
+        TYPE_1000013_70,
+        TYPE_1000013_80,
+        TYPE_1000013_90,
+        TYPE_1000013_100,
+        TYPE_1000020,
+        TYPE_1000008,
+        TYPE_1000012,
+        TYPE_1000020_10,
+        TYPE_1000008_10,
+        TYPE_1000012_10,
+        TYPE_1000020_20,
+        TYPE_1000008_20,
+        TYPE_1000012_20,
+        TYPE_1000020_30,
+        TYPE_1000008_30,
+        TYPE_1000012_30,
+        TYPE_1000020_40,
+        TYPE_1000008_40,
+        TYPE_1000012_40,
+        TYPE_1000020_50,
+        TYPE_1000008_50,
+        TYPE_1000012_50,
+        TYPE_1000020_60,
+        TYPE_1000008_60,
+        TYPE_1000012_60,
+        TYPE_1000020_70,
+        TYPE_1000008_70,
+        TYPE_1000012_70,
+        TYPE_1000020_80,
+        TYPE_1000008_80,
+        TYPE_1000012_80,
+        TYPE_1000020_90,
+        TYPE_1000008_90,
+        TYPE_1000012_90,
+        TYPE_1000020_100,
+        TYPE_1000008_100,
+        TYPE_1000012_100,
+        TYPE_1000021,
+        TYPE_1000022_10,
+        TYPE_1000022_20,
+        TYPE_1000023,
+        TYPE_UNDEFINED
+    };
+
+    enum LampIcon : int
+    {
+        ICON_UNKNOWN                    = 0,
+        ICON_OTHER                      = 1,
+        ICON_NONE                       = 2,
+        ICON_ARROW_STRAIGHT_AHEAD       = 3,
+        ICON_ARROW_LEFT                 = 4,
+        ICON_ARROW_DIAG_LEFT            = 5,
+        ICON_ARROW_STRAIGHT_AHEAD_LEFT  = 6,
+        ICON_ARROW_RIGHT                = 7,
+        ICON_ARROW_DIAG_RIGHT           = 8,
+        ICON_ARROW_STRAIGHT_AHEAD_RIGHT = 9,
+        ICON_ARROW_LEFT_RIGHT           = 10,
+        ICON_ARROW_DOWN                 = 11,
+        ICON_ARROW_DOWN_LEFT            = 12,
+        ICON_ARROW_DOWN_RIGHT           = 13,
+        ICON_ARROW_CROSS                = 14,
+        ICON_PEDESTRIAN                 = 15,
+        ICON_WALK                       = 16,
+        ICON_DONT_WALK                  = 17,
+        ICON_BICYCLE                    = 18,
+        ICON_PEDESTRIAN_AND_BICYCLE     = 19,
+        ICON_COUNTDOWN_SECONDS          = 20,
+        ICON_COUNTDOWN_PERCENT          = 21,
+        ICON_TRAM                       = 22,
+        ICON_BUS                        = 23,
+        ICON_BUS_AND_TRAM               = 24
+    };
+
+    enum LampColor
+    {
+        COLOR_UNKNOWN = 0,
+        COLOR_OTHER   = 1,
+        COLOR_RED     = 2,
+        COLOR_YELLOW  = 3,
+        COLOR_GREEN   = 4,
+        COLOR_BLUE    = 5,
+        COLOR_WHITE   = 6
+    };
+
+    struct TrafficLightInfo
+    {
+        TrafficLightType type;
+        size_t           nr_lamps;
+        // Listed in vector as up -> down
+        std::vector<LampColor> colors;
+        std::vector<LampIcon>  icons;
+    };
+
+    static const std::unordered_map<std::string, TrafficLightInfo> traffic_light_type_map = {
+        {"1000001",
+         {TYPE_1000001,
+          3,
+          {LampColor::COLOR_RED, LampColor::COLOR_YELLOW, LampColor::COLOR_GREEN},
+          {LampIcon::ICON_NONE, LampIcon::ICON_NONE, LampIcon::ICON_NONE}}},
+        {"1000011.10",
+         {TYPE_1000011_10,
+          3,
+          {LampColor::COLOR_RED, LampColor::COLOR_YELLOW, LampColor::COLOR_GREEN},
+          {LampIcon::ICON_ARROW_LEFT, LampIcon::ICON_ARROW_LEFT, LampIcon::ICON_ARROW_LEFT}}},
+        {"1000011.20",
+         {TYPE_1000011_20,
+          3,
+          {LampColor::COLOR_RED, LampColor::COLOR_YELLOW, LampColor::COLOR_GREEN},
+          {LampIcon::ICON_ARROW_RIGHT, LampIcon::ICON_ARROW_RIGHT, LampIcon::ICON_ARROW_RIGHT}}},
+        {"1000011.30",
+         {TYPE_1000011_30,
+          3,
+          {LampColor::COLOR_RED, LampColor::COLOR_YELLOW, LampColor::COLOR_GREEN},
+          {LampIcon::ICON_ARROW_STRAIGHT_AHEAD, LampIcon::ICON_ARROW_STRAIGHT_AHEAD, LampIcon::ICON_ARROW_STRAIGHT_AHEAD}}},
+        {"1000011.40",
+         {TYPE_1000011_40,
+          3,
+          {LampColor::COLOR_RED, LampColor::COLOR_YELLOW, LampColor::COLOR_GREEN},
+          {LampIcon::ICON_ARROW_STRAIGHT_AHEAD_LEFT, LampIcon::ICON_ARROW_STRAIGHT_AHEAD_LEFT, LampIcon::ICON_ARROW_STRAIGHT_AHEAD_LEFT}}},
+        {"1000011.50",
+         {TYPE_1000011_50,
+          3,
+          {LampColor::COLOR_RED, LampColor::COLOR_YELLOW, LampColor::COLOR_GREEN},
+          {LampIcon::ICON_ARROW_STRAIGHT_AHEAD_RIGHT, LampIcon::ICON_ARROW_STRAIGHT_AHEAD_RIGHT, LampIcon::ICON_ARROW_STRAIGHT_AHEAD_RIGHT}}},
+        {"1000002.30",
+         {TYPE_1000002_30,
+          3,
+          {LampColor::COLOR_RED, LampColor::COLOR_RED, LampColor::COLOR_GREEN},
+          {LampIcon::ICON_DONT_WALK, LampIcon::ICON_DONT_WALK, LampIcon::ICON_WALK}}},
+        {"1000013.10",
+         {TYPE_1000013_10,
+          3,
+          {LampColor::COLOR_RED, LampColor::COLOR_YELLOW, LampColor::COLOR_GREEN},
+          {LampIcon::ICON_BICYCLE, LampIcon::ICON_BICYCLE, LampIcon::ICON_BICYCLE}}},
+        {"1000002", {TYPE_1000002, 2, {LampColor::COLOR_RED, LampColor::COLOR_GREEN}, {LampIcon::ICON_DONT_WALK, LampIcon::ICON_WALK}}},
+        {"1000009.10", {TYPE_1000009_10, 2, {LampColor::COLOR_RED, LampColor::COLOR_YELLOW}, {LampIcon::ICON_NONE, LampIcon::ICON_NONE}}},
+        {"1000009.20", {TYPE_1000009_20, 2, {LampColor::COLOR_YELLOW, LampColor::COLOR_GREEN}, {LampIcon::ICON_NONE, LampIcon::ICON_NONE}}},
+        {"1000009.30", {TYPE_1000009_30, 2, {LampColor::COLOR_RED, LampColor::COLOR_GREEN}, {LampIcon::ICON_NONE, LampIcon::ICON_NONE}}},
+        {"1000010.10",
+         {TYPE_1000010_10, 2, {LampColor::COLOR_YELLOW, LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_LEFT, LampIcon::ICON_ARROW_LEFT}}},
+        {"1000010.20",
+         {TYPE_1000010_20, 2, {LampColor::COLOR_YELLOW, LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_RIGHT, LampIcon::ICON_ARROW_RIGHT}}},
+        {"1000007",
+         {TYPE_1000007,
+          2,
+          {LampColor::COLOR_RED, LampColor::COLOR_GREEN},
+          {LampIcon::ICON_PEDESTRIAN_AND_BICYCLE, LampIcon::ICON_PEDESTRIAN_AND_BICYCLE}}},
+        {"1000013", {TYPE_1000013, 2, {LampColor::COLOR_RED, LampColor::COLOR_GREEN}, {LampIcon::ICON_BICYCLE, LampIcon::ICON_BICYCLE}}},
+        {"1000002.10", {TYPE_1000002_10, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_DONT_WALK}}},
+        {"1000002.20", {TYPE_1000002_20, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_WALK}}},
+        {"1000014.10", {TYPE_1000014_10, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_TRAM}}},
+        {"1000007.10", {TYPE_1000007_10, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_PEDESTRIAN_AND_BICYCLE}}},
+        {"1000015", {TYPE_1000015, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_PEDESTRIAN_AND_BICYCLE}}},
+        {"1000007.20", {TYPE_1000007_20, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_PEDESTRIAN_AND_BICYCLE}}},
+        {"1000013.20", {TYPE_1000013_20, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_BICYCLE}}},
+        {"1000007.30", {TYPE_1000007_30, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_PEDESTRIAN_AND_BICYCLE}}},
+        {"1000013.30", {TYPE_1000013_30, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_BICYCLE}}},
+        {"1000013.40", {TYPE_1000013_40, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_BICYCLE}}},
+        {"1000013.50", {TYPE_1000013_50, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_BICYCLE}}},
+        {"1000013.60", {TYPE_1000013_60, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_BICYCLE}}},
+        {"1000013.70", {TYPE_1000013_70, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_BICYCLE}}},
+        {"1000013.80", {TYPE_1000013_80, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_BICYCLE}}},
+        {"1000013.90", {TYPE_1000013_90, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_BICYCLE}}},
+        {"1000013.100", {TYPE_1000013_100, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_BICYCLE}}},
+        {"1000020", {TYPE_1000020, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_NONE}}},
+        {"1000008", {TYPE_1000008, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_NONE}}},
+        {"1000012", {TYPE_1000012, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_NONE}}},
+        {"1000020.10", {TYPE_1000020_10, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_ARROW_LEFT}}},
+        {"1000008.10", {TYPE_1000008_10, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_ARROW_LEFT}}},
+        {"1000012.10", {TYPE_1000012_10, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_LEFT}}},
+        {"1000020.20", {TYPE_1000020_20, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_ARROW_RIGHT}}},
+        {"1000008.20", {TYPE_1000008_20, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_ARROW_RIGHT}}},
+        {"1000012.20", {TYPE_1000012_20, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_RIGHT}}},
+        {"1000020.30", {TYPE_1000020_30, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_ARROW_STRAIGHT_AHEAD}}},
+        {"1000008.30", {TYPE_1000008_30, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_ARROW_STRAIGHT_AHEAD}}},
+        {"1000012.30", {TYPE_1000012_30, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_STRAIGHT_AHEAD}}},
+        {"1000020.40", {TYPE_1000020_40, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_ARROW_STRAIGHT_AHEAD_LEFT}}},
+        {"1000008.40", {TYPE_1000008_40, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_ARROW_STRAIGHT_AHEAD_LEFT}}},
+        {"1000012.40", {TYPE_1000012_40, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_STRAIGHT_AHEAD_LEFT}}},
+        {"1000020.50", {TYPE_1000020_50, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_ARROW_STRAIGHT_AHEAD_RIGHT}}},
+        {"1000008.50", {TYPE_1000008_50, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_ARROW_STRAIGHT_AHEAD_RIGHT}}},
+        {"1000012.50", {TYPE_1000012_50, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_STRAIGHT_AHEAD_RIGHT}}},
+        {"1000020.60", {TYPE_1000020_60, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_ARROW_DIAG_LEFT}}},
+        {"1000008.60", {TYPE_1000008_60, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_ARROW_DIAG_LEFT}}},
+        {"1000012.60", {TYPE_1000012_60, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_DIAG_LEFT}}},
+        {"1000020.70", {TYPE_1000020_70, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_ARROW_DIAG_RIGHT}}},
+        {"1000008.70", {TYPE_1000008_70, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_ARROW_DIAG_RIGHT}}},
+        {"1000012.70", {TYPE_1000012_70, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_DIAG_RIGHT}}},
+        {"1000020.80", {TYPE_1000020_80, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_ARROW_DOWN_LEFT}}},
+        {"1000008.80", {TYPE_1000008_80, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_ARROW_DOWN_LEFT}}},
+        {"1000012.80", {TYPE_1000012_80, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_DOWN_LEFT}}},
+        {"1000020.90", {TYPE_1000020_90, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_ARROW_DOWN_RIGHT}}},
+        {"1000008.90", {TYPE_1000008_90, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_ARROW_DOWN_RIGHT}}},
+        {"1000012.90", {TYPE_1000012_90, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_DOWN_RIGHT}}},
+        {"1000020.100", {TYPE_1000020_100, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_ARROW_LEFT_RIGHT}}},
+        {"1000008.100", {TYPE_1000008_100, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_ARROW_LEFT_RIGHT}}},
+        {"1000012.100", {TYPE_1000012_100, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_LEFT_RIGHT}}},
+        {"1000021", {TYPE_1000021, 1, {LampColor::COLOR_GREEN}, {LampIcon::ICON_ARROW_DOWN}}},
+        {"1000022.10", {TYPE_1000022_10, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_ARROW_DIAG_LEFT}}},
+        {"1000022.20", {TYPE_1000022_20, 1, {LampColor::COLOR_YELLOW}, {LampIcon::ICON_ARROW_DIAG_RIGHT}}},
+        {"1000023", {TYPE_1000023, 1, {LampColor::COLOR_RED}, {LampIcon::ICON_ARROW_CROSS}}}};
+
+    class Position;  // forward declaration
+    class Road;      // forward declaration
 
     class Signal : public RoadObject
     {
@@ -1527,6 +1767,16 @@ namespace roadmanager
             TrafficSign_MainSign_Classification_Type_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
         };
 
+        enum LampMode : int
+        {
+            MODE_UNKNOWN  = 0,
+            MODE_OTHER    = 1,
+            MODE_OFF      = 2,
+            MODE_CONSTANT = 3,
+            MODE_FLASHING = 4,
+            MODE_COUNTING = 5
+        };
+
         Signal(double      s,
                double      t,
                int         id,
@@ -1592,6 +1842,10 @@ namespace roadmanager
         {
             return osi_type_;
         }
+        void SetTypeStr(std::string type)
+        {
+            type_ = type;
+        }
         std::string GetType() const
         {
             return type_;
@@ -1644,6 +1898,11 @@ namespace roadmanager
         {
             return text_;
         }
+        std::vector<id_t> GetAllValidGlobalLanes() const
+        {
+            return all_valid_global_lanes_;
+        }
+        void               SetAllValidLanes(Signal *sig, Road *r);
         static OSIType     GetOSITypeFromString(const std::string &type);
         static std::string GetCombinedTypeSubtypeValueStr(std::string type, std::string subtype, std::string value);
         std::string        GetModel3DFullPath() const
@@ -1653,6 +1912,14 @@ namespace roadmanager
         void SetModel3DFullPath(const std::string &path)
         {
             model3d_full_path_ = path;
+        }
+        void SetHasOSCAction(bool value)
+        {
+            has_osc_action_ = value;
+        }
+        bool GetHasOSCAction() const
+        {
+            return has_osc_action_;
         }
 
     private:
@@ -1680,6 +1947,167 @@ namespace roadmanager
         double                                      value_  = 0.0;
         static const std::map<std::string, OSIType> types_mapping_;
         std::string                                 model3d_full_path_;
+        bool                                        has_osc_action_ = false;
+        std::vector<id_t>                           all_valid_global_lanes_;
+    };
+
+    class TrafficLight : public Signal
+    {
+    public:
+        class Lamp
+        {
+        public:
+            Lamp() = default;
+            Lamp(id_t id, double x, double y, double z, double width, double height, LampIcon icon, LampColor color)
+                : id_(id),
+                  x_(x),
+                  y_(y),
+                  z_(z),
+                  width_(width),
+                  height_(height),
+                  icon_(icon),
+                  color_(color),
+                  mode_(LampMode::MODE_OFF)
+            {
+            }
+
+            // Setters
+            void SetId(id_t id)
+            {
+                id_ = id;
+            }
+            void SetMode(LampMode mode)
+            {
+                mode_ = mode;
+            }
+            void SetColor(LampColor color)
+            {
+                color_ = color;
+            }
+            void SetIcon(LampIcon icon)
+            {
+                icon_ = icon;
+            }
+
+            // Getters
+            double GetX() const
+            {
+                return x_;
+            }
+            double GetY() const
+            {
+                return y_;
+            }
+            double GetZ() const
+            {
+                return z_;
+            }
+            double GetHeight() const
+            {
+                return height_;
+            }
+            double GetWidth() const
+            {
+                return width_;
+            }
+            id_t GetId() const
+            {
+                return id_;
+            }
+            LampMode GetMode() const
+            {
+                return mode_;
+            }
+            LampIcon GetIcon() const
+            {
+                return icon_;
+            }
+            LampColor GetColor() const
+            {
+                return color_;
+            }
+
+        private:
+            id_t   id_;
+            double x_;
+            double y_;
+            double z_;
+            double width_;
+            double height_;
+
+            LampIcon  icon_;
+            LampColor color_;
+            LampMode  mode_;
+        };
+
+        TrafficLight(double      s,
+                     double      t,
+                     int         id,
+                     std::string name,
+                     bool        dynamic,
+                     Orientation orientation,
+                     double      z_offset,
+                     std::string country,
+                     int         osi_type,
+                     std::string type,
+                     std::string subtype,
+                     std::string value_str,
+                     std::string unit,
+                     double      height,
+                     double      width,
+                     double      depth,  // i.e. length of the bounding box
+                     std::string text,
+                     double      h_offset,
+                     double      pitch,
+                     double      roll,
+                     double      x,
+                     double      y,
+                     double      z,
+                     double      h);
+
+        void SetTrafficLightInfo();
+        void UpdateState(const std::string state);
+        void CheckValidLampModes(const std::string &input) const;
+
+        size_t GetNrLamps() const
+        {
+            return nr_lamps_;
+        }
+
+        Lamp *GetLamp(size_t index)
+        {
+            return &lamps_.at(index);
+        }
+
+        TrafficLightType GetTrafficLightType() const
+        {
+            return light_type_;
+        }
+
+        std::string GetStateString() const
+        {
+            return state_;
+        }
+
+        std::vector<std::string> GetStateVector() const
+        {
+            return state_vector_;
+        }
+
+    private:
+        size_t            nr_lamps_;
+        std::vector<Lamp> lamps_;
+        TrafficLightType  light_type_;
+
+        // State (from OpenSCENARIO)
+        std::string                               state_;
+        std::vector<std::string>                  state_vector_;
+        std::unordered_map<std::string, LampMode> lamp_mode_map_ = {{"unknown", LampMode::MODE_UNKNOWN},
+                                                                    {"other", LampMode::MODE_OTHER},
+                                                                    {"off", LampMode::MODE_OFF},
+                                                                    {"on", LampMode::MODE_CONSTANT},
+                                                                    {"flashing", LampMode::MODE_FLASHING},
+                                                                    {"counting", LampMode::MODE_COUNTING}};
     };
 
     class OutlineCorner
@@ -2782,8 +3210,6 @@ namespace roadmanager
         std::string orig_geooffset_str_;
     };
 
-    class Position;  // forward declaration
-
     class OpenDrive
     {
     public:
@@ -2991,6 +3417,11 @@ namespace roadmanager
         id_t LookupRoadIdFromStr(std::string id_str);
         id_t LookupJunctionIdFromStr(std::string id_str);
 
+        std::vector<Signal *> GetDynamicSignals()
+        {
+            return dynamic_signals_;
+        }
+
         Outline *CreateContinuousRepeatOutline(Road  *r,
                                                id_t   ids,
                                                double s,
@@ -3023,6 +3454,7 @@ namespace roadmanager
         GlobalFriction                            friction_;
         std::vector<std::pair<id_t, std::string>> road_ids_;
         std::vector<std::pair<id_t, std::string>> junction_ids_;
+        std::vector<Signal *>                     dynamic_signals_;
         id_t                                      LookupIdFromStr(std::vector<std::pair<id_t, std::string>> &ids, std::string id_str);
         bool                                      ParseOpenDriveXML(const pugi::xml_document &doc);
     };

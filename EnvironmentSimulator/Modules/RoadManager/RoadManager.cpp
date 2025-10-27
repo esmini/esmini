@@ -76,6 +76,7 @@ using namespace roadmanager;
 
 static id_t g_Lane_id;
 static id_t g_Laneb_id;
+static id_t g_tl_id;
 
 const char* object_type_str[] = {"barrier",   "bike",     "building",     "bus",          "car",           "crosswalk",  "gantry",
                                  "motorbike", "none",     "obstacle",     "parkingSpace", "patch",         "pedestrian", "pole",
@@ -374,6 +375,226 @@ Signal::Signal(double      s,
     value_ = strtod(value_str);
 }
 
+TrafficLight::TrafficLight(double      s,
+                           double      t,
+                           int         id,
+                           std::string name,
+                           bool        dynamic,
+                           Orientation orientation,
+                           double      z_offset,
+                           std::string country,
+                           int         osi_type,
+                           std::string type,
+                           std::string subtype,
+                           std::string value_str,
+                           std::string unit,
+                           double      height,
+                           double      width,
+                           double      depth,
+                           std::string text,
+                           double      h_offset,
+                           double      pitch,
+                           double      roll,
+                           double      x,
+                           double      y,
+                           double      z,
+                           double      h)
+    : Signal(s,
+             t,
+             id,
+             name,
+             dynamic,
+             orientation,
+             z_offset,
+             country,
+             osi_type,
+             type,
+             subtype,
+             value_str,
+             unit,
+             height,
+             width,
+             depth,
+             text,
+             h_offset,
+             pitch,
+             roll,
+             x,
+             y,
+             z,
+             h)
+{
+    LOG_DEBUG("Adding traffic light with id {} of type {} subtype {}", id, type, subtype);
+    SetTrafficLightInfo();
+}
+
+void TrafficLight::SetTrafficLightInfo()
+{
+    std::string type_cleaned = GetType();
+    type_cleaned.erase(std::remove(type_cleaned.begin(), type_cleaned.end(), '.'), type_cleaned.end());
+    std::string combined_type = GetCombinedTypeSubtypeValueStr(type_cleaned, GetSubType(), GetValueStr());
+
+    auto it = traffic_light_type_map.find(combined_type);
+    if (it != traffic_light_type_map.end())
+    {
+        SetTypeStr(type_cleaned);  // Update type-string with the cleaned version
+        const auto& tl_info = it->second;
+        light_type_         = tl_info.type;
+        nr_lamps_           = tl_info.nr_lamps;
+        double lamp_height_ = GetHeight() / static_cast<double>(nr_lamps_);  // Assume all lights occupy entire space
+        double lamp_width_  = GetWidth();                                    // Assume light is as wide as the light
+
+        for (size_t i = 0; i < nr_lamps_; i++)
+        {
+            // Lamps stored [up, ..., down]
+            double z  = GetZ() + GetZOffset() + lamp_height_ / 2 + lamp_height_ * static_cast<double>(nr_lamps_ - 1 - i);
+            id_t   id = GetNewGlobalTrafficLightId();
+            lamps_.emplace_back(id, GetX(), GetY(), z, lamp_width_, lamp_height_, tl_info.icons[i], tl_info.colors[i]);
+        }
+    }
+    else
+    {
+        light_type_ = TrafficLightType::TYPE_UNDEFINED;
+        LOG_WARN("TrafficLight: Traffic light type '{}' subtype '{}' not supported", GetType(), GetSubType());
+    }
+}
+
+void TrafficLight::UpdateState(const std::string state)
+{
+    state_ = state;
+    state_vector_.clear();
+
+    std::stringstream ss(state);
+    std::string       token;
+
+    while (std::getline(ss, token, ';'))
+    {
+        if (!token.empty())
+        {
+            state_vector_.push_back(token);
+        }
+    }
+
+    if (state_vector_.size() != nr_lamps_)
+    {
+        LOG_ERROR_AND_QUIT("TrafficLight::UpdateState: new state does not match number of lamps for traffic light id {}", GetId());
+    }
+    for (size_t i = 0; i < state_vector_.size(); i++)
+    {
+        lamps_[i].SetMode(lamp_mode_map_[state_vector_[i]]);
+    }
+}
+
+void TrafficLight::CheckValidLampModes(const std::string& input) const
+{
+    std::istringstream ss(input);
+    std::string        token;
+    size_t             valid_tokens = 0;
+
+    while (std::getline(ss, token, ';'))
+    {
+        if (token.empty())
+            continue;
+
+        if (lamp_mode_map_.count(token))
+        {
+            valid_tokens++;
+        }
+        else
+        {
+            LOG_ERROR_AND_QUIT("TrafficLight: Invalid mode '{}', valid modes are 'unknown', 'other', 'off', 'on', 'flashing' and 'counting'", token);
+        }
+    }
+
+    if (valid_tokens != nr_lamps_)
+    {
+        LOG_ERROR_AND_QUIT("TrafficSignalStateAction: Signal of type TrafficLightType::{} takes {} values, but {} were provided",
+                           GetTrafficLightType(),
+                           GetNrLamps(),
+                           valid_tokens);
+    }
+}
+
+void Signal::SetAllValidLanes(Signal* sig, Road* r)
+{
+    std::vector<std::pair<int, Lane*>> drivable_lanes;
+    auto                               ls = r->GetLaneSectionByS(sig->GetS());
+    drivable_lanes.reserve(ls->GetNumberOfLanes());
+
+    for (unsigned int i = 0; i < ls->GetNumberOfLanes(); i++)
+    {
+        auto lane = ls->GetLaneByIdx(i);
+        if (lane->GetLaneType() & Lane::LaneType::LANE_TYPE_ANY_DRIVING)
+        {
+            drivable_lanes.emplace_back(ls->GetLaneIdByIdx(i), lane);
+        }
+    }
+
+    if (sig->validity_.empty())
+    {
+        // Use orientation to find all lanes
+        switch (sig->GetOrientation())
+        {
+            case Orientation::NONE:
+            {
+                for (const auto& [id, lane] : drivable_lanes)
+                {
+                    all_valid_global_lanes_.push_back(lane->GetGlobalId());
+                }
+                break;
+            }
+            case Orientation::POSITIVE:
+            {
+                for (const auto& [id, lane] : drivable_lanes)
+                {
+                    if (id < 0)
+                    {
+                        all_valid_global_lanes_.push_back(lane->GetGlobalId());
+                    }
+                }
+                break;
+            }
+            case Orientation::NEGATIVE:
+            {
+                for (const auto& [id, lane] : drivable_lanes)
+                {
+                    if (id > 0)
+                    {
+                        all_valid_global_lanes_.push_back(lane->GetGlobalId());
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    else
+    {
+        all_valid_global_lanes_.reserve(drivable_lanes.size());
+        for (const auto& [from, to] : sig->validity_)
+        {
+            int step = (from <= to) ? 1 : -1;
+            for (int i = from; i <= to; i += step)
+            {
+                if (i == 0)
+                {
+                    continue;  // ignore reference line
+                }
+
+                auto it = std::find_if(drivable_lanes.begin(), drivable_lanes.end(), [i](const auto& p) { return p.first == i; });
+                if (it != drivable_lanes.end())
+                {
+                    all_valid_global_lanes_.push_back(it->second->GetGlobalId());
+                }
+            }
+        }
+
+        std::sort(all_valid_global_lanes_.begin(), all_valid_global_lanes_.end());
+        all_valid_global_lanes_.erase(std::unique(all_valid_global_lanes_.begin(), all_valid_global_lanes_.end()), all_valid_global_lanes_.end());
+    }
+}
+
 Signal::OSIType Signal::GetOSITypeFromString(const std::string& type)
 {
     if (types_mapping_.count(type) != 0)
@@ -416,6 +637,13 @@ id_t roadmanager::GetNewGlobalLaneBoundaryId()
 {
     id_t returnvalue = g_Laneb_id;
     g_Laneb_id++;
+    return returnvalue;
+}
+
+id_t roadmanager::GetNewGlobalTrafficLightId()
+{
+    id_t returnvalue = g_tl_id;
+    g_tl_id++;
     return returnvalue;
 }
 
@@ -3320,6 +3548,7 @@ void OpenDrive::InitGlobalLaneIds()
 {
     g_Lane_id  = 0;
     g_Laneb_id = 0;
+    g_tl_id    = 0;
 }
 
 Controller* OpenDrive::GetControllerByIdx(idx_t index)
@@ -3380,6 +3609,7 @@ void OpenDrive::Clear()
 
     road_ids_.clear();
     junction_ids_.clear();
+    dynamic_signals_.clear();
 
     for (size_t i = 0; i < road_.size(); i++)
     {
@@ -4477,18 +4707,6 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                         country_file_loaded = LoadSignalsByCountry(country);
                     }
 
-                    // if special country OpenDRIVE, check for various supported traffic light types
-                    if (country == "opendrive")
-                    {
-                        std::string signal_type = signal.attribute("type").value();
-
-                        if ((country_revision <= 2013 && signal_type == "1.000.001") || signal_type == "1000001")
-                        {
-                            // traffic light
-                            LOG_INFO("traffic light found!");
-                        }
-                    }
-
                     std::string type;
                     std::string subtype;
                     std::string value;
@@ -4542,32 +4760,69 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
 
                     Position pos(r->GetId(), s, t);
 
-                    Signal* sig = new Signal(s,
-                                             t,
-                                             ids,
-                                             name,
-                                             dynamic,
-                                             orientation,
-                                             z_offset,
-                                             country,
-                                             osi_type,
-                                             type,
-                                             subtype,
-                                             value,
-                                             unit,
-                                             height,
-                                             width,
-                                             depth,
-                                             text,
-                                             h_offset,
-                                             pitch,
-                                             roll,
-                                             pos.GetX(),
-                                             pos.GetY(),
-                                             pos.GetZ(),
-                                             pos.GetHRoad() + (orientation == Signal::Orientation::NEGATIVE ? M_PI : 0.0));
+                    Signal* sig;
+                    if (country == "opendrive" && country_revision < 2013 && dynamic)  // why country_revision < 2013??
+                    {
+                        sig = new TrafficLight(s,
+                                               t,
+                                               ids,
+                                               name,
+                                               dynamic,
+                                               orientation,
+                                               z_offset,
+                                               country,
+                                               osi_type,
+                                               type,
+                                               subtype,
+                                               value,
+                                               unit,
+                                               height,
+                                               width,
+                                               depth,
+                                               text,
+                                               h_offset,
+                                               pitch,
+                                               roll,
+                                               pos.GetX(),
+                                               pos.GetY(),
+                                               pos.GetZ(),
+                                               pos.GetHRoad() + (orientation == Signal::Orientation::NEGATIVE ? M_PI : 0.0));
+                    }
+                    else
+                    {
+                        sig = new Signal(s,
+                                         t,
+                                         ids,
+                                         name,
+                                         dynamic,
+                                         orientation,
+                                         z_offset,
+                                         country,
+                                         osi_type,
+                                         type,
+                                         subtype,
+                                         value,
+                                         unit,
+                                         height,
+                                         width,
+                                         depth,
+                                         text,
+                                         h_offset,
+                                         pitch,
+                                         roll,
+                                         pos.GetX(),
+                                         pos.GetY(),
+                                         pos.GetZ(),
+                                         pos.GetHRoad() + (orientation == Signal::Orientation::NEGATIVE ? M_PI : 0.0));
+                    }
+
                     if (sig != NULL)
                     {
+                        if (sig->IsDynamic())
+                        {
+                            dynamic_signals_.push_back(sig);
+                        }
+
                         r->AddSignal(sig);
                     }
                     else
@@ -4583,6 +4838,8 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                         validity.toLane_   = atoi(validity_node.attribute("toLane").value());
                         sig->validity_.push_back(validity);
                     }
+
+                    sig->SetAllValidLanes(sig, r);
                 }
                 else
                 {

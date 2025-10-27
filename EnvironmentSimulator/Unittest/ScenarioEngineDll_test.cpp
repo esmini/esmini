@@ -1952,6 +1952,7 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     uint64_t miscobj_3_id = osi_gt.mutable_stationary_object(3)->mutable_id()->value();
     uint64_t miscobj_4_id = osi_gt.mutable_stationary_object(4)->mutable_id()->value();
     uint64_t miscobj_5_id = osi_gt.mutable_stationary_object(5)->mutable_id()->value();
+    uint64_t miscobj_6_id = osi_gt.mutable_stationary_object(6)->mutable_id()->value();
 
     osi3::StationaryObject_Classification_Type miscobj_0_type = osi_gt.mutable_stationary_object(0)->mutable_classification()->type();
     osi3::StationaryObject_Classification_Type miscobj_1_type = osi_gt.mutable_stationary_object(1)->mutable_classification()->type();
@@ -1959,8 +1960,9 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     osi3::StationaryObject_Classification_Type miscobj_3_type = osi_gt.mutable_stationary_object(3)->mutable_classification()->type();
     osi3::StationaryObject_Classification_Type miscobj_4_type = osi_gt.mutable_stationary_object(4)->mutable_classification()->type();
     osi3::StationaryObject_Classification_Type miscobj_5_type = osi_gt.mutable_stationary_object(5)->mutable_classification()->type();
+    osi3::StationaryObject_Classification_Type miscobj_6_type = osi_gt.mutable_stationary_object(6)->mutable_classification()->type();
 
-    EXPECT_EQ(n_miscobjects, 6);
+    EXPECT_EQ(n_miscobjects, 7);
 
     EXPECT_EQ(miscobj_0_id, 0);
     EXPECT_EQ(miscobj_1_id, 1);
@@ -1968,13 +1970,15 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     EXPECT_EQ(miscobj_3_id, 3);
     EXPECT_EQ(miscobj_4_id, 4);
     EXPECT_EQ(miscobj_5_id, 5);
+    EXPECT_EQ(miscobj_6_id, 6);
 
     EXPECT_EQ(miscobj_0_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
     EXPECT_EQ(miscobj_1_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
-    EXPECT_EQ(miscobj_2_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
-    EXPECT_EQ(miscobj_3_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
-    EXPECT_EQ(miscobj_4_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
+    EXPECT_EQ(miscobj_2_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
+    EXPECT_EQ(miscobj_3_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
+    EXPECT_EQ(miscobj_4_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
     EXPECT_EQ(miscobj_5_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
+    EXPECT_EQ(miscobj_6_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
 
     SE_Close();
 }
@@ -3978,7 +3982,7 @@ TEST(RoadSign, TestValidityRecord)
     int n_Objects = SE_GetNumberOfObjects();
     EXPECT_EQ(n_Objects, 2);
 
-    EXPECT_EQ(SE_GetNumberOfRoadSigns(1), 18);
+    EXPECT_EQ(SE_GetNumberOfRoadSigns(1), 17);
     EXPECT_EQ(SE_GetNumberOfRoadSignValidityRecords(1, 0), 2);
 
     SE_RoadObjValidity validityRec;

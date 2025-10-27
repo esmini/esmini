@@ -2416,6 +2416,40 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
 
             action = envAction;
         }
+        else if (actionChild.name() == std::string("InfrastructureAction"))
+        {
+            pugi::xml_node infraChild = actionChild.first_child();
+            if (!strcmp(infraChild.name(), "TrafficSignalAction"))
+            {
+                // Parse TrafficSignalAction
+                pugi::xml_node controllerAction = infraChild.child("TrafficSignalControllerAction");
+                pugi::xml_node stateAction      = infraChild.child("TrafficSignalStateAction");
+
+                if (controllerAction && stateAction)
+                {
+                    LOG_ERROR_AND_QUIT(
+                        "TrafficSignalAction contains both TrafficSignalControllerAction and TrafficSignalStateAction — only one is allowed.");
+                }
+                else if (!controllerAction && !stateAction)
+                {
+                    LOG_ERROR_AND_QUIT("TrafficSignalAction must contain exactly one of TrafficSignalControllerAction or TrafficSignalStateAction.");
+                }
+                else if (controllerAction)
+                {
+                    LOG_WARN("TrafficSignalAction {} not supported yet", controllerAction.name());
+                }
+                else if (stateAction)
+                {
+                    TrafficSignalStateAction *trafficSignalStateAction = new TrafficSignalStateAction(parent);
+                    trafficSignalStateAction->name_                    = parameters.ReadAttribute(stateAction, "name");
+                    trafficSignalStateAction->value_                   = parameters.ReadAttribute(stateAction, "state");
+
+                    trafficSignalStateAction->SetSignalState();
+
+                    action = trafficSignalStateAction;
+                }
+            }
+        }
         else
         {
             LOG_WARN("Unsupported global action: {}", actionChild.name());
@@ -4705,6 +4739,14 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                     // register this trigger for later resolving storyboard element references
                     storyboard_element_triggers.push_back(info);
 
+                    condition = trigger;
+                }
+                else if (condition_type == "TrafficSignalCondition")
+                {
+                    TrigByTrafficSignal *trigger = new TrigByTrafficSignal;
+                    trigger->signalName_         = parameters.ReadAttribute(byValueChild, "name");
+                    trigger->signalState_        = parameters.ReadAttribute(byValueChild, "state");
+                    trigger->SetSignal();
                     condition = trigger;
                 }
                 else

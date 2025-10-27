@@ -1150,11 +1150,31 @@ namespace roadgeom
                         signGroup->addChild(obj_standin);
                     }
 
-                    if (tx != nullptr && signal->GetType() == "1.000.001" || signal->GetType() == "1000001")
+                    if (tx != nullptr && typeid(*signal) == typeid(roadmanager::TrafficLight))
                     {
-                        TrafficLightRedYellowGreen tl;
-                        tl.SetNode(tx);
-                        traffic_light_red_yellow_green_[signal->GetId()] = tl;
+                        auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
+                        switch (tl->GetTrafficLightType())
+                        {
+                            case roadmanager::TrafficLightType::TYPE_1000001:
+                            {
+                                TrafficLightRedYellowGreen tl_ryg;
+                                tl_ryg.SetNode(tx);
+                                traffic_light_red_yellow_green_[signal->GetId()] = tl_ryg;
+                                break;
+                            }
+                            case roadmanager::TrafficLightType::TYPE_1000002:
+                            {
+                                TrafficLightPedestrianRedGreen tl_prg;
+                                tl_prg.SetNode(tx);
+                                traffic_light_pedestrian_red_green_[signal->GetId()] = tl_prg;
+                                break;
+                            }
+                            default:
+                            {
+                                LOG_ERROR("Unsupport traffic signal type, can't view");
+                                break;
+                            }
+                        }
                     }
                 }
 
@@ -1862,6 +1882,33 @@ namespace roadgeom
     }
 
     bool TrafficLightRedYellowGreen::GetState(unsigned int light_index) const
+    {
+        return switches_[light_index]->getValue(1);
+    }
+
+    void TrafficLightPedestrianRedGreen::SetNode(osg::Group* node)
+    {
+        // find and register expected switches
+        const std::string switch_names[] = {"lamp1_switch", "lamp2_switch"};
+
+        for (unsigned int i = 0; i < 2; i++)
+        {
+            FindNamedNode fnn(switch_names[i]);
+            node->accept(fnn);
+            switches_[i] = static_cast<osg::Switch*>(fnn.getNode());
+        }
+    }
+
+    void TrafficLightPedestrianRedGreen::SetState(unsigned int light_index, bool state)
+    {
+        if (light_index < 2 && switches_[light_index] != nullptr)
+        {
+            switches_[light_index]->setAllChildrenOff();
+            switches_[light_index]->setValueList({!state, state});
+        }
+    }
+
+    bool TrafficLightPedestrianRedGreen::GetState(unsigned int light_index) const
     {
         return switches_[light_index]->getValue(1);
     }

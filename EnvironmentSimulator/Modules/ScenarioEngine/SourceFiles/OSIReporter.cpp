@@ -32,6 +32,51 @@
 #define OSI_OUT_PORT          48198
 #define OSI_MAX_UDP_DATA_SIZE 8192
 
+// enum mappings
+std::map<roadmanager::LampColor, osi3::TrafficLight_Classification_Color> lamps_color_map = {
+    {roadmanager::LampColor::COLOR_UNKNOWN, osi3::TrafficLight_Classification_Color_COLOR_UNKNOWN},
+    {roadmanager::LampColor::COLOR_OTHER, osi3::TrafficLight_Classification_Color_COLOR_OTHER},
+    {roadmanager::LampColor::COLOR_RED, osi3::TrafficLight_Classification_Color_COLOR_RED},
+    {roadmanager::LampColor::COLOR_YELLOW, osi3::TrafficLight_Classification_Color_COLOR_YELLOW},
+    {roadmanager::LampColor::COLOR_GREEN, osi3::TrafficLight_Classification_Color_COLOR_GREEN},
+    {roadmanager::LampColor::COLOR_BLUE, osi3::TrafficLight_Classification_Color_COLOR_BLUE},
+    {roadmanager::LampColor::COLOR_WHITE, osi3::TrafficLight_Classification_Color_COLOR_WHITE}};
+
+std::map<roadmanager::LampIcon, osi3::TrafficLight_Classification_Icon> lamps_icon_map = {
+    {roadmanager::LampIcon::ICON_UNKNOWN, osi3::TrafficLight_Classification_Icon_ICON_UNKNOWN},
+    {roadmanager::LampIcon::ICON_OTHER, osi3::TrafficLight_Classification_Icon_ICON_OTHER},
+    {roadmanager::LampIcon::ICON_NONE, osi3::TrafficLight_Classification_Icon_ICON_NONE},
+    {roadmanager::LampIcon::ICON_ARROW_STRAIGHT_AHEAD, osi3::TrafficLight_Classification_Icon_ICON_ARROW_STRAIGHT_AHEAD},
+    {roadmanager::LampIcon::ICON_ARROW_LEFT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT},
+    {roadmanager::LampIcon::ICON_ARROW_DIAG_LEFT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_DIAG_LEFT},
+    {roadmanager::LampIcon::ICON_ARROW_STRAIGHT_AHEAD_LEFT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_STRAIGHT_AHEAD_LEFT},
+    {roadmanager::LampIcon::ICON_ARROW_RIGHT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_RIGHT},
+    {roadmanager::LampIcon::ICON_ARROW_DIAG_RIGHT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_DIAG_RIGHT},
+    {roadmanager::LampIcon::ICON_ARROW_STRAIGHT_AHEAD_RIGHT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_STRAIGHT_AHEAD_RIGHT},
+    {roadmanager::LampIcon::ICON_ARROW_LEFT_RIGHT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT_RIGHT},
+    {roadmanager::LampIcon::ICON_ARROW_DOWN, osi3::TrafficLight_Classification_Icon_ICON_ARROW_DOWN},
+    {roadmanager::LampIcon::ICON_ARROW_DOWN_LEFT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_DOWN_LEFT},
+    {roadmanager::LampIcon::ICON_ARROW_DOWN_RIGHT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_DOWN_RIGHT},
+    {roadmanager::LampIcon::ICON_ARROW_CROSS, osi3::TrafficLight_Classification_Icon_ICON_ARROW_CROSS},
+    {roadmanager::LampIcon::ICON_PEDESTRIAN, osi3::TrafficLight_Classification_Icon_ICON_PEDESTRIAN},
+    {roadmanager::LampIcon::ICON_WALK, osi3::TrafficLight_Classification_Icon_ICON_WALK},
+    {roadmanager::LampIcon::ICON_DONT_WALK, osi3::TrafficLight_Classification_Icon_ICON_DONT_WALK},
+    {roadmanager::LampIcon::ICON_BICYCLE, osi3::TrafficLight_Classification_Icon_ICON_BICYCLE},
+    {roadmanager::LampIcon::ICON_PEDESTRIAN_AND_BICYCLE, osi3::TrafficLight_Classification_Icon_ICON_PEDESTRIAN_AND_BICYCLE},
+    {roadmanager::LampIcon::ICON_COUNTDOWN_SECONDS, osi3::TrafficLight_Classification_Icon_ICON_COUNTDOWN_SECONDS},
+    {roadmanager::LampIcon::ICON_COUNTDOWN_PERCENT, osi3::TrafficLight_Classification_Icon_ICON_COUNTDOWN_PERCENT},
+    {roadmanager::LampIcon::ICON_TRAM, osi3::TrafficLight_Classification_Icon_ICON_TRAM},
+    {roadmanager::LampIcon::ICON_BUS, osi3::TrafficLight_Classification_Icon_ICON_BUS},
+    {roadmanager::LampIcon::ICON_BUS_AND_TRAM, osi3::TrafficLight_Classification_Icon_ICON_BUS_AND_TRAM}};
+
+std::map<roadmanager::Signal::LampMode, osi3::TrafficLight_Classification_Mode> lamps_mode_map = {
+    {roadmanager::Signal::LampMode::MODE_UNKNOWN, osi3::TrafficLight_Classification_Mode_MODE_UNKNOWN},
+    {roadmanager::Signal::LampMode::MODE_OTHER, osi3::TrafficLight_Classification_Mode_MODE_OTHER},
+    {roadmanager::Signal::LampMode::MODE_OFF, osi3::TrafficLight_Classification_Mode_MODE_OFF},
+    {roadmanager::Signal::LampMode::MODE_CONSTANT, osi3::TrafficLight_Classification_Mode_MODE_CONSTANT},
+    {roadmanager::Signal::LampMode::MODE_FLASHING, osi3::TrafficLight_Classification_Mode_MODE_FLASHING},
+    {roadmanager::Signal::LampMode::MODE_COUNTING, osi3::TrafficLight_Classification_Mode_MODE_COUNTING}};
+
 // Large OSI messages needs to be split for UDP transmission
 // This struct must be mached on receiver side
 static struct
@@ -435,7 +480,7 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
     UpdateOSIRoadLane();
     UpdateOSILaneBoundary();
     UpdateOSIIntersection();
-    UpdateTrafficSignals();
+    UpdateStaticTrafficSignals();
 
     // Set the original geo reference string as is
     std::string proj_string_delimiter = "";
@@ -597,7 +642,10 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
             }
         }
     }
+
     UpdateEnvironment(scenario_engine_->environment);
+    UpdateDynamicTrafficSignals();
+
     return 0;
 }
 
@@ -2540,13 +2588,13 @@ int OSIReporter::UpdateOSIRoadLane()
     return 0;
 }
 
-int OSIReporter::UpdateTrafficSignals()
+int OSIReporter::UpdateStaticTrafficSignals()
 {
     // Create OSI Stationary Object
     // obj_osi_internal.ts = obj_osi_internal.gt->add_traffic_sign();
 
     // Retrieve opendrive class from RoadManager
-    static roadmanager::OpenDrive *opendrive = roadmanager::Position::GetOpenDrive();
+    auto opendrive = roadmanager::Position::GetOpenDrive();
 
     // Loop over all roads
     for (unsigned int i = 0; i < opendrive->GetNumOfRoads(); i++)
@@ -2558,22 +2606,11 @@ int OSIReporter::UpdateTrafficSignals()
 
             if (signal)
             {
-                // Is Traffic Light
-                if (signal->IsDynamic())
+                if (signal->IsDynamic() && !signal->GetHasOSCAction())
                 {
-                    osi3::TrafficLight *trafficLight = obj_osi_internal.static_gt->add_traffic_light();
-                    trafficLight->mutable_id()->set_value(static_cast<unsigned int>(signal->GetId()));
-                    trafficLight->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
-                    trafficLight->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
-                    trafficLight->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(
-                        signal->GetH() + signal->GetHOffset() + M_PI));  // Add pi to have the yaw angle of actual sign face direction (normally
-                                                                         // pointing 180 degrees wrt road construction direction)
-                    trafficLight->mutable_base()->mutable_dimension()->set_height(signal->GetHeight());
-                    trafficLight->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
-
-                    trafficLight->mutable_base()->mutable_position()->set_x(signal->GetX());
-                    trafficLight->mutable_base()->mutable_position()->set_y(signal->GetY());
-                    trafficLight->mutable_base()->mutable_position()->set_z(signal->GetZ() + signal->GetZOffset() + signal->GetHeight() / 2.0);
+                    // TODO: Some logic to populate anyway if set in scenario
+                    // UpdateDynamicTrafficSignals();
+                    AddTrafficLightToGt(obj_osi_internal.static_gt, signal);
                 }
                 else
                 {
@@ -2676,6 +2713,67 @@ int OSIReporter::UpdateTrafficSignals()
         }
     }
     return 0;
+}
+
+int OSIReporter::UpdateDynamicTrafficSignals()
+{
+    obj_osi_internal.dynamic_gt->clear_traffic_light();
+
+    for (auto signal : roadmanager::Position::GetOpenDrive()->GetDynamicSignals())
+    {
+        if (signal == nullptr || !signal->GetHasOSCAction())
+        {
+            continue;
+        }
+
+        AddTrafficLightToGt(obj_osi_internal.dynamic_gt, signal);
+    }
+
+    return 0;
+}
+
+void OSIReporter::AddTrafficLightToGt(osi3::GroundTruth *gt, roadmanager::Signal *signal)
+{
+    roadmanager::TrafficLight *tl = dynamic_cast<roadmanager::TrafficLight *>(signal);
+    if (tl == nullptr)
+    {
+        return;
+    }
+
+    for (size_t i = 0; i < tl->GetNrLamps(); i++)
+    {
+        osi3::TrafficLight *trafficLight = gt->add_traffic_light();
+        // trafficLight->mutable_id()->set_value(static_cast<unsigned int>(signal->GetId()));
+        trafficLight->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
+        trafficLight->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
+        trafficLight->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(
+            signal->GetH() + signal->GetHOffset() + M_PI));  // Add pi to have the yaw angle of actual sign face direction (normally
+                                                             // pointing 180 degrees wrt road construction direction)
+
+        auto lamp = tl->GetLamp(i);
+        trafficLight->mutable_base()->mutable_dimension()->set_height(lamp->GetHeight());
+        trafficLight->mutable_base()->mutable_dimension()->set_width(lamp->GetWidth());
+
+        trafficLight->mutable_base()->mutable_position()->set_x(lamp->GetX());
+        trafficLight->mutable_base()->mutable_position()->set_y(lamp->GetY());
+        trafficLight->mutable_base()->mutable_position()->set_z(lamp->GetZ());
+
+        trafficLight->mutable_id()->set_value(lamp->GetId());
+        trafficLight->mutable_classification()->set_mode(lamps_mode_map[lamp->GetMode()]);
+        trafficLight->mutable_classification()->set_color(lamps_color_map[lamp->GetColor()]);
+        trafficLight->mutable_classification()->set_icon(lamps_icon_map[lamp->GetIcon()]);
+
+        // Lane validity can be added here, needs deduce lanes based on orientattion and potentially validity field
+        for (const auto &g_lane_id : tl->GetAllValidGlobalLanes())
+        {
+            trafficLight->mutable_classification()->add_assigned_lane_id()->set_value(g_lane_id);
+        }
+
+        if (!signal->GetModel3DFullPath().empty())
+        {
+            trafficLight->set_model_reference(signal->GetModel3DFullPath());
+        }
+    }
 }
 
 int OSIReporter::UpdateOSITrafficCommand()

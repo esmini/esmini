@@ -19,6 +19,7 @@
 #include <random>
 #include <algorithm>
 #include <numeric>
+#include <sstream>
 #include "VehiclePool.hpp"
 #include "ControllerACC.hpp"
 #include "ScenarioReader.hpp"
@@ -70,6 +71,81 @@ void ParameterSetAction::Step(double simTime, double dt)
     (void)dt;
 
     OSCAction::Stop();
+}
+
+void TrafficSignalStateAction::Start(double simTime)
+{
+    trafficlight_->UpdateState(value_);
+    OSCAction::Start(simTime);
+}
+
+void TrafficSignalStateAction::Step(double simTime, double dt)
+{
+    (void)simTime;
+    (void)dt;
+
+    OSCAction::Stop();
+}
+
+int TrafficSignalStateAction::CountNonEmptyTokens(const std::string& s)
+{
+    std::istringstream ss(s);
+    std::string        token;
+    int                count = 0;
+
+    while (std::getline(ss, token, ';'))
+    {
+        if (!token.empty())
+        {
+            ++count;
+        }
+    }
+
+    return count;
+}
+
+void TrafficSignalStateAction::SetSignalState()
+{
+    roadmanager::OpenDrive* odr = roadmanager::Position::GetOpenDrive();
+
+    if (odr == nullptr)
+    {
+        return;
+    }
+
+    if (odr->GetDynamicSignals().size() == 0)
+    {
+        LOG_ERROR_AND_QUIT("TrafficSignalStateAction: No dynamic traffic signals in the road");
+    }
+
+    for (const auto& signal : odr->GetDynamicSignals())
+    {
+        if (signal == nullptr)
+        {
+            continue;
+        }
+        auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
+
+        if (tl != nullptr && tl->GetId() == std::stoi(this->name_))
+        {
+            tl->CheckValidLampModes(this->value_);
+            std::string combined_type = tl->GetCombinedTypeSubtypeValueStr(tl->GetType(), tl->GetSubType(), tl->GetValueStr());
+            auto        it            = roadmanager::traffic_light_type_map.find(combined_type);
+            if (it == roadmanager::traffic_light_type_map.end())
+            {
+                LOG_ERROR_AND_QUIT("TrafficSignalStateAction: Unsupported traffic signal type", tl->GetType());
+            }
+
+            trafficlight_ = tl;
+            tl->SetHasOSCAction(true);  // Action attached to the trafficlight, to know if we should populate TL as dynamic osi data
+            break;
+        }
+    }
+
+    if (trafficlight_ == nullptr)
+    {
+        LOG_ERROR_AND_QUIT("TrafficSignalStateAction: No matching traffic signal with id {} in the road", name_);
+    }
 }
 
 void VariableSetAction::Start(double simTime)

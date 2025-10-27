@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="3"
+               date="2020-05-12T10:00:00"
+               description="dummy"
+               author="esmini"/>
+   <ParameterDeclarations>
+      <ParameterDeclaration name="RedLightDistance" parameterType="string" value="50"/>
+      <ParameterDeclaration name="TrafficLightRed" parameterType="string" value="on;off;off"/>
+      <ParameterDeclaration name="TrafficLightYellow" parameterType="string" value="off;on;off"/>
+      <ParameterDeclaration name="TrafficLightGreen" parameterType="string" value="off;off;on"/>
+      <ParameterDeclaration name="PedestrianLightRed" parameterType="string" value="on;off"/>
+      <ParameterDeclaration name="PedestrianLightGreen" parameterType="string" value="off;on"/>
+   </ParameterDeclarations>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <PedestrianCatalog>
+         <Directory path="../xosc/Catalogs/Pedestrians"/>
+      </PedestrianCatalog>
+   </CatalogLocations>
+     <RoadNetwork>
+      <LogicFile filepath="../xodr/fabriksgatan_traffic_lights.xodr"/>
+      <SceneGraphFile filepath="../models/fabriksgatan.osgb"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+      </ScenarioObject>
+      <ScenarioObject name="Pedestrian_1">
+         <CatalogReference catalogName="PedestrianCatalog" entryName="pedestrian_adult"/>
+      </ScenarioObject>
+      <ScenarioObject name="Pedestrian_2">
+         <CatalogReference catalogName="PedestrianCatalog" entryName="pedestrian_adult"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <GlobalAction>
+               <InfrastructureAction>
+                  <TrafficSignalAction>
+                     <TrafficSignalStateAction name="1" state="$TrafficLightGreen"/>
+                  </TrafficSignalAction>
+               </InfrastructureAction>
+            </GlobalAction>
+            <GlobalAction>
+               <InfrastructureAction>
+                  <TrafficSignalAction>
+                     <TrafficSignalStateAction name="2" state="$PedestrianLightRed"/>
+                  </TrafficSignalAction>
+               </InfrastructureAction>
+            </GlobalAction>
+            <GlobalAction>
+               <InfrastructureAction>
+                  <TrafficSignalAction>
+                     <TrafficSignalStateAction name="3" state="$PedestrianLightRed"/>
+                  </TrafficSignalAction>
+               </InfrastructureAction>
+            </GlobalAction>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <RoutingAction>
+                        <AssignRouteAction>
+                           <Route name="MyRoute" closed="false">
+                              <Waypoint routeStrategy="shortest">
+                                    <Position>
+                                       <LanePosition roadId="3" laneId="-1" offset="0.0" s="11"/>
+                                    </Position>
+                              </Waypoint>
+                              <Waypoint routeStrategy="shortest">
+                                    <Position>
+                                       <LanePosition roadId="2" laneId="1" offset="0.0" s="200"/>
+                                    </Position>
+                              </Waypoint>
+                           </Route>
+                        </AssignRouteAction>
+                  </RoutingAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="13.889"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="3" laneId="-1" offset="0" s="10"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Pedestrian_1">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="3" laneId="-3" offset="0.5" s="113">
+                           <Orientation type="relative" h="1.93"/>
+                        </LanePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Pedestrian_2">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="0"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="3" laneId="3" offset="-0.5" s="110">
+                           <Orientation type="relative" h="1.57"/>
+                        </LanePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="DummyStory">
+         <Act name="StopLightsAct">
+            <ManeuverGroup maximumExecutionCount="1" name="StopLightsManueverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="StopLightManeuver">
+                  <Event name="StopLightEvent" priority="override" maximumExecutionCount="1">
+                     <Action name="StopLightAction">
+                        <GlobalAction>
+                           <InfrastructureAction>
+                              <TrafficSignalAction>
+                                 <TrafficSignalStateAction name="1" state="$TrafficLightYellow"/>
+                              </TrafficSignalAction>
+                           </InfrastructureAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="PositionCondition" delay="0" conditionEdge="none">
+                                <ByEntityCondition>
+                                    <TriggeringEntities triggeringEntitiesRule="any">
+                                        <EntityRef entityRef="Ego"/>
+                                    </TriggeringEntities>
+                                    <EntityCondition>
+                                       <DistanceCondition value="$RedLightDistance" freespace="false" rule="lessThan" relativeDistanceType="longitudinal" coordinateSystem="road">
+                                             <Position>
+                                                <LanePosition roadId="3" laneId="-1" s="109.0" offset="0.0"/>
+                                             </Position>
+                                       </DistanceCondition>
+                                    </EntityCondition>
+                                </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="StopLightEvent2" priority="override" maximumExecutionCount="1">
+                     <Action name="StopLightAction2">
+                        <GlobalAction>
+                           <InfrastructureAction>
+                              <TrafficSignalAction>
+                                 <TrafficSignalStateAction name="1" state="$TrafficLightRed"/>
+                              </TrafficSignalAction>
+                           </InfrastructureAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="TrafficLightYellow" delay="3.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <TrafficSignalCondition name="1" state="$TrafficLightYellow"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="StopLightEvent3" priority="override" maximumExecutionCount="1">
+                     <Action name="StopLightAction2">
+                        <GlobalAction>
+                           <InfrastructureAction>
+                              <TrafficSignalAction>
+                                 <TrafficSignalStateAction name="1" state="$TrafficLightGreen"/>
+                              </TrafficSignalAction>
+                           </InfrastructureAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="TrafficLightRed" delay="10.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <TrafficSignalCondition name="1" state="$TrafficLightRed"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="PedestrianLightEvent" priority="override" maximumExecutionCount="1">
+                     <Action name="PedestrianLightAction">
+                        <GlobalAction>
+                           <InfrastructureAction>
+                              <TrafficSignalAction>
+                                 <TrafficSignalStateAction name="2" state="$PedestrianLightGreen"/>
+                              </TrafficSignalAction>
+                           </InfrastructureAction>
+                        </GlobalAction>
+                     </Action>
+                     <Action name="PedestrianLightAction2">
+                        <GlobalAction>
+                           <InfrastructureAction>
+                              <TrafficSignalAction>
+                                 <TrafficSignalStateAction name="3" state="$PedestrianLightGreen"/>
+                              </TrafficSignalAction>
+                           </InfrastructureAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="TrafficLightRed" delay="3.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <TrafficSignalCondition name="1" state="$TrafficLightRed"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="PedestrianLightEvent2" priority="override" maximumExecutionCount="1">
+                     <Action name="PedestrianLightAction3">
+                        <GlobalAction>
+                           <InfrastructureAction>
+                              <TrafficSignalAction>
+                                 <TrafficSignalStateAction name="2" state="$PedestrianLightRed"/>
+                              </TrafficSignalAction>
+                           </InfrastructureAction>
+                        </GlobalAction>
+                     </Action>
+                     <Action name="PedestrianLightAction4">
+                        <GlobalAction>
+                           <InfrastructureAction>
+                              <TrafficSignalAction>
+                                 <TrafficSignalStateAction name="3" state="$PedestrianLightRed"/>
+                              </TrafficSignalAction>
+                           </InfrastructureAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="TrafficLightRed2" delay="9.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <TrafficSignalCondition name="1" state="$TrafficLightRed"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="StopOnRedManeuver">
+                  <Event name="StopOnRedEvent" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="StopOnYellowAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="${$RedLightDistance - 6}" dynamicsDimension="distance"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="0.0"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="TrafficLightYellow" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <TrafficSignalCondition name="1" state="$TrafficLightYellow"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="DriveOnGreenEvent" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="DriveOnGreenAction">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="5" dynamicsDimension="time"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="13.889"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="TrafficLightGreen" delay="0.5" conditionEdge="rising">
+                              <ByValueCondition>
+                                 <TrafficSignalCondition name="1" state="$TrafficLightGreen"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="WalkOnGreenManueverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Pedestrian_1"/>
+               </Actors>
+               <Maneuver name="WalkOnGreenManeuver1">
+                  <Event name="WalkOnGreenEvent1" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="WalkOnGreenAction1">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="1" dynamicsDimension="rate"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="2.0"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="WalkOnGreenStraightLine1">
+                        <PrivateAction>
+                              <RoutingAction>
+                                 <FollowTrajectoryAction>
+                                    <Trajectory closed="false" name="ped_traj">
+                                          <Shape>
+                                             <Polyline>
+                                                <Vertex>
+                                                      <Position>
+                                                         <LanePosition roadId="3" laneId="-3" offset="0.5" s="113">
+                                                         </LanePosition>
+                                                      </Position>
+                                                </Vertex>
+                                                <Vertex>
+                                                      <Position>
+                                                         <LanePosition roadId="3" laneId="3" offset="-1.0" s="110">
+                                                         </LanePosition>
+                                                      </Position>
+                                                </Vertex>
+                                                <Vertex>
+                                                      <Position>
+                                                         <LanePosition roadId="3" laneId="3" offset="-0.5" s="109">
+                                                         </LanePosition>
+                                                      </Position>
+                                                </Vertex>
+                                                <Vertex>
+                                                      <Position>
+                                                         <LanePosition roadId="3" laneId="3" offset="0.5" s="90"/>
+                                                      </Position>
+                                                </Vertex>
+                                             </Polyline>
+                                          </Shape>
+                                    </Trajectory>
+                                    <TimeReference>
+                                          <None/>
+                                    </TimeReference>
+                                    <TrajectoryFollowingMode followingMode="position"/>
+                                 </FollowTrajectoryAction>
+                              </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="PedestrianLightGreen" delay="0.5" conditionEdge="none">
+                              <ByValueCondition>
+                                 <TrafficSignalCondition name="3" state="$PedestrianLightGreen"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="WalkOnGreenManueverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Pedestrian_2"/>
+               </Actors>
+               <Maneuver name="WalkOnGreenManeuver2">
+                  <Event name="WalkOnGreenEvent2" priority="overwrite" maximumExecutionCount="1">
+                     <Action name="WalkOnGreenAction2">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="linear" value="1" dynamicsDimension="rate"/>
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="3.3"/>
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="WalkOnGreenStraightLine2">
+                        <PrivateAction>
+                              <RoutingAction>
+                                 <FollowTrajectoryAction>
+                                    <Trajectory closed="false" name="ped_traj">
+                                          <Shape>
+                                             <Polyline>
+                                                <Vertex>
+                                                      <Position>
+                                                         <LanePosition roadId="3" laneId="3" offset="-0.5" s="110">
+                                                         </LanePosition>
+                                                      </Position>
+                                                </Vertex>
+                                                <Vertex>
+                                                      <Position>
+                                                         <LanePosition roadId="3" laneId="-3" offset="0.0" s="110">
+                                                         </LanePosition>
+                                                      </Position>
+                                                </Vertex>
+                                                <Vertex>
+                                                      <Position>
+                                                         <LanePosition roadId="3" laneId="-3" offset="-0.5" s="110">
+                                                         </LanePosition>
+                                                      </Position>
+                                                </Vertex>
+                                                <Vertex>
+                                                      <Position>
+                                                         <LanePosition roadId="3" laneId="-3" offset="-0.5" s="90"/>
+                                                      </Position>
+                                                </Vertex>
+                                             </Polyline>
+                                          </Shape>
+                                    </Trajectory>
+                                    <TimeReference>
+                                          <None/>
+                                    </TimeReference>
+                                    <TrajectoryFollowingMode followingMode="position"/>
+                                 </FollowTrajectoryAction>
+                              </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="PedestrianLightGreen" delay="1.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <TrafficSignalCondition name="2" state="$PedestrianLightGreen"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="StartTrigger" delay="0" conditionEdge="none">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>   
+      </Story>
+		<StopTrigger>
+		  <ConditionGroup>
+			 <Condition name="StopCondition" delay="0" conditionEdge="rising">
+				<ByValueCondition>
+					<SimulationTimeCondition value="30" rule="greaterThan"/>
+				</ByValueCondition>
+			 </Condition>
+		  </ConditionGroup>
+		</StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

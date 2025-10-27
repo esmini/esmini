@@ -1,0 +1,1145 @@
+<?xml version="1.0" standalone="yes"?>
+<OpenDRIVE>
+    <header revMajor="1" revMinor="4" name="" version="1.00" date="Wed Jul  1 07:46:19 2020" north="0.0000000000000000e+00" south="0.0000000000000000e+00" east="0.0000000000000000e+00" west="0.0000000000000000e+00">
+    </header>
+    <road name="" length="9.3660831225697507e+01" id="0" junction="-1">
+        <link>
+            <predecessor elementType="junction" elementId="4" />
+        </link>
+        <type s="0.0000000000000000e+00" type="town"/>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="2.7245446351316485e+01" y="-1.0188720701065932e+01" hdg="-1.3588592348487367e+00" length="8.8071724735679666e+01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="-3.2543238367009553e-06" dU="4.1318473925356069e-09" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="7.0148430603202215e-04" dV="-7.9649207295225658e-06"/>
+            </geometry>
+            <geometry s="8.8071724735679666e+01" x="4.5766973627847619e+01" y="-9.6267946418374777e+01" hdg="-1.4205911198841079e+00" length="5.5891064900178407e+00">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="-5.6372958335447834e-04" dU="3.1801585363045161e-05" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="-2.2083331895134190e-02" dV="1.9767205747957413e-03"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="0.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <left>
+                    <lane id="3" type="sidewalk" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_3d_sidewalk" mapping="auto" />
+                            <fillet pos="leftOfLane" style="cobble" id="5" />
+                        </userData>
+                    </lane>
+                    <lane id="2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <roadMark sOffset="0.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="8.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
+                        </roadMark>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-3" type="sidewalk" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_3d_sidewalk" mapping="auto" />
+                            <fillet pos="rightOfLane" style="cobble" id="2" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="1.6909178810488743e+01" id="1" junction="-1">
+        <link>
+            <predecessor elementType="junction" elementId="4" />
+        </link>
+        <type s="0.0000000000000000e+00" type="town"/>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="3.3139257795788829e+01" y="-1.2502863131013289e+00" hdg="1.9297931061740717e-01" length="1.6909178810488743e+01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="0.0000000000000000e+00" dU="-0.0000000000000000e+00" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="1.6414502399378592e-17" dV="-9.7074509550970606e-19"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="0.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <left>
+                    <lane id="3" type="sidewalk" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_3d_sidewalk" mapping="auto" />
+                            <fillet pos="leftOfLane" style="cobble" id="4" />
+                        </userData>
+                    </lane>
+                    <lane id="2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <roadMark sOffset="0.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="8.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
+                        </roadMark>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-3" type="sidewalk" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_3d_sidewalk" mapping="auto" />
+                            <fillet pos="rightOfLane" style="cobble" id="5" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="3.0419431655254522e+02" id="2" junction="-1">
+        <link>
+            <successor elementType="junction" elementId="4" />
+        </link>
+        <type s="0.0000000000000000e+00" type="town"/>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="-3.4506656357669272e+01" y="3.0339042219333351e+02" hdg="-1.3658071295771883e+00" length="5.0759189538874864e+01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="-2.5606059687222221e-14" dU="5.5960732546781059e-17" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="8.2000493870997992e-08" dV="-1.6154807556215293e-09"/>
+            </geometry>
+            <geometry s="5.0759189538874864e+01" x="-2.4174289163551293e+01" y="2.5369396848883480e+02" hdg="-1.3658112918557990e+00" length="8.1504707916198981e+01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="-6.0972028030722779e-08" dU="7.8701916922356173e-11" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="1.0008160562831812e-04" dV="-1.2285507906784312e-06"/>
+            </geometry>
+            <geometry s="1.3226389745507385e+02" x="-7.5842073532985523e+00" y="1.7389592641126364e+02" hdg="-1.3739807873047223e+00" length="1.0086755551341727e+02">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="-3.2688351950601254e-07" dU="-6.1826188069576508e-10" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="-1.3120555286963648e-04" dV="4.9823647816250076e-07"/>
+            </geometry>
+            <geometry s="2.3313145296849112e+02" x="1.1331698045250960e+01" y="7.4818523911759257e+01" hdg="-1.3852424651423894e+00" length="7.1062863584054099e+01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="-1.1130563064500562e-07" dU="4.9048564562838788e-10" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="-8.7143753033982286e-05" dV="6.1314642720371393e-07"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="0.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <left>
+                    <lane id="3" type="sidewalk" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_3d_sidewalk" mapping="auto" />
+                            <fillet pos="leftOfLane" style="cobble" id="4" />
+                        </userData>
+                    </lane>
+                    <lane id="2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <roadMark sOffset="0.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="8.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
+                        </roadMark>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-3" type="sidewalk" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_3d_sidewalk" mapping="auto" />
+                            <fillet pos="rightOfLane" style="grass" id="3" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="1.1425949070763556e+02" id="3" junction="-1">
+        <link>
+            <successor elementType="junction" elementId="4" />
+        </link>
+        <type s="0.0000000000000000e+00" type="town"/>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="-9.5108934408286586e+01" y="-2.0438206710852683e+01" hdg="1.4572989246020085e-01" length="1.1425949070763556e+02">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="0.0000000000000000e+00" dU="-0.0000000000000000e+00" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="7.1686675245806369e-18" dV="-3.2614106856467854e-20"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="0.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <left>
+                    <lane id="3" type="sidewalk" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_3d_sidewalk" mapping="auto" />
+                            <fillet pos="leftOfLane" style="grass" id="3" />
+                        </userData>
+                    </lane>
+                    <lane id="2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </left>
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <roadMark sOffset="0.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="3.0000000000000000e+00" space="8.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="0.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
+                        </roadMark>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="standard" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-3" type="sidewalk" level= "false">
+                        <link>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_3d_sidewalk" mapping="auto" />
+                            <fillet pos="rightOfLane" style="cobble" id="2" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+         <object type="pole" name="pole" id="1" s="109.0" t="-4.0" zOffset="-0.2" validLength="0.0" orientation="+" radius="0.03" height="4.4" hdg="0.0" pitch="0.0" roll="0.0"/>
+         <object type="pole" name="pole" id="2" s="114.0" t="4.0" zOffset="-0.2" validLength="0.0" orientation="+" radius="0.03" height="3.2" hdg="0.0" pitch="0.0" roll="0.0"/>
+        </objects>
+        <signals>
+            <signal s="109.0" t="-4.0" id="1" name="_Sg12" dynamic="yes" orientation="+" zOffset="3.4" type="1000001" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.8" width="0.4"/>
+            <signal s="114.0" t="4.0" id="2" name="_Sg13" dynamic="yes" orientation="+" zOffset="2.5" type="1000002" country="OpenDRIVE" subtype="-1" hOffset="1.57" pitch="0.0" roll="0.0" height="0.55" width="0.4">
+                <validity fromLane="-1" toLane="1" />
+            </signal>
+            <signal s="109.0" t="-4.0" id="3" name="_Sg14" dynamic="yes" orientation="+" zOffset="2.5" type="1000002" country="OpenDRIVE" subtype="-1" hOffset="-1.57" pitch="0.0" roll="0.0" height="0.55" width="0.4">
+                <validity fromLane="-1" toLane="1" />
+            </signal>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="1.4705225500143696e+01" id="5" junction="4">
+        <link>
+            <predecessor elementType="road" elementId="1" contactPoint="start" />
+            <successor elementType="road" elementId="0" contactPoint="start" />
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="3.2803636309735573e+01" y="4.6722882091698636e-01" hdg="-2.9486133429773531e+00" length="1.4705225500143696e+01">
+                <arc curvature="1.0810810810810828e-01"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="1.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                            <predecessor id="1"/>
+                            <successor id="-1"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="9.3301575614303687e+00" id="6" junction="4">
+        <link>
+            <predecessor elementType="road" elementId="1" contactPoint="start" />
+            <successor elementType="road" elementId="2" contactPoint="end" />
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="3.2803636190615933e+01" y="4.6722878935149659e-01" hdg="-2.9486133429736281e+00" length="9.1930635037769175e+00">
+                <arc curvature="-1.7201209583480823e-01"/>
+            </geometry>
+            <geometry s="9.1930635037769175e+00" x="2.5971648657389952e+01" y="5.1180085127984833e+00" hdg="1.7532538437800906e+00" length="1.3709405765345117e-01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="0.0000000000000000e+00" dU="-0.0000000000000000e+00" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="-7.9705957217080451e-13" dV="3.3325228239591205e-12"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="1.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                            <predecessor id="1"/>
+                            <successor id="1"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                            <predecessor id="2"/>
+                            <successor id="2"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <height sOffset="9.3301575614303687e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
+                            <fillet pos="leftOfLane" style="pavement" id="1" />
+                        </userData>
+                    </lane>
+                    <lane id="-3" type="sidewalk" level= "false">
+                        <link>
+                            <predecessor id="3"/>
+                            <successor id="3"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <height sOffset="9.3301575614303687e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_3d_sidewalk" mapping="auto" />
+                            <fillet pos="rightOfLane" style="cobble" id="0" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="1.5338635364571706e+01" id="7" junction="4">
+        <link>
+            <predecessor elementType="road" elementId="1" contactPoint="start" />
+            <successor elementType="road" elementId="3" contactPoint="end" />
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="3.2803636236597036e+01" y="4.6722880153541468e-01" hdg="-2.9486133429723873e+00" length="1.5338635364571706e+01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="-4.8936597517695011e-07" dU="-1.5708281042885836e-06" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="-1.5818022749425516e-03" dV="1.8331850953223605e-06"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="1.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                            <predecessor id="1"/>
+                            <successor id="1"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="9.1410861217122346e+00" id="8" junction="4">
+        <link>
+            <predecessor elementType="road" elementId="0" contactPoint="start" />
+            <successor elementType="road" elementId="1" contactPoint="start" />
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="2.8956290447352409e+01" y="-9.8206012012572330e+00" hdg="1.7827334187410562e+00" length="9.1410861217122346e+00">
+                <arc curvature="-1.7391304347823630e-01"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="1.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                            <predecessor id="1"/>
+                            <successor id="-1"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                            <predecessor id="2"/>
+                            <successor id="-2"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <height sOffset="9.1410861217122346e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
+                            <fillet pos="leftOfLane" style="pavement" id="1" />
+                        </userData>
+                    </lane>
+                    <lane id="-3" type="sidewalk" level= "false">
+                        <link>
+                            <predecessor id="3"/>
+                            <successor id="-3"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <height sOffset="9.1410861217122346e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_3d_sidewalk" mapping="auto" />
+                            <fillet pos="rightOfLane" style="cobble" id="0" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="1.5371484665602292e+01" id="9" junction="4">
+        <link>
+            <predecessor elementType="road" elementId="0" contactPoint="start" />
+            <successor elementType="road" elementId="2" contactPoint="end" />
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="2.8956290580884982e+01" y="-9.8206011251776353e+00" hdg="1.7827334187410560e+00" length="1.5371484665602292e+01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="-1.9055574025561113e-07" dU="-6.0883899569170309e-07" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="-9.8463255142854154e-04" dV="1.1219756338650985e-06"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="1.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <roadMark sOffset="0.0000000000000000e+00" type="broken" weight="standard" color="standard" width="1.2000000000000000e-01" laneChange="both" height="1.9999999552965164e-02">
+                            <type name="broken" width="1.2000000000000000e-01" >
+                                <line length="4.0000000000000000e+00" space="4.0000000000000000e+00" tOffset="0.0000000000000000e+00" sOffset="4.0000000000000000e+00" rule="caution" width="1.2000000000000000e-01"/>
+                            </type>
+                        </roadMark>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                            <predecessor id="1"/>
+                            <successor id="1"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="1.5058299990762263e+01" id="10" junction="4">
+        <link>
+            <predecessor elementType="road" elementId="0" contactPoint="start" />
+            <successor elementType="road" elementId="3" contactPoint="end" />
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="2.8956290811185873e+01" y="-9.8206009939376955e+00" hdg="1.7827334187422974e+00" length="1.4921205933107643e+01">
+                <arc curvature="1.0083562508647546e-01"/>
+            </geometry>
+            <geometry s="1.4921205933107643e+01" x="1.7820941371377330e+01" y="-2.0946993485213241e+00" hdg="-2.9958627611295898e+00" length="1.3709405765462002e-01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="0.0000000000000000e+00" dU="-0.0000000000000000e+00" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="-2.6746200822552207e-14" dV="2.7673120119619053e-14"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="1.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                            <predecessor id="1"/>
+                            <successor id="1"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="9.7922380451809516e+00" id="11" junction="4">
+        <link>
+            <predecessor elementType="road" elementId="3" contactPoint="end" />
+            <successor elementType="road" elementId="0" contactPoint="start" />
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="1.8193551670482446e+01" y="-5.5775080348612729e+00" hdg="1.4572989246020046e-01" length="1.3709405765461935e-01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="0.0000000000000000e+00" dU="-0.0000000000000000e+00" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="-1.9435818770592763e-14" dV="1.4176995781653325e-13"/>
+            </geometry>
+            <geometry s="1.3709405765461935e-01" x="1.8329192320670806e+01" y="-5.5576001629296883e+00" hdg="1.4572989246020107e-01" length="9.6551439875263316e+00">
+                <arc curvature="-1.5583290412372322e-01"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="1.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="-1"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                            <predecessor id="-2"/>
+                            <successor id="-2"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <height sOffset="9.7922380451809516e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
+                            <fillet pos="leftOfLane" style="pavement" id="1" />
+                        </userData>
+                    </lane>
+                    <lane id="-3" type="sidewalk" level= "false">
+                        <link>
+                            <predecessor id="-3"/>
+                            <successor id="-3"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <height sOffset="9.7922380451809516e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_3d_sidewalk" mapping="auto" />
+                            <fillet pos="rightOfLane" style="cobble" id="2" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="1.5504008388748556e+01" id="12" junction="4">
+        <link>
+            <predecessor elementType="road" elementId="3" contactPoint="end" />
+            <successor elementType="road" elementId="1" contactPoint="start" />
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="1.8193551670482446e+01" y="-5.5775080348612729e+00" hdg="1.4572989246020124e-01" length="1.5504008388748556e+01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="4.7680881019220175e-07" dU="-1.5582149683902567e-06" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="1.4836350290814318e-03" dV="1.7023429132889896e-06"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="1.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="-1"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="1.4869596549707827e+01" id="13" junction="4">
+        <link>
+            <predecessor elementType="road" elementId="3" contactPoint="end" />
+            <successor elementType="road" elementId="2" contactPoint="end" />
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="1.8193552009115297e+01" y="-5.5775077608211987e+00" hdg="1.4572989246020107e-01" length="1.4869596549707827e+01">
+                <arc curvature="1.0810810810811375e-01"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="1.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="1"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="1.5474663187534015e+01" id="14" junction="4">
+        <link>
+            <predecessor elementType="road" elementId="2" contactPoint="end" />
+            <successor elementType="road" elementId="0" contactPoint="start" />
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="2.2504870734064529e+01" y="4.6177629621062923e+00" hdg="-1.3883388098097456e+00" length="1.5474663187534015e+01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="1.8525862999110341e-07" dU="-6.0882455161454867e-07" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="9.2726258005406954e-04" dV="1.0819067536513177e-06"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="1.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="-1"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="1.4864770982925403e+01" id="15" junction="4">
+        <link>
+            <predecessor elementType="road" elementId="2" contactPoint="end" />
+            <successor elementType="road" elementId="1" contactPoint="start" />
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="2.2504870734064529e+01" y="4.6177629621062923e+00" hdg="-1.3883388098097562e+00" length="1.3709405765343657e-01">
+                <paramPoly3 pRange="arcLength" aU="0.0000000000000000e+00" bU="1.0000000000000000e+00" cU="0.0000000000000000e+00" dU="-0.0000000000000000e+00" aV="0.0000000000000000e+00" bV="0.0000000000000000e+00" cV="-3.2039366881044965e-14" dV="3.2907675432183805e-13"/>
+            </geometry>
+            <geometry s="1.3709405765343657e-01" x="2.2529746092282728e+01" y="4.4829453246554598e+00" hdg="-1.3883388098147114e+00" length="1.4727676925271966e+01">
+                <arc curvature="1.0737050577974649e-01"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="1.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="-1"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <road name="" length="9.2432627200889943e+00" id="16" junction="4">
+        <link>
+            <predecessor elementType="road" elementId="2" contactPoint="end" />
+            <successor elementType="road" elementId="3" contactPoint="end" />
+        </link>
+        <planView>
+            <geometry s="0.0000000000000000e+00" x="2.2504870688215554e+01" y="4.6177624915068947e+00" hdg="-1.3883388098147114e+00" length="9.2432627200889943e+00">
+                <arc curvature="-1.7391304347826336e-01"/>
+            </geometry>
+        </planView>
+        <lateralProfile>
+        </lateralProfile>
+        <lanes>
+            <laneOffset s="0.0000000000000000e+00" a="1.7500000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+            <laneSection s="0.0000000000000000e+00">
+                <center>
+                    <lane id="0" type="none" level= "false">
+                        <link>
+                        </link>
+                        <userData code="viStyleDef">
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                </center>
+                <right>
+                    <lane id="-1" type="driving" level= "false">
+                        <link>
+                            <predecessor id="-1"/>
+                            <successor id="1"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.5000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="hide_pav." mapping="auto" />
+                            <fillet pos="none" style="none" id="0" />
+                        </userData>
+                    </lane>
+                    <lane id="-2" type="border" level= "false">
+                        <link>
+                            <predecessor id="-2"/>
+                            <successor id="2"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="3.0000001192092896e-01" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <height sOffset="9.2432627200889943e+00" inner="0.0000000000000000e+00" outer="0.0000000000000000e+00"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_cobble" mapping="auto" />
+                            <fillet pos="leftOfLane" style="pavement" id="1" />
+                        </userData>
+                    </lane>
+                    <lane id="-3" type="sidewalk" level= "false">
+                        <link>
+                            <predecessor id="-3"/>
+                            <successor id="3"/>
+                        </link>
+                        <width sOffset="0.0000000000000000e+00" a="2.0000000000000000e+00" b="0.0000000000000000e+00" c="0.0000000000000000e+00" d="-0.0000000000000000e+00"/>
+                        <height sOffset="0.0000000000000000e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <height sOffset="9.2432627200889943e+00" inner="1.1999999731779099e-01" outer="1.1999999731779099e-01"/>
+                        <userData code="viStyleDef">
+                            <style sOffset="0.000000" laneStyle="bo_3d_sidewalk" mapping="auto" />
+                            <fillet pos="rightOfLane" style="grass" id="3" />
+                        </userData>
+                    </lane>
+                </right>
+            </laneSection>
+        </lanes>
+        <objects>
+        </objects>
+        <signals>
+        </signals>
+        <surface>
+        </surface>
+    </road>
+    <junction name="" id="4">
+        <connection id="0" incomingRoad="0" connectingRoad="8" contactPoint="start">
+            <laneLink from="1" to="-1"/>
+            <laneLink from="2" to="-2"/>
+            <laneLink from="3" to="-3"/>
+        </connection>
+        <connection id="1" incomingRoad="0" connectingRoad="9" contactPoint="start">
+            <laneLink from="1" to="-1"/>
+        </connection>
+        <connection id="2" incomingRoad="0" connectingRoad="10" contactPoint="start">
+            <laneLink from="1" to="-1"/>
+        </connection>
+        <connection id="3" incomingRoad="1" connectingRoad="5" contactPoint="start">
+            <laneLink from="1" to="-1"/>
+        </connection>
+        <connection id="4" incomingRoad="1" connectingRoad="6" contactPoint="start">
+            <laneLink from="1" to="-1"/>
+            <laneLink from="2" to="-2"/>
+            <laneLink from="3" to="-3"/>
+        </connection>
+        <connection id="5" incomingRoad="1" connectingRoad="7" contactPoint="start">
+            <laneLink from="1" to="-1"/>
+        </connection>
+        <connection id="6" incomingRoad="2" connectingRoad="14" contactPoint="start">
+            <laneLink from="-1" to="-1"/>
+        </connection>
+        <connection id="7" incomingRoad="2" connectingRoad="15" contactPoint="start">
+            <laneLink from="-1" to="-1"/>
+        </connection>
+        <connection id="8" incomingRoad="2" connectingRoad="16" contactPoint="start">
+            <laneLink from="-1" to="-1"/>
+            <laneLink from="-2" to="-2"/>
+            <laneLink from="-3" to="-3"/>
+        </connection>
+        <connection id="9" incomingRoad="3" connectingRoad="11" contactPoint="start">
+            <laneLink from="-1" to="-1"/>
+            <laneLink from="-2" to="-2"/>
+            <laneLink from="-3" to="-3"/>
+        </connection>
+        <connection id="10" incomingRoad="3" connectingRoad="12" contactPoint="start">
+            <laneLink from="-1" to="-1"/>
+        </connection>
+        <connection id="11" incomingRoad="3" connectingRoad="13" contactPoint="start">
+            <laneLink from="-1" to="-1"/>
+        </connection>
+    </junction>
+</OpenDRIVE>

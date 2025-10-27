@@ -514,7 +514,297 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
     delete player;
 }
 
+TEST(TrafficSignals, TestTrafficSignalActions)
+{
+    const char*     args[] = {"esmini", "--osc", "../../../resources/xosc/traffic_lights.xosc", "--headless", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    double          dt     = 0.1;
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ScenarioEngine* se = player->scenarioEngine;
+    ASSERT_EQ(se->entities_.object_.size(), 3);
+    Object* car   = se->entities_.object_[0];
+    Object* ped_1 = se->entities_.object_[1];
+    Object* ped_2 = se->entities_.object_[2];
+
+    EXPECT_NEAR(car->pos_.GetX(), -84.9608, 1e-3);
+    EXPECT_NEAR(car->pos_.GetY(), -20.7175, 1e-3);
+    EXPECT_NEAR(ped_1->pos_.GetX(), 17.3177, 1e-3);
+    EXPECT_NEAR(ped_1->pos_.GetY(), -8.2833, 1e-3);
+    EXPECT_NEAR(ped_2->pos_.GetX(), 13.1006, 1e-3);
+    EXPECT_NEAR(ped_2->pos_.GetY(), -0.2101, 1e-3);
+
+    while (se->getSimulationTime() < 9.7)
+    {
+        player->Frame(dt);
+    }
+
+    // Pedestrian lights from red -> green, car waiting at the stoplight
+    EXPECT_NEAR(car->pos_.GetX(), 7.3508, 1e-3);
+    EXPECT_NEAR(car->pos_.GetY(), -7.1689, 1e-3);
+
+    while (se->getSimulationTime() < 15.7)
+    {
+        player->Frame(dt);
+    }
+
+    // Pedestrian lights from green -> red, pedestrians has crossed the street
+    EXPECT_NEAR(ped_1->pos_.GetX(), 12.3541, 1e-3);
+    EXPECT_NEAR(ped_1->pos_.GetY(), -0.4353, 1e-3);
+    EXPECT_NEAR(ped_2->pos_.GetX(), 12.2388, 1e-3);
+    EXPECT_NEAR(ped_2->pos_.GetY(), -10.0395, 1e-3);
+
+    while (se->getSimulationTime() < 21.6)
+    {
+        player->Frame(dt);
+    }
+
+    // Traffic light red off, green on, car has made a left turn
+    EXPECT_NEAR(car->pos_.GetX(), 25.4155, 1e-3);
+    EXPECT_NEAR(car->pos_.GetY(), 8.1338, 1e-3);
+
+    delete player;
+}
+
 #ifdef _USE_OSI
+
+TEST(OSI, TestTrafficLights)
+{
+    const char*     args[] = {"esmini", "--osc", "../../../resources/xosc/traffic_lights.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    double          dt     = 0.1;
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ScenarioEngine* se = player->scenarioEngine;
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+
+    // OSI TrafficLights
+    ASSERT_EQ(osi_gt_ptr->traffic_light_size(), 7);
+
+    for (int i = 0; i < osi_gt_ptr->traffic_light_size(); i++)
+    {
+        ASSERT_EQ(osi_gt_ptr->traffic_light(i).id().value(), static_cast<size_t>(i));
+    }
+
+    // TrafficLight for Cars, 3 lamps
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(0).base().position().x(), 13.3165, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(0).base().position().y(), -8.5674, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(0).base().position().z(), 4.0666, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(0).base().dimension().width(), 0.4000, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(0).base().dimension().height(), 0.2666, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(0).base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(0).base().orientation().roll(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(0).base().orientation().yaw(), -2.9958, 1e-3);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_RED);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_NONE);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().assigned_lane_id(0).value(), 25);
+
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(1).base().position().x(), 13.3165, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(1).base().position().y(), -8.5674, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(1).base().position().z(), 3.7999, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(1).base().dimension().width(), 0.4000, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(1).base().dimension().height(), 0.2666, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(1).base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(1).base().orientation().roll(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(1).base().orientation().yaw(), -2.9958, 1e-3);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_YELLOW);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_NONE);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().assigned_lane_id(0).value(), 25);
+
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(2).base().position().x(), 13.3165, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(2).base().position().y(), -8.5674, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(2).base().position().z(), 3.5333, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(2).base().dimension().width(), 0.4000, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(2).base().dimension().height(), 0.2666, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(2).base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(2).base().orientation().roll(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(2).base().orientation().yaw(), -2.9958, 1e-3);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_GREEN);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_NONE);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().assigned_lane_id(0).value(), 25);
+
+    // TrafficLight for pedestrians, 2 lamps
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(3).base().position().x(), 17.1018, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(3).base().position().y(), 0.0738, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(3).base().position().z(), 2.9125, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(3).base().dimension().width(), 0.4000, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(3).base().dimension().height(), 0.2750, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(3).base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(3).base().orientation().roll(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(3).base().orientation().yaw(), -1.4258, 1e-3);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_RED);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_DONT_WALK);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().assigned_lane_id(0).value(), 23);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().assigned_lane_id(1).value(), 25);
+
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(4).base().position().x(), 17.1018, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(4).base().position().y(), 0.0738, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(4).base().position().z(), 2.6375, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(4).base().dimension().width(), 0.4000, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(4).base().dimension().height(), 0.2750, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(4).base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(4).base().orientation().roll(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(4).base().orientation().yaw(), -1.4258, 1e-3);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_GREEN);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_WALK);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().assigned_lane_id(0).value(), 23);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().assigned_lane_id(1).value(), 25);
+
+    // TrafficLight for pedestrians, 2 lamps
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(5).base().position().x(), 13.3165, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(5).base().position().y(), -8.5674, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(5).base().position().z(), 2.9125, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(5).base().dimension().width(), 0.4000, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(5).base().dimension().height(), 0.2750, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(5).base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(5).base().orientation().roll(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(5).base().orientation().yaw(), 1.7173, 1e-3);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_RED);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_DONT_WALK);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().assigned_lane_id(0).value(), 23);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().assigned_lane_id(1).value(), 25);
+
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(6).base().position().x(), 13.3165, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(6).base().position().y(), -8.5674, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(6).base().position().z(), 2.6375, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(6).base().dimension().width(), 0.4000, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(6).base().dimension().height(), 0.2750, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(6).base().orientation().pitch(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(6).base().orientation().roll(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->traffic_light(6).base().orientation().yaw(), 1.7173, 1e-3);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_GREEN);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_WALK);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().assigned_lane_id(0).value(), 23);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().assigned_lane_id(1).value(), 25);
+
+    while (se->getSimulationTime() < 3.7)
+    {
+        player->Frame(dt);
+    }
+
+    // Green off, yellow on
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+
+    while (se->getSimulationTime() < 6.7)
+    {
+        player->Frame(dt);
+    }
+
+    // yellow off, red on
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+
+    while (se->getSimulationTime() < 9.7)
+    {
+        player->Frame(dt);
+    }
+
+    // Pedestrian lights from red -> green
+    EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+
+    while (se->getSimulationTime() < 15.7)
+    {
+        player->Frame(dt);
+    }
+
+    // Pedestrian lights from green -> red
+    EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+
+    while (se->getSimulationTime() < 16.7)
+    {
+        player->Frame(dt);
+    }
+
+    // red off, green on
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+
+    delete player;
+}
+
+TEST(OSI, TestTrafficLightStates)
+{
+    const char* args[] =
+        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/traffic_light_tests.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    double          dt     = 0.1;
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+
+    // OSI TrafficLights
+    ASSERT_EQ(osi_gt_ptr->traffic_light_size(), 3);
+
+    for (int i = 0; i < osi_gt_ptr->traffic_light_size(); i++)
+    {
+        ASSERT_EQ(osi_gt_ptr->traffic_light(i).id().value(), static_cast<size_t>(i));
+    }
+
+    // TrafficLights with arrows, 3 lamps
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_RED);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().assigned_lane_id(0).value(), 2);
+
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_YELLOW);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().assigned_lane_id(0).value(), 2);
+
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_GREEN);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().assigned_lane_id(0).value(), 2);
+
+    for (size_t i = 0; i < 2; i++)
+    {
+        player->Frame(dt);
+    }
+
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OTHER);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_FLASHING);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_COUNTING);
+
+    for (size_t i = 0; i < 2; i++)
+    {
+        player->Frame(dt);
+    }
+
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_UNKNOWN);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_UNKNOWN);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_UNKNOWN);
+
+    delete player;
+}
 
 TEST(OSI, TestOrientation)
 {

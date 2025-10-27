@@ -100,17 +100,45 @@ static int execute_scenario(int argc, char* argv[])
 
 #if _USE_OSG
 #if 1  // traffic light visualization test
-        unsigned int period = 500;
         if (player->viewer_ != nullptr && player->viewer_->roadGeom != nullptr)
         {
-            for (auto& pair : player->viewer_->roadGeom->traffic_light_red_yellow_green_)
+            auto odr     = roadmanager::Position::GetOpenDrive();
+            auto signals = odr->GetDynamicSignals();
+            for (const auto& signal : signals)
             {
-                for (unsigned int i = 0; i < 3; i++)
+                auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
+                if (tl == nullptr)
                 {
-                    if (static_cast<unsigned int>(player->GetCounter()) % period == i * period / 3)
+                    continue;
+                }
+
+                switch (tl->GetTrafficLightType())
+                {
+                    case roadmanager::TrafficLightType::TYPE_1000001:
                     {
-                        pair.second.SetState(i, !pair.second.GetState(i));
-                        printf("Traffic light id %u light %u state %d\n", pair.first, i, pair.second.GetState(i));
+                        auto light = player->viewer_->roadGeom->traffic_light_red_yellow_green_[tl->GetId()];
+
+                        for (size_t k = 0; k < tl->GetNrLamps(); k++)
+                        {
+                            auto lamp = tl->GetLamp(k);
+                            light.SetState(k, lamp->GetMode() == roadmanager::Signal::LampMode::MODE_CONSTANT);
+                        }
+                        break;
+                    }
+                    case roadmanager::TrafficLightType::TYPE_1000002:
+                    {
+                        auto light = player->viewer_->roadGeom->traffic_light_pedestrian_red_green_[tl->GetId()];
+                        for (size_t k = 0; k < tl->GetNrLamps(); k++)
+                        {
+                            auto lamp = tl->GetLamp(k);
+                            light.SetState(k, lamp->GetMode() == roadmanager::Signal::LampMode::MODE_CONSTANT);
+                        }
+                        break;
+                    }
+                    default:
+                    {
+                        LOG_WARN_ONCE("Traffic light type {} doesn't have supported graphics", tl->GetTrafficLightType());
+                        break;
                     }
                 }
             }
