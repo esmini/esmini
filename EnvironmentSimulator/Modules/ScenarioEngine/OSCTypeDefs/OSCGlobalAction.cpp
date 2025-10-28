@@ -11,6 +11,7 @@
  */
 
 #include "OSCGlobalAction.hpp"
+#include "Controller.hpp"
 #include "OSCSwarmTrafficGeometry.hpp"
 #include <memory>
 #include <cmath>
@@ -19,6 +20,7 @@
 #include <random>
 #include <algorithm>
 #include <numeric>
+#include <set>
 #include "VehiclePool.hpp"
 #include "ControllerACC.hpp"
 #include "ScenarioReader.hpp"
@@ -215,18 +217,15 @@ void DeleteEntityAction::Step(double simTime, double dt)
     OSCAction::Stop();
 }
 
-void print_triangles(const BBoxVec& vec, char const filename[])
+void TrafficAction::SpawnEntity(roadmanager::Position* pos)
 {
     EntityWithController ewc;
     int                  laneID = pos->GetLaneId();
 
     if (traffic_distribution_entry_.empty())
     {
-        auto trPtr = bbx->triangle();
-        auto pt    = trPtr->a;
-        file << pt.x << "," << pt.y;
-        file << "," << trPtr->b.x << "," << trPtr->b.y;
-        file << "," << trPtr->c.x << "," << trPtr->c.y << "\n";
+        // fallback: use vehicle pool
+        ewc.object = new Vehicle(*vehicle_pool_.GetRandomVehicle());
     }
     else
     {
@@ -275,11 +274,11 @@ void print_triangles(const BBoxVec& vec, char const filename[])
     LOG_INFO("Spawned entity {} with speed {}", ewc.object->GetName(), ewc.object->GetSpeed());
 }
 
-void print_bbx(const BBoxVec& vec, char const filename[])
+bool TrafficAction::FreePositionToSpawn(roadmanager::Position* pos)
 {
-    entities_        = &context_->GetScenarioEngine().entities_;
-    double x = pos->GetX();
-    double y = pos->GetY();
+    entities_ = &context_->GetScenarioEngine().entities_;
+    double x  = pos->GetX();
+    double y  = pos->GetY();
     double latDist;
     double longDist;
 
@@ -291,61 +290,33 @@ void print_bbx(const BBoxVec& vec, char const filename[])
             return false;
         }
     }
-    file.close();
+
+    return true;
 }
 
-void printTree(aabbTree::Tree& tree, const char filename[])
+void TrafficAction::DespawnEntity(Object* object)
 {
-    std::ofstream file;
-    file.open(filename);
-    std::vector<aabbTree::ptTree> v1, v2;
-    v1.clear();
-    v2.clear();
+    LOG_INFO("Despawning entity {}", (object)->name_);
 
-    if (tree.empty())
+    for (auto& ctrl : (object)->controllers_)
     {
-        file.close();
-        return;
+        object->UnassignController(ctrl);
+        ctrl->UnlinkObject();
+        context_->GetScenarioEngine().scenarioReader->RemoveController(ctrl);
     }
-
-    auto bbx = tree.BBox();
-    file << bbx->blhCorner().x << "," << bbx->blhCorner().y << "," << bbx->urhCorner().x << "," << bbx->urhCorner().y << "\n";
-    v1.insert(v1.end(), tree.Children().begin(), tree.Children().end());
-
-    while (!v1.empty())
-    {
-        for (auto const& tr : v1)
-        {
-            if (!tr->empty())
-            {
-                auto bbox = tr->BBox();
-                file << bbox->blhCorner().x << "," << bbox->blhCorner().y << "," << bbox->urhCorner().x << "," << bbox->urhCorner().y << ",";
-                v2.insert(v2.end(), tr->Children().begin(), tr->Children().end());
-            }
-        }
-        file << "\n";
-        v1.clear();
-        v1 = v2;
-        v2.clear();
-    }
-
-    file.close();
-}
-
-TrafficSwarmAction::TrafficSwarmAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::SWARM_TRAFFIC, parent), centralObject_(0)
-{
-    spawnedV.clear();
-    counter_ = 0;
+    context_->GetScenarioEngine().entities_.removeObject(object->GetId());
+    context_->GetScenarioGateway().removeObject(object->GetId());
 }
 
 void TrafficSwarmAction::Start(double simTime)
 {
-    LOG_INFO("Swarm IR: {:.2f}, SMjA: {:.2f}, SMnA: {:.2f}, maxV: {} vel: {:.2f}",
+    LOG_INFO("Swarm IR: {:.2f}, SMjA: {:.2f}, SMnA: {:.2f}, maxV: {}, initialSpeedLowerLimit: {:.2f}, initialSpeedUpperLimit: {:.2f}",
              innerRadius_,
              semiMajorAxis_,
              semiMinorAxis_,
              numberOfVehicles,
-             velocity_);
+             initialSpeedLowerLimit_,
+             initialSpeedUpperLimit_);
     double x0, y0, x1, y1;
     swarm_entities_ = &context_->GetScenarioEngine().entities_;
     spawnedV.clear();
@@ -371,12 +342,7 @@ void TrafficSwarmAction::Start(double simTime)
 
     // Register model filenames from vehicle catalog
     // if no catalog loaded, use same model as central object
-    std::vector<std::pair<int, double>> categories = {{Vehicle::Category::CAR, 5.0},
-                                                      {Vehicle::Category::TRAILER, 0.0},  // allow trailers but no single trailers
-                                                      {Vehicle::Category::VAN, 2.0},
-                                                      {Vehicle::Category::BUS, 1.0},
-                                                      {Vehicle::Category::TRUCK, 2.0},
-                                                      {Vehicle::Category::MOTORBIKE, 1.0}};
+    vehicle_pool_.Initialize(&context_->GetScenarioReader(), nullptr, true);
 
     vehicle_pool_.Initialize(reader_, &categories, true);
 
@@ -435,17 +401,11 @@ void TrafficSwarmAction::Step(double simTime, double dt)
     }
 }
 
-void scenarioengine::TrafficSwarmAction::SetScenarioEngine(ScenarioEngine* scenario_engine)
-{
-    scenario_engine_ = scenario_engine;
-    entities_        = scenario_engine_ != nullptr ? &scenario_engine_->entities_ : nullptr;
-}
-
 void TrafficSwarmAction::createRoadSegments(BBoxVec& vec)
 {
-    for (unsigned int i = 0; i < odrManager_->GetNumOfRoads(); i++)
+    for (unsigned int i = 0; i < context_->GetOdrManager().GetNumOfRoads(); i++)
     {
-        roadmanager::Road* road = odrManager_->GetRoadByIdx(i);
+        roadmanager::Road* road = context_->GetOdrManager().GetRoadByIdx(i);
 
         for (unsigned int j = 0; j < road->GetNumberOfGeometries(); j++)
         {
@@ -566,7 +526,7 @@ inline void TrafficSwarmAction::sampleRoads(int minN, int maxN, Solutions& sols,
             }
             // pos.XYZH2TrackPos(pt.x, pt.y, 0, pt.h);
             // Peek road
-            roadmanager::Road* road = odrManager_->GetRoadById(pos.GetTrackId());
+            roadmanager::Road* road = context_->GetOdrManager().GetRoadById(pos.GetTrackId());
             if (road->GetNumberOfDrivingLanes(pos.GetS()) == 0)
                 continue;
             // Since the number of points is equal to the number of vehicles to spaw,
@@ -586,7 +546,7 @@ inline void TrafficSwarmAction::sampleRoads(int minN, int maxN, Solutions& sols,
             roadmanager::Position pos(pt.x, pt.y, 0.0, pt.h, 0.0, 0.0);
             // pos.XYZH2TrackPos(pt.x, pt.y, 0, pt.h);
 
-            roadmanager::Road* road          = odrManager_->GetRoadById(pos.GetTrackId());
+            roadmanager::Road* road          = context_->GetOdrManager().GetRoadById(pos.GetTrackId());
             unsigned int       nDrivingLanes = road->GetNumberOfDrivingLanes(pos.GetS());
             if (nDrivingLanes == 0)
             {
@@ -658,8 +618,8 @@ void TrafficSwarmAction::spawn(Solutions sols, int replace, double simTime)
             Controller::InitArgs args;
             args.name            = "Swarm ACC controller";
             args.type            = CONTROLLER_ACC_TYPE_NAME;
-            args.scenario_engine = scenario_engine_;
-            args.gateway         = gateway_;
+            args.scenario_engine = &context_->GetScenarioEngine();
+            args.gateway         = &context_->GetScenarioGateway();
             args.parameters      = 0;
             args.properties      = 0;
 
@@ -675,7 +635,7 @@ void TrafficSwarmAction::spawn(Solutions sols, int replace, double simTime)
 #if 1  // This is another way of setting the ACC setSpeed property
             (static_cast<ControllerACC*>(acc))->SetSetSpeed(vel);
 #endif
-            reader_->AddController(acc);
+            context_->GetScenarioReader().AddController(acc);
 
             // Pick random model from vehicle catalog
             Vehicle* vehicle_tmp = vehicle_pool_.GetRandomVehicle();
@@ -805,7 +765,7 @@ int TrafficSwarmAction::despawn(double simTime)
             {
                 vehicle->UnassignController(ctrl);
                 ctrl->UnlinkObject();
-                reader_->RemoveController(ctrl);
+                context_->GetScenarioReader().RemoveController(ctrl);
             }
 
             if (vehicle->type_ == Object::Type::VEHICLE)
@@ -816,7 +776,7 @@ int TrafficSwarmAction::despawn(double simTime)
                 {
                     trailer = static_cast<Vehicle*>(v->TrailerVehicle());
 
-                    gateway_->removeObject(v->name_);
+                    context_->GetScenarioGateway().removeObject(v->name_);
 
                     if (v->objectEvents_.size() > 0 || v->initActions_.size() > 0)
                     {
@@ -834,7 +794,7 @@ int TrafficSwarmAction::despawn(double simTime)
 
             if (vehicle)
             {
-                gateway_->removeObject(vehicle->name_);
+                context_->GetScenarioGateway().removeObject(vehicle->name_);
                 if (vehicle->objectEvents_.size() > 0 || vehicle->initActions_.size() > 0)
                 {
                     swarm_entities_->deactivateObject(vehicle);
@@ -862,7 +822,7 @@ int TrafficSwarmAction::despawn(double simTime)
 }
 
 double TrafficSwarmAction::getInitialSpeed() const
-{   
+{
     if (!speedRange)
     {
         return velocity_;
@@ -870,31 +830,54 @@ double TrafficSwarmAction::getInitialSpeed() const
     return SE_Env::Inst().GetRand().GetRealBetween(initialSpeedLowerLimit_, initialSpeedUpperLimit_);
 }
 
-TrafficSourceAction::TrafficSourceAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::SOURCE_TRAFFIC, parent)
+EntityWithController TrafficDistributionEntry::GetRandomEntity() const
 {
-}
+    if (entityDistribution.entries.empty())
+    {
+        return {nullptr, nullptr};
+    }
 
-void scenarioengine::TrafficSourceAction::SetScenarioEngine(ScenarioEngine* scenario_engine)
-{
-    scenario_engine_ = scenario_engine;
-    entities_        = scenario_engine_ != nullptr ? &scenario_engine_->entities_ : nullptr;
+    // Compute total weight of all entity entries
+    double totalWeight = std::accumulate(entityDistribution.entries.begin(),
+                                         entityDistribution.entries.end(),
+                                         0.0,
+                                         [](double sum, const EntityDistributionEntry& ede) { return sum + ede.weight; });
+
+    double pick = SE_Env::Inst().GetRand().GetRealBetween(0.0, totalWeight);
+
+    for (const auto& ede : entityDistribution.entries)
+    {
+        if (pick <= ede.weight)
+        {
+            Controller* ctrl = ede.controllers.empty() ? nullptr : ede.controllers[0];
+            return {ede.object, ctrl};  // Return pointer to the actual vehicle
+        }
+        pick -= ede.weight;
+    }
+
+    // Defensive: return last entry's object/controller
+    const auto& ede  = entityDistribution.entries.back();
+    Controller* ctrl = ede.controllers.empty() ? nullptr : ede.controllers[0];
+    return {ede.object, ctrl};  // Defensive: return last entry's vehicle if not found
 }
 
 void TrafficSourceAction::Start(double simTime)
 {
-    LOG_INFO("Traffic Source Radius: {:.2f}, Rate: {:.2f}, Speed: {:.2f}",
-             radius_,
-             rate_,
-             speed_);
-    
+    LOG_INFO("Traffic Source Radius: {:.2f}, Rate: {:.2f}, Speed: {:.2f}", radius_, rate_, spawn_speed_);
+    action_type_ = "source_";
+
     SetActionTriggerTime(simTime);
 
-    // Should be exchanged for the vehicle definition/distribution
-    vehicle_pool_.Initialize(reader_, nullptr, true);
-
-    if (vehicle_pool_.GetVehicles().size() == 0)
+    if (traffic_distribution_entry_.empty())
     {
-        LOG_ERROR("TrafficSwarmAction: No vehicles available to populate swarm traffic. Missing both Vehicle catalog and central vehicle object");
+        LOG_WARN("TrafficSourceAction: No traffic distribution entry defined, using vehicle pool for spawning.");
+        vehicle_pool_.Initialize(&context_->GetScenarioReader(), nullptr, true);
+
+        if (vehicle_pool_.GetVehicles().size() == 0)
+        {
+            LOG_ERROR(
+                "TrafficSourceAction: No vehicles available to populate source traffic. Missing both Vehicle catalog and traffic distribution entry.");
+        }
     }
 
     OSCAction::Start(simTime);
@@ -939,7 +922,8 @@ void TrafficSinkAction::Step(double simTime, double dt)
     (void)simTime;
     if (constant_despawn_)
     {
-        SpawnEntity();
+        FindPossibleDespawn();
+        return;
     }
 
     time_accumulator_ += dt;
@@ -1050,7 +1034,7 @@ void TrafficAreaAction::UpdateRoadRanges()
     // AddComplementaryRoadCursors();
 }
 
-void TrafficSourceAction::SpawnEntity()
+void TrafficAreaAction::SetRoadRangeLength(RoadRange& road_range)
 {
     std::unordered_set<int> road_ids_in_range;
     for (const auto& rc : road_range.roadCursors)
@@ -1424,9 +1408,23 @@ void TrafficAreaAction::HandleLastRoadCursor(std::vector<RoadCursor> last_road_c
                 continue;
             }
 
-            vehicle->AssignController(acc);
-            acc->LinkObject(vehicle);
-            acc->Activate({ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF, ControlActivationMode::OFF});
+            for (const auto& laneId : current.laneIds)
+            {
+                LaneSegment ls;
+                ls.roadId = current.roadId;
+                ls.laneId = laneId;
+                ls.minS   = current.s;
+                ls.maxS   = std::min(next.s, ls.minS + max_length - accumulated_length);
+                ls.length = ls.maxS - ls.minS;
+                lane_segments_.push_back(ls);
+                add_length = ls.length;
+            }
+            accumulated_length += add_length;
+            if (accumulated_length >= max_length)
+            {
+                return;
+            }
+        }
 
         const auto& last = last_road_cursors.back();
         for (const auto& laneId : last.laneIds)
@@ -1464,10 +1462,10 @@ bool TrafficAreaAction::InsideArea(roadmanager::Position object_pos)
     if (!polygon_points_.empty())
     {
         // Ray-casting algorithm to determine if the point is inside the polygon
-        int  n      = polygon_points_.size();
-        bool inside = false;
+        size_t n      = polygon_points_.size();
+        bool   inside = false;
 
-        for (int i = 0, j = n - 1; i < n; j = i++)
+        for (size_t i = 0, j = n - 1; i < n; j = i++)
         {
             double xi = polygon_points_[i].GetX(), yi = polygon_points_[i].GetY();
             double xj = polygon_points_[j].GetX(), yj = polygon_points_[j].GetY();
@@ -1482,17 +1480,15 @@ bool TrafficAreaAction::InsideArea(roadmanager::Position object_pos)
     }
     else if (!road_ranges_.empty())
     {
-        int    obj_current_road = object_pos.GetTrackId();
-        int    obj_current_lane = object_pos.GetLaneId();
+        auto   obj_current_road = object_pos.GetTrackId();
+        auto   obj_current_lane = object_pos.GetLaneId();
         double obj_current_s    = object_pos.GetS();
         return std::any_of(lane_segments_.begin(),
-                   lane_segments_.end(),
-                   [obj_current_road, obj_current_lane, obj_current_s](const LaneSegment& ls) {
-                       return ls.roadId == obj_current_road && 
-                              ls.laneId == obj_current_lane &&
-                              obj_current_s >= ls.minS && 
-                              obj_current_s <= ls.maxS;
-                   });
+                           lane_segments_.end(),
+                           [obj_current_road, obj_current_lane, obj_current_s](const LaneSegment& ls) {
+                               return ls.roadId == static_cast<int>(obj_current_road) && ls.laneId == obj_current_lane && obj_current_s >= ls.minS &&
+                                      obj_current_s <= ls.maxS;
+                           });
     }
     LOG_ERROR("Both polygon points and road range are empty in TrafficAreaAction");
     return false;
@@ -1588,7 +1584,7 @@ roadmanager::Position* TrafficAreaAction::GetRandomSpawnPosition()
                 lane_segments_[static_cast<size_t>(SE_Env::Inst().GetRand().GetNumberBetween(0, static_cast<int>(lane_segments_.size()) - 1))];
             double s = SE_Env::Inst().GetRand().GetRealBetween(seg.minS, seg.maxS);
 
-            roadmanager::Position* spawn_position = new roadmanager::Position(seg.roadId, seg.laneId, s, 0.0);
+            roadmanager::Position* spawn_position = new roadmanager::Position(static_cast<id_t>(seg.roadId), seg.laneId, s, 0.0);
             if (!FreePositionToSpawn(spawn_position))
             {
                 LOG_INFO("Generated spawn position is to close to other vehicle. Skipping spawn");

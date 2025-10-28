@@ -334,6 +334,34 @@ namespace scenarioengine
         OSCEnvironment* environment_;
     };
 
+    struct EntityWithController
+    {
+        Object*     object     = nullptr;
+        Controller* controller = nullptr;
+    };
+
+    class EntityDistributionEntry
+    {
+    public:
+        double                   weight{1.0};
+        Object*                  object{nullptr};
+        std::vector<Controller*> controllers;
+    };
+
+    class EntityDistribution
+    {
+    public:
+        std::vector<EntityDistributionEntry> entries;
+    };
+
+    class TrafficDistributionEntry
+    {
+    public:
+        double               weight{1.0};
+        EntityDistribution   entityDistribution;
+        EntityWithController GetRandomEntity() const;
+    };
+
     class ScenarioReader;
     class ScenarioEngine;
 
@@ -410,15 +438,17 @@ namespace scenarioengine
          */
         void DespawnEntity(Object* object);
 
-        protected:
-            std::shared_ptr<TrafficActionContext> context_;
-            std::string       name_;
-            int spawned_count_ = 0;
-            std::vector<int> spawned_entity_ids_;
-            std::string action_type_;
-            VehiclePool                        vehicle_pool_;
-            double                             spawn_speed_ = 0.0;
-            Entities*              entities_;
+        std::vector<TrafficDistributionEntry> traffic_distribution_entry_;
+
+    protected:
+        std::shared_ptr<TrafficActionContext> context_;
+        std::string                           name_;
+        int                                   spawned_count_ = 0;
+        std::vector<int>                      spawned_entity_ids_;
+        std::string                           action_type_;
+        VehiclePool                           vehicle_pool_;
+        double                                spawn_speed_ = 0.0;
+        Entities*                             entities_;
     };
     class TrafficSwarmAction : public TrafficAction
     {
@@ -442,23 +472,16 @@ namespace scenarioengine
         TrafficSwarmAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context)
             : TrafficAction(ActionType::SWARM_TRAFFIC, parent, context)
         {
-            spawnedV.clear();
-            centralObject_ = action.centralObject_;
         }
 
         OSCGlobalAction* Copy()
         {
-            TrafficSwarmAction* new_action = new TrafficSwarmAction(*this);
-            return new_action;
+            return new TrafficSwarmAction(*this);
         }
 
         void Start(double simTime);
 
         void Step(double simTime, double dt);
-
-        void print()
-        {
-        }
 
         void SetCentralObject(Object* centralObj)
         {
@@ -476,16 +499,6 @@ namespace scenarioengine
         {
             semiMinorAxis_ = axes;
         }
-        void SetScenarioEngine(ScenarioEngine* scenario_engine);
-
-        void SetGateway(ScenarioGateway* gateway)
-        {
-            gateway_ = gateway;
-        }
-        void SetReader(ScenarioReader* reader)
-        {
-            reader_ = reader;
-        }
         void SetNumberOfVehicles(int number)
         {
             numberOfVehicles = static_cast<unsigned long>(number);
@@ -493,7 +506,7 @@ namespace scenarioengine
         void Setvelocity(double velocity)
         {
             speedRange = false;
-            velocity_ = velocity;
+            velocity_  = velocity;
         }
         void SetInitialSpeedRange(double lowerLimit, double upperLimit)
         {
@@ -502,7 +515,18 @@ namespace scenarioengine
         }
         void SetDirectionOfTravelDistribution(double opposite, double same)
         {
-            dot_set_ = true;
+            dot_set_     = true;
+            dotOpposite_ = opposite;
+            dotSame_     = same;
+        }
+        void SetInitialSpeedRange(double lowerLimit, double upperLimit)
+        {
+            initialSpeedLowerLimit_ = lowerLimit;
+            initialSpeedUpperLimit_ = upperLimit;
+        }
+        void SetDirectionOfTravelDistribution(double opposite, double same)
+        {
+            dot_set_     = true;
             dotOpposite_ = opposite;
             dotSame_     = same;
         }
@@ -529,10 +553,10 @@ namespace scenarioengine
         inline bool ensureDistance(roadmanager::Position pos, int lane, double dist);
         void        createEllipseSegments(aabbTree::BBoxVec& vec, double SMjA, double SMnA);
         inline void sampleRoads(int minN, int maxN, Solutions& sols, vector<SelectInfo>& info);
-        double getInitialSpeed() const;
+        double      getInitialSpeed() const;
     };
 
-    class TrafficSourceAction : public OSCGlobalAction
+    class TrafficSourceAction : public TrafficAction
     {
     public:
         TrafficSourceAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context)
@@ -542,30 +566,12 @@ namespace scenarioengine
 
         OSCGlobalAction* Copy()
         {
-            TrafficSourceAction* new_action = new TrafficSourceAction(*this);
-            return new_action;
+            return new TrafficSourceAction(*this);
         }
 
         void Start(double simTime);
 
         void Step(double simTime, double dt);
-
-        void print()
-        {
-        }
-
-        void SpawnEntity();
-
-        void SetScenarioEngine(ScenarioEngine* scenario_engine);
-
-        void SetGateway(ScenarioGateway* gateway)
-        {
-            gateway_ = gateway;
-        }
-        void SetReader(ScenarioReader* reader)
-        {
-            reader_ = reader;
-        }
 
         void SetActionTriggerTime(double simTime)
         {
@@ -581,7 +587,7 @@ namespace scenarioengine
         }
         void SetSpeed(double speed)
         {
-            speed_ = speed;
+            spawn_speed_ = speed;
         }
         void SetPosition(roadmanager::Position* pos)
         {

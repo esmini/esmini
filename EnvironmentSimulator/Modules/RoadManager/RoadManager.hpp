@@ -2991,22 +2991,26 @@ namespace roadmanager
         id_t LookupRoadIdFromStr(std::string id_str);
         id_t LookupJunctionIdFromStr(std::string id_str);
 
-        Outline *CreateContinuousRepeatOutline(Road  *r,
-                                               id_t   ids,
-                                               double s,
-                                               double t,
-                                               double heading,
-                                               double length,
-                                               double rs,
-                                               double rlength,
-                                               double rwidthStart,
-                                               double rwidthEnd,
-                                               double rheightStart,
-                                               double rheightEnd,
-                                               double rtStart,
-                                               double rtEnd,
-                                               double rzOffsetStart,
-                                               double rzOffsetEnd);
+        Outline                                  *CreateContinuousRepeatOutline(Road  *r,
+                                                                                id_t   ids,
+                                                                                double s,
+                                                                                double t,
+                                                                                double heading,
+                                                                                double length,
+                                                                                double rs,
+                                                                                double rlength,
+                                                                                double rwidthStart,
+                                                                                double rwidthEnd,
+                                                                                double rheightStart,
+                                                                                double rheightEnd,
+                                                                                double rtStart,
+                                                                                double rtEnd,
+                                                                                double rzOffsetStart,
+                                                                                double rzOffsetEnd);
+        std::vector<std::pair<id_t, std::string>> GetRoadIds() const
+        {
+            return road_ids_;
+        }
 
     private:
         pugi::xml_node                            root_node_;

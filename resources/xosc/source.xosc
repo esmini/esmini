@@ -5,9 +5,12 @@
         <VehicleCatalog>
             <Directory path="../xosc/Catalogs/Vehicles"/>
         </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
     </CatalogLocations>
     <RoadNetwork>
-        <LogicFile filepath="../xodr/trafficsource.xodr"/>
+        <LogicFile filepath="../xodr/trafficarea.xodr"/>
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">
@@ -17,6 +20,31 @@
     <Storyboard>
         <Init>
             <Actions>
+                <GlobalAction>
+                        <TrafficAction>
+                            <TrafficSourceAction rate="0.5" radius="0.7" speed="30.0">
+                                <Position>
+                                    <LanePosition roadId="1" laneId="-2" s="10.0" offset="0.0"/>
+                                </Position>
+                                <TrafficDistribution>
+                                    <TrafficDistributionEntry weight="1">
+                                        <EntityDistribution>
+                                            <EntityDistributionEntry weight="0.5">
+                                                <ScenarioObjectTemplate>
+                                                    <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
+                                                </ScenarioObjectTemplate>
+                                            </EntityDistributionEntry>
+                                            <EntityDistributionEntry weight="0.5">
+                                                <ScenarioObjectTemplate>
+                                                    <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+                                                </ScenarioObjectTemplate>
+                                            </EntityDistributionEntry>
+                                        </EntityDistribution>
+                                    </TrafficDistributionEntry>
+                                </TrafficDistribution>
+                            </TrafficSourceAction>
+                        </TrafficAction>
+                    </GlobalAction>
                 <Private entityRef="Ego">
                     <PrivateAction>
                         <LongitudinalAction>
@@ -39,6 +67,7 @@
             </Actions>
         </Init>
         <Story name="story_act_maneuvuergroup_traffic source maneuver">
+<<<<<<< HEAD
             <Act name="act_maneuvuergroup_traffic source maneuver">
                 <ManeuverGroup name="maneuvuergroup_traffic source maneuver" maximumExecutionCount="1">
                     <Actors selectTriggeringEntities="false"/>
@@ -89,12 +118,19 @@
                 </StartTrigger>
                 <StopTrigger/>
             </Act>
+=======
+
+>>>>>>> 530005831f5757fa9ffd95de4565efb2590249af
         </Story>
         <StopTrigger>
             <ConditionGroup>
                 <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
                     <ByValueCondition>
+<<<<<<< HEAD
                         <SimulationTimeCondition value="60.0" rule="greaterThan"/>
+=======
+                        <SimulationTimeCondition value="11.0" rule="greaterThan"/>
+>>>>>>> 530005831f5757fa9ffd95de4565efb2590249af
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

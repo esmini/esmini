@@ -1476,6 +1476,31 @@ bool scenarioengine::ScenarioReader::CheckModelId(Object *object)
     return true;
 }
 
+Object *ScenarioReader::ChooseCatalogEntry(Entry *entry)
+{
+    Object *obj = nullptr;
+    if (!entry)
+        return nullptr;
+
+    if (entry->type_ == CatalogType::CATALOG_VEHICLE)
+    {
+        obj = parseOSCVehicle(entry->GetNode());
+    }
+    else if (entry->type_ == CatalogType::CATALOG_PEDESTRIAN)
+    {
+        obj = parseOSCPedestrian(entry->GetNode());
+    }
+    else if (entry->type_ == CatalogType::CATALOG_MISC_OBJECT)
+    {
+        obj = parseOSCMiscObject(entry->GetNode());
+    }
+    else
+    {
+        LOG_ERROR("Unexpected catalog type {}", entry->GetTypeAsStr());
+    }
+    return obj;
+}
+
 int ScenarioReader::parseEntities()
 {
     pugi::xml_node enitiesNode = osc_root_.child("Entities");
@@ -1505,28 +1530,7 @@ int ScenarioReader::parseEntities()
                 }
                 else
                 {
-                    if (entry->type_ == CatalogType::CATALOG_VEHICLE)
-                    {
-                        // Make a new instance from catalog entry
-                        Vehicle *vehicle = parseOSCVehicle(entry->GetNode());
-                        obj              = vehicle;
-                    }
-                    else if (entry->type_ == CatalogType::CATALOG_PEDESTRIAN)
-                    {
-                        // Make a new instance from catalog entry
-                        Pedestrian *pedestrian = parseOSCPedestrian(entry->GetNode());
-                        obj                    = pedestrian;
-                    }
-                    else if (entry->type_ == CatalogType::CATALOG_MISC_OBJECT)
-                    {
-                        // Make a new instance from catalog entry
-                        MiscObject *miscobj = parseOSCMiscObject(entry->GetNode());
-                        obj                 = miscobj;
-                    }
-                    else
-                    {
-                        LOG_ERROR("Unexpected catalog type {}", entry->GetTypeAsStr());
-                    }
+                    obj = ChooseCatalogEntry(entry);
                 }
 
                 parameters.RestoreParameterDeclarations();
@@ -2212,6 +2216,104 @@ int ScenarioReader::ParseTransitionDynamics(pugi::xml_node node, OSCPrivateActio
     return 0;
 }
 
+void ScenarioReader::ParseTrafficDistribution(pugi::xml_node traffic_dist_node, std::vector<TrafficDistributionEntry> &distribution_entries)
+{
+    for (auto tdeNode : traffic_dist_node.children("TrafficDistributionEntry"))
+    {
+        TrafficDistributionEntry tde;
+        std::string              weightStr = parameters.ReadAttribute(tdeNode, "weight", true);
+        if (!weightStr.empty())
+        {
+            tde.weight = std::stod(weightStr);
+        }
+
+        // Parse EntityDistributions inside
+        for (auto entityDistNode : tdeNode.children("EntityDistribution"))
+        {
+            EntityDistribution ed;
+            for (auto edeNode : entityDistNode.children("EntityDistributionEntry"))
+            {
+                EntityDistributionEntry ede;
+                std::string             edeWeight = parameters.ReadAttribute(edeNode, "weight", true);
+                if (!edeWeight.empty())
+                {
+                    ede.weight = std::stod(edeWeight);
+                }
+
+                // Get ScenarioObjectTemplate → CatalogReference
+                auto scenarioObjectTemplateNode = edeNode.child("ScenarioObjectTemplate");
+                if (scenarioObjectTemplateNode)
+                {
+                    for (pugi::xml_node scenarioObjectTemplateChild = scenarioObjectTemplateNode.first_child(); scenarioObjectTemplateChild;
+                         scenarioObjectTemplateChild                = scenarioObjectTemplateChild.next_sibling())
+                    {
+                        std::string scenarioObjectTemplateChildName(scenarioObjectTemplateChild.name());
+                        if (scenarioObjectTemplateChildName == "CatalogReference")
+                        {
+                            Entry *entry = ResolveCatalogReference(scenarioObjectTemplateChild);
+                            if (entry)
+                                ede.object = ChooseCatalogEntry(entry);
+                            else
+                                ede.object = nullptr;
+                        }
+                        else if (scenarioObjectTemplateChildName == "Vehicle")
+                        {
+                            ede.object = parseOSCVehicle(scenarioObjectTemplateChild);
+                        }
+                        else if (scenarioObjectTemplateChildName == "Pedestrian")
+                        {
+                            ede.object = parseOSCPedestrian(scenarioObjectTemplateChild);
+                        }
+                        else if (scenarioObjectTemplateChildName == "MiscObject")
+                        {
+                            ede.object = parseOSCMiscObject(scenarioObjectTemplateChild);
+                        }
+                        else if (scenarioObjectTemplateChildName == "ObjectController")
+                        {
+                            Controller *ctrl = 0;
+                            if (scenarioObjectTemplateChild.child("CatalogReference"))
+                            {
+                                Entry *entry = ResolveCatalogReference(scenarioObjectTemplateChild.child("CatalogReference"));
+                                if (entry == 0)
+                                {
+                                    LOG_ERROR("No entry found");
+                                }
+                                else
+                                {
+                                    if (entry->type_ == CatalogType::CATALOG_CONTROLLER)
+                                    {
+                                        ctrl = parseOSCObjectController(entry->GetNode());
+                                    }
+                                    else
+                                    {
+                                        LOG_ERROR("Unexpected catalog type {}", entry->GetTypeAsStr());
+                                    }
+                                }
+                            }
+                            else if (scenarioObjectTemplateChild.child("Controller"))
+                            {
+                                ctrl = parseOSCObjectController(scenarioObjectTemplateChild.child("Controller"));
+                            }
+                            ede.controllers.push_back(ctrl);
+                        }
+                        else
+                        {
+                            LOG_WARN("Unknown ScenarioObjectTemplate child: {}", scenarioObjectTemplateChildName);
+                        }
+                    }
+                }
+                else
+                {
+                    LOG_ERROR("Missing ScenarioObjectTemplate");
+                }
+                ed.entries.push_back(ede);
+            }
+            tde.entityDistribution = ed;
+        }
+        distribution_entries.push_back(tde);
+    }
+}
+
 OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode, Event *parent)
 {
     OSCGlobalAction *action = 0;
@@ -2305,11 +2407,12 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
 
             if (!strcmp(trafficChild.name(), "TrafficSourceAction"))
             {
-                TrafficSourceAction *trafficSourceAction = new TrafficSourceAction(parent);
+                TrafficSourceAction *trafficSourceAction = new TrafficSourceAction(parent, trafficActionContext);
 
-                trafficSourceAction->SetScenarioEngine(scenarioEngine_);
-                trafficSourceAction->SetGateway(gateway_);
-                trafficSourceAction->SetReader(this);
+                if (!traffic_name.empty())
+                {
+                    trafficSourceAction->SetName(traffic_name);
+                }
 
                 std::string radius, rate, speed;
 
@@ -2332,20 +2435,56 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                     speed = parameters.ReadAttribute(trafficChild, "speed");
                     trafficSourceAction->SetSpeed(std::stod(speed));
                 }
-                
-                OSCPosition     *oscPosition     = parseOSCPosition(trafficChild.child("Position"));
-                trafficSourceAction->pos_            = new roadmanager::Position(*oscPosition->GetRMPos());
+
+                OSCPosition           *oscPosition = parseOSCPosition(trafficChild.child("Position"));
+                roadmanager::Position *pos         = new roadmanager::Position(*oscPosition->GetRMPos());
+                trafficSourceAction->SetPosition(pos);
                 delete oscPosition;
 
+                if (trafficChild.child("TrafficDistribution"))
+                {
+                    auto traffic_dist_node = trafficChild.child("TrafficDistribution");
+                    ParseTrafficDistribution(traffic_dist_node, trafficSourceAction->traffic_distribution_entry_);
+                }
 
+                action = trafficSourceAction;
             }
             else if (!strcmp(trafficChild.name(), "TrafficSinkAction"))
             {
-                LOG_INFO("TrafficSinkAction not implemented yet");
+                TrafficSinkAction *trafficSinkAction = new TrafficSinkAction(parent, trafficActionContext);
+
+                if (!traffic_name.empty())
+                {
+                    trafficSinkAction->SetName(traffic_name);
+                }
+
+                std::string radius, rate;
+
+                // Traffic surce radius
+                radius = parameters.ReadAttribute(trafficChild, "radius", true);
+                trafficSinkAction->SetRadius(std::stod(radius));
+
+                // Traffic spawn rate
+                rate = parameters.ReadAttribute(trafficChild, "rate");
+                if (!rate.empty())
+                {
+                    trafficSinkAction->SetRate(std::stod(rate));
+                }
+                else
+                {
+                    LOG_INFO("No rate specified for TrafficSinkAction, will constantly despawn vehicles in range.");
+                }
+
+                OSCPosition           *oscPosition = parseOSCPosition(trafficChild.child("Position"));
+                roadmanager::Position *pos         = new roadmanager::Position(*oscPosition->GetRMPos());
+                trafficSinkAction->SetPosition(pos);
+                delete oscPosition;
+
+                action = trafficSinkAction;
             }
             else if (!strcmp(trafficChild.name(), "TrafficSwarmAction"))
             {
-                TrafficSwarmAction *trafficSwarmAction = new TrafficSwarmAction(parent);
+                TrafficSwarmAction *trafficSwarmAction = new TrafficSwarmAction(parent, trafficActionContext);
 
                 pugi::xml_node childNode = trafficChild.child("CentralObject");
                 if (childNode.empty())
@@ -2362,7 +2501,6 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 }
 
                 trafficSwarmAction->SetCentralObject(entities_->GetObjectByName(parameters.ReadAttribute(childNode, "entityRef")));
-                // childNode = trafficChild.child("")
 
                 std::string radius, numberOfVehicles;
 
@@ -2391,7 +2529,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 if (!dotNode.empty())
                 {
                     std::string opposite = parameters.ReadAttribute(dotNode, "opposite", true);
-                    std::string same = parameters.ReadAttribute(dotNode, "same", true);
+                    std::string same     = parameters.ReadAttribute(dotNode, "same", true);
                     std::cout << "opposite: " << opposite << ", same: " << same << std::endl;
                 }
 
@@ -2408,13 +2546,12 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                         velocity = "0.0";
                     }
                     trafficSwarmAction->Setvelocity(std::stod(velocity));
-
                 }
                 else if (GetVersionMajor() == 1 && GetVersionMinor() >= 2)
                 {
                     // InitialSpeedRange
                     pugi::xml_node rangeNode = trafficChild.child("InitialSpeedRange");
-                    std::string lowerLimit, upperLimit;
+                    std::string    lowerLimit, upperLimit;
                     if (rangeNode.empty())
                     {
                         LOG_WARN("Warning: Missing swarm InitialSpeedRange! Using default value 0.0 for both limits.");
@@ -2427,7 +2564,6 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                         upperLimit = parameters.ReadAttribute(rangeNode, "upperLimit", true);
                     }
                     trafficSwarmAction->SetInitialSpeedRange(std::stod(lowerLimit), std::stod(upperLimit));
-
                 }
 
                 // TrafficDefinition or TrafficDistribution handling
@@ -2509,13 +2645,13 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
 
                             for (pugi::xml_node cursorNode : areaChild.children("RoadCursor"))
                             {
-                                RoadCursor road_cursor;
+                                RoadCursor  road_cursor;
                                 std::string roadId = parameters.ReadAttribute(cursorNode, "roadId", true);
                                 if (!roadId.empty())
                                 {
                                     road_cursor.roadId = std::stoi(roadId);
                                 }
-                                std::string s             = parameters.ReadAttribute(cursorNode, "s");
+                                std::string s = parameters.ReadAttribute(cursorNode, "s");
                                 road_cursor.s = !s.empty() ? std::stod(s) : 0.0;
                                 for (pugi::xml_node laneNode : cursorNode.children("Lane"))
                                 {
@@ -2550,6 +2686,15 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
             else if (!strcmp(trafficChild.name(), "TrafficStopAction"))
             {
                 LOG_INFO("TrafficStopAction not implemented yet");
+
+                TrafficStopAction *trafficStopAction = new TrafficStopAction(parent, trafficActionContext);
+
+                if (!traffic_name.empty())
+                {
+                    trafficStopAction->SetTrafficActionToStop(traffic_name);
+                }
+
+                action = trafficStopAction;
             }
         }
         else if (actionChild.name() == std::string("EntityAction"))
