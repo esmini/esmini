@@ -100,18 +100,15 @@ static int execute_scenario(int argc, char* argv[])
 
 #if _USE_OSG
 #if 1  // traffic light visualization test
-        unsigned int period = 500;
         if (player->viewer_ != nullptr && player->viewer_->roadGeom != nullptr)
         {
-            for (auto& pair : player->viewer_->roadGeom->traffic_light_red_yellow_green_)
+            auto odr = roadmanager::Position::GetOpenDrive();
+            for (auto [id, state] : odr->GetTrafficSignalState())
             {
-                for (unsigned int i = 0; i < 3; i++)
+                auto light = player->viewer_->roadGeom->traffic_light_red_yellow_green_[id];
+                for (size_t i = 0; i < state.size(); i++)
                 {
-                    if (static_cast<unsigned int>(player->GetCounter()) % period == i * period / 3)
-                    {
-                        pair.second.SetState(i, !pair.second.GetState(i));
-                        printf("Traffic light id %u light %u state %d\n", pair.first, i, pair.second.GetState(i));
-                    }
+                    light.SetState(i, state[i]);
                 }
             }
         }

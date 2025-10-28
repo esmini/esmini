@@ -337,15 +337,23 @@ namespace scenarioengine
     class TrafficSignalStateAction : public OSCGlobalAction
     {
     public:
-        std::string name_;
-        std::string value_;
+        std::string             name_;
+        std::string             value_;
+        roadmanager::Signal*    signal_;
+        roadmanager::OpenDrive* odr_;
 
-        TrafficSignalStateAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::INFRASTRUCTURE, parent), name_(""), value_(""){};
+        TrafficSignalStateAction(StoryBoardElement* parent)
+            : OSCGlobalAction(ActionType::INFRASTRUCTURE, parent),
+              name_(""),
+              value_(""),
+              signal_(nullptr){};
 
         TrafficSignalStateAction(const TrafficSignalStateAction& action) : OSCGlobalAction(ActionType::INFRASTRUCTURE, action.parent_)
         {
-            name_  = action.name_;
-            value_ = action.value_;
+            name_   = action.name_;
+            value_  = action.value_;
+            signal_ = action.signal_;
+            odr_    = action.odr_;
         }
 
         OSCGlobalAction* Copy()
@@ -358,6 +366,30 @@ namespace scenarioengine
         {
             return "TrafficSignalStateAction";
         };
+
+        void RegisterOpenDrive(roadmanager::OpenDrive* odr)
+        {
+            odr_ = odr;
+        }
+
+        void SetSignal()
+        {
+            for (size_t i = 0; i < odr_->GetNumOfRoads(); i++)
+            {
+                auto   road       = odr_->GetRoadByIdx(i);
+                size_t nr_signals = road->GetNumberOfSignals();
+                for (size_t j = 0; j < nr_signals; j++)
+                {
+                    auto signal = road->GetSignal(j);
+                    if (signal->GetId() == std::stoi(this->name_))
+                    {
+                        LOG_INFO("Signal Id {} found, continuing", signal->GetId());
+                        this->signal_ = signal;
+                        break;
+                    }
+                }
+            }
+        }
 
         void Start(double simTime);
         void Step(double simTime, double dt);

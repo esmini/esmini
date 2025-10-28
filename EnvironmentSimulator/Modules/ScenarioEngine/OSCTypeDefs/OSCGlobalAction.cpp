@@ -19,6 +19,7 @@
 #include <random>
 #include <algorithm>
 #include <numeric>
+#include <sstream>
 #include "VehiclePool.hpp"
 #include "ControllerACC.hpp"
 #include "ScenarioReader.hpp"
@@ -74,7 +75,28 @@ void ParameterSetAction::Step(double simTime, double dt)
 
 void TrafficSignalStateAction::Start(double simTime)
 {
-    LOG_INFO("Set traffic signal state {} = {}", name_, value_);
+    std::vector<bool> result;
+    std::stringstream ss(value_);
+    std::string       token;
+
+    while (std::getline(ss, token, ';'))
+    {
+        if (token == "on")
+        {
+            result.push_back(true);
+        }
+        else if (token == "off")
+        {
+            result.push_back(false);
+        }
+        else
+        {
+            LOG_WARN("Warning: unknown state {}", token);
+        }
+    }
+
+    odr_->UpdateTrafficSignalState(std::stoi(name_), result);
+
     OSCAction::Start(simTime);
 }
 
