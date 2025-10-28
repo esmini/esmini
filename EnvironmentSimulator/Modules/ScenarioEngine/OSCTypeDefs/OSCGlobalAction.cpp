@@ -72,6 +72,20 @@ void ParameterSetAction::Step(double simTime, double dt)
     OSCAction::Stop();
 }
 
+void TrafficSignalStateAction::Start(double simTime)
+{
+    LOG_INFO("Set traffic signal state {} = {}", name_, value_);
+    OSCAction::Start(simTime);
+}
+
+void TrafficSignalStateAction::Step(double simTime, double dt)
+{
+    (void)simTime;
+    (void)dt;
+
+    OSCAction::Stop();
+}
+
 void VariableSetAction::Start(double simTime)
 {
     LOG_INFO("Set variable {} = {}", name_, value_);

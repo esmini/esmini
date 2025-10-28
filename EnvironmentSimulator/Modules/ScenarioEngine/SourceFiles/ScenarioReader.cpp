@@ -2410,6 +2410,39 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
 
             action = envAction;
         }
+        else if (actionChild.name() == std::string("InfrastructureAction"))
+        {
+            pugi::xml_node infraChild = actionChild.first_child();
+            if (!strcmp(infraChild.name(), "TrafficSignalAction"))
+            {
+                // Parse TrafficSignalAction
+                pugi::xml_node controllerAction = infraChild.child("TrafficSignalControllerAction");
+                pugi::xml_node stateAction      = infraChild.child("TrafficSignalStateAction");
+
+                if (controllerAction && stateAction)
+                {
+                    LOG_ERROR_AND_QUIT(
+                        "TrafficSignalAction contains both TrafficSignalControllerAction and TrafficSignalStateAction — only one is allowed.");
+                }
+                else if (!controllerAction && !stateAction)
+                {
+                    LOG_ERROR_AND_QUIT("TrafficSignalAction must contain exactly one of TrafficSignalControllerAction or TrafficSignalStateAction.");
+                }
+                else if (controllerAction)
+                {
+                    LOG_WARN("TrafficSignalAction {} not supported yet", controllerAction.name());
+                }
+                else if (stateAction)
+                {
+                    LOG_INFO("Parsing TrafficSignalStateAction");
+                    TrafficSignalStateAction *trafficSignalStateAction = new TrafficSignalStateAction(parent);
+                    trafficSignalStateAction->name_                    = parameters.ReadAttribute(stateAction, "name");
+                    trafficSignalStateAction->value_                   = parameters.ReadAttribute(stateAction, "state");
+
+                    action = trafficSignalStateAction;
+                }
+            }
+        }
         else
         {
             LOG_WARN("Unsupported global action: {}", actionChild.name());

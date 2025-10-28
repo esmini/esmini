@@ -334,6 +334,39 @@ namespace scenarioengine
         OSCEnvironment* environment_;
     };
 
+    class TrafficSignalStateAction : public OSCGlobalAction
+    {
+    public:
+        std::string name_;
+        std::string value_;
+
+        TrafficSignalStateAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::INFRASTRUCTURE, parent), name_(""), value_(""){};
+
+        TrafficSignalStateAction(const TrafficSignalStateAction& action) : OSCGlobalAction(ActionType::INFRASTRUCTURE, action.parent_)
+        {
+            name_  = action.name_;
+            value_ = action.value_;
+        }
+
+        OSCGlobalAction* Copy()
+        {
+            TrafficSignalStateAction* new_action = new TrafficSignalStateAction(*this);
+            return new_action;
+        }
+
+        std::string Type2Str()
+        {
+            return "TrafficSignalStateAction";
+        };
+
+        void Start(double simTime);
+        void Step(double simTime, double dt);
+
+        void print()
+        {
+        }
+    };
+
     class ScenarioReader;
     class ScenarioEngine;
 
