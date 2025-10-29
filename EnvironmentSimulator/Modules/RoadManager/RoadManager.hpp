@@ -3013,6 +3013,10 @@ namespace roadmanager
         {
         public:
             TrafficSignalState() = default;
+
+            // Creates a default state {false, false, ...}
+            // string("off;off;...")
+            // Based on length of string input
             TrafficSignalState(std::string state)
             {
                 std::stringstream ss(state);
@@ -3026,11 +3030,13 @@ namespace roadmanager
                 UpdateState(state_vector_);
             }
 
+            // Rebuilds the vector<bool> based on a string
             void UpdateState(const std::string state)
             {
                 state_ = state;
-
                 state_vector_.clear();
+                bool unknown_token = false;
+
                 std::stringstream ss(state);
                 std::string       token;
 
@@ -3047,25 +3053,25 @@ namespace roadmanager
                     else
                     {
                         state_vector_.push_back(false);
-                        LOG_WARN("Warning: unknown state {}, setting state 'off'", token);
+                        LOG_WARN("Warning: unknown state '{}', setting state 'off'", token);
+                        unknown_token = true;
                     }
+                }
+
+                if (unknown_token)
+                {
+                    UpdateState(state_vector_);
                 }
             }
 
+            // Rebuilds the string based on a vector<bool>
             void UpdateState(const std::vector<bool> state)
             {
                 state_vector_ = state;
                 state_        = "";
                 for (size_t i = 0; i < state_vector_.size(); i++)
                 {
-                    if (state_vector_[i])
-                    {
-                        state_ += "on";
-                    }
-                    else
-                    {
-                        state_ += "off";
-                    }
+                    state_ += (state_vector_[i]) ? "on" : "off";
 
                     if (i != state_vector_.size() - 1)
                     {
@@ -3095,14 +3101,16 @@ namespace roadmanager
             traffic_signal_state_.emplace(id, TrafficSignalState(state));
         }
 
-        void SetTrafficSignalStateByString(int id, std::string state)
+        template <typename T>
+        void SetTrafficSignalState(int id, const T &state)
         {
-            traffic_signal_state_[id].UpdateState(state);
-        }
-
-        void SetTrafficSignalStateByVector(int id, std::vector<bool> state)
-        {
-            traffic_signal_state_[id].UpdateState(state);
+            auto it = traffic_signal_state_.find(id);
+            if (it == traffic_signal_state_.end())
+            {
+                LOG_WARN("Can't update state of signal {}, it probably wasn't properly created", id);
+                return;
+            }
+            it->second.UpdateState(state);
         }
 
         std::unordered_map<int, TrafficSignalState> &GetTrafficSignalState()

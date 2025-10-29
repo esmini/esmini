@@ -697,7 +697,6 @@ bool TrigByTrafficSignal::CheckCondition(double sim_time)
     auto traffic_signal_state = roadmanager::Position::GetOpenDrive()->GetTrafficSignalStateById(std::stoi(signalName_));
     if (traffic_signal_state == nullptr)
     {
-        LOG_WARN("TrafficSignalCondition: Traffic signal id {} not found");
         return false;
     }
 

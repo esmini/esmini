@@ -339,21 +339,19 @@ namespace scenarioengine
     public:
         std::string             name_;
         std::string             value_;
-        roadmanager::Signal*    signal_;
         roadmanager::OpenDrive* odr_;
 
         TrafficSignalStateAction(StoryBoardElement* parent)
             : OSCGlobalAction(ActionType::INFRASTRUCTURE, parent),
               name_(""),
               value_(""),
-              signal_(nullptr){};
+              odr_(nullptr){};
 
         TrafficSignalStateAction(const TrafficSignalStateAction& action) : OSCGlobalAction(ActionType::INFRASTRUCTURE, action.parent_)
         {
-            name_   = action.name_;
-            value_  = action.value_;
-            signal_ = action.signal_;
-            odr_    = action.odr_;
+            name_  = action.name_;
+            value_ = action.value_;
+            odr_   = action.odr_;
         }
 
         OSCGlobalAction* Copy()
@@ -383,9 +381,16 @@ namespace scenarioengine
                     auto signal = road->GetSignal(j);
                     if (signal->GetId() == std::stoi(this->name_))
                     {
-                        LOG_INFO("Signal Id {} found, continuing", signal->GetId());
-                        this->signal_ = signal;
+                        // Count how many ';' we have in the string and add 1 if its not empty (so "off" has 1 value, "off;on" 2 values etc.)
+                        int nr_values = std::count(this->value_.begin(), this->value_.end(), ';') + static_cast<int>(!this->value_.empty());
+                        if ((signal->GetType() == "1000001" || signal->GetType() == "1.000.001") && nr_values != 3)
+                        {
+                            LOG_WARN("Signal of type {} takes 3 values, but {} were provided", signal->GetType(), nr_values);
+                            return;
+                        }
+
                         odr_->CreateTrafficSignalState(std::stoi(this->name_), this->value_);
+                        LOG_INFO("Creating signal with id {}", signal->GetId());
                         break;
                     }
                 }
