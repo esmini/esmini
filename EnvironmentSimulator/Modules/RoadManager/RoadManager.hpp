@@ -3013,6 +3013,18 @@ namespace roadmanager
         {
         public:
             TrafficSignalState() = default;
+            TrafficSignalState(std::string state)
+            {
+                std::stringstream ss(state);
+                std::string       token;
+
+                while (std::getline(ss, token, ';'))
+                {
+                    state_vector_.push_back(false);
+                }
+
+                UpdateState(state_vector_);
+            }
 
             void UpdateState(const std::string state)
             {
@@ -3076,6 +3088,12 @@ namespace roadmanager
             std::string       state_;
             std::vector<bool> state_vector_;
         };
+
+        void CreateTrafficSignalState(int id, std::string state)
+        {
+            // Emplace will skip if already existing
+            traffic_signal_state_.emplace(id, TrafficSignalState(state));
+        }
 
         void SetTrafficSignalStateByString(int id, std::string state)
         {

@@ -385,7 +385,7 @@ namespace scenarioengine
                     {
                         LOG_INFO("Signal Id {} found, continuing", signal->GetId());
                         this->signal_ = signal;
-                        odr_->SetTrafficSignalStateByString(std::stoi(this->name_), this->value_);
+                        odr_->CreateTrafficSignalState(std::stoi(this->name_), this->value_);
                         break;
                     }
                 }
