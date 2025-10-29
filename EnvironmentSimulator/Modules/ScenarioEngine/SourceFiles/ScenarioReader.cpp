@@ -4676,6 +4676,13 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
 
                     condition = trigger;
                 }
+                else if (condition_type == "TrafficSignalCondition")
+                {
+                    TrigByTrafficSignal *trigger = new TrigByTrafficSignal;
+                    trigger->signalName_         = parameters.ReadAttribute(byValueChild, "name");
+                    trigger->signalState_        = parameters.ReadAttribute(byValueChild, "state");
+                    condition                    = trigger;
+                }
                 else
                 {
                     LOG_WARN("WARNING: ByValueCondition {} not supported yet. Ignoring.", condition_type);

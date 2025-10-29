@@ -75,28 +75,7 @@ void ParameterSetAction::Step(double simTime, double dt)
 
 void TrafficSignalStateAction::Start(double simTime)
 {
-    std::vector<bool> result;
-    std::stringstream ss(value_);
-    std::string       token;
-
-    while (std::getline(ss, token, ';'))
-    {
-        if (token == "on")
-        {
-            result.push_back(true);
-        }
-        else if (token == "off")
-        {
-            result.push_back(false);
-        }
-        else
-        {
-            LOG_WARN("Warning: unknown state {}", token);
-        }
-    }
-
-    odr_->UpdateTrafficSignalState(std::stoi(name_), result);
-
+    odr_->SetTrafficSignalStateByString(std::stoi(name_), value_);
     OSCAction::Start(simTime);
 }
 

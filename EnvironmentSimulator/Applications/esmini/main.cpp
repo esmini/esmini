@@ -106,9 +106,9 @@ static int execute_scenario(int argc, char* argv[])
             for (auto [id, state] : odr->GetTrafficSignalState())
             {
                 auto light = player->viewer_->roadGeom->traffic_light_red_yellow_green_[id];
-                for (size_t i = 0; i < state.size(); i++)
+                for (size_t i = 0; i < state.GetStateVector().size(); i++)
                 {
-                    light.SetState(i, state[i]);
+                    light.SetState(i, state.GetStateVector()[i]);
                 }
             }
         }

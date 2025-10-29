@@ -18,6 +18,7 @@
 #include <map>
 #include <vector>
 #include <list>
+#include <sstream>
 #include "pugixml.hpp"
 #include "CommonMini.hpp"
 #include "logger.hpp"
@@ -3008,33 +3009,117 @@ namespace roadmanager
                                                double rzOffsetStart,
                                                double rzOffsetEnd);
 
-        void UpdateTrafficSignalState(int id, std::vector<bool> state)
+        class TrafficSignalState
         {
-            traffic_signal_state_[id] = state;
+        public:
+            TrafficSignalState() = default;
+
+            void UpdateState(const std::string state)
+            {
+                state_ = state;
+
+                state_vector_.clear();
+                std::stringstream ss(state);
+                std::string       token;
+
+                while (std::getline(ss, token, ';'))
+                {
+                    if (token == "on")
+                    {
+                        state_vector_.push_back(true);
+                    }
+                    else if (token == "off")
+                    {
+                        state_vector_.push_back(false);
+                    }
+                    else
+                    {
+                        state_vector_.push_back(false);
+                        LOG_WARN("Warning: unknown state {}, setting state 'off'", token);
+                    }
+                }
+            }
+
+            void UpdateState(const std::vector<bool> state)
+            {
+                state_vector_ = state;
+                state_        = "";
+                for (size_t i = 0; i < state_vector_.size(); i++)
+                {
+                    if (state_vector_[i])
+                    {
+                        state_ += "on";
+                    }
+                    else
+                    {
+                        state_ += "off";
+                    }
+
+                    if (i != state_vector_.size() - 1)
+                    {
+                        state_ += ";";
+                    }
+                }
+            }
+
+            std::string GetStateString() const
+            {
+                return state_;
+            }
+
+            std::vector<bool> GetStateVector() const
+            {
+                return state_vector_;
+            }
+
+        private:
+            std::string       state_;
+            std::vector<bool> state_vector_;
+        };
+
+        void SetTrafficSignalStateByString(int id, std::string state)
+        {
+            traffic_signal_state_[id].UpdateState(state);
         }
-        std::unordered_map<int, std::vector<bool>> &GetTrafficSignalState()
+
+        void SetTrafficSignalStateByVector(int id, std::vector<bool> state)
+        {
+            traffic_signal_state_[id].UpdateState(state);
+        }
+
+        std::unordered_map<int, TrafficSignalState> &GetTrafficSignalState()
         {
             return traffic_signal_state_;
         }
 
+        TrafficSignalState *GetTrafficSignalStateById(int id)
+        {
+            auto ret = traffic_signal_state_.find(id);
+            if (ret == traffic_signal_state_.end())
+            {
+                return nullptr;
+            }
+            return &ret->second;
+        }
+
     private:
-        pugi::xml_node                             root_node_;
-        std::vector<Road *>                        road_;
-        std::vector<Junction *>                    junction_;
-        std::vector<Controller>                    controller_;
-        GeoReference                               geo_ref_;
-        GeoOffset                                  geo_offset_;
-        std::string                                odr_filename_;
-        std::map<std::string, std::string>         signals_types_;
-        SpeedUnit                                  speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.
-        int                                        versionMajor_;
-        int                                        versionMinor_;
-        GlobalFriction                             friction_;
-        std::vector<std::pair<id_t, std::string>>  road_ids_;
-        std::vector<std::pair<id_t, std::string>>  junction_ids_;
-        std::unordered_map<int, std::vector<bool>> traffic_signal_state_;
-        id_t                                       LookupIdFromStr(std::vector<std::pair<id_t, std::string>> &ids, std::string id_str);
-        bool                                       ParseOpenDriveXML(const pugi::xml_document &doc);
+        pugi::xml_node                              root_node_;
+        std::vector<Road *>                         road_;
+        std::vector<Junction *>                     junction_;
+        std::vector<Controller>                     controller_;
+        GeoReference                                geo_ref_;
+        GeoOffset                                   geo_offset_;
+        std::string                                 odr_filename_;
+        std::map<std::string, std::string>          signals_types_;
+        SpeedUnit                                   speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.
+        int                                         versionMajor_;
+        int                                         versionMinor_;
+        GlobalFriction                              friction_;
+        std::vector<std::pair<id_t, std::string>>   road_ids_;
+        std::vector<std::pair<id_t, std::string>>   junction_ids_;
+        std::unordered_map<int, TrafficSignalState> traffic_signal_state_;
+        id_t                                        LookupIdFromStr(std::vector<std::pair<id_t, std::string>> &ids, std::string id_str);
+        bool                                        ParseOpenDriveXML(const pugi::xml_document &doc);
     };
 
     typedef struct

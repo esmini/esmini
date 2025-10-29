@@ -10,6 +10,7 @@
  * https://sites.google.com/view/simulationscenarios
  */
 
+#include <sstream>
 #include "OSCCondition.hpp"
 #include "Storyboard.hpp"
 #include "logger.hpp"
@@ -687,6 +688,25 @@ std::string TrigByVariable::GetAdditionalLogInfo()
 {
     OSCParameterDeclarations::ParameterStruct* ve = variables_->getParameterEntry(variableRef_);
     return fmt::format("variable {} {} {} {}, edge: {}", variableRef_, ve ? ve->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
+}
+
+bool TrigByTrafficSignal::CheckCondition(double sim_time)
+{
+    (void)sim_time;
+
+    auto traffic_signal_state = roadmanager::Position::GetOpenDrive()->GetTrafficSignalStateById(std::stoi(signalName_));
+    if (traffic_signal_state == nullptr)
+    {
+        LOG_WARN("TrafficSignalCondition: Traffic signal id {} not found");
+        return false;
+    }
+
+    return signalState_ == traffic_signal_state->GetStateString();
+}
+
+std::string TrigByTrafficSignal::GetAdditionalLogInfo()
+{
+    return fmt::format("TrafficSignal signalName={} signalState={}", signalName_, signalState_);
 }
 
 bool TrigByTimeHeadway::CheckCondition(double sim_time)
