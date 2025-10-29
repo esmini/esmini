@@ -11,7 +11,6 @@ ESMINI_PATH = '../'
 COMMON_ESMINI_ARGS = '--headless --fixed_timestep 0.01 --record sim.dat '
 COMMON_REPLAYER_ARGS = '--file sim.dat --headless --time_scale 10 --res_path ../resources --quit_at_end '
 
-
 class TestSuite(unittest.TestCase):
 
     def use_package(self, pack_name):
@@ -316,8 +315,13 @@ class TestSuite(unittest.TestCase):
         # Check vehicle key positions
         csv = generate_csv()
 
+        # Write CSV data to file for investigation
+        with open('SWARM.csv', 'w') as f:
+            f.write(csv)
+
         self.assertTrue(re.search('^40.00.*, 0, Ego, 33.31.*, 699.01.*, -0.95.*, 1.45.*, 0.00.*, 0.00.*, 10.00.*', csv, re.MULTILINE))
         # Random generators differ on platforms => random traffic will be repeatable only per platform
+        
         if platform == "win32":
             self.assertTrue(re.search('^5.000, 0, Ego, 11.090, 349.861, -0.625, 1.550, 0.002, 0.000, 10.000, -0.000, 4.627', csv, re.MULTILINE))
             self.assertTrue(re.search('^5.000, 1, swarm_0, 9.030, 199.999, -0.348, 1.562, 0.002, 0.000, 30.000, -0.000, 1.315', csv, re.MULTILINE))
@@ -344,10 +348,10 @@ class TestSuite(unittest.TestCase):
 
         elif platform == "linux" or platform == "linux2":
             self.assertTrue(re.search('^10.000, 0, Ego, 12.312, 399.846, -0.719, 1.542, 0.002, 0.000, 10.000, -0.001, 2.971', csv, re.MULTILINE))
-            self.assertTrue(re.search('^10.000, 30, swarm_23\\+, 8.765, 166.040, -0.283, 1.564, 0.002, 0.000, 30.000, -0.000, 4.033', csv, re.MULTILINE))
-            self.assertTrue(re.search('^14.000, 28, swarm_22\\+\\+, -3.463, 497.994, -0.839, 4.659, 6.283, 0.000, 30.000, 0.001, 5.891', csv, re.MULTILINE))
-            self.assertTrue(re.search('^15.000, 26, swarm_22, -5.730, 449.347, -0.794, 4.673, 6.282, 0.000, 30.000, 0.001, 3.641', csv, re.MULTILINE))
-            self.assertTrue(re.search('^20.000, 72, swarm_50, 19.084, 746.780, -1.083, 4.591, 6.281, 0.000, 30.000, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^10.000, 26, swarm_25, 12.368, 152.023, -0.254, 1.564, 0.002, 0.000, 30.000, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^14.000, 26, swarm_25, 13.507, 272.017, -0.475, 1.558, 0.002, 0.000, 30.000, -0.000, 3.565', csv, re.MULTILINE))
+            self.assertTrue(re.search('^29.000, 43, swarm_42, -5.005, 345.368, -0.616, 4.692, 6.281, 0.000, 30.000, 0.000, 4.994', csv, re.MULTILINE))
+            self.assertTrue(re.search('^40.000, 72, swarm_71, 22.359, 587.579, -0.830, 1.488, 6.283, 0.000, 11.821, -0.001, 6.077', csv, re.MULTILINE))
 
     def test_traffic_source_action(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/source.xosc'), COMMON_ESMINI_ARGS + ' --seed 0' + ' --fixed_timestep 0.1')

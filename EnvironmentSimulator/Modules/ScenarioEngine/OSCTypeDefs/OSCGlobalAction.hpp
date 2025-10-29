@@ -519,17 +519,6 @@ namespace scenarioengine
             dotOpposite_ = opposite;
             dotSame_     = same;
         }
-        void SetInitialSpeedRange(double lowerLimit, double upperLimit)
-        {
-            initialSpeedLowerLimit_ = lowerLimit;
-            initialSpeedUpperLimit_ = upperLimit;
-        }
-        void SetDirectionOfTravelDistribution(double opposite, double same)
-        {
-            dot_set_     = true;
-            dotOpposite_ = opposite;
-            dotSame_     = same;
-        }
 
     private:
         double                 velocity_;

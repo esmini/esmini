@@ -344,8 +344,6 @@ void TrafficSwarmAction::Start(double simTime)
     // if no catalog loaded, use same model as central object
     vehicle_pool_.Initialize(&context_->GetScenarioReader(), nullptr, true);
 
-    vehicle_pool_.Initialize(reader_, &categories, true);
-
     if (vehicle_pool_.Empty())
     {
         if (centralObject_ && centralObject_->type_ == Object::Type::VEHICLE)
@@ -873,7 +871,7 @@ void TrafficSourceAction::Start(double simTime)
         LOG_WARN("TrafficSourceAction: No traffic distribution entry defined, using vehicle pool for spawning.");
         vehicle_pool_.Initialize(&context_->GetScenarioReader(), nullptr, true);
 
-        if (vehicle_pool_.GetVehicles().size() == 0)
+        if (vehicle_pool_.Empty())
         {
             LOG_ERROR(
                 "TrafficSourceAction: No vehicles available to populate source traffic. Missing both Vehicle catalog and traffic distribution entry.");

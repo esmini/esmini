@@ -67,70 +67,12 @@
             </Actions>
         </Init>
         <Story name="story_act_maneuvuergroup_traffic source maneuver">
-<<<<<<< HEAD
-            <Act name="act_maneuvuergroup_traffic source maneuver">
-                <ManeuverGroup name="maneuvuergroup_traffic source maneuver" maximumExecutionCount="1">
-                    <Actors selectTriggeringEntities="false"/>
-                    <Maneuver name="traffic source maneuver">
-                        <Event name="traffic source event" priority="overwrite" maximumExecutionCount="1">
-                            <Action name="traffic source action">
-                                <GlobalAction>
-                                    <TrafficAction>
-                                        <TrafficSourceAction rate="2.0" radius="1.0" speed="30.0">
-                                            <Position>
-                                                <LanePosition roadId="0" laneId="-2" s="100.0" offset="0.0"/>
-                                            </Position>
-                                            <TrafficDistribution>
-                                                <TrafficDistributionEntry weight="0.5">
-                                                    <EntityDistribution>
-                                                        <EntityDistributionEntry weight="0.5">
-                                                            <ScenarioObjectTemplate>
-                                                                <CatalogReference catalogName="VehicleCatalog" entryName="Vehicle"/>
-                                                            </ScenarioObjectTemplate>
-                                                        </EntityDistributionEntry>
-                                                    </EntityDistribution>
-                                                </TrafficDistributionEntry>
-                                            </TrafficDistribution>
-                                        </TrafficSourceAction>
-                                    </TrafficAction>
-                                </GlobalAction>
-                            </Action>
-                            <StartTrigger>
-                                <ConditionGroup>
-                                    <Condition name="traffic source trigger" delay="0.0" conditionEdge="none">
-                                        <ByValueCondition>
-                                            <SimulationTimeCondition value="2.0" rule="greaterThan"/>
-                                        </ByValueCondition>
-                                    </Condition>
-                                </ConditionGroup>
-                            </StartTrigger>
-                        </Event>
-                    </Maneuver>
-                </ManeuverGroup>
-                <StartTrigger>
-                    <ConditionGroup>
-                        <Condition name="act_start" delay="0.0" conditionEdge="rising">
-                            <ByValueCondition>
-                                <SimulationTimeCondition value="0.0" rule="greaterThan"/>
-                            </ByValueCondition>
-                        </Condition>
-                    </ConditionGroup>
-                </StartTrigger>
-                <StopTrigger/>
-            </Act>
-=======
-
->>>>>>> 530005831f5757fa9ffd95de4565efb2590249af
         </Story>
         <StopTrigger>
             <ConditionGroup>
                 <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
                     <ByValueCondition>
-<<<<<<< HEAD
-                        <SimulationTimeCondition value="60.0" rule="greaterThan"/>
-=======
                         <SimulationTimeCondition value="11.0" rule="greaterThan"/>
->>>>>>> 530005831f5757fa9ffd95de4565efb2590249af
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>

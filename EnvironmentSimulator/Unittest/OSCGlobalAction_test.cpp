@@ -1,6 +1,7 @@
 #include "OSCGlobalAction.hpp"
 #include "playerbase.hpp"
 #include <gtest/gtest.h>
+#include "logger.hpp"
 
 using namespace scenarioengine;
 using namespace roadmanager;
@@ -18,8 +19,8 @@ protected:
         trafficAreaAction = new TrafficAreaAction(nullptr, trafficActionContext);
         trafficAreaAction->SetNumberOfEntities(10);
 
-        // TODO [hlindst9] How to get rid of this dummy output?
-        LOG_INFO("Dummy logging to avoid first log being captured in tests");
+        txtLogger.ClearBufferAndCapacity();
+        txtLogger.SetBufferCapacity(1);  // Ensure buffer has enough capacity
     }
 
     void TearDownBase()
@@ -56,9 +57,11 @@ TEST_P(TrafficAreaActionRoadCursorInfoTest, SetAdditionalRoadCursorInfoTest)
     // testing::internal::CaptureStdout();
     trafficAreaAction->SetAdditionalRoadCursorInfo(road_cursor);
     // std::string output = testing::internal::GetCapturedStdout();
+    const std::deque<std::string>& buffer = txtLogger.GetBuffer();
 
     ASSERT_TRUE(road_cursor == expected_road_cursor);
     // ASSERT_EQ(output, GetParam().log_output);
+    ASSERT_EQ(buffer[0], GetParam().log_output);
 }
 
 // Example parameters
