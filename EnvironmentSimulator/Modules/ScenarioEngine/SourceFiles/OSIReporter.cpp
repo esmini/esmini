@@ -435,7 +435,7 @@ int OSIReporter::UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<Ob
     UpdateOSIRoadLane();
     UpdateOSILaneBoundary();
     UpdateOSIIntersection();
-    UpdateTrafficSignals();
+    UpdateStaticTrafficSignals();
 
     // Set the original geo reference string as is
     std::string proj_string_delimiter = "";
@@ -597,7 +597,10 @@ int OSIReporter::UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<O
             }
         }
     }
+
     UpdateEnvironment(scenario_engine_->environment);
+    UpdateDynamicTrafficSignals();
+
     return 0;
 }
 
@@ -2540,7 +2543,7 @@ int OSIReporter::UpdateOSIRoadLane()
     return 0;
 }
 
-int OSIReporter::UpdateTrafficSignals()
+int OSIReporter::UpdateStaticTrafficSignals()
 {
     // Create OSI Stationary Object
     // obj_osi_internal.ts = obj_osi_internal.gt->add_traffic_sign();
@@ -2558,22 +2561,9 @@ int OSIReporter::UpdateTrafficSignals()
 
             if (signal)
             {
-                // Is Traffic Light
                 if (signal->IsDynamic())
                 {
-                    osi3::TrafficLight *trafficLight = obj_osi_internal.static_gt->add_traffic_light();
-                    trafficLight->mutable_id()->set_value(static_cast<unsigned int>(signal->GetId()));
-                    trafficLight->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
-                    trafficLight->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
-                    trafficLight->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(
-                        signal->GetH() + signal->GetHOffset() + M_PI));  // Add pi to have the yaw angle of actual sign face direction (normally
-                                                                         // pointing 180 degrees wrt road construction direction)
-                    trafficLight->mutable_base()->mutable_dimension()->set_height(signal->GetHeight());
-                    trafficLight->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
-
-                    trafficLight->mutable_base()->mutable_position()->set_x(signal->GetX());
-                    trafficLight->mutable_base()->mutable_position()->set_y(signal->GetY());
-                    trafficLight->mutable_base()->mutable_position()->set_z(signal->GetZ() + signal->GetZOffset() + signal->GetHeight() / 2.0);
+                    dynamic_signals_.push_back(signal);  // Save for use in dynamic data later
                 }
                 else
                 {
@@ -2675,6 +2665,49 @@ int OSIReporter::UpdateTrafficSignals()
             }
         }
     }
+    return 0;
+}
+
+int OSIReporter::UpdateDynamicTrafficSignals()
+{
+    obj_osi_internal.dynamic_gt->clear_traffic_light();
+
+    for (const auto &signal : dynamic_signals_)
+    {
+        if (signal != nullptr)
+        {
+            size_t lamps = 0;
+            if (signal->GetType() == "1000001")
+            {
+                lamps = 3;
+            }
+
+            for (size_t i = 1; i < lamps + 1; i++)
+            {
+                osi3::TrafficLight *trafficLight = obj_osi_internal.dynamic_gt->add_traffic_light();
+                // trafficLight->mutable_id()->set_value(static_cast<unsigned int>(signal->GetId()));
+                trafficLight->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
+                trafficLight->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
+                trafficLight->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(
+                    signal->GetH() + signal->GetHOffset() + M_PI));  // Add pi to have the yaw angle of actual sign face direction (normally
+                                                                     // pointing 180 degrees wrt road construction direction)
+                double height = signal->GetHeight() / static_cast<double>(lamps);
+                trafficLight->mutable_base()->mutable_dimension()->set_height(height);
+                trafficLight->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
+
+                trafficLight->mutable_base()->mutable_position()->set_x(signal->GetX());
+                trafficLight->mutable_base()->mutable_position()->set_y(signal->GetY());
+                trafficLight->mutable_base()->mutable_position()->set_z(signal->GetZ() + signal->GetZOffset() + height * i);  // Down -> Up
+
+                trafficLight->mutable_classification()->set_mode(osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+                trafficLight->mutable_classification()->set_color(osi3::TrafficLight_Classification_Color_COLOR_RED);
+                trafficLight->mutable_classification()->set_icon(osi3::TrafficLight_Classification_Icon_ICON_NONE);
+            }
+
+            // Lane validity can be added here, needs deduce lanes based on orientattion and potentially validity field
+        }
+    }
+
     return 0;
 }
 

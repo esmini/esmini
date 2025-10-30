@@ -124,7 +124,7 @@
             <validity fromLane="-3" toLane="-1"/>
             <validity fromLane="1" toLane="3"/>
          </signal>
-         <signal s="0.0" t="-3.57" id="1" name="speed_50_1" dynamic="no" orientation="+" zOffset="1.7" type="c" country="se" subtype="31" value="5" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+         <signal s="0.0" t="-3.57" id="1" name="speed_50_1" dynamic="no" orientation="+" zOffset="1.7" type="c" country="se" subtype="31" value="5" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61" unit="km/h"/>
          <signal s="100.0" t="3.57" id="2" name="speed_30_0" dynamic="no" orientation="+" zOffset="1.7" type="c" country="se" subtype="31" value="3" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
          <signal s="100.0" t="-3.57" id="3" name="speed_30_1" dynamic="no" orientation="+" zOffset="1.7" type="c" country="se" subtype="31" value="3" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
          <signal s="100.0" t="3.57" id="4" name="speed_50_2" dynamic="no" orientation="-" zOffset="1.7" type="c" country="se" subtype="31" value="5" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>

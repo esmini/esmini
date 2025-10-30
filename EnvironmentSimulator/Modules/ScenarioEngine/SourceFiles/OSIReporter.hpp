@@ -118,9 +118,13 @@ public:
     */
     int UpdateOSIIntersection();
     /**
-    Fills the Traffic Signals
+    Fills the static Traffic Signals
     */
-    int UpdateTrafficSignals();
+    int UpdateStaticTrafficSignals();
+    /**
+    Fills the dynamic Traffic Signals
+    */
+    int UpdateDynamicTrafficSignals();
     /**
     Fills the Traffic Commands (scenario events)
     */
@@ -272,4 +276,5 @@ private:
     OSIStaticReportMode                 static_update_mode_ = OSIStaticReportMode::DEFAULT;
     std::vector<std::pair<int, double>> osi_crop_           = {};       // id, radius
     std::optional<int64_t>              environment_timestamp_offset_;  // Offset to apply to environment timestamp, in seconds
+    std::vector<roadmanager::Signal*>   dynamic_signals_;
 };
