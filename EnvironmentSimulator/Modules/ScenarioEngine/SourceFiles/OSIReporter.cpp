@@ -2669,7 +2669,7 @@ int OSIReporter::UpdateTrafficSignals()
                     if (!signal->GetModel3DFullPath().empty())
                     {
                         // Set 3D model file as OSI model reference
-                        obj_osi_internal.sobj->set_model_reference(signal->GetModel3DFullPath());
+                        trafficSign->mutable_main_sign()->set_model_reference(signal->GetModel3DFullPath());
                     }
                 }
             }
