@@ -1237,6 +1237,13 @@ namespace roadmanager
         LaneBoundaryOSI boundary_[2];
     };
 
+    enum TrafficLightType : int
+    {
+        TYPE_1000001 = 0
+    };
+
+    inline std::unordered_map<TrafficLightType, size_t> traffic_light_type_lamps = {{TrafficLightType::TYPE_1000001, 3}};
+
     class RoadObject
     {
     public:
@@ -1246,6 +1253,8 @@ namespace roadmanager
             NEGATIVE,
             NONE,
         };
+
+        virtual ~RoadObject() = default;
 
         RoadObject() : x_(0.0), y_(0.0), z_(0.0), h_(0.0)
         {
@@ -1681,6 +1690,76 @@ namespace roadmanager
         double                                      value_  = 0.0;
         static const std::map<std::string, OSIType> types_mapping_;
         std::string                                 model3d_full_path_;
+    };
+
+    class TrafficLight : public Signal
+    {
+    public:
+        TrafficLight(double      s,
+                     double      t,
+                     int         id,
+                     std::string name,
+                     bool        dynamic,
+                     Orientation orientation,
+                     double      z_offset,
+                     std::string country,
+                     int         osi_type,
+                     std::string type,
+                     std::string subtype,
+                     std::string value_str,
+                     std::string unit,
+                     double      height,
+                     double      width,
+                     double      depth,  // i.e. length of the bounding box
+                     std::string text,
+                     double      h_offset,
+                     double      pitch,
+                     double      roll,
+                     double      x,
+                     double      y,
+                     double      z,
+                     double      h);
+
+        struct LampPosition
+        {
+            LampPosition(double x, double y, double z) : x_(x), y_(y), z_(z)
+            {
+            }
+
+            double x_;
+            double y_;
+            double z_;
+        };
+
+        bool SetTrafficLightInfo();
+
+        size_t GetNrLamps() const
+        {
+            return nr_lamps_;
+        }
+        double GetLampHeight() const
+        {
+            return lamp_height_;
+        }
+        double GetLampWidth() const
+        {
+            return lamp_width_;
+        }
+        std::vector<LampPosition> GetLampPositions() const
+        {
+            return lamp_positions_;
+        }
+        TrafficLightType GetTrafficLightType() const
+        {
+            return light_type_;
+        }
+
+    private:
+        size_t                    nr_lamps_;
+        double                    lamp_height_;
+        double                    lamp_width_;
+        std::vector<LampPosition> lamp_positions_;
+        TrafficLightType          light_type_;
     };
 
     class OutlineCorner

@@ -2672,37 +2672,37 @@ int OSIReporter::UpdateDynamicTrafficSignals()
 {
     obj_osi_internal.dynamic_gt->clear_traffic_light();
 
-    for (const auto &signal : dynamic_signals_)
+    for (auto *signal : dynamic_signals_)
     {
-        if (signal != nullptr)
+        if (signal == nullptr)
         {
-            size_t lamps = 0;
-            if (signal->GetType() == "1000001")
-            {
-                lamps = 3;
-            }
+            continue;
+        }
 
-            for (size_t i = 1; i < lamps + 1; i++)
-            {
-                osi3::TrafficLight *trafficLight = obj_osi_internal.dynamic_gt->add_traffic_light();
-                // trafficLight->mutable_id()->set_value(static_cast<unsigned int>(signal->GetId()));
-                trafficLight->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
-                trafficLight->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
-                trafficLight->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(
-                    signal->GetH() + signal->GetHOffset() + M_PI));  // Add pi to have the yaw angle of actual sign face direction (normally
-                                                                     // pointing 180 degrees wrt road construction direction)
-                double height = signal->GetHeight() / static_cast<double>(lamps);
-                trafficLight->mutable_base()->mutable_dimension()->set_height(height);
-                trafficLight->mutable_base()->mutable_dimension()->set_width(signal->GetWidth());
+        roadmanager::TrafficLight *tl = dynamic_cast<roadmanager::TrafficLight *>(signal);
+        for (size_t i = 0; i < tl->GetNrLamps(); i++)
+        {
+            osi3::TrafficLight *trafficLight = obj_osi_internal.dynamic_gt->add_traffic_light();
+            // trafficLight->mutable_id()->set_value(static_cast<unsigned int>(signal->GetId()));
+            trafficLight->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
+            trafficLight->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(signal->GetRoll()));
+            trafficLight->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(
+                signal->GetH() + signal->GetHOffset() + M_PI));  // Add pi to have the yaw angle of actual sign face direction (normally
+                                                                 // pointing 180 degrees wrt road construction direction)
+            trafficLight->mutable_base()->mutable_dimension()->set_height(tl->GetLampHeight());
+            trafficLight->mutable_base()->mutable_dimension()->set_width(tl->GetLampWidth());
 
-                trafficLight->mutable_base()->mutable_position()->set_x(signal->GetX());
-                trafficLight->mutable_base()->mutable_position()->set_y(signal->GetY());
-                trafficLight->mutable_base()->mutable_position()->set_z(signal->GetZ() + signal->GetZOffset() + height * i);  // Down -> Up
+            auto positions = tl->GetLampPositions()[i];
+            trafficLight->mutable_base()->mutable_position()->set_x(positions.x_);
+            trafficLight->mutable_base()->mutable_position()->set_y(positions.y_);
+            trafficLight->mutable_base()->mutable_position()->set_z(positions.z_);  // Down -> Up
 
-                trafficLight->mutable_classification()->set_mode(osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
-                trafficLight->mutable_classification()->set_color(osi3::TrafficLight_Classification_Color_COLOR_RED);
-                trafficLight->mutable_classification()->set_icon(osi3::TrafficLight_Classification_Icon_ICON_NONE);
-            }
+            auto odr                = roadmanager::Position::GetOpenDrive();
+            auto trafficLight_state = odr->GetTrafficSignalStateById(signal->GetId());
+            (void)trafficLight_state;  // To avoid unused variable warning if not used in the future
+            trafficLight->mutable_classification()->set_mode(osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+            trafficLight->mutable_classification()->set_color(osi3::TrafficLight_Classification_Color_COLOR_RED);
+            trafficLight->mutable_classification()->set_icon(osi3::TrafficLight_Classification_Icon_ICON_NONE);
 
             // Lane validity can be added here, needs deduce lanes based on orientattion and potentially validity field
         }

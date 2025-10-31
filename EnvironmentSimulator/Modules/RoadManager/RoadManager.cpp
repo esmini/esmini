@@ -374,6 +374,84 @@ Signal::Signal(double      s,
     value_ = strtod(value_str);
 }
 
+TrafficLight::TrafficLight(double      s,
+                           double      t,
+                           int         id,
+                           std::string name,
+                           bool        dynamic,
+                           Orientation orientation,
+                           double      z_offset,
+                           std::string country,
+                           int         osi_type,
+                           std::string type,
+                           std::string subtype,
+                           std::string value_str,
+                           std::string unit,
+                           double      height,
+                           double      width,
+                           double      depth,
+                           std::string text,
+                           double      h_offset,
+                           double      pitch,
+                           double      roll,
+                           double      x,
+                           double      y,
+                           double      z,
+                           double      h)
+    : Signal(s,
+             t,
+             id,
+             name,
+             dynamic,
+             orientation,
+             z_offset,
+             country,
+             osi_type,
+             type,
+             subtype,
+             value_str,
+             unit,
+             height,
+             width,
+             depth,
+             text,
+             h_offset,
+             pitch,
+             roll,
+             x,
+             y,
+             z,
+             h)
+{
+    LOG_INFO("Traffic light found of type {} subtype {} found", type, subtype);
+    SetTrafficLightInfo();
+}
+
+bool TrafficLight::SetTrafficLightInfo()
+{
+    std::string combined_type = GetCombinedTypeSubtypeValueStr(GetType(), GetSubType(), GetValueStr());
+    if (combined_type == "1000001" || combined_type == "1.000.001")
+    {
+        light_type_  = TrafficLightType::TYPE_1000001;
+        nr_lamps_    = traffic_light_type_lamps[light_type_];
+        lamp_height_ = GetHeight() / static_cast<double>(nr_lamps_);  // Assume all lights occupy entire space
+        lamp_width_  = GetWidth();                                    // Assume light is as wide as the light
+
+        for (size_t i = 0; i < nr_lamps_; i++)
+        {
+            // TODO: Apply some rotation if given...
+            double z = GetZ() + GetZOffset() + lamp_height_ / 2 + lamp_height_ * static_cast<double>(i);  // Down -> Up
+            lamp_positions_.emplace_back(GetX(), GetY(), z);
+        }
+    }
+    else
+    {
+        LOG_WARN("Unknown traffic light type '{}' subtype '{}'", GetType(), GetSubType());
+        return false;
+    }
+    return true;
+}
+
 Signal::OSIType Signal::GetOSITypeFromString(const std::string& type)
 {
     if (types_mapping_.count(type) != 0)
@@ -4477,18 +4555,6 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                         country_file_loaded = LoadSignalsByCountry(country);
                     }
 
-                    // if special country OpenDRIVE, check for various supported traffic light types
-                    if (country == "opendrive")
-                    {
-                        std::string signal_type = signal.attribute("type").value();
-
-                        if ((country_revision <= 2013 && signal_type == "1.000.001") || signal_type == "1000001")
-                        {
-                            // traffic light
-                            LOG_INFO("traffic light found!");
-                        }
-                    }
-
                     std::string type;
                     std::string subtype;
                     std::string value;
@@ -4542,30 +4608,62 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
 
                     Position pos(r->GetId(), s, t);
 
-                    Signal* sig = new Signal(s,
-                                             t,
-                                             ids,
-                                             name,
-                                             dynamic,
-                                             orientation,
-                                             z_offset,
-                                             country,
-                                             osi_type,
-                                             type,
-                                             subtype,
-                                             value,
-                                             unit,
-                                             height,
-                                             width,
-                                             depth,
-                                             text,
-                                             h_offset,
-                                             pitch,
-                                             roll,
-                                             pos.GetX(),
-                                             pos.GetY(),
-                                             pos.GetZ(),
-                                             pos.GetHRoad() + (orientation == Signal::Orientation::NEGATIVE ? M_PI : 0.0));
+                    Signal* sig = nullptr;
+                    if (country == "opendrive" && country_revision < 2013 && dynamic)  // why country_revision < 2013??
+                    {
+                        sig = new TrafficLight(s,
+                                               t,
+                                               ids,
+                                               name,
+                                               dynamic,
+                                               orientation,
+                                               z_offset,
+                                               country,
+                                               osi_type,
+                                               type,
+                                               subtype,
+                                               value,
+                                               unit,
+                                               height,
+                                               width,
+                                               depth,
+                                               text,
+                                               h_offset,
+                                               pitch,
+                                               roll,
+                                               pos.GetX(),
+                                               pos.GetY(),
+                                               pos.GetZ(),
+                                               pos.GetHRoad() + (orientation == Signal::Orientation::NEGATIVE ? M_PI : 0.0));
+                    }
+                    else
+                    {
+                        sig = new Signal(s,
+                                         t,
+                                         ids,
+                                         name,
+                                         dynamic,
+                                         orientation,
+                                         z_offset,
+                                         country,
+                                         osi_type,
+                                         type,
+                                         subtype,
+                                         value,
+                                         unit,
+                                         height,
+                                         width,
+                                         depth,
+                                         text,
+                                         h_offset,
+                                         pitch,
+                                         roll,
+                                         pos.GetX(),
+                                         pos.GetY(),
+                                         pos.GetZ(),
+                                         pos.GetHRoad() + (orientation == Signal::Orientation::NEGATIVE ? M_PI : 0.0));
+                    }
+
                     if (sig != NULL)
                     {
                         r->AddSignal(sig);
@@ -4574,7 +4672,6 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     {
                         LOG_ERROR("Signal: Major error");
                     }
-
                     for (pugi::xml_node validity_node = signal.child("validity"); validity_node;
                          validity_node                = validity_node.next_sibling("validity"))
                     {
