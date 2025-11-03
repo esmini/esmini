@@ -75,7 +75,7 @@ void ParameterSetAction::Step(double simTime, double dt)
 
 void TrafficSignalStateAction::Start(double simTime)
 {
-    odr_->SetTrafficSignalState(std::stoi(name_), value_);
+    trafficlight_->UpdateState(value_);
     OSCAction::Start(simTime);
 }
 

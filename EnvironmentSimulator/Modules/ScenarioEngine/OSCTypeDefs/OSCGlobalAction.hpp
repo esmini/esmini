@@ -337,21 +337,23 @@ namespace scenarioengine
     class TrafficSignalStateAction : public OSCGlobalAction
     {
     public:
-        std::string             name_;
-        std::string             value_;
-        roadmanager::OpenDrive* odr_;
+        std::string                name_;
+        std::string                value_;
+        roadmanager::TrafficLight* trafficlight_;
 
         TrafficSignalStateAction(StoryBoardElement* parent)
             : OSCGlobalAction(ActionType::INFRASTRUCTURE, parent),
               name_(""),
               value_(""),
-              odr_(nullptr){};
+              trafficlight_(nullptr)
+        {
+        }
 
         TrafficSignalStateAction(const TrafficSignalStateAction& action) : OSCGlobalAction(ActionType::INFRASTRUCTURE, action.parent_)
         {
-            name_  = action.name_;
-            value_ = action.value_;
-            odr_   = action.odr_;
+            name_         = action.name_;
+            value_        = action.value_;
+            trafficlight_ = action.trafficlight_;
         }
 
         OSCGlobalAction* Copy()
@@ -365,32 +367,41 @@ namespace scenarioengine
             return "TrafficSignalStateAction";
         };
 
-        void RegisterOpenDrive(roadmanager::OpenDrive* odr)
-        {
-            odr_ = odr;
-        }
-
         void SetSignal()
         {
-            for (size_t i = 0; i < odr_->GetNumOfRoads(); i++)
+            roadmanager::OpenDrive* odr = roadmanager::Position::GetOpenDrive();
+            if (odr == nullptr)
             {
-                auto   road       = odr_->GetRoadByIdx(i);
+                return;
+            }
+            for (size_t i = 0; i < odr->GetNumOfRoads(); i++)
+            {
+                auto   road       = odr->GetRoadByIdx(i);
                 size_t nr_signals = road->GetNumberOfSignals();
                 for (size_t j = 0; j < nr_signals; j++)
                 {
                     auto signal = road->GetSignal(j);
-                    if (signal->GetId() == std::stoi(this->name_))
+                    if (!signal->IsDynamic())
+                    {
+                        continue;
+                    }
+                    auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
+                    if (tl != nullptr && tl->GetId() == std::stoi(this->name_))
                     {
                         // Count how many ';' we have in the string and add 1 if its not empty (so "off" has 1 value, "off;on" 2 values etc.)
                         int nr_values = std::count(this->value_.begin(), this->value_.end(), ';') + static_cast<int>(!this->value_.empty());
-                        if ((signal->GetType() == "1000001" || signal->GetType() == "1.000.001") && nr_values != 3)
+
+                        if (tl->GetTrafficLightType() == roadmanager::TrafficLightType::TYPE_1000001 && nr_values != 3)
                         {
-                            LOG_WARN("Signal of type {} takes 3 values, but {} were provided", signal->GetType(), nr_values);
+                            LOG_ERROR("TrafficSignalStateAction: Signal of type {} takes 3 values, but {} were provided",
+                                      tl->GetTrafficLightType(),
+                                      nr_values);
                             return;
                         }
 
-                        odr_->CreateTrafficSignalState(std::stoi(this->name_), this->value_);
-                        LOG_INFO("Creating signal with id {}", signal->GetId());
+                        tl->DefaultState(static_cast<size_t>(nr_values));
+                        trafficlight_ = tl;
+                        LOG_INFO("Creating signal with id {}", tl->GetId());
                         break;
                     }
                 }

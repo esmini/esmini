@@ -694,13 +694,44 @@ bool TrigByTrafficSignal::CheckCondition(double sim_time)
 {
     (void)sim_time;
 
-    auto traffic_signal_state = roadmanager::Position::GetOpenDrive()->GetTrafficSignalStateById(std::stoi(signalName_));
-    if (traffic_signal_state == nullptr)
+    roadmanager::TrafficLight* tl  = nullptr;
+    auto                       odr = roadmanager::Position::GetOpenDrive();
+    if (odr == nullptr)
+    {
+        return false;
+    }
+    for (size_t i = 0; i < odr->GetNumOfRoads(); i++)
+    {
+        auto road = odr->GetRoadByIdx(i);
+        if (road == nullptr)
+        {
+            continue;
+        }
+        auto signals = road->GetNumberOfSignals();
+        for (size_t j = 0; j < signals; j++)
+        {
+            auto signal = road->GetSignal(j);
+            if (signal == nullptr)
+            {
+                continue;
+            }
+            if (!signal->IsDynamic())
+            {
+                continue;
+            }
+            if (signal->GetId() == std::stoi(signalName_))
+            {
+                tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
+                break;
+            }
+        }
+    }
+    if (tl == nullptr)
     {
         return false;
     }
 
-    return signalState_ == traffic_signal_state->GetStateString();
+    return signalState_ == tl->GetStateString();
 }
 
 std::string TrigByTrafficSignal::GetAdditionalLogInfo()

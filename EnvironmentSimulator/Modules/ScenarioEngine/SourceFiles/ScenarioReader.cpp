@@ -2438,7 +2438,6 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                     trafficSignalStateAction->name_                    = parameters.ReadAttribute(stateAction, "name");
                     trafficSignalStateAction->value_                   = parameters.ReadAttribute(stateAction, "state");
 
-                    trafficSignalStateAction->RegisterOpenDrive(roadmanager::Position::GetOpenDrive());
                     trafficSignalStateAction->SetSignal();
 
                     action = trafficSignalStateAction;

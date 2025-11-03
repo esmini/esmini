@@ -1753,6 +1753,69 @@ namespace roadmanager
         {
             return light_type_;
         }
+        /* State stuff */
+        void DefaultState(size_t values)
+        {
+            state_vector_ = std::vector<bool>(values, false);
+            UpdateState(state_vector_);
+        }
+        // Rebuilds the vector<bool> based on a string
+        void UpdateState(const std::string state)
+        {
+            state_ = state;
+            state_vector_.clear();
+            bool unknown_token = false;
+
+            std::stringstream ss(state);
+            std::string       token;
+
+            while (std::getline(ss, token, ';'))
+            {
+                if (token == "on")
+                {
+                    state_vector_.push_back(true);
+                }
+                else if (token == "off")
+                {
+                    state_vector_.push_back(false);
+                }
+                else
+                {
+                    state_vector_.push_back(false);
+                    LOG_WARN("Warning: unknown state '{}', setting state 'off'", token);
+                    unknown_token = true;
+                }
+            }
+
+            if (unknown_token)
+            {
+                UpdateState(state_vector_);
+            }
+        }
+        // Rebuilds the string based on a vector<bool>
+        void UpdateState(const std::vector<bool> state)
+        {
+            state_vector_ = state;
+            state_        = "";
+            for (size_t i = 0; i < state_vector_.size(); i++)
+            {
+                state_ += (state_vector_[i]) ? "on" : "off";
+
+                if (i != state_vector_.size() - 1)
+                {
+                    state_ += ";";
+                }
+            }
+        }
+        std::string GetStateString() const
+        {
+            return state_;
+        }
+
+        std::vector<bool> GetStateVector() const
+        {
+            return state_vector_;
+        }
 
     private:
         size_t                    nr_lamps_;
@@ -1760,6 +1823,10 @@ namespace roadmanager
         double                    lamp_width_;
         std::vector<LampPosition> lamp_positions_;
         TrafficLightType          light_type_;
+
+        // State (from OpenSCENARIO)
+        std::string       state_;
+        std::vector<bool> state_vector_;
     };
 
     class OutlineCorner
