@@ -3945,11 +3945,9 @@ void ScenarioReader::parseInit(Init &init)
             if (init.private_action_[j]->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
             {
                 TeleportAction *action = static_cast<TeleportAction *>(init.private_action_[j]);
-                if (action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_LANE)
-                {
-                    pos = action->position_.GetRelativePosition();
-                }
-                else if (action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_OBJECT)
+                if (action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_LANE ||
+                    action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_WORLD ||
+                    action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_OBJECT)
                 {
                     pos = action->position_.GetRelativePosition();
                 }
