@@ -97,7 +97,7 @@ OSCPositionLane::OSCPositionLane(id_t roadId, int laneId, double s, double offse
     if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE || std::isnan(orientation.h_))
     {
         // Adjust heading to road direction also considering traffic rule (left/right hand traffic)
-        if ((laneId < 0 && road->GetRule() == roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC) ||
+        if ((laneId <= 0 && road->GetRule() == roadmanager::Road::RoadRule::RIGHT_HAND_TRAFFIC) ||
             (laneId > 0 && road->GetRule() == roadmanager::Road::RoadRule::LEFT_HAND_TRAFFIC))
         {
             position_.SetHeadingRelative(std::isnan(orientation.h_) ? 0.0 : orientation.h_, false);
