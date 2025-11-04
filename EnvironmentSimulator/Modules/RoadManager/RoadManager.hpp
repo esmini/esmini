@@ -29,8 +29,10 @@
 
 namespace roadmanager
 {
-    id_t        GetNewGlobalLaneId();
-    id_t        GetNewGlobalLaneBoundaryId();
+    id_t GetNewGlobalLaneId();
+    id_t GetNewGlobalLaneBoundaryId();
+    id_t GetNewGlobalTrafficLightId();
+
     const char *ReadUserData(pugi::xml_node node, const std::string &code, const std::string &default_value = "");
 
     /**
@@ -1720,15 +1722,51 @@ namespace roadmanager
                      double      z,
                      double      h);
 
-        struct LampPosition
+        class Lamp
         {
-            LampPosition(double x, double y, double z) : x_(x), y_(y), z_(z)
+        public:
+            Lamp(id_t id, double x, double y, double z, double width, double height) : id_(id), x_(x), y_(y), z_(z), width_(width), height_(height)
             {
             }
 
+            double GetX() const
+            {
+                return x_;
+            }
+            double GetY() const
+            {
+                return y_;
+            }
+            double GetZ() const
+            {
+                return z_;
+            }
+            double GetHeight() const
+            {
+                return height_;
+            }
+            double GetWidth() const
+            {
+                return width_;
+            }
+
+            void SetId(id_t id)
+            {
+                id_ = id;
+            }
+
+            id_t GetId() const
+            {
+                return id_;
+            }
+
+        private:
+            id_t   id_;
             double x_;
             double y_;
             double z_;
+            double width_;
+            double height_;
         };
 
         bool SetTrafficLightInfo();
@@ -1737,18 +1775,12 @@ namespace roadmanager
         {
             return nr_lamps_;
         }
-        double GetLampHeight() const
+
+        Lamp *GetLamp(size_t index)
         {
-            return lamp_height_;
+            return &lamps_.at(index);
         }
-        double GetLampWidth() const
-        {
-            return lamp_width_;
-        }
-        std::vector<LampPosition> GetLampPositions() const
-        {
-            return lamp_positions_;
-        }
+
         TrafficLightType GetTrafficLightType() const
         {
             return light_type_;
@@ -1818,11 +1850,9 @@ namespace roadmanager
         }
 
     private:
-        size_t                    nr_lamps_;
-        double                    lamp_height_;
-        double                    lamp_width_;
-        std::vector<LampPosition> lamp_positions_;
-        TrafficLightType          light_type_;
+        size_t            nr_lamps_;
+        std::vector<Lamp> lamps_;
+        TrafficLightType  light_type_;
 
         // State (from OpenSCENARIO)
         std::string       state_;
@@ -3138,6 +3168,11 @@ namespace roadmanager
         id_t LookupRoadIdFromStr(std::string id_str);
         id_t LookupJunctionIdFromStr(std::string id_str);
 
+        std::vector<Signal *> GetDynamicSignals()
+        {
+            return dynamic_signals_;
+        }
+
         Outline *CreateContinuousRepeatOutline(Road  *r,
                                                id_t   ids,
                                                double s,
@@ -3155,143 +3190,24 @@ namespace roadmanager
                                                double rzOffsetStart,
                                                double rzOffsetEnd);
 
-        class TrafficSignalState
-        {
-        public:
-            TrafficSignalState() = default;
-
-            // Creates a default state {false, false, ...}
-            // string("off;off;...")
-            // Based on length of string input
-            TrafficSignalState(std::string state)
-            {
-                std::stringstream ss(state);
-                std::string       token;
-
-                while (std::getline(ss, token, ';'))
-                {
-                    state_vector_.push_back(false);
-                }
-
-                UpdateState(state_vector_);
-            }
-
-            // Rebuilds the vector<bool> based on a string
-            void UpdateState(const std::string state)
-            {
-                state_ = state;
-                state_vector_.clear();
-                bool unknown_token = false;
-
-                std::stringstream ss(state);
-                std::string       token;
-
-                while (std::getline(ss, token, ';'))
-                {
-                    if (token == "on")
-                    {
-                        state_vector_.push_back(true);
-                    }
-                    else if (token == "off")
-                    {
-                        state_vector_.push_back(false);
-                    }
-                    else
-                    {
-                        state_vector_.push_back(false);
-                        LOG_WARN("Warning: unknown state '{}', setting state 'off'", token);
-                        unknown_token = true;
-                    }
-                }
-
-                if (unknown_token)
-                {
-                    UpdateState(state_vector_);
-                }
-            }
-
-            // Rebuilds the string based on a vector<bool>
-            void UpdateState(const std::vector<bool> state)
-            {
-                state_vector_ = state;
-                state_        = "";
-                for (size_t i = 0; i < state_vector_.size(); i++)
-                {
-                    state_ += (state_vector_[i]) ? "on" : "off";
-
-                    if (i != state_vector_.size() - 1)
-                    {
-                        state_ += ";";
-                    }
-                }
-            }
-
-            std::string GetStateString() const
-            {
-                return state_;
-            }
-
-            std::vector<bool> GetStateVector() const
-            {
-                return state_vector_;
-            }
-
-        private:
-            std::string       state_;
-            std::vector<bool> state_vector_;
-        };
-
-        void CreateTrafficSignalState(int id, std::string state)
-        {
-            // Emplace will skip if already existing
-            traffic_signal_state_.emplace(id, TrafficSignalState(state));
-        }
-
-        template <typename T>
-        void SetTrafficSignalState(int id, const T &state)
-        {
-            auto it = traffic_signal_state_.find(id);
-            if (it == traffic_signal_state_.end())
-            {
-                LOG_WARN("Can't update state of signal {}, it probably wasn't properly created", id);
-                return;
-            }
-            it->second.UpdateState(state);
-        }
-
-        std::unordered_map<int, TrafficSignalState> &GetTrafficSignalState()
-        {
-            return traffic_signal_state_;
-        }
-
-        TrafficSignalState *GetTrafficSignalStateById(int id)
-        {
-            auto ret = traffic_signal_state_.find(id);
-            if (ret == traffic_signal_state_.end())
-            {
-                return nullptr;
-            }
-            return &ret->second;
-        }
-
     private:
-        pugi::xml_node                              root_node_;
-        std::vector<Road *>                         road_;
-        std::vector<Junction *>                     junction_;
-        std::vector<Controller>                     controller_;
-        GeoReference                                geo_ref_;
-        GeoOffset                                   geo_offset_;
-        std::string                                 odr_filename_;
-        std::map<std::string, std::string>          signals_types_;
-        SpeedUnit                                   speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.
-        int                                         versionMajor_;
-        int                                         versionMinor_;
-        GlobalFriction                              friction_;
-        std::vector<std::pair<id_t, std::string>>   road_ids_;
-        std::vector<std::pair<id_t, std::string>>   junction_ids_;
-        std::unordered_map<int, TrafficSignalState> traffic_signal_state_;
-        id_t                                        LookupIdFromStr(std::vector<std::pair<id_t, std::string>> &ids, std::string id_str);
-        bool                                        ParseOpenDriveXML(const pugi::xml_document &doc);
+        pugi::xml_node                            root_node_;
+        std::vector<Road *>                       road_;
+        std::vector<Junction *>                   junction_;
+        std::vector<Controller>                   controller_;
+        GeoReference                              geo_ref_;
+        GeoOffset                                 geo_offset_;
+        std::string                               odr_filename_;
+        std::map<std::string, std::string>        signals_types_;
+        SpeedUnit                                 speed_unit_;  // First specified speed unit. MS is default. Undefined if no speed entries.
+        int                                       versionMajor_;
+        int                                       versionMinor_;
+        GlobalFriction                            friction_;
+        std::vector<std::pair<id_t, std::string>> road_ids_;
+        std::vector<std::pair<id_t, std::string>> junction_ids_;
+        std::vector<Signal *>                     dynamic_signals_;
+        id_t                                      LookupIdFromStr(std::vector<std::pair<id_t, std::string>> &ids, std::string id_str);
+        bool                                      ParseOpenDriveXML(const pugi::xml_document &doc);
     };
 
     typedef struct

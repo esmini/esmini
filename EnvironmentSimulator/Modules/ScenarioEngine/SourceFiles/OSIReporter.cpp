@@ -2549,7 +2549,7 @@ int OSIReporter::UpdateStaticTrafficSignals()
     // obj_osi_internal.ts = obj_osi_internal.gt->add_traffic_sign();
 
     // Retrieve opendrive class from RoadManager
-    static roadmanager::OpenDrive *opendrive = roadmanager::Position::GetOpenDrive();
+    auto opendrive = roadmanager::Position::GetOpenDrive();
 
     // Loop over all roads
     for (unsigned int i = 0; i < opendrive->GetNumOfRoads(); i++)
@@ -2563,7 +2563,8 @@ int OSIReporter::UpdateStaticTrafficSignals()
             {
                 if (signal->IsDynamic())
                 {
-                    dynamic_signals_.push_back(signal);  // Save for use in dynamic data later
+                    // TODO: Some logic to populate anyway if set in scenario
+                    continue;
                 }
                 else
                 {
@@ -2672,7 +2673,7 @@ int OSIReporter::UpdateDynamicTrafficSignals()
 {
     obj_osi_internal.dynamic_gt->clear_traffic_light();
 
-    for (auto *signal : dynamic_signals_)
+    for (auto signal : roadmanager::Position::GetOpenDrive()->GetDynamicSignals())
     {
         if (signal == nullptr)
         {
@@ -2680,6 +2681,11 @@ int OSIReporter::UpdateDynamicTrafficSignals()
         }
 
         roadmanager::TrafficLight *tl = dynamic_cast<roadmanager::TrafficLight *>(signal);
+        if (tl == nullptr)
+        {
+            continue;
+        }
+
         for (size_t i = 0; i < tl->GetNrLamps(); i++)
         {
             osi3::TrafficLight *trafficLight = obj_osi_internal.dynamic_gt->add_traffic_light();
@@ -2689,17 +2695,16 @@ int OSIReporter::UpdateDynamicTrafficSignals()
             trafficLight->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(
                 signal->GetH() + signal->GetHOffset() + M_PI));  // Add pi to have the yaw angle of actual sign face direction (normally
                                                                  // pointing 180 degrees wrt road construction direction)
-            trafficLight->mutable_base()->mutable_dimension()->set_height(tl->GetLampHeight());
-            trafficLight->mutable_base()->mutable_dimension()->set_width(tl->GetLampWidth());
 
-            auto positions = tl->GetLampPositions()[i];
-            trafficLight->mutable_base()->mutable_position()->set_x(positions.x_);
-            trafficLight->mutable_base()->mutable_position()->set_y(positions.y_);
-            trafficLight->mutable_base()->mutable_position()->set_z(positions.z_);  // Down -> Up
+            auto lamp = tl->GetLamp(i);
+            trafficLight->mutable_base()->mutable_dimension()->set_height(lamp->GetHeight());
+            trafficLight->mutable_base()->mutable_dimension()->set_width(lamp->GetWidth());
 
-            auto odr                = roadmanager::Position::GetOpenDrive();
-            auto trafficLight_state = odr->GetTrafficSignalStateById(signal->GetId());
-            (void)trafficLight_state;  // To avoid unused variable warning if not used in the future
+            trafficLight->mutable_base()->mutable_position()->set_x(lamp->GetX());
+            trafficLight->mutable_base()->mutable_position()->set_y(lamp->GetY());
+            trafficLight->mutable_base()->mutable_position()->set_z(lamp->GetZ());
+
+            trafficLight->mutable_id()->set_value(lamp->GetId());
             trafficLight->mutable_classification()->set_mode(osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
             trafficLight->mutable_classification()->set_color(osi3::TrafficLight_Classification_Color_COLOR_RED);
             trafficLight->mutable_classification()->set_icon(osi3::TrafficLight_Classification_Icon_ICON_NONE);

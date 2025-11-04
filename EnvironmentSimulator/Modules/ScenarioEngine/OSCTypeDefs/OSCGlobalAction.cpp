@@ -87,6 +87,57 @@ void TrafficSignalStateAction::Step(double simTime, double dt)
     OSCAction::Stop();
 }
 
+int TrafficSignalStateAction::CountNonEmptyTokens(const std::string& s)
+{
+    std::istringstream ss(s);
+    std::string        token;
+    int                count = 0;
+
+    while (std::getline(ss, token, ';'))
+    {
+        if (!token.empty())
+            ++count;
+    }
+
+    return count;
+}
+
+void TrafficSignalStateAction::SetSignal()
+{
+    roadmanager::OpenDrive* odr = roadmanager::Position::GetOpenDrive();
+
+    if (odr == nullptr)
+    {
+        return;
+    }
+
+    for (const auto& signal : odr->GetDynamicSignals())
+    {
+        if (signal == nullptr)
+        {
+            continue;
+        }
+        auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
+
+        if (tl != nullptr && tl->GetId() == std::stoi(this->name_))
+        {
+            // Count how many ';' we have in the string and add 1 if its not empty (so "off" has 1 value, "off;on" 2 values etc.)
+            int nr_values = CountNonEmptyTokens(this->value_);
+
+            if (tl->GetTrafficLightType() == roadmanager::TrafficLightType::TYPE_1000001 && nr_values != 3)
+            {
+                LOG_ERROR("TrafficSignalStateAction: Signal of type {} takes 3 values, but {} were provided", tl->GetTrafficLightType(), nr_values);
+                return;
+            }
+
+            tl->DefaultState(static_cast<size_t>(nr_values));
+            trafficlight_ = tl;
+            LOG_INFO("Creating signal with id {}", tl->GetId());
+            break;
+        }
+    }
+}
+
 void VariableSetAction::Start(double simTime)
 {
     LOG_INFO("Set variable {} = {}", name_, value_);

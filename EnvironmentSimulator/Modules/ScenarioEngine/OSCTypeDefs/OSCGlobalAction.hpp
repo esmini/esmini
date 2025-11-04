@@ -365,48 +365,10 @@ namespace scenarioengine
         std::string Type2Str()
         {
             return "TrafficSignalStateAction";
-        };
-
-        void SetSignal()
-        {
-            roadmanager::OpenDrive* odr = roadmanager::Position::GetOpenDrive();
-            if (odr == nullptr)
-            {
-                return;
-            }
-            for (size_t i = 0; i < odr->GetNumOfRoads(); i++)
-            {
-                auto   road       = odr->GetRoadByIdx(i);
-                size_t nr_signals = road->GetNumberOfSignals();
-                for (size_t j = 0; j < nr_signals; j++)
-                {
-                    auto signal = road->GetSignal(j);
-                    if (!signal->IsDynamic())
-                    {
-                        continue;
-                    }
-                    auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
-                    if (tl != nullptr && tl->GetId() == std::stoi(this->name_))
-                    {
-                        // Count how many ';' we have in the string and add 1 if its not empty (so "off" has 1 value, "off;on" 2 values etc.)
-                        int nr_values = std::count(this->value_.begin(), this->value_.end(), ';') + static_cast<int>(!this->value_.empty());
-
-                        if (tl->GetTrafficLightType() == roadmanager::TrafficLightType::TYPE_1000001 && nr_values != 3)
-                        {
-                            LOG_ERROR("TrafficSignalStateAction: Signal of type {} takes 3 values, but {} were provided",
-                                      tl->GetTrafficLightType(),
-                                      nr_values);
-                            return;
-                        }
-
-                        tl->DefaultState(static_cast<size_t>(nr_values));
-                        trafficlight_ = tl;
-                        LOG_INFO("Creating signal with id {}", tl->GetId());
-                        break;
-                    }
-                }
-            }
         }
+
+        int  CountNonEmptyTokens(const std::string& s);
+        void SetSignal();
 
         void Start(double simTime);
         void Step(double simTime, double dt);

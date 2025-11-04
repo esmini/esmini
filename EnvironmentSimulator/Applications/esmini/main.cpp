@@ -102,26 +102,15 @@ static int execute_scenario(int argc, char* argv[])
 #if 1  // traffic light visualization test
         if (player->viewer_ != nullptr && player->viewer_->roadGeom != nullptr)
         {
-            auto odr   = roadmanager::Position::GetOpenDrive();
-            auto roads = odr->GetNumOfRoads();
-            for (size_t i = 0; i < roads; i++)
+            auto odr     = roadmanager::Position::GetOpenDrive();
+            auto signals = odr->GetDynamicSignals();
+            for (const auto& signal : signals)
             {
-                auto   road       = odr->GetRoadByIdx(i);
-                size_t nr_signals = road->GetNumberOfSignals();
-
-                for (size_t j = 0; j < nr_signals; j++)
+                auto tl    = dynamic_cast<roadmanager::TrafficLight*>(signal);
+                auto light = player->viewer_->roadGeom->traffic_light_red_yellow_green_[tl->GetId()];
+                for (size_t k = 0; k < tl->GetStateVector().size(); k++)
                 {
-                    auto signal = road->GetSignal(j);
-                    if (!signal->IsDynamic())
-                    {
-                        continue;
-                    }
-                    auto tl    = dynamic_cast<roadmanager::TrafficLight*>(signal);
-                    auto light = player->viewer_->roadGeom->traffic_light_red_yellow_green_[tl->GetId()];
-                    for (size_t k = 0; k < tl->GetStateVector().size(); k++)
-                    {
-                        light.SetState(k, tl->GetStateVector()[k]);
-                    }
+                    light.SetState(k, tl->GetStateVector()[k]);
                 }
             }
         }

@@ -76,6 +76,7 @@ using namespace roadmanager;
 
 static id_t g_Lane_id;
 static id_t g_Laneb_id;
+static id_t g_tl_id;
 
 const char* object_type_str[] = {"barrier",   "bike",     "building",     "bus",          "car",           "crosswalk",  "gantry",
                                  "motorbike", "none",     "obstacle",     "parkingSpace", "patch",         "pedestrian", "pole",
@@ -432,16 +433,17 @@ bool TrafficLight::SetTrafficLightInfo()
     std::string combined_type = GetCombinedTypeSubtypeValueStr(GetType(), GetSubType(), GetValueStr());
     if (combined_type == "1000001" || combined_type == "1.000.001")
     {
-        light_type_  = TrafficLightType::TYPE_1000001;
-        nr_lamps_    = traffic_light_type_lamps[light_type_];
-        lamp_height_ = GetHeight() / static_cast<double>(nr_lamps_);  // Assume all lights occupy entire space
-        lamp_width_  = GetWidth();                                    // Assume light is as wide as the light
+        light_type_         = TrafficLightType::TYPE_1000001;
+        nr_lamps_           = traffic_light_type_lamps[light_type_];
+        double lamp_height_ = GetHeight() / static_cast<double>(nr_lamps_);  // Assume all lights occupy entire space
+        double lamp_width_  = GetWidth();                                    // Assume light is as wide as the light
 
         for (size_t i = 0; i < nr_lamps_; i++)
         {
             // TODO: Apply some rotation if given...
-            double z = GetZ() + GetZOffset() + lamp_height_ / 2 + lamp_height_ * static_cast<double>(i);  // Down -> Up
-            lamp_positions_.emplace_back(GetX(), GetY(), z);
+            double z  = GetZ() + GetZOffset() + lamp_height_ / 2 + lamp_height_ * static_cast<double>(i);  // Down -> Up
+            id_t   id = GetNewGlobalTrafficLightId();
+            lamps_.emplace_back(id, GetX(), GetY(), z, lamp_width_, lamp_height_);
         }
     }
     else
@@ -494,6 +496,13 @@ id_t roadmanager::GetNewGlobalLaneBoundaryId()
 {
     id_t returnvalue = g_Laneb_id;
     g_Laneb_id++;
+    return returnvalue;
+}
+
+id_t roadmanager::GetNewGlobalTrafficLightId()
+{
+    id_t returnvalue = g_tl_id;
+    g_tl_id++;
     return returnvalue;
 }
 
@@ -3398,6 +3407,7 @@ void OpenDrive::InitGlobalLaneIds()
 {
     g_Lane_id  = 0;
     g_Laneb_id = 0;
+    g_tl_id    = 0;
 }
 
 Controller* OpenDrive::GetControllerByIdx(idx_t index)
@@ -3458,6 +3468,7 @@ void OpenDrive::Clear()
 
     road_ids_.clear();
     junction_ids_.clear();
+    dynamic_signals_.clear();
 
     for (size_t i = 0; i < road_.size(); i++)
     {
@@ -4608,7 +4619,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
 
                     Position pos(r->GetId(), s, t);
 
-                    Signal* sig = nullptr;
+                    Signal* sig;
                     if (country == "opendrive" && country_revision < 2013 && dynamic)  // why country_revision < 2013??
                     {
                         sig = new TrafficLight(s,
@@ -4666,6 +4677,11 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
 
                     if (sig != NULL)
                     {
+                        if (sig->IsDynamic())
+                        {
+                            dynamic_signals_.push_back(sig);
+                        }
+
                         r->AddSignal(sig);
                     }
                     else
