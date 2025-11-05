@@ -33,7 +33,7 @@
 #define OSI_MAX_UDP_DATA_SIZE 8192
 
 // enum mappings
-std::unordered_map<roadmanager::LampColor, osi3::TrafficLight_Classification_Color> lamps_color_map = {
+std::map<roadmanager::LampColor, osi3::TrafficLight_Classification_Color> lamps_color_map = {
     {roadmanager::LampColor::COLOR_UNKNOWN, osi3::TrafficLight_Classification_Color_COLOR_UNKNOWN},
     {roadmanager::LampColor::COLOR_OTHER, osi3::TrafficLight_Classification_Color_COLOR_OTHER},
     {roadmanager::LampColor::COLOR_RED, osi3::TrafficLight_Classification_Color_COLOR_RED},
@@ -41,7 +41,8 @@ std::unordered_map<roadmanager::LampColor, osi3::TrafficLight_Classification_Col
     {roadmanager::LampColor::COLOR_GREEN, osi3::TrafficLight_Classification_Color_COLOR_GREEN},
     {roadmanager::LampColor::COLOR_BLUE, osi3::TrafficLight_Classification_Color_COLOR_BLUE},
     {roadmanager::LampColor::COLOR_WHITE, osi3::TrafficLight_Classification_Color_COLOR_WHITE}};
-std::unordered_map<roadmanager::LampIcon, osi3::TrafficLight_Classification_Icon> lamps_icon_map = {
+
+std::map<roadmanager::LampIcon, osi3::TrafficLight_Classification_Icon> lamps_icon_map = {
     {roadmanager::LampIcon::ICON_UNKNOWN, osi3::TrafficLight_Classification_Icon_ICON_UNKNOWN},
     {roadmanager::LampIcon::ICON_OTHER, osi3::TrafficLight_Classification_Icon_ICON_OTHER},
     {roadmanager::LampIcon::ICON_NONE, osi3::TrafficLight_Classification_Icon_ICON_NONE},
@@ -67,7 +68,8 @@ std::unordered_map<roadmanager::LampIcon, osi3::TrafficLight_Classification_Icon
     {roadmanager::LampIcon::ICON_TRAM, osi3::TrafficLight_Classification_Icon_ICON_TRAM},
     {roadmanager::LampIcon::ICON_BUS, osi3::TrafficLight_Classification_Icon_ICON_BUS},
     {roadmanager::LampIcon::ICON_BUS_AND_TRAM, osi3::TrafficLight_Classification_Icon_ICON_BUS_AND_TRAM}};
-std::unordered_map<roadmanager::LampMode, osi3::TrafficLight_Classification_Mode> lamps_mode_map = {
+
+std::map<roadmanager::LampMode, osi3::TrafficLight_Classification_Mode> lamps_mode_map = {
     {roadmanager::LampMode::MODE_UNKNOWN, osi3::TrafficLight_Classification_Mode_MODE_UNKNOWN},
     {roadmanager::LampMode::MODE_OTHER, osi3::TrafficLight_Classification_Mode_MODE_OTHER},
     {roadmanager::LampMode::MODE_OFF, osi3::TrafficLight_Classification_Mode_MODE_OFF},

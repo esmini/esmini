@@ -128,7 +128,9 @@ void TrafficSignalStateAction::SetSignalState()
 
             if (tl->GetTrafficLightType() == roadmanager::TrafficLightType::TYPE_1000001 && nr_values != 3)
             {
-                LOG_ERROR("TrafficSignalStateAction: Signal of type {} takes 3 values, but {} were provided", tl->GetTrafficLightType(), nr_values);
+                LOG_ERROR_AND_QUIT("TrafficSignalStateAction: Signal of type {} takes 3 values, but {} were provided",
+                                   tl->GetTrafficLightType(),
+                                   nr_values);
                 return;
             }
 
