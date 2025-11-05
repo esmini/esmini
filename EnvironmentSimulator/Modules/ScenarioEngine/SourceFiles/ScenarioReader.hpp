@@ -124,6 +124,9 @@ namespace scenarioengine
         Entry* ResolveCatalogReference(pugi::xml_node node);
         bool   CheckModelId(Object* object);
 
+        // return true if any reordering occured
+        bool moveInitObjectActions(std::vector<OSCPrivateAction*>& actions, Object* object, Object* referred);
+
         // Storyboard - Init
         void                      parseInit(Init& init);
         ActivateControllerAction* parseActivateControllerAction(pugi::xml_node actionNode, Event* parent);

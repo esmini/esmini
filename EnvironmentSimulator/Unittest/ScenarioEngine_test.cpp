@@ -5937,6 +5937,141 @@ TEST(LaneChange, InternalPositionHandling)
     EXPECT_NEAR(pos.GetOffset(), 0.0, 1e-3);
 }
 
+TEST(InitActions, TestInitActionsReorderingGhost)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/init_actions_reorder.xosc");
+    ASSERT_NE(se, nullptr);
+    const double dt = 0.1;
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 4);
+
+    roadmanager::Position& pos0 = entities->object_[0]->pos_;
+    roadmanager::Position& pos1 = entities->object_[1]->pos_;
+    roadmanager::Position& pos2 = entities->object_[2]->pos_;
+    roadmanager::Position& pos3 = entities->object_[3]->pos_;
+
+    EXPECT_NEAR(pos0.GetX(), 80.0, 1e-3);
+    EXPECT_NEAR(pos0.GetY(), 3.865, 1e-3);
+    EXPECT_NEAR(pos0.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos0.GetTrackId(), 1);
+    EXPECT_EQ(pos0.GetLaneId(), 1);
+
+    EXPECT_NEAR(pos1.GetX(), 90.0, 1e-3);
+    EXPECT_NEAR(pos1.GetY(), 1.165, 1e-3);
+    EXPECT_NEAR(pos1.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos1.GetTrackId(), 1);
+    EXPECT_EQ(pos1.GetLaneId(), 1);
+
+    EXPECT_NEAR(pos2.GetX(), 100.0, 1e-3);
+    EXPECT_NEAR(pos2.GetY(), -1.535, 1e-3);
+    EXPECT_NEAR(pos2.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos2.GetTrackId(), 1);
+    EXPECT_EQ(pos2.GetLaneId(), -1);
+
+    EXPECT_NEAR(pos3.GetX(), 80.0, 1e-3);
+    EXPECT_NEAR(pos3.GetY(), 3.8650, 1e-3);
+    EXPECT_NEAR(pos3.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos3.GetTrackId(), 1);
+    EXPECT_EQ(pos3.GetLaneId(), 1);
+
+    while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    EXPECT_NEAR(pos0.GetX(), 96.6666, 1e-3);
+    EXPECT_NEAR(pos0.GetY(), 3.865, 1e-3);
+    EXPECT_NEAR(pos0.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos0.GetTrackId(), 1);
+    EXPECT_EQ(pos0.GetLaneId(), 1);
+
+    EXPECT_NEAR(pos1.GetX(), 111.2444, 1e-3);
+    EXPECT_NEAR(pos1.GetY(), 1.165, 1e-3);
+    EXPECT_NEAR(pos1.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos1.GetTrackId(), 1);
+    EXPECT_EQ(pos1.GetLaneId(), 1);
+
+    EXPECT_NEAR(pos2.GetX(), 115.6888, 1e-3);
+    EXPECT_NEAR(pos2.GetY(), -1.535, 1e-3);
+    EXPECT_NEAR(pos2.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos2.GetTrackId(), 1);
+    EXPECT_EQ(pos2.GetLaneId(), -1);
+
+    EXPECT_NEAR(pos3.GetX(), 131.8000, 1e-3);
+    EXPECT_NEAR(pos3.GetY(), 3.8650, 1e-3);
+    EXPECT_NEAR(pos3.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos3.GetTrackId(), 1);
+    EXPECT_EQ(pos3.GetLaneId(), 1);
+
+    delete se;
+}
+
+TEST(InitActions, TestInitActionsReorderingNoGhost)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/init_actions_reorder.xosc", true);
+    ASSERT_NE(se, nullptr);
+    const double dt = 0.1;
+    se->step(0.0);
+    se->prepareGroundTruth(0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 3);
+
+    roadmanager::Position& pos0 = entities->object_[0]->pos_;
+    roadmanager::Position& pos1 = entities->object_[1]->pos_;
+    roadmanager::Position& pos2 = entities->object_[2]->pos_;
+
+    EXPECT_NEAR(pos0.GetX(), 80.0, 1e-3);
+    EXPECT_NEAR(pos0.GetY(), 3.865, 1e-3);
+    EXPECT_NEAR(pos0.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos0.GetTrackId(), 1);
+    EXPECT_EQ(pos0.GetLaneId(), 1);
+
+    EXPECT_NEAR(pos1.GetX(), 90.0, 1e-3);
+    EXPECT_NEAR(pos1.GetY(), 1.165, 1e-3);
+    EXPECT_NEAR(pos1.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos1.GetTrackId(), 1);
+    EXPECT_EQ(pos1.GetLaneId(), 1);
+
+    EXPECT_NEAR(pos2.GetX(), 100.0, 1e-3);
+    EXPECT_NEAR(pos2.GetY(), -1.5349, 1e-3);
+    EXPECT_NEAR(pos2.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos2.GetTrackId(), 1);
+    EXPECT_EQ(pos2.GetLaneId(), -1);
+
+    while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
+    {
+        se->step(dt);
+        se->prepareGroundTruth(0.0);
+    }
+
+    EXPECT_NEAR(pos0.GetX(), 123.8333, 1e-3);
+    EXPECT_NEAR(pos0.GetY(), 3.865, 1e-3);
+    EXPECT_NEAR(pos0.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos0.GetTrackId(), 1);
+    EXPECT_EQ(pos0.GetLaneId(), 1);
+
+    EXPECT_NEAR(pos1.GetX(), 128.2777, 1e-3);
+    EXPECT_NEAR(pos1.GetY(), 1.165, 1e-3);
+    EXPECT_NEAR(pos1.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos1.GetTrackId(), 1);
+    EXPECT_EQ(pos1.GetLaneId(), 1);
+
+    EXPECT_NEAR(pos2.GetX(), 132.7222, 1e-3);
+    EXPECT_NEAR(pos2.GetY(), -1.5349, 1e-3);
+    EXPECT_NEAR(pos2.GetH(), 0.0, 1e-3);
+    EXPECT_EQ(pos2.GetTrackId(), 1);
+    EXPECT_EQ(pos2.GetLaneId(), -1);
+
+    delete se;
+}
+
 int main(int argc, char** argv)
 {
 #if 0  // set to 1 and modify filter to run one single test

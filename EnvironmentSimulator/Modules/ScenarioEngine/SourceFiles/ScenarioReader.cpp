@@ -3873,6 +3873,50 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
     return action;
 }
 
+bool ScenarioReader::moveInitObjectActions(std::vector<OSCPrivateAction *> &actions, Object *object, Object *referred)
+{
+    std::vector<OSCPrivateAction *> moved_actions;
+    std::vector<OSCPrivateAction *> tmp_actions;
+    bool                            reference_found = false;
+
+    for (size_t i = 0; i < actions.size(); i++)
+    {
+        if (actions[i]->object_ == referred)
+        {
+            reference_found = true;
+            if (tmp_actions.size() == 0)
+            {
+                // no dependent actions to move
+                return false;
+            }
+        }
+        else if (actions[i]->object_ == object && !reference_found)
+        {
+            // move action to temporary list
+            tmp_actions.push_back(actions[i]);
+            continue;
+        }
+        else if (reference_found && tmp_actions.size() > 0)
+        {
+            // passed group of object and reference object actions, insert actions from temporary list
+            moved_actions.insert(moved_actions.end(), tmp_actions.begin(), tmp_actions.end());
+            tmp_actions.clear();
+        }
+
+        moved_actions.push_back(actions[i]);
+    }
+
+    // append any remaining actions from temporary list
+    if (tmp_actions.size() > 0)
+    {
+        moved_actions.insert(moved_actions.end(), tmp_actions.begin(), tmp_actions.end());
+    }
+
+    std::swap(actions, moved_actions);
+
+    return true;
+}
+
 void ScenarioReader::parseInit(Init &init)
 {
     pugi::xml_node actionsNode = osc_root_.child("Storyboard").child("Init").child("Actions");
@@ -3930,36 +3974,54 @@ void ScenarioReader::parseInit(Init &init)
                         entityRef->initActions_.push_back(action);
                     }
                 }
-                entities_->activateObject(entityRef);
+                if (entities_->activateObject(entityRef) != 0)
+                {
+                    LOG_ERROR_AND_QUIT("Failed to activate object {}", entityRef->GetName());
+                }
             }
         }
     }
 
     // Now, potentially the list of init actions needs to be sorted based on dependencies
-    for (size_t i = 1; i < init.private_action_.size(); i++)
+    // Sort actions group-wise based on object
+    bool         done      = false;
+    unsigned int counter   = 0;
+    size_t       max_loops = 2 * init.private_action_.size();
+    while (!done && counter < max_loops)
     {
-        // If relative actions depends on earlier action, switch position
-        for (size_t j = 0; j < i; j++)
+        done = true;
+        for (size_t i = 0; i < init.private_action_.size(); i++)
         {
-            roadmanager::Position *pos = 0;
-            if (init.private_action_[j]->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
+            // find any relative object in any teleport action
+            if (init.private_action_[i]->action_type_ == OSCPrivateAction::ActionType::TELEPORT)
             {
-                TeleportAction *action = static_cast<TeleportAction *>(init.private_action_[j]);
-                if (action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_LANE ||
-                    action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_WORLD ||
-                    action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_OBJECT)
+                TeleportAction *action = static_cast<TeleportAction *>(init.private_action_[i]);
+                if ((action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_LANE ||
+                     action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_WORLD ||
+                     action->position_.GetType() == roadmanager::Position::PositionType::RELATIVE_OBJECT))
                 {
-                    pos = action->position_.GetRelativePosition();
+                    for (size_t j = 0; j < entities_->object_.size(); j++)
+                    {
+                        if (init.private_action_[i]->object_ != entities_->object_[j] &&
+                            action->position_.GetRelativePosition() == &entities_->object_[j]->pos_)
+                        {
+                            if (moveInitObjectActions(init.private_action_, init.private_action_[i]->object_, entities_->object_[j]))
+                            {
+                                // action list was modified, check further
+                                done = false;
+                            }
+                            break;
+                        }
+                    }
                 }
             }
-            if (pos == &init.private_action_[i]->object_->pos_)
-            {
-                // swap places
-                OSCPrivateAction *tmp_action = init.private_action_[i];
-                init.private_action_[i]      = init.private_action_[j];
-                init.private_action_[j]      = tmp_action;
-            }
         }
+        counter++;
+    }
+
+    if (counter >= max_loops)
+    {
+        LOG_WARN("Giving up after {} attempts to reorder {} init actions, possible circular dependency", max_loops, init.private_action_.size());
     }
 }
 
