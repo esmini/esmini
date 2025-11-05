@@ -32,6 +32,49 @@
 #define OSI_OUT_PORT          48198
 #define OSI_MAX_UDP_DATA_SIZE 8192
 
+// enum mappings
+std::unordered_map<roadmanager::LampColor, osi3::TrafficLight_Classification_Color> lamps_color_map = {
+    {roadmanager::LampColor::COLOR_UNKNOWN, osi3::TrafficLight_Classification_Color_COLOR_UNKNOWN},
+    {roadmanager::LampColor::COLOR_OTHER, osi3::TrafficLight_Classification_Color_COLOR_OTHER},
+    {roadmanager::LampColor::COLOR_RED, osi3::TrafficLight_Classification_Color_COLOR_RED},
+    {roadmanager::LampColor::COLOR_YELLOW, osi3::TrafficLight_Classification_Color_COLOR_YELLOW},
+    {roadmanager::LampColor::COLOR_GREEN, osi3::TrafficLight_Classification_Color_COLOR_GREEN},
+    {roadmanager::LampColor::COLOR_BLUE, osi3::TrafficLight_Classification_Color_COLOR_BLUE},
+    {roadmanager::LampColor::COLOR_WHITE, osi3::TrafficLight_Classification_Color_COLOR_WHITE}};
+std::unordered_map<roadmanager::LampIcon, osi3::TrafficLight_Classification_Icon> lamps_icon_map = {
+    {roadmanager::LampIcon::ICON_UNKNOWN, osi3::TrafficLight_Classification_Icon_ICON_UNKNOWN},
+    {roadmanager::LampIcon::ICON_OTHER, osi3::TrafficLight_Classification_Icon_ICON_OTHER},
+    {roadmanager::LampIcon::ICON_NONE, osi3::TrafficLight_Classification_Icon_ICON_NONE},
+    {roadmanager::LampIcon::ICON_ARROW_STRAIGHT_AHEAD, osi3::TrafficLight_Classification_Icon_ICON_ARROW_STRAIGHT_AHEAD},
+    {roadmanager::LampIcon::ICON_ARROW_LEFT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT},
+    {roadmanager::LampIcon::ICON_ARROW_DIAG_LEFT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_DIAG_LEFT},
+    {roadmanager::LampIcon::ICON_ARROW_STRAIGHT_AHEAD_LEFT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_STRAIGHT_AHEAD_LEFT},
+    {roadmanager::LampIcon::ICON_ARROW_RIGHT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_RIGHT},
+    {roadmanager::LampIcon::ICON_ARROW_DIAG_RIGHT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_DIAG_RIGHT},
+    {roadmanager::LampIcon::ICON_ARROW_STRAIGHT_AHEAD_RIGHT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_STRAIGHT_AHEAD_RIGHT},
+    {roadmanager::LampIcon::ICON_ARROW_LEFT_RIGHT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT_RIGHT},
+    {roadmanager::LampIcon::ICON_ARROW_DOWN, osi3::TrafficLight_Classification_Icon_ICON_ARROW_DOWN},
+    {roadmanager::LampIcon::ICON_ARROW_DOWN_LEFT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_DOWN_LEFT},
+    {roadmanager::LampIcon::ICON_ARROW_DOWN_RIGHT, osi3::TrafficLight_Classification_Icon_ICON_ARROW_DOWN_RIGHT},
+    {roadmanager::LampIcon::ICON_ARROW_CROSS, osi3::TrafficLight_Classification_Icon_ICON_ARROW_CROSS},
+    {roadmanager::LampIcon::ICON_PEDESTRIAN, osi3::TrafficLight_Classification_Icon_ICON_PEDESTRIAN},
+    {roadmanager::LampIcon::ICON_WALK, osi3::TrafficLight_Classification_Icon_ICON_WALK},
+    {roadmanager::LampIcon::ICON_DONT_WALK, osi3::TrafficLight_Classification_Icon_ICON_DONT_WALK},
+    {roadmanager::LampIcon::ICON_BICYCLE, osi3::TrafficLight_Classification_Icon_ICON_BICYCLE},
+    {roadmanager::LampIcon::ICON_PEDESTRIAN_AND_BICYCLE, osi3::TrafficLight_Classification_Icon_ICON_PEDESTRIAN_AND_BICYCLE},
+    {roadmanager::LampIcon::ICON_COUNTDOWN_SECONDS, osi3::TrafficLight_Classification_Icon_ICON_COUNTDOWN_SECONDS},
+    {roadmanager::LampIcon::ICON_COUNTDOWN_PERCENT, osi3::TrafficLight_Classification_Icon_ICON_COUNTDOWN_PERCENT},
+    {roadmanager::LampIcon::ICON_TRAM, osi3::TrafficLight_Classification_Icon_ICON_TRAM},
+    {roadmanager::LampIcon::ICON_BUS, osi3::TrafficLight_Classification_Icon_ICON_BUS},
+    {roadmanager::LampIcon::ICON_BUS_AND_TRAM, osi3::TrafficLight_Classification_Icon_ICON_BUS_AND_TRAM}};
+std::unordered_map<roadmanager::LampMode, osi3::TrafficLight_Classification_Mode> lamps_mode_map = {
+    {roadmanager::LampMode::MODE_UNKNOWN, osi3::TrafficLight_Classification_Mode_MODE_UNKNOWN},
+    {roadmanager::LampMode::MODE_OTHER, osi3::TrafficLight_Classification_Mode_MODE_OTHER},
+    {roadmanager::LampMode::MODE_OFF, osi3::TrafficLight_Classification_Mode_MODE_OFF},
+    {roadmanager::LampMode::MODE_CONSTANT, osi3::TrafficLight_Classification_Mode_MODE_CONSTANT},
+    {roadmanager::LampMode::MODE_FLASHING, osi3::TrafficLight_Classification_Mode_MODE_FLASHING},
+    {roadmanager::LampMode::MODE_COUNTING, osi3::TrafficLight_Classification_Mode_MODE_COUNTING}};
+
 // Large OSI messages needs to be split for UDP transmission
 // This struct must be mached on receiver side
 static struct
@@ -2705,9 +2748,9 @@ int OSIReporter::UpdateDynamicTrafficSignals()
             trafficLight->mutable_base()->mutable_position()->set_z(lamp->GetZ());
 
             trafficLight->mutable_id()->set_value(lamp->GetId());
-            trafficLight->mutable_classification()->set_mode(osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
-            trafficLight->mutable_classification()->set_color(osi3::TrafficLight_Classification_Color_COLOR_RED);
-            trafficLight->mutable_classification()->set_icon(osi3::TrafficLight_Classification_Icon_ICON_NONE);
+            trafficLight->mutable_classification()->set_mode(lamps_mode_map[lamp->GetMode()]);
+            trafficLight->mutable_classification()->set_color(lamps_color_map[lamp->GetColor()]);
+            trafficLight->mutable_classification()->set_icon(lamps_icon_map[lamp->GetIcon()]);
 
             // Lane validity can be added here, needs deduce lanes based on orientattion and potentially validity field
         }

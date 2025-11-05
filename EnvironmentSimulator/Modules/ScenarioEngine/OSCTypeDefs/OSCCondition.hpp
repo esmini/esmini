@@ -605,33 +605,10 @@ namespace scenarioengine
     class TrigByTrafficSignal : public TrigByValue
     {
     public:
-        std::string       signalName_;   // Id of the referenced signal in the roadnetwork
-        std::string       signalState_;  // State of the signal for condition to be true
-        std::vector<bool> signalState_vector_;
+        std::string signalName_;   // Id of the referenced signal in the roadnetwork
+        std::string signalState_;  // State of the signal for condition to be true
 
         bool CheckCondition(double sim_time);
-        void ConditionStringToBool()
-        {
-            std::stringstream ss(signalState_);
-            std::string       token;
-
-            while (std::getline(ss, token, ';'))
-            {
-                if (token == "on")
-                {
-                    signalState_vector_.push_back(true);
-                }
-                else if (token == "off")
-                {
-                    signalState_vector_.push_back(false);
-                }
-                else
-                {
-                    signalState_vector_.push_back(false);
-                    LOG_WARN("Warning: unknown state condition '{}', using state 'off'", token);
-                }
-            }
-        }
         TrigByTrafficSignal() : TrigByValue(TrigByValue::Type::TRAFFIC_SIGNAL)
         {
         }

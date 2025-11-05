@@ -96,13 +96,15 @@ int TrafficSignalStateAction::CountNonEmptyTokens(const std::string& s)
     while (std::getline(ss, token, ';'))
     {
         if (!token.empty())
+        {
             ++count;
+        }
     }
 
     return count;
 }
 
-void TrafficSignalStateAction::SetSignal()
+void TrafficSignalStateAction::SetSignalState()
 {
     roadmanager::OpenDrive* odr = roadmanager::Position::GetOpenDrive();
 
@@ -130,9 +132,9 @@ void TrafficSignalStateAction::SetSignal()
                 return;
             }
 
-            tl->DefaultState(static_cast<size_t>(nr_values));
+            tl->UpdateState(this->value_);
             trafficlight_ = tl;
-            LOG_INFO("Creating signal with id {}", tl->GetId());
+            LOG_INFO("TrafficSignalStateAction: Setting signal {} to state '{}'", tl->GetId(), this->value_);
             break;
         }
     }

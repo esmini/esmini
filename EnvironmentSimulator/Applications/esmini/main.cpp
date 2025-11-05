@@ -106,11 +106,18 @@ static int execute_scenario(int argc, char* argv[])
             auto signals = odr->GetDynamicSignals();
             for (const auto& signal : signals)
             {
-                auto tl    = dynamic_cast<roadmanager::TrafficLight*>(signal);
-                auto light = player->viewer_->roadGeom->traffic_light_red_yellow_green_[tl->GetId()];
-                for (size_t k = 0; k < tl->GetStateVector().size(); k++)
+                auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
+                if (tl == nullptr)
                 {
-                    light.SetState(k, tl->GetStateVector()[k]);
+                    continue;
+                }
+
+                auto light = player->viewer_->roadGeom->traffic_light_red_yellow_green_[tl->GetId()];
+
+                for (size_t k = 0; k < tl->GetNrLamps(); k++)
+                {
+                    auto lamp = tl->GetLamp(k);
+                    light.SetState(k, lamp->GetMode() == roadmanager::LampMode::MODE_CONSTANT);
                 }
             }
         }

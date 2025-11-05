@@ -721,7 +721,7 @@ bool TrigByTrafficSignal::CheckCondition(double sim_time)
         return false;
     }
 
-    return signalState_vector_ == tl->GetStateVector();
+    return signalState_ == tl->GetStateString();
 }
 
 std::string TrigByTrafficSignal::GetAdditionalLogInfo()

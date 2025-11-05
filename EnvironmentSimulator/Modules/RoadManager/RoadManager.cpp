@@ -326,6 +326,12 @@ const std::map<std::string, Signal::OSIType> Signal::types_mapping_ = {
     {"TYPE_PARKING_HAZARD", Signal::TYPE_PARKING_HAZARD},
     {"TYPE_TRAFFIC_LIGHT_GREEN_ARROW", Signal::TYPE_TRAFFIC_LIGHT_GREEN_ARROW}};
 
+// Mappings below are down -> up
+std::unordered_map<TrafficLightType, std::vector<LampColor>> traffic_light_colors = {
+    {TrafficLightType::TYPE_1000001, {LampColor::COLOR_RED, LampColor::COLOR_YELLOW, LampColor::COLOR_GREEN}}};
+std::unordered_map<TrafficLightType, std::vector<LampIcon>> traffic_light_icons = {
+    {TrafficLightType::TYPE_1000001, {LampIcon::ICON_NONE, LampIcon::ICON_NONE, LampIcon::ICON_NONE}}};
+
 Signal::Signal(double      s,
                double      t,
                int         id,
@@ -440,10 +446,19 @@ bool TrafficLight::SetTrafficLightInfo()
 
         for (size_t i = 0; i < nr_lamps_; i++)
         {
+            size_t idx = nr_lamps_ - 1 - i;
             // TODO: Apply some rotation if given...
-            double z  = GetZ() + GetZOffset() + lamp_height_ / 2 + lamp_height_ * static_cast<double>(i);  // Down -> Up
+            double z  = GetZ() + GetZOffset() + lamp_height_ / 2 + lamp_height_ * static_cast<double>(idx);  // Up -> down
             id_t   id = GetNewGlobalTrafficLightId();
-            lamps_.emplace_back(id, GetX(), GetY(), z, lamp_width_, lamp_height_);
+            // Lamps stored [up, ..., down]
+            lamps_.emplace_back(id,
+                                GetX(),
+                                GetY(),
+                                z,
+                                lamp_width_,
+                                lamp_height_,
+                                traffic_light_icons[light_type_][i],
+                                traffic_light_colors[light_type_][i]);
         }
     }
     else

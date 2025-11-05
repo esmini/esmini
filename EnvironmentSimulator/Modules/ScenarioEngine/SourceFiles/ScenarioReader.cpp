@@ -2438,7 +2438,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                     trafficSignalStateAction->name_                    = parameters.ReadAttribute(stateAction, "name");
                     trafficSignalStateAction->value_                   = parameters.ReadAttribute(stateAction, "state");
 
-                    trafficSignalStateAction->SetSignal();
+                    trafficSignalStateAction->SetSignalState();
 
                     action = trafficSignalStateAction;
                 }
@@ -4680,8 +4680,7 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                     TrigByTrafficSignal *trigger = new TrigByTrafficSignal;
                     trigger->signalName_         = parameters.ReadAttribute(byValueChild, "name");
                     trigger->signalState_        = parameters.ReadAttribute(byValueChild, "state");
-                    trigger->ConditionStringToBool();
-                    condition = trigger;
+                    condition                    = trigger;
                 }
                 else
                 {

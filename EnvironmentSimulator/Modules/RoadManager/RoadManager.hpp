@@ -29,6 +29,56 @@
 
 namespace roadmanager
 {
+    enum LampMode : int
+    {
+        MODE_UNKNOWN  = 0,
+        MODE_OTHER    = 1,
+        MODE_OFF      = 2,
+        MODE_CONSTANT = 3,
+        MODE_FLASHING = 4,
+        MODE_COUNTING = 5
+    };
+
+    enum LampIcon : int
+    {
+        ICON_UNKNOWN                    = 0,
+        ICON_OTHER                      = 1,
+        ICON_NONE                       = 2,
+        ICON_ARROW_STRAIGHT_AHEAD       = 3,
+        ICON_ARROW_LEFT                 = 4,
+        ICON_ARROW_DIAG_LEFT            = 5,
+        ICON_ARROW_STRAIGHT_AHEAD_LEFT  = 6,
+        ICON_ARROW_RIGHT                = 7,
+        ICON_ARROW_DIAG_RIGHT           = 8,
+        ICON_ARROW_STRAIGHT_AHEAD_RIGHT = 9,
+        ICON_ARROW_LEFT_RIGHT           = 10,
+        ICON_ARROW_DOWN                 = 11,
+        ICON_ARROW_DOWN_LEFT            = 12,
+        ICON_ARROW_DOWN_RIGHT           = 13,
+        ICON_ARROW_CROSS                = 14,
+        ICON_PEDESTRIAN                 = 15,
+        ICON_WALK                       = 16,
+        ICON_DONT_WALK                  = 17,
+        ICON_BICYCLE                    = 18,
+        ICON_PEDESTRIAN_AND_BICYCLE     = 19,
+        ICON_COUNTDOWN_SECONDS          = 20,
+        ICON_COUNTDOWN_PERCENT          = 21,
+        ICON_TRAM                       = 22,
+        ICON_BUS                        = 23,
+        ICON_BUS_AND_TRAM               = 24
+    };
+
+    enum LampColor
+    {
+        COLOR_UNKNOWN = 0,
+        COLOR_OTHER   = 1,
+        COLOR_RED     = 2,
+        COLOR_YELLOW  = 3,
+        COLOR_GREEN   = 4,
+        COLOR_BLUE    = 5,
+        COLOR_WHITE   = 6
+    };
+
     id_t GetNewGlobalLaneId();
     id_t GetNewGlobalLaneBoundaryId();
     id_t GetNewGlobalTrafficLightId();
@@ -1725,10 +1775,39 @@ namespace roadmanager
         class Lamp
         {
         public:
-            Lamp(id_t id, double x, double y, double z, double width, double height) : id_(id), x_(x), y_(y), z_(z), width_(width), height_(height)
+            Lamp() = default;
+            Lamp(id_t id, double x, double y, double z, double width, double height, LampIcon icon, LampColor color)
+                : id_(id),
+                  x_(x),
+                  y_(y),
+                  z_(z),
+                  width_(width),
+                  height_(height),
+                  icon_(icon),
+                  color_(color),
+                  mode_(LampMode::MODE_OFF)
             {
             }
 
+            // Setters
+            void SetId(id_t id)
+            {
+                id_ = id;
+            }
+            void SetMode(LampMode mode)
+            {
+                mode_ = mode;
+            }
+            void SetColor(LampColor color)
+            {
+                color_ = color;
+            }
+            void SetIcon(LampIcon icon)
+            {
+                icon_ = icon;
+            }
+
+            // Getters
             double GetX() const
             {
                 return x_;
@@ -1749,15 +1828,21 @@ namespace roadmanager
             {
                 return width_;
             }
-
-            void SetId(id_t id)
-            {
-                id_ = id;
-            }
-
             id_t GetId() const
             {
                 return id_;
+            }
+            LampMode GetMode() const
+            {
+                return mode_;
+            }
+            LampIcon GetIcon() const
+            {
+                return icon_;
+            }
+            LampColor GetColor() const
+            {
+                return color_;
             }
 
         private:
@@ -1767,6 +1852,10 @@ namespace roadmanager
             double z_;
             double width_;
             double height_;
+
+            LampIcon  icon_;
+            LampColor color_;
+            LampMode  mode_;
         };
 
         bool SetTrafficLightInfo();
@@ -1785,66 +1874,39 @@ namespace roadmanager
         {
             return light_type_;
         }
-        /* State stuff */
-        void DefaultState(size_t values)
-        {
-            state_vector_ = std::vector<bool>(values, false);
-            UpdateState(state_vector_);
-        }
-        // Rebuilds the vector<bool> based on a string
+
         void UpdateState(const std::string state)
         {
             state_ = state;
             state_vector_.clear();
-            bool unknown_token = false;
 
             std::stringstream ss(state);
             std::string       token;
 
             while (std::getline(ss, token, ';'))
             {
-                if (token == "on")
+                if (!token.empty())
                 {
-                    state_vector_.push_back(true);
-                }
-                else if (token == "off")
-                {
-                    state_vector_.push_back(false);
-                }
-                else
-                {
-                    state_vector_.push_back(false);
-                    LOG_WARN("Warning: unknown state '{}', setting state 'off'", token);
-                    unknown_token = true;
+                    state_vector_.push_back(token);
                 }
             }
 
-            if (unknown_token)
+            if (state_vector_.size() != nr_lamps_)
             {
-                UpdateState(state_vector_);
+                LOG_ERROR_AND_QUIT("TrafficLight::UpdateState: new state does not match number of lamps for traffic light id {}", GetId());
             }
-        }
-        // Rebuilds the string based on a vector<bool>
-        void UpdateState(const std::vector<bool> state)
-        {
-            state_vector_ = state;
-            state_        = "";
             for (size_t i = 0; i < state_vector_.size(); i++)
             {
-                state_ += (state_vector_[i]) ? "on" : "off";
-
-                if (i != state_vector_.size() - 1)
-                {
-                    state_ += ";";
-                }
+                lamps_[i].SetMode(lamp_mode_map_[state_vector_[i]]);
             }
         }
+
         std::string GetStateString() const
         {
             return state_;
         }
 
-        std::vector<bool> GetStateVector() const
+        std::vector<std::string> GetStateVector() const
         {
             return state_vector_;
         }
@@ -1855,8 +1917,14 @@ namespace roadmanager
         TrafficLightType  light_type_;
 
         // State (from OpenSCENARIO)
-        std::string       state_;
-        std::vector<bool> state_vector_;
+        std::string                               state_;
+        std::vector<std::string>                  state_vector_;
+        std::unordered_map<std::string, LampMode> lamp_mode_map_ = {{"unknown", LampMode::MODE_UNKNOWN},
+                                                                    {"other", LampMode::MODE_OTHER},
+                                                                    {"off", LampMode::MODE_OFF},
+                                                                    {"on", LampMode::MODE_CONSTANT},
+                                                                    {"flashing", LampMode::MODE_FLASHING},
+                                                                    {"counting", LampMode::MODE_COUNTING}};
     };
 
     class OutlineCorner

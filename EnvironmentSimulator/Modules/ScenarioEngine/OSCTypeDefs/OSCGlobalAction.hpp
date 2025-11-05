@@ -368,7 +368,7 @@ namespace scenarioengine
         }
 
         int  CountNonEmptyTokens(const std::string& s);
-        void SetSignal();
+        void SetSignalState();
 
         void Start(double simTime);
         void Step(double simTime, double dt);
