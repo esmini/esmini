@@ -146,7 +146,7 @@
          <signal s="80.0" t="-3.57" id="12" name="construction_zone_s0" dynamic="no" orientation="+" zOffset="1.7" type="a" country="se" subtype="20" value="1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
          <signal s="80.0" t="3.57" id="13" name="construction_zone_s1" dynamic="no" orientation="+" zOffset="1.7" type="123" country="de" subtype="" value="-1.0" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
          <signal s="15.0" t="-3.57" id="201" name="_Sg12" dynamic="yes" orientation="+" zOffset="2.0" type="1000001" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="1.2" width="0.4"/>
-         <!--signal s="25.0" t="-3.57" id="202" name="_Sg13" dynamic="yes" orientation="+" zOffset="2.0" type="1000001" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="1.2" width="0.4"/-->
+         <signal s="25.0" t="-3.57" id="202" name="_Sg13" dynamic="yes" orientation="+" zOffset="2.0" type="1000001" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="1.2" width="0.4"/>
       </signals>
       <surface/>
    </road>

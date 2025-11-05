@@ -1716,6 +1716,14 @@ namespace roadmanager
         {
             model3d_full_path_ = path;
         }
+        void SetHasOSCAction(bool value)
+        {
+            has_osc_action_ = value;
+        }
+        bool GetHasOSCAction() const
+        {
+            return has_osc_action_;
+        }
 
     private:
         double                                      s_;
@@ -1742,36 +1750,12 @@ namespace roadmanager
         double                                      value_  = 0.0;
         static const std::map<std::string, OSIType> types_mapping_;
         std::string                                 model3d_full_path_;
+        bool                                        has_osc_action_ = false;
     };
 
     class TrafficLight : public Signal
     {
     public:
-        TrafficLight(double      s,
-                     double      t,
-                     int         id,
-                     std::string name,
-                     bool        dynamic,
-                     Orientation orientation,
-                     double      z_offset,
-                     std::string country,
-                     int         osi_type,
-                     std::string type,
-                     std::string subtype,
-                     std::string value_str,
-                     std::string unit,
-                     double      height,
-                     double      width,
-                     double      depth,  // i.e. length of the bounding box
-                     std::string text,
-                     double      h_offset,
-                     double      pitch,
-                     double      roll,
-                     double      x,
-                     double      y,
-                     double      z,
-                     double      h);
-
         class Lamp
         {
         public:
@@ -1858,7 +1842,32 @@ namespace roadmanager
             LampMode  mode_;
         };
 
-        bool SetTrafficLightInfo();
+        TrafficLight(double      s,
+                     double      t,
+                     int         id,
+                     std::string name,
+                     bool        dynamic,
+                     Orientation orientation,
+                     double      z_offset,
+                     std::string country,
+                     int         osi_type,
+                     std::string type,
+                     std::string subtype,
+                     std::string value_str,
+                     std::string unit,
+                     double      height,
+                     double      width,
+                     double      depth,  // i.e. length of the bounding box
+                     std::string text,
+                     double      h_offset,
+                     double      pitch,
+                     double      roll,
+                     double      x,
+                     double      y,
+                     double      z,
+                     double      h);
+
+        void SetTrafficLightInfo();
 
         size_t GetNrLamps() const
         {

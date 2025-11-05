@@ -134,6 +134,7 @@ void TrafficSignalStateAction::SetSignalState()
 
             tl->UpdateState(this->value_);
             trafficlight_ = tl;
+            tl->SetHasOSCAction(true);  // Action attached to the trafficlight
             LOG_INFO("TrafficSignalStateAction: Setting signal {} to state '{}'", tl->GetId(), this->value_);
             break;
         }

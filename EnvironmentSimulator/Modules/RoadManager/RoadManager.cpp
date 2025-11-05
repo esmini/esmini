@@ -434,7 +434,7 @@ TrafficLight::TrafficLight(double      s,
     SetTrafficLightInfo();
 }
 
-bool TrafficLight::SetTrafficLightInfo()
+void TrafficLight::SetTrafficLightInfo()
 {
     std::string combined_type = GetCombinedTypeSubtypeValueStr(GetType(), GetSubType(), GetValueStr());
     if (combined_type == "1000001" || combined_type == "1.000.001")
@@ -446,11 +446,9 @@ bool TrafficLight::SetTrafficLightInfo()
 
         for (size_t i = 0; i < nr_lamps_; i++)
         {
-            size_t idx = nr_lamps_ - 1 - i;
-            // TODO: Apply some rotation if given...
-            double z  = GetZ() + GetZOffset() + lamp_height_ / 2 + lamp_height_ * static_cast<double>(idx);  // Up -> down
-            id_t   id = GetNewGlobalTrafficLightId();
             // Lamps stored [up, ..., down]
+            double z  = GetZ() + GetZOffset() + lamp_height_ / 2 + lamp_height_ * static_cast<double>(nr_lamps_ - 1 - i);
+            id_t   id = GetNewGlobalTrafficLightId();
             lamps_.emplace_back(id,
                                 GetX(),
                                 GetY(),
@@ -463,10 +461,9 @@ bool TrafficLight::SetTrafficLightInfo()
     }
     else
     {
-        LOG_WARN("Unknown traffic light type '{}' subtype '{}'", GetType(), GetSubType());
-        return false;
+        LOG_WARN("TrafficLight: Traffic light type '{}' subtype '{}' not supported yet", GetType(), GetSubType());
+        return;
     }
-    return true;
 }
 
 Signal::OSIType Signal::GetOSITypeFromString(const std::string& type)

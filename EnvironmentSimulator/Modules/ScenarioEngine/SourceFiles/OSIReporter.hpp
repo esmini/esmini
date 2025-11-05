@@ -207,6 +207,7 @@ public:
     SE_SOCKET         OpenSocket(std::string ipaddr);
     void              SerializeDynamicData();
     void              SerializeDynamicAndStaticData();
+    void              AddTrafficLightToGt(osi3::GroundTruth* gt, roadmanager::Signal* signal);
     int               GetUDPClientStatus()
     {
         return (udp_client_ ? udp_client_->GetStatus() : -1);
