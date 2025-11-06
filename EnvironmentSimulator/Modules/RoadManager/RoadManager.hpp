@@ -1656,6 +1656,10 @@ namespace roadmanager
         {
             return osi_type_;
         }
+        void SetType(std::string type)
+        {
+            type_ = type;
+        }
         std::string GetType() const
         {
             return type_;

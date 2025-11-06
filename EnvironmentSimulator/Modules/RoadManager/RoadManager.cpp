@@ -436,9 +436,13 @@ TrafficLight::TrafficLight(double      s,
 
 void TrafficLight::SetTrafficLightInfo()
 {
-    std::string combined_type = GetCombinedTypeSubtypeValueStr(GetType(), GetSubType(), GetValueStr());
-    if (combined_type == "1000001" || combined_type == "1.000.001")
+    std::string type_cleaned = GetType();
+    type_cleaned.erase(std::remove(type_cleaned.begin(), type_cleaned.end(), '.'), type_cleaned.end());
+    std::string combined_type = GetCombinedTypeSubtypeValueStr(type_cleaned, GetSubType(), GetValueStr());
+
+    if (combined_type == "1000001")
     {
+        SetType(type_cleaned);
         light_type_         = TrafficLightType::TYPE_1000001;
         nr_lamps_           = traffic_light_type_lamps[light_type_];
         double lamp_height_ = GetHeight() / static_cast<double>(nr_lamps_);  // Assume all lights occupy entire space
