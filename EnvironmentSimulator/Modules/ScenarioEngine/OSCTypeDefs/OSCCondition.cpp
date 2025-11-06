@@ -690,18 +690,9 @@ std::string TrigByVariable::GetAdditionalLogInfo()
     return fmt::format("variable {} {} {} {}, edge: {}", variableRef_, ve ? ve->value._string : "NOT_FOUND", Rule2Str(rule_), value_, Edge2Str());
 }
 
-bool TrigByTrafficSignal::CheckCondition(double sim_time)
+void TrigByTrafficSignal::SetSignal()
 {
-    (void)sim_time;
-
-    roadmanager::TrafficLight* tl  = nullptr;
-    auto                       odr = roadmanager::Position::GetOpenDrive();
-
-    if (odr == nullptr)
-    {
-        return false;
-    }
-
+    auto odr = roadmanager::Position::GetOpenDrive();
     for (const auto& signal : odr->GetDynamicSignals())
     {
         if (signal == nullptr)
@@ -709,19 +700,23 @@ bool TrigByTrafficSignal::CheckCondition(double sim_time)
             continue;
         }
 
-        if (signal->GetId() == std::stoi(signalName_))
+        if (signal->GetId() == std::stoi(this->signalName_))
         {
-            tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
-            break;
+            if (auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal))
+            {
+                this->traffic_light_ = tl;
+                break;
+            }
         }
     }
+    LOG_ERROR("TrafficSignalCondition: Couldn't find traffic signal with id {}", this->signalName_);
+}
 
-    if (tl == nullptr)
-    {
-        return false;
-    }
+bool TrigByTrafficSignal::CheckCondition(double sim_time)
+{
+    (void)sim_time;
 
-    return signalState_ == tl->GetStateString();
+    return signalState_ == traffic_light_->GetStateString();
 }
 
 std::string TrigByTrafficSignal::GetAdditionalLogInfo()

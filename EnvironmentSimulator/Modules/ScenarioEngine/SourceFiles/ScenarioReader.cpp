@@ -4680,7 +4680,8 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                     TrigByTrafficSignal *trigger = new TrigByTrafficSignal;
                     trigger->signalName_         = parameters.ReadAttribute(byValueChild, "name");
                     trigger->signalState_        = parameters.ReadAttribute(byValueChild, "state");
-                    condition                    = trigger;
+                    trigger->SetSignal();
+                    condition = trigger;
                 }
                 else
                 {
