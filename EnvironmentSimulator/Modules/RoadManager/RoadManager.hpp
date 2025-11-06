@@ -29,56 +29,6 @@
 
 namespace roadmanager
 {
-    enum LampMode : int
-    {
-        MODE_UNKNOWN  = 0,
-        MODE_OTHER    = 1,
-        MODE_OFF      = 2,
-        MODE_CONSTANT = 3,
-        MODE_FLASHING = 4,
-        MODE_COUNTING = 5
-    };
-
-    enum LampIcon : int
-    {
-        ICON_UNKNOWN                    = 0,
-        ICON_OTHER                      = 1,
-        ICON_NONE                       = 2,
-        ICON_ARROW_STRAIGHT_AHEAD       = 3,
-        ICON_ARROW_LEFT                 = 4,
-        ICON_ARROW_DIAG_LEFT            = 5,
-        ICON_ARROW_STRAIGHT_AHEAD_LEFT  = 6,
-        ICON_ARROW_RIGHT                = 7,
-        ICON_ARROW_DIAG_RIGHT           = 8,
-        ICON_ARROW_STRAIGHT_AHEAD_RIGHT = 9,
-        ICON_ARROW_LEFT_RIGHT           = 10,
-        ICON_ARROW_DOWN                 = 11,
-        ICON_ARROW_DOWN_LEFT            = 12,
-        ICON_ARROW_DOWN_RIGHT           = 13,
-        ICON_ARROW_CROSS                = 14,
-        ICON_PEDESTRIAN                 = 15,
-        ICON_WALK                       = 16,
-        ICON_DONT_WALK                  = 17,
-        ICON_BICYCLE                    = 18,
-        ICON_PEDESTRIAN_AND_BICYCLE     = 19,
-        ICON_COUNTDOWN_SECONDS          = 20,
-        ICON_COUNTDOWN_PERCENT          = 21,
-        ICON_TRAM                       = 22,
-        ICON_BUS                        = 23,
-        ICON_BUS_AND_TRAM               = 24
-    };
-
-    enum LampColor
-    {
-        COLOR_UNKNOWN = 0,
-        COLOR_OTHER   = 1,
-        COLOR_RED     = 2,
-        COLOR_YELLOW  = 3,
-        COLOR_GREEN   = 4,
-        COLOR_BLUE    = 5,
-        COLOR_WHITE   = 6
-    };
-
     id_t GetNewGlobalLaneId();
     id_t GetNewGlobalLaneBoundaryId();
     id_t GetNewGlobalTrafficLightId();
@@ -1590,6 +1540,56 @@ namespace roadmanager
             TYPE_TRAFFIC_LIGHT_GREEN_ARROW                                        = 92,
             TrafficSign_MainSign_Classification_Type_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
             TrafficSign_MainSign_Classification_Type_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+        };
+
+        enum LampMode : int
+        {
+            MODE_UNKNOWN  = 0,
+            MODE_OTHER    = 1,
+            MODE_OFF      = 2,
+            MODE_CONSTANT = 3,
+            MODE_FLASHING = 4,
+            MODE_COUNTING = 5
+        };
+
+        enum LampIcon : int
+        {
+            ICON_UNKNOWN                    = 0,
+            ICON_OTHER                      = 1,
+            ICON_NONE                       = 2,
+            ICON_ARROW_STRAIGHT_AHEAD       = 3,
+            ICON_ARROW_LEFT                 = 4,
+            ICON_ARROW_DIAG_LEFT            = 5,
+            ICON_ARROW_STRAIGHT_AHEAD_LEFT  = 6,
+            ICON_ARROW_RIGHT                = 7,
+            ICON_ARROW_DIAG_RIGHT           = 8,
+            ICON_ARROW_STRAIGHT_AHEAD_RIGHT = 9,
+            ICON_ARROW_LEFT_RIGHT           = 10,
+            ICON_ARROW_DOWN                 = 11,
+            ICON_ARROW_DOWN_LEFT            = 12,
+            ICON_ARROW_DOWN_RIGHT           = 13,
+            ICON_ARROW_CROSS                = 14,
+            ICON_PEDESTRIAN                 = 15,
+            ICON_WALK                       = 16,
+            ICON_DONT_WALK                  = 17,
+            ICON_BICYCLE                    = 18,
+            ICON_PEDESTRIAN_AND_BICYCLE     = 19,
+            ICON_COUNTDOWN_SECONDS          = 20,
+            ICON_COUNTDOWN_PERCENT          = 21,
+            ICON_TRAM                       = 22,
+            ICON_BUS                        = 23,
+            ICON_BUS_AND_TRAM               = 24
+        };
+
+        enum LampColor
+        {
+            COLOR_UNKNOWN = 0,
+            COLOR_OTHER   = 1,
+            COLOR_RED     = 2,
+            COLOR_YELLOW  = 3,
+            COLOR_GREEN   = 4,
+            COLOR_BLUE    = 5,
+            COLOR_WHITE   = 6
         };
 
         Signal(double      s,

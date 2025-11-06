@@ -117,7 +117,7 @@ static int execute_scenario(int argc, char* argv[])
                 for (size_t k = 0; k < tl->GetNrLamps(); k++)
                 {
                     auto lamp = tl->GetLamp(k);
-                    light.SetState(k, lamp->GetMode() == roadmanager::LampMode::MODE_CONSTANT);
+                    light.SetState(k, lamp->GetMode() == roadmanager::Signal::LampMode::MODE_CONSTANT);
                 }
             }
         }

@@ -327,10 +327,10 @@ const std::map<std::string, Signal::OSIType> Signal::types_mapping_ = {
     {"TYPE_TRAFFIC_LIGHT_GREEN_ARROW", Signal::TYPE_TRAFFIC_LIGHT_GREEN_ARROW}};
 
 // Mappings below are down -> up
-std::unordered_map<TrafficLightType, std::vector<LampColor>> traffic_light_colors = {
-    {TrafficLightType::TYPE_1000001, {LampColor::COLOR_RED, LampColor::COLOR_YELLOW, LampColor::COLOR_GREEN}}};
-std::unordered_map<TrafficLightType, std::vector<LampIcon>> traffic_light_icons = {
-    {TrafficLightType::TYPE_1000001, {LampIcon::ICON_NONE, LampIcon::ICON_NONE, LampIcon::ICON_NONE}}};
+std::unordered_map<TrafficLightType, std::vector<Signal::LampColor>> traffic_light_colors = {
+    {TrafficLightType::TYPE_1000001, {Signal::LampColor::COLOR_RED, Signal::LampColor::COLOR_YELLOW, Signal::LampColor::COLOR_GREEN}}};
+std::unordered_map<TrafficLightType, std::vector<Signal::LampIcon>> traffic_light_icons = {
+    {TrafficLightType::TYPE_1000001, {Signal::LampIcon::ICON_NONE, Signal::LampIcon::ICON_NONE, Signal::LampIcon::ICON_NONE}}};
 
 Signal::Signal(double      s,
                double      t,
@@ -430,7 +430,7 @@ TrafficLight::TrafficLight(double      s,
              z,
              h)
 {
-    LOG_INFO("Traffic light found of type {} subtype {} found", type, subtype);
+    LOG_DEBUG("Adding traffic light with id {} of type {} subtype {}", id, type, subtype);
     SetTrafficLightInfo();
 }
 
