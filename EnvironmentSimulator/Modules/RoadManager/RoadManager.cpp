@@ -466,6 +466,81 @@ void TrafficLight::SetTrafficLightInfo()
     }
 }
 
+void Signal::SetAllValidLanes(Signal* sig, Road* r)
+{
+    std::vector<int> drivable_lane_ids;
+    auto             ls = r->GetLaneSectionByS(sig->GetS());
+    drivable_lane_ids.reserve(ls->GetNumberOfLanes());
+
+    for (size_t i = 0; i < ls->GetNumberOfLanes(); i++)
+    {
+        if (ls->GetLaneByIdx(i)->GetLaneType() & Lane::LaneType::LANE_TYPE_ANY_DRIVING)
+        {
+            drivable_lane_ids.push_back(ls->GetLaneIdByIdx(i));
+        }
+    }
+
+    if (sig->validity_.empty())
+    {
+        // Use orientation to find all lanes
+        switch (sig->GetOrientation())
+        {
+            case Orientation::NONE:
+            {
+                all_valid_lanes_ = drivable_lane_ids;
+                break;
+            }
+            case Orientation::POSITIVE:
+            {
+                for (const auto& lane_id : drivable_lane_ids)
+                {
+                    if (lane_id > 0)
+                    {
+                        all_valid_lanes_.push_back(lane_id);
+                    }
+                }
+                break;
+            }
+            case Orientation::NEGATIVE:
+            {
+                for (const auto& lane_id : drivable_lane_ids)
+                {
+                    if (lane_id < 0)
+                    {
+                        all_valid_lanes_.push_back(lane_id);
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }
+    else
+    {
+        all_valid_lanes_.reserve(drivable_lane_ids.size());
+        for (const auto& [from, to] : sig->validity_)
+        {
+            int step = (from <= to) ? 1 : -1;
+            for (int i = from; i <= to; i += step)
+            {
+                if (i == 0)
+                {
+                    continue;  // ignore reference line
+                }
+
+                if (std::find(drivable_lane_ids.begin(), drivable_lane_ids.end(), i) != drivable_lane_ids.end())
+                {
+                    all_valid_lanes_.push_back(i);
+                }
+            }
+        }
+
+        std::sort(all_valid_lanes_.begin(), all_valid_lanes_.end());
+        all_valid_lanes_.erase(std::unique(all_valid_lanes_.begin(), all_valid_lanes_.end()), all_valid_lanes_.end());
+    }
+}
+
 Signal::OSIType Signal::GetOSITypeFromString(const std::string& type)
 {
     if (types_mapping_.count(type) != 0)
@@ -4700,6 +4775,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     {
                         LOG_ERROR("Signal: Major error");
                     }
+
                     for (pugi::xml_node validity_node = signal.child("validity"); validity_node;
                          validity_node                = validity_node.next_sibling("validity"))
                     {
@@ -4708,6 +4784,8 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                         validity.toLane_   = atoi(validity_node.attribute("toLane").value());
                         sig->validity_.push_back(validity);
                     }
+
+                    sig->SetAllValidLanes(sig, r);
                 }
                 else
                 {

@@ -1339,6 +1339,9 @@ namespace roadmanager
         double                      h_;
     };
 
+    class Position;  // forward declaration
+    class Road;      // forward declaration
+
     class Signal : public RoadObject
     {
     public:
@@ -1706,6 +1709,7 @@ namespace roadmanager
         {
             return text_;
         }
+        void               SetAllValidLanes(Signal *sig, Road *r);
         static OSIType     GetOSITypeFromString(const std::string &type);
         static std::string GetCombinedTypeSubtypeValueStr(std::string type, std::string subtype, std::string value);
         std::string        GetModel3DFullPath() const
@@ -1751,6 +1755,7 @@ namespace roadmanager
         static const std::map<std::string, OSIType> types_mapping_;
         std::string                                 model3d_full_path_;
         bool                                        has_osc_action_ = false;
+        std::vector<int>                            all_valid_lanes_;
     };
 
     class TrafficLight : public Signal
@@ -3035,8 +3040,6 @@ namespace roadmanager
         double      hdg_ = 0.0;
         std::string orig_geooffset_str_;
     };
-
-    class Position;  // forward declaration
 
     class OpenDrive
     {
