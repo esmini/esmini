@@ -2764,10 +2764,10 @@ void OSIReporter::AddTrafficLightToGt(osi3::GroundTruth *gt, roadmanager::Signal
         trafficLight->mutable_classification()->set_icon(lamps_icon_map[lamp->GetIcon()]);
 
         // Lane validity can be added here, needs deduce lanes based on orientattion and potentially validity field
-        // for (const auto& lane : tl->validity_)
-        // {
-        //     trafficLight->mutable_classification()->add_assigned_lane_id()->set_value(TBD);
-        // }
+        for (const auto &g_lane_id : tl->GetAllValidGlobalLanes())
+        {
+            trafficLight->mutable_classification()->add_assigned_lane_id()->set_value(g_lane_id);
+        }
     }
 }
 

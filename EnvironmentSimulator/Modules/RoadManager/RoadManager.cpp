@@ -468,15 +468,16 @@ void TrafficLight::SetTrafficLightInfo()
 
 void Signal::SetAllValidLanes(Signal* sig, Road* r)
 {
-    std::vector<int> drivable_lane_ids;
-    auto             ls = r->GetLaneSectionByS(sig->GetS());
-    drivable_lane_ids.reserve(ls->GetNumberOfLanes());
+    std::vector<std::pair<int, Lane*>> drivable_lanes;
+    auto                               ls = r->GetLaneSectionByS(sig->GetS());
+    drivable_lanes.reserve(ls->GetNumberOfLanes());
 
     for (size_t i = 0; i < ls->GetNumberOfLanes(); i++)
     {
-        if (ls->GetLaneByIdx(i)->GetLaneType() & Lane::LaneType::LANE_TYPE_ANY_DRIVING)
+        auto lane = ls->GetLaneByIdx(i);
+        if (lane->GetLaneType() & Lane::LaneType::LANE_TYPE_ANY_DRIVING)
         {
-            drivable_lane_ids.push_back(ls->GetLaneIdByIdx(i));
+            drivable_lanes.emplace_back(ls->GetLaneIdByIdx(i), lane);
         }
     }
 
@@ -487,27 +488,30 @@ void Signal::SetAllValidLanes(Signal* sig, Road* r)
         {
             case Orientation::NONE:
             {
-                all_valid_lanes_ = drivable_lane_ids;
+                for (const auto& [id, lane] : drivable_lanes)
+                {
+                    all_valid_global_lanes_.push_back(lane->GetGlobalId());
+                }
                 break;
             }
             case Orientation::POSITIVE:
             {
-                for (const auto& lane_id : drivable_lane_ids)
+                for (const auto& [id, lane] : drivable_lanes)
                 {
-                    if (lane_id > 0)
+                    if (id < 0)
                     {
-                        all_valid_lanes_.push_back(lane_id);
+                        all_valid_global_lanes_.push_back(lane->GetGlobalId());
                     }
                 }
                 break;
             }
             case Orientation::NEGATIVE:
             {
-                for (const auto& lane_id : drivable_lane_ids)
+                for (const auto& [id, lane] : drivable_lanes)
                 {
-                    if (lane_id < 0)
+                    if (id > 0)
                     {
-                        all_valid_lanes_.push_back(lane_id);
+                        all_valid_global_lanes_.push_back(lane->GetGlobalId());
                     }
                 }
                 break;
@@ -518,7 +522,7 @@ void Signal::SetAllValidLanes(Signal* sig, Road* r)
     }
     else
     {
-        all_valid_lanes_.reserve(drivable_lane_ids.size());
+        all_valid_global_lanes_.reserve(drivable_lanes.size());
         for (const auto& [from, to] : sig->validity_)
         {
             int step = (from <= to) ? 1 : -1;
@@ -529,15 +533,16 @@ void Signal::SetAllValidLanes(Signal* sig, Road* r)
                     continue;  // ignore reference line
                 }
 
-                if (std::find(drivable_lane_ids.begin(), drivable_lane_ids.end(), i) != drivable_lane_ids.end())
+                auto it = std::find_if(drivable_lanes.begin(), drivable_lanes.end(), [i](const auto& p) { return p.first == i; });
+                if (it != drivable_lanes.end())
                 {
-                    all_valid_lanes_.push_back(i);
+                    all_valid_global_lanes_.push_back(it->second->GetGlobalId());
                 }
             }
         }
 
-        std::sort(all_valid_lanes_.begin(), all_valid_lanes_.end());
-        all_valid_lanes_.erase(std::unique(all_valid_lanes_.begin(), all_valid_lanes_.end()), all_valid_lanes_.end());
+        std::sort(all_valid_global_lanes_.begin(), all_valid_global_lanes_.end());
+        all_valid_global_lanes_.erase(std::unique(all_valid_global_lanes_.begin(), all_valid_global_lanes_.end()), all_valid_global_lanes_.end());
     }
 }
 
