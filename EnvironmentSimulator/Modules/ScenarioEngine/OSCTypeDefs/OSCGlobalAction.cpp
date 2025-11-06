@@ -113,6 +113,11 @@ void TrafficSignalStateAction::SetSignalState()
         return;
     }
 
+    if (odr->GetDynamicSignals().size() == 0)
+    {
+        LOG_ERROR_AND_QUIT("TrafficSignalStateAction: No dynamic traffic signals in the road");
+    }
+
     for (const auto& signal : odr->GetDynamicSignals())
     {
         if (signal == nullptr)
@@ -126,9 +131,9 @@ void TrafficSignalStateAction::SetSignalState()
             // Count how many ';' we have in the string and add 1 if its not empty (so "off" has 1 value, "off;on" 2 values etc.)
             int nr_values = CountNonEmptyTokens(this->value_);
 
-            if (tl->GetTrafficLightType() == roadmanager::TrafficLightType::TYPE_1000001 && nr_values != 3)
+            if (tl->GetTrafficLightType() == roadmanager::Signal::TrafficLightType::TYPE_1000001 && nr_values != 3)
             {
-                LOG_ERROR_AND_QUIT("TrafficSignalStateAction: Signal of type {} takes 3 values, but {} were provided",
+                LOG_ERROR_AND_QUIT("TrafficSignalStateAction: Signal of type TrafficLightType::{} takes 3 values, but {} were provided",
                                    tl->GetTrafficLightType(),
                                    nr_values);
                 return;
@@ -138,6 +143,10 @@ void TrafficSignalStateAction::SetSignalState()
             trafficlight_ = tl;
             tl->SetHasOSCAction(true);  // Action attached to the trafficlight
             break;
+        }
+        else
+        {
+            LOG_ERROR_AND_QUIT("TrafficSignalStateAction: No matching traffic signal with id {} in the road", name_);
         }
     }
 }

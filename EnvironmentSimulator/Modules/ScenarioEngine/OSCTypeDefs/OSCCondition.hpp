@@ -605,9 +605,9 @@ namespace scenarioengine
     class TrigByTrafficSignal : public TrigByValue
     {
     public:
-        std::string                signalName_;     // Id of the referenced signal in the roadnetwork
-        std::string                signalState_;    // State of the signal for condition to be true
-        roadmanager::TrafficLight* traffic_light_;  // Which signal has the trigger assigned
+        std::string                signalName_;               // Id of the referenced signal in the roadnetwork
+        std::string                signalState_;              // State of the signal for condition to be true
+        roadmanager::TrafficLight* traffic_light_ = nullptr;  // Which signal has the trigger assigned
 
         void SetSignal();
         bool CheckCondition(double sim_time);

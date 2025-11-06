@@ -702,14 +702,16 @@ void TrigByTrafficSignal::SetSignal()
 
         if (signal->GetId() == std::stoi(this->signalName_))
         {
-            if (auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal))
+            // Add some switch here to cast to other type depending on tl->GetTrafficSignalType() if necessary
+            this->traffic_light_ = dynamic_cast<roadmanager::TrafficLight*>(signal);
+            if (traffic_light_ == nullptr)
             {
-                this->traffic_light_ = tl;
-                break;
+                LOG_ERROR_AND_QUIT("TrafficSignalCondition: Traffic signal with id {} isn't a valid signal", this->signalName_);
             }
+            return;
         }
     }
-    LOG_ERROR("TrafficSignalCondition: Couldn't find traffic signal with id {}", this->signalName_);
+    LOG_ERROR_AND_QUIT("TrafficSignalCondition: Couldn't find traffic signal with id {}", this->signalName_);
 }
 
 bool TrigByTrafficSignal::CheckCondition(double sim_time)

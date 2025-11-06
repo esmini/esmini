@@ -1239,13 +1239,6 @@ namespace roadmanager
         LaneBoundaryOSI boundary_[2];
     };
 
-    enum TrafficLightType : int
-    {
-        TYPE_1000001 = 0
-    };
-
-    inline std::unordered_map<TrafficLightType, size_t> traffic_light_type_lamps = {{TrafficLightType::TYPE_1000001, 3}};
-
     class RoadObject
     {
     public:
@@ -1540,6 +1533,12 @@ namespace roadmanager
             TYPE_TRAFFIC_LIGHT_GREEN_ARROW                                        = 92,
             TrafficSign_MainSign_Classification_Type_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
             TrafficSign_MainSign_Classification_Type_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+        };
+
+        enum TrafficLightType : int
+        {
+            TYPE_1000001   = 0,
+            TYPE_UNDEFINED = 1
         };
 
         enum LampMode : int
@@ -1943,6 +1942,8 @@ namespace roadmanager
                                                                     {"on", LampMode::MODE_CONSTANT},
                                                                     {"flashing", LampMode::MODE_FLASHING},
                                                                     {"counting", LampMode::MODE_COUNTING}};
+
+        std::unordered_map<TrafficLightType, size_t> traffic_light_type_lamps = {{TrafficLightType::TYPE_1000001, 3}};
     };
 
     class OutlineCorner
