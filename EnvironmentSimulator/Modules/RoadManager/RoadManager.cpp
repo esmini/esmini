@@ -328,9 +328,11 @@ const std::map<std::string, Signal::OSIType> Signal::types_mapping_ = {
 
 // Mappings below are down -> up
 std::unordered_map<Signal::TrafficLightType, std::vector<Signal::LampColor>> traffic_light_colors = {
-    {Signal::TrafficLightType::TYPE_1000001, {Signal::LampColor::COLOR_RED, Signal::LampColor::COLOR_YELLOW, Signal::LampColor::COLOR_GREEN}}};
+    {Signal::TrafficLightType::TYPE_1000001, {Signal::LampColor::COLOR_RED, Signal::LampColor::COLOR_YELLOW, Signal::LampColor::COLOR_GREEN}},
+    {Signal::TrafficLightType::TYPE_1000002, {Signal::LampColor::COLOR_RED, Signal::LampColor::COLOR_GREEN}}};
 std::unordered_map<Signal::TrafficLightType, std::vector<Signal::LampIcon>> traffic_light_icons = {
-    {Signal::TrafficLightType::TYPE_1000001, {Signal::LampIcon::ICON_NONE, Signal::LampIcon::ICON_NONE, Signal::LampIcon::ICON_NONE}}};
+    {Signal::TrafficLightType::TYPE_1000001, {Signal::LampIcon::ICON_NONE, Signal::LampIcon::ICON_NONE, Signal::LampIcon::ICON_NONE}},
+    {Signal::TrafficLightType::TYPE_1000002, {Signal::LampIcon::ICON_NONE, Signal::LampIcon::ICON_NONE}}};
 
 Signal::Signal(double      s,
                double      t,
@@ -440,10 +442,18 @@ void TrafficLight::SetTrafficLightInfo()
     type_cleaned.erase(std::remove(type_cleaned.begin(), type_cleaned.end(), '.'), type_cleaned.end());
     std::string combined_type = GetCombinedTypeSubtypeValueStr(type_cleaned, GetSubType(), GetValueStr());
 
-    if (combined_type == "1000001")
+    if (combined_type == "1000001" || combined_type == "1000002")
     {
+        if (combined_type == "1000001")
+        {
+            light_type_ = TrafficLightType::TYPE_1000001;
+        }
+        else if (combined_type == "1000002")
+        {
+            light_type_ = TrafficLightType::TYPE_1000002;
+        }
+
         SetType(type_cleaned);
-        light_type_         = TrafficLightType::TYPE_1000001;
         nr_lamps_           = traffic_light_type_lamps[light_type_];
         double lamp_height_ = GetHeight() / static_cast<double>(nr_lamps_);  // Assume all lights occupy entire space
         double lamp_width_  = GetWidth();                                    // Assume light is as wide as the light

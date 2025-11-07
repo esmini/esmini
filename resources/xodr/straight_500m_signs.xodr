@@ -119,6 +119,7 @@
          <object type="pole" name="pole" id="9" s="80.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" radius="0.03" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
          <object type="pole" name="pole" id="202" s="15.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" radius="0.03" height="3.2" hdg="0.0" pitch="0.0" roll="0.0"/>
          <object type="pole" name="pole" id="203" s="15.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" radius="0.03" height="3.2" hdg="0.0" pitch="0.0" roll="0.0"/>
+         <object type="pole" name="pole" id="203" s="12.0" t="-3.7" zOffset="-0.2" validLength="0.0" orientation="+" radius="0.03" height="2.8" hdg="0.0" pitch="0.0" roll="0.0"/>
       </objects>
       <signals>
          <!--signal s="0.0" t="3.57" id="0" name="speed_50_0_0" dynamic="no" orientation="+" zOffset="1.7" type="c" country="se" subtype="31" value="5" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61">
@@ -150,7 +151,7 @@
          </signal-->
          <signal s="15.0" t="-3.57" id="201" name="_Sg14" dynamic="yes" orientation="+" zOffset="2.0" type="1.000.001" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="1.2" width="0.4"/>
          <signal s="15.0" t="3.57" id="202" name="_Sg13" dynamic="yes" orientation="+" zOffset="2.0" type="1000001" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="1.2" width="0.4"/>
-         <signal s="25.0" t="3.57" id="203" name="_Sg13" dynamic="yes" orientation="+" zOffset="2.0" type="1000002" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="1.2" width="0.4"/>
+         <signal s="12.0" t="-3.57" id="203" name="_Sg13" dynamic="yes" orientation="+" hOffset="-1.57" zOffset="2.0" type="1000002" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="1.2" width="0.4"/>
       </signals>
       <surface/>
    </road>

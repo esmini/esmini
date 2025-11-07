@@ -112,6 +112,8 @@ static int execute_scenario(int argc, char* argv[])
                     continue;
                 }
 
+                int second = static_cast<int>(player->scenarioEngine->getSimulationTime());
+
                 switch (tl->GetTrafficLightType())
                 {
                     case roadmanager::Signal::TrafficLightType::TYPE_1000001:
@@ -121,7 +123,18 @@ static int execute_scenario(int argc, char* argv[])
                         for (size_t k = 0; k < tl->GetNrLamps(); k++)
                         {
                             auto lamp = tl->GetLamp(k);
-                            light.SetState(k, lamp->GetMode() == roadmanager::Signal::LampMode::MODE_CONSTANT);
+                            light.SetState(k, (second + k) % 2);
+                        }
+                        break;
+                    }
+                    case roadmanager::Signal::TrafficLightType::TYPE_1000002:
+                    {
+                        auto light = player->viewer_->roadGeom->traffic_light_pedestrian_red_green_[tl->GetId()];
+
+                        for (size_t k = 0; k < tl->GetNrLamps(); k++)
+                        {
+                            auto lamp = tl->GetLamp(k);
+                            light.SetState(k, (second + k) % 2);
                         }
                         break;
                     }

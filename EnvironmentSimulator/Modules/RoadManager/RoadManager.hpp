@@ -1538,7 +1538,8 @@ namespace roadmanager
         enum TrafficLightType : int
         {
             TYPE_1000001   = 0,
-            TYPE_UNDEFINED = 1
+            TYPE_1000002   = 1,
+            TYPE_UNDEFINED = 2
         };
 
         enum LampMode : int
@@ -1947,7 +1948,8 @@ namespace roadmanager
                                                                     {"flashing", LampMode::MODE_FLASHING},
                                                                     {"counting", LampMode::MODE_COUNTING}};
 
-        std::unordered_map<TrafficLightType, size_t> traffic_light_type_lamps = {{TrafficLightType::TYPE_1000001, 3}};
+        std::unordered_map<TrafficLightType, size_t> traffic_light_type_lamps = {{TrafficLightType::TYPE_1000001, 3},
+                                                                                 {TrafficLightType::TYPE_1000002, 2}};
     };
 
     class OutlineCorner
