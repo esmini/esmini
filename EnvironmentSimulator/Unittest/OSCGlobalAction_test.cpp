@@ -13,7 +13,7 @@ protected:
 
     void SetUpBase()
     {
-        roadmanager::Position::GetOpenDrive()->LoadOpenDriveFile("../../../EnvironmentSimulator/Unittest/xodr/trafficarea.xodr");
+        roadmanager::Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/trafficarea.xodr");
         std::shared_ptr<TrafficActionContext> trafficActionContext = std::make_shared<TrafficActionContext>(*roadmanager::Position::GetOpenDrive());
 
         trafficAreaAction = new TrafficAreaAction(nullptr, trafficActionContext);
