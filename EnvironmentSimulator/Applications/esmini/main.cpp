@@ -125,6 +125,16 @@ static int execute_scenario(int argc, char* argv[])
                         }
                         break;
                     }
+                    case roadmanager::TrafficLightType::TYPE_1000002:
+                    {
+                        auto light = player->viewer_->roadGeom->traffic_light_pedestrian_red_green_[tl->GetId()];
+                        for (size_t k = 0; k < tl->GetNrLamps(); k++)
+                        {
+                            auto lamp = tl->GetLamp(k);
+                            light.SetState(k, lamp->GetMode() == roadmanager::Signal::LampMode::MODE_CONSTANT);
+                        }
+                        break;
+                    }
                     default:
                     {
                         LOG_WARN_ONCE("Traffic light type {} doesn't have supported graphics", tl->GetTrafficLightType());

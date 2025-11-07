@@ -1162,6 +1162,13 @@ namespace roadgeom
                                 traffic_light_red_yellow_green_[signal->GetId()] = tl_ryg;
                                 break;
                             }
+                            case roadmanager::TrafficLightType::TYPE_1000002:
+                            {
+                                TrafficLightPedestrianRedGreen tl_prg;
+                                tl_prg.SetNode(tx);
+                                traffic_light_pedestrian_red_green_[signal->GetId()] = tl_prg;
+                                break;
+                            }
                             default:
                             {
                                 LOG_ERROR("Unsupport traffic signal type, can't view");
@@ -1875,6 +1882,33 @@ namespace roadgeom
     }
 
     bool TrafficLightRedYellowGreen::GetState(unsigned int light_index) const
+    {
+        return switches_[light_index]->getValue(1);
+    }
+
+    void TrafficLightPedestrianRedGreen::SetNode(osg::Group* node)
+    {
+        // find and register expected switches
+        const std::string switch_names[] = {"lamp1_switch", "lamp2_switch"};
+
+        for (unsigned int i = 0; i < 2; i++)
+        {
+            FindNamedNode fnn(switch_names[i]);
+            node->accept(fnn);
+            switches_[i] = static_cast<osg::Switch*>(fnn.getNode());
+        }
+    }
+
+    void TrafficLightPedestrianRedGreen::SetState(unsigned int light_index, bool state)
+    {
+        if (light_index < 2 && switches_[light_index] != nullptr)
+        {
+            switches_[light_index]->setAllChildrenOff();
+            switches_[light_index]->setValueList({!state, state});
+        }
+    }
+
+    bool TrafficLightPedestrianRedGreen::GetState(unsigned int light_index) const
     {
         return switches_[light_index]->getValue(1);
     }

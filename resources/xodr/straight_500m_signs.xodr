@@ -149,8 +149,7 @@
             <validity fromLane="3" toLane="3"/>
          </signal-->
          <signal s="15.0" t="-3.57" id="201" name="_Sg14" dynamic="yes" orientation="+" zOffset="2.0" type="1.000.001" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="1.2" width="0.4"/>
-         <signal s="15.0" t="3.57" id="202" name="_Sg13" dynamic="yes" orientation="+" zOffset="2.0" type="1000001" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="1.2" width="0.4"/>
-         <signal s="25.0" t="3.57" id="203" name="_Sg12" dynamic="yes" orientation="+" zOffset="2.0" type="1000002" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="1.2" width="0.4"/>
+         <signal s="15.0" t="3.57" id="203" name="_Sg12" dynamic="yes" orientation="+" zOffset="2.0" type="1000002" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.8" width="0.4"/>
          <signal s="45.0" t="3.57" id="204" name="_Sg11" dynamic="yes" orientation="-" zOffset="2.0" type="1000013" country="OpenDRIVE" subtype="60" hOffset="0.0" pitch="0.0" roll="0.0" height="0.4" width="0.4"/>
       </signals>
       <surface/>
