@@ -378,10 +378,123 @@ namespace scenarioengine
         }
     };
 
+    struct EntityWithController
+    {
+        Object*     object     = nullptr;
+        Controller* controller = nullptr;
+    };
+
+    class EntityDistributionEntry
+    {
+    public:
+        double                   weight{1.0};
+        Object*                  object{nullptr};
+        std::vector<Controller*> controllers;
+    };
+
+    class EntityDistribution
+    {
+    public:
+        std::vector<EntityDistributionEntry> entries;
+    };
+
+    class TrafficDistributionEntry
+    {
+    public:
+        double               weight{1.0};
+        EntityDistribution   entityDistribution;
+        EntityWithController GetRandomEntity() const;
+    };
+
     class ScenarioReader;
     class ScenarioEngine;
 
-    class SwarmTrafficAction : public OSCGlobalAction
+    class TrafficActionContext
+    {
+    public:
+        TrafficActionContext(ScenarioEngine& engine, ScenarioGateway& gateway, ScenarioReader& reader, roadmanager::OpenDrive& odrManager)
+            : scenario_engine_(&engine),
+              gateway_(&gateway),
+              reader_(&reader),
+              odrManager_(&odrManager){};
+        TrafficActionContext(roadmanager::OpenDrive& odrManager) : odrManager_(&odrManager){};
+
+        ScenarioEngine& GetScenarioEngine()
+        {
+            return *scenario_engine_;
+        };
+
+        ScenarioGateway& GetScenarioGateway()
+        {
+            return *gateway_;
+        };
+        ScenarioReader& GetScenarioReader()
+        {
+            return *reader_;
+        };
+        roadmanager::OpenDrive& GetOdrManager()
+        {
+            return *odrManager_;
+        };
+
+    private:
+        ScenarioEngine*         scenario_engine_{};
+        ScenarioGateway*        gateway_{};
+        ScenarioReader*         reader_{};
+        roadmanager::OpenDrive* odrManager_{};
+    };
+
+    class TrafficAction : public OSCGlobalAction
+    {
+    public:
+        TrafficAction(ActionType type, StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context)
+            : OSCGlobalAction(type, parent),
+              context_(context)
+        {
+        }
+
+        ~TrafficAction() = default;
+
+        void SetName(std::string_view name)
+        {
+            name_ = name;
+        }
+        void Print()
+        {
+        }
+
+        /**
+         * Tries to spawn an entity at the given position, if there is enough free space.
+         * @param pos Position to spawn the entity at.
+         */
+        void SpawnEntity(roadmanager::Position* pos);
+
+        /**
+         * Checks if there is enough free space at the given position to spawn an entity.
+         * @param pos Position to check.
+         * @return True if there is enough free space, false otherwise.
+         */
+        bool FreePositionToSpawn(roadmanager::Position* pos);
+
+        /**
+         * Despawns the given entity, along with controllers attached.
+         * @param object Entity to despawn.
+         */
+        void DespawnEntity(Object* object);
+
+        std::vector<TrafficDistributionEntry> traffic_distribution_entry_;
+
+    protected:
+        std::shared_ptr<TrafficActionContext> context_;
+        std::string                           name_;
+        int                                   spawned_count_ = 0;
+        std::vector<int>                      spawned_entity_ids_;
+        std::string                           action_type_;
+        VehiclePool                           vehicle_pool_;
+        double                                spawn_speed_ = 0.0;
+        Entities*                             entities_;
+    };
+    class TrafficSwarmAction : public TrafficAction
     {
     public:
         struct SpawnInfo
@@ -400,27 +513,19 @@ namespace scenarioengine
             unsigned int          nLanes;
         } SelectInfo;
 
-        SwarmTrafficAction(StoryBoardElement* parent);
-
-        SwarmTrafficAction(const SwarmTrafficAction& action, StoryBoardElement* parent) : OSCGlobalAction(ActionType::SWARM_TRAFFIC, parent)
+        TrafficSwarmAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context)
+            : TrafficAction(ActionType::SWARM_TRAFFIC, parent, context)
         {
-            spawnedV.clear();
-            centralObject_ = action.centralObject_;
         }
 
         OSCGlobalAction* Copy()
         {
-            SwarmTrafficAction* new_action = new SwarmTrafficAction(*this);
-            return new_action;
+            return new TrafficSwarmAction(*this);
         }
 
         void Start(double simTime);
 
         void Step(double simTime, double dt);
-
-        void print()
-        {
-        }
 
         void SetCentralObject(Object* centralObj)
         {
@@ -438,39 +543,42 @@ namespace scenarioengine
         {
             semiMinorAxis_ = axes;
         }
-        void SetScenarioEngine(ScenarioEngine* scenario_engine);
-
-        void SetGateway(ScenarioGateway* gateway)
-        {
-            gateway_ = gateway;
-        }
-        void SetReader(ScenarioReader* reader)
-        {
-            reader_ = reader;
-        }
         void SetNumberOfVehicles(int number)
         {
             numberOfVehicles = static_cast<unsigned long>(number);
         }
         void Setvelocity(double velocity)
         {
-            velocity_ = velocity;
+            speedRange = false;
+            velocity_  = velocity;
+        }
+        void SetInitialSpeedRange(double lowerLimit, double upperLimit)
+        {
+            initialSpeedLowerLimit_ = lowerLimit;
+            initialSpeedUpperLimit_ = upperLimit;
+        }
+        void SetDirectionOfTravelDistribution(double opposite, double same)
+        {
+            dot_set_     = true;
+            dotOpposite_ = opposite;
+            dotSame_     = same;
         }
 
     private:
-        double                  velocity_;
-        Entities*               entities_;
-        ScenarioGateway*        gateway_;
-        ScenarioReader*         reader_;
-        ScenarioEngine*         scenario_engine_;
-        Object*                 centralObject_;
-        aabbTree::ptTree        rTree;
-        unsigned long           numberOfVehicles;
-        std::vector<SpawnInfo>  spawnedV;
-        roadmanager::OpenDrive* odrManager_;
-        double                  innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
-        VehiclePool             vehicle_pool_;
-        static int              counter_;
+        double                 velocity_;
+        double                 initialSpeedLowerLimit_;
+        double                 initialSpeedUpperLimit_;
+        bool                   speedRange = true;
+        double                 dotOpposite_;
+        double                 dotSame_;
+        bool                   dot_set_ = false;
+        Entities*              swarm_entities_;
+        Object*                centralObject_;
+        aabbTree::ptTree       rTree;
+        unsigned long          numberOfVehicles;
+        std::vector<SpawnInfo> spawnedV;
+        double                 innerRadius_, semiMajorAxis_, semiMinorAxis_, midSMjA, midSMnA, minSize_, lastTime;
+        static int             counter_;
 
         int         despawn(double simTime);
         void        createRoadSegments(aabbTree::BBoxVec& vec);
@@ -478,6 +586,286 @@ namespace scenarioengine
         inline bool ensureDistance(roadmanager::Position pos, int lane, double dist);
         void        createEllipseSegments(aabbTree::BBoxVec& vec, double SMjA, double SMnA);
         inline void sampleRoads(int minN, int maxN, Solutions& sols, vector<SelectInfo>& info);
+        double      getInitialSpeed() const;
+    };
+
+    class TrafficSourceAction : public TrafficAction
+    {
+    public:
+        TrafficSourceAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context)
+            : TrafficAction(ActionType::SOURCE_TRAFFIC, parent, context)
+        {
+        }
+
+        OSCGlobalAction* Copy()
+        {
+            return new TrafficSourceAction(*this);
+        }
+
+        void Start(double simTime);
+
+        void Step(double simTime, double dt);
+
+        void SetActionTriggerTime(double simTime)
+        {
+            action_trigger_time_ = simTime;
+        }
+        void SetRadius(double radius)
+        {
+            radius_ = radius;
+        }
+        void SetRate(double rate)
+        {
+            rate_ = rate;
+        }
+        void SetSpeed(double speed)
+        {
+            spawn_speed_ = speed;
+        }
+        void SetPosition(roadmanager::Position* pos)
+        {
+            pos_ = pos;
+        }
+
+        /**
+         * Get a random position within the spawn radius from the source position.
+         * @return A pointer to the random spawn position.
+         */
+        roadmanager::Position* GetRandomSpawnPosition();
+
+        // std::vector<TrafficDistributionEntry> traffic_distribution_entry_;
+
+    private:
+        double                 action_trigger_time_;
+        double                 radius_;
+        double                 rate_;
+        roadmanager::Position* pos_;
+    };
+
+    class TrafficSinkAction : public TrafficAction
+    {
+    public:
+        TrafficSinkAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context)
+            : TrafficAction(ActionType::SINK_TRAFFIC, parent, context)
+        {
+        }
+
+        OSCGlobalAction* Copy()
+        {
+            return new TrafficSinkAction(*this);
+        }
+
+        void Start(double simTime);
+
+        void Step(double simTime, double dt);
+
+        void SetActionTriggerTime(double simTime)
+        {
+            action_trigger_time_ = simTime;
+        }
+        void SetRadius(double radius)
+        {
+            radius_ = radius;
+        }
+        void SetRate(double rate, bool constantDespawn = false)
+        {
+            rate_             = rate;
+            constant_despawn_ = constantDespawn;
+        }
+        void SetPosition(roadmanager::Position* pos)
+        {
+            pos_ = pos;
+        }
+
+        /**
+         * Despawn entities that are within the sink radius.
+         */
+        void FindPossibleDespawn();
+
+        /**
+         * Check if a given position is inside the sink radius.
+         * @param object_pos The position to check.
+         * @return True if the position is inside the sink radius, false otherwise.
+         */
+        bool InsideSink(roadmanager::Position object_pos);
+
+    private:
+        double                 action_trigger_time_;
+        double                 radius_;
+        double                 rate_;
+        roadmanager::Position* pos_;
+        bool                   constant_despawn_ = true;
+        double                 time_accumulator_ = 0.0;
+    };
+
+    // helper for floating-point comparison
+    inline bool almost_equal(double a, double b, double eps = 1e-9)
+    {
+        return std::fabs(a - b) < eps;
+    }
+
+    struct LaneSegment
+    {
+        int    roadId;
+        int    laneId;
+        double minS;
+        double maxS;
+        double length;
+    };
+
+    inline bool operator==(const LaneSegment& a, const LaneSegment& b)
+    {
+        return a.roadId == b.roadId && a.laneId == b.laneId && almost_equal(a.minS, b.minS) && almost_equal(a.maxS, b.maxS) &&
+               almost_equal(a.length, b.length);
+    }
+
+    struct RoadCursor
+    {
+        int              roadId;
+        double           s = 0.0;
+        std::vector<int> laneIds;
+        bool             last = false;
+        double           road_length;
+
+        explicit RoadCursor() : roadId(), s(0.0), laneIds{}, last(false), road_length(-1)
+        {
+        }
+
+        explicit RoadCursor(int id) : roadId(id), s(0.0), laneIds{}, last(false), road_length(-1)
+        {
+        }
+
+        RoadCursor(int id, double s_, std::vector<int> lanes = {}, bool last_ = false, double len = 0.0)
+            : roadId(id),
+              s(s_),
+              laneIds(std::move(lanes)),
+              last(last_),
+              road_length(len)
+        {
+        }
+    };
+
+    inline bool operator==(const RoadCursor& a, const RoadCursor& b)
+    {
+        return a.roadId == b.roadId && almost_equal(a.s, b.s) && a.laneIds == b.laneIds && a.last == b.last &&
+               almost_equal(a.road_length, b.road_length);
+    }
+
+    struct RoadRange
+    {
+        double                  length;
+        std::vector<RoadCursor> roadCursors;
+    };
+
+    inline bool operator==(const RoadRange& a, const RoadRange& b)
+    {
+        return almost_equal(a.length, b.length) && a.roadCursors == b.roadCursors;
+    }
+
+    class TrafficAreaAction : public TrafficAction
+    {
+    public:
+        TrafficAreaAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context)
+            : TrafficAction(ActionType::AREA_TRAFFIC, parent, context)
+        {
+        }
+
+        OSCGlobalAction* Copy()
+        {
+            return new TrafficAreaAction(*this);
+        }
+
+        void Start(double simTime);
+
+        void Step(double simTime, double dt);
+
+        void SpawnEntities(int number_of_entities_to_spawn);
+
+        void DespawnEntities();
+
+        bool InsideArea(roadmanager::Position object_pos);
+
+        void SetContinuous(bool continuous)
+        {
+            continuous_ = continuous;
+        }
+
+        void SetNumberOfEntities(int number_of_entities)
+        {
+            number_of_entities_ = number_of_entities;
+        }
+
+        void SetPolygonPoints(const std::vector<roadmanager::Position> points)
+        {
+            polygon_points_ = points;
+        }
+
+        void SortPolygonPoints(std::vector<roadmanager::Position>& points);
+
+        void SetRoadRanges(const std::vector<RoadRange> road_ranges)
+        {
+            road_ranges_ = road_ranges;
+        }
+        std::vector<RoadRange> GetRoadRanges() const
+        {
+            return road_ranges_;
+        }
+        std::vector<LaneSegment> GetLaneSegments() const
+        {
+            return lane_segments_;
+        }
+
+        void UpdateRoadRanges();
+        void SetRoadRangeLength(RoadRange& road_range);
+        void SetAdditionalRoadCursorInfo(RoadCursor& road_cursor);
+        void AddComplementaryRoadCursors();
+        void SetLaneSegments(RoadRange& road_range);
+        void LaneSegments();
+        void LaneSegmentsForRoad(std::vector<RoadCursor> road_cursors_to_road, double& accumulated_length, const double max_length);
+        void HandleLastRoadCursor(std::vector<RoadCursor> last_road_cursors, double& accumulated_length, const double max_length);
+
+        roadmanager::Position* GetRandomSpawnPosition();
+        roadmanager::Position* pos_;
+
+    private:
+        double ClampMax(double value, double accumulated, double max_length);
+
+        bool                               continuous_;
+        int                                number_of_entities_;
+        std::vector<roadmanager::Position> polygon_points_;
+        std::vector<RoadRange>             road_ranges_;
+        std::vector<LaneSegment>           lane_segments_;
+        bool                               first_spawn_ = false;
+    };
+
+    class TrafficStopAction : public TrafficAction
+    {
+    public:
+        TrafficStopAction(StoryBoardElement* parent, std::shared_ptr<TrafficActionContext> context)
+            : TrafficAction(ActionType::STOP_TRAFFIC, parent, context)
+        {
+        }
+
+        OSCGlobalAction* Copy()
+        {
+            return new TrafficStopAction(*this);
+        }
+
+        void Start(double simTime);
+
+        void Step(double simTime, double dt);
+
+        void print()
+        {
+        }
+
+        void SetTrafficActionToStop(const std::string& action)
+        {
+            traffic_action_to_stop_ = action;
+        }
+
+    private:
+        std::string traffic_action_to_stop_;
     };
 
 }  // namespace scenarioengine

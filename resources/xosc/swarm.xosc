@@ -33,6 +33,7 @@
                <TrafficAction>
                   <TrafficSwarmAction innerRadius="200" semiMajorAxis="300" semiMinorAxis="500" numberOfVehicles="75" velocity="30" offset="0">
                       <CentralObject entityRef="Ego" />
+                      <InitialSpeedRange lowerLimit="30" upperLimit="30" />
                   </TrafficSwarmAction>
                </TrafficAction>
             </GlobalAction>

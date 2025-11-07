@@ -3472,6 +3472,10 @@ namespace roadmanager
                                                double rtEnd,
                                                double rzOffsetStart,
                                                double rzOffsetEnd);
+        std::vector<std::pair<id_t, std::string>> GetRoadIds() const
+        {
+            return road_ids_;
+        }
 
     private:
         pugi::xml_node                            root_node_;

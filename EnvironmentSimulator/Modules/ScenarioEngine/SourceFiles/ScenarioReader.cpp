@@ -1482,6 +1482,31 @@ bool scenarioengine::ScenarioReader::CheckModelId(Object *object)
     return true;
 }
 
+Object *ScenarioReader::ChooseCatalogEntry(Entry *entry)
+{
+    Object *obj = nullptr;
+    if (!entry)
+        return nullptr;
+
+    if (entry->type_ == CatalogType::CATALOG_VEHICLE)
+    {
+        obj = parseOSCVehicle(entry->GetNode());
+    }
+    else if (entry->type_ == CatalogType::CATALOG_PEDESTRIAN)
+    {
+        obj = parseOSCPedestrian(entry->GetNode());
+    }
+    else if (entry->type_ == CatalogType::CATALOG_MISC_OBJECT)
+    {
+        obj = parseOSCMiscObject(entry->GetNode());
+    }
+    else
+    {
+        LOG_ERROR("Unexpected catalog type {}", entry->GetTypeAsStr());
+    }
+    return obj;
+}
+
 int ScenarioReader::parseEntities()
 {
     pugi::xml_node enitiesNode = osc_root_.child("Entities");
@@ -1511,28 +1536,7 @@ int ScenarioReader::parseEntities()
                 }
                 else
                 {
-                    if (entry->type_ == CatalogType::CATALOG_VEHICLE)
-                    {
-                        // Make a new instance from catalog entry
-                        Vehicle *vehicle = parseOSCVehicle(entry->GetNode());
-                        obj              = vehicle;
-                    }
-                    else if (entry->type_ == CatalogType::CATALOG_PEDESTRIAN)
-                    {
-                        // Make a new instance from catalog entry
-                        Pedestrian *pedestrian = parseOSCPedestrian(entry->GetNode());
-                        obj                    = pedestrian;
-                    }
-                    else if (entry->type_ == CatalogType::CATALOG_MISC_OBJECT)
-                    {
-                        // Make a new instance from catalog entry
-                        MiscObject *miscobj = parseOSCMiscObject(entry->GetNode());
-                        obj                 = miscobj;
-                    }
-                    else
-                    {
-                        LOG_ERROR("Unexpected catalog type {}", entry->GetTypeAsStr());
-                    }
+                    obj = ChooseCatalogEntry(entry);
                 }
 
                 parameters.RestoreParameterDeclarations();
@@ -2218,6 +2222,104 @@ int ScenarioReader::ParseTransitionDynamics(pugi::xml_node node, OSCPrivateActio
     return 0;
 }
 
+void ScenarioReader::ParseTrafficDistribution(pugi::xml_node traffic_dist_node, std::vector<TrafficDistributionEntry> &distribution_entries)
+{
+    for (auto tdeNode : traffic_dist_node.children("TrafficDistributionEntry"))
+    {
+        TrafficDistributionEntry tde;
+        std::string              weightStr = parameters.ReadAttribute(tdeNode, "weight", true);
+        if (!weightStr.empty())
+        {
+            tde.weight = std::stod(weightStr);
+        }
+
+        // Parse EntityDistributions inside
+        for (auto entityDistNode : tdeNode.children("EntityDistribution"))
+        {
+            EntityDistribution ed;
+            for (auto edeNode : entityDistNode.children("EntityDistributionEntry"))
+            {
+                EntityDistributionEntry ede;
+                std::string             edeWeight = parameters.ReadAttribute(edeNode, "weight", true);
+                if (!edeWeight.empty())
+                {
+                    ede.weight = std::stod(edeWeight);
+                }
+
+                // Get ScenarioObjectTemplate → CatalogReference
+                auto scenarioObjectTemplateNode = edeNode.child("ScenarioObjectTemplate");
+                if (scenarioObjectTemplateNode)
+                {
+                    for (pugi::xml_node scenarioObjectTemplateChild = scenarioObjectTemplateNode.first_child(); scenarioObjectTemplateChild;
+                         scenarioObjectTemplateChild                = scenarioObjectTemplateChild.next_sibling())
+                    {
+                        std::string scenarioObjectTemplateChildName(scenarioObjectTemplateChild.name());
+                        if (scenarioObjectTemplateChildName == "CatalogReference")
+                        {
+                            Entry *entry = ResolveCatalogReference(scenarioObjectTemplateChild);
+                            if (entry)
+                                ede.object = ChooseCatalogEntry(entry);
+                            else
+                                ede.object = nullptr;
+                        }
+                        else if (scenarioObjectTemplateChildName == "Vehicle")
+                        {
+                            ede.object = parseOSCVehicle(scenarioObjectTemplateChild);
+                        }
+                        else if (scenarioObjectTemplateChildName == "Pedestrian")
+                        {
+                            ede.object = parseOSCPedestrian(scenarioObjectTemplateChild);
+                        }
+                        else if (scenarioObjectTemplateChildName == "MiscObject")
+                        {
+                            ede.object = parseOSCMiscObject(scenarioObjectTemplateChild);
+                        }
+                        else if (scenarioObjectTemplateChildName == "ObjectController")
+                        {
+                            Controller *ctrl = 0;
+                            if (scenarioObjectTemplateChild.child("CatalogReference"))
+                            {
+                                Entry *entry = ResolveCatalogReference(scenarioObjectTemplateChild.child("CatalogReference"));
+                                if (entry == 0)
+                                {
+                                    LOG_ERROR("No entry found");
+                                }
+                                else
+                                {
+                                    if (entry->type_ == CatalogType::CATALOG_CONTROLLER)
+                                    {
+                                        ctrl = parseOSCObjectController(entry->GetNode());
+                                    }
+                                    else
+                                    {
+                                        LOG_ERROR("Unexpected catalog type {}", entry->GetTypeAsStr());
+                                    }
+                                }
+                            }
+                            else if (scenarioObjectTemplateChild.child("Controller"))
+                            {
+                                ctrl = parseOSCObjectController(scenarioObjectTemplateChild.child("Controller"));
+                            }
+                            ede.controllers.push_back(ctrl);
+                        }
+                        else
+                        {
+                            LOG_WARN("Unknown ScenarioObjectTemplate child: {}", scenarioObjectTemplateChildName);
+                        }
+                    }
+                }
+                else
+                {
+                    LOG_ERROR("Missing ScenarioObjectTemplate");
+                }
+                ed.entries.push_back(ede);
+            }
+            tde.entityDistribution = ed;
+        }
+        distribution_entries.push_back(tde);
+    }
+}
+
 OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode, Event *parent)
 {
     OSCGlobalAction *action = 0;
@@ -2302,10 +2404,93 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
         }
         else if (actionChild.name() == std::string("TrafficAction"))
         {
+            std::shared_ptr<TrafficActionContext> trafficActionContext =
+                std::make_shared<TrafficActionContext>(*scenarioEngine_, *gateway_, *this, *roadmanager::Position::GetOpenDrive());
+            std::string traffic_name;
+            traffic_name = parameters.ReadAttribute(actionChild, "trafficName");
+
             pugi::xml_node trafficChild = actionChild.first_child();
-            if (!strcmp(trafficChild.name(), "TrafficSwarmAction"))
+
+            if (!strcmp(trafficChild.name(), "TrafficSourceAction"))
             {
-                SwarmTrafficAction *trafficSwarmAction = new SwarmTrafficAction(parent);
+                TrafficSourceAction *trafficSourceAction = new TrafficSourceAction(parent, trafficActionContext);
+
+                if (!traffic_name.empty())
+                {
+                    trafficSourceAction->SetName(traffic_name);
+                }
+
+                std::string radius, rate, speed;
+
+                // Traffic surce radius
+                radius = parameters.ReadAttribute(trafficChild, "radius", true);
+                trafficSourceAction->SetRadius(std::stod(radius));
+
+                // Traffic spawn rate
+                rate = parameters.ReadAttribute(trafficChild, "rate", true);
+                trafficSourceAction->SetRate(std::stod(rate));
+
+                speed = parameters.ReadAttribute(trafficChild, "velocity");
+                if (!speed.empty() && GetVersionMajor() == 1 && GetVersionMinor() < 3)
+                {
+                    LOG_WARN("velocity attribute is depricated from v1.3. Reading it anyway.");
+                    trafficSourceAction->SetSpeed(std::stod(speed));
+                }
+                else
+                {
+                    speed = parameters.ReadAttribute(trafficChild, "speed");
+                    trafficSourceAction->SetSpeed(std::stod(speed));
+                }
+
+                OSCPosition           *oscPosition = parseOSCPosition(trafficChild.child("Position"));
+                roadmanager::Position *pos         = new roadmanager::Position(*oscPosition->GetRMPos());
+                trafficSourceAction->SetPosition(pos);
+                delete oscPosition;
+
+                if (trafficChild.child("TrafficDistribution"))
+                {
+                    auto traffic_dist_node = trafficChild.child("TrafficDistribution");
+                    ParseTrafficDistribution(traffic_dist_node, trafficSourceAction->traffic_distribution_entry_);
+                }
+
+                action = trafficSourceAction;
+            }
+            else if (!strcmp(trafficChild.name(), "TrafficSinkAction"))
+            {
+                TrafficSinkAction *trafficSinkAction = new TrafficSinkAction(parent, trafficActionContext);
+
+                if (!traffic_name.empty())
+                {
+                    trafficSinkAction->SetName(traffic_name);
+                }
+
+                std::string radius, rate;
+
+                // Traffic surce radius
+                radius = parameters.ReadAttribute(trafficChild, "radius", true);
+                trafficSinkAction->SetRadius(std::stod(radius));
+
+                // Traffic spawn rate
+                rate = parameters.ReadAttribute(trafficChild, "rate");
+                if (!rate.empty())
+                {
+                    trafficSinkAction->SetRate(std::stod(rate));
+                }
+                else
+                {
+                    LOG_INFO("No rate specified for TrafficSinkAction, will constantly despawn vehicles in range.");
+                }
+
+                OSCPosition           *oscPosition = parseOSCPosition(trafficChild.child("Position"));
+                roadmanager::Position *pos         = new roadmanager::Position(*oscPosition->GetRMPos());
+                trafficSinkAction->SetPosition(pos);
+                delete oscPosition;
+
+                action = trafficSinkAction;
+            }
+            else if (!strcmp(trafficChild.name(), "TrafficSwarmAction"))
+            {
+                TrafficSwarmAction *trafficSwarmAction = new TrafficSwarmAction(parent, trafficActionContext);
 
                 pugi::xml_node childNode = trafficChild.child("CentralObject");
                 if (childNode.empty())
@@ -2322,35 +2507,200 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 }
 
                 trafficSwarmAction->SetCentralObject(entities_->GetObjectByName(parameters.ReadAttribute(childNode, "entityRef")));
-                // childNode = trafficChild.child("")
 
-                std::string radius, numberOfVehicles, velocity;
+                std::string radius, numberOfVehicles;
 
                 // Inner radius (Circle)
-                radius = parameters.ReadAttribute(trafficChild, "innerRadius");
+                radius = parameters.ReadAttribute(trafficChild, "innerRadius", true);
                 trafficSwarmAction->SetInnerRadius(std::stod(radius));
 
                 // Semi major axis
-                radius = parameters.ReadAttribute(trafficChild, "semiMajorAxis");
+                radius = parameters.ReadAttribute(trafficChild, "semiMajorAxis", true);
                 trafficSwarmAction->SetSemiMajorAxes(std::stod(radius));
 
                 // Semi major axis
-                radius = parameters.ReadAttribute(trafficChild, "semiMinorAxis");
+                radius = parameters.ReadAttribute(trafficChild, "semiMinorAxis", true);
                 trafficSwarmAction->SetSemiMinorAxes(std::stod(radius));
 
-                trafficSwarmAction->SetScenarioEngine(scenarioEngine_);
-                trafficSwarmAction->SetGateway(gateway_);
-                trafficSwarmAction->SetReader(this);
+                if (!traffic_name.empty())
+                {
+                    trafficSwarmAction->SetName(traffic_name);
+                }
 
                 // Number of vehicles
-                numberOfVehicles = parameters.ReadAttribute(trafficChild, "numberOfVehicles");
+                numberOfVehicles = parameters.ReadAttribute(trafficChild, "numberOfVehicles", true);
                 trafficSwarmAction->SetNumberOfVehicles(static_cast<int>(std::stoul(numberOfVehicles)));
 
-                // Velocity
-                velocity = parameters.ReadAttribute(trafficChild, "velocity");
-                trafficSwarmAction->Setvelocity(std::stod(velocity));
+                pugi::xml_node dotNode = trafficChild.child("DirectionOfTravelDistribution");
+                if (!dotNode.empty())
+                {
+                    std::string opposite = parameters.ReadAttribute(dotNode, "opposite", true);
+                    std::string same     = parameters.ReadAttribute(dotNode, "same", true);
+                    std::cout << "opposite: " << opposite << ", same: " << same << std::endl;
+                }
+
+                // Velocity or Range handling
+                // Is 0 really a good default for below values? Suggestion is reference vehicles speed
+
+                if (GetVersionMajor() == 1 && GetVersionMinor() < 2)
+                {
+                    // Velocity
+                    std::string velocity = parameters.ReadAttribute(trafficChild, "velocity");
+                    if (velocity.empty())
+                    {
+                        LOG_WARN("Warning: Missing swarm velocity! Using default value 0.0");
+                        velocity = "0.0";
+                    }
+                    trafficSwarmAction->Setvelocity(std::stod(velocity));
+                }
+                else if (GetVersionMajor() == 1 && GetVersionMinor() >= 2)
+                {
+                    // InitialSpeedRange
+                    pugi::xml_node rangeNode = trafficChild.child("InitialSpeedRange");
+                    std::string    lowerLimit, upperLimit;
+                    if (rangeNode.empty())
+                    {
+                        LOG_WARN("Warning: Missing swarm InitialSpeedRange! Using default value 0.0 for both limits.");
+                        lowerLimit = "0.0";
+                        upperLimit = "0.0";
+                    }
+                    else
+                    {
+                        lowerLimit = parameters.ReadAttribute(rangeNode, "lowerLimit", true);
+                        upperLimit = parameters.ReadAttribute(rangeNode, "upperLimit", true);
+                    }
+                    trafficSwarmAction->SetInitialSpeedRange(std::stod(lowerLimit), std::stod(upperLimit));
+                }
+
+                // TrafficDefinition or TrafficDistribution handling
+                pugi::xml_node trafficNode;
+                if (GetVersionMajor() == 1 && GetVersionMinor() < 3)
+                {
+                    trafficNode = trafficChild.child("TrafficDefinition");
+                }
+                else if (GetVersionMajor() == 1 && GetVersionMinor() >= 3)
+                {
+                    trafficNode = trafficChild.child("TrafficDistribution");
+                }
 
                 action = trafficSwarmAction;
+            }
+            else if (!strcmp(trafficChild.name(), "TrafficAreaAction"))
+            {
+                TrafficAreaAction *trafficAreaAction = new TrafficAreaAction(parent, trafficActionContext);
+
+                if (!traffic_name.empty())
+                {
+                    trafficAreaAction->SetName(traffic_name);
+                }
+
+                std::string continuous, number_of_entites;
+
+                continuous = parameters.ReadAttribute(trafficChild, "continuous", true);
+                bool cont  = continuous == "true" || continuous == "1" || continuous == "True";
+                trafficAreaAction->SetContinuous(cont);
+
+                number_of_entites = parameters.ReadAttribute(trafficChild, "numberOfEntities", true);
+                trafficAreaAction->SetNumberOfEntities(std::stoi(number_of_entites));
+
+                if (trafficChild.child("TrafficDistribution"))
+                {
+                    auto traffic_dist_node = trafficChild.child("TrafficDistribution");
+                    ParseTrafficDistribution(traffic_dist_node, trafficAreaAction->traffic_distribution_entry_);
+                }
+
+                pugi::xml_node trafficAreaNode = trafficChild.child("TrafficArea");
+                if (!trafficAreaNode.empty())
+                {
+                    for (pugi::xml_node areaChild = trafficAreaNode.first_child(); areaChild; areaChild = areaChild.next_sibling())
+                    {
+                        std::string            areaChildName(areaChild.name());
+                        std::vector<RoadRange> road_ranges;
+                        if (areaChildName == "Polygon")
+                        {
+                            LOG_INFO("Assuming a convex Polygon");
+                            // Read polygon points
+                            std::vector<roadmanager::Position> polygon_points;
+                            for (auto positionNode : areaChild.children("Position"))
+                            {
+                                if (!positionNode)
+                                {
+                                    throw std::runtime_error("Missing Position node");
+                                }
+                                std::unique_ptr<OSCPosition> pos    = std::unique_ptr<OSCPosition>(parseOSCPosition(positionNode));
+                                roadmanager::Position       *rm_pos = pos->GetRMPos();
+                                polygon_points.push_back(*rm_pos);
+                            }
+                            trafficAreaAction->SetPolygonPoints(polygon_points);
+                        }
+                        else if (areaChildName == "RoadRange")
+                        {
+                            RoadRange   road_range;
+                            std::string length, laneId;
+
+                            length = parameters.ReadAttribute(areaChild, "length");
+                            if (!length.empty() && std::stod(length) < 0.0)
+                            {
+                                LOG_ERROR("RoadRange length must be non-negative");
+                                LOG_INFO("RoadRange length set to 0.0");
+                                length = "0.0";
+                            }
+                            road_range.length = !length.empty() ? std::stod(length) : 0.0;
+
+                            std::vector<RoadCursor> road_cursors;
+
+                            for (pugi::xml_node cursorNode : areaChild.children("RoadCursor"))
+                            {
+                                RoadCursor  road_cursor;
+                                std::string roadId = parameters.ReadAttribute(cursorNode, "roadId", true);
+                                if (!roadId.empty())
+                                {
+                                    road_cursor.roadId = std::stoi(roadId);
+                                }
+                                std::string s = parameters.ReadAttribute(cursorNode, "s");
+                                road_cursor.s = !s.empty() ? std::stod(s) : 0.0;
+                                for (pugi::xml_node laneNode : cursorNode.children("Lane"))
+                                {
+                                    laneId = parameters.ReadAttribute(laneNode, "id", true);
+                                    road_cursor.laneIds.push_back(std::stoi(laneId));
+                                }
+                                road_cursors.push_back(road_cursor);
+                            }
+                            if (road_cursors.size() < 2)
+                            {
+                                LOG_ERROR("RoadRange must have at least two RoadCursors");
+                            }
+                            road_cursors.back().last = true;
+                            road_range.roadCursors   = road_cursors;
+
+                            road_ranges.push_back(road_range);
+                        }
+                        else
+                        {
+                            LOG_ERROR("Missing area definition (Polygon or RoadRange)");
+                        }
+                        trafficAreaAction->SetRoadRanges(road_ranges);
+                    }
+                }
+                else
+                {
+                    LOG_ERROR("Missing TrafficArea object");
+                }
+
+                action = trafficAreaAction;
+            }
+            else if (!strcmp(trafficChild.name(), "TrafficStopAction"))
+            {
+                LOG_INFO("TrafficStopAction not implemented yet");
+
+                TrafficStopAction *trafficStopAction = new TrafficStopAction(parent, trafficActionContext);
+
+                if (!traffic_name.empty())
+                {
+                    trafficStopAction->SetTrafficActionToStop(traffic_name);
+                }
+
+                action = trafficStopAction;
             }
         }
         else if (actionChild.name() == std::string("EntityAction"))
