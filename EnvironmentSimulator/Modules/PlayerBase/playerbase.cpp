@@ -369,7 +369,7 @@ void ScenarioPlayer::ViewerFrame()
     while (viewer_->entities_.size() < scenarioEngine->entities_.object_.size())
     {
         Object* obj = scenarioEngine->entities_.object_[viewer_->entities_.size()];
-        viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->GetModel3DFilename(),
+        viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->GetModel3DFullPath(),
                                                            trail_color,
                                                            viewer::EntityModel::EntityType::VEHICLE,
                                                            false,
