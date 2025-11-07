@@ -1,5 +1,5 @@
 #include "ScenarioGateway.hpp"
-#include "CommonMini.cpp"
+#include "CommonMini.hpp"
 #include "PacketHandler.hpp"
 
 Dat::DatWriter::~DatWriter()
