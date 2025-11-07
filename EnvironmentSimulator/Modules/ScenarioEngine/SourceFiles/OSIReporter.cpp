@@ -2768,6 +2768,11 @@ void OSIReporter::AddTrafficLightToGt(osi3::GroundTruth *gt, roadmanager::Signal
         {
             trafficLight->mutable_classification()->add_assigned_lane_id()->set_value(g_lane_id);
         }
+
+        if (!signal->GetModel3DFullPath().empty())
+        {
+            trafficLight->set_model_reference(signal->GetModel3DFullPath());
+        }
     }
 }
 
