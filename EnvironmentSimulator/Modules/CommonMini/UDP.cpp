@@ -93,7 +93,18 @@ UDPServer::UDPServer(unsigned short int port, unsigned int timeoutMs) : UDPBase(
     if (setsockopt(sock_, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) < 0)
 #endif
     {
-        printf("socket SO_RCVTIMEO (receive timeout) not supported on this platform\n");
+        LOG_WARN("socket SO_RCVTIMEO (receive timeout) not supported on this platform");
+    }
+
+    // set re-use address option
+    unsigned int reuse_addr = 1;  // 1 means ON, 0 means OFF
+#ifdef _WIN32
+    if (setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse_addr, sizeof(reuse_addr)) != 0)
+#else
+    if (setsockopt(sock_, SOL_SOCKET, SO_REUSEADDR, &reuse_addr, sizeof(reuse_addr)) < 0)
+#endif
+    {
+        LOG_WARN("socket SO_REUSEADDR not supported on this platform");
     }
 
     // Prepare the sockaddr_in structure

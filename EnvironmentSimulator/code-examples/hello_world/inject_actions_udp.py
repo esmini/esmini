@@ -8,7 +8,7 @@
 
    How to run:
    1. Open two terminals in esmini root folder
-   2. From terminal 1, run: ./EnvironmentSimulator/code-examples/hello_world/inject_actions.py
+   2. From terminal 1, run: ./EnvironmentSimulator/code-examples/hello_world/inject_actions_udp.py
    3. From terminal 2, run: ./bin/esmini --window 80 80 800 400 --osc ./EnvironmentSimulator/Unittest/xosc/dummy_mw.xosc --player_server
 
    In step 3, add --pause to make esmini stop after initialization and wait for further commands
