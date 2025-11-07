@@ -1156,7 +1156,7 @@ namespace roadgeom
                         auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
                         switch (tl->GetTrafficLightType())
                         {
-                            case roadmanager::Signal::TrafficLightType::TYPE_1000001:
+                            case roadmanager::TrafficLightType::TYPE_1000001:
                             {
                                 TrafficLightRedYellowGreen tl_ryg;
                                 tl_ryg.SetNode(tx);

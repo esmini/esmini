@@ -114,7 +114,7 @@ static int execute_scenario(int argc, char* argv[])
 
                 switch (tl->GetTrafficLightType())
                 {
-                    case roadmanager::Signal::TrafficLightType::TYPE_1000001:
+                    case roadmanager::TrafficLightType::TYPE_1000001:
                     {
                         auto light = player->viewer_->roadGeom->traffic_light_red_yellow_green_[tl->GetId()];
 

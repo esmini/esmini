@@ -326,12 +326,6 @@ const std::map<std::string, Signal::OSIType> Signal::types_mapping_ = {
     {"TYPE_PARKING_HAZARD", Signal::TYPE_PARKING_HAZARD},
     {"TYPE_TRAFFIC_LIGHT_GREEN_ARROW", Signal::TYPE_TRAFFIC_LIGHT_GREEN_ARROW}};
 
-// Mappings below are down -> up
-std::unordered_map<Signal::TrafficLightType, std::vector<Signal::LampColor>> traffic_light_colors = {
-    {Signal::TrafficLightType::TYPE_1000001, {Signal::LampColor::COLOR_RED, Signal::LampColor::COLOR_YELLOW, Signal::LampColor::COLOR_GREEN}}};
-std::unordered_map<Signal::TrafficLightType, std::vector<Signal::LampIcon>> traffic_light_icons = {
-    {Signal::TrafficLightType::TYPE_1000001, {Signal::LampIcon::ICON_NONE, Signal::LampIcon::ICON_NONE, Signal::LampIcon::ICON_NONE}}};
-
 Signal::Signal(double      s,
                double      t,
                int         id,
@@ -440,11 +434,13 @@ void TrafficLight::SetTrafficLightInfo()
     type_cleaned.erase(std::remove(type_cleaned.begin(), type_cleaned.end(), '.'), type_cleaned.end());
     std::string combined_type = GetCombinedTypeSubtypeValueStr(type_cleaned, GetSubType(), GetValueStr());
 
-    if (combined_type == "1000001")
+    auto it = traffic_light_type_map.find(combined_type);
+    if (it != traffic_light_type_map.end())
     {
-        SetType(type_cleaned);
-        light_type_         = TrafficLightType::TYPE_1000001;
-        nr_lamps_           = traffic_light_type_lamps[light_type_];
+        SetTypeStr(type_cleaned);  // Update type-string with the cleaned version
+        const auto& tl_info = it->second;
+        light_type_         = tl_info.type;
+        nr_lamps_           = tl_info.nr_lamps;
         double lamp_height_ = GetHeight() / static_cast<double>(nr_lamps_);  // Assume all lights occupy entire space
         double lamp_width_  = GetWidth();                                    // Assume light is as wide as the light
 
@@ -453,20 +449,13 @@ void TrafficLight::SetTrafficLightInfo()
             // Lamps stored [up, ..., down]
             double z  = GetZ() + GetZOffset() + lamp_height_ / 2 + lamp_height_ * static_cast<double>(nr_lamps_ - 1 - i);
             id_t   id = GetNewGlobalTrafficLightId();
-            lamps_.emplace_back(id,
-                                GetX(),
-                                GetY(),
-                                z,
-                                lamp_width_,
-                                lamp_height_,
-                                traffic_light_icons[light_type_][i],
-                                traffic_light_colors[light_type_][i]);
+            lamps_.emplace_back(id, GetX(), GetY(), z, lamp_width_, lamp_height_, tl_info.icons[i], tl_info.colors[i]);
         }
     }
     else
     {
         light_type_ = TrafficLightType::TYPE_UNDEFINED;
-        LOG_WARN("TrafficLight: Traffic light type '{}' subtype '{}' not supported yet", GetType(), GetSubType());
+        LOG_WARN("TrafficLight: Traffic light type '{}' subtype '{}' not supported", GetType(), GetSubType());
         return;
     }
 }

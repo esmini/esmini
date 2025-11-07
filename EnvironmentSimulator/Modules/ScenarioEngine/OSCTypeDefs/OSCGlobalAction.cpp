@@ -129,9 +129,16 @@ void TrafficSignalStateAction::SetSignalState()
         if (tl != nullptr && tl->GetId() == std::stoi(this->name_))
         {
             // Count how many ';' we have in the string and add 1 if its not empty (so "off" has 1 value, "off;on" 2 values etc.)
-            int nr_values = CountNonEmptyTokens(this->value_);
+            size_t nr_values = static_cast<size_t>(CountNonEmptyTokens(this->value_));
 
-            if (tl->GetTrafficLightType() == roadmanager::Signal::TrafficLightType::TYPE_1000001 && nr_values != 3)
+            std::string combined_type = tl->GetCombinedTypeSubtypeValueStr(tl->GetType(), tl->GetSubType(), tl->GetValueStr());
+            auto        it            = roadmanager::traffic_light_type_map.find(combined_type);
+            if (it == roadmanager::traffic_light_type_map.end())
+            {
+                LOG_ERROR_AND_QUIT("TrafficSignalStateAction: Type {} isn't supported.", tl->GetType());
+            }
+
+            if (it->second.nr_lamps != nr_values)
             {
                 LOG_ERROR_AND_QUIT("TrafficSignalStateAction: Signal of type TrafficLightType::{} takes 3 values, but {} were provided",
                                    tl->GetTrafficLightType(),
@@ -139,15 +146,15 @@ void TrafficSignalStateAction::SetSignalState()
                 return;
             }
 
-            tl->UpdateState(this->value_);
             trafficlight_ = tl;
             tl->SetHasOSCAction(true);  // Action attached to the trafficlight
             break;
         }
-        else
-        {
-            LOG_ERROR_AND_QUIT("TrafficSignalStateAction: No matching traffic signal with id {} in the road", name_);
-        }
+    }
+
+    if (trafficlight_ == nullptr)
+    {
+        LOG_ERROR_AND_QUIT("TrafficSignalStateAction: No matching traffic signal with id {} in the road", name_);
     }
 }
 
