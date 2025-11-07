@@ -10,7 +10,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -67,7 +66,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -124,7 +122,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -181,7 +178,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -245,7 +241,6 @@
                 <spiral curvStart="-0.06909484644623465" curvEnd="9.999999994736442e-10"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -311,7 +306,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -383,7 +377,6 @@
                 <spiral curvStart="-0.06909484644623465" curvEnd="9.999999994736442e-10"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -455,7 +448,6 @@
                 <spiral curvStart="0.06909484578763792" curvEnd="9.999999994736442e-10"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -521,7 +513,6 @@
                 <line/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">
@@ -593,7 +584,6 @@
                 <spiral curvStart="-0.06909484644623465" curvEnd="9.999999994736442e-10"/>
             </geometry>
         </planView>
-        <elevationProfile/>
         <lateralProfile/>
         <lanes>
             <laneSection s="0">

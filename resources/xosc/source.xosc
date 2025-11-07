@@ -66,8 +66,6 @@
                 </Private>
             </Actions>
         </Init>
-        <Story name="story_act_maneuvuergroup_traffic source maneuver">
-        </Story>
         <StopTrigger>
             <ConditionGroup>
                 <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
