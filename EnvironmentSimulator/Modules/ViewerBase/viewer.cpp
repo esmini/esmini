@@ -1572,9 +1572,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     exe_path_ = exe_path;
 
-    // environment_bs_ = environment_->getBound();  // bounding sphere of the environment model
-    // printf("bs radius %.2f pos: %.2f, %.2f\n", environment_bs_.radius(), environment_bs_.center().x(), environment_bs_.center().y());
-
     // establish origin of the road network, pick coordinates of the first lane OSI point
     if (odrManager_->GetNumOfRoads() > 0)
     {
@@ -1598,9 +1595,10 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
         std::string file_path = LocateFile(modelFilename, {}, "Environment 3D model", found);
         if (found)
         {
-            if (AddEnvironment(file_path.c_str()) == 0)
+            if (LoadEnvironment(file_path.c_str()) == 0)
             {
                 LOG_INFO("Loaded scenegraph: {}", file_path);
+                envGroup_->addChild(environment_);
             }
             else
             {
@@ -1620,11 +1618,13 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
                                           opt->GetOptionSet("ground_plane"),
                                           exe_path_,
                                           optimize);
+
     if (roadGeom->root_ != nullptr)
     {
+        // Refer to generated road model as environment
         environment_ = roadGeom->root_;
+        env_origin2odr_->addChild(environment_);
     }
-    env_origin2odr_->addChild(environment_);
 
     // Since the generated 3D model is based on OSI features, let's hide those
     ClearNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
@@ -3004,16 +3004,8 @@ int Viewer::LoadShadowfile(std::string vehicleModelFilename)
     return -1;
 }
 
-int Viewer::AddEnvironment(const char* filename)
+int Viewer::LoadEnvironment(const char* filename)
 {
-    // remove current model, if any
-    if (environment_ != 0)
-    {
-        printf("Removing current env\n");
-        envGroup_->getParent(0)->removeChild(environment_);
-    }
-
-    // load and apply new model
     // First, assume absolute path or relative current directory
     if (strcmp(FileNameOf(filename).c_str(), ""))
     {
@@ -3021,7 +3013,6 @@ int Viewer::AddEnvironment(const char* filename)
         {
             return -1;
         }
-        envGroup_->addChild(environment_);
     }
     else
     {

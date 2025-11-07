@@ -503,7 +503,6 @@ namespace roadgeom
         root_->addChild(rm_group_);
         root_->addChild(r_group_);
 
-        origin      = origin;
         odrManager_ = odr;
 
         if (generate_road_surface)

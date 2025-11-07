@@ -499,7 +499,7 @@ namespace viewer
         void                     RemoveCar(std::string name);
         void                     ReplaceCar(int index, EntityModel* model);
         int                      LoadShadowfile(std::string vehicleModelFilename);
-        int                      AddEnvironment(const char* filename);
+        int                      LoadEnvironment(const char* filename);
         osg::ref_ptr<osg::Group> LoadEntityModel(const char* filename, osg::BoundingBox& bb);
         void                     UpdateSensor(PointSensor* sensor);
         void                     SensorSetPivotPos(PointSensor* sensor, double x, double y, double z);
