@@ -113,6 +113,11 @@ if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
     if ! ${EXE_FOLDER}/FollowRouteController_test --disable_stdout; then
         exit_with_msg "FollowRouteController_test failed"
     fi
+
+    echo $'\n'OSCGlobalAction_test:
+    if ! ${EXE_FOLDER}/OSCGlobalAction_test --disable_stdout; then
+        exit_with_msg "OSCGlobalAction_test failed"
+    fi
 fi
 
 cd $SMOKE_TEST_FOLDER

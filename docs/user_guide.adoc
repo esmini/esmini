@@ -4313,7 +4313,7 @@ To run formatting locally, follow steps below.
 ----
 pre-commit run clang-format --all-files
 pre-commit run cmake-format --all-files
-pre-commit run black --all-files
+pre-commit run black-format --all-files
 ----
 
 ==== Manually analyse code

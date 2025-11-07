@@ -78,7 +78,7 @@ int VehiclePool::Initialize(ScenarioReader* reader, const std::vector<std::pair<
     Catalogs* catalogs = reader->GetCatalogs();
 
     std::vector<std::pair<int, double>> categories_tmp;
-    if (categories->empty())
+    if (!categories || categories->empty())
     {
         // set default categories
         categories_tmp = {{Vehicle::Category::CAR, 5.0},
