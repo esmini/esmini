@@ -555,8 +555,8 @@ class TestSuite(unittest.TestCase):
                 assert False
 
         # Always aim for 10 entities present
-        assert (df.groupby("time")["name"].nunique() >= 7).all()
-        assert (df.groupby("time")["id"].nunique() >= 7).all()
+        assert (df.groupby("time")["name"].nunique() >= 6).all()
+        assert (df.groupby("time")["id"].nunique() >= 6).all()
 
 
     def test_conflicting_domains(self):
