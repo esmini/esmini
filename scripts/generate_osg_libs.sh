@@ -65,6 +65,8 @@ elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
         zfilename="osg_linux.7z"
         z_exe=7za
     else
+        # Mac build, ensure cmake minimum policy version 3.5 to avoid issues with newer cmake versions
+        export CMAKE_POLICY_VERSION_MINIMUM=3.5
         target_dir="mac"
         zfilename="osg_mac.7z"
         z_exe=7z
@@ -239,9 +241,6 @@ if [ ! -d OpenSceneGraph/build ]; then
         cmake --build . $PARALLEL_BUILDS --target install
 
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        # Mac build, ensure cmake minimum policy version 3.5 to avoid issues with newer cmake versions
-        export CMAKE_POLICY_VERSION_MINIMUM=3.5
-
         cmake ${COMMON_ARGS} -DOSG_TEXT_USE_FONTCONFIG=false -DOPENGL_PROFILE=GL2 -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -fPIC -DGL_SILENCE_DEPRECATION" -DCMAKE_OSX_ARCHITECTURES="$macos_arch" -DCMAKE_INSTALL_PREFIX=../install ..
 
         cmake --build . -j $PARALLEL_BUILDS --config Release --target install
