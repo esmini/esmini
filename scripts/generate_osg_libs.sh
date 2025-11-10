@@ -211,7 +211,7 @@ if [ ! -d OpenSceneGraph ]; then
     git checkout fca3b5b9a9f1c36ddf08ed08cbe02a2668fa4ee9 src/osgPlugins/osga/OSGA_Archive.cpp
 
     # Enforce pthread sched_yield() in favor of pthread_yield() which was deprecated in glibc 2.34
-    sed -i 's/CHECK_FUNCTION_EXISTS(pthread_yield/# CHECK_FUNCTION_EXISTS(pthread_yield/g' src/OpenThreads/pthreads/CMakeLists.txt
+    sed -i '' 's/CHECK_FUNCTION_EXISTS(pthread_yield/# CHECK_FUNCTION_EXISTS(pthread_yield/g' src/OpenThreads/pthreads/CMakeLists.txt
 
     # unstage and show status of the repo
     git reset
@@ -239,6 +239,9 @@ if [ ! -d OpenSceneGraph/build ]; then
         cmake --build . $PARALLEL_BUILDS --target install
 
     elif [[ "$OSTYPE" == "darwin"* ]]; then
+        # Mac build, ensure cmake minimum policy version 3.5 to avoid issues with newer cmake versions
+        export CMAKE_POLICY_VERSION_MINIMUM=3.5
+
         cmake ${COMMON_ARGS} -DOSG_TEXT_USE_FONTCONFIG=false -DOPENGL_PROFILE=GL2 -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -fPIC -DGL_SILENCE_DEPRECATION" -DCMAKE_OSX_ARCHITECTURES="$macos_arch" -DCMAKE_INSTALL_PREFIX=../install ..
 
         cmake --build . -j $PARALLEL_BUILDS --config Release --target install
@@ -284,6 +287,7 @@ if [ "$OSTYPE" == "msys" ]; then
     cp 3rdParty_x64/x64/lib/zlibstatic.lib 3rdParty_x64/x64/lib/zlibstaticd.lib $target_dir/lib
     cp 3rdParty_x64/x64/include/jpeglib.h $target_dir/include
     cp 3rdParty_x64/x64/lib/jpeg.lib 3rdParty_x64/x64/lib/jpegd.lib $target_dir/lib
+    cp 3rdParty_x64/x64/lib/libpng16_static.lib 3rdParty_x64/x64/lib/libpng16_staticd.lib $target_dir/lib
 elif [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
     cp zlib/install/include/zlib.h $target_dir/include
     cp zlib/install/lib/libz.${LIB_EXT} zlib/install/lib/libzd.${LIB_EXT} $target_dir/lib
@@ -307,6 +311,7 @@ cp ${LIB_OT_PREFIX}OpenThreads.${LIB_EXT} $osg_root_dir/$target_dir/lib
 
 cd $osg_root_dir/OpenSceneGraph/install/lib/$plugins_dir_name
 cp ${LIB_PREFIX}osgdb_jpeg.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
+cp ${LIB_PREFIX}osgdb_png.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
 cp ${LIB_PREFIX}osgdb_osg.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
 cp ${LIB_PREFIX}osgdb_serializers_osg.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
 cp ${LIB_PREFIX}osgdb_serializers_osgsim.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
@@ -330,6 +335,7 @@ if [[ ! "$OSTYPE" == "darwin"* ]]; then
 
     cd $osg_root_dir/OpenSceneGraph/install-debug/lib/$plugins_dir_name
     cp ${LIB_PREFIX}osgdb_jpegd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
+    cp ${LIB_PREFIX}osgdb_pngd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
     cp ${LIB_PREFIX}osgdb_osgd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
     cp ${LIB_PREFIX}osgdb_serializers_osgd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
     cp ${LIB_PREFIX}osgdb_serializers_osgsimd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name

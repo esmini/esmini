@@ -24,6 +24,7 @@ macro(set_osg_libs)
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosg.a
             ${EXTERNALS_OSG_LIBRARY_PATH}/libOpenThreads.a
             ${EXTERNALS_OSG_LIBRARY_PATH}/libjpeg.a
+            ${EXTERNALS_OSG_LIBRARY_PATH}/libpng.a
             "-framework OpenGL"
             "-framework Cocoa"
             dl

@@ -72,6 +72,7 @@ float color_background[3] = {0.5f, 0.75f, 1.0f};
 // Cppcheck cannot resolve them during static analysis, so this warning is false positive.
 USE_OSGPLUGIN(osg2)
 USE_OSGPLUGIN(jpeg)
+USE_OSGPLUGIN(png)
 USE_SERIALIZER_WRAPPER_LIBRARY(osg)
 USE_SERIALIZER_WRAPPER_LIBRARY(osgSim)
 USE_COMPRESSOR_WRAPPER(ZLibCompressor)
