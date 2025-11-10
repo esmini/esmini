@@ -2066,6 +2066,8 @@ namespace roadmanager
                      double      h);
 
         void SetTrafficLightInfo();
+        void UpdateState(const std::string state);
+        void CheckValidLampModes(const std::string &input);
 
         size_t GetNrLamps() const
         {
@@ -2080,32 +2082,6 @@ namespace roadmanager
         TrafficLightType GetTrafficLightType() const
         {
             return light_type_;
-        }
-
-        void UpdateState(const std::string state)
-        {
-            state_ = state;
-            state_vector_.clear();
-
-            std::stringstream ss(state);
-            std::string       token;
-
-            while (std::getline(ss, token, ';'))
-            {
-                if (!token.empty())
-                {
-                    state_vector_.push_back(token);
-                }
-            }
-
-            if (state_vector_.size() != nr_lamps_)
-            {
-                LOG_ERROR_AND_QUIT("TrafficLight::UpdateState: new state does not match number of lamps for traffic light id {}", GetId());
-            }
-            for (size_t i = 0; i < state_vector_.size(); i++)
-            {
-                lamps_[i].SetMode(lamp_mode_map_[state_vector_[i]]);
-            }
         }
 
         std::string GetStateString() const

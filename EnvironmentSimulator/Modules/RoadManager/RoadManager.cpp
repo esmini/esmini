@@ -459,6 +459,32 @@ void TrafficLight::SetTrafficLightInfo()
     }
 }
 
+void TrafficLight::UpdateState(const std::string state)
+{
+    state_ = state;
+    state_vector_.clear();
+
+    std::stringstream ss(state);
+    std::string       token;
+
+    while (std::getline(ss, token, ';'))
+    {
+        if (!token.empty())
+        {
+            state_vector_.push_back(token);
+        }
+    }
+
+    if (state_vector_.size() != nr_lamps_)
+    {
+        LOG_ERROR_AND_QUIT("TrafficLight::UpdateState: new state does not match number of lamps for traffic light id {}", GetId());
+    }
+    for (size_t i = 0; i < state_vector_.size(); i++)
+    {
+        lamps_[i].SetMode(lamp_mode_map_[state_vector_[i]]);
+    }
+}
+
 void Signal::SetAllValidLanes(Signal* sig, Road* r)
 {
     std::vector<std::pair<int, Lane*>> drivable_lanes;

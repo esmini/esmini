@@ -128,27 +128,16 @@ void TrafficSignalStateAction::SetSignalState()
 
         if (tl != nullptr && tl->GetId() == std::stoi(this->name_))
         {
-            // Count how many ';' we have in the string and add 1 if its not empty (so "off" has 1 value, "off;on" 2 values etc.)
-            size_t nr_values = static_cast<size_t>(CountNonEmptyTokens(this->value_));
-
+            tl->CheckValidLampModes(this->value_);
             std::string combined_type = tl->GetCombinedTypeSubtypeValueStr(tl->GetType(), tl->GetSubType(), tl->GetValueStr());
             auto        it            = roadmanager::traffic_light_type_map.find(combined_type);
             if (it == roadmanager::traffic_light_type_map.end())
             {
-                LOG_ERROR_AND_QUIT("TrafficSignalStateAction: Type {} isn't supported with actions", tl->GetType());
-            }
-
-            if (tl->GetNrLamps() != nr_values)
-            {
-                LOG_ERROR_AND_QUIT("TrafficSignalStateAction: Signal of type TrafficLightType::{} takes {} values, but {} were provided",
-                                   tl->GetTrafficLightType(),
-                                   tl->GetNrLamps(),
-                                   nr_values);
-                return;
+                LOG_ERROR_AND_QUIT("TrafficSignalStateAction: Unsupported traffic signal type", tl->GetType());
             }
 
             trafficlight_ = tl;
-            tl->SetHasOSCAction(true);  // Action attached to the trafficlight
+            tl->SetHasOSCAction(true);  // Action attached to the trafficlight, to know if we should populate TL as dynamic osi data
             break;
         }
     }

@@ -708,6 +708,8 @@ void TrigByTrafficSignal::SetSignal()
             {
                 LOG_ERROR_AND_QUIT("TrafficSignalCondition: Traffic signal with id {} isn't a valid signal", this->signalName_);
             }
+
+            traffic_light_->CheckValidLampModes(this->signalState_);
             return;
         }
     }
