@@ -19,7 +19,7 @@
                         <TrafficAreaAction continuous="true" numberOfEntities="10">
                             <TrafficArea>
                                 <RoadRange length="350">
-                                    <RoadCursor roadId="0" s="100"/>
+                                    <RoadCursor roadId="0" s="50"/>
                                     <RoadCursor roadId="1" s="0">
                                         <Lane id="1"/>
                                         <Lane id="-1"/>

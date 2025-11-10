@@ -1,12 +1,12 @@
 <?xml version='1.0' encoding='utf-8'?>
 <OpenDRIVE>
     <header name="myroad" revMajor="1" revMinor="5" date="2025-09-02 09:53:52.262491" north="0.0" south="0.0" east="0.0" west="0.0"/>
-    <road rule="RHT" id="0" junction="-1" length="200">
+    <road rule="RHT" id="0" junction="-1" length="100">
         <link>
             <successor elementType="road" elementId="1" contactPoint="start"/>
         </link>
         <planView>
-            <geometry s="0" x="0" y="0" hdg="0" length="200">
+            <geometry s="0" x="0" y="0" hdg="0" length="100">
                 <line/>
             </geometry>
         </planView>
@@ -61,13 +61,13 @@
             </laneSection>
         </lanes>
     </road>
-    <road rule="RHT" id="1" junction="-1" length="200">
+    <road rule="RHT" id="1" junction="-1" length="150">
         <link>
             <predecessor elementType="road" elementId="0" contactPoint="end"/>
             <successor elementType="road" elementId="2" contactPoint="start"/>
         </link>
         <planView>
-            <geometry s="0" x="200.0" y="0.0" hdg="0.0" length="200">
+            <geometry s="0" x="100.0" y="0.0" hdg="0.0" length="150">
                 <line/>
             </geometry>
         </planView>
@@ -131,7 +131,7 @@
             <predecessor elementType="road" elementId="1" contactPoint="end"/>
         </link>
         <planView>
-            <geometry s="0" x="400.0" y="0.0" hdg="0.0" length="200">
+            <geometry s="0" x="250.0" y="0.0" hdg="0.0" length="200">
                 <line/>
             </geometry>
         </planView>
