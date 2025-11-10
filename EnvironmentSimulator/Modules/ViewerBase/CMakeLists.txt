@@ -43,7 +43,9 @@ add_library(
     ${TARGET_ROAD_GEOM}
     STATIC
     roadgeom.cpp
-    roadgeom.hpp)
+    roadgeom.hpp
+    trafficlightmodel.hpp
+    trafficlightmodel.cpp)
 
 target_include_directories(
     ${TARGET_ROAD_GEOM}

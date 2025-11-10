@@ -536,6 +536,27 @@ void ScenarioPlayer::ViewerFrame()
             sensorFrustum[j]->Update();
         }
 
+        // Update traffic light visualization
+        for (const auto& signal : roadmanager::Position::GetOpenDrive()->GetDynamicSignals())
+        {
+            auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
+            if (tl != nullptr)
+            {
+                auto light_model = viewer_->roadGeom->GetTrafficLightModel(tl->GetId());
+                if (light_model != nullptr)
+                {
+                    for (size_t k = 0; k < light_model->GetNrLamps(); k++)
+                    {
+                        auto lamp = tl->GetLamp(k);
+                        if (lamp->ReadAndConsumeDirtyFlag())
+                        {
+                            light_model->SetState(k, lamp->GetMode() == roadmanager::Signal::LampMode::MODE_CONSTANT);
+                        }
+                    }
+                }
+            }
+        }
+
         // Update info text
         static char str_buf[128];
         if (viewer_->currentCarInFocus_ >= 0 && static_cast<unsigned int>(viewer_->currentCarInFocus_) < viewer_->entities_.size())

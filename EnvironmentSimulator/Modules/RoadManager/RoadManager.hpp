@@ -1978,7 +1978,8 @@ namespace roadmanager
             }
             void SetMode(LampMode mode)
             {
-                mode_ = mode;
+                mode_  = mode;
+                dirty_ = true;
             }
             void SetColor(LampColor color)
             {
@@ -2026,6 +2027,12 @@ namespace roadmanager
             {
                 return color_;
             }
+            bool ReadAndConsumeDirtyFlag()
+            {
+                bool retval = dirty_;
+                dirty_      = false;
+                return retval;
+            }
 
         private:
             id_t   id_;
@@ -2034,6 +2041,7 @@ namespace roadmanager
             double z_;
             double width_;
             double height_;
+            bool   dirty_ = false;  // indicates whether graphics needs to update
 
             LampIcon  icon_;
             LampColor color_;
