@@ -485,6 +485,36 @@ void TrafficLight::UpdateState(const std::string state)
     }
 }
 
+void TrafficLight::CheckValidLampModes(const std::string& input)
+{
+    std::istringstream ss(input);
+    std::string        token;
+    size_t             valid_tokens = 0;
+
+    while (std::getline(ss, token, ';'))
+    {
+        if (token.empty())
+            continue;
+
+        if (lamp_mode_map_.count(token))
+        {
+            valid_tokens++;
+        }
+        else
+        {
+            LOG_ERROR_AND_QUIT("TrafficLight: Invalid mode '{}', valid modes are 'unknown', 'other', 'off', 'on', 'flashing' and 'counting'", token);
+        }
+    }
+
+    if (valid_tokens != nr_lamps_)
+    {
+        LOG_ERROR_AND_QUIT("TrafficSignalStateAction: Signal of type TrafficLightType::{} takes {} values, but {} were provided",
+                           GetTrafficLightType(),
+                           GetNrLamps(),
+                           valid_tokens);
+    }
+}
+
 void Signal::SetAllValidLanes(Signal* sig, Road* r)
 {
     std::vector<std::pair<int, Lane*>> drivable_lanes;
