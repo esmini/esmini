@@ -20,6 +20,7 @@
 #include <osg/Geometry>
 #include <osg/Material>
 #include "RoadManager.hpp"
+#include "trafficlightmodel.hpp"
 
 namespace roadgeom
 {
@@ -46,30 +47,6 @@ namespace roadgeom
 
     uint64_t  GenerateMaterialKey(double r, double g, double b, double a, uint8_t t, uint8_t f);
     osg::Vec4 ODR2OSGColor(roadmanager::RoadMarkColor color);
-
-    class TrafficLightRedYellowGreen
-    {
-    public:
-        TrafficLightRedYellowGreen() = default;
-        void SetNode(osg::Group* node);
-        void SetState(unsigned int light_index, bool on);
-        bool GetState(unsigned int light_index) const;
-
-    private:
-        osg::Switch* switches_[3];
-    };
-
-    class TrafficLightPedestrianRedGreen
-    {
-    public:
-        TrafficLightPedestrianRedGreen() = default;
-        void SetNode(osg::Group* node);
-        void SetState(unsigned int light_index, bool on);
-        bool GetState(unsigned int light_index) const;
-
-    private:
-        osg::Switch* switches_[2];
-    };
 
     class RoadGeom
     {
@@ -128,9 +105,9 @@ namespace roadgeom
         int                                          AddGroundSurface();
         void                                         SetNodeName(osg::Node& node, const std::string& prefix, id_t id, const std::string& label);
         int                                          SaveToFile(const std::string& filename);
+        TrafficLightModel*                           GetTrafficLightModel(int id);
 
-        std::unordered_map<int, TrafficLightRedYellowGreen>     traffic_light_red_yellow_green_;
-        std::unordered_map<int, TrafficLightPedestrianRedGreen> traffic_light_pedestrian_red_green_;
+        std::unordered_map<int, TrafficLightModel> traffic_light_;
 
     private:
         unsigned int                                                   number_of_materials     = 0;

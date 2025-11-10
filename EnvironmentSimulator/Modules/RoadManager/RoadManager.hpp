@@ -1921,6 +1921,14 @@ namespace roadmanager
         {
             return has_osc_action_;
         }
+        std::string GetCombinedType() const
+        {
+            return combined_type_;
+        }
+        void SetCombinedType(std::string combined_type)
+        {
+            combined_type_ = combined_type;
+        }
 
     private:
         double                                      s_;
@@ -1934,6 +1942,7 @@ namespace roadmanager
         int                                         osi_type_;
         std::string                                 type_;
         std::string                                 subtype_;
+        std::string                                 combined_type_;
         std::string                                 value_str_;
         std::string                                 unit_;
         double                                      height_;
@@ -1978,7 +1987,8 @@ namespace roadmanager
             }
             void SetMode(LampMode mode)
             {
-                mode_ = mode;
+                mode_  = mode;
+                dirty_ = true;
             }
             void SetColor(LampColor color)
             {
@@ -2026,6 +2036,12 @@ namespace roadmanager
             {
                 return color_;
             }
+            bool ReadAndConsumeDirtyFlag()
+            {
+                bool retval = dirty_;
+                dirty_      = false;
+                return retval;
+            }
 
         private:
             id_t   id_;
@@ -2034,6 +2050,7 @@ namespace roadmanager
             double z_;
             double width_;
             double height_;
+            bool   dirty_ = false;  // indicates whether graphics needs to update
 
             LampIcon  icon_;
             LampColor color_;

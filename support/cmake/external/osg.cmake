@@ -51,6 +51,8 @@ macro(set_osg_libs)
             optimized
             ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_jpeg.a
             optimized
+            ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_png.a
+            optimized
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgUtil.a
             optimized
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgAnimation.a
@@ -60,8 +62,6 @@ macro(set_osg_libs)
             ${EXTERNALS_OSG_LIBRARY_PATH}/libOpenThreads.a
             optimized
             ${EXTERNALS_OSG_LIBRARY_PATH}/libjpeg.a
-            debug
-            ${EXTERNALS_OSG_LIBRARY_PATH}/libosgd.a
             debug
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgViewerd.a
             debug
@@ -81,6 +81,8 @@ macro(set_osg_libs)
             debug
             ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_jpegd.a
             debug
+            ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_pngd.a
+            debug
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgUtild.a
             debug
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgAnimationd.a
@@ -90,6 +92,7 @@ macro(set_osg_libs)
             ${EXTERNALS_OSG_LIBRARY_PATH}/libOpenThreadsd.a
             debug
             ${EXTERNALS_OSG_LIBRARY_PATH}/libjpegd.a
+            libpng16.a
             GL
             X11
             Xrandr
@@ -104,6 +107,8 @@ macro(set_osg_libs)
             ${EXTERNALS_OSG_LIBRARY_PATH}/zlibstatic.lib
             optimized
             ${EXTERNALS_OSG_LIBRARY_PATH}/jpeg.lib
+            optimized
+            ${EXTERNALS_OSG_LIBRARY_PATH}/libpng16_static.lib
             optimized
             ${EXTERNALS_OSG_LIBRARY_PATH}/${OSG_VERSION}-osg.lib
             optimized
@@ -130,8 +135,12 @@ macro(set_osg_libs)
             ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_osg.lib
             optimized
             ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpeg.lib
+            optimized
+            ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_png.lib
             debug
             ${EXTERNALS_OSG_LIBRARY_PATH}/zlibstaticd.lib
+            debug
+            ${EXTERNALS_OSG_LIBRARY_PATH}/libpng16_staticd.lib
             debug
             ${EXTERNALS_OSG_LIBRARY_PATH}/jpegd.lib
             debug
@@ -159,7 +168,9 @@ macro(set_osg_libs)
             debug
             ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_osgd.lib
             debug
-            ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpegd.lib)
+            ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_jpegd.lib
+            debug
+            ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/osgdb_pngd.lib)
     elseif(MINGW)
         set(OSG_LIBRARIES
             opengl32.lib

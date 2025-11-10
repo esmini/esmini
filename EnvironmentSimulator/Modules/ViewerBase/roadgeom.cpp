@@ -1132,7 +1132,45 @@ namespace roadgeom
                         signal->SetModel3DFullPath(located_file_path);
                     }
 
-                    if (tx != nullptr)
+                    if (tx == nullptr && typeid(*signal) == typeid(roadmanager::TrafficLight))
+                    {
+                        std::string texture_file_name = "opendrive_" + signal->GetCombinedType() + ".png";
+
+                        auto it = roadmanager::traffic_light_type_map.find(signal->GetCombinedType());
+
+                        if (it != roadmanager::traffic_light_type_map.end())
+                        {
+                            roadmanager::TrafficLightInfo tl_info = it->second;
+
+                            traffic_light_.emplace(signal->GetId(),
+                                                   TrafficLightModel(tl_info.nr_lamps,
+                                                                     LocateFile(texture_file_name,
+                                                                                {DirNameOf(odrManager_->GetOpenDriveFilename()) + "/../models",
+                                                                                 DirNameOf(exe_path) + "/../resources/models"},
+                                                                                "Traffic light texture",
+                                                                                found)));
+                            if (found)
+                            {
+                                tx = traffic_light_.at(signal->GetId()).GetTx();
+                            }
+                        }
+                        else
+                        {
+                            LOG_ERROR("Unsupport traffic signal type {}, can't resolve corresponding texture file", signal->GetType());
+                        }
+                    }
+
+                    if (tx == nullptr)
+                    {
+                        LOG_DEBUG("Failed to load signal {}.osgb / {}.osgb or create 3D model - using simple bounding box",
+                                  FileNameOf(filename),
+                                  signal->GetName());
+                        osg::ref_ptr<osg::PositionAttitudeTransform> obj_standin =
+                            dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
+                        obj_standin->setNodeMask(NODE_MASK_SIGN);
+                        signGroup->addChild(obj_standin);
+                    }
+                    else
                     {
                         tx->setPosition(osg::Vec3(static_cast<float>(signal->GetX() - origin[0]),
                                                   static_cast<float>(signal->GetY() - origin[1]),
@@ -1140,41 +1178,6 @@ namespace roadgeom
                         tx->setAttitude(osg::Quat(signal->GetH() + signal->GetHOffset(), osg::Vec3(0, 0, 1)));
                         tx->setNodeMask(NODE_MASK_SIGN);
                         signGroup->addChild(tx);
-                    }
-                    else
-                    {
-                        LOG_DEBUG("Failed to load signal {}.osgb / {}.osgb - use simple bounding box", FileNameOf(filename), signal->GetName());
-                        osg::ref_ptr<osg::PositionAttitudeTransform> obj_standin =
-                            dynamic_cast<osg::PositionAttitudeTransform*>(tx_bb->clone(osg::CopyOp::DEEP_COPY_ALL));
-                        obj_standin->setNodeMask(NODE_MASK_SIGN);
-                        signGroup->addChild(obj_standin);
-                    }
-
-                    if (tx != nullptr && typeid(*signal) == typeid(roadmanager::TrafficLight))
-                    {
-                        auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
-                        switch (tl->GetTrafficLightType())
-                        {
-                            case roadmanager::TrafficLightType::TYPE_1000001:
-                            {
-                                TrafficLightRedYellowGreen tl_ryg;
-                                tl_ryg.SetNode(tx);
-                                traffic_light_red_yellow_green_[signal->GetId()] = tl_ryg;
-                                break;
-                            }
-                            case roadmanager::TrafficLightType::TYPE_1000002:
-                            {
-                                TrafficLightPedestrianRedGreen tl_prg;
-                                tl_prg.SetNode(tx);
-                                traffic_light_pedestrian_red_green_[signal->GetId()] = tl_prg;
-                                break;
-                            }
-                            default:
-                            {
-                                LOG_ERROR("Unsupport traffic signal type, can't view");
-                                break;
-                            }
-                        }
                     }
                 }
 
@@ -1859,58 +1862,14 @@ namespace roadgeom
         return 0;
     }
 
-    void TrafficLightRedYellowGreen::SetNode(osg::Group* node)
+    TrafficLightModel* RoadGeom::GetTrafficLightModel(int id)
     {
-        // find and register expected switches
-        const std::string switch_names[] = {"lamp1_switch", "lamp2_switch", "lamp3_switch"};
-
-        for (unsigned int i = 0; i < 3; i++)
+        auto it = traffic_light_.find(id);
+        if (it != traffic_light_.end())
         {
-            FindNamedNode fnn(switch_names[i]);
-            node->accept(fnn);
-            switches_[i] = static_cast<osg::Switch*>(fnn.getNode());
+            return &it->second;
         }
-    }
-
-    void TrafficLightRedYellowGreen::SetState(unsigned int light_index, bool state)
-    {
-        if (light_index < 3 && switches_[light_index] != nullptr)
-        {
-            switches_[light_index]->setAllChildrenOff();
-            switches_[light_index]->setValueList({!state, state});
-        }
-    }
-
-    bool TrafficLightRedYellowGreen::GetState(unsigned int light_index) const
-    {
-        return switches_[light_index]->getValue(1);
-    }
-
-    void TrafficLightPedestrianRedGreen::SetNode(osg::Group* node)
-    {
-        // find and register expected switches
-        const std::string switch_names[] = {"lamp1_switch", "lamp2_switch"};
-
-        for (unsigned int i = 0; i < 2; i++)
-        {
-            FindNamedNode fnn(switch_names[i]);
-            node->accept(fnn);
-            switches_[i] = static_cast<osg::Switch*>(fnn.getNode());
-        }
-    }
-
-    void TrafficLightPedestrianRedGreen::SetState(unsigned int light_index, bool state)
-    {
-        if (light_index < 2 && switches_[light_index] != nullptr)
-        {
-            switches_[light_index]->setAllChildrenOff();
-            switches_[light_index]->setValueList({!state, state});
-        }
-    }
-
-    bool TrafficLightPedestrianRedGreen::GetState(unsigned int light_index) const
-    {
-        return switches_[light_index]->getValue(1);
+        return nullptr;
     }
 
 }  // namespace roadgeom

@@ -98,54 +98,6 @@ static int execute_scenario(int argc, char* argv[])
 
         retval = player->Frame(dt);
 
-#if _USE_OSG
-#if 1  // traffic light visualization test
-        if (player->viewer_ != nullptr && player->viewer_->roadGeom != nullptr)
-        {
-            auto odr     = roadmanager::Position::GetOpenDrive();
-            auto signals = odr->GetDynamicSignals();
-            for (const auto& signal : signals)
-            {
-                auto tl = dynamic_cast<roadmanager::TrafficLight*>(signal);
-                if (tl == nullptr)
-                {
-                    continue;
-                }
-
-                switch (tl->GetTrafficLightType())
-                {
-                    case roadmanager::TrafficLightType::TYPE_1000001:
-                    {
-                        auto light = player->viewer_->roadGeom->traffic_light_red_yellow_green_[tl->GetId()];
-
-                        for (size_t k = 0; k < tl->GetNrLamps(); k++)
-                        {
-                            auto lamp = tl->GetLamp(k);
-                            light.SetState(k, lamp->GetMode() == roadmanager::Signal::LampMode::MODE_CONSTANT);
-                        }
-                        break;
-                    }
-                    case roadmanager::TrafficLightType::TYPE_1000002:
-                    {
-                        auto light = player->viewer_->roadGeom->traffic_light_pedestrian_red_green_[tl->GetId()];
-                        for (size_t k = 0; k < tl->GetNrLamps(); k++)
-                        {
-                            auto lamp = tl->GetLamp(k);
-                            light.SetState(k, lamp->GetMode() == roadmanager::Signal::LampMode::MODE_CONSTANT);
-                        }
-                        break;
-                    }
-                    default:
-                    {
-                        LOG_WARN_ONCE("Traffic light type {} doesn't have supported graphics", tl->GetTrafficLightType());
-                        break;
-                    }
-                }
-            }
-        }
-#endif
-#endif  // _USE_OSG
-
 #ifdef _USE_IMPLOT
         if (plot != nullptr && plot->IsModeSynchronuous())
         {

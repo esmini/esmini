@@ -362,6 +362,7 @@ Signal::Signal(double      s,
       osi_type_(osi_type),
       type_(type),
       subtype_(subtype),
+      combined_type_(""),
       value_str_(value_str),
       unit_(unit),
       height_(height),
@@ -432,9 +433,9 @@ void TrafficLight::SetTrafficLightInfo()
 {
     std::string type_cleaned = GetType();
     type_cleaned.erase(std::remove(type_cleaned.begin(), type_cleaned.end(), '.'), type_cleaned.end());
-    std::string combined_type = GetCombinedTypeSubtypeValueStr(type_cleaned, GetSubType(), GetValueStr());
+    SetCombinedType(GetCombinedTypeSubtypeValueStr(type_cleaned, GetSubType(), GetValueStr()));
 
-    auto it = traffic_light_type_map.find(combined_type);
+    auto it = traffic_light_type_map.find(GetCombinedType());
     if (it != traffic_light_type_map.end())
     {
         SetTypeStr(type_cleaned);  // Update type-string with the cleaned version
