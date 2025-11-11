@@ -287,11 +287,16 @@ if [ "$OSTYPE" == "msys" ]; then
     cp 3rdParty_x64/x64/include/jpeglib.h $target_dir/include
     cp 3rdParty_x64/x64/lib/jpeg.lib 3rdParty_x64/x64/lib/jpegd.lib $target_dir/lib
     cp 3rdParty_x64/x64/lib/libpng16_static.lib 3rdParty_x64/x64/lib/libpng16_staticd.lib $target_dir/lib
-elif [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     cp zlib/install/include/zlib.h $target_dir/include
     cp zlib/install/lib/libz.${LIB_EXT} zlib/install/lib/libzd.${LIB_EXT} $target_dir/lib
     cp jpeg-9e/jpeglib.h $target_dir/include
     cp jpeg-9e/.libs/libjpeg.${LIB_EXT} jpeg-9e/.libsd/libjpegd.${LIB_EXT} $target_dir/lib
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    cp zlib/install/include/zlib.h $target_dir/include
+    cp zlib/install/lib/libz.${LIB_EXT} $target_dir/lib
+    cp jpeg-9e/jpeglib.h $target_dir/include
+    cp jpeg-9e/.libs/libjpeg.${LIB_EXT} $target_dir/lib
 else
     echo Unknown OSTYPE: $OSTYPE
 fi
