@@ -51,6 +51,8 @@
 #include <dlfcn.h>
 #include <unistd.h>
 #include <limits.h>
+#elif defined(__EMSCRIPTEN__)
+// WASM/Emscripten - no dynamic library support needed
 #endif
 
 #if __has_include(<filesystem>)
@@ -1748,6 +1750,11 @@ std::string GetDefaultPath()
     LOG_DEBUG("Executable/Library path: {}", path);
     std::string strPath(path);
     return strPath;
+
+#elif defined(__EMSCRIPTEN__)
+    // For WASM/Emscripten, return a default path since we don't have dynamic libraries
+    LOG_DEBUG("WASM: Using default empty path");
+    return "";
 
 #else
 
