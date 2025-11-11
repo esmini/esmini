@@ -32,6 +32,14 @@ set(PUGIXML_INCLUDE_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../externals/pugixml")
 set(EXPR_INCLUDE_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../externals/expr")
+set(FMT_INCLUDE_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../externals/fmt/include")
+
+set(YAML_INCLUDE_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../externals/yaml")
+
+set(EXPR_INCLUDE_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../externals/expr")
 
 file(
     GLOB
@@ -65,6 +73,11 @@ file(
     PUGIXML_SOURCES
     "../../../externals/pugixml/*.cpp")
 
+# Define FMT source files
+set(FMT_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../externals/fmt/src/format.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../externals/fmt/src/os.cc")
+
 list(
     REMOVE_ITEM
     CONTROLLERS_SOURCES
@@ -73,6 +86,12 @@ list(
     REMOVE_ITEM
     CONTROLLERS_INCLUDE_DIR
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/Controllers/ControllerSumo.hpp")
+
+# Remove GUI-related files not suitable for WASM
+list(
+    REMOVE_ITEM
+    PLAYERBASE_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/PlayerBase/Plot.cpp")
 
 list(
     REMOVE_ITEM
@@ -83,6 +102,16 @@ list(
     SCENARIOENGINE_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/ScenarioEngine/SourceFiles/OSIReporter.cpp")
 
+# Remove OSI-related files
+list(
+    REMOVE_ITEM
+    SCENARIOENGINE_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/ScenarioEngine/SourceFiles/OSITrafficCommand.hpp")
+list(
+    REMOVE_ITEM
+    SCENARIOENGINE_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../Modules/ScenarioEngine/SourceFiles/OSITrafficCommand.cpp")
+
 include_directories(
     ${SCENARIOENGINE_INCLUDE_DIRS}
     ${CONTROLLERS_INCLUDE_DIR}
@@ -91,10 +120,12 @@ include_directories(
     ${COMMON_MINI_INCLUDE_DIR}
     ${PUGIXML_INCLUDE_DIR}
     ${EXPR_INCLUDE_DIR}
+    ${FMT_INCLUDE_DIR}
+    ${YAML_INCLUDE_DIR}
     esminijs.hpp)
 
 if(EMSCRIPTEN)
-    message("build "${TARGET}.js)
+    message("build " ${TARGET} ".js")
     set(CMAKE_EXECUTABLE_SUFFIX
         ".js")
     add_executable(
@@ -106,7 +137,8 @@ if(EMSCRIPTEN)
         ${PLAYERBASE_SOURCES}
         ${SCENARIOENGINE_SOURCES}
         ${COMMONMINI_SOURCES}
-        ${PUGIXML_SOURCES})
+        ${PUGIXML_SOURCES}
+        ${FMT_SOURCES})
 
     set_target_properties(
         ${TARGET}
@@ -117,11 +149,12 @@ if(EMSCRIPTEN)
       -s ENVIRONMENT=web \
       -s MODULARIZE=1 \
       -s EXPORT_NAME=\"esmini\" \
-      -s EXPORTED_RUNTIME_METHODS=[\"cwrap\"] \
+      -s EXPORTED_RUNTIME_METHODS=[\"cwrap\",\"FS\"] \
       -s FORCE_FILESYSTEM=1 \
       -s ALLOW_MEMORY_GROWTH=1 \
       -s WASM_ASYNC_COMPILATION=0 \
-      -s WASM=0 \
+      -s WASM=1 \
       -s SINGLE_FILE=1 \
+      -s EXCEPTION_CATCHING_ALLOWED=[..] \
   ")
 endif()
