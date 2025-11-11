@@ -396,6 +396,17 @@ TEST(LogFeatures, TestLogBuffer)
     EXPECT_EQ(txtLogger.GetBufferCapacity(), 0);
 }
 
+TEST(FilenameOperations, TestDirName)
+{
+    EXPECT_EQ(LastDirOfFolderPath("/my_folder"), "my_folder");
+    EXPECT_EQ(LastDirOfFolderPath("/home/kalle/"), "kalle");
+    EXPECT_EQ(LastDirOfFolderPath("/home/kalle"), "kalle");
+    EXPECT_EQ(LastDirOfFolderPath("/"), "");
+    EXPECT_EQ(LastDirOfFolderPath("//"), "");
+    EXPECT_EQ(LastDirOfFolderPath("///"), "");
+    EXPECT_EQ(LastDirOfFolderPath(""), "");
+}
+
 int main(int argc, char** argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";

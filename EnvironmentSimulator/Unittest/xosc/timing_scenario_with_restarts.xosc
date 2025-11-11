@@ -6,10 +6,10 @@
     </ParameterDeclarations>
     <CatalogLocations>
         <VehicleCatalog>
-            <Directory path="../xosc/Catalogs/Vehicles"/>
+            <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
         </VehicleCatalog>
         <ControllerCatalog>
-            <Directory path="../xosc/Catalogs/Controllers"/>
+            <Directory path="../../../resources/xosc/Catalogs/Controllers"/>
         </ControllerCatalog>
     </CatalogLocations>
     <RoadNetwork>
@@ -24,7 +24,7 @@
                         <Property name="useGhost" value="true" />
                         <Property name="headstartTime" value="3.0" />
                     </Properties>
-                </Controller>            
+                </Controller>
             </ObjectController>
         </ScenarioObject>
         <ScenarioObject name="Target">

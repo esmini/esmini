@@ -285,35 +285,27 @@ Catalog *ScenarioReader::LoadCatalog(std::string name)
     }
 
     // Not found, try to locate it in one the registered catalog directories
-    pugi::xml_document       catalog_doc;
-    pugi::xml_parse_result   result;
-    std::vector<std::string> file_name_candidates;
-    for (size_t i = 0; i < catalogs_->catalog_dirs_.size() && !result; i++)
-    {
-        file_name_candidates.clear();
-        // absolute path or relative to current directory
-        file_name_candidates.push_back(catalogs_->catalog_dirs_[i].dir_name_ + "/" + name + ".xosc");
-        // Then assume relative path to scenario directory - which perhaps should be the expected location
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), catalogs_->catalog_dirs_[i].dir_name_) + "/" + name +
-                                       ".xosc");
+    pugi::xml_document     catalog_doc;
+    pugi::xml_parse_result result;
+    bool                   found = false;
 
-        // Check registered paths
-        for (size_t j = 0; j < SE_Env::Inst().GetPaths().size(); j++)
-        {
-            file_name_candidates.push_back(
-                CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[j], catalogs_->catalog_dirs_[i].dir_name_ + "/" + name + ".xosc"));
-            file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[j], name + ".xosc"));
-        }
-        for (size_t j = 0; j < file_name_candidates.size() && !result; j++)
-        {
-            if (FileExists(file_name_candidates[j].c_str()))
-            {
-                // Load it
-                result = catalog_doc.load_file(file_name_candidates[j].c_str());
-            }
-        }
+    std::vector<std::string> dirs;
+    for (const auto &dir_entry : catalogs_->catalog_dirs_)
+    {
+        dirs.emplace_back(DirNameOf(SE_Env::Inst().GetOSCFilePath()) + "/" + dir_entry.dir_name_);
+        dirs.emplace_back(DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/xosc/Catalogs/" + LastDirOfFolderPath(dir_entry.dir_name_));
     }
-    if (!result)
+
+    std::string file_path = LocateFile(name + ".xosc", {dirs}, "OpenSCENARIO catalog file", found);
+
+    if (!found)
+    {
+        LOG_ERROR("Couldn't locate OpenSCENARIO file {}", FileNameOf(name));
+        return nullptr;
+    }
+
+    // Load it
+    if (!catalog_doc.load_file(file_path.c_str()))
     {
         throw std::runtime_error("Couldn't locate catalog file: " + name + ". " + result.description());
     }

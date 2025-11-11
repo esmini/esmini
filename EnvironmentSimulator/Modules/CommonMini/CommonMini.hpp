@@ -861,6 +861,7 @@ std::vector<std::string> SplitString(const std::string& str, char delimiter);
 std::vector<std::string> SplitQuotedString(const std::string& str, char delim);
 std::string              DirNameOf(const std::string& fname);
 std::string              FileNameOf(const std::string& fname);
+std::string              LastDirOfFolderPath(const std::string& path);
 bool                     IsDirectoryName(const std::string& string);
 std::string              FileNameExtOf(const std::string& fname);
 std::string              FileNameWithoutExtOf(const std::string& fname);

@@ -1122,10 +1122,38 @@ std::string FileNameOf(const std::string& fname)
     {
         return (fname.substr(pos + 1));
     }
+
+    return fname;  // Assume filename with no separator
+}
+
+std::string LastDirOfFolderPath(const std::string& path)
+{
+    size_t pos = path.find_last_of("\\/");
+    if (pos != std::string::npos)
+    {
+        if (pos != path.length() - 1)
+        {
+            return (path.substr(pos + 1));
+        }
+        else if (pos != 0)
+        {
+            std::string tmp = path;
+            tmp.pop_back();
+
+            pos = tmp.find_last_of("\\/");
+
+            if (pos != std::string::npos)
+            {
+                return (tmp.substr(pos + 1));
+            }
+        }
+    }
     else
     {
-        return fname;  // Assume filename with no separator
+        return path;  // Assume single name with no separator
     }
+
+    return "";
 }
 
 bool IsDirectoryName(const std::string& string)
