@@ -84,7 +84,7 @@
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
                         <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="13.8889"/>
+                           <AbsoluteTargetSpeed value="13.889"/>
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
