@@ -493,7 +493,7 @@ It will show only log entries relating to storyboard, including triggering. Exam
 ----
 
 ==== Scenario recording (.dat)
-From version 2.53.0 esmini implements a package-based `.dat` file format. The new format comes with increased flexibility without unnecessary file size growth. It supports gradually adding/removing content in the `.dat` files without breaking compatibility. Packages consists of header (packet ID and packet size) and the data. This file can later be used either to replay (see <<Replay scenario>>) the scenario or convert it to `.csv` for further analysis, e.g. in Excel.
+From version 2.54.0 esmini implements a package-based `.dat` file format. The new format comes with increased flexibility without unnecessary file size growth. It supports gradually adding/removing content in the `.dat` files without breaking compatibility. Packages consists of header (packet ID and packet size) and the data. This file can later be used either to replay (see <<Replay scenario>>) the scenario or convert it to `.csv` for further analysis, e.g. in Excel.
 
 A list of available packet IDs and packet structure etc. can be found in: +
 https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/PacketHandler.hpp[`EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/PacketHandler.hpp`]
@@ -3289,6 +3289,11 @@ Order of search locations:
 
 * Default location relative executable (or library): `<path_to_exe>/resources/traffic_signals/<country code>_traffic_signals.txt`
 * Relative current directory: `./resources/traffic_signals/<country code>_traffic_signals.txt`
+
+*Catalogs*
+
+* Relative scenario file: `<path_to_xosc>/<specified_path>`
+* Default location relative executable (or library): `<path_to_exe>/resources/xosc/Catalogs/<trailing_folder_in_specified_path>`
 
 === Various issues
 

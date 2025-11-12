@@ -1,10 +1,36 @@
-### DRAFT - Version x
-- Changing fixed timestep on ghost from 0.05 -> GetFixedTimestep() will cause any scenario using followGhost to be slightly different (also at svadds!)
-- Following python code eliminated due to currently not compatible with new dat-format
-  - csv2dat functionality in dat.py
-  - dat2xosc script
-
 ## esmini release notes
+
+### 2025-11-12 Version 2.54.0
+
+Braking changes:
+- Total rework of .dat (scenario recording) format
+  - package based, enabling more content in future
+  - bump to version 3
+  - old .dat files < v3 will not play
+  - more info in [User guide - Scenario recording (.dat)](https://esmini.github.io/#_scenario_recording_dat)
+  - Following related python code removed:
+    - csv2dat functionality in dat.py
+    - dat2xosc script
+
+New behaviors:
+- Change timestep of ghost (re)start phase
+  - from hardcoded 0.05 to whatever set fixed timestep
+  - fallback to 0.05 when no fixed timestep set
+  - will cause any scenarios involving ghost to be slightly different
+
+Improvements and fixes:
+- Fix bug writing signal 3D model to wrong OSI package
+  - causing crash in some cases
+- Fix wrong direction with lanePos and lane 0
+- Bump CI and release macOS version to 14
+- Ensure init actions ordered wrt entity dependencies
+  - sort actions group wise based on object
+  - add missing RelativeWorldPosition for sorting consideration
+- Fix wrongly positioned and duplicate 3D model bug
+- Fix 3D model load failure in swarm action
+- Set socket reuse address option avoiding port lockup
+- Update catalog search path handling
+  - see [User guide - Search locations](https://esmini.github.io/#_search_locations)
 
 ### 2025-10-24 Version 2.53.1
 
