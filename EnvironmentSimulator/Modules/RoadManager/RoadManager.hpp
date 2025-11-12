@@ -2067,7 +2067,7 @@ namespace roadmanager
 
         void SetTrafficLightInfo();
         void UpdateState(const std::string state);
-        void CheckValidLampModes(const std::string &input);
+        void CheckValidLampModes(const std::string &input) const;
 
         size_t GetNrLamps() const
         {

@@ -485,7 +485,7 @@ void TrafficLight::UpdateState(const std::string state)
     }
 }
 
-void TrafficLight::CheckValidLampModes(const std::string& input)
+void TrafficLight::CheckValidLampModes(const std::string& input) const
 {
     std::istringstream ss(input);
     std::string        token;
