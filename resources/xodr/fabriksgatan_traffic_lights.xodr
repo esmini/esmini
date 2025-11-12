@@ -413,8 +413,12 @@
         </objects>
         <signals>
             <signal s="109.0" t="-4.0" id="1" name="_Sg12" dynamic="yes" orientation="+" zOffset="3.4" type="1000001" country="OpenDRIVE" subtype="-1" hOffset="0.0" pitch="0.0" roll="0.0" height="0.8" width="0.4"/>
-            <signal s="114.0" t="4.0" id="2" name="_Sg13" dynamic="yes" orientation="+" zOffset="2.5" type="1000002" country="OpenDRIVE" subtype="-1" hOffset="1.57" pitch="0.0" roll="0.0" height="0.55" width="0.4"/>
-            <signal s="109.0" t="-4.0" id="3" name="_Sg14" dynamic="yes" orientation="+" zOffset="2.5" type="1000002" country="OpenDRIVE" subtype="-1" hOffset="-1.57" pitch="0.0" roll="0.0" height="0.55" width="0.4"/>
+            <signal s="114.0" t="4.0" id="2" name="_Sg13" dynamic="yes" orientation="+" zOffset="2.5" type="1000002" country="OpenDRIVE" subtype="-1" hOffset="1.57" pitch="0.0" roll="0.0" height="0.55" width="0.4">
+                <validity fromLane="-1" toLane="1" />
+            </signal>
+            <signal s="109.0" t="-4.0" id="3" name="_Sg14" dynamic="yes" orientation="+" zOffset="2.5" type="1000002" country="OpenDRIVE" subtype="-1" hOffset="-1.57" pitch="0.0" roll="0.0" height="0.55" width="0.4">
+                <validity fromLane="-1" toLane="1" />
+            </signal>
         </signals>
         <surface>
         </surface>
