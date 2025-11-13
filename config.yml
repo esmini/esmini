@@ -1,5 +1,6 @@
 esmini:
   window: 60 60 800 400
+  # vehicle_dynamics: True
 replayer:
   window: 60 60 800 400
   res_path: ./resources

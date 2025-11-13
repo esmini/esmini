@@ -521,7 +521,7 @@ void Signal::SetAllValidLanes(Signal* sig, Road* r)
     auto                               ls = r->GetLaneSectionByS(sig->GetS());
     drivable_lanes.reserve(ls->GetNumberOfLanes());
 
-    for (size_t i = 0; i < ls->GetNumberOfLanes(); i++)
+    for (unsigned int i = 0; i < ls->GetNumberOfLanes(); i++)
     {
         auto lane = ls->GetLaneByIdx(i);
         if (lane->GetLaneType() & Lane::LaneType::LANE_TYPE_ANY_DRIVING)
