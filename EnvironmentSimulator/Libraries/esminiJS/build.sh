@@ -4,5 +4,5 @@ fi
 
 cd build/
 emcmake cmake ..  
-emmake make
+emmake make -j $(nproc)
 cp esmini.js ../example/
