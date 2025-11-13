@@ -343,7 +343,7 @@
                            </LongitudinalAction>
                         </PrivateAction>
                      </Action>
-                     <Action>
+                     <Action name="WalkOnGreenStraightLine1">
                         <PrivateAction>
                               <RoutingAction>
                                  <FollowTrajectoryAction>
@@ -414,7 +414,7 @@
                            </LongitudinalAction>
                         </PrivateAction>
                      </Action>
-                     <Action name="WalkOnGreenStraightLine">
+                     <Action name="WalkOnGreenStraightLine2">
                         <PrivateAction>
                               <RoutingAction>
                                  <FollowTrajectoryAction>
