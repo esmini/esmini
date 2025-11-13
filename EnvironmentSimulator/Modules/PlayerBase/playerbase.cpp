@@ -402,19 +402,24 @@ void ScenarioPlayer::ViewerFrame()
     }
 
     // Visualize entities
+
+    double dt = 0.0;
+    if (vehicle_dynamics_enabled_)
+    {
+        dt = GetFixedTimestep();
+        if (dt < 0.0)
+        {
+            static __int64 time_stamp = 0;
+            dt                        = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
+        }
+    }
+
     for (size_t i = 0; i < scenarioEngine->entities_.object_.size(); i++)
     {
         viewer::EntityModel* entity = viewer_->entities_[i];
         Object*              obj    = scenarioEngine->entities_.object_[i];
 
         entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
-
-        double dt = GetFixedTimestep();
-        if (dt < 0.0)
-        {
-            static __int64 time_stamp = 0;
-            dt                        = SE_getSimTimeStep(time_stamp, minStepSize, maxStepSize);
-        }
 
         if (vehicle_dynamics_enabled_)
         {
