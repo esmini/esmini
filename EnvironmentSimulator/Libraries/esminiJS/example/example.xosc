@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+  <FileHeader author="SimOne" date="2022-09-07T16:45:01" description="双侧车道线巡航-直道" revMajor="1" revMinor="0" />
+  <ParameterDeclarations>
+    <ParameterDeclaration name="$Ego_vi" parameterType="double" value="19.444444444444443" />
+    <ParameterDeclaration name="$Ego_vt" parameterType="double" value="22.22222222222222" />
+  </ParameterDeclarations>
+  <CatalogLocations />
+  <RoadNetwork>
+    <LogicFile filepath="example.xodr" />
+    <SceneGraphFile filepath="" />
+  </RoadNetwork>
+  <Entities>
+    <ScenarioObject name="Ego">
+      <Vehicle name="simonedriver" vehicleCategory="car">
+        <ParameterDeclarations />
+        <Performance maxAcceleration="200" maxDeceleration="10" maxSpeed="69.444" />
+        <BoundingBox>
+          <Center x="1.5" y="0" z="0.9" />
+          <Dimensions height="1.48" length="4.93" width="1.86" />
+        </BoundingBox>
+        <Axles>
+          <FrontAxle maxSteering="0.5" positionX="3.1" positionZ="0.3" trackWidth="1.8" wheelDiameter="0.6" />
+          <RearAxle maxSteering="0" positionX="0" positionZ="0.3" trackWidth="1.8" wheelDiameter="0.6" />
+        </Axles>
+        <Properties>
+          <Property name="category" value="Ego" />
+          <Property name="model" value="simonedriver" />
+          <Property name="name" value="Ego" />
+        </Properties>
+      </Vehicle>
+      <ObjectController>
+        <Controller name="SimOneDriver">
+          <Properties>
+            <Property name="name" value="SimOneDriver" />
+          </Properties>
+        </Controller>
+      </ObjectController>
+    </ScenarioObject>
+  </Entities>
+  <Storyboard>
+    <Init>
+      <Actions>
+        <GlobalAction>
+          <EnvironmentAction>
+            <Environment name="Environment">
+              <TimeOfDay animation="false" dateTime="2022-09-07T10:00:00" />
+              <Weather cloudState="free">
+                <Sun azimuth="0" elevation="1.57" intensity="60000" />
+                <Fog visualRange="1200" />
+                <Precipitation intensity="0" precipitationType="dry" />
+              </Weather>
+              <RoadCondition frictionScaleFactor="0.8">
+                <Properties>
+                  <Property name="humidityLevel" value="0.1" />
+                  <Property name="dirtyLevel" value="0.1" />
+                </Properties>
+              </RoadCondition>
+            </Environment>
+          </EnvironmentAction>
+        </GlobalAction>
+        <Private entityRef="Ego">
+          <PrivateAction>
+            <LongitudinalAction>
+              <SpeedAction>
+                <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0" />
+                <SpeedActionTarget>
+                  <AbsoluteTargetSpeed value="$Ego_vi" />
+                </SpeedActionTarget>
+              </SpeedAction>
+            </LongitudinalAction>
+          </PrivateAction>
+          <PrivateAction>
+            <TeleportAction>
+              <Position>
+                <LanePosition laneId="-2" offset="0" roadId="1" s="100">
+                  <Orientation h="0" p="0" r="0" type="absolute" />
+                </LanePosition>
+              </Position>
+            </TeleportAction>
+          </PrivateAction>
+        </Private>
+      </Actions>
+    </Init>
+    <Story name="MyStory">
+      <ParameterDeclarations />
+      <Act name="MyAct1">
+        <ManeuverGroup maximumExecutionCount="1" name="MySequence1">
+          <Actors selectTriggeringEntities="false">
+            <EntityRef entityRef="Ego" />
+          </Actors>
+          <Maneuver name="Maneuver send_command_action">
+            <Event name="Event1" priority="overwrite">
+              <Action name="Action1">
+                <UserDefinedAction>
+                  <CustomCommandAction type="Command">CruiseSpeed=60</CustomCommandAction>
+                </UserDefinedAction>
+              </Action>
+              <StartTrigger>
+                <ConditionGroup>
+                  <Condition conditionEdge="none" delay="0" name="TimeCondition1">
+                    <ByValueCondition>
+                      <SimulationTimeCondition rule="greaterThan" value="30" />
+                    </ByValueCondition>
+                  </Condition>
+                </ConditionGroup>
+              </StartTrigger>
+            </Event>
+          </Maneuver>
+        </ManeuverGroup>
+        <StartTrigger>
+          <ConditionGroup>
+            <Condition conditionEdge="none" delay="0" name="TimeCondition3">
+              <ByValueCondition>
+                <SimulationTimeCondition rule="greaterThan" value="0" />
+              </ByValueCondition>
+            </Condition>
+          </ConditionGroup>
+        </StartTrigger>
+      </Act>
+    </Story>
+    <StopTrigger>
+      <ConditionGroup>
+        <Condition conditionEdge="none" delay="0" name="TimeConditionStop">
+          <ByValueCondition>
+            <SimulationTimeCondition rule="greaterThan" value="60" />
+          </ByValueCondition>
+        </Condition>
+      </ConditionGroup>
+    </StopTrigger>
+  </Storyboard>
+</OpenSCENARIO>

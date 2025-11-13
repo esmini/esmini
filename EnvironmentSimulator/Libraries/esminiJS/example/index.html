@@ -2,13 +2,1237 @@
 <html lang="en">
 
 <head>
-    <title>OpenScenario Viewer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esmini WASM Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        
+        .file-input {
+            margin: 10px 0;
+        }
+        
+        .file-list {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .file-item {
+            padding: 5px;
+            margin: 2px 0;
+            background-color: white;
+            border-radius: 3px;
+            border: 1px solid #e9ecef;
+            cursor: pointer;
+        }
+        
+        .file-item:hover {
+            background-color: #e7f3ff;
+        }
+        
+        .file-item.selected {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .file-category {
+            margin: 10px 0 5px 0;
+            color: #495057;
+        }
+        
+        .file-category strong {
+            font-size: 14px;
+        }
+        
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .output {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 900px;
+            overflow-y: auto;
+        }
+        
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.loading {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .object-data {
+            background-color: #e7f3ff;
+            border: 1px solid #b8daff;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Will not use threejs, please see the console output</h1>
+    <div class="container">
+        <h1>Esmini WASM Demo</h1>
+        <div id="status" class="status loading">Loading esmini WASM module...</div>
+        
+        <div class="controls">
+            <h3>File System Access</h3>
+            <div style="background-color: #e7f3ff; border: 1px solid #b8daff; padding: 15px; border-radius: 4px; margin: 10px 0;">
+                <p><strong>Load scenario data:</strong> Select the <strong>parent directory</strong> containing all scenario files.</p>
+                <p>Inside file picker menu, make sure that you are not inside the parent directory and a subdirectory is accidentaly selected.
+                If that happens just navigate one level up to select the correct parent directory.</p>
+                <div style="background: #f8f9fa; padding: 10px; margin: 10px 0; border-radius: 4px; font-family: monospace; font-size: 13px;">
+                    🗀 your-scenario-directory/ ← <strong>Select this directory</strong><br>
+                    ├── xosc/                   (scenario files)<br>
+                    ├── xodr/                   (road networks)<br>
+                    ├── catalogs/               (vehicle/controller definitions)<br>
+                    └── models/                 (3D assets - optional for now)
+                </div>
+                <div class="file-input">
+                    <button id="selectDirectory">Select Parent Directory</button>
+                    <span id="browserSupport" style="margin-left: 15px; color: #6c757d;"></span>
+                </div>
+            </div>
+            
+            <div id="fileList" class="file-list" style="display: none;">
+                <h4>Loaded Files:</h4>
+                <div id="fileItems"></div>
+                <div style="margin-top: 10px;">
+                    <label>Select .xosc scenario: </label>
+                    <select id="xoscSelect" style="margin: 5px; min-width: 350px; max-width: 100%; min-height: 2em; max-height: 150px; overflow-y: auto; font-size: 1em;"></select>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <h3>Controls</h3>
+            <button id="runEmbeddedDemo" disabled>Run Example Demo Scenario</button>
+            <button id="runDemo" disabled>Run Loaded Scenario</button>
+            <button id="clearOutput">Clear Output</button>
+            <p style="margin-top: 10px; color: #6c757d; font-size: 0.9em;">
+                💡 <strong>Tip:</strong> Use "Run Example Demo Scenario" for a quick test or select your own .xodr/.xosc files above
+            </p>
+        </div>
+        
+        <div class="controls">
+            <h3>Output</h3>
+            <div id="output" class="output">Waiting for esmini to load...</div>
+        </div>
+    </div>
+
     <script src="./esmini.js"></script>
-    <script src="./main.js"></script>
+    <script>
+        let esminiInstance = null;
+        let loadedFiles = new Map(); // Store loaded files: filename -> content
+        let selectedXoscFile = null;
+        
+        const statusEl = document.getElementById('status');
+        const outputEl = document.getElementById('output');
+        const runDemoBtn = document.getElementById('runDemo');
+        const runEmbeddedDemoBtn = document.getElementById('runEmbeddedDemo');
+        const clearOutputBtn = document.getElementById('clearOutput');
+        const selectDirBtn = document.getElementById('selectDirectory');
+        const browserSupportEl = document.getElementById('browserSupport');
+        const fileListEl = document.getElementById('fileList');
+        const fileItemsEl = document.getElementById('fileItems');
+        const xoscSelectEl = document.getElementById('xoscSelect');
+
+        // Check browser support for File System Access API
+        function checkBrowserSupport() {
+            if ('showDirectoryPicker' in window) {
+                browserSupportEl.textContent = '✅ Directory API supported';
+                browserSupportEl.style.color = '#28a745';
+                selectDirBtn.disabled = false;
+            } else {
+                browserSupportEl.textContent = '❌ Directory API not supported - please use another browser';
+                browserSupportEl.style.color = '#dc3545';
+                selectDirBtn.disabled = true;
+            }
+        }
+
+        function log(message) {
+            console.log(message);
+            outputEl.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            outputEl.scrollTop = outputEl.scrollHeight;
+        }
+
+        // Capture console output from esmini
+        function setupConsoleCapture() {
+            // Store original console methods
+            const originalLog = console.log;
+            const originalInfo = console.info;
+            const originalWarn = console.warn;
+            const originalError = console.error;
+            
+            console.log = function(...args) {
+                originalLog.apply(console, args);
+                captureEsminiMessage('LOG', args);
+            };
+            
+            console.info = function(...args) {
+                originalInfo.apply(console, args);
+                captureEsminiMessage('INFO', args);
+            };
+            
+            console.warn = function(...args) {
+                originalWarn.apply(console, args);
+                captureEsminiMessage('WARN', args);
+            };
+            
+            console.error = function(...args) {
+                originalError.apply(console, args);
+                captureEsminiMessage('ERROR', args);
+            };
+            
+            // Also capture Emscripten's output functions used by esmini WASM
+            if (esminiInstance && typeof esminiInstance.print === 'undefined') {
+                // Override the global 'out' function that esmini uses for stdout
+                if (typeof window.out === 'function') {
+                    const originalOut = window.out;
+                    window.out = function(message) {
+                        originalOut(message);
+                        captureEsminiOutput(message);
+                    };
+                }
+                
+                // Also try to override the Module's print function
+                if (esminiInstance.Module && typeof esminiInstance.Module.print === 'function') {
+                    const originalPrint = esminiInstance.Module.print;
+                    esminiInstance.Module.print = function(message) {
+                        originalPrint(message);
+                        captureEsminiOutput(message);
+                    };
+                }
+            }
+            
+            function captureEsminiOutput(message) {
+                if (typeof message === 'string' && message.length > 0) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    outputEl.textContent += `${timestamp}: 📤 ESMINI: ${message}\n`;
+                    outputEl.scrollTop = outputEl.scrollHeight;
+                }
+            }
+            
+            function captureEsminiMessage(level, args) {
+                const message = args.join(' ');
+                
+                // Only capture esmini-specific messages, not our demo messages
+                if (message.includes('xosc file path:') || 
+                    message.includes('esmini GIT') ||
+                    message.includes('esmini BUILD') ||
+                    message.includes('Loading xosc') ||
+                    message.includes('Loaded OpenDRIVE') ||
+                    message.includes('scene graph file') ||
+                    message.includes('3D model search') ||
+                    message.includes('init scenario') ||
+                    message.includes('variables') ||
+                    message.includes('parameters') ||
+                    message.match(/^\[\]\s\[info\]/) ||
+                    message.match(/^\[\]\s\[warn\]/) ||
+                    message.match(/^\[\]\s\[error\]/)) {
+                    
+                    const timestamp = new Date().toLocaleTimeString();
+                    const prefix = level === 'ERROR' ? '🚨' : level === 'WARN' ? '⚠️' : '📤';
+                    
+                    // Add directly to output element
+                    outputEl.textContent += `${timestamp}: ${prefix} ESMINI: ${message}\n`;
+                    outputEl.scrollTop = outputEl.scrollHeight;
+                }
+            }
+            
+            log('📺 Console capture enabled for esmini output');
+        }
+
+        // Select directory using modern File System Access API
+        async function selectDirectory() {
+            try {
+                log('Opening directory picker...');
+                
+                const dirHandle = await window.showDirectoryPicker({
+                    mode: 'read'
+                });
+                
+                log(`Selected directory: ${dirHandle.name}`);
+                await loadFilesFromDirectory(dirHandle);
+                
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    log('❌ Error selecting directory: ' + error.message);
+                }
+            }
+        }
+
+        // Load files from directory handle
+        async function loadFilesFromDirectory(dirHandle) {
+            loadedFiles.clear();
+            let fileCount = 0;
+            
+            // Check if this looks like a scenario root directory
+            const subdirs = [];
+            const files = [];
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'directory') {
+                    subdirs.push(entry.name);
+                } else {
+                    files.push(entry.name);
+                }
+            }
+            
+            const hasXosc = subdirs.includes('xosc');
+            const hasXodr = subdirs.includes('xodr');  
+            const hasCatalogs = subdirs.includes('catalogs');
+            
+            if (hasXosc && hasXodr && hasCatalogs) {
+                log(`✅ Perfect! Found complete scenario structure: ${subdirs.join(', ')}`);
+            } else if (hasXosc || hasXodr) {
+                log(`⚠️ Partial structure detected. Found subdirs: ${subdirs.join(', ')}`);
+                log(`🗀 For best results, select the root directory containing: xosc/, xodr/, catalogs/`);
+            } else if (subdirs.length > 0) {
+                log(`Found subdirectories: ${subdirs.join(', ')}`);
+            }
+            
+            try {
+                // Recursively load files from this directory and subdirectories
+                fileCount = await loadDirectoryRecursive(dirHandle, '');
+                
+                log(`✅ Loaded ${fileCount} files from directory and subdirectories`);
+                updateFileList();
+                
+            } catch (error) {
+                log('❌ Error reading directory: ' + error.message);
+            }
+        }
+        
+        // Recursively load files from directory and subdirectories
+        async function loadDirectoryRecursive(dirHandle, basePath) {
+            let fileCount = 0;
+            
+            try {
+                for await (const entry of dirHandle.values()) {
+                    const entryPath = basePath ? `${basePath}/${entry.name}` : entry.name;
+                    
+                    if (entry.kind === 'file') {
+                        const file = await entry.getFile();
+                        const fileName = file.name;
+                        
+                        // Load .xodr, .xosc, .gltf, and .glb files
+                        if (fileName.endsWith('.xodr') || fileName.endsWith('.xosc') || 
+                            fileName.endsWith('.gltf') || fileName.endsWith('.glb')) {
+                            let content;
+                            if (fileName.endsWith('.gltf') || fileName.endsWith('.glb')) {
+                                // For 3D model files, store as binary data
+                                const arrayBuffer = await file.arrayBuffer();
+                                content = new Uint8Array(arrayBuffer);
+                            } else {
+                                // For XML files, store as text
+                                content = await file.text();
+                            }
+                            loadedFiles.set(entryPath, content);
+                            fileCount++;
+                            log(`📄 Loaded: ${entryPath} (${(file.size / 1024).toFixed(1)} KB)`);
+                        }
+                    } else if (entry.kind === 'directory') {
+                        // Recursively load subdirectories
+                        const subdirHandle = await dirHandle.getDirectoryHandle(entry.name);
+                        const subCount = await loadDirectoryRecursive(subdirHandle, entryPath);
+                        fileCount += subCount;
+                    }
+                }
+            } catch (error) {
+                log(`❌ Error loading from ${basePath || 'root'}: ${error.message}`);
+            }
+            
+            return fileCount;
+        }
+
+        // Update the file list display
+        function updateFileList() {
+            if (loadedFiles.size === 0) {
+                fileListEl.style.display = 'none';
+                return;
+            }
+            fileListEl.style.display = 'block';
+            fileItemsEl.innerHTML = '';
+            xoscSelectEl.innerHTML = '<option value="">-- Select scenario --</option>';
+
+            // Debug: Log all loaded files
+            log(`📋 All loaded files (${loadedFiles.size} total):`);
+            for (const [filename] of loadedFiles.entries()) {
+                log(`  📄 ${filename}`);
+            }
+
+            // Find catalog .xosc files - improved logic
+            const catalogXoscFiles = new Set();
+            for (const [filename, content] of loadedFiles.entries()) {
+                if (filename.endsWith('.xosc')) {
+                    // Primary check: Files in catalogs/ directory are definitely catalog files
+                    if (filename.includes('/catalogs/') || filename.includes('/Catalogs/')) {
+                        catalogXoscFiles.add(filename);
+                    }
+                    // Secondary check: Files with "catalog" in the name are likely catalog files
+                    else if (filename.toLowerCase().includes('catalog')) {
+                        catalogXoscFiles.add(filename);
+                    }
+                    // Note: We no longer check for <Directory path= because scenario files 
+                    // also contain these when referencing catalogs
+                }
+            }
+
+            // Categorize files
+            const categories = {
+                scenarios: [],
+                roads: [],
+                catalogs: [],
+                assets: [],
+                other: []
+            };
+            
+            // Debug: Log catalog detection results
+            log(`📋 Catalog detection results:`);
+            for (const [filename] of loadedFiles.entries()) {
+                if (filename.endsWith('.xosc')) {
+                    const isCatalog = catalogXoscFiles.has(filename);
+                    log(`  ${filename}: ${isCatalog ? '📚 CATALOG' : '🎬 SCENARIO'}`);
+                }
+            }
+            
+            for (const [filename, content] of loadedFiles.entries()) {
+                const fileInfo = {
+                    name: filename,
+                    size: (content.length / 1024).toFixed(1),
+                    category: 'other'
+                };
+                // Categorize files
+                if (filename.endsWith('.xosc')) {
+                    if (!catalogXoscFiles.has(filename)) {
+                        fileInfo.category = 'scenarios';
+                        // Add to scenario selector (exclude catalogs)
+                        const option = document.createElement('option');
+                        option.value = filename;
+                        option.textContent = filename;
+                        xoscSelectEl.appendChild(option);
+                        log(`  ➕ Added to scenario selector: ${filename}`);
+                    } else {
+                        fileInfo.category = 'catalogs';
+                        log(`  📚 Marked as catalog (excluded from selector): ${filename}`);
+                    }
+                } else if (filename.endsWith('.xodr')) {
+                    fileInfo.category = 'roads';
+                    log(`  🛣️ Categorized as road network: ${filename}`);
+                } else if (filename.includes('catalog') || filename.includes('Catalog')) {
+                    fileInfo.category = 'catalogs';
+                    log(`  📚 Categorized as catalog (by filename): ${filename}`);
+                } else if (filename.endsWith('.gltf') || filename.endsWith('.glb') || 
+                          filename.endsWith('.osgb') || filename.endsWith('.png') || filename.endsWith('.jpg')) {
+                    fileInfo.category = 'assets';
+                    log(`  🎨 Categorized as asset: ${filename}`);
+                } else {
+                    fileInfo.category = 'other';
+                    log(`  📄 Categorized as other: ${filename}`);
+                }
+                categories[fileInfo.category].push(fileInfo);
+            }
+            
+            // Debug: Log final categorization results
+            log(`📊 File categorization summary:`);
+            Object.entries(categories).forEach(([category, files]) => {
+                log(`  ${category}: ${files.length} files`);
+                files.forEach(file => log(`    - ${file.name}`));
+            });
+            
+            // Display categorized files
+            Object.entries(categories).forEach(([category, files]) => {
+                if (files.length === 0) return;
+                
+                const categoryEl = document.createElement('div');
+                categoryEl.className = 'file-category';
+                
+                const categoryIcons = {
+                    scenarios: '🎬',
+                    roads: '🛣️', 
+                    catalogs: '📚',
+                    assets: '🎨',
+                    other: '📄'
+                };
+                
+                const categoryNames = {
+                    scenarios: 'Scenarios',
+                    roads: 'Road Networks', 
+                    catalogs: 'Catalogs',
+                    assets: '3D Assets (not used yet)',
+                    other: 'Other Files'
+                };
+                
+                categoryEl.innerHTML = `<strong>${categoryIcons[category]} ${categoryNames[category]} (${files.length})</strong>`;
+                fileItemsEl.appendChild(categoryEl);
+                
+                files.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.style.marginLeft = '20px';
+                    fileItem.textContent = `${file.name} (${file.size} KB)`;
+                    
+                    fileItemsEl.appendChild(fileItem);
+                });
+            });
+        }
+
+        // Handle scenario selection
+        function onXoscSelectionChange() {
+            selectedXoscFile = xoscSelectEl.value;
+            if (selectedXoscFile) {
+                log(`📋 Selected scenario: ${selectedXoscFile}`);
+                runDemoBtn.textContent = `Run ${selectedXoscFile.split('/').pop()}`; // Show just filename
+                runDemoBtn.disabled = false;
+            } else {
+                runDemoBtn.textContent = 'Run Loaded Scenario';
+                runDemoBtn.disabled = true; // Disable when no scenario selected
+            }
+        }
+
+        // Initialize esmini
+        async function initEsmini() {
+            try {
+                log('Initializing esmini WASM module...');
+                log('Checking if esmini is available...');
+                
+                // Check if esmini script has loaded
+                if (typeof window.esmini === 'undefined') {
+                    log('⚠️ esmini not yet available, waiting...');
+                    setStatus('⏳ Waiting for esmini.js to load...', 'loading');
+                    
+                    // Wait for esmini to be available
+                    let attempts = 0;
+                    while (typeof window.esmini === 'undefined' && attempts < 100) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        attempts++;
+                    }
+                    
+                    if (typeof window.esmini === 'undefined') {
+                        throw new Error('Esmini WASM module failed to load after 10 seconds');
+                    }
+                }
+                
+                // Get the esmini factory function
+                const esminiFactory = window.esmini;
+                log('✅ Esmini factory function found');
+                
+                // Create an instance with proper error handling
+                log('Creating esmini instance...');
+                setStatus('🔧 Initializing esmini instance...', 'loading');
+                
+                // Try to create instance with empty config first (like main.js does)
+                try {
+                    esminiInstance = esminiFactory({
+                        // Capture esmini's stdout output
+                        print: function(text) {
+                            console.log(text); // Keep the original behavior
+                            // Directly add to our output
+                            const timestamp = new Date().toLocaleTimeString();
+                            outputEl.textContent += `${timestamp}: 📤 ESMINI: ${text}\n`;
+                            outputEl.scrollTop = outputEl.scrollHeight;
+                        },
+                        printErr: function(text) {
+                            console.error(text); // Keep the original behavior
+                            // Directly add to our output
+                            const timestamp = new Date().toLocaleTimeString();
+                            outputEl.textContent += `${timestamp}: 🚨 ESMINI ERROR: ${text}\n`;
+                            outputEl.scrollTop = outputEl.scrollHeight;
+                        }
+                    });
+                    log('✅ Esmini instance created successfully (with output capture)');
+                } catch (error) {
+                    log('⚠️ Failed with output capture, trying without: ' + error.message);
+                    try {
+                        esminiInstance = esminiFactory();
+                        log('✅ Esmini instance created successfully (no config)');
+                    } catch (error2) {
+                        log('⚠️ Failed without config, trying with empty config object: ' + error2.message);
+                        try {
+                            esminiInstance = esminiFactory({});
+                            log('✅ Esmini instance created successfully (empty config)');
+                        } catch (error3) {
+                            log('⚠️ Failed with empty config, trying with Module config: ' + error3.message);
+                            // Try with Module configuration to avoid the arguments_ error
+                            esminiInstance = esminiFactory({
+                                arguments_: [], // Use arguments_ instead of arguments
+                                noInitialRun: false
+                            });
+                            log('✅ Esmini instance created successfully (with Module config)');
+                        }
+                    }
+                }
+                
+                // Wait for module to be ready if it has a ready promise
+                if (esminiInstance && esminiInstance.then) {
+                    log('⏳ Waiting for module to be ready...');
+                    esminiInstance = await esminiInstance;
+                }
+                
+                log('✅ Esmini WASM module loaded and ready!');
+                
+                // Safely check available functions without triggering property access issues
+                log('🔍 Checking available esmini APIs...');
+                
+                // Check for specific esmini functions safely
+                let hasFS = false;
+                let hasFS_createDataFile = false;
+                let hasOpenScenario = false;
+                
+                try {
+                    hasFS = 'FS' in esminiInstance && typeof esminiInstance.FS === 'object';
+                    if (hasFS) log('✅ File system (FS) API available');
+                } catch (e) {
+                    log('⚠️ FS check failed: ' + e.message);
+                }
+                
+                try {
+                    hasFS_createDataFile = 'FS_createDataFile' in esminiInstance && typeof esminiInstance.FS_createDataFile === 'function';
+                    if (hasFS_createDataFile) log('✅ FS_createDataFile API available');
+                } catch (e) {
+                    log('⚠️ FS_createDataFile check failed: ' + e.message);
+                }
+                
+                try {
+                    hasOpenScenario = 'OpenScenario' in esminiInstance && typeof esminiInstance.OpenScenario === 'function';
+                    if (hasOpenScenario) {
+                        log('✅ OpenScenario constructor available');
+                    } else {
+                        log('⚠️ OpenScenario not found');
+                        
+                        // Try to safely find constructor-like functions
+                        const safeProps = ['Module', 'ccall', 'cwrap', 'getValue', 'setValue'];
+                        const foundConstructors = [];
+                        for (const prop of safeProps) {
+                            try {
+                                if (prop in esminiInstance && typeof esminiInstance[prop] === 'function') {
+                                    foundConstructors.push(prop);
+                                }
+                            } catch (e) {
+                                // Skip problematic properties
+                            }
+                        }
+                        if (foundConstructors.length > 0) {
+                            log('Available safe functions: ' + foundConstructors.join(', '));
+                        }
+                    }
+                } catch (e) {
+                    log('⚠️ OpenScenario check failed: ' + e.message);
+                }
+                
+                setStatus('✅ Esmini loaded successfully!', 'success');
+                runDemoBtn.disabled = true; // Disabled until files are loaded and selected
+                runEmbeddedDemoBtn.disabled = false; // Always available once esmini is loaded
+                log('Ready to run simulations!');
+                
+            } catch (error) {
+                log('❌ Error initializing esmini: ' + error.message);
+                log('Error details: ' + (error.stack || 'No stack trace'));
+                setStatus('❌ Failed to load esmini: ' + error.message, 'error');
+                console.error('Esmini initialization error:', error);
+            }
+        }
+
+        // Helper function to create a simple XODR road file
+        function createSimpleXodr() {
+            // Files are now loaded via HTTP instead of being embedded
+            return null;
+        }
+
+        // Run demo with either loaded files or embedded demo
+        function runDemo() {
+            if (!esminiInstance) {
+                log('❌ Esmini not initialized');
+                return;
+            }
+
+            if (!selectedXoscFile) {
+                log('❌ No scenario file selected. Use "Run Embedded Demo" instead.');
+                return;
+            }
+
+            try {
+                log('Running simulation with loaded files...');
+                runWithLoadedFiles();
+            } catch (error) {
+                log('❌ Error running demo: ' + error.message);
+                if (error.stack) {
+                    log('Error stack: ' + error.stack);
+                }
+            }
+        }
+
+        // Run embedded demo
+        function runEmbeddedDemo() {
+            if (!esminiInstance) {
+                log('❌ Esmini not initialized');
+                return;
+            }
+
+            try {
+                log('Running simulation with embedded demo files...');
+                runWithEmbeddedFiles();
+            } catch (error) {
+                log('❌ Error running embedded demo: ' + error.message);
+                if (error.stack) {
+                    log('Error stack: ' + error.stack);
+                }
+            }
+        }
+
+        // Run simulation with user-selected files
+        function runWithLoadedFiles() {
+            if (!selectedXoscFile) {
+                log('❌ No scenario file selected');
+                return;
+            }
+            
+            // Clean up from previous run
+            cleanupPreviousSimulation();
+            
+            log(`📋 Using scenario: ${selectedXoscFile}`);
+            
+            // Create scenario directory for this run
+            const scenarioDir = '/scenario';
+            try {
+                esminiInstance.FS.mkdir(scenarioDir);
+                log(`  Created scenario directory: ${scenarioDir}`);
+            } catch (e) {
+                log(`⚠️ Directory creation: ${e.message}`);
+            }
+            
+            // Create directory structure and load all files maintaining their relative paths
+            let filesLoaded = 0;
+            const createdDirs = new Set();
+            
+            // First pass: create all necessary directories inside scenario directory
+            for (const [filename] of loadedFiles.entries()) {
+                if (filename.includes('/')) {
+                    const pathParts = filename.split('/');
+                    pathParts.pop(); // Remove filename, keep directory path
+                    
+                    // Create nested directory structure inside scenario directory
+                    let currentPath = scenarioDir;
+                    for (const part of pathParts) {
+                        currentPath = `${currentPath}/${part}`;
+                        if (!createdDirs.has(currentPath)) {
+                            try {
+                                // Create directory using FS.mkdir
+                                if (esminiInstance.FS && esminiInstance.FS.mkdir) {
+                                    esminiInstance.FS.mkdir(currentPath);
+                                    createdDirs.add(currentPath);
+                                    log(`  Created directory: ${currentPath}`);
+                                } else {
+                                    // Fallback: FS_createDataFile can create directories implicitly
+                                    esminiInstance.FS_createDataFile('/', currentPath, '', true, true, true);
+                                    createdDirs.add(currentPath);
+                                    log(`  Created directory: ${currentPath} (fallback)`);
+                                }
+                            } catch (error) {
+                                // Directory might already exist, continue
+                                log(`  ℹ️ Directory ${currentPath} already exists or creation failed: ${error.message}`);
+                                createdDirs.add(currentPath); // Mark as processed
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Second pass: load all files with their proper paths inside scenario directory
+            for (const [filename, content] of loadedFiles.entries()) {
+                try {
+                    if (esminiInstance.FS_createDataFile) {
+                        let targetDir = scenarioDir;
+                        let targetFilename = filename;
+                        
+                        // Handle files in subdirectories
+                        if (filename.includes('/')) {
+                            const pathParts = filename.split('/');
+                            targetFilename = pathParts.pop(); // Get just the filename
+                            targetDir = `${scenarioDir}/${pathParts.join('/')}`; // Get directory path inside scenario
+                        }
+                        
+                        // Create the file in the correct directory inside scenario directory
+                        esminiInstance.FS_createDataFile(targetDir, targetFilename, content, true, false, false);
+                        filesLoaded++;
+                        log(`  ✅ Loaded ${filename} in ${targetDir} (${(content.length / 1024).toFixed(1)} KB)`);
+                    } else {
+                        log(`  ❌ No filesystem API available to load ${filename}`);
+                    }
+                } catch (error) {
+                    log(`  ❌ Failed to load ${filename}: ${error.message}`);
+                }
+            }
+            
+            log(`Loaded ${filesLoaded} files into virtual filesystem with directory structure`);
+            
+            // Debug: Show virtual filesystem structure
+            if (esminiInstance.FS) {
+                try {
+                    log(`🔍 Virtual filesystem contents:`);
+                    function listDirectory(path, indent = '') {
+                        try {
+                            const entries = esminiInstance.FS.readdir(path);
+                            entries.forEach(entry => {
+                                if (entry !== '.' && entry !== '..') {
+                                    const fullPath = path === '/' ? `/${entry}` : `${path}/${entry}`;
+                                    try {
+                                        const stat = esminiInstance.FS.stat(fullPath);
+                                        if (esminiInstance.FS.isDir(stat.mode)) {
+                                            log(`${indent}${entry}/`);
+                                            listDirectory(fullPath, indent + '  ');
+                                        } else {
+                                            log(`${indent}📄 ${entry}`);
+                                        }
+                                    } catch (e) {
+                                        log(`${indent}❓ ${entry} (stat error)`);
+                                    }
+                                }
+                            });
+                        } catch (e) {
+                            log(`${indent}❌ Cannot read directory ${path}: ${e.message}`);
+                        }
+                    }
+                    listDirectory('/');
+                } catch (e) {
+                    log(`🔍 Cannot inspect filesystem: ${e.message}`);
+                }
+            }
+            
+            // Parse the XOSC file to find referenced files and provide helpful warnings
+            analyzeScenarioReferences(selectedXoscFile);
+            
+            // Try to run the scenario - use path in scenario directory
+            try {
+                const scenarioPath = `${scenarioDir}/${selectedXoscFile}`;
+                runScenarioSimulation(scenarioPath);
+            } catch (error) {
+                log('❌ Error running scenario: ' + error.message);
+                if (error.message.includes('catalog')) {
+                    log('This error suggests missing catalog files. Try selecting the complete scenario directory structure!');
+                    log('Expected: Select the root folder containing xosc/, xodr/, and catalogs/ subdirectories');
+                } else if (error.message.includes('.xodr')) {
+                    log('This error suggests a missing road file (.xodr). Make sure to select the complete scenario directory!');
+                }
+            }
+        }
+
+        // Analyze scenario file to check for missing references
+        function analyzeScenarioReferences(xoscFilename) {
+            const xoscContent = loadedFiles.get(xoscFilename);
+            if (!xoscContent) return;
+            
+            log('🔍 Analyzing scenario file references...');
+            
+            // Get the directory of the scenario file for relative path resolution
+            const xoscDir = xoscFilename.includes('/') ? xoscFilename.split('/').slice(0, -1).join('/') : '';
+            
+            let missingFiles = [];
+            
+            // Check for XODR file reference
+            const xodrMatch = xoscContent.match(/<LogicFile\s+filepath="([^"]+)"/i);
+            if (xodrMatch) {
+                const xodrRelativePath = xodrMatch[1];
+                
+                // Resolve the absolute path from the scenario file's perspective
+                let xodrAbsolutePath = xodrRelativePath;
+                if (xoscDir && xodrRelativePath.startsWith('../')) {
+                    // Handle relative paths like ../xodr/bdsc_export.xodr
+                    const scenarioDirParts = xoscDir.split('/');
+                    const xodrParts = xodrRelativePath.split('/');
+                    
+                    // Go up directories for each ../
+                    let upCount = 0;
+                    for (const part of xodrParts) {
+                        if (part === '..') {
+                            upCount++;
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    const baseDirParts = scenarioDirParts.slice(0, -upCount);
+                    const relativeParts = xodrParts.slice(upCount);
+                    xodrAbsolutePath = [...baseDirParts, ...relativeParts].join('/');
+                } else if (xoscDir && !xodrRelativePath.startsWith('/')) {
+                    // Handle relative paths in same directory or subdirectory
+                    xodrAbsolutePath = xoscDir + '/' + xodrRelativePath;
+                }
+                
+                const hasXodr = Array.from(loadedFiles.keys()).some(name => 
+                    name === xodrAbsolutePath || name.endsWith(xodrRelativePath.replace(/^.*\//, ''))
+                );
+                
+                if (hasXodr) {
+                    log(`  ✅ Found referenced XODR: ${xodrRelativePath} → ${xodrAbsolutePath}`);
+                } else {
+                    log(`  ❌ Missing XODR file: ${xodrRelativePath} (expected at: ${xodrAbsolutePath})`);
+                    missingFiles.push(`XODR: ${xodrAbsolutePath}`);
+                    
+                    // Try to create a fallback XODR in the expected location
+                    try {
+                        const simpleXodr = createSimpleXodr();
+                        const xodrFilename = xodrRelativePath.replace(/^.*\//, ''); // Get just the filename
+                        
+                        // Create in current directory as fallback since we can't create the full path
+                        esminiInstance.FS_createDataFile('.', xodrFilename, simpleXodr, true, true);
+                        log(`  ⚡ Created fallback XODR: ${xodrFilename} (in current directory)`);
+                    } catch (error) {
+                        log(`  ❌ Failed to create fallback XODR: ${error.message}`);
+                    }
+                }
+            }
+            
+            // Check for catalog references
+            const catalogMatches = xoscContent.match(/<Directory\s+path="([^"]+)"/gi);
+            if (catalogMatches) {
+                catalogMatches.forEach(match => {
+                    const pathMatch = match.match(/path="([^"]+)"/i);
+                    if (pathMatch) {
+                        const catalogRelativePath = pathMatch[1];
+                        
+                        // Resolve catalog path relative to scenario file
+                        let catalogAbsolutePath = catalogRelativePath;
+                        if (xoscDir && catalogRelativePath.startsWith('../')) {
+                            // Handle relative catalog paths
+                            const scenarioDirParts = xoscDir.split('/');
+                            const catalogParts = catalogRelativePath.split('/');
+                            
+                            let upCount = 0;
+                            for (const part of catalogParts) {
+                                if (part === '..') upCount++;
+                                else break;
+                            }
+                            
+                            const baseDirParts = scenarioDirParts.slice(0, -upCount);
+                            const relativeParts = catalogParts.slice(upCount);
+                            catalogAbsolutePath = [...baseDirParts, ...relativeParts].join('/');
+                        } else if (xoscDir && !catalogRelativePath.startsWith('/')) {
+                            catalogAbsolutePath = xoscDir + '/' + catalogRelativePath;
+                        }
+                        
+                        const hasCatalog = Array.from(loadedFiles.keys()).some(name => 
+                            name.startsWith(catalogAbsolutePath) || name.includes(catalogAbsolutePath)
+                        );
+                        
+                        if (hasCatalog) {
+                            log(`  ✅ Found catalog directory: ${catalogRelativePath} → ${catalogAbsolutePath}`);
+                        } else {
+                            log(`  ❌ Missing catalog directory: ${catalogRelativePath} (expected at: ${catalogAbsolutePath})`);
+                            missingFiles.push(`Catalog: ${catalogAbsolutePath}`);
+                        }
+                    }
+                });
+            }
+            
+            // Check for vehicle/controller references
+            const entityRefs = xoscContent.match(/<CatalogReference\s+catalogName="[^"]*"\s+entryName="([^"]+)"/gi);
+            if (entityRefs) {
+                log(`  📋 Found ${entityRefs.length} catalog references - ensure catalog files are loaded`);
+            }
+            
+            // Provide helpful summary and guidance
+            const totalFiles = loadedFiles.size;
+            const xmlFiles = Array.from(loadedFiles.keys()).filter(name => 
+                name.endsWith('.xosc') || name.endsWith('.xodr') || name.includes('Catalog')
+            ).length;
+            
+            log(`  📊 Summary: ${totalFiles} total files loaded, ${xmlFiles} essential XML files`);
+            
+            // Show guidance if files are missing
+            if (missingFiles.length > 0) {
+                log(`  ⚠️ Missing ${missingFiles.length} essential files - simulation may fail!`);
+                log(`  To fix: Select the parent directory containing all subdirectories (xosc/, xodr/, catalogs/)`);
+                log(`  Expected structure:\n     your-scenario-directory/\n     ├── xosc/\n     ├── xodr/\n     └── catalogs/`);
+                log(`  🗀 Click "Choose Directory" above and select the complete scenario folder!`);
+            } else {
+                log(`  ✅ All referenced files found - ready to run!`);
+            }
+        }
+
+        // Clean up previous simulation files and directories
+        function cleanupPreviousSimulation() {
+            try {
+                if (esminiInstance.FS) {
+                    // Try to remove the scenario directory recursively
+                    const scenarioDir = '/scenario';
+                    try {
+                        // Check if directory exists
+                        esminiInstance.FS.stat(scenarioDir);
+                        // If we get here, directory exists
+                        log('  Removing previous simulation directory...');
+                        
+                        // Recursively remove directory contents
+                        function removeRecursive(path) {
+                            try {
+                                const entries = esminiInstance.FS.readdir(path);
+                                for (const entry of entries) {
+                                    if (entry !== '.' && entry !== '..') {
+                                        const fullPath = `${path}/${entry}`;
+                                        try {
+                                            const entryStat = esminiInstance.FS.stat(fullPath);
+                                            if (esminiInstance.FS.isDir(entryStat.mode)) {
+                                                removeRecursive(fullPath);
+                                                esminiInstance.FS.rmdir(fullPath);
+                                                log(`  🗑️ Removed directory: ${fullPath}`);
+                                            } else {
+                                                esminiInstance.FS.unlink(fullPath);
+                                                log(`  🗑️ Removed file: ${fullPath}`);
+                                            }
+                                        } catch (e) {
+                                            log(`  ⚠️ Could not remove ${fullPath}: ${e.message}`);
+                                        }
+                                    }
+                                }
+                            } catch (e) {
+                                log(`  ⚠️ Could not read directory ${path}: ${e.message}`);
+                            }
+                        }
+                        
+                        removeRecursive(scenarioDir);
+                        esminiInstance.FS.rmdir(scenarioDir);
+                        log('✅ Previous simulation directory removed completely');
+                        
+                    } catch (e) {
+                        // Directory doesn't exist, which is fine for first run
+                        log('  No previous simulation directory (first run)');
+                    }
+                }
+            } catch (error) {
+                log(`⚠️ Cleanup warning: ${error.message}`);
+            }
+        }
+
+        // Run simulation with embedded demo files
+        async function runWithEmbeddedFiles() {
+            log('📦 Loading demo files from server...');
+            
+            // Clean up from previous run
+            cleanupPreviousSimulation();
+            
+            // File URLs - these will be fetched via HTTP
+            const xodrFilename = 'example.xodr';
+            const xoscFilename = 'example.xosc';
+            const scenarioDir = '/scenario';
+            
+            try {
+                log('  Fetching demo files from server...');
+                
+                // Fetch the XODR file
+                log(`  Fetching ${xodrFilename}...`);
+                const xodrResponse = await fetch('./' + xodrFilename);
+                if (!xodrResponse.ok) {
+                    throw new Error(`Failed to fetch ${xodrFilename}: ${xodrResponse.status}`);
+                }
+                const xodrContent = await xodrResponse.text();
+                log(`  ✅ Loaded ${xodrFilename} (${(xodrContent.length / 1024).toFixed(1)} KB)`);
+                
+                // Fetch the XOSC file  
+                log(`  Fetching ${xoscFilename}...`);
+                const xoscResponse = await fetch('./' + xoscFilename);
+                if (!xoscResponse.ok) {
+                    throw new Error(`Failed to fetch ${xoscFilename}: ${xoscResponse.status}`);
+                }
+                const xoscContent = await xoscResponse.text();
+                log(`  ✅ Loaded ${xoscFilename} (${(xoscContent.length / 1024).toFixed(1)} KB)`);
+                
+                log('Creating virtual files in WASM filesystem...');
+                
+                // Use Emscripten's virtual filesystem to create files
+                if (esminiInstance.FS_createDataFile) {
+                    // Create scenario directory
+                    try {
+                        esminiInstance.FS.mkdir(scenarioDir);
+                        log(`📁 Created scenario directory: ${scenarioDir}`);
+                    } catch (e) {
+                        // Directory might already exist, try to continue
+                        log(`⚠️ Directory creation: ${e.message}`);
+                    }
+                    
+                    log(`  Creating virtual file: ${scenarioDir}/${xodrFilename}`);
+                    esminiInstance.FS_createDataFile(scenarioDir, xodrFilename, xodrContent, true, true);
+                    
+                    log(`  Creating virtual file: ${scenarioDir}/${xoscFilename}`);
+                    esminiInstance.FS_createDataFile(scenarioDir, xoscFilename, xoscContent, true, true);
+                    
+                    log('✅ Virtual files created successfully!');
+                } else {
+                    log('⚠️ No filesystem API found');
+                    
+                    // Check for specific FS functions without unsafe property enumeration
+                    const fsMethods = ['FS', 'FS_createDataFile', 'FS_writeFile', 'FS_readFile'];
+                    const foundFSMethods = [];
+                    for (const method of fsMethods) {
+                        try {
+                            if (method in esminiInstance) foundFSMethods.push(method);
+                        } catch (e) {
+                            // Skip problematic properties
+                        }
+                    }
+                    if (foundFSMethods.length > 0) {
+                        log('Available FS methods: ' + foundFSMethods.join(', '));
+                    }
+                    return;
+                }
+                
+                runScenarioSimulation(`${scenarioDir}/${xoscFilename}`);  // Use full path in scenario directory
+                
+            } catch (error) {
+                log('❌ Error loading demo files: ' + error.message);
+                if (error.message.includes('Failed to fetch')) {
+                    log('💡 Make sure example.xodr and example.xosc files are in the same directory as index.html');
+                }
+            }
+        }
+
+        // Common function to run scenario simulation
+        function runScenarioSimulation(scenarioFile) {
+            log(`🎮 Starting simulation with: ${scenarioFile}`);
+            
+            try {
+                log('Creating OpenScenario instance...');
+                
+                const config = {
+                    max_loop: 10e3,         // Maximum number of simulation loops (from main.js)
+                    max_time_step: 1.0 / 25,     // Maximum time step for simulation (from main.js)
+                    min_time_step: 1.0 / 120.0,    // Minimum time step for simulation (from main.js)
+                    dt: 0.0                // Default time step (from main.js)
+                };
+                
+                const scenario = new esminiInstance.OpenScenario(scenarioFile, config);
+                log('✅ Scenario simulation completed!');
+                
+                // Get object states for the last few seconds (like main.js does)
+                try {
+                    log('📊 Retrieving object states for analysis...');
+                    let objectStates = scenario.get_object_state_by_second(60, 1);
+                    
+                    for (let i = 0; i < objectStates.size(); i++) {
+                        const objectState = objectStates.get(i);
+                        log(`🚗 Object "${objectState.name}" pos[x:${objectState.x.toFixed(2)}, y:${objectState.y.toFixed(2)}, z:${objectState.z.toFixed(2)}]`);
+                    }
+                    
+                    if (objectStates.size() === 0) {
+                        log('📊 No object states retrieved (this might be normal for this scenario)');
+                    } else {
+                        log(`📊 Retrieved ${objectStates.size()} object state records`);
+                    }
+                } catch (error) {
+                    log('⚠️ Could not retrieve object states: ' + error.message);
+                    log('💡 This is normal - the scenario still ran successfully!');
+                }
+            } catch (error) {
+                log('❌ Error running simulation: ' + error.message);
+                if (error.message.includes('catalog')) {
+                    log('💡 This error suggests missing catalog files. Try selecting the complete scenario directory structure!');
+                } else if (error.message.includes('.xodr')) {
+                    log('💡 This error suggests a missing road file (.xodr). Make sure to select the complete scenario directory!');
+                }
+            }
+        }
+
+        // Helper function to set status
+        function setStatus(message, type) {
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+
+        // Event listeners
+        runDemoBtn.addEventListener('click', runDemo);
+        runEmbeddedDemoBtn.addEventListener('click', runEmbeddedDemo);
+        clearOutputBtn.addEventListener('click', () => {
+            outputEl.textContent = '';
+        });
+        selectDirBtn.addEventListener('click', selectDirectory);
+        xoscSelectEl.addEventListener('change', onXoscSelectionChange);
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            checkBrowserSupport();
+            log('Page loaded, starting esmini initialization...');
+            initEsmini();
+        });
+
+        // Track esmini.js loading
+        window.addEventListener('DOMContentLoaded', () => {
+            log('DOM loaded, esmini.js should be loading...');
+            if (typeof window.esmini !== 'undefined') {
+                log('⚡ esmini.js loaded quickly!');
+            } else {
+                log('⏳ esmini.js still loading (this is normal for a 17MB file)...');
+            }
+        });
+    </script>
 </body>
 
 </html>

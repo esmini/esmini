@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<OpenDRIVE>
+  <header revMajor="1" revMinor="4" name="" version="2.00" date="2021-05-14T11:48:57" north="20.999260" west="-323.636046" east="411.636046" south="-11.999260" vendor="51World">
+    <geoReference/>
+    <userData code="originLat" value="0.000000"/>
+    <userData code="originLong" value="0.000000"/>
+    <userData code="originAlt" value="0.000000"/>
+    <userData code="originHdg" value="0.000000"/>
+    <userData code="RnkMajorVersion" value="1"/>
+    <userData code="RnkMinorVersion" value="0"/>
+    <userData code="localEnuExt" value="6378137.000000,0.000000,0.000000,;0.000000,1.000000,0.000000,;0.000000,0.000000,1.000000,;1.000000,0.000000,0.000000,"/>
+  </header>
+  <road junction="-1" length="10000.000000" name="Road(1)" id="1">
+    <type s="0.000000" type="town">
+      <speed max="undefined" unit="km/h"/>
+    </type>
+    <planView>
+      <geometry hdg="6.272301" length="10000.000000" s="0.000000" x="0.000000" y="0.000000">
+        <line/>
+      </geometry>
+    </planView>
+    <elevationProfile>
+      <elevation a="0.000000" b="0.000000" c="0.000000" d="0.000000" s="0.000000"/>
+    </elevationProfile>
+    <lateralProfile>
+      <crossfall a="0.000000" b="0.000000" c="0.000000" d="0.000000" s="0.000000" side="left"/>
+      <crossfall a="0.000000" b="0.000000" c="0.000000" d="0.000000" s="0.000000" side="right"/>
+      <superelevation a="0.000000" b="0.000000" c="0.000000" d="0.000000" s="0.000000"/>
+    </lateralProfile>
+    <lanes>
+      <laneSection s="0.000000" singleSide="false">
+        <center>
+          <lane id="0" level="false" type="none">
+            <roadMark sOffset="0.000000" color="yellow" height="0.000000" laneChange="none" material="" type="solid" weight="standard" width="0.150000"/>
+          </lane>
+        </center>
+        <left>
+          <lane id="1" level="false" type="driving">
+            <height sOffset="0.000000" inner="0.000000" outer="0.000000"/>
+            <height sOffset="10000.000000" inner="0.000000" outer="0.000000"/>
+            <roadMark sOffset="0.000000" color="white" height="0.000000" laneChange="both" material="" type="broken" weight="standard" width="0.150000"/>
+            <width sOffset="0.000000" a="3.500000" b="0.000000" c="0.000000" d="0.000000"/>
+          </lane>
+          <lane id="2" level="false" type="driving">
+            <height sOffset="0.000000" inner="0.000000" outer="0.000000"/>
+            <height sOffset="10000.000000" inner="0.000000" outer="0.000000"/>
+            <roadMark sOffset="0.000000" color="white" height="0.000000" laneChange="both" material="" type="broken" weight="standard" width="0.150000"/>
+            <width sOffset="0.000000" a="3.500000" b="0.000000" c="0.000000" d="0.000000"/>
+          </lane>
+          <lane id="3" level="false" type="driving">
+            <height sOffset="0.000000" inner="0.000000" outer="0.000000"/>
+            <height sOffset="10000.000000" inner="0.000000" outer="0.000000"/>
+            <roadMark sOffset="0.000000" color="white" height="0.000000" laneChange="both" material="" type="solid" weight="standard" width="0.150000"/>
+            <width sOffset="0.000000" a="3.500000" b="0.000000" c="0.000000" d="0.000000"/>
+          </lane>
+        </left>
+        <right>
+          <lane id="-1" level="false" type="driving">
+            <height sOffset="0.000000" inner="0.000000" outer="0.000000"/>
+            <height sOffset="10000.000000" inner="0.000000" outer="0.000000"/>
+            <roadMark sOffset="0.000000" color="white" height="0.000000" laneChange="both" material="" type="broken" weight="standard" width="0.150000"/>
+            <width sOffset="0.000000" a="3.500000" b="0.000000" c="0.000000" d="0.000000"/>
+          </lane>
+          <lane id="-2" level="false" type="driving">
+            <height sOffset="0.000000" inner="0.000000" outer="0.000000"/>
+            <height sOffset="10000.000000" inner="0.000000" outer="0.000000"/>
+            <roadMark sOffset="0.000000" color="white" height="0.000000" laneChange="both" material="" type="broken" weight="standard" width="0.150000"/>
+            <width sOffset="0.000000" a="3.500000" b="0.000000" c="0.000000" d="0.000000"/>
+          </lane>
+          <lane id="-3" level="false" type="driving">
+            <height sOffset="0.000000" inner="0.000000" outer="0.000000"/>
+            <height sOffset="10000.000000" inner="0.000000" outer="0.000000"/>
+            <roadMark sOffset="0.000000" color="white" height="0.000000" laneChange="both" material="" type="solid" weight="standard" width="0.150000"/>
+            <width sOffset="0.000000" a="3.500000" b="0.000000" c="0.000000" d="0.000000"/>
+          </lane>
+        </right>
+      </laneSection>
+      <laneOffset a="0.000000" b="0.000000" c="0.000000" d="0.000000" s="0.000000"/>
+    </lanes>
+    <objects/>
+    <signals/>
+  </road>
+</OpenDRIVE>
