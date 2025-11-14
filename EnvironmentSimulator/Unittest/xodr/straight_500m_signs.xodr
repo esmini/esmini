@@ -133,10 +133,12 @@
 		<objects>
 			<object type="pole" name="pole" id="1" s="100.0" t="3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 			<object type="pole" name="pole" id="2" s="100.0" t="-3.57" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
+			<object type="pole" name="pole" id="3" s="110.0" t="4.0" zOffset="-0.2" validLength="0.0" orientation="+" length="0.06" width="0.06" radius="0.5" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
 		</objects>
 		<signals>
 			<signal s="100.0" t="3.57" id="1" name="speed_30_0" dynamic="no" orientation="+" zOffset="1.7" type="c" country="SE" subtype="31" value="3" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
 			<signal s="100.0" t="-3.57" id="2" name="speed_30_1" dynamic="no" orientation="+" zOffset="1.7" type="c" country="SE" subtype="31" value="3" hOffset="0.0" pitch="0.0" roll="0.0" height="0.61" width="0.61"/>
+            <signal s="110.0" t="4.0" id="3" name="_Sg14" dynamic="yes" orientation="-" zOffset="1.7" type="1.000.011" country="OpenDRIVE" subtype="10" hOffset="0.0" pitch="0.0" roll="0.0" height="1.0" width="0.4"/>
 		</signals>
 		<surface/>
 	</road>

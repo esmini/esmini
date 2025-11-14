@@ -746,6 +746,66 @@ TEST(OSI, TestTrafficLights)
     delete player;
 }
 
+TEST(OSI, TestTrafficLightStates)
+{
+    const char* args[] =
+        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/traffic_light_tests.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    double          dt     = 0.1;
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+
+    // OSI TrafficLights
+    ASSERT_EQ(osi_gt_ptr->traffic_light_size(), 3);
+
+    for (int i = 0; i < osi_gt_ptr->traffic_light_size(); i++)
+    {
+        ASSERT_EQ(osi_gt_ptr->traffic_light(i).id().value(), static_cast<size_t>(i));
+    }
+
+    // TrafficLights with arrows, 3 lamps
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_RED);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().assigned_lane_id(0).value(), 2);
+
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_YELLOW);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().assigned_lane_id(0).value(), 2);
+
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_GREEN);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().assigned_lane_id(0).value(), 2);
+
+    for (size_t i = 0; i < 2; i++)
+    {
+        player->Frame(dt);
+    }
+
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OTHER);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_FLASHING);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_COUNTING);
+
+    for (size_t i = 0; i < 2; i++)
+    {
+        player->Frame(dt);
+    }
+
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_UNKNOWN);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_UNKNOWN);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_UNKNOWN);
+
+    delete player;
+}
+
 TEST(OSI, TestOrientation)
 {
     const char* args[] =
