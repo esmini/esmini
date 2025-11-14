@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Demonstrate and test ACC controller -->
+<!-- A white car is driving with constant speed, set by init event -->
+<!-- The white car approaches a red leading car -->
+<!-- The red leading car will perform some maneuvers to exercise the ACC function -->
+
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="2"
+               date="2021-08-24T10:00:00"
+               description="Toggle Traffic Lights"
+               author="esmini-team"/>
+   <ParameterDeclarations/>
+   <CatalogLocations/>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_500m_signs.xodr"/>
+   </RoadNetwork>
+   <Entities/>
+   <Storyboard>
+      <Init>
+         <Actions/>
+      </Init>
+      <Story name="DummyStory">
+         <Act name="StopLightsAct">
+            <ManeuverGroup maximumExecutionCount="1" name="StopLightsManueverGroup">
+               <Actors selectTriggeringEntities="false">
+               </Actors>
+               <Maneuver name="StopLightManeuver">
+                  <Event name="StopLightEvent" priority="override" maximumExecutionCount="1">
+                     <Action name="StopLightAction">
+                        <GlobalAction>
+                           <InfrastructureAction>
+                              <TrafficSignalAction>
+                                 <TrafficSignalStateAction name="3" state="other;flashing;counting"/>
+                              </TrafficSignalAction>
+                           </InfrastructureAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="SimTimeCondition1" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="0.1" rule="greaterOrEqual"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="StopLightManeuver2">
+                  <Event name="StopLightEvent2" priority="override" maximumExecutionCount="1">
+                     <Action name="StopLightAction2">
+                        <GlobalAction>
+                           <InfrastructureAction>
+                              <TrafficSignalAction>
+                                 <TrafficSignalStateAction name="3" state="unknown;unknown;unknown"/>
+                              </TrafficSignalAction>
+                           </InfrastructureAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="SimTimeCondition2" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="0.2" rule="greaterOrEqual"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="StartTrigger" delay="0" conditionEdge="none">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0" rule="greaterThan"/>
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+               <Condition name="stop_trigger " delay="0" conditionEdge="none">
+                  <ByValueCondition>
+                     <SimulationTimeCondition value="5" rule="greaterThan"/>
+                  </ByValueCondition>
+               </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>
