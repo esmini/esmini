@@ -1,0 +1,172 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+    <FileHeader description="traffic sink example" author="hlindst9" revMajor="1" revMinor="3" date="2025-08-25T10:06:23.244169"/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/trafficarea.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="sink_0">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="sink_1">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="sink_2">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="sink_3">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="sink_4">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+        <ScenarioObject name="sink_5">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <GlobalAction>
+                    <TrafficAction>
+                        <TrafficSinkAction radius="0.7">
+                            <Position>
+                                <LanePosition roadId="2" laneId="-2" s="50.0" offset="0.0"/>
+                            </Position>
+                        </TrafficSinkAction>
+                    </TrafficAction>
+                </GlobalAction>
+                <Private entityRef="sink_0">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="30.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" s="20.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="sink_1">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="30.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" s="40.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="sink_2">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="30.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-1" s="60.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="sink_3">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="30.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-2" s="20.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="sink_4">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="30.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-2" s="40.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+                <Private entityRef="sink_5">
+                    <PrivateAction>
+                        <LongitudinalAction>
+                            <SpeedAction>
+                                <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
+                                <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="30.0"/>
+                                </SpeedActionTarget>
+                            </SpeedAction>
+                        </LongitudinalAction>
+                    </PrivateAction>
+                    <PrivateAction>
+                        <TeleportAction>
+                            <Position>
+                                <LanePosition roadId="0" laneId="-2" s="60.0" offset="0.0"/>
+                            </Position>
+                        </TeleportAction>
+                    </PrivateAction>
+                </Private>
+            </Actions>
+        </Init>
+        <Story name="story_act_maneuvuergroup_traffic sink maneuver">
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="20.0" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

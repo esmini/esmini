@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenSCENARIO xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="OpenScenario.xsd">
+    <FileHeader description="traffic area example" author="hlindst9" revMajor="1" revMinor="3" date="2025-08-27T14:58:05.899682"/>
+    <VariableDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/trafficarea.xodr"/>
+    </RoadNetwork>
+    <Storyboard>
+        <Init>
+            <Actions>
+                <GlobalAction>
+                    <TrafficAction trafficName="traffic_area_road_range">
+                        <TrafficAreaAction continuous="true" numberOfEntities="10">
+                            <TrafficArea>
+                                <RoadRange length="350">
+                                    <RoadCursor roadId="0" s="100"/>
+                                    <RoadCursor roadId="1" s="0">
+                                        <Lane id="1"/>
+                                        <Lane id="-1"/>
+                                    </RoadCursor>
+                                    <RoadCursor roadId="1" s="100">
+                                        <Lane id="-1"/>
+                                        <Lane id="-2"/>
+                                    </RoadCursor>
+                                    <RoadCursor roadId="2" s="100">
+                                        <Lane id="-1"/>
+                                        <Lane id="-2"/>
+                                    </RoadCursor>
+                                </RoadRange>
+                            </TrafficArea>
+                            <TrafficDistribution>
+                                <TrafficDistributionEntry weight="1">
+                                    <EntityDistribution>
+                                        <EntityDistributionEntry weight="0.5">
+                                            <ScenarioObjectTemplate>
+                                                <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+                                            </ScenarioObjectTemplate>
+                                        </EntityDistributionEntry>
+                                        <EntityDistributionEntry weight="0.5">
+                                            <ScenarioObjectTemplate>
+                                                <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
+                                            </ScenarioObjectTemplate>
+                                        </EntityDistributionEntry>
+                                    </EntityDistribution>
+                                </TrafficDistributionEntry>
+                            </TrafficDistribution>
+                        </TrafficAreaAction>
+                    </TrafficAction>
+                </GlobalAction>
+            </Actions>
+        </Init>
+        <Story name="story_act_maneuvuergroup_traffic area maneuver">
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
+                    <ByValueCondition>
+                        <SimulationTimeCondition value="30.0" rule="greaterThan"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

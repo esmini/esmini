@@ -132,7 +132,7 @@ namespace esmini::common
             return buffer_;
         }
 
-        void ClearBufferAndCApacity()
+        void ClearBufferAndCapacity()
         {
             buffer_.clear();
             SetBufferCapacity(0);

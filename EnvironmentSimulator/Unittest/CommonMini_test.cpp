@@ -391,7 +391,7 @@ TEST(LogFeatures, TestLogBuffer)
     EXPECT_EQ(buffer[1], "[] [info] Should also, again, be stored in buffer\n");
     EXPECT_EQ(buffer[2], "[] [info] Should replace first message\n");
 
-    txtLogger.ClearBufferAndCApacity();
+    txtLogger.ClearBufferAndCapacity();
     EXPECT_EQ(buffer.size(), 0);
     EXPECT_EQ(txtLogger.GetBufferCapacity(), 0);
 }
