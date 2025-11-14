@@ -292,6 +292,7 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     cp zlib/install/lib/libz.${LIB_EXT} zlib/install/lib/libzd.${LIB_EXT} $target_dir/lib
     cp jpeg-9e/jpeglib.h $target_dir/include
     cp jpeg-9e/.libs/libjpeg.${LIB_EXT} jpeg-9e/.libsd/libjpegd.${LIB_EXT} $target_dir/lib
+    cp /usr/lib/x86_64-linux-gnu/libpng16.${LIB_EXT} $target_dir/lib
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     cp zlib/install/include/zlib.h $target_dir/include
     cp zlib/install/lib/libz.${LIB_EXT} $target_dir/lib

@@ -26,7 +26,7 @@ macro(set_cloud_links)
             https://www.dropbox.com/scl/fi/kg6km3plk755vnz8gv1me/implot_mac.7z?rlkey=zzbpujrhoprlwnjeudv9pcb1o&dl=1)
     elseif(LINUX)
         set(OSG_PACKAGE_URL
-            https://drive.usercontent.google.com/download?id=1Ya1bLp_0-qqlhs67WAwbGW7l37wqP3o2&export=download&authuser=0&confirm=t;
+            https://drive.usercontent.google.com/download?id=1BHUujSqafCt5NMrLilU-PTUducQ4jz98&export=download&authuser=0&confirm=t;
             https://esmini.asuscomm.com/AICLOUD766065121/libs/osg_linux_glibc_2_31_gcc_7_5_0.7z;
             https://www.dropbox.com/s/4ug0gmkgdavzyb4/osg_linux_glibc_2_31_gcc_7_5_0.7z?dl=1)
         set(OSI_PACKAGE_URL
