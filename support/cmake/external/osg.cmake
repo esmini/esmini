@@ -19,11 +19,13 @@ macro(set_osg_libs)
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgSim.a
             ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_osg.a
             ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_jpeg.a
+            ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_png.a
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgUtil.a
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgAnimation.a
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosg.a
             ${EXTERNALS_OSG_LIBRARY_PATH}/libOpenThreads.a
             ${EXTERNALS_OSG_LIBRARY_PATH}/libjpeg.a
+            ${EXTERNALS_OSG_LIBRARY_PATH}/libpng16.a
             "-framework OpenGL"
             "-framework Cocoa"
             dl
@@ -35,8 +37,6 @@ macro(set_osg_libs)
             optimized
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgViewer.a
             optimized
-            ${EXTERNALS_OSG_LIBRARY_PATH}/libosgDB.a
-            optimized
             ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osgsim.a
             optimized
             ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osg.a
@@ -44,6 +44,8 @@ macro(set_osg_libs)
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgGA.a
             optimized
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgText.a
+            optimized
+            ${EXTERNALS_OSG_LIBRARY_PATH}/libosgDB.a
             optimized
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgSim.a
             optimized
@@ -62,6 +64,8 @@ macro(set_osg_libs)
             ${EXTERNALS_OSG_LIBRARY_PATH}/libOpenThreads.a
             optimized
             ${EXTERNALS_OSG_LIBRARY_PATH}/libjpeg.a
+            optimized
+            ${EXTERNALS_OSG_LIBRARY_PATH}/libpng16.a
             debug
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgViewerd.a
             debug
@@ -92,7 +96,8 @@ macro(set_osg_libs)
             ${EXTERNALS_OSG_LIBRARY_PATH}/libOpenThreadsd.a
             debug
             ${EXTERNALS_OSG_LIBRARY_PATH}/libjpegd.a
-            libpng16.a
+            debug
+            ${EXTERNALS_OSG_LIBRARY_PATH}/libpng16.a
             GL
             X11
             Xrandr

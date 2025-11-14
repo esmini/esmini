@@ -174,11 +174,17 @@ namespace scenarioengine
         }
     };
 
-    typedef struct
+    struct ReplayEntry
     {
         ObjectStateStructDat state;
         double               odometer;
-    } ReplayEntry;
+    };
+
+    struct ReplayTrafficLight
+    {
+        TrafficLightModel*                         model  = nullptr;
+        std::vector<roadmanager::Signal::LampMode> modes_ = {};
+    };
 
     class Replay
     {

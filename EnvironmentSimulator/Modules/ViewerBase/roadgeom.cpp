@@ -1142,13 +1142,14 @@ namespace roadgeom
                         {
                             roadmanager::TrafficLightInfo tl_info = it->second;
 
-                            traffic_light_.emplace(signal->GetId(),
-                                                   TrafficLightModel(tl_info.nr_lamps,
-                                                                     LocateFile(texture_file_name,
-                                                                                {DirNameOf(odrManager_->GetOpenDriveFilename()) + "/../models",
-                                                                                 DirNameOf(exe_path) + "/../resources/models"},
-                                                                                "Traffic light texture",
-                                                                                found)));
+                            traffic_light_.emplace(
+                                signal->GetId(),
+                                TrafficLightModel(tl_info.nr_lamps,
+                                                  LocateFile(texture_file_name,
+                                                             {DirNameOf(odrManager_->GetOpenDriveFilename()) + "/../models/roads_signal_textures",
+                                                              DirNameOf(exe_path) + "/../resources/models/roads_signal_textures"},
+                                                             "Traffic light texture",
+                                                             found)));
                             if (found)
                             {
                                 tx = traffic_light_.at(signal->GetId()).GetTx();

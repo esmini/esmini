@@ -5,13 +5,13 @@ macro(set_cloud_links)
     set(MODELS_PACKAGE_URL
         https://drive.usercontent.google.com/download?id=1c3cqRzwY41gWXbg0rmugQkL5I_5L6DH_&export=download&authuser=0&confirm=t;
         https://esmini.asuscomm.com/AICLOUD779364751/models/models.7z;
-        https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1)
+        https://www.dropbox.com/scl/fi/01v4863tgt3fdtx218226/models.7z?rlkey=07ioakfufoxp1q1beojntmsjp&st=hckmbfbd&dl=1)
 
     if(APPLE)
         set(OSG_PACKAGE_URL
-            https://drive.usercontent.google.com/download?id=1-1ySbmgX_Z1wXGOp-s6uouDpbmubw9zg&export=download&authuser=0&confirm=t;
+            https://drive.usercontent.google.com/download?id=16fHAwCctVtaheLB5oqipuxSZvsIW_eUu&export=download&authuser=0&confirm=t;
             https://esmini.asuscomm.com/AICLOUD766065121/libs/OpenSceneGraph_mac.7z;
-            https://www.dropbox.com/s/d0czj6b89p9jyvv/OpenSceneGraph_mac.7z?dl=1)
+            https://www.dropbox.com/scl/fi/pp8ml2pdhi26eyrzy91ki/osg_mac_macos_13_png.7z?rlkey=ejzcxlbrvl8gnqwih4ywsgfdo&st=i7799iip&dl=1)
         set(OSI_PACKAGE_URL
             https://drive.usercontent.google.com/download?id=1iyOT2Y-bqWzxbE5Aeov0WAx2-ic8uFd3&export=download&authuser=0&confirm=t;
             https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_mac_clang_1500_v2.7z;
@@ -26,9 +26,9 @@ macro(set_cloud_links)
             https://www.dropbox.com/scl/fi/kg6km3plk755vnz8gv1me/implot_mac.7z?rlkey=zzbpujrhoprlwnjeudv9pcb1o&dl=1)
     elseif(LINUX)
         set(OSG_PACKAGE_URL
-            https://drive.usercontent.google.com/download?id=1Ya1bLp_0-qqlhs67WAwbGW7l37wqP3o2&export=download&authuser=0&confirm=t;
+            https://drive.usercontent.google.com/download?id=1NQlZBTFBWHpu-ImEjJN6CIxvwuinelzL&export=download&authuser=0&confirm=t;
             https://esmini.asuscomm.com/AICLOUD766065121/libs/osg_linux_glibc_2_31_gcc_7_5_0.7z;
-            https://www.dropbox.com/s/4ug0gmkgdavzyb4/osg_linux_glibc_2_31_gcc_7_5_0.7z?dl=1)
+            https://www.dropbox.com/scl/fi/0rq5uefqmvfva0idsgsjn/osg_linux_glibc_2_31_gcc_7_5_0_png.7z?rlkey=x549jvuwljvgvivhbi0ysj5xj&st=qz6fll2i&dl=1)
         set(OSI_PACKAGE_URL
             https://drive.usercontent.google.com/download?id=1TFCwpS6oxqeUx2DSTvMv6f9Ra6CDtYn0&export=download&authuser=0&confirm=t;
             https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_linux_glibc_2_31_gcc_7_5_0_v2.7z;
@@ -47,9 +47,9 @@ macro(set_cloud_links)
             https://www.dropbox.com/scl/fi/d5h6vdqqf6q890d53541b/implot_linux_glibc_2_31_gcc_7_5_0.7z?rlkey=galhhylarlx70lhzfdmih4jim&dl=1)
     elseif(MSVC)
         set(OSG_PACKAGE_URL
-            https://drive.usercontent.google.com/download?id=1RTag0aUn_pJPK697j0-E72ABW10wZvOm&export=download&authuser=0&confirm=t;
+            https://drive.usercontent.google.com/download?id=11QIsQkYbY0I8_YsivPH9r7_qqWBqbsfH&export=download&authuser=0&confirm=t;
             https://esmini.asuscomm.com/AICLOUD766065121/libs/OpenSceneGraph_v10.7z;
-            https://dl.dropboxusercontent.com/s/e95hnoo782p40uc/OpenSceneGraph_v10.7z?dl=1)
+            https://www.dropbox.com/scl/fi/074keimjeec2e6jul3rn0/osg_win_vs17_v142_png.7z?rlkey=1631xcd9muiaayasf5p8jh597&st=ufyogs3h&dl=1)
         set(OSI_PACKAGE_URL
             https://drive.usercontent.google.com/download?id=1F0kxK7feXVfZihesDYU0UjaxoHMQ4BI5&export=download&authuser=0&confirm=t;
             https://esmini.asuscomm.com/AICLOUD766065121/libs/osi_3_5_0_win_vs_sdk_142_v2.7z;

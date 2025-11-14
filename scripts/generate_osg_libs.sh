@@ -33,11 +33,16 @@
 
 OSG_REPO=https://github.com/esmini/OpenSceneGraph_for_esmini
 # Specify version as branch or tag, e.g. OpenSceneGraph_for_esmini or OpenSceneGraph-3.6.5.
-OSG_VERSION=OpenSceneGraph-3.6.5
-fbx_support=false  # users are encouraged to convert fbx to osgb format whenever possible
+OSG_VERSION=OpenSceneGraph-3.6.5_for_esmini_v1
 # Parallel compile. Set specific number, e.g. "-j4" or empty "-j" for compiler default. Set to "" for cmake versions < 3.12.
 PARALLEL_BUILDS="-j4"
 ZIP_MIN_VERSION=12
+PNG_MIN_VERSION=50
+
+if ! ( [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "msys" ]] ); then
+    echo "Unsupported platform: $OSTYPE. Supported ones are: Win, Linux, Mac. Exiting." >&2
+    exit 1
+fi
 
 if [ "$OSTYPE" == "msys" ]; then
     # comment out line below to use default generator
@@ -52,7 +57,7 @@ if [ "$OSTYPE" == "msys" ]; then
     LIB_OT_PREFIX="ot*-"
 
     target_dir="v10"
-    zfilename="osg_v10.7z"
+    zfilename="osg_win.7z"
     z_exe="$PROGRAMFILES/7-Zip/7z"
 
 elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -65,6 +70,8 @@ elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
         zfilename="osg_linux.7z"
         z_exe=7za
     else
+        # Mac build, ensure cmake minimum policy version 3.5 to avoid issues with newer cmake versions
+        export CMAKE_POLICY_VERSION_MINIMUM=3.5
         target_dir="mac"
         zfilename="osg_mac.7z"
         z_exe=7z
@@ -79,122 +86,122 @@ fi
 # However you might want to adjust versions of software packages being checkout and built
 
 osg_root_dir=$(pwd)
+common_cmake_args="-DCMAKE_INSTALL_PREFIX=install -DCMAKE_DEBUG_POSTFIX=d"
 
-echo ------------------------ Installing dependencies ------------------------------------
+echo ------------------------ Build dependencies ------------------------------------
 
 cd $osg_root_dir
-if [ "$OSTYPE" == "msys" ]; then
-    if [ ! -d 3rdParty_x64 ]; then
-        if [ ! -f 3rdParty_VS2017_v141_x64_V11_full.7z  ]; then
-            curl -L "https://www.dropbox.com/scl/fi/fs54s1g2zbjbi6ou7zjt0/3rdParty_VS2017_v141_x64_V11_full.7z?rlkey=usiax6ry5xvclmye7sdypqwd9&st=fhfauw9e&dl=1" -O
-            "$z_exe" x 3rdParty_VS2017_v141_x64_V11_full.7z
-        fi
+if [ ! -d zlib ]; then
+    echo ------------------------ Build zlib ------------------------------------
+    git clone https://github.com/madler/zlib.git --depth 1 --branch v1.2.$ZIP_MIN_VERSION
+    cd  zlib
+    mkdir build
+    cd build
+    mkdir install
+
+    args="$common_cmake_args"
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        args+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch"
     fi
 
-    if [ $fbx_support = true ]; then
-        if [ ! -f fbx202021_fbxsdk_vs2017_win.exe ]; then
-            curl --user-agent  "Mozilla/5.0" -L https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_vs2017_win.exe -o fbx202021_fbxsdk_vs2017_win.exe
-        fi
-
-        if [ ! -d "$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/include" ]; then
-            echo Installing FBX SDK...
-            powershell -Command "Start-Process fbx202021_fbxsdk_vs2017_win.exe -ArgumentList /S -Wait"
-        else
-            echo FBX SDK already installed
-        fi
-
-        fbx_include="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/include"
-        fbx_lib_release="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/release/libfbxsdk-md.lib"
-        fbx_lib_debug="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/debug/libfbxsdk-md.lib"
-        fbx_xml_lib="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/release/libxml2-md.lib"
-        fbx_xml_lib_debug="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/debug/libxml2-md.lib"
-        fbx_zlib_lib="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/release/zlib-md.lib"
-        fbx_zlib_lib_debug="$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/lib/vs2017/x64/debug/zlib-md.lib"
+    if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        args+=" -DCMAKE_C_FLAGS=-fPIC"
+        build_type="-DCMAKE_BUILD_TYPE=Release"
     fi
 
-elif  [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    cmake .. "${GENERATOR_ARGUMENTS[@]}" $args $build_type
+    cmake --build . $PARALLEL_BUILDS --target install --config Release
 
-    if [ ! -d zlib ]; then
-        git clone https://github.com/madler/zlib.git --depth 1 --branch v1.2.$ZIP_MIN_VERSION
-        cd  zlib
-        mkdir install
-        mkdir build
-        cd build
-
+    if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "msys" ]]; then
         if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            cmake "${GENERATOR_ARGUMENTS[@]}" -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="-fPIC" ..
-            cmake --build . $PARALLEL_BUILDS --target install
-            mv ../install/lib/libz.a ../install/lib/libzd.a
-
             rm CMakeCache.txt
-            cmake "${GENERATOR_ARGUMENTS[@]}" -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-fPIC" ..
-            cmake --build . $PARALLEL_BUILDS --target install
-        elif [[ "$OSTYPE" == "darwin"* ]]; then
-            cmake "${GENERATOR_ARGUMENTS[@]}" -D CMAKE_INSTALL_PREFIX=../install -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_OSX_ARCHITECTURES="$macos_arch" ..
-            cmake --build . $PARALLEL_BUILDS --target install
-        else
-            cmake "${GENERATOR_ARGUMENTS[@]}" -D CMAKE_INSTALL_PREFIX=../install ..
-            cmake --build . $PARALLEL_BUILDS --config Debug --target install
-            cmake --build . $PARALLEL_BUILDS --config Release --target install --clean-first
+            build_type="-DCMAKE_BUILD_TYPE=Debug"
+            cmake .. "${GENERATOR_ARGUMENTS[@]}" $args $build_type
         fi
-
-    else
-        echo zlib folder already exists, continue with next step...
+        cmake --build . $PARALLEL_BUILDS --target install --config Debug --clean-first
     fi
-
-    if [ $fbx_support = true ]; then
-        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-            if [ ! -f fbx202001_fbxsdk_linux.tar.gz ]; then
-                curl --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-0-1/fbx202001_fbxsdk_linux.tar.gz" -o fbx202001_fbxsdk_linux.tar.gz
-                mkdir fbxsdk
-            fi
-            tar xzvf fbx202001_fbxsdk_linux.tar.gz --directory fbxsdk
-            ./fbxsdk/fbx202001_fbxsdk_linux ./fbxsdk
-            fbx_include="../../fbxsdk/include"
-            fbx_lib_release="../../fbxsdk/lib/gcc/x64/release/libfbxsdk.a"
-            fbx_lib_debug="../../fbxsdk/lib/gcc/x64/debug/libfbxsdk.a"
-            fbx_xml_lib=libxml2.so
-            fbx_zlib_lib=libz.so
-        elif [[ "$OSTYPE" == "darwin"* ]]; then
-            curl --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_clang_mac.pkg.tgz" -o fbx202021_fbxsdk_clang_mac.pkg.tgz
-            tar xzvf fbx202021_fbxsdk_clang_mac.pkg.tgz
-            sudo installer -pkg fbx202021_fbxsdk_clang_macos.pkg -target /
-            fbx_include="/Applications/Autodesk/FBX SDK/2020.2.1/include"
-            fbx_lib_release="/Applications/Autodesk/FBX SDK/2020.2.1/lib/clang/release/libfbxsdk.a"
-            fbx_lib_debug="/Applications/Autodesk/FBX SDK/2020.2.1/lib/clang/debug/libfbxsdk.a"
-            fbx_xml_lib=libxml2.dylib
-            fbx_zlib_lib=libz.dylib
-        fi
-    fi
+else
+    echo zlib folder already exists, continue with next step...
 fi
 
 cd $osg_root_dir
-if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
-    if [ ! -d jpeg-9e ]; then
-        if [ ! -f jpegsrc.v9e.tar.gz ]; then
-            curl -L -O http://www.ijg.org/files/jpegsrc.v9e.tar.gz
-        fi
-        tar xzf jpegsrc.v9e.tar.gz
-        cd jpeg-9e
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            ./configure CFLAGS="-arch arm64 -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk -mmacosx-version-min=10.15"
-            make
-        else
-            ./configure CFLAGS='-fPIC -g'; make $PARALLEL_BUILDS
-            mv .libs .libsd
-            mv .libsd/libjpeg.a .libsd/libjpegd.a
-            make clean
-            ./configure CFLAGS='-fPIC'; make $PARALLEL_BUILDS
-        fi
-    else
-        echo jpeg folder already exists, continue with next step...
+if [ ! -d libpng ]; then
+    echo ------------------------ Build libpng ------------------------------------
+    git clone https://github.com/pnggroup/libpng --depth 1 --branch v1.6.$PNG_MIN_VERSION
+    cd libpng
+    mkdir build
+    cd build
+    mkdir install
+
+    args="$common_cmake_args -DPNG_STATIC=ON -DPNG_SHARED=OFF -DPNG_TOOLS=OFF -DZLIB_ROOT=$osg_root_dir/zlib/build/install"
+
+    if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        C_FLAGS="-fPIC"
+        build_type="-DCMAKE_BUILD_TYPE=Release"
     fi
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        args+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch -DPNG_HARDWARE_OPTIMIZATIONS=OFF"
+    fi
+
+    cmake .. "${GENERATOR_ARGUMENTS[@]}" $args $build_type
+    cmake --build . $PARALLEL_BUILDS --target install --config Release
+
+    if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "msys" ]]; then
+        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+            rm CMakeCache.txt
+            build_type="-DCMAKE_BUILD_TYPE=Debug"
+            cmake .. "${GENERATOR_ARGUMENTS[@]}" $args $build_type
+        fi
+        cmake --build . $PARALLEL_BUILDS --target install --config Debug --clean-first
+    fi
+
+else
+    echo libpng folder already exists, continue with next step...
 fi
 
-echo ------------------------ Installing OSG ------------------------------------
+cd $osg_root_dir
+if [ ! -d libjpeg ]; then
+
+    echo ------------------------ Build libjpeg ------------------------------------
+    git clone https://github.com/csparker247/jpeg-cmake.git --depth 1 --branch v1.3.0 libjpeg
+    cd libjpeg
+    mkdir build
+    cd build
+    mkdir install
+
+    args="$common_cmake_args -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DLINK_STATIC=ON -DBUILD_EXECUTABLES=OFF -DBUILD_ALT_UI=OFF -DBUILD_TESTS=OFF"
+
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        args+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch"
+    fi
+
+    if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        args+=" -DCMAKE_C_FLAGS=-fPIC"
+        build_type="-DCMAKE_BUILD_TYPE=Release"
+    fi
+
+    cmake .. "${GENERATOR_ARGUMENTS[@]}" $args $build_type
+    cmake --build . $PARALLEL_BUILDS --target install --config Release
+
+    if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "msys" ]]; then
+        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+            rm CMakeCache.txt
+            build_type="-DCMAKE_BUILD_TYPE=Debug"
+            cmake .. "${GENERATOR_ARGUMENTS[@]}" $args $build_type
+        fi
+        cmake --build . $PARALLEL_BUILDS --target install --config Debug --clean-first
+    fi
+else
+    echo jpeg-cmake folder already exists, continue with next step...
+fi
+
+# ------------------------ Build OSG ------------------------------------
 
 cd $osg_root_dir
 if [ ! -d OpenSceneGraph ]; then
+    echo ------------------------ Checkout OSG ------------------------------------
     # use fork including some fixes
     git clone $OSG_REPO --branch $OSG_VERSION OpenSceneGraph
 
@@ -211,59 +218,61 @@ if [ ! -d OpenSceneGraph ]; then
     git checkout fca3b5b9a9f1c36ddf08ed08cbe02a2668fa4ee9 src/osgPlugins/osga/OSGA_Archive.cpp
 
     # Enforce pthread sched_yield() in favor of pthread_yield() which was deprecated in glibc 2.34
-    sed -i 's/CHECK_FUNCTION_EXISTS(pthread_yield/# CHECK_FUNCTION_EXISTS(pthread_yield/g' src/OpenThreads/pthreads/CMakeLists.txt
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' 's/CHECK_FUNCTION_EXISTS(pthread_yield/# CHECK_FUNCTION_EXISTS(pthread_yield/g' src/OpenThreads/pthreads/CMakeLists.txt
+    else
+        sed -i 's/CHECK_FUNCTION_EXISTS(pthread_yield/# CHECK_FUNCTION_EXISTS(pthread_yield/g' src/OpenThreads/pthreads/CMakeLists.txt
+    fi
 
     # unstage and show status of the repo
     git reset
     git describe --long --dirty
+else
+    echo OSG already checked out, continue with next step...
 fi
 
 cd $osg_root_dir
 if [ ! -d OpenSceneGraph/build ]; then
+    echo ------------------------ Build OSG ------------------------------------
+
     cd OpenSceneGraph
     mkdir build
     cd build
+    mkdir install
 
-    COMMON_ARGS="-DOSG_AGGRESSIVE_WARNINGS=False -DDYNAMIC_OPENSCENEGRAPH=false -DDYNAMIC_OPENTHREADS=false -DBUILD_OSG_APPLICATIONS=False -DBUILD_OSG_EXAMPLES=False -DBUILD_OSG_DEPRECATED_SERIALIZERS=False -DFBX_INCLUDE_DIR="$fbx_include" "
-    echo $COMMON_ARGS
+    args="-DOPENGL_PROFILE=GL2 -DOSG_AGGRESSIVE_WARNINGS=OFF -DDYNAMIC_OPENSCENEGRAPH=OFF -DDYNAMIC_OPENTHREADS=OFF -DBUILD_OSG_APPLICATIONS=OFF -DBUILD_OSG_EXAMPLES=OFF -DBUILD_OSG_DEPRECATED_SERIALIZERS=OFF -DJPEG_INCLUDE_DIR=$osg_root_dir/libjpeg/build/install/include -DPNG_PNG_INCLUDE_DIR=$osg_root_dir/libpng/build/install/include -DZLIB_INCLUDE_DIR=$osg_root_dir/zlib/build/install/include -DCMAKE_INSTALL_PREFIX=install"
 
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        COMMON_ARGS2="-DOPENGL_PROFILE=GL2 -DCMAKE_CXX_FLAGS=-fPIC -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e "
-
-        cmake ${COMMON_ARGS} ${COMMON_ARGS2} -DJPEG_LIBRARY=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DFBX_LIBRARY="$fbx_lib_release" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=../install ..
-        cmake --build . $PARALLEL_BUILDS --target install
-
-        # build debug variant
-        rm CMakeCache.txt
-        cmake ${COMMON_ARGS} ${COMMON_ARGS2} -DJPEG_LIBRARY=$osg_root_dir/jpeg-9e/.libsd/libjpegd.a -DFBX_LIBRARY="$fbx_lib_debug" -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install-debug ..
-        cmake --build . $PARALLEL_BUILDS --target install
-
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
-        cmake ${COMMON_ARGS} -DOSG_TEXT_USE_FONTCONFIG=false -DOPENGL_PROFILE=GL2 -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -fPIC -DGL_SILENCE_DEPRECATION" -DCMAKE_OSX_ARCHITECTURES="$macos_arch" -DCMAKE_INSTALL_PREFIX=../install ..
-
-        cmake --build . -j $PARALLEL_BUILDS --config Release --target install
-
-    elif [ "$OSTYPE" == "msys" ]; then
-        COMMON_ARGS2="-DOPENGL_PROFILE=GL3 -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" "
-
-        cmake "${GENERATOR_ARGUMENTS[@]}" ${COMMON_ARGS} ${COMMON_ARGS2} -DCMAKE_INSTALL_PREFIX=../install -DFBX_XML2_LIBRARY="$fbx_xml_lib_release" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib_release" ..
-        cmake --build . -j $PARALLEL_BUILDS --config Release --target install
-
-        # build debug variant
-        rm CMakeCache.txt
-
-        cmake "${GENERATOR_ARGUMENTS[@]}" ${COMMON_ARGS} ${COMMON_ARGS2} -DCMAKE_INSTALL_PREFIX=../install-debug -DFBX_XML2_LIBRARY="$fbx_xml_lib_debug" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib_debug" ..
-        cmake --build . -j $PARALLEL_BUILDS --config Debug --target install
-    else
-        echo Unknown OSTYPE: $OSTYPE
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        args+=" -DCMAKE_OSX_ARCHITECTURES=$macos_arch -DOSG_TEXT_USE_FONTCONFIG=OFF "
     fi
+
+    if [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        args+=" -DCMAKE_CXX_FLAGS=-fPIC"
+        build_type="-DCMAKE_BUILD_TYPE=Release"
+        libs_to_link="-DZLIB_LIBRARY_RELEASE=$osg_root_dir/zlib/build/install/lib/libz.a -DJPEG_LIBRARY_RELEASE=$osg_root_dir/libjpeg/build/install/lib/libjpeg.a -DPNG_LIBRARY_RELEASE=$osg_root_dir/libpng/build/install/lib/libpng16.a -DZLIB_LIBRARY_DEBUG=$osg_root_dir/zlib/build/install/lib/libzd.a -DJPEG_LIBRARY_DEBUG=$osg_root_dir/libjpeg/build/install/lib/libjpegd.a -DPNG_LIBRARY_DEBUG=$osg_root_dir/libpng/build/install/lib/libpng16d.a"
+    elif [[ "$OSTYPE" == "msys" ]]; then
+        libs_to_link="-DZLIB_LIBRARY_RELEASE=$osg_root_dir/zlib/build/install/lib/zlib.lib -DJPEG_LIBRARY_RELEASE=$osg_root_dir/libjpeg/build/install/lib/jpeg.lib -DPNG_LIBRARY_RELEASE=$osg_root_dir/libpng/build/install/lib/libpng16_static.lib -DZLIB_LIBRARY_DEBUG=$osg_root_dir/zlib/build/install/lib/zlibd.lib -DJPEG_LIBRARY_DEBUG=$osg_root_dir/libjpeg/build/install/lib/jpegd.lib -DPNG_LIBRARY_DEBUG=$osg_root_dir/libpng/build/install/lib/libpng16_staticd.lib"
+    fi
+
+    cmake .. "${GENERATOR_ARGUMENTS[@]}" $args $build_type $build_type $libs_to_link
+    cmake --build . $PARALLEL_BUILDS --target install --config Release
+
+    if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "msys" ]]; then
+        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+            rm CMakeCache.txt
+            build_type=" -DCMAKE_BUILD_TYPE=Debug"
+            cmake .. "${GENERATOR_ARGUMENTS[@]}" $args $build_type
+        fi
+        cmake --build . $PARALLEL_BUILDS --target install --config Debug --clean-first
+    fi
+else
+    echo OSG build folder already exists, continue with next step...
 fi
 
-echo ------------------------ Pack ------------------------------------
+echo ------------------------ Pack files ------------------------------------
 
 cd $osg_root_dir
-
-plugins_dir=$(find OpenSceneGraph/install/lib -maxdepth 1 -type d -name "osgPlugins-*")
+plugins_dir=$(find OpenSceneGraph/build/install/lib -maxdepth 1 -type d -name "osgPlugins-*")
 if [ -d "$plugins_dir" ]; then
     plugins_dir_name=$(basename $plugins_dir)
 else
@@ -277,66 +286,37 @@ if [ ! -d $target_dir ]; then
     mkdir $target_dir/lib
     mkdir $target_dir/lib/$plugins_dir_name
 fi
-cp -r OpenSceneGraph/install/include $target_dir/
+cp -r OpenSceneGraph/build/install/include $target_dir/
 
-if [ "$OSTYPE" == "msys" ]; then
-    cp 3rdParty_x64/x64/include/zlib.h $target_dir/include
-    cp 3rdParty_x64/x64/lib/zlibstatic.lib 3rdParty_x64/x64/lib/zlibstaticd.lib $target_dir/lib
-    cp 3rdParty_x64/x64/include/jpeglib.h $target_dir/include
-    cp 3rdParty_x64/x64/lib/jpeg.lib 3rdParty_x64/x64/lib/jpegd.lib $target_dir/lib
-elif [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
-    cp zlib/install/include/zlib.h $target_dir/include
-    cp zlib/install/lib/libz.${LIB_EXT} zlib/install/lib/libzd.${LIB_EXT} $target_dir/lib
-    cp jpeg-9e/jpeglib.h $target_dir/include
-    cp jpeg-9e/.libs/libjpeg.${LIB_EXT} jpeg-9e/.libsd/libjpegd.${LIB_EXT} $target_dir/lib
+cp zlib/build/install/include/*.h $target_dir/include
+if [[ "$OSTYPE" == "msys" ]]; then
+    cp zlib/build/install/lib/zlibstatic*.${LIB_EXT} $target_dir/lib
 else
-    echo Unknown OSTYPE: $OSTYPE
+    cp zlib/build/install/lib/libz*.${LIB_EXT} $target_dir/lib
 fi
+cp libjpeg/build/install/include/*.h $target_dir/include
+cp libjpeg/build/install/lib/${LIB_PREFIX}jpeg*.${LIB_EXT} $target_dir/lib
+cp libpng/build/install/include/*.h $target_dir/include
+cp libpng/build/install/lib/libpng16*.${LIB_EXT} $target_dir/lib
 
-cd $osg_root_dir/OpenSceneGraph/install/lib
-cp ${LIB_OSG_PREFIX}osg.${LIB_EXT} $osg_root_dir/$target_dir/lib
-cp ${LIB_OSG_PREFIX}osgAnimation.${LIB_EXT} $osg_root_dir/$target_dir/lib
-cp ${LIB_OSG_PREFIX}osgDB.${LIB_EXT} $osg_root_dir/$target_dir/lib
-cp ${LIB_OSG_PREFIX}osgGA.${LIB_EXT} $osg_root_dir/$target_dir/lib
-cp ${LIB_OSG_PREFIX}osgShadow.${LIB_EXT} $osg_root_dir/$target_dir/lib
-cp ${LIB_OSG_PREFIX}osgSim.${LIB_EXT} $osg_root_dir/$target_dir/lib
-cp ${LIB_OSG_PREFIX}osgText.${LIB_EXT} $osg_root_dir/$target_dir/lib
-cp ${LIB_OSG_PREFIX}osgUtil.${LIB_EXT} $osg_root_dir/$target_dir/lib
-cp ${LIB_OSG_PREFIX}osgViewer.${LIB_EXT} $osg_root_dir/$target_dir/lib
-cp ${LIB_OT_PREFIX}OpenThreads.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cd $osg_root_dir/OpenSceneGraph/build/install/lib
+cp ${LIB_OSG_PREFIX}osg{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgAnimation{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgDB{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgGA{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgShadow{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgSim{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgText{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgUtil{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OSG_PREFIX}osgViewer{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib
+cp ${LIB_OT_PREFIX}OpenThreads{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib
 
-cd $osg_root_dir/OpenSceneGraph/install/lib/$plugins_dir_name
-cp ${LIB_PREFIX}osgdb_jpeg.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
-cp ${LIB_PREFIX}osgdb_osg.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
-cp ${LIB_PREFIX}osgdb_serializers_osg.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
-cp ${LIB_PREFIX}osgdb_serializers_osgsim.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
-
-if [ $fbx_support = true ]; then
-    cp ${LIB_PREFIX}osgdb_fbx.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
-fi
-
-if [[ ! "$OSTYPE" == "darwin"* ]]; then
-    cd $osg_root_dir/OpenSceneGraph/install-debug/lib
-    cp ${LIB_OSG_PREFIX}osgd.${LIB_EXT} $osg_root_dir/$target_dir/lib
-    cp ${LIB_OSG_PREFIX}osgAnimationd.${LIB_EXT} $osg_root_dir/$target_dir/lib
-    cp ${LIB_OSG_PREFIX}osgDBd.${LIB_EXT} $osg_root_dir/$target_dir/lib
-    cp ${LIB_OSG_PREFIX}osgGAd.${LIB_EXT} $osg_root_dir/$target_dir/lib
-    cp ${LIB_OSG_PREFIX}osgShadowd.${LIB_EXT} $osg_root_dir/$target_dir/lib
-    cp ${LIB_OSG_PREFIX}osgSimd.${LIB_EXT} $osg_root_dir/$target_dir/lib
-    cp ${LIB_OSG_PREFIX}osgTextd.${LIB_EXT} $osg_root_dir/$target_dir/lib
-    cp ${LIB_OSG_PREFIX}osgUtild.${LIB_EXT} $osg_root_dir/$target_dir/lib
-    cp ${LIB_OSG_PREFIX}osgViewerd.${LIB_EXT} $osg_root_dir/$target_dir/lib
-    cp ${LIB_OT_PREFIX}OpenThreadsd.${LIB_EXT} $osg_root_dir/$target_dir/lib
-
-    cd $osg_root_dir/OpenSceneGraph/install-debug/lib/$plugins_dir_name
-    cp ${LIB_PREFIX}osgdb_jpegd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
-    cp ${LIB_PREFIX}osgdb_osgd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
-    cp ${LIB_PREFIX}osgdb_serializers_osgd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
-    cp ${LIB_PREFIX}osgdb_serializers_osgsimd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
-    if [ $fbx_support = true ]; then
-        cp ${LIB_PREFIX}osgdb_fbxd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
-    fi
-fi
+cd $osg_root_dir/OpenSceneGraph/build/install/lib/$plugins_dir_name
+cp ${LIB_PREFIX}osgdb_jpeg{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
+cp ${LIB_PREFIX}osgdb_png{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
+cp ${LIB_PREFIX}osgdb_osg{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
+cp ${LIB_PREFIX}osgdb_serializers_osg{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
+cp ${LIB_PREFIX}osgdb_serializers_osgsim{,d}.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
 
 cd $osg_root_dir
 
