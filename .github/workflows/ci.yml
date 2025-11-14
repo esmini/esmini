@@ -133,6 +133,23 @@ jobs:
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
 
+      - name: Run osc-validation pytest suite
+        if: runner.os == 'Linux' && matrix.configuration == 'Release'
+        shell: bash
+        run: |
+          git clone https://github.com/PMSFIT/osc-validation.git
+          cd osc-validation
+          python3 -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+          SIM_BIN="$(pwd)/../bin/esmini"
+          echo "Using esmini binary: $SIM_BIN"
+          poetry run pytest validation/scenario/ \
+            --tool ESMini \
+            --toolpath "$SIM_BIN" \
+            -k "test_trajectory_remote_zip" \
+            -v
+
       - name: Compile minimal C example
         if: runner.os == 'Linux'
         run: |
