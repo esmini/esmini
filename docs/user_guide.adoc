@@ -1121,6 +1121,75 @@ image::speed_sign1.png[]
 .German speed sign
 image::speed_sign2.png[]
 
+=== Traffic Lights
+Included in esmini v.2.54.x
+
+==== The system
+
+Traffic lights are specified in the https://www.asam.net/index.php?eID=dumpFile&t=f&f=4422&token=e590561f3c39aa2260e5442e29e93f6693d1cccd#top-016f925e-bfe2-481d-b603-da4524d7491f[OpenDRIVE] road network description file. A traffic light is identified by four parameters:
+
+. dynamic
+. country
+. type
+. subtype
+
+Dynamic should be set to `yes`, as it indicates that the signal is potentially changing state during the simulation.
+
+Only the country `OpenDRIVE` is supported, with its associated types and subtypes. More information available in https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Signal_reference/1.0.0/signal-catalog/01_road_signals/road_signals.html[ASAM OpenDRIVE signal references].
+
+==== Traffic lights visualization
+
+**TODO:** The traffic lights are generated procedurally, and gets an associated texture depending on the type and subtype. The available textures can be found in esmini/path/to/textures.
+
+==== Traffic lights in OpenSCENARIO
+
+esmini supports `TrafficSignalStateAction` and `TrafficSignalStateCondition`. The semantic state can be set in the `TrafficSignalStateAction`, and the same semantic state can be monitored in `TrafficSignalStateCondition`. A semantic state is described as a `string`, with one state per lamp in the traffic light separated by a `;`. The lamps are mapped from top -> bottom, meaning the leftmost semantic state is the top lamp etc.
+
+Example of a semantic state of a lamp of type `1000001` (https://github.com/esmini/esmini/blob/master/resources/xosc/traffic_lights.xosc[full example]):
+
+[source,xml]
+----
+<GlobalAction>
+    <InfrastructureAction>
+      <TrafficSignalAction>
+          <TrafficSignalStateAction name="201" state="on;off;off"/>
+      </TrafficSignalAction>
+    </InfrastructureAction>
+</GlobalAction>
+----
+
+In above example, `name=201` maps to `signal` in the `OpenDRIVE` with `id=1`, and `state` is the semantic state of each of the 3 lamps.
+
+Supported semantic states are:
+
+. unknown
+. other
+. off
+. on
+. flashing
+. counting (no graphics support)
+
+For their intended usage and definition see https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1TrafficLight_1_1Classification.html#ae107846d88eaa3dab95d3d931d73fa09[ASAM OSI documentation].
+
+[Note]
+====
+**Note**: state `on` corresponds to `MODE_CONSTANT` in `OSI`.
+====
+
+
+==== Traffic Lights in OSI
+
+The traffic lights data are mostly supported in OSI, except the following data which is **not** supported:
+
+. counter
+. is_out_of_service
+. logical_lane_assignment
+
+[Note]
+====
+**Note**: The `assigned_lane_id` only shows the **drivable lanes** associated with the signal and maps to the `validity` element of a `signal` in an `OpenDRIVE`.
+====
+
 === Expressions
 From OpenSCENARIO v1.1 https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_expressions[expressions] including mathematical operations are supported in assignment of value to OpenSCENARIO https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_parameters[parameters] and XML element attributes. Examples:
 
