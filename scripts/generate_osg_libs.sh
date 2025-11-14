@@ -38,6 +38,7 @@ fbx_support=false  # users are encouraged to convert fbx to osgb format whenever
 # Parallel compile. Set specific number, e.g. "-j4" or empty "-j" for compiler default. Set to "" for cmake versions < 3.12.
 PARALLEL_BUILDS="-j4"
 ZIP_MIN_VERSION=12
+PNG_MIN_VERSION=50
 
 if [ "$OSTYPE" == "msys" ]; then
     # comment out line below to use default generator
@@ -52,7 +53,7 @@ if [ "$OSTYPE" == "msys" ]; then
     LIB_OT_PREFIX="ot*-"
 
     target_dir="v10"
-    zfilename="osg_v10.7z"
+    zfilename="osg_win.7z"
     z_exe="$PROGRAMFILES/7-Zip/7z"
 
 elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -65,6 +66,8 @@ elif [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
         zfilename="osg_linux.7z"
         z_exe=7za
     else
+        # Mac build, ensure cmake minimum policy version 3.5 to avoid issues with newer cmake versions
+        export CMAKE_POLICY_VERSION_MINIMUM=3.5
         target_dir="mac"
         zfilename="osg_mac.7z"
         z_exe=7z
@@ -86,18 +89,19 @@ cd $osg_root_dir
 if [ "$OSTYPE" == "msys" ]; then
     if [ ! -d 3rdParty_x64 ]; then
         if [ ! -f 3rdParty_VS2017_v141_x64_V11_full.7z  ]; then
+            echo ------------------------ Downloading 3rdParty ------------------------------------
             curl -L "https://www.dropbox.com/scl/fi/fs54s1g2zbjbi6ou7zjt0/3rdParty_VS2017_v141_x64_V11_full.7z?rlkey=usiax6ry5xvclmye7sdypqwd9&st=fhfauw9e&dl=1" -O
             "$z_exe" x 3rdParty_VS2017_v141_x64_V11_full.7z
         fi
     fi
 
     if [ $fbx_support = true ]; then
+        echo ------------------------ Installing FBX SDK ------------------------------------
         if [ ! -f fbx202021_fbxsdk_vs2017_win.exe ]; then
             curl --user-agent  "Mozilla/5.0" -L https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-2-1/fbx202021_fbxsdk_vs2017_win.exe -o fbx202021_fbxsdk_vs2017_win.exe
         fi
 
         if [ ! -d "$PROGRAMFILES/Autodesk/FBX/FBX SDK/2020.2.1/include" ]; then
-            echo Installing FBX SDK...
             powershell -Command "Start-Process fbx202021_fbxsdk_vs2017_win.exe -ArgumentList /S -Wait"
         else
             echo FBX SDK already installed
@@ -115,6 +119,7 @@ if [ "$OSTYPE" == "msys" ]; then
 elif  [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
     if [ ! -d zlib ]; then
+        echo ------------------------ Installing zlib ------------------------------------
         git clone https://github.com/madler/zlib.git --depth 1 --branch v1.2.$ZIP_MIN_VERSION
         cd  zlib
         mkdir install
@@ -142,7 +147,23 @@ elif  [[ "$OSTYPE" == "darwin"* ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
         echo zlib folder already exists, continue with next step...
     fi
 
+    cd $osg_root_dir
+    if [ ! -d libpng ]; then
+        echo ------------------------ Installing libpng ------------------------------------
+        git clone https://github.com/pnggroup/libpng --depth 1 --branch v1.6.$PNG_MIN_VERSION
+        cd libpng
+        mkdir install
+        mkdir build
+        cd build
+        cmake .. -DPNG_STATIC=ON -DCMAKE_C_FLAGS=-fPIC
+        cmake --build .
+    else
+        echo libpng folder already exists, continue with next step...
+    fi
+
+    cd $osg_root_dir
     if [ $fbx_support = true ]; then
+        echo ------------------------ Installing FBX SDK ------------------------------------
         if [[ "$OSTYPE" == "linux-gnu"* ]]; then
             if [ ! -f fbx202001_fbxsdk_linux.tar.gz ]; then
                 curl --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-0-1/fbx202001_fbxsdk_linux.tar.gz" -o fbx202001_fbxsdk_linux.tar.gz
@@ -172,6 +193,7 @@ cd $osg_root_dir
 if [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
     if [ ! -d jpeg-9e ]; then
         if [ ! -f jpegsrc.v9e.tar.gz ]; then
+            echo ------------------------ Installing libjpeg ------------------------------------
             curl -L -O http://www.ijg.org/files/jpegsrc.v9e.tar.gz
         fi
         tar xzf jpegsrc.v9e.tar.gz
@@ -210,8 +232,15 @@ if [ ! -d OpenSceneGraph ]; then
     # Apply fix '_FPOSOFF' has been deprecated #26231
     git checkout fca3b5b9a9f1c36ddf08ed08cbe02a2668fa4ee9 src/osgPlugins/osga/OSGA_Archive.cpp
 
+    # Apply fix to use ecplicit jpeg and png libraries
+    git checkout 27e353b55cdeb0eb397d61a4b731810c9b40cb75 CMakeLists.txt
+
     # Enforce pthread sched_yield() in favor of pthread_yield() which was deprecated in glibc 2.34
-    sed -i 's/CHECK_FUNCTION_EXISTS(pthread_yield/# CHECK_FUNCTION_EXISTS(pthread_yield/g' src/OpenThreads/pthreads/CMakeLists.txt
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' 's/CHECK_FUNCTION_EXISTS(pthread_yield/# CHECK_FUNCTION_EXISTS(pthread_yield/g' src/OpenThreads/pthreads/CMakeLists.txt
+    else
+        sed -i 's/CHECK_FUNCTION_EXISTS(pthread_yield/# CHECK_FUNCTION_EXISTS(pthread_yield/g' src/OpenThreads/pthreads/CMakeLists.txt
+    fi
 
     # unstage and show status of the repo
     git reset
@@ -239,7 +268,7 @@ if [ ! -d OpenSceneGraph/build ]; then
         cmake --build . $PARALLEL_BUILDS --target install
 
     elif [[ "$OSTYPE" == "darwin"* ]]; then
-        cmake ${COMMON_ARGS} -DOSG_TEXT_USE_FONTCONFIG=false -DOPENGL_PROFILE=GL2 -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -fPIC -DGL_SILENCE_DEPRECATION" -DCMAKE_OSX_ARCHITECTURES="$macos_arch" -DCMAKE_INSTALL_PREFIX=../install ..
+        cmake ${COMMON_ARGS} -DOSG_TEXT_USE_FONTCONFIG=false -DOPENGL_PROFILE=GL2 -DJPEG_INCLUDE_DIR=$osg_root_dir/jpeg-9e -DJPEG_LIBRARY_RELEASE=$osg_root_dir/jpeg-9e/.libs/libjpeg.a -DPNG_INCLUDE_DIR=$osg_root_dir/libpng -DPNG_LIBRARY_RELEASE=$osg_root_dir/libpng/build/libpng16.a -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -fPIC -DGL_SILENCE_DEPRECATION" -DCMAKE_OSX_ARCHITECTURES="$macos_arch" -DCMAKE_INSTALL_PREFIX=../install ..
 
         cmake --build . -j $PARALLEL_BUILDS --config Release --target install
 
@@ -284,11 +313,19 @@ if [ "$OSTYPE" == "msys" ]; then
     cp 3rdParty_x64/x64/lib/zlibstatic.lib 3rdParty_x64/x64/lib/zlibstaticd.lib $target_dir/lib
     cp 3rdParty_x64/x64/include/jpeglib.h $target_dir/include
     cp 3rdParty_x64/x64/lib/jpeg.lib 3rdParty_x64/x64/lib/jpegd.lib $target_dir/lib
-elif [[ "$OSTYPE" == "linux-gnu"* ]] || [[ "$OSTYPE" == "darwin"* ]]; then
+    cp 3rdParty_x64/x64/lib/libpng16_static.lib 3rdParty_x64/x64/lib/libpng16_staticd.lib $target_dir/lib
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     cp zlib/install/include/zlib.h $target_dir/include
     cp zlib/install/lib/libz.${LIB_EXT} zlib/install/lib/libzd.${LIB_EXT} $target_dir/lib
     cp jpeg-9e/jpeglib.h $target_dir/include
     cp jpeg-9e/.libs/libjpeg.${LIB_EXT} jpeg-9e/.libsd/libjpegd.${LIB_EXT} $target_dir/lib
+    cp libpng/build/libpng16.${LIB_EXT} $target_dir/lib
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    cp zlib/install/include/zlib.h $target_dir/include
+    cp zlib/install/lib/libz.${LIB_EXT} $target_dir/lib
+    cp jpeg-9e/jpeglib.h $target_dir/include
+    cp jpeg-9e/.libs/libjpeg.${LIB_EXT} $target_dir/lib
+    cp libpng/build/libpng16.${LIB_EXT} $target_dir/lib
 else
     echo Unknown OSTYPE: $OSTYPE
 fi
@@ -307,6 +344,7 @@ cp ${LIB_OT_PREFIX}OpenThreads.${LIB_EXT} $osg_root_dir/$target_dir/lib
 
 cd $osg_root_dir/OpenSceneGraph/install/lib/$plugins_dir_name
 cp ${LIB_PREFIX}osgdb_jpeg.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
+cp ${LIB_PREFIX}osgdb_png.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
 cp ${LIB_PREFIX}osgdb_osg.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
 cp ${LIB_PREFIX}osgdb_serializers_osg.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
 cp ${LIB_PREFIX}osgdb_serializers_osgsim.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
@@ -330,6 +368,7 @@ if [[ ! "$OSTYPE" == "darwin"* ]]; then
 
     cd $osg_root_dir/OpenSceneGraph/install-debug/lib/$plugins_dir_name
     cp ${LIB_PREFIX}osgdb_jpegd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
+    cp ${LIB_PREFIX}osgdb_pngd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
     cp ${LIB_PREFIX}osgdb_osgd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
     cp ${LIB_PREFIX}osgdb_serializers_osgd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
     cp ${LIB_PREFIX}osgdb_serializers_osgsimd.${LIB_EXT} $osg_root_dir/$target_dir/lib/$plugins_dir_name
