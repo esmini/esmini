@@ -407,6 +407,25 @@ TEST(FilenameOperations, TestDirName)
     EXPECT_EQ(LastDirOfFolderPath(""), "");
 }
 
+TEST(FilenameOperations, TestNormalizePath)
+{
+    EXPECT_EQ(LexicallyNormalizePath("/my_folder/.."), "/");
+    EXPECT_EQ(LexicallyNormalizePath("/home/kalle.."), "/home/kalle..");
+    EXPECT_EQ(LexicallyNormalizePath("/home/kalle\\"), "/home/kalle");
+    EXPECT_EQ(LexicallyNormalizePath("/home/kalle/..\\kalle2"), "/home/kalle2");
+    EXPECT_EQ(LexicallyNormalizePath("/"), "/");
+    EXPECT_EQ(LexicallyNormalizePath("//"), "/");
+    EXPECT_EQ(LexicallyNormalizePath("///"), "/");
+    EXPECT_EQ(LexicallyNormalizePath(""), ".");
+    EXPECT_EQ(LexicallyNormalizePath("."), ".");
+    EXPECT_EQ(LexicallyNormalizePath("/a/b/../c/./d"), "/a/c/d");
+    EXPECT_EQ(LexicallyNormalizePath("a\\b\\c\\..\\.."), "a");
+    EXPECT_EQ(LexicallyNormalizePath("C:\\foo\\.\\bar\\"), "C:/foo/bar");
+    EXPECT_EQ(LexicallyNormalizePath("..//file.txt"), "../file.txt");
+    EXPECT_EQ(LexicallyNormalizePath("/../a"), "/a");
+    EXPECT_EQ(LexicallyNormalizePath("/a/b/c/../../.."), "/");
+}
+
 int main(int argc, char** argv)
 {
     // testing::GTEST_FLAG(filter) = "*TestIsPointWithinSectorBetweenTwoLines*";

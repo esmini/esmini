@@ -191,12 +191,6 @@ std::string ControlDomain2Str(ControlDomains domain)
     return "Undefined";
 }
 
-bool FileExists(const char* fileName)
-{
-    std::ifstream infile(fileName);
-    return infile.good();
-}
-
 std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path)
 {
     std::string path = file_path;
@@ -220,8 +214,7 @@ std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string fi
 
 std::string LocateFile(const std::string& file_path, const std::vector<std::string>& dirs, const std::string& label, bool& found, bool log_not_found)
 {
-    std::string location = file_path;
-    found                = false;
+    found = false;
     std::vector<std::string> file_name_candidates;
     std::string              filename = FileNameOf(file_path);
 
@@ -252,25 +245,26 @@ std::string LocateFile(const std::string& file_path, const std::vector<std::stri
 
     for (auto& candidate : file_name_candidates)
     {
-        if (FileExists(candidate.c_str()))
+        if (!fs::exists(candidate))
         {
-            found = true;
-
-            // found file, register the filepath regardless of success of loading
-            location = fs::path(candidate).lexically_normal().generic_string();
-
-            if (location == file_path)
-            {
-                LOG_DEBUG("{} {} located", label, location);
-            }
-            else
-            {
-                LOG_DEBUG("{} {} located at {}", label, filename, location);
-            }
-
-            // do no more attempts
-            return location;
+            continue;  // file not found, try next candidate
         }
+
+        std::string canonical_path = LexicallyNormalizePath(candidate);
+
+        found = true;
+
+        if (canonical_path == file_path)
+        {
+            LOG_DEBUG("{} {} located", label, canonical_path);
+        }
+        else
+        {
+            LOG_DEBUG("{} {} located at {}", label, filename, canonical_path);
+        }
+
+        // found file, return the filepath regardless of success of loading
+        return canonical_path;
     }
 
     if (log_not_found)
@@ -285,7 +279,7 @@ std::string LocateFile(const std::string& file_path, const std::vector<std::stri
         LOG_WARN("{} {} not located, using specified file path", label, file_path);
     }
 
-    return location;
+    return file_path;
 }
 
 double GetAngleOfVector(double x, double y)
@@ -1213,6 +1207,94 @@ std::string FilePathWithoutExtOf(const std::string& fpath)
     {
         return fpath;
     }
+}
+
+std::string LexicallyNormalizePath(const std::string& path_str)
+{
+    // This is a Gemini-inspired implementation of fs::path::lexically_normal()
+    // We'll use the preferred platform separator for the output,
+    // but process all '/' and '\' as delimiters.
+    // Standard library path uses '/' internally even on Windows,
+    // but for string output, let's default to the common Unix/URL separator.
+    const char OUTPUT_SEPARATOR = '/';
+
+    // 1. Convert all '\' to '/' for uniform processing
+    std::string temp_path = path_str;
+    for (char& c : temp_path)
+    {
+        if (c == '\\')
+        {
+            c = '/';
+        }
+    }
+
+    // Check if the original path was absolute (started with '/' or '\')
+    bool is_absolute = !path_str.empty() && temp_path.front() == '/';
+
+    // 2. Tokenize the path string
+    std::stringstream        ss(temp_path);
+    std::string              segment;
+    std::vector<std::string> components;
+
+    // Use '/' to split the path into segments. This handles multiple consecutive separators (e.g., //)
+    while (std::getline(ss, segment, OUTPUT_SEPARATOR))
+    {
+        if (segment.empty() || segment == ".")
+        {
+            // Ignore empty segments (due to multiple separators like "a//b" or "a\\b")
+            // and "." (current directory)
+            continue;
+        }
+
+        // 3. Handle ".." (Parent directory)
+        if (segment == "..")
+        {
+            // Check if the stack is NOT empty AND the previous component is NOT '..'
+            if (!components.empty() && components.back() != "..")
+            {
+                components.pop_back();  // Remove the last valid component
+            }
+            else if (!(is_absolute && components.empty()))
+            {
+                components.push_back(segment);  // Not at root, add segment
+            }
+        }
+        else
+        {
+            // 4. Keep all other valid components
+            components.push_back(segment);
+        }
+    }
+
+    // 5. Reconstruct the path
+    std::string normalized_path;
+
+    if (is_absolute)
+    {
+        normalized_path += OUTPUT_SEPARATOR;
+    }
+
+    // Join the components with the separator
+    for (size_t i = 0; i < components.size(); ++i)
+    {
+        normalized_path += components[i];
+        if (i < components.size() - 1)
+        {
+            normalized_path += OUTPUT_SEPARATOR;
+        }
+    }
+
+    // Handle edge cases:
+    if (normalized_path.empty())
+    {
+        if (is_absolute)
+        {
+            return std::string(1, OUTPUT_SEPARATOR);  // e.g., input was "/" or "/./"
+        }
+        return ".";  // e.g., input was "./" or "a/b/../.."
+    }
+
+    return normalized_path;
 }
 
 std::string ToLower(const std::string in_str)

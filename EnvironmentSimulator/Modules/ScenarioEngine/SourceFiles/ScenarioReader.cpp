@@ -35,6 +35,16 @@
 
 #include <cstdlib>
 
+#if __has_include(<filesystem>)
+#include <filesystem>
+namespace fs = std::filesystem;
+#elif __has_include(<experimental/filesystem>)
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
+#else
+#error "Missing <filesystem> header"
+#endif
+
 using namespace scenarioengine;
 
 namespace scenarioengine
@@ -1019,12 +1029,12 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
     if (!properties.file_.filepath_.empty())
     {
         // Localize file
-        if (!FileExists(filename.c_str()))
+        if (!fs::exists(filename))
         {
             // Then assume relative path to scenario directory - which perhaps should be the expected location
             std::string filename2 = CombineDirectoryPathAndFilepath(DirNameOf(oscFilename_), filename);
 
-            if (!FileExists(filename2.c_str()))
+            if (!fs::exists(filename2))
             {
                 // Give up
                 LOG_ERROR("Failed to localize controller file {}, also tried {}", filename, filename2);

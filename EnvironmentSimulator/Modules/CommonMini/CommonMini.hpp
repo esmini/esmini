@@ -365,11 +365,6 @@ void PrintOSGUsage();
 std::string GetDefaultPath();
 
 /**
-        Checks whether file with given path exists or not
-*/
-bool FileExists(const char* fileName);
-
-/**
         Concatenate a directory path and a file path
 */
 std::string CombineDirectoryPathAndFilepath(std::string dir_path, std::string file_path);
@@ -855,8 +850,10 @@ private:
 // true, True, TRUE as true
 // false, False, FALSE as false
 std::pair<bool, bool> StrToBool(const std::string& val);
+
 // Splits string with delimiter
 std::vector<std::string> SplitString(const std::string& str, char delimiter);
+
 // Splits string with delimiter, but ignores delimiter inside quotes
 std::vector<std::string> SplitQuotedString(const std::string& str, char delim);
 std::string              DirNameOf(const std::string& fname);
@@ -866,9 +863,12 @@ bool                     IsDirectoryName(const std::string& string);
 std::string              FileNameExtOf(const std::string& fname);
 std::string              FileNameWithoutExtOf(const std::string& fname);
 std::string              FilePathWithoutExtOf(const std::string& fpath);
-std::string              ToLower(const std::string in_str);
-std::string              ToLower(const char* in_str);
-FILE*                    FileOpen(const char* filename, const char* mode);
+
+// Normalize path, similar to fs::lexically_normal()
+std::string LexicallyNormalizePath(const std::string& path_str);
+std::string ToLower(const std::string in_str);
+std::string ToLower(const char* in_str);
+FILE*       FileOpen(const char* filename, const char* mode);
 
 int    strtoi(std::string s);
 double strtod(std::string s);

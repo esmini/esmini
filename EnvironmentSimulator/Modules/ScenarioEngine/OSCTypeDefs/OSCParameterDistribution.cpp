@@ -55,7 +55,7 @@ int OSCParameterDistribution::Load(std::string filename)
     size_t                 i;
     for (i = 0; i < file_name_candidates.size(); i++)
     {
-        if (FileExists(file_name_candidates[i].c_str()))
+        if (fs::exists(file_name_candidates[i].c_str()))
         {
             result = doc_.load_file(file_name_candidates[i].c_str());
             if (!result)

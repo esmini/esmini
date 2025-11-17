@@ -2986,7 +2986,7 @@ int Viewer::LoadShadowfile(std::string vehicleModelFilename)
 
     for (size_t i = 0; i < file_name_candidates.size(); i++)
     {
-        if (FileExists(file_name_candidates[i].c_str()))
+        if (fs::exists(file_name_candidates[i].c_str()))
         {
             // Load shadow geometry
             shadow_node_ = osgDB::readNodeFile(file_name_candidates[i]);
