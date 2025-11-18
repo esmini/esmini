@@ -1769,12 +1769,13 @@ namespace roadmanager
 
         enum LampMode : int
         {
-            MODE_UNKNOWN  = 0,
-            MODE_OTHER    = 1,
-            MODE_OFF      = 2,
-            MODE_CONSTANT = 3,
-            MODE_FLASHING = 4,
-            MODE_COUNTING = 5
+            MODE_UNKNOWN   = 0,
+            MODE_OTHER     = 1,
+            MODE_OFF       = 2,
+            MODE_CONSTANT  = 3,
+            MODE_FLASHING  = 4,
+            MODE_COUNTING  = 5,
+            MODE_UNDEFINED = 6,  // Keep last
         };
 
         Signal(double      s,
@@ -2035,6 +2036,10 @@ namespace roadmanager
             LampColor GetColor() const
             {
                 return color_;
+            }
+            bool IsDirty() const
+            {
+                return dirty_;
             }
             bool ReadAndConsumeDirtyFlag()
             {

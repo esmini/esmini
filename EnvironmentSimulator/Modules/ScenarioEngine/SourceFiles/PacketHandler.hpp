@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include "CommonMini.hpp"
+#include "RoadManager.hpp"
 
 #define DAT_FILE_FORMAT_VERSION_MAJOR 4
 #define DAT_FILE_FORMAT_VERSION_MINOR 0
@@ -38,7 +39,8 @@ namespace Dat
         OBJ_ADDED       = 20,
         DT              = 21,
         END_OF_SCENARIO = 22,
-        PACKET_ID_SIZE  = 23,  // Keep this last
+        TRAFFIC_LIGHT   = 23,
+        PACKET_ID_SIZE  = 24,  // Keep this last
     };
 
     struct PacketString
@@ -82,6 +84,14 @@ namespace Dat
         float height = std::nanf("");
     };
 
+    struct TrafficLightLamp
+    {
+        int          traffic_light_id = -1;
+        unsigned int lamp_id          = ID_UNDEFINED;
+        unsigned int lamp_idx         = IDX_UNDEFINED;
+        int          lamp_mode        = static_cast<int>(roadmanager::Signal::LampMode::MODE_UNDEFINED);
+    };
+
     struct PacketGeneric
     {
         PacketHeader      header;
@@ -113,9 +123,10 @@ namespace Dat
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?
     {
-        double                            dt_ = LARGE_NUMBER;
-        double                            timestamp_;
-        std::unordered_map<int, ObjState> state_;
+        double                                     dt_ = LARGE_NUMBER;
+        double                                     timestamp_;
+        std::unordered_map<id_t, TrafficLightLamp> traffic_lights_lamps_;
+        std::unordered_map<int, ObjState>          state_;
     };
 
     class DatWriter

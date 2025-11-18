@@ -117,6 +117,7 @@ target_include_directories(
     PRIVATE ${COMMON_MINI_PATH}
             ${SCENARIO_ENGINE_PATH}/SourceFiles
             ${SCENARIO_ENGINE_PATH}/OSCTypeDefs
+            ${VIEWER_BASE_PATH}
             ${CONTROLLERS_PATH})
 
 target_include_directories(

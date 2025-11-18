@@ -23,7 +23,11 @@ class OldDATHeader(ctypes.Structure):
             ]
 
 class PacketId(enum.Enum):
-    """Enum for packet IDs."""
+    """
+    Enum for packet IDs.
+
+    Shall mirror PacketHandler.hpp Dat::PacketId
+    """
     OBJ_ID          = 0
     MODEL_ID        = 1
     OBJ_TYPE        = 2
@@ -47,7 +51,8 @@ class PacketId(enum.Enum):
     OBJ_ADDED       = 20
     DT              = 21
     END_OF_SCENARIO = 22
-    PACKET_ID_SIZE  = 23
+    TRAFFIC_LIGHT   = 23
+    PACKET_ID_SIZE  = 24
 
 class Pose:
     def __init__(self):
@@ -103,8 +108,8 @@ def read_packet_header(file) -> tuple:
     header_data = file.read(header_size)
     if (len(header_data) != header_size):
         raise EOFError("Unexpected end of file while reading packet header")
-    packet_id, _ = struct.unpack(header_format, header_data)
-    return packet_id
+    packet_id, data_size = struct.unpack(header_format, header_data)
+    return packet_id, data_size
 
 def read_string_packet(file):
     """Read a string packet from the file."""
@@ -364,7 +369,7 @@ class DATFile():
         Packets are read in the order they are likely to appear in the file.
         """
         while self.file.tell() < self.file_size:
-            p_id = read_packet_header(self.file)
+            p_id, data_size = read_packet_header(self.file)
 
             # TIMESTAMP packet
             if p_id == PacketId.TIMESTAMP.value:
@@ -444,6 +449,8 @@ class DATFile():
                 for k in list(bb.__dict__.keys()):
                     setattr(bb, k, read_dtype(self.file, DataType.float))
                 self.current_object_timeline.bounding_box.values.append([self.current_timestamp, bb])
+            elif p_id == PacketId.TRAFFIC_LIGHT.value:
+                self.file.seek(data_size, 1) # Skip packet, not supported yet
 
             # OBJ_DELETED packet
             elif p_id == PacketId.OBJ_DELETED.value:

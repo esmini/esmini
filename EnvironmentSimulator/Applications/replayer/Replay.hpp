@@ -19,6 +19,7 @@
 #include <optional>
 #include "CommonMini.hpp"
 #include "ScenarioGateway.hpp"
+#include "trafficlightmodel.hpp"
 
 namespace scenarioengine
 {
@@ -31,6 +32,48 @@ namespace scenarioengine
         mutable double                    last_time  = LARGE_NUMBER;
 
         std::optional<T> get_value_incremental(double time) const noexcept
+        {
+            if (values.empty())
+            {
+                return std::nullopt;
+            }
+
+            if (values.size() == 1)
+            {
+                last_index = 0;
+                last_time  = values[0].first;
+                return values[0].second;
+            }
+
+            size_t idx = last_index;
+
+            if (NEAR_NUMBERS(last_time, time))
+            {
+                return values[idx].second;
+            }
+
+            if (time >= values[idx].first)  // moving forward
+            {
+                while (idx + 1 < values.size() && values[idx + 1].first <= time + SMALL_NUMBER)
+                {
+                    idx++;
+                }
+            }
+            else  // moving backward
+            {
+                while (idx > 0 && values[idx].first > time + SMALL_NUMBER)
+                {
+                    idx--;
+                }
+            }
+
+            last_index = idx;
+            last_time  = time;
+
+            return values[idx].second;
+        }
+
+        std::optional<T> get_value_and_time_incremental(double time) const noexcept
         {
             if (values.empty())
             {
@@ -186,16 +229,26 @@ namespace scenarioengine
         std::vector<roadmanager::Signal::LampMode> modes_ = {};
     };
 
+    typedef struct
+    {
+        TrafficLightModel*                         model  = nullptr;
+        std::vector<roadmanager::Signal::LampMode> modes_ = {};
+    } ReplayTrafficLight;
+
     class Replay
     {
     public:
-        std::vector<ReplayEntry>                       data_;
-        Dat::DatHeader                                 dat_header_;
-        Timeline<double>                               dt_;
-        std::map<int, PropertyTimeline, MapComparator> objects_timeline_;
-        std::vector<double>                            timestamps_;
-        std::unordered_map<int, ReplayEntry>           object_state_cache_;
-        int                                            ghost_ghost_counter_ = -1;
+        // Timelines
+        Timeline<double>                                                  dt_;
+        std::map<int, PropertyTimeline, MapComparator>                    objects_timeline_;
+        std::unordered_map<unsigned int, Timeline<Dat::TrafficLightLamp>> traffic_lights_timeline_;
+
+        std::vector<ReplayEntry>                    data_;
+        Dat::DatHeader                              dat_header_;
+        std::vector<double>                         timestamps_;
+        std::unordered_map<int, ReplayEntry>        object_state_cache_;
+        std::unordered_map<int, ReplayTrafficLight> traffic_light_cache_;
+        int                                         ghost_ghost_counter_ = -1;
 
         Replay(std::string filename);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
@@ -261,6 +314,7 @@ namespace scenarioengine
         unsigned int             index_      = 0;
         bool                     repeat_     = false;
         std::string              create_datfile_;
+        std::vector<id_t>        unknown_pids;
 
         /* PacketHandler stuff */
         double                            timestamp_            = 0.0;

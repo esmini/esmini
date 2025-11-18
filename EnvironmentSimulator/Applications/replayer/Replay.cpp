@@ -405,6 +405,17 @@ int Replay::ParsePackets(const std::string& filename)
                 dt_.values.emplace_back(timestamp_, dt);
                 break;
             }
+            case static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT):
+            {
+                Dat::TrafficLightLamp lamp;
+                if (dat_reader.ReadPacket(header, lamp) != 0)
+                {
+                    LOG_ERROR("Failed reading traffic light lamp");
+                    return -1;
+                }
+                traffic_lights_timeline_[lamp.lamp_id].values.emplace_back(timestamp_, lamp);
+                break;
+            }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
             {
                 double stop_time;
@@ -425,6 +436,11 @@ int Replay::ParsePackets(const std::string& filename)
             default:
             {
                 dat_reader.UnknownPacket(header);
+                if (std::find(unknown_pids.begin(), unknown_pids.end(), header.id) == unknown_pids.end())
+                {
+                    LOG_DEBUG("Unknown packet with id: {}", header.id);
+                    unknown_pids.push_back(header.id);
+                }
                 break;
             }
         }

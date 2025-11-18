@@ -1,5 +1,4 @@
 #include "ScenarioGateway.hpp"
-#include "CommonMini.hpp"
 #include "PacketHandler.hpp"
 
 Dat::DatWriter::~DatWriter()
@@ -60,6 +59,34 @@ int Dat::DatWriter::WriteGenericDataToDat()
     {
         object_state_cache_.dt_ = dt_;
         Write(PacketId::DT, object_state_cache_.dt_);
+    }
+
+    // PacketId::TRAFFIC_LIGHT
+    auto dynamic_signals = roadmanager::Position::GetOpenDrive()->GetDynamicSignals();
+    for (size_t i = 0; i < dynamic_signals.size(); i++)
+    {
+        auto tl = dynamic_cast<roadmanager::TrafficLight*>(dynamic_signals[i]);
+        if (tl == nullptr || !tl->GetHasOSCAction())
+        {
+            continue;
+        }
+
+        for (size_t j = 0; j < tl->GetNrLamps(); j++)
+        {
+            auto lamp = tl->GetLamp(j);
+            if (!lamp->IsDirty())
+            {
+                continue;
+            }
+
+            auto [it, inserted] = object_state_cache_.traffic_lights_lamps_.try_emplace(lamp->GetId());
+
+            if (it->second.lamp_mode != lamp->GetMode())
+            {
+                it->second = {tl->GetId(), lamp->GetId(), static_cast<unsigned int>(j), static_cast<int>(lamp->GetMode())};
+                Write(PacketId::TRAFFIC_LIGHT, it->second);
+            }
+        }
     }
 
     return 0;
@@ -322,9 +349,9 @@ constexpr bool Dat::DatWriter::ShouldWriteObjId(PacketId p_id) const noexcept
 {
     static_assert(static_cast<int>(PacketId::END_OF_SCENARIO) < 64, "PacketId values must be < 64");
 
-    constexpr uint64_t skip_mask = (uint64_t{1} << static_cast<unsigned int>(PacketId::END_OF_SCENARIO)) |
-                                   (uint64_t{1} << static_cast<unsigned int>(PacketId::DT)) |
-                                   (uint64_t{1} << static_cast<unsigned int>(PacketId::TIMESTAMP));
+    constexpr uint64_t skip_mask =
+        (uint64_t{1} << static_cast<unsigned int>(PacketId::END_OF_SCENARIO)) | (uint64_t{1} << static_cast<unsigned int>(PacketId::DT)) |
+        (uint64_t{1} << static_cast<unsigned int>(PacketId::TIMESTAMP)) | (uint64_t{1} << static_cast<unsigned int>(PacketId::TRAFFIC_LIGHT));
 
     // If the bit for p_id is set, we skip writing
     return ((skip_mask >> static_cast<unsigned int>(p_id)) & uint64_t{1}) == 0;
@@ -373,7 +400,6 @@ bool Dat::DatReader::ReadFile(Dat::PacketHeader& header)
 
 void Dat::DatReader::UnknownPacket(const Dat::PacketHeader& header)
 {
-    LOG_DEBUG("Unknown packet with id: {}", header.id);
     file_.seekg(header.data_size, std::ios::cur);  // Skips the packet by moving cursor ahead
 }
 
