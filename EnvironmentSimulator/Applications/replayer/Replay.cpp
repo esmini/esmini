@@ -425,6 +425,11 @@ int Replay::ParsePackets(const std::string& filename)
             default:
             {
                 dat_reader.UnknownPacket(header);
+                if (std::find(unknown_pids.begin(), unknown_pids.end(), header.id) == unknown_pids.end())
+                {
+                    LOG_DEBUG("Unknown packet with id: {}", header.id);
+                    unknown_pids.push_back(header.id);
+                }
                 break;
             }
         }
