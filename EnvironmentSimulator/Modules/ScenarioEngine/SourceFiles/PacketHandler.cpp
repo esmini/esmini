@@ -54,7 +54,7 @@ int Dat::DatWriter::WriteGenericDataToDat()
     for (size_t i = 0; i < dynamic_signals.size(); i++)
     {
         auto tl = dynamic_cast<roadmanager::TrafficLight*>(dynamic_signals[i]);
-        if (!tl->GetHasOSCAction())
+        if (tl == nullptr || !tl->GetHasOSCAction())
         {
             continue;
         }
