@@ -1631,7 +1631,7 @@ The main flow of our example is:
 Step-by-step:
 
 . Create a new folder, e.g. "my_sumo", for this example
-. Copy esmini/EnvironmentSimulator/Unittest/xodr/simple_3way_motorway.xodr into the new folder
+. Copy esmini/resources/xodr/fabriksgatan.xodr into the new folder
 . Open a terminal in the new folder
 . Convert the xodr into a SUMO https://sumo.dlr.de/docs/Networks/SUMO_Road_Networks.html[road network]: +
    `netconvert --opendrive fabriksgatan.xodr -o my_sumo.net.xml`
