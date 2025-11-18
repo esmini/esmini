@@ -121,10 +121,10 @@ namespace Dat
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?
     {
-        double                                    dt_ = LARGE_NUMBER;
-        double                                    timestamp_;
-        std::unordered_map<int, TrafficLightLamp> traffic_lights_lamps_;
-        std::unordered_map<int, ObjState>         state_;
+        double                                     dt_ = LARGE_NUMBER;
+        double                                     timestamp_;
+        std::unordered_map<id_t, TrafficLightLamp> traffic_lights_lamps_;
+        std::unordered_map<int, ObjState>          state_;
     };
 
     class DatWriter
