@@ -33,7 +33,7 @@
 
 OSG_REPO=https://github.com/esmini/OpenSceneGraph_for_esmini
 # Specify version as branch or tag, e.g. OpenSceneGraph_for_esmini or OpenSceneGraph-3.6.5.
-OSG_VERSION=OpenSceneGraph-3.6.5
+OSG_VERSION=OpenSceneGraph-3.6.5_for_esmini_v1
 fbx_support=false  # users are encouraged to convert fbx to osgb format whenever possible
 # Parallel compile. Set specific number, e.g. "-j4" or empty "-j" for compiler default. Set to "" for cmake versions < 3.12.
 PARALLEL_BUILDS="-j4"
@@ -231,9 +231,6 @@ if [ ! -d OpenSceneGraph ]; then
 
     # Apply fix '_FPOSOFF' has been deprecated #26231
     git checkout fca3b5b9a9f1c36ddf08ed08cbe02a2668fa4ee9 src/osgPlugins/osga/OSGA_Archive.cpp
-
-    # Apply fix to use ecplicit jpeg and png libraries
-    git checkout 27e353b55cdeb0eb397d61a4b731810c9b40cb75 CMakeLists.txt
 
     # Enforce pthread sched_yield() in favor of pthread_yield() which was deprecated in glibc 2.34
     if [[ "$OSTYPE" == "darwin"* ]]; then
