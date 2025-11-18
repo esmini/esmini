@@ -405,6 +405,16 @@ int Replay::ParsePackets(const std::string& filename)
                 dt_.values.emplace_back(timestamp_, dt);
                 break;
             }
+            case static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT):
+            {
+                Dat::TrafficLightLamp lamp;
+                if (dat_reader.ReadPacket(header, lamp) != 0)
+                {
+                    LOG_ERROR("Failed reading traffic light lamp");
+                    return -1;
+                }
+                break;
+            }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
             {
                 double stop_time;
