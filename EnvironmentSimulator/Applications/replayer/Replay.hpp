@@ -255,6 +255,7 @@ namespace scenarioengine
         unsigned int             index_      = 0;
         bool                     repeat_     = false;
         std::string              create_datfile_;
+        std::vector<id_t>        unknown_pids;
 
         /* PacketHandler stuff */
         double                            timestamp_            = 0.0;
