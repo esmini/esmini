@@ -413,6 +413,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading traffic light lamp");
                     return -1;
                 }
+                tl_lamps_timelines_[lamp.id].values.emplace_back(timestamp_, lamp);
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):

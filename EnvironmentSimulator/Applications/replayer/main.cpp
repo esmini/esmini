@@ -1073,6 +1073,36 @@ int main(int argc, char** argv)
                 {
                     viewer_->SetInfoText("All entities in focus");
                 }
+
+                if (viewer_->roadGeom != nullptr)
+                {
+                    for (const auto& [key, value] : player->tl_lamps_timelines_)
+                    {
+                        auto tl_state = player->tl_lamps_timelines_[key].get_value_incremental(simTime);
+                        if (key == 1)
+                        {
+                            auto light = viewer_->roadGeom->traffic_light_red_yellow_green_[key];
+                            for (size_t i = 0; i < 3; i++)
+                            {
+                                if (tl_state.value().idx == i)
+                                    light.SetState(tl_state.value().idx, tl_state.value().mode_ == roadmanager::Signal::LampMode::MODE_CONSTANT);
+                                else
+                                    light.SetState(i, false);
+                            }
+                        }
+                        else
+                        {
+                            auto light = viewer_->roadGeom->traffic_light_pedestrian_red_green_[key];
+                            for (size_t i = 0; i < 2; i++)
+                            {
+                                if (tl_state.value().idx == 1)
+                                    light.SetState(tl_state.value().idx, tl_state.value().mode_ == roadmanager::Signal::LampMode::MODE_CONSTANT);
+                                else
+                                    light.SetState(i, false);
+                            }
+                        }
+                    }
+                }
 #endif  // _USE_OSG
 
                 // Collision detection

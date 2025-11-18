@@ -183,13 +183,16 @@ namespace scenarioengine
     class Replay
     {
     public:
-        std::vector<ReplayEntry>                       data_;
-        Dat::DatHeader                                 dat_header_;
-        Timeline<double>                               dt_;
-        std::map<int, PropertyTimeline, MapComparator> objects_timeline_;
-        std::vector<double>                            timestamps_;
-        std::unordered_map<int, ReplayEntry>           object_state_cache_;
-        int                                            ghost_ghost_counter_ = -1;
+        // Timelines
+        std::unordered_map<int, Timeline<Dat::TrafficLightLamp>> tl_lamps_timelines_;
+        std::map<int, PropertyTimeline, MapComparator>           objects_timeline_;
+        Timeline<double>                                         dt_;
+
+        std::vector<ReplayEntry>             data_;
+        Dat::DatHeader                       dat_header_;
+        std::vector<double>                  timestamps_;
+        std::unordered_map<int, ReplayEntry> object_state_cache_;
+        int                                  ghost_ghost_counter_ = -1;
 
         Replay(std::string filename);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
