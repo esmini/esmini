@@ -60,11 +60,12 @@ int main(int argc, char** argv)
     // First output header and CSV labels
     snprintf(line,
              MAX_LINE_LEN,
-             "Version: %d.%d, OpenDRIVE: %s, 3DModel: %s\n",
+             "Version: %d.%d, OpenDRIVE: %s, 3DModel: %s GIT REV: %s\n",
              player->dat_header_.version_major,
              player->dat_header_.version_minor,
              player->dat_header_.odr_filename.string.c_str(),
-             player->dat_header_.model_filename.string.c_str());
+             player->dat_header_.model_filename.string.c_str(),
+             player->dat_header_.git_rev.string.c_str());
     file << line;
     snprintf(line, MAX_LINE_LEN, "time, id, name, x, y, z, h, p, r, speed, wheel_angle, wheel_rot\n");
     file << line;

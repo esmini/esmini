@@ -1126,7 +1126,7 @@ void ScenarioGateway::WriteStatesToFile(const double simulation_time, const doub
     }
 }
 
-int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename, std::string model_filename)
+int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename, std::string model_filename, std::string git_rev)
 {
     if (filename.empty())
     {
@@ -1134,5 +1134,5 @@ int ScenarioGateway::RecordToFile(std::string filename, std::string odr_filename
         return -1;
     }
 
-    return dat_writer_.Init(filename, odr_filename, model_filename);
+    return dat_writer_.Init(filename, odr_filename, model_filename, git_rev);
 }

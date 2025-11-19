@@ -13,7 +13,7 @@ Dat::DatWriter::~DatWriter()
     }
 }
 
-int Dat::DatWriter::Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name)
+int Dat::DatWriter::Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name, const std::string& git_rev)
 {
     write_file_.open(file_name, std::ios::binary);
     if (write_file_.fail())
@@ -22,21 +22,32 @@ int Dat::DatWriter::Init(const std::string& file_name, const std::string& odr_na
         return -1;
     }
 
-    // Write version
+    // Always write versions first
     unsigned int version_major = DAT_FILE_FORMAT_VERSION_MAJOR;
     unsigned int version_minor = DAT_FILE_FORMAT_VERSION_MINOR;
+
     write_file_.write(reinterpret_cast<char*>(&version_major), sizeof(version_major));
     write_file_.write(reinterpret_cast<char*>(&version_minor), sizeof(version_minor));
 
-    // Write odr filename
-    unsigned int odr_size = static_cast<unsigned int>(odr_name.size());
+    unsigned int odr_size     = static_cast<unsigned int>(odr_name.size());
+    unsigned int model_size   = static_cast<unsigned int>(model_name.size());
+    unsigned int git_rev_size = static_cast<unsigned int>(git_rev.size());
+
+    // Size of payload
+    unsigned int header_size = sizeof(odr_size) + odr_size + sizeof(model_size) + model_size + sizeof(git_rev_size) + git_rev_size;
+
+    // Write size of dat header packet, excluding version
+    write_file_.write(reinterpret_cast<char*>(&header_size), sizeof(header_size));
+
+    // Write payload
     write_file_.write(reinterpret_cast<char*>(&odr_size), sizeof(odr_size));
     write_file_.write(odr_name.data(), odr_size);
 
-    // Write model filename
-    unsigned int model_size = static_cast<unsigned int>(model_name.size());
     write_file_.write(reinterpret_cast<char*>(&model_size), sizeof(model_size));
     write_file_.write(model_name.data(), model_size);
+
+    write_file_.write(reinterpret_cast<char*>(&git_rev_size), sizeof(git_rev_size));
+    write_file_.write(git_rev.data(), git_rev_size);
 
     return 0;
 }
@@ -184,8 +195,8 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
         {
             cache_it->second.name_ = std::string(state->info.name);
 
-            auto name_size = static_cast<unsigned int>(cache_it->second.name_.size());
-            Write(PacketId::NAME, name_size, cache_it->second.name_);
+            PacketString p_str = {static_cast<unsigned int>(cache_it->second.name_.size()), cache_it->second.name_};
+            Write(PacketId::NAME, p_str);
         }
         // PacketId::ROAD_ID
         if (cache_it->second.road_id_ != state->pos.GetTrackId())
@@ -321,15 +332,13 @@ constexpr bool Dat::DatWriter::ShouldWriteObjId(PacketId p_id) const noexcept
 
 /* DAT READER */
 
-Dat::DatReader::DatReader(const std::string& filename)
+Dat::DatReader::DatReader(const std::string& filename) : file_name_(filename)
 {
     file_.open(filename, std::ifstream::binary);
     if (file_.fail())
     {
         LOG_ERROR_AND_QUIT("Cannot open file: {}", filename);
     }
-
-    LOG_INFO("Datfile {} opened.", FileNameOf(filename));
 
     SetFileSize();
 }
@@ -397,20 +406,65 @@ int Dat::DatReader::FillDatHeader()
     if (!file_.read(reinterpret_cast<char*>(&header_.version_major), sizeof(header_.version_major)) ||
         !file_.read(reinterpret_cast<char*>(&header_.version_minor), sizeof(header_.version_minor)))
     {
-        LOG_ERROR("Failed reading header versions.");
-        return -1;
+        LOG_ERROR_AND_QUIT("Failed reading header versions.");
     }
+
+    if (header_.version_major != DAT_FILE_FORMAT_VERSION_MAJOR)
+    {
+        LOG_ERROR_AND_QUIT("Incompatible DAT major file version: {}, supporting version: {}", header_.version_major, DAT_FILE_FORMAT_VERSION_MAJOR);
+    }
+
+    unsigned int header_size = 0;
+    if (!file_.read(reinterpret_cast<char*>(&header_size), sizeof(header_size)))
+    {
+        LOG_ERROR_AND_QUIT("Failed reading header size.");
+    }
+
+    std::streampos payload_start = file_.tellg();
+    std::streampos payload_end   = payload_start + static_cast<std::streampos>(header_size);
 
     if (ReadStringPacket(header_.odr_filename.string) != 0)
     {
-        LOG_ERROR("Failed reading odr filename.");
-        return -1;
+        LOG_ERROR_AND_QUIT("Failed reading odr filename.");
     }
 
     if (ReadStringPacket(header_.model_filename.string) != 0)
     {
-        LOG_ERROR("Failed reading model filename.");
-        return -1;
+        LOG_ERROR_AND_QUIT("Failed reading model filename.");
+    }
+
+    if (ReadStringPacket(header_.git_rev.string) != 0)
+    {
+        LOG_ERROR_AND_QUIT("Failed reading git rev.");
+    }
+
+    LOG_INFO("Datfile {} opened: version {}.{}, odr_filename: {}, model_filename: {}, GIT REV: {}",
+             file_name_,
+             header_.version_major,
+             header_.version_minor,
+             header_.odr_filename.string,
+             header_.model_filename.string,
+             header_.git_rev.string);
+
+    if (header_.version_minor != DAT_FILE_FORMAT_VERSION_MINOR)
+    {
+        LOG_WARN("replayer compiled for version {}.{}. Some inconsistencies are expected.",
+                 DAT_FILE_FORMAT_VERSION_MAJOR,
+                 DAT_FILE_FORMAT_VERSION_MINOR);
+    }
+
+    std::streampos after_read = file_.tellg();
+
+    if (after_read > payload_end)
+    {
+        LOG_ERROR_AND_QUIT("Unexpected: Dat Header exceeds bounds");
+    }
+
+    if (after_read < payload_end)
+    {
+        auto remaining_payload = payload_end - after_read;
+        file_.seekg(remaining_payload, std::ios::cur);
+        LOG_WARN("Skipping {} amount of unrecognized .dat header data", static_cast<size_t>(remaining_payload));
     }
 
     return 0;

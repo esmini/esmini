@@ -8,7 +8,7 @@ import copy
 import bisect
 import ctypes
 
-VERSION_MAJOR = 3
+VERSION_MAJOR = 4
 VERSION_MINOR = 0
 SMALL_NUMBER = 1e-6
 LARGE_NUMBER = 1e10
@@ -271,8 +271,10 @@ class DATFile():
     def __init__(self, filename, extended=False):
         self.version_major  = 0
         self.version_minor  = 0
+        self.header_size    = 0
         self.odr_filename   = ""
         self.model_filename = ""
+        self.git_rev        = ""
 
         self.check_header(filename)
         self.extended = extended
@@ -307,7 +309,7 @@ class DATFile():
             self.file = open(filename, 'rb')
         except OSError:
             print(f'ERROR: Could not open file {filename} for reading')
-            raise
+            return -1
 
         ret = self.read_dat_header(self.file)
 
@@ -347,8 +349,10 @@ class DATFile():
         try:
             self.version_major  = read_dtype(file, DataType.uint32)
             self.version_minor  = read_dtype(file, DataType.uint32)
+            self.header_size    = read_dtype(file, DataType.uint32)
             self.odr_filename   = read_string_packet(file)
             self.model_filename = read_string_packet(file)
+            self.git_rev        = read_string_packet(file)
             return 0
         except ValueError:
             return -1
@@ -624,7 +628,7 @@ class DATFile():
 
     def get_header_line(self) -> str:
         """Get the header line with version and file references."""
-        return f'Version: {self.version_major}.{self.version_minor}, OpenDRIVE: {self.odr_filename}, 3DModel: {self.model_filename}'
+        return f'Version: {self.version_major}.{self.version_minor}, OpenDRIVE: {self.odr_filename}, 3DModel: {self.model_filename} GIT REV: {self.git_rev}'
 
     def get_labels_line(self) -> List[str]:
         """ Get the standard labels line """

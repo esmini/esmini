@@ -361,7 +361,7 @@ namespace scenarioengine
         ObjectState *getObjectStatePtrById(int id);
         int          getObjectStateById(int id, ObjectState &objectState) const;
         void         WriteStatesToFile(const double simulation_time, const double dt);
-        int          RecordToFile(std::string filename, std::string odr_filename, std::string model_filename);
+        int          RecordToFile(std::string filename, std::string odr_filename, std::string model_filename, std::string git_rev);
 
         std::vector<std::unique_ptr<ObjectState>> objectState_;
 

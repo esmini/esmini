@@ -452,23 +452,6 @@ void Replay::ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filen
     }
 
     dat_header_ = dat_reader.GetDatHeader();
-    if (dat_header_.version_major != DAT_FILE_FORMAT_VERSION_MAJOR)
-    {
-        LOG_ERROR_AND_QUIT("Incompatible DAT major file version: {}, supporting: {}", dat_header_.version_major, DAT_FILE_FORMAT_VERSION_MAJOR);
-    }
-
-    LOG_INFO("Datfile: version {}.{}, odr_filename: {}, model_filename: {}",
-             dat_header_.version_major,
-             dat_header_.version_minor,
-             dat_header_.odr_filename.string,
-             dat_header_.model_filename.string);
-
-    if (dat_header_.version_minor != DAT_FILE_FORMAT_VERSION_MINOR)
-    {
-        LOG_WARN("replayer compiled for version {}.{}. Some inconsistencies are expected.",
-                 DAT_FILE_FORMAT_VERSION_MAJOR,
-                 DAT_FILE_FORMAT_VERSION_MINOR);
-    }
 }
 
 void Replay::FillInTimestamps()
@@ -1000,7 +983,7 @@ void Replay::SetupGhostsTimeline()
 void Replay::CreateMergedDatfile(const std::string filename) const
 {
     Dat::DatWriter dat_writer;
-    dat_writer.Init(filename, dat_header_.odr_filename.string, dat_header_.model_filename.string);
+    dat_writer.Init(filename, dat_header_.odr_filename.string, dat_header_.model_filename.string, dat_header_.git_rev.string);
 
     if (!dat_writer.IsWriteFileOpen())
     {

@@ -3,7 +3,7 @@
 #include <fstream>
 #include "CommonMini.hpp"
 
-#define DAT_FILE_FORMAT_VERSION_MAJOR 3
+#define DAT_FILE_FORMAT_VERSION_MAJOR 4
 #define DAT_FILE_FORMAT_VERSION_MINOR 0
 
 namespace scenarioengine
@@ -53,6 +53,7 @@ namespace Dat
         unsigned int version_minor;
         PacketString odr_filename;
         PacketString model_filename;
+        PacketString git_rev;
     };
 
     struct PacketHeader
@@ -132,7 +133,7 @@ namespace Dat
         DatWriter() = default;
         ~DatWriter();
 
-        int Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name);
+        int Init(const std::string& file_name, const std::string& odr_name, const std::string& model_name, const std::string& git_rev);
 
         bool IsWriteFileOpen() const;
         void SetTimestampWritten(bool state);
@@ -184,6 +185,20 @@ namespace Dat
             WritePacket(packet);
 
             return 0;
+        }
+
+        void WriteToBuffer(char*& write_ptr, const PacketString& p)
+        {
+            memcpy(write_ptr, &p.size, sizeof(p.size));
+            write_ptr += sizeof(p.size);
+
+            memcpy(write_ptr, p.string.data(), p.string.size());
+            write_ptr += p.string.size();
+        }
+
+        size_t SerializedSize(const PacketString& p)
+        {
+            return sizeof(p.size) + p.string.size();
         }
 
         template <typename T>
@@ -284,6 +299,7 @@ namespace Dat
         }
 
     private:
+        std::string    file_name_;
         std::ifstream  file_;
         std::streampos file_size_;
         Dat::DatHeader header_;

@@ -1932,7 +1932,10 @@ int ScenarioPlayer::Init()
         }
 
         LOG_INFO("Recording data to file {}", filename);
-        scenarioGateway->RecordToFile(filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename());
+        scenarioGateway->RecordToFile(filename,
+                                      scenarioEngine->getOdrFilename(),
+                                      scenarioEngine->getSceneGraphFilename(),
+                                      std::string(esmini_git_rev()));
     }
 
     if (launch_server)

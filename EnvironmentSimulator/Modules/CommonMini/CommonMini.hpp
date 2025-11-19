@@ -358,6 +358,11 @@ class SE_Options;  // forward declaration
 // else return 0
 int OnRequestShowHelpOrVersion(int argc, char** argv, SE_Options& opt);
 
+/**
+    Get the rev of the currently compiled esmini
+*/
+const char* esmini_git_rev(void);
+
 // Displays OSG options on the command prompt
 void PrintOSGUsage();
 
