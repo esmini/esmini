@@ -607,6 +607,8 @@ class DATFile():
                 if curr_time + next_dt < next_timestamp - SMALL_NUMBER and curr_time + dt < next_timestamp - SMALL_NUMBER:
                     end_time = next_timestamp - next_dt
                     self.fill_empty_timestamps(curr_time, end_time, dt, filled)
+                elif j == len(self.dt.values) - 1 and curr_time + dt < self.timestamps[-1] - SMALL_NUMBER:
+                    self.fill_empty_timestamps(curr_time, self.timestamps[-1], dt, filled)
                 else:
                     filled.append(next_timestamp)
                 i += 1

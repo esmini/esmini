@@ -539,6 +539,11 @@ void Replay::FillInTimestamps()
                 double end_time = next_timestamp - next_dt;
                 FillEmptyTimestamps(curr_time, end_time, dt, filled);
             }
+            // We have reached the last dt_ value, but the current time is not at the end, so we need to fill with current dt until the end
+            else if (j == dt_.values.size() - 1 && curr_time + dt < timestamps_.back() - SMALL_NUMBER)
+            {
+                FillEmptyTimestamps(curr_time, timestamps_.back(), dt, filled);
+            }
             // We are one sample away, just add it
             else
             {

@@ -4827,7 +4827,7 @@ TEST(DirectJunctionTest, TestVariousRoutes)
     }
     SE_RegisterParameterDeclarationCallback(0, 0);
 }
-/*
+
 TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 {
     const char* args[2][2][7] = {
@@ -4876,55 +4876,70 @@ TEST(ReplayTest, TestMultiReplayDifferentTimeSteps)
 
         // Check multi replay
         scenarioengine::Replay* replay = new scenarioengine::Replay(".", "multirep_test", "");
+        std::vector<int>        ids    = replay->GetAllObjectIDs();
+        EXPECT_EQ(ids.size(), 4);
         EXPECT_EQ(replay->GetNumberOfScenarios(), 2);
 
-        EXPECT_NEAR(replay->data_[0].state.info.timeStamp, -2.5, 1E-3);
-        EXPECT_STREQ(replay->data_[0].state.info.name, "Ego");
-        EXPECT_STREQ(replay->data_[1].state.info.name, "Ego_ghost");
-        EXPECT_STREQ(replay->data_[2].state.info.name, "Ego");
-        EXPECT_NEAR(replay->data_[2].state.info.timeStamp, -2.45, 1E-3);
-        EXPECT_NEAR(replay->data_[4].state.info.timeStamp, -2.40, 1E-3);
-        EXPECT_NEAR(replay->data_[100].state.info.timeStamp, 0.0, 1E-3);
-        EXPECT_NEAR(replay->data_[100].state.info.id, 0, 1E-3);
-        EXPECT_NEAR(replay->data_[101].state.info.timeStamp, 0.0, 1E-3);
-        EXPECT_NEAR(replay->data_[101].state.info.id, 1, 1E-3);
-        EXPECT_NEAR(replay->data_[102].state.info.timeStamp, 0.0, 1E-3);
-        EXPECT_NEAR(replay->data_[102].state.info.id, 100, 1E-3);
-        EXPECT_NEAR(replay->data_[103].state.info.timeStamp, 0.0, 1E-3);
-        EXPECT_NEAR(replay->data_[103].state.info.id, 101, 1E-3);
-        EXPECT_NEAR(replay->data_[104].state.info.timeStamp, 0.01, 1E-3);
-        EXPECT_NEAR(replay->data_[104].state.info.id, 0, 1E-3);
-        EXPECT_NEAR(replay->data_[108].state.info.timeStamp, 0.02, 1E-3);
-        EXPECT_NEAR(replay->data_[108].state.info.id, 0, 1E-3);
-        EXPECT_NEAR(replay->data_[139].state.info.timeStamp, 0.09, 1E-3);
-        EXPECT_NEAR(replay->data_[139].state.info.id, 101, 1E-3);
-        EXPECT_NEAR(replay->data_[140].state.info.timeStamp, 0.1, 1E-3);
-        EXPECT_NEAR(replay->data_[140].state.info.id, 0, 1E-3);
+        double                      time  = -2.5;
+        scenarioengine::ReplayEntry entry = replay->GetReplayEntryAtTimeBinary(ids[0], time);
+        EXPECT_NEAR(entry.state.info.timeStamp, -2.5, 1E-3);
+        EXPECT_STREQ(entry.state.info.name.c_str(), "Ego");
 
-        EXPECT_NEAR(replay->data_[2012].state.info.timeStamp, 4.78, 1E-3);
-        EXPECT_NEAR(replay->data_[2012].state.info.id, 0, 1E-3);
-        EXPECT_NEAR(replay->data_[2015].state.info.timeStamp, 4.78, 1E-3);
-        EXPECT_NEAR(replay->data_[2015].state.info.id, 101, 1E-3);
+        entry = replay->GetReplayEntryAtTimeBinary(ids[1], time);
+        EXPECT_STREQ(entry.state.info.name.c_str(), "Ego_ghost");
+
+        time  = -2.45;
+        entry = replay->GetReplayEntryAtTimeBinary(ids[2], time);
+        EXPECT_STREQ(entry.state.info.name.c_str(), "Ego");
+        EXPECT_NEAR(entry.state.info.timeStamp, -2.45, 1E-3);
+
+        time  = -2.40;
+        entry = replay->GetReplayEntryAtTimeBinary(ids[3], time);
+        EXPECT_NEAR(entry.state.info.timeStamp, -2.40, 1E-3);
+
+        time  = 0.0;
+        entry = replay->GetReplayEntryAtTimeBinary(ids[0], time);
+        EXPECT_NEAR(entry.state.info.timeStamp, 0.0, 1E-3);
+        EXPECT_NEAR(entry.state.info.id, 0, 1E-3);
+        entry = replay->GetReplayEntryAtTimeBinary(ids[1], time);
+        EXPECT_NEAR(entry.state.info.timeStamp, 0.0, 1E-3);
+        EXPECT_NEAR(entry.state.info.id, 1, 1E-3);
+        entry = replay->GetReplayEntryAtTimeBinary(ids[2], time);
+        EXPECT_NEAR(entry.state.info.timeStamp, 0.0, 1E-3);
+        EXPECT_NEAR(entry.state.info.id, 100, 1E-3);
+        entry = replay->GetReplayEntryAtTimeBinary(ids[3], time);
+        EXPECT_NEAR(entry.state.info.timeStamp, 0.0, 1E-3);
+        EXPECT_NEAR(entry.state.info.id, 101, 1E-3);
 
         if (k == 0)
         {
-            EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.994, 1E-3);
-            EXPECT_NEAR(replay->data_[2015].state.pos.y, 207.392, 1E-3);
-            EXPECT_NEAR(replay->data_[5965].state.info.timeStamp, 19.51, 1E-3);
-            EXPECT_NEAR(replay->data_[5965].state.info.id, 1, 1E-3);
+            time  = 10.0;
+            entry = replay->GetReplayEntryAtTimeBinary(ids[0], time);
+            EXPECT_NEAR(entry.state.pos.y, 276.141, 1E-3);
+            entry = replay->GetReplayEntryAtTimeBinary(ids[1], time);
+            EXPECT_NEAR(entry.state.pos.y, 318.771, 1E-3);
+            entry = replay->GetReplayEntryAtTimeBinary(ids[2], time);
+            EXPECT_NEAR(entry.state.pos.y, 331.016, 1E-3);
+            entry = replay->GetReplayEntryAtTimeBinary(ids[3], time);
+            EXPECT_NEAR(entry.state.pos.y, 417.317, 1E-3);
         }
         else
         {
-            EXPECT_NEAR(replay->data_[2012].state.pos.y, 130.913, 1E-3);
-            EXPECT_NEAR(replay->data_[2015].state.pos.y, 210.738, 1E-3);
-            EXPECT_NEAR(replay->data_[4201].state.info.timeStamp, 19.6, 1E-3);
-            EXPECT_NEAR(replay->data_[4201].state.info.id, 1, 1E-3);
+            time  = 19.6;
+            entry = replay->GetReplayEntryAtTimeBinary(ids[0], time);
+            EXPECT_NEAR(entry.state.pos.y, 355.166, 1E-3);
+            entry = replay->GetReplayEntryAtTimeBinary(ids[1], time);
+            EXPECT_NEAR(entry.state.pos.y, 361.272, 1E-3);
+            entry = replay->GetReplayEntryAtTimeBinary(ids[2], time);
+            EXPECT_NEAR(entry.state.pos.y, 332.214, 1E-3);
+            entry = replay->GetReplayEntryAtTimeBinary(ids[3], time);
+            EXPECT_NEAR(entry.state.pos.y, 418.993, 1E-3);
         }
 
         delete replay;
     }
 }
-*/
+
 void ConditionCallbackInstance1(const char* element_name, double timestamp)
 {
     EXPECT_STREQ(element_name, "act_start_condition");
