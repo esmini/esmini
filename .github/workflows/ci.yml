@@ -143,7 +143,7 @@ jobs:
         if: runner.os == 'Linux' && matrix.configuration == 'Release'
         shell: bash
         run: |
-          git clone --branch feature/always-stdout-esmini-log --single-branch https://github.com/PMSFIT/osc-validation.git
+          git clone --branch testing --single-branch https://github.com/PMSFIT/osc-validation.git
           pushd osc-validation
           python3 -m venv .venv
           source .venv/bin/activate
@@ -162,7 +162,7 @@ jobs:
           pytest validation/scenario/ \
             --tool ESMini \
             --toolpath "$SIM_BIN" \
-            -k "test_trajectory" \
+            -m trajectory \
             -v
           popd
 
