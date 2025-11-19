@@ -1,0 +1,49 @@
+name: "Run osc-validation"
+description: "Install osc-validation, run pytest suite, convert JUnit XML to HTML, and collect artifacts"
+runs:
+  using: "composite"
+  steps:
+
+    - name: Clone osc-validation
+      shell: bash
+      run: |
+        git clone --branch testing --single-branch https://github.com/PMSFIT/osc-validation.git
+
+    - name: Set up Python venv
+      shell: bash
+      run: |
+        pushd osc-validation
+        python3 -m venv .venv
+        source .venv/bin/activate
+        pip install -e .
+        pip install junit2html
+        popd
+
+    - name: Run osc-validation pytest suite
+      shell: bash
+      continue-on-error: true
+      run: |
+        pushd osc-validation
+        source .venv/bin/activate
+
+        SIM_BIN="$(pwd)/../bin/esmini"
+        echo "Using esmini binary: $SIM_BIN"
+
+        mkdir -p osc_validation_results
+
+        pytest validation/scenario/ \
+          --tool ESMini \
+          --toolpath "$SIM_BIN" \
+          -m trajectory \
+          -v \
+          --junitxml=osc_validation_results/junit.xml || true
+
+        cd osc_validation_results
+        junit2html junit.xml junit.html
+        popd
+
+    - name: Upload osc-validation artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: osc-validation
+        path: osc-validation/osc_validation_results
