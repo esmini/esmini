@@ -142,6 +142,7 @@ jobs:
           python3 -m venv .venv
           source .venv/bin/activate
           pip install -e .
+          pip install junit2html
           popd
 
       - name: Run osc-validation pytest suite
@@ -153,12 +154,23 @@ jobs:
           source .venv/bin/activate
           SIM_BIN="$(pwd)/../bin/esmini"
           echo "Using esmini binary: $SIM_BIN"
+          mkdir -p osc_validation_results
           pytest validation/scenario/ \
             --tool ESMini \
             --toolpath "$SIM_BIN" \
             -m trajectory \
-            -v
+            -v \
+            --junitxml=osc_validation_results/junit.xml
+          cd osc_validation_results
+          junit2html junit.xml junit.html
           popd
+
+      - name: Upload osc-validation artifacts
+        if: runner.os == 'Linux' && matrix.configuration == 'Release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: osc-validation_${{ runner.os }}_${{ matrix.configuration }}
+          path: osc-validation/osc_validation_results
 
       - name: Compile minimal C example
         if: runner.os == 'Linux'
