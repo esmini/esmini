@@ -888,7 +888,7 @@ ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, double t) const
 
     entry.state.info.id             = id;
     entry.state.info.timeStamp      = static_cast<float>(t);
-    entry.state.info.model_id       = timeline.model_id_.get_value_incremental(t).value();
+    entry.state.info.model_id       = timeline.model_id_.get_value_incremental(t).value_or(-1);
     entry.state.info.obj_type       = timeline.obj_type_.get_value_incremental(t).value();
     entry.state.info.obj_category   = timeline.obj_category_.get_value_incremental(t).value();
     entry.state.info.ctrl_type      = timeline.ctrl_type_.get_value_incremental(t).value();
@@ -924,7 +924,7 @@ ReplayEntry Replay::GetReplayEntryAtTimeBinary(int id, double t) const
 
     entry.state.info.id             = id;
     entry.state.info.timeStamp      = static_cast<float>(t);
-    entry.state.info.model_id       = timeline.model_id_.get_value_binary(t).value();
+    entry.state.info.model_id       = timeline.model_id_.get_value_binary(t).value_or(-1);
     entry.state.info.obj_type       = timeline.obj_type_.get_value_binary(t).value();
     entry.state.info.obj_category   = timeline.obj_category_.get_value_binary(t).value();
     entry.state.info.ctrl_type      = timeline.ctrl_type_.get_value_binary(t).value();

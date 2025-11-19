@@ -258,7 +258,7 @@ int ParseEntities(Replay* player)
                 new_sc.trajPoints = 0;
 
                 std::string filename;
-                if (timelines.model_id_.values.front().second >= 0)
+                if (!timelines.model_id_.values.empty() && timelines.model_id_.values.front().second >= 0)
                 {
                     filename = SE_Env::Inst().GetModelFilenameById(timelines.model_id_.values.front().second);
                 }
