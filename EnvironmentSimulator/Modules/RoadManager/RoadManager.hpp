@@ -2027,6 +2027,10 @@ namespace roadmanager
             {
                 return color_;
             }
+            bool IsDirty() const
+            {
+                return dirty_;
+            }
             bool ReadAndConsumeDirtyFlag()
             {
                 bool retval = dirty_;

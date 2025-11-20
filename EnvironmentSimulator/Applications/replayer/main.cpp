@@ -1073,6 +1073,42 @@ int main(int argc, char** argv)
                 {
                     viewer_->SetInfoText("All entities in focus");
                 }
+
+                for (const auto& [lamp_id, data] : player->traffic_lights_timeline_)
+                {
+                    auto tl_state = data.get_value_incremental(simTime);
+
+                    if (!tl_state.has_value())
+                    {
+                        continue;
+                    }
+
+                    auto& val         = tl_state.value();
+                    auto  tl_id       = val.traffic_light_id;
+                    auto  light_model = viewer_->roadGeom->GetTrafficLightModel(tl_id);
+                    if (!light_model)
+                    {
+                        continue;
+                    }
+
+                    auto& cache = player->traffic_light_cache_.try_emplace(tl_id, light_model->GetNrLamps(), roadmanager::Signal::LampMode::MODE_OFF)
+                                      .first->second;
+
+                    if (val.lamp_idx < cache.size())
+                    {
+                        cache[val.lamp_idx] = static_cast<roadmanager::Signal::LampMode>(val.lamp_mode);
+                    }
+                    else
+                    {
+                        LOG_ERROR_AND_QUIT("Trying to access lamp out of bounds for traffic light id {}", val.traffic_light_id);
+                    }
+                    // Always push the full cached state to the model so model reflects accumulated state
+                    for (size_t lamp = 0; lamp < cache.size(); lamp++)
+                    {
+                        light_model->SetState(lamp, cache[lamp] == roadmanager::Signal::LampMode::MODE_CONSTANT);
+                    }
+                }
+
 #endif  // _USE_OSG
 
                 // Collision detection

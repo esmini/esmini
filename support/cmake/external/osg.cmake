@@ -65,8 +65,6 @@ macro(set_osg_libs)
             debug
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgViewerd.a
             debug
-            ${EXTERNALS_OSG_LIBRARY_PATH}/libosgDBd.a
-            debug
             ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osgsimd.a
             debug
             ${EXTERNALS_OSG_PLUGINS_LIBRARY_PATH}/libosgdb_serializers_osgd.a
@@ -74,6 +72,8 @@ macro(set_osg_libs)
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgGAd.a
             debug
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgTextd.a
+            debug
+            ${EXTERNALS_OSG_LIBRARY_PATH}/libosgDBd.a
             debug
             ${EXTERNALS_OSG_LIBRARY_PATH}/libosgSimd.a
             debug

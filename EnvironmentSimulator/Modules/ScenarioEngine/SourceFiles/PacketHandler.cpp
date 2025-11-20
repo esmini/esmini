@@ -59,29 +59,32 @@ int Dat::DatWriter::WriteGenericDataToDat()
             continue;
         }
 
-        // Psuedo-code
-        // if (!state altered)
-        // {
-        //     continue;
-        // }
         for (size_t j = 0; j < tl->GetNrLamps(); j++)
         {
-            auto lamp      = tl->GetLamp(j);
-            auto id        = lamp->GetId();
-            auto it        = object_state_cache_.traffic_lights_lamps_.find(id);
-            auto lamp_mode = lamp->GetMode();
-
-            if (it == object_state_cache_.traffic_lights_lamps_.end())
+            auto lamp = tl->GetLamp(j);
+            if (!lamp->IsDirty())
             {
-                object_state_cache_.traffic_lights_lamps_[id] = {tl->GetId(),
-                                                                 static_cast<unsigned int>(j),
-                                                                 static_cast<int>(roadmanager::Signal::LampMode::MODE_OFF)};
-                it                                            = object_state_cache_.traffic_lights_lamps_.find(id);
+                continue;
             }
 
-            if (it->second.mode_ != lamp_mode)
+            auto tl_id     = tl->GetId();
+            auto lamp_id   = lamp->GetId();
+            auto lamp_mode = lamp->GetMode();
+
+            auto it = object_state_cache_.traffic_lights_lamps_.find(lamp_id);
+            if (it == object_state_cache_.traffic_lights_lamps_.end())
             {
-                it->second = {tl->GetId(), static_cast<unsigned int>(j), static_cast<int>(lamp_mode)};
+                object_state_cache_.traffic_lights_lamps_[lamp_id] = {tl_id,
+                                                                      lamp_id,
+                                                                      static_cast<unsigned int>(j),
+                                                                      static_cast<int>(roadmanager::Signal::LampMode::MODE_OFF)};
+
+                it = object_state_cache_.traffic_lights_lamps_.find(lamp_id);
+            }
+
+            if (it->second.lamp_mode != lamp_mode)
+            {
+                it->second = {tl_id, static_cast<unsigned int>(lamp_id), static_cast<unsigned int>(j), static_cast<int>(lamp_mode)};
                 Write(PacketId::TRAFFIC_LIGHT, it->second);
             }
         }

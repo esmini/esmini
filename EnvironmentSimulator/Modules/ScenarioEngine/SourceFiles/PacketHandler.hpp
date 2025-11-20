@@ -85,9 +85,10 @@ namespace Dat
 
     struct TrafficLightLamp
     {
-        int          id;
-        unsigned int idx;
-        int          mode_;
+        int          traffic_light_id;
+        unsigned int lamp_id;
+        unsigned int lamp_idx;
+        int          lamp_mode;
     };
 
     struct PacketGeneric
