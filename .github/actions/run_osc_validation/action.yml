@@ -35,16 +35,16 @@ runs:
           --tool ESMini \
           --toolpath "$SIM_BIN" \
           -m trajectory \
-          -v \
           --basetemp osc_validation_results \
-          --junitxml osc_validation_results/junit.xml || true
-        pytest_exit_code=$?
+          --junitxml osc_validation_results/junit.xml
+        code=$?
+        echo "exitcode=$code" >> $GITHUB_OUTPUT
+        echo "osc-validation finished with exit code $code"
 
         cd osc_validation_results
         junit2html junit.xml junit.html
 
         popd
-        exit $pytest_exit_code
 
     - name: Upload osc-validation artifacts
       if: always()
@@ -52,3 +52,12 @@ runs:
       with:
         name: osc-validation
         path: osc-validation/osc_validation_results
+
+    - name: Fail if tests failed
+      if: always()
+      shell: bash
+      run: |
+        if [ "${{ steps.run_tests.outputs.exitcode }}" != "0" ]; then
+          echo "osc-validation failed"
+          exit 1
+        fi
