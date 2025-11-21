@@ -270,7 +270,7 @@ if [ ! -d OpenSceneGraph/build ]; then
         cmake --build . -j $PARALLEL_BUILDS --config Release --target install
 
     elif [ "$OSTYPE" == "msys" ]; then
-        COMMON_ARGS2="-DOPENGL_PROFILE=GL3 -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" "
+        COMMON_ARGS2="-DOPENGL_PROFILE=GL2 -DACTUAL_3RDPARTY_DIR=../../3rdParty_x64/x64 -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" "
 
         cmake "${GENERATOR_ARGUMENTS[@]}" ${COMMON_ARGS} ${COMMON_ARGS2} -DCMAKE_INSTALL_PREFIX=../install -DFBX_XML2_LIBRARY="$fbx_xml_lib_release" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib_release" ..
         cmake --build . -j $PARALLEL_BUILDS --config Release --target install
