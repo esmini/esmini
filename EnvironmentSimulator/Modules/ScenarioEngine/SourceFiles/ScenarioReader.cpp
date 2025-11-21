@@ -310,14 +310,11 @@ Catalog *ScenarioReader::LoadCatalog(std::string name)
 
     if (!found)
     {
-        LOG_ERROR("Couldn't locate OpenSCENARIO file {}", FileNameOf(name));
-        return nullptr;
+        LOG_ERROR_AND_QUIT("Couldn't locate OpenSCENARIO file {}", FileNameOf(name));
     }
-
-    // Load it
-    if (!catalog_doc.load_file(file_path.c_str()))
+    else if (!catalog_doc.load_file(file_path.c_str()))
     {
-        throw std::runtime_error("Couldn't locate catalog file: " + name + ". " + result.description());
+        LOG_ERROR_AND_QUIT("Couldn't load catalog file: " + name + ". " + result.description());
     }
 
     pugi::xml_node osc_node_ = catalog_doc.child("OpenSCENARIO");
