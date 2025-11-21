@@ -85,10 +85,10 @@ namespace Dat
 
     struct TrafficLightLamp
     {
-        int          traffic_light_id;
-        unsigned int lamp_id;
-        unsigned int lamp_idx;
-        int          lamp_mode;
+        int          traffic_light_id = -1;
+        unsigned int lamp_id          = ID_UNDEFINED;
+        unsigned int lamp_idx         = IDX_UNDEFINED;
+        int          lamp_mode        = static_cast<int>(roadmanager::Signal::LampMode::MODE_UNDEFINED);
     };
 
     struct PacketGeneric

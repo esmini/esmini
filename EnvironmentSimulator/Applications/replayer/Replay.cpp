@@ -413,15 +413,7 @@ int Replay::ParsePackets(const std::string& filename)
                     LOG_ERROR("Failed reading traffic light lamp");
                     return -1;
                 }
-
                 traffic_lights_timeline_[lamp.lamp_id].values.emplace_back(timestamp_, lamp);
-
-                auto& vec = traffic_lights_timeline_[lamp.lamp_id].values;
-                if (!NEAR_NUMBERS(vec.front().first, timestamps_.front()))
-                {
-                    lamp.lamp_mode = roadmanager::Signal::LampMode::MODE_OFF;
-                    vec.insert(vec.begin(), {timestamps_.front(), lamp});
-                }
                 break;
             }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):

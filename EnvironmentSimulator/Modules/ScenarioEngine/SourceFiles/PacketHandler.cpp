@@ -50,6 +50,7 @@ int Dat::DatWriter::WriteGenericDataToDat()
         Write(PacketId::DT, object_state_cache_.dt_);
     }
 
+    // PacketId::TRAFFIC_LIGHT
     auto dynamic_signals = roadmanager::Position::GetOpenDrive()->GetDynamicSignals();
     for (size_t i = 0; i < dynamic_signals.size(); i++)
     {
@@ -67,24 +68,11 @@ int Dat::DatWriter::WriteGenericDataToDat()
                 continue;
             }
 
-            auto tl_id     = tl->GetId();
-            auto lamp_id   = lamp->GetId();
-            auto lamp_mode = lamp->GetMode();
+            auto [it, inserted] = object_state_cache_.traffic_lights_lamps_.try_emplace(lamp->GetId());
 
-            auto it = object_state_cache_.traffic_lights_lamps_.find(lamp_id);
-            if (it == object_state_cache_.traffic_lights_lamps_.end())
+            if (it->second.lamp_mode != lamp->GetMode())
             {
-                object_state_cache_.traffic_lights_lamps_[lamp_id] = {tl_id,
-                                                                      lamp_id,
-                                                                      static_cast<unsigned int>(j),
-                                                                      static_cast<int>(roadmanager::Signal::LampMode::MODE_OFF)};
-
-                it = object_state_cache_.traffic_lights_lamps_.find(lamp_id);
-            }
-
-            if (it->second.lamp_mode != lamp_mode)
-            {
-                it->second = {tl_id, static_cast<unsigned int>(lamp_id), static_cast<unsigned int>(j), static_cast<int>(lamp_mode)};
+                it->second = {tl->GetId(), lamp->GetId(), static_cast<unsigned int>(j), static_cast<int>(lamp->GetMode())};
                 Write(PacketId::TRAFFIC_LIGHT, it->second);
             }
         }
