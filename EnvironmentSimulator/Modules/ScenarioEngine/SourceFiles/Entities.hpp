@@ -655,7 +655,7 @@ namespace scenarioengine
 
         // Resolve and set path to 3D model file
         // Return 0 if file exists, else -1
-        int SetModel3DFullPath(const std::string& file_path);
+        int SetModel3DFullPath(const std::string& file_path, const std::string& add_path = "");
 
         const std::string& GetModel3DFullPath() const
         {
