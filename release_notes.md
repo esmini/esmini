@@ -1,8 +1,23 @@
 ## esmini release notes
 
+### 2025-11-21 Version 2.55.0
+
+Breaking changes:
+- Bump .dat format from 3.0 to 4.0
+  - add esmini version to dat file header
+  - Note: Major version bump => previous dat files will not play
+
+Improvements and fixes:
+- Fix missing vehicle dynamics with non fixed timestep
+- replayer prints which esmini version created the dat file
+- Fix replayer issue causing unexpected jump to start/end
+- Fix wrong xodr file in [User guide - SUMO integration](https://esmini.github.io/#_sumo_integration)
+- Restore support for gcc 7.5 by relaxing need for full fs::filesystem
+- A few additional minor fixes in replayer
+
 ### 2025-11-12 Version 2.54.0
 
-Braking changes:
+Breaking changes:
 - Total rework of .dat (scenario recording) format
   - package based, enabling more content in future
   - bump to version 3
