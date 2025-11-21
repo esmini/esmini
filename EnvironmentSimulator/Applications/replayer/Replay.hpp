@@ -19,6 +19,7 @@
 #include <optional>
 #include "CommonMini.hpp"
 #include "ScenarioGateway.hpp"
+#include "trafficlightmodel.hpp"
 
 namespace scenarioengine
 {
@@ -222,6 +223,12 @@ namespace scenarioengine
         double               odometer;
     } ReplayEntry;
 
+    typedef struct
+    {
+        TrafficLightModel*                         model  = nullptr;
+        std::vector<roadmanager::Signal::LampMode> modes_ = {};
+    } ReplayTrafficLight;
+
     class Replay
     {
     public:
@@ -230,12 +237,12 @@ namespace scenarioengine
         std::map<int, PropertyTimeline, MapComparator>                    objects_timeline_;
         std::unordered_map<unsigned int, Timeline<Dat::TrafficLightLamp>> traffic_lights_timeline_;
 
-        std::vector<ReplayEntry>                                            data_;
-        Dat::DatHeader                                                      dat_header_;
-        std::vector<double>                                                 timestamps_;
-        std::unordered_map<int, ReplayEntry>                                object_state_cache_;
-        std::unordered_map<int, std::vector<roadmanager::Signal::LampMode>> traffic_light_cache_;
-        int                                                                 ghost_ghost_counter_ = -1;
+        std::vector<ReplayEntry>                    data_;
+        Dat::DatHeader                              dat_header_;
+        std::vector<double>                         timestamps_;
+        std::unordered_map<int, ReplayEntry>        object_state_cache_;
+        std::unordered_map<int, ReplayTrafficLight> traffic_light_cache_;
+        int                                         ghost_ghost_counter_ = -1;
 
         Replay(std::string filename);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);

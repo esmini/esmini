@@ -871,6 +871,27 @@ int main(int argc, char** argv)
             return -1;
         }
 
+#ifdef _USE_OSG
+        for (const auto& [lamp_id, data] : player->traffic_lights_timeline_)
+        {
+            if (data.values.empty())
+            {
+                continue;
+            }
+
+            auto tl_state = &data.values[0].second;
+
+            auto light_model = viewer_->roadGeom->GetTrafficLightModel(tl_state->traffic_light_id);
+            if (light_model == nullptr)
+            {
+                continue;
+            }
+
+            ReplayTrafficLight rtl = {light_model, {light_model->GetNrLamps(), roadmanager::Signal::LampMode::MODE_OFF}};
+            player->traffic_light_cache_.try_emplace(tl_state->traffic_light_id, rtl);
+        }
+#endif
+
         const std::vector<int> ghost_indices = GetGhostIdx();
 
         std::string start_time_str = opt.GetOptionValue("start_time");
@@ -1065,15 +1086,7 @@ int main(int argc, char** argv)
                 }
 
 #ifdef _USE_OSG
-                if (viewer_->currentCarInFocus_ < 0)
-                {
-                    viewer_->SetInfoText(scenarioEntity.size() > 0 ? "Environment in focus" : "");
-                }
-                else if (viewer_->currentCarInFocus_ > 0 && static_cast<unsigned int>(viewer_->currentCarInFocus_) >= scenarioEntity.size())
-                {
-                    viewer_->SetInfoText("All entities in focus");
-                }
-
+                // Fetch states for traffic lights
                 for (const auto& [lamp_id, data] : player->traffic_lights_timeline_)
                 {
                     auto tl_state = data.get_value_incremental(simTime);
@@ -1083,32 +1096,33 @@ int main(int argc, char** argv)
                         continue;
                     }
 
-                    auto& val         = tl_state.value();
-                    auto  tl_id       = val.traffic_light_id;
-                    auto  light_model = viewer_->roadGeom->GetTrafficLightModel(tl_id);
-                    if (!light_model)
-                    {
-                        continue;
-                    }
+                    auto& tl_data = tl_state.value();
+                    auto  tl_id   = tl_data.traffic_light_id;
 
-                    auto& cache = player->traffic_light_cache_.try_emplace(tl_id, light_model->GetNrLamps(), roadmanager::Signal::LampMode::MODE_OFF)
-                                      .first->second;
-
-                    if (val.lamp_idx < cache.size())
+                    auto& cache = player->traffic_light_cache_.at(tl_id);
+                    if (tl_data.lamp_idx < cache.modes_.size())
                     {
-                        cache[val.lamp_idx] = static_cast<roadmanager::Signal::LampMode>(val.lamp_mode);
+                        cache.modes_[tl_data.lamp_idx] = static_cast<roadmanager::Signal::LampMode>(tl_data.lamp_mode);
                     }
                     else
                     {
-                        LOG_ERROR_AND_QUIT("Trying to access lamp out of bounds for traffic light id {}", val.traffic_light_id);
+                        LOG_ERROR_AND_QUIT("Trying to access lamp out of bounds for traffic light id {}", tl_data.traffic_light_id);
                     }
                     // Always push the full cached state to the model so model reflects accumulated state
-                    for (size_t lamp = 0; lamp < cache.size(); lamp++)
+                    for (size_t lamp = 0; lamp < cache.modes_.size(); lamp++)
                     {
-                        light_model->SetState(lamp, cache[lamp] == roadmanager::Signal::LampMode::MODE_CONSTANT);
+                        cache.model->SetState(lamp, cache.modes_[lamp] == roadmanager::Signal::LampMode::MODE_CONSTANT);
                     }
                 }
 
+                if (viewer_->currentCarInFocus_ < 0)
+                {
+                    viewer_->SetInfoText(scenarioEntity.size() > 0 ? "Environment in focus" : "");
+                }
+                else if (viewer_->currentCarInFocus_ > 0 && static_cast<unsigned int>(viewer_->currentCarInFocus_) >= scenarioEntity.size())
+                {
+                    viewer_->SetInfoText("All entities in focus");
+                }
 #endif  // _USE_OSG
 
                 // Collision detection
