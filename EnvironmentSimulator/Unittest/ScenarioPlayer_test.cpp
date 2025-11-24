@@ -773,16 +773,19 @@ TEST(OSI, TestTrafficLightStates)
     EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
     EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_RED);
     EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().is_out_of_service(), false);
     EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().assigned_lane_id(0).value(), 2);
 
     EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
     EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_YELLOW);
     EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().is_out_of_service(), false);
     EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().assigned_lane_id(0).value(), 2);
 
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_GREEN);
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_ARROW_LEFT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().is_out_of_service(), false);
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().assigned_lane_id(0).value(), 2);
 
     for (size_t i = 0; i < 2; i++)
@@ -791,17 +794,29 @@ TEST(OSI, TestTrafficLightStates)
     }
 
     EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OTHER);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().is_out_of_service(), false);
     EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_FLASHING);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().is_out_of_service(), false);
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_COUNTING);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().is_out_of_service(), false);
 
-    for (size_t i = 0; i < 2; i++)
-    {
-        player->Frame(dt);
-    }
+    player->Frame(dt);
 
-    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_UNKNOWN);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OTHER);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().is_out_of_service(), true);
     EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_UNKNOWN);
-    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_UNKNOWN);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().is_out_of_service(), false);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OTHER);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().is_out_of_service(), true);
+
+    player->Frame(dt);
+
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().is_out_of_service(), false);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().is_out_of_service(), false);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().is_out_of_service(), false);
 
     delete player;
 }

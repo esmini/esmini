@@ -53,7 +53,7 @@
                         <GlobalAction>
                            <InfrastructureAction>
                               <TrafficSignalAction>
-                                 <TrafficSignalStateAction name="3" state="unknown;unknown;unknown"/>
+                                 <TrafficSignalStateAction name="3" state="broken;unknown;broken"/>
                               </TrafficSignalAction>
                            </InfrastructureAction>
                         </GlobalAction>
@@ -63,6 +63,28 @@
                            <Condition name="SimTimeCondition2" delay="0" conditionEdge="none">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="0.2" rule="greaterOrEqual"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="StopLightManeuver3">
+                  <Event name="StopLightEvent3" priority="override" maximumExecutionCount="1">
+                     <Action name="StopLightAction3">
+                        <GlobalAction>
+                           <InfrastructureAction>
+                              <TrafficSignalAction>
+                                 <TrafficSignalStateAction name="3" state="on;on;on"/>
+                              </TrafficSignalAction>
+                           </InfrastructureAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="SimTimeCondition3" delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="0.3" rule="greaterOrEqual"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
@@ -85,7 +107,7 @@
          <ConditionGroup>
                <Condition name="stop_trigger " delay="0" conditionEdge="none">
                   <ByValueCondition>
-                     <SimulationTimeCondition value="5" rule="greaterThan"/>
+                     <SimulationTimeCondition value="0.5" rule="greaterThan"/>
                   </ByValueCondition>
                </Condition>
          </ConditionGroup>

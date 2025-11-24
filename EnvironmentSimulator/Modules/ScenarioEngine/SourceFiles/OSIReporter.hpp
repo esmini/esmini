@@ -192,6 +192,10 @@ public:
     */
     int CreateSensorViewFromSensorData(const osi3::SensorData& sd);
 
+    osi3::TrafficLight_Classification_Color LampColorMap(roadmanager::LampColor c);
+    osi3::TrafficLight_Classification_Icon  LampIconMap(roadmanager::LampIcon i);
+    osi3::TrafficLight_Classification_Mode  LampModeMap(roadmanager::Signal::LampMode m);
+
     const char*       GetOSIGroundTruth(int* size);
     const char*       GetOSIGroundTruthRaw();
     const char*       GetOSITrafficCommandRaw();

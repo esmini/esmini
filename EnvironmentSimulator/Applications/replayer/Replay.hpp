@@ -229,12 +229,6 @@ namespace scenarioengine
         std::vector<roadmanager::Signal::LampMode> modes_ = {};
     };
 
-    typedef struct
-    {
-        TrafficLightModel*                         model  = nullptr;
-        std::vector<roadmanager::Signal::LampMode> modes_ = {};
-    } ReplayTrafficLight;
-
     class Replay
     {
     public:

@@ -1775,7 +1775,7 @@ namespace roadmanager
             MODE_CONSTANT  = 3,
             MODE_FLASHING  = 4,
             MODE_COUNTING  = 5,
-            MODE_UNDEFINED = 6,  // Keep last
+            MODE_UNDEFINED = 6  // Keep last
         };
 
         Signal(double      s,
@@ -1979,6 +1979,8 @@ namespace roadmanager
                   color_(color),
                   mode_(LampMode::MODE_OFF)
             {
+                dirty_  = false;
+                broken_ = false;
             }
 
             // Setters
@@ -2047,6 +2049,14 @@ namespace roadmanager
                 dirty_      = false;
                 return retval;
             }
+            bool IsBroken() const
+            {
+                return broken_;
+            }
+            void SetIsBroken(bool value)
+            {
+                broken_ = value;
+            }
 
         private:
             id_t   id_;
@@ -2055,7 +2065,8 @@ namespace roadmanager
             double z_;
             double width_;
             double height_;
-            bool   dirty_ = false;  // indicates whether graphics needs to update
+            bool   dirty_;  // indicates whether graphics needs to update
+            bool   broken_;
 
             LampIcon  icon_;
             LampColor color_;
@@ -2129,7 +2140,8 @@ namespace roadmanager
                                                                     {"off", LampMode::MODE_OFF},
                                                                     {"on", LampMode::MODE_CONSTANT},
                                                                     {"flashing", LampMode::MODE_FLASHING},
-                                                                    {"counting", LampMode::MODE_COUNTING}};
+                                                                    {"counting", LampMode::MODE_COUNTING},
+                                                                    {"broken", LampMode::MODE_OTHER}};
     };
 
     class OutlineCorner

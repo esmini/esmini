@@ -483,6 +483,7 @@ void TrafficLight::UpdateState(const std::string state)
     for (size_t i = 0; i < state_vector_.size(); i++)
     {
         lamps_[i].SetMode(lamp_mode_map_[state_vector_[i]]);
+        lamps_[i].SetIsBroken(state_vector_[i] == "broken");
     }
 }
 

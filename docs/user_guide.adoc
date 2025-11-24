@@ -1152,13 +1152,13 @@ Example of a semantic state of a lamp of type `1000001` (https://github.com/esmi
 <GlobalAction>
     <InfrastructureAction>
       <TrafficSignalAction>
-          <TrafficSignalStateAction name="201" state="on;off;off"/>
+          <TrafficSignalStateAction name="1" state="on;off;off"/>
       </TrafficSignalAction>
     </InfrastructureAction>
 </GlobalAction>
 ----
 
-In above example, `name=201` maps to `signal` in the `OpenDRIVE` with `id=1`, and `state` is the semantic state of each of the 3 lamps.
+In above example, `name=1` maps to `signal` in the `OpenDRIVE` with `id=1`, and `state` is the semantic state of each of the 3 lamps.
 
 Supported semantic states are:
 
@@ -1168,26 +1168,46 @@ Supported semantic states are:
 . on
 . flashing
 . counting (no graphics support)
+. broken
 
 For their intended usage and definition see https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1TrafficLight_1_1Classification.html#ae107846d88eaa3dab95d3d931d73fa09[ASAM OSI documentation].
-
-[Note]
-====
-**Note**: state `on` corresponds to `MODE_CONSTANT` in `OSI`.
-====
 
 
 ==== Traffic Lights in OSI
 
-The traffic lights data are mostly supported in OSI, except the following data which is **not** supported:
+Traffic lights are decomposed into individual lamps before being transmitted via OSI. All traffic lights are currently assumed to be aligned along the positive z-axis, with no pitch or roll applied.
 
-. counter
-. is_out_of_service
-. logical_lane_assignment
+Each lamp’s vertical position is calculated from top to bottom using the formula:
+
+`zOffset + lampHeight/2 + lampHeight * (nrOfLamps - 1 - lampIdx)`
+
+Where:
+
+. `zOffset` – the base vertical offset taken from the zOffset attribute in the OpenDRIVE (xodr) definition
+. `lampHeight` – computed as `height / nrOfLamps`, where `height` comes from the corresponding xodr element
+. `nrOfLamps` – the total number of lamps, automatically derived from the `type` field in the xodr element
+. `lampIdx` – zero-based index of the lamp (0 = top lamp)
+
+This computation ensures consistent vertical placement of all lamps within a multi-lamp traffic signal when exported to OSI.
+
+===== OpenSCENARIO to OSI state mapping
+
+This is how esmini maps the semantic states from OpenSCENARIO to OSI:
+
+. unknown -> `MODE_UNKNOWN`
+. other -> `MODE_OTHER`
+. off -> `MODE_OFF`
+. on -> `MODE_CONSTANT`
+. flashing -> `MODE_FLASHING`
+. counting -> `MODE_COUNTING`
+. broken -> `MODE_OTHER` and `is_out_of_service`
 
 [Note]
 ====
-**Note**: The `assigned_lane_id` only shows the **drivable lanes** associated with the signal and maps to the `validity` element of a `signal` in an `OpenDRIVE`.
+**Note**: The following OSI data is **not** supported for TrafficLight:
+
+. counter
+. logical_lane_assignment
 ====
 
 === Expressions
