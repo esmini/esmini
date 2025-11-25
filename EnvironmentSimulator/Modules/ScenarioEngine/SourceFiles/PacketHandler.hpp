@@ -173,6 +173,8 @@ namespace Dat
 
             size_t total_size = (SerializedSize(data) + ... + 0);  // +0 incase we want to write without data
 
+            LOG_DEBUG("Writing packet id {} size {}", p_id, total_size);
+
             // Create the packet
             PacketGeneric packet;
             packet.header.id        = static_cast<id_t>(p_id);

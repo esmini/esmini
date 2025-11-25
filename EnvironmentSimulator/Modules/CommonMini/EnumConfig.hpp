@@ -48,7 +48,7 @@ namespace esmini_options
         LOG_SKIP_MODULES,                // 37
         OSC_STR,                         // 38
         OSG_SCREENSHOT_EVENT_HANDLER,    // 39
-        OSCI_CROP_DYNAMIC,               // 40
+        OSI_CROP_DYNAMIC,                // 40
         OSI_EXCLUDE_GHOST,               // 41
         OSI_FILE,                        // 42
         OSI_FREQ,                        // 43
@@ -146,7 +146,7 @@ namespace esmini_options
         {"log_skip_modules", LOG_SKIP_MODULES},
         {"osc_str", OSC_STR},
         {"osg_screenshot_event_handler", OSG_SCREENSHOT_EVENT_HANDLER},
-        {"osi_crop_dynamic", OSCI_CROP_DYNAMIC},
+        {"osi_crop_dynamic", OSI_CROP_DYNAMIC},
         {"osi_exclude_ghost", OSI_EXCLUDE_GHOST},
         {"osi_file", OSI_FILE},
         {"osi_freq", OSI_FREQ},
