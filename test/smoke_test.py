@@ -438,11 +438,11 @@ class TestSuite(unittest.TestCase):
         df["name"] = df["name"].astype(str)
 
         # Set your cutoff time and target name
-        cutoff_time_sink_5 = 12.980
+        cutoff_time_sink_5 = 1.400
         sink_5 = "sink_5"
-        cutoff_time_sink_4 = 13.650
+        cutoff_time_sink_4 = 2.900
         sink_4 = "sink_4"
-        cutoff_time_sink_3 = 14.310
+        cutoff_time_sink_3 = 4.300
         sink_3 = "sink_3"
 
         # Filter rows after specified time and check if target_name is still present

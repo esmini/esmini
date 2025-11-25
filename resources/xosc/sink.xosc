@@ -36,7 +36,7 @@
                     <TrafficAction>
                         <TrafficSinkAction radius="0.7">
                             <Position>
-                                <LanePosition roadId="2" laneId="-2" s="50.0" offset="0.0"/>
+                                <LanePosition roadId="0" laneId="-2" s="80.0" offset="0.0"/>
                             </Position>
                         </TrafficSinkAction>
                     </TrafficAction>
@@ -47,7 +47,7 @@
                             <SpeedAction>
                                 <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="30.0"/>
+                                    <AbsoluteTargetSpeed value="14.0"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -66,7 +66,7 @@
                             <SpeedAction>
                                 <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="30.0"/>
+                                    <AbsoluteTargetSpeed value="14.0"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -85,7 +85,7 @@
                             <SpeedAction>
                                 <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="30.0"/>
+                                    <AbsoluteTargetSpeed value="14.0"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -104,7 +104,7 @@
                             <SpeedAction>
                                 <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="30.0"/>
+                                    <AbsoluteTargetSpeed value="14.0"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -123,7 +123,7 @@
                             <SpeedAction>
                                 <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="30.0"/>
+                                    <AbsoluteTargetSpeed value="14.0"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -142,7 +142,7 @@
                             <SpeedAction>
                                 <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time"/>
                                 <SpeedActionTarget>
-                                    <AbsoluteTargetSpeed value="30.0"/>
+                                    <AbsoluteTargetSpeed value="14.0"/>
                                 </SpeedActionTarget>
                             </SpeedAction>
                         </LongitudinalAction>
@@ -161,7 +161,7 @@
             <ConditionGroup>
                 <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
                     <ByValueCondition>
-                        <SimulationTimeCondition value="20.0" rule="greaterThan"/>
+                        <SimulationTimeCondition value="6.0" rule="greaterThan"/>
                     </ByValueCondition>
                 </Condition>
             </ConditionGroup>
