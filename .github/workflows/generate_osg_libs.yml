@@ -1,0 +1,51 @@
+# Build OpenSceneGraph (OSG) libraries for esmini on supported platforms
+
+name: Generate OSG libs
+
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-2022, macos-14]
+
+    runs-on: ${{ matrix.os }}  # Use the matrix variable for the OS
+
+    steps:
+      # Checks-out your repository in case we need it for debugging
+      - uses: actions/checkout@v3
+
+      - name: Install and use g++-9 on Ubuntu
+        if: runner.os == 'Linux'
+        shell: bash
+        run: sudo apt-get update -q
+          && sudo apt-get install -q -y gcc-9 g++-9
+          && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 200
+          && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 200
+
+      - name: Install OSG dependencies on Ubuntu
+        if: runner.os == 'Linux'
+        shell: bash
+        run: sudo apt-get install -y -q libx11-dev libxrandr-dev libxinerama-dev libgl1-mesa-dev libegl1-mesa-dev
+          && sudo apt-get install -y -q libglu1-mesa-dev xorg-dev mesa-utils
+
+      - name: build OSG
+        shell: bash
+        run: |
+          mkdir osg
+          cd osg
+          ../esmini/scripts/generate_osg_libs.sh
+
+      - name: Upload lib package
+        uses: actions/upload-artifact@v4
+        with:
+          name: osg ${{ runner.os }} lib package
+          path: osg/osg_*.7z
+
+      - name: Debugging with tmate
+        if: failure()
+        uses: mxschmitt/action-tmate@v3
