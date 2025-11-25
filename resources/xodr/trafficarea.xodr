@@ -67,7 +67,7 @@
             <successor elementType="road" elementId="2" contactPoint="start"/>
         </link>
         <planView>
-            <geometry s="0" x="200.0" y="0.0" hdg="0.0" length="150">
+            <geometry s="0" x="100.0" y="0.0" hdg="0.0" length="150">
                 <line/>
             </geometry>
         </planView>
@@ -131,7 +131,7 @@
             <predecessor elementType="road" elementId="1" contactPoint="end"/>
         </link>
         <planView>
-            <geometry s="0" x="400.0" y="0.0" hdg="0.0" length="200">
+            <geometry s="0" x="250.0" y="0.0" hdg="0.0" length="200">
                 <line/>
             </geometry>
         </planView>
