@@ -32,14 +32,17 @@ namespace esmini
         state->height          = gw_state->info.boundingbox.dimensions_.height_;
         state->object_type     = gw_state->info.obj_type;
         state->object_category = gw_state->info.obj_category;
-        
+
         // Extract wheel information from wheel_data vector
-        if (!gw_state->info.wheel_data.empty()) {
+        if (!gw_state->info.wheel_data.empty())
+        {
             // Use the first wheel's data for wheel angle and rotation
-            const auto& wheel = gw_state->info.wheel_data[0];
-            state->wheel_angle = (float)wheel.h;  // heading/yaw for wheel angle
+            const auto &wheel  = gw_state->info.wheel_data[0];
+            state->wheel_angle = (float)wheel.h;              // heading/yaw for wheel angle
             state->wheel_rot   = (float)wheel.rotation_rate;  // rotation rate for wheel rotation
-        } else {
+        }
+        else
+        {
             // Default values when no wheel data available
             state->wheel_angle = 0.0f;
             state->wheel_rot   = 0.0f;
@@ -109,7 +112,7 @@ namespace esmini
     {
         OpenScenarioConfig _config;
         _config.max_loop = second * fps;
-        _config.dt = 1.0 / fps;
+        _config.dt       = 1.0 / fps;
 
         return this->get_object_state(&_config);
     }
