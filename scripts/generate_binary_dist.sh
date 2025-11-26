@@ -47,6 +47,7 @@ resources/xosc/trailer_connect.xosc \
 resources/xosc/bicycle_fall_over.xosc \
 resources/xosc/tunnels.xosc \
 resources/xosc/follow_reference.xosc \
+resources/xosc/traffic_lights.xosc \
 resources/xosc/Catalogs/Maneuvers/*.* \
 resources/xosc/Catalogs/Routes/*.* \
 resources/xosc/Catalogs/Vehicles/*.* \
@@ -65,6 +66,7 @@ resources/xodr/curves_elevation.xodr \
 resources/xodr/crest-curve.xodr \
 resources/xodr/two_plus_one.xodr \
 resources/xodr/tunnels.xodr \
+resources/xodr/fabriksgatan_traffic_lights.xodr \
 resources/models/bus_blue.osgb \
 resources/models/car_blue.osgb \
 resources/models/car_red.osgb \
@@ -97,6 +99,8 @@ resources/models/se_a_20-1.osgb \
 resources/models/cn_jin-70.osgb \
 resources/models/cn_shi-50.osgb \
 resources/models/pole.osgb \
+resources/models/roads_signal_textures/opendrive_1000001.png \
+resources/models/roads_signal_textures/opendrive_1000002.png \
 resources/models/asphalt.jpg \
 resources/models/grass.jpg \
 resources/models/railing.osgb \
