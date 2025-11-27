@@ -103,8 +103,8 @@ namespace scenarioengine
         int  ScenarioFrame(double timestep_s, bool keyframe);
         void ShowObjectSensors(bool mode);
 
-        void DynamicPitchUpdate(Object *obj, double dt, double a_min = -12.0, double a_max = 10.0);
-        void DynamicRollUpdate(Object *obj, double dt, double a_min = -12.0, double a_max = 10.0);
+        void DynamicPitchUpdate(Object *obj, double dt, double a_min = -12.0, double a_max = 10.0) const;
+        void DynamicRollUpdate(Object *obj, double dt, double a_min = -12.0, double a_max = 10.0) const;
 
         void EnableVehicleDynamics()
         {
@@ -121,18 +121,18 @@ namespace scenarioengine
         }
         void SetTension(double tension)
         {
-            pitch_spring_.SetTension(tension);
-            roll_spring_.SetTension(tension);
+            pitch_spring_template_.SetTension(tension);
+            roll_spring_template_.SetTension(tension);
         }
         void SetDamping(double damping)
         {
-            pitch_spring_.SetDamping(damping);
-            roll_spring_.SetDamping(damping);
+            pitch_spring_template_.SetDamping(damping);
+            roll_spring_template_.SetDamping(damping);
         }
         void SetOptimalDamping()
         {
-            pitch_spring_.SetOptimalDamping();
-            roll_spring_.SetOptimalDamping();
+            pitch_spring_template_.SetOptimalDamping();
+            roll_spring_template_.SetOptimalDamping();
         }
 
         /**
@@ -302,8 +302,8 @@ namespace scenarioengine
         std::string  titleString;
         PlayerState  state_;
         bool         vehicle_dynamics_enabled_;
-        DampedSpring pitch_spring_;
-        DampedSpring roll_spring_;
+        DampedSpring pitch_spring_template_;
+        DampedSpring roll_spring_template_;
         double       pitch_limit_;
         double       roll_limit_;
     };

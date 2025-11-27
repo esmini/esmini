@@ -388,6 +388,10 @@ void ScenarioPlayer::ViewerFrame()
         viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(obj, viewer_->entities_.back());
         viewer_->entities_.back()->txNode_->setUpdateCallback(cb);
 
+        // initialize vehicle dynamics from templates
+        obj->pitch_spring_ = pitch_spring_template_;
+        obj->roll_spring_  = roll_spring_template_;
+
         InitVehicleModel(obj, static_cast<viewer::CarModel*>(viewer_->entities_.back()));
     }
 
@@ -457,15 +461,15 @@ void ScenarioPlayer::ViewerFrame()
 
                 if (vehicle_dynamics_enabled_ && static_cast<Vehicle*>(obj)->TowVehicle() == nullptr)  // skip trailers
                 {
-                    double pitch_capped = ABS_LIMIT(pitch_spring_.GetValue(), static_cast<Vehicle*>(obj)->GetAllowedPitch());
+                    double pitch_capped = ABS_LIMIT(obj->pitch_spring_.GetValue(), static_cast<Vehicle*>(obj)->GetAllowedPitch());
                     car->UpdateWheels(obj->wheel_angle_,
                                       obj->wheel_rot_,
                                       obj->front_axle_.positionX - obj->rear_axle_.positionX,
                                       obj->front_axle_.trackWidth,
                                       pitch_capped,
-                                      roll_spring_.GetValue());
+                                      obj->roll_spring_.GetValue());
 
-                    car->UpdatePitchAndRoll(pitch_capped, roll_spring_.GetValue());
+                    car->UpdatePitchAndRoll(pitch_capped, obj->roll_spring_.GetValue());
                 }
                 else
                 {
@@ -602,7 +606,7 @@ void ScenarioPlayer::ViewerFrame()
     viewer_->Frame(scenarioEngine->getSimulationTime());
 }
 
-void ScenarioPlayer::DynamicPitchUpdate(Object* obj, double dt, double a_min, double a_max)
+void ScenarioPlayer::DynamicPitchUpdate(Object* obj, double dt, double a_min, double a_max) const
 {
     double a_clamped = CLAMP(obj->pos_.GetAccLong(), a_min, a_max);
 
@@ -613,11 +617,11 @@ void ScenarioPlayer::DynamicPitchUpdate(Object* obj, double dt, double a_min, do
         pitch_target = 0.0;
     }
 
-    pitch_spring_.SetTargetValue(pitch_target);
-    pitch_spring_.Update(dt);
+    obj->pitch_spring_.SetTargetValue(pitch_target);
+    obj->pitch_spring_.Update(dt);
 }
 
-void ScenarioPlayer::DynamicRollUpdate(Object* obj, double dt, double a_min, double a_max)
+void ScenarioPlayer::DynamicRollUpdate(Object* obj, double dt, double a_min, double a_max) const
 {
     double a_clamped = CLAMP(obj->pos_.GetAccLat(), a_min, a_max);
 
@@ -628,8 +632,8 @@ void ScenarioPlayer::DynamicRollUpdate(Object* obj, double dt, double a_min, dou
         roll_target = 0.0;
     }
 
-    roll_spring_.SetTargetValue(roll_target);
-    roll_spring_.Update(dt);
+    obj->roll_spring_.SetTargetValue(roll_target);
+    obj->roll_spring_.Update(dt);
 }
 
 int ScenarioPlayer::SaveImagesToRAM(bool state)
@@ -1101,6 +1105,10 @@ int ScenarioPlayer::InitViewer()
                 static_cast<Vehicle*>(obj)->SetAllowedPitch();
             }
         }
+
+        // initialize vehicle dynamics from templates
+        obj->pitch_spring_ = pitch_spring_template_;
+        obj->roll_spring_  = roll_spring_template_;
     }
 
     // Choose vehicle to look at initially (switch with 'Tab')

@@ -236,6 +236,9 @@ namespace scenarioengine
         std::vector<Event*>            objectEvents_;  // Events that contains privateactions applied to this object
         std::vector<OSCPrivateAction*> initActions_;   // initActions that is being or has been applied to this object
 
+        DampedSpring pitch_spring_;
+        DampedSpring roll_spring_;
+
         struct
         {
             double pos_x;
