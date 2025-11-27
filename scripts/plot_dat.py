@@ -22,9 +22,11 @@ if __name__ == "__main__":
 
     # Read the dat file
     dat = DATFile(args.filename)
+    dat.build_data('plot')
+    labels = list(dat.labels)
 
     plot.plot(
-        dat,
+        dat.data, labels,
         args.param,
         args.x_axis,
         args.derive,

@@ -1,11 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def plot(dat, params=['speed'], x_axis='time', derive=False, dots=False, equal_aspect=False, list_plottable_params=False):
-    dat.build_data('plot')
-    labels = list(dat.labels)
+def plot(rows, labels, params=['speed'], x_axis='time', derive=False, dots=False, equal_aspect=False, list_plottable_params=False):
+
     if not x_axis in labels:
-        raise RuntimeError(f'x_axis: Did not find {x_axis} in data labels {labels}')
+        raise RuntimeError('x_axis: Did not find {} in data labels {}'.format(x_axis, labels))
+
+    x_axis_index = labels.index(x_axis)
 
     if params is not None:
         params_complete = []
@@ -18,9 +19,10 @@ def plot(dat, params=['speed'], x_axis='time', derive=False, dots=False, equal_a
     print('parameters:', params)
 
     plottable_params = []
-    for key, value in dat.labels.mapping.items():
+    for i, label in enumerate(labels):
+        value = rows[0][i]
         if isinstance(value, float) or isinstance(value, int):
-            plottable_params.append(key.strip())
+            plottable_params.append(label.strip())
 
     if list_plottable_params or params is None:
         print('\nPlottable parameters:')
@@ -38,36 +40,36 @@ def plot(dat, params=['speed'], x_axis='time', derive=False, dots=False, equal_a
         parameter.append(a)
 
     # filter out requested parameters and slice out objects
+    objs = []
     x = []
     y = []
     id2idx = {}
 
-    if 'id' not in labels:
-        raise RuntimeError(f'Did not find id in labels {labels}')
-
-    ids = [id for id in dat.objects_timeline.keys() if id is not None]
-    for i, obj_id in enumerate(ids):
-        id2idx[obj_id] = i
-        x.append([])
-        y.append([])
-        for p in parameter:
-            y[i].append([])
+    if not 'id' in labels:
+        raise RuntimeError('Did not find id in labels {}'.format(labels))
     id_index = labels.index('id')
 
-    if 'name' in labels:
-        names = zip(ids, [dat.objects_timeline.get(id).name.values[0][1] for id in ids])
-    else:
-        names = zip(ids, ['obj'+str(id) for id in ids])
-    objs = [f"{name.strip()} ({id})" for id, name in names]
-
-    for data in dat.data:
+    for data in rows:
         id = data[id_index]
+        if id not in id2idx:
+            if 'name' in labels:
+                name = data[labels.index('name')].strip()
+            else:
+                name = 'obj' + str(id)
+            name += ' ({})'.format(id)
+            id2idx[id] = len(objs)
+            objs.append(name)
+            x.append([])
+            y.append([])
+            for p in parameter:
+                y[id2idx[id]].append([])
+
         for j, p in enumerate(parameter):
             if p in params:
                 y[id2idx[id]][j].append(float(data[labels.index(p)]))
             else:
-                raise RuntimeError(f'Did not find param {p} in labels {labels}')
-        x[id2idx[id]].append(float(data[labels.index(x_axis)]))
+                 raise RuntimeError('Did not find param {} in labels {}'.format(p, labels))
+        x[id2idx[id]].append(float(data[x_axis_index]))
 
     if derive:
         for i in range(len(y)):
