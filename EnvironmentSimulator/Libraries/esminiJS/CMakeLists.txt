@@ -125,7 +125,10 @@ include_directories(
     esminijs.hpp)
 
 if(EMSCRIPTEN)
-    message("build " ${TARGET} ".js")
+    message(
+        "build "
+        ${TARGET}
+        ".js")
     set(CMAKE_EXECUTABLE_SUFFIX
         ".js")
     add_executable(
