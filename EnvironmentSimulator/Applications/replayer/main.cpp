@@ -419,7 +419,8 @@ std::vector<int> GetGhostIdx()
 int main(int argc, char** argv)
 {
     Replay*     player;
-    double      simTime = 0;
+    double      simTime      = 0;
+    double      last_simTime = LARGE_NUMBER;
     std::string arg_str;
 
     // Setup signal handler to catch Ctrl-C
@@ -1014,6 +1015,29 @@ int main(int argc, char** argv)
 
             do
             {
+                auto   esc        = player->element_state_changes_.get_values_until_time(simTime);
+                double event_time = player->element_state_changes_.last_time;
+                // ((event happened after previous simTime but earlier or at current simTime && time moving forward) || (we are at init time && we
+                // have rewound time to get here))
+                bool crossed_forward = (simTime > last_simTime &&     // we are moving forward
+                                        event_time > last_simTime &&  // event is ahead of last time
+                                        event_time <= simTime);       // ...and we reached/passed it
+
+                bool at_start_time = (simTime == player->timestamps_[0] && last_simTime > simTime);  // we moved backward *into* the start
+
+                if (crossed_forward || at_start_time)
+                {
+                    for (const auto& state : esc)
+                    {
+                        if (state.first >= last_simTime || at_start_time)
+                        {
+                            LOG_INFO("Storyboard element state change at simtime {:.3f}:\n{}", state.first, state.second);
+                        }
+                    }
+                }
+
+                last_simTime = simTime;
+
 #ifdef _USE_OSG
                 if (!(pause_player || viewer_->GetSaveImagesToFile()))
                 {

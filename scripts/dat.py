@@ -9,7 +9,7 @@ import bisect
 import ctypes
 
 VERSION_MAJOR = 4
-VERSION_MINOR = 2
+VERSION_MINOR = 3
 SMALL_NUMBER = 1e-6
 LARGE_NUMBER = 1e10
 
@@ -55,7 +55,8 @@ class PacketId(enum.Enum):
     REFPOINT_X_OFFSET = 24
     MODEL_X_OFFSET    = 25
     OBJ_MODEL3D       = 26
-    PACKET_ID_SIZE    = 27
+    ELEM_STATE_CHANGE = 27
+    PACKET_ID_SIZE    = 28
 
 class Pose:
     def __init__(self):
@@ -467,6 +468,8 @@ class DATFile():
             elif p_id == PacketId.OBJ_MODEL3D.value:
                 model3d = read_string_packet(self.file)
                 self.current_object_timeline.model3d.values.append([self.current_timestamp, model3d])
+            elif p_id == PacketId.ELEM_STATE_CHANGE.value:
+                self.file.seek(data_size, 1) # Skip packet, not supported yet
 
             # OBJ_DELETED packet
             elif p_id == PacketId.OBJ_DELETED.value:

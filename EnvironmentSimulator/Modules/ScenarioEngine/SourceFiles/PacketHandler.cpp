@@ -51,18 +51,18 @@ int Dat::DatWriter::Init(const std::string& file_name, const std::string& odr_na
     return 0;
 }
 
-// Write data not specific to object states (don't forget to update ShouldWriteObjId)
-int Dat::DatWriter::WriteGenericDataToDat()
+int Dat::DatWriter::WriteDtToDat()
 {
-    // PacketId::DT
     if (!NEAR_NUMBERS(object_state_cache_.dt_, dt_))
     {
         object_state_cache_.dt_ = dt_;
         Write(PacketId::DT, object_state_cache_.dt_);
     }
+    return 0;
+}
 
-    // PacketId::TRAFFIC_LIGHT
-    auto dynamic_signals = roadmanager::Position::GetOpenDrive()->GetDynamicSignals();
+int Dat::DatWriter::WriteTrafficLightsToDat(const std::vector<roadmanager::Signal*>& dynamic_signals)
+{
     for (size_t i = 0; i < dynamic_signals.size(); i++)
     {
         auto tl = dynamic_cast<roadmanager::TrafficLight*>(dynamic_signals[i]);
@@ -87,6 +87,26 @@ int Dat::DatWriter::WriteGenericDataToDat()
                 Write(PacketId::TRAFFIC_LIGHT, it->second);
             }
         }
+    }
+    return 0;
+}
+
+int Dat::DatWriter::WriteStoryBoardStateChangesToDat(const std::vector<std::string>& state_changes)
+{
+    std::string concat_string;
+    for (const auto& state : state_changes)
+    {
+        if (!concat_string.empty())
+        {
+            concat_string += "\n";
+        }
+        concat_string += state;
+    }
+
+    if (!concat_string.empty())
+    {
+        PacketString p_str = {static_cast<unsigned int>(concat_string.size()), concat_string};
+        Write(PacketId::ELEM_STATE_CHANGE, p_str);
     }
 
     return 0;
@@ -374,7 +394,8 @@ constexpr bool Dat::DatWriter::ShouldWriteObjId(PacketId p_id) const noexcept
 
     constexpr uint64_t skip_mask =
         (uint64_t{1} << static_cast<unsigned int>(PacketId::END_OF_SCENARIO)) | (uint64_t{1} << static_cast<unsigned int>(PacketId::DT)) |
-        (uint64_t{1} << static_cast<unsigned int>(PacketId::TIMESTAMP)) | (uint64_t{1} << static_cast<unsigned int>(PacketId::TRAFFIC_LIGHT));
+        (uint64_t{1} << static_cast<unsigned int>(PacketId::TIMESTAMP)) | (uint64_t{1} << static_cast<unsigned int>(PacketId::TRAFFIC_LIGHT)) |
+        uint64_t{1} << static_cast<unsigned int>(PacketId::ELEM_STATE_CHANGE);
 
     // If the bit for p_id is set, we skip writing
     return ((skip_mask >> static_cast<unsigned int>(p_id)) & uint64_t{1}) == 0;

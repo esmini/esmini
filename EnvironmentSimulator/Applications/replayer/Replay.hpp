@@ -33,7 +33,7 @@ namespace scenarioengine
         mutable size_t                    last_index = 0;  // Set as mutable to allow modification in const methods
         mutable double                    last_time  = LARGE_NUMBER;
 
-        std::optional<T> get_value_incremental(double time) const noexcept
+        std::optional<T> get_value_incremental(double time) const
         {
             if (values.empty())
             {
@@ -69,55 +69,16 @@ namespace scenarioengine
                 }
             }
 
-            last_index = idx;
-            last_time  = time;
+            if (idx != last_index || idx == 0)
+            {
+                last_index = idx;
+                last_time  = values[idx].first;
+            }
 
             return values[idx].second;
         }
 
-        std::optional<T> get_value_and_time_incremental(double time) const noexcept
-        {
-            if (values.empty())
-            {
-                return std::nullopt;
-            }
-
-            if (values.size() == 1)
-            {
-                last_index = 0;
-                last_time  = values[0].first;
-                return values[0].second;
-            }
-
-            size_t idx = last_index;
-
-            if (NEAR_NUMBERS(last_time, time))
-            {
-                return values[idx].second;
-            }
-
-            if (time >= values[idx].first)  // moving forward
-            {
-                while (idx + 1 < values.size() && values[idx + 1].first <= time + SMALL_NUMBER)
-                {
-                    idx++;
-                }
-            }
-            else  // moving backward
-            {
-                while (idx > 0 && values[idx].first > time + SMALL_NUMBER)
-                {
-                    idx--;
-                }
-            }
-
-            last_index = idx;
-            last_time  = time;
-
-            return values[idx].second;
-        }
-
-        std::optional<T> get_value_binary(double time, bool upper = false) const noexcept
+        std::optional<T> get_value_binary(double time, bool upper = false) const
         {
             if (values.empty())
             {
@@ -154,7 +115,7 @@ namespace scenarioengine
             return it->second;
         }
 
-        std::optional<size_t> get_index_binary(double time) const noexcept
+        std::optional<size_t> get_index_binary(double time) const
         {
             if (values.empty())
             {
@@ -177,6 +138,97 @@ namespace scenarioengine
             }
 
             return static_cast<size_t>(std::distance(values.begin(), it));
+        }
+
+        /* Finds all values from previously found value until given time */
+        std::vector<std::pair<double, T>> get_values_until_time(double time) const
+        {
+            if (values.empty())
+            {
+                return {};
+            }
+
+            if (values.size() == 1 || NEAR_NUMBERS(time, values[0].first))
+            {
+                last_index = 0;
+                last_time  = values[0].first;
+                return {values[0]};
+            }
+
+            if (NEAR_NUMBERS(last_time, time))
+            {
+                return {values[last_index]};
+            }
+
+            size_t                            idx = last_index;
+            std::vector<std::pair<double, T>> ret = {};
+
+            while (idx < values.size() && values[idx].first <= time + SMALL_NUMBER)
+            {
+                ret.push_back(values[idx]);
+                last_index = idx;
+                last_time  = values[idx].first;
+                idx++;
+            }
+
+            return ret;
+        }
+
+        std::vector<T> get_values_at_time(double time) const
+        {
+            std::vector<T> ret = {};
+            if (values.empty())
+            {
+                return ret;
+            }
+
+            if (values.size() == 1)
+            {
+                last_index = 0;
+                last_time  = values[0].first;
+                return {values[0].second};
+            }
+
+            size_t idx = last_index;
+
+            if (idx == 0 || values[idx - 1].first < time - SMALL_NUMBER)  // Find forward
+            {
+                while (NEAR_NUMBERS(values[idx].first, time))
+                {
+                    ret.push_back(values[idx].second);
+                    idx++;
+                }
+            }
+            else if (idx == values.size() - 1 || values[idx + 1].first > time + SMALL_NUMBER)  // Find backward
+            {
+                while (NEAR_NUMBERS(values[idx].first, time))
+                {
+                    ret.push_back(values[idx].second);
+                    idx--;
+                }
+            }
+            else  // We are in the middle of a range, search backward then forward
+            {
+                auto temp_idx = idx;
+                while (NEAR_NUMBERS(values[temp_idx].first, time))
+                {
+                    ret.push_back(values[temp_idx].second);
+                    temp_idx--;
+                }
+
+                temp_idx = idx + 1;
+
+                while (NEAR_NUMBERS(values[temp_idx].first, time))
+                {
+                    ret.push_back(values[temp_idx].second);
+                    temp_idx++;
+                }
+
+                idx        = temp_idx;
+                last_index = idx;  // Save so we dont have to search backwards and forwards again
+            }
+
+            return ret;
         }
     };
 
@@ -241,6 +293,7 @@ namespace scenarioengine
     public:
         // Timelines
         Timeline<double>                                                  dt_;
+        Timeline<std::string>                                             element_state_changes_;
         std::map<int, PropertyTimeline, MapComparator>                    objects_timeline_;
         std::unordered_map<unsigned int, Timeline<Dat::TrafficLightLamp>> traffic_lights_timeline_;
 
@@ -258,12 +311,13 @@ namespace scenarioengine
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
 
-        void SetupGhostsTimeline();
-        int  ParsePackets(const std::string& filename);
-        void FillInTimestamps();
-        void FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);
-        void CreateMergedDatfile(const std::string filename) const;
-        void ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filename);
+        void        SetupGhostsTimeline();
+        int         ParsePackets(const std::string& filename);
+        std::string BuildElementStateChange(const std::string& element_state);
+        void        FillInTimestamps();
+        void        FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);
+        void        CreateMergedDatfile(const std::string filename) const;
+        void        ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filename);
 
         /**
                 Go to specific time

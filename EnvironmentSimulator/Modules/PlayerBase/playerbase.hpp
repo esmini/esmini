@@ -241,7 +241,8 @@ namespace scenarioengine
             return odr_manager;
         }
 
-        void InitControllersPostPlayer();
+        void        InitControllersPostPlayer();
+        static void StoryBoardElementCallback(const char *name, int type, int state, const char *full_path);
 
         CSV_Logger                   *CSV_Log;
         ScenarioEngine               *scenarioEngine;

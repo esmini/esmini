@@ -23,6 +23,7 @@
 using namespace scenarioengine;
 
 void (*StoryBoardElement::stateChangeCallback)(const char* name, int type, int state, const char* full_path) = nullptr;
+std::vector<std::string> StoryBoardElement::state_changes_;
 
 #ifdef _USE_OSI
 OSIReporter* StoryBoardElement::osi_reporter_ = nullptr;
@@ -336,6 +337,12 @@ void StoryBoardElement::SetState(StoryBoardElement::State state)
         if (stateChangeCallback != nullptr)
         {
             stateChangeCallback(GetName().c_str(), static_cast<int>(element_type_), static_cast<int>(state), GetFullPath().c_str());
+        }
+
+        if (SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::RECORD))
+        {
+            std::string s = fmt::format("{};{};{};{}", element_type_, state, GetName(), GetFullPath());
+            state_changes_.emplace_back(s);
         }
 
         for (size_t i = 0; i < trigger_ref_.size(); i++)

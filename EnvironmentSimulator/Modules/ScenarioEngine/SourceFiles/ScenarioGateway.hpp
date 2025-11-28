@@ -371,10 +371,21 @@ namespace scenarioengine
 
         std::vector<std::unique_ptr<ObjectState>> objectState_;
 
+        void SetDynamicSignals(std::vector<roadmanager::Signal *> dynamic_signals)
+        {
+            dynamic_signals_ = dynamic_signals;
+        }
+        void UpdateStoryBoardStateChanges(std::vector<std::string> storyboard_state_changes)
+        {
+            storyboard_state_changes_ = storyboard_state_changes;
+        }
+
     private:
         int updateObjectInfo(ObjectState *obj_state, double timestamp, int visibilityMask, double speed, double wheel_angle, double wheel_rot);
-        std::ofstream  data_file_;
-        Dat::DatWriter dat_writer_;
+        std::ofstream                      data_file_;
+        Dat::DatWriter                     dat_writer_;
+        std::vector<roadmanager::Signal *> dynamic_signals_;
+        std::vector<std::string>           storyboard_state_changes_;
     };
 
 }  // namespace scenarioengine

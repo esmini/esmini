@@ -284,7 +284,10 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
 
         scenarioEngine->prepareGroundTruth(timestep_s);
 
+        scenarioGateway->SetDynamicSignals(roadmanager::Position::GetOpenDrive()->GetDynamicSignals());
+        scenarioGateway->UpdateStoryBoardStateChanges(scenarioEngine->storyBoard.GetChanges());
         scenarioGateway->WriteStatesToFile(scenarioEngine->getSimulationTime(), timestep_s);
+        scenarioEngine->storyBoard.ClearStateChanges();
 
         if (CSV_Log)
         {

@@ -454,6 +454,19 @@ int Replay::ParsePackets(const std::string& filename)
                 current_object_timeline_->model3d_.values.emplace_back(timestamp_, std::move(model3d));
                 break;
             }
+            case static_cast<id_t>(Dat::PacketId::ELEM_STATE_CHANGE):
+            {
+                std::string state_change;
+                if (dat_reader.ReadStringPacket(state_change) != 0)
+                {
+                    LOG_ERROR("Failed to read element state change");
+                    return -1;
+                }
+
+                std::string esc = BuildElementStateChange(state_change);
+                element_state_changes_.values.emplace_back(timestamp_, esc);
+                break;
+            }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
             {
                 double stop_time;
@@ -593,6 +606,90 @@ void Replay::FillInTimestamps()
     }
 
     timestamps_.swap(filled);
+}
+
+std::string GetElementType(const std::string& s)
+{
+    switch (std::stoi(s))
+    {
+        case 1:
+            return "StoryBoard";
+        case 2:
+            return "Story";
+        case 3:
+            return "Act";
+        case 4:
+            return "ManeuverGroup";
+        case 5:
+            return "Maneuver";
+        case 6:
+            return "Event";
+        case 7:
+            return "Action";
+        case 8:
+            return "Undefined type";
+        default:
+            LOG_ERROR_AND_QUIT("Can't resolve ElementType {}", s);
+    }
+
+    return "";
+}
+
+std::string GetElementState(const std::string& s)
+{
+    switch (std::stoi(s))
+    {
+        case 0:
+            return "Init";
+        case 1:
+            return "Standby";
+        case 2:
+            return "Running";
+        case 3:
+            return "Complete";
+        case 4:
+            return "Undefined state";
+        default:
+            LOG_ERROR_AND_QUIT("Can't resolve ElementState {}", s);
+    }
+
+    return "";
+}
+
+std::string Replay::BuildElementStateChange(const std::string& element_state)
+{
+    std::string        output = "";
+    std::istringstream stream(element_state);
+    std::string        line;
+
+    bool first = true;
+
+    while (std::getline(stream, line))
+    {
+        if (line.empty())
+            continue;
+
+        std::istringstream ls(line);
+
+        std::string type_str, state_str, name, path;
+
+        if (!std::getline(ls, type_str, ';') || !std::getline(ls, state_str, ';') || !std::getline(ls, name, ';') || !std::getline(ls, path, ';'))
+        {
+            continue;
+        }
+
+        // Add newline ONLY between lines (not after the last one)
+        if (!first)
+        {
+            output += "\n";
+        }
+
+        first = false;
+
+        output += fmt::format("   {} '{}' changed state to '{}' (path: {})", GetElementType(type_str), name, GetElementState(state_str), path);
+    }
+
+    return output;
 }
 
 void Replay::FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v)
@@ -1098,7 +1195,7 @@ void Replay::CreateMergedDatfile(const std::string filename) const
         // Same flow as in ScenarioGateway.cpp
         auto dt = timestamps_[i] - prev_timestamp;
         dat_writer.SetSimulationTime(timestamps_[i], dt);
-        dat_writer.WriteGenericDataToDat();  // Writes the fixed timestep
+        dat_writer.WriteDtToDat();  // Writes the fixed timestep
         dat_writer.WriteObjectStatesToDat(object_states);
         dat_writer.SetTimestampWritten(false);
 

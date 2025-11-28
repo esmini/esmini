@@ -69,6 +69,14 @@ namespace scenarioengine
             UNDEFINED_ELEMENT_TRANSITION
         } Transition;
 
+        struct StateChangeStruct
+        {
+            int         type;
+            int         state;
+            std::string name;
+            std::string path;
+        };
+
         ElementType        element_type_;
         StoryBoardElement* parent_;
         int                num_executions_;
@@ -198,12 +206,23 @@ namespace scenarioengine
 
         virtual std::vector<StoryBoardElement*>* GetChildren() = 0;
 
+        static const std::vector<std::string>& GetChanges()
+        {
+            return state_changes_;
+        }
+
+        void ClearStateChanges()
+        {
+            state_changes_.clear();
+        }
+
     private:
         std::string name_;
         std::string full_path_;
 
-        State      state_;
-        Transition transition_;
+        State                           state_;
+        Transition                      transition_;
+        static std::vector<std::string> state_changes_;
     };
 
 }  // namespace scenarioengine

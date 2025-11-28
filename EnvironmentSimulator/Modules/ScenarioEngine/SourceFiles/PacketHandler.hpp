@@ -5,7 +5,7 @@
 #include "RoadManager.hpp"
 
 #define DAT_FILE_FORMAT_VERSION_MAJOR 4
-#define DAT_FILE_FORMAT_VERSION_MINOR 2
+#define DAT_FILE_FORMAT_VERSION_MINOR 3
 
 namespace scenarioengine
 {
@@ -43,7 +43,8 @@ namespace Dat
         REFPOINT_X_OFFSET = 24,
         MODEL_X_OFFSET    = 25,
         OBJ_MODEL3D       = 26,
-        PACKET_ID_SIZE    = 27,  // Keep this last
+        ELEM_STATE_CHANGE = 27,
+        PACKET_ID_SIZE    = 28  // Keep this last
     };
 
     struct PacketString
@@ -139,7 +140,9 @@ namespace Dat
     {
     public:
         void           WritePacket(PacketGeneric& packet);
-        int            WriteGenericDataToDat();
+        int            WriteDtToDat();
+        int            WriteTrafficLightsToDat(const std::vector<roadmanager::Signal*>& dynamic_signals);
+        int            WriteStoryBoardStateChangesToDat(const std::vector<std::string>& state_changes);
         int            WriteObjectStatesToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states);
         constexpr bool ShouldWriteObjId(PacketId p_id) const noexcept;
 

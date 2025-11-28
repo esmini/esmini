@@ -1128,7 +1128,9 @@ void ScenarioGateway::WriteStatesToFile(const double simulation_time, const doub
     if (dat_writer_.IsWriteFileOpen())
     {
         dat_writer_.SetSimulationTime(simulation_time, dt);
-        dat_writer_.WriteGenericDataToDat();
+        dat_writer_.WriteDtToDat();
+        dat_writer_.WriteTrafficLightsToDat(dynamic_signals_);
+        dat_writer_.WriteStoryBoardStateChangesToDat(storyboard_state_changes_);
         dat_writer_.WriteObjectStatesToDat(objectState_);
         dat_writer_.SetTimestampWritten(false);
     }
