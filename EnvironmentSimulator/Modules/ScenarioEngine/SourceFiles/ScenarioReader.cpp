@@ -302,6 +302,7 @@ Catalog *ScenarioReader::LoadCatalog(std::string name)
     std::vector<std::string> dirs;
     for (const auto &dir_entry : catalogs_->catalog_dirs_)
     {
+        dirs.emplace_back(dir_entry.dir_name_);
         dirs.emplace_back(DirNameOf(SE_Env::Inst().GetOSCFilePath()) + "/" + dir_entry.dir_name_);
         dirs.emplace_back(DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/xosc/Catalogs/" + LastDirOfFolderPath(dir_entry.dir_name_));
     }
