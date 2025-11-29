@@ -4286,8 +4286,8 @@ TEST(WheelData, TestWheelData)
     EXPECT_EQ(state->info.wheel_data[2].axle, 1);
     EXPECT_EQ(state->info.wheel_data[3].axle, 1);
 
-    EXPECT_NEAR(state->info.wheel_data[0].h, 0.054, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].h, 0.054, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[0].h, 0.0507, 1E-3);
+    EXPECT_NEAR(state->info.wheel_data[1].h, 0.0507, 1E-3);
     EXPECT_NEAR(state->info.wheel_data[2].h, 0.0, 1E-3);
     EXPECT_NEAR(state->info.wheel_data[3].h, 0.0, 1E-3);
 

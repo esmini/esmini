@@ -924,24 +924,28 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                     obj->SetAngularAcc(GetAngleDifference(heading_rate_new, obj->state_old.h_rate) / dt, 0.0, 0.0);
                 }
 
-                // Update wheel rotations of internal scenario objects
-                if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
+                if (obj->type_ == Object::Type::VEHICLE)
                 {
-                    // An improvised calculation of a steering angle based on yaw rate and enitity speed
-                    double steeringAngleTarget = SIGN(obj->GetSpeed()) * M_PI * heading_rate_new / MAX(fabs(obj->GetSpeed()), 1.0);
-                    double steeringAngleDiff   = steeringAngleTarget - obj->wheel_angle_;
+                    Vehicle* v = static_cast<Vehicle*>(obj);
 
-                    // Turn wheel gradually towards target
-                    double steeringAngleStep = SIGN(steeringAngleDiff) * MIN(abs(steeringAngleDiff), 0.5 * dt);
+                    // Update wheel rotations of internal scenario objects
+                    if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
+                    {
+                        if (fabs(obj->GetSpeed()) > SMALL_NUMBER)
+                        {
+                            // Calculate steering angle according to simple bicycle model
+                            obj->wheel_angle_ =
+                                SIGN(v->rear_axle_speed_) * atan2(heading_rate_new * v->front_axle_.positionX, fabs(v->rear_axle_speed_));
+                            obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
+                        }
+                    }
 
-                    obj->wheel_angle_ += steeringAngleStep;
-                    obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
-                }
-
-                if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
-                {
-                    obj->wheel_rot_ = fmod(obj->wheel_rot_ + obj->speed_ * dt / WHEEL_RADIUS, 2 * M_PI);
-                    obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+                    if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
+                    {
+                        // Update wheel rotation based on sign of rear axle speed and magnitude of reference point speed
+                        obj->wheel_rot_ = fmod(obj->wheel_rot_ + SIGN(v->rear_axle_speed_) * fabs(obj->GetSpeed()) * dt / WHEEL_RADIUS, 2 * M_PI);
+                        obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+                    }
                 }
             }
             else

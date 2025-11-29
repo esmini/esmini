@@ -5534,7 +5534,7 @@ TEST(APITest, TestWheelData)
 
     SE_GetObjectWheelData(SE_GetId(2), 0, &wheel_data);
     EXPECT_EQ(wheel_data.axle, 0);
-    EXPECT_NEAR(wheel_data.h, 0.054, 1E-3);
+    EXPECT_NEAR(wheel_data.h, 0.0507, 1E-3);
     EXPECT_EQ(wheel_data.index, 0);
     EXPECT_NEAR(wheel_data.p, 1.989, 1E-3);
     EXPECT_NEAR(wheel_data.x, 2.98, 1E-3);
@@ -5543,7 +5543,7 @@ TEST(APITest, TestWheelData)
 
     SE_GetObjectWheelData(SE_GetId(2), 1, &wheel_data);
     EXPECT_EQ(wheel_data.axle, 0);
-    EXPECT_NEAR(wheel_data.h, 0.054, 1E-3);
+    EXPECT_NEAR(wheel_data.h, 0.0507, 1E-3);
     EXPECT_EQ(wheel_data.index, 1);
     EXPECT_NEAR(wheel_data.p, 1.989, 1E-3);
     EXPECT_NEAR(wheel_data.x, 2.98, 1E-3);
@@ -5725,8 +5725,8 @@ TEST_P(TrailTest, TrailTestPositionMode)
 INSTANTIATE_TEST_SUITE_P(
     TrailTestPositionModePosition,
     TrailTest,
-    testing::Values(std::make_tuple("position", 71.0, -6.0, 64, 0.0407, 79.9937, -5.7766, 8, 0.1727, 84.8936, -4.8236, 2, 0.0118),
-                    std::make_tuple("time", 60.9999, -5.994, 64, 0.2814, 65.9984, -5.8872, 8, 0.1727, 70.9764, -5.4374, 2, -0.0157)));
+    testing::Values(std::make_tuple("position", 71.0, -6.0, 64, 0.0445, 79.9937, -5.7766, 8, 0.1624, 84.8936, -4.8236, 2, 0.0118),
+                    std::make_tuple("time", 60.9999, -5.994, 64, 0.2758, 65.9984, -5.8872, 8, 0.1624, 70.9764, -5.4374, 2, -0.0157)));
 
 int main(int argc, char** argv)
 {

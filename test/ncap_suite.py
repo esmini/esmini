@@ -50,7 +50,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n7.850, 1, GVT, 383.090, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 0.083', csv))
         self.assertTrue(re.search('\n7.850, 2, SOV, 359.540, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 3.588', csv))
         self.assertTrue(re.search('\n7.900, 0, Ego, 203.611, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 5.349', csv))
-        self.assertTrue(re.search('\n7.900, 1, GVT, 382.118, 1.748, 0.000, 3.145, 0.000, 0.000, 19.444, 0.013, 2.860', csv))
+        self.assertTrue(re.search('\n7.900, 1, GVT, 382.118, 1.748, 0.000, 3.145, 0.000, 0.000, 19.444, 0.010, 2.860', csv))
         self.assertTrue(re.search('\n7.900, 2, SOV, 358.568, 1.750, 0.000, 3.142, 0.000, 0.000, 19.444, 0.000, 0.083', csv))
         self.assertTrue(re.search('\n9.250, 0, Ego, 229.861, -1.750, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 4.951', csv))
         self.assertTrue(re.search('\n9.250, 1, GVT, 355.920, 0.287, 0.000, 3.239, 0.000, 0.000, 19.444, 0.000, 2.462', csv))
@@ -107,11 +107,11 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n24.250, 0, Ego, 157.264, -0.920, 0.000, 0.375, 0.000, 0.000, 2.778, 0.348, 3.965', csv))
+        self.assertTrue(re.search('\n24.250, 0, Ego, 157.264, -0.920, 0.000, 0.375, 0.000, 0.000, 2.778, 0.287, 3.965', csv))
         self.assertTrue(re.search('\n24.250, 1, Target, 163.965, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 4.844', csv))
-        self.assertTrue(re.search('\n24.300, 0, Ego, 157.392, -0.868, 0.000, 0.390, 0.000, 0.000, 2.778, 0.348, 4.362', csv))
+        self.assertTrue(re.search('\n24.300, 0, Ego, 157.392, -0.868, 0.000, 0.390, 0.000, 0.000, 2.778, 0.287, 4.362', csv))
         self.assertTrue(re.search('\n24.300, 1, Target, 163.548, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 6.034', csv))
-        self.assertTrue(re.search('\n27.350, 0, Ego, 162.721, 5.309, 0.000, 1.321, 0.000, 0.000, 2.778, 0.316, 3.435', csv))
+        self.assertTrue(re.search('\n27.350, 0, Ego, 162.721, 5.309, 0.000, 1.321, 0.000, 0.000, 2.778, 0.262, 3.435', csv))
         self.assertTrue(re.search('\n27.350, 1, Target, 138.131, 1.750, 0.000, 3.142, 0.000, 0.000, 8.333, 0.000, 3.255', csv))
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CBFA_2023(self):
@@ -264,9 +264,9 @@ class TestSuite(unittest.TestCase):
 
         # Check vehicle state
         csv = generate_csv()
-        self.assertTrue(re.search('\n27.450, 0, Ego, 162.780, 5.580, 0.000, 1.345, 0.000, 0.000, 2.778, 0.266, 4.229', csv))
+        self.assertTrue(re.search('\n27.450, 0, Ego, 162.780, 5.580, 0.000, 1.345, 0.000, 0.000, 2.778, 0.219, 4.229', csv))
         self.assertTrue(re.search('\n27.450, 1, VRU, 163.241, 9.500, 0.000, 6.283, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
-        self.assertTrue(re.search('\n27.500, 0, Ego, 162.808, 5.716, 0.000, 1.356, 0.000, 0.000, 2.778, 0.262, 4.626', csv))
+        self.assertTrue(re.search('\n27.500, 0, Ego, 162.808, 5.716, 0.000, 1.356, 0.000, 0.000, 2.778, 0.219, 4.626', csv))
         self.assertTrue(re.search('\n27.500, 1, VRU, 163.310, 9.500, 0.000, 6.283, 0.000, 0.000, 1.389, 0.000, 0.000', csv))
 
     def test_AEB_VRU_2023_NCAP_AEB_VRU_CPRA_Cm_2023(self):
