@@ -1755,6 +1755,23 @@ void Vehicle::AlignTrailers()
     }
 }
 
+void Vehicle::AlignRearAxlePosition()
+{
+    // Calculate rear axle position given reference point position and heading
+    if (!NEAR_ZERO(GetRefpointXOffset()))
+    {
+        // rear axle position offset from reference point
+        rear_axle_pos_ = SE_Vector(pos_.GetX(), pos_.GetY()) + SE_Vector(-GetRefpointXOffset(), 0.0).Rotate(pos_.GetH());
+        rear_axle_vel_ = SE_Vector(pos_.GetVelX(), pos_.GetVelY());
+    }
+    else
+    {
+        // no offset, rear axle coincides with reference position
+        rear_axle_pos_.Set(pos_.GetX(), pos_.GetY());
+        rear_axle_vel_.Set(pos_.GetVelX(), pos_.GetVelY());
+    }
+}
+
 std::string Vehicle::Category2String(int category)
 {
     switch (category)

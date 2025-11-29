@@ -9,7 +9,7 @@ import bisect
 import ctypes
 
 VERSION_MAJOR = 4
-VERSION_MINOR = 0
+VERSION_MINOR = 1
 SMALL_NUMBER = 1e-6
 LARGE_NUMBER = 1e10
 
@@ -28,31 +28,33 @@ class PacketId(enum.Enum):
 
     Shall mirror PacketHandler.hpp Dat::PacketId
     """
-    OBJ_ID          = 0
-    MODEL_ID        = 1
-    OBJ_TYPE        = 2
-    OBJ_CATEGORY    = 3
-    CTRL_TYPE       = 4
-    TIMESTAMP       = 5
-    NAME            = 6
-    SPEED           = 7
-    WHEEL_ANGLE     = 8
-    WHEEL_ROT       = 9
-    BOUNDING_BOX    = 10
-    SCALE_MODE      = 11
-    VISIBILITY_MASK = 12
-    POSE            = 13
-    ROAD_ID         = 14
-    LANE_ID         = 15
-    POS_OFFSET      = 16
-    POS_T           = 17
-    POS_S           = 18
-    OBJ_DELETED     = 19
-    OBJ_ADDED       = 20
-    DT              = 21
-    END_OF_SCENARIO = 22
-    TRAFFIC_LIGHT   = 23
-    PACKET_ID_SIZE  = 24
+    OBJ_ID            = 0
+    MODEL_ID          = 1
+    OBJ_TYPE          = 2
+    OBJ_CATEGORY      = 3
+    CTRL_TYPE         = 4
+    TIMESTAMP         = 5
+    NAME              = 6
+    SPEED             = 7
+    WHEEL_ANGLE       = 8
+    WHEEL_ROT         = 9
+    BOUNDING_BOX      = 10
+    SCALE_MODE        = 11
+    VISIBILITY_MASK   = 12
+    POSE              = 13
+    ROAD_ID           = 14
+    LANE_ID           = 15
+    POS_OFFSET        = 16
+    POS_T             = 17
+    POS_S             = 18
+    OBJ_DELETED       = 19
+    OBJ_ADDED         = 20
+    DT                = 21
+    END_OF_SCENARIO   = 22
+    TRAFFIC_LIGHT     = 23
+    REFPOINT_X_OFFSET = 24
+    MODEL_X_OFFSET    = 25
+    PACKET_ID_SIZE    = 26
 
 class Pose:
     def __init__(self):
@@ -235,6 +237,8 @@ class PropertyTimeline():
         self.pos_t = Timeline()
         self.pos_s = Timeline()
         self.active = Timeline()
+        self.refpoint_x_offset = Timeline()
+        self.model_x_offset = Timeline()
 
 class DATFile():
     """
@@ -270,7 +274,9 @@ class DATFile():
         "laneId": None,
         "offset": None,
         "t": None,
-        "s": None
+        "s": None,
+        "refpoint_x_offset": None,
+        "model_x_offset": None
     }
 
     def __init__(self, filename, extended=False):
@@ -451,6 +457,10 @@ class DATFile():
                 self.current_object_timeline.bounding_box.values.append([self.current_timestamp, bb])
             elif p_id == PacketId.TRAFFIC_LIGHT.value:
                 self.file.seek(data_size, 1) # Skip packet, not supported yet
+            elif p_id == PacketId.REFPOINT_X_OFFSET.value:
+                self.current_object_timeline.refpoint_x_offset.values.append([self.current_timestamp, read_dtype(self.file, DataType.float)])
+            elif p_id == PacketId.MODEL_X_OFFSET.value:
+                self.current_object_timeline.model_x_offset.values.append([self.current_timestamp, read_dtype(self.file, DataType.float)])
 
             # OBJ_DELETED packet
             elif p_id == PacketId.OBJ_DELETED.value:
@@ -515,6 +525,9 @@ class DATFile():
         slice_idx = obj_tl.visibility_mask.get_index_binary(self.current_timestamp)
         obj_tl.visibility_mask.values = obj_tl.visibility_mask.values[0:slice_idx]
 
+        slice_idx = obj_tl.pos_s.get_index_binary(self.current_timestamp)
+        obj_tl.pos_s.values = obj_tl.pos_s.values[0:slice_idx]
+
     def get_object_state_struct_at_time(self, obj_id: int, t: float) -> dict:
         """ Get the state of an object at a specific time."""
         timeline = self.objects_timeline.get(obj_id)
@@ -549,6 +562,8 @@ class DATFile():
         self.ObjectStateStructDat["offset"] = timeline.pos_offset.get_value_incremental(t)
         self.ObjectStateStructDat["t"] = timeline.pos_t.get_value_incremental(t)
         self.ObjectStateStructDat["s"] = timeline.pos_s.get_value_incremental(t)
+        self.ObjectStateStructDat["refpoint_x_offset"] = timeline.refpoint_x_offset.get_value_incremental(t)
+        self.ObjectStateStructDat["model_x_offset"] = timeline.model_x_offset.get_value_incremental(t)
 
         return self.ObjectStateStructDat
 

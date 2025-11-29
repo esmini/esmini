@@ -2236,6 +2236,53 @@ Mode is a scenario parameter and can easily be changed in the ParameterDeclarati
 
 Regarding use cases of the LateralDistanceAction in entity coordinate system, we have no clue. But we're interested to learn how, if ever, its' being used. Please let us know.
 
+=== Shift reference point
+
+Although OpenSCENARIO XML https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/06_general_concepts/06_03_coordinate_systems.html#_vehicle_coordinate_system_xv_yv_zv[specifies] the reference point of vehicles to be at rear axle, esmini, from v2.56.0, supports offsetting the reference point along vehicle x-axis.
+
+The video clip below demonstrates moving the reference point to the front axle, in effect following trajectory by front axle.
+
+video::gvfFI4hgw1M[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+The reference point can be placed anywhere along the vehicle x-axis, relative mid rear axle, by specifying the Vehicle property `refpoint_x_offset`.
+
+.Original reference point (red) can be moved along vehicle x-axis, for example at midpoint or front axle.
+image::x_offset.png[]
+
+Example:
+
+[source, xml]
+----
+<Vehicle>
+   ...
+   <Properties>
+      <Property name="refpoint_x_offset" value="2.98"/>
+   </Properties>
+</Vehicle>
+----
+
+Full example scenario here: https://github.com/esmini/esmini/blob/dev/resources/xosc/follow_trajectory_by_front_axle.xosc[follow_trajectory_by_front_axle.xosc]
+
+Command: `./bin/esmini --osc ./resources/xosc/follow_trajectory_by_front_axle.xosc`
+
+The car 3D model in the last part of the clip comes from the OpenX Assets project:
+https://github.com/bounverif/openx-assets
+
+Settings for `m1_audi_q7_2015` (in openx_assets_3d.catalog.xosc):
+
+[source, xml]
+----
+<Properties>
+   <Property name="model_x_offset" value="1.5542"/>
+   <Property name="refpoint_x_offset" value="2.98"/>
+   <Property name="model_id" value="21"/>
+</Properties>
+----
+
+* `model_x_offset`: Align the 3D model to the OpenSCENARIO reference point (it's at center in this model)
+* `refpoint_x_offset`: Move the reference point along the vehicle x-axis
+* `model_id`: Specifies which 3D model for any use use in replayer
+
 == Controllers
 
 === Controller concept
@@ -2788,7 +2835,7 @@ https://github.com/esmini/esmini/blob/master/resources/xosc/follow_reference.xos
 
 image::follow_reference.png[]
 
-video::icozF90XZDQ[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+video::gvfFI4hgw1M[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
 
 The scenario triggers four lane changes with different https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/DynamicsShape.html[shapes]:
 

@@ -260,6 +260,20 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
             Write(PacketId::POS_S, cache_it->second.pos_s_);
         }
 
+        // PacketId::REFPOINT_X_OFFSET
+        if (!NEAR_NUMBERSF(cache_it->second.refpoint_x_offset_, static_cast<float>(state->info.refpoint_x_offset)))
+        {
+            cache_it->second.refpoint_x_offset_ = static_cast<float>(state->info.refpoint_x_offset);
+            Write(PacketId::REFPOINT_X_OFFSET, cache_it->second.refpoint_x_offset_);
+        }
+
+        // PacketId::MODEL_X_OFFSET
+        if (!NEAR_NUMBERSF(cache_it->second.model_x_offset_, static_cast<float>(state->info.model_x_offset)))
+        {
+            cache_it->second.model_x_offset_ = static_cast<float>(state->info.model_x_offset);
+            Write(PacketId::MODEL_X_OFFSET, cache_it->second.model_x_offset_);
+        }
+
         this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state
     }
 

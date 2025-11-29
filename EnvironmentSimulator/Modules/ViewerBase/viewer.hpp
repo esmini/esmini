@@ -492,7 +492,8 @@ namespace viewer
                                                    bool                    road_sensor,
                                                    std::string             name,
                                                    OSCBoundingBox*         boundingBox,
-                                                   double                  x_offset,
+                                                   double                  refpoint_x_offset,
+                                                   double                  modlel_x_offset,
                                                    EntityScaleMode         scaleMode = EntityScaleMode::NONE);
         int                      AddEntityModel(EntityModel* model);
         void                     RemoveCar(int index);

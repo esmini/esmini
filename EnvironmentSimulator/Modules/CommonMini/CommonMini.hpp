@@ -269,6 +269,14 @@ public:
         return res;
     }
 
+    SE_Vector operator/(double const& s) const
+    {
+        SE_Vector res;
+        res.x_ = x_ / MAX(SMALL_NUMBER, s);
+        res.y_ = y_ / MAX(SMALL_NUMBER, s);
+        return res;
+    }
+
     SE_Vector& operator+=(SE_Vector const& p)
     {
         this->x_ += p.x_;
@@ -679,6 +687,8 @@ void ZYZ2EulerAngles(double z0, double y, double z1, double& h, double& p, doubl
         Get Euler angles in local coordinates after rotation Z0 * Y * Z1 (heading, pitch, heading)
 */
 void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r);
+
+void CreateRotationMatrix3d(double roll, double pitch, double yaw, double R[3][3]);
 
 int InvertMatrix3(const double m[3][3], double mi[3][3]);
 

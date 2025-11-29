@@ -375,6 +375,7 @@ void ScenarioPlayer::ViewerFrame()
                                                            false,
                                                            obj->name_,
                                                            &obj->boundingbox_,
+                                                           obj->refpoint_x_offset_,
                                                            obj->model3d_x_offset_,
                                                            obj->scaleMode_));
 
@@ -1086,6 +1087,7 @@ int ScenarioPlayer::InitViewer()
                                                                road_sensor,
                                                                obj->name_,
                                                                &obj->boundingbox_,
+                                                               obj->refpoint_x_offset_,
                                                                obj->model3d_x_offset_,
                                                                obj->scaleMode_)) != 0)
         {

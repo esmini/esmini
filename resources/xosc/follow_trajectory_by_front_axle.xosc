@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2025-11-28T10:00:00" description="Follow trajectory by front axle" author="esmini team"/>
+   <ParameterDeclarations/>
+   <CatalogLocations>
+       <VehicleCatalog>
+          <Directory path="/tmp/openx-assets/catalogs"/>
+       </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <!-- <CatalogReference catalogName="openx_assets_3d.catalog" entryName="m1_audi_q7_2015"/> -->
+         <Vehicle name="car_white" vehicleCategory="car" model3d="../models/car_white.osgb">
+            <BoundingBox>
+               <Center x="1.4" y="0.0" z="0.75"/>
+               <Dimensions width="2.0" length="5.04" height="1.5"/>
+            </BoundingBox>
+            <Performance maxSpeed="100" maxDeceleration="10" maxAcceleration="10"/>
+            <Axles>
+               <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+               <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <Properties>
+               <Property name="model_id" value="0"/>
+               <Property name="scaleMode" value="None"/>
+               <Property name="refpoint_x_offset" value="2.98"/>
+            </Properties>
+         </Vehicle>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${10/3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>            
+               <PrivateAction>
+                  <RoutingAction>
+                     <FollowTrajectoryAction initialDistanceOffset="0.0">
+                        <Trajectory closed="false" name="TrajectoryPLine">
+                           <ParameterDeclarations/>
+                           <Shape>
+                              <Polyline>
+                                 <Vertex>
+                                    <Position>
+                                       <WorldPosition x="10.0" y="-3.0"/>
+                                    </Position>
+                                 </Vertex>
+                                 <Vertex>
+                                    <Position>
+                                       <WorldPosition x="20.0" y="3.0"/>
+                                    </Position>
+                                 </Vertex>
+                                 <Vertex>
+                                    <Position>
+                                       <WorldPosition x="30.0" y="-3.0"/>
+                                    </Position>
+                                 </Vertex>
+                                 <Vertex>
+                                    <Position>
+                                       <WorldPosition x="25.0" y="1.0"/>
+                                    </Position>
+                                 </Vertex>
+                                 <Vertex>
+                                    <Position>
+                                       <WorldPosition x="30.0" y="1.5"/>
+                                    </Position>
+                                 </Vertex>
+                              </Polyline>
+                           </Shape>
+                        </Trajectory>
+                        <TimeReference>
+                           <None/>
+                        </TimeReference>
+                        <TrajectoryFollowingMode followingMode="position"/>
+                     </FollowTrajectoryAction>
+                  </RoutingAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StopTrigger" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="18" rule="greaterOrEqual"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

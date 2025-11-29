@@ -5,7 +5,7 @@
 #include "RoadManager.hpp"
 
 #define DAT_FILE_FORMAT_VERSION_MAJOR 4
-#define DAT_FILE_FORMAT_VERSION_MINOR 0
+#define DAT_FILE_FORMAT_VERSION_MINOR 1
 
 namespace scenarioengine
 {
@@ -16,31 +16,33 @@ namespace Dat
 {
     enum class PacketId : id_t
     {
-        OBJ_ID          = 0,
-        MODEL_ID        = 1,
-        OBJ_TYPE        = 2,
-        OBJ_CATEGORY    = 3,
-        CTRL_TYPE       = 4,
-        TIMESTAMP       = 5,
-        NAME            = 6,
-        SPEED           = 7,
-        WHEEL_ANGLE     = 8,
-        WHEEL_ROT       = 9,
-        BOUNDING_BOX    = 10,
-        SCALE_MODE      = 11,
-        VISIBILITY_MASK = 12,
-        POSE            = 13,
-        ROAD_ID         = 14,
-        LANE_ID         = 15,
-        POS_OFFSET      = 16,
-        POS_T           = 17,
-        POS_S           = 18,
-        OBJ_DELETED     = 19,
-        OBJ_ADDED       = 20,
-        DT              = 21,
-        END_OF_SCENARIO = 22,
-        TRAFFIC_LIGHT   = 23,
-        PACKET_ID_SIZE  = 24,  // Keep this last
+        OBJ_ID            = 0,
+        MODEL_ID          = 1,
+        OBJ_TYPE          = 2,
+        OBJ_CATEGORY      = 3,
+        CTRL_TYPE         = 4,
+        TIMESTAMP         = 5,
+        NAME              = 6,
+        SPEED             = 7,
+        WHEEL_ANGLE       = 8,
+        WHEEL_ROT         = 9,
+        BOUNDING_BOX      = 10,
+        SCALE_MODE        = 11,
+        VISIBILITY_MASK   = 12,
+        POSE              = 13,
+        ROAD_ID           = 14,
+        LANE_ID           = 15,
+        POS_OFFSET        = 16,
+        POS_T             = 17,
+        POS_S             = 18,
+        OBJ_DELETED       = 19,
+        OBJ_ADDED         = 20,
+        DT                = 21,
+        END_OF_SCENARIO   = 22,
+        TRAFFIC_LIGHT     = 23,
+        REFPOINT_X_OFFSET = 24,
+        MODEL_X_OFFSET    = 25,
+        PACKET_ID_SIZE    = 26,  // Keep this last
     };
 
     struct PacketString
@@ -100,25 +102,27 @@ namespace Dat
 
     struct ObjState  // Could this be ObjectStateStruct with some additional fields?
     {
-        int         obj_id_          = -1;
-        bool        active_          = false;
-        float       speed_           = std::nanf("");
-        Pose        pose_            = {};
-        int         model_id_        = -1;
-        int         obj_type_        = -1;
-        int         obj_category_    = -1;
-        int         ctrl_type_       = -1;
-        float       wheel_angle_     = std::nanf("");
-        float       wheel_rot_       = std::nanf("");
-        BoundingBox bounding_box_    = {};
-        int         scale_mode_      = -1;
-        int         visibility_mask_ = -1;
-        std::string name_            = {};
-        id_t        road_id_         = ID_UNDEFINED;
-        int         lane_id_         = -LARGE_NUMBER_INT;
-        float       pos_offset_      = std::nanf("");
-        float       pos_t_           = std::nanf("");
-        float       pos_s_           = std::nanf("");
+        int         obj_id_            = -1;
+        bool        active_            = false;
+        float       speed_             = std::nanf("");
+        Pose        pose_              = {};
+        int         model_id_          = -1;
+        int         obj_type_          = -1;
+        int         obj_category_      = -1;
+        int         ctrl_type_         = -1;
+        float       wheel_angle_       = std::nanf("");
+        float       wheel_rot_         = std::nanf("");
+        BoundingBox bounding_box_      = {};
+        int         scale_mode_        = -1;
+        int         visibility_mask_   = -1;
+        std::string name_              = {};
+        id_t        road_id_           = ID_UNDEFINED;
+        int         lane_id_           = -LARGE_NUMBER_INT;
+        float       pos_offset_        = std::nanf("");
+        float       pos_t_             = std::nanf("");
+        float       pos_s_             = std::nanf("");
+        float       refpoint_x_offset_ = std::nanf("");
+        float       model_x_offset_    = std::nanf("");
     };
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?

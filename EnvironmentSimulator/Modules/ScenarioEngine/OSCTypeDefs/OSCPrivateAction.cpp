@@ -2397,6 +2397,11 @@ void TeleportAction::Start(double simTime)
         (static_cast<Vehicle*>(object_))->AlignTrailers();
     }
 
+    if (object_->GetType() == Object::Type::VEHICLE)
+    {
+        static_cast<Vehicle*>(object_)->AlignRearAxlePosition();
+    }
+
     LOG_INFO("{} New position:", object_->name_);
     object_->pos_.Print();
 

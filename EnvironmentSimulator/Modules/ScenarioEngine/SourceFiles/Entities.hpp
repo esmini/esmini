@@ -230,7 +230,8 @@ namespace scenarioengine
         Performance               performance_;
         Axle                      front_axle_;
         Axle                      rear_axle_;
-        double                    model3d_x_offset_ = 0.0;
+        double                    model3d_x_offset_  = 0.0;
+        double                    refpoint_x_offset_ = 0.0;
 
         // Rel2abs Controller addition
         std::vector<Event*>            objectEvents_;  // Events that contains privateactions applied to this object
@@ -680,6 +681,15 @@ namespace scenarioengine
             return source_reference_;
         }
 
+        void SetRefpointXOffset(double x_offset)
+        {
+            refpoint_x_offset_ = x_offset;
+        }
+        double GetRefpointXOffset() const
+        {
+            return refpoint_x_offset_;
+        }
+
     private:
         int         dirty_;
         bool        is_active_;
@@ -822,11 +832,15 @@ namespace scenarioengine
         int                             ConnectTrailer(Vehicle* trailer);
         int                             DisconnectTrailer();
         void                            AlignTrailers();
+        void                            AlignRearAxlePosition();
         static std::string              Category2String(int category);
         std::shared_ptr<TrailerCoupler> trailer_coupler_;  // mounting point to any tow vehicle
         std::shared_ptr<TrailerHitch>   trailer_hitch_;    // mounting point to any tow vehicle
         std::vector<WheelData>          wheel_data;
-        double                          max_pitch_angle_;
+        double                          max_pitch_angle_ = 0.0;
+        SE_Vector                       rear_axle_pos_;    // rear axle position in world coordinates
+        SE_Vector                       rear_axle_vel_;    // rear axle velocity in world coordinates
+        double                          rear_axle_speed_;  // rear axle speed
     };
 
     class Pedestrian : public Object

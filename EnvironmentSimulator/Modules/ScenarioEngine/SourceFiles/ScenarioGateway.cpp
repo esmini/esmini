@@ -52,7 +52,9 @@ ObjectState::ObjectState(int                          id,
                          double                       front_axle_x_pos,
                          double                       front_axle_z_pos,
                          const roadmanager::Position* pos,
-                         std::string                  source_reference)
+                         std::string                  source_reference,
+                         double                       refpoint_x_offset,
+                         double                       model_x_offset)
     : dirty_(0)
 {
     state_.info.id           = id;
@@ -64,14 +66,16 @@ ObjectState::ObjectState(int                          id,
     state_.info.ctrl_type    = ctrl_type;
     state_.info.timeStamp    = timestamp;
     StrCopy(state_.info.name, name.c_str(), MIN(name.length() + 1, NAME_LEN));
-    state_.pos                   = *pos;
-    state_.info.speed            = speed;
-    state_.info.rear_axle_z_pos  = rear_axle_z_pos;
-    state_.info.front_axle_x_pos = front_axle_x_pos;
-    state_.info.front_axle_z_pos = front_axle_z_pos;
-    state_.info.boundingbox      = boundingbox;
-    state_.info.scaleMode        = scaleMode;
-    state_.info.visibilityMask   = visibilityMask;
+    state_.pos                    = *pos;
+    state_.info.speed             = speed;
+    state_.info.rear_axle_z_pos   = rear_axle_z_pos;
+    state_.info.front_axle_x_pos  = front_axle_x_pos;
+    state_.info.front_axle_z_pos  = front_axle_z_pos;
+    state_.info.boundingbox       = boundingbox;
+    state_.info.scaleMode         = scaleMode;
+    state_.info.visibilityMask    = visibilityMask;
+    state_.info.refpoint_x_offset = refpoint_x_offset;
+    state_.info.model_x_offset    = model_x_offset;
 
     for (auto& w : state_.info.wheel_data)
     {
@@ -345,7 +349,9 @@ int ScenarioGateway::reportObject(int                    id,
                                   double                 front_axle_x_pos,
                                   double                 front_axle_z_pos,
                                   roadmanager::Position* pos,
-                                  std::string            source_reference)
+                                  std::string            source_reference,
+                                  double                 refpoint_x_offset,
+                                  double                 model_x_offset)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -371,7 +377,9 @@ int ScenarioGateway::reportObject(int                    id,
                                     front_axle_x_pos,
                                     front_axle_z_pos,
                                     pos,
-                                    source_reference);
+                                    source_reference,
+                                    refpoint_x_offset,
+                                    model_x_offset);
 
         // Add object to collection
         objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});

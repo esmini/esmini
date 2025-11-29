@@ -603,7 +603,9 @@ void ControllerRel2Abs::Step(double timeStep)
                            object_->front_axle_.positionX,
                            object_->front_axle_.positionZ,
                            &object_->pos_,
-                           object_->GetSourceReference());
+                           object_->GetSourceReference(),
+                           object_->model3d_x_offset_,
+                           object_->refpoint_x_offset_);
 
     Controller::Step(timeStep);
 }

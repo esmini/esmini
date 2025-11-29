@@ -736,6 +736,8 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
                 v->AlignTrailers();
             }
 
+            v->AlignRearAxlePosition();
+
             vehicle->AssignController(acc);
             acc->LinkObject(vehicle);
             acc->Activate({ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF, ControlActivationMode::OFF});

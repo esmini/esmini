@@ -1496,6 +1496,40 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
     r = GetAngleInInterval2PI(atan2(R2[2][1], R2[2][2]));
 }
 
+void CreateRotationMatrix3d(double roll, double pitch, double yaw, double R[3][3])
+{
+    // Calculate sines and cosines once for efficiency and clarity
+    double c_phi   = std::cos(roll);
+    double s_phi   = std::sin(roll);
+    double c_theta = std::cos(pitch);
+    double s_theta = std::sin(pitch);
+    double c_psi   = std::cos(yaw);
+    double s_psi   = std::sin(yaw);
+
+    // The elements of the combined matrix R = R_x * R_y * R_z
+
+    // Row 0
+    R[0][0] = c_theta * c_psi;
+    R[0][1] = -c_theta * s_psi;
+    R[0][2] = s_theta;
+
+    // Row 1
+    R[1][0] = c_phi * s_psi + s_phi * s_theta * c_psi;
+    R[1][1] = c_phi * c_psi - s_phi * s_theta * s_psi;
+    R[1][2] = -s_phi * c_theta;
+
+    // Row 2
+    R[2][0] = s_phi * s_psi - c_phi * s_theta * c_psi;
+    R[2][1] = s_phi * c_psi + c_phi * s_theta * s_psi;
+    R[2][2] = c_phi * c_theta;
+
+    // Avoid gimbal lock
+    if (fabs(R[0][0]) < SMALL_NUMBER)
+        R[0][0] = SIGN(R[0][0]) * SMALL_NUMBER;
+    if (fabs(R[2][2]) < SMALL_NUMBER)
+        R[2][2] = SIGN(R[2][2]) * SMALL_NUMBER;
+}
+
 int InvertMatrix3(const double m[3][3], double mi[3][3])
 {
     // Augmenting the matrix with the identity matrix

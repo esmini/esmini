@@ -2087,7 +2087,8 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
                                        bool                    road_sensor,
                                        std::string             name,
                                        OSCBoundingBox*         boundingBox,
-                                       double                  x_offset,
+                                       double                  refpoint_x_offset,
+                                       double                  model_x_offset,
                                        EntityScaleMode         scaleMode)
 {
     // Load 3D model
@@ -2122,6 +2123,14 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
             txVehicleDynamics->addChild(modelgroup->getChild(0));
             modelgroup->addChild(txVehicleDynamics);
             modelgroup->removeChild(0, 1);
+        }
+        else  // model not loaded
+        {
+            // ignore model_x_offset since bounding box standin will be created at correct position
+            model_x_offset = 0.0;
+
+            // ignore refpoint_x_offset since bounding box already adjusted for the stand-in model
+            refpoint_x_offset = 0.0;
         }
     }
 
@@ -2177,11 +2186,12 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         }
         else
         {
-            geode->addDrawable(new osg::ShapeDrawable(
-                new osg::Box(osg::Vec3(static_cast<float>(carStdOrig[0]), static_cast<float>(carStdOrig[1]), static_cast<float>(carStdOrig[2])),
-                             static_cast<float>(carStdDim[0]),
-                             static_cast<float>(carStdDim[1]),
-                             static_cast<float>(carStdDim[2]))));
+            geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(static_cast<float>(carStdOrig[0]) - refpoint_x_offset,
+                                                                             static_cast<float>(carStdOrig[1]),
+                                                                             static_cast<float>(carStdOrig[2])),
+                                                                   static_cast<float>(carStdDim[0]),
+                                                                   static_cast<float>(carStdDim[1]),
+                                                                   static_cast<float>(carStdDim[2]))));
         }
         geode->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
         geode->getOrCreateStateSet()->setAttribute(material);
@@ -2245,17 +2255,18 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
 
     if (scaleMode == EntityScaleMode::NONE)
     {
-        modeltx->setPosition(osg::Vec3(x_offset, 0.0, 0.0));
+        modeltx->setPosition(osg::Vec3(model_x_offset - refpoint_x_offset, 0.0, 0.0));
     }
     else if (scaleMode == EntityScaleMode::BB_TO_MODEL)
     {
-        modeltx->setPosition(osg::Vec3(x_offset, 0.0, 0.0));
+        modeltx->setPosition(osg::Vec3(model_x_offset - refpoint_x_offset, 0.0, 0.0));
 
         // Create visual model of object bounding box, copy values from model bounding box
-        bbGeode->addDrawable(new osg::ShapeDrawable(new osg::Box(modelBB.center(),
-                                                                 modelBB._max.x() - modelBB._min.x(),
-                                                                 modelBB._max.y() - modelBB._min.y(),
-                                                                 modelBB._max.z() - modelBB._min.z())));
+        bbGeode->addDrawable(
+            new osg::ShapeDrawable(new osg::Box(osg::Vec3(modelBB.center().x() - model_x_offset, modelBB.center().y(), modelBB.center().z()),
+                                                modelBB._max.x() - modelBB._min.x(),
+                                                modelBB._max.y() - modelBB._min.y(),
+                                                modelBB._max.z() - modelBB._min.z())));
 
         // Also update OSC boundingbox
         if (boundingBox != nullptr)

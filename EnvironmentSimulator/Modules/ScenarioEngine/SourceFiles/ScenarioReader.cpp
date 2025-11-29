@@ -734,6 +734,13 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         vehicle->SetSourceReference(source_reference);
     }
 
+    std::string refpoint_x_offset = vehicle->properties_.GetValueStr("refpoint_x_offset");
+    if (!refpoint_x_offset.empty())
+    {
+        vehicle->SetRefpointXOffset(strtod(refpoint_x_offset));
+        vehicle->boundingbox_.center_.x_ -= static_cast<float>(vehicle->GetRefpointXOffset());
+    }
+
     // Trailer related elements
     pugi::xml_node trailer_hitch_node = vehicleNode.child("TrailerHitch");
     if (!trailer_hitch_node.empty())

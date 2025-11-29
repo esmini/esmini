@@ -416,6 +416,28 @@ int Replay::ParsePackets(const std::string& filename)
                 traffic_lights_timeline_[lamp.lamp_id].values.emplace_back(timestamp_, lamp);
                 break;
             }
+            case static_cast<id_t>(Dat::PacketId::REFPOINT_X_OFFSET):
+            {
+                float refpoint_x_offset;
+                if (dat_reader.ReadPacket(header, refpoint_x_offset) != 0)
+                {
+                    LOG_ERROR("Failed reading refpoint_x_offset");
+                    return -1;
+                }
+                current_object_timeline_->refpoint_x_offset_.values.emplace_back(timestamp_, refpoint_x_offset);
+                break;
+            }
+            case static_cast<id_t>(Dat::PacketId::MODEL_X_OFFSET):
+            {
+                float model_x_offset;
+                if (dat_reader.ReadPacket(header, model_x_offset) != 0)
+                {
+                    LOG_ERROR("Failed reading model_x_offset");
+                    return -1;
+                }
+                current_object_timeline_->model_x_offset_.values.emplace_back(timestamp_, model_x_offset);
+                break;
+            }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
             {
                 double stop_time;

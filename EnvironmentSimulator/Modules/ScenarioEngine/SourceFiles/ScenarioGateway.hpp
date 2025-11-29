@@ -37,10 +37,12 @@ namespace scenarioengine
         double                 front_axle_x_pos;  // x coordinate of the middle of front axle under neutral load conditions
         double                 front_axle_z_pos;  // z coordinate of the middle of front axle under neutral load conditions
         OSCBoundingBox         boundingbox;
-        int                    scaleMode;         // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
-        int                    visibilityMask;    // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
-        std::vector<WheelData> wheel_data;        // make room for maximum number of wheels
-        std::string            source_reference;  // object preperty with same name mapping to OSI "source_reference"
+        int                    scaleMode;          // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
+        int                    visibilityMask;     // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        std::vector<WheelData> wheel_data;         // make room for maximum number of wheels
+        std::string            source_reference;   // object property with same name mapping to OSI "source_reference"
+        double                 refpoint_x_offset;  // x offset of the reference point
+        double                 model_x_offset;     // x offset of the 3D model relative to the object reference point
     };
 
     struct ObjectStateStruct
@@ -111,7 +113,9 @@ namespace scenarioengine
                     double                       front_axle_x_pos,
                     double                       front_axle_z_pos,
                     const roadmanager::Position *pos,
-                    std::string                  source_reference);
+                    std::string                  source_reference,
+                    double                       refpoint_x_offset,
+                    double                       model_x_offset);
         ObjectState(int            id,
                     std::string    name,
                     int            obj_type,
@@ -217,7 +221,9 @@ namespace scenarioengine
                          double                 front_axle_x_pos,
                          double                 front_axle_z_pos,
                          roadmanager::Position *pos,
-                         std::string            source_reference);
+                         std::string            source_reference,
+                         double                 refpoint_x_offset,
+                         double                 model_x_offset);
 
         int reportObject(int            id,
                          std::string    name,

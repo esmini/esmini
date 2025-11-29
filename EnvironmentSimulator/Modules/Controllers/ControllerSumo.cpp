@@ -220,7 +220,9 @@ void ControllerSumo::Step(double timeStep)
                                                vehicle->front_axle_.positionX,
                                                vehicle->front_axle_.positionZ,
                                                &vehicle->pos_,
-                                               vehicle->GetSourceReference());
+                                               vehicle->GetSourceReference(),
+                                               vehicle->refpoint_x_offset_,
+                                               vehicle->model3d_x_offset_);
 
                         vehicle = static_cast<Vehicle*>(vehicle->TrailerVehicle());
                     }
@@ -307,6 +309,11 @@ void ControllerSumo::Step(double timeStep)
                 if (obj->reset_ && !obj->TowVehicle() && obj->TrailerVehicle())
                 {
                     static_cast<Vehicle*>(obj)->AlignTrailers();
+                }
+
+                if (obj->GetType() == Object::Type::VEHICLE)
+                {
+                    static_cast<Vehicle*>(obj)->AlignRearAxlePosition();
                 }
 
                 obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
