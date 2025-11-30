@@ -2985,33 +2985,27 @@ void Viewer::UpdateSensor(PointSensor* sensor)
 
 int Viewer::LoadShadowfile(std::string vehicleModelFilename)
 {
-    std::vector<std::string> file_name_candidates;
+    bool        found = false;
+    std::string file_path =
+        LocateFile(SHADOW_MODEL_FILEPATH, {DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/models"}, "Shadow face model ", found);
 
-    // First look in same folder as the vehicle model
-    file_name_candidates.push_back(DirNameOf(vehicleModelFilename).append("/" + std::string(SHADOW_MODEL_FILEPATH)));
-
-    // Then check registered paths
-    for (size_t i = 0; i < SE_Env::Inst().GetPaths().size(); i++)
+    if (found)
     {
-        file_name_candidates.push_back(CombineDirectoryPathAndFilepath(SE_Env::Inst().GetPaths()[i], std::string(SHADOW_MODEL_FILEPATH)));
-    }
-
-    for (size_t i = 0; i < file_name_candidates.size(); i++)
-    {
-        if (fs::exists(file_name_candidates[i].c_str()))
+        // Load shadow geometry
+        shadow_node_ = osgDB::readNodeFile(file_path);
+        if (shadow_node_ != nullptr)
         {
-            // Load shadow geometry
-            shadow_node_ = osgDB::readNodeFile(file_name_candidates[i]);
-            if (shadow_node_ != nullptr)
-            {
-                return 0;
-            }
+            return 0;
+        }
+        else
+        {
+            LOG_ERROR("Shadow face model file {} found, but failed to load", file_path);
         }
     }
-
-    LOG_WARN("Failed to locate shadow model {} based on vehicle model file path {} - continue without",
-             SHADOW_MODEL_FILEPATH,
-             vehicleModelFilename.c_str());
+    else
+    {
+        LOG_WARN("Shadow face model file {} not located", file_path);
+    }
 
     return -1;
 }
