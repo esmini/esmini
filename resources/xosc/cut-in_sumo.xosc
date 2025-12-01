@@ -29,6 +29,7 @@
                     <RearAxle maxSteering="30" positionX="0" positionZ="0.4" trackWidth="1.68" wheelDiameter="0.8"/>
                 </Axles>
                 <Properties>
+                    <Property name="model_id" value="0"/>
                     <File filepath="../models/car_white.osgb"/>
                 </Properties>
             </Vehicle>

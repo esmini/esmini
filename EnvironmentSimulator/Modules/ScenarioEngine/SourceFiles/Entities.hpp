@@ -224,7 +224,7 @@ namespace scenarioengine
         double sensor_pos_[3];
 
         roadmanager::Position     pos_;
-        int                       model_id_;
+        int                       model_id_ = -1;
         roadmanager::PolyLineBase trail_;
         OSCBoundingBox            boundingbox_;
         Performance               performance_;
