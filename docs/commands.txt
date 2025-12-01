@@ -148,6 +148,8 @@ Options:
       Show version and quit
   --view_mode <view_mode>
       Entity visualization: "model"(default)/"boundingbox"/"both" toggle key ','
+  --wireframe
+      Global wireframe mode, toggle key 'w'
 
 Additional OSG graphics options:
   --clear-color <color>                      Set the background color of the viewer in the form "r,g,b[,a]"

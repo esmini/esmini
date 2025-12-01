@@ -1,5 +1,38 @@
 ## esmini release notes
 
+### DRAFT 2025-12-02 Version 2.56.0
+
+New features:
+- Add support for traffic lights
+  - basic functionality and visualization
+    - TrafficSignalStateAction
+    - TrafficSignalCondition
+    - OSI reporting
+    - generate 3D model
+    - support in .dat/replayer
+  - see info and limitations in [User guide - Traffic lights visualization](https://esmini.github.io/#_traffic_lights)
+  - example scenario [traffic_lights.xosc](https://github.com/esmini/esmini/blob/dev/resources/xosc/traffic_lights.xosc) video clip [here](https://youtu.be/26BSMblzyO4)
+  - Note: Requires update of osg and model packages:
+    - remove `externals/osg` and `resources/models` folders 
+    - run `cmake ..` from build folder 
+- Add support for moving Vehicle reference point along x-axis
+  - see info in [User guide - Shift reference point](https://esmini.github.io/#_shift_reference_point)
+  - video clip: https://youtu.be/gvfFI4hgw1M
+- Add `--wireframe` option
+
+Improvements and fixes:
+- Restore support for absolute catalog file path
+- Update esminiJS lib and improve WASM [example](https://github.com/esmini/esmini/tree/dev/EnvironmentSimulator/Libraries/esminiJS/example) ([PR #748](https://github.com/esmini/esmini/issues/748))
+- Add CI job for building OSG libs
+- Restore esmini CI link to original [Vector NCAP scenario repo](https://github.com/vectorgrp/OSC-NCAP-scenarios)
+- Log written dat-packet id and size (debug log level)
+- Extend search for (osgb) file needed for vehicle shadow
+- Restore plot_csv.py (issue introduced in v2.54.0) 
+- Improve wheel angle and rotation calculations
+  - base wheel angle kinematics of the bicycle model
+  - limitation: still same rotation on all wheels
+- A few additional minor fixes in replayer
+
 ### 2025-11-21 Version 2.55.0
 
 Breaking changes:

@@ -475,6 +475,7 @@ int main(int argc, char **argv)
     opt.AddOption("tunnel_transparency", "Set level of transparency for generated tunnels [0:1]", "transparency", "0.0");
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("version", "Show version and quit");
+    opt.AddOption("wireframe", "Global wireframe mode, toggle key 'w'");
 
     if (int ret = OnRequestShowHelpOrVersion(argc, argv, opt); ret > 0)
     {

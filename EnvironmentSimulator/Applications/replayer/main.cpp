@@ -475,6 +475,9 @@ int main(int argc, char** argv)
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
 #endif  // _USEOSG
     opt.AddOption("version", "Show version and quit");
+#ifdef _USE_OSG
+    opt.AddOption("wireframe", "Global wireframe mode, toggle key 'w'");
+#endif  // _USEOSG
 
     if (int ret = OnRequestShowHelpOrVersion(argc, argv, opt); ret > 0)
     {

@@ -24,6 +24,8 @@ Options:
       Additional custom top camera <x,y,z,rot>
   --dir <path>
       Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
+  --fixed_timestep <s>
+      Use fixed timestep for the replay
   --ground_plane
       Add a large flat ground surface
   --generate_without_textures
@@ -38,6 +40,8 @@ Options:
       Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'
   --logfile_path [path]  (default if option or value omitted: replayer_log.txt)
       Logfile path/filename, e.g. "../my_log.txt"
+  --log_level [mode]  (default if option or value omitted: info)
+      Log level debug, info, warn, error
   --no_ghost
       Remove ghost entities
   --no_ghost_model
@@ -74,6 +78,8 @@ Options:
       When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE
   --version
       Show version and quit
+  --wireframe
+      Global wireframe mode, toggle key 'w'
 
 Additional OSG graphics options:
   --clear-color <color>                      Set the background color of the viewer in the form "r,g,b[,a]"

@@ -88,6 +88,8 @@ Options:
       When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE
   --version
       Show version and quit
+  --wireframe
+      Global wireframe mode, toggle key 'w'
 
 Additional OSG graphics options:
   --clear-color <color>                      Set the background color of the viewer in the form "r,g,b[,a]"

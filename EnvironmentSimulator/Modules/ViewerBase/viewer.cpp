@@ -25,6 +25,7 @@
 #include <osgGA/DriveManipulator>
 #include <osgGA/TerrainManipulator>
 #include <osgGA/SphericalManipulator>
+#include <osgGA/StateSetManipulator>
 #include <osgDB/Registry>
 #include <osgDB/WriteFile>
 #include <osgUtil/SmoothingVisitor>
@@ -1769,7 +1770,13 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     }
 
     // add the state manipulator
-    osgViewer_->addEventHandler(new osgGA::StateSetManipulator(camera->getOrCreateStateSet()));
+    osg::ref_ptr<osgGA::StateSetManipulator> stateSetManipulator = new osgGA::StateSetManipulator(camera->getOrCreateStateSet());
+    osgViewer_->addEventHandler(stateSetManipulator);
+
+    if (SE_Env::Inst().GetOptions().GetOptionSet("wireframe"))
+    {
+        stateSetManipulator->setPolygonMode(osg::PolygonMode::Mode::LINE);
+    }
 
     // Light
     osgViewer_->setLightingMode(osg::View::LightingMode::SKY_LIGHT);
