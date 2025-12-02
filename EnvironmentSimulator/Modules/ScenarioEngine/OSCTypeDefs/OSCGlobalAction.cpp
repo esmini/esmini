@@ -380,8 +380,9 @@ void TrafficAction::DespawnEntity(Object* object)
         ctrl->UnlinkObject();
         context_->GetScenarioEngine().scenarioReader->RemoveController(ctrl);
     }
-    context_->GetScenarioEngine().entities_.removeObject(object->GetId());
+
     context_->GetScenarioGateway().removeObject(object->GetId());
+    context_->GetScenarioEngine().entities_.removeObject(object->GetId());
 }
 
 void TrafficSwarmAction::Start(double simTime)

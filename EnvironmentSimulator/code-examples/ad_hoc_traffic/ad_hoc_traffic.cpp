@@ -9,11 +9,11 @@
 #include <string.h>
 #include <vector>
 
-typedef struct
+struct AdHocCar
 {
     int    id;
     double x;
-} Car;
+};
 
 int main(int argc, char* argv[])
 {
@@ -37,9 +37,9 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-    std::vector<Car> cars;
-    const double     speed    = 100.0 / 3.6;
-    const double     distance = 40.0;
+    std::vector<AdHocCar> cars;
+    const double          speed    = 100.0 / 3.6;
+    const double          distance = 40.0;
 
     int    counter       = 0;
     double timestamp_now = SE_GetSimulationTime();
@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
         {
             // Add a vehicle at regular distance
             std::string name = "object_" + std::to_string(counter);
-            Car         car  = {0, 0.0f};
+            AdHocCar    car  = {0, 0.0f};
 
             car.id = SE_AddObject(name.c_str(), 1, 0, 0, counter % 11);
             if (car.id >= 0)
