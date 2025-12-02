@@ -9,7 +9,7 @@ import bisect
 import ctypes
 
 VERSION_MAJOR = 4
-VERSION_MINOR = 1
+VERSION_MINOR = 2
 SMALL_NUMBER = 1e-6
 LARGE_NUMBER = 1e10
 
@@ -54,7 +54,8 @@ class PacketId(enum.Enum):
     TRAFFIC_LIGHT     = 23
     REFPOINT_X_OFFSET = 24
     MODEL_X_OFFSET    = 25
-    PACKET_ID_SIZE    = 26
+    OBJ_MODEL3D       = 26
+    PACKET_ID_SIZE    = 27
 
 class Pose:
     def __init__(self):
@@ -239,6 +240,7 @@ class PropertyTimeline():
         self.active = Timeline()
         self.refpoint_x_offset = Timeline()
         self.model_x_offset = Timeline()
+        self.model3d = Timeline()
 
 class DATFile():
     """
@@ -276,7 +278,8 @@ class DATFile():
         "t": None,
         "s": None,
         "refpoint_x_offset": None,
-        "model_x_offset": None
+        "model_x_offset": None,
+        "model3d": None
     }
 
     def __init__(self, filename, extended=False):
@@ -461,6 +464,9 @@ class DATFile():
                 self.current_object_timeline.refpoint_x_offset.values.append([self.current_timestamp, read_dtype(self.file, DataType.float)])
             elif p_id == PacketId.MODEL_X_OFFSET.value:
                 self.current_object_timeline.model_x_offset.values.append([self.current_timestamp, read_dtype(self.file, DataType.float)])
+            elif p_id == PacketId.OBJ_MODEL3D.value:
+                model3d = read_string_packet(self.file)
+                self.current_object_timeline.model3d.values.append([self.current_timestamp, model3d])
 
             # OBJ_DELETED packet
             elif p_id == PacketId.OBJ_DELETED.value:

@@ -2992,9 +2992,11 @@ void Viewer::UpdateSensor(PointSensor* sensor)
 
 int Viewer::LoadShadowfile(std::string vehicleModelFilename)
 {
-    bool        found = false;
-    std::string file_path =
-        LocateFile(SHADOW_MODEL_FILEPATH, {DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/models"}, "Shadow face model ", found);
+    bool        found     = false;
+    std::string file_path = LocateFile(SHADOW_MODEL_FILEPATH,
+                                       {DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/models", DirNameOf(vehicleModelFilename)},
+                                       "Shadow face model ",
+                                       found);
 
     if (found)
     {

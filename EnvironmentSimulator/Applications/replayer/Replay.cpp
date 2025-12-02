@@ -438,6 +438,17 @@ int Replay::ParsePackets(const std::string& filename)
                 current_object_timeline_->model_x_offset_.values.emplace_back(timestamp_, model_x_offset);
                 break;
             }
+            case static_cast<id_t>(Dat::PacketId::OBJ_MODEL3D):
+            {
+                std::string model3d;
+                if (dat_reader.ReadStringPacket(model3d) != 0)
+                {
+                    LOG_ERROR("Failed reading object 3D model filename.");
+                    return -1;
+                }
+                current_object_timeline_->model3d_.values.emplace_back(timestamp_, std::move(model3d));
+                break;
+            }
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
             {
                 double stop_time;

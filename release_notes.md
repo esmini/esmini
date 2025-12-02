@@ -18,6 +18,9 @@ New features:
 - Add support for moving Vehicle reference point along x-axis
   - see info in [User guide - Shift reference point](https://esmini.github.io/#_shift_reference_point)
   - video clip: https://youtu.be/gvfFI4hgw1M
+- Use `model3d` filename in .dat file instead of relying on model_id
+  - `model_id` deprecated, support will be removed eventually
+  - meanwhile `model_id` overrides any specified `model3d` in replayer
 - Add `--wireframe` option
 
 Improvements and fixes:

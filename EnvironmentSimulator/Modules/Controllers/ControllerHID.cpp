@@ -368,7 +368,7 @@ int ControllerHID::ReadHID(double& throttle, double& steering)
     }
     else
     {
-        LOG_ERROR("Error reading joystick data: %d", res);
+        LOG_ERROR("Error reading joystick data: {}", res);
         return -1;
     }
 

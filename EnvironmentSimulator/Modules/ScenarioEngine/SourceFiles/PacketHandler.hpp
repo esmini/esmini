@@ -5,7 +5,7 @@
 #include "RoadManager.hpp"
 
 #define DAT_FILE_FORMAT_VERSION_MAJOR 4
-#define DAT_FILE_FORMAT_VERSION_MINOR 1
+#define DAT_FILE_FORMAT_VERSION_MINOR 2
 
 namespace scenarioengine
 {
@@ -42,7 +42,8 @@ namespace Dat
         TRAFFIC_LIGHT     = 23,
         REFPOINT_X_OFFSET = 24,
         MODEL_X_OFFSET    = 25,
-        PACKET_ID_SIZE    = 26,  // Keep this last
+        OBJ_MODEL3D       = 26,
+        PACKET_ID_SIZE    = 27,  // Keep this last
     };
 
     struct PacketString
@@ -123,6 +124,7 @@ namespace Dat
         float       pos_s_             = std::nanf("");
         float       refpoint_x_offset_ = std::nanf("");
         float       model_x_offset_    = std::nanf("");
+        std::string model3d_           = {};
     };
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?

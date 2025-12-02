@@ -696,26 +696,23 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         // No 3D model attribute present. Apply model file based on Category, and set default 3D model id
         if (vehicle->category_ == Vehicle::Category::BICYCLE)
         {
-            vehicle->model_id_ = 9;  // magic number for cyclist, set as default
             vehicle->SetModel3DFullPath("cyclist.osgb", DirNameOf(SE_Env::Inst().GetOSCFilePath()) + "/../models");
         }
         else if (vehicle->category_ == Vehicle::Category::MOTORBIKE)
         {
-            vehicle->model_id_ = 10;  // magic number for motorcyclist, set as default
             vehicle->SetModel3DFullPath("mc.osgb", DirNameOf(SE_Env::Inst().GetOSCFilePath()) + "/../models");
         }
         else if (vehicle->category_ == Vehicle::Category::TRAILER)
         {
-            vehicle->model_id_ = 11;  // magic number for car trailer, set as default
             vehicle->SetModel3DFullPath("car_trailer.osgb", DirNameOf(SE_Env::Inst().GetOSCFilePath()) + "/../models");
         }
         else
         {
             // magic numbers: If first vehicle make it white, else red
-            vehicle->model_id_ = entities_->object_pool_.size() == 0 ? 0 : 2;
             vehicle->SetModel3DFullPath(entities_->object_pool_.size() == 0 ? "car_white.osgb" : "car_red.osgb",
                                         DirNameOf(SE_Env::Inst().GetOSCFilePath()) + "/../models");
         }
+        LOG_INFO("Assigned 3D model {} to vehicle {}", vehicle->GetModel3DFullPath(), vehicle->GetTypeName());
     }
 
     std::string modelIdStr = vehicle->properties_.GetValueStr("model_id");
@@ -882,12 +879,10 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
     // Set default model_id, will be overwritten if that property is defined
     if (pedestrian->category_ == Pedestrian::Category::ANIMAL)
     {
-        pedestrian->model_id_ = 8;  // magic number for moose, set as default
         pedestrian->SetModel3DFullPath("moose_cc0.osgb");
     }
     else
     {
-        pedestrian->model_id_ = 7;  // magic number for pedestrian, set as default
         pedestrian->SetModel3DFullPath("walkman.osgb");
     }
 
@@ -2256,7 +2251,7 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 }
                 else
                 {
-                    LOG_WARN("ParameterAction %s not supported yet", paramChild.name());
+                    LOG_WARN("ParameterAction {} not supported yet", paramChild.name());
                 }
             }
         }

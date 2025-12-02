@@ -7,7 +7,6 @@
                 author="esmini team"/>
 
     <!-- esmini specific vehicle properties: -->
-    <!-- model_id [0, 1, 2, ...] default = 0 -->
     <!-- scaleMode [None, BBToModel, ModelToBB] default = None -->
     <!-- ignoreHeadingForTrajMotion [true, false] default = false/> -->
     <!-- plineInterpolation [segment, corner, off] default = given by followingMode/> -->
@@ -41,7 +40,6 @@
                 <TrailerRef entityRef="$TrailerRef"/>
             </Trailer>
             <Properties>
-                <Property name="model_id" value="$EgoModelId"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="$ScaleMode"/>
                 <!-- source_reference is populated to OSI moving object -->
@@ -72,7 +70,6 @@
                 <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <Properties>
-                <Property name="model_id" value="1"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="$ScaleMode"/>
                 <Property name="dummy" value="2"/>
@@ -100,7 +97,6 @@
                 <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
             </Axles>
             <Properties>
-                <Property name="model_id" value="2"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="$ScaleMode"/>
                 <Property name="refpoint_x_offset" value="$RefPointXOffset"/>
@@ -121,7 +117,6 @@
             <Properties>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="ModelToBB"/>
-                <Property name="model_id" value="3"/>
                 <Property name="refpoint_x_offset" value="0.0"/>
             </Properties>
         </Vehicle>
@@ -142,7 +137,6 @@
             <Properties>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="BBToModel"/>
-                <Property name="model_id" value="4"/>
                 <Property name="refpoint_x_offset" value="0.0"/>
             </Properties>
         </Vehicle>
@@ -161,7 +155,6 @@
             <Properties>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="BBToModel"/>
-                <Property name="model_id" value="5"/>
                 <Property name="refpoint_x_offset" value="0.0"/>
             </Properties>
         </Vehicle>
@@ -180,7 +173,6 @@
             <Properties>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="BBToModel"/>
-                <Property name="model_id" value="6"/>
                 <Property name="refpoint_x_offset" value="0.0"/>
             </Properties>
         </Vehicle>
@@ -197,7 +189,6 @@
                 <RearAxle maxSteering="0.523598775598" wheelDiameter="0.7" trackWidth="0.7" positionX="0" positionZ="0.35"/>
             </Axles>
             <Properties>
-                <Property name="model_id" value="9"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="BBToModel"/>
                 <Property name="refpoint_x_offset" value="0.0"/>
@@ -216,7 +207,6 @@
                 <RearAxle maxSteering="0.523598775598" wheelDiameter="0.7" trackWidth="0.7" positionX="0" positionZ="0.35"/>
             </Axles>
             <Properties>
-                <Property name="model_id" value="10"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="BBToModel"/>
                 <Property name="refpoint_x_offset" value="0.0"/>
@@ -235,7 +225,6 @@
                 <RearAxle maxSteering="0.0" wheelDiameter="0.4" trackWidth="0.0" positionX="0" positionZ="0.2"/>
             </Axles>
             <Properties>
-                <Property name="model_id" value="20"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="None"/>
                 <Property name="refpoint_x_offset" value="0.0"/>
@@ -264,7 +253,6 @@
                 <TrailerRef entityRef="$TrailerRef"/>
             </Trailer>
             <Properties>
-                <Property name="model_id" value="12"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="None"/>
                 <Property name="refpoint_x_offset" value="0.0"/>
@@ -284,7 +272,6 @@
             </Axles>
             <TrailerCoupler dx="3.25"/>
             <Properties>
-                <Property name="model_id" value="11"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="BBToModel"/>
             </Properties>
@@ -311,7 +298,6 @@
                 <TrailerRef entityRef="$TrailerRef"/>
             </Trailer>
             <Properties>
-                <Property name="model_id" value="14"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="BBToModel"/>
             </Properties>
@@ -338,7 +324,6 @@
                 <TrailerRef entityRef="$TrailerRef"/>
             </Trailer>
             <Properties>
-                <Property name="model_id" value="13"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="None"/>
             </Properties>
@@ -373,7 +358,6 @@
                         </Axles>
                         <TrailerCoupler dx="3.25"/>
                         <Properties>
-                            <Property name="model_id" value="11"/>
                             <!-- Scale modes: None, BBToModel, ModelToBB -->
                             <Property name="scaleMode" value="BBToModel"/>
                         </Properties>
@@ -381,7 +365,6 @@
                 </Trailer>
             </Trailer>
             <Properties>
-                <Property name="model_id" value="0"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="BBToModel"/>
             </Properties>
@@ -406,7 +389,6 @@
                 </Trailer>
             </Trailer>
             <Properties>
-                <Property name="model_id" value="12"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="None"/>
             </Properties>
@@ -432,7 +414,6 @@
                 <TrailerRef entityRef="$TrailerRef"/>
             </Trailer>
             <Properties>
-                <Property name="model_id" value="19"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="None"/>
             </Properties>
@@ -483,7 +464,6 @@
                                     </Axles>
                                     <TrailerCoupler dx="9.5"/>
                                     <Properties>
-                                        <Property name="model_id" value="14"/>
                                         <!-- Scale modes: None, BBToModel, ModelToBB -->
                                         <Property name="scaleMode" value="None"/>
                                     </Properties>
@@ -491,7 +471,6 @@
                             </Trailer>
                         </Trailer>
                         <Properties>
-                            <Property name="model_id" value="13"/>
                             <!-- Scale modes: None, BBToModel, ModelToBB -->
                             <Property name="scaleMode" value="None"/>
                         </Properties>
@@ -499,7 +478,6 @@
                 </Trailer>
             </Trailer>
             <Properties>
-                <Property name="model_id" value="12"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="None"/>
             </Properties>
@@ -568,7 +546,6 @@
                                                 </Axles>
                                                 <TrailerCoupler dx="6.5"/>
                                                 <Properties>
-                                                    <Property name="model_id" value="14"/>
                                                     <!-- Scale modes: None, BBToModel, ModelToBB -->
                                                     <Property name="scaleMode" value="BBToModel"/>
                                                 </Properties>
@@ -576,7 +553,6 @@
                                         </Trailer>
                                     </Trailer>
                                     <Properties>
-                                        <Property name="model_id" value="19"/>
                                         <!-- Scale modes: None, BBToModel, ModelToBB -->
                                         <Property name="scaleMode" value="None"/>
                                     </Properties>
@@ -584,7 +560,6 @@
                             </Trailer>
                         </Trailer>
                         <Properties>
-                            <Property name="model_id" value="13"/>
                             <!-- Scale modes: None, BBToModel, ModelToBB -->
                             <Property name="scaleMode" value="None"/>
                         </Properties>
@@ -592,7 +567,6 @@
                 </Trailer>
             </Trailer>
             <Properties>
-                <Property name="model_id" value="12"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="None"/>
             </Properties>
@@ -619,7 +593,6 @@
                 <TrailerRef entityRef="$TrailerRef"/>
             </Trailer>
             <Properties>
-                <Property name="model_id" value="18"/>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="BBToModel"/>
                 <Property name="refpoint_x_offset" value="$RefPointXOffset"/>

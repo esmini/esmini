@@ -274,6 +274,15 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
             Write(PacketId::MODEL_X_OFFSET, cache_it->second.model_x_offset_);
         }
 
+        // PacketId::OBJ_MODEL3D
+        if (std::strcmp(cache_it->second.model3d_.c_str(), state->info.model3d.c_str()) != 0)
+        {
+            cache_it->second.model3d_ = state->info.model3d;
+
+            PacketString p_str = {static_cast<unsigned int>(cache_it->second.model3d_.size()), cache_it->second.model3d_};
+            Write(PacketId::OBJ_MODEL3D, p_str);
+        }
+
         this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state
     }
 

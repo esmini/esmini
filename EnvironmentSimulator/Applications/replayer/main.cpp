@@ -258,9 +258,34 @@ int ParseEntities(Replay* player)
                 new_sc.trajPoints = 0;
 
                 std::string filename;
+
                 if (!timelines.model_id_.values.empty() && timelines.model_id_.values.front().second >= 0)
                 {
                     filename = SE_Env::Inst().GetModelFilenameById(timelines.model_id_.values.front().second);
+                    LOG_WARN("NOTE: model_id is deprecated. Support will be removed. Use 'model3d' attribute instead.");
+                    if (filename.empty())
+                    {
+                        LOG_WARN("No 3D model filename found for model ID {} of entity {} {}",
+                                 timelines.model_id_.values.front().second,
+                                 new_sc.id,
+                                 new_sc.name.c_str());
+                    }
+                    else
+                    {
+                        LOG_INFO("Resolved 3D model filename '{}' for model ID {} of entity {} {}",
+                                 filename.c_str(),
+                                 timelines.model_id_.values.front().second,
+                                 new_sc.id,
+                                 new_sc.name.c_str());
+                    }
+                }
+                else if (!timelines.model3d_.values.empty())
+                {
+                    filename = timelines.model3d_.values.front().second;
+                }
+                else
+                {
+                    LOG_WARN("No 3D model resolved for entity {} {}", new_sc.id, new_sc.name);
                 }
 
                 bool found = false;

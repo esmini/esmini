@@ -203,6 +203,7 @@ namespace scenarioengine
         Timeline<float>          odometer_;
         Timeline<float>          refpoint_x_offset_;
         Timeline<float>          model_x_offset_;
+        Timeline<std::string>    model3d_;
     };
 
     // Custom comparator ensuring map has ids ordered as:
