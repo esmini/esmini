@@ -319,6 +319,7 @@ namespace scenarioengine
         bool                     repeat_     = false;
         std::string              create_datfile_;
         std::vector<id_t>        unknown_pids;
+        bool                     eos_received_ = false;  // end of scenario packet
 
         /* PacketHandler stuff */
         double                            timestamp_            = 0.0;

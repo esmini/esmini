@@ -30,6 +30,11 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
         return;
     }
 
+    if (!eos_received_)
+    {
+        stopTime_ = timestamps_.back();
+    }
+
     FillInTimestamps();  // Create timestamps from dt
 
     if (timestamps_.empty())
@@ -464,6 +469,7 @@ int Replay::ParsePackets(const std::string& filename)
                 {
                     timestamps_.emplace_back(stopTime_);
                 }
+                eos_received_ = true;
                 break;
             }
             default:
