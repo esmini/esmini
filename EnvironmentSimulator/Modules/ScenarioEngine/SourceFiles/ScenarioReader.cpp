@@ -2627,9 +2627,9 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                                 {
                                     throw std::runtime_error("Missing Position node");
                                 }
-                                std::unique_ptr<OSCPosition> pos    = std::unique_ptr<OSCPosition>(parseOSCPosition(positionNode));
-                                roadmanager::Position       *rm_pos = pos->GetRMPos();
-                                polygon_points.push_back(*rm_pos);
+                                OSCPosition *oscPosition = parseOSCPosition(positionNode);
+                                polygon_points.push_back(*oscPosition->GetRMPos());
+                                delete oscPosition;
                             }
                             trafficAreaAction->SetPolygonPoints(polygon_points);
                         }

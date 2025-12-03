@@ -193,7 +193,10 @@ namespace scenarioengine
             return full_path_;
         };
 
-        StoryBoardElement*              FindChildByName(std::string name);
+        // non recursive
+        StoryBoardElement* FindChildByName(std::string name);
+
+        // recursive
         std::vector<StoryBoardElement*> FindChildByTypeAndName(ElementType type, std::string name);
 
         virtual std::vector<StoryBoardElement*>* GetChildren() = 0;

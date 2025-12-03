@@ -347,14 +347,15 @@ void TrafficAction::SpawnEntity(roadmanager::Position* pos)
 
     spawned_entity_ids_.push_back(ewc.object->GetId());
     spawned_count_++;
+    delete pos;
     LOG_INFO("Spawned entity {} with speed {}", ewc.object->GetName(), ewc.object->GetSpeed());
 }
 
-bool TrafficAction::FreePositionToSpawn(roadmanager::Position* pos)
+bool TrafficAction::FreePositionToSpawn(const roadmanager::Position& pos)
 {
     entities_ = &context_->GetScenarioEngine().entities_;
-    double x  = pos->GetX();
-    double y  = pos->GetY();
+    double x  = pos.GetX();
+    double y  = pos.GetY();
     double latDist;
     double longDist;
 
@@ -936,6 +937,31 @@ EntityWithController TrafficDistributionEntry::GetRandomEntity() const
     return {ede.object, ctrl};  // Defensive: return last entry's vehicle if not found
 }
 
+TrafficAction::~TrafficAction()
+{
+    for (auto& entry : traffic_distribution_entry_)
+    {
+        for (const auto& ede : entry.entityDistribution.entries)
+        {
+            delete ede.object;
+            for (auto ctrl : ede.controllers)
+            {
+                context_->GetScenarioReader().RemoveController(ctrl);
+                delete ctrl;
+            }
+        }
+    }
+}
+
+TrafficSourceAction::~TrafficSourceAction()
+{
+    if (pos_ != nullptr)
+    {
+        delete pos_;
+        pos_ = nullptr;
+    }
+}
+
 void TrafficSourceAction::Start(double simTime)
 {
     LOG_INFO("Traffic Source Radius: {:.2f}, Rate: {:.2f}, Speed: {:.2f}", radius_, rate_, spawn_speed_);
@@ -981,6 +1007,15 @@ roadmanager::Position* TrafficSourceAction::GetRandomSpawnPosition()
     double newY = y + radius * std::sin(angle);
 
     return new roadmanager::Position(newX, newY, 0.0, 0.0, 0.0, 0.0);
+}
+
+TrafficSinkAction::~TrafficSinkAction()
+{
+    if (pos_ != nullptr)
+    {
+        delete pos_;
+        pos_ = nullptr;
+    }
 }
 
 void TrafficSinkAction::Start(double simTime)
@@ -1532,7 +1567,7 @@ void TrafficAreaAction::DespawnEntities()
     }
 }
 
-bool TrafficAreaAction::InsideArea(roadmanager::Position object_pos)
+bool TrafficAreaAction::InsideArea(const roadmanager::Position& object_pos) const
 {
     if (!polygon_points_.empty())
     {
@@ -1643,7 +1678,7 @@ roadmanager::Position* TrafficAreaAction::GetRandomSpawnPosition()
 
         spawn_position->SetLanePos(spawn_position->GetTrackId(), spawn_position->GetLaneId(), spawn_position->GetS(), 0.0);
 
-        if (!InsideArea(*spawn_position) || !FreePositionToSpawn(spawn_position))
+        if (!InsideArea(*spawn_position) || !FreePositionToSpawn(*spawn_position))
         {
             LOG_INFO("Generated spawn position is not inside polygon, or to close to other vehicle. Skipping spawn");
             delete spawn_position;
@@ -1660,7 +1695,7 @@ roadmanager::Position* TrafficAreaAction::GetRandomSpawnPosition()
             double s = SE_Env::Inst().GetRand().GetRealBetween(seg.minS, seg.maxS);
 
             roadmanager::Position* spawn_position = new roadmanager::Position(static_cast<id_t>(seg.roadId), seg.laneId, s, 0.0);
-            if (!FreePositionToSpawn(spawn_position))
+            if (!FreePositionToSpawn(*spawn_position))
             {
                 LOG_INFO("Generated spawn position is to close to other vehicle. Skipping spawn");
                 delete spawn_position;
@@ -1685,6 +1720,10 @@ void TrafficStopAction::Step(double simTime, double dt)
 {
     (void)simTime;
     (void)dt;
-    auto traffic_to_stop = context_->GetScenarioEngine().storyBoard.FindChildByName(traffic_action_to_stop_);
-    traffic_to_stop->Stop();
+    std::vector<StoryBoardElement*> actions =
+        context_->GetScenarioEngine().storyBoard.FindChildByTypeAndName(StoryBoardElement::ElementType::ACTION, traffic_action_to_stop_);
+    for (auto& action : actions)
+    {
+        action->Stop();
+    }
 }

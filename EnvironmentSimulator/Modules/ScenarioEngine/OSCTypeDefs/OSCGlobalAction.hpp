@@ -453,7 +453,7 @@ namespace scenarioengine
         {
         }
 
-        ~TrafficAction() = default;
+        ~TrafficAction();
 
         void SetName(std::string_view name)
         {
@@ -465,7 +465,7 @@ namespace scenarioengine
 
         /**
          * Tries to spawn an entity at the given position, if there is enough free space.
-         * @param pos Position to spawn the entity at.
+         * @param pos Position to spawn the entity at. Will be deleted after spawning.
          */
         void SpawnEntity(roadmanager::Position* pos);
 
@@ -474,7 +474,7 @@ namespace scenarioengine
          * @param pos Position to check.
          * @return True if there is enough free space, false otherwise.
          */
-        bool FreePositionToSpawn(roadmanager::Position* pos);
+        bool FreePositionToSpawn(const roadmanager::Position& pos);
 
         /**
          * Despawns the given entity, along with controllers attached.
@@ -597,6 +597,8 @@ namespace scenarioengine
         {
         }
 
+        ~TrafficSourceAction();
+
         OSCGlobalAction* Copy()
         {
             return new TrafficSourceAction(*this);
@@ -639,7 +641,7 @@ namespace scenarioengine
         double                 action_trigger_time_;
         double                 radius_;
         double                 rate_;
-        roadmanager::Position* pos_;
+        roadmanager::Position* pos_ = nullptr;
     };
 
     class TrafficSinkAction : public TrafficAction
@@ -649,6 +651,8 @@ namespace scenarioengine
             : TrafficAction(ActionType::SINK_TRAFFIC, parent, context)
         {
         }
+
+        ~TrafficSinkAction();
 
         OSCGlobalAction* Copy()
         {
@@ -693,7 +697,7 @@ namespace scenarioengine
         double                 action_trigger_time_;
         double                 radius_;
         double                 rate_;
-        roadmanager::Position* pos_;
+        roadmanager::Position* pos_              = nullptr;
         bool                   constant_despawn_ = true;
         double                 time_accumulator_ = 0.0;
     };
@@ -783,7 +787,7 @@ namespace scenarioengine
 
         void DespawnEntities();
 
-        bool InsideArea(roadmanager::Position object_pos);
+        bool InsideArea(const roadmanager::Position& object_pos) const;
 
         void SetContinuous(bool continuous)
         {
