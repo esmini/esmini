@@ -1,6 +1,6 @@
 ## esmini release notes
 
-### DRAFT 2025-12-02 Version 2.56.0
+### 2025-12-04 Version 2.56.0
 
 New features:
 - Add support for traffic lights
@@ -21,6 +21,7 @@ New features:
 - Use `model3d` filename in .dat file instead of relying on model_id
   - `model_id` deprecated, support will be removed eventually
   - meanwhile `model_id` overrides any specified `model3d` in replayer
+- Write storyboard events to .dat and show in console by replayer
 - Add `--wireframe` option
 
 Improvements and fixes:
@@ -34,7 +35,10 @@ Improvements and fixes:
 - Improve wheel angle and rotation calculations
   - base wheel angle kinematics of the bicycle model
   - limitation: still same rotation on all wheels
-- A few additional minor fixes in replayer
+- Make .dat playable after crash while recording it
+- Prevent bin/dat2csv writing file info to csv
+  - aligned behavior with dat2csv.py
+- A few additional minor fixes
 
 ### 2025-11-21 Version 2.55.0
 
