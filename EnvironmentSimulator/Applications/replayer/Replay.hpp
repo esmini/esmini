@@ -163,12 +163,24 @@ namespace scenarioengine
             size_t                            idx = last_index;
             std::vector<std::pair<double, T>> ret = {};
 
-            while (idx < values.size() && values[idx].first <= time + SMALL_NUMBER)
+            if (time < last_time - SMALL_NUMBER)  // move backwards to find right index later
             {
-                ret.push_back(values[idx]);
+                while (idx > 0 && time < values[idx].first)
+                {
+                    idx--;
+                }
                 last_index = idx;
                 last_time  = values[idx].first;
-                idx++;
+            }
+            else
+            {
+                while (idx < values.size() && values[idx].first <= time + SMALL_NUMBER)
+                {
+                    ret.push_back(values[idx]);
+                    last_index = idx;
+                    last_time  = values[idx].first;
+                    idx++;
+                }
             }
 
             return ret;

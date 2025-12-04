@@ -1019,9 +1019,9 @@ int main(int argc, char** argv)
                 double event_time = player->element_state_changes_.last_time;
                 // ((event happened after previous simTime but earlier or at current simTime && time moving forward) || (we are at init time && we
                 // have rewound time to get here))
-                bool crossed_forward = (simTime > last_simTime &&     // we are moving forward
-                                        event_time > last_simTime &&  // event is ahead of last time
-                                        event_time <= simTime);       // ...and we reached/passed it
+                bool crossed_forward = (simTime > last_simTime &&               // we are moving forward
+                                        event_time > last_simTime &&            // event is ahead of last time
+                                        event_time <= simTime + SMALL_NUMBER);  // ...and we reached/passed it
 
                 bool at_start_time = (simTime == player->timestamps_[0] && last_simTime > simTime);  // we moved backward *into* the start
 
@@ -1029,7 +1029,7 @@ int main(int argc, char** argv)
                 {
                     for (const auto& state : esc)
                     {
-                        if (state.first >= last_simTime || at_start_time)
+                        if (state.first >= last_simTime + SMALL_NUMBER || at_start_time)
                         {
                             LOG_INFO("Storyboard element state change at simtime {:.3f}:\n{}", state.first, state.second);
                         }

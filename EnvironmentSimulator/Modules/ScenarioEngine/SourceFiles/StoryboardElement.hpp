@@ -69,14 +69,6 @@ namespace scenarioengine
             UNDEFINED_ELEMENT_TRANSITION
         } Transition;
 
-        struct StateChangeStruct
-        {
-            int         type;
-            int         state;
-            std::string name;
-            std::string path;
-        };
-
         ElementType        element_type_;
         StoryBoardElement* parent_;
         int                num_executions_;
