@@ -677,6 +677,7 @@ class DATFile():
     def print_csv(self, extended = False, include_file_refs = True) -> None:
         """Print the contents of the .dat file in CSV format to the console."""
         # Print header
+        self.extended = extended
         self.build_data()
         if include_file_refs:
             print(self.get_header_line())
@@ -693,6 +694,7 @@ class DATFile():
 
     def save_csv(self, extended = False, include_file_refs = True) -> None:
         """Save the contents of the .dat file in CSV format to a file."""
+        self.extended = extended
         self.build_data()
         csvfile = os.path.splitext(self.filename)[0] + '.csv'
         try:
