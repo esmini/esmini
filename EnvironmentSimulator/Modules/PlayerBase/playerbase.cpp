@@ -528,51 +528,52 @@ void ScenarioPlayer::ViewerFrame()
                  obj->pos_.GetX() + static_cast<double>(obj->boundingbox_.center_.x_) * cos(obj->pos_.GetH()),
                  obj->pos_.GetY() + static_cast<double>(obj->boundingbox_.center_.x_) * sin(obj->pos_.GetH()));
         entity->on_screen_info_.osg_text_->setText(entity->on_screen_info_.string_);
+    }
 
-        for (size_t j = 0; j < sensorFrustum.size(); j++)
+    for (size_t j = 0; j < sensorFrustum.size(); j++)
+    {
+        sensorFrustum[j]->Update();
+    }
+
+    // Update info text
+    static char str_buf[128];
+    if (viewer_->currentCarInFocus_ >= 0 && static_cast<unsigned int>(viewer_->currentCarInFocus_) < viewer_->entities_.size())
+    {
+        Object* obj_in_focus = scenarioEngine->entities_.object_[static_cast<unsigned int>(viewer_->currentCarInFocus_)];
+        snprintf(str_buf,
+                 sizeof(str_buf),
+                 "%.2fs entity[%d]: %s (%d) %.2fkm/h %.2fm (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)",
+                 scenarioEngine->getSimulationTime(),
+                 viewer_->currentCarInFocus_,
+                 obj_in_focus->name_.c_str(),
+                 obj_in_focus->GetId(),
+                 3.6 * obj_in_focus->speed_,
+                 obj_in_focus->odometer_,
+                 obj_in_focus->pos_.GetTrackId(),
+                 obj_in_focus->pos_.GetLaneId(),
+                 fabs(obj_in_focus->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj_in_focus->pos_.GetOffset(),
+                 obj_in_focus->pos_.GetS(),
+                 obj_in_focus->pos_.GetX(),
+                 obj_in_focus->pos_.GetY(),
+                 obj_in_focus->pos_.GetH());
+    }
+    else
+    {
+        if (viewer_->currentCarInFocus_ < 0 && viewer_->entities_.size() > 1)
         {
-            sensorFrustum[j]->Update();
+            snprintf(str_buf, sizeof(str_buf), "%.2fs Environment in focus", scenarioEngine->getSimulationTime());
         }
-
-        // Update info text
-        static char str_buf[128];
-        if (viewer_->currentCarInFocus_ >= 0 && static_cast<unsigned int>(viewer_->currentCarInFocus_) < viewer_->entities_.size())
+        else if (viewer_->currentCarInFocus_ > 0 && static_cast<unsigned int>(viewer_->currentCarInFocus_) >= viewer_->entities_.size())
         {
-            Object* obj_in_focus = scenarioEngine->entities_.object_[static_cast<unsigned int>(viewer_->currentCarInFocus_)];
-            snprintf(str_buf,
-                     sizeof(str_buf),
-                     "%.2fs entity[%d]: %s (%d) %.2fkm/h %.2fm (%d, %d, %.2f, %.2f) / (%.2f, %.2f %.2f)",
-                     scenarioEngine->getSimulationTime(),
-                     viewer_->currentCarInFocus_,
-                     obj_in_focus->name_.c_str(),
-                     obj_in_focus->GetId(),
-                     3.6 * obj_in_focus->speed_,
-                     obj_in_focus->odometer_,
-                     obj_in_focus->pos_.GetTrackId(),
-                     obj_in_focus->pos_.GetLaneId(),
-                     fabs(obj_in_focus->pos_.GetOffset()) < SMALL_NUMBER ? 0 : obj_in_focus->pos_.GetOffset(),
-                     obj_in_focus->pos_.GetS(),
-                     obj_in_focus->pos_.GetX(),
-                     obj_in_focus->pos_.GetY(),
-                     obj_in_focus->pos_.GetH());
+            snprintf(str_buf, sizeof(str_buf), "%.2fs All entities in focus", scenarioEngine->getSimulationTime());
         }
         else
         {
-            if (viewer_->currentCarInFocus_ < 0 && viewer_->entities_.size() > 1)
-            {
-                snprintf(str_buf, sizeof(str_buf), "%.2fs Environment in focus", scenarioEngine->getSimulationTime());
-            }
-            else if (viewer_->currentCarInFocus_ > 0 && static_cast<unsigned int>(viewer_->currentCarInFocus_) >= viewer_->entities_.size())
-            {
-                snprintf(str_buf, sizeof(str_buf), "%.2fs All entities in focus", scenarioEngine->getSimulationTime());
-            }
-            else
-            {
-                snprintf(str_buf, sizeof(str_buf), "%.2fs", scenarioEngine->getSimulationTime());
-            }
+            snprintf(str_buf, sizeof(str_buf), "%.2fs", scenarioEngine->getSimulationTime());
         }
-        viewer_->SetInfoText(str_buf);
     }
+
+    viewer_->SetInfoText(str_buf);
 
     mutex.Unlock();
 
