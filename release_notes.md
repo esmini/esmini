@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2025-12-05 Version 2.56.1
+
+Bugfixes:
+- dat2csv extended not saving extended data ([issue #752](https://github.com/esmini/esmini/issues/752))
+- sometimes missing infotext and global actions
+
 ### 2025-12-04 Version 2.56.0
 
 New features:
