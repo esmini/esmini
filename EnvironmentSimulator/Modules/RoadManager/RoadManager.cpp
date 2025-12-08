@@ -73,6 +73,7 @@ using namespace roadmanager;
 #define TUNNEL_WALL_THICKNESS      2.0
 #define TUNNEL_ROOF_THICKNESS      2.0
 #define TUNNEL_HEIGHT              4.5
+#define MAX_ROAD_LEN_ERROR         0.1
 
 static id_t g_Lane_id;
 static id_t g_Laneb_id;
@@ -3948,6 +3949,18 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                     cout << "Type == NULL" << endl;
                 }
             }
+
+            if (r->GetLength() > SMALL_NUMBER && r->GetNumberOfGeometries() > 0)
+            {
+                Geometry* geom = r->GetGeometry(r->GetNumberOfGeometries() - 1);
+                if (fabs(r->GetLength() - (geom->GetS() + geom->GetLength())) > MAX_ROAD_LEN_ERROR)
+                {
+                    LOG_ERROR("Last geometry of road {} does not end at road end (s={:.2f} vs road length {:.2f})",
+                              r->GetId(),
+                              geom->GetS() + geom->GetLength(),
+                              r->GetLength());
+                }
+            }
         }
 
         pugi::xml_node elevation_profile = road_node.child("elevationProfile");
@@ -4630,6 +4643,10 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                 {
                     LOG_ERROR("Unsupported lane type: {}", child->name());
                 }
+            }
+            if (r->GetLength() > SMALL_NUMBER && r->GetNumberOfLaneSections() == 0)
+            {
+                LOG_ERROR("Road {} non zero length {:.2f} but no lane sections", r->GetId(), r->GetLength());
             }
         }
 
