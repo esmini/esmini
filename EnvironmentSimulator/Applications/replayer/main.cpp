@@ -51,9 +51,10 @@ static bool                        quit_request = false;
 static std::vector<ScenarioEntity> scenarioEntity;
 static std::string                 res_path;
 
-static bool pause_player   = false;  // continuous play
-static bool no_ghost       = false;
-static bool no_ghost_model = false;
+static bool pause_player     = false;  // continuous play
+static bool no_ghost         = false;
+static bool no_ghost_model   = false;
+static bool no_ghost_restart = true;
 #ifdef _USE_OSG
 static double          time_scale = 1.0;
 static viewer::Viewer* viewer_    = nullptr;
@@ -224,7 +225,8 @@ int ParseEntities(Replay* player)
         {
             ReplayEntry entry = player->GetReplayEntryAtTimeIncremental(id, player->timestamps_[i]);
 
-            if (no_ghost && timelines.ctrl_type_.values[0].second == GHOST_CTRL_TYPE)
+            if ((no_ghost && timelines.ctrl_type_.values[0].second == GHOST_CTRL_TYPE) ||
+                (no_ghost_restart && id < 0))  // only ghost restart ghosts have <0 ids
             {
                 continue;
             }
@@ -502,6 +504,7 @@ int main(int argc, char** argv)
 #endif  // _USEOSG
     opt.AddOption("version", "Show version and quit");
 #ifdef _USE_OSG
+    opt.AddOption("view_ghost_restart", "Ghost restarts will be shown with separate ghosts");
     opt.AddOption("wireframe", "Global wireframe mode, toggle key 'w'");
 #endif  // _USEOSG
 
@@ -865,6 +868,11 @@ int main(int argc, char** argv)
         if (opt.GetOptionSet("no_ghost_model"))
         {
             no_ghost_model = true;
+        }
+
+        if (opt.GetOptionSet("view_ghost_restart"))
+        {
+            no_ghost_restart = false;
         }
 
         if (opt.GetOptionSet("remove_object"))
