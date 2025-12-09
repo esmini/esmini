@@ -427,6 +427,7 @@ int ScenarioEngine::step(double deltaSimTime)
         {
             // Object not reported yet, do that
             scenarioGateway.reportObject(obj->id_,
+                                         obj->g_id_,
                                          obj->name_,
                                          static_cast<int>(obj->type_),
                                          obj->category_,

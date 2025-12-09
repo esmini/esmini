@@ -202,6 +202,7 @@ void ControllerSumo::Step(double timeStep)
                     while (vehicle != nullptr)
                     {
                         gateway_->reportObject(vehicle->id_,
+                                               vehicle->g_id_,
                                                vehicle->name_,
                                                static_cast<int>(vehicle->type_),
                                                vehicle->category_,

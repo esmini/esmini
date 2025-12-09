@@ -76,6 +76,7 @@ extern const char* ESMINI_BUILD_VERSION;
 
 static SE_SystemTime systemTime_;
 static const int     max_csv_entry_length = 1024;
+static id_t          global_id            = 0;
 
 const char* esmini_git_tag(void)
 {
@@ -95,6 +96,18 @@ const char* esmini_git_branch(void)
 const char* esmini_build_version(void)
 {
     return ESMINI_BUILD_VERSION;
+}
+
+id_t GetNewGlobalId()
+{
+    id_t returnvalue = global_id;
+    global_id++;
+    return returnvalue;
+}
+
+void ResetGlobalIdCounter()
+{
+    global_id = 0;
 }
 
 std::map<int, std::string> ParseModelIds()

@@ -585,6 +585,7 @@ void ControllerRel2Abs::Step(double timeStep)
     prev_target_speed = object_->GetSpeed();
 
     gateway_->reportObject(object_->id_,
+                           object_->g_id_,
                            object_->name_,
                            static_cast<int>(object_->type_),
                            object_->category_,

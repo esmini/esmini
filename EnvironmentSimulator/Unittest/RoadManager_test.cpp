@@ -1506,7 +1506,7 @@ TEST_F(LaneTestFixture, TestLaneGetLineGlobalIds)
     lane.AddLaneRoadMark(laneroadmark_second);
 
     OpenDrive *odr = new OpenDrive();
-    odr->InitGlobalLaneIds();
+    ResetGlobalIdCounter();
     laneRoadMarktypeline->SetGlobalId();
     laneRoadMarktypeline_second->SetGlobalId();
 

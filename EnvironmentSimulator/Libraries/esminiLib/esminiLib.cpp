@@ -1701,18 +1701,18 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API const char *SE_GetOSILaneBoundary(int *size, int global_id)
+    SE_DLL_API const char *SE_GetOSILaneBoundary(int *size, int g_id)
     {
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            return player->osiReporter->GetOSIRoadLaneBoundary(size, global_id);
+            return player->osiReporter->GetOSIRoadLaneBoundary(size, g_id);
         }
 
         *size = 0;
 #else
         (void)size;
-        (void)global_id;
+        (void)g_id;
 #endif  // _USE_OSI
 
         return 0;

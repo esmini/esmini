@@ -24,6 +24,7 @@ namespace scenarioengine
     struct ObjectInfoStruct
     {
         int                    id;
+        id_t                   g_id;
         int                    model_id;
         std::string            model3d;
         int                    obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
@@ -95,6 +96,7 @@ namespace scenarioengine
     public:
         ObjectState();
         ObjectState(int                          id,
+                    id_t                         g_id,
                     std::string                  name,
                     int                          obj_type,
                     int                          obj_category,
@@ -203,6 +205,7 @@ namespace scenarioengine
         ~ScenarioGateway();
 
         int reportObject(int                    id,
+                         id_t                   g_id,
                          std::string            name,
                          int                    obj_type,
                          int                    obj_category,

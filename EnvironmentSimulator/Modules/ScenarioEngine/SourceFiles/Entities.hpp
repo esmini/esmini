@@ -192,6 +192,7 @@ namespace scenarioengine
 
         Type   type_;
         int    id_;
+        id_t   g_id_;
         double speed_;
         double wheel_angle_;
         double wheel_rot_;

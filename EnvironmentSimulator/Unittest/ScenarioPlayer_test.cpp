@@ -591,9 +591,10 @@ TEST(OSI, TestTrafficLights)
     // OSI TrafficLights
     ASSERT_EQ(osi_gt_ptr->traffic_light_size(), 7);
 
+    int start_id = 32;  // Magic number, taken from running test and see ID of first traffic-light
     for (int i = 0; i < osi_gt_ptr->traffic_light_size(); i++)
     {
-        ASSERT_EQ(osi_gt_ptr->traffic_light(i).id().value(), static_cast<size_t>(i));
+        EXPECT_EQ(osi_gt_ptr->traffic_light(i).id().value(), static_cast<size_t>(start_id + i));
     }
 
     // TrafficLight for Cars, 3 lamps
@@ -608,7 +609,7 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
     EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_RED);
     EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_NONE);
-    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().assigned_lane_id(0).value(), 25);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().assigned_lane_id(0).value(), 29);
 
     EXPECT_NEAR(osi_gt_ptr->traffic_light(1).base().position().x(), 13.3165, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_light(1).base().position().y(), -8.5674, 1e-3);
@@ -621,7 +622,7 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
     EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_YELLOW);
     EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_NONE);
-    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().assigned_lane_id(0).value(), 25);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().assigned_lane_id(0).value(), 29);
 
     EXPECT_NEAR(osi_gt_ptr->traffic_light(2).base().position().x(), 13.3165, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_light(2).base().position().y(), -8.5674, 1e-3);
@@ -634,7 +635,7 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_GREEN);
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_NONE);
-    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().assigned_lane_id(0).value(), 25);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().assigned_lane_id(0).value(), 29);
 
     // TrafficLight for pedestrians, 2 lamps
     EXPECT_NEAR(osi_gt_ptr->traffic_light(3).base().position().x(), 17.1018, 1e-3);
@@ -648,8 +649,8 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
     EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_RED);
     EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_DONT_WALK);
-    EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().assigned_lane_id(0).value(), 23);
-    EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().assigned_lane_id(1).value(), 25);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().assigned_lane_id(0).value(), 26);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().assigned_lane_id(1).value(), 29);
 
     EXPECT_NEAR(osi_gt_ptr->traffic_light(4).base().position().x(), 17.1018, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_light(4).base().position().y(), 0.0738, 1e-3);
@@ -662,8 +663,8 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
     EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_GREEN);
     EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_WALK);
-    EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().assigned_lane_id(0).value(), 23);
-    EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().assigned_lane_id(1).value(), 25);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().assigned_lane_id(0).value(), 26);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().assigned_lane_id(1).value(), 29);
 
     // TrafficLight for pedestrians, 2 lamps
     EXPECT_NEAR(osi_gt_ptr->traffic_light(5).base().position().x(), 13.3165, 1e-3);
@@ -677,8 +678,8 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_CONSTANT);
     EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_RED);
     EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_DONT_WALK);
-    EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().assigned_lane_id(0).value(), 23);
-    EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().assigned_lane_id(1).value(), 25);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().assigned_lane_id(0).value(), 26);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().assigned_lane_id(1).value(), 29);
 
     EXPECT_NEAR(osi_gt_ptr->traffic_light(6).base().position().x(), 13.3165, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_light(6).base().position().y(), -8.5674, 1e-3);
@@ -691,8 +692,8 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().mode(), osi3::TrafficLight_Classification_Mode_MODE_OFF);
     EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_GREEN);
     EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_WALK);
-    EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().assigned_lane_id(0).value(), 23);
-    EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().assigned_lane_id(1).value(), 25);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().assigned_lane_id(0).value(), 26);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().assigned_lane_id(1).value(), 29);
 
     while (se->getSimulationTime() < 3.7)
     {
@@ -764,9 +765,10 @@ TEST(OSI, TestTrafficLightStates)
     // OSI TrafficLights
     ASSERT_EQ(osi_gt_ptr->traffic_light_size(), 3);
 
+    int start_id = 10;  // Magic number, taken from running test and see ID of first traffic-light
     for (int i = 0; i < osi_gt_ptr->traffic_light_size(); i++)
     {
-        ASSERT_EQ(osi_gt_ptr->traffic_light(i).id().value(), static_cast<size_t>(i));
+        EXPECT_EQ(osi_gt_ptr->traffic_light(i).id().value(), static_cast<size_t>(i + start_id));
     }
 
     // TrafficLights with arrows, 3 lamps
@@ -898,42 +900,42 @@ TEST(OSI, TestDirectJunctions)
     ASSERT_NE(osi_gt_ptr, nullptr);
 
     // direct junction connections - both ways
-    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 3);
     EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).has_antecessor_lane_id(), false);
     EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).successor_lane_id().value(), 8);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).successor_lane_id().value(), 13);
 
-    EXPECT_EQ(osi_gt_ptr->lane(2).id().value(), 3);
+    EXPECT_EQ(osi_gt_ptr->lane(2).id().value(), 5);
     EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).has_antecessor_lane_id(), false);
     EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).successor_lane_id().value(), 9);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).successor_lane_id().value(), 15);
 
-    EXPECT_EQ(osi_gt_ptr->lane(3).id().value(), 4);
+    EXPECT_EQ(osi_gt_ptr->lane(3).id().value(), 7);
     EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).has_antecessor_lane_id(), false);
     EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).successor_lane_id().value(), 11);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).successor_lane_id().value(), 19);
 
-    EXPECT_EQ(osi_gt_ptr->lane(6).id().value(), 8);
+    EXPECT_EQ(osi_gt_ptr->lane(6).id().value(), 13);
     EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing(0).has_antecessor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing(0).antecessor_lane_id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing(0).antecessor_lane_id().value(), 3);
     EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing(0).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing(0).successor_lane_id().value(), 15);
+    EXPECT_EQ(osi_gt_ptr->lane(6).classification().lane_pairing(0).successor_lane_id().value(), 25);
 
-    EXPECT_EQ(osi_gt_ptr->lane(7).id().value(), 9);
+    EXPECT_EQ(osi_gt_ptr->lane(7).id().value(), 15);
     EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing(0).has_antecessor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing(0).antecessor_lane_id().value(), 3);
+    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing(0).antecessor_lane_id().value(), 5);
     EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing(0).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing(0).successor_lane_id().value(), 16);
+    EXPECT_EQ(osi_gt_ptr->lane(7).classification().lane_pairing(0).successor_lane_id().value(), 27);
 
-    EXPECT_EQ(osi_gt_ptr->lane(8).id().value(), 11);
+    EXPECT_EQ(osi_gt_ptr->lane(8).id().value(), 19);
     EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing(0).has_antecessor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing(0).antecessor_lane_id().value(), 4);
+    EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing(0).antecessor_lane_id().value(), 7);
     EXPECT_EQ(osi_gt_ptr->lane(8).classification().lane_pairing(0).has_successor_lane_id(), false);
 
     delete player;
@@ -960,44 +962,44 @@ TEST(OSI, TestLanePairingJunctionUnorderedRoads)
     ASSERT_NE(osi_gt_ptr, nullptr);
 
     // check all lane pairs
-    EXPECT_EQ(osi_gt_ptr->lane(0).id().value(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(0).id().value(), 2);
     EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).has_antecessor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).antecessor_lane_id().value(), 5);
+    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).antecessor_lane_id().value(), 9);
     EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).successor_lane_id().value(), 8);
+    EXPECT_EQ(osi_gt_ptr->lane(0).classification().lane_pairing(0).successor_lane_id().value(), 15);
 
-    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 3);
+    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 5);
     EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).has_antecessor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).antecessor_lane_id().value(), 6);
+    EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).antecessor_lane_id().value(), 11);
     EXPECT_EQ(osi_gt_ptr->lane(1).classification().lane_pairing(0).has_successor_lane_id(), false);
 
-    EXPECT_EQ(osi_gt_ptr->lane(2).id().value(), 5);
+    EXPECT_EQ(osi_gt_ptr->lane(2).id().value(), 9);
     EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).has_antecessor_lane_id(), false);
     EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).successor_lane_id().value(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(2).classification().lane_pairing(0).successor_lane_id().value(), 2);
 
-    EXPECT_EQ(osi_gt_ptr->lane(3).id().value(), 6);
+    EXPECT_EQ(osi_gt_ptr->lane(3).id().value(), 11);
     EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing_size(), 2);
     EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).has_antecessor_lane_id(), false);
     EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).successor_lane_id().value(), 3);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(0).successor_lane_id().value(), 5);
     EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(1).has_antecessor_lane_id(), false);
     EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(1).has_successor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(1).successor_lane_id().value(), 10);
+    EXPECT_EQ(osi_gt_ptr->lane(3).classification().lane_pairing(1).successor_lane_id().value(), 18);
 
-    EXPECT_EQ(osi_gt_ptr->lane(4).id().value(), 8);
+    EXPECT_EQ(osi_gt_ptr->lane(4).id().value(), 15);
     EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing(0).has_antecessor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing(0).antecessor_lane_id().value(), 1);
+    EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing(0).antecessor_lane_id().value(), 2);
     EXPECT_EQ(osi_gt_ptr->lane(4).classification().lane_pairing(0).has_successor_lane_id(), false);
 
-    EXPECT_EQ(osi_gt_ptr->lane(5).id().value(), 10);
+    EXPECT_EQ(osi_gt_ptr->lane(5).id().value(), 18);
     EXPECT_EQ(osi_gt_ptr->lane(5).classification().lane_pairing_size(), 1);
     EXPECT_EQ(osi_gt_ptr->lane(5).classification().lane_pairing(0).has_antecessor_lane_id(), true);
-    EXPECT_EQ(osi_gt_ptr->lane(5).classification().lane_pairing(0).antecessor_lane_id().value(), 6);
+    EXPECT_EQ(osi_gt_ptr->lane(5).classification().lane_pairing(0).antecessor_lane_id().value(), 11);
 
     delete player;
 }
@@ -1023,7 +1025,7 @@ TEST(OSI, TestGeoOffset)
     EXPECT_STREQ(osi_gt_ptr->proj_string().c_str(), "offset x=-1000 y=-500 z=0.0 hdg=0.959931");
 
     // verify correct location of some lane OSI points after offset transformation
-    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 4);
     EXPECT_EQ(osi_gt_ptr->lane(0).classification().centerline().size(), 3);
     EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(0).x(), -139.5333, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(0).y(), -23.0803, 1e-3);
@@ -1066,7 +1068,7 @@ TEST(OSI, TestGeoOffsetIgnoreODROffset)
     EXPECT_STREQ(osi_gt_ptr->proj_string().c_str(), "offset x=-1000 y=-500 z=0.0 hdg=0.959931");
 
     // verify correct location of some lane OSI points after offset transformation
-    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->lane(1).id().value(), 4);
     EXPECT_EQ(osi_gt_ptr->lane(0).classification().centerline().size(), 3);
     EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(0).x(), -139.5333, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->lane(0).classification().centerline(0).y(), -23.0803, 1e-3);
@@ -1101,7 +1103,7 @@ TEST(OSI, TestStationaryObjects)
     ASSERT_NE(osi_gt_ptr, nullptr);
 
     // verify correct location of OpenDRIVE stationary object with polygon
-    EXPECT_EQ(osi_gt_ptr->stationary_object(0).id().value(), 0);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(0).id().value(), 4);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().length(), 25.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().width(), 10.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().height(), 2.0, 1e-3);
@@ -1123,7 +1125,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(3).y(), 2.9534, 1e-3);
 
     // verify correct location of OpenDRIVE second stationary object
-    EXPECT_EQ(osi_gt_ptr->stationary_object(1).id().value(), 1);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(1).id().value(), 5);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().dimension().length(), 4.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().dimension().width(), 4.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().dimension().height(), 10.0, 1e-3);
@@ -1135,7 +1137,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().orientation().roll(), 0.0, 1e-3);
 
     // verify correct location of OpenDRIVE sign pole object
-    EXPECT_EQ(osi_gt_ptr->stationary_object(2).id().value(), 2);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(2).id().value(), 6);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().dimension().length(), 0.06, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().dimension().width(), 0.06, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().dimension().height(), 2.35, 1e-3);
@@ -1147,7 +1149,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().orientation().roll(), 0.0, 1e-3);
 
     // verify correct parsing of OpenDRIVE parking space object
-    EXPECT_EQ(osi_gt_ptr->stationary_object(3).id().value(), 3);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(3).id().value(), 7);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().dimension().length(), 5.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().dimension().width(), 3.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().dimension().height(), 2.0, 1e-3);
@@ -1162,7 +1164,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_STREQ(osi_gt_ptr->stationary_object(3).source_reference().Get(0).identifier().Get(0).c_str(), "5_kalle");
 
     // verify correct location of first OSC box object
-    EXPECT_EQ(osi_gt_ptr->stationary_object(4).id().value(), 4);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(4).id().value(), 8);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(4).base().dimension().length(), 2.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(4).base().dimension().width(), 1.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(4).base().dimension().height(), 2.0, 1e-3);
@@ -1179,7 +1181,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_EQ(osi_gt_ptr->stationary_object(4).source_reference(0).identifier(0), "box_123XY");
 
     // verify correct location of second OSC box object
-    EXPECT_EQ(osi_gt_ptr->stationary_object(5).id().value(), 5);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(5).id().value(), 9);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().dimension().length(), 1.2, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().dimension().width(), 0.8, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().dimension().height(), 0.5, 1e-3);
@@ -1249,7 +1251,7 @@ TEST_F(OSITunnelTestFixture, TestOSIBrokenRoadmarkCurve)
     const osi3::LaneBoundary* lane_boundary = &osi_gt_ptr->lane_boundary().Get(5);
 
     EXPECT_EQ(lane_boundary->classification().type(), osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_DASHED_LINE);
-    EXPECT_EQ(lane_boundary->id().value(), 5);
+    EXPECT_EQ(lane_boundary->id().value(), 10);
     EXPECT_EQ(lane_boundary->boundary_line_size(), 14);
 
     EXPECT_NEAR(lane_boundary->boundary_line(0).position().x(), 129.8113, 1e-3);

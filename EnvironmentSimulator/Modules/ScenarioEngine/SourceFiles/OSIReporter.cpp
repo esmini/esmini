@@ -204,7 +204,7 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor *> sensor)
             mobj = obj_osi_internal.sd->mutable_sensor_view(static_cast<int>(i))->mutable_global_ground_truth()->add_moving_object();
 
             // Populate sensor data
-            mobj->mutable_id()->set_value(static_cast<unsigned int>(sensor[i]->hitList_[j].obj_->id_));
+            mobj->mutable_id()->set_value(static_cast<unsigned int>(sensor[i]->hitList_[j].obj_->g_id_));
             mobj->mutable_base()->mutable_position()->set_x(sensor[i]->hitList_[j].x_ +
                                                             static_cast<double>(sensor[i]->hitList_[j].obj_->boundingbox_.center_.x_) *
                                                                 cos(sensor[i]->hitList_[j].yaw_));
@@ -632,8 +632,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
     obj_osi_internal.sobj = obj_osi_internal.static_gt->add_stationary_object();
 
     // Set OSI Stationary Object Mutable ID
-    int sobj_size = obj_osi_internal.static_gt->mutable_stationary_object()->size();
-    obj_osi_internal.sobj->mutable_id()->set_value(static_cast<unsigned int>(sobj_size - 1));
+    obj_osi_internal.sobj->mutable_id()->set_value(object->GetGlobalId());
 
     // Set OSI Stationary Object Type and Classification
     if (object->GetType() == roadmanager::RMObject::ObjectType::POLE)
@@ -744,8 +743,7 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
     obj_osi_internal.sobj = obj_osi_internal.static_gt->add_stationary_object();
 
     // Set OSI Stationary Object Mutable ID
-    int sobj_size = obj_osi_internal.static_gt->mutable_stationary_object()->size();
-    obj_osi_internal.sobj->mutable_id()->set_value(static_cast<unsigned int>(sobj_size - 1));
+    obj_osi_internal.sobj->mutable_id()->set_value(objectState->state_.info.g_id);
 
     // Set OSI Stationary Object Type and Classification
     if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::MISC_OBJECT))
@@ -843,7 +841,7 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     obj_osi_internal.mobj = obj_osi_internal.dynamic_gt->add_moving_object();
 
     // Set OSI Moving Object Mutable ID
-    obj_osi_internal.mobj->mutable_id()->set_value(static_cast<unsigned int>(objectState->state_.info.id));
+    obj_osi_internal.mobj->mutable_id()->set_value(static_cast<unsigned int>(objectState->state_.info.g_id));
 
     // Set OSI Moving Object Type and Classification
     if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE))
@@ -1081,7 +1079,7 @@ int OSIReporter::UpdateOSIIntersection()
     {
         id_t                    road_id;
         double                  length;
-        idx_t                   global_id;
+        idx_t                   g_id;
         roadmanager::OSIPoints *osipoints;
     } LaneLengthStruct;
 
@@ -1344,7 +1342,7 @@ int OSIReporter::UpdateOSIIntersection()
                             if ((right_lane_struct.length > length) || (fabs(right_lane_struct.length - length) < tolerance))
                             {
                                 right_lane_struct.length    = length;
-                                right_lane_struct.global_id = g_id;
+                                right_lane_struct.g_id      = g_id;
                                 right_lane_struct.osipoints = osipoints;
                             }
                         }
@@ -1384,7 +1382,7 @@ int OSIReporter::UpdateOSIIntersection()
                             if ((left_lane_struct.length > length) || (fabs(right_lane_struct.length - length) < tolerance))
                             {
                                 left_lane_struct.length    = length;
-                                left_lane_struct.global_id = g_id;
+                                left_lane_struct.g_id      = g_id;
                                 left_lane_struct.osipoints = osipoints;
                             }
                         }
@@ -1499,7 +1497,7 @@ int OSIReporter::UpdateOSIIntersection()
                 for (unsigned int j = 0; j < lane_lengths.size(); j++)
                 {
                     osi3::Identifier *free_lane_id = osi_lane->mutable_classification()->add_free_lane_boundary_id();
-                    free_lane_id->set_value(lane_lengths[j].global_id);
+                    free_lane_id->set_value(lane_lengths[j].g_id);
                 }
             }
             else
@@ -1537,7 +1535,7 @@ int OSIReporter::UpdateOSIIntersection()
                     if (!(std::find(ids_to_remove.begin(), ids_to_remove.end(), static_cast<int>(j)) != ids_to_remove.end()))
                     {
                         osi3::Identifier *free_lane_id = osi_lane->mutable_classification()->add_free_lane_boundary_id();
-                        free_lane_id->set_value(lane_lengths[j].global_id);
+                        free_lane_id->set_value(lane_lengths[j].g_id);
                     }
                 }
                 LOG_WARN("Issues with the Intersection {} (global id {}) for the osi free lane boundary, not all lanes added.",
@@ -2904,7 +2902,7 @@ const char *OSIReporter::GetOSIRoadLane(const std::vector<std::unique_ptr<Object
     return osiRoadLane.osi_lane_info.data();
 }
 
-const char *OSIReporter::GetOSIRoadLaneBoundary(int *size, int global_id)
+const char *OSIReporter::GetOSIRoadLaneBoundary(int *size, int g_id)
 {
     // find the lane bounday in the sensor view and save its index
     int idx = -1;
@@ -2912,7 +2910,7 @@ const char *OSIReporter::GetOSIRoadLaneBoundary(int *size, int global_id)
     {
         osi3::Identifier identifier = obj_osi_internal.lnb[i]->id();
         int              found_id   = static_cast<int>(identifier.value());
-        if (found_id == global_id)
+        if (found_id == g_id)
         {
             idx = static_cast<int>(i);
             break;
@@ -2966,14 +2964,14 @@ idx_t OSIReporter::GetLaneIdxfromIdOSI(id_t lane_id)
     return idx;
 }
 
-osi3::Lane *OSIReporter::GetOSILaneFromGlobalId(id_t lane_global_id)
+osi3::Lane *OSIReporter::GetOSILaneFromGlobalId(id_t g_id)
 {
     auto it = std::lower_bound(obj_osi_internal.ln.begin(),
                                obj_osi_internal.ln.end(),
-                               lane_global_id,
+                               g_id,
                                [](osi3::Lane *lane, id_t gid) { return lane->id().value() < gid; });
 
-    if (it != obj_osi_internal.ln.end() && (*it)->id().value() == lane_global_id)
+    if (it != obj_osi_internal.ln.end() && (*it)->id().value() == g_id)
     {
         return *it;
     }

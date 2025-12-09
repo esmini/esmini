@@ -23,6 +23,7 @@ using namespace roadmanager;
 Object::Object(Type type)
     : type_(type),
       id_(0),
+      g_id_(0),
       speed_(0),
       wheel_angle_(0),
       wheel_rot_(0),
@@ -1438,7 +1439,9 @@ int Entities::addObject(Object* obj, bool activate, int call_index)
         LOG_ERROR_AND_QUIT("Error: addObject max recursion reached ({}). Check scenario trailer config", max_trailers);
     }
 
-    obj->id_ = getNewId();
+    obj->id_   = getNewId();
+    obj->g_id_ = GetNewGlobalId();
+
     if (activate)
     {
         object_.push_back(obj);

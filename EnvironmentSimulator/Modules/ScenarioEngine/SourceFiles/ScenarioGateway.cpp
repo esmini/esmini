@@ -34,6 +34,7 @@ ObjectState::ObjectState()
 }
 
 ObjectState::ObjectState(int                          id,
+                         id_t                         g_id,
                          std::string                  name,
                          int                          obj_type,
                          int                          obj_category,
@@ -58,6 +59,7 @@ ObjectState::ObjectState(int                          id,
     : dirty_(0)
 {
     state_.info.id           = id;
+    state_.info.g_id         = g_id;
     state_.info.obj_type     = obj_type;
     state_.info.obj_category = obj_category;
     state_.info.obj_role     = obj_role;
@@ -331,6 +333,7 @@ int ScenarioGateway::updateObjectInfo(ObjectState* obj_state,
 }
 
 int ScenarioGateway::reportObject(int                    id,
+                                  id_t                   g_id,
                                   std::string            name,
                                   int                    obj_type,
                                   int                    obj_category,
@@ -359,6 +362,7 @@ int ScenarioGateway::reportObject(int                    id,
     {
         // Create state and set permanent information
         obj_state = new ObjectState(id,
+                                    g_id,
                                     name,
                                     obj_type,
                                     obj_category,

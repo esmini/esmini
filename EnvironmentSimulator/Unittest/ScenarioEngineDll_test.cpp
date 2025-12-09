@@ -720,22 +720,22 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
 
     SE_StepDT(0.001f);
 
-    std::vector<std::vector<id_t>> lane_bound = {{ID_UNDEFINED, 8, 9, 10},
-                                                 {8, 9, 10, 0},
-                                                 {9, 10, 0, 1},
-                                                 {10, 0, 1, 2},
-                                                 {0, 1, 2, 3},
-                                                 {1, 2, 3, 11},
-                                                 {2, 3, 11, 4},
-                                                 {3, 11, 4, 5},  // right side start
-                                                 {11, 4, 5, 6},
-                                                 {4, 5, 6, 7},
-                                                 {5, 6, 7, 12},
-                                                 {6, 7, 12, 13},
-                                                 {7, 12, 13, 14},
-                                                 {12, 13, 14, ID_UNDEFINED}};
+    std::vector<std::vector<id_t>> lane_bound = {{ID_UNDEFINED, 29, 30, 31},
+                                                 {29, 30, 31, 4},
+                                                 {30, 31, 4, 6},
+                                                 {31, 4, 6, 8},
+                                                 {4, 6, 8, 10},
+                                                 {6, 8, 10, 32},
+                                                 {8, 10, 32, 13},
+                                                 {10, 32, 13, 15},  // right side start
+                                                 {32, 13, 15, 17},
+                                                 {13, 15, 17, 19},
+                                                 {15, 17, 19, 33},
+                                                 {17, 19, 33, 34},
+                                                 {19, 33, 34, 35},
+                                                 {33, 34, 35, ID_UNDEFINED}};
 
-    std::vector<int> veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+    std::vector<int> osc_veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
     for (size_t i = 0; i < lane_bound.size(); i++)
     {
         SE_LaneBoundaryId lanes_id;
@@ -745,7 +745,7 @@ TEST(GetOSILaneBoundaryIdsTest, lane_boundary_ids)
         lanes_id.far_right_lb_id = lane_bound[i][3];
         SE_LaneBoundaryId ids;
 
-        SE_GetOSILaneBoundaryIds(veh_id[i], &ids);
+        SE_GetOSILaneBoundaryIds(osc_veh_id[i], &ids);
 
         EXPECT_EQ(ids.far_left_lb_id, lanes_id.far_left_lb_id);
         EXPECT_EQ(ids.left_lb_id, lanes_id.left_lb_id);
@@ -971,12 +971,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 84981);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 84991);  // initial OSI size, including static content
 
     SE_StepDT(0.001f);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 85983);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 85995);  // slight growth due to only dynamic updates
 
     int road_lane_size;
 
@@ -988,12 +988,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 87148);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 87162);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 88314);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 88330);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -1008,7 +1008,7 @@ TEST(GetOSIRoadLaneTest, lane_id)
     SE_SetOSIFrequency(1);
     SE_StepDT(0.001f);
 
-    std::vector<int> lanes  = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
+    std::vector<int> lanes  = {0, 1, 2, 3, 5, 7, 9, 12, 14, 16, 18, 20, 21, 22};
     std::vector<int> veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     int        road_lane_size;
@@ -1041,7 +1041,7 @@ TEST(GetOSIRoadLaneTest, left_lane_id)
     osi3::Lane osi_lane;
 
     // explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-    std::vector<int> lanes  = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
+    std::vector<int> lanes  = {0, 1, 2, 3, 5, 7, 9, 12, 14, 16, 18, 20, 21, 22};
     std::vector<int> veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for (size_t i = 0; i < lanes.size(); i++)
@@ -1056,9 +1056,9 @@ TEST(GetOSIRoadLaneTest, left_lane_id)
         {
             EXPECT_EQ(osi_lane.classification().left_adjacent_lane_id(0).value(), lanes[i - 1]);
         }
-        else if (lanes[i] == 8)
+        else if (lanes[i] == 12)
         {
-            EXPECT_EQ(osi_lane.classification().left_adjacent_lane_id(0).value(), 6);
+            EXPECT_EQ(osi_lane.classification().left_adjacent_lane_id(0).value(), 9);
         }
         else
         {
@@ -1081,7 +1081,7 @@ TEST(GetOSIRoadLaneTest, right_lane_id)
     osi3::Lane osi_lane;
 
     // explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-    std::vector<int> lanes  = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
+    std::vector<int> lanes  = {0, 1, 2, 3, 5, 7, 9, 12, 14, 16, 18, 20, 21, 22};
     std::vector<int> veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for (size_t i = 0; i < lanes.size(); i++)
@@ -1089,7 +1089,7 @@ TEST(GetOSIRoadLaneTest, right_lane_id)
         const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
         osi_lane.ParseFromArray(road_lane, road_lane_size);
 
-        if (lanes[i] == 14)
+        if (lanes[i] == 22)
         {
             EXPECT_EQ(osi_lane.classification().right_adjacent_lane_id_size(), 0);
         }
@@ -1097,9 +1097,9 @@ TEST(GetOSIRoadLaneTest, right_lane_id)
         {
             EXPECT_EQ(osi_lane.classification().right_adjacent_lane_id(0).value(), lanes[i + 1]);
         }
-        else if (lanes[i] == 6)
+        else if (lanes[i] == 9)
         {
-            EXPECT_EQ(osi_lane.classification().right_adjacent_lane_id(0).value(), 8);
+            EXPECT_EQ(osi_lane.classification().right_adjacent_lane_id(0).value(), 12);
         }
         else
         {
@@ -1122,7 +1122,7 @@ TEST(GetOSIRoadLaneTest, right_lane_boundary_id)
     osi3::Lane osi_lane;
 
     // explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-    std::vector<int> lane_bound = {8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14};
+    std::vector<int> lane_bound = {29, 30, 31, 4, 6, 8, 10, 32, 13, 15, 17, 19, 33, 34, 35};
     std::vector<int> veh_id     = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for (size_t i = 0; i < lane_bound.size() - 1; i++)
@@ -1148,7 +1148,7 @@ TEST(GetOSIRoadLaneTest, left_lane_boundary_id)
     osi3::Lane osi_lane;
 
     // explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-    std::vector<int> lane_bound = {8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14};
+    std::vector<int> lane_bound = {29, 30, 31, 4, 6, 8, 10, 32, 13, 15, 17, 19, 33, 34, 35};
     std::vector<int> veh_id     = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
     for (size_t i = 0; i < veh_id.size(); i++)
@@ -1286,7 +1286,7 @@ TEST(GetOSILaneBoundaryTests, lane_boundary_id_existing)
 
     // explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
     std::vector<int> lanes      = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
-    std::vector<int> lane_bound = {-1, 8, 9, 10, 0, 1, 2, 3, 11, 4, 5, 6, 7, 12, 13, 14, -1};
+    std::vector<int> lane_bound = {-1, 29, 30, 31, 4, 6, 8, 10, 32, 13, 15, 17, 19, 33, 34, 35, -1};
 
     for (size_t i = 0; i < lane_bound.size(); i++)
     {
@@ -1328,7 +1328,7 @@ TEST_P(GetOSILaneBoundaryTests, lane_boundary_id_not_existing)
     SE_Close();
 }
 
-INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetOSILaneBoundaryTests, ::testing::Values(std::make_tuple(15, 0), std::make_tuple(-15, 0)));
+INSTANTIATE_TEST_SUITE_P(EsminiAPITests, GetOSILaneBoundaryTests, ::testing::Values(std::make_tuple(36, 0), std::make_tuple(-36, 0)));
 
 TEST(OSIFile, writeosifile_two_step)
 {
@@ -1496,7 +1496,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
     SE_DisableOSIFile();
 
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9133);
+    EXPECT_EQ(fileStatus.st_size, 9145);
 
     // Read OSI file
     FILE* file = FileOpen("gt.osi", "rb");
@@ -1567,7 +1567,7 @@ TEST(GroundTruthTests, check_frequency_implicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_implicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9133);
+    EXPECT_EQ(fileStatus.st_size, 9145);
 
     // Read OSI file
     FILE* file = FileOpen("gt_implicit.osi", "rb");
@@ -1637,7 +1637,7 @@ TEST(GroundTruthTests, check_frequency_explicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_explicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9133);
+    EXPECT_EQ(fileStatus.st_size, 9145);
 
     // Read OSI file
     FILE* file = FileOpen("gt_explicit.osi", "rb");
@@ -1777,7 +1777,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 10099);
+    EXPECT_EQ(fileStatus.st_size, 10113);
 }
 
 TEST(GroundTruthTests, check_update_gt_twice_same_frame)
@@ -1795,7 +1795,7 @@ TEST(GroundTruthTests, check_update_gt_twice_same_frame)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 7201);
+    EXPECT_EQ(fileStatus.st_size, 7209);
 }
 
 TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
@@ -1912,7 +1912,7 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
     double miscobj_yaw   = osi_gt.mutable_stationary_object(0)->mutable_base()->mutable_orientation()->yaw();
 
     EXPECT_EQ(n_miscobjects, 1);
-    EXPECT_EQ(miscobj_id, 0);
+    EXPECT_EQ(miscobj_id, 15);
 
     EXPECT_EQ(miscobj_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
 
@@ -1964,13 +1964,13 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
 
     EXPECT_EQ(n_miscobjects, 7);
 
-    EXPECT_EQ(miscobj_0_id, 0);
-    EXPECT_EQ(miscobj_1_id, 1);
-    EXPECT_EQ(miscobj_2_id, 2);
-    EXPECT_EQ(miscobj_3_id, 3);
-    EXPECT_EQ(miscobj_4_id, 4);
-    EXPECT_EQ(miscobj_5_id, 5);
-    EXPECT_EQ(miscobj_6_id, 6);
+    EXPECT_EQ(miscobj_0_id, 13);
+    EXPECT_EQ(miscobj_1_id, 14);
+    EXPECT_EQ(miscobj_2_id, 15);
+    EXPECT_EQ(miscobj_3_id, 21);
+    EXPECT_EQ(miscobj_4_id, 22);
+    EXPECT_EQ(miscobj_5_id, 23);
+    EXPECT_EQ(miscobj_6_id, 24);
 
     EXPECT_EQ(miscobj_0_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
     EXPECT_EQ(miscobj_1_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
@@ -2159,11 +2159,12 @@ TEST(OSILaneParing, multi_roads)
     osi_gt.ParseFromArray(gt, sv_size);
 
     // order: lane, predecessor, successor
-    std::vector<std::vector<int>> lane_pairs = {{0, -1, 3}, {2, -1, 5}, {3, 0, 6}, {5, 2, 8}, {6, 3, 9}, {8, 5, 11}, {9, 6, -1}, {11, 8, -1}};
-    int                           successor;
-    int                           predecessor;
-    int                           gt_successor   = -1;
-    int                           gt_predecessor = -1;
+    std::vector<std::vector<int>> lane_pairs =
+        {{0, -1, 6}, {4, -1, 10}, {6, 0, 12}, {10, 4, 16}, {12, 6, 18}, {16, 10, 22}, {18, 12, -1}, {22, 16, -1}};
+    int successor;
+    int predecessor;
+    int gt_successor   = -1;
+    int gt_predecessor = -1;
     for (int i = 0; i < osi_gt.lane_size(); i++)
     {
         if (osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
@@ -2226,22 +2227,22 @@ TEST(OSILaneParing, multi_lanesections)
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
     // order: lane, predecessor, successor
-    std::vector<std::vector<int>> lane_pairs = {{0, -1, 3},
-                                                {2, -1, 6},
-                                                {4, -1, 8},
-                                                {3, 0, 7},
-                                                {6, 2, 10},
-                                                {8, 4, 12},
-                                                {7, 3, 11},
-                                                {10, 6, 14},
-                                                {12, 8, 17},
-                                                {11, 7, 16},
-                                                {14, 10, 19},
-                                                {15, -1, 20},
-                                                {17, 12, -1},
-                                                {16, 11, -1},
-                                                {19, 14, -1},
-                                                {20, 15, -1}};
+    std::vector<std::vector<int>> lane_pairs = {{0, -1, 6},
+                                                {4, -1, 12},
+                                                {8, -1, 16},
+                                                {6, 0, 14},
+                                                {12, 4, 20},
+                                                {16, 8, 24},
+                                                {14, 6, 22},
+                                                {20, 12, 28},
+                                                {24, 16, 34},
+                                                {22, 14, 32},
+                                                {28, 20, 38},
+                                                {30, -1, 40},
+                                                {34, 24, -1},
+                                                {32, 22, -1},
+                                                {38, 28, -1},
+                                                {40, 30, -1}};
     int                           successor;
     int                           predecessor;
     int                           gt_successor;
@@ -2305,7 +2306,7 @@ TEST(OSILaneParing, highway_split)
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
     // order: lane, predecessor, successor
-    std::vector<std::vector<int>> lane_pairs = {{1, -1, 8}, {2, -1, 10}, {8, 1, 4}, {10, 2, 6}, {4, 8, -1}, {6, 10, -1}};
+    std::vector<std::vector<int>> lane_pairs = {{2, -1, 16}, {4, -1, 20}, {16, 2, 8}, {20, 4, 12}, {8, 16, -1}, {12, 20, -1}};
 
     int successor;
     int predecessor;
@@ -2372,7 +2373,7 @@ TEST(OSILaneParing, highway_merge_lht)
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
     // order: lane, predecessor, successor
-    std::vector<std::vector<int>> lane_pairs = {{1, -1, 8}, {2, -1, 10}, {8, 1, 4}, {10, 2, 6}, {4, 8, -1}, {6, 10, -1}};
+    std::vector<std::vector<int>> lane_pairs = {{2, -1, 16}, {4, -1, 20}, {16, 2, 8}, {20, 4, 12}, {8, 16, -1}, {12, 20, -1}};
 
     int successor;
     int predecessor;
@@ -2438,18 +2439,18 @@ TEST(OSILaneParing, highway_merge)
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
     // order: lane, predecessor, successor
-    std::vector<std::vector<int>> lane_pairs = {{0, -1, 11},
-                                                {2, -1, 13},
-                                                {3, -1, 14},
-                                                {5, -1, 16},
-                                                {6, 11, -1},
-                                                {8, 13, -1},
-                                                {9, 14, -1},
-                                                {10, 16, -1},
-                                                {11, 0, 6},
-                                                {13, 2, 8},
-                                                {14, 3, 9},
-                                                {16, 5, 10}};
+    std::vector<std::vector<int>> lane_pairs = {{0, -1, 22},
+                                                {4, -1, 26},
+                                                {6, -1, 28},
+                                                {10, -1, 32},
+                                                {12, 22, -1},
+                                                {16, 26, -1},
+                                                {18, 28, -1},
+                                                {20, 32, -1},
+                                                {22, 0, 12},
+                                                {26, 4, 16},
+                                                {28, 6, 18},
+                                                {32, 10, 20}};
     int                           successor;
     int                           predecessor;
     int                           gt_successor;
@@ -2513,10 +2514,10 @@ TEST(OSILaneParing, highway_merge_w_split)
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
     // order: lane, predecessor, successor
-    std::vector<std::vector<int>> lane_pairs = {{0, -1, 5},   {1, -1, 6},   {3, -1, 8},   {4, -1, 9},   {5, 0, 11},   {6, 1, 12},
-                                                {8, 3, 14},   {9, 4, 15},   {10, -1, 16}, {11, 5, 24},  {12, 6, 25},  {14, 8, 27},
-                                                {15, 9, 28},  {16, 10, 30}, {24, 11, 17}, {25, 12, 18}, {27, 14, 20}, {28, 15, 21},
-                                                {30, 16, 23}, {17, 24, -1}, {18, 25, -1}, {20, 27, -1}, {21, 28, -1}, {23, 30, -1}};
+    std::vector<std::vector<int>> lane_pairs = {{0, -1, 10},  {2, -1, 12},  {6, -1, 16},  {8, -1, 18},  {10, 0, 22},  {12, 2, 24},
+                                                {16, 6, 28},  {18, 8, 30},  {20, -1, 32}, {22, 10, 48}, {24, 12, 50}, {28, 16, 54},
+                                                {30, 18, 56}, {32, 20, 60}, {48, 22, 34}, {50, 24, 36}, {54, 28, 40}, {56, 30, 42},
+                                                {60, 32, 46}, {34, 48, -1}, {36, 50, -1}, {40, 54, -1}, {42, 56, -1}, {46, 60, -1}};
     int                           successor;
     int                           predecessor;
     int                           gt_successor;
@@ -2580,11 +2581,12 @@ TEST(OSILaneParing, circular_road)
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
     // order: lane, predecessor, successor
-    std::vector<std::vector<int>> lane_pairs = {{0, 5, 11}, {2, 3, 9}, {3, 2, 6}, {5, 0, 8}, {6, 3, 9}, {8, 5, 11}, {9, 6, 2}, {11, 8, 0}};
-    int                           successor;
-    int                           predecessor;
-    int                           gt_successor;
-    int                           gt_predecessor;
+    std::vector<std::vector<int>> lane_pairs =
+        {{0, 10, 22}, {4, 6, 18}, {6, 4, 12}, {10, 0, 16}, {12, 6, 18}, {16, 10, 22}, {18, 12, 4}, {22, 16, 0}};
+    int successor;
+    int predecessor;
+    int gt_successor;
+    int gt_predecessor;
     for (int i = 0; i < osi_gt.lane_size(); i++)
     {
         if (osi_gt.mutable_lane(i)->mutable_classification()->lane_pairing_size() == 0)
@@ -2644,18 +2646,18 @@ TEST(OSILaneParing, simple_3way_intersection)
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
     // order: lane, predecessor, successor
-    std::vector<std::vector<int>> lane_pairs = {{0, -1, 18},
-                                                {2, -1, 18},
-                                                {3, 18, -1},
-                                                {5, 18, -1},
-                                                {6, 18, -1},
-                                                {8, 18, -1},
-                                                {18, 3, 0},
-                                                {18, 3, 8},
-                                                {18, 2, 5},
-                                                {18, 2, 8},
-                                                {18, 6, 5},
-                                                {18, 6, 0}};
+    std::vector<std::vector<int>> lane_pairs = {{0, -1, 36},
+                                                {4, -1, 36},
+                                                {6, 36, -1},
+                                                {10, 36, -1},
+                                                {12, 36, -1},
+                                                {16, 36, -1},
+                                                {36, 6, 0},
+                                                {36, 6, 16},
+                                                {36, 4, 10},
+                                                {36, 4, 16},
+                                                {36, 12, 10},
+                                                {36, 12, 0}};
 
     std::sort(lane_pairs.begin(), lane_pairs.end());
 
@@ -2718,18 +2720,18 @@ TEST(OSILaneParing, simple_3way_intersection_lht)
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
     // order: lane, predecessor, successor
-    std::vector<std::vector<int>> lane_pairs = {{0, -1, 18},
-                                                {2, -1, 18},
-                                                {3, 18, -1},
-                                                {5, 18, -1},
-                                                {6, 18, -1},
-                                                {8, 18, -1},
-                                                {18, 0, 3},
-                                                {18, 0, 6},
-                                                {18, 5, 2},
-                                                {18, 5, 6},
-                                                {18, 8, 2},
-                                                {18, 8, 3}};
+    std::vector<std::vector<int>> lane_pairs = {{0, -1, 36},
+                                                {4, -1, 36},
+                                                {6, 36, -1},
+                                                {10, 36, -1},
+                                                {12, 36, -1},
+                                                {16, 36, -1},
+                                                {36, 0, 6},
+                                                {36, 0, 12},
+                                                {36, 10, 4},
+                                                {36, 10, 12},
+                                                {36, 16, 4},
+                                                {36, 16, 6}};
 
     std::sort(lane_pairs.begin(), lane_pairs.end());
 
@@ -2792,9 +2794,9 @@ TEST(OSILaneParing, simple_4way_intersection)
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
     // order: lane, predecessor, successor
-    std::vector<std::vector<int>> lane_pairs = {{0, -1, 30},  {2, -1, 30}, {3, 30, -1}, {5, 30, -1}, {6, 30, -1}, {8, 30, -1}, {9, 30, -1},
-                                                {11, 30, -1}, {30, 2, 5},  {30, 2, 8},  {30, 2, 11}, {30, 3, 0},  {30, 3, 8},  {30, 3, 11},
-                                                {30, 6, 0},   {30, 6, 5},  {30, 6, 11}, {30, 9, 0},  {30, 9, 5},  {30, 9, 8}};
+    std::vector<std::vector<int>> lane_pairs = {{0, -1, 60},  {4, -1, 60},  {6, 60, -1},  {10, 60, -1}, {12, 60, -1}, {16, 60, -1}, {18, 60, -1},
+                                                {22, 60, -1}, {60, 4, 10},  {60, 4, 16},  {60, 4, 22},  {60, 6, 0},   {60, 6, 16},  {60, 6, 22},
+                                                {60, 12, 0},  {60, 12, 10}, {60, 12, 22}, {60, 18, 0},  {60, 18, 10}, {60, 18, 16}};
     std::sort(lane_pairs.begin(), lane_pairs.end());
 
     int gt_successor;
@@ -4630,13 +4632,13 @@ TEST(APITest, TestGetRoute)
     EXPECT_EQ(route_info.s, 15);
     EXPECT_EQ(route_info.x, 15);
     EXPECT_EQ(route_info.y, -1.5);
-    EXPECT_EQ(route_info.osiLaneId, 3);
+    EXPECT_EQ(route_info.osiLaneId, 6);
     SE_GetRoutePoint(0, 1, &route_info);
     EXPECT_EQ(route_info.t, -4.5);
     EXPECT_EQ(route_info.s, 150);
     EXPECT_EQ(route_info.x, 150);
     EXPECT_EQ(route_info.y, -4.5);
-    EXPECT_EQ(route_info.osiLaneId, 15);
+    EXPECT_EQ(route_info.osiLaneId, 30);
 
     SE_Close();
 }

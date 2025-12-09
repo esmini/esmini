@@ -371,6 +371,16 @@ int OnRequestShowHelpOrVersion(int argc, char** argv, SE_Options& opt);
 */
 const char* esmini_git_rev(void);
 
+/**
+    Increments a counter to keep ID's unique and global.
+ */
+id_t GetNewGlobalId();
+
+/**
+    Resets the global ID counter
+*/
+void ResetGlobalIdCounter();
+
 // Displays OSG options on the command prompt
 void PrintOSGUsage();
 

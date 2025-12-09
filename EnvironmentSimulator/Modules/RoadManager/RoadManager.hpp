@@ -29,10 +29,6 @@
 
 namespace roadmanager
 {
-    id_t GetNewGlobalLaneId();
-    id_t GetNewGlobalLaneBoundaryId();
-    id_t GetNewGlobalTrafficLightId();
-
     const char *ReadUserData(pugi::xml_node node, const std::string &code, const std::string &default_value = "");
 
     /**
@@ -537,7 +533,7 @@ namespace roadmanager
     class LaneBoundaryOSI
     {
     public:
-        LaneBoundaryOSI(id_t gbid) : global_id_(gbid)
+        LaneBoundaryOSI(id_t gbid) : g_id_(gbid)
         {
         }
         LaneBoundaryOSI()
@@ -548,7 +544,7 @@ namespace roadmanager
         void SetGlobalId();
         id_t GetGlobalId() const
         {
-            return global_id_;
+            return g_id_;
         }
         OSIPoints *GetOSIPoints()
         {
@@ -557,7 +553,7 @@ namespace roadmanager
         OSIPoints osi_points_;
 
     private:
-        id_t global_id_;  // Unique ID for OSI
+        id_t g_id_;  // Unique ID for OSI
     };
 
     struct RoadMarkInfo
@@ -639,7 +635,7 @@ namespace roadmanager
         void      SetGlobalId();
         id_t      GetGlobalId() const
         {
-            return global_id_;
+            return g_id_;
         }
         RoadMarkColor GetColor() const
         {
@@ -661,7 +657,7 @@ namespace roadmanager
         double               s_offset_;
         RoadMarkTypeLineRule rule_;
         double               width_;
-        id_t                 global_id_;      // Unique ID for OSI
+        id_t                 g_id_;           // Unique ID for OSI
         RoadMarkColor        color_;          // if set, supersedes setting in <RoadMark>
         bool                 repeat_ = true;  // false for explicit road marks
     };
@@ -961,7 +957,7 @@ namespace roadmanager
         }
         id_t GetGlobalId() const
         {
-            return global_id_;
+            return g_id_;
         }
 
         // Add Functions
@@ -1043,7 +1039,7 @@ namespace roadmanager
 
     private:
         int                           id_              = 0;             // center = 0, left > 0, right < 0
-        id_t                          global_id_       = ID_UNDEFINED;  // Unique ID for OSI
+        id_t                          g_id_            = ID_UNDEFINED;  // Unique ID for OSI
         id_t                          osiintersection_ = ID_UNDEFINED;  // flag to see if the lane is part of an osi-lane section or not
         LaneType                      type_            = LaneType::LANE_TYPE_NONE;
         std::vector<LaneLink *>       link_;
@@ -2514,6 +2510,14 @@ namespace roadmanager
         {
             return id_;
         }
+        id_t GetGlobalId() const
+        {
+            return g_id_;
+        }
+        void SetGlobalId()
+        {
+            g_id_ = GetNewGlobalId();
+        }
         double GetS() const
         {
             return s_;
@@ -2634,6 +2638,7 @@ namespace roadmanager
         std::string            name_;
         ObjectType             type_;
         id_t                   id_;
+        id_t                   g_id_;
         double                 s_;
         double                 t_;
         double                 z_offset_;
