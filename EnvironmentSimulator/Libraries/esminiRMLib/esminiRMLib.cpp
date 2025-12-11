@@ -103,7 +103,7 @@ extern "C"
 {
     RM_DLL_API int RM_Init(const char* odrFilename)
     {
-        if (SE_Env::Inst().GetLogFilePath() == LOG_FILENAME)
+        if (SE_Env::Inst().GetOptions().GetOptionValueByEnum(esmini_options::LOGFILE_PATH) == LOG_FILENAME)
         {
             // Set unique log filename to prevent two libraries writing to same file
             // - in case esminiRMLib is used in parallel with esminiLib

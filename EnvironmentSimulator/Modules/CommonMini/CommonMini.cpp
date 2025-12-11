@@ -1836,12 +1836,6 @@ SE_Env& SE_Env::Inst()
     return instance_;
 }
 
-void SE_Env::SetDatFilePath(std::string datFilePath)
-{
-    datFilePath_ = datFilePath;
-    txtLogger.SetLogFilePath(SE_Env::Inst().GetLogFilePath());
-}
-
 /*
  * Logger for all vehicles contained in the Entities vector.
  *

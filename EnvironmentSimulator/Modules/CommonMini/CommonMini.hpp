@@ -1355,7 +1355,6 @@ public:
     SE_Env()
         : osiMaxLongitudinalDistance_(OSI_MAX_LONGITUDINAL_DISTANCE),
           osiMaxLateralDeviation_(OSI_MAX_LATERAL_DEVIATION),
-          logFilePath_(LOG_FILENAME),
           datFilePath_(""),
           exeFilePath_(""),
           oscFilePath_(""),
@@ -1423,43 +1422,11 @@ public:
         return systemTime_.GetS();
     }
 
-    /**
-            Specify scenario logfile (.txt) file path,
-            optionally including directory path and/or filename
-            Specify only directory (end with "/" or "\") to let esmini set default filename
-            Specify only filename (no leading "/" or "\") to let esmini set default directory
-            Set "" to disable logfile
-            examples:
-              "../logfile.txt" (relative current directory)
-              "c:/tmp/esmini.log" (absolute path)
-              "my.log" (put it in current directory)
-              "c:/tmp/" (use default filename)
-              "" (prevent creation of logfile)
-            Note: Needs to be called prior to calling SE_Init()
-            @param path Logfile path
-    */
-    // void        SetLogFilePath(std::string logFilePath);
-    std::string GetLogFilePath() const
+    void SetDatFilePath(std::string datFilePath)
     {
-        return logFilePath_;
+        datFilePath_ = datFilePath;
     }
 
-    /**
-            Specify scenario recording (.dat) file path,
-            optionally including directory path and/or filename
-            Specify only directory (end with "/" or "\") to let esmini set default filename
-            Specify only filename (no leading "/" or "\") to let esmini set default directory
-            Set "" to disable logfile
-            examples:
-              "../logfile.txt" (relative current directory)
-              "c:/tmp/esmini.log" (absolute path)
-              "my.log" (put it in current directory)
-              "c:/tmp/" (use default filename)
-              "" (prevent creation of logfile)
-            Note: Needs to be called prior to calling SE_Init()
-            @param path Logfile path
-    */
-    void        SetDatFilePath(std::string datFilePath);
     std::string GetDatFilePath() const
     {
         return datFilePath_;
@@ -1538,7 +1505,6 @@ public:
 private:
     double                     osiMaxLongitudinalDistance_;
     double                     osiMaxLateralDeviation_;
-    std::string                logFilePath_;
     std::string                datFilePath_;
     std::string                exeFilePath_;  // path to executable or library
     std::string                oscFilePath_;  // resolved osc file path
