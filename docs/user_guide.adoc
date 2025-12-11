@@ -790,8 +790,6 @@ The above script link points to OSI tag v3.5.0. In more recent OSI versions the 
 
 esmini shared library works also as plugin in Unity (Win, Linux, Mac). A simple example can be downloaded from https://www.dropbox.com/scl/fi/lnwq3i9h2jcrbdb58i9a2/esmini-player_v2_56_1.unitypackage?rlkey=1sil117mil3hab60ktktr0s5k&st=x64nowxt&dl=1[here]. The package contains everything needed to get going:
 
-https://www.dropbox.com/scl/fi/lnwq3i9h2jcrbdb58i9a2/esmini-player_v2_56_1.unitypackage?rlkey=1sil117mil3hab60ktktr0s5k&st=x64nowxt&dl=1
-
 - esmini library C# wrapper
 - a generic scenario player script
 - a few example scenarios (OpenSCENARIO XML + OpenDRIVE) including 3D models
