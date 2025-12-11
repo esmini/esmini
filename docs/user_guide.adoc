@@ -786,6 +786,28 @@ See <<OSI for Python on Windows>> for hints how to install dependencies (OSI and
 The above script link points to OSI tag v3.5.0. In more recent OSI versions the script has moved to another folder: https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/osi3trace/osi2read.py[osi3trace/osi2read.py].
 ====
 
+=== esmini in Unity
+
+esmini shared library works also as plugin in Unity (Win, Linux, Mac). A simple example can be downloaded from https://www.dropbox.com/scl/fi/lnwq3i9h2jcrbdb58i9a2/esmini-player_v2_56_1.unitypackage?rlkey=1sil117mil3hab60ktktr0s5k&st=x64nowxt&dl=1[here]. The package contains everything needed to get going:
+
+https://www.dropbox.com/scl/fi/lnwq3i9h2jcrbdb58i9a2/esmini-player_v2_56_1.unitypackage?rlkey=1sil117mil3hab60ktktr0s5k&st=x64nowxt&dl=1
+
+- esmini library C# wrapper
+- a generic scenario player script
+- a few example scenarios (OpenSCENARIO XML + OpenDRIVE) including 3D models
+- plugins for all platforms (can be updated of course)
+- and finally a scene connecting the player script to a game object
+
+Run:
+
+. Import package (Import Package -> Custom Package)
+. Load the scene (Assets/Scenes/esmini-scene)
+. Then just press play-button
+
+Select (click on) esmini-player in Hierarchy to show up in Inspector, where you can specify scenario file and a few parameters. Note that scenario file and dependent OpenDRIVE and optional 3D scenegraph file must be present in StreamingAssets folder.
+
+Plugins can be updated, but NOTE that you need to restart Unity to (re)load shared library plugins. And, of course, scenario files and other content can be added or replaced.
+
 == Scenario features
 === Speed profile
 (introduced in esmini v2.23.0)
@@ -3069,7 +3091,7 @@ Here follows an example of how to convert .osgb models into .fbx format for use 
 A folder named "out" should have been created and including the model.fbx plus any texture files
 
 === Import into Unity
-. Drag the resulting fbx file, and all textures, into a unity project, preferably an empty folder
+. Drag the resulting fbx file, and all textures, into a Unity project, preferably an empty folder
 . Add the model to the Scene hierarchy
 . Select the model and int the "Inspector", select the "Materials" tab
 . Change the "Location" to "Use External Materials (Legacy)" and click "Apply"
@@ -3079,6 +3101,16 @@ A folder named "out" should have been created and including the model.fbx plus a
    for HDRP template: "Surface type" to "Transparent" and check "alpha clipping"
 
 That should basically be it.
+
+Sometimes the fbx conversion is not perfect. https://en.wikipedia.org/wiki/Wavefront_.obj_file[Wavefront obj] is another format, somewhat limited but stable.
+
+. Run command: +
+   `osgconv model.osgb model.obj --use-world-frame -o 120pass:[--]0.5773503,-0.5773503,-0.5773503`
+. Drag the resulting `.obj` file and accompaniing material (`.mtl`) file, into the Unity project
+
+There should be no need for the additional material processing as described in the `.fbx` case.
+
+`.obj` is an ascii (text) format, which comes with cons and pros. Size is typically much larger tha binary alternatives. As text file it can be inspected in any text editor, and easily manipulated by scripting, e.g. in Python.
 
 === Colors, textures and wheel rotations
 

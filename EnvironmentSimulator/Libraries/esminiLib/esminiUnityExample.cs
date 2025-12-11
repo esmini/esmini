@@ -46,16 +46,6 @@ public class esminiUnityExample : MonoBehaviour
     private ScenarioObjectState state;
     private List<GameObject> cars = new List<GameObject>();
     private GameObject envModel;
-    private List<string> objectNames = new List<string>
-        {
-            "car_white",
-            "car_blue",
-            "car_red",
-            "car_yellow",
-            "truck_yellow",
-            "van_red",
-            "bus_blue"
-        };
 
     public struct UserData
     {
@@ -148,10 +138,16 @@ public class esminiUnityExample : MonoBehaviour
             print("Parameter[" + i + "] name: " + p_name + " type: " + p_type);
         }
 
-        // Load environment 3D model
-        string sceneGraphFilename = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetSceneGraphFilename());
-        Debug.Log("Loading " + Path.GetFileNameWithoutExtension(sceneGraphFilename));
-        envModel = (GameObject)Instantiate(Resources.Load(Path.GetFileNameWithoutExtension(sceneGraphFilename)));
+        // Load environment 3D model, based on OpenDRIVE filename
+        string envModelName = Path.GetFileNameWithoutExtension(Marshal.PtrToStringAnsi(ESMiniLib.SE_GetODRFilename()));
+        if (envModelName == null || envModelName.Length == 0)
+        {
+            Debug.Log("Error: No OpenDRIVE file specified");
+            ESMiniLib.SE_Close();
+            return;
+        }
+        Debug.Log("Loading " + envModelName);
+        envModel = (GameObject)Instantiate(Resources.Load(envModelName));
 
         // Fetch names of entities within the scenario
         int nObjects = ESMiniLib.SE_GetNumberOfObjects();
@@ -205,9 +201,11 @@ public class esminiUnityExample : MonoBehaviour
             if (cars.Count <= i)
             {
                 // Add scenario controlled objects
-                int model_id = state.model_id % objectNames.Count;
-                cars.Add((GameObject)Instantiate(Resources.Load(objectNames[model_id])));
-                Debug.Log("Adding " + objectNames[model_id]);
+                //string filename = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetObjectModelFileName(i));
+                string filename = Path.GetFileNameWithoutExtension(Marshal.PtrToStringAnsi(ESMiniLib.SE_GetObjectModelFileName(i)));
+
+                cars.Add((GameObject)Instantiate(Resources.Load(filename)));
+                Debug.Log("Adding " + filename);
 
                 // Attach camera to first object
                 if (i==0)

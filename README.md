@@ -60,7 +60,7 @@ See [User Guide "Hello World" tutorial](https://esmini.github.io/#_hello_world_p
 ### OSI support
 In addition to internal API ([example](https://esmini.github.io/#_fetch_state_of_scenario_objects)) for getting information about the ongoing simulation, e.g. road width and road user position, esmini collects everything into an [OSI](https://github.com/OpenSimulationInterface) :: [groundtruth structure](https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1GroundTruth.html). This structure can be 1. stored in an OSI trace-file, 2. retrieved via UDP and/or 3. retrieved directly via API (see [esminiLib.hpp](https://github.com/esmini/esmini/blob/3af727a3f95825bfcf8b1cbd7becf68ea26cf08e/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L473)).
 
-  **Note**: Only parts of OSI groundthruth is populated.
+  **Note**: Only parts of OSI groundtruth is populated.
 
   Hello World tutorial includes an [example of how to fetch OSI groundtruth](https://esmini.github.io/#_osi_groundtruth).
 
@@ -71,21 +71,7 @@ In addition to internal API ([example](https://esmini.github.io/#_fetch_state_of
   Script that compiles OSI for Win/Linux/Mac available [here](https://github.com/esmini/esmini/blob/master/scripts/generate_osi_libs.sh). Run in bash, also on Windows, e.g. GIT bash.
 
 ### Unity support
-esmini shared library works fine also in Unity (Win, Linux, Mac). A simple example can be downloaded from [here](https://www.dropbox.com/s/sj53hz0zesxa681/esmini-player.unitypackage?dl=1). The package contains everything needed to get going:
-- esmini library C# wrapper
-- a generic scenario player script
-- a few example scenarios (OpenSCENARIO XML + OpenDRIVE) including 3D models
-- plugins for all platforms (can be updated of course)
-- and finally a scene connecting the player script to a game object
-
-Run:
-1. Import package (Import Package -> Custom Package).
-2. Load the scene (Assets/Scenes/esmini-scene).
-3. Then just press play-button.
-
-Select (click on) esmini-player in Hierarchy to show up in Inspector, where you can specify scenario file and a few parameters. Note that scenario file and dependent OpenDRIVE and optional 3D scenegraph file must be present in StreamingAssets folder.
-
-Plugins can be updated, but NOTE that you need to restart Unity to (re)load shared library plugins. And, of course, scenario files and other content can be added or replaced.
+esmini shared library works also as plugin in Unity (Win, Linux, Mac). Learn more and find example in [User guide - esmini in Unity](https://esmini.github.io/#_esmini_in_unity).
 
 ### esmini & Python
 see [User Guide Hello-World tutorial](https://esmini.github.io/#_python_binding).
