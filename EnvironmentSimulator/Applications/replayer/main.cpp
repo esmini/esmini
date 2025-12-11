@@ -290,6 +290,11 @@ int ParseEntities(Replay* player)
                     LOG_WARN("No 3D model resolved for entity {} {}", new_sc.id, new_sc.name);
                 }
 
+                double refpoint_x_offset =
+                    (timelines.refpoint_x_offset_.values.empty()) ? 0.0 : static_cast<double>(timelines.refpoint_x_offset_.values.front().second);
+                double model_x_offset =
+                    (timelines.model_x_offset_.values.empty()) ? 0.0 : static_cast<double>(timelines.model_x_offset_.values.front().second);
+
                 bool found = false;
                 if ((new_sc.entityModel = viewer_->CreateEntityModel(
                          LocateFile(filename, {CombineDirectoryPathAndFilepath(res_path, "models")}, "Entity 3D model", found),
@@ -298,8 +303,8 @@ int ParseEntities(Replay* player)
                          false,
                          timelines.name_.values.front().second,
                          &timelines.bounding_box_.values.front().second,
-                         timelines.refpoint_x_offset_.values.front().second,
-                         timelines.model_x_offset_.values.front().second,
+                         refpoint_x_offset,
+                         model_x_offset,
                          static_cast<EntityScaleMode>(timelines.scale_mode_.values.front().second))) == 0)
                 {
                     return -1;
