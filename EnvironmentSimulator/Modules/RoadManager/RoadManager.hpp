@@ -2452,7 +2452,8 @@ namespace roadmanager
             TREE,
             VAN,
             VEGETATION,
-            WIND
+            WIND,
+            BRIDGE
         };
 
         enum class TunnelComponentType

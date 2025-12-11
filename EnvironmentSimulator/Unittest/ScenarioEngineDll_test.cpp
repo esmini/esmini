@@ -971,12 +971,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 84991);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 86255);  // initial OSI size, including static content
 
     SE_StepDT(0.001f);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 85995);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 87430);  // slight growth due to only dynamic updates
 
     int road_lane_size;
 
@@ -988,12 +988,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 87162);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 88768);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 88330);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 90107);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -1181,10 +1181,9 @@ TEST_P(GetOSIRoadLaneTest, centerline_is_driving_direction)
     osi3::Lane osi_lane;
 
     // explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-    std::vector<int> lanes  = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
     std::vector<int> veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
-    for (size_t i = 0; i < lanes.size(); i++)
+    for (size_t i = 0; i < veh_id.size(); i++)
     {
         const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
         osi_lane.ParseFromArray(road_lane, road_lane_size);
@@ -1218,10 +1217,9 @@ TEST(GetOSIRoadLaneTest, is_host_vehicle_lane)
     osi3::Lane osi_lane;
 
     // explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-    std::vector<int> lanes  = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
     std::vector<int> veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
 
-    for (size_t i = 0; i < lanes.size(); i++)
+    for (size_t i = 0; i < veh_id.size(); i++)
     {
         const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
         osi_lane.ParseFromArray(road_lane, road_lane_size);
@@ -1243,31 +1241,82 @@ TEST(GetOSIRoadLaneTest, lane_classification)
     int        road_lane_size;
     osi3::Lane osi_lane;
 
-    // explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-    std::vector<int> lanes  = {0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14};
-    std::vector<int> veh_id = {13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0};
+    auto NONDRIVING = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING;
+    auto DRIVING    = osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING;
 
-    int obj_id = 0;
+    std::vector<std::pair<int, osi3::Lane_Classification_Type>> veh_lane = {
+        {13, NONDRIVING},
+        {12, NONDRIVING},
+        {11, NONDRIVING},
+        {10, DRIVING},
+        {9, DRIVING},
+        {8, DRIVING},
+        {7, NONDRIVING},
+        {6, NONDRIVING},
+        {5, DRIVING},
+        {4, DRIVING},
+        {3, DRIVING},
+        {2, NONDRIVING},
+        {1, NONDRIVING},
+        {0, NONDRIVING},
+    };
 
-    for (size_t i = 0; i < lanes.size(); i++)
+    for (const auto& [id, lane_type] : veh_lane)
     {
-        int lane_id = lanes[i];
-
-        const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, veh_id[i]);
+        const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, id);
         osi_lane.ParseFromArray(road_lane, road_lane_size);
 
-        osi3::Lane_Classification_Type lane_type = osi_lane.classification().type();
+        EXPECT_EQ(osi_lane.classification().type(), lane_type);
+    }
 
-        if (lane_id == 3 || lane_id == 4 || lane_id == 5 || lane_id == 9 || lane_id == 10 || lane_id == 11)
-        {
-            EXPECT_EQ(lane_type, osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_DRIVING);
-        }
-        else
-        {
-            EXPECT_EQ(lane_type, osi3::Lane_Classification_Type::Lane_Classification_Type_TYPE_NONDRIVING);
-        }
+    SE_Close();
+}
 
-        obj_id++;
+TEST(GetOSIRoadLaneTest, lane_source_reference)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/full_e6mini.xosc";
+    const char* Scenario_file = scenario_file.c_str();
+
+    SE_Init(Scenario_file, 0, 0, 0, 0);
+    SE_SetOSIFrequency(1);
+    SE_StepDT(0.001f);
+    int        road_lane_size;
+    osi3::Lane osi_lane;
+
+    std::string id_1 = "road_id:";
+    std::string id_2 = "road_s:";
+    std::string id_3 = "lane_id:";
+
+    std::vector<std::pair<int, std::vector<std::string>>> veh_lane = {
+        {13, {id_1 + "0", id_2 + "0", id_3 + "7"}},
+        {12, {id_1 + "0", id_2 + "0", id_3 + "6"}},
+        {11, {id_1 + "0", id_2 + "0", id_3 + "5"}},
+        {10, {id_1 + "0", id_2 + "0", id_3 + "4"}},
+        {9, {id_1 + "0", id_2 + "0", id_3 + "3"}},
+        {8, {id_1 + "0", id_2 + "0", id_3 + "2"}},
+        {7, {id_1 + "0", id_2 + "0", id_3 + "1"}},
+        {6, {id_1 + "0", id_2 + "0", id_3 + "-1"}},
+        {5, {id_1 + "0", id_2 + "0", id_3 + "-2"}},
+        {4, {id_1 + "0", id_2 + "0", id_3 + "-3"}},
+        {3, {id_1 + "0", id_2 + "0", id_3 + "-4"}},
+        {2, {id_1 + "0", id_2 + "0", id_3 + "-5"}},
+        {1, {id_1 + "0", id_2 + "0", id_3 + "-6"}},
+        {0, {id_1 + "0", id_2 + "0", id_3 + "-7"}},
+    };
+
+    for (const auto& [id, src_identifier] : veh_lane)
+    {
+        const char* road_lane = SE_GetOSIRoadLane(&road_lane_size, id);
+        osi_lane.ParseFromArray(road_lane, road_lane_size);
+
+        ASSERT_EQ(osi_lane.source_reference_size(), 1);
+        ASSERT_EQ(osi_lane.source_reference(0).identifier_size(), static_cast<int>(src_identifier.size()));
+
+        EXPECT_EQ(osi_lane.source_reference(0).type(), "net.asam.opendrive");
+        for (size_t i = 0; i < src_identifier.size(); i++)
+        {
+            EXPECT_EQ(osi_lane.source_reference(0).identifier(static_cast<int>(i)), src_identifier[i]);
+        }
     }
 
     SE_Close();
@@ -1284,8 +1333,6 @@ TEST(GetOSILaneBoundaryTests, lane_boundary_id_existing)
     int                lb_size;
     osi3::LaneBoundary osi_lb;
 
-    // explicitly writing lanes ID so that it will be easy to adapt the test for more complex roads in the future
-    std::vector<int> lanes      = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14};
     std::vector<int> lane_bound = {-1, 29, 30, 31, 4, 6, 8, 10, 32, 13, 15, 17, 19, 33, 34, 35, -1};
 
     for (size_t i = 0; i < lane_bound.size(); i++)
@@ -1468,10 +1515,16 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 
     // verify model_reference and source_reference are populated from the ,xosc file
     EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
-    ASSERT_EQ(osi_gt_ptr->moving_object(0).model_reference(), "../../../resources/models/car_white.osgb");
-    ASSERT_EQ(osi_gt_ptr->moving_object(0).source_reference_size(), 1);
-    ASSERT_EQ(osi_gt_ptr->moving_object(0).source_reference(0).identifier_size(), 1);
-    EXPECT_EQ(osi_gt_ptr->moving_object(0).source_reference(0).identifier(0), "generic_sedan_car");
+    ASSERT_EQ(osi_gt_ptr->moving_object(1).model_reference(), "../../../resources/models/car_red.osgb");
+    ASSERT_EQ(osi_gt_ptr->moving_object(1).source_reference_size(), 1);
+    ASSERT_NE(osi_gt_ptr->moving_object(1).source_reference(0).type().size(), 0);
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).type(), "net.asam.openscenario");
+    ASSERT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier_size(), 5);
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(0), "entity_id:1");
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(1), "entity_type:Vehicle");
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(2), "entity_name:OverTaker");
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(3), "model_year:2019");
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).source_reference(0).identifier(4), "make:esmini_car");
 
     for (int i = 0; i < 3; i++)
     {
@@ -1496,7 +1549,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
     SE_DisableOSIFile();
 
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9145);
+    EXPECT_EQ(fileStatus.st_size, 9985);
 
     // Read OSI file
     FILE* file = FileOpen("gt.osi", "rb");
@@ -1567,7 +1620,7 @@ TEST(GroundTruthTests, check_frequency_implicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_implicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9145);
+    EXPECT_EQ(fileStatus.st_size, 9985);
 
     // Read OSI file
     FILE* file = FileOpen("gt_implicit.osi", "rb");
@@ -1637,7 +1690,7 @@ TEST(GroundTruthTests, check_frequency_explicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_explicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9145);
+    EXPECT_EQ(fileStatus.st_size, 9985);
 
     // Read OSI file
     FILE* file = FileOpen("gt_explicit.osi", "rb");
@@ -1777,7 +1830,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 10113);
+    EXPECT_EQ(fileStatus.st_size, 11124);
 }
 
 TEST(GroundTruthTests, check_update_gt_twice_same_frame)
@@ -1795,7 +1848,7 @@ TEST(GroundTruthTests, check_update_gt_twice_same_frame)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 7209);
+    EXPECT_EQ(fileStatus.st_size, 7707);
 }
 
 TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
@@ -1896,6 +1949,8 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
 
     int n_miscobjects = osi_gt.mutable_stationary_object()->size();
 
+    ASSERT_EQ(n_miscobjects, 1);
+
     uint64_t                                   miscobj_id   = osi_gt.mutable_stationary_object(0)->mutable_id()->value();
     osi3::StationaryObject_Classification_Type miscobj_type = osi_gt.mutable_stationary_object(0)->mutable_classification()->type();
 
@@ -1911,7 +1966,6 @@ TEST(GetMiscObjFromGroundTruth, receive_miscobj)
     double miscobj_pitch = osi_gt.mutable_stationary_object(0)->mutable_base()->mutable_orientation()->pitch();
     double miscobj_yaw   = osi_gt.mutable_stationary_object(0)->mutable_base()->mutable_orientation()->yaw();
 
-    EXPECT_EQ(n_miscobjects, 1);
     EXPECT_EQ(miscobj_id, 15);
 
     EXPECT_EQ(miscobj_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
@@ -1946,6 +2000,8 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
 
     int n_miscobjects = osi_gt.mutable_stationary_object()->size();
 
+    ASSERT_EQ(n_miscobjects, 7);
+
     uint64_t miscobj_0_id = osi_gt.mutable_stationary_object(0)->mutable_id()->value();
     uint64_t miscobj_1_id = osi_gt.mutable_stationary_object(1)->mutable_id()->value();
     uint64_t miscobj_2_id = osi_gt.mutable_stationary_object(2)->mutable_id()->value();
@@ -1962,8 +2018,6 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     osi3::StationaryObject_Classification_Type miscobj_5_type = osi_gt.mutable_stationary_object(5)->mutable_classification()->type();
     osi3::StationaryObject_Classification_Type miscobj_6_type = osi_gt.mutable_stationary_object(6)->mutable_classification()->type();
 
-    EXPECT_EQ(n_miscobjects, 7);
-
     EXPECT_EQ(miscobj_0_id, 13);
     EXPECT_EQ(miscobj_1_id, 14);
     EXPECT_EQ(miscobj_2_id, 15);
@@ -1979,6 +2033,46 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     EXPECT_EQ(miscobj_4_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
     EXPECT_EQ(miscobj_5_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
     EXPECT_EQ(miscobj_6_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
+
+    SE_Close();
+}
+
+TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_source_reference)
+{
+    int               sv_size = 0;
+    osi3::GroundTruth osi_gt;
+
+    SE_Init("../../../EnvironmentSimulator/Unittest/xosc/miscobj_mix.xosc", 0, 0, 0, 0);
+
+    SE_StepDT(0.001f);
+
+    const char* gt = SE_GetOSIGroundTruth(&sv_size);
+    osi_gt.ParseFromArray(gt, sv_size);
+
+    int n_miscobjects = osi_gt.mutable_stationary_object()->size();
+
+    ASSERT_EQ(n_miscobjects, 7);
+    ASSERT_EQ(osi_gt.stationary_object(0).source_reference_size(), 1);
+    ASSERT_EQ(osi_gt.stationary_object(0).source_reference(0).identifier_size(), 2);
+
+    std::vector<std::vector<std::string>> src_data = {{"net.asam.opendrive", "object_type:object", "object_id:1"},
+                                                      {"net.asam.opendrive", "object_type:object", "object_id:2"},
+                                                      {"net.asam.opendrive", "object_type:object", "object_id:3"},
+                                                      {"net.asam.openscenario", "object_type:MiscObject", "object_name:Box"},
+                                                      {"net.asam.openscenario", "object_type:MiscObject", "object_name:Wall"},
+                                                      {"net.asam.openscenario", "object_type:MiscObject", "object_name:Cone-45"},
+                                                      {"net.asam.openscenario", "object_type:MiscObject", "object_name:Cone-100"}};
+
+    for (int i = 0; i < n_miscobjects; i++)
+    {
+        std::string src_ref_type = osi_gt.mutable_stationary_object(i)->source_reference(0).type();
+        std::string src_ref_id1  = osi_gt.mutable_stationary_object(i)->source_reference(0).identifier(0);
+        std::string src_ref_id2  = osi_gt.mutable_stationary_object(i)->source_reference(0).identifier(1);
+
+        EXPECT_EQ(src_ref_type, src_data[static_cast<size_t>(i)][0]);
+        EXPECT_EQ(src_ref_id1, src_data[static_cast<size_t>(i)][1]);
+        EXPECT_EQ(src_ref_id2, src_data[static_cast<size_t>(i)][2]);
+    }
 
     SE_Close();
 }

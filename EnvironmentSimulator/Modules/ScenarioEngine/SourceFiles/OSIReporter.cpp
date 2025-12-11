@@ -32,6 +32,9 @@
 #define OSI_OUT_PORT          48198
 #define OSI_MAX_UDP_DATA_SIZE 8192
 
+constexpr const char *SOURCE_REF_TYPE_ODR = "net.asam.opendrive";
+constexpr const char *SOURCE_REF_TYPE_OSC = "net.asam.openscenario";
+
 // Large OSI messages needs to be split for UDP transmission
 // This struct must be mached on receiver side
 static struct
@@ -631,36 +634,42 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
     // Create OSI Stationary Object
     obj_osi_internal.sobj = obj_osi_internal.static_gt->add_stationary_object();
 
+    // SOURCE REFERENCE
+    auto source_reference = obj_osi_internal.sobj->add_source_reference();
+    source_reference->set_type(SOURCE_REF_TYPE_ODR);
+    std::string src_ref_type = "object";
+
     // Set OSI Stationary Object Mutable ID
     obj_osi_internal.sobj->mutable_id()->set_value(object->GetGlobalId());
 
     // Set OSI Stationary Object Type and Classification
-    if (object->GetType() == roadmanager::RMObject::ObjectType::POLE)
+    auto obj_type = object->GetType();
+    if (obj_type == roadmanager::RMObject::ObjectType::POLE)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::TREE)
+    else if (obj_type == roadmanager::RMObject::ObjectType::TREE)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_TREE);
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::VEGETATION)
+    else if (obj_type == roadmanager::RMObject::ObjectType::VEGETATION)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_VEGETATION);
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::BARRIER)
+    else if (obj_type == roadmanager::RMObject::ObjectType::BARRIER)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::BUILDING)
+    else if (obj_type == roadmanager::RMObject::ObjectType::BUILDING)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BUILDING);
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::PARKINGSPACE)
+    else if (obj_type == roadmanager::RMObject::ObjectType::PARKINGSPACE)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
@@ -671,17 +680,22 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
         obj_osi_internal.sobj->mutable_classification()->set_color(
             osi3::StationaryObject_Classification_Color::StationaryObject_Classification_Color_COLOR_GREY);
 
-        obj_osi_internal.sobj->add_source_reference()->add_identifier()->assign(object->GetParkingSpace().GetRestrictions());
+        source_reference->add_identifier()->assign(object->GetParkingSpace().GetRestrictions());
     }
-    else if (object->GetType() == roadmanager::RMObject::ObjectType::OBSTACLE || object->GetType() == roadmanager::RMObject::ObjectType::RAILING ||
-             object->GetType() == roadmanager::RMObject::ObjectType::PATCH || object->GetType() == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||
-             object->GetType() == roadmanager::RMObject::ObjectType::CROSSWALK ||
-             object->GetType() == roadmanager::RMObject::ObjectType::STREETLAMP || object->GetType() == roadmanager::RMObject::ObjectType::GANTRY ||
-             object->GetType() == roadmanager::RMObject::ObjectType::SOUNDBARRIER || object->GetType() == roadmanager::RMObject::ObjectType::WIND ||
-             object->GetType() == roadmanager::RMObject::ObjectType::ROADMARK)
+    else if (obj_type == roadmanager::RMObject::ObjectType::OBSTACLE || obj_type == roadmanager::RMObject::ObjectType::RAILING ||
+             obj_type == roadmanager::RMObject::ObjectType::PATCH || obj_type == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||
+             obj_type == roadmanager::RMObject::ObjectType::CROSSWALK || obj_type == roadmanager::RMObject::ObjectType::STREETLAMP ||
+             obj_type == roadmanager::RMObject::ObjectType::GANTRY || obj_type == roadmanager::RMObject::ObjectType::SOUNDBARRIER ||
+             obj_type == roadmanager::RMObject::ObjectType::WIND || obj_type == roadmanager::RMObject::ObjectType::ROADMARK)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
+    }
+    else if (obj_type == roadmanager::RMObject::ObjectType::BRIDGE)
+    {
+        obj_osi_internal.sobj->mutable_classification()->set_type(
+            osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BRIDGE);
+        src_ref_type = "bridge";
     }
     else
     {
@@ -689,6 +703,9 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_UNKNOWN);
         LOG_ERROR("OSIReporter::UpdateOSIStationaryObjectODR -> Unsupported stationary object category");
     }
+
+    source_reference->add_identifier(fmt::format("object_type:{}", src_ref_type));
+    source_reference->add_identifier(fmt::format("object_id:{}", object->GetId()));
 
     // Set OSI Stationary Object Position
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(object->GetX());
@@ -826,10 +843,23 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
     // Set 3D model file as OSI model reference
     obj_osi_internal.sobj->set_model_reference(objectState->state_.info.model3d);
 
-    // Set source reference if available
+    // SOURCE REFERENCE
+    auto source_reference = obj_osi_internal.sobj->add_source_reference();
+    source_reference->set_type(SOURCE_REF_TYPE_OSC);
+
+    std::string entity_type = fmt::format("object_type:MiscObject");
+    std::string entity_name = fmt::format("object_name:{}", objectState->state_.info.name);
+
+    source_reference->add_identifier(entity_type);
+    source_reference->add_identifier(entity_name);
+
+    // Add source reference if available in scenario
     if (!objectState->state_.info.source_reference.empty())
     {
-        obj_osi_internal.sobj->add_source_reference()->add_identifier()->assign(objectState->state_.info.source_reference);
+        for (const auto &ref : objectState->state_.info.source_reference)
+        {
+            source_reference->add_identifier(ref);
+        }
     }
 
     return 0;
@@ -844,6 +874,7 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     obj_osi_internal.mobj->mutable_id()->set_value(static_cast<unsigned int>(objectState->state_.info.g_id));
 
     // Set OSI Moving Object Type and Classification
+    std::string entity_type = "Vehicle";
     if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE))
     {
         obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_VEHICLE);
@@ -938,6 +969,7 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     }
     else if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
     {
+        entity_type = "Pedestrian";
         if (objectState->state_.info.obj_category == static_cast<int>(Pedestrian::Category::PEDESTRIAN))
         {
             obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_PEDESTRIAN);
@@ -1058,10 +1090,21 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     // Set 3D model file as OSI model reference
     obj_osi_internal.mobj->set_model_reference(objectState->state_.info.model3d);
 
+    // SOURCE REFERENCE
+    auto source_reference = obj_osi_internal.mobj->add_source_reference();
+    source_reference->set_type(SOURCE_REF_TYPE_OSC);
+
+    source_reference->add_identifier(fmt::format("entity_id:{}", objectState->state_.info.id));
+    source_reference->add_identifier(fmt::format("entity_type:{}", entity_type));
+    source_reference->add_identifier(fmt::format("entity_name:{}", objectState->state_.info.name));
+
     // Set source reference if available
     if (!objectState->state_.info.source_reference.empty())
     {
-        obj_osi_internal.mobj->add_source_reference()->add_identifier()->assign(objectState->state_.info.source_reference);
+        for (const auto &ref : objectState->state_.info.source_reference)
+        {
+            source_reference->add_identifier(ref);
+        }
     }
 
     return 0;
@@ -2234,6 +2277,17 @@ int OSIReporter::UpdateOSIRoadLane()
                         }
                     }
 
+                    // SOURCE REFERENCE
+                    auto source_reference = osi_lane->add_source_reference();
+                    source_reference->set_type(SOURCE_REF_TYPE_ODR);
+                    std::string t_road_id = fmt::format("road_id:{}", road->GetId());
+                    std::string t_road_s  = fmt::format("road_s:{}", lane_section->GetS());
+                    std::string t_lane_id = fmt::format("lane_id:{}", lane->GetId());
+
+                    source_reference->add_identifier(t_road_id);
+                    source_reference->add_identifier(t_road_s);
+                    source_reference->add_identifier(t_lane_id);
+
                     // STILL TO DO:
                     double temp = 0;
                     osi_lane->mutable_classification()->mutable_road_condition()->set_surface_temperature(temp);
@@ -2561,8 +2615,6 @@ int OSIReporter::UpdateStaticTrafficSignals()
             {
                 if (signal->IsDynamic() && !signal->GetHasOSCAction())
                 {
-                    // TODO: Some logic to populate anyway if set in scenario
-                    // UpdateDynamicTrafficSignals();
                     AddTrafficLightToGt(obj_osi_internal.static_gt, signal);
                 }
                 else
@@ -2639,7 +2691,7 @@ int OSIReporter::UpdateStaticTrafficSignals()
                             osi3::TrafficSignValue_Unit::TrafficSignValue_Unit_UNIT_UNKNOWN);
                     }
 
-                    // Set Pithc, Roll, Height, Width
+                    // Set Pitch, Roll, Height, Width
                     trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_pitch(
                         GetAngleInIntervalMinusPIPlusPI(signal->GetPitch()));
                     trafficSign->mutable_main_sign()->mutable_base()->mutable_orientation()->set_roll(
@@ -2655,6 +2707,11 @@ int OSIReporter::UpdateStaticTrafficSignals()
                     trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_y(signal->GetY());
                     trafficSign->mutable_main_sign()->mutable_base()->mutable_position()->set_z(signal->GetZ() + signal->GetZOffset() +
                                                                                                 signal->GetHeight() / 2.0);
+
+                    // SOURCE REFERENCE
+                    auto source_reference = trafficSign->add_source_reference();
+                    source_reference->set_type(SOURCE_REF_TYPE_ODR);
+                    source_reference->add_identifier(fmt::format("traffic_sign_id:{}", signal->GetId()));
 
                     if (!signal->GetModel3DFullPath().empty())
                     {
@@ -2723,6 +2780,11 @@ void OSIReporter::AddTrafficLightToGt(osi3::GroundTruth *gt, roadmanager::Signal
         {
             trafficLight->mutable_classification()->add_assigned_lane_id()->set_value(g_lane_id);
         }
+
+        // SOURCE REFERENCE
+        auto source_reference = trafficLight->add_source_reference();
+        source_reference->set_type(SOURCE_REF_TYPE_ODR);
+        source_reference->add_identifier(fmt::format("traffic_light_id:{}", signal->GetId()));
 
         if (!signal->GetModel3DFullPath().empty())
         {

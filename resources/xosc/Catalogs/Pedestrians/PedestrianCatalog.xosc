@@ -15,6 +15,7 @@
          <Properties>
             <Property name="model_id" value="7"/>       
             <!-- Scale modes: None, BBToModel, ModelToBB -->
+            <Property name="source_reference" value="date_of_birth:1969"/>
             <Property name="scaleMode" value="BBToModel"/>  
          </Properties>
       </Pedestrian>

@@ -725,10 +725,10 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         }
     }
 
-    std::string source_reference = vehicle->properties_.GetValueStr("source_reference");
-    if (!source_reference.empty())
+    auto source_references = vehicle->properties_.GetAllValuesStr("source_reference");
+    if (!source_references.empty())
     {
-        vehicle->SetSourceReference(source_reference);
+        vehicle->SetSourceReference(source_references);
     }
 
     std::string refpoint_x_offset = vehicle->properties_.GetValueStr("refpoint_x_offset");
@@ -929,6 +929,12 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
         }
     }
 
+    auto source_references = pedestrian->properties_.GetAllValuesStr("source_reference");
+    if (!source_references.empty())
+    {
+        pedestrian->SetSourceReference(source_references);
+    }
+
     parameters.RestoreParameterDeclarations();
 
     return pedestrian;
@@ -1001,10 +1007,10 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
         }
     }
 
-    std::string source_reference = miscObject->properties_.GetValueStr("source_reference");
-    if (!source_reference.empty())
+    auto source_references = miscObject->properties_.GetAllValuesStr("source_reference");
+    if (!source_references.empty())
     {
-        miscObject->SetSourceReference(source_reference);
+        miscObject->SetSourceReference(source_references);
     }
 
     parameters.RestoreParameterDeclarations();

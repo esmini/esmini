@@ -672,12 +672,17 @@ namespace scenarioengine
             return FileNameOf(model3d_full_path_);
         }
 
-        void SetSourceReference(const std::string& source_reference)
+        void AddSourceReference(const std::string& source_reference)
         {
-            source_reference_ = source_reference;
+            source_reference_.push_back(source_reference);
         }
 
-        const std::string& GetSourceReference() const
+        void SetSourceReference(std::vector<std::string> source_reference)
+        {
+            source_reference_ = std::move(source_reference);
+        }
+
+        const std::vector<std::string>& GetSourceReference() const
         {
             return source_reference_;
         }
@@ -692,10 +697,10 @@ namespace scenarioengine
         }
 
     private:
-        int         dirty_;
-        bool        is_active_;
-        std::string model3d_full_path_;
-        std::string source_reference_;
+        int                      dirty_;
+        bool                     is_active_;
+        std::string              model3d_full_path_;
+        std::vector<std::string> source_reference_;
     };
 
     class Vehicle : public Object

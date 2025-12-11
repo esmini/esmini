@@ -45,7 +45,7 @@ Object::Object(Type type)
       dirty_(0),
       is_active_(false),
       model3d_full_path_(""),
-      source_reference_("")
+      source_reference_({})
 {
     sensor_pos_[0] = 0;
     sensor_pos_[1] = 0;

@@ -43,7 +43,6 @@
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="$ScaleMode"/>
                 <!-- source_reference is populated to OSI moving object -->
-                <Property name="source_reference" value="generic_sedan_car"/>
                 <Property name="refpoint_x_offset" value="$RefPointXOffset"/>
             </Properties>
         </Vehicle>
@@ -99,6 +98,8 @@
             <Properties>
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="$ScaleMode"/>
+                <Property name="source_reference" value="model_year:2019"/>
+                <Property name="source_reference" value="make:esmini_car"/>
                 <Property name="refpoint_x_offset" value="$RefPointXOffset"/>
             </Properties>
         </Vehicle>

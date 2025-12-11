@@ -23,27 +23,27 @@ namespace scenarioengine
 
     struct ObjectInfoStruct
     {
-        int                    id;
-        id_t                   g_id;
-        int                    model_id;
-        std::string            model3d;
-        int                    obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
-        int                    obj_category;  // sub type for vehicle, pedestrian and miscobj
-        int                    obj_role;      // role for vehicle and pedestrian
-        int                    ctrl_type;     // See Controller::Type enum
-        double                 timeStamp;
-        char                   name[NAME_LEN];
-        double                 speed;
-        double                 rear_axle_z_pos;   // z coordinate of the middle of rear axle under neutral load conditions
-        double                 front_axle_x_pos;  // x coordinate of the middle of front axle under neutral load conditions
-        double                 front_axle_z_pos;  // z coordinate of the middle of front axle under neutral load conditions
-        OSCBoundingBox         boundingbox;
-        int                    scaleMode;          // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
-        int                    visibilityMask;     // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
-        std::vector<WheelData> wheel_data;         // make room for maximum number of wheels
-        std::string            source_reference;   // object property with same name mapping to OSI "source_reference"
-        double                 refpoint_x_offset;  // x offset of the reference point
-        double                 model_x_offset;     // x offset of the 3D model relative to the object reference point
+        int                      id;
+        id_t                     g_id;
+        int                      model_id;
+        std::string              model3d;
+        int                      obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
+        int                      obj_category;  // sub type for vehicle, pedestrian and miscobj
+        int                      obj_role;      // role for vehicle and pedestrian
+        int                      ctrl_type;     // See Controller::Type enum
+        double                   timeStamp;
+        char                     name[NAME_LEN];
+        double                   speed;
+        double                   rear_axle_z_pos;   // z coordinate of the middle of rear axle under neutral load conditions
+        double                   front_axle_x_pos;  // x coordinate of the middle of front axle under neutral load conditions
+        double                   front_axle_z_pos;  // z coordinate of the middle of front axle under neutral load conditions
+        OSCBoundingBox           boundingbox;
+        int                      scaleMode;          // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
+        int                      visibilityMask;     // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        std::vector<WheelData>   wheel_data;         // make room for maximum number of wheels
+        std::vector<std::string> source_reference;   // object property with same name mapping to OSI "source_reference"
+        double                   refpoint_x_offset;  // x offset of the reference point
+        double                   model_x_offset;     // x offset of the 3D model relative to the object reference point
     };
 
     struct ObjectStateStruct
@@ -115,7 +115,7 @@ namespace scenarioengine
                     double                       front_axle_x_pos,
                     double                       front_axle_z_pos,
                     const roadmanager::Position *pos,
-                    std::string                  source_reference,
+                    std::vector<std::string>     source_reference,
                     double                       refpoint_x_offset,
                     double                       model_x_offset);
         ObjectState(int            id,
@@ -204,29 +204,29 @@ namespace scenarioengine
         ScenarioGateway();
         ~ScenarioGateway();
 
-        int reportObject(int                    id,
-                         id_t                   g_id,
-                         std::string            name,
-                         int                    obj_type,
-                         int                    obj_category,
-                         int                    obj_role,
-                         int                    model_id,
-                         std::string            model3d,
-                         int                    ctrl_type,
-                         OSCBoundingBox         boundingbox,
-                         int                    scaleMode,
-                         int                    visibilityMask,
-                         double                 timestamp,
-                         double                 speed,
-                         double                 wheel_angle,
-                         double                 wheel_rot,
-                         double                 rear_axle_z_pos,
-                         double                 front_axle_x_pos,
-                         double                 front_axle_z_pos,
-                         roadmanager::Position *pos,
-                         std::string            source_reference,
-                         double                 refpoint_x_offset,
-                         double                 model_x_offset);
+        int reportObject(int                      id,
+                         id_t                     g_id,
+                         std::string              name,
+                         int                      obj_type,
+                         int                      obj_category,
+                         int                      obj_role,
+                         int                      model_id,
+                         std::string              model3d,
+                         int                      ctrl_type,
+                         OSCBoundingBox           boundingbox,
+                         int                      scaleMode,
+                         int                      visibilityMask,
+                         double                   timestamp,
+                         double                   speed,
+                         double                   wheel_angle,
+                         double                   wheel_rot,
+                         double                   rear_axle_z_pos,
+                         double                   front_axle_x_pos,
+                         double                   front_axle_z_pos,
+                         roadmanager::Position   *pos,
+                         std::vector<std::string> source_reference,
+                         double                   refpoint_x_offset,
+                         double                   model_x_offset);
 
         int reportObject(int            id,
                          std::string    name,

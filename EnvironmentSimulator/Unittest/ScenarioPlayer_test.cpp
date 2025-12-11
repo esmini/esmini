@@ -590,6 +590,8 @@ TEST(OSI, TestTrafficLights)
 
     // OSI TrafficLights
     ASSERT_EQ(osi_gt_ptr->traffic_light_size(), 7);
+    ASSERT_EQ(osi_gt_ptr->traffic_light(0).source_reference_size(), 1);
+    ASSERT_EQ(osi_gt_ptr->traffic_light(0).source_reference(0).identifier_size(), 1);
 
     int start_id = 32;  // Magic number, taken from running test and see ID of first traffic-light
     for (int i = 0; i < osi_gt_ptr->traffic_light_size(); i++)
@@ -610,6 +612,8 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_RED);
     EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_NONE);
     EXPECT_EQ(osi_gt_ptr->traffic_light(0).classification().assigned_lane_id(0).value(), 29);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).source_reference(0).type(), "net.asam.opendrive");
+    EXPECT_EQ(osi_gt_ptr->traffic_light(0).source_reference(0).identifier(0), "traffic_light_id:1");
 
     EXPECT_NEAR(osi_gt_ptr->traffic_light(1).base().position().x(), 13.3165, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_light(1).base().position().y(), -8.5674, 1e-3);
@@ -623,6 +627,8 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_YELLOW);
     EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_NONE);
     EXPECT_EQ(osi_gt_ptr->traffic_light(1).classification().assigned_lane_id(0).value(), 29);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).source_reference(0).type(), "net.asam.opendrive");
+    EXPECT_EQ(osi_gt_ptr->traffic_light(1).source_reference(0).identifier(0), "traffic_light_id:1");
 
     EXPECT_NEAR(osi_gt_ptr->traffic_light(2).base().position().x(), 13.3165, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_light(2).base().position().y(), -8.5674, 1e-3);
@@ -636,6 +642,8 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().color(), osi3::TrafficLight_Classification_Color_COLOR_GREEN);
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_NONE);
     EXPECT_EQ(osi_gt_ptr->traffic_light(2).classification().assigned_lane_id(0).value(), 29);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).source_reference(0).type(), "net.asam.opendrive");
+    EXPECT_EQ(osi_gt_ptr->traffic_light(2).source_reference(0).identifier(0), "traffic_light_id:1");
 
     // TrafficLight for pedestrians, 2 lamps
     EXPECT_NEAR(osi_gt_ptr->traffic_light(3).base().position().x(), 17.1018, 1e-3);
@@ -651,6 +659,8 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_DONT_WALK);
     EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().assigned_lane_id(0).value(), 26);
     EXPECT_EQ(osi_gt_ptr->traffic_light(3).classification().assigned_lane_id(1).value(), 29);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(3).source_reference(0).type(), "net.asam.opendrive");
+    EXPECT_EQ(osi_gt_ptr->traffic_light(3).source_reference(0).identifier(0), "traffic_light_id:2");
 
     EXPECT_NEAR(osi_gt_ptr->traffic_light(4).base().position().x(), 17.1018, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_light(4).base().position().y(), 0.0738, 1e-3);
@@ -665,6 +675,8 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_WALK);
     EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().assigned_lane_id(0).value(), 26);
     EXPECT_EQ(osi_gt_ptr->traffic_light(4).classification().assigned_lane_id(1).value(), 29);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(4).source_reference(0).type(), "net.asam.opendrive");
+    EXPECT_EQ(osi_gt_ptr->traffic_light(4).source_reference(0).identifier(0), "traffic_light_id:2");
 
     // TrafficLight for pedestrians, 2 lamps
     EXPECT_NEAR(osi_gt_ptr->traffic_light(5).base().position().x(), 13.3165, 1e-3);
@@ -680,6 +692,8 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_DONT_WALK);
     EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().assigned_lane_id(0).value(), 26);
     EXPECT_EQ(osi_gt_ptr->traffic_light(5).classification().assigned_lane_id(1).value(), 29);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(5).source_reference(0).type(), "net.asam.opendrive");
+    EXPECT_EQ(osi_gt_ptr->traffic_light(5).source_reference(0).identifier(0), "traffic_light_id:3");
 
     EXPECT_NEAR(osi_gt_ptr->traffic_light(6).base().position().x(), 13.3165, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_light(6).base().position().y(), -8.5674, 1e-3);
@@ -694,6 +708,8 @@ TEST(OSI, TestTrafficLights)
     EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().icon(), osi3::TrafficLight_Classification_Icon_ICON_WALK);
     EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().assigned_lane_id(0).value(), 26);
     EXPECT_EQ(osi_gt_ptr->traffic_light(6).classification().assigned_lane_id(1).value(), 29);
+    EXPECT_EQ(osi_gt_ptr->traffic_light(6).source_reference(0).type(), "net.asam.opendrive");
+    EXPECT_EQ(osi_gt_ptr->traffic_light(6).source_reference(0).identifier(0), "traffic_light_id:3");
 
     while (se->getSimulationTime() < 3.7)
     {
@@ -1160,7 +1176,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().orientation().pitch(), 0.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().orientation().roll(), 0.0, 1e-3);
     ASSERT_EQ(osi_gt_ptr->stationary_object(3).source_reference().size(), 1);
-    ASSERT_EQ(osi_gt_ptr->stationary_object(3).source_reference().Get(0).identifier().size(), 1);
+    ASSERT_EQ(osi_gt_ptr->stationary_object(3).source_reference().Get(0).identifier().size(), 3);
     EXPECT_STREQ(osi_gt_ptr->stationary_object(3).source_reference().Get(0).identifier().Get(0).c_str(), "5_kalle");
 
     // verify correct location of first OSC box object
@@ -1177,11 +1193,13 @@ TEST(OSI, TestStationaryObjects)
 
     EXPECT_EQ(osi_gt_ptr->stationary_object(4).model_reference(), "");
     ASSERT_EQ(osi_gt_ptr->stationary_object(4).source_reference_size(), 1);
-    ASSERT_EQ(osi_gt_ptr->stationary_object(4).source_reference(0).identifier_size(), 1);
-    EXPECT_EQ(osi_gt_ptr->stationary_object(4).source_reference(0).identifier(0), "box_123XY");
+    ASSERT_EQ(osi_gt_ptr->stationary_object(4).source_reference(0).identifier_size(), 3);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(4).source_reference(0).identifier(0), "object_type:MiscObject");
+    EXPECT_EQ(osi_gt_ptr->stationary_object(4).source_reference(0).identifier(1), "object_name:Box3");
+    EXPECT_EQ(osi_gt_ptr->stationary_object(4).source_reference(0).identifier(2), "box_123XY");
 
     // verify correct location of second OSC box object
-    EXPECT_EQ(osi_gt_ptr->stationary_object(5).id().value(), 9);
+    ASSERT_EQ(osi_gt_ptr->stationary_object(5).id().value(), 9);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().dimension().length(), 1.2, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().dimension().width(), 0.8, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().dimension().height(), 0.5, 1e-3);
@@ -1193,12 +1211,14 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().orientation().roll(), 0.0, 1e-3);
 
     EXPECT_EQ(osi_gt_ptr->stationary_object(5).model_reference(), "../models/box_cc_by.osgb");
-    EXPECT_EQ(osi_gt_ptr->stationary_object(5).source_reference_size(), 1);
-    EXPECT_EQ(osi_gt_ptr->stationary_object(5).source_reference(0).identifier_size(), 1);
-    EXPECT_EQ(osi_gt_ptr->stationary_object(5).source_reference(0).identifier(0), "box_123XZ");
+    ASSERT_EQ(osi_gt_ptr->stationary_object(5).source_reference_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(5).source_reference(0).identifier_size(), 3);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(5).source_reference(0).identifier(0), "object_type:MiscObject");
+    EXPECT_EQ(osi_gt_ptr->stationary_object(5).source_reference(0).identifier(1), "object_name:Box4");
+    EXPECT_EQ(osi_gt_ptr->stationary_object(5).source_reference(0).identifier(2), "box_123XZ");
 
     // verify correct location of OpenDRIVE traffic sign
-    EXPECT_EQ(osi_gt_ptr->traffic_sign(0).id().value(), 1);
+    ASSERT_EQ(osi_gt_ptr->traffic_sign(0).id().value(), 1);
     EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().dimension().length(), 0.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().dimension().width(), 0.6, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().dimension().height(), 0.6, 1e-3);
@@ -1208,6 +1228,10 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().orientation().yaw(), 3.1415, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().orientation().pitch(), 0.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().orientation().roll(), 0.0, 1e-3);
+    ASSERT_EQ(osi_gt_ptr->traffic_sign(0).source_reference_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->traffic_sign(0).source_reference(0).type(), "net.asam.opendrive");
+    ASSERT_EQ(osi_gt_ptr->traffic_sign(0).source_reference(0).identifier_size(), 1);
+    EXPECT_EQ(osi_gt_ptr->traffic_sign(0).source_reference(0).identifier(0), "traffic_sign_id:1");
 
     delete player;
 }

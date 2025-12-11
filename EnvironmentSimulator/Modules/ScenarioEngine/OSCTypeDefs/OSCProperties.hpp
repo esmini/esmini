@@ -60,6 +60,21 @@ namespace scenarioengine
             }
             return "";
         }
+
+        std::vector<std::string> GetAllValuesStr(const std::string key)
+        {
+            std::vector<std::string> ret;
+
+            for (const auto& p : property_)
+            {
+                if (p.name_ == key)
+                {
+                    ret.push_back(p.value_);
+                }
+            }
+
+            return ret;
+        }
     };
 
 }  // namespace scenarioengine
