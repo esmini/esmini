@@ -119,7 +119,6 @@ public class esminiUnityExample : MonoBehaviour
             Destroy(envModel);
         }
 
-
         if (ESMiniLib.SE_Init( Application.streamingAssetsPath + OSC_filename,
             disable_controllers ? 1 : 0,
             OSG_visualization ? 1 : 0,
@@ -136,6 +135,11 @@ public class esminiUnityExample : MonoBehaviour
             int p_type;
             string p_name = Marshal.PtrToStringAnsi(ESMiniLib.SE_GetParameterName(i, out p_type));
             print("Parameter[" + i + "] name: " + p_name + " type: " + p_type);
+        }
+
+        if (ESMiniLib.SE_GetNumberOfPermutations() > 0)
+        {
+            Debug.Log("Permutation " + (ESMiniLib.SE_GetPermutationIndex() + 1).ToString() + " of " + ESMiniLib.SE_GetNumberOfPermutations().ToString());
         }
 
         // Load environment 3D model, based on OpenDRIVE filename
@@ -164,6 +168,7 @@ public class esminiUnityExample : MonoBehaviour
     void OnApplicationQuit()
     {
         Debug.Log("Quit");
+        ESMiniLib.SE_ResetParameterDistribution();
         ESMiniLib.SE_Close();
         Marshal.FreeHGlobal(user_data_ptr);
     }
@@ -180,16 +185,25 @@ public class esminiUnityExample : MonoBehaviour
     {
         ESMiniLib.SE_StepDT(Time.deltaTime);
 
-        if (ESMiniLib.SE_GetQuitFlag() == 1)
+        if (ESMiniLib.SE_GetQuitFlag() != 0)
         {
-     #if UNITY_EDITOR
-            // Application.Quit() does not work in the editor so
-            // UnityEditor.EditorApplication.isPlaying need to be set to false to end the game
-            ESMiniLib.SE_Close();
-            UnityEditor.EditorApplication.isPlaying = false;
-     #else
-            Application.Quit();
-     #endif
+            if (ESMiniLib.SE_GetNumberOfPermutations() > 0 && ESMiniLib.SE_GetPermutationIndex() < ESMiniLib.SE_GetNumberOfPermutations() - 1)
+            {
+                // Run next permutation
+                Reload();
+            }
+            else
+            {
+#if UNITY_EDITOR
+                // Application.Quit() does not work in the editor so
+                // UnityEditor.EditorApplication.isPlaying need to be set to false to end the simulation
+                ESMiniLib.SE_Close();
+                ESMiniLib.SE_ResetParameterDistribution();
+                UnityEditor.EditorApplication.isPlaying = false;
+#else
+                Application.Quit();
+#endif
+            }
         }
 
         // Check nr of objects

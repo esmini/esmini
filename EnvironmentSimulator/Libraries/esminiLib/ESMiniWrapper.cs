@@ -504,6 +504,18 @@ namespace ESMini
         [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectPropertyValue")]
         public static extern IntPtr SE_GetObjectPropertyValue(int index, string value);
 
+        [DllImport(LIB_NAME, EntryPoint = "SE_ResetParameterDistribution")]
+        public static extern void SE_ResetParameterDistribution();
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetNumberOfPermutations")]
+        public static extern uint SE_GetNumberOfPermutations();
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_SelectPermutation")]
+        public static extern int SE_SelectPermutation(uint index);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetPermutationIndex")]
+        public static extern int SE_GetPermutationIndex();
+
         // Simple vehicle
 
         [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleCreate")]
