@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2025-12-12 Version 2.56.2
+
+Improvements and fixes:
+- Update Unity example and add support for permutations ([issue #743](https://github.com/esmini/esmini/issues/743))
+  - brief info and link to package in [User guide - esmini in Unity](https://esmini.github.io/#_esmini_in_unity)
+- Add option `--view_ghost_restart` to view also original ghost before restart
+  - default mode is now to view only resulting ghost path
+  - this option adds the original detour before any restart happens
+- Log error message on road vs geometry length mismatch ([issue #753](https://github.com/esmini/esmini/issues/753))
+- Fix replayer bug causing crash when running old dat file in newer player
+- Fix bug resetting log filename when setting custom dat filename via API
+
 ### 2025-12-05 Version 2.56.1
 
 Bugfixes:
