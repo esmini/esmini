@@ -374,7 +374,9 @@ void ScenarioPlayer::ViewerFrame()
         Object* obj = scenarioEngine->entities_.object_[viewer_->entities_.size()];
         viewer_->AddEntityModel(viewer_->CreateEntityModel(obj->GetModel3DFullPath(),
                                                            trail_color,
-                                                           viewer::EntityModel::EntityType::VEHICLE,
+                                                           obj->type_ == Object::Type::VEHICLE      ? viewer::EntityModel::EntityType::VEHICLE
+                                                           : obj->type_ == Object::Type::PEDESTRIAN ? viewer::EntityModel::EntityType::MOVING
+                                                                                                    : viewer::EntityModel::EntityType::ENTITY,
                                                            false,
                                                            obj->name_,
                                                            &obj->boundingbox_,

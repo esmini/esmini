@@ -1064,7 +1064,7 @@ extern "C"
         }
     }
 
-    SE_DLL_API int SE_AddObject(const char *object_name, int object_type, int object_category, int object_role, int model_id)
+    SE_DLL_API int SE_AddObject(const char *object_name, int object_type, int object_category, int object_role, int model_id, const char *model_3d)
     {
         SE_OSCBoundingBox bb = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
         return SE_AddObjectWithBoundingBox(object_name,
@@ -1072,6 +1072,7 @@ extern "C"
                                            object_category,
                                            object_role,
                                            model_id,
+                                           model_3d,
                                            bb,
                                            static_cast<int>(EntityScaleMode::BB_TO_MODEL));
     }
@@ -1081,6 +1082,7 @@ extern "C"
                                                int               object_category,
                                                int               object_role,
                                                int               model_id,
+                                               const char       *model_3d,
                                                SE_OSCBoundingBox bounding_box,
                                                int               scale_mode)
     {
@@ -1103,7 +1105,6 @@ extern "C"
                 object_type = scenarioengine::Object::Type::VEHICLE;
             }
 
-            Vehicle                       *vehicle = nullptr;
             scenarioengine::OSCBoundingBox bb;
             bb.center_.x_          = bounding_box.center_.x_;
             bb.center_.y_          = bounding_box.center_.y_;
@@ -1112,26 +1113,56 @@ extern "C"
             bb.dimensions_.length_ = bounding_box.dimensions_.length_;
             bb.dimensions_.width_  = bounding_box.dimensions_.width_;
 
-            if (object_type == scenarioengine::Object::Type::VEHICLE)
-            {
-                vehicle             = new Vehicle();
-                object_id           = player->scenarioEngine->entities_.addObject(vehicle, true);
-                vehicle->name_      = name;
-                vehicle->scaleMode_ = static_cast<EntityScaleMode>(scale_mode);
-                vehicle->model_id_  = model_id;
-                vehicle->SetModel3DFullPath(SE_Env::Inst().GetModelFilenameById(model_id));
-                vehicle->category_    = object_category;
-                vehicle->role_        = object_role;
-                vehicle->boundingbox_ = bb;
+            scenarioengine::Controller::Type ctrl_type = scenarioengine::Controller::Type::CONTROLLER_TYPE_UNDEFINED;
 
-                Controller::InitArgs args = {"", "", 0, 0, 0, 0};
-                args.type                 = CONTROLLER_EXTERNAL_TYPE_NAME;
-                Controller *ctrl          = InstantiateControllerExternal(&args);
-                if (ctrl != nullptr)
+            if (object_type == scenarioengine::Object::Type::VEHICLE || object_type == scenarioengine::Object::Type::PEDESTRIAN ||
+                object_type == scenarioengine::Object::Type::MISC_OBJECT)
+            {
+                Object *object = nullptr;
+                if (object_type == scenarioengine::Object::Type::VEHICLE)
                 {
-                    player->scenarioEngine->scenarioReader->AddController(ctrl);
-                    vehicle->AssignController(ctrl);
-                    ctrl->Activate({ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF});
+                    object = new Vehicle();
+                }
+                else if (object_type == scenarioengine::Object::Type::PEDESTRIAN)
+                {
+                    object = new Pedestrian();
+                }
+                else
+                {
+                    object = new MiscObject();
+                }
+
+                object->name_        = name;
+                object->scaleMode_   = static_cast<EntityScaleMode>(scale_mode);
+                object->category_    = object_category;
+                object->role_        = object_role;
+                object->boundingbox_ = bb;
+
+                object_id = player->scenarioEngine->entities_.addObject(object, true);
+
+                if (model_3d != nullptr && strlen(model_3d) > 0)
+                {
+                    object->SetModel3DFullPath(model_3d);
+                }
+                else if (model_id != -1)
+                {
+                    object->model_id_ = model_id;
+                    object->SetModel3DFullPath(SE_Env::Inst().GetModelFilenameById(model_id));
+                }
+
+                if (object_type == scenarioengine::Object::Type::VEHICLE || object_type == scenarioengine::Object::Type::PEDESTRIAN)
+                {
+                    ctrl_type                 = Controller::Type::CONTROLLER_TYPE_EXTERNAL;
+                    Controller::InitArgs args = {"", "", 0, 0, 0, 0};
+                    args.type                 = CONTROLLER_EXTERNAL_TYPE_NAME;
+                    Controller *ctrl          = InstantiateControllerExternal(&args);
+                    if (ctrl != nullptr)
+                    {
+                        player->scenarioEngine->scenarioReader->AddController(ctrl);
+                        object->AssignController(ctrl);
+                        ctrl->Activate(
+                            {ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF});
+                    }
                 }
             }
             else
@@ -1146,7 +1177,7 @@ extern "C"
                                                       object_category,
                                                       object_role,
                                                       model_id,
-                                                      vehicle->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
+                                                      ctrl_type,
                                                       bb,
                                                       scale_mode,
                                                       0xff,
