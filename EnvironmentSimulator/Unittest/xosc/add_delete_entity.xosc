@@ -9,6 +9,9 @@
         <VehicleCatalog>
             <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
         </VehicleCatalog>
+        <MiscObjectCatalog>
+            <Directory path="../../../resources/xosc/Catalogs/MiscObjects"/>
+        </MiscObjectCatalog>
     </CatalogLocations>
     <RoadNetwork>
         <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
@@ -19,6 +22,9 @@
         </ScenarioObject>
         <ScenarioObject name="Car2">
             <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+        </ScenarioObject>
+        <ScenarioObject name="Box1">
+           <CatalogReference catalogName="MiscObjectCatalog" entryName="box"/>
         </ScenarioObject>
     </Entities>
     <Storyboard>
@@ -54,7 +60,7 @@
                     </Actors>
                     <Maneuver name="ManeuversCar1">
                         <Event name="AddCar1Event1-ExpectedToFail" priority="parallel">
-                            <Action name="AddEntityAction1">
+                            <Action name="AddCar1Action1">
                                 <GlobalAction>
                                     <EntityAction entityRef="Car1">
                                         <AddEntityAction>
@@ -76,7 +82,7 @@
                             </StartTrigger>
                         </Event>
                         <Event name="DeleteCar1Event1-ExpectedToSucceed" priority="parallel">
-                            <Action name="DeleteCar2Action1">
+                            <Action name="DeleteCar1Action1">
                                 <GlobalAction>
                                     <EntityAction entityRef="Car1">
                                         <DeleteEntityAction/>
@@ -117,7 +123,7 @@
                             </StartTrigger>
                         </Event>
                         <Event name="DeleteCar1Event2-ExpectedToSucceed" priority="parallel">
-                            <Action name="DeleteCar2Action1">
+                            <Action name="DeleteCar1Action2">
                                 <GlobalAction>
                                     <EntityAction entityRef="Car1">
                                         <DeleteEntityAction/>
@@ -147,7 +153,7 @@
                     </Actors>
                     <Maneuver name="ManeuversCar2">
                         <Event name="AddCar2Event1-ExpectedToSucceed" priority="parallel">
-                            <Action name="AddEntityAction2">
+                            <Action name="AddCar2Action1">
                                 <GlobalAction>
                                     <EntityAction entityRef="Car2">
                                         <AddEntityAction>
@@ -180,6 +186,28 @@
                                 </ConditionGroup>
                             </StartTrigger>
                         </Event>
+                        <Event name="AddBoxEvent" priority="parallel">
+                            <Action name="AddBoxAction">
+                                <GlobalAction>
+                                    <EntityAction entityRef="Box1">
+                                        <AddEntityAction>
+                                            <Position>
+                                                <LanePosition roadId="1" laneId="-2" offset="0.0" s="130"/>
+                                            </Position>
+                                        </AddEntityAction>
+                                    </EntityAction>
+                                </GlobalAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                   <Condition name="AddBoxCondition" delay="1" conditionEdge="none">
+                                       <ByValueCondition>
+                                           <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="SetSpeedActionCar2" state="endTransition"/>
+                                       </ByValueCondition>
+                                   </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
                         <Event name="DeleteCar2Event1-ExpectedToSucceed" priority="parallel">
                             <Action name="DeleteCar2Action1">
                                 <GlobalAction>
@@ -199,7 +227,7 @@
                             </StartTrigger>
                         </Event>
                         <Event name="DeleteCar2Event2-ExpectedToFail" priority="parallel">
-                            <Action name="DeleteCar2Action1">
+                            <Action name="DeleteCar2Action2">
                                 <GlobalAction>
                                     <EntityAction entityRef="Car2">
                                         <DeleteEntityAction/>
@@ -220,7 +248,7 @@
                 </ManeuverGroup>
                 <StartTrigger>
                     <ConditionGroup>
-                        <Condition name="StartCondition" delay="0" conditionEdge="none">
+                        <Condition name="MGCar2StartCondition" delay="0" conditionEdge="none">
                             <ByValueCondition>
                                 <SimulationTimeCondition value="0" rule="greaterOrEqual"/>
                             </ByValueCondition>
@@ -231,7 +259,7 @@
         </Story>
         <StopTrigger>
             <ConditionGroup>
-                <Condition name="StopCondition" delay="2" conditionEdge="none">
+                <Condition name="QuitCondition" delay="2" conditionEdge="none">
                     <ByValueCondition>
                         <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="DeleteCar1Event2-ExpectedToSucceed" state="completeState"/>
                     </ByValueCondition>

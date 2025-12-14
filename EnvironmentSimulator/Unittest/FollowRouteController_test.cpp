@@ -15,6 +15,14 @@
 
 using namespace roadmanager;
 using namespace scenarioengine;
+
+static void scenario_step(ScenarioEngine *scenario_engine, double dt)
+{
+    scenario_engine->step(dt);
+    scenario_engine->prepareGroundTruth(dt);
+    scenario_engine->getScenarioGateway()->clearDirtyBits();
+}
+
 class FollowRouteControllerTest : public ::testing::Test
 {
 public:
@@ -44,8 +52,7 @@ TEST_F(FollowRouteControllerTest, PerformSingleLaneChange)
     {
         Position p = se->entities_.object_[0]->pos_;
         LOG_DEBUG("s={:.2f}, r={}, l={}", p.GetS(), p.GetTrackId(), p.GetLaneId());
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     Position finalPos = se->entities_.object_[0]->pos_;
@@ -73,8 +80,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteWithLaneChanges)
     // Fast forward
     while (se->getSimulationTime() < (15.0 - SMALL_NUMBER))
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     Position finalPos = se->entities_.object_[0]->pos_;
@@ -102,8 +108,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteWithCollisionRisk)
     // Fast forward
     while (se->getSimulationTime() < (15.0 - SMALL_NUMBER))
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     Position finalPos = se->entities_.object_[0]->pos_;
@@ -133,8 +138,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteBlockedByCollisionRisk)
     // Fast forward
     while (se->getSimulationTime() < (15.0 - SMALL_NUMBER))
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     Position finalPos = se->entities_.object_[0]->pos_;
@@ -161,8 +165,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteMedium)
     // Fast forward
     while (se->getSimulationTime() < (35 - SMALL_NUMBER))
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     Position finalPos = se->entities_.object_[0]->pos_;
@@ -186,8 +189,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteNoPath)
 
     double dt = 0.1;
     // Perform one step so that the object position is set
-    se->step(dt);
-    se->prepareGroundTruth(dt);
+    scenario_step(se, dt);
 
     Position start = se->entities_.object_[0]->pos_;
     Position target(5, 1, 30, 0);
@@ -195,8 +197,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteNoPath)
     // Fast forward
     while (se->getSimulationTime() < (30 - SMALL_NUMBER))
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     Position finalPos = se->entities_.object_[0]->pos_;
@@ -229,8 +230,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteMultipleScenarioWaypoints)
     {
         Position p = se->entities_.object_[0]->pos_;
         passedPositions.push_back(p);
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     for (Position &scenarioWp : scenarioWaypoints)
@@ -296,8 +296,7 @@ TEST_F(FollowRouteControllerTest, FollowRouteGhostStartingOnRoute)
     {
         Position p = se->entities_.object_[0]->pos_;
         passedPositions.push_back(p);
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     for (Position &scenarioWp : scenarioWaypoints)

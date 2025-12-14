@@ -72,6 +72,38 @@ class OSIFile():
                     )
                 )
 
+            for o in self.osi_msg.stationary_object:
+                fcsv.write('{:.6f}, {}, {}, {}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}, {:.6f}\n'.format(
+                    t,
+                    o.id.value,
+                    'misc_obj' + str(o.id.value),
+                    o.classification.type,
+                    o.base.position.x,
+                    o.base.position.y,
+                    o.base.position.z,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    o.base.orientation.yaw,
+                    o.base.orientation.pitch,
+                    o.base.orientation.roll,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,  # no wheels
+                    0.0  # wheel rotation not available
+                    )
+                )
+
+        fcsv.close()
+
     def close(self):
         self.file.close()
 

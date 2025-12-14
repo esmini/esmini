@@ -21,6 +21,13 @@ using namespace scenarioengine;
 
 #define TRIG_ERR_MARGIN 0.001
 
+static void scenario_step(ScenarioEngine* scenario_engine, double dt)
+{
+    scenario_engine->step(dt);
+    scenario_engine->prepareGroundTruth(dt);
+    scenario_engine->getScenarioGateway()->clearDirtyBits();
+}
+
 TEST(DistanceTest, CalcDistanceVariations)
 {
     double dist = 0.0;
@@ -284,8 +291,7 @@ TEST(DistanceTest, DistanceWithTrailers)
     EXPECT_EQ(se->entities_.object_.size(), 7);
 
     // initialize
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     ASSERT_EQ(se->entities_.object_[2]->GetType(), Object::Type::VEHICLE);
     ASSERT_EQ(se->entities_.object_[0]->GetType(), Object::Type::VEHICLE);
@@ -377,8 +383,7 @@ TEST(DistanceTest, DistanceWithTrailers)
     // move forward in time a bit
     while (se->getSimulationTime() < 1.2 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(car1->pos_.GetX(), 513.193, 1e-3);
@@ -399,8 +404,7 @@ TEST(DistanceTest, DistanceWithTrailers)
     // move forward until car1 is very close to truck1
     while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(car1->pos_.GetX(), 489.205, 1e-3);
@@ -421,8 +425,7 @@ TEST(DistanceTest, DistanceWithTrailers)
     // move forward until car1 is overlapping truck1 longitudinally
     while (se->getSimulationTime() < 2.1 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     // euclidian freespace distance between car1 and truck1
@@ -440,8 +443,7 @@ TEST(DistanceTest, DistanceWithTrailers)
     // move forward until car1 is behind truck1 longitudinally
     while (se->getSimulationTime() < 2.7 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     // euclidian freespace distance between car1 and truck1
@@ -459,8 +461,7 @@ TEST(DistanceTest, DistanceWithTrailers)
     // move forward until car2 is close to truck2 longitudinally
     while (se->getSimulationTime() < 3.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     // euclidian freespace distance between car2 and truck2
@@ -479,8 +480,7 @@ TEST(DistanceTest, DistanceWithTrailers)
     // move forward until car2 is overlapping truck2 longitudinally, and close laterally at corner of trailer
     while (se->getSimulationTime() < 3.2 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     // euclidian freespace distance between car2 and truck2
@@ -498,8 +498,7 @@ TEST(DistanceTest, DistanceWithTrailers)
     // move forward until car2 is at longitudinal middle of trailer body, hence less close laterally since in curve
     while (se->getSimulationTime() < 3.5 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     // euclidian freespace distance between car2 and truck2
@@ -517,8 +516,7 @@ TEST(DistanceTest, DistanceWithTrailers)
     // move forward until car2 is behind truck2
     while (se->getSimulationTime() < 4.1 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     // euclidian freespace distance between car2 and truck2
@@ -576,8 +574,7 @@ TEST(DistanceTest, TestTrajectoryDistance)
 
     ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/lane-change_clothoid_based_trajectory.xosc");
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -586,8 +583,7 @@ TEST(DistanceTest, TestTrajectoryDistance)
 
     while (se->getSimulationTime() < 3.1 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     // Check car position at given time at end phase of the scenario
@@ -646,32 +642,28 @@ TEST(TrajectoryTest, EnsureContinuation)
 
     for (int i = 0; i < static_cast<int>(1.0 / dt); i++)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 4.95, 1e-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
 
     for (int i = 0; i < static_cast<int>(2.0 / dt); i++)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 14.92759, 1e-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.18333, 1e-5);
 
     for (int i = 0; i < static_cast<int>(1.5 / dt); i++)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 21.32304, 1e-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), 2.553967, 1e-5);
 
     for (int i = 0; i < static_cast<int>(1.0 / dt); i++)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 26.13539, 1e-5);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), 2.917931, 1e-5);
@@ -688,48 +680,42 @@ TEST(TrajectoryTest, PolyLineContinuosSpeed)
 
     while (se->getSimulationTime() < 1.05)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 77.77778, 1e-5);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
 
     while (se->getSimulationTime() < 1.10)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 79.154167, 1e-5);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
 
     while (se->getSimulationTime() < 2.45)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 107.55053, 1e-5);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
 
     while (se->getSimulationTime() < 2.50)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 108.21914, 1e-5);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
 
     while (se->getSimulationTime() < 4.75)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 122.78807, 1e-5);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
 
     while (se->getSimulationTime() < 4.80)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 122.78806, 1e-5);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-5);
@@ -745,8 +731,7 @@ TEST(TrajectoryTest, FollowTrajectoryReverse)
 
     while (se->getSimulationTime() < 4.36)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 248.858, 1e-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 1.465, 1e-3);
@@ -754,8 +739,7 @@ TEST(TrajectoryTest, FollowTrajectoryReverse)
 
     while (se->getSimulationTime() < 8.76)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 201.098, 1e-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.468, 1e-3);
@@ -763,8 +747,7 @@ TEST(TrajectoryTest, FollowTrajectoryReverse)
 
     while (se->getSimulationTime() < 9.96)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 174.700, 1e-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.535, 1e-3);
@@ -778,8 +761,7 @@ TEST(TrajectoryTest, TestIgnoreHeadingAndInterpolationByVehicleProperty)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/traj_heading_and_interpolation.xosc");
     const double    dt = 0.1;
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -809,8 +791,7 @@ TEST(TrajectoryTest, TestIgnoreHeadingAndInterpolationByVehicleProperty)
     // Check expected position and orientation at some specific time stamps
     while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 129.417, 1E-2);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -6.883, 1E-2);
@@ -831,8 +812,7 @@ TEST(TrajectoryTest, TestIgnoreHeadingAndInterpolationByVehicleProperty)
     // just before second corner
     while (se->getSimulationTime() < 7.1 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 139.714, 1E-2);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -8.943, 1E-2);
@@ -853,8 +833,7 @@ TEST(TrajectoryTest, TestIgnoreHeadingAndInterpolationByVehicleProperty)
     // just after second corner
     while (se->getSimulationTime() < 7.3 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 140.694, 1E-2);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -8.861, 1E-2);
@@ -883,8 +862,7 @@ TEST(TrajectoryTest, TestIgnoreHeadingAndInterpolationByOption)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/traj_heading_and_interpolation.xosc");
     const double    dt = 0.1;
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -914,8 +892,7 @@ TEST(TrajectoryTest, TestIgnoreHeadingAndInterpolationByOption)
     // Check expected position and orientation at some specific time stamps
     while (se->getSimulationTime() < 3.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 119.612, 1E-2);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -5.078, 1E-2);
@@ -935,8 +912,7 @@ TEST(TrajectoryTest, TestIgnoreHeadingAndInterpolationByOption)
 
     while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 129.417, 1E-2);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -6.883, 1E-2);
@@ -963,8 +939,7 @@ TEST(TrajectoryTest, TestUseCases)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/traj_use_cases.xosc");
     const double    dt = 0.1;
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -1004,8 +979,7 @@ TEST(TrajectoryTest, TestUseCases)
     // Check expected position and orientation at some specific time stamps
     while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 75.000, 1E-2);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -9.000, 1E-2);
@@ -1321,8 +1295,7 @@ TEST(ParameterTest, KeepLastParameterValueTest)
     EXPECT_STREQ(se->GetScenarioReader()->parameters.parameterDeclarations_.Parameter[1].name.c_str(), "posX");
     EXPECT_NEAR(se->GetScenarioReader()->parameters.parameterDeclarations_.Parameter[1].value._double, 10.0, 1e-3);
 
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 20.0, 1e-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 0.0, 1e-3);
@@ -1340,8 +1313,7 @@ TEST(VariableTest, TestMultipleAndAddVariableValue)
     EXPECT_STREQ(se->GetScenarioReader()->variables.parameterDeclarations_.Parameter[0].name.c_str(), "MyVariable1");
     EXPECT_EQ(se->GetScenarioReader()->variables.parameterDeclarations_.Parameter[0].value._int, 4);
 
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 50.0, 1e-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.5349, 1e-3);
@@ -1349,8 +1321,7 @@ TEST(VariableTest, TestMultipleAndAddVariableValue)
     double dt = 0.1;
     while (se->getSimulationTime() < 4.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     EXPECT_EQ(se->GetScenarioReader()->variables.parameterDeclarations_.Parameter[0].value._int, 19);  // 4 * 3 + 7
@@ -1381,16 +1352,14 @@ TEST(JunctionTest, JunctionSelectorTest)
     for (int i = 0; i < static_cast<int>(sizeof(angles) / sizeof(double)); i++)
     {
         ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/junction-selector.xosc");
-        se->step(0.0);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.0);
         ASSERT_NE(se, nullptr);
 
         se->entities_.object_[0]->SetJunctionSelectorStrategy(roadmanager::Junction::JunctionStrategyType::SELECTOR_ANGLE);
         se->entities_.object_[0]->SetJunctionSelectorAngle(angles[i]);
         while (se->getSimulationTime() < durations[i] && se->GetQuitFlag() != true)
         {
-            se->step(dt);
-            se->prepareGroundTruth(dt);
+            scenario_step(se, dt);
         }
         ASSERT_EQ(se->entities_.object_[0]->pos_.GetTrackId(), roadIds[i]);
         delete se;
@@ -1403,15 +1372,13 @@ TEST(JunctionTest, TestConnectivityTroughHeadToHeadJunctions)
     double dt = 0.1;
 
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/connected_junctions_simple.xosc");
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities_.object_.size(), 2);
 
     while (se->getSimulationTime() < 12.0 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     EXPECT_EQ(se->entities_.object_[0]->pos_.GetTrackId(), 2);
@@ -1440,15 +1407,13 @@ TEST(ConditionTest, CollisionTest)
 
     // Initialize the scenario and disable interactive controller
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/test-collision-detection.xosc", true);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(SE_Env::Inst().GetCollisionDetection(), true);  // Should be enabled by now
 
     while (se->getSimulationTime() < timestamps[0] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_EQ(se->entities_.object_[0]->collisions_.size(), 0);
     EXPECT_EQ(se->entities_.object_[1]->collisions_.size(), 0);
@@ -1456,8 +1421,7 @@ TEST(ConditionTest, CollisionTest)
 
     while (se->getSimulationTime() < timestamps[1] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_EQ(se->entities_.object_[0]->collisions_.size(), 1);
     EXPECT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[2]);
@@ -1467,8 +1431,7 @@ TEST(ConditionTest, CollisionTest)
 
     while (se->getSimulationTime() < timestamps[2] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_EQ(se->entities_.object_[0]->collisions_.size(), 1);
     EXPECT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[2]);
@@ -1478,8 +1441,7 @@ TEST(ConditionTest, CollisionTest)
 
     while (se->getSimulationTime() < timestamps[3] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_EQ(se->entities_.object_[0]->collisions_.size(), 2);
     EXPECT_EQ(se->entities_.object_[0]->collisions_[0], se->entities_.object_[2]);
@@ -1491,8 +1453,7 @@ TEST(ConditionTest, CollisionTest)
 
     while (se->getSimulationTime() < timestamps[4] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[1]), true);
     EXPECT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[2]), false);
@@ -1504,8 +1465,7 @@ TEST(ConditionTest, CollisionTest)
 
     while (se->getSimulationTime() < timestamps[5] - SMALL_NUMBER && se->GetQuitFlag() != true)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[1]), false);
     EXPECT_EQ(se->entities_.object_[0]->Collision(se->entities_.object_[2]), false);
@@ -1574,7 +1534,7 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     }
 
     // assign controllers
-    se->step(dt);
+    scenario_step(se, dt);
 
     // stimulate driver input
     UDPClient* udpClient = new UDPClient(base_port, "127.0.0.1");
@@ -1600,24 +1560,23 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     udpClient->Send(reinterpret_cast<char*>(&msg), sizeof(msg));
 
     // read messages and report updated states
-    se->step(dt);
-    // another step for scenarioengine to fetch and apply updated states
-    se->step(dt);
+    scenario_step(se, dt);
 
     EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetY(), 40.0);
 
     // another step, make sure no dead-reckoning happen
-    se->step(dt);
+    scenario_step(se, dt);
     EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetX(), 20.0);
     EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetY(), 40.0);
 
     // now, do not update position but enable dead reckoning
     msg.message.stateXYH.deadReckon = 1;
     udpClient->Send(reinterpret_cast<char*>(&msg), sizeof(msg));
-    se->step(dt);
-    se->step(dt);
+
+    scenario_step(se, dt);
     EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetX(), 20.0);
-    se->step(dt);
+
+    scenario_step(se, dt);
     // Now, the dead reckoning should have kicked in
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 20.287, 1E-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 40.089, 1E-3);
@@ -1692,7 +1651,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     }
 
     // assign controllers
-    se->step(dt);
+    scenario_step(se, dt);
 
     // stimulate driver input
     UDPClient* udpClient = new UDPClient(base_port, "127.0.0.1");
@@ -1717,10 +1676,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     udpClient->Send(reinterpret_cast<char*>(&msg), sizeof(msg));
 
     // read messages and report updated states
-    se->step(dt);
-
-    // another step for scenarioengine to fetch and apply updated states
-    se->step(dt);
+    scenario_step(se, dt);
 
     // In synchronous mode one message is consumed each time step
     // Expect the first message to be applied, the second has not
@@ -1728,11 +1684,11 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetY(), 30.0);
 
     // another step for scenarioengine to fetch and apply the second message
-    se->step(dt);
+    scenario_step(se, dt);
     EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetY(), 40.0);
 
     // second vehicle has not been updated (no message sent)
-    se->step(dt);
+    scenario_step(se, dt);
     EXPECT_DOUBLE_EQ(se->entities_.object_[1]->pos_.GetY(), 6.5);
 
     // Create a sender for second vehicle as well
@@ -1755,8 +1711,7 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     msg.message.stateXYZHPR.x = 150.0;
     udpClient->Send(reinterpret_cast<char*>(&msg), sizeof(msg));
 
-    se->step(dt);
-    se->step(dt);
+    scenario_step(se, dt);
     EXPECT_DOUBLE_EQ(se->entities_.object_[0]->pos_.GetX(), 150.0);
     EXPECT_DOUBLE_EQ(se->entities_.object_[1]->pos_.GetX(), 90.0);
     EXPECT_DOUBLE_EQ(se->entities_.object_[1]->pos_.GetY(), -10.0);
@@ -1776,8 +1731,7 @@ TEST(ControllerTest, TestFollowReferenceController)
     ASSERT_NE(se, nullptr);
     ASSERT_EQ(se->entities_.object_.size(), 2);
 
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     // check initial state of Ego and reference/ghost
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 10.0, 1e-3);
@@ -1790,8 +1744,7 @@ TEST(ControllerTest, TestFollowReferenceController)
     // move forward to just after the linear lane change started, check state sample at that point
     while (se->getSimulationTime() < 9.2 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 119.5249, 1e-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), 1.4171, 1e-3);
@@ -1814,8 +1767,7 @@ TEST(RoadOrientationTest, TestElevationPitchRoll)
     // Fast forward
     while (se->getSimulationTime() < (5.0 - SMALL_NUMBER))
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     // Check vehicle orientation
@@ -1826,8 +1778,7 @@ TEST(RoadOrientationTest, TestElevationPitchRoll)
     // Fast forward
     while (se->getSimulationTime() < (6.0 - SMALL_NUMBER))
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(se->entities_.object_[1]->pos_.GetZ(), 0.50319, 1e-5);
@@ -2108,8 +2059,7 @@ TEST(OrientationTest, TestRelativeRoadHeading)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/four_roads.xosc");
     ASSERT_NE(se, nullptr);
 
-    se->step(0.1);
-    se->prepareGroundTruth(0.1);
+    scenario_step(se, 0.1);
 
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetX(), 5.000, 1e-3);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetY(), 1.535, 1e-3);
@@ -2488,7 +2438,7 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
     controller->LinkObject(obj);
 
     // assign controllers
-    se->step(dt);
+    scenario_step(se, dt);
 
     obj->SetSpeed(0);
     EXPECT_EQ(controller->model_->MinDist(), 2.0);
@@ -2550,8 +2500,7 @@ TEST(ControllerTest, ALKS_R157_TestR157RefDriverBrakeRate)
         int state = 0;
         while (se->getSimulationTime() < 7.5)
         {
-            se->step(dt);
-            se->prepareGroundTruth(dt);
+            scenario_step(se, dt);
 
             if (state == 0 && se->getSimulationTime() > 2.0)
             {
@@ -2800,8 +2749,8 @@ TEST(SpeedTest, TestAbsoluteSpeed)
 
     while (time < 7.5)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
+
         time = se->getSimulationTime();
 
         if (time > 1.1 + SMALL_NUMBER && time < 3.05 + SMALL_NUMBER)
@@ -2859,8 +2808,7 @@ TEST(ControllerTest, TestLoomingControllerSimple)
 
     while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.4061, 1E-3);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0844, 1E-3);
@@ -2868,32 +2816,28 @@ TEST(ControllerTest, TestLoomingControllerSimple)
 
     while (se->getSimulationTime() < 10.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 82.8457, 1E-3);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0642, 1E-3);
 
     while (se->getSimulationTime() < 15.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 4.2868, 1e-3);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0630, 1e-3);
 
     while (se->getSimulationTime() < 20.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 45.7279, 1e-3);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.0638, 1e-3);
 
     while (se->getSimulationTime() < 25.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 87.1630, 1e-3);
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetT(), -1.2508, 1e-3);
@@ -2916,8 +2860,8 @@ TEST(ControllerTest, TestLoomingSimpleFarTan)
 
     while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
+
         EXPECT_EQ(ctrl->getHasFarTan(), true);
     }
     ASSERT_NEAR(se->entities_.object_[0]->pos_.GetS(), 41.4061, 1E-3);
@@ -2951,8 +2895,7 @@ TEST(RelativeClearanceTest, TestRelativeClearanceFreeSpace)
 
         while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
         {
-            se->step(dt);
-            se->prepareGroundTruth(dt);
+            scenario_step(se, dt);
         }
 
         ASSERT_NEAR(se->entities_.object_[2]->pos_.GetT(), -4.500000, 1E-3);
@@ -2960,8 +2903,7 @@ TEST(RelativeClearanceTest, TestRelativeClearanceFreeSpace)
 
         while (se->getSimulationTime() < 10.5 - SMALL_NUMBER)
         {
-            se->step(dt);
-            se->prepareGroundTruth(dt);
+            scenario_step(se, dt);
         }
 
         if (i == 1)
@@ -2997,8 +2939,7 @@ TEST(TwoPlusOneRoadTest, TestTwoPlusOneRoad)
     {
         while (se->getSimulationTime() < exp_values[i].time + SMALL_NUMBER)
         {
-            se->step(dt);
-            se->prepareGroundTruth(dt);
+            scenario_step(se, dt);
         }
         EXPECT_NEAR(se->entities_.object_[1]->pos_.GetS(), exp_values[i].s, 1E-2);
         EXPECT_NEAR(se->entities_.object_[1]->pos_.GetT(), exp_values[i].t, 1E-2);
@@ -3035,8 +2976,7 @@ TEST(RelativeClearanceTest, TestRelativeClearanceOppositeLane)
 
         while (se->getSimulationTime() < 1.6 - SMALL_NUMBER)
         {
-            se->step(dt);
-            se->prepareGroundTruth(dt);
+            scenario_step(se, dt);
         }
         if (i == 0)
         {
@@ -3046,8 +2986,7 @@ TEST(RelativeClearanceTest, TestRelativeClearanceOppositeLane)
 
         while (se->getSimulationTime() < 5.75 - SMALL_NUMBER)
         {
-            se->step(dt);
-            se->prepareGroundTruth(dt);
+            scenario_step(se, dt);
         }
 
         if (i == 1)
@@ -3076,15 +3015,13 @@ TEST(ControllerTest, TestLoomingControllerAdvanced)
 
     while (se->getSimulationTime() < 2.5 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_EQ(ctrl->getHasFarTan(), false);
 
     while (se->getSimulationTime() < 6.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_EQ(ctrl->getHasFarTan(), true);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetS(), 85.3214, 1E-3);
@@ -3093,8 +3030,7 @@ TEST(ControllerTest, TestLoomingControllerAdvanced)
 
     while (se->getSimulationTime() < 31.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
     EXPECT_EQ(ctrl->getHasFarTan(), false);
 
@@ -3317,8 +3253,7 @@ TEST(ConditionTest, TestTTCAndLateralDist)
 
         while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
         {
-            se->step(dt);
-            se->prepareGroundTruth(dt);
+            scenario_step(se, dt);
         }
 
         if (i == 0)
@@ -3481,8 +3416,7 @@ TEST(ConditionTest, TestConditionDelayScenario)
 
     while (se->getSimulationTime() < 7.2 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     // expect the lane change to not have been triggered yet
@@ -3490,8 +3424,7 @@ TEST(ConditionTest, TestConditionDelayScenario)
     EXPECT_EQ(event->GetCurrentState(), StoryBoardElement::State::STANDBY);
 
     // do another step
-    se->step(dt);
-    se->prepareGroundTruth(dt);
+    scenario_step(se, dt);
 
     // expect the lane change to have been triggered by now
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -1.5161, 1e-3);
@@ -3499,8 +3432,7 @@ TEST(ConditionTest, TestConditionDelayScenario)
 
     while (se->getSimulationTime() < 9.2 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     // expect the lane change to be completed by now
@@ -3523,8 +3455,7 @@ TEST(ActionTest, TestRelativeLaneChangeAction)
 
     while (se->getSimulationTime() < 4.5 + dt - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 109.483, 1E-3);
@@ -3538,8 +3469,7 @@ TEST(ActionTest, TestRelativeLaneChangeAction)
 
     while (se->getSimulationTime() < 8.5 + dt - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 188.965, 1E-3);
@@ -3567,8 +3497,7 @@ TEST(ActionTest, TestRelativeLaneOffsetAction)
 
     while (se->getSimulationTime() < 4.5 + dt - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 110.0, 1E-3);
@@ -3582,8 +3511,7 @@ TEST(ActionTest, TestRelativeLaneOffsetAction)
 
     while (se->getSimulationTime() < 8.5 + dt - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(dt);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 190.0, 1E-3);
@@ -3615,16 +3543,14 @@ TEST(ActionTest, TestRelativeLanePosition)
     ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
     ASSERT_EQ(se->entities_.object_[1]->GetName(), "Target");
 
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     double dt = 0.1;
     for (int i = 0; i < n; i++)
     {
         while (se->getSimulationTime() < pos[i][0] - SMALL_NUMBER)
         {
-            se->step(dt);
-            se->prepareGroundTruth(dt);
+            scenario_step(se, dt);
         }
         EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), pos[i][1], 1E-3);
         EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), pos[i][2], 1E-3);
@@ -3652,16 +3578,14 @@ TEST(ActionTest, TestRelativeLaneOffsetPosition)
     ASSERT_EQ(se->entities_.object_[0]->GetName(), "Ego");
     ASSERT_EQ(se->entities_.object_[1]->GetName(), "Target");
 
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     double dt = 0.1;
     for (int i = 0; i < n; i++)
     {
         while (se->getSimulationTime() < pos[i][0] - SMALL_NUMBER)
         {
-            se->step(dt);
-            se->prepareGroundTruth(dt);
+            scenario_step(se, dt);
         }
         EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), pos[i][1], 1E-3);
         EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), pos[i][2], 1E-3);
@@ -3680,8 +3604,8 @@ TEST(PositionTest, TestPositionMode)
     ASSERT_NE(se, nullptr);
     EXPECT_EQ(se->entities_.object_[0]->GetName(), "Ego");
 
-    se->step(dt);
-    se->prepareGroundTruth(dt);
+    scenario_step(se, dt);
+
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 10.0, 1E-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -3.0, 1E-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetZ(), -0.268, 1E-3);
@@ -3698,8 +3622,8 @@ TEST(PositionTest, TestPositionMode)
                                                      roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL |
                                                          roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::P_REL);
 
-    se->step(dt);
-    se->prepareGroundTruth(dt);
+    scenario_step(se, dt);
+
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 35.0, 1E-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -3.0, 1E-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetZ(), 2.232, 1E-3);
@@ -3716,8 +3640,8 @@ TEST(PositionTest, TestPositionMode)
                                                      roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS |
                                                          roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::P_ABS);
 
-    se->step(dt);
-    se->prepareGroundTruth(dt);
+    scenario_step(se, dt);
+
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 30.0, 1E-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -2.0, 1E-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetZ(), 3.154, 1E-3);
@@ -3734,8 +3658,8 @@ TEST(PositionTest, TestPositionMode)
                                                      roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS |
                                                          roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::P_REL);
 
-    se->step(dt);
-    se->prepareGroundTruth(dt);
+    scenario_step(se, dt);
+
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), 30.0, 1E-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetY(), -2.0, 1E-3);
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetZ(), 2.154, 1E-3);
@@ -3753,8 +3677,8 @@ TEST(PositionTest, TestPositionTypes)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/position_types.xosc");
     ASSERT_NE(se, nullptr);
 
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
+
     scenarioengine::Entities* entities = &se->entities_;
 
     ASSERT_NE(entities, nullptr);
@@ -3808,8 +3732,7 @@ TEST(PositionTest, TestPositionTypes)
         EXPECT_NEAR(GetAngleDifference(entities->object_[4 + i]->pos_.GetR(), entities->object_[i]->pos_.GetR()), 0.0, 1E-3);
     }
 
-    se->step(dt);
-    se->prepareGroundTruth(dt);
+    scenario_step(se, dt);
 
     delete se;
 }
@@ -3821,8 +3744,8 @@ TEST(PositionTest, TestTrajectoryLanePosRoll)
     ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/bicycle_fall_over.xosc");
     ASSERT_NE(se, nullptr);
 
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
+
     scenarioengine::Entities* entities = &se->entities_;
 
     ASSERT_NE(entities, nullptr);
@@ -3830,8 +3753,7 @@ TEST(PositionTest, TestTrajectoryLanePosRoll)
 
     while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 120.0, 1E-3);
@@ -3844,8 +3766,7 @@ TEST(PositionTest, TestTrajectoryLanePosRoll)
 
     while (se->getSimulationTime() < 2.3 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 123.0, 1E-3);
@@ -3858,8 +3779,7 @@ TEST(PositionTest, TestTrajectoryLanePosRoll)
 
     while (se->getSimulationTime() < 2.5 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 125.0, 1E-3);
@@ -3872,8 +3792,7 @@ TEST(PositionTest, TestTrajectoryLanePosRoll)
 
     while (se->getSimulationTime() < 3.4 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 129.95, 1E-3);
@@ -3886,8 +3805,7 @@ TEST(PositionTest, TestTrajectoryLanePosRoll)
 
     while (se->getSimulationTime() < 3.6 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 130.0, 1E-3);
@@ -3907,8 +3825,7 @@ TEST(ClothoidSplineTest, TestTrajectoryShape)
 
     ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/lane-change_clothoid_spline_based_trajectory.xosc");
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -3916,8 +3833,7 @@ TEST(ClothoidSplineTest, TestTrajectoryShape)
 
     while (se->getSimulationTime() < 26.4)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     // Check car position at given time at end phase of the scenario
@@ -3936,8 +3852,8 @@ TEST(RelativePositionRouting, TestRelativePositionWithRoutes)
 {
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_pos_over_intersection.xosc");
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
+
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
     ASSERT_EQ(entities->object_.size(), 6);
@@ -3988,7 +3904,7 @@ TEST(RelativePositionRouting, TestRelativePositionWithRoutes)
 
     while (se->getSimulationTime() < 1.0 + SMALL_NUMBER)
     {
-        se->step(0.5);
+        scenario_step(se, 0.5);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 40.210, 1E-3);
@@ -4026,10 +3942,10 @@ TEST(RelativePositionRouting, TestRelativePositionWithRoutes)
     EXPECT_NEAR(GetAngleDifference(entities->object_[4]->pos_.GetP(), 0.0), 0.0, 1E-3);
     EXPECT_NEAR(GetAngleDifference(entities->object_[4]->pos_.GetR(), 0.0), 0.0, 1E-3);
 
-    EXPECT_NEAR(entities->object_[5]->pos_.GetX(), 46.0261, 1E-3);
-    EXPECT_NEAR(entities->object_[5]->pos_.GetY(), -87.017, 1E-3);
-    EXPECT_NEAR(entities->object_[5]->pos_.GetZ(), 0.0, 1E-3);
-    EXPECT_NEAR(GetAngleDifference(entities->object_[5]->pos_.GetH(), 1.744), 0.0, 1E-3);
+    EXPECT_NEAR(entities->object_[5]->pos_.GetX(), 45.6760, 1E-3);
+    EXPECT_NEAR(entities->object_[5]->pos_.GetY(), -85.0483, 1E-3);
+    EXPECT_NEAR(entities->object_[5]->pos_.GetZ(), 0.0010, 1E-3);
+    EXPECT_NEAR(GetAngleDifference(entities->object_[5]->pos_.GetH(), 1.7490), 0.0, 1E-3);
     EXPECT_NEAR(GetAngleDifference(entities->object_[5]->pos_.GetP(), 0.0), 0.0, 1E-3);
     EXPECT_NEAR(GetAngleDifference(entities->object_[5]->pos_.GetR(), 0.0), 0.0, 1E-3);
 
@@ -4116,8 +4032,7 @@ TEST(Friction, TestFrictionPerWheel)
 {
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/friction_and_lane_change_edge_case.xosc");
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -4142,8 +4057,7 @@ TEST(Friction, TestFrictionPerWheel)
 
     while (se->getSimulationTime() < 1.8 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
@@ -4153,8 +4067,7 @@ TEST(Friction, TestFrictionPerWheel)
 
     while (se->getSimulationTime() < 1.9 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
@@ -4164,8 +4077,7 @@ TEST(Friction, TestFrictionPerWheel)
 
     while (se->getSimulationTime() < 3.9 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
@@ -4175,8 +4087,7 @@ TEST(Friction, TestFrictionPerWheel)
 
     while (se->getSimulationTime() < 4.0 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
@@ -4186,8 +4097,7 @@ TEST(Friction, TestFrictionPerWheel)
 
     while (se->getSimulationTime() < 12.1 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 0.4, 1E-3);
@@ -4197,8 +4107,7 @@ TEST(Friction, TestFrictionPerWheel)
 
     while (se->getSimulationTime() < 13.7 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 0.4, 1E-3);
@@ -4208,8 +4117,7 @@ TEST(Friction, TestFrictionPerWheel)
 
     while (se->getSimulationTime() < 20.0 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
@@ -4224,8 +4132,7 @@ TEST(WheelData, TestWheelData)
 {
     ScenarioEngine* se = new ScenarioEngine("../../../resources/xosc/lane_change_crest.xosc");
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -4274,8 +4181,7 @@ TEST(WheelData, TestWheelData)
 
     while (se->getSimulationTime() < 5.8 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.1);
+        scenario_step(se, 0.1);
     }
 
     // check overtaking car, some wheel heading expected
@@ -4324,8 +4230,7 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
 {
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/friction_and_lane_change_edge_case.xosc");
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -4336,8 +4241,7 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
     // Check expected position and orientation at some specific time stamps
     while (se->getSimulationTime() < 21.0 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     ObjectStateStruct* state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 121.059, 1E-3);
@@ -4349,8 +4253,7 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
 
     while (se->getSimulationTime() < 21.6 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     EXPECT_NEAR(state->pos.GetX(), 121.604, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 4.992, 1E-3);
@@ -4361,8 +4264,7 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
 
     while (se->getSimulationTime() < 22.3 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     EXPECT_NEAR(state->pos.GetX(), 121.802, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 3.987, 1E-3);
@@ -4373,8 +4275,7 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
 
     while (se->getSimulationTime() < 22.3 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     EXPECT_NEAR(state->pos.GetX(), 121.802, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 3.987, 1E-3);
@@ -4385,8 +4286,7 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
 
     while (se->getSimulationTime() < 25.7 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     EXPECT_NEAR(state->pos.GetX(), 123.581, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 1.751, 1E-3);
@@ -4397,8 +4297,7 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
 
     while (se->getSimulationTime() < 26.7 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     EXPECT_NEAR(state->pos.GetX(), 124.400, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 2.263, 1E-3);
@@ -4409,8 +4308,7 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
 
     while (se->getSimulationTime() < 28.4 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     EXPECT_NEAR(state->pos.GetX(), 124.424, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 4.313, 1E-3);
@@ -4421,8 +4319,7 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
 
     while (se->getSimulationTime() < 29.5 + SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, 0.1);
     }
     EXPECT_NEAR(state->pos.GetX(), 125.203, 1E-3);
     EXPECT_NEAR(state->pos.GetY(), 5.250, 1E-3);
@@ -4439,8 +4336,7 @@ TEST(Trajectory, TestOrientationInterpolation)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/bike_tilt_smooth.xosc");
     const double    dt = 0.05;
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -4451,8 +4347,7 @@ TEST(Trajectory, TestOrientationInterpolation)
     // Check expected position and orientation at some specific time stamps
     while (se->getSimulationTime() < 2.95 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     ObjectStateStruct* state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 120.83, 1E-2);
@@ -4465,8 +4360,7 @@ TEST(Trajectory, TestOrientationInterpolation)
 
     while (se->getSimulationTime() < 3.85 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 127.08, 1E-2);
@@ -4479,8 +4373,7 @@ TEST(Trajectory, TestOrientationInterpolation)
 
     while (se->getSimulationTime() < 4.75 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 130.61, 1E-2);
@@ -4493,8 +4386,7 @@ TEST(Trajectory, TestOrientationInterpolation)
 
     while (se->getSimulationTime() < 4.95 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     state = &gw->objectState_[0]->state_;
     EXPECT_NEAR(state->pos.GetX(), 130.62, 1E-2);
@@ -4513,8 +4405,7 @@ TEST(PositionTest, TestRelativePositionPhases)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/relative_speed_phases.xosc");
     const double    dt = 0.05;
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -4523,8 +4414,7 @@ TEST(PositionTest, TestRelativePositionPhases)
     // Check expected position and orientation at some specific time stamps
     while (se->getSimulationTime() < 7.15 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 129.500, 1E-3);
@@ -4545,8 +4435,7 @@ TEST(PositionTest, TestRelativePositionPhases)
 
     while (se->getSimulationTime() < 7.2 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 130.512, 1E-3);
@@ -4557,8 +4446,7 @@ TEST(PositionTest, TestRelativePositionPhases)
 
     while (se->getSimulationTime() < 7.2 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 130.512, 1E-3);
@@ -4569,8 +4457,7 @@ TEST(PositionTest, TestRelativePositionPhases)
 
     while (se->getSimulationTime() < 9.95 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 203.750, 1E-3);
@@ -4581,8 +4468,7 @@ TEST(PositionTest, TestRelativePositionPhases)
 
     while (se->getSimulationTime() < 10.95 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 233.750, 1E-3);
@@ -4593,8 +4479,7 @@ TEST(PositionTest, TestRelativePositionPhases)
 
     while (se->getSimulationTime() < 11.45 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 249.438, 1E-3);
@@ -4605,8 +4490,7 @@ TEST(PositionTest, TestRelativePositionPhases)
 
     while (se->getSimulationTime() < 12.20 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 275.125, 1E-3);
@@ -4617,8 +4501,7 @@ TEST(PositionTest, TestRelativePositionPhases)
 
     while (se->getSimulationTime() < 18.40 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 431.750, 1E-3);
@@ -4629,8 +4512,7 @@ TEST(PositionTest, TestRelativePositionPhases)
 
     while (se->getSimulationTime() < 19.95 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 431.750, 1E-3);
@@ -4682,8 +4564,7 @@ TEST_F(LaneOffsetIntersectionTest, AssertInitialization)
 
 TEST_F(LaneOffsetIntersectionTest, TestLaneOffsetOfMovingObjects)
 {
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     // Check initial positions
     EXPECT_NEAR(se->entities_.object_[0]->pos_.GetX(), -68.0103, 1E-3);
@@ -4736,8 +4617,7 @@ TEST_F(LaneOffsetIntersectionTest, TestLaneOffsetOfMovingObjects)
 
     while (se->getSimulationTime() < 3.0 - SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.1);
+        scenario_step(se, 0.1);
     }
 
     // At time=3.0, three vehicles are in the intersection
@@ -4767,8 +4647,7 @@ TEST_F(LaneOffsetIntersectionTest, TestLaneOffsetOfMovingObjects)
 
     while (se->getSimulationTime() < 9.0 - SMALL_NUMBER)
     {
-        se->step(0.1);
-        se->prepareGroundTruth(0.1);
+        scenario_step(se, 0.1);
     }
 
     // At time=9.0, all vehicles has passed through the intersection
@@ -4927,8 +4806,7 @@ TEST(ActionTest, TestInstantLaneChange)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/instant_lane_change.xosc");
     const double    dt = 0.05;
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -4937,8 +4815,7 @@ TEST(ActionTest, TestInstantLaneChange)
     // Check expected position and orientation at some specific time stamps
     while (se->getSimulationTime() < 0.95 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 50.0, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.535, 1E-3);
@@ -4950,40 +4827,35 @@ TEST(ActionTest, TestInstantLaneChange)
 
     while (se->getSimulationTime() < 1.0 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 50.25, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 1.535, 1E-3);
 
     while (se->getSimulationTime() < 1.95 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 55.0, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 1.535, 1E-3);
 
     while (se->getSimulationTime() < 2.0 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 55.25, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.535, 1E-3);
 
     while (se->getSimulationTime() < 2.95 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 60.00, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.535, 1E-3);
 
     while (se->getSimulationTime() < 3.0 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 60.25, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 1.535, 1E-3);
@@ -4996,8 +4868,7 @@ TEST(RouteingTest, TestPositionOffRoute)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/route_detour.xosc", true);
     const double    dt = 0.05;
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -5018,8 +4889,7 @@ TEST(RouteingTest, TestPositionOffRoute)
 
     while (se->getSimulationTime() < 1.0 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 216.982, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 86.012, 1E-3);
@@ -5032,8 +4902,7 @@ TEST(RouteingTest, TestPositionOffRoute)
 
     while (se->getSimulationTime() < 3.15 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 132.565, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 91.5, 1E-3);
@@ -5046,8 +4915,7 @@ TEST(RouteingTest, TestPositionOffRoute)
 
     while (se->getSimulationTime() < 3.20 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 130.565, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 91.5, 1E-3);
@@ -5060,8 +4928,7 @@ TEST(RouteingTest, TestPositionOffRoute)
 
     while (se->getSimulationTime() < 5.75 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 28.565, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 91.5, 1E-3);
@@ -5074,8 +4941,7 @@ TEST(RouteingTest, TestPositionOffRoute)
 
     while (se->getSimulationTime() < 5.8 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 26.565, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 91.5, 1E-3);
@@ -5088,8 +4954,7 @@ TEST(RouteingTest, TestPositionOffRoute)
 
     while (se->getSimulationTime() < 8.0 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -58.592, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 83.938, 1E-3);
@@ -5102,8 +4967,7 @@ TEST(RouteingTest, TestPositionOffRoute)
 
     while (se->getSimulationTime() < 8.4 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -61.500, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 68.564, 1E-3);
@@ -5116,8 +4980,7 @@ TEST(RouteingTest, TestPositionOffRoute)
 
     while (se->getSimulationTime() < 11.25 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -61.500, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -45.435, 1E-3);
@@ -5131,8 +4994,7 @@ TEST(RouteingTest, TestPositionOffRoute)
 
     while (se->getSimulationTime() < 11.50 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -61.500, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -55.435, 1E-3);
@@ -5146,8 +5008,7 @@ TEST(RouteingTest, TestPositionOffRoute)
 
     while (se->getSimulationTime() < 11.60 + SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), -61.500, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -59.435, 1E-3);
@@ -5167,8 +5028,7 @@ TEST(PositioningTest, TestElevationMapping)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/test_elevation_mapping.xosc", false);
     const double    dt = 0.1;
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -5189,8 +5049,7 @@ TEST(PositioningTest, TestElevationMapping)
     while (se->getSimulationTime() < 1.0 + SMALL_NUMBER)
     {
         ctrl->ReportKeyEvent(static_cast<int>(KeyType::KEY_Up), true);
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     // Verify that car has moved to lower road
@@ -5320,8 +5179,7 @@ TEST(GhostConcept, TestMultipleRestartAtCorrectPosition)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/driver_lane_bouncing_scenario.xosc");
     const double    dt = 0.1;
     ASSERT_NE(se, nullptr);
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -5330,8 +5188,7 @@ TEST(GhostConcept, TestMultipleRestartAtCorrectPosition)
     // Check expected position and orientation at some specific time stamps
     while (se->getSimulationTime() < 28.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
     EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 609.49, 1E-2);
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -3.49, 1E-2);
@@ -5716,8 +5573,7 @@ TEST(DeltaDirection, DistanceDiffDirection)
     std::unique_ptr<ScenarioEngine> se = std::make_unique<ScenarioEngine>("../../../EnvironmentSimulator/Unittest/xosc/lat_dist_road_test.xosc");
     ASSERT_NE(se, nullptr);
     const double dt = 0.1;
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se.get(), 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -5734,8 +5590,7 @@ TEST(DeltaDirection, DistanceDiffDirection)
 
     while (se->getSimulationTime() < 1.6)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se.get(), dt);
     }
 
     ASSERT_EQ(pos_1.GetTrackId(), 1);
@@ -5746,8 +5601,7 @@ TEST(DeltaDirection, DistanceDiffDirection)
 
     while (se->getSimulationTime() < 2.2)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se.get(), dt);
     }
 
     pos_1.Delta(&pos_2, pos_diff);
@@ -5755,8 +5609,7 @@ TEST(DeltaDirection, DistanceDiffDirection)
 
     while (se->getSimulationTime() < 13.5)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se.get(), dt);
     }
 
     pos_1.Delta(&pos_2, pos_diff);
@@ -5768,8 +5621,7 @@ TEST(LatDistAction, EntityCoordinates)
     std::unique_ptr<ScenarioEngine> se = std::make_unique<ScenarioEngine>("../../../EnvironmentSimulator/Unittest/xosc/lat_dist_entity_basic.xosc");
     ASSERT_NE(se, nullptr);
     const double dt = 0.1;
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se.get(), 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -5799,8 +5651,7 @@ TEST(LatDistAction, EntityCoordinates)
 
     while (se->getSimulationTime() < 1.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se.get(), dt);
     }
 
     EXPECT_NEAR(pos_0.GetX(), 100.0, 1e-3);
@@ -5821,8 +5672,7 @@ TEST(LatDistAction, EntityCoordinates)
 
     while (se->getSimulationTime() < 5.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se.get(), dt);
     }
 
     EXPECT_NEAR(pos_0.GetX(), 100.0, 1e-3);
@@ -5847,8 +5697,7 @@ TEST(LaneChange, InternalPositionHandling)
     std::unique_ptr<ScenarioEngine> se = std::make_unique<ScenarioEngine>("../../../EnvironmentSimulator/Unittest/xosc/lane_change_road_split.xosc");
     ASSERT_NE(se, nullptr);
     const double dt = 0.1;
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se.get(), 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -5864,8 +5713,7 @@ TEST(LaneChange, InternalPositionHandling)
 
     while (se->getSimulationTime() < 3.5 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se.get(), dt);
     }
 
     // Lane change ongoing, still on original lane -1
@@ -5875,8 +5723,7 @@ TEST(LaneChange, InternalPositionHandling)
     EXPECT_EQ(pos.GetTrackId(), 0);
     EXPECT_EQ(pos.GetLaneId(), -1);
 
-    se->step(dt);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se.get(), dt);
 
     // Lane change still ongoing, passed lane border, snapped to lane -2
     EXPECT_NEAR(pos.GetX(), 169.98, 1e-3);
@@ -5887,8 +5734,7 @@ TEST(LaneChange, InternalPositionHandling)
 
     while (se->getSimulationTime() < 7.5 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se.get(), dt);
     }
 
     // Second lane change started, still on road 0, lane -2
@@ -5898,8 +5744,7 @@ TEST(LaneChange, InternalPositionHandling)
     EXPECT_EQ(pos.GetTrackId(), 0);
     EXPECT_EQ(pos.GetLaneId(), -2);
 
-    se->step(dt);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se.get(), dt);
 
     // Second lane change still ongoing, on road 11, lane -1
     EXPECT_NEAR(pos.GetX(), 303.2898, 1e-3);
@@ -5910,8 +5755,7 @@ TEST(LaneChange, InternalPositionHandling)
 
     while (se->getSimulationTime() < 10.5 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se.get(), dt);
     }
 
     // Second lane change almost done, now on connected road 2, lane -1 with less lane offset
@@ -5924,8 +5768,7 @@ TEST(LaneChange, InternalPositionHandling)
 
     while (se->getSimulationTime() < 11.8 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se.get(), dt);
     }
 
     // Second lane change done, still on road 2, lane -1 zero lane offset
@@ -5942,8 +5785,7 @@ TEST(InitActions, TestInitActionsReorderingGhost)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/init_actions_reorder.xosc");
     ASSERT_NE(se, nullptr);
     const double dt = 0.1;
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -5980,8 +5822,7 @@ TEST(InitActions, TestInitActionsReorderingGhost)
 
     while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(pos0.GetX(), 96.6666, 1e-3);
@@ -6016,8 +5857,7 @@ TEST(InitActions, TestInitActionsReorderingNoGhost)
     ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/init_actions_reorder.xosc", true);
     ASSERT_NE(se, nullptr);
     const double dt = 0.1;
-    se->step(0.0);
-    se->prepareGroundTruth(0.0);
+    scenario_step(se, 0.0);
 
     scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
@@ -6047,8 +5887,7 @@ TEST(InitActions, TestInitActionsReorderingNoGhost)
 
     while (se->getSimulationTime() < 2.0 - SMALL_NUMBER)
     {
-        se->step(dt);
-        se->prepareGroundTruth(0.0);
+        scenario_step(se, dt);
     }
 
     EXPECT_NEAR(pos0.GetX(), 123.8333, 1e-3);

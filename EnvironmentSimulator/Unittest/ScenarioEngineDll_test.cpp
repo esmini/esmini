@@ -1998,9 +1998,7 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     const char* gt = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
 
-    int n_miscobjects = osi_gt.mutable_stationary_object()->size();
-
-    ASSERT_EQ(n_miscobjects, 7);
+    ASSERT_EQ(osi_gt.mutable_stationary_object()->size(), 7);
 
     uint64_t miscobj_0_id = osi_gt.mutable_stationary_object(0)->mutable_id()->value();
     uint64_t miscobj_1_id = osi_gt.mutable_stationary_object(1)->mutable_id()->value();
@@ -2033,6 +2031,24 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     EXPECT_EQ(miscobj_4_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
     EXPECT_EQ(miscobj_5_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
     EXPECT_EQ(miscobj_6_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
+
+    // for remaning tests, use raw pointer to avoid re-parsing
+    const osi3::GroundTruth* osi_gt_raw = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+    ASSERT_EQ(osi_gt_raw->stationary_object().size(), 7);  // should be same as above
+
+    // add another misc object and make sure it appears in OSI, and only once
+    SE_AddObject("MiscObject_cone_100_A", 3, 1, 0, -1, "cone-100");
+    SE_StepDT(0.1f);
+    ASSERT_EQ(osi_gt_raw->stationary_object().size(), 1);
+    EXPECT_EQ(osi_gt_raw->stationary_object(0).id().value(), 25);
+
+    // change report mode to include all stationary objects, also add another misc object
+    SE_SetOSIStaticReportMode(SE_OSIStaticReportMode::API);
+    SE_AddObject("MiscObject_cone_100_B", 3, 1, 0, -1, "cone-100");
+    SE_StepDT(0.1f);
+    ASSERT_EQ(osi_gt_raw->stationary_object().size(), 9);
+    EXPECT_EQ(osi_gt_raw->stationary_object(7).id().value(), 25);
+    EXPECT_EQ(osi_gt_raw->stationary_object(8).id().value(), 26);
 
     SE_Close();
 }
@@ -3130,11 +3146,11 @@ TEST(ExternalControlTest, TestTimings)
                                 "sim.dat",
                                 "--fixed_timestep",
                                 "0.1",
-                                // "--window",
-                                // "60",
-                                // "60",
-                                // "800",
-                                // "400",
+                                //"--window",
+                                //"60",
+                                //"60",
+                                //"800",
+                                //"400",
                                 "--csv_logger",
                                 "csv_log.csv",
                                 "--osi_file",

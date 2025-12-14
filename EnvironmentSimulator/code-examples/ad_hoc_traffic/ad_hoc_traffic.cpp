@@ -24,7 +24,9 @@ int main(int argc, char* argv[])
     float dt             = 0.1f;
     int   n_misc_objects = 0;
 
-    SE_AddPath("../resources");
+    SE_AddPath("../../../../resources");
+    SE_AddPath("../../../../resources/models");
+    SE_EnableOSIFile(0);
 
     // provide headless mode option for smoke test
     if (argc > 1 && !strcmp(argv[1], "--headless"))
@@ -90,7 +92,14 @@ int main(int argc, char* argv[])
         {
             float tmp = static_cast<float>(counter - 1.0);
 
-            int id = SE_AddObjectWithBoundingBox("misc_object", 3, 6, 0, 0, "box_cc_by.osgb", {0.0, 0.0, 1.0, 2.0f * tmp, 1.0, 2.0}, 2);
+            int id = SE_AddObjectWithBoundingBox((std::string("misc_object_") + std::to_string(n_misc_objects)).c_str(),
+                                                 3,
+                                                 6,
+                                                 0,
+                                                 0,
+                                                 "box_cc_by.osgb",
+                                                 {0.0, 0.0, 1.0, 2.0f * tmp, 1.0, 2.0},
+                                                 2);
             SE_ReportObjectPosXYH(id, 0.0f, tmp * 100.0f, 5.0f, 0.0f);
             n_misc_objects++;
         }

@@ -92,11 +92,13 @@ ObjectState::ObjectState(int                          id,
 }
 
 ObjectState::ObjectState(int            id,
+                         id_t           g_id,
                          std::string    name,
                          int            obj_type,
                          int            obj_category,
                          int            obj_role,
                          int            model_id,
+                         std::string    model3d,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,
                          int            scaleMode,
@@ -115,10 +117,12 @@ ObjectState::ObjectState(int            id,
     : dirty_(0)
 {
     state_.info.id           = id;
+    state_.info.g_id         = g_id;
     state_.info.obj_type     = obj_type;
     state_.info.obj_category = obj_category;
     state_.info.obj_role     = obj_role;
     state_.info.model_id     = model_id;
+    state_.info.model3d      = model3d;
     state_.info.ctrl_type    = ctrl_type;
     state_.info.name[0]      = 0;
     state_.info.timeStamp    = timestamp;
@@ -142,11 +146,13 @@ ObjectState::ObjectState(int            id,
 }
 
 ObjectState::ObjectState(int            id,
+                         id_t           g_id,
                          std::string    name,
                          int            obj_type,
                          int            obj_category,
                          int            obj_role,
                          int            model_id,
+                         std::string    model3d,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,
                          int            scaleMode,
@@ -163,10 +169,12 @@ ObjectState::ObjectState(int            id,
     : dirty_(0)
 {
     state_.info.id           = id;
+    state_.info.g_id         = g_id;
     state_.info.obj_type     = obj_type;
     state_.info.obj_category = obj_category;
     state_.info.obj_role     = obj_role;
     state_.info.model_id     = model_id;
+    state_.info.model3d      = model3d;
     state_.info.ctrl_type    = ctrl_type;
     state_.info.timeStamp    = timestamp;
     StrCopy(state_.info.name, name.c_str(), MIN(name.length() + 1, NAME_LEN));
@@ -188,11 +196,13 @@ ObjectState::ObjectState(int            id,
 }
 
 ObjectState::ObjectState(int            id,
+                         id_t           g_id,
                          std::string    name,
                          int            obj_type,
                          int            obj_category,
                          int            obj_role,
                          int            model_id,
+                         std::string    model3d,
                          int            ctrl_type,
                          OSCBoundingBox boundingbox,
                          int            scaleMode,
@@ -207,10 +217,12 @@ ObjectState::ObjectState(int            id,
                          double         s)
 {
     state_.info.id           = id;
+    state_.info.g_id         = g_id;
     state_.info.obj_type     = obj_type;
     state_.info.obj_category = obj_category;
     state_.info.obj_role     = obj_role;
     state_.info.model_id     = model_id;
+    state_.info.model3d      = model3d;
     state_.info.ctrl_type    = ctrl_type;
     state_.info.timeStamp    = timestamp;
     StrCopy(state_.info.name, name.c_str(), MIN(name.length() + 1, NAME_LEN));
@@ -234,10 +246,12 @@ ObjectState::ObjectState(int            id,
 void ObjectState::Print()
 {
     LOG_INFO(
-        "state: \n\tid {}\n\tname {}\n\tmodel_id: {}\n\tctrl_type: {}\n\ttime {:.2f}\n\tx {:.2f}\n\ty {:.2f}\n\th {:.2f}\n\tspeed {:.2f}\twheel_angle {:.2f} type {} category {} role {}",
+        "state: \n\tid {}\n\tgid {}\n\tname {}\n\tmodel_id: {}\n\tmodel3d: {}\n\tctrl_type: {}\n\ttime {:.2f}\n\tx {:.2f}\n\ty {:.2f}\n\th {:.2f}\n\tspeed {:.2f}\twheel_angle {:.2f} type {} category {} role {}",
         state_.info.id,
+        state_.info.g_id,
         state_.info.name,
         state_.info.model_id,
+        state_.info.model3d,
         state_.info.ctrl_type,
         state_.info.timeStamp,
         state_.pos.GetX(),
@@ -332,29 +346,29 @@ int ScenarioGateway::updateObjectInfo(ObjectState* obj_state,
     return 0;
 }
 
-int ScenarioGateway::reportObject(int                      id,
-                                  id_t                     g_id,
-                                  std::string              name,
-                                  int                      obj_type,
-                                  int                      obj_category,
-                                  int                      obj_role,
-                                  int                      model_id,
-                                  std::string              model3d,
-                                  int                      ctrl_type,
-                                  OSCBoundingBox           boundingbox,
-                                  int                      scaleMode,
-                                  int                      visibilityMask,
-                                  double                   timestamp,
-                                  double                   speed,
-                                  double                   wheel_angle,
-                                  double                   wheel_rot,
-                                  double                   rear_axle_z_pos,
-                                  double                   front_axle_x_pos,
-                                  double                   front_axle_z_pos,
-                                  roadmanager::Position*   pos,
-                                  std::vector<std::string> source_reference,
-                                  double                   refpoint_x_offset,
-                                  double                   model_x_offset)
+int ScenarioGateway::reportObjectPos(int                      id,
+                                     id_t                     g_id,
+                                     std::string              name,
+                                     int                      obj_type,
+                                     int                      obj_category,
+                                     int                      obj_role,
+                                     int                      model_id,
+                                     std::string              model3d,
+                                     int                      ctrl_type,
+                                     OSCBoundingBox           boundingbox,
+                                     int                      scaleMode,
+                                     int                      visibilityMask,
+                                     double                   timestamp,
+                                     double                   speed,
+                                     double                   wheel_angle,
+                                     double                   wheel_rot,
+                                     double                   rear_axle_z_pos,
+                                     double                   front_axle_x_pos,
+                                     double                   front_axle_z_pos,
+                                     roadmanager::Position*   pos,
+                                     std::vector<std::string> source_reference,
+                                     double                   refpoint_x_offset,
+                                     double                   model_x_offset)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -386,6 +400,7 @@ int ScenarioGateway::reportObject(int                      id,
                                     model_x_offset);
 
         // Add object to collection
+        obj_state->dirty_ |= Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL;
         objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
     }
     else
@@ -393,34 +408,35 @@ int ScenarioGateway::reportObject(int                      id,
         // Update status
         obj_state->state_.pos = *pos;
         obj_state->dirty_ |= Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL;
-
         updateObjectInfo(obj_state, timestamp, visibilityMask, speed, wheel_angle, wheel_rot);
     }
 
     return 0;
 }
 
-int ScenarioGateway::reportObject(int            id,
-                                  std::string    name,
-                                  int            obj_type,
-                                  int            obj_category,
-                                  int            obj_role,
-                                  int            model_id,
-                                  int            ctrl_type,
-                                  OSCBoundingBox boundingbox,
-                                  int            scaleMode,
-                                  int            visibilityMask,
-                                  double         timestamp,
-                                  double         speed,
-                                  double         wheel_angle,
-                                  double         wheel_rot,
-                                  double         rear_axle_z_pos,
-                                  double         x,
-                                  double         y,
-                                  double         z,
-                                  double         h,
-                                  double         p,
-                                  double         r)
+int ScenarioGateway::reportObjectXYZHPR(int            id,
+                                        id_t           g_id,
+                                        std::string    name,
+                                        int            obj_type,
+                                        int            obj_category,
+                                        int            obj_role,
+                                        int            model_id,
+                                        std::string    model3d,
+                                        int            ctrl_type,
+                                        OSCBoundingBox boundingbox,
+                                        int            scaleMode,
+                                        int            visibilityMask,
+                                        double         timestamp,
+                                        double         speed,
+                                        double         wheel_angle,
+                                        double         wheel_rot,
+                                        double         rear_axle_z_pos,
+                                        double         x,
+                                        double         y,
+                                        double         z,
+                                        double         h,
+                                        double         p,
+                                        double         r)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -429,11 +445,13 @@ int ScenarioGateway::reportObject(int            id,
         // Create state and set permanent information
         LOG_INFO("Creating new object \"{}\" (id {}, timestamp {:.2f})", name, id, timestamp);
         obj_state = new ObjectState(id,
+                                    g_id,
                                     name,
                                     obj_type,
                                     obj_category,
                                     obj_role,
                                     model_id,
+                                    model3d,
                                     ctrl_type,
                                     boundingbox,
                                     scaleMode,
@@ -451,6 +469,7 @@ int ScenarioGateway::reportObject(int            id,
                                     r);
 
         // Add object to collection
+        obj_state->dirty_ |= Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL;
         objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
     }
     else
@@ -465,24 +484,26 @@ int ScenarioGateway::reportObject(int            id,
     return 0;
 }
 
-int ScenarioGateway::reportObject(int            id,
-                                  std::string    name,
-                                  int            obj_type,
-                                  int            obj_category,
-                                  int            obj_role,
-                                  int            model_id,
-                                  int            ctrl_type,
-                                  OSCBoundingBox boundingbox,
-                                  int            scaleMode,
-                                  int            visibilityMask,
-                                  double         timestamp,
-                                  double         speed,
-                                  double         wheel_angle,
-                                  double         wheel_rot,
-                                  double         rear_axle_z_pos,
-                                  double         x,
-                                  double         y,
-                                  double         h)
+int ScenarioGateway::reportObjectXYH(int            id,
+                                     id_t           g_id,
+                                     std::string    name,
+                                     int            obj_type,
+                                     int            obj_category,
+                                     int            obj_role,
+                                     int            model_id,
+                                     std::string    model3d,
+                                     int            ctrl_type,
+                                     OSCBoundingBox boundingbox,
+                                     int            scaleMode,
+                                     int            visibilityMask,
+                                     double         timestamp,
+                                     double         speed,
+                                     double         wheel_angle,
+                                     double         wheel_rot,
+                                     double         rear_axle_z_pos,
+                                     double         x,
+                                     double         y,
+                                     double         h)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -491,11 +512,13 @@ int ScenarioGateway::reportObject(int            id,
         // Create state and set permanent information
         LOG_INFO("Creating new object \"{}\" (id {}, timestamp {:.2f})", name, id, timestamp);
         obj_state = new ObjectState(id,
+                                    g_id,
                                     name,
                                     obj_type,
                                     obj_category,
                                     obj_role,
                                     model_id,
+                                    model3d,
                                     ctrl_type,
                                     boundingbox,
                                     scaleMode,
@@ -513,6 +536,7 @@ int ScenarioGateway::reportObject(int            id,
                                     0);
 
         // Add object to collection
+        obj_state->dirty_ |= Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL;
         objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
     }
     else
@@ -527,25 +551,27 @@ int ScenarioGateway::reportObject(int            id,
     return 0;
 }
 
-int ScenarioGateway::reportObject(int            id,
-                                  std::string    name,
-                                  int            obj_type,
-                                  int            obj_category,
-                                  int            obj_role,
-                                  int            model_id,
-                                  int            ctrl_type,
-                                  OSCBoundingBox boundingbox,
-                                  int            scaleMode,
-                                  int            visibilityMask,
-                                  double         timestamp,
-                                  double         speed,
-                                  double         wheel_angle,
-                                  double         wheel_rot,
-                                  double         rear_axle_z_pos,
-                                  id_t           roadId,
-                                  int            laneId,
-                                  double         laneOffset,
-                                  double         s)
+int ScenarioGateway::reportObjectLanePos(int            id,
+                                         id_t           g_id,
+                                         std::string    name,
+                                         int            obj_type,
+                                         int            obj_category,
+                                         int            obj_role,
+                                         int            model_id,
+                                         std::string    model3d,
+                                         int            ctrl_type,
+                                         OSCBoundingBox boundingbox,
+                                         int            scaleMode,
+                                         int            visibilityMask,
+                                         double         timestamp,
+                                         double         speed,
+                                         double         wheel_angle,
+                                         double         wheel_rot,
+                                         double         rear_axle_z_pos,
+                                         id_t           roadId,
+                                         int            laneId,
+                                         double         laneOffset,
+                                         double         s)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -554,11 +580,13 @@ int ScenarioGateway::reportObject(int            id,
         // Create state and set permanent information
         LOG_INFO("Creating new object \"{}\" (id {}, timestamp {:.2f})", name, id, timestamp);
         obj_state = new ObjectState(id,
+                                    g_id,
                                     name,
                                     obj_type,
                                     obj_category,
                                     obj_role,
                                     model_id,
+                                    model3d,
                                     ctrl_type,
                                     boundingbox,
                                     scaleMode,
@@ -574,6 +602,7 @@ int ScenarioGateway::reportObject(int            id,
                                     s);
 
         // Add object to collection
+        obj_state->dirty_ |= Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL;
         objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
     }
     else
@@ -588,24 +617,26 @@ int ScenarioGateway::reportObject(int            id,
     return 0;
 }
 
-int ScenarioGateway::reportObject(int            id,
-                                  std::string    name,
-                                  int            obj_type,
-                                  int            obj_category,
-                                  int            obj_role,
-                                  int            model_id,
-                                  int            ctrl_type,
-                                  OSCBoundingBox boundingbox,
-                                  int            scaleMode,
-                                  int            visibilityMask,
-                                  double         timestamp,
-                                  double         speed,
-                                  double         wheel_angle,
-                                  double         wheel_rot,
-                                  double         rear_axle_z_pos,
-                                  id_t           roadId,
-                                  double         lateralOffset,
-                                  double         s)
+int ScenarioGateway::reportObjectRoadPos(int            id,
+                                         id_t           g_id,
+                                         std::string    name,
+                                         int            obj_type,
+                                         int            obj_category,
+                                         int            obj_role,
+                                         int            model_id,
+                                         std::string    model3d,
+                                         int            ctrl_type,
+                                         OSCBoundingBox boundingbox,
+                                         int            scaleMode,
+                                         int            visibilityMask,
+                                         double         timestamp,
+                                         double         speed,
+                                         double         wheel_angle,
+                                         double         wheel_rot,
+                                         double         rear_axle_z_pos,
+                                         id_t           roadId,
+                                         double         lateralOffset,
+                                         double         s)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -614,11 +645,13 @@ int ScenarioGateway::reportObject(int            id,
         // Create state and set permanent information
         LOG_INFO("Creating new object \"{}\" (id {}, timestamp {:.2f})", name, id, timestamp);
         obj_state = new ObjectState(id,
+                                    g_id,
                                     name,
                                     obj_type,
                                     obj_category,
                                     obj_role,
                                     model_id,
+                                    model3d,
                                     ctrl_type,
                                     boundingbox,
                                     scaleMode,
@@ -633,6 +666,7 @@ int ScenarioGateway::reportObject(int            id,
                                     s);
 
         // Add object to collection
+        obj_state->dirty_ |= Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL;
         objectState_.push_back(std::unique_ptr<ObjectState>{obj_state});
     }
     else

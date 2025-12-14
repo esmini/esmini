@@ -1159,11 +1159,13 @@ void Replay::CreateMergedDatfile(const std::string filename) const
             }
 
             auto obj = std::make_unique<scenarioengine::ObjectState>(state->info.id,
+                                                                     ID_UNDEFINED,  // No global id
                                                                      state->info.name,
                                                                      state->info.obj_type,
                                                                      state->info.obj_category,
                                                                      0,  // No role
                                                                      state->info.model_id,
+                                                                     "",  // No model3d
                                                                      state->info.ctrl_type,
                                                                      state->info.boundingbox,
                                                                      state->info.scaleMode,

@@ -4924,11 +4924,13 @@ See code examples in ScenarioEngineDLL test cases, e.g: https://github.com/esmin
 ====
 **Note:**
 
-OSI groundtruth reported via the API always contains both static and dynamic objects in the first frame. By default subsequent frames will only contain dynamic objects. The same data is also stored in the OSI log file, given that the log file is enabled.
+OSI groundtruth always contains all dynamics objects. Static objects, by default, will be reported only the very frame they are created. OpenDRIVE objects are always created during initialization. OpenSCENARIO MiscObjects are also normally created during initialization. However, they can be added by AddEntityAction or AddObject() API function, hence, from esmini v2.57.0, MiscObjects can be added at any time to groundtruth.
 
-However, the behavior can be configured as follows:
+To summarize the default behavior, first frame will include all dynamic and static objects created during the initialization of the scenario. Subsequent frames will include all dynamics objects available at that time plus any static MiscObjects created that very frame. 
 
-The dynamic objects are reported every frame. How the static objects are reported and logged can be controlled by `SE_SetOSIStaticReportMode` function. The available options are according to the enum `SE_OSIStaticReportMode`:
+The same data is also stored in the OSI log file, given that the log file is enabled.
+
+The behavior regarding static content, described above, can be configured by `SE_SetOSIStaticReportMode` function. The available options are according to the enum `SE_OSIStaticReportMode`:
 
 - `SE_OSIStaticReportMode::DEFAULT` - Report and log static objects only once
 - `SE_OSIStaticReportMode::API` - Report static objects in every frame, but only once in the log file

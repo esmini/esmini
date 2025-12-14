@@ -1089,17 +1089,6 @@ extern "C"
         // Add missing object
         if (player != nullptr)
         {
-            int         object_id = -1;
-            std::string name;
-            if (object_name == nullptr)
-            {
-                name = "obj_" + std::to_string(object_id);
-            }
-            else
-            {
-                name = object_name;
-            }
-
             if (object_type < 1 || object_type >= scenarioengine::Object::Type::N_OBJECT_TYPES)
             {
                 object_type = scenarioengine::Object::Type::VEHICLE;
@@ -1114,11 +1103,11 @@ extern "C"
             bb.dimensions_.width_  = bounding_box.dimensions_.width_;
 
             scenarioengine::Controller::Type ctrl_type = scenarioengine::Controller::Type::CONTROLLER_TYPE_UNDEFINED;
+            Object                          *object    = nullptr;
 
             if (object_type == scenarioengine::Object::Type::VEHICLE || object_type == scenarioengine::Object::Type::PEDESTRIAN ||
                 object_type == scenarioengine::Object::Type::MISC_OBJECT)
             {
-                Object *object = nullptr;
                 if (object_type == scenarioengine::Object::Type::VEHICLE)
                 {
                     object = new Vehicle();
@@ -1132,13 +1121,12 @@ extern "C"
                     object = new MiscObject();
                 }
 
-                object->name_        = name;
                 object->scaleMode_   = static_cast<EntityScaleMode>(scale_mode);
                 object->category_    = object_category;
                 object->role_        = object_role;
                 object->boundingbox_ = bb;
-
-                object_id = player->scenarioEngine->entities_.addObject(object, true);
+                player->scenarioEngine->entities_.addObject(object, true);
+                object->name_ = (object_name == nullptr) ? "obj_" + std::to_string(object->id_) : object_name;
 
                 if (model_3d != nullptr && strlen(model_3d) > 0)
                 {
@@ -1171,29 +1159,31 @@ extern "C"
                 return -1;
             }
 
-            if (player->scenarioGateway->reportObject(object_id,
-                                                      name,
-                                                      object_type,
-                                                      object_category,
-                                                      object_role,
-                                                      model_id,
-                                                      ctrl_type,
-                                                      bb,
-                                                      scale_mode,
-                                                      0xff,
-                                                      0.0,
-                                                      0.0,
-                                                      0.0,
-                                                      0.0,
-                                                      0.0,
-                                                      0.0,
-                                                      0.0,
-                                                      0.0,
-                                                      0.0,
-                                                      0.0,
-                                                      0.0) == 0)
+            if (player->scenarioGateway->reportObjectXYZHPR(object->id_,
+                                                            object->g_id_,
+                                                            object->name_,
+                                                            object->type_,
+                                                            object->category_,
+                                                            object->role_,
+                                                            object->model_id_,
+                                                            model_3d == nullptr ? "" : object->GetModel3DFullPath(),
+                                                            ctrl_type,
+                                                            bb,
+                                                            scale_mode,
+                                                            0xff,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0,
+                                                            0.0) == 0)
             {
-                return object_id;
+                return object->id_;
             }
         }
 
@@ -1297,24 +1287,26 @@ extern "C"
             return -1;
         }
 
-        player->scenarioGateway->reportObject(object_id,
-                                              obj->name_,
-                                              obj->type_,
-                                              obj->category_,
-                                              obj->role_,
-                                              obj->model_id_,
-                                              obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
-                                              obj->boundingbox_,
-                                              static_cast<int>(obj->scaleMode_),
-                                              obj->visibilityMask_,
-                                              0.0,
-                                              obj->GetSpeed(),
-                                              obj->wheel_angle_,
-                                              obj->wheel_rot_,
-                                              obj->rear_axle_.positionZ,
-                                              obj->pos_.GetTrackId(),
-                                              t,
-                                              obj->pos_.GetS());
+        player->scenarioGateway->reportObjectRoadPos(object_id,
+                                                     obj->g_id_,
+                                                     obj->name_,
+                                                     obj->type_,
+                                                     obj->category_,
+                                                     obj->role_,
+                                                     obj->model_id_,
+                                                     obj->GetModel3DFilename(),
+                                                     obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
+                                                     obj->boundingbox_,
+                                                     static_cast<int>(obj->scaleMode_),
+                                                     obj->visibilityMask_,
+                                                     0.0,
+                                                     obj->GetSpeed(),
+                                                     obj->wheel_angle_,
+                                                     obj->wheel_rot_,
+                                                     obj->rear_axle_.positionZ,
+                                                     obj->pos_.GetTrackId(),
+                                                     t,
+                                                     obj->pos_.GetS());
 
         return 0;
     }
@@ -1328,25 +1320,27 @@ extern "C"
             return -1;
         }
 
-        player->scenarioGateway->reportObject(object_id,
-                                              obj->name_,
-                                              obj->type_,
-                                              obj->category_,
-                                              obj->role_,
-                                              obj->model_id_,
-                                              obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
-                                              obj->boundingbox_,
-                                              static_cast<int>(obj->scaleMode_),
-                                              obj->visibilityMask_,
-                                              0.0,
-                                              obj->GetSpeed(),
-                                              obj->wheel_angle_,
-                                              obj->wheel_rot_,
-                                              obj->rear_axle_.positionZ,
-                                              obj->pos_.GetTrackId(),
-                                              obj->pos_.GetLaneId(),
-                                              laneOffset,
-                                              obj->pos_.GetS());
+        player->scenarioGateway->reportObjectLanePos(object_id,
+                                                     obj->g_id_,
+                                                     obj->name_,
+                                                     obj->type_,
+                                                     obj->category_,
+                                                     obj->role_,
+                                                     obj->model_id_,
+                                                     obj->GetModel3DFilename(),
+                                                     obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
+                                                     obj->boundingbox_,
+                                                     static_cast<int>(obj->scaleMode_),
+                                                     obj->visibilityMask_,
+                                                     0.0,
+                                                     obj->GetSpeed(),
+                                                     obj->wheel_angle_,
+                                                     obj->wheel_rot_,
+                                                     obj->rear_axle_.positionZ,
+                                                     obj->pos_.GetTrackId(),
+                                                     obj->pos_.GetLaneId(),
+                                                     laneOffset,
+                                                     obj->pos_.GetS());
 
         return 0;
     }

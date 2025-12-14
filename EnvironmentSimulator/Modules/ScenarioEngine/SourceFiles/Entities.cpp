@@ -23,7 +23,7 @@ using namespace roadmanager;
 Object::Object(Type type)
     : type_(type),
       id_(0),
-      g_id_(0),
+      g_id_(ID_UNDEFINED),
       speed_(0),
       wheel_angle_(0),
       wheel_rot_(0),

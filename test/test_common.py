@@ -11,6 +11,7 @@ from dat import *
 
 LOG_FILENAME = 'log.txt'
 DAT_FILENAME = 'sim.dat'
+OSI_FILENAME = 'ground_truth.osi'
 STDOUT_FILENAME = 'stdout.txt'
 TIMEOUT = 40
 POLL_INTERVAL = 0.1  # seconds

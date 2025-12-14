@@ -204,6 +204,8 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
                 Draw();
                 if (!IsPaused() && !IsQuitRequested())
                 {
+                    // clear bits from previous frame
+                    scenarioGateway->clearDirtyBits();
                     retval = ScenarioFrame(ghost_solo_dt, false);
                 }
             }
@@ -238,6 +240,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
         {
             scenarioEngine->mutex_.Lock();
             ScenarioPostFrame();
+            scenarioGateway->clearDirtyBits();  // clear bits enabling identifying external updates
             scenarioEngine->mutex_.Unlock();
         }
     }

@@ -648,18 +648,27 @@ class TestSuite(unittest.TestCase):
         # Check some scenario events
         self.assertTrue(re.search('^.2.000.* Failed to activate obj Car1. Already active \\(1 instances in active list\\)', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.3.010.* Added entity Car2', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.4.020.* AddBoxEvent complete after 1 execution', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.7.010.* Deleted entity Car2', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.9.010.* Failed to deactivate obj Car2. Already inactive \\(0 in active list\\)', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.10.010.* Deleted entity Car1', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.12.010.* Added entity Car1', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.16.390.* Deleted entity Car1', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.16.400.* StopCondition: true, delay: 2.00, DeleteCar1Event2-ExpectedToSucceed, COMPLETE / END_TRANSITION == COMPLETE, edge: none', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^.18.400.* StopCondition: true', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.16.400.* QuitCondition: true, delay: 2.00, DeleteCar1Event2-ExpectedToSucceed, COMPLETE / END_TRANSITION == COMPLETE, edge: none', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.18.400.* QuitCondition: true', log, re.MULTILINE)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv()
         self.assertTrue(re.search('^3.020, 0, Car1, 68.722, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
         self.assertTrue(re.search('^3.020, 1, Car2, 90.194, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.020, 0, Car1, 88.167, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 3.422', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.020, 1, Car2, 109.639, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 5.290', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.030, 0, Car1, 88.361, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 3.977', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.030, 1, Car2, 109.833, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 5.846', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.030, 2, Box1, 130.000, -3.910, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.040, 0, Car1, 88.556, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 4.533', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.040, 1, Car2, 110.028, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444, 0.000, 0.118', csv, re.MULTILINE))
+        self.assertTrue(re.search('^4.040, 2, Box1, 130.000, -3.910, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^7.010, 0, Car1, 146.306, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
         self.assertTrue(re.search('^7.010, 1, Car2, 167.778, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
         self.assertTrue(re.search('^7.010, 0, Car1, 146.306, -1.535, 0.000, 0.000, 0.000, 0.000, 19.444', csv, re.MULTILINE))
@@ -1919,25 +1928,27 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\n.0.000.* my_manouver_group initState -> startTransition -> runningState', log)  is not None)
         self.assertTrue(re.search('\n.0.100.* Creating new object "object_0" \\(id 0, timestamp 0.00\\)', log)  is not None)
         self.assertTrue(re.search('\n.1.500.* Creating new object "object_1" \\(id 1, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.2.900.* Creating new object "object_2" \\(id 2, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.4.400.* Creating new object "object_3" \\(id 3, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.5.800.* Creating new object "object_4" \\(id 4, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.7.200.* Creating new object "object_5" \\(id 5, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.8.700.* Creating new object "object_6" \\(id 6, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.10.100.* Creating new object "object_7" \\(id 7, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.11.600.* Creating new object "object_8" \\(id 8, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.13.000.* Creating new object "object_9" \\(id 9, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.14.400.* Creating new object "object_10" \\(id 10, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.15.900.* Creating new object "object_11" \\(id 11, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.17.300.* Creating new object "object_12" \\(id 12, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.18.800.* Creating new object "object_13" \\(id 13, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.20.200.* Creating new object "object_14" \\(id 14, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.21.600.* Creating new object "object_15" \\(id 15, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.23.100.* Creating new object "object_16" \\(id 16, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.24.500.* Creating new object "object_17" \\(id 17, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.26.000.* Creating new object "object_18" \\(id 18, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.27.400.* Creating new object "object_19" \\(id 19, timestamp 0.00\\)', log)  is not None)
-        self.assertTrue(re.search('\n.28.800.* Creating new object "object_20" \\(id 20, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.1.500.* Creating new object "misc_object_0" \\(id 2, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.2.900.* Creating new object "object_2" \\(id 3, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.2.900.* Creating new object "misc_object_1" \\(id 4, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.4.400.* Creating new object "object_3" \\(id 5, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.5.800.* Creating new object "object_4" \\(id 6, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.7.200.* Creating new object "object_5" \\(id 7, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.8.700.* Creating new object "object_6" \\(id 8, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.10.100.* Creating new object "object_7" \\(id 9, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.11.600.* Creating new object "object_8" \\(id 10, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.13.000.* Creating new object "object_9" \\(id 11, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.14.400.* Creating new object "object_10" \\(id 12, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.15.900.* Creating new object "object_11" \\(id 13, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.17.300.* Creating new object "object_12" \\(id 14, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.18.800.* Creating new object "object_13" \\(id 15, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.20.200.* Creating new object "object_14" \\(id 16, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.21.600.* Creating new object "object_15" \\(id 17, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.23.100.* Creating new object "object_16" \\(id 18, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.24.500.* Creating new object "object_17" \\(id 19, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.26.000.* Creating new object "object_18" \\(id 20, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.27.400.* Creating new object "object_19" \\(id 21, timestamp 0.00\\)', log)  is not None)
+        self.assertTrue(re.search('\n.28.800.* Creating new object "object_20" \\(id 22, timestamp 0.00\\)', log)  is not None)
 
         # Check vehicle key positions
         csv = generate_csv("empty_scenario.dat")
@@ -1996,7 +2007,6 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^5.100, 0, Ego, 66.480, -1.535, 0.000, 0.000, 0.000, 0.000, 9.800, 0.000, 0.259', csv, re.MULTILINE))
         self.assertTrue(re.search('^9.500, 0, Ego, 89.800, -1.535, 0.000, 0.000, 0.000, 0.000, 1.000, 0.000, 4.056', csv, re.MULTILINE))
         self.assertTrue(re.search('^9.600, 0, Ego, 89.880, -1.535, 0.000, 0.000, 0.000, 0.000, 0.800, 0.000, 4.284', csv, re.MULTILINE))
-
 
     def test_traj_heading(self):
         # This test case checks correct handling of driving direction wrt trajectory control point headings, specified or not
@@ -2335,7 +2345,7 @@ class TestSuite(unittest.TestCase):
         self.controller_conflict_common('1_3')
 
     def test_cut_in_sumo(self):
-        if self.use_package("SUMO"):
+        if use_package("SUMO"):
             log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/cut-in_sumo.xosc'), COMMON_ESMINI_ARGS + "--seed 1 --fixed_timestep 0.5 --log_level debug")
 
             # Check some initialization steps
@@ -2404,7 +2414,7 @@ class TestSuite(unittest.TestCase):
             print("Skipping due to lacking SUMO support ", end='', file=sys.stderr)
 
     def test_sumo_test(self):
-        if self.use_package("SUMO"):
+        if use_package("SUMO"):
             if self.build_type("Release"):
                 log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/sumo-test.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 20.0")
 

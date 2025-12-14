@@ -82,7 +82,13 @@ public:
     */
     int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
     /**
+    Fills up the osi message with static GroundTruth from OpenDRIVE. Should only be called once.
+    @return -1 on error, 0 on no updates performed, else number of odr objects updated
+    */
+    int CreateOSIStaticGroundTruthFromODR();
+    /**
     Fills up the osi message with  static GroundTruth
+    @return -1 on error, 0 on no updates performed, else number of misc objects updated
     */
     int UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
     /**
@@ -95,6 +101,7 @@ public:
     int UpdateOSIStationaryObjectODR(roadmanager::RMObject* object);
     /**
     Fills up the osi message with Stationary Object
+    @return -1 on error, 0 on no updates performed, else 1
     */
     int UpdateOSIStationaryObject(ObjectState* objectState);
     /**

@@ -61,7 +61,7 @@ namespace scenarioengine
             return "";
         }
 
-        std::vector<std::string> GetAllValuesStr(const std::string key)
+        std::vector<std::string> GetAllValuesStr(const std::string key) const
         {
             std::vector<std::string> ret;
 

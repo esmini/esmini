@@ -177,71 +177,71 @@ int ScenarioEngine::step(double deltaSimTime)
             }
             else
             {
-                if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
+                if (o->ReadDirtyBits() & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
                 {
-                    obj->SetDirtyBits(o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL));
+                    obj->SetDirtyBits(o->ReadDirtyBits() & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL));
                 }
-                if (o->dirty_ & Object::DirtyBit::SPEED)
+                if (o->ReadDirtyBits() & Object::DirtyBit::SPEED)
                 {
                     obj->SetDirtyBits(Object::DirtyBit::SPEED);
                 }
-                if (o->dirty_ & Object::DirtyBit::ACCELERATION)
+                if (o->ReadDirtyBits() & Object::DirtyBit::ACCELERATION)
                 {
                     obj->SetDirtyBits(Object::DirtyBit::ACCELERATION);
                 }
-                if (o->dirty_ & Object::DirtyBit::WHEEL_ANGLE)
+                if (o->ReadDirtyBits() & Object::DirtyBit::WHEEL_ANGLE)
                 {
                     obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
                 }
-                if (o->dirty_ & Object::DirtyBit::WHEEL_ROTATION)
+                if (o->ReadDirtyBits() & Object::DirtyBit::WHEEL_ROTATION)
                 {
                     obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
                 }
-                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_H_SET)
+                if (o->ReadDirtyBits() & Object::DirtyBit::ALIGN_MODE_H_SET)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::SET,
                                       roadmanager::Position::PosMode::H_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
                 }
-                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_P_SET)
+                if (o->ReadDirtyBits() & Object::DirtyBit::ALIGN_MODE_P_SET)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::SET,
                                       roadmanager::Position::PosMode::P_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
                 }
-                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_R_SET)
+                if (o->ReadDirtyBits() & Object::DirtyBit::ALIGN_MODE_R_SET)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::SET,
                                       roadmanager::Position::PosMode::R_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
                 }
-                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_Z_SET)
+                if (o->ReadDirtyBits() & Object::DirtyBit::ALIGN_MODE_Z_SET)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::SET,
                                       roadmanager::Position::PosMode::Z_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::SET));
                 }
-                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_H_UPDATE)
+                if (o->ReadDirtyBits() & Object::DirtyBit::ALIGN_MODE_H_UPDATE)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
                                       roadmanager::Position::PosMode::H_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
                 }
-                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_P_UPDATE)
+                if (o->ReadDirtyBits() & Object::DirtyBit::ALIGN_MODE_P_UPDATE)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
                                       roadmanager::Position::PosMode::P_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
                 }
-                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_R_UPDATE)
+                if (o->ReadDirtyBits() & Object::DirtyBit::ALIGN_MODE_R_UPDATE)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
                                       roadmanager::Position::PosMode::R_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
                 }
-                if (o->dirty_ & Object::DirtyBit::ALIGN_MODE_Z_UPDATE)
+                if (o->ReadDirtyBits() & Object::DirtyBit::ALIGN_MODE_Z_UPDATE)
                 {
                     obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE,
                                       roadmanager::Position::PosMode::Z_MASK & o->state_.pos.GetMode(roadmanager::Position::PosModeType::UPDATE));
                 }
-                if (o->dirty_ & Object::DirtyBit::BOUNDING_BOX)
+                if (o->ReadDirtyBits() & Object::DirtyBit::BOUNDING_BOX)
                 {
                     obj->boundingbox_ = o->state_.info.boundingbox;
                 }
-                if (o->dirty_ & Object::DirtyBit::LANE_TYPE_SNAP_MASK)
+                if (o->ReadDirtyBits() & Object::DirtyBit::LANE_TYPE_SNAP_MASK)
                 {
                     obj->pos_.SetSnapLaneTypes(o->state_.pos.GetSnapLaneTypes());
                 }
@@ -307,7 +307,7 @@ int ScenarioEngine::step(double deltaSimTime)
         ObjectState* o = scenarioGateway.getObjectStatePtrById(obj->id_);
         if (o != nullptr)
         {
-            if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
+            if (o->ReadDirtyBits() & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
             {
                 obj->pos_.Duplicate(o->state_.pos);
                 if (obj->pos_.route_ != nullptr)
@@ -316,20 +316,20 @@ int ScenarioEngine::step(double deltaSimTime)
                     obj->pos_.CalcRoutePosition();
                 }
             }
-            if (o->dirty_ & Object::DirtyBit::SPEED)
+            if (o->ReadDirtyBits() & Object::DirtyBit::SPEED)
             {
                 obj->speed_ = o->state_.info.speed;
             }
 
             // Update wheel info, assuming first wheel is steering wheel on front axle
-            if (o->dirty_ & Object::DirtyBit::WHEEL_ANGLE)
+            if (o->ReadDirtyBits() & Object::DirtyBit::WHEEL_ANGLE)
             {
                 if (o->state_.info.wheel_data.size() > 0)
                 {
                     obj->wheel_angle_ = o->state_.info.wheel_data[0].h;
                 }
             }
-            if (o->dirty_ & Object::DirtyBit::WHEEL_ROTATION)
+            if (o->ReadDirtyBits() & Object::DirtyBit::WHEEL_ROTATION)
             {
                 if (o->state_.info.wheel_data.size() > 0)
                 {
@@ -426,29 +426,29 @@ int ScenarioEngine::step(double deltaSimTime)
         else
         {
             // Object not reported yet, do that
-            scenarioGateway.reportObject(obj->id_,
-                                         obj->g_id_,
-                                         obj->name_,
-                                         static_cast<int>(obj->type_),
-                                         obj->category_,
-                                         obj->role_,
-                                         obj->model_id_,
-                                         obj->GetModel3DFullPath(),
-                                         obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
-                                         obj->boundingbox_,
-                                         static_cast<int>(obj->scaleMode_),
-                                         obj->visibilityMask_,
-                                         simulationTime_,
-                                         obj->speed_,
-                                         obj->wheel_angle_,
-                                         obj->wheel_rot_,
-                                         obj->rear_axle_.positionZ,
-                                         obj->front_axle_.positionX,
-                                         obj->front_axle_.positionZ,
-                                         &obj->pos_,
-                                         obj->GetSourceReference(),
-                                         obj->refpoint_x_offset_,
-                                         obj->model3d_x_offset_);
+            scenarioGateway.reportObjectPos(obj->id_,
+                                            obj->g_id_,
+                                            obj->name_,
+                                            static_cast<int>(obj->type_),
+                                            obj->category_,
+                                            obj->role_,
+                                            obj->model_id_,
+                                            obj->GetModel3DFullPath(),
+                                            obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
+                                            obj->boundingbox_,
+                                            static_cast<int>(obj->scaleMode_),
+                                            obj->visibilityMask_,
+                                            simulationTime_,
+                                            obj->speed_,
+                                            obj->wheel_angle_,
+                                            obj->wheel_rot_,
+                                            obj->rear_axle_.positionZ,
+                                            obj->front_axle_.positionX,
+                                            obj->front_axle_.positionZ,
+                                            &obj->pos_,
+                                            obj->GetSourceReference(),
+                                            obj->refpoint_x_offset_,
+                                            obj->model3d_x_offset_);
 
             if (obj->type_ == Object::Type::VEHICLE)
             {
@@ -835,7 +835,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
         }
         else
         {
-            if (o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
+            if (o->ReadDirtyBits() & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
             {
                 obj->pos_.Duplicate(o->state_.pos);
                 if (obj->pos_.route_ != nullptr)
@@ -843,29 +843,29 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                     // update assigned route info
                     obj->pos_.CalcRoutePosition();
                 }
-                obj->SetDirtyBits(o->dirty_ & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL));
+                obj->SetDirtyBits(o->ReadDirtyBits() & (Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL));
             }
-            if (o->dirty_ & Object::DirtyBit::ACCELERATION)
+            if (o->ReadDirtyBits() & Object::DirtyBit::ACCELERATION)
             {
                 obj->pos_.SetAcc(o->state_.pos.GetAccX(), o->state_.pos.GetAccY(), o->state_.pos.GetAccZ());
                 obj->SetDirtyBits(Object::DirtyBit::ACCELERATION);
             }
-            if (o->dirty_ & Object::DirtyBit::SPEED)
+            if (o->ReadDirtyBits() & Object::DirtyBit::SPEED)
             {
                 obj->speed_ = o->state_.info.speed;
                 obj->SetDirtyBits(Object::DirtyBit::SPEED);
             }
-            if (o->dirty_ & Object::DirtyBit::WHEEL_ANGLE)
+            if (o->ReadDirtyBits() & Object::DirtyBit::WHEEL_ANGLE)
             {
                 obj->wheel_angle_ = o->state_.info.wheel_data.size() > 0 ? o->state_.info.wheel_data[0].h : 0.0;
                 obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
             }
-            if (o->dirty_ & Object::DirtyBit::WHEEL_ROTATION)
+            if (o->ReadDirtyBits() & Object::DirtyBit::WHEEL_ROTATION)
             {
                 obj->wheel_rot_ = o->state_.info.wheel_data.size() > 0 ? o->state_.info.wheel_data[0].p : 0.0;
                 obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
             }
-            if (o->dirty_ & Object::DirtyBit::BOUNDING_BOX)
+            if (o->ReadDirtyBits() & Object::DirtyBit::BOUNDING_BOX)
             {
                 obj->boundingbox_ = o->state_.info.boundingbox;
                 obj->SetDirtyBits(Object::DirtyBit::BOUNDING_BOX);
@@ -1079,10 +1079,6 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             }
             scenarioGateway.updateObjectWheelData(obj->id_, wheel_data);
         }
-
-        // Now that frame is complete, reset dirty bits to avoid circulation
-        if (o)
-            o->clearDirtyBits();
 
         // Clear dirty/update bits for any reported velocity and acceleration values, and flag indicating teleport action
         obj->ClearDirtyBits(Object::DirtyBit::VELOCITY | Object::DirtyBit::ANGULAR_RATE | Object::DirtyBit::ACCELERATION |

@@ -1118,6 +1118,8 @@ TEST(OSI, TestStationaryObjects)
     const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
     ASSERT_NE(osi_gt_ptr, nullptr);
 
+    ASSERT_EQ(osi_gt_ptr->stationary_object().size(), 6);
+
     // verify correct location of OpenDRIVE stationary object with polygon
     EXPECT_EQ(osi_gt_ptr->stationary_object(0).id().value(), 4);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().length(), 25.0, 1e-3);
