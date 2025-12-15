@@ -7932,7 +7932,11 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                             while (++counter)
                                             {
                                                 // [X1, Y1] = Real position with no tolerance
-                                                s = MIN(pos_candidate.GetS() + step, s_end_roadmarkline - SMALL_NUMBER / 2);
+                                                if (pos_candidate.GetS() + step > s_end_roadmarkline - SMALL_NUMBER / 2)
+                                                {
+                                                    step = s_end_roadmarkline - SMALL_NUMBER / 2 - pos_candidate.GetS();
+                                                }
+                                                s = pos_candidate.GetS() + step;
 
                                                 pos_candidate.SetRoadMarkPos(road->GetId(), lane->GetId(), m, 0, n, s, 0, j);
 
