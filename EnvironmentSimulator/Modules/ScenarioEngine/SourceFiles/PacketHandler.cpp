@@ -455,6 +455,17 @@ void Dat::DatReader::CloseFile()
     }
 }
 
+std::string Dat::DatReader::ReadStringPacket(const Dat::PacketGeneric& pkt)
+{
+    const char*  ptr = pkt.data.data();
+    unsigned int size;
+
+    memcpy(&size, ptr, sizeof(size));
+    ptr += sizeof(size);
+
+    return std::string(ptr, size);
+}
+
 int Dat::DatReader::ReadStringPacket(std::string& str)
 {
     unsigned int size;
@@ -467,7 +478,6 @@ int Dat::DatReader::ReadStringPacket(std::string& str)
     {
         return -1;
     }
-
     return 0;
 }
 

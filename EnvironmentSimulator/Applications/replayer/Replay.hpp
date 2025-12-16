@@ -300,6 +300,16 @@ namespace scenarioengine
     };
 #endif  // _USE_OSG
 
+    // Used in dat-merging
+    struct PacketRef
+    {
+        size_t            scenario_idx;
+        std::streampos    header_offset;
+        Dat::PacketHeader header;
+        double            timestamp;
+        int               veh_id_offset;
+    };
+
     class Replay
     {
     public:
@@ -324,7 +334,7 @@ namespace scenarioengine
         ~Replay();
 
         void        SetupGhostsTimeline();
-        int         ParsePackets(const std::string& filename);
+        int         ParsePackets(const std::string& filename, std::vector<Dat::PacketHeader>* raw_data = nullptr);
         std::string BuildElementStateChange(const std::string& element_state);
         void        FillInTimestamps();
         void        FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);
@@ -393,6 +403,7 @@ namespace scenarioengine
         int                               current_object_id_;
         int                               ghost_controller_id_;
         scenarioengine::PropertyTimeline* current_object_timeline_;
+        std::vector<Dat::PacketGeneric>   generic_packets_;
     };
 
 }  // namespace scenarioengine

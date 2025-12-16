@@ -57,61 +57,75 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
       create_datfile_(create_datfile)
 {
     GetReplaysFromDirectory(directory, scenario);
-    std::vector<std::pair<std::string, std::map<int, PropertyTimeline, MapComparator>>> scenarioData;
-    std::vector<std::vector<double>>                                                    timestamps;
+    std::vector<std::vector<PacketRef>> scenarioData;
 
     if (scenarios_.size() < 2)
     {
         LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
     }
 
-    for (size_t i = 0; i < scenarios_.size(); i++)
-    {
-        ParsePackets(scenarios_[i]);
-        FillInTimestamps();
-        timestamps.push_back(timestamps_);
-        scenarioData.emplace_back(scenarios_[i], objects_timeline_);
+    // double current_timestamp;
+    // for (size_t i = 0; i < scenarios_.size(); i++)
+    // {
+    //     auto dat_reader = Dat::DatReader(scenarios_[i]);
+    //     ParseDatHeader(dat_reader, scenarios_[i]);
 
-        objects_timeline_.clear();
-        timestamps_.clear();
-        dt_ = {};
-    }
+    //     std::vector<PacketRef> data = {};
+
+    //     while (true)
+    //     {
+    //         PacketRef ref;
+    //         ref.scenario_idx = i;
+    //         ref.header_offset = dat_reader.TellG();
+    //         ref.veh_id_offset += (i * 100);
+
+    //         if (!dat_reader.ReadHeader(ref.header))
+    //         {
+    //             break;
+    //         }
+
+    //         if (ref.header.id == static_cast<id_t>(Dat::PacketId::TIMESTAMP))
+    //         {
+    //             dat_reader.ReadPacket(, current_timestamp);
+    //             ref.timestamp = current_timestamp;
+    //         }
+    //         else
+    //         {
+    //             ref.timestamp = current_timestamp;
+    //             dat_reader.SeekG(ref.header.data_size);
+    //         }
+
+    //         data.push_back(ref);
+    //     }
+
+    //     scenarioData.emplace_back(data);
+    // }
+
+    // for (size_t i = 0; i < scenarioData[i].size(); i++)
+    // {
+    //     for (size_t j = 1; j < scenarioData.size(); j++)
+    //     {
+    //         auto p_id = scenarioData[j][i];
+
+    //     }
+    // }
 
     // Build the objects timeline data structure
     // Log which scenario belongs to what ID-group (0, 100, 200 etc.)
-    for (size_t i = 0; i < scenarioData.size(); i++)
-    {
-        std::string scenario_tmp = scenarioData[i].first;
-        LOG_INFO("Scenarios corresponding to IDs ({}:{}): {}", i * 100, (i + 1) * 100 - 1, FileNameOf(scenario_tmp));
-        for (auto& [id, timeline] : scenarioData[i].second)
-        {
-            int new_id = id + static_cast<int>(i * 100);
-            objects_timeline_.emplace(new_id, std::move(timeline));
-        }
-    }
+    // for (size_t i = 0; i < scenarioData.size(); i++)
+    // {
+    //     std::string scenario_tmp = scenarioData[i].first;
+    //     LOG_INFO("Scenarios corresponding to IDs ({}:{}): {}", i * 100, (i + 1) * 100 - 1, FileNameOf(scenario_tmp));
+    //     for (auto& [id, timeline] : scenarioData[i].second)
+    //     {
+    //         int new_id = id + static_cast<int>(i * 100);
+    //         objects_timeline_.emplace(new_id, std::move(timeline));
+    //     }
+    // }
 
     // Completely delete scenarioData, its not useful anymore
-    scenarioData.clear();
-    std::vector<std::pair<std::string, std::map<int, PropertyTimeline, MapComparator>>>().swap(scenarioData);
-
-    // Build the final timestamps_ vector
-    size_t total_size = std::accumulate(timestamps.begin(), timestamps.end(), size_t{0}, [](size_t sum, const auto& v) { return sum + v.size(); });
-    timestamps_.reserve(total_size);
-
-    for (const auto& v : timestamps)
-    {
-        timestamps_.insert(timestamps_.end(), v.begin(), v.end());
-    }
-
-    // Completely delete timestamps, its not useful anymore
-    timestamps.clear();
-    std::vector<std::vector<double>>().swap(timestamps);
-
-    std::sort(timestamps_.begin(), timestamps_.end());
-
-    // Remove duplicated timestamps
-    timestamps_.erase(std::unique(timestamps_.begin(), timestamps_.end(), [](const auto& a, const auto& b) { return NEAR_NUMBERS(a, b); }),
-                      timestamps_.end());
+    // scenarioData.clear();
+    // std::vector<std::pair<std::string, std::map<int, PropertyTimeline, MapComparator>>>().swap(scenarioData);
 
     startTime_ = timestamps_[0];
     stopIndex_ = static_cast<unsigned int>(timestamps_.size() - 1);
@@ -126,21 +140,26 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     }
 }
 
-int Replay::ParsePackets(const std::string& filename)
+int Replay::ParsePackets(const std::string& filename, std::vector<Dat::PacketHeader>* raw_data)
 {
     auto dat_reader = Dat::DatReader(filename);
 
     ParseDatHeader(dat_reader, filename);
 
-    // Now parse packets
     Dat::PacketHeader header;
     while (dat_reader.ReadFile(header))
     {
-        switch (header.id)
+        generic_packets_.push_back(dat_reader.CreateGenericPacket(header));
+    }
+
+    // Now parse packets
+    for (const auto& gp : generic_packets_)
+    {
+        switch (gp.header.id)
         {
             case static_cast<id_t>(Dat::PacketId::TIMESTAMP):
             {
-                if (dat_reader.ReadPacket(header, timestamp_) != 0)
+                if (dat_reader.ReadPacket(gp, timestamp_) != 0)
                 {
                     LOG_ERROR("Failed reading timestamp data.");
                 }
@@ -160,7 +179,7 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_ID):
             {
-                if (dat_reader.ReadPacket(header, current_object_id_) != 0)
+                if (dat_reader.ReadPacket(gp, current_object_id_) != 0)
                 {
                     LOG_ERROR("Failed reading object ID.");
                     return -1;
@@ -195,7 +214,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::SPEED):
             {
                 float speed;
-                if (dat_reader.ReadPacket(header, speed) != 0)
+                if (dat_reader.ReadPacket(gp, speed) != 0)
                 {
                     LOG_ERROR("Failed reading speed data.");
                     return -1;
@@ -206,7 +225,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::POSE):
             {
                 Dat::Pose pose;
-                if (dat_reader.ReadPacket(header, pose.x, pose.y, pose.z, pose.h, pose.p, pose.r) != 0)
+                if (dat_reader.ReadPacket(gp, pose.x, pose.y, pose.z, pose.h, pose.p, pose.r) != 0)
                 {
                     LOG_ERROR("Failed reading pose data.");
                     return -1;
@@ -218,7 +237,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::MODEL_ID):
             {
                 int model_id;
-                if (dat_reader.ReadPacket(header, model_id) != 0)
+                if (dat_reader.ReadPacket(gp, model_id) != 0)
                 {
                     LOG_ERROR("Failed reading model ID.");
                     return -1;
@@ -229,7 +248,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::OBJ_TYPE):
             {
                 int obj_type;
-                if (dat_reader.ReadPacket(header, obj_type) != 0)
+                if (dat_reader.ReadPacket(gp, obj_type) != 0)
                 {
                     LOG_ERROR("Failed reading object type.");
                     return -1;
@@ -240,7 +259,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::OBJ_CATEGORY):
             {
                 int obj_category;
-                if (dat_reader.ReadPacket(header, obj_category) != 0)
+                if (dat_reader.ReadPacket(gp, obj_category) != 0)
                 {
                     LOG_ERROR("Failed reading object category.");
                     return -1;
@@ -251,7 +270,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::CTRL_TYPE):
             {
                 int ctrl_type;
-                if (dat_reader.ReadPacket(header, ctrl_type) != 0)
+                if (dat_reader.ReadPacket(gp, ctrl_type) != 0)
                 {
                     LOG_ERROR("Failed reading controller type.");
                     return -1;
@@ -266,7 +285,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::WHEEL_ANGLE):
             {
                 float wheel_angle;
-                if (dat_reader.ReadPacket(header, wheel_angle) != 0)
+                if (dat_reader.ReadPacket(gp, wheel_angle) != 0)
                 {
                     LOG_ERROR("Failed reading wheel angle.");
                     return -1;
@@ -277,7 +296,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::WHEEL_ROT):
             {
                 float wheel_rot;
-                if (dat_reader.ReadPacket(header, wheel_rot) != 0)
+                if (dat_reader.ReadPacket(gp, wheel_rot) != 0)
                 {
                     LOG_ERROR("Failed reading wheel rotation.");
                     return -1;
@@ -288,7 +307,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::BOUNDING_BOX):
             {
                 OSCBoundingBox bounding_box;
-                if (dat_reader.ReadPacket(header,
+                if (dat_reader.ReadPacket(gp,
                                           bounding_box.center_.x_,
                                           bounding_box.center_.y_,
                                           bounding_box.center_.z_,
@@ -305,7 +324,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::SCALE_MODE):
             {
                 int scale_mode;
-                if (dat_reader.ReadPacket(header, scale_mode) != 0)
+                if (dat_reader.ReadPacket(gp, scale_mode) != 0)
                 {
                     LOG_ERROR("Failed reading scale mode.");
                     return -1;
@@ -316,7 +335,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::VISIBILITY_MASK):
             {
                 int visibility_mask;
-                if (dat_reader.ReadPacket(header, visibility_mask) != 0)
+                if (dat_reader.ReadPacket(gp, visibility_mask) != 0)
                 {
                     LOG_ERROR("Failed reading visibility mask.");
                     return -1;
@@ -326,8 +345,8 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::NAME):
             {
-                std::string name;
-                if (dat_reader.ReadStringPacket(name) != 0)
+                std::string name = dat_reader.ReadStringPacket(gp);
+                if (name.empty())
                 {
                     LOG_ERROR("Failed reading name.");
                     return -1;
@@ -338,7 +357,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::ROAD_ID):
             {
                 id_t road_id;
-                if (dat_reader.ReadPacket(header, road_id) != 0)
+                if (dat_reader.ReadPacket(gp, road_id) != 0)
                 {
                     LOG_ERROR("Failed reading road ID.");
                     return -1;
@@ -349,7 +368,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::LANE_ID):
             {
                 int lane_id;
-                if (dat_reader.ReadPacket(header, lane_id) != 0)
+                if (dat_reader.ReadPacket(gp, lane_id) != 0)
                 {
                     LOG_ERROR("Failed reading lane ID.");
                     return -1;
@@ -360,7 +379,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::POS_OFFSET):
             {
                 float offset;
-                if (dat_reader.ReadPacket(header, offset) != 0)
+                if (dat_reader.ReadPacket(gp, offset) != 0)
                 {
                     LOG_ERROR("Failed reading position offset.");
                     return -1;
@@ -371,7 +390,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::POS_T):
             {
                 float t;
-                if (dat_reader.ReadPacket(header, t) != 0)
+                if (dat_reader.ReadPacket(gp, t) != 0)
                 {
                     LOG_ERROR("Failed reading position T.");
                     return -1;
@@ -382,7 +401,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::POS_S):
             {
                 float s;
-                if (dat_reader.ReadPacket(header, s) != 0)
+                if (dat_reader.ReadPacket(gp, s) != 0)
                 {
                     LOG_ERROR("Failed reading position S.");
                     return -1;
@@ -398,7 +417,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::DT):
             {
                 double dt;
-                if (dat_reader.ReadPacket(header, dt) != 0)
+                if (dat_reader.ReadPacket(gp, dt) != 0)
                 {
                     LOG_ERROR("Failed reading fixed timestep.");
                     return -1;
@@ -413,7 +432,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT):
             {
                 Dat::TrafficLightLamp lamp;
-                if (dat_reader.ReadPacket(header, lamp) != 0)
+                if (dat_reader.ReadPacket(gp, lamp) != 0)
                 {
                     LOG_ERROR("Failed reading traffic light lamp");
                     return -1;
@@ -424,7 +443,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::REFPOINT_X_OFFSET):
             {
                 float refpoint_x_offset;
-                if (dat_reader.ReadPacket(header, refpoint_x_offset) != 0)
+                if (dat_reader.ReadPacket(gp, refpoint_x_offset) != 0)
                 {
                     LOG_ERROR("Failed reading refpoint_x_offset");
                     return -1;
@@ -435,7 +454,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::MODEL_X_OFFSET):
             {
                 float model_x_offset;
-                if (dat_reader.ReadPacket(header, model_x_offset) != 0)
+                if (dat_reader.ReadPacket(gp, model_x_offset) != 0)
                 {
                     LOG_ERROR("Failed reading model_x_offset");
                     return -1;
@@ -445,8 +464,8 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::OBJ_MODEL3D):
             {
-                std::string model3d;
-                if (dat_reader.ReadStringPacket(model3d) != 0)
+                std::string model3d = dat_reader.ReadStringPacket(gp);
+                if (model3d.empty())
                 {
                     LOG_ERROR("Failed reading object 3D model filename.");
                     return -1;
@@ -456,8 +475,8 @@ int Replay::ParsePackets(const std::string& filename)
             }
             case static_cast<id_t>(Dat::PacketId::ELEM_STATE_CHANGE):
             {
-                std::string state_change;
-                if (dat_reader.ReadStringPacket(state_change) != 0)
+                std::string state_change = dat_reader.ReadStringPacket(gp);
+                if (state_change.empty())
                 {
                     LOG_ERROR("Failed to read element state change");
                     return -1;
@@ -470,7 +489,7 @@ int Replay::ParsePackets(const std::string& filename)
             case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
             {
                 double stop_time;
-                if (dat_reader.ReadPacket(header, stop_time) != 0)
+                if (dat_reader.ReadPacket(gp, stop_time) != 0)
                 {
                     LOG_ERROR("Failed reading end of scenario timestamp.");
                     return -1;
@@ -487,11 +506,11 @@ int Replay::ParsePackets(const std::string& filename)
             }
             default:
             {
-                dat_reader.UnknownPacket(header);
-                if (std::find(unknown_pids.begin(), unknown_pids.end(), header.id) == unknown_pids.end())
+                dat_reader.UnknownPacket(gp.header);
+                if (std::find(unknown_pids.begin(), unknown_pids.end(), gp.header.id) == unknown_pids.end())
                 {
-                    LOG_DEBUG("Unknown packet with id: {}", header.id);
-                    unknown_pids.push_back(header.id);
+                    LOG_DEBUG("Unknown packet with id: {}", gp.header.id);
+                    unknown_pids.push_back(gp.header.id);
                 }
                 break;
             }
