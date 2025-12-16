@@ -301,13 +301,10 @@ namespace scenarioengine
 #endif  // _USE_OSG
 
     // Used in dat-merging
-    struct PacketRef
+    struct PacketSlice
     {
-        size_t            scenario_idx;
-        std::streampos    header_offset;
-        Dat::PacketHeader header;
         double            timestamp;
-        int               veh_id_offset;
+        std::vector<Dat::PacketGeneric> packets;
     };
 
     class Replay
@@ -335,6 +332,7 @@ namespace scenarioengine
 
         void        SetupGhostsTimeline();
         int         ParsePackets(const std::string& filename, std::vector<Dat::PacketHeader>* raw_data = nullptr);
+        void        SortPackets(Dat::DatReader& dat_reader);
         std::string BuildElementStateChange(const std::string& element_state);
         void        FillInTimestamps();
         void        FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);

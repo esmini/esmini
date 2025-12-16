@@ -57,7 +57,7 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
       create_datfile_(create_datfile)
 {
     GetReplaysFromDirectory(directory, scenario);
-    std::vector<std::vector<PacketRef>> scenarioData;
+    // std::vector<std::vector<PacketRef>> scenarioData;
 
     if (scenarios_.size() < 2)
     {
@@ -146,11 +146,14 @@ int Replay::ParsePackets(const std::string& filename, std::vector<Dat::PacketHea
 
     ParseDatHeader(dat_reader, filename);
 
+    // Build the packets containing header and data and store in a vector
     Dat::PacketHeader header;
     while (dat_reader.ReadFile(header))
     {
         generic_packets_.push_back(dat_reader.CreateGenericPacket(header));
     }
+
+    SortPackets(dat_reader);
 
     // Now parse packets
     for (const auto& gp : generic_packets_)
@@ -518,6 +521,67 @@ int Replay::ParsePackets(const std::string& filename, std::vector<Dat::PacketHea
     }
 
     return 0;
+}
+
+void Replay::SortPackets(Dat::DatReader& dat_reader)
+{
+    std::vector<PacketSlice> slices;
+    std::vector<PacketSlice> ghost_restarts;
+    PacketSlice* current = nullptr;
+    double prev_timestamp = 0.0;
+
+    for (const auto& packet : generic_packets_)
+    {
+        if (packet.header.id == static_cast<id_t>(Dat::PacketId::TIMESTAMP))
+        {
+            if (slices.size() > 1)
+            {
+                prev_timestamp = slices.back().timestamp;
+            }
+            
+
+            double timestamp;
+            dat_reader.ReadPacket(packet, timestamp);
+
+            if (timestamp > 0.0 && timestamp <= prev_timestamp)
+            {
+                ghost_restarts.emplace_back();
+                current = &ghost_restarts.back();
+            }
+            else
+            {
+                slices.emplace_back();
+                current = &slices.back();
+            }
+
+            current->timestamp = timestamp;
+            current->packets.push_back(packet);
+        }
+        else
+        {
+            if (current == nullptr)
+            {
+                LOG_ERROR_AND_QUIT("Data before first timestamp");
+            }
+
+            current->packets.push_back(packet);
+        }
+    }
+
+    std::sort(slices.begin(), slices.end(),
+    [](const PacketSlice& a, const PacketSlice& b) {
+        return a.timestamp < b.timestamp;
+    });
+
+    generic_packets_.clear();
+
+    for (auto& slice : slices)
+    {
+        for (auto& pkt : slice.packets)
+        {
+            generic_packets_.push_back(std::move(pkt));
+        }
+    }
 }
 
 void Replay::ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filename)
