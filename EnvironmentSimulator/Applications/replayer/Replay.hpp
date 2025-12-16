@@ -242,6 +242,53 @@ namespace scenarioengine
 
             return ret;
         }
+
+        // Function will delete all data between the [start_time, end_time] and insert input instead
+        void replace_data_between_times(const double                             start_time,
+                                        const double                             end_time,
+                                        const std::vector<std::pair<double, T>>& input,
+                                        bool                                     clean = false)
+        {
+            if (input.empty() || values.empty())
+            {
+                return;
+            }
+
+            auto first =
+                std::lower_bound(values.begin(), values.end(), start_time, [](const auto& v, double t) { return v.first < t - SMALL_NUMBER; });
+
+            auto last = std::upper_bound(values.begin(),
+                                         values.end(),
+                                         end_time,
+                                         [](double t, const std::pair<double, T>& v) { return t < v.first - SMALL_NUMBER; });
+
+            auto insert_pos = values.erase(first, last);
+
+            values.insert(insert_pos, input.begin(), input.end());
+
+            if (clean && values.size() > 1)
+            {
+                clean_duplicate_timestamps();
+            }
+
+            return;
+        }
+
+        void clean_duplicate_timestamps()
+        {
+            auto it = values.begin();
+            while (it + 1 != values.end())
+            {
+                if (NEAR_NUMBERS(it->first, (it + 1)->first))
+                {
+                    it = values.erase(it);  // erase first of the duplicates
+                }
+                else
+                {
+                    it++;
+                }
+            }
+        }
     };
 
     struct PropertyTimeline
@@ -300,6 +347,13 @@ namespace scenarioengine
     };
 #endif  // _USE_OSG
 
+    // Used in dat-merging
+    struct PacketSlice
+    {
+        double                          timestamp;
+        std::vector<Dat::PacketGeneric> packets;
+    };
+
     class Replay
     {
     public:
@@ -317,19 +371,23 @@ namespace scenarioengine
         std::unordered_map<int, ReplayTrafficLight> traffic_light_cache_;
 #endif  // _USE_OSG
 
-        int ghost_ghost_counter_ = -1;
-
         Replay(std::string filename);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
 
-        void        SetupGhostsTimeline();
-        int         ParsePackets(const std::string& filename);
-        std::string BuildElementStateChange(const std::string& element_state);
-        void        FillInTimestamps();
-        void        FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);
-        void        CreateMergedDatfile(const std::string filename) const;
-        void        ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filename);
+        void           UpdateGhostsTimelineAfterRestart(size_t idx);
+        int            ParsePackets();
+        std::string    BuildElementStateChange(const std::string& element_state);
+        void           FillInTimestamps();
+        void           FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);
+        void           CalculateNewDt();
+        void           CreateMergedDatfile(const std::string filename) const;
+        Dat::DatHeader ParseDatHeader(const std::string& filename);
+        bool           ExtractPacketsAsSlices(bool dt_in_slice = true, size_t scenario_idx = 0);
+        void           ExtractGhostRestarts();
+        void           FlattenSlices(bool add_ghost_restart = true);
+        void           RemoveDuplicateTimestampsInSlices(const Timeline<double>& dts);
+        void           MergeAndCleanTimestamps(const std::vector<std::vector<double>>& scenarios_timestamps);
 
         /**
                 Go to specific time
@@ -388,11 +446,17 @@ namespace scenarioengine
         bool                     eos_received_ = false;  // end of scenario packet
 
         /* PacketHandler stuff */
-        double                            timestamp_            = 0.0;
-        bool                              ghost_timeline_setup_ = false;
-        int                               current_object_id_;
-        int                               ghost_controller_id_;
-        scenarioengine::PropertyTimeline* current_object_timeline_;
+        std::unique_ptr<Dat::DatReader>              dat_reader_;
+        std::unique_ptr<Dat::DatWriter>              dat_writer_;
+        double                                       timestamp_ = 0.0;
+        int                                          current_object_id_;
+        int                                          ghost_controller_id_;
+        scenarioengine::PropertyTimeline*            current_object_timeline_;
+        std::vector<std::vector<Dat::PacketGeneric>> generic_packets_ = {};
+        std::vector<PacketSlice>                     packet_slices_   = {};
+        std::vector<std::vector<PacketSlice>>        ghost_restarts_;
+        std::vector<std::pair<double, double>>       restart_timestamps_;  // start, stop of each ghost reset
+        Timeline<double>                             dts_;
     };
 
 }  // namespace scenarioengine

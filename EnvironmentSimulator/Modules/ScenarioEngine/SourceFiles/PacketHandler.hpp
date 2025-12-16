@@ -209,13 +209,12 @@ namespace Dat
             return 0;
         }
 
-        void WriteToBuffer(char*& write_ptr, const PacketString& p)
+        template <typename T>
+        void ReWriteToBuffer(PacketGeneric& pkt, const T& value)
         {
-            memcpy(write_ptr, &p.size, sizeof(p.size));
-            write_ptr += sizeof(p.size);
-
-            memcpy(write_ptr, p.string.data(), p.string.size());
-            write_ptr += p.string.size();
+            pkt.header.data_size = sizeof(T);
+            pkt.data.resize(sizeof(T));
+            std::memcpy(pkt.data.data(), &value, sizeof(T));
         }
 
         size_t SerializedSize(const PacketString& p)
@@ -227,6 +226,15 @@ namespace Dat
         size_t SerializedSize(const T& val)
         {
             return sizeof(val);
+        }
+
+        void WriteToBuffer(char*& write_ptr, const PacketString& p)
+        {
+            memcpy(write_ptr, &p.size, sizeof(p.size));
+            write_ptr += sizeof(p.size);
+
+            memcpy(write_ptr, p.string.data(), p.string.size());
+            write_ptr += p.string.size();
         }
 
         template <typename T>
@@ -252,9 +260,11 @@ namespace Dat
     {
     public:
         DatReader(const std::string& filename);
+        DatReader() = default;
         ~DatReader();
 
-        int ReadStringPacket(std::string& str);
+        std::string ReadStringPacket(const Dat::PacketGeneric& pkt);
+        int         ReadStringPacket(std::string& str);
 
         int            FillDatHeader();
         Dat::DatHeader GetDatHeader() const
@@ -262,27 +272,31 @@ namespace Dat
             return header_;
         }
 
-        void SetFileSize();
-        bool ReadFile(Dat::PacketHeader& header);
-        void UnknownPacket(const Dat::PacketHeader& header);
-        void CloseFile();
+        void               SetFileSize();
+        bool               ReadFile(Dat::PacketHeader& header);
+        void               SkipPacket(const Dat::PacketHeader& header);
+        void               CloseFile();
+        Dat::PacketGeneric CreateGenericPacket(const Dat::PacketHeader& header)
+        {
+            Dat::PacketGeneric packet;
+            packet.header = header;
+            packet.data.resize(header.data_size);
+
+            if (!file_.read(packet.data.data(), packet.header.data_size))
+            {
+                LOG_ERROR("Failed to create generic packet");
+            }
+
+            return packet;
+        }
 
         /* Template definition kept in the header, otherwise symbols might not be resolved properly.
         Maybe it can be resolved during the build process somehow, but for now they are here. */
         template <typename... Data>
-        int ReadPacket(const Dat::PacketHeader& header, Data&... data)
+        int ReadPacket(const Dat::PacketGeneric& gp, Data&... data)
         {
-            Dat::PacketGeneric packet;
-            packet.header = header;
-            packet.data.resize(packet.header.data_size);
-
-            if (!file_.read(packet.data.data(), packet.header.data_size))
-            {
-                return -1;
-            }
-
-            const char* read_ptr        = packet.data.data();
-            const char* end_ptr         = read_ptr + header.data_size;
+            const char* read_ptr        = gp.data.data();
+            const char* end_ptr         = read_ptr + gp.header.data_size;
             bool        exceeded_bounds = false;
 
             // A lambda that safely copies data from the read_ptr to the provided field,
@@ -310,14 +324,20 @@ namespace Dat
             // Give an error for the packet if we have remaining data or exceeded bounds
             if (remaining_data > 0)
             {
-                LOG_DEBUG("Unused data remaining in packet with id: {}", header.id);
+                LOG_DEBUG("Unused data remaining in packet with id: {}", gp.header.id);
             }
             else if (exceeded_bounds)
             {
-                LOG_DEBUG("Reading previous partial version of packet id: {}", header.id);
+                LOG_DEBUG("Reading previous partial version of packet id: {}", gp.header.id);
             }
 
             return 0;
+        }
+
+        bool ReadHeader(PacketHeader& hdr)
+        {
+            file_.read(reinterpret_cast<char*>(&hdr), sizeof(hdr));
+            return file_.good();
         }
 
     private:

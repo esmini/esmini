@@ -69,8 +69,8 @@ if(BUILD_REPLAYER)
     target_link_libraries(
         ${TARGET1}
         PRIVATE project_options
-                RoadManager
                 ScenarioEngine
+                RoadManager
                 CommonMini
                 Controllers
                 ${TIME_LIB})

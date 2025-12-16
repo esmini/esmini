@@ -23,7 +23,34 @@ using namespace scenarioengine;
 Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 {
     // Parse the packets from the file
-    int ret = ParsePackets(filename);
+    dat_writer_ = std::make_unique<Dat::DatWriter>();
+    dat_reader_ = std::make_unique<Dat::DatReader>(filename);
+    dat_header_ = ParseDatHeader(filename);
+
+    bool has_ghost_restarts = ExtractPacketsAsSlices();
+
+    if (has_ghost_restarts)
+    {
+        ExtractGhostRestarts();
+    }
+
+    if (timestamps_.empty())
+    {
+        LOG_ERROR("No timestamps available, quitting");
+        return;
+    }
+
+    if (dts_.values.empty())
+    {
+        LOG_ERROR("No dt found in file {}", filename);
+        return;
+    }
+
+    FillInTimestamps();  // Create filled timestamps with help from dt
+
+    FlattenSlices();
+
+    int ret = ParsePackets();
     if (ret != 0)
     {
         LOG_ERROR("Failed to parse packets from file: {}", filename);
@@ -33,14 +60,6 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
     if (!eos_received_)
     {
         stopTime_ = timestamps_.back();
-    }
-
-    FillInTimestamps();  // Create timestamps from dt
-
-    if (timestamps_.empty())
-    {
-        LOG_ERROR("No timestamps found in file: {}", filename);
-        return;
     }
 
     startTime_ = timestamps_[0];
@@ -57,454 +76,712 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
       create_datfile_(create_datfile)
 {
     GetReplaysFromDirectory(directory, scenario);
-    std::vector<std::pair<std::string, std::map<int, PropertyTimeline, MapComparator>>> scenarioData;
-    std::vector<std::vector<double>>                                                    timestamps;
 
     if (scenarios_.size() < 2)
     {
-        LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
+        LOG_ERROR("Too few scenarios loaded, use single replay feature instead\n");
+        return;
     }
 
-    for (size_t i = 0; i < scenarios_.size(); i++)
+    for (size_t s = 0; s < scenarios_.size(); s++)
     {
-        ParsePackets(scenarios_[i]);
-        FillInTimestamps();
-        timestamps.push_back(timestamps_);
-        scenarioData.emplace_back(scenarios_[i], objects_timeline_);
-
-        objects_timeline_.clear();
-        timestamps_.clear();
-        dt_ = {};
+        LOG_INFO("Scenarios corresponding to IDs ({}:{}): {}", s * 100, (s + 1) * 100 - 1, scenarios_[s]);
     }
 
-    // Build the objects timeline data structure
-    // Log which scenario belongs to what ID-group (0, 100, 200 etc.)
-    for (size_t i = 0; i < scenarioData.size(); i++)
+    // Make the base scenario for other cars to merge into
+    size_t i    = 0;
+    dat_writer_ = std::make_unique<Dat::DatWriter>();
+    dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[i]);
+    dat_header_ = ParseDatHeader(scenarios_[i]);
+    std::vector<std::vector<double>> scenarios_timestamps;
+    std::vector<Timeline<double>>    dts;
+
+    bool has_ghost_restarts = ExtractPacketsAsSlices(false);
+
+    if (has_ghost_restarts)
     {
-        std::string scenario_tmp = scenarioData[i].first;
-        LOG_INFO("Scenarios corresponding to IDs ({}:{}): {}", i * 100, (i + 1) * 100 - 1, FileNameOf(scenario_tmp));
-        for (auto& [id, timeline] : scenarioData[i].second)
+        ExtractGhostRestarts();
+    }
+
+    if (timestamps_.empty())
+    {
+        LOG_ERROR("No timestamps available in scenario: {}", scenarios_[i]);
+        return;
+    }
+
+    FillInTimestamps();
+
+    scenarios_timestamps.emplace_back(timestamps_);
+    dts.emplace_back(dts_);
+
+    // We loop over rest of scenarios and save their timestamps and delta-times as well as create their timestamp
+    // vectors to merge later
+    for (i = 1; i < scenarios_.size(); i++)
+    {
+        timestamps_ = {};
+        dts_        = {};
+
+        dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[i]);
+        ParseDatHeader(scenarios_[i]);
+        has_ghost_restarts = ExtractPacketsAsSlices(false, i);
+
+        if (has_ghost_restarts)
         {
-            int new_id = id + static_cast<int>(i * 100);
-            objects_timeline_.emplace(new_id, std::move(timeline));
+            ExtractGhostRestarts();
         }
+
+        FillInTimestamps();
+
+        scenarios_timestamps.emplace_back(timestamps_);
+        dts.emplace_back(dts_);
     }
 
-    // Completely delete scenarioData, its not useful anymore
-    scenarioData.clear();
-    std::vector<std::pair<std::string, std::map<int, PropertyTimeline, MapComparator>>>().swap(scenarioData);
+    MergeAndCleanTimestamps(scenarios_timestamps);  // creates a new timestamp_ vector
 
-    // Build the final timestamps_ vector
-    size_t total_size = std::accumulate(timestamps.begin(), timestamps.end(), size_t{0}, [](size_t sum, const auto& v) { return sum + v.size(); });
-    timestamps_.reserve(total_size);
+    // Calculate new DTs after we have new timestamp array with possibly new delta-times
+    CalculateNewDt();
 
-    for (const auto& v : timestamps)
+    // Deal with the slices, first sorting, then removing unnecessary timestamp packets then flatten the slices
+    std::sort(packet_slices_.begin(),
+              packet_slices_.end(),
+              [](const PacketSlice& slice_a, const PacketSlice& slice_b) { return slice_a.timestamp < slice_b.timestamp; });
+
+    RemoveDuplicateTimestampsInSlices(dts_);
+
+    if (has_ghost_restarts)
     {
-        timestamps_.insert(timestamps_.end(), v.begin(), v.end());
+        LOG_WARN("Some scenario has ghost restart, ignoring the restart when merging");
     }
 
-    // Completely delete timestamps, its not useful anymore
-    timestamps.clear();
-    std::vector<std::vector<double>>().swap(timestamps);
-
-    std::sort(timestamps_.begin(), timestamps_.end());
-
-    // Remove duplicated timestamps
-    timestamps_.erase(std::unique(timestamps_.begin(), timestamps_.end(), [](const auto& a, const auto& b) { return NEAR_NUMBERS(a, b); }),
-                      timestamps_.end());
-
-    startTime_ = timestamps_[0];
-    stopIndex_ = static_cast<unsigned int>(timestamps_.size() - 1);
-    stopTime_  = timestamps_[stopIndex_];
-
-    time_ = startTime_;
+    FlattenSlices(false);
 
     if (!create_datfile_.empty())
     {
         LOG_INFO("Creating merged dat file: {}", create_datfile_);
         CreateMergedDatfile(create_datfile_);
+
+        return;
+    }
+
+    int ret = ParsePackets();
+
+    if (ret != 0)
+    {
+        LOG_ERROR("Failed to parse packets on merged .dat files");
+        return;
+    }
+
+    if (!eos_received_)
+    {
+        stopTime_ = timestamps_.back();
+    }
+
+    startTime_ = timestamps_[0];
+    stopIndex_ = static_cast<unsigned int>(timestamps_.size() - 1);
+    // stopTime_ set in END_OF_SCENARIO packet
+
+    time_ = startTime_;
+}
+
+void Replay::CalculateNewDt()
+{
+    dts_           = {};
+    double temp_dt = LARGE_NUMBER;
+    for (size_t j = 0; j < timestamps_.size() - 1; j++)
+    {
+        double dt = timestamps_[j + 1] - timestamps_[j];
+        if (!NEAR_NUMBERS(dt, temp_dt))
+        {
+            dts_.values.emplace_back(timestamps_[j + 1], dt);
+            temp_dt = dt;
+        }
     }
 }
 
-int Replay::ParsePackets(const std::string& filename)
+void Replay::MergeAndCleanTimestamps(const std::vector<std::vector<double>>& scenarios_timestamps)
 {
-    auto dat_reader = Dat::DatReader(filename);
+    // Flatten
+    size_t total_size = std::accumulate(scenarios_timestamps.begin(),
+                                        scenarios_timestamps.end(),
+                                        size_t{0},
+                                        [](size_t sum, const std::vector<double>& t_v) { return sum + t_v.size(); });
 
-    ParseDatHeader(dat_reader, filename);
+    timestamps_.reserve(total_size);
 
-    // Now parse packets
-    Dat::PacketHeader header;
-    while (dat_reader.ReadFile(header))
+    for (const auto& t_v : scenarios_timestamps)
     {
-        switch (header.id)
+        timestamps_.insert(timestamps_.end(), t_v.begin(), t_v.end());
+    }
+
+    // Sort
+    std::sort(timestamps_.begin(), timestamps_.end());
+
+    // Remove duplicates
+    timestamps_.erase(std::unique(timestamps_.begin(), timestamps_.end(), [](double a, double b) { return NEAR_NUMBERS(a, b); }), timestamps_.end());
+}
+
+void Replay::RemoveDuplicateTimestampsInSlices(const Timeline<double>& dts)
+{
+    auto   dts_it         = dts.values.begin();
+    bool   dt_written     = false;
+    double temp_timestamp = LARGE_NUMBER;
+    for (auto it = packet_slices_.begin(); it + 1 != packet_slices_.end();)
+    {
+        // First packet is either empty or just timestamp, i.e. useless packet.
+        if (it->packets.size() < 2)
         {
-            case static_cast<id_t>(Dat::PacketId::TIMESTAMP):
-            {
-                if (dat_reader.ReadPacket(header, timestamp_) != 0)
-                {
-                    LOG_ERROR("Failed reading timestamp data.");
-                }
+            it = packet_slices_.erase(it);
+            continue;
+        }
 
-                if (timestamps_.empty() || timestamp_ > timestamps_.back())
-                {
-                    timestamps_.emplace_back(timestamp_);
-                    ghost_timeline_setup_ = false;
-                }
-                else if (timestamp_ < timestamps_.back() && !ghost_timeline_setup_)
-                {
-                    LOG_INFO("Ghost reset detected at time: {}", timestamps_.back());
-                    SetupGhostsTimeline();
-                    ghost_timeline_setup_ = true;
-                }
-                break;
+        // Remove duplicate timestamps
+        auto next_it = it + 1;
+        if (NEAR_NUMBERS(it->timestamp, next_it->timestamp))
+        {
+            if (!next_it->packets.empty() && next_it->packets.front().header.id == static_cast<id_t>(Dat::PacketId::TIMESTAMP))
+            {
+                next_it->packets.erase(next_it->packets.begin());
             }
-            case static_cast<id_t>(Dat::PacketId::OBJ_ID):
-            {
-                if (dat_reader.ReadPacket(header, current_object_id_) != 0)
-                {
-                    LOG_ERROR("Failed reading object ID.");
-                    return -1;
-                }
 
-                if (objects_timeline_.count(current_object_id_) == 0)
+            if (next_it->packets.empty())
+            {
+                packet_slices_.erase(next_it);
+                continue;
+            }
+        }
+
+        if (!NEAR_NUMBERS(temp_timestamp, it->timestamp))
+        {
+            dt_written = false;
+        }
+
+        if (dts_it != dts.values.end())
+        {
+            auto [t, dt] = *dts_it;
+            if (NEAR_NUMBERS(t, it->timestamp) && !dt_written)
+            {
+                Dat::PacketGeneric pkt;
+                pkt.header = {static_cast<id_t>(Dat::PacketId::DT), {}};
+                dat_writer_->ReWriteToBuffer(pkt, dt);
+                it->packets.push_back(pkt);
+
+                dts_it++;
+                dt_written     = true;
+                temp_timestamp = it->timestamp;
+            }
+        }
+
+        it++;
+    }
+
+    // Write end of scenario last
+    Dat::PacketGeneric pkt;
+    pkt.header = {static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO), {}};
+    dat_writer_->ReWriteToBuffer(pkt, timestamps_.back());
+    packet_slices_.back().packets.push_back(pkt);
+}
+
+bool Replay::ExtractPacketsAsSlices(bool dt_in_slice, size_t scenario_idx)
+{
+    // Build the packets containing header and data and store in a vector
+    PacketSlice* current_slice  = nullptr;
+    bool         has_restart    = false;
+    double       prev_timestamp = 0.0;
+
+    Dat::PacketHeader header;
+    while (dat_reader_->ReadFile(header))
+    {
+        LOG_DEBUG("Read packet id={}, size={}", header.id, header.data_size);
+        auto packet = dat_reader_->CreateGenericPacket(header);
+
+        double timestamp = prev_timestamp;
+        if (packet.header.id == static_cast<id_t>(Dat::PacketId::TIMESTAMP))
+        {
+            packet_slices_.emplace_back();  // Initializes a PacketSlice in place
+            current_slice = &packet_slices_.back();
+
+            dat_reader_->ReadPacket(packet, timestamp);
+            current_slice->timestamp = timestamp;
+
+            if (timestamps_.empty() || timestamp > timestamps_.back())
+            {
+                timestamps_.emplace_back(timestamp);
+            }
+        }
+        else if (packet.header.id == static_cast<id_t>(Dat::PacketId::DT))
+        {
+            double dt;
+            dat_reader_->ReadPacket(packet, dt);
+            if (NEAR_NUMBERS(dt, 0.0))
+            {
+                continue;
+            }
+
+            dts_.values.emplace_back(current_slice->timestamp, dt);
+
+            // We don't want to save the dt packet in the current slice
+            if (!dt_in_slice)
+            {
+                continue;
+            }
+        }
+        else if (packet.header.id == static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO))
+        {
+            double stopTime;
+            dat_reader_->ReadPacket(packet, stopTime);
+
+            if (stopTime > stopTime_)
+            {
+                stopTime_ = stopTime;
+            }
+
+            if (stopTime_ > timestamps_.back() + SMALL_NUMBER)
+            {
+                timestamps_.emplace_back(stopTime_);
+            }
+
+            eos_received_ = true;
+
+            continue;  // Don't add the packet to any slices
+        }
+        // If merging datfiles, we need to adjust the ID based on scenario idx
+        else if (scenario_idx > 0 && packet.header.id == static_cast<id_t>(Dat::PacketId::OBJ_ID))
+        {
+            int obj_id;
+            dat_reader_->ReadPacket(packet, obj_id);
+
+            obj_id += static_cast<int>(scenario_idx) * 100;
+
+            dat_writer_->ReWriteToBuffer(packet, obj_id);
+        }
+
+        // Skip some packages here if its not the first scenario we are parsing (doesn't make sense to merge)
+        if (scenario_idx == 0 || (packet.header.id != static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT) &&
+                                  packet.header.id != static_cast<id_t>(Dat::PacketId::ELEM_STATE_CHANGE)))
+        {
+            current_slice->packets.push_back(packet);
+        }
+
+        if (timestamp < prev_timestamp)
+        {
+            has_restart = true;
+        }
+
+        prev_timestamp = timestamp;
+    }
+
+    return has_restart;
+}
+
+int Replay::ParsePackets()
+{
+    // Now parse packets
+    for (size_t i = 0; i < generic_packets_.size(); i++)
+    {
+        for (const auto& gp : generic_packets_[i])
+        {
+            switch (gp.header.id)
+            {
+                case static_cast<id_t>(Dat::PacketId::TIMESTAMP):
                 {
-                    // Initialize timelines for this object
-                    objects_timeline_[current_object_id_] = {};
-                    current_object_timeline_              = &objects_timeline_[current_object_id_];
-                    current_object_timeline_->odometer_.values.emplace_back(timestamp_, 0.0f);
-                    if (timestamp_ > 0.0)
+                    if (dat_reader_->ReadPacket(gp, timestamp_) != 0)
                     {
-                        current_object_timeline_->active_.values.emplace_back(0.0f, false);  // Object was inactive from start of simulation
-                        current_object_timeline_->active_.values.emplace_back(timestamp_, true);
+                        LOG_ERROR("Failed reading timestamp data.");
+                    }
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::OBJ_ID):
+                {
+                    if (dat_reader_->ReadPacket(gp, current_object_id_) != 0)
+                    {
+                        LOG_ERROR("Failed reading object ID.");
+                        return -1;
+                    }
+
+                    if (i > 0)
+                    {
+                        current_object_id_ = -((current_object_id_ / 100) * 100 + static_cast<int>(i));
+                    }
+
+                    if (objects_timeline_.count(current_object_id_) == 0)
+                    {
+                        // Initialize timelines for this object
+                        objects_timeline_[current_object_id_] = {};
+                        current_object_timeline_              = &objects_timeline_[current_object_id_];
+                        current_object_timeline_->odometer_.values.emplace_back(timestamp_, 0.0f);
+                        if (timestamp_ > 0.0)
+                        {
+                            current_object_timeline_->active_.values.emplace_back(0.0f, false);  // Object was inactive from start of simulation
+                            current_object_timeline_->active_.values.emplace_back(timestamp_, true);
+                        }
+                        else
+                        {
+                            current_object_timeline_->active_.values.emplace_back(timestamp_, true);  // Object is active at the start of simulation
+                        }
                     }
                     else
                     {
-                        current_object_timeline_->active_.values.emplace_back(timestamp_, true);  // Object is active at the start of simulation
+                        current_object_timeline_ = &objects_timeline_[current_object_id_];
+                        if (current_object_timeline_->active_.values.back().second != true)
+                        {
+                            current_object_timeline_->active_.values.emplace_back(timestamp_, true);
+                        }
                     }
-                }
-                else
-                {
-                    current_object_timeline_ = &objects_timeline_[current_object_id_];
-                    if (current_object_timeline_->active_.values.back().second != true)
-                    {
-                        current_object_timeline_->active_.values.emplace_back(timestamp_, true);
-                    }
-                }
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::SPEED):
-            {
-                float speed;
-                if (dat_reader.ReadPacket(header, speed) != 0)
-                {
-                    LOG_ERROR("Failed reading speed data.");
-                    return -1;
-                }
-                current_object_timeline_->speed_.values.emplace_back(timestamp_, speed);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::POSE):
-            {
-                Dat::Pose pose;
-                if (dat_reader.ReadPacket(header, pose.x, pose.y, pose.z, pose.h, pose.p, pose.r) != 0)
-                {
-                    LOG_ERROR("Failed reading pose data.");
-                    return -1;
-                }
-
-                current_object_timeline_->pose_.values.emplace_back(timestamp_, pose);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::MODEL_ID):
-            {
-                int model_id;
-                if (dat_reader.ReadPacket(header, model_id) != 0)
-                {
-                    LOG_ERROR("Failed reading model ID.");
-                    return -1;
-                }
-                current_object_timeline_->model_id_.values.emplace_back(timestamp_, model_id);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::OBJ_TYPE):
-            {
-                int obj_type;
-                if (dat_reader.ReadPacket(header, obj_type) != 0)
-                {
-                    LOG_ERROR("Failed reading object type.");
-                    return -1;
-                }
-                current_object_timeline_->obj_type_.values.emplace_back(timestamp_, obj_type);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::OBJ_CATEGORY):
-            {
-                int obj_category;
-                if (dat_reader.ReadPacket(header, obj_category) != 0)
-                {
-                    LOG_ERROR("Failed reading object category.");
-                    return -1;
-                }
-                current_object_timeline_->obj_category_.values.emplace_back(timestamp_, obj_category);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::CTRL_TYPE):
-            {
-                int ctrl_type;
-                if (dat_reader.ReadPacket(header, ctrl_type) != 0)
-                {
-                    LOG_ERROR("Failed reading controller type.");
-                    return -1;
-                }
-                current_object_timeline_->ctrl_type_.values.emplace_back(timestamp_, ctrl_type);
-                if (ctrl_type == 100)  // Ghost controller, save the id
-                {
-                    ghost_controller_id_ = current_object_id_;
-                }
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::WHEEL_ANGLE):
-            {
-                float wheel_angle;
-                if (dat_reader.ReadPacket(header, wheel_angle) != 0)
-                {
-                    LOG_ERROR("Failed reading wheel angle.");
-                    return -1;
-                }
-                current_object_timeline_->wheel_angle_.values.emplace_back(timestamp_, wheel_angle);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::WHEEL_ROT):
-            {
-                float wheel_rot;
-                if (dat_reader.ReadPacket(header, wheel_rot) != 0)
-                {
-                    LOG_ERROR("Failed reading wheel rotation.");
-                    return -1;
-                }
-                current_object_timeline_->wheel_rot_.values.emplace_back(timestamp_, wheel_rot);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::BOUNDING_BOX):
-            {
-                OSCBoundingBox bounding_box;
-                if (dat_reader.ReadPacket(header,
-                                          bounding_box.center_.x_,
-                                          bounding_box.center_.y_,
-                                          bounding_box.center_.z_,
-                                          bounding_box.dimensions_.length_,
-                                          bounding_box.dimensions_.width_,
-                                          bounding_box.dimensions_.height_) != 0)
-                {
-                    LOG_ERROR("Failed reading bounding box data.");
-                    return -1;
-                }
-                current_object_timeline_->bounding_box_.values.emplace_back(timestamp_, bounding_box);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::SCALE_MODE):
-            {
-                int scale_mode;
-                if (dat_reader.ReadPacket(header, scale_mode) != 0)
-                {
-                    LOG_ERROR("Failed reading scale mode.");
-                    return -1;
-                }
-                current_object_timeline_->scale_mode_.values.emplace_back(timestamp_, scale_mode);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::VISIBILITY_MASK):
-            {
-                int visibility_mask;
-                if (dat_reader.ReadPacket(header, visibility_mask) != 0)
-                {
-                    LOG_ERROR("Failed reading visibility mask.");
-                    return -1;
-                }
-                current_object_timeline_->visibility_mask_.values.emplace_back(timestamp_, visibility_mask);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::NAME):
-            {
-                std::string name;
-                if (dat_reader.ReadStringPacket(name) != 0)
-                {
-                    LOG_ERROR("Failed reading name.");
-                    return -1;
-                }
-                current_object_timeline_->name_.values.emplace_back(timestamp_, std::move(name));
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::ROAD_ID):
-            {
-                id_t road_id;
-                if (dat_reader.ReadPacket(header, road_id) != 0)
-                {
-                    LOG_ERROR("Failed reading road ID.");
-                    return -1;
-                }
-                current_object_timeline_->road_id_.values.emplace_back(timestamp_, road_id);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::LANE_ID):
-            {
-                int lane_id;
-                if (dat_reader.ReadPacket(header, lane_id) != 0)
-                {
-                    LOG_ERROR("Failed reading lane ID.");
-                    return -1;
-                }
-                current_object_timeline_->lane_id_.values.emplace_back(timestamp_, lane_id);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::POS_OFFSET):
-            {
-                float offset;
-                if (dat_reader.ReadPacket(header, offset) != 0)
-                {
-                    LOG_ERROR("Failed reading position offset.");
-                    return -1;
-                }
-                current_object_timeline_->pos_offset_.values.emplace_back(timestamp_, offset);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::POS_T):
-            {
-                float t;
-                if (dat_reader.ReadPacket(header, t) != 0)
-                {
-                    LOG_ERROR("Failed reading position T.");
-                    return -1;
-                }
-                current_object_timeline_->pos_t_.values.emplace_back(timestamp_, t);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::POS_S):
-            {
-                float s;
-                if (dat_reader.ReadPacket(header, s) != 0)
-                {
-                    LOG_ERROR("Failed reading position S.");
-                    return -1;
-                }
-                current_object_timeline_->pos_s_.values.emplace_back(timestamp_, s);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::OBJ_DELETED):
-            {
-                current_object_timeline_->active_.values.emplace_back(timestamp_, false);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::DT):
-            {
-                double dt;
-                if (dat_reader.ReadPacket(header, dt) != 0)
-                {
-                    LOG_ERROR("Failed reading fixed timestep.");
-                    return -1;
-                }
-                if (NEAR_NUMBERS(dt, 0.0))  // skip first step with 0 dt
-                {
                     break;
                 }
-                dt_.values.emplace_back(timestamp_, dt);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT):
-            {
-                Dat::TrafficLightLamp lamp;
-                if (dat_reader.ReadPacket(header, lamp) != 0)
+                case static_cast<id_t>(Dat::PacketId::SPEED):
                 {
-                    LOG_ERROR("Failed reading traffic light lamp");
-                    return -1;
+                    float speed;
+                    if (dat_reader_->ReadPacket(gp, speed) != 0)
+                    {
+                        LOG_ERROR("Failed reading speed data.");
+                        return -1;
+                    }
+                    current_object_timeline_->speed_.values.emplace_back(timestamp_, speed);
+                    break;
                 }
-                traffic_lights_timeline_[lamp.lamp_id].values.emplace_back(timestamp_, lamp);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::REFPOINT_X_OFFSET):
-            {
-                float refpoint_x_offset;
-                if (dat_reader.ReadPacket(header, refpoint_x_offset) != 0)
+                case static_cast<id_t>(Dat::PacketId::POSE):
                 {
-                    LOG_ERROR("Failed reading refpoint_x_offset");
-                    return -1;
-                }
-                current_object_timeline_->refpoint_x_offset_.values.emplace_back(timestamp_, refpoint_x_offset);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::MODEL_X_OFFSET):
-            {
-                float model_x_offset;
-                if (dat_reader.ReadPacket(header, model_x_offset) != 0)
-                {
-                    LOG_ERROR("Failed reading model_x_offset");
-                    return -1;
-                }
-                current_object_timeline_->model_x_offset_.values.emplace_back(timestamp_, model_x_offset);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::OBJ_MODEL3D):
-            {
-                std::string model3d;
-                if (dat_reader.ReadStringPacket(model3d) != 0)
-                {
-                    LOG_ERROR("Failed reading object 3D model filename.");
-                    return -1;
-                }
-                current_object_timeline_->model3d_.values.emplace_back(timestamp_, std::move(model3d));
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::ELEM_STATE_CHANGE):
-            {
-                std::string state_change;
-                if (dat_reader.ReadStringPacket(state_change) != 0)
-                {
-                    LOG_ERROR("Failed to read element state change");
-                    return -1;
-                }
+                    Dat::Pose pose;
+                    if (dat_reader_->ReadPacket(gp, pose.x, pose.y, pose.z, pose.h, pose.p, pose.r) != 0)
+                    {
+                        LOG_ERROR("Failed reading pose data.");
+                        return -1;
+                    }
 
-                std::string esc = BuildElementStateChange(state_change);
-                element_state_changes_.values.emplace_back(timestamp_, esc);
-                break;
-            }
-            case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
-            {
-                double stop_time;
-                if (dat_reader.ReadPacket(header, stop_time) != 0)
-                {
-                    LOG_ERROR("Failed reading end of scenario timestamp.");
-                    return -1;
+                    current_object_timeline_->pose_.values.emplace_back(timestamp_, pose);
+                    break;
                 }
+                case static_cast<id_t>(Dat::PacketId::MODEL_ID):
+                {
+                    int model_id;
+                    if (dat_reader_->ReadPacket(gp, model_id) != 0)
+                    {
+                        LOG_ERROR("Failed reading model ID.");
+                        return -1;
+                    }
+                    current_object_timeline_->model_id_.values.emplace_back(timestamp_, model_id);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::OBJ_TYPE):
+                {
+                    int obj_type;
+                    if (dat_reader_->ReadPacket(gp, obj_type) != 0)
+                    {
+                        LOG_ERROR("Failed reading object type.");
+                        return -1;
+                    }
+                    current_object_timeline_->obj_type_.values.emplace_back(timestamp_, obj_type);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::OBJ_CATEGORY):
+                {
+                    int obj_category;
+                    if (dat_reader_->ReadPacket(gp, obj_category) != 0)
+                    {
+                        LOG_ERROR("Failed reading object category.");
+                        return -1;
+                    }
+                    current_object_timeline_->obj_category_.values.emplace_back(timestamp_, obj_category);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::CTRL_TYPE):
+                {
+                    int ctrl_type;
+                    if (dat_reader_->ReadPacket(gp, ctrl_type) != 0)
+                    {
+                        LOG_ERROR("Failed reading controller type.");
+                        return -1;
+                    }
+                    current_object_timeline_->ctrl_type_.values.emplace_back(timestamp_, ctrl_type);
+                    if (ctrl_type == 100)  // Ghost controller, save the id
+                    {
+                        ghost_controller_id_ = current_object_id_;
+                    }
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::WHEEL_ANGLE):
+                {
+                    float wheel_angle;
+                    if (dat_reader_->ReadPacket(gp, wheel_angle) != 0)
+                    {
+                        LOG_ERROR("Failed reading wheel angle.");
+                        return -1;
+                    }
+                    current_object_timeline_->wheel_angle_.values.emplace_back(timestamp_, wheel_angle);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::WHEEL_ROT):
+                {
+                    float wheel_rot;
+                    if (dat_reader_->ReadPacket(gp, wheel_rot) != 0)
+                    {
+                        LOG_ERROR("Failed reading wheel rotation.");
+                        return -1;
+                    }
+                    current_object_timeline_->wheel_rot_.values.emplace_back(timestamp_, wheel_rot);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::BOUNDING_BOX):
+                {
+                    OSCBoundingBox bounding_box;
+                    if (dat_reader_->ReadPacket(gp,
+                                                bounding_box.center_.x_,
+                                                bounding_box.center_.y_,
+                                                bounding_box.center_.z_,
+                                                bounding_box.dimensions_.length_,
+                                                bounding_box.dimensions_.width_,
+                                                bounding_box.dimensions_.height_) != 0)
+                    {
+                        LOG_ERROR("Failed reading bounding box data.");
+                        return -1;
+                    }
+                    current_object_timeline_->bounding_box_.values.emplace_back(timestamp_, bounding_box);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::SCALE_MODE):
+                {
+                    int scale_mode;
+                    if (dat_reader_->ReadPacket(gp, scale_mode) != 0)
+                    {
+                        LOG_ERROR("Failed reading scale mode.");
+                        return -1;
+                    }
+                    current_object_timeline_->scale_mode_.values.emplace_back(timestamp_, scale_mode);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::VISIBILITY_MASK):
+                {
+                    int visibility_mask;
+                    if (dat_reader_->ReadPacket(gp, visibility_mask) != 0)
+                    {
+                        LOG_ERROR("Failed reading visibility mask.");
+                        return -1;
+                    }
+                    current_object_timeline_->visibility_mask_.values.emplace_back(timestamp_, visibility_mask);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::NAME):
+                {
+                    std::string name = dat_reader_->ReadStringPacket(gp);
+                    if (name.empty())
+                    {
+                        LOG_ERROR("Failed reading name.");
+                        return -1;
+                    }
+                    current_object_timeline_->name_.values.emplace_back(timestamp_, std::move(name));
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::ROAD_ID):
+                {
+                    id_t road_id;
+                    if (dat_reader_->ReadPacket(gp, road_id) != 0)
+                    {
+                        LOG_ERROR("Failed reading road ID.");
+                        return -1;
+                    }
+                    current_object_timeline_->road_id_.values.emplace_back(timestamp_, road_id);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::LANE_ID):
+                {
+                    int lane_id;
+                    if (dat_reader_->ReadPacket(gp, lane_id) != 0)
+                    {
+                        LOG_ERROR("Failed reading lane ID.");
+                        return -1;
+                    }
+                    current_object_timeline_->lane_id_.values.emplace_back(timestamp_, lane_id);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::POS_OFFSET):
+                {
+                    float offset;
+                    if (dat_reader_->ReadPacket(gp, offset) != 0)
+                    {
+                        LOG_ERROR("Failed reading position offset.");
+                        return -1;
+                    }
+                    current_object_timeline_->pos_offset_.values.emplace_back(timestamp_, offset);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::POS_T):
+                {
+                    float t;
+                    if (dat_reader_->ReadPacket(gp, t) != 0)
+                    {
+                        LOG_ERROR("Failed reading position T.");
+                        return -1;
+                    }
+                    current_object_timeline_->pos_t_.values.emplace_back(timestamp_, t);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::POS_S):
+                {
+                    float s;
+                    if (dat_reader_->ReadPacket(gp, s) != 0)
+                    {
+                        LOG_ERROR("Failed reading position S.");
+                        return -1;
+                    }
+                    current_object_timeline_->pos_s_.values.emplace_back(timestamp_, s);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::OBJ_DELETED):
+                {
+                    current_object_timeline_->active_.values.emplace_back(timestamp_, false);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT):
+                {
+                    Dat::TrafficLightLamp lamp;
+                    if (dat_reader_->ReadPacket(gp, lamp) != 0)
+                    {
+                        LOG_ERROR("Failed reading traffic light lamp");
+                        return -1;
+                    }
+                    traffic_lights_timeline_[lamp.lamp_id].values.emplace_back(timestamp_, lamp);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::REFPOINT_X_OFFSET):
+                {
+                    float refpoint_x_offset;
+                    if (dat_reader_->ReadPacket(gp, refpoint_x_offset) != 0)
+                    {
+                        LOG_ERROR("Failed reading refpoint_x_offset");
+                        return -1;
+                    }
+                    current_object_timeline_->refpoint_x_offset_.values.emplace_back(timestamp_, refpoint_x_offset);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::MODEL_X_OFFSET):
+                {
+                    float model_x_offset;
+                    if (dat_reader_->ReadPacket(gp, model_x_offset) != 0)
+                    {
+                        LOG_ERROR("Failed reading model_x_offset");
+                        return -1;
+                    }
+                    current_object_timeline_->model_x_offset_.values.emplace_back(timestamp_, model_x_offset);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::OBJ_MODEL3D):
+                {
+                    std::string model3d = dat_reader_->ReadStringPacket(gp);
+                    if (model3d.empty())
+                    {
+                        LOG_ERROR("Failed reading object 3D model filename.");
+                        return -1;
+                    }
+                    current_object_timeline_->model3d_.values.emplace_back(timestamp_, std::move(model3d));
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::ELEM_STATE_CHANGE):
+                {
+                    std::string state_change = dat_reader_->ReadStringPacket(gp);
+                    if (state_change.empty())
+                    {
+                        LOG_ERROR("Failed to read element state change");
+                        return -1;
+                    }
 
-                stopTime_ = stop_time;
+                    std::string esc = BuildElementStateChange(state_change);
+                    element_state_changes_.values.emplace_back(timestamp_, esc);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::DT):
+                case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
+                default:  // Intentially ignored packets
+                {
+                    dat_reader_->SkipPacket(gp.header);
+                    if (std::find(unknown_pids.begin(), unknown_pids.end(), gp.header.id) == unknown_pids.end())
+                    {
+                        LOG_DEBUG("Unknown packet with id: {}", gp.header.id);
+                        unknown_pids.push_back(gp.header.id);
+                    }
+                    break;
+                }
+            }
+        }
 
-                if (!NEAR_NUMBERS(stopTime_, timestamps_.back()))
-                {
-                    timestamps_.emplace_back(stopTime_);
-                }
-                eos_received_ = true;
-                break;
-            }
-            default:
-            {
-                dat_reader.UnknownPacket(header);
-                if (std::find(unknown_pids.begin(), unknown_pids.end(), header.id) == unknown_pids.end())
-                {
-                    LOG_DEBUG("Unknown packet with id: {}", header.id);
-                    unknown_pids.push_back(header.id);
-                }
-                break;
-            }
+        if (i > 0)
+        {
+            UpdateGhostsTimelineAfterRestart(i);
         }
     }
 
     return 0;
 }
 
-void Replay::ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filename)
+void Replay::FlattenSlices(bool add_ghost_restart)
+{
+    generic_packets_.emplace_back();
+    for (auto& slice : packet_slices_)
+    {
+        for (auto& pkt : slice.packets)
+        {
+            generic_packets_.front().push_back(std::move(pkt));
+        }
+    }
+
+    if (add_ghost_restart)
+    {
+        for (auto& restart : ghost_restarts_)
+        {
+            generic_packets_.emplace_back();
+            for (auto& slice : restart)
+            {
+                for (auto& pkt : slice.packets)
+                {
+                    generic_packets_.back().push_back(std::move(pkt));
+                }
+            }
+        }
+    }
+}
+
+void Replay::ExtractGhostRestarts()
+{
+    /*
+        First loop over all slices to see if we have ghost restart, if we do, then we make them to separate vectors
+    */
+    std::vector<PacketSlice> temp_slices;
+    bool                     g_restart      = false;
+    double                   prev_timestamp = 0.0;
+
+    for (auto it = packet_slices_.begin(); it != packet_slices_.end();)
+    {
+        double timestamp = it->timestamp;
+
+        if (timestamp > 0.0 && timestamp <= prev_timestamp - SMALL_NUMBER && !g_restart)
+        {
+            restart_timestamps_.emplace_back(timestamp, prev_timestamp);
+            g_restart = true;
+        }
+        else if (g_restart && timestamp >= prev_timestamp + SMALL_NUMBER)
+        {
+            ghost_restarts_.emplace_back(std::move(temp_slices));
+            temp_slices.clear();
+            g_restart = false;
+        }
+
+        if (g_restart)
+        {
+            temp_slices.push_back(std::move(*it));
+            it = packet_slices_.erase(it);
+        }
+        else
+        {
+            prev_timestamp = timestamp;
+            ++it;
+        }
+    }
+}
+
+Dat::DatHeader Replay::ParseDatHeader(const std::string& filename)
 {
     // Read raw header BEFORE reading packets
-    if (dat_reader.FillDatHeader() != 0)
+    if (dat_reader_->FillDatHeader() != 0)
     {
         int old_header = ReadOldDatHeader(filename);
         if (old_header != -1)
@@ -519,48 +796,43 @@ void Replay::ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filen
         LOG_ERROR_AND_QUIT("Failed to read DAT header.");
     }
 
-    dat_header_ = dat_reader.GetDatHeader();
+    return dat_reader_->GetDatHeader();
 }
 
 void Replay::FillInTimestamps()
 {
-    if (dt_.values.empty())
-    {
-        LOG_ERROR_AND_QUIT("No delta time (DT) information found in dat file, can not create timestamps vector.");
-    }
-
     double              curr_time = timestamps_.front();
     std::vector<double> filled    = {curr_time};
 
     // Fixed timestep entire scenario
-    if (dt_.values.size() == 1)
+    if (dts_.values.size() == 1)
     {
-        double dt = dt_.values.front().second;
-        FillEmptyTimestamps(curr_time, timestamps_.back(), dt, filled);
+        double current_dt = dts_.values.front().second;
+        FillEmptyTimestamps(curr_time, timestamps_.back(), current_dt, filled);
     }
     // Mixed timesteps in the scenario
     else
     {
         size_t i = 0;
-        for (size_t j = 0; j < dt_.values.size() - 1;)
+        for (size_t j = 0; j < dts_.values.size() - 1;)
         {
             double next_timestamp = timestamps_[i + 1];
-            double next_dt        = dt_.values[j + 1].second;
+            double next_dt        = dts_.values[j + 1].second;
 
             // We have reached the time where the next dt should be used
             // Increment j so we get next dt in next iteration
-            if (NEAR_NUMBERS(curr_time, dt_.values[j + 1].first - next_dt))
+            if (NEAR_NUMBERS(curr_time, dts_.values[j + 1].first - next_dt))
             {
                 j++;
             }
             // The next timestamp of a dt change is before our current time
             // We have a ghost reset
-            else if (curr_time - SMALL_NUMBER > dt_.values[j + 1].first)
+            else if (curr_time - SMALL_NUMBER > dts_.values[j + 1].first)
             {
                 // stitch together the timestamps
-                double start_time = dt_.values[j + 1].first;
+                double start_time = dts_.values[j + 1].first;
                 double end_time   = curr_time;
-                double restart_dt = dt_.values[j + 1].second;
+                double restart_dt = dts_.values[j + 1].second;
 
                 auto   it        = std::upper_bound(filled.begin(), filled.end(), start_time);
                 size_t start_idx = static_cast<size_t>(std::distance(filled.begin(), (--it)));
@@ -582,18 +854,18 @@ void Replay::FillInTimestamps()
                 continue;
             }
 
-            double dt = dt_.values[j].second;
+            double current_dt = dts_.values[j].second;
             // The gap to the next timestamp is more than 1 sample away, we should fill it
-            if (curr_time + next_dt < next_timestamp - SMALL_NUMBER && curr_time + dt < next_timestamp - SMALL_NUMBER)
+            if (curr_time + next_dt < next_timestamp - SMALL_NUMBER && curr_time + current_dt < next_timestamp - SMALL_NUMBER)
             {
                 // We have a large gap
                 double end_time = next_timestamp - next_dt;
-                FillEmptyTimestamps(curr_time, end_time, dt, filled);
+                FillEmptyTimestamps(curr_time, end_time, current_dt, filled);
             }
             // We have reached the last dt_ value, but the current time is not at the end, so we need to fill with current dt until the end
-            else if (j == dt_.values.size() - 1 && curr_time + dt < timestamps_.back() - SMALL_NUMBER)
+            else if (j == dts_.values.size() - 1 && curr_time + current_dt < timestamps_.back() - SMALL_NUMBER)
             {
-                FillEmptyTimestamps(curr_time, timestamps_.back(), dt, filled);
+                FillEmptyTimestamps(curr_time, timestamps_.back(), current_dt, filled);
             }
             // We are one sample away, just add it
             else
@@ -765,7 +1037,7 @@ Replay::~Replay()
     objects_timeline_.clear();
     timestamps_.clear();
     object_state_cache_.clear();
-    dt_ = {};
+    dts_ = {};
 }
 
 void Replay::GoToStart(bool ignore_repeat)
@@ -1087,39 +1359,28 @@ ReplayEntry Replay::GetReplayEntryAtTimeBinary(int id, double t) const
     return entry;
 }
 
-void Replay::SetupGhostsTimeline()
+void Replay::UpdateGhostsTimelineAfterRestart(size_t idx)
 {
-    auto ghost_timeline = objects_timeline_.find(ghost_controller_id_);
-    if (ghost_timeline == objects_timeline_.end())
+    int  ghost_ghost_id          = -(static_cast<int>(idx));
+    auto original_ghost_timeline = objects_timeline_.find(ghost_controller_id_);
+    if (original_ghost_timeline == objects_timeline_.end())
     {
         LOG_ERROR_AND_QUIT("No ghost controller found even though a ghost restart was detected. Quitting.");
+    }
+    if (idx == 0)
+    {
+        LOG_ERROR_AND_QUIT("Trying to adjust ghost timeline without any ghost restarts, exiting");
     }
 
     // We have detected a ghost restart, thus we:
     // first decrement the ghost_ghost_counter to ensure every ghost ghost gets a unique ID.
     // then copy the current object's timeline to the new ghost object's timeline and sets the last state to inactive
     // finally, we need to clear the current ghost object's timeline down to the time where ghost reset began
-    auto it = objects_timeline_.find(ghost_ghost_counter_);
-    if (it == objects_timeline_.end())
-    {
-        auto [new_it, inserted] = objects_timeline_.emplace(ghost_ghost_counter_, objects_timeline_[ghost_controller_id_]);
-        it                      = new_it;
+    PropertyTimeline temp = objects_timeline_[ghost_ghost_id];
 
-        if (inserted)
-        {
-            it->second.active_.values.front().second = false;  // Object starts as inactive, as we assume no restart happens at start
-            it->second.name_.values.front().second += "_" + std::to_string(ghost_ghost_counter_);
-
-            // Ghosts ghost active from ghost restart time until latest timestamp
-            it->second.active_.values.emplace_back(timestamp_, true);  // timestamp_ contains the new rewinded time
-            it->second.active_.values.emplace_back(timestamps_.back(), false);
-
-            ghost_ghost_counter_ -= 1;  // Next ghost will have a new id
-        }
-    }
-
-    // Then we slice the ghost controller timeline to the time where ghost reset began
-    auto ghost_timeline_properties = &ghost_timeline->second;
+    // Extract ghost data up until restart and put in ghost_ghost
+    objects_timeline_[ghost_ghost_id] = original_ghost_timeline->second;
+    auto ghost_timeline_properties    = &objects_timeline_[ghost_ghost_id];
     ghost_timeline_properties->lane_id_.values.resize(ghost_timeline_properties->lane_id_.get_index_binary(timestamp_).value());
     ghost_timeline_properties->road_id_.values.resize(ghost_timeline_properties->road_id_.get_index_binary(timestamp_).value());
     ghost_timeline_properties->pos_offset_.values.resize(ghost_timeline_properties->pos_offset_.get_index_binary(timestamp_).value());
@@ -1130,80 +1391,44 @@ void Replay::SetupGhostsTimeline()
     ghost_timeline_properties->wheel_angle_.values.resize(ghost_timeline_properties->wheel_angle_.get_index_binary(timestamp_).value());
     ghost_timeline_properties->wheel_rot_.values.resize(ghost_timeline_properties->wheel_rot_.get_index_binary(timestamp_).value());
     ghost_timeline_properties->visibility_mask_.values.resize(ghost_timeline_properties->visibility_mask_.get_index_binary(timestamp_).value());
+
+    ghost_timeline_properties->name_.values.front().second += fmt::format("_{}", ghost_ghost_id);
+    ghost_timeline_properties->active_.values.front().second = false;  // Not active at start
+    double restart_begin                                     = restart_timestamps_[idx - 1].first;
+    double restart_end                                       = restart_timestamps_[idx - 1].second;
+    ghost_timeline_properties->active_.values.emplace_back(restart_begin, true);  // Active at start of restart
+    ghost_timeline_properties->active_.values.emplace_back(restart_end, false);   // Not active after restart time has passed
+
+    auto& ghost_timeline = original_ghost_timeline->second;
+    ghost_timeline.lane_id_.replace_data_between_times(restart_begin, restart_end, temp.lane_id_.values, true);
+    ghost_timeline.road_id_.replace_data_between_times(restart_begin, restart_end, temp.road_id_.values, true);
+    ghost_timeline.pos_offset_.replace_data_between_times(restart_begin, restart_end, temp.pos_offset_.values, true);
+    ghost_timeline.pos_t_.replace_data_between_times(restart_begin, restart_end, temp.pos_t_.values, true);
+    ghost_timeline.pos_s_.replace_data_between_times(restart_begin, restart_end, temp.pos_s_.values, true);
+    ghost_timeline.pose_.replace_data_between_times(restart_begin, restart_end, temp.pose_.values, true);
+    ghost_timeline.speed_.replace_data_between_times(restart_begin, restart_end, temp.speed_.values, true);
+    ghost_timeline.wheel_angle_.replace_data_between_times(restart_begin, restart_end, temp.wheel_angle_.values, true);
+    ghost_timeline.wheel_rot_.replace_data_between_times(restart_begin, restart_end, temp.wheel_rot_.values, true);
+    ghost_timeline.visibility_mask_.replace_data_between_times(restart_begin, restart_end, temp.visibility_mask_.values, true);
 }
 
 void Replay::CreateMergedDatfile(const std::string filename) const
 {
-    Dat::DatWriter dat_writer;
-    dat_writer.Init(filename, dat_header_.odr_filename.string, dat_header_.model_filename.string, dat_header_.git_rev.string);
+    dat_writer_->Init(filename, dat_header_.odr_filename.string, dat_header_.model_filename.string, dat_header_.git_rev.string);
 
-    if (!dat_writer.IsWriteFileOpen())
+    if (!dat_writer_->IsWriteFileOpen())
     {
         LOG_ERROR("Failed to open dat file for writing: {}", filename);
         return;
     }
 
-    // We re-create the object states vector which then is written to the DAT file
-    double                                                    prev_timestamp = timestamps_[0];
-    std::vector<std::unique_ptr<scenarioengine::ObjectState>> object_states;
-    for (size_t i = 0; i < timestamps_.size() - 1; i++)
+    for (auto packet : generic_packets_[0])
     {
-        for (const auto& [id, _] : objects_timeline_)
-        {
-            ReplayEntry entry = GetReplayEntryAtTimeIncremental(id, timestamps_[i]);
-            auto        state = &entry.state;
-
-            if (!state->info.active)  // Ignore entities which are inactive in the current time
-            {
-                continue;
-            }
-
-            auto obj = std::make_unique<scenarioengine::ObjectState>(state->info.id,
-                                                                     ID_UNDEFINED,  // No global id
-                                                                     state->info.name,
-                                                                     state->info.obj_type,
-                                                                     state->info.obj_category,
-                                                                     0,  // No role
-                                                                     state->info.model_id,
-                                                                     "",  // No model3d
-                                                                     state->info.ctrl_type,
-                                                                     state->info.boundingbox,
-                                                                     state->info.scaleMode,
-                                                                     state->info.visibilityMask,
-                                                                     static_cast<double>(state->info.timeStamp),
-                                                                     static_cast<double>(state->info.speed),
-                                                                     static_cast<double>(state->info.wheel_angle),
-                                                                     static_cast<double>(state->info.wheel_rot),
-                                                                     0.0,  // No rear axle z pos
-                                                                     static_cast<double>(state->pos.x),
-                                                                     static_cast<double>(state->pos.y),
-                                                                     static_cast<double>(state->pos.z),
-                                                                     static_cast<double>(state->pos.h),
-                                                                     static_cast<double>(state->pos.p),
-                                                                     static_cast<double>(state->pos.r));
-
-            obj->state_.info.wheel_data.emplace_back();  // Initialize wheel_data vector
-            obj->state_.info.wheel_data[0].h = static_cast<double>(state->info.wheel_angle);
-            obj->state_.info.wheel_data[0].p = static_cast<double>(state->info.wheel_rot);
-            obj->state_.pos.SetTrackId(state->pos.roadId);
-            obj->state_.pos.SetLaneId(state->pos.laneId);
-            obj->state_.pos.SetOffset(static_cast<double>(state->pos.offset));
-            obj->state_.pos.SetT(static_cast<double>(state->pos.t));
-            obj->state_.pos.SetS(static_cast<double>(state->pos.s));
-
-            object_states.emplace_back(std::move(obj));
-        }
-
-        // Same flow as in ScenarioGateway.cpp
-        auto dt = timestamps_[i] - prev_timestamp;
-        dat_writer.SetSimulationTime(timestamps_[i], dt);
-        dat_writer.WriteDtToDat();  // Writes the fixed timestep
-        dat_writer.WriteObjectStatesToDat(object_states);
-        dat_writer.SetTimestampWritten(false);
-
-        object_states.clear();  // Clear the states for the next timestamp
-        prev_timestamp = timestamps_[i];
+        dat_writer_->WritePacket(packet);
     }
+
+    // Set simulation time so END_OF_SCENARIO packet is written correctly in destructor (dt not important)
+    dat_writer_->SetSimulationTime(timestamps_.back(), 0.0);
 }
 
 int Replay::ReadOldDatHeader(const std::string& filename)

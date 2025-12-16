@@ -335,6 +335,10 @@ void Dat::DatWriter::CheckDeletedObjects()
 
 void Dat::DatWriter::WritePacket(PacketGeneric& packet)
 {
+    if (packet.header.data_size != packet.data.size())
+    {
+        LOG_ERROR_AND_QUIT("packet id {} fails", packet.header.id);
+    }
     write_file_.write(reinterpret_cast<char*>(&packet.header), sizeof(PacketHeader));
     write_file_.write(packet.data.data(), static_cast<std::streamsize>(packet.data.size()));
 }
@@ -442,7 +446,7 @@ bool Dat::DatReader::ReadFile(Dat::PacketHeader& header)
     return true;
 }
 
-void Dat::DatReader::UnknownPacket(const Dat::PacketHeader& header)
+void Dat::DatReader::SkipPacket(const Dat::PacketHeader& header)
 {
     file_.seekg(header.data_size, std::ios::cur);  // Skips the packet by moving cursor ahead
 }
@@ -453,6 +457,17 @@ void Dat::DatReader::CloseFile()
     {
         file_.close();
     }
+}
+
+std::string Dat::DatReader::ReadStringPacket(const Dat::PacketGeneric& pkt)
+{
+    const char*  ptr = pkt.data.data();
+    unsigned int size;
+
+    memcpy(&size, ptr, sizeof(size));
+    ptr += sizeof(size);
+
+    return std::string(ptr, size);
 }
 
 int Dat::DatReader::ReadStringPacket(std::string& str)
@@ -467,7 +482,6 @@ int Dat::DatReader::ReadStringPacket(std::string& str)
     {
         return -1;
     }
-
     return 0;
 }
 
