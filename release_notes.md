@@ -1,5 +1,22 @@
 ## esmini release notes
 
+### 2025-12-17 Version 2.57.0
+
+New features and behaviors:
+- Use global IDs for all OSI elements ([issue #747](https://github.com/esmini/esmini/issues/747))
+  - track internal scenario ID in OSI source reference
+- Extend AddObject() with model name and obj types
+  - add model_3d filename overriding model_id
+  - support pedestrians and misc objects ([issue #750](https://github.com/esmini/esmini/issues/750))
+- Implement OSI source reference
+  - for Lane, StationaryObject, MovingObject, TrafficLight and TrafficSign
+- Report added stationary MiscObjects on OSI
+  - see updated note in [User guide - OSI data via API call](https://esmini.github.io/#_osi_data_via_api_call)
+
+Improvements and fixes:
+- Fix sometimes stuck on loading OpenDRIVE file ([issue #751](https://github.com/esmini/esmini/issues/751))
+- Add support for OSI checks in smoke tests
+
 ### 2025-12-12 Version 2.56.2
 
 Improvements and fixes:
@@ -31,8 +48,8 @@ New features:
   - see info and limitations in [User guide - Traffic lights visualization](https://esmini.github.io/#_traffic_lights)
   - example scenario [traffic_lights.xosc](https://github.com/esmini/esmini/blob/dev/resources/xosc/traffic_lights.xosc) video clip [here](https://youtu.be/26BSMblzyO4)
   - Note: Requires update of osg and model packages:
-    - remove `externals/osg` and `resources/models` folders 
-    - run `cmake ..` from build folder 
+    - remove `externals/osg` and `resources/models` folders
+    - run `cmake ..` from build folder
 - Add support for moving Vehicle reference point along x-axis
   - see info in [User guide - Shift reference point](https://esmini.github.io/#_shift_reference_point)
   - video clip: https://youtu.be/gvfFI4hgw1M
@@ -49,7 +66,7 @@ Improvements and fixes:
 - Restore esmini CI link to original [Vector NCAP scenario repo](https://github.com/vectorgrp/OSC-NCAP-scenarios)
 - Log written dat-packet id and size (debug log level)
 - Extend search for (osgb) file needed for vehicle shadow
-- Restore plot_csv.py (issue introduced in v2.54.0) 
+- Restore plot_csv.py (issue introduced in v2.54.0)
 - Improve wheel angle and rotation calculations
   - base wheel angle kinematics of the bicycle model
   - limitation: still same rotation on all wheels
