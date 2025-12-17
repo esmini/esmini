@@ -13,16 +13,6 @@ COMMON_REPLAYER_ARGS = '--file sim.dat --headless --time_scale 10 --res_path ../
 
 class TestSuite(unittest.TestCase):
 
-    def use_package(self, pack_name):
-        result = subprocess.run(
-            ["cmake", "-B", "../build", "-N", "-L"],
-            capture_output=True,
-            text=True,
-            check=True,
-            shell=False
-        )
-        return result.stdout.find("USE_" + pack_name + ":BOOL=ON") != -1
-
     def build_type(self, build_type):
         result = subprocess.run(
             ["cmake", "-B", "../build", "-N", "-L"],
@@ -636,7 +626,7 @@ class TestSuite(unittest.TestCase):
 
         # osg viewer, which replayer depends on, fails on CI headless mac system
         if sys.platform != "darwin":
-            if self.use_package("OSG"):
+            if use_package("OSG"):
                 log = run_replayer(COMMON_REPLAYER_ARGS + '--collision continue')
                 self.assertTrue(re.search('Collision between Ego \\(id 0\\) and NPC2 \\(id 2\\) at time 5.25.', log, re.MULTILINE)  is not None)
                 self.assertTrue(re.search('Relative speed 14.40 km/h', log, re.MULTILINE)  is not None)
@@ -1641,7 +1631,7 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^.0.000.* Controller ALKS_R157SM_Controller active on domains: Longitudinal \\(mask=0x1\\)', log[-1], re.MULTILINE)  is not None)
 
         # make sure replayer is available, which is not the case when USE_OSG=FALSE has been defined in build configuration
-        if self.use_package("OSG"):
+        if use_package("OSG"):
             if len(models) > 0:
                 with open(STDOUT_FILENAME, "w") as f:
                     if len(models) > 1:
@@ -1959,20 +1949,32 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^1.700, 0, object_0, 44.444, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^1.700, 1, object_1, 5.556, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
         self.assertTrue(re.search('^19.500, 1, object_1, 500.000, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 2, object_2, 461.111, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 3, object_3, 419.444, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 4, object_4, 380.556, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 5, object_5, 341.667, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 6, object_6, 300.000, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 7, object_7, 261.111, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 8, object_8, 219.444, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 9, object_9, 180.556, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 10, object_10, 141.667, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 11, object_11, 100.000, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 12, object_12, 61.111, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.500, 13, object_13, 19.444, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.600, 2, object_2, 463.889, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
-        self.assertTrue(re.search('^19.600, 3, object_3, 422.222, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 2, misc_object_0, 100.000, 5.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 3, object_2, 461.111, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 4, misc_object_1, 200.000, 5.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 5, object_3, 419.444, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 6, object_4, 380.556, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 7, object_5, 341.667, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 8, object_6, 300.000, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 9, object_7, 261.111, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 10, object_8, 219.444, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 11, object_9, 180.556, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 12, object_10, 141.667, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 13, object_11, 100.000, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 14, object_12, 61.111, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.500, 15, object_13, 19.444, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.600, 3, object_2, 463.889, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+        self.assertTrue(re.search('^19.600, 5, object_3, 422.222, -1.500, 0.000, 0.000, 0.000, 0.000, 27.778, 0.000, 0.000', csv, re.MULTILINE))
+
+        if use_package("OSI"):
+            # Check OSI data, that misc objects are added but appearing only once
+            osi_csv = generate_csv_from_osi()
+            self.assertTrue(re.search('^1.600000, 15, obj15, MEDIUM_CAR, 2.77.*$\n^1.600000, 16, misc_obj16, 3, 100.0.*$\n^1.700000, 14, obj14, MEDIUM_CAR, 44.44',
+                                    osi_csv, re.MULTILINE))
+            self.assertTrue(re.search('^3.000000, 17, obj17, MEDIUM_CAR, 2.77.*$\n^3.000000, 18, misc_obj18, 3, 200.0.*$\n^3.100000, 14, obj14, MEDIUM_CAR, 83.33',
+                                    osi_csv, re.MULTILINE))
+            self.assertTrue(re.search('^3.100000, 15, obj15, MEDIUM_CAR, 44.44.*$\n^3.100000, 17, obj17, MEDIUM_CAR, 5.55',
+                                    osi_csv, re.MULTILINE))
 
     def test_rising_edge(self):
         # This test case checks rising condition edge. A car is accelerating from 0 up to 10m/s, then braking to a stop.

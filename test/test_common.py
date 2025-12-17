@@ -138,6 +138,16 @@ def run_replayer(replayer_arguments = None):
 
     assert False, 'No log file'
 
+def use_package(pack_name):
+    result = subprocess.run(
+        ["cmake", "-B", "../build", "-N", "-L"],
+        capture_output=True,
+        text=True,
+        check=True,
+        shell=False
+    )
+    return result.stdout.find("USE_" + pack_name + ":BOOL=ON") != -1
+
 def generate_csv(filename=DAT_FILENAME):
 
     # Below is one/the old way of converting dat to csv. Keeping the lines for reference.
@@ -153,3 +163,17 @@ def generate_csv(filename=DAT_FILENAME):
         return f.read()
 
     assert False, 'No csv file'
+
+def generate_csv_from_osi(filename=OSI_FILENAME):
+
+    if use_package("OSI"):
+        import osi2csv
+
+        osi = osi2csv.OSIFile(filename)
+        osi.save_csv()
+        osi.close()
+
+        with open(os.path.splitext(filename)[0] + '.csv', "r") as f:
+            return f.read()
+
+        assert False, 'No csv file'
