@@ -242,6 +242,53 @@ namespace scenarioengine
 
             return ret;
         }
+
+        // Function will replace all data between the [first, last] time of input on this->values
+        void replace_data_between_times(const std::vector<std::pair<double, T>>& input, bool clean = false)
+        {
+            if (input.empty() || values.empty())
+                return;
+
+            const double start_time = input.front().first;
+            const double end_time   = input.back().first;
+
+            auto first = std::lower_bound(values.begin(),
+                                          values.end(),
+                                          start_time,
+                                          [](const auto& v, double t) { return v.first < t && !NEAR_NUMBERS(v.first, t); });
+
+            auto last = std::upper_bound(values.begin(),
+                                         values.end(),
+                                         end_time,
+                                         [](double t, const auto& v) { return t < v.first && !NEAR_NUMBERS(v.first, t); });
+
+            auto insert_pos = values.erase(first, last);
+
+            values.insert(insert_pos, input.begin(), input.end());
+
+            if (clean && values.size() > 1)
+            {
+                clean_duplicate_timestamps();
+            }
+
+            return;
+        }
+
+        void clean_duplicate_timestamps()
+        {
+            auto it = values.begin();
+            while (it + 1 != values.end())
+            {
+                if (NEAR_NUMBERS(it->first, (it + 1)->first))
+                {
+                    it = values.erase(it);  // erase first of the duplicates
+                }
+                else
+                {
+                    it++;
+                }
+            }
+        }
     };
 
     struct PropertyTimeline
@@ -303,7 +350,7 @@ namespace scenarioengine
     // Used in dat-merging
     struct PacketSlice
     {
-        double            timestamp;
+        double                          timestamp;
         std::vector<Dat::PacketGeneric> packets;
     };
 
@@ -331,7 +378,7 @@ namespace scenarioengine
         ~Replay();
 
         void        SetupGhostsTimeline();
-        int         ParsePackets(const std::string& filename, std::vector<Dat::PacketHeader>* raw_data = nullptr);
+        int         ParsePackets(const std::string& filename);
         void        SortPackets(Dat::DatReader& dat_reader);
         std::string BuildElementStateChange(const std::string& element_state);
         void        FillInTimestamps();
@@ -396,12 +443,13 @@ namespace scenarioengine
         bool                     eos_received_ = false;  // end of scenario packet
 
         /* PacketHandler stuff */
-        double                            timestamp_            = 0.0;
-        bool                              ghost_timeline_setup_ = false;
-        int                               current_object_id_;
-        int                               ghost_controller_id_;
-        scenarioengine::PropertyTimeline* current_object_timeline_;
-        std::vector<Dat::PacketGeneric>   generic_packets_;
+        double                                       timestamp_            = 0.0;
+        bool                                         ghost_timeline_setup_ = false;
+        int                                          current_object_id_;
+        int                                          ghost_controller_id_;
+        scenarioengine::PropertyTimeline*            current_object_timeline_;
+        std::vector<std::vector<Dat::PacketGeneric>> generic_packets_ = {};
+        double                                       restart_timestamp_;
     };
 
 }  // namespace scenarioengine
