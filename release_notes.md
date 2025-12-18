@@ -1,5 +1,11 @@
 ## esmini release notes
 
+### 2025-12-18 Version 2.57.1
+
+Improvements and fixes:
+- Populate host_vehicle_id in OSI ([issue #747](https://github.com/esmini/esmini/issues/747))
+  - assigned to first ScenarioObject listed in [Entities](https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/Entities.html)
+
 ### 2025-12-17 Version 2.57.0
 
 New features and behaviors:
