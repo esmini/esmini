@@ -5340,6 +5340,30 @@ TEST(RoadmanagerTest, TestSimpleGetDistance)
     SE_Close();
 }
 
+TEST(RoadmanagerTest, CheckPreviousRoadIsCleared)
+{
+    std::string scenario_file = "../../../resources/xosc/slow-lead-vehicle.xosc";
+
+    SE_Init(scenario_file.c_str(), 0, 0, 0, 0);
+
+    EXPECT_EQ(SE_GetNumberOfObjects(), 2);
+
+    SE_RoadInfo roadinfo;
+    ASSERT_EQ(SE_GetRoadInfoAtDistance(0, 0, &roadinfo, 0, true), 0);
+    EXPECT_EQ(roadinfo.roadId, 1);
+    EXPECT_EQ(roadinfo.laneId, -1);
+
+    SE_Close();
+
+    SE_Init("../../../resources/xosc/parking_lot.xosc", 0, 0, 0, 0);
+
+    EXPECT_EQ(SE_GetNumberOfObjects(), 3);
+
+    ASSERT_EQ(SE_GetRoadInfoAtDistance(0, 0, &roadinfo, 0, true), -1);
+
+    SE_Close();
+}
+
 TEST(ParamDistTest, TestRunAll)
 {
 #ifdef _USE_OSI

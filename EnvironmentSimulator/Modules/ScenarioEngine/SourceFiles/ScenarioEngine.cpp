@@ -675,6 +675,9 @@ int ScenarioEngine::parseScenario()
     // Init road manager
     scenarioReader->parseRoadNetwork(roadNetwork);
 
+    // Clear any previously loaded OpenDRIVE data
+    roadmanager::Position::GetOpenDrive()->Reset();
+
     if (getOdrFilename().empty())
     {
         LOG_WARN("No OpenDRIVE file specified, continue without");
