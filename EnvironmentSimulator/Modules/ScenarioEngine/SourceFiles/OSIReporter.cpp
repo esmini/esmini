@@ -303,6 +303,11 @@ int OSIReporter::UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectSt
         UpdateOSIStaticGroundTruth(objectState);
         UpdateOSIDynamicGroundTruth(objectState);
 
+        if (!objectState.empty())
+        {
+            obj_osi_internal.static_gt->mutable_host_vehicle_id()->set_value(objectState.front()->state_.info.g_id);
+        }
+
         if (IsFileOpen() || GetUDPClientStatus() == 0)
         {
             SerializeDynamicAndStaticData();

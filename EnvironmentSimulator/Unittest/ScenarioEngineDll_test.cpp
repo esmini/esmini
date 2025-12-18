@@ -971,12 +971,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 86255);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 86259);  // initial OSI size, including static content
 
     SE_StepDT(0.001f);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 87430);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 87434);  // slight growth due to only dynamic updates
 
     int road_lane_size;
 
@@ -988,12 +988,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 88768);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 88772);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001f);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 90107);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 90111);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -1513,8 +1513,14 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
 
     osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
 
+    ASSERT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    // Verify that osi host_vehicle_id is the global id of the ego car in the scenario
+    EXPECT_EQ(osi_gt_ptr->moving_object(0).source_reference(0).identifier(0), "entity_id:0");
+    EXPECT_EQ(osi_gt_ptr->moving_object(0).source_reference(0).identifier(2), "entity_name:Ego");
+    EXPECT_EQ(osi_gt_ptr->moving_object(0).id().value(), osi_gt_ptr->host_vehicle_id().value());
+
     // verify model_reference and source_reference are populated from the ,xosc file
-    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
     ASSERT_EQ(osi_gt_ptr->moving_object(1).model_reference(), "../../../resources/models/car_red.osgb");
     ASSERT_EQ(osi_gt_ptr->moving_object(1).source_reference_size(), 1);
     ASSERT_NE(osi_gt_ptr->moving_object(1).source_reference(0).type().size(), 0);
@@ -1549,7 +1555,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
     SE_DisableOSIFile();
 
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9985);
+    EXPECT_EQ(fileStatus.st_size, 9989);
 
     // Read OSI file
     FILE* file = FileOpen("gt.osi", "rb");
@@ -1570,6 +1576,13 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
         EXPECT_EQ(osi_gt.mutable_moving_object()->size(), 2);
         seconds = static_cast<double>(osi_gt.mutable_timestamp()->seconds()) + 1E-9 * static_cast<double>(osi_gt.mutable_timestamp()->nanos());
         EXPECT_NEAR(seconds, time_stamps[i], 1E-5);
+        if (i == 0)
+        {
+            EXPECT_EQ(osi_gt.version().version_major(), 3);
+            EXPECT_EQ(osi_gt.version().version_minor(), 5);
+            EXPECT_EQ(osi_gt.version().version_patch(), 0);
+            EXPECT_EQ(osi_gt.host_vehicle_id().value(), osi_gt.mutable_moving_object(0)->id().value());
+        }
         obj_x = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->x();
         obj_y = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->y();
         obj_z = osi_gt.mutable_moving_object(0)->mutable_base()->mutable_position()->z();
@@ -1620,7 +1633,7 @@ TEST(GroundTruthTests, check_frequency_implicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_implicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9985);
+    EXPECT_EQ(fileStatus.st_size, 9989);
 
     // Read OSI file
     FILE* file = FileOpen("gt_implicit.osi", "rb");
@@ -1690,7 +1703,7 @@ TEST(GroundTruthTests, check_frequency_explicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_explicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9985);
+    EXPECT_EQ(fileStatus.st_size, 9989);
 
     // Read OSI file
     FILE* file = FileOpen("gt_explicit.osi", "rb");
@@ -1830,7 +1843,42 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 11124);
+    EXPECT_EQ(fileStatus.st_size, 11128);
+}
+
+TEST(GroundTruthTests, check_update_osi_ground_truth_api_and_log)
+{
+    const osi3::GroundTruth* osi_gt_ptr;
+    struct stat              fileStatus;
+
+    SE_EnableOSIFile("gt_static_dynamic.osi");
+    ASSERT_EQ(SE_Init("../../../resources/xosc/cut-in_simple.xosc", 0, 0, 0, 0), 0);
+
+    osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 7);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_StepDT(0.01f);
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 0);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_SetOSIStaticReportMode(SE_OSIStaticReportMode::API_AND_LOG);
+    SE_StepDT(0.01f);
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 7);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_SetOSIStaticReportMode(SE_OSIStaticReportMode::DEFAULT);
+    SE_StepDT(0.01f);
+
+    EXPECT_EQ(osi_gt_ptr->lane_boundary_size(), 0);
+    EXPECT_EQ(osi_gt_ptr->moving_object().size(), 2);
+
+    SE_Close();
+    ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
+    EXPECT_EQ(fileStatus.st_size, 17777);
 }
 
 TEST(GroundTruthTests, check_update_gt_twice_same_frame)
@@ -1848,7 +1896,7 @@ TEST(GroundTruthTests, check_update_gt_twice_same_frame)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 7707);
+    EXPECT_EQ(fileStatus.st_size, 7711);
 }
 
 TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
