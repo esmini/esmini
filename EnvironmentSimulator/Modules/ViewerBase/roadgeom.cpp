@@ -408,27 +408,26 @@ namespace roadgeom
                                 LOG_ERROR("Unexpected last point without endpoint q {}", q);
                             }
 
+                            double z_right = osi_points[q].z + ROADMARK_Z_OFFSET - (lane_roadmarktypeline->GetWidth() / 2) * tan(osi_points[q].r);
+                            double z_left  = osi_points[q].z + ROADMARK_Z_OFFSET + (lane_roadmarktypeline->GetWidth() / 2) * tan(osi_points[q].r);
+
                             if (q == startpoint)
                             {
                                 // First point in a line sequence, no adjustment needed
-                                (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0l[0]),
-                                                                static_cast<float>(l1p0l[1]),
-                                                                static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
-                                (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0r[0]),
-                                                                static_cast<float>(l1p0r[1]),
-                                                                static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
+                                (*vertices).push_back(
+                                    osg::Vec3(static_cast<float>(l1p0l[0]), static_cast<float>(l1p0l[1]), static_cast<float>(z_left)));
+                                (*vertices).push_back(
+                                    osg::Vec3(static_cast<float>(l1p0r[0]), static_cast<float>(l1p0r[1]), static_cast<float>(z_right)));
                             }
                             else if (osi_points[q].endpoint)
                             {
                                 // Last point of a line sequence, no adjustment needed
                                 double* left  = (q < osi_points.size() - 1) ? l1p0l : l1p1l;
                                 double* right = (q < osi_points.size() - 1) ? l1p0r : l1p1r;
-                                (*vertices).push_back(osg::Vec3(static_cast<float>(left[0]),
-                                                                static_cast<float>(left[1]),
-                                                                static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
-                                (*vertices).push_back(osg::Vec3(static_cast<float>(right[0]),
-                                                                static_cast<float>(right[1]),
-                                                                static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
+                                (*vertices).push_back(
+                                    osg::Vec3(static_cast<float>(left[0]), static_cast<float>(left[1]), static_cast<float>(z_left)));
+                                (*vertices).push_back(
+                                    osg::Vec3(static_cast<float>(right[0]), static_cast<float>(right[1]), static_cast<float>(z_right)));
                             }
                             else
                             {
@@ -446,16 +445,14 @@ namespace roadgeom
                                                                      isect[0],
                                                                      isect[1]) == 0)
                                 {
-                                    (*vertices).push_back(osg::Vec3(static_cast<float>(isect[0]),
-                                                                    static_cast<float>(isect[1]),
-                                                                    static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
+                                    (*vertices).push_back(
+                                        osg::Vec3(static_cast<float>(isect[0]), static_cast<float>(isect[1]), static_cast<float>(z_left)));
                                 }
                                 else
                                 {
                                     // lines parallel, no adjustment needed
-                                    (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0l[0]),
-                                                                    static_cast<float>(l1p0l[1]),
-                                                                    static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
+                                    (*vertices).push_back(
+                                        osg::Vec3(static_cast<float>(l1p0l[0]), static_cast<float>(l1p0l[1]), static_cast<float>(z_left)));
                                 }
 
                                 if (GetIntersectionOfTwoLineSegments(l0p0r[0],
@@ -469,16 +466,14 @@ namespace roadgeom
                                                                      isect[0],
                                                                      isect[1]) == 0)
                                 {
-                                    (*vertices).push_back(osg::Vec3(static_cast<float>(isect[0]),
-                                                                    static_cast<float>(isect[1]),
-                                                                    static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
+                                    (*vertices).push_back(
+                                        osg::Vec3(static_cast<float>(isect[0]), static_cast<float>(isect[1]), static_cast<float>(z_right)));
                                 }
                                 else
                                 {
                                     // lines parallel, no adjustment needed
-                                    (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0r[0]),
-                                                                    static_cast<float>(l1p0r[1]),
-                                                                    static_cast<float>(osi_points[q].z + ROADMARK_Z_OFFSET)));
+                                    (*vertices).push_back(
+                                        osg::Vec3(static_cast<float>(l1p0r[0]), static_cast<float>(l1p0r[1]), static_cast<float>(z_right)));
                                 }
                             }
 

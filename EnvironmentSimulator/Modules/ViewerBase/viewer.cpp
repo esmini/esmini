@@ -2735,11 +2735,12 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
             {
                 roadmanager::Lane* lane = lane_section->GetLaneByIdx(j);
 
-                // visualize both lane boundary and lane center and
+                // For laneId = 0, visualize reference line (k=0, laneId=0) and center lane (k=1)
+                // Other lanes visualize lane center (k=0) and lane boundary (k=1)
                 for (unsigned int k = 0; k < 2; k++)
                 {
                     // skip lane center for all non driving lanes except center lane
-                    if ((k == 1 && lane->GetId() != 0) && !lane->IsDriving())
+                    if ((k == 0 && lane->GetId() != 0) && !lane->IsDriving())
                     {
                         continue;
                     }
@@ -2749,7 +2750,7 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
 
                     if (k == 0 && lane->GetId() == 0)
                     {
-                        // visualize road reference line
+                        // road reference line
                         roadmanager::OSIPoints ref_line_osi_points = lane_section->GetRefLineOSIPoints();
                         for (const auto& ref_line_point : ref_line_osi_points.GetPoints())
                         {
@@ -2762,15 +2763,15 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                     {
                         curr_osi = nullptr;
 
-                        if (k == 1)
+                        if (k == 0 || lane->GetId() == 0)
                         {
-                            curr_osi = lane->GetOSIPoints();
+                            curr_osi = lane->GetOSIPoints();  // road center lane and mid driving lanes
                         }
                         else
                         {
                             if (lane->GetLaneBoundary() != nullptr)
                             {
-                                curr_osi = lane->GetLaneBoundary()->GetOSIPoints();
+                                curr_osi = lane->GetLaneBoundary()->GetOSIPoints();  // lane boundary
                             }
                         }
 
@@ -2817,7 +2818,7 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                                                 OSI_DOT_SIZE);
                         }
                     }
-                    else if (k == 1)
+                    else if (k == 0)
                     {
                         pline = AddPolyLine(viewer,
                                             odrLines_,
