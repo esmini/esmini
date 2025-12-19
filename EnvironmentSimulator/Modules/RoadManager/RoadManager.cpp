@@ -1271,6 +1271,23 @@ void Lane::AddLaneWidth(LaneWidth* lane_width)
     lane_width_.push_back(lane_width);
 }
 
+void Lane::AddLaneHeight(LaneHeight lane_height)
+{
+    if (lane_height_.size() > 0 && lane_height.s_offset < lane_height_.back().s_offset)
+    {
+        for (unsigned int i = 0; i < lane_height_.size(); i++)
+        {
+            if (lane_height.s_offset < lane_height_[i].s_offset)
+            {
+                lane_height_.insert(lane_height_.begin() + i, lane_height);
+                return;
+            }
+        }
+    }
+
+    lane_height_.push_back(lane_height);
+}
+
 void Lane::AddLaneRoadMark(LaneRoadMark* lane_roadMark)
 {
     if (lane_roadMark_.size() > 0 && lane_roadMark->GetSOffset() < lane_roadMark_.back()->GetSOffset())
@@ -3379,8 +3396,10 @@ bool Road::GetZAndPitchByS(double s, double* z, double* z_prim, double* z_primPr
         }
     }
 
-    *z     = 0.0;
-    *pitch = 0.0;
+    *z          = 0.0;
+    *z_prim     = 0.0;
+    *z_primPrim = 0.0;
+    *pitch      = 0.0;
 
     return false;
 }
@@ -3421,11 +3440,22 @@ bool Road::UpdateZAndRollBySAndT(double s, double t, double* z, double* roadSupe
         {
             double ds = s - super_elevation->GetS();
             *roll     = super_elevation->poly3_.Evaluate(ds);
+#if 1    // new
+         // *z = 0.0; // calculate later
+#elif 0  // semi new
+            *z += cos(*roll) * tan(*roll) * t;
+#else
             *z += tan(*roll) * t;
+#endif
             *roadSuperElevationPrim = super_elevation->poly3_.EvaluatePrim(ds);
             return true;
         }
     }
+    else
+    {
+        *roll = 0.0;
+    }
+
     return false;
 }
 
@@ -4164,6 +4194,15 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                 double c        = atof(width.attribute("c").value());
                                 double d        = atof(width.attribute("d").value());
                                 lane->AddLaneWidth(new LaneWidth(s_offset, a, b, c, d));
+                            }
+
+                            // Height
+                            for (pugi::xml_node height = lane_node->child("height"); height; height = height.next_sibling("height"))
+                            {
+                                double s_offset = atof(height.attribute("sOffset").value());
+                                double inner    = atof(height.attribute("inner").value());
+                                double outer    = atof(height.attribute("outer").value());
+                                lane->AddLaneHeight({s_offset, inner, outer});
                             }
 
                             // roadMark
@@ -7300,7 +7339,14 @@ int OpenDrive::CheckAndAddOSIPoint(Position&                 pos_pivot,
         else
         {
             // add candidate
-            p           = {pos_candidate.GetS(), pos_candidate.GetX(), pos_candidate.GetY(), pos_candidate.GetZ(), pos_candidate.GetHRoad(), false};
+            p           = {pos_candidate.GetS(),
+                           pos_candidate.GetX(),
+                           pos_candidate.GetY(),
+                           pos_candidate.GetZ(),
+                           pos_candidate.GetHRoad(),
+                           pos_candidate.GetPRoad(),
+                           pos_candidate.GetRRoad(),
+                           false};
             pos_last_ok = pos_candidate;
         }
 
@@ -7325,14 +7371,14 @@ int OpenDrive::CheckAndAddOSIPoint(Position&                 pos_pivot,
     }
     else if (osi_requirement == false)
     {
-        insert = true;              // indicate that a point needs to be inserted
+        insert = true;              // indicate that a point needs to be inserted, i.e. closer to pivot point
         step   = -abs(step) / 2.0;  // look backwards half current stepsize for a point fulfilling requirements
     }
     else
     {
         if (insert)
         {
-            step = abs(step) / 2.0;  // insert mode, look forward half current stepsize for a point fulfilling requirements
+            step = abs(step) / 2.0;  // insert mode, look forward half current stepsize for a point still fulfilling requirements
         }
 
         // register candidate in case we need to revert to it
@@ -7482,7 +7528,14 @@ void OpenDrive::SetLaneOSIPoints()
                 }
 
                 // Add the starting point of each lane as osi point
-                PointStruct p = {lsec->GetS(), pos_pivot.GetX(), pos_pivot.GetY(), pos_pivot.GetZ(), pos_pivot.GetHRoad(), false};
+                PointStruct p = {lsec->GetS(),
+                                 pos_pivot.GetX(),
+                                 pos_pivot.GetY(),
+                                 pos_pivot.GetZ(),
+                                 pos_pivot.GetHRoad(),
+                                 pos_pivot.GetPRoad(),
+                                 pos_pivot.GetRRoad(),
+                                 false};
                 osi_point.push_back(p);
                 pos_last_ok = pos_pivot;
 
@@ -7665,7 +7718,14 @@ void OpenDrive::SetLaneBoundaryPoints()
                     }
 
                     // Add the starting point of each lane as osi point
-                    PointStruct p = {lsec->GetS(), pos_pivot.GetX(), pos_pivot.GetY(), pos_pivot.GetZ(), pos_pivot.GetHRoad(), false};
+                    PointStruct p = {lsec->GetS(),
+                                     pos_pivot.GetX(),
+                                     pos_pivot.GetY(),
+                                     pos_pivot.GetZ(),
+                                     pos_pivot.GetHRoad(),
+                                     pos_pivot.GetPRoad(),
+                                     pos_pivot.GetRRoad(),
+                                     false};
                     osi_point.push_back(p);
                     pos_last_ok = pos_pivot;
 
@@ -7836,6 +7896,8 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                                              pos_candidate.GetY(),
                                                              pos_candidate.GetZ(),
                                                              pos_candidate.GetHRoad(),
+                                                             pos_candidate.GetPRoad(),
+                                                             pos_candidate.GetRRoad(),
                                                              true};
                                             osi_point.push_back(p);
 
@@ -7867,8 +7929,14 @@ void OpenDrive::SetRoadMarkOSIPoints()
                                             pos_last_ok = pos_pivot;
 
                                             // Add the starting point of each lane as osi point
-                                            PointStruct p =
-                                                {s_roadmark_point, pos_pivot.GetX(), pos_pivot.GetY(), pos_pivot.GetZ(), pos_pivot.GetHRoad(), false};
+                                            PointStruct p = {s_roadmark_point,
+                                                             pos_pivot.GetX(),
+                                                             pos_pivot.GetY(),
+                                                             pos_pivot.GetZ(),
+                                                             pos_pivot.GetHRoad(),
+                                                             pos_pivot.GetPRoad(),
+                                                             pos_pivot.GetRRoad(),
+                                                             false};
                                             osi_point.push_back(p);
 
                                             // [XO, YO] = closest position with given (-) tolerance
@@ -9149,13 +9217,32 @@ Position::ReturnCode Position::Track2XYZ(int mode)
     geometry->EvaluateDS(s_ - geometry->GetS(), &x_, &y_, &h_road_);
 
     // Consider lateral t position, perpendicular to track heading
+    EvaluateRoadZHPR(mode);
+
+#if 1  // new
+    double x_local  = t_ * cos(h_road_ + M_PI_2);
+    double y_local  = t_ * sin(h_road_ + M_PI_2);
+    double v[3]     = {x_local, y_local, 0.0};
+    double v_out[3] = {0, 0, 0};
+
+    MultMatrixVector3d(rot_mat_, v, v_out);
+    x_ += v_out[0];
+    y_ += v_out[1];
+    z_ += v_out[2];
+
+#elif 0  // semi new
+    double x_local = cos(r_road_) * t_ * cos(h_road_ + M_PI_2);
+    double y_local = cos(r_road_) * t_ * sin(h_road_ + M_PI_2);
+
+    x_ += x_local;
+    y_ += y_local;
+#else
     double x_local = t_ * cos(h_road_ + M_PI_2);
     double y_local = t_ * sin(h_road_ + M_PI_2);
 
     x_ += x_local;
     y_ += y_local;
-
-    EvaluateRoadZHPR(mode);
+#endif
 
     return ReturnCode::OK;
 }
@@ -9351,7 +9438,7 @@ Position::ReturnCode Position::SetTrackPosMode(id_t track_id, double s, double t
         }
     }
 
-    EvaluateZHPR(mode);
+    Track2XYZ(mode);
 
     return retval_long;
 }
@@ -10531,7 +10618,8 @@ void Position::EvaluateZHPR(int mode)
                          CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_ABS) ? r_ : GetRRelative(),
                          h_,
                          p_,
-                         r_);
+                         r_,
+                         rot_mat_);
 
         if (CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_ABS) || CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS) ||
             CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_ABS))

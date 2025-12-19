@@ -1477,7 +1477,7 @@ void ZYZ2EulerAngles(double z0, double y, double z1, double& h, double& p, doubl
     r = atan2(m[2][1], m[2][2]);
 }
 
-void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r)
+void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r, double (&m)[3][3])
 {
     // 1. Create two rotation matrices
     // 2. Multiply them
@@ -1521,6 +1521,14 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
     h = GetAngleInInterval2PI(atan2(R2[1][0], R2[0][0]));
     p = GetAngleInInterval2PI(atan2(-R2[2][0], sqrt(R2[2][1] * R2[2][1] + R2[2][2] * R2[2][2])));
     r = GetAngleInInterval2PI(atan2(R2[2][1], R2[2][2]));
+
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            m[i][j] = R2[i][j];
+        }
+    }
 }
 
 void CreateRotationMatrix3d(double roll, double pitch, double yaw, double R[3][3])

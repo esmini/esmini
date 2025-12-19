@@ -702,7 +702,7 @@ void ZYZ2EulerAngles(double z0, double y, double z1, double& h, double& p, doubl
 /**
         Get Euler angles in local coordinates after rotation Z0 * Y * Z1 (heading, pitch, heading)
 */
-void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r);
+void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r, double (&m)[3][3]);
 
 void CreateRotationMatrix3d(double roll, double pitch, double yaw, double R[3][3]);
 

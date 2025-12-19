@@ -112,6 +112,8 @@ namespace roadmanager
         double y;
         double z;
         double h;
+        double p;
+        double r;
         bool   endpoint;
     } PointStruct;
 
@@ -904,6 +906,13 @@ namespace roadmanager
             LANE_TYPE_TUNNEL   = -2
         } LaneType;
 
+        struct LaneHeight
+        {
+            double s_offset;
+            double inner;
+            double outer;
+        };
+
         // Construct & Destruct
         Lane()
         {
@@ -966,6 +975,7 @@ namespace roadmanager
             link_.push_back(lane_link);
         }
         void AddLaneWidth(LaneWidth *lane_width);
+        void AddLaneHeight(LaneHeight lane_height);
         void AddLaneRoadMark(LaneRoadMark *lane_roadMark);
         void AddLaneMaterial(Lane::Material *lane_material);
 
@@ -1044,6 +1054,7 @@ namespace roadmanager
         LaneType                      type_            = LaneType::LANE_TYPE_NONE;
         std::vector<LaneLink *>       link_;
         std::vector<LaneWidth *>      lane_width_;
+        std::vector<LaneHeight>       lane_height_;
         std::vector<LaneRoadMark *>   lane_roadMark_;
         std::vector<Lane::Material *> lane_material_;
         LaneBoundaryOSI              *lane_boundary_ = nullptr;
@@ -3306,6 +3317,22 @@ namespace roadmanager
                 Setting information based on the OSI standards for OpenDrive elements
         */
         bool SetRoadOSI();
+
+        /**
+        Check if given point candidate should be added, if so add it as well
+        @param pos_pivot Previous stored point
+        @param pos_candidate New candidate point to check
+        @param pos_last_ok Last approved candidate point
+        @param x0 First point for OSI requirement check
+        @param y0 First point for OSI requirement check
+        @param x1 Second point for OSI requirement check
+        @param y1 Second point for OSI requirement check
+        @param step Returns updated step size for next candidate, from pivot point
+        @param osi_requirement Returns result of OSI requirement check
+        @param osi_point Vector to store point if candidate is approved
+        @param insert Returns insert mode indicating overshoot and need to recheck with smaller step
+        @return 1 if point was added, 2 if added endpoint, else 0 indicating not done
+        */
         int  CheckAndAddOSIPoint(Position                 &pos_pivot,
                                  Position                 &pos_candidate,
                                  Position                 &pos_last_ok,
@@ -4767,6 +4794,8 @@ namespace roadmanager
         double osi_x_;
         double osi_y_;
         double osi_z_;
+
+        double rot_mat_[3][3];  // rotation matrix from road to world coordinates according to h, p, r
 
         // keep track for fast incremental updates of the position
         idx_t track_idx_;            // road index
