@@ -23,7 +23,17 @@ using namespace scenarioengine;
 Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 {
     // Parse the packets from the file
-    int ret = ParsePackets(filename);
+    dat_reader_ = std::make_unique<Dat::DatReader>(filename);
+
+    ParseDatHeader(filename);
+    bool has_ghost_restarts = ExtractPackets();
+
+    if (has_ghost_restarts)
+    {
+        ExtractGhostRestarts();
+    }
+
+    int ret = ParsePackets();
     if (ret != 0)
     {
         LOG_ERROR("Failed to parse packets from file: {}", filename);
@@ -64,68 +74,7 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
     }
 
-    // double current_timestamp;
-    // for (size_t i = 0; i < scenarios_.size(); i++)
-    // {
-    //     auto dat_reader = Dat::DatReader(scenarios_[i]);
-    //     ParseDatHeader(dat_reader, scenarios_[i]);
-
-    //     std::vector<PacketRef> data = {};
-
-    //     while (true)
-    //     {
-    //         PacketRef ref;
-    //         ref.scenario_idx = i;
-    //         ref.header_offset = dat_reader.TellG();
-    //         ref.veh_id_offset += (i * 100);
-
-    //         if (!dat_reader.ReadHeader(ref.header))
-    //         {
-    //             break;
-    //         }
-
-    //         if (ref.header.id == static_cast<id_t>(Dat::PacketId::TIMESTAMP))
-    //         {
-    //             dat_reader.ReadPacket(, current_timestamp);
-    //             ref.timestamp = current_timestamp;
-    //         }
-    //         else
-    //         {
-    //             ref.timestamp = current_timestamp;
-    //             dat_reader.SeekG(ref.header.data_size);
-    //         }
-
-    //         data.push_back(ref);
-    //     }
-
-    //     scenarioData.emplace_back(data);
-    // }
-
-    // for (size_t i = 0; i < scenarioData[i].size(); i++)
-    // {
-    //     for (size_t j = 1; j < scenarioData.size(); j++)
-    //     {
-    //         auto p_id = scenarioData[j][i];
-
-    //     }
-    // }
-
-    // Build the objects timeline data structure
-    // Log which scenario belongs to what ID-group (0, 100, 200 etc.)
-    // for (size_t i = 0; i < scenarioData.size(); i++)
-    // {
-    //     std::string scenario_tmp = scenarioData[i].first;
-    //     LOG_INFO("Scenarios corresponding to IDs ({}:{}): {}", i * 100, (i + 1) * 100 - 1, FileNameOf(scenario_tmp));
-    //     for (auto& [id, timeline] : scenarioData[i].second)
-    //     {
-    //         int new_id = id + static_cast<int>(i * 100);
-    //         objects_timeline_.emplace(new_id, std::move(timeline));
-    //     }
-    // }
-
-    // Completely delete scenarioData, its not useful anymore
-    // scenarioData.clear();
-    // std::vector<std::pair<std::string, std::map<int, PropertyTimeline, MapComparator>>>().swap(scenarioData);
+    // TODO: Some merge logic
 
     startTime_ = timestamps_[0];
     stopIndex_ = static_cast<unsigned int>(timestamps_.size() - 1);
@@ -140,22 +89,38 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     }
 }
 
-int Replay::ParsePackets(const std::string& filename)
+bool Replay::ExtractPackets()
 {
-    auto dat_reader = Dat::DatReader(filename);
-
-    ParseDatHeader(dat_reader, filename);
-
     // Build the packets containing header and data and store in a vector
     generic_packets_.emplace_back();
     Dat::PacketHeader header;
-    while (dat_reader.ReadFile(header))
+    bool              has_restart    = false;
+    double            prev_timestamp = 0.0;
+
+    while (dat_reader_->ReadFile(header))
     {
-        generic_packets_.front().push_back(dat_reader.CreateGenericPacket(header));
+        auto packet = dat_reader_->CreateGenericPacket(header);
+        generic_packets_.front().push_back(packet);
+
+        double timestamp = prev_timestamp;
+        if (packet.header.id == static_cast<id_t>(Dat::PacketId::TIMESTAMP))
+        {
+            dat_reader_->ReadPacket(packet, timestamp);
+        }
+
+        if (timestamp < prev_timestamp)
+        {
+            has_restart = true;
+        }
+
+        prev_timestamp = timestamp;
     }
 
-    SortPackets(dat_reader);
+    return has_restart;
+}
 
+int Replay::ParsePackets()
+{
     // Now parse packets
     for (size_t i = 0; i < generic_packets_.size(); i++)
     {
@@ -165,7 +130,7 @@ int Replay::ParsePackets(const std::string& filename)
             {
                 case static_cast<id_t>(Dat::PacketId::TIMESTAMP):
                 {
-                    if (dat_reader.ReadPacket(gp, timestamp_) != 0)
+                    if (dat_reader_->ReadPacket(gp, timestamp_) != 0)
                     {
                         LOG_ERROR("Failed reading timestamp data.");
                     }
@@ -174,22 +139,11 @@ int Replay::ParsePackets(const std::string& filename)
                     {
                         timestamps_.emplace_back(timestamp_);
                     }
-                    else if (timestamp_ < timestamps_.back() && !ghost_timeline_setup_)
-                    {
-                        restart_timestamp_    = timestamp_;
-                        ghost_timeline_setup_ = true;
-                    }
-                    // else if (timestamp_ < timestamps_.back() && !ghost_timeline_setup_)
-                    // {
-                    //     LOG_INFO("Ghost reset detected at time: {}", timestamps_.back());
-                    //     SetupGhostsTimeline();
-                    //     ghost_timeline_setup_ = true;
-                    // }
                     break;
                 }
                 case static_cast<id_t>(Dat::PacketId::OBJ_ID):
                 {
-                    if (dat_reader.ReadPacket(gp, current_object_id_) != 0)
+                    if (dat_reader_->ReadPacket(gp, current_object_id_) != 0)
                     {
                         LOG_ERROR("Failed reading object ID.");
                         return -1;
@@ -229,7 +183,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::SPEED):
                 {
                     float speed;
-                    if (dat_reader.ReadPacket(gp, speed) != 0)
+                    if (dat_reader_->ReadPacket(gp, speed) != 0)
                     {
                         LOG_ERROR("Failed reading speed data.");
                         return -1;
@@ -240,7 +194,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::POSE):
                 {
                     Dat::Pose pose;
-                    if (dat_reader.ReadPacket(gp, pose.x, pose.y, pose.z, pose.h, pose.p, pose.r) != 0)
+                    if (dat_reader_->ReadPacket(gp, pose.x, pose.y, pose.z, pose.h, pose.p, pose.r) != 0)
                     {
                         LOG_ERROR("Failed reading pose data.");
                         return -1;
@@ -252,7 +206,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::MODEL_ID):
                 {
                     int model_id;
-                    if (dat_reader.ReadPacket(gp, model_id) != 0)
+                    if (dat_reader_->ReadPacket(gp, model_id) != 0)
                     {
                         LOG_ERROR("Failed reading model ID.");
                         return -1;
@@ -263,7 +217,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::OBJ_TYPE):
                 {
                     int obj_type;
-                    if (dat_reader.ReadPacket(gp, obj_type) != 0)
+                    if (dat_reader_->ReadPacket(gp, obj_type) != 0)
                     {
                         LOG_ERROR("Failed reading object type.");
                         return -1;
@@ -274,7 +228,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::OBJ_CATEGORY):
                 {
                     int obj_category;
-                    if (dat_reader.ReadPacket(gp, obj_category) != 0)
+                    if (dat_reader_->ReadPacket(gp, obj_category) != 0)
                     {
                         LOG_ERROR("Failed reading object category.");
                         return -1;
@@ -285,7 +239,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::CTRL_TYPE):
                 {
                     int ctrl_type;
-                    if (dat_reader.ReadPacket(gp, ctrl_type) != 0)
+                    if (dat_reader_->ReadPacket(gp, ctrl_type) != 0)
                     {
                         LOG_ERROR("Failed reading controller type.");
                         return -1;
@@ -300,7 +254,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::WHEEL_ANGLE):
                 {
                     float wheel_angle;
-                    if (dat_reader.ReadPacket(gp, wheel_angle) != 0)
+                    if (dat_reader_->ReadPacket(gp, wheel_angle) != 0)
                     {
                         LOG_ERROR("Failed reading wheel angle.");
                         return -1;
@@ -311,7 +265,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::WHEEL_ROT):
                 {
                     float wheel_rot;
-                    if (dat_reader.ReadPacket(gp, wheel_rot) != 0)
+                    if (dat_reader_->ReadPacket(gp, wheel_rot) != 0)
                     {
                         LOG_ERROR("Failed reading wheel rotation.");
                         return -1;
@@ -322,13 +276,13 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::BOUNDING_BOX):
                 {
                     OSCBoundingBox bounding_box;
-                    if (dat_reader.ReadPacket(gp,
-                                              bounding_box.center_.x_,
-                                              bounding_box.center_.y_,
-                                              bounding_box.center_.z_,
-                                              bounding_box.dimensions_.length_,
-                                              bounding_box.dimensions_.width_,
-                                              bounding_box.dimensions_.height_) != 0)
+                    if (dat_reader_->ReadPacket(gp,
+                                                bounding_box.center_.x_,
+                                                bounding_box.center_.y_,
+                                                bounding_box.center_.z_,
+                                                bounding_box.dimensions_.length_,
+                                                bounding_box.dimensions_.width_,
+                                                bounding_box.dimensions_.height_) != 0)
                     {
                         LOG_ERROR("Failed reading bounding box data.");
                         return -1;
@@ -339,7 +293,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::SCALE_MODE):
                 {
                     int scale_mode;
-                    if (dat_reader.ReadPacket(gp, scale_mode) != 0)
+                    if (dat_reader_->ReadPacket(gp, scale_mode) != 0)
                     {
                         LOG_ERROR("Failed reading scale mode.");
                         return -1;
@@ -350,7 +304,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::VISIBILITY_MASK):
                 {
                     int visibility_mask;
-                    if (dat_reader.ReadPacket(gp, visibility_mask) != 0)
+                    if (dat_reader_->ReadPacket(gp, visibility_mask) != 0)
                     {
                         LOG_ERROR("Failed reading visibility mask.");
                         return -1;
@@ -360,7 +314,7 @@ int Replay::ParsePackets(const std::string& filename)
                 }
                 case static_cast<id_t>(Dat::PacketId::NAME):
                 {
-                    std::string name = dat_reader.ReadStringPacket(gp);
+                    std::string name = dat_reader_->ReadStringPacket(gp);
                     if (name.empty())
                     {
                         LOG_ERROR("Failed reading name.");
@@ -372,7 +326,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::ROAD_ID):
                 {
                     id_t road_id;
-                    if (dat_reader.ReadPacket(gp, road_id) != 0)
+                    if (dat_reader_->ReadPacket(gp, road_id) != 0)
                     {
                         LOG_ERROR("Failed reading road ID.");
                         return -1;
@@ -383,7 +337,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::LANE_ID):
                 {
                     int lane_id;
-                    if (dat_reader.ReadPacket(gp, lane_id) != 0)
+                    if (dat_reader_->ReadPacket(gp, lane_id) != 0)
                     {
                         LOG_ERROR("Failed reading lane ID.");
                         return -1;
@@ -394,7 +348,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::POS_OFFSET):
                 {
                     float offset;
-                    if (dat_reader.ReadPacket(gp, offset) != 0)
+                    if (dat_reader_->ReadPacket(gp, offset) != 0)
                     {
                         LOG_ERROR("Failed reading position offset.");
                         return -1;
@@ -405,7 +359,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::POS_T):
                 {
                     float t;
-                    if (dat_reader.ReadPacket(gp, t) != 0)
+                    if (dat_reader_->ReadPacket(gp, t) != 0)
                     {
                         LOG_ERROR("Failed reading position T.");
                         return -1;
@@ -416,7 +370,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::POS_S):
                 {
                     float s;
-                    if (dat_reader.ReadPacket(gp, s) != 0)
+                    if (dat_reader_->ReadPacket(gp, s) != 0)
                     {
                         LOG_ERROR("Failed reading position S.");
                         return -1;
@@ -432,7 +386,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::DT):
                 {
                     double dt;
-                    if (dat_reader.ReadPacket(gp, dt) != 0)
+                    if (dat_reader_->ReadPacket(gp, dt) != 0)
                     {
                         LOG_ERROR("Failed reading fixed timestep.");
                         return -1;
@@ -447,7 +401,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT):
                 {
                     Dat::TrafficLightLamp lamp;
-                    if (dat_reader.ReadPacket(gp, lamp) != 0)
+                    if (dat_reader_->ReadPacket(gp, lamp) != 0)
                     {
                         LOG_ERROR("Failed reading traffic light lamp");
                         return -1;
@@ -458,7 +412,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::REFPOINT_X_OFFSET):
                 {
                     float refpoint_x_offset;
-                    if (dat_reader.ReadPacket(gp, refpoint_x_offset) != 0)
+                    if (dat_reader_->ReadPacket(gp, refpoint_x_offset) != 0)
                     {
                         LOG_ERROR("Failed reading refpoint_x_offset");
                         return -1;
@@ -469,7 +423,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::MODEL_X_OFFSET):
                 {
                     float model_x_offset;
-                    if (dat_reader.ReadPacket(gp, model_x_offset) != 0)
+                    if (dat_reader_->ReadPacket(gp, model_x_offset) != 0)
                     {
                         LOG_ERROR("Failed reading model_x_offset");
                         return -1;
@@ -479,7 +433,7 @@ int Replay::ParsePackets(const std::string& filename)
                 }
                 case static_cast<id_t>(Dat::PacketId::OBJ_MODEL3D):
                 {
-                    std::string model3d = dat_reader.ReadStringPacket(gp);
+                    std::string model3d = dat_reader_->ReadStringPacket(gp);
                     if (model3d.empty())
                     {
                         LOG_ERROR("Failed reading object 3D model filename.");
@@ -490,7 +444,7 @@ int Replay::ParsePackets(const std::string& filename)
                 }
                 case static_cast<id_t>(Dat::PacketId::ELEM_STATE_CHANGE):
                 {
-                    std::string state_change = dat_reader.ReadStringPacket(gp);
+                    std::string state_change = dat_reader_->ReadStringPacket(gp);
                     if (state_change.empty())
                     {
                         LOG_ERROR("Failed to read element state change");
@@ -504,7 +458,7 @@ int Replay::ParsePackets(const std::string& filename)
                 case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
                 {
                     double stop_time;
-                    if (dat_reader.ReadPacket(gp, stop_time) != 0)
+                    if (dat_reader_->ReadPacket(gp, stop_time) != 0)
                     {
                         LOG_ERROR("Failed reading end of scenario timestamp.");
                         return -1;
@@ -521,7 +475,7 @@ int Replay::ParsePackets(const std::string& filename)
                 }
                 default:
                 {
-                    dat_reader.UnknownPacket(gp.header);
+                    dat_reader_->UnknownPacket(gp.header);
                     if (std::find(unknown_pids.begin(), unknown_pids.end(), gp.header.id) == unknown_pids.end())
                     {
                         LOG_DEBUG("Unknown packet with id: {}", gp.header.id);
@@ -534,20 +488,21 @@ int Replay::ParsePackets(const std::string& filename)
 
         if (i > 0)
         {
-            SetupGhostsTimeline();
-            ghost_timeline_setup_ = false;
+            UpdateGhostsTimelineAfterRestart(i);
         }
     }
 
     return 0;
 }
 
-void Replay::SortPackets(Dat::DatReader& dat_reader)
+void Replay::ExtractGhostRestarts()
 {
-    std::vector<PacketSlice> slices;
-    std::vector<PacketSlice> ghost_restarts;
-    PacketSlice*             current        = nullptr;
-    double                   prev_timestamp = 0.0;
+    std::vector<PacketSlice>              slices;
+    std::vector<PacketSlice>              ghost_restart;
+    std::vector<std::vector<PacketSlice>> ghost_restarts;
+    bool                                  g_restart      = false;
+    PacketSlice*                          current        = nullptr;
+    double                                prev_timestamp = 0.0;
 
     for (const auto& packet : generic_packets_.front())
     {
@@ -559,17 +514,29 @@ void Replay::SortPackets(Dat::DatReader& dat_reader)
             }
 
             double timestamp;
-            dat_reader.ReadPacket(packet, timestamp);
+            dat_reader_->ReadPacket(packet, timestamp);
 
-            if (timestamp > 0.0 && timestamp <= prev_timestamp)
+            if (timestamp > 0.0 && timestamp <= prev_timestamp - SMALL_NUMBER && !g_restart)
             {
-                ghost_restarts.emplace_back();
-                current = &ghost_restarts.back();
+                ghost_restart.emplace_back();
+                current = &ghost_restart.back();
+                restart_timestamps_.emplace_back(timestamp, prev_timestamp);
+                g_restart = true;
             }
             else
             {
-                slices.emplace_back();
-                current = &slices.back();
+                if (g_restart && timestamp >= prev_timestamp + SMALL_NUMBER)
+                {
+                    ghost_restarts.emplace_back(std::move(ghost_restart));
+                    ghost_restart.clear();
+                    g_restart = false;
+                }
+
+                if (!g_restart)
+                {
+                    slices.emplace_back();
+                    current = &slices.back();
+                }
             }
 
             current->timestamp = timestamp;
@@ -586,13 +553,7 @@ void Replay::SortPackets(Dat::DatReader& dat_reader)
         }
     }
 
-    // std::sort(slices.begin(), slices.end(),
-    // [](const PacketSlice& a, const PacketSlice& b) {
-    //     return a.timestamp < b.timestamp;
-    // });
-
-    generic_packets_.clear();
-    generic_packets_.emplace_back();
+    generic_packets_.front().clear();
 
     for (auto& slice : slices)
     {
@@ -602,24 +563,23 @@ void Replay::SortPackets(Dat::DatReader& dat_reader)
         }
     }
 
-    if (!ghost_restarts.empty())
+    for (auto& restart : ghost_restarts)
     {
         generic_packets_.emplace_back();
-    }
-
-    for (auto& ghost_slice : ghost_restarts)
-    {
-        for (auto& pkt : ghost_slice.packets)
+        for (auto& slice : restart)
         {
-            generic_packets_.back().push_back(std::move(pkt));
+            for (auto& pkt : slice.packets)
+            {
+                generic_packets_.back().push_back(std::move(pkt));
+            }
         }
     }
 }
 
-void Replay::ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filename)
+void Replay::ParseDatHeader(const std::string& filename)
 {
     // Read raw header BEFORE reading packets
-    if (dat_reader.FillDatHeader() != 0)
+    if (dat_reader_->FillDatHeader() != 0)
     {
         int old_header = ReadOldDatHeader(filename);
         if (old_header != -1)
@@ -634,7 +594,7 @@ void Replay::ParseDatHeader(Dat::DatReader& dat_reader, const std::string& filen
         LOG_ERROR_AND_QUIT("Failed to read DAT header.");
     }
 
-    dat_header_ = dat_reader.GetDatHeader();
+    dat_header_ = dat_reader_->GetDatHeader();
 }
 
 void Replay::FillInTimestamps()
@@ -1202,23 +1162,28 @@ ReplayEntry Replay::GetReplayEntryAtTimeBinary(int id, double t) const
     return entry;
 }
 
-void Replay::SetupGhostsTimeline()
+void Replay::UpdateGhostsTimelineAfterRestart(size_t idx)
 {
+    int  ghost_ghost_id          = -(static_cast<int>(idx));
     auto original_ghost_timeline = objects_timeline_.find(ghost_controller_id_);
     if (original_ghost_timeline == objects_timeline_.end())
     {
         LOG_ERROR_AND_QUIT("No ghost controller found even though a ghost restart was detected. Quitting.");
+    }
+    if (idx == 0)
+    {
+        LOG_ERROR_AND_QUIT("Trying to adjust ghost timeline without any ghost restarts, exiting");
     }
 
     // We have detected a ghost restart, thus we:
     // first decrement the ghost_ghost_counter to ensure every ghost ghost gets a unique ID.
     // then copy the current object's timeline to the new ghost object's timeline and sets the last state to inactive
     // finally, we need to clear the current ghost object's timeline down to the time where ghost reset began
-    PropertyTimeline temp = objects_timeline_[ghost_ghost_counter_];
+    PropertyTimeline temp = objects_timeline_[ghost_ghost_id];
 
     // Extract ghost data up until restart and put in ghost_ghost
-    objects_timeline_[ghost_ghost_counter_] = original_ghost_timeline->second;
-    auto ghost_timeline_properties          = &objects_timeline_[ghost_ghost_counter_];
+    objects_timeline_[ghost_ghost_id] = original_ghost_timeline->second;
+    auto ghost_timeline_properties    = &objects_timeline_[ghost_ghost_id];
     ghost_timeline_properties->lane_id_.values.resize(ghost_timeline_properties->lane_id_.get_index_binary(timestamp_).value());
     ghost_timeline_properties->road_id_.values.resize(ghost_timeline_properties->road_id_.get_index_binary(timestamp_).value());
     ghost_timeline_properties->pos_offset_.values.resize(ghost_timeline_properties->pos_offset_.get_index_binary(timestamp_).value());
@@ -1230,78 +1195,24 @@ void Replay::SetupGhostsTimeline()
     ghost_timeline_properties->wheel_rot_.values.resize(ghost_timeline_properties->wheel_rot_.get_index_binary(timestamp_).value());
     ghost_timeline_properties->visibility_mask_.values.resize(ghost_timeline_properties->visibility_mask_.get_index_binary(timestamp_).value());
 
-    ghost_timeline_properties->active_.values.front().second = false;                  // Not active at start
-    ghost_timeline_properties->active_.values.emplace_back(restart_timestamp_, true);  // Active at start of restart
-    double restart_over = *std::upper_bound(timestamps_.begin(), timestamps_.end(), timestamp_);
-    ghost_timeline_properties->active_.values.emplace_back(restart_over, false);  // Not active after restart time has passed
+    ghost_timeline_properties->name_.values.front().second += fmt::format("_{}", ghost_ghost_id);
+    ghost_timeline_properties->active_.values.front().second = false;  // Not active at start
+    double restart_begin                                     = restart_timestamps_[idx - 1].first;
+    double restart_end                                       = restart_timestamps_[idx - 1].second;
+    ghost_timeline_properties->active_.values.emplace_back(restart_begin, true);  // Active at start of restart
+    ghost_timeline_properties->active_.values.emplace_back(restart_end, false);   // Not active after restart time has passed
 
     auto& ghost_timeline = original_ghost_timeline->second;
-    ghost_timeline.lane_id_.replace_data_between_times(temp.lane_id_.values, true);
-    ghost_timeline.road_id_.replace_data_between_times(temp.road_id_.values, true);
-    ghost_timeline.pos_offset_.replace_data_between_times(temp.pos_offset_.values, true);
-    ghost_timeline.pos_t_.replace_data_between_times(temp.pos_t_.values, true);
-    ghost_timeline.pos_s_.replace_data_between_times(temp.pos_s_.values, true);
-    ghost_timeline.pose_.replace_data_between_times(temp.pose_.values, true);
-    ghost_timeline.speed_.replace_data_between_times(temp.speed_.values, true);
-    ghost_timeline.wheel_angle_.replace_data_between_times(temp.wheel_angle_.values, true);
-    ghost_timeline.wheel_rot_.replace_data_between_times(temp.wheel_rot_.values, true);
-    ghost_timeline.visibility_mask_.replace_data_between_times(temp.visibility_mask_.values, true);
-    // auto start_idx = ghost_timeline.pos_s_.get_index_binary(temp.pos_s_.values[0].first).value() - 1;
-    // for (size_t i = 0; i < temp.pos_s_.values.size(); i++)
-    // {
-    //     auto time = temp.pos_s_.values[i].first;
-    //     for (; start_idx < ghost_timeline.pos_s_.values.size();)
-    //     {
-    //         auto cur_time = ghost_timeline.pos_s_.values[start_idx].first;
-    //         if (NEAR_NUMBERS(time, cur_time))
-    //         {
-    //             ghost_timeline.pos_s_.values[start_idx] = temp.pos_s_.values[i];
-    //             start_idx++;
-    //         }
-    //         else if (cur_time < time)
-    //         {
-    //             ghost_timeline.pos_s_.values.erase(ghost_timeline.pos_s_.values.begin() + start_idx);
-    //         }
-    //         else // cur_time > time
-    //         {
-    //             break;
-    //         }
-    //     }
-    // }
-
-    // double start_time_idx = ghost_timeline_properties->lane_id_.get_index_binary(restart_timestamp_).value();
-    // double end_time_idx = ghost_timeline_properties->lane_id_.get_index_binary(timestamp_).value();
-    // ghost_timeline_properties->road_id_.get_index_binary(timestamp_).value();
-    // ghost_timeline_properties->pos_offset_.get_index_binary(timestamp_).value();
-    // ghost_timeline_properties->pos_t_.get_index_binary(timestamp_).value();
-    // ghost_timeline_properties->pose_.get_index_binary(timestamp_).value();
-    // ghost_timeline_properties->speed_.get_index_binary(timestamp_).value();
-    // ghost_timeline_properties->wheel_angle_.get_index_binary(timestamp_).value();
-    // ghost_timeline_properties->wheel_rot_.get_index_binary(timestamp_).value();
-    // ghost_timeline_properties->visibility_mask_.get_index_binary(timestamp_).value();
-
-    // auto first_timestamp =
-
-    // if (it == objects_timeline_.end())
-    // {
-    //     auto [new_it, inserted] = objects_timeline_.emplace(ghost_ghost_counter_, objects_timeline_[ghost_controller_id_]);
-    //     it                      = new_it;
-
-    //     if (inserted)
-    //     {
-    //         it->second.active_.values.front().second = false;  // Object starts as inactive, as we assume no restart happens at start
-    //         it->second.name_.values.front().second += "_" + std::to_string(ghost_ghost_counter_);
-
-    //         // Ghosts ghost active from ghost restart time until latest timestamp
-    //         it->second.active_.values.emplace_back(timestamp_, true);  // timestamp_ contains the new rewinded time
-    //         it->second.active_.values.emplace_back(timestamps_.back(), false);
-
-    //         ghost_ghost_counter_ -= 1;  // Next ghost will have a new id
-    //     }
-    // }
-
-    // Then we slice the ghost controller timeline to the time where ghost reset began
-    // auto ghost_timeline_properties = &original_ghost_timeline->second;
+    ghost_timeline.lane_id_.replace_data_between_times(restart_begin, restart_end, temp.lane_id_.values, true);
+    ghost_timeline.road_id_.replace_data_between_times(restart_begin, restart_end, temp.road_id_.values, true);
+    ghost_timeline.pos_offset_.replace_data_between_times(restart_begin, restart_end, temp.pos_offset_.values, true);
+    ghost_timeline.pos_t_.replace_data_between_times(restart_begin, restart_end, temp.pos_t_.values, true);
+    ghost_timeline.pos_s_.replace_data_between_times(restart_begin, restart_end, temp.pos_s_.values, true);
+    ghost_timeline.pose_.replace_data_between_times(restart_begin, restart_end, temp.pose_.values, true);
+    ghost_timeline.speed_.replace_data_between_times(restart_begin, restart_end, temp.speed_.values, true);
+    ghost_timeline.wheel_angle_.replace_data_between_times(restart_begin, restart_end, temp.wheel_angle_.values, true);
+    ghost_timeline.wheel_rot_.replace_data_between_times(restart_begin, restart_end, temp.wheel_rot_.values, true);
+    ghost_timeline.visibility_mask_.replace_data_between_times(restart_begin, restart_end, temp.visibility_mask_.values, true);
 }
 
 void Replay::CreateMergedDatfile(const std::string filename) const

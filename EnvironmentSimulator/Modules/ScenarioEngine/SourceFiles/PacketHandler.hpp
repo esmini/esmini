@@ -252,6 +252,7 @@ namespace Dat
     {
     public:
         DatReader(const std::string& filename);
+        DatReader() = default;
         ~DatReader();
 
         std::string ReadStringPacket(const Dat::PacketGeneric& pkt);
@@ -329,16 +330,6 @@ namespace Dat
         {
             file_.read(reinterpret_cast<char*>(&hdr), sizeof(hdr));
             return file_.good();
-        }
-
-        const std::streampos TellG()
-        {
-            return file_.tellg();
-        }
-
-        void SeekG(unsigned int size)
-        {
-            file_.seekg(size, std::ios::cur);
         }
 
     private:
