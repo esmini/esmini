@@ -40,8 +40,7 @@ namespace esmini::common
 
         if (filePath.has_parent_path() && !fs::exists(filePath.parent_path()))
         {
-            std::cout << GetVersionInfoForLog() << '\n' << "Invalid file path : " << path << " exiting" << '\n';
-            exit(-1);
+            throw std::runtime_error(std::string("Invalid logfile path: ") + path);
         }
         if (!filePath.has_filename())
         {
@@ -170,13 +169,13 @@ namespace esmini::common
         {
             std::cout << GetVersionInfoForLog() << '\n';
             std::cerr << "Logger initialization failed: " << ex.what() << std::endl;
-            exit(-1);
+            throw std::runtime_error(std::string("Logger initialization failed : ") + ex.what());
         }
         catch (...)
         {
             std::cout << GetVersionInfoForLog() << '\n';
             std::cerr << "Logger initialization failed: Unknown exception" << std::endl;
-            exit(-1);
+            throw std::runtime_error(std::string("Logger initialization failed, unknown exception."));
         }
         currentLogFileName_ = filePath;
         return true;
