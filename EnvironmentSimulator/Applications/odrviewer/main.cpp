@@ -438,6 +438,7 @@ int main(int argc, char **argv)
     opt.AddOption("help", "Show this help message (-h works as well)");
     opt.AddOption("odr", "OpenDRIVE filename (required)", "odr_filename", "", false, true, true);
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
+    opt.AddOption("axis_indicator", "0:off 1:on 2:xray, cycle key 'x'", "mode");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many .tga files will be created");
     opt.AddOption(CONFIG_FILE_OPTION_NAME, "Configuration file path/filename, e.g. \"../my_config.txt\"", "path", DEFAULT_CONFIG_FILE, true, false);
     opt.AddOption("custom_fixed_camera", "Additional custom camera position <x,y,z>[,h,p]", "position and optional orientation", "", false, false);

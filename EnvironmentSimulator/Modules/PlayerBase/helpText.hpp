@@ -16,8 +16,8 @@ Key shortcuts \n\
     H (shift + h): Print this help text to console \n\
     Space:         Toggle pause/play simulation \n\
     Return:        Step simulation (one timestep) then pause \n\
-    TAB:           Move camera to next vehicle \n\
-    Shift + TAB:   Move camera to previoius vehicle \n\
+    TAB:           Move camera to next entity (0, 1, 2..., ALL, ROAD) \n\
+    Shift + TAB:   Move camera to previous entity \n\
     Delete:        Same as above (Shift + TAB) \n\
     o:             Toggle show / hide OpenDRIVE road feature lines \n\
     O:             Toggle show / hide odr signal bounding boxes \n\
@@ -32,6 +32,7 @@ Key shortcuts \n\
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
     ; (shift + ,): Toggle show/hide object outlines \n\
     K:             Print current camera position and orientation to console \n\
+    x:             Cycle axis indicator view mode (off, on, xray) \n\
     ESC:           quit \n\
     \n\
     Arrow keys is used to drive externally controlled Ego vehicle: \n\
@@ -40,7 +41,7 @@ Key shortcuts \n\
         Left:  Steer left \n\
         Right: Steer right \n\
     \n\
-    1 - 9: Camera models acording to : \n\
+    1 - 9: Camera models according to : \n\
         1: Custom camera model \n\
         2: Flight \n\
         3: Drive \n\
@@ -56,7 +57,7 @@ Key shortcuts \n\
            - Orbit        (camera facing vehicle, rotating around it) \n\
            - Fixed        (fix rotation, always straight behind vehicle) \n\
            - Flex         (imagine the camera attached to vehicle via an elastic string) \n\
-           - Flex - orbit (Like flex but allows for roatation around vehicle) \n\
+           - Flex - orbit (Like flex but allows for rotation around vehicle) \n\
            - Top          (top view, fixed rotation, always straight above vehicle) \n\
            - Driver       (\"driver\" view, fixed at center of vehicle) \n\
     \n\

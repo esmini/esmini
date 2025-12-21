@@ -459,6 +459,7 @@ int main(int argc, char** argv)
     opt.AddOption("file", "Simulation recording data file (.dat)", "filename", "", false, true, true);
 #ifdef _USE_OSG
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
+    opt.AddOption("axis_indicator", "0:off 1:on 2:xray, cycle key 'x'", "mode");
     opt.AddOption("camera_mode",
                   "Initial camera mode (\"orbit\", \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\"). Toggle key 'k'",
                   "mode",

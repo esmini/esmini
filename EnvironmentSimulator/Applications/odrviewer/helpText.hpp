@@ -16,8 +16,8 @@ Key shortcuts \n\
     H (shift + h): Print this help text to console \n\
     Space:         Toggle pause/play simulation \n\
     Return:        Step simulation(one timestep) then pause \n\
-    TAB:           Move camera to next vehicle (0, 1, 2..., ALL, ROAD)\n\
-    Shift + TAB:   Move camera to previous vehicle \n\
+    TAB:           Move camera to next entity (0, 1, 2..., ALL, ROAD) \n\
+    Shift + TAB:   Move camera to previous entity \n\
     Delete:        Same as above (Shift + TAB) \n\
     o:             Toggle show / hide OpenDRIVE road feature lines \n\
     u:             Toggle show / hide OSI road lines \n\
@@ -26,6 +26,7 @@ Key shortcuts \n\
     i:             Toggle info text showing time and speed \n\
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
     K:             Print current camera position and orientation to console \n\
+    x:             Cycle axis indicator view mode (off, on, xray) \n\
     ESC:           quit \n\
     \n\
     1 - 9: Camera models according to : \n\

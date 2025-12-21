@@ -1826,6 +1826,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     infoTextCamera->setProjectionMatrix(osg::Matrix::ortho2D(0, traits->width, 0, traits->height));
     rootnode_->addChild(infoTextCamera);
 
+    rootnode_->addChild(CreateAxisIndicator());
+
     fetch_image_ = new FetchImage(this);
     if (opt->GetOptionSet("osg_screenshot_event_handler"))
     {
@@ -3402,6 +3404,113 @@ double Viewer::GetFrictionScaleFactor() const
     return frictionScaleFactor_;
 }
 
+#include <osg/Geode>
+#include <osg/Geometry>
+#include <osg/LineWidth>
+#include <osgText/Text>
+#include <osgViewer/Viewer>
+
+/**
+ * @brief Creates a 3D coordinate system indicator node.
+ *
+ * This function generates an OpenSceneGraph node that draws a visual
+ * representation of the X, Y, and Z axes at the origin.
+ * - X-axis is Red
+ * - Y-axis is Green
+ * - Z-axis is Blue
+ * Each axis line is 1 meter long.
+ *
+ * @return A pointer to an osg::Node containing the axis geometry.
+ */
+osg::Node* Viewer::CreateAxisIndicator()
+{
+    // Create a Geode to hold our geometry
+    osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+
+    // --- Create the axis lines ---
+    osg::ref_ptr<osg::Geometry> geom = new osg::Geometry();
+
+    // Define the vertices for the 3 lines
+    osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array();
+    // X-axis
+    vertices->push_back(osg::Vec3(0.0f, 0.0f, 0.0f));
+    vertices->push_back(osg::Vec3(1.0f, 0.0f, 0.0f));
+    // Y-axis
+    vertices->push_back(osg::Vec3(0.0f, 0.0f, 0.0f));
+    vertices->push_back(osg::Vec3(0.0f, 1.0f, 0.0f));
+    // Z-axis
+    vertices->push_back(osg::Vec3(0.0f, 0.0f, 0.0f));
+    vertices->push_back(osg::Vec3(0.0f, 0.0f, 1.0f));
+    geom->setVertexArray(vertices.get());
+
+    // Define the colors for each vertex
+    osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array();
+
+    colors->push_back(osg::Vec4(1.0, 0.1, 0.1, 1.0f));  // Red for X
+    colors->push_back(osg::Vec4(1.0, 0.1, 0.1, 1.0f));
+    colors->push_back(osg::Vec4(0.1, 0.9, 0.2, 1.0f));  // Green for Y
+    colors->push_back(osg::Vec4(0.1, 0.9, 0.2, 1.0f));
+    colors->push_back(osg::Vec4(0.1, 0.1, 1.0, 1.0f));  // Blue for Z
+    colors->push_back(osg::Vec4(0.1, 0.1, 1.0, 1.0f));
+    geom->setColorArray(colors.get());
+
+    // Use BIND_PER_VERTEX to apply the color to each vertex
+    geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+
+    // Tell OSG to draw the 6 vertices as 3 separate lines
+    geom->addPrimitiveSet(new osg::DrawArrays(GL_LINES, 0, 6));
+
+    // Add the geometry to the geode
+    geode->addDrawable(geom.get());
+
+    // --- Set rendering states ---
+    axis_indicator_stateset_ = geode->getOrCreateStateSet();
+    // Disable lighting to see the raw colors
+    axis_indicator_stateset_->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+    // Set line width to make them more visible
+    axis_indicator_stateset_->setAttributeAndModes(new osg::LineWidth(2.5f), osg::StateAttribute::ON);
+
+    geom->setNodeMask(NodeMask::NODE_MASK_AXIS_INDICATOR);
+
+    SetAxisIndicatorMode(strtoi(SE_Env::Inst().GetOptions().GetOptionValueByEnum(esmini_options::AXIS_INDICATOR)));
+
+    return geode.release();
+}
+
+void Viewer::SetAxisIndicatorMode(int mode)
+{
+    switch (mode)
+    {
+        case 0:  // off
+            ClearNodeMaskBits(NodeMask::NODE_MASK_AXIS_INDICATOR);
+            break;
+        case 1:  // on, depth test
+            SetNodeMaskBits(NodeMask::NODE_MASK_AXIS_INDICATOR);
+            // Disable depth test to always show on top
+            axis_indicator_stateset_->setMode(GL_DEPTH, osg::StateAttribute::ON);
+            axis_indicator_stateset_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+            axis_indicator_stateset_->setRenderBinToInherit();
+            break;
+        case 2:  // on, no depth test
+            SetNodeMaskBits(NodeMask::NODE_MASK_AXIS_INDICATOR);
+            // Disable depth test to always show on top
+            axis_indicator_stateset_->setMode(GL_DEPTH, osg::StateAttribute::OFF);
+            axis_indicator_stateset_->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+            axis_indicator_stateset_->setRenderBinDetails(INT_MAX, "RenderBin");
+            break;
+        default:
+            LOG_WARN("SetAxisIndicatorMode: Invalid mode {} - no change", mode);
+            return;
+    }
+
+    axis_indicator_mode_ = mode;
+}
+
+void Viewer::CycleAxisIndicatorMode()
+{
+    SetAxisIndicatorMode((axis_indicator_mode_ + 1) % 3);
+}
+
 bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)
 {
     switch (ea.getEventType())
@@ -3679,6 +3788,14 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
             if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
             {
                 viewer_->ToggleNodeMaskBits(NodeMask::NODE_MASK_OBJECT_SENSORS);
+            }
+        }
+        break;
+        case ('x'):
+        {
+            if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+            {
+                viewer_->CycleAxisIndicatorMode();
             }
         }
         break;

@@ -590,22 +590,25 @@ namespace viewer
         void   Frame(double time);
         void   SetFrictionScaleFactor(const double factor);
         double GetFrictionScaleFactor() const;
+        void   SetAxisIndicatorMode(int mode);
+        void   CycleAxisIndicatorMode();
 
     private:
-        int  CreateTunnels(roadmanager::OpenDrive* od);
-        int  InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
-                        int                                        x,
-                        int                                        y,
-                        int                                        w,
-                        int                                        h,
-                        int                                        samples,
-                        bool                                       decoration,
-                        int                                        screenNum,
-                        bool                                       headless);
-        bool CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
-        bool CreateRoadMarkLines(roadmanager::OpenDrive* od);
-        void CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
-        void SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
+        int        CreateTunnels(roadmanager::OpenDrive* od);
+        int        InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
+                              int                                        x,
+                              int                                        y,
+                              int                                        w,
+                              int                                        h,
+                              int                                        samples,
+                              bool                                       decoration,
+                              int                                        screenNum,
+                              bool                                       headless);
+        bool       CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
+        bool       CreateRoadMarkLines(roadmanager::OpenDrive* od);
+        void       CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
+        void       SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
+        osg::Node* CreateAxisIndicator();
 
         bool                                  keyUp_;
         bool                                  keyDown_;
@@ -620,6 +623,8 @@ namespace viewer
         double                                frictionScaleFactor_;
         bool                                  defaultClearColorUsed_;
         std::vector<float>                    fogColor_;
+        osg::StateSet*                        axis_indicator_stateset_;
+        int                                   axis_indicator_mode_ = 0;
 
         struct
         {
