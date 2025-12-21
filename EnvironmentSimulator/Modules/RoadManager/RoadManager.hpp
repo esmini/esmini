@@ -2812,8 +2812,8 @@ namespace roadmanager
         Lane::Material *GetLaneMaterialByS(double s, int lane_id) const;
         double          GetSpeedByS(double s) const;
         RoadType        GetRoadTypeByS(double s) const;
-        bool            GetZAndPitchByS(double s, double *z, double *z_prim, double *z_primPrim, double *pitch, idx_t *index) const;
-        bool            UpdateZAndRollBySAndT(double s, double t, double *z, double *roadSuperElevationPrim, double *roll, idx_t *index) const;
+        bool            GetZAndPitchByS(double s, double *z_centerline, double *z_prim, double *z_primPrim, double *pitch, idx_t *index) const;
+        bool            UpdateRollByS(double s, double *roadSuperElevationPrim, double *roll, idx_t *index) const;
         unsigned int    GetNumberOfLaneSections() const
         {
             return static_cast<unsigned int>(lane_section_.size());
@@ -3888,6 +3888,7 @@ namespace roadmanager
         void SetPitchRelative(double pitch, bool evaluate = true);
         void SetPitchRoad(double pitch, bool evaluate = true);
         void SetZ(double z);
+        void SetZCenterline(double z);
         void SetZRelative(double z);
 
         /**
@@ -3895,12 +3896,12 @@ namespace roadmanager
         @param mode Bitmask combining values from roadmanager::PosMode enum
         example: To set relative z and absolute roll: (Z_REL | R_ABS) or (7 | 12288) = (7 + 12288) = 12295
         */
-        void EvaluateZHPR(int mode);
+        void EvaluateHPR(int mode);
 
         /**
         Call this to resolve orientation alignment wrt road, using current SET mode
         */
-        void EvaluateZHPR();
+        void EvaluateHPR();
 
         /**
         Specify position by cartesian coordinate (x, y, z, h)
@@ -4234,6 +4235,14 @@ namespace roadmanager
         double GetZRoad() const
         {
             return z_road_;
+        }
+
+        /**
+        Retrieve the road centerline Z-value
+        */
+        double GetZCenterline() const
+        {
+            return z_centerline_;
         }
 
         /**
@@ -4686,7 +4695,7 @@ namespace roadmanager
             return direction_mode_;
         }
 
-        bool EvaluateRoadZHPR(int mode);
+        bool EvaluateRoadCenterlineZHPR(int mode);
 
         // Relative values
         struct RelativeInfo
@@ -4777,6 +4786,7 @@ namespace roadmanager
         double accY_;
         double accZ_;
         double z_road_;
+        double z_centerline_;
         double p_road_;
         double r_road_;
         double z_roadPrim_;              // the road vertical slope (dz/ds)
@@ -4786,7 +4796,8 @@ namespace roadmanager
         double osi_y_;
         double osi_z_;
 
-        double rot_mat_[3][3];  // rotation matrix from road to world coordinates according to h, p, r
+        double rot_mat_[3][3];       // rotation matrix for final object orientation
+        double rot_mat_road_[3][3];  // rotation matrix for road surface at object position
 
         // keep track for fast incremental updates of the position
         idx_t track_idx_;            // road index

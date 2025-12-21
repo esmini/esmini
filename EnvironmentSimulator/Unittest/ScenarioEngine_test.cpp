@@ -5063,6 +5063,56 @@ TEST(PositioningTest, TestElevationMapping)
     delete se;
 }
 
+TEST(PositioningTest, TestPitchAndRollCombined)
+{
+    ScenarioEngine* se = new ScenarioEngine("../../../EnvironmentSimulator/Unittest/xosc/tilted_crest.xosc", false);
+    const double    dt = 0.1;
+    ASSERT_NE(se, nullptr);
+    scenario_step(se, 0.0);
+
+    scenarioengine::Entities* entities = &se->entities_;
+    ASSERT_NE(entities, nullptr);
+    ASSERT_EQ(entities->object_.size(), 1);
+
+    // Check initial expected position and orientation
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 1.7677, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 1.4845, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), -1.5550, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 1.5707, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetP(), 6.0055, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetR(), 0.7853, 1E-3);
+
+    // step simulation until bike is roughly midway
+    while (se->getSimulationTime() < 5.0 + SMALL_NUMBER)
+    {
+        scenario_step(se, dt);
+    }
+
+    // Check pose
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 1.7677, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 10.7686, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 7.9677, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 1.5707, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetP(), 5.3026, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetR(), 0.7853, 1E-3);
+
+    // step simulation until bike is almost at top
+    while (se->getSimulationTime() < 9.0 + SMALL_NUMBER)
+    {
+        scenario_step(se, dt);
+    }
+
+    // Check pose
+    EXPECT_NEAR(entities->object_[0]->pos_.GetX(), 1.7677, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetY(), 18.3143, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 17.5571, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 1.5707, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetP(), 5.6720, 1E-3);
+    EXPECT_NEAR(entities->object_[0]->pos_.GetR(), 0.7853, 1E-3);
+
+    delete se;
+}
+
 TEST(StringIds, TestRoadStringIdsEdgeCases)
 {
     pugi::xml_document  doc;

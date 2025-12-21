@@ -355,14 +355,14 @@ namespace roadgeom
                             continue;
                         }
 
-                        double l0p0l[2] = {0.0, 0.0};  // previous line, startpoint, left side
-                        double l0p0r[2] = {0.0, 0.0};  // previous line, startpoint, right side
-                        double l0p1l[2] = {0.0, 0.0};  // previous line, endpoint, left side
-                        double l0p1r[2] = {0.0, 0.0};  // previous line, endpoint, right side
-                        double l1p0l[2] = {0.0, 0.0};  // current line, startpoint, left side
-                        double l1p0r[2] = {0.0, 0.0};  // current line, startpoint, right side
-                        double l1p1l[2] = {0.0, 0.0};  // current line, endpoint, left side
-                        double l1p1r[2] = {0.0, 0.0};  // current line, endpoint, right side
+                        double l0p0l[3] = {0.0, 0.0, 0.0};  // previous line, startpoint, left side
+                        double l0p0r[3] = {0.0, 0.0, 0.0};  // previous line, startpoint, right side
+                        double l0p1l[3] = {0.0, 0.0, 0.0};  // previous line, endpoint, left side
+                        double l0p1r[3] = {0.0, 0.0, 0.0};  // previous line, endpoint, right side
+                        double l1p0l[3] = {0.0, 0.0, 0.0};  // current line, startpoint, left side
+                        double l1p0r[3] = {0.0, 0.0, 0.0};  // current line, startpoint, right side
+                        double l1p1l[3] = {0.0, 0.0, 0.0};  // current line, endpoint, left side
+                        double l1p1r[3] = {0.0, 0.0, 0.0};  // current line, endpoint, right side
 
                         osg::ref_ptr<osg::Vec3Array>        vertices;
                         osg::ref_ptr<osg::DrawElementsUInt> indices;
@@ -384,40 +384,41 @@ namespace roadgeom
 
                             if (q < osi_points.size() - 1)
                             {
-                                OffsetVec2D(osi_points[q].x - origin[0],
-                                            osi_points[q].y - origin[1],
-                                            osi_points[q + 1].x - origin[0],
-                                            osi_points[q + 1].y - origin[1],
-                                            -lane_roadmarktypeline->GetWidth() / 2,
-                                            l1p0l[0],
-                                            l1p0l[1],
-                                            l1p1l[0],
-                                            l1p1l[1]);
-                                OffsetVec2D(osi_points[q].x - origin[0],
-                                            osi_points[q].y - origin[1],
-                                            osi_points[q + 1].x - origin[0],
-                                            osi_points[q + 1].y - origin[1],
-                                            lane_roadmarktypeline->GetWidth() / 2,
-                                            l1p0r[0],
-                                            l1p0r[1],
-                                            l1p1r[0],
-                                            l1p1r[1]);
+                                const double w = lane_roadmarktypeline->GetWidth() / 2;
+                                double       v[3];
+
+                                RotateY(w, osi_points[q].r, osi_points[q].p, osi_points[q].h, v);
+                                l1p0l[0] = osi_points[q].x + v[0] - origin[0];
+                                l1p0l[1] = osi_points[q].y + v[1] - origin[1];
+                                l1p0l[2] = osi_points[q].z + v[2] + ROADMARK_Z_OFFSET;
+
+                                RotateY(w, osi_points[q + 1].r, osi_points[q + 1].p, osi_points[q + 1].h, v);
+                                l1p1l[0] = osi_points[q + 1].x + v[0] - origin[0];
+                                l1p1l[1] = osi_points[q + 1].y + v[1] - origin[1];
+                                l1p1l[2] = osi_points[q + 1].z + v[2] + ROADMARK_Z_OFFSET;
+
+                                RotateY(-w, osi_points[q].r, osi_points[q].p, osi_points[q].h, v);
+                                l1p0r[0] = osi_points[q].x + v[0] - origin[0];
+                                l1p0r[1] = osi_points[q].y + v[1] - origin[1];
+                                l1p0r[2] = osi_points[q].z + v[2] + ROADMARK_Z_OFFSET;
+
+                                RotateY(-w, osi_points[q + 1].r, osi_points[q + 1].p, osi_points[q + 1].h, v);
+                                l1p1r[0] = osi_points[q + 1].x + v[0] - origin[0];
+                                l1p1r[1] = osi_points[q + 1].y + v[1] - origin[1];
+                                l1p1r[2] = osi_points[q + 1].z + v[2] + ROADMARK_Z_OFFSET;
                             }
                             else if (!osi_points[q].endpoint)
                             {
                                 LOG_ERROR("Unexpected last point without endpoint q {}", q);
                             }
 
-                            double z_right = osi_points[q].z + ROADMARK_Z_OFFSET - (lane_roadmarktypeline->GetWidth() / 2) * tan(osi_points[q].r);
-                            double z_left  = osi_points[q].z + ROADMARK_Z_OFFSET + (lane_roadmarktypeline->GetWidth() / 2) * tan(osi_points[q].r);
-
                             if (q == startpoint)
                             {
                                 // First point in a line sequence, no adjustment needed
                                 (*vertices).push_back(
-                                    osg::Vec3(static_cast<float>(l1p0l[0]), static_cast<float>(l1p0l[1]), static_cast<float>(z_left)));
+                                    osg::Vec3(static_cast<float>(l1p0l[0]), static_cast<float>(l1p0l[1]), static_cast<float>(l1p0l[2])));
                                 (*vertices).push_back(
-                                    osg::Vec3(static_cast<float>(l1p0r[0]), static_cast<float>(l1p0r[1]), static_cast<float>(z_right)));
+                                    osg::Vec3(static_cast<float>(l1p0r[0]), static_cast<float>(l1p0r[1]), static_cast<float>(l1p0r[2])));
                             }
                             else if (osi_points[q].endpoint)
                             {
@@ -425,15 +426,16 @@ namespace roadgeom
                                 double* left  = (q < osi_points.size() - 1) ? l1p0l : l1p1l;
                                 double* right = (q < osi_points.size() - 1) ? l1p0r : l1p1r;
                                 (*vertices).push_back(
-                                    osg::Vec3(static_cast<float>(left[0]), static_cast<float>(left[1]), static_cast<float>(z_left)));
+                                    osg::Vec3(static_cast<float>(left[0]), static_cast<float>(left[1]), static_cast<float>(left[2])));
                                 (*vertices).push_back(
-                                    osg::Vec3(static_cast<float>(right[0]), static_cast<float>(right[1]), static_cast<float>(z_right)));
+                                    osg::Vec3(static_cast<float>(right[0]), static_cast<float>(right[1]), static_cast<float>(right[2])));
                             }
                             else
                             {
                                 // Find intersection of non parallel lines
                                 double isect[2];
 
+                                // left side
                                 if (GetIntersectionOfTwoLineSegments(l0p0l[0],
                                                                      l0p0l[1],
                                                                      l0p1l[0],
@@ -445,16 +447,19 @@ namespace roadgeom
                                                                      isect[0],
                                                                      isect[1]) == 0)
                                 {
-                                    (*vertices).push_back(
-                                        osg::Vec3(static_cast<float>(isect[0]), static_cast<float>(isect[1]), static_cast<float>(z_left)));
+                                    (*vertices).push_back(osg::Vec3(static_cast<float>(isect[0]),
+                                                                    static_cast<float>(isect[1]),
+                                                                    static_cast<float>(l0p1l[2] + ROADMARK_Z_OFFSET)));
                                 }
                                 else
                                 {
                                     // lines parallel, no adjustment needed
-                                    (*vertices).push_back(
-                                        osg::Vec3(static_cast<float>(l1p0l[0]), static_cast<float>(l1p0l[1]), static_cast<float>(z_left)));
+                                    (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0l[0]),
+                                                                    static_cast<float>(l1p0l[1]),
+                                                                    static_cast<float>(l1p0l[2] + ROADMARK_Z_OFFSET)));
                                 }
 
+                                // right side
                                 if (GetIntersectionOfTwoLineSegments(l0p0r[0],
                                                                      l0p0r[1],
                                                                      l0p1r[0],
@@ -466,14 +471,16 @@ namespace roadgeom
                                                                      isect[0],
                                                                      isect[1]) == 0)
                                 {
-                                    (*vertices).push_back(
-                                        osg::Vec3(static_cast<float>(isect[0]), static_cast<float>(isect[1]), static_cast<float>(z_right)));
+                                    (*vertices).push_back(osg::Vec3(static_cast<float>(isect[0]),
+                                                                    static_cast<float>(isect[1]),
+                                                                    static_cast<float>(l0p1r[2] + ROADMARK_Z_OFFSET)));
                                 }
                                 else
                                 {
                                     // lines parallel, no adjustment needed
-                                    (*vertices).push_back(
-                                        osg::Vec3(static_cast<float>(l1p0r[0]), static_cast<float>(l1p0r[1]), static_cast<float>(z_right)));
+                                    (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0r[0]),
+                                                                    static_cast<float>(l1p0r[1]),
+                                                                    static_cast<float>(l1p0r[2] + ROADMARK_Z_OFFSET)));
                                 }
                             }
 
