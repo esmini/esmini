@@ -704,6 +704,8 @@ void ZYZ2EulerAngles(double z0, double y, double z1, double& h, double& p, doubl
 */
 void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, double r1, double& h, double& p, double& r, double (&m)[3][3]);
 
+void RotateY(double y_value, double roll, double pitch, double yaw, double v[3]);
+
 void CreateRotationMatrix3d(double roll, double pitch, double yaw, double R[3][3]);
 
 int InvertMatrix3(const double m[3][3], double mi[3][3]);

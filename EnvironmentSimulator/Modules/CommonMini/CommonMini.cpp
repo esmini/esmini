@@ -1506,57 +1506,72 @@ void R0R12EulerAngles(double h0, double p0, double r0, double h1, double p1, dou
                              {-sy, cy * sz, cy * cz}};
 
     // Multiply
-    double R2[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
-    for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++)
-            for (int k = 0; k < 3; k++)
-                R2[i][j] += R0[i][k] * R1[k][j];
-
-    // Avoid gimbal lock
-    if (fabs(R2[0][0]) < SMALL_NUMBER)
-        R2[0][0] = SIGN(R2[0][0]) * SMALL_NUMBER;
-    if (fabs(R2[2][2]) < SMALL_NUMBER)
-        R2[2][2] = SIGN(R2[2][2]) * SMALL_NUMBER;
-
-    h = GetAngleInInterval2PI(atan2(R2[1][0], R2[0][0]));
-    p = GetAngleInInterval2PI(atan2(-R2[2][0], sqrt(R2[2][1] * R2[2][1] + R2[2][2] * R2[2][2])));
-    r = GetAngleInInterval2PI(atan2(R2[2][1], R2[2][2]));
-
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < 3; j++)
         {
-            m[i][j] = R2[i][j];
+            m[i][j] = 0.0;
+            for (int k = 0; k < 3; k++)
+            {
+                m[i][j] += R0[i][k] * R1[k][j];
+            }
         }
     }
+
+    // Avoid gimbal lock
+    if (fabs(m[0][0]) < SMALL_NUMBER)
+    {
+        m[0][0] = SIGN(m[0][0]) * SMALL_NUMBER;
+    }
+    if (fabs(m[2][2]) < SMALL_NUMBER)
+    {
+        m[2][2] = SIGN(m[2][2]) * SMALL_NUMBER;
+    }
+
+    h = GetAngleInInterval2PI(atan2(m[1][0], m[0][0]));
+    p = GetAngleInInterval2PI(atan2(-m[2][0], sqrt(m[2][1] * m[2][1] + m[2][2] * m[2][2])));
+    r = GetAngleInInterval2PI(atan2(m[2][1], m[2][2]));
+}
+
+void RotateY(double y_value, double roll, double pitch, double yaw, double v[3])
+{
+    const double pitch2 = AVOID_ZERO(pitch);
+    const double cp     = std::cos(roll);
+    const double sp     = std::sin(roll);
+    const double ct     = std::cos(pitch2);
+    const double st     = std::sin(pitch2);
+    const double cs     = std::cos(yaw);
+    const double ss     = std::sin(yaw);
+
+    v[0] = y_value * (cs * st * sp - ss * cp);
+    v[1] = y_value * (ss * st * sp + cs * cp);
+    v[2] = y_value * (ct * sp);
 }
 
 void CreateRotationMatrix3d(double roll, double pitch, double yaw, double R[3][3])
 {
     // Calculate sines and cosines once for efficiency and clarity
-    double c_phi   = std::cos(roll);
-    double s_phi   = std::sin(roll);
-    double c_theta = std::cos(pitch);
-    double s_theta = std::sin(pitch);
-    double c_psi   = std::cos(yaw);
-    double s_psi   = std::sin(yaw);
+    const double cr = std::cos(roll);
+    const double sr = std::sin(roll);
+    const double cp = std::cos(pitch);
+    const double sp = std::sin(pitch);
+    const double cy = std::cos(yaw);
+    const double sy = std::sin(yaw);
 
-    // The elements of the combined matrix R = R_x * R_y * R_z
+    // First Row
+    R[0][0] = cy * cp;
+    R[0][1] = cy * sp * sr - sy * cr;
+    R[0][2] = cy * sp * cr + sy * sr;
 
-    // Row 0
-    R[0][0] = c_theta * c_psi;
-    R[0][1] = -c_theta * s_psi;
-    R[0][2] = s_theta;
+    // Second Row
+    R[1][0] = sy * cp;
+    R[1][1] = sy * sp * sr + cy * cr;
+    R[1][2] = sy * sp * cr - cy * sr;
 
-    // Row 1
-    R[1][0] = c_phi * s_psi + s_phi * s_theta * c_psi;
-    R[1][1] = c_phi * c_psi - s_phi * s_theta * s_psi;
-    R[1][2] = -s_phi * c_theta;
-
-    // Row 2
-    R[2][0] = s_phi * s_psi - c_phi * s_theta * c_psi;
-    R[2][1] = s_phi * c_psi + c_phi * s_theta * s_psi;
-    R[2][2] = c_phi * c_theta;
+    // Third Row
+    R[2][0] = -sp;
+    R[2][1] = cp * sr;
+    R[2][2] = cp * cr;
 
     // Avoid gimbal lock
     if (fabs(R[0][0]) < SMALL_NUMBER)
@@ -1680,12 +1695,9 @@ void CalcRelAnglesFromRoadAndAbsAngles(double  h_road,
 
 void MultMatrixVector3d(const double m[3][3], const double v0[3], double v1[3])
 {
-    for (int i = 0; i < 3; i++)
-    {
-        v1[i] = 0.0;
-        for (int j = 0; j < 3; j++)
-            v1[i] += m[i][j] * v0[j];
-    }
+    v1[0] = m[0][0] * v0[0] + m[0][1] * v0[1] + m[0][2] * v0[2];
+    v1[1] = m[1][0] * v0[0] + m[1][1] * v0[1] + m[1][2] * v0[2];
+    v1[2] = m[2][0] * v0[0] + m[2][1] * v0[1] + m[2][2] * v0[2];
 }
 
 void MultMatrixMatrix3d(const double m0[3][3], const double m1[3][3], double m_out[3][3])
