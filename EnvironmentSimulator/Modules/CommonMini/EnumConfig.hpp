@@ -104,6 +104,7 @@ namespace esmini_options
         VEHICLE_DYNAMICS,                // 93
         WIREFRAME,                       // 94
         VIEW_GHOST_RESTART,              // 95
+        AXIS_INDICATOR,                  // 96
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -203,7 +204,8 @@ namespace esmini_options
         {"hide_ghost", HIDE_GHOST},
         {"ghost_trail_dt", GHOST_TRAIL_DT},
         {"wireframe", WIREFRAME},
-        {"view_ghost_restart", VIEW_GHOST_RESTART}};
+        {"view_ghost_restart", VIEW_GHOST_RESTART},
+        {"axis_indicator", AXIS_INDICATOR}};
 
     CONFIG_ENUM ConvertStrKeyToEnum(const std::string& key);
 }  // namespace esmini_options

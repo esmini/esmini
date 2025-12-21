@@ -14,6 +14,8 @@ Options:
       OpenDRIVE filename (required)
   --aa_mode [mode]  (default if value omitted: 4)
       Anti-alias mode=number of multisamples (subsamples, 0=off)
+  --axis_indicator <mode>
+      0:off 1:on 2:xray, cycle key 'x'
   --capture_screen
       Continuous screen capture. Warning: Many .tga files will be created
   --config_file_path [path]...  (default if option or value omitted: config.yml)
@@ -113,14 +115,13 @@ Examples:
 4. Sparse traffic (about 0.5 vehicle per 100 meter = 1 per 200 m)
    odrviewer --odr xodr\e6mini.xodr --model models\e6mini.osgb --density 0.5 --window 60 60 1000 500
 
-
 Key shortcuts
 
     H (shift + h): Print this help text to console
     Space:         Toggle pause/play simulation
     Return:        Step simulation(one timestep) then pause
-    TAB:           Move camera to next vehicle (0, 1, 2..., ALL, ROAD)
-    Shift + TAB:   Move camera to previous vehicle
+    TAB:           Move camera to next entity (0, 1, 2..., ALL, ROAD)
+    Shift + TAB:   Move camera to previous entity
     Delete:        Same as above (Shift + TAB)
     o:             Toggle show / hide OpenDRIVE road feature lines
     u:             Toggle show / hide OSI road lines
@@ -129,6 +130,7 @@ Key shortcuts
     i:             Toggle info text showing time and speed
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None
     K:             Print current camera position and orientation to console
+    x:             Cycle axis indicator view mode (off, on, xray)
     ESC:           quit
 
     1 - 9: Camera models according to :

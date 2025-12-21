@@ -4,6 +4,8 @@ Options:
       OpenSCENARIO filename (required) - if path includes spaces, enclose with ""
   --aa_mode [mode]  (default if value omitted: 4)
       Anti-alias mode=number of multisamples (subsamples, 0=off)
+  --axis_indicator <mode>
+      0:off 1:on 2:xray, cycle key 'x'
   --align_routepositions
       Align t-axis of route positions to the direction of the route
   --bounding_boxes
