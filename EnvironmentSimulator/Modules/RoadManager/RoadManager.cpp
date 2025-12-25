@@ -7226,11 +7226,15 @@ GetMaxSegmentLen(const Position* pivot, const Position* pos, double min, double 
     if (pivot)
     {
         // check slope and delta z for discontinuities
+        double z_change_rate_elev       = pivot->GetZRoadPrim();
+        double z_change_rate_super_elev = tan(pivot->GetRoadSuperElevationPrim()) * pivot->GetT();
+
         if (
             // radical change of slope
             abs(pos->GetZRoadPrim() - pivot->GetZRoadPrim()) > 0.1 - SMALL_NUMBER ||
-            // change of z not according to slope (discontinuity found)
-            abs((pos->GetZ() - pivot->GetZ()) - pivot->GetZRoadPrim() * (pos->GetS() - pivot->GetS())) > 0.1 - SMALL_NUMBER)  // actual
+            // change of z not according to slope based on elevation and superelevation change rate (discontinuity found)
+            (abs((pos->GetZ() - pivot->GetZ()) - (z_change_rate_elev + z_change_rate_super_elev) * (pos->GetS() - pivot->GetS())) >
+             0.1 - SMALL_NUMBER))
         {
             max_segment_length = min;
             osi_requirement    = false;
