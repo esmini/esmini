@@ -1562,7 +1562,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     trails_ = new osg::Group;
     root_origin2odr_->addChild(trails_);
     odrLines_ = new osg::Group;
-    odrLines_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
     root_origin2odr_->addChild(odrLines_);
     osiFeatures_ = new osg::Group;
     root_origin2odr_->addChild(osiFeatures_);
@@ -2779,6 +2778,7 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
         kp_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, static_cast<int>(kp_points->size())));
         kp_geom->getOrCreateStateSet()->setAttributeAndModes(kp_point, osg::StateAttribute::ON);
         kp_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+        kp_geom->setNodeMask(NODE_MASK_ODR_FEATURES);
 
         odrLines_->addChild(kp_geom);
 
@@ -2860,15 +2860,15 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                         else
                         {
                             // center lane
-                            AddPolyLine(viewer,
-                                        odrLines_,
-                                        vertices,
-                                        osg::Vec4(SE_Color::Color2RBG(SE_Color::Color::RED)[0],
-                                                  SE_Color::Color2RBG(SE_Color::Color::RED)[1],
-                                                  SE_Color::Color2RBG(SE_Color::Color::RED)[2],
-                                                  1.0),
-                                        6.0,
-                                        OSI_DOT_SIZE);
+                            pline = AddPolyLine(viewer,
+                                                odrLines_,
+                                                vertices,
+                                                osg::Vec4(SE_Color::Color2RBG(SE_Color::Color::RED)[0],
+                                                          SE_Color::Color2RBG(SE_Color::Color::RED)[1],
+                                                          SE_Color::Color2RBG(SE_Color::Color::RED)[2],
+                                                          1.0),
+                                                6.0,
+                                                OSI_DOT_SIZE);
                         }
                     }
                     else if (k == 1)
@@ -2897,7 +2897,16 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                     }
                     if (pline != nullptr)
                     {
-                        pline->SetNodeMaskDots(NodeMask::NODE_MASK_OSI_POINTS);
+                        pline->SetNodeMaskLines(NodeMask::NODE_MASK_ODR_FEATURES);
+
+                        if (lane->GetId() == 0 && k == 1)
+                        {
+                            pline->SetNodeMaskDots(NodeMask::NODE_MASK_ODR_FEATURES);
+                        }
+                        else
+                        {
+                            pline->SetNodeMaskDots(NodeMask::NODE_MASK_OSI_POINTS);
+                        }
                     }
                 }
             }
