@@ -6214,20 +6214,20 @@ bool OpenDrive::IsIndirectlyConnected(id_t road1_id, id_t road2_id, id_t*& conne
     return false;
 }
 
-int OpenDrive::CheckConnectedRoad(Road* road, RoadLink* link, ContactPointType expected_contact_point_type, RoadLink* link2)
+int OpenDrive::CheckConnectedRoad(Road* road, ContactPointType expected_contact_point_type, RoadLink* link)
 {
-    if (link2 == nullptr)
+    if (link == nullptr)
     {
         return -1;
     }
 
-    if (link2->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
+    if (link->GetElementType() == RoadLink::ElementType::ELEMENT_TYPE_ROAD)
     {
         if (link->GetElementId() == road->GetId())
         {
             if (link->GetContactPointType() != expected_contact_point_type)
             {
-                LOG_ERROR("Found connecting road from other end, but contact point is wrong (expected START, got {})",
+                LOG_DEBUG("Found connecting road from other end, but contact point is wrong (expected START, got {})",
                           ContactPointType2Str(link->GetContactPointType()).c_str());
                 return -1;
             }
@@ -6452,11 +6452,11 @@ int OpenDrive::CheckLink(Road* road, RoadLink* link, ContactPointType expected_c
         Road* connecting_road = GetRoadById(link->GetElementId());
         if (connecting_road != nullptr)
         {
-            if (CheckConnectedRoad(road, link, expected_contact_point_type, connecting_road->GetLink(LinkType::PREDECESSOR)) == 0)
+            if (CheckConnectedRoad(road, expected_contact_point_type, connecting_road->GetLink(LinkType::PREDECESSOR)) == 0)
             {
                 return 0;
             }
-            else if (CheckConnectedRoad(road, link, expected_contact_point_type, connecting_road->GetLink(LinkType::SUCCESSOR)) == 0)
+            else if (CheckConnectedRoad(road, expected_contact_point_type, connecting_road->GetLink(LinkType::SUCCESSOR)) == 0)
             {
                 return 0;
             }

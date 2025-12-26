@@ -3374,14 +3374,29 @@ namespace roadmanager
                                    int    lane2_id = 0) const;
 
         /**
-                Add any missing connections so that road connectivity is two-ways
-                Look at all road connections, and make sure they are defined both ways
-                @param idx index into the vector of roads
-                @return number of added connections
+        Add any missing connections so that road connectivity is two-ways
+        Look at all road connections, and make sure they are defined both ways
+        @param idx index into the vector of roads
+        @return number of added connections
         */
-        int                CheckConnections();
-        int                CheckLink(Road *road, RoadLink *link, ContactPointType expected_contact_point_type);
-        int                CheckConnectedRoad(Road *road, RoadLink *link, ContactPointType expected_contact_point_type, RoadLink *link2);
+        int CheckConnections();
+
+        /**
+        Check that the link connects to given road at given contact point, as predecessor or successor
+        @param road Expected road
+        @param link Link to check
+        @expected_contact_point_type Expected contact point
+        */
+        int CheckLink(Road *road, RoadLink *link, ContactPointType expected_contact_point_type);
+
+        /**
+        Check link road ID and contact point
+        @param road which ID to match the one in the link
+        @param link Link
+        @expected_contact_point_type Expected contact point
+        */
+        int CheckConnectedRoad(Road *road, ContactPointType expected_contact_point_type, RoadLink *link);
+
         int                CheckJunctionConnection(Junction *junction, Connection *connection) const;
         static std::string ContactPointType2Str(ContactPointType type);
         static std::string ElementType2Str(RoadLink::ElementType type);
