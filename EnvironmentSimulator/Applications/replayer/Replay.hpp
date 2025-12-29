@@ -382,7 +382,7 @@ namespace scenarioengine
         void           FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);
         void           CreateMergedDatfile(const std::string filename) const;
         Dat::DatHeader ParseDatHeader(const std::string& filename);
-        bool           ExtractPacketsAsSlices();
+        bool           ExtractPacketsAsSlices(size_t scenario_idx = 0);
         void           ExtractGhostRestarts();
         void           FlattenSlices();
 

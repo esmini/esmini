@@ -209,13 +209,10 @@ namespace Dat
             return 0;
         }
 
-        void WriteToBuffer(char*& write_ptr, const PacketString& p)
+        template <typename T>
+        void RewritePacket(PacketGeneric& pkt, const T& value)
         {
-            memcpy(write_ptr, &p.size, sizeof(p.size));
-            write_ptr += sizeof(p.size);
-
-            memcpy(write_ptr, p.string.data(), p.string.size());
-            write_ptr += p.string.size();
+            std::memcpy(pkt.data.data(), &value, sizeof(T));
         }
 
         size_t SerializedSize(const PacketString& p)
@@ -227,6 +224,15 @@ namespace Dat
         size_t SerializedSize(const T& val)
         {
             return sizeof(val);
+        }
+
+        void WriteToBuffer(char*& write_ptr, const PacketString& p)
+        {
+            memcpy(write_ptr, &p.size, sizeof(p.size));
+            write_ptr += sizeof(p.size);
+
+            memcpy(write_ptr, p.string.data(), p.string.size());
+            write_ptr += p.string.size();
         }
 
         template <typename T>

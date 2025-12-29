@@ -77,21 +77,77 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     }
 
     // Make the base scenario for other cars to merge into
-    // dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[0]);
-    // ParseDatHeader(scenarios_[0]);
+    dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[0]);
+    ParseDatHeader(scenarios_[0]);
 
-    // bool restarts = ExtractPackets();
+    bool has_ghost_restarts = ExtractPacketsAsSlices();
 
-    // TODO: Some merge logic
-    // for (size_t i = 1; i < scenarios_.size(); i++)
-    // {
-    //     std::vector<std::vector<Dat::PacketGeneric>> packets = {};
-    //     dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[0]);
-    //     ParseDatHeader(scenarios_[1]);
-    //     bool restarts = ExtractPackets(packets);
+    if (has_ghost_restarts)
+    {
+        ExtractGhostRestarts();
+    }
 
-    //     for
-    // }
+    for (size_t i = 1; i < scenarios_.size(); i++)
+    {
+        dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[0]);
+        ParseDatHeader(scenarios_[1]);
+        has_ghost_restarts = ExtractPacketsAsSlices(i);
+
+        if (has_ghost_restarts)
+        {
+            ExtractGhostRestarts();
+        }
+    }
+
+    std::sort(packet_slices_.begin(),
+              packet_slices_.end(),
+              [](const PacketSlice& slice_a, const PacketSlice& slice_b) { return slice_a.timestamp < slice_b.timestamp; });
+
+    for (auto it = packet_slices_.begin(); it + 1 != packet_slices_.end();)
+    {
+        // First packet is either empty or just timestamp, i.e. useless packet.
+        if (it->packets.size() < 2)
+        {
+            it = packet_slices_.erase(it);
+            continue;
+        }
+
+        // Remove duplicate timestamps
+        auto next_it = it + 1;
+        if (NEAR_NUMBERS(it->timestamp, next_it->timestamp))
+        {
+            if (!next_it->packets.empty() && next_it->packets.front().header.id == static_cast<id_t>(Dat::PacketId::TIMESTAMP))
+            {
+                next_it->packets.erase(next_it->packets.begin());
+            }
+
+            if (next_it->packets.empty())
+            {
+                packet_slices_.erase(next_it);
+                continue;
+            }
+        }
+
+        it++;
+    }
+
+    FlattenSlices();
+
+    int ret = ParsePackets();
+
+    if (ret != 0)
+    {
+        LOG_ERROR("Failed to parse packets on merged .dat files");
+        return;
+    }
+
+    FillInTimestamps();  // Create timestamps from dt
+
+    if (timestamps_.empty())
+    {
+        LOG_ERROR("Failed to create timestamp vector on merged .dat files");
+        return;
+    }
 
     startTime_ = timestamps_[0];
     stopIndex_ = static_cast<unsigned int>(timestamps_.size() - 1);
@@ -106,13 +162,14 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     }
 }
 
-bool Replay::ExtractPacketsAsSlices()
+bool Replay::ExtractPacketsAsSlices(size_t scenario_idx)
 {
     // Build the packets containing header and data and store in a vector
     Dat::PacketHeader header;
     PacketSlice*      current_slice  = nullptr;
     bool              has_restart    = false;
     double            prev_timestamp = 0.0;
+    Dat::DatWriter    dat_writer;
 
     while (dat_reader_->ReadFile(header))
     {
@@ -127,8 +184,22 @@ bool Replay::ExtractPacketsAsSlices()
             dat_reader_->ReadPacket(packet, timestamp);
             current_slice->timestamp = timestamp;
         }
+        // If merging datfiles, we need to adjust the ID based on scenario idx
+        else if (scenario_idx > 0 && packet.header.id == static_cast<id_t>(Dat::PacketId::OBJ_ID))
+        {
+            int obj_id;
+            dat_reader_->ReadPacket(packet, obj_id);
 
-        current_slice->packets.push_back(packet);
+            obj_id += static_cast<int>(scenario_idx) * 100;
+
+            dat_writer.RewritePacket(packet, obj_id);
+        }
+
+        // Skip some packages here if its not the first scenario we are parsing (doesn't make sense to merge)
+        if (scenario_idx == 0 || packet.header.id != static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT))
+        {
+            current_slice->packets.push_back(packet);
+        }
 
         if (timestamp < prev_timestamp)
         {
@@ -173,7 +244,7 @@ int Replay::ParsePackets()
 
                     if (i > 0)
                     {
-                        current_object_id_ = -i;
+                        current_object_id_ = -((current_object_id_ / 100) * 100 + static_cast<int>(i));
                     }
 
                     if (objects_timeline_.count(current_object_id_) == 0)
