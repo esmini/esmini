@@ -375,15 +375,16 @@ namespace scenarioengine
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
 
-        void        UpdateGhostsTimelineAfterRestart(size_t idx);
-        int         ParsePackets();
-        void        ExtractGhostRestarts();
-        std::string BuildElementStateChange(const std::string& element_state);
-        void        FillInTimestamps();
-        void        FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);
-        void        CreateMergedDatfile(const std::string filename) const;
-        void        ParseDatHeader(const std::string& filename);
-        bool        ExtractPackets();
+        void           UpdateGhostsTimelineAfterRestart(size_t idx);
+        int            ParsePackets();
+        std::string    BuildElementStateChange(const std::string& element_state);
+        void           FillInTimestamps();
+        void           FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);
+        void           CreateMergedDatfile(const std::string filename) const;
+        Dat::DatHeader ParseDatHeader(const std::string& filename);
+        bool           ExtractPacketsAsSlices();
+        void           ExtractGhostRestarts();
+        void           FlattenSlices();
 
         /**
                 Go to specific time
@@ -448,6 +449,8 @@ namespace scenarioengine
         int                                          ghost_controller_id_;
         scenarioengine::PropertyTimeline*            current_object_timeline_;
         std::vector<std::vector<Dat::PacketGeneric>> generic_packets_ = {};
+        std::vector<PacketSlice>                     packet_slices_   = {};
+        std::vector<std::vector<PacketSlice>>        ghost_restarts_;
         std::vector<std::pair<double, double>>       restart_timestamps_;  // start, stop of each ghost reset
     };
 

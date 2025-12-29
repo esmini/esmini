@@ -26,12 +26,14 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
     dat_reader_ = std::make_unique<Dat::DatReader>(filename);
 
     ParseDatHeader(filename);
-    bool has_ghost_restarts = ExtractPackets();
+    bool has_ghost_restarts = ExtractPacketsAsSlices();
 
     if (has_ghost_restarts)
     {
         ExtractGhostRestarts();
     }
+
+    FlattenSlices();
 
     int ret = ParsePackets();
     if (ret != 0)
@@ -74,7 +76,22 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
     }
 
+    // Make the base scenario for other cars to merge into
+    // dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[0]);
+    // ParseDatHeader(scenarios_[0]);
+
+    // bool restarts = ExtractPackets();
+
     // TODO: Some merge logic
+    // for (size_t i = 1; i < scenarios_.size(); i++)
+    // {
+    //     std::vector<std::vector<Dat::PacketGeneric>> packets = {};
+    //     dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[0]);
+    //     ParseDatHeader(scenarios_[1]);
+    //     bool restarts = ExtractPackets(packets);
+
+    //     for
+    // }
 
     startTime_ = timestamps_[0];
     stopIndex_ = static_cast<unsigned int>(timestamps_.size() - 1);
@@ -89,24 +106,29 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     }
 }
 
-bool Replay::ExtractPackets()
+bool Replay::ExtractPacketsAsSlices()
 {
     // Build the packets containing header and data and store in a vector
-    generic_packets_.emplace_back();
     Dat::PacketHeader header;
+    PacketSlice*      current_slice  = nullptr;
     bool              has_restart    = false;
     double            prev_timestamp = 0.0;
 
     while (dat_reader_->ReadFile(header))
     {
         auto packet = dat_reader_->CreateGenericPacket(header);
-        generic_packets_.front().push_back(packet);
 
         double timestamp = prev_timestamp;
         if (packet.header.id == static_cast<id_t>(Dat::PacketId::TIMESTAMP))
         {
+            packet_slices_.emplace_back();  // Initializes a PacketSlice in place
+            current_slice = &packet_slices_.back();
+
             dat_reader_->ReadPacket(packet, timestamp);
+            current_slice->timestamp = timestamp;
         }
+
+        current_slice->packets.push_back(packet);
 
         if (timestamp < prev_timestamp)
         {
@@ -495,67 +517,10 @@ int Replay::ParsePackets()
     return 0;
 }
 
-void Replay::ExtractGhostRestarts()
+void Replay::FlattenSlices()
 {
-    std::vector<PacketSlice>              slices;
-    std::vector<PacketSlice>              ghost_restart;
-    std::vector<std::vector<PacketSlice>> ghost_restarts;
-    bool                                  g_restart      = false;
-    PacketSlice*                          current        = nullptr;
-    double                                prev_timestamp = 0.0;
-
-    for (const auto& packet : generic_packets_.front())
-    {
-        if (packet.header.id == static_cast<id_t>(Dat::PacketId::TIMESTAMP))
-        {
-            if (slices.size() > 1)
-            {
-                prev_timestamp = slices.back().timestamp;
-            }
-
-            double timestamp;
-            dat_reader_->ReadPacket(packet, timestamp);
-
-            if (timestamp > 0.0 && timestamp <= prev_timestamp - SMALL_NUMBER && !g_restart)
-            {
-                ghost_restart.emplace_back();
-                current = &ghost_restart.back();
-                restart_timestamps_.emplace_back(timestamp, prev_timestamp);
-                g_restart = true;
-            }
-            else
-            {
-                if (g_restart && timestamp >= prev_timestamp + SMALL_NUMBER)
-                {
-                    ghost_restarts.emplace_back(std::move(ghost_restart));
-                    ghost_restart.clear();
-                    g_restart = false;
-                }
-
-                if (!g_restart)
-                {
-                    slices.emplace_back();
-                    current = &slices.back();
-                }
-            }
-
-            current->timestamp = timestamp;
-            current->packets.push_back(packet);
-        }
-        else
-        {
-            if (current == nullptr)
-            {
-                LOG_ERROR_AND_QUIT("Data before first timestamp");
-            }
-
-            current->packets.push_back(packet);
-        }
-    }
-
-    generic_packets_.front().clear();
-
-    for (auto& slice : slices)
+    generic_packets_.emplace_back();
+    for (auto& slice : packet_slices_)
     {
         for (auto& pkt : slice.packets)
         {
@@ -563,7 +528,7 @@ void Replay::ExtractGhostRestarts()
         }
     }
 
-    for (auto& restart : ghost_restarts)
+    for (auto& restart : ghost_restarts_)
     {
         generic_packets_.emplace_back();
         for (auto& slice : restart)
@@ -576,7 +541,45 @@ void Replay::ExtractGhostRestarts()
     }
 }
 
-void Replay::ParseDatHeader(const std::string& filename)
+void Replay::ExtractGhostRestarts()
+{
+    /*
+        First loop over all slices to see if we have ghost restart, if we do, then we make them to separate vectors
+    */
+    std::vector<PacketSlice> temp_slices;
+    bool                     g_restart      = false;
+    double                   prev_timestamp = 0.0;
+
+    for (auto it = packet_slices_.begin(); it != packet_slices_.end();)
+    {
+        double timestamp = it->timestamp;
+
+        if (timestamp > 0.0 && timestamp <= prev_timestamp - SMALL_NUMBER && !g_restart)
+        {
+            restart_timestamps_.emplace_back(timestamp, prev_timestamp);
+            g_restart = true;
+        }
+        else if (g_restart && timestamp >= prev_timestamp + SMALL_NUMBER)
+        {
+            ghost_restarts_.emplace_back(std::move(temp_slices));
+            temp_slices.clear();
+            g_restart = false;
+        }
+
+        if (g_restart)
+        {
+            temp_slices.push_back(std::move(*it));
+            it = packet_slices_.erase(it);
+        }
+        else
+        {
+            prev_timestamp = timestamp;
+            ++it;
+        }
+    }
+}
+
+Dat::DatHeader Replay::ParseDatHeader(const std::string& filename)
 {
     // Read raw header BEFORE reading packets
     if (dat_reader_->FillDatHeader() != 0)
@@ -594,7 +597,7 @@ void Replay::ParseDatHeader(const std::string& filename)
         LOG_ERROR_AND_QUIT("Failed to read DAT header.");
     }
 
-    dat_header_ = dat_reader_->GetDatHeader();
+    return dat_reader_->GetDatHeader();
 }
 
 void Replay::FillInTimestamps()
