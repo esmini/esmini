@@ -24,14 +24,26 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 {
     // Parse the packets from the file
     dat_reader_ = std::make_unique<Dat::DatReader>(filename);
+    dat_header_ = ParseDatHeader(filename);
 
-    ParseDatHeader(filename);
-    bool has_ghost_restarts = ExtractPacketsAsSlices();
+    bool has_ghost_restarts = ExtractPacketsAsSlices(timestamps_);
 
     if (has_ghost_restarts)
     {
         ExtractGhostRestarts();
     }
+
+    if (timestamps_.empty())
+    {
+        LOG_ERROR_AND_QUIT("No timestamps available, quitting");
+    }
+
+    if (dts_[0].values.empty())
+    {
+        LOG_ERROR_AND_QUIT("No dt found in file {}", filename);
+    }
+
+    FillInTimestamps(timestamps_, dts_[0]);  // Create filled timestamps with help from dt
 
     FlattenSlices();
 
@@ -45,14 +57,6 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
     if (!eos_received_)
     {
         stopTime_ = timestamps_.back();
-    }
-
-    FillInTimestamps();  // Create timestamps from dt
-
-    if (timestamps_.empty())
-    {
-        LOG_ERROR("No timestamps found in file: {}", filename);
-        return;
     }
 
     startTime_ = timestamps_[0];
@@ -76,33 +80,101 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
     }
 
-    // Make the base scenario for other cars to merge into
-    dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[0]);
-    ParseDatHeader(scenarios_[0]);
+    size_t i = 0;
 
-    bool has_ghost_restarts = ExtractPacketsAsSlices();
+    // Make the base scenario for other cars to merge into
+    dat_reader_                                           = std::make_unique<Dat::DatReader>(scenarios_[i]);
+    dat_header_                                           = ParseDatHeader(scenarios_[i]);
+    std::vector<std::vector<double>> scenarios_timestamps = {{}};
+
+    bool has_ghost_restarts = ExtractPacketsAsSlices(scenarios_timestamps[i]);
 
     if (has_ghost_restarts)
     {
         ExtractGhostRestarts();
     }
 
-    for (size_t i = 1; i < scenarios_.size(); i++)
+    if (scenarios_timestamps[i].empty())
     {
-        dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[0]);
-        ParseDatHeader(scenarios_[1]);
-        has_ghost_restarts = ExtractPacketsAsSlices(i);
+        LOG_ERROR_AND_QUIT("No timestamps available in scenario: {}", scenarios_[i]);
+    }
+
+    if (dts_[i].values.empty())
+    {
+        LOG_ERROR_AND_QUIT("No dt found in file {}", scenarios_[i]);
+    }
+
+    FillInTimestamps(scenarios_timestamps[i], dts_[i]);  // Create timestamps from dt
+
+    for (i = 1; i < scenarios_.size(); i++)
+    {
+        dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[i]);
+        ParseDatHeader(scenarios_[i]);
+        scenarios_timestamps.emplace_back();
+        has_ghost_restarts = ExtractPacketsAsSlices(scenarios_timestamps[i], i);
 
         if (has_ghost_restarts)
         {
             ExtractGhostRestarts();
         }
+
+        FillInTimestamps(scenarios_timestamps[i], dts_[i]);
     }
 
     std::sort(packet_slices_.begin(),
               packet_slices_.end(),
               [](const PacketSlice& slice_a, const PacketSlice& slice_b) { return slice_a.timestamp < slice_b.timestamp; });
 
+    MergeAndCleanTimestamps(scenarios_timestamps);
+
+    RemoveDuplicateTimestampsInSlices();
+
+    FlattenSlices();
+
+    int ret = ParsePackets();
+
+    if (ret != 0)
+    {
+        LOG_ERROR("Failed to parse packets on merged .dat files");
+        return;
+    }
+
+    startTime_ = timestamps_[0];
+    stopIndex_ = static_cast<unsigned int>(timestamps_.size() - 1);
+    stopTime_  = timestamps_[stopIndex_];
+
+    time_ = startTime_;
+
+    // if (!create_datfile_.empty())
+    // {
+    //     LOG_INFO("Creating merged dat file: {}", create_datfile_);
+    //     CreateMergedDatfile(create_datfile_);
+    // }
+}
+void Replay::MergeAndCleanTimestamps(std::vector<std::vector<double>>& scenarios_timestamps)
+{
+    // Flatten
+    size_t total_size = std::accumulate(scenarios_timestamps.begin(),
+                                        scenarios_timestamps.end(),
+                                        size_t{0},
+                                        [](size_t sum, const std::vector<double>& t_v) { return sum + t_v.size(); });
+
+    timestamps_.reserve(total_size);
+
+    for (const auto& t_v : scenarios_timestamps)
+    {
+        timestamps_.insert(timestamps_.end(), t_v.begin(), t_v.end());
+    }
+
+    // Sort
+    std::sort(timestamps_.begin(), timestamps_.end());
+
+    // Remove duplicates
+    timestamps_.erase(std::unique(timestamps_.begin(), timestamps_.end(), [](double a, double b) { return NEAR_NUMBERS(a, b); }), timestamps_.end());
+}
+
+void Replay::RemoveDuplicateTimestampsInSlices()
+{
     for (auto it = packet_slices_.begin(); it + 1 != packet_slices_.end();)
     {
         // First packet is either empty or just timestamp, i.e. useless packet.
@@ -130,47 +202,18 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
 
         it++;
     }
-
-    FlattenSlices();
-
-    int ret = ParsePackets();
-
-    if (ret != 0)
-    {
-        LOG_ERROR("Failed to parse packets on merged .dat files");
-        return;
-    }
-
-    FillInTimestamps();  // Create timestamps from dt
-
-    if (timestamps_.empty())
-    {
-        LOG_ERROR("Failed to create timestamp vector on merged .dat files");
-        return;
-    }
-
-    startTime_ = timestamps_[0];
-    stopIndex_ = static_cast<unsigned int>(timestamps_.size() - 1);
-    stopTime_  = timestamps_[stopIndex_];
-
-    time_ = startTime_;
-
-    if (!create_datfile_.empty())
-    {
-        LOG_INFO("Creating merged dat file: {}", create_datfile_);
-        CreateMergedDatfile(create_datfile_);
-    }
 }
 
-bool Replay::ExtractPacketsAsSlices(size_t scenario_idx)
+bool Replay::ExtractPacketsAsSlices(std::vector<double>& timestamps, size_t scenario_idx)
 {
     // Build the packets containing header and data and store in a vector
-    Dat::PacketHeader header;
-    PacketSlice*      current_slice  = nullptr;
-    bool              has_restart    = false;
-    double            prev_timestamp = 0.0;
-    Dat::DatWriter    dat_writer;
+    Dat::DatWriter   dat_writer;
+    PacketSlice*     current_slice  = nullptr;
+    bool             has_restart    = false;
+    double           prev_timestamp = 0.0;
+    Timeline<double> dts            = {};
 
+    Dat::PacketHeader header;
     while (dat_reader_->ReadFile(header))
     {
         auto packet = dat_reader_->CreateGenericPacket(header);
@@ -183,6 +226,17 @@ bool Replay::ExtractPacketsAsSlices(size_t scenario_idx)
 
             dat_reader_->ReadPacket(packet, timestamp);
             current_slice->timestamp = timestamp;
+
+            if (timestamps.empty() || timestamp > timestamps.back())
+            {
+                timestamps.emplace_back(timestamp);
+            }
+        }
+        else if (packet.header.id == static_cast<id_t>(Dat::PacketId::DT))
+        {
+            double dt;
+            dat_reader_->ReadPacket(packet, dt);
+            dts.values.emplace_back(current_slice->timestamp, dt);
         }
         // If merging datfiles, we need to adjust the ID based on scenario idx
         else if (scenario_idx > 0 && packet.header.id == static_cast<id_t>(Dat::PacketId::OBJ_ID))
@@ -196,7 +250,8 @@ bool Replay::ExtractPacketsAsSlices(size_t scenario_idx)
         }
 
         // Skip some packages here if its not the first scenario we are parsing (doesn't make sense to merge)
-        if (scenario_idx == 0 || packet.header.id != static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT))
+        if (scenario_idx == 0 || (packet.header.id != static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT) &&
+                                  packet.header.id != static_cast<id_t>(Dat::PacketId::ELEM_STATE_CHANGE)))
         {
             current_slice->packets.push_back(packet);
         }
@@ -208,6 +263,8 @@ bool Replay::ExtractPacketsAsSlices(size_t scenario_idx)
 
         prev_timestamp = timestamp;
     }
+
+    dts_.emplace_back(dts);
 
     return has_restart;
 }
@@ -226,11 +283,6 @@ int Replay::ParsePackets()
                     if (dat_reader_->ReadPacket(gp, timestamp_) != 0)
                     {
                         LOG_ERROR("Failed reading timestamp data.");
-                    }
-
-                    if (timestamps_.empty() || timestamp_ > timestamps_.back())
-                    {
-                        timestamps_.emplace_back(timestamp_);
                     }
                     break;
                 }
@@ -478,17 +530,8 @@ int Replay::ParsePackets()
                 }
                 case static_cast<id_t>(Dat::PacketId::DT):
                 {
-                    double dt;
-                    if (dat_reader_->ReadPacket(gp, dt) != 0)
-                    {
-                        LOG_ERROR("Failed reading fixed timestep.");
-                        return -1;
-                    }
-                    if (NEAR_NUMBERS(dt, 0.0))  // skip first step with 0 dt
-                    {
-                        break;
-                    }
-                    dt_.values.emplace_back(timestamp_, dt);
+                    // We've already extracted the dts
+                    dat_reader_->SkipPacket(gp.header);
                     break;
                 }
                 case static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT):
@@ -559,7 +602,7 @@ int Replay::ParsePackets()
 
                     stopTime_ = stop_time;
 
-                    if (!NEAR_NUMBERS(stopTime_, timestamps_.back()))
+                    if (stopTime_ > timestamps_.back() + SMALL_NUMBER)
                     {
                         timestamps_.emplace_back(stopTime_);
                     }
@@ -568,7 +611,7 @@ int Replay::ParsePackets()
                 }
                 default:
                 {
-                    dat_reader_->UnknownPacket(gp.header);
+                    dat_reader_->SkipPacket(gp.header);
                     if (std::find(unknown_pids.begin(), unknown_pids.end(), gp.header.id) == unknown_pids.end())
                     {
                         LOG_DEBUG("Unknown packet with id: {}", gp.header.id);
@@ -671,45 +714,40 @@ Dat::DatHeader Replay::ParseDatHeader(const std::string& filename)
     return dat_reader_->GetDatHeader();
 }
 
-void Replay::FillInTimestamps()
+void Replay::FillInTimestamps(std::vector<double>& timestamps, const Timeline<double>& dt)
 {
-    if (dt_.values.empty())
-    {
-        LOG_ERROR_AND_QUIT("No delta time (DT) information found in dat file, can not create timestamps vector.");
-    }
-
-    double              curr_time = timestamps_.front();
+    double              curr_time = timestamps.front();
     std::vector<double> filled    = {curr_time};
 
     // Fixed timestep entire scenario
-    if (dt_.values.size() == 1)
+    if (dt.values.size() == 1)
     {
-        double dt = dt_.values.front().second;
-        FillEmptyTimestamps(curr_time, timestamps_.back(), dt, filled);
+        double current_dt = dt.values.front().second;
+        FillEmptyTimestamps(curr_time, timestamps.back(), current_dt, filled);
     }
     // Mixed timesteps in the scenario
     else
     {
         size_t i = 0;
-        for (size_t j = 0; j < dt_.values.size() - 1;)
+        for (size_t j = 0; j < dt.values.size() - 1;)
         {
-            double next_timestamp = timestamps_[i + 1];
-            double next_dt        = dt_.values[j + 1].second;
+            double next_timestamp = timestamps[i + 1];
+            double next_dt        = dt.values[j + 1].second;
 
             // We have reached the time where the next dt should be used
             // Increment j so we get next dt in next iteration
-            if (NEAR_NUMBERS(curr_time, dt_.values[j + 1].first - next_dt))
+            if (NEAR_NUMBERS(curr_time, dt.values[j + 1].first - next_dt))
             {
                 j++;
             }
             // The next timestamp of a dt change is before our current time
             // We have a ghost reset
-            else if (curr_time - SMALL_NUMBER > dt_.values[j + 1].first)
+            else if (curr_time - SMALL_NUMBER > dt.values[j + 1].first)
             {
                 // stitch together the timestamps
-                double start_time = dt_.values[j + 1].first;
+                double start_time = dt.values[j + 1].first;
                 double end_time   = curr_time;
-                double restart_dt = dt_.values[j + 1].second;
+                double restart_dt = dt.values[j + 1].second;
 
                 auto   it        = std::upper_bound(filled.begin(), filled.end(), start_time);
                 size_t start_idx = static_cast<size_t>(std::distance(filled.begin(), (--it)));
@@ -731,18 +769,18 @@ void Replay::FillInTimestamps()
                 continue;
             }
 
-            double dt = dt_.values[j].second;
+            double current_dt = dt.values[j].second;
             // The gap to the next timestamp is more than 1 sample away, we should fill it
-            if (curr_time + next_dt < next_timestamp - SMALL_NUMBER && curr_time + dt < next_timestamp - SMALL_NUMBER)
+            if (curr_time + next_dt < next_timestamp - SMALL_NUMBER && curr_time + current_dt < next_timestamp - SMALL_NUMBER)
             {
                 // We have a large gap
                 double end_time = next_timestamp - next_dt;
-                FillEmptyTimestamps(curr_time, end_time, dt, filled);
+                FillEmptyTimestamps(curr_time, end_time, current_dt, filled);
             }
             // We have reached the last dt_ value, but the current time is not at the end, so we need to fill with current dt until the end
-            else if (j == dt_.values.size() - 1 && curr_time + dt < timestamps_.back() - SMALL_NUMBER)
+            else if (j == dt.values.size() - 1 && curr_time + current_dt < timestamps.back() - SMALL_NUMBER)
             {
-                FillEmptyTimestamps(curr_time, timestamps_.back(), dt, filled);
+                FillEmptyTimestamps(curr_time, timestamps.back(), current_dt, filled);
             }
             // We are one sample away, just add it
             else
@@ -754,7 +792,7 @@ void Replay::FillInTimestamps()
         }
     }
 
-    timestamps_.swap(filled);
+    timestamps.swap(filled);
 }
 
 std::string GetElementType(const std::string& s)
@@ -914,7 +952,7 @@ Replay::~Replay()
     objects_timeline_.clear();
     timestamps_.clear();
     object_state_cache_.clear();
-    dt_ = {};
+    dts_ = {};
 }
 
 void Replay::GoToStart(bool ignore_repeat)

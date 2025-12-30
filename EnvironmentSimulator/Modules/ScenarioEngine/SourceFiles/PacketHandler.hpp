@@ -272,7 +272,7 @@ namespace Dat
 
         void               SetFileSize();
         bool               ReadFile(Dat::PacketHeader& header);
-        void               UnknownPacket(const Dat::PacketHeader& header);
+        void               SkipPacket(const Dat::PacketHeader& header);
         void               CloseFile();
         Dat::PacketGeneric CreateGenericPacket(const Dat::PacketHeader& header)
         {

@@ -378,13 +378,15 @@ namespace scenarioengine
         void           UpdateGhostsTimelineAfterRestart(size_t idx);
         int            ParsePackets();
         std::string    BuildElementStateChange(const std::string& element_state);
-        void           FillInTimestamps();
+        void           FillInTimestamps(std::vector<double>& timestamps, const Timeline<double>& dt);
         void           FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);
         void           CreateMergedDatfile(const std::string filename) const;
         Dat::DatHeader ParseDatHeader(const std::string& filename);
-        bool           ExtractPacketsAsSlices(size_t scenario_idx = 0);
+        bool           ExtractPacketsAsSlices(std::vector<double>& timestamps, size_t scenario_idx = 0);
         void           ExtractGhostRestarts();
         void           FlattenSlices();
+        void           RemoveDuplicateTimestampsInSlices();
+        void           MergeAndCleanTimestamps(std::vector<std::vector<double>>& scenarios_timestamps);
 
         /**
                 Go to specific time
@@ -452,6 +454,7 @@ namespace scenarioengine
         std::vector<PacketSlice>                     packet_slices_   = {};
         std::vector<std::vector<PacketSlice>>        ghost_restarts_;
         std::vector<std::pair<double, double>>       restart_timestamps_;  // start, stop of each ghost reset
+        std::vector<Timeline<double>>                dts_;
     };
 
 }  // namespace scenarioengine

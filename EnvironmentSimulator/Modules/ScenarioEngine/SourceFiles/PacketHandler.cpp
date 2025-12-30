@@ -442,7 +442,7 @@ bool Dat::DatReader::ReadFile(Dat::PacketHeader& header)
     return true;
 }
 
-void Dat::DatReader::UnknownPacket(const Dat::PacketHeader& header)
+void Dat::DatReader::SkipPacket(const Dat::PacketHeader& header)
 {
     file_.seekg(header.data_size, std::ios::cur);  // Skips the packet by moving cursor ahead
 }
