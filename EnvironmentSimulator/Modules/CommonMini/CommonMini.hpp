@@ -462,7 +462,14 @@ double GetCrossProduct2D(double x1, double y1, double x2, double y2);
 double GetDotProduct2D(double x1, double y1, double x2, double y2);
 
 /**
-        Retrieve the angle between two vectors of any length
+        Retrieve the signed relative angle [-pi,pi] between two 2D vectors of any length
+        treating the first vector as pivot/temporary x-axis
+*/
+double GetSignedAngleBetweenVectors(double x1, double y1, double x2, double y2);
+
+/**
+        Retrieve absolute relative angle [0,pi] between two 2D vectors of any length
+        treating the first vector as pivot/temporary x-axis
 */
 double GetAngleBetweenVectors(double x1, double y1, double x2, double y2);
 
@@ -522,6 +529,23 @@ double PointDistance2D(double x0, double y0, double x1, double y1);
         @return Signed distance (negative on the right, positive to the left)
 */
 double PointToLineDistance2DSigned(double px, double py, double lx0, double ly0, double lx1, double ly1);
+
+/**
+        Calculate (shortest) distance between a point to a line, in 2D
+        Inspiration: https://www.geeksforgeeks.org/shortest-distance-between-a-line-and-a-point-in-a-3-d-plane/
+        But modified so that negtive distance means point is on right side of the line and vice versa
+        @param px X-coordinate of the point
+        @param py Y-coordinate of the point
+        @param pz Z-coordinate of the point
+        @param lx0 X-coordinate of the first endpoint of the line
+        @param ly0 Y-coordinate of the first endpoint of the line
+        @param ly1 Z-coordinate of the first endpoint of the line
+        @param lx1 X-coordinate of the second endpoint of the line
+        @param ly1 Y-coordinate of the second endpoint of the line
+        @param lz1 Z-coordinate of the second endpoint of the line
+        @return Signed distance (negative on the right, positive to the left)
+*/
+double PointToLineDistance3DSigned(double px, double py, double pz, double lx0, double ly0, double lz0, double lx1, double ly1, double lz1);
 
 /**
         Calculate distance between two 2D points, return square value - avoiding square root operation
@@ -688,6 +712,11 @@ double GetAngleBetweenVectors3D(double x1, double y1, double z1, double x2, doub
         Normalize a 2D vector
 */
 void NormalizeVec2D(double x, double y, double& xn, double& yn);
+
+/**
+        Normalize a 3D vector
+*/
+void NormalizeVec3D(double x, double y, double z, double& xn, double& yn, double& zn);
 
 /**
         Find parallel line at specified offset (- means left, + right)

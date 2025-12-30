@@ -596,6 +596,38 @@ double PointToLineDistance2DSigned(double px, double py, double lx0, double ly0,
     return cp / l0Length;
 }
 
+double PointToLineDistance3DSigned(double px, double py, double pz, double lx0, double ly0, double lz0, double lx1, double ly1, double lz1)
+{
+    // Calculate the direction vector of the line
+    double dx = lx1 - lx0;
+    double dy = ly1 - ly0;
+    double dz = lz1 - lz0;
+
+    // Calculate the vector from the line's start point to the point
+    double px0 = px - lx0;
+    double py0 = py - ly0;
+    double pz0 = pz - lz0;
+
+    // Compute the cross product of the two vectors
+    double crossX = py0 * dz - pz0 * dy;
+    double crossY = pz0 * dx - px0 * dz;
+    double crossZ = px0 * dy - py0 * dx;
+
+    // Compute the magnitude of the cross product
+    double crossMagnitude = std::sqrt(crossX * crossX + crossY * crossY + crossZ * crossZ);
+
+    // Compute the magnitude of the direction vector
+    double lineMagnitude = std::sqrt(dx * dx + dy * dy + dz * dz);
+
+    // Calculate the signed distance
+    double distance = crossMagnitude / (lineMagnitude > SMALL_NUMBER ? lineMagnitude : SMALL_NUMBER);
+
+    // Determine the sign of the distance using the cross product in the XY plane
+    double crossProduct = GetCrossProduct2D(dx, dy, px0, py0);
+
+    return crossProduct < 0 ? -distance : distance;
+}
+
 double PointSquareDistance2D(double x0, double y0, double x1, double y1)
 {
     return (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
@@ -1400,16 +1432,18 @@ double GetDotProduct2D(double x1, double y1, double x2, double y2)
     return x1 * x2 + y1 * y2;
 }
 
+double GetSignedAngleBetweenVectors(double x1, double y1, double x2, double y2)
+{
+    double dot   = x1 * x2 + y1 * y2;
+    double cross = x1 * y2 - y1 * x2;  // The 2D cross product
+
+    // Returns angle in radians between -PI and PI
+    return std::atan2(cross, dot);
+}
+
 double GetAngleBetweenVectors(double x1, double y1, double x2, double y2)
 {
-    double dp      = GetDotProduct2D(x1, y1, x2, y2);
-    double length1 = GetLengthOfVector2D(x1, y1);
-    double length2 = GetLengthOfVector2D(x2, y2);
-    if (length1 < SMALL_NUMBER || length2 < SMALL_NUMBER)
-    {
-        return 0.0;  // Avoid division by zero
-    }
-    return acos(ABS_LIMIT(dp / (length1 * length2), 1.0));
+    return fabs(GetSignedAngleBetweenVectors(x1, y1, x2, y2));
 }
 
 double GetDotProduct3D(double x1, double y1, double z1, double x2, double y2, double z2)
@@ -1438,6 +1472,18 @@ void NormalizeVec2D(double x, double y, double& xn, double& yn)
     }
     xn = x / len;
     yn = y / len;
+}
+
+void NormalizeVec3D(double x, double y, double z, double& xn, double& yn, double& zn)
+{
+    double len = sqrt(x * x + y * y + z * z);
+    if (len < SMALL_NUMBER)
+    {
+        len = SMALL_NUMBER;
+    }
+    xn = x / len;
+    yn = y / len;
+    zn = z / len;
 }
 
 void OffsetVec2D(double x0, double y0, double x1, double y1, double offset, double& xo0, double& yo0, double& xo1, double& yo1)

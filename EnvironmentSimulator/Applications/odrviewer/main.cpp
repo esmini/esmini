@@ -120,10 +120,12 @@ void UpdateCarPose(Car *car)
 {
     if (car->model->txNode_ != 0)
     {
-        double h, p, r, m[3][3];
-        R0R12EulerAngles(car->pos.GetHRoad(), car->pos.GetPRoad(), car->pos.GetRRoad(), car->pos.GetHRelative(), 0.0, 0.0, h, p, r, m);
+        double                 h, p, r, m[3][3];
+        roadmanager::Position &pos = car->pos;
 
-        car->model->SetPosition(car->pos.GetX(), car->pos.GetY(), car->pos.GetZ());
+        R0R12EulerAngles(pos.GetHRoad() + pos.GetHOffset(), pos.GetPRoad(), pos.GetRRoad(), pos.GetHRelative(), 0.0, 0.0, h, p, r, m);
+
+        car->model->SetPosition(pos.GetX(), pos.GetY(), pos.GetZ());
         car->model->SetRotation(h, p, r);
     }
 }

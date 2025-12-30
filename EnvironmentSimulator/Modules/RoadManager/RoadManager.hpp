@@ -114,6 +114,8 @@ namespace roadmanager
         double h;
         double p;
         double r;
+        double nx;  // x coord of normal projected on XY plane
+        double ny;  // y coord of normal projected on XY plane
         bool   endpoint;
     } PointStruct;
 
@@ -996,13 +998,19 @@ namespace roadmanager
         {
             return static_cast<unsigned int>(lane_material_.size());
         }
+        unsigned int GetNumberOfHeights() const
+        {
+            return static_cast<unsigned int>(lane_height_.size());
+        }
 
-        LaneLink       *GetLink(LinkType type) const;
-        LaneWidth      *GetWidthByIndex(idx_t index) const;
-        LaneWidth      *GetWidthByS(double s) const;
-        LaneRoadMark   *GetLaneRoadMarkByIdx(idx_t idx) const;
-        Lane::Material *GetMaterialByIdx(idx_t idx) const;
-        Lane::Material *GetMaterialByS(double s) const;
+        LaneLink               *GetLink(LinkType type) const;
+        LaneWidth              *GetWidthByIndex(idx_t index) const;
+        LaneWidth              *GetWidthByS(double s) const;
+        LaneRoadMark           *GetLaneRoadMarkByIdx(idx_t idx) const;
+        Lane::Material         *GetMaterialByIdx(idx_t idx) const;
+        Lane::Material         *GetMaterialByS(double s) const;
+        double                  GetHeightBySAndOffset(double s, double offset) const;
+        const Lane::LaneHeight *GetHeightByIdx(idx_t idx) const;
 
         RoadMarkInfo GetRoadMarkInfoByS(id_t track_id, int lane_id, double s) const;
         OSIPoints   *GetOSIPoints()
@@ -1088,6 +1096,7 @@ namespace roadmanager
         id_t   GetLaneGlobalIdByIdx(idx_t idx) const;
         id_t   GetLaneGlobalIdById(int id) const;
         double GetOuterOffset(double s, int lane_id) const;
+        double GetInnerOffset(double s, int lane_id) const;
         double GetWidth(double s, int lane_id) const;
 
         /**
@@ -3769,6 +3778,12 @@ namespace roadmanager
         // Copy only location data from other position object
         void CopyLocation(const Position &from);
 
+        // Copy only stae data (speed, acc...) from other position object
+        void CopyState(const Position &from);
+
+        // Copy only config data (snapLaneType...) from other position object
+        void CopyConfig(const Position &from);
+
         void Clean();
 
         void              Init();
@@ -3824,7 +3839,7 @@ namespace roadmanager
         */
         ReturnCode SetLanePosMode(id_t track_id, int lane_id, double s, double offset, int mode, idx_t lane_section_idx = IDX_UNDEFINED);
 
-        Position::ReturnCode SetLaneBoundaryPos(id_t track_id, int lane_id, double s, double offset, idx_t lane_section_idx = IDX_UNDEFINED);
+        Position::ReturnCode SetLaneBoundaryPos(id_t track_id, int lane_id, double s, idx_t lane_section_idx = IDX_UNDEFINED);
         void                 SetRoadMarkPos(id_t   track_id,
                                             int    lane_id,
                                             idx_t  roadmark_idx,
@@ -4714,6 +4729,8 @@ namespace roadmanager
 
         bool EvaluateRoadCenterlineZHPR(int mode);
 
+        double EvaluateLaneHeight() const;
+
         // Relative values
         struct RelativeInfo
         {
@@ -4767,7 +4784,6 @@ namespace roadmanager
         int    lane_id_;       // lane reference
         double offset_;        // lateral position relative lane given by lane_id
         double h_road_;        // heading of the road
-        double h_add_ = 0;     // additional heading given by h_offset and lane offset
         double h_offset_;      // local heading offset given by lane width
         double h_relative_;    // heading relative to the road (h_ = h_road_ + h_relative_)
         double z_relative_;    // z relative to the road
