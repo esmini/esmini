@@ -238,6 +238,16 @@ bool Replay::ExtractPacketsAsSlices(std::vector<double>& timestamps, size_t scen
             dat_reader_->ReadPacket(packet, dt);
             dts.values.emplace_back(current_slice->timestamp, dt);
         }
+        else if (packet.header.id == static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO))
+        {
+            dat_reader_->ReadPacket(packet, stopTime_);
+
+            if (stopTime_ > timestamps.back() + SMALL_NUMBER)
+            {
+                timestamps.emplace_back(stopTime_);
+            }
+            eos_received_ = true;
+        }
         // If merging datfiles, we need to adjust the ID based on scenario idx
         else if (scenario_idx > 0 && packet.header.id == static_cast<id_t>(Dat::PacketId::OBJ_ID))
         {
@@ -593,20 +603,7 @@ int Replay::ParsePackets()
                 }
                 case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
                 {
-                    double stop_time;
-                    if (dat_reader_->ReadPacket(gp, stop_time) != 0)
-                    {
-                        LOG_ERROR("Failed reading end of scenario timestamp.");
-                        return -1;
-                    }
-
-                    stopTime_ = stop_time;
-
-                    if (stopTime_ > timestamps_.back() + SMALL_NUMBER)
-                    {
-                        timestamps_.emplace_back(stopTime_);
-                    }
-                    eos_received_ = true;
+                    dat_reader_->SkipPacket(gp.header);
                     break;
                 }
                 default:
