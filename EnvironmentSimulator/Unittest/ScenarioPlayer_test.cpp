@@ -861,17 +861,17 @@ TEST(OSI, TestOrientationAndOutline)
     ASSERT_NE(osi_gt_ptr, nullptr);
 
     // OpenSCENARIO position
-    EXPECT_NEAR(obj->pos_.GetX(), 100.0576, 1e-3);
-    EXPECT_NEAR(obj->pos_.GetY(), 82.7423, 1e-3);
-    EXPECT_NEAR(obj->pos_.GetZ(), -0.8108, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetX(), 99.8824, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 82.7725, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), -0.7169, 1e-3);
     EXPECT_NEAR(obj->pos_.GetH(), 1.4000, 1e-3);
     EXPECT_NEAR(obj->pos_.GetP(), 0.0, 1e-3);
     EXPECT_NEAR(obj->pos_.GetR(), 0.48599, 1e-3);
 
     // OSI position
-    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 100.6408, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), 84.0624, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().z(), -0.1477, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 100.4656, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), 84.0926, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().z(), -0.0538, 1e-3);
     EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().yaw(), 1.4000), 0.0, 1e-3);
     EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().pitch(), 0.0), 0.0, 1e-3);
     EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().roll(), 0.48599), 0.0, 1e-3);

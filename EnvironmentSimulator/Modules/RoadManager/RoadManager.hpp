@@ -1118,8 +1118,9 @@ namespace roadmanager
         @return Lateral position of lane center
         */
         double GetCenterOffset(double s, int lane_id) const;
-        double GetOuterOffsetHeading(double s, int lane_id) const;
-        double GetCenterOffsetHeading(double s, int lane_id) const;
+
+        double GetTotalLaneWidthPrim(double s, int lane_id, bool center = false) const;
+
         double GetLength() const
         {
             return length_;
@@ -4292,6 +4293,13 @@ namespace roadmanager
         }
 
         /**
+        Retrieve the lane heading as road heading plus contributions from lane width and lane offset
+        */
+        double GetHOffset() const;
+
+        double GetHOffset(Road *road, LaneSection *lane_section) const;
+
+        /**
         Retrieve the driving direction considering lane ID and rult (lef or right hand traffic)
         Will be either 1 (road direction) or -1 (opposite road direction)
         */
@@ -4734,6 +4742,8 @@ namespace roadmanager
         Set position to the border of lane (right border for right lanes, left border for left lanes)
         */
         void                 LaneBoundary2Track();
+        double               GetTotalLaneWidthPrim() const;  // use current road and lane section
+        double               GetTotalLaneWidthPrim(LaneSection *lane_section) const;
         void                 XYZ2Track(int mode = PosMode::UNDEFINED);
         Position::ReturnCode XYZ2Route(int mode = PosMode::UNDEFINED);
         ReturnCode           SetLongitudinalTrackPos(id_t track_id, double s);
@@ -4757,7 +4767,8 @@ namespace roadmanager
         int    lane_id_;       // lane reference
         double offset_;        // lateral position relative lane given by lane_id
         double h_road_;        // heading of the road
-        double h_offset_;      // local heading offset given by lane width and offset
+        double h_add_ = 0;     // additional heading given by h_offset and lane offset
+        double h_offset_;      // local heading offset given by lane width
         double h_relative_;    // heading relative to the road (h_ = h_road_ + h_relative_)
         double z_relative_;    // z relative to the road
         double t_trajectory_;  // lateral point/distance along the trajectory

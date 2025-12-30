@@ -4,7 +4,7 @@
    <ParameterDeclarations/>
    <CatalogLocations>
       <VehicleCatalog>
-         <Directory path="../../../resources/xosc/catalogs/vehicles"/>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
    </CatalogLocations>
    <RoadNetwork>

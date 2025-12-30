@@ -248,7 +248,7 @@ TEST_F(OSIPointsTestFixture, TestConstructorEmpty)
 
 TEST_F(OSIPointsTestFixture, TestConstructorArgument)
 {
-    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, true}};
+    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, 2, 2, true}};
 
     OSIPoints osi_points_test_object = OSIPoints(osi_points_test_set);
 
@@ -266,7 +266,7 @@ TEST_F(OSIPointsTestFixture, TestConstructorArgument)
 
 TEST_F(OSIPointsTestFixture, TestSetGet)
 {
-    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, true}};
+    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, 2, 2, true}};
 
     osi_points.Set(osi_points_test_set);
 
@@ -294,7 +294,7 @@ TEST_F(OSIPointsTestFixture, TestGetFromIdxEmpty)
 
 TEST_F(OSIPointsTestFixture, TestGetFromIdx)
 {
-    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, true}};
+    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, 2, 2, true}};
 
     OSIPoints osi_points_test_object = OSIPoints(osi_points_test_set);
 
@@ -315,7 +315,7 @@ TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
 {
     ASSERT_EQ(osi_points.GetNumOfOSIPoints(), 0);
 
-    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, true}};
+    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, 2, 2, true}};
     // std::vector<double>      s{0, -1, 2};
     // std::vector<double>      x{0, -1, 2};
     // std::vector<double>      y{0, -1, 2};

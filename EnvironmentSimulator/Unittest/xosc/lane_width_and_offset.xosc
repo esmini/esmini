@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<OpenSCENARIO>
+	<FileHeader author="esmini team" date="2025-12-30T10:27:00" description="extreme lane offset and width" revMajor="1" revMinor="3" />
+	<ParameterDeclarations />
+	<CatalogLocations>
+		<VehicleCatalog>
+			<Directory path="../../../resources/xosc/Catalogs/Vehicles" />
+		</VehicleCatalog>
+	</CatalogLocations>
+	<RoadNetwork>
+		<LogicFile filepath="../xodr/lane_width_and_offset.xodr" />
+	</RoadNetwork>
+	<Entities>
+		<ScenarioObject name="ego">
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
+		</ScenarioObject>
+	</Entities>
+	<Storyboard>
+		<Init>
+			<Actions>
+				<Private entityRef="ego">
+					<PrivateAction>
+						<TeleportAction>
+							<Position>
+								<LanePosition laneId="-1" roadId="4" s="0.01" offset="0.0"/>
+							</Position>
+						</TeleportAction>
+					</PrivateAction>
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0" />
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="2" />
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Private>
+			</Actions>
+		</Init>
+		<StopTrigger>
+			<ConditionGroup>
+				<Condition conditionEdge="rising" delay="0.0" name="Condition_1">
+					<ByValueCondition>
+						<SimulationTimeCondition rule="greaterOrEqual" value="4.0" />
+					</ByValueCondition>
+				</Condition>
+			</ConditionGroup>
+		</StopTrigger>
+	</Storyboard>
+</OpenSCENARIO>
