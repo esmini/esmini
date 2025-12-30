@@ -186,7 +186,9 @@
             </center>
             <right>
                <lane id="-1" type="driving" level="false">
-                  <link/>
+                  <link>
+                      <successor id="-2"/>
+                  </link>
                   <width sOffset="0" a="3.00" b="0.0" c="0.0" d="0.0"/>
                   <roadMark sOffset="0" type="solid" weight="standard" color="standard" width="0.12" laneChange="none" height="02"/>
                </lane>
@@ -203,16 +205,18 @@
                <lane id="-1" type="driving" level="false">
                   <link/>
                   <width sOffset="0" a="0.00" b="0.3" c="0.0" d="0.0"/>
-                  <width sOffset="10" a="3.00" b="0.0" c="0.0" d="0.0"/>
+                  <width sOffset="10" a="3.0" b="0.0" c="0.0" d="0.0"/>
                   <roadMark sOffset="10" type="broken" weight="standard" color="standard" width="0.12" laneChange="none" height="02"/>
                </lane>
                <lane id="-2" type="driving" level="false">
-                  <link/>
+                  <link>
+                      <predecessor id="-1"/>
+                  </link>
                   <width sOffset="0" a="3.00" b="0.0" c="0.0" d="0.0"/>
                   <roadMark sOffset="0" type="solid" weight="standard" color="standard" width="0.12" laneChange="none" height="02"/>
                </lane>
             </right>
-         </laneSection>
+         </laneSection>      
       </lanes>
    </road>
 </OpenDRIVE>

@@ -2239,7 +2239,7 @@ double LaneSection::GetCenterOffset(double s, int lane_id) const
     return outer_offset - width / 2;
 }
 
-double LaneSection::GetOuterOffsetHeading(double s, int lane_id) const
+double LaneSection::GetTotalLaneWidthPrim(double s, int lane_id, bool center) const
 {
     if (lane_id == 0)
     {
@@ -2247,50 +2247,32 @@ double LaneSection::GetOuterOffsetHeading(double s, int lane_id) const
         return 0.0;
     }
 
-    Lane* lane = GetLaneById(lane_id);
-    if (lane == nullptr)
+    double accumulated_lane_width_prim = 0.0;
+
+    for (int id = lane_id; id != 0; id -= SIGN(id))
     {
-        return 0.0;
+        Lane* lane = GetLaneById(id);
+        if (lane == nullptr)
+        {
+            LOG_WARN("GetOffsetHeading: No lane with id {} in lane section at s {:.2f}", id, s_);
+            return 0.0;
+        }
+
+        LaneWidth* lane_width = lane->GetWidthByS(s - s_);
+        if (lane_width == nullptr)  // No lane width registered
+        {
+            return 0.0;
+        }
+
+        // Calculate local s-parameter in width segment
+        double ds = s - (s_ + lane_width->GetSOffset());
+
+        accumulated_lane_width_prim += lane_width->poly3_.EvaluatePrim(ds) * (center ? 0.5 : 1.0);
+        center = false;  // center measurement only applied to given lane
     }
 
-    LaneWidth* lane_width = lane->GetWidthByS(s - s_);
-    if (lane_width == nullptr)  // No lane width registered
-    {
-        return 0.0;
-    }
-
-    // Calculate local s-parameter in width segment
-    double ds = s - (s_ + lane_width->GetSOffset());
-
-    // Calculate heading at local s
-    double heading = atan(lane_width->poly3_.EvaluatePrim(ds));
-
-    if (abs(lane_id) == 1)
-    {
-        // this is the last lane, next to reference lane of width = 0. Stop here.
-        return heading;
-    }
-    else
-    {
-        int step = lane_id < 0 ? +1 : -1;
-        return (heading + GetOuterOffsetHeading(s, lane_id + step));
-    }
-}
-
-double LaneSection::GetCenterOffsetHeading(double s, int lane_id) const
-{
-    int step = lane_id < 0 ? +1 : -1;
-
-    if (lane_id == 0)
-    {
-        // Reference lane (0) has no width
-        return 0.0;
-    }
-    double inner_offset_heading = GetOuterOffsetHeading(s, lane_id + step);
-    double outer_offset_heading = GetOuterOffsetHeading(s, lane_id);
-
-    // Center is simply mean/center value of inner and outer lane boundries
-    return atan((tan(inner_offset_heading) + tan(outer_offset_heading)) / 2.0);
+    // Calculate heading based on sum of lane width slopes and lane offset
+    return accumulated_lane_width_prim;
 }
 
 void LaneSection::AddLane(Lane* lane)
@@ -8161,7 +8143,7 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
                     if (keep[i][step])
                     {
                         tpoint_struct& p = tpoint[i][step];
-                        tunnel->boundary_[i].osi_points_.GetPoints().push_back({p.s, p.x, p.y, p.z, p.h, false});
+                        tunnel->boundary_[i].osi_points_.GetPoints().push_back({p.s, p.x, p.y, p.z, p.h, 0.0, 0.0, false});
                     }
                 }
             }
@@ -9138,6 +9120,18 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         EvaluateHPR();
     }
 
+    if (mode & PosMode::Z_SET)
+    {
+        if ((mode & PosMode::Z_MASK) == PosMode::Z_REL)
+        {
+            SetZRelative(z3);
+        }
+        else if ((mode & PosMode::Z_MASK) == PosMode::Z_ABS)
+        {
+            SetZ(z3);
+        }
+    }
+
     return retvalue;
 }
 
@@ -9156,6 +9150,9 @@ bool Position::EvaluateRoadCenterlineZHPR(int mode)
         h_road_   = GetRoadH();
         ret_value = road->GetZAndPitchByS(s_, &z_centerline_, &z_roadPrim_, &z_roadPrimPrim_, &p_road_, &elevation_idx_);
         ret_value &= road->UpdateRollByS(s_, &roadSuperElevationPrim_, &r_road_, &super_elevation_idx_);
+        // h_add_ = atan(road->GetLaneOffsetPrim(s_)) +  h_offset_;
+        // h_road_ += atan(road->GetLaneOffsetPrim(s_)) + h_offset_;
+        // h_road_ = GetAngleInInterval2PI(h_road_);
     }
     else
     {
@@ -9227,9 +9224,31 @@ void Position::LaneBoundary2Track()
         if (lane_section != nullptr)
         {
             t_        = road->GetLaneOffset(s_) + offset_ + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
-            h_offset_ = lane_section->GetOuterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+            h_offset_ = GetHOffset(road, lane_section);
         }
     }
+}
+
+double Position::GetTotalLaneWidthPrim(LaneSection* lane_section) const
+{
+    if (lane_section != nullptr)
+    {
+        return lane_section->GetTotalLaneWidthPrim(s_, lane_id_, true) * (lane_id_ < 0 ? -1 : 1);
+    }
+
+    return 0.0;
+}
+
+double Position::GetTotalLaneWidthPrim() const
+{
+    Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+
+    if (road != nullptr && road->GetNumberOfLaneSections() > 0)
+    {
+        return GetTotalLaneWidthPrim(road->GetLaneSectionByIdx(lane_section_idx_));
+    }
+
+    return 0.0;
 }
 
 void Position::Lane2Track()
@@ -9244,7 +9263,7 @@ void Position::Lane2Track()
         if (lane_section != nullptr)
         {
             t_        = offset_ + road->GetLaneOffset(s_) + lane_section->GetCenterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
-            h_offset_ = lane_section->GetCenterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+            h_offset_ = GetHOffset(road, lane_section);
         }
     }
 }
@@ -9261,7 +9280,7 @@ void Position::RoadMark2Track()
         if (lane_section != nullptr)
         {
             t_        = offset_ + road->GetLaneOffset(s_) + lane_section->GetOuterOffset(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
-            h_offset_ = lane_section->GetOuterOffsetHeading(s_, lane_id_) * (lane_id_ < 0 ? -1 : 1);
+            h_offset_ = GetHOffset(road, lane_section);
 
             Lane* lane = lane_section->GetLaneByIdx(lane_idx_);
             if (lane != nullptr)
@@ -10591,7 +10610,7 @@ void Position::EvaluateHPR(int mode)
         R0R12EulerAngles(GetHRoad(),
                          CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS) ? 0.0 : GetPRoad(),
                          CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_ABS) ? 0.0 : GetRRoad(),
-                         CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_ABS) ? GetAngleDifference(h_, GetHRoad()) : GetHRelative(),
+                         CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_ABS) ? GetAngleDifference(h_, GetHRoad()) : GetHRelative() + GetHOffset(),
                          CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS) ? p_ : GetPRelative(),
                          CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_ABS) ? r_ : GetRRelative(),
                          h_,
@@ -10604,7 +10623,7 @@ void Position::EvaluateHPR(int mode)
         {
             // at least one orientation component is absolute, calculate relative angles for these
             double h_rel_tmp, p_rel_tmp, r_rel_tmp;
-            CalcRelAnglesFromRoadAndAbsAngles(GetHRoad(), GetPRoad(), GetRRoad(), h_, p_, r_, h_rel_tmp, p_rel_tmp, r_rel_tmp);
+            CalcRelAnglesFromRoadAndAbsAngles(GetHRoad() + GetHOffset(), GetPRoad(), GetRRoad(), h_, p_, r_, h_rel_tmp, p_rel_tmp, r_rel_tmp);
 
             if (CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_ABS))
             {
@@ -10634,6 +10653,27 @@ double Position::GetCurvature() const
     {
         return 0;
     }
+}
+
+double Position::GetHOffset(Road* road, LaneSection* lane_section) const
+{
+    if (road != nullptr && lane_section != nullptr)
+    {
+        return atan(GetTotalLaneWidthPrim(lane_section) + road->GetLaneOffsetPrim(s_));
+    }
+
+    return 0.0;
+}
+
+double Position::GetHOffset() const
+{
+    Road* road = GetOpenDrive()->GetRoadByIdx(track_idx_);
+    if (road != nullptr)
+    {
+        return atan(GetTotalLaneWidthPrim() + road->GetLaneOffsetPrim(s_));
+    }
+
+    return 0.0;
 }
 
 int Position::GetDrivingDirectionRelativeRoad() const
