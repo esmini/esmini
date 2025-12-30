@@ -9150,9 +9150,6 @@ bool Position::EvaluateRoadCenterlineZHPR(int mode)
         h_road_   = GetRoadH();
         ret_value = road->GetZAndPitchByS(s_, &z_centerline_, &z_roadPrim_, &z_roadPrimPrim_, &p_road_, &elevation_idx_);
         ret_value &= road->UpdateRollByS(s_, &roadSuperElevationPrim_, &r_road_, &super_elevation_idx_);
-        // h_add_ = atan(road->GetLaneOffsetPrim(s_)) +  h_offset_;
-        // h_road_ += atan(road->GetLaneOffsetPrim(s_)) + h_offset_;
-        // h_road_ = GetAngleInInterval2PI(h_road_);
     }
     else
     {

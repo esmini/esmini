@@ -4758,7 +4758,6 @@ namespace roadmanager
         int    lane_id_;       // lane reference
         double offset_;        // lateral position relative lane given by lane_id
         double h_road_;        // heading of the road
-        double h_add_ = 0;     // additional heading given by h_offset and lane offset
         double h_offset_;      // local heading offset given by lane width
         double h_relative_;    // heading relative to the road (h_ = h_road_ + h_relative_)
         double z_relative_;    // z relative to the road
