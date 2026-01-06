@@ -316,6 +316,7 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
     osi3::SensorView currentOut;
     currentOut.Clear();
     currentOut.mutable_sensor_id()->set_value(0);
+    currentOut.mutable_version()->CopyFrom(se_osi_ground_truth->version());
     currentOut.mutable_host_vehicle_id()->set_value(se_osi_ground_truth->host_vehicle_id().value());
     double const time = currentCommunicationPoint + communicationStepSize;
     currentOut.mutable_timestamp()->set_seconds((long long int)floor(time));
