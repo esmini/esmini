@@ -1807,6 +1807,10 @@ namespace roadmanager
         {
             return id_;
         }
+        id_t GetGlobalId() const
+        {
+            return g_id_;
+        }
         double GetS() const
         {
             return s_;
@@ -1902,6 +1906,7 @@ namespace roadmanager
         void               SetAllValidLanes(Signal *sig, Road *r);
         static OSIType     GetOSITypeFromString(const std::string &type);
         static std::string GetCombinedTypeSubtypeValueStr(std::string type, std::string subtype, std::string value);
+        void               SetGlobalId();
         std::string        GetModel3DFullPath() const
         {
             return model3d_full_path_;
@@ -1955,6 +1960,7 @@ namespace roadmanager
         std::string                                 model3d_full_path_;
         bool                                        has_osc_action_ = false;
         std::vector<id_t>                           all_valid_global_lanes_;
+        id_t                                        g_id_;
     };
 
     class TrafficLight : public Signal

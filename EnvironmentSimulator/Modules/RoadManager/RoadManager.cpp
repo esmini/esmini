@@ -1224,6 +1224,10 @@ void LaneRoadMarkTypeLine::SetGlobalId()
 {
     g_id_ = GetNewGlobalId();
 }
+void Signal::SetGlobalId()
+{
+    g_id_ = GetNewGlobalId();
+}
 
 LaneWidth* Lane::GetWidthByIndex(idx_t index) const
 {
@@ -4806,16 +4810,7 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                                          pos.GetHRoad() + (orientation == Signal::Orientation::NEGATIVE ? M_PI : 0.0));
                     }
 
-                    if (sig != NULL)
-                    {
-                        if (sig->IsDynamic())
-                        {
-                            dynamic_signals_.push_back(sig);
-                        }
-
-                        r->AddSignal(sig);
-                    }
-                    else
+                    if (sig == NULL)
                     {
                         LOG_ERROR("Signal: Major error");
                     }
@@ -4829,7 +4824,15 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                         sig->validity_.push_back(validity);
                     }
 
+                    sig->SetGlobalId();
                     sig->SetAllValidLanes(sig, r);
+
+                    if (sig->IsDynamic())
+                    {
+                        dynamic_signals_.push_back(sig);
+                    }
+
+                    r->AddSignal(sig);
                 }
                 else
                 {

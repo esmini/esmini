@@ -2669,7 +2669,7 @@ int OSIReporter::UpdateStaticTrafficSignals()
                     // Traffic Sign
                     osi3::TrafficSign *trafficSign = obj_osi_internal.static_gt->add_traffic_sign();
                     // Set ID, Value, Text
-                    trafficSign->mutable_id()->set_value(static_cast<unsigned int>(signal->GetId()));
+                    trafficSign->mutable_id()->set_value(signal->GetGlobalId());
                     trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value(signal->GetValue());
                     trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_text(signal->GetText());
                     trafficSign->mutable_main_sign()->mutable_classification()->set_type(

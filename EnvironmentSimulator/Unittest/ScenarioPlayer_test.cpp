@@ -593,10 +593,11 @@ TEST(OSI, TestTrafficLights)
     ASSERT_EQ(osi_gt_ptr->traffic_light(0).source_reference_size(), 1);
     ASSERT_EQ(osi_gt_ptr->traffic_light(0).source_reference(0).identifier_size(), 1);
 
-    int start_id = 32;  // Magic number, taken from running test and see ID of first traffic-light
+    std::vector<uint64_t> traffic_light_ids = {32, 33, 34, 36, 37, 39, 40};
+    ASSERT_EQ(traffic_light_ids.size(), osi_gt_ptr->traffic_light_size());
     for (int i = 0; i < osi_gt_ptr->traffic_light_size(); i++)
     {
-        EXPECT_EQ(osi_gt_ptr->traffic_light(i).id().value(), static_cast<size_t>(start_id + i));
+        EXPECT_EQ(osi_gt_ptr->traffic_light(i).id().value(), traffic_light_ids[static_cast<size_t>(i)]);
     }
 
     // TrafficLight for Cars, 3 lamps
@@ -781,10 +782,11 @@ TEST(OSI, TestTrafficLightStates)
     // OSI TrafficLights
     ASSERT_EQ(osi_gt_ptr->traffic_light_size(), 3);
 
-    int start_id = 10;  // Magic number, taken from running test and see ID of first traffic-light
+    std::vector<uint64_t> traffic_light_ids = {12, 13, 14};
+    ASSERT_EQ(traffic_light_ids.size(), osi_gt_ptr->traffic_light_size());
     for (int i = 0; i < osi_gt_ptr->traffic_light_size(); i++)
     {
-        EXPECT_EQ(osi_gt_ptr->traffic_light(i).id().value(), static_cast<size_t>(i + start_id));
+        EXPECT_EQ(osi_gt_ptr->traffic_light(i).id().value(), traffic_light_ids[static_cast<size_t>(i)]);
     }
 
     // TrafficLights with arrows, 3 lamps
@@ -1121,7 +1123,7 @@ TEST(OSI, TestStationaryObjects)
     ASSERT_EQ(osi_gt_ptr->stationary_object().size(), 6);
 
     // verify correct location of OpenDRIVE stationary object with polygon
-    EXPECT_EQ(osi_gt_ptr->stationary_object(0).id().value(), 4);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(0).id().value(), 5);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().length(), 25.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().width(), 10.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().dimension().height(), 2.0, 1e-3);
@@ -1143,7 +1145,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon().at(3).y(), 2.9534, 1e-3);
 
     // verify correct location of OpenDRIVE second stationary object
-    EXPECT_EQ(osi_gt_ptr->stationary_object(1).id().value(), 5);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(1).id().value(), 6);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().dimension().length(), 4.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().dimension().width(), 4.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().dimension().height(), 10.0, 1e-3);
@@ -1155,7 +1157,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(1).base().orientation().roll(), 0.0, 1e-3);
 
     // verify correct location of OpenDRIVE sign pole object
-    EXPECT_EQ(osi_gt_ptr->stationary_object(2).id().value(), 6);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(2).id().value(), 7);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().dimension().length(), 0.06, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().dimension().width(), 0.06, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().dimension().height(), 2.35, 1e-3);
@@ -1167,7 +1169,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_NEAR(osi_gt_ptr->stationary_object(2).base().orientation().roll(), 0.0, 1e-3);
 
     // verify correct parsing of OpenDRIVE parking space object
-    EXPECT_EQ(osi_gt_ptr->stationary_object(3).id().value(), 7);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(3).id().value(), 8);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().dimension().length(), 5.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().dimension().width(), 3.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(3).base().dimension().height(), 2.0, 1e-3);
@@ -1182,7 +1184,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_STREQ(osi_gt_ptr->stationary_object(3).source_reference().Get(0).identifier().Get(0).c_str(), "5_kalle");
 
     // verify correct location of first OSC box object
-    EXPECT_EQ(osi_gt_ptr->stationary_object(4).id().value(), 8);
+    EXPECT_EQ(osi_gt_ptr->stationary_object(4).id().value(), 9);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(4).base().dimension().length(), 2.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(4).base().dimension().width(), 1.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(4).base().dimension().height(), 2.0, 1e-3);
@@ -1201,7 +1203,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_EQ(osi_gt_ptr->stationary_object(4).source_reference(0).identifier(2), "box_123XY");
 
     // verify correct location of second OSC box object
-    ASSERT_EQ(osi_gt_ptr->stationary_object(5).id().value(), 9);
+    ASSERT_EQ(osi_gt_ptr->stationary_object(5).id().value(), 10);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().dimension().length(), 1.2, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().dimension().width(), 0.8, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->stationary_object(5).base().dimension().height(), 0.5, 1e-3);
@@ -1220,7 +1222,7 @@ TEST(OSI, TestStationaryObjects)
     EXPECT_EQ(osi_gt_ptr->stationary_object(5).source_reference(0).identifier(2), "box_123XZ");
 
     // verify correct location of OpenDRIVE traffic sign
-    ASSERT_EQ(osi_gt_ptr->traffic_sign(0).id().value(), 1);
+    ASSERT_EQ(osi_gt_ptr->traffic_sign(0).id().value(), 4);
     EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().dimension().length(), 0.0, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().dimension().width(), 0.6, 1e-3);
     EXPECT_NEAR(osi_gt_ptr->traffic_sign(0).main_sign().base().dimension().height(), 0.6, 1e-3);

@@ -2064,13 +2064,13 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     osi3::StationaryObject_Classification_Type miscobj_5_type = osi_gt.mutable_stationary_object(5)->mutable_classification()->type();
     osi3::StationaryObject_Classification_Type miscobj_6_type = osi_gt.mutable_stationary_object(6)->mutable_classification()->type();
 
-    EXPECT_EQ(miscobj_0_id, 13);
-    EXPECT_EQ(miscobj_1_id, 14);
-    EXPECT_EQ(miscobj_2_id, 15);
-    EXPECT_EQ(miscobj_3_id, 21);
-    EXPECT_EQ(miscobj_4_id, 22);
-    EXPECT_EQ(miscobj_5_id, 23);
-    EXPECT_EQ(miscobj_6_id, 24);
+    EXPECT_EQ(miscobj_0_id, 16);
+    EXPECT_EQ(miscobj_1_id, 17);
+    EXPECT_EQ(miscobj_2_id, 18);
+    EXPECT_EQ(miscobj_3_id, 24);
+    EXPECT_EQ(miscobj_4_id, 25);
+    EXPECT_EQ(miscobj_5_id, 26);
+    EXPECT_EQ(miscobj_6_id, 27);
 
     EXPECT_EQ(miscobj_0_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
     EXPECT_EQ(miscobj_1_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
@@ -2088,15 +2088,15 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     SE_AddObject("MiscObject_cone_100_A", 3, 1, 0, -1, "cone-100");
     SE_StepDT(0.1f);
     ASSERT_EQ(osi_gt_raw->stationary_object().size(), 1);
-    EXPECT_EQ(osi_gt_raw->stationary_object(0).id().value(), 25);
+    EXPECT_EQ(osi_gt_raw->stationary_object(0).id().value(), 28);
 
     // change report mode to include all stationary objects, also add another misc object
     SE_SetOSIStaticReportMode(SE_OSIStaticReportMode::API);
     SE_AddObject("MiscObject_cone_100_B", 3, 1, 0, -1, "cone-100");
     SE_StepDT(0.1f);
     ASSERT_EQ(osi_gt_raw->stationary_object().size(), 9);
-    EXPECT_EQ(osi_gt_raw->stationary_object(7).id().value(), 25);
-    EXPECT_EQ(osi_gt_raw->stationary_object(8).id().value(), 26);
+    EXPECT_EQ(osi_gt_raw->stationary_object(7).id().value(), 28);  // this is MiscObject_cone_100_A (so id is same as above)
+    EXPECT_EQ(osi_gt_raw->stationary_object(8).id().value(), 29);
 
     SE_Close();
 }
@@ -3019,8 +3019,17 @@ TEST(OSILaneParing, Signs)
     const char*       gt      = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
     // order: id, type, country, subtypevalue, text, pitch, roll, height, s, t, zOffset
-    std::vector<
-        std::tuple<unsigned int, osi3::TrafficSign_MainSign_Classification_Type, double, std::string, double, double, double, double, double, double>>
+    std::vector<std::tuple<unsigned int,
+                           osi3::TrafficSign_MainSign_Classification_Type,
+                           double,
+                           std::string,
+                           double,
+                           double,
+                           double,
+                           double,
+                           double,
+                           double,
+                           unsigned int>>
         signs = {std::make_tuple(0,
                                  osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DANGER_SPOT,
                                  0,
@@ -3030,7 +3039,8 @@ TEST(OSILaneParing, Signs)
                                  0.61,
                                  0.0,
                                  3.57,
-                                 1.7),
+                                 1.7,
+                                 10),
                  std::make_tuple(1,
                                  osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DANGER_SPOT,
                                  0,
@@ -3040,7 +3050,8 @@ TEST(OSILaneParing, Signs)
                                  0.61,
                                  0.0,
                                  3.57,
-                                 1.7),
+                                 1.7,
+                                 11),
                  std::make_tuple(2,
                                  osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_ZEBRA_CROSSING,
                                  11,
@@ -3050,7 +3061,8 @@ TEST(OSILaneParing, Signs)
                                  0.61,
                                  100.0,
                                  3.57,
-                                 1.7),
+                                 1.7,
+                                 12),
                  std::make_tuple(3,
                                  osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN,
                                  0,
@@ -3060,7 +3072,8 @@ TEST(OSILaneParing, Signs)
                                  0.61,
                                  100.0,
                                  3.57,
-                                 1.7),
+                                 1.7,
+                                 13),
                  std::make_tuple(4,
                                  osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_HILL_UPWARDS,
                                  0,
@@ -3070,7 +3083,8 @@ TEST(OSILaneParing, Signs)
                                  0.61,
                                  100.0,
                                  3.57,
-                                 1.7),
+                                 1.7,
+                                 14),
                  std::make_tuple(5,
                                  osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DOUBLE_TURN_LEFT,
                                  10,
@@ -3080,7 +3094,8 @@ TEST(OSILaneParing, Signs)
                                  0.61,
                                  100.0,
                                  3.57,
-                                 1.7),
+                                 1.7,
+                                 15),
                  std::make_tuple(6,
                                  osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_DOUBLE_TURN_RIGHT,
                                  20,
@@ -3090,7 +3105,8 @@ TEST(OSILaneParing, Signs)
                                  0.61,
                                  200.0,
                                  3.57,
-                                 1.7),
+                                 1.7,
+                                 16),
                  std::make_tuple(7,
                                  osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN,
                                  0,
@@ -3100,7 +3116,8 @@ TEST(OSILaneParing, Signs)
                                  0.61,
                                  200.0,
                                  3.57,
-                                 1.7),
+                                 1.7,
+                                 17),
                  std::make_tuple(8,
                                  osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN,
                                  0,
@@ -3110,7 +3127,8 @@ TEST(OSILaneParing, Signs)
                                  0.61,
                                  200.0,
                                  3.57,
-                                 1.7),
+                                 1.7,
+                                 18),
                  std::make_tuple(9,
                                  osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN,
                                  0,
@@ -3120,7 +3138,8 @@ TEST(OSILaneParing, Signs)
                                  0.61,
                                  200.0,
                                  3.57,
-                                 1.7),
+                                 1.7,
+                                 19),
                  std::make_tuple(10,
                                  osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN,
                                  0,
@@ -3130,7 +3149,8 @@ TEST(OSILaneParing, Signs)
                                  0.61,
                                  500.0,
                                  3.57,
-                                 1.7),
+                                 1.7,
+                                 20),
                  std::make_tuple(11,
                                  osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN,
                                  0,
@@ -3140,32 +3160,40 @@ TEST(OSILaneParing, Signs)
                                  0.61,
                                  500.0,
                                  3.57,
-                                 1.7)};
+                                 1.7,
+                                 21)};
 
-    unsigned int                                   sign_id = 0;
-    osi3::TrafficSign_MainSign_Classification_Type type    = osi3::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN;
-    double                                         value   = 0;
-    std::string                                    text    = "";
-    double                                         pitch   = 0;
-    double                                         roll    = 0;
-    double                                         height  = 0;
+    unsigned int                                   global_sign_id = 0;
+    osi3::TrafficSign_MainSign_Classification_Type type           = osi3::TrafficSign_MainSign_Classification_Type_TYPE_UNKNOWN;
+    double                                         value          = 0;
+    std::string                                    text           = "";
+    double                                         pitch          = 0;
+    double                                         roll           = 0;
+    double                                         height         = 0;
 
     for (auto traffic_sign : osi_gt.traffic_sign())
     {
         for (auto sign : signs)
         {
-            if (traffic_sign.id().value() == std::get<0>(sign))
+            ASSERT_NE(traffic_sign.source_reference_size(), 0);
+            ASSERT_NE(traffic_sign.source_reference(0).identifier_size(), 0);
+
+            std::string src_ref_id = traffic_sign.source_reference(0).identifier(0);
+            auto        pos        = src_ref_id.find(":");
+            std::string id         = (pos == std::string::npos) ? "" : src_ref_id.substr(pos + 1);
+
+            if (std::stoul(id) == std::get<0>(sign))
             {
-                sign_id = std::get<0>(sign);
-                type    = std::get<1>(sign);
-                value   = std::get<2>(sign);
-                text    = std::get<3>(sign);
-                pitch   = std::get<4>(sign);
-                roll    = std::get<5>(sign);
-                height  = std::get<6>(sign);
+                type           = std::get<1>(sign);
+                value          = std::get<2>(sign);
+                text           = std::get<3>(sign);
+                pitch          = std::get<4>(sign);
+                roll           = std::get<5>(sign);
+                height         = std::get<6>(sign);
+                global_sign_id = std::get<10>(sign);
             }
         }
-        ASSERT_EQ(traffic_sign.id().value(), sign_id);
+        ASSERT_EQ(traffic_sign.id().value(), global_sign_id);
         ASSERT_EQ(static_cast<int>(traffic_sign.main_sign().classification().type()), static_cast<int>(type));
         ASSERT_DOUBLE_EQ(traffic_sign.main_sign().classification().value().value(), value);
         ASSERT_STREQ(traffic_sign.main_sign().classification().value().text().c_str(), text.c_str());
