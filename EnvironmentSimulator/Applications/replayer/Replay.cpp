@@ -89,11 +89,11 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     }
 
     // Make the base scenario for other cars to merge into
-    size_t i                                              = 0;
-    dat_writer_                                           = std::make_unique<Dat::DatWriter>();
-    dat_reader_                                           = std::make_unique<Dat::DatReader>(scenarios_[i]);
-    dat_header_                                           = ParseDatHeader(scenarios_[i]);
-    std::vector<std::vector<double>> scenarios_timestamps = {{}};
+    size_t i    = 0;
+    dat_writer_ = std::make_unique<Dat::DatWriter>();
+    dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[i]);
+    dat_header_ = ParseDatHeader(scenarios_[i]);
+    std::vector<std::vector<double>> scenarios_timestamps;
     std::vector<Timeline<double>>    dts;
 
     bool has_ghost_restarts = ExtractPacketsAsSlices(false);
@@ -123,7 +123,6 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
 
         dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[i]);
         ParseDatHeader(scenarios_[i]);
-        scenarios_timestamps.emplace_back();  // Initialize a new empty vector
         has_ghost_restarts = ExtractPacketsAsSlices(false, i);
 
         if (has_ghost_restarts)
