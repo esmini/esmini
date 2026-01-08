@@ -83,6 +83,11 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         return;
     }
 
+    for (size_t s = 0; s < scenarios_.size(); s++)
+    {
+        LOG_INFO("Scenarios corresponding to IDs ({}:{}): {}", s * 100, (s + 1) * 100 - 1, scenarios_[s]);
+    }
+
     // Make the base scenario for other cars to merge into
     size_t i                                              = 0;
     dat_writer_                                           = std::make_unique<Dat::DatWriter>();
@@ -105,6 +110,7 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
     }
 
     FillInTimestamps();
+
     scenarios_timestamps.emplace_back(timestamps_);
     dts.emplace_back(dts_);
 
