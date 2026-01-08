@@ -212,6 +212,8 @@ namespace Dat
         template <typename T>
         void RewritePacket(PacketGeneric& pkt, const T& value)
         {
+            pkt.header.data_size = sizeof(T);
+            pkt.data.resize(sizeof(T));
             std::memcpy(pkt.data.data(), &value, sizeof(T));
         }
 

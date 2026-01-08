@@ -23,10 +23,11 @@ using namespace scenarioengine;
 Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 {
     // Parse the packets from the file
+    dat_writer_ = std::make_unique<Dat::DatWriter>();
     dat_reader_ = std::make_unique<Dat::DatReader>(filename);
     dat_header_ = ParseDatHeader(filename);
 
-    bool has_ghost_restarts = ExtractPacketsAsSlices(timestamps_);
+    bool has_ghost_restarts = ExtractPacketsAsSlices();
 
     if (has_ghost_restarts)
     {
@@ -35,15 +36,17 @@ Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
 
     if (timestamps_.empty())
     {
-        LOG_ERROR_AND_QUIT("No timestamps available, quitting");
+        LOG_ERROR("No timestamps available, quitting");
+        return;
     }
 
-    if (dts_[0].values.empty())
+    if (dts_.values.empty())
     {
-        LOG_ERROR_AND_QUIT("No dt found in file {}", filename);
+        LOG_ERROR("No dt found in file {}", filename);
+        return;
     }
 
-    FillInTimestamps(timestamps_, dts_[0]);  // Create filled timestamps with help from dt
+    FillInTimestamps();  // Create filled timestamps with help from dt
 
     FlattenSlices();
 
@@ -73,61 +76,72 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
       create_datfile_(create_datfile)
 {
     GetReplaysFromDirectory(directory, scenario);
-    // std::vector<std::vector<PacketRef>> scenarioData;
 
     if (scenarios_.size() < 2)
     {
-        LOG_ERROR_AND_QUIT("Too few scenarios loaded, use single replay feature instead\n");
+        LOG_ERROR("Too few scenarios loaded, use single replay feature instead\n");
+        return;
     }
 
-    size_t i = 0;
-
     // Make the base scenario for other cars to merge into
+    size_t i                                              = 0;
+    dat_writer_                                           = std::make_unique<Dat::DatWriter>();
     dat_reader_                                           = std::make_unique<Dat::DatReader>(scenarios_[i]);
     dat_header_                                           = ParseDatHeader(scenarios_[i]);
     std::vector<std::vector<double>> scenarios_timestamps = {{}};
+    std::vector<Timeline<double>>    dts;
 
-    bool has_ghost_restarts = ExtractPacketsAsSlices(scenarios_timestamps[i]);
+    bool has_ghost_restarts = ExtractPacketsAsSlices(false);
 
     if (has_ghost_restarts)
     {
         ExtractGhostRestarts();
     }
 
-    if (scenarios_timestamps[i].empty())
+    if (timestamps_.empty())
     {
-        LOG_ERROR_AND_QUIT("No timestamps available in scenario: {}", scenarios_[i]);
+        LOG_ERROR("No timestamps available in scenario: {}", scenarios_[i]);
+        return;
     }
 
-    if (dts_[i].values.empty())
-    {
-        LOG_ERROR_AND_QUIT("No dt found in file {}", scenarios_[i]);
-    }
+    FillInTimestamps();
+    scenarios_timestamps.emplace_back(timestamps_);
+    dts.emplace_back(dts_);
 
-    FillInTimestamps(scenarios_timestamps[i], dts_[i]);  // Create timestamps from dt
-
+    // We loop over rest of scenarios and save their timestamps and delta-times as well as create their timestamp
+    // vectors to merge later
     for (i = 1; i < scenarios_.size(); i++)
     {
+        timestamps_ = {};
+        dts_        = {};
+
         dat_reader_ = std::make_unique<Dat::DatReader>(scenarios_[i]);
         ParseDatHeader(scenarios_[i]);
-        scenarios_timestamps.emplace_back();
-        has_ghost_restarts = ExtractPacketsAsSlices(scenarios_timestamps[i], i);
+        scenarios_timestamps.emplace_back();  // Initialize a new empty vector
+        has_ghost_restarts = ExtractPacketsAsSlices(false, i);
 
         if (has_ghost_restarts)
         {
             ExtractGhostRestarts();
         }
 
-        FillInTimestamps(scenarios_timestamps[i], dts_[i]);
+        FillInTimestamps();
+
+        scenarios_timestamps.emplace_back(timestamps_);
+        dts.emplace_back(dts_);
     }
 
+    MergeAndCleanTimestamps(scenarios_timestamps);  // creates a new timestamp_ vector
+
+    // Calculate new DTs after we have new timestamp array with possibly new delta-times
+    CalculateNewDt();
+
+    // Deal with the slices, first sorting, then removing unnecessary timestamp packets then flatten the slices
     std::sort(packet_slices_.begin(),
               packet_slices_.end(),
               [](const PacketSlice& slice_a, const PacketSlice& slice_b) { return slice_a.timestamp < slice_b.timestamp; });
 
-    MergeAndCleanTimestamps(scenarios_timestamps);
-
-    RemoveDuplicateTimestampsInSlices();
+    RemoveDuplicateTimestampsInSlices(dts_);
 
     FlattenSlices();
 
@@ -139,19 +153,40 @@ Replay::Replay(const std::string directory, const std::string scenario, std::str
         return;
     }
 
+    if (!eos_received_)
+    {
+        stopTime_ = timestamps_.back();
+    }
+
     startTime_ = timestamps_[0];
     stopIndex_ = static_cast<unsigned int>(timestamps_.size() - 1);
     stopTime_  = timestamps_[stopIndex_];
 
     time_ = startTime_;
 
-    // if (!create_datfile_.empty())
-    // {
-    //     LOG_INFO("Creating merged dat file: {}", create_datfile_);
-    //     CreateMergedDatfile(create_datfile_);
-    // }
+    if (!create_datfile_.empty())
+    {
+        LOG_INFO("Creating merged dat file: {}", create_datfile_);
+        CreateMergedDatfile(create_datfile_);
+    }
 }
-void Replay::MergeAndCleanTimestamps(std::vector<std::vector<double>>& scenarios_timestamps)
+
+void Replay::CalculateNewDt()
+{
+    dts_           = {};
+    double temp_dt = LARGE_NUMBER;
+    for (size_t j = 0; j < timestamps_.size() - 1; j++)
+    {
+        double dt = timestamps_[j + 1] - timestamps_[j];
+        if (!NEAR_NUMBERS(dt, temp_dt))
+        {
+            dts_.values.emplace_back(timestamps_[j + 1], dt);
+            temp_dt = dt;
+        }
+    }
+}
+
+void Replay::MergeAndCleanTimestamps(const std::vector<std::vector<double>>& scenarios_timestamps)
 {
     // Flatten
     size_t total_size = std::accumulate(scenarios_timestamps.begin(),
@@ -173,8 +208,11 @@ void Replay::MergeAndCleanTimestamps(std::vector<std::vector<double>>& scenarios
     timestamps_.erase(std::unique(timestamps_.begin(), timestamps_.end(), [](double a, double b) { return NEAR_NUMBERS(a, b); }), timestamps_.end());
 }
 
-void Replay::RemoveDuplicateTimestampsInSlices()
+void Replay::RemoveDuplicateTimestampsInSlices(const Timeline<double>& dts)
 {
+    auto   dts_it         = dts.values.begin();
+    bool   dt_written     = false;
+    double temp_timestamp = LARGE_NUMBER;
     for (auto it = packet_slices_.begin(); it + 1 != packet_slices_.end();)
     {
         // First packet is either empty or just timestamp, i.e. useless packet.
@@ -200,18 +238,39 @@ void Replay::RemoveDuplicateTimestampsInSlices()
             }
         }
 
+        if (!NEAR_NUMBERS(temp_timestamp, it->timestamp))
+        {
+            dt_written = false;
+        }
+
+        if (dts_it != dts.values.end())
+        {
+            auto [t, dt] = *dts_it;
+            if (NEAR_NUMBERS(t, it->timestamp) && !dt_written)
+            {
+                Dat::PacketGeneric pkt;
+                Dat::PacketHeader  header;
+                header.id  = static_cast<size_t>(Dat::PacketId::DT);
+                pkt.header = header;
+                dat_writer_->RewritePacket(pkt, dt);
+                it->packets.push_back(pkt);
+
+                dts_it++;
+                dt_written     = true;
+                temp_timestamp = it->timestamp;
+            }
+        }
+
         it++;
     }
 }
 
-bool Replay::ExtractPacketsAsSlices(std::vector<double>& timestamps, size_t scenario_idx)
+bool Replay::ExtractPacketsAsSlices(bool dt_in_slice, size_t scenario_idx)
 {
     // Build the packets containing header and data and store in a vector
-    Dat::DatWriter   dat_writer;
-    PacketSlice*     current_slice  = nullptr;
-    bool             has_restart    = false;
-    double           prev_timestamp = 0.0;
-    Timeline<double> dts            = {};
+    PacketSlice* current_slice  = nullptr;
+    bool         has_restart    = false;
+    double       prev_timestamp = 0.0;
 
     Dat::PacketHeader header;
     while (dat_reader_->ReadFile(header))
@@ -227,24 +286,41 @@ bool Replay::ExtractPacketsAsSlices(std::vector<double>& timestamps, size_t scen
             dat_reader_->ReadPacket(packet, timestamp);
             current_slice->timestamp = timestamp;
 
-            if (timestamps.empty() || timestamp > timestamps.back())
+            if (timestamps_.empty() || timestamp > timestamps_.back())
             {
-                timestamps.emplace_back(timestamp);
+                timestamps_.emplace_back(timestamp);
             }
         }
         else if (packet.header.id == static_cast<id_t>(Dat::PacketId::DT))
         {
             double dt;
             dat_reader_->ReadPacket(packet, dt);
-            dts.values.emplace_back(current_slice->timestamp, dt);
+            if (NEAR_NUMBERS(dt, 0.0))
+            {
+                continue;
+            }
+
+            dts_.values.emplace_back(current_slice->timestamp, dt);
+
+            // We don't want to save the dt packet in the current slice
+            if (!dt_in_slice)
+            {
+                continue;
+            }
         }
         else if (packet.header.id == static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO))
         {
-            dat_reader_->ReadPacket(packet, stopTime_);
+            double stopTime;
+            dat_reader_->ReadPacket(packet, stopTime);
 
-            if (stopTime_ > timestamps.back() + SMALL_NUMBER)
+            if (stopTime > stopTime_)
             {
-                timestamps.emplace_back(stopTime_);
+                stopTime_ = stopTime;
+            }
+
+            if (stopTime_ > timestamps_.back() + SMALL_NUMBER)
+            {
+                timestamps_.emplace_back(stopTime_);
             }
             eos_received_ = true;
         }
@@ -256,7 +332,7 @@ bool Replay::ExtractPacketsAsSlices(std::vector<double>& timestamps, size_t scen
 
             obj_id += static_cast<int>(scenario_idx) * 100;
 
-            dat_writer.RewritePacket(packet, obj_id);
+            dat_writer_->RewritePacket(packet, obj_id);
         }
 
         // Skip some packages here if its not the first scenario we are parsing (doesn't make sense to merge)
@@ -273,8 +349,6 @@ bool Replay::ExtractPacketsAsSlices(std::vector<double>& timestamps, size_t scen
 
         prev_timestamp = timestamp;
     }
-
-    dts_.emplace_back(dts);
 
     return has_restart;
 }
@@ -711,40 +785,40 @@ Dat::DatHeader Replay::ParseDatHeader(const std::string& filename)
     return dat_reader_->GetDatHeader();
 }
 
-void Replay::FillInTimestamps(std::vector<double>& timestamps, const Timeline<double>& dt)
+void Replay::FillInTimestamps()
 {
-    double              curr_time = timestamps.front();
+    double              curr_time = timestamps_.front();
     std::vector<double> filled    = {curr_time};
 
     // Fixed timestep entire scenario
-    if (dt.values.size() == 1)
+    if (dts_.values.size() == 1)
     {
-        double current_dt = dt.values.front().second;
-        FillEmptyTimestamps(curr_time, timestamps.back(), current_dt, filled);
+        double current_dt = dts_.values.front().second;
+        FillEmptyTimestamps(curr_time, timestamps_.back(), current_dt, filled);
     }
     // Mixed timesteps in the scenario
     else
     {
         size_t i = 0;
-        for (size_t j = 0; j < dt.values.size() - 1;)
+        for (size_t j = 0; j < dts_.values.size() - 1;)
         {
-            double next_timestamp = timestamps[i + 1];
-            double next_dt        = dt.values[j + 1].second;
+            double next_timestamp = timestamps_[i + 1];
+            double next_dt        = dts_.values[j + 1].second;
 
             // We have reached the time where the next dt should be used
             // Increment j so we get next dt in next iteration
-            if (NEAR_NUMBERS(curr_time, dt.values[j + 1].first - next_dt))
+            if (NEAR_NUMBERS(curr_time, dts_.values[j + 1].first - next_dt))
             {
                 j++;
             }
             // The next timestamp of a dt change is before our current time
             // We have a ghost reset
-            else if (curr_time - SMALL_NUMBER > dt.values[j + 1].first)
+            else if (curr_time - SMALL_NUMBER > dts_.values[j + 1].first)
             {
                 // stitch together the timestamps
-                double start_time = dt.values[j + 1].first;
+                double start_time = dts_.values[j + 1].first;
                 double end_time   = curr_time;
-                double restart_dt = dt.values[j + 1].second;
+                double restart_dt = dts_.values[j + 1].second;
 
                 auto   it        = std::upper_bound(filled.begin(), filled.end(), start_time);
                 size_t start_idx = static_cast<size_t>(std::distance(filled.begin(), (--it)));
@@ -766,7 +840,7 @@ void Replay::FillInTimestamps(std::vector<double>& timestamps, const Timeline<do
                 continue;
             }
 
-            double current_dt = dt.values[j].second;
+            double current_dt = dts_.values[j].second;
             // The gap to the next timestamp is more than 1 sample away, we should fill it
             if (curr_time + next_dt < next_timestamp - SMALL_NUMBER && curr_time + current_dt < next_timestamp - SMALL_NUMBER)
             {
@@ -775,9 +849,9 @@ void Replay::FillInTimestamps(std::vector<double>& timestamps, const Timeline<do
                 FillEmptyTimestamps(curr_time, end_time, current_dt, filled);
             }
             // We have reached the last dt_ value, but the current time is not at the end, so we need to fill with current dt until the end
-            else if (j == dt.values.size() - 1 && curr_time + current_dt < timestamps.back() - SMALL_NUMBER)
+            else if (j == dts_.values.size() - 1 && curr_time + current_dt < timestamps_.back() - SMALL_NUMBER)
             {
-                FillEmptyTimestamps(curr_time, timestamps.back(), current_dt, filled);
+                FillEmptyTimestamps(curr_time, timestamps_.back(), current_dt, filled);
             }
             // We are one sample away, just add it
             else
@@ -789,7 +863,7 @@ void Replay::FillInTimestamps(std::vector<double>& timestamps, const Timeline<do
         }
     }
 
-    timestamps.swap(filled);
+    timestamps_.swap(filled);
 }
 
 std::string GetElementType(const std::string& s)
@@ -1326,73 +1400,17 @@ void Replay::UpdateGhostsTimelineAfterRestart(size_t idx)
 
 void Replay::CreateMergedDatfile(const std::string filename) const
 {
-    Dat::DatWriter dat_writer;
-    dat_writer.Init(filename, dat_header_.odr_filename.string, dat_header_.model_filename.string, dat_header_.git_rev.string);
+    dat_writer_->Init(filename, dat_header_.odr_filename.string, dat_header_.model_filename.string, dat_header_.git_rev.string);
 
-    if (!dat_writer.IsWriteFileOpen())
+    if (!dat_writer_->IsWriteFileOpen())
     {
         LOG_ERROR("Failed to open dat file for writing: {}", filename);
         return;
     }
 
-    // We re-create the object states vector which then is written to the DAT file
-    double                                                    prev_timestamp = timestamps_[0];
-    std::vector<std::unique_ptr<scenarioengine::ObjectState>> object_states;
-    for (size_t i = 0; i < timestamps_.size() - 1; i++)
+    for (auto packet : generic_packets_[0])
     {
-        for (const auto& [id, _] : objects_timeline_)
-        {
-            ReplayEntry entry = GetReplayEntryAtTimeIncremental(id, timestamps_[i]);
-            auto        state = &entry.state;
-
-            if (!state->info.active)  // Ignore entities which are inactive in the current time
-            {
-                continue;
-            }
-
-            auto obj = std::make_unique<scenarioengine::ObjectState>(state->info.id,
-                                                                     state->info.name,
-                                                                     state->info.obj_type,
-                                                                     state->info.obj_category,
-                                                                     0,  // No role
-                                                                     state->info.model_id,
-                                                                     state->info.ctrl_type,
-                                                                     state->info.boundingbox,
-                                                                     state->info.scaleMode,
-                                                                     state->info.visibilityMask,
-                                                                     static_cast<double>(state->info.timeStamp),
-                                                                     static_cast<double>(state->info.speed),
-                                                                     static_cast<double>(state->info.wheel_angle),
-                                                                     static_cast<double>(state->info.wheel_rot),
-                                                                     0.0,  // No rear axle z pos
-                                                                     static_cast<double>(state->pos.x),
-                                                                     static_cast<double>(state->pos.y),
-                                                                     static_cast<double>(state->pos.z),
-                                                                     static_cast<double>(state->pos.h),
-                                                                     static_cast<double>(state->pos.p),
-                                                                     static_cast<double>(state->pos.r));
-
-            obj->state_.info.wheel_data.emplace_back();  // Initialize wheel_data vector
-            obj->state_.info.wheel_data[0].h = static_cast<double>(state->info.wheel_angle);
-            obj->state_.info.wheel_data[0].p = static_cast<double>(state->info.wheel_rot);
-            obj->state_.pos.SetTrackId(state->pos.roadId);
-            obj->state_.pos.SetLaneId(state->pos.laneId);
-            obj->state_.pos.SetOffset(static_cast<double>(state->pos.offset));
-            obj->state_.pos.SetT(static_cast<double>(state->pos.t));
-            obj->state_.pos.SetS(static_cast<double>(state->pos.s));
-
-            object_states.emplace_back(std::move(obj));
-        }
-
-        // Same flow as in ScenarioGateway.cpp
-        auto dt = timestamps_[i] - prev_timestamp;
-        dat_writer.SetSimulationTime(timestamps_[i], dt);
-        dat_writer.WriteDtToDat();  // Writes the fixed timestep
-        dat_writer.WriteObjectStatesToDat(object_states);
-        dat_writer.SetTimestampWritten(false);
-
-        object_states.clear();  // Clear the states for the next timestamp
-        prev_timestamp = timestamps_[i];
+        dat_writer_->WritePacket(packet);
     }
 }
 

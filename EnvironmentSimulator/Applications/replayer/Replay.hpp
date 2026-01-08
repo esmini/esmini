@@ -378,15 +378,16 @@ namespace scenarioengine
         void           UpdateGhostsTimelineAfterRestart(size_t idx);
         int            ParsePackets();
         std::string    BuildElementStateChange(const std::string& element_state);
-        void           FillInTimestamps(std::vector<double>& timestamps, const Timeline<double>& dt);
+        void           FillInTimestamps();
         void           FillEmptyTimestamps(const double start, const double end, const double dt, std::vector<double>& v);
+        void           CalculateNewDt();
         void           CreateMergedDatfile(const std::string filename) const;
         Dat::DatHeader ParseDatHeader(const std::string& filename);
-        bool           ExtractPacketsAsSlices(std::vector<double>& timestamps, size_t scenario_idx = 0);
+        bool           ExtractPacketsAsSlices(bool dt_in_slice = true, size_t scenario_idx = 0);
         void           ExtractGhostRestarts();
         void           FlattenSlices();
-        void           RemoveDuplicateTimestampsInSlices();
-        void           MergeAndCleanTimestamps(std::vector<std::vector<double>>& scenarios_timestamps);
+        void           RemoveDuplicateTimestampsInSlices(const Timeline<double>& dts);
+        void           MergeAndCleanTimestamps(const std::vector<std::vector<double>>& scenarios_timestamps);
 
         /**
                 Go to specific time
@@ -446,6 +447,7 @@ namespace scenarioengine
 
         /* PacketHandler stuff */
         std::unique_ptr<Dat::DatReader>              dat_reader_;
+        std::unique_ptr<Dat::DatWriter>              dat_writer_;
         double                                       timestamp_ = 0.0;
         int                                          current_object_id_;
         int                                          ghost_controller_id_;
@@ -454,7 +456,7 @@ namespace scenarioengine
         std::vector<PacketSlice>                     packet_slices_   = {};
         std::vector<std::vector<PacketSlice>>        ghost_restarts_;
         std::vector<std::pair<double, double>>       restart_timestamps_;  // start, stop of each ghost reset
-        std::vector<Timeline<double>>                dts_;
+        Timeline<double>                             dts_;
     };
 
 }  // namespace scenarioengine
