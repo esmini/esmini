@@ -1,5 +1,13 @@
 ## esmini release notes
 
+### 2026-01-08 Version 2.57.2
+
+Improvements and fixes:
+- Ensure global ids also for OpenDRIVE signals ([issue #747](https://github.com/esmini/esmini/issues/747))
+- Populate OSI version also to sensor view ([PR #762](https://github.com/esmini/esmini/issues/762))
+- Always clear any previous OpenDRIVE data between sessions ([issue #757](https://github.com/esmini/esmini/issues/757))
+- Avoid side effects of exit call, use exception instead ([issue #755](https://github.com/esmini/esmini/issues/755))
+
 ### 2025-12-18 Version 2.57.1
 
 Improvements and fixes:
