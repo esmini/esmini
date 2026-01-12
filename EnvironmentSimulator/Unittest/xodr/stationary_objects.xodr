@@ -6,7 +6,7 @@
             <successor elementType="road" elementId="1" contactPoint="start"/>
         </link>
         <planView>
-            <geometry s="0" x="0" y="0" hdg="0" length="50">
+            <geometry s="0" x="0" y="0" hdg="0.5" length="50">
                 <line/>
             </geometry>
         </planView>
@@ -30,7 +30,7 @@
             </laneSection>
         </lanes>
         <objects>
-            <object type="building" name="Box1" dynamic="no" id="1" s="20" t="-7" zOffset="3.0" orientation="none" length="25.0" width="10.0" height="10.0" hdg="0.2" pitch="0.0" roll="0.0" validLength="25.0">
+            <object type="building" name="Box1Local" dynamic="no" id="20" s="20" t="-7" zOffset="3.0" orientation="none" length="25.0" width="10.0" height="10.0" hdg="0.2" pitch="0.0" roll="0.0" validLength="25.0">
                 <outlines>
                     <outline id="52" fillType="grass" closed="true" outer="false" laneType="none">
                         <cornerLocal id="0" u="-2.0" v="2.0" z="-0.5" height="2.0"/>
@@ -40,11 +40,43 @@
                     </outline>
                 </outlines>
             </object>
+            <object type="building" name="Box1Road" dynamic="no" id="21" s="20" t="-7" zOffset="3.0" orientation="none" length="25.0" width="10.0" height="10.0" hdg="1.2" pitch="0.0" roll="0.0" validLength="25.0">
+                <outlines>
+                    <outline id="53" fillType="grass" closed="true" outer="false" laneType="none">
+                        <cornerRoad id="0" s="24.0" t="-12.0" dz="0.5" height="2.0"/>
+                        <cornerRoad id="1" s="26.0" t="-12.0" dz="0.5" height="2.0"/>
+                        <cornerRoad id="2" s="26.0" t="-9.0" dz="0.5" height="2.0"/>
+                        <cornerRoad id="3" s="24.0" t="-9.0" dz="0.5" height="2.0"/>
+                    </outline>
+                </outlines>
+            </object>
             <object type="building" name="Box2" dynamic="no" id="8" s="40" t="-7" zOffset="-1.0" orientation="none" length="4.0" width="4.0" height="10.0" hdg="0.78" pitch="0.0" roll="0.0" validLength="25.0">
             </object>
             <object type="pole" name="pole" dynamic="no" id="5" s="5.0" t="0.5" zOffset="-0.2" validLength="0.06" orientation="+" radius="0.03" height="2.35" hdg="0.0" pitch="0.0" roll="0.0"/>
             <object type="parkingSpace" name="parking_slot" dynamic="no" id="6" s="7.0" t="-4.5" zOffset="0.0" validLength="5.0" length="5.0" width="3.0" height="2.0" hdg="0.0" pitch="0.0" roll="0.0">
                <parkingSpace access="car" restrictions="5_kalle"/>
+            </object>
+            <object id="11" name="barrier_linear" s="0" t="0" zOffset="0.0" hdg="0.0" roll="0" pitch="0" orientation="-" type="barrier" subtype="esminiBarrier" height="1" width="0.5" length="10" validLength="10" dynamic="no">
+                <outlines>
+                    <outline id="1" outer="true" closed="false">
+                        <cornerLocal u="0" v="0" z="0" height="1" id="1"/>
+                        <cornerLocal u="3.83" v="0.76" z="0" height="1" id="2"/>
+                        <cornerLocal u="7.07" v="2.93" z="0" height="1" id="3"/>
+                        <cornerLocal u="9.24" v="6.17" z="0" height="1" id="4"/>
+                        <cornerLocal u="10" v="10" z="0" height="1" id="5"/>
+                    </outline>
+                </outlines>
+            </object>
+            <object id="12" name="barrier_closed" s="0" t="0.1" zOffset="0.0" hdg="0.1" roll="0" pitch="0" orientation="-" type="barrier" subtype="esminiBarrier" height="1" width="0.5" length="10" validLength="10" dynamic="no">
+                <outlines>
+                    <outline id="1" outer="true" closed="true">
+                        <cornerLocal u="0" v="0" z="0" height="1" id="1"/>
+                        <cornerLocal u="3.83" v="0.76" z="0" height="1" id="2"/>
+                        <cornerLocal u="7.07" v="2.93" z="0" height="1" id="3"/>
+                        <cornerLocal u="9.24" v="6.17" z="0" height="1" id="4"/>
+                        <cornerLocal u="10" v="10" z="0" height="1" id="5"/>
+                    </outline>
+                </outlines>
             </object>
         </objects>
         <signals>

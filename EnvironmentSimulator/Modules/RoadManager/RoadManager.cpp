@@ -2774,7 +2774,7 @@ void OutlineCornerRoad::GetPosLocal(double& x, double& y, double& z)
     roadmanager::Position point;
     point.SetTrackPos(roadId_, s_, t_);
 
-    Global2LocalCoordinates(point.GetX(), point.GetY(), pref.GetX(), pref.GetY(), 0.0, x, y);
+    Global2LocalCoordinates(point.GetX(), point.GetY(), pref.GetX(), pref.GetY(), -(center_heading_ + pref.GetH()), x, y);
 
     z = pref.GetZ() + dz_;
 }
@@ -2810,19 +2810,9 @@ void OutlineCornerLocal::GetPos(double& x, double& y, double& z)
 
 void OutlineCornerLocal::GetPosLocal(double& x, double& y, double& z)
 {
-    roadmanager::Position pref;
-    pref.SetTrackPosMode(roadId_,
-                         s_,
-                         t_,
-                         roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
-                             roadmanager::Position::PosMode::R_REL);
-    double total_heading = GetAngleSum(pref.GetH(), heading_);
-    double u2, v2;
-    RotateVec2D(u_, v_, total_heading, u2, v2);
-
-    x = u2;
-    y = v2;
-    z = zLocal_;
+    x = u_;
+    y = v_;
+    z = heading_;
 }
 
 roadmanager::RMObject::RMObject(double      s,

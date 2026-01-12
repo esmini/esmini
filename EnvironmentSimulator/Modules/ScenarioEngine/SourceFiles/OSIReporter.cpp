@@ -783,6 +783,17 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
                 }
                 // replace any previous height value with the average height of the outline corners
                 obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(height);
+
+                if (!outline->closed_)
+                {
+                    // Repeat intermediate vertices to close the polygon, avoiding single edge between last and first vertices
+                    for (int l = static_cast<int>(outline->corner_.size()) - 2; l > 0; l--)
+                    {
+                        osi3::Vector2d *vec = obj_osi_internal.sobj->mutable_base()->add_base_polygon();
+                        vec->set_x(obj_osi_internal.sobj->mutable_base()->base_polygon().at(l).x());
+                        vec->set_y(obj_osi_internal.sobj->mutable_base()->base_polygon().at(l).y());
+                    }
+                }
             }
         }
     }
