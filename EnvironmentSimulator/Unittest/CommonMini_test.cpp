@@ -304,6 +304,10 @@ TEST(MathFunctions, TestGetAngleDifference)
     EXPECT_NEAR(GetAngleDifference(-0.4, 0.0), -0.4, 1e-5);
     EXPECT_NEAR(GetAngleDifference(0.1, 6.2), 0.183185, 1e-5);
     EXPECT_NEAR(GetAngleDifference(6.2, 0.1), -0.183185, 1e-5);
+    EXPECT_NEAR(GetAngleDifference(3.16, 3.14), 0.02, 1e-5);
+    EXPECT_NEAR(GetAngleDifference(3.14, 3.16), -0.02, 1e-5);
+    EXPECT_NEAR(GetAngleDifference(3.14, -3.14), -0.00319, 1e-5);
+    EXPECT_NEAR(GetAngleDifference(3.16, -3.16), 0.036815, 1e-5);
 }
 
 TEST(MathFunctions, TestGetIntersectionsOfLineAndCircle)
