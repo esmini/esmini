@@ -130,7 +130,8 @@ namespace scenarioengine
             auto search_begin = values.begin();
             auto search_end   = values.end();
 
-            auto it = std::upper_bound(search_begin, search_end, time, [](double t, const std::pair<double, T>& v) { return t < v.first; });
+            auto it =
+                std::upper_bound(search_begin, search_end, time, [](double t, const std::pair<double, T>& v) { return t < v.first - SMALL_NUMBER; });
 
             if (it == values.begin())
             {
@@ -371,7 +372,7 @@ namespace scenarioengine
         std::unordered_map<int, ReplayTrafficLight> traffic_light_cache_;
 #endif  // _USE_OSG
 
-        Replay(std::string filename);
+        Replay(std::string filename, bool quiet = false);
         Replay(const std::string directory, const std::string scenario, std::string create_datfile);
         ~Replay();
 
@@ -435,6 +436,7 @@ namespace scenarioengine
     private:
         std::vector<std::string> scenarios_;
         double                   time_;
+        bool                     quiet_;
         double                   startTime_  = 0.0;
         double                   stopTime_   = 0.0;
         unsigned int             startIndex_ = 0;

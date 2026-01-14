@@ -485,7 +485,7 @@ int Dat::DatReader::ReadStringPacket(std::string& str)
     return 0;
 }
 
-int Dat::DatReader::FillDatHeader()
+int Dat::DatReader::FillDatHeader(bool quiet)
 {
     if (!file_.read(reinterpret_cast<char*>(&header_.version_major), sizeof(header_.version_major)) ||
         !file_.read(reinterpret_cast<char*>(&header_.version_minor), sizeof(header_.version_minor)))
@@ -522,15 +522,18 @@ int Dat::DatReader::FillDatHeader()
         LOG_ERROR_AND_QUIT("Failed reading git rev.");
     }
 
-    LOG_INFO("Datfile {} opened: version {}.{}, odr_filename: {}, model_filename: {}, GIT REV: {}",
-             file_name_,
-             header_.version_major,
-             header_.version_minor,
-             header_.odr_filename.string,
-             header_.model_filename.string,
-             header_.git_rev.string);
+    if (!quiet)
+    {
+        LOG_INFO("Datfile {} opened: version {}.{}, odr_filename: {}, model_filename: {}, GIT REV: {}",
+                 file_name_,
+                 header_.version_major,
+                 header_.version_minor,
+                 header_.odr_filename.string,
+                 header_.model_filename.string,
+                 header_.git_rev.string);
+    }
 
-    if (header_.version_minor != DAT_FILE_FORMAT_VERSION_MINOR)
+    if (header_.version_minor != DAT_FILE_FORMAT_VERSION_MINOR && !quiet)
     {
         LOG_WARN("replayer compiled for version {}.{}. Some inconsistencies are expected.",
                  DAT_FILE_FORMAT_VERSION_MAJOR,
@@ -548,7 +551,10 @@ int Dat::DatReader::FillDatHeader()
     {
         auto remaining_payload = payload_end - after_read;
         file_.seekg(remaining_payload, std::ios::cur);
-        LOG_WARN("Skipping {} amount of unrecognized .dat header data", static_cast<size_t>(remaining_payload));
+        if (!quiet)
+        {
+            LOG_WARN("Skipping {} amount of unrecognized .dat header data", static_cast<size_t>(remaining_payload));
+        }
     }
 
     return 0;

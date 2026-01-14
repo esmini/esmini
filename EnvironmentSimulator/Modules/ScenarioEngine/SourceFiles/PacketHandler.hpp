@@ -266,7 +266,7 @@ namespace Dat
         std::string ReadStringPacket(const Dat::PacketGeneric& pkt);
         int         ReadStringPacket(std::string& str);
 
-        int            FillDatHeader();
+        int            FillDatHeader(bool quiet = false);
         Dat::DatHeader GetDatHeader() const
         {
             return header_;

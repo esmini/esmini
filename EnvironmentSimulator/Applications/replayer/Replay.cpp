@@ -20,7 +20,7 @@
 
 using namespace scenarioengine;
 
-Replay::Replay(std::string filename) : time_(0.0), index_(0), repeat_(false)
+Replay::Replay(std::string filename, bool quiet) : time_(0.0), quiet_(quiet), index_(0), repeat_(false)
 {
     // Parse the packets from the file
     dat_writer_ = std::make_unique<Dat::DatWriter>();
@@ -753,7 +753,7 @@ void Replay::ExtractGhostRestarts()
     {
         double timestamp = it->timestamp;
 
-        if (timestamp > 0.0 && timestamp <= prev_timestamp - SMALL_NUMBER && !g_restart)
+        if (timestamp > 0.0 && timestamp < prev_timestamp - SMALL_NUMBER && !g_restart)
         {
             restart_timestamps_.emplace_back(timestamp, prev_timestamp);
             g_restart = true;
@@ -776,12 +776,14 @@ void Replay::ExtractGhostRestarts()
             ++it;
         }
     }
+    for (const auto& restart : restart_timestamps_)
+        LOG_INFO("Restart start: {}. Restart end: {}", restart.first, restart.second);
 }
 
 Dat::DatHeader Replay::ParseDatHeader(const std::string& filename)
 {
     // Read raw header BEFORE reading packets
-    if (dat_reader_->FillDatHeader() != 0)
+    if (dat_reader_->FillDatHeader(quiet_) != 0)
     {
         int old_header = ReadOldDatHeader(filename);
         if (old_header != -1)
