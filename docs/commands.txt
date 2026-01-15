@@ -1,6 +1,6 @@
 Usage: esmini [options]
 Options:
-  --osc <filename>
+  [--osc] <filename>
       OpenSCENARIO filename (required) - if path includes spaces, enclose with ""
   --aa_mode [mode]  (default if value omitted: 4)
       Anti-alias mode=number of multisamples (subsamples, 0=off)

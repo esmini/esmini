@@ -2161,13 +2161,24 @@ void SE_Mutex::Unlock()
 void SE_Option::Usage() const
 {
     std::string showMandatoryStr = isSingleValueOption_ ? "" : "...";
-    if (!default_value_.empty())
+    std::string option_str;
+
+    if (isDefaultArgument_)
     {
-        printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? ('[' + opt_arg_ + ']' + showMandatoryStr).c_str() : "");
+        option_str = std::string("[") + std::string(OPT_PREFIX) + opt_str_.c_str() + std::string("]");
     }
     else
     {
-        printf("  %s%s %s", OPT_PREFIX, opt_str_.c_str(), (opt_arg_ != "") ? ('<' + opt_arg_ + '>' + showMandatoryStr).c_str() : "");
+        option_str = std::string(OPT_PREFIX) + opt_str_;
+    }
+
+    if (!default_value_.empty())
+    {
+        printf("  %s %s", option_str.c_str(), (opt_arg_ != "") ? ('[' + opt_arg_ + ']' + showMandatoryStr).c_str() : "");
+    }
+    else
+    {
+        printf("  %s %s", option_str.c_str(), (opt_arg_ != "") ? ('<' + opt_arg_ + '>' + showMandatoryStr).c_str() : "");
     }
 
     if (autoApply_)
@@ -2198,7 +2209,8 @@ void SE_Options::AddOption(std::string opt_str,
                            std::string opt_arg,
                            std::string default_value,
                            bool        autoApply,
-                           bool        isSingleValueOption)
+                           bool        isSingleValueOption,
+                           bool        isDefaultArgument)
 {
     SE_Option* option = GetOption(opt_str);
 
@@ -2212,10 +2224,11 @@ void SE_Options::AddOption(std::string opt_str,
         option->default_value_       = default_value;
         option->autoApply_           = autoApply;
         option->isSingleValueOption_ = isSingleValueOption;
+        option->isDefaultArgument_   = isDefaultArgument;
     }
     else
     {
-        SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply, isSingleValueOption);
+        SE_Option opt(opt_str, opt_desc, opt_arg, default_value, autoApply, isSingleValueOption, isDefaultArgument);
         auto      index = esmini_options::ConvertStrKeyToEnum(opt_str);
         if (index != esmini_options::CONFIG_ENUM::CONFIGS_COUNT)
         {
@@ -2230,7 +2243,13 @@ void SE_Options::AddOption(std::string opt_str,
             LOG_ERROR_AND_QUIT("Option {} not availble, add it to config enum", opt_str);
         }
     }
+
     optionOrder_.push_back(option);
+
+    if (isDefaultArgument)
+    {
+        default_option_ = optionOrder_.back();
+    }
 }
 
 void SE_Options::PrintUsage()
@@ -2304,16 +2323,16 @@ std::vector<std::string>& SE_Options::GetOptionValues(std::string opt)
     return option->arg_value_;
 }
 
-static constexpr std::array<const char*, 10> OSG_ARGS = {"--clear-color",
-                                                         "--screen",
-                                                         "--window",
-                                                         "--borderless-window",
-                                                         "--SingleThreaded",
-                                                         "--CullDrawThreadPerContext",
-                                                         "--SingleThreaded",
-                                                         "--DrawThreadPerContext",
-                                                         "--CullThreadPerCameraDrawThreadPerContext",
-                                                         "--lodScale"};
+static constexpr std::array<std::pair<const char*, int>, 10> OSG_ARGS = {{{"--clear-color", 1},
+                                                                          {"--screen", 1},
+                                                                          {"--window", 4},
+                                                                          {"--borderless-window", 0},
+                                                                          {"--SingleThreaded", 0},
+                                                                          {"--CullDrawThreadPerContext", 0},
+                                                                          {"--SingleThreaded", 0},
+                                                                          {"--DrawThreadPerContext", 0},
+                                                                          {"--CullThreadPerCameraDrawThreadPerContext", 0},
+                                                                          {"--lodScale", 1}}};
 
 int SE_Options::ChangeOptionArg(std::string opt, std::string new_value, int index)
 {
@@ -2443,6 +2462,12 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
 
         if (!(arg.substr(0, strlen(OPT_PREFIX)) == OPT_PREFIX))
         {
+            if (default_option_->arg_value_.empty())
+            {
+                // connsume first unrecognized argument as default option value
+                default_option_->arg_value_.push_back(arg);
+                default_option_->set_ = true;
+            }
             i++;
             continue;
         }
@@ -2489,10 +2514,16 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
         }
         else
         {
-            auto it = std::find_if(std::begin(OSG_ARGS), std::end(OSG_ARGS), [&arg](const char* osg_arg) { return osg_arg == arg; });
+            auto it = std::find_if(std::begin(OSG_ARGS),
+                                   std::end(OSG_ARGS),
+                                   [&arg](const std::pair<const char*, int> osg_arg) { return osg_arg.first == arg; });
             if (it == std::end(OSG_ARGS))
             {
                 unknown_args_.push_back(args[i]);
+            }
+            else
+            {
+                i += it->second;  // skip OSG arg and its parameters
             }
         }
         i++;

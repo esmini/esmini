@@ -439,7 +439,7 @@ int main(int argc, char** argv)
     SE_Options& opt = SE_Env::Inst().GetOptions();
     opt.Reset();
 
-    opt.AddOption("file", "Simulation recording data file (.dat)", "filename");
+    opt.AddOption("file", "Simulation recording data file (.dat)", "filename", "", false, true, true);
 #ifdef _USE_OSG
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
     opt.AddOption("camera_mode",

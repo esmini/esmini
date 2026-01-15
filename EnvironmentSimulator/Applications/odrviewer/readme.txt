@@ -10,7 +10,7 @@ Options:
       Search path prefix for assets, e.g. OpenDRIVE files.
   --help
       Show this help message (-h works as well)
-  --odr <odr_filename>
+  [--odr] <odr_filename>
       OpenDRIVE filename (required)
   --aa_mode [mode]  (default if value omitted: 4)
       Anti-alias mode=number of multisamples (subsamples, 0=off)
