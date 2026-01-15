@@ -1748,7 +1748,10 @@ int OnRequestShowHelpOrVersion(int argc, char** argv, SE_Options& opt)
             }
             opt.PrintUsage();
 #ifdef _USE_OSG
-            PrintOSGUsage();
+            if (strstr(argv[0], "dat2csv") == NULL)
+            {
+                PrintOSGUsage();
+            }
 #endif  // _USE_OSG
             retVal += 1;
         }

@@ -138,11 +138,6 @@ Example: +
 +
 image::plot_dat.png[]
 
-*dat2csv*:: Convert esmini recording (.dat) file to standard .csv format +
-Example: +
-``./scripts/dat2csv sim.dat`` +
-will create sim.csv.
-
 *osi2csv.py*:: Convert OSI trace file (from esmini) to .csv format +
 Example: +
 ``./scripts/osi2csv.py ./ground_truth.osi`` +
@@ -156,8 +151,6 @@ Example: +
 ``./bin/esmini --headless --osc ./resources/xosc/acc-test.xosc --fixed_timestep 0.05 --osi_file sim.osi`` (will create an osi trace file) +
 ``./scripts/osi2csv.py sim.osi`` (convert to .csv) +
 ``./scripts/plot_csv.py sim.csv --param ax`` will plot the x component of acceleration vector.
-
-*dat2xosc.py*:: Convert any scenario to a fixed trajectory based scenario. See more info in https://github.com/esmini/esmini/blob/dev/scripts/dat2xosc.py[script].
 
 *move_to_origin.py*:: Translate a scenario to origin. Useful for scenarios with large coordinates causing precision issues. See more info in https://github.com/esmini/esmini/blob/dev/scripts/move_to_origin.py[script].
 
@@ -501,13 +494,11 @@ https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Modules/ScenarioE
 To create a recording with regular timesteps: +
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --fixed_timestep 0.05 --record sim.dat``
 
-To convert the .dat file into .csv, do either of: +
-``./bin/dat2csv sim.dat`` +
-or +
-``python ./scripts/dat2csv.py sim.dat``
+To convert the .dat file into .csv, do: +
+``./bin/dat2csv sim.dat``
 
 Only a subset of the .dat file information is extracted. To extract some more info, e.g. road coordinates, run:
-``./scripts/dat2csv --extended sim.dat`` +
+``./bin/dat2csv sim.dat --extended`` +
 
 You can create .dat files from multiple scenarios in a single command, like this on Linux (bash):
 

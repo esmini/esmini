@@ -546,9 +546,6 @@ int main(int argc, char** argv)
     if (opt.ParseArgs(argc_, argv_) != 0 || argc_ < 2)
     {
         opt.PrintUsage();
-#ifdef _USE_OSG
-        PrintOSGUsage();
-#endif  // _USE_OSG
         return -1;
     }
 
@@ -570,9 +567,6 @@ int main(int argc, char** argv)
     {
         printf("Missing required file argument\n");
         opt.PrintUsage();
-#ifdef _USE_OSG
-        PrintOSGUsage();
-#endif  // _USE_OSG
         return -1;
     }
 

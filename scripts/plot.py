@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import numpy as np
 
 def plot(rows, labels, params=['speed'], x_axis='time', derive=False, dots=False, equal_aspect=False, list_plottable_params=False):
 

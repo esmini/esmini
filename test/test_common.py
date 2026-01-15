@@ -152,7 +152,7 @@ def use_package(pack_name):
 def generate_csv(filename=DAT_FILENAME):
 
     with open(STDOUT_FILENAME, "w") as f:
-        args = [os.path.join(ESMINI_PATH,'bin','dat2csv'), filename, "--save_csv"]
+        args = [os.path.join(ESMINI_PATH,'bin','dat2csv'), "--file", filename]
         process = subprocess.Popen(args, cwd=os.path.dirname(os.path.realpath(__file__)), stdout=f)
         assert process.wait() == 0
 

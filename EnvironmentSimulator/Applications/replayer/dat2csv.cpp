@@ -26,46 +26,55 @@ using namespace scenarioengine;
 
 int main(int argc, char** argv)
 {
+    SE_Options& opt = SE_Env::Inst().GetOptions();
+    opt.Reset();
+
+    SE_Env::Inst().AddPath(DirNameOf(argv[0]));
+
+    opt.AddOption("csv", "Optional name of the output file (default is Dat-file-name with .csv extension)", "name");
+    opt.AddOption("extended", "Make csv with extended data fields");
+    opt.AddOption("file", "Dat-file to convert to csv", "filename", "", false, true, true);
+    opt.AddOption("help", "Show this help message (-h works as well)");
+    opt.AddOption("file_refs", "include odr model, and git file references");
+    opt.AddOption("print_csv", "Print the csv to stdout instead of saving it");
+    opt.AddOption("version", "Show version and quit");
+
+    if (int ret = OnRequestShowHelpOrVersion(argc, argv, opt); ret > 0)
+    {
+        return ret;
+    }
+
+    if (opt.ParseArgs(argc, argv) != 0 || argc < 2)
+    {
+        opt.PrintUsage();
+        return -1;
+    }
+
+    if (opt.HasUnknownArgs())
+    {
+        opt.PrintUnknownArgs("Unrecognized arguments:");
+        opt.PrintUsage();
+        return -1;  // we harmonize all applications to quit on unknown arguments
+    }
+
     Replay*     player;
     static char line[MAX_LINE_LEN];
-    bool        extended = false;
-    bool        save_csv = false;
-    bool        quiet    = false;
+    bool        extended  = opt.GetOptionSet("extended");
+    bool        save_csv  = !opt.GetOptionSet("print_csv");
+    bool        file_refs = opt.GetOptionSet("file_refs");
 
     std::setlocale(LC_ALL, "C.UTF-8");
 
-    if (argc < 2)
-    {
-        printf("Usage: %s <filename> <option>\n\tOption '--extended' increases data output\n", argv[0]);
-        return -1;
-    }
-    else if (argc > 2)
-    {
-        for (int i = 2; i < argc; i++)
-        {
-            if (strcmp(argv[i], "--extended") == 0)
-            {
-                extended = true;
-            }
-            else if (strcmp(argv[i], "--save_csv") == 0)
-            {
-                save_csv = true;
-            }
-            else if (strcmp(argv[i], "--quiet") == 0)
-            {
-                quiet = true;
-            }
-            else
-            {
-                printf("Unrecognized argument %s, ignoring", argv[i]);
-            }
-        }
-    }
+    std::string dat_file = opt.GetOptionValue("file");
 
-    std::string   filename = FileNameWithoutExtOf(argv[1]) + ".csv";
     std::ofstream file;
     if (save_csv)
     {
+        std::string filename = opt.GetOptionValue("csv");
+        if (filename.empty())
+        {
+            filename = FilePathWithoutExtOf(dat_file) + ".csv";
+        }
         file.open(filename);
         if (!file.is_open())
         {
@@ -77,12 +86,37 @@ int main(int argc, char** argv)
     // Create replayer object for parsing the binary data file
     try
     {
-        player = new Replay(argv[1], quiet);
+        player = new Replay(dat_file, true);
     }
     catch (const std::exception& e)
     {
         printf("%s", e.what());
         return -1;
+    }
+
+    if (file_refs && save_csv)
+    {
+        snprintf(line,
+                 MAX_LINE_LEN,
+                 "Version: %d.%d, OpenDRIVE: %s, 3DModel: %s GIT REV: %s\n",
+                 player->dat_header_.version_major,
+                 player->dat_header_.version_minor,
+                 player->dat_header_.odr_filename.string.c_str(),
+                 player->dat_header_.model_filename.string.c_str(),
+                 player->dat_header_.git_rev.string.c_str());
+        file << line;
+    }
+    else if (file_refs)
+    {
+        snprintf(line,
+                 MAX_LINE_LEN,
+                 "Version: %d.%d, OpenDRIVE: %s, 3DModel: %s GIT REV: %s\n",
+                 player->dat_header_.version_major,
+                 player->dat_header_.version_minor,
+                 player->dat_header_.odr_filename.string.c_str(),
+                 player->dat_header_.model_filename.string.c_str(),
+                 player->dat_header_.git_rev.string.c_str());
+        printf("%s", line);
     }
 
     if (!extended)

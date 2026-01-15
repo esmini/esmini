@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### DRAFT Notes 2026-1-16
+- Reworked Replayer packet handling
+- Updated dat-merging strategy
+- Updated bin/dat2csv
+  - Use esmini Options
+  - Extended behavior
+- Replace all instances of scripts/dat2csv.py with bin/dat2csv
+- Removed scripts/dat2csv.py and scripts/dat.py
+
 ### 2026-01-08 Version 2.57.2
 
 Improvements and fixes:
