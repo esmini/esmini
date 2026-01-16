@@ -7,7 +7,6 @@ import psutil
 ESMINI_PATH = os.path.realpath(os.pardir)
 
 sys.path.insert(0, os.path.join(ESMINI_PATH, 'scripts'))
-from dat import *
 
 LOG_FILENAME = 'log.txt'
 DAT_FILENAME = 'sim.dat'

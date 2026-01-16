@@ -114,6 +114,10 @@ Example: +
 +
 image::odrviewer.png[]
 
+*dat2csv*:: Convert esmini recording (.dat) file to standard .csv format
+Example: + 
+``./bin/dat2csv sim.dat``
+
 === Scripts
 esmini comes with a collection of scripts for various purposes, like preprocessing of scenario files and plotting or conversion of simulation output files. The scripts are located in the `scripts` folder.
 
