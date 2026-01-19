@@ -681,6 +681,21 @@ int ScenarioGateway::reportObjectRoadPos(int            id,
     return 0;
 }
 
+int scenarioengine::ScenarioGateway::reportObjectOutline(int id, const std::vector<SE_Point2D>& outline_points)
+{
+    ObjectState* obj_state = getObjectStatePtrById(id);
+    if (obj_state != nullptr)
+    {
+        obj_state->state_.outline = outline_points;
+    }
+    else
+    {
+        return -1;
+    }
+
+    return 0;
+}
+
 int ScenarioGateway::updateObjectPos(int id, double timestamp, const roadmanager::Position* pos)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);

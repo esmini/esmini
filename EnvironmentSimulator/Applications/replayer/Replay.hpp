@@ -294,28 +294,29 @@ namespace scenarioengine
 
     struct PropertyTimeline
     {
-        Timeline<int>            model_id_;
-        Timeline<int>            obj_type_;
-        Timeline<int>            obj_category_;
-        Timeline<int>            ctrl_type_;
-        Timeline<std::string>    name_;
-        Timeline<float>          speed_;
-        Timeline<float>          wheel_angle_;
-        Timeline<float>          wheel_rot_;
-        Timeline<OSCBoundingBox> bounding_box_;
-        Timeline<int>            scale_mode_;
-        Timeline<int>            visibility_mask_;
-        Timeline<Dat::Pose>      pose_;
-        Timeline<id_t>           road_id_;
-        Timeline<int>            lane_id_;
-        Timeline<float>          pos_offset_;
-        Timeline<float>          pos_t_;
-        Timeline<float>          pos_s_;
-        Timeline<bool>           active_;
-        Timeline<float>          odometer_;
-        Timeline<float>          refpoint_x_offset_;
-        Timeline<float>          model_x_offset_;
-        Timeline<std::string>    model3d_;
+        Timeline<int>                     model_id_;
+        Timeline<int>                     obj_type_;
+        Timeline<int>                     obj_category_;
+        Timeline<int>                     ctrl_type_;
+        Timeline<std::string>             name_;
+        Timeline<float>                   speed_;
+        Timeline<float>                   wheel_angle_;
+        Timeline<float>                   wheel_rot_;
+        Timeline<OSCBoundingBox>          bounding_box_;
+        Timeline<int>                     scale_mode_;
+        Timeline<int>                     visibility_mask_;
+        Timeline<Dat::Pose>               pose_;
+        Timeline<id_t>                    road_id_;
+        Timeline<int>                     lane_id_;
+        Timeline<float>                   pos_offset_;
+        Timeline<float>                   pos_t_;
+        Timeline<float>                   pos_s_;
+        Timeline<bool>                    active_;
+        Timeline<float>                   odometer_;
+        Timeline<float>                   refpoint_x_offset_;
+        Timeline<float>                   model_x_offset_;
+        Timeline<std::string>             model3d_;
+        Timeline<std::vector<SE_Point2D>> outline_;
     };
 
     // Custom comparator ensuring map has ids ordered as:

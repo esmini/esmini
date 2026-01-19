@@ -1554,6 +1554,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     SetNodeMaskBits(NodeMask::NODE_MASK_INFO);
     SetNodeMaskBits(NodeMask::NODE_MASK_TRAJECTORY_LINES);
     SetNodeMaskBits(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+    SetNodeMaskBits(NodeMask::NODE_MASK_OBJ_OUTLINE);
 
     roadSensors_ = new osg::Group;
     roadSensors_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
@@ -1776,6 +1777,11 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     if (SE_Env::Inst().GetOptions().GetOptionSet("wireframe"))
     {
         stateSetManipulator->setPolygonMode(osg::PolygonMode::Mode::LINE);
+    }
+
+    if (SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::HIDE_OBJ_OUTLINE))
+    {
+        ClearNodeMaskBits(NodeMask::NODE_MASK_OBJ_OUTLINE);
     }
 
     // Light
@@ -2088,15 +2094,57 @@ int Viewer::AddCustomLightSource(double x, double y, double z, double intensity)
     return 0;
 }
 
-EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
-                                       osg::Vec4               trail_color,
-                                       EntityModel::EntityType type,
-                                       bool                    road_sensor,
-                                       std::string             name,
-                                       OSCBoundingBox*         boundingBox,
-                                       double                  refpoint_x_offset,
-                                       double                  model_x_offset,
-                                       EntityScaleMode         scaleMode)
+void Viewer::CreateEntityOutline2D(osg::ref_ptr<osg::Group>       modelgroup,
+                                   const std::vector<SE_Point2D>* outline,
+                                   double                         refpoint_x_offset,
+                                   osg::Material*                 material)
+{
+    if (!outline)
+    {
+        return;
+    }
+
+    osg::ref_ptr<osg::Geode>     outlineGeode    = new osg::Geode;
+    osg::ref_ptr<osg::Geometry>  outlineGeometry = new osg::Geometry;
+    osg::ref_ptr<osg::Vec3Array> vertices        = new osg::Vec3Array;
+
+    for (const auto& p : *outline)
+    {
+        vertices->push_back(osg::Vec3(static_cast<float>(p.x - refpoint_x_offset), static_cast<float>(p.y), 0.05f));
+    }
+
+    outlineGeometry->setVertexArray(vertices.get());
+    outlineGeometry->addPrimitiveSet(new osg::DrawArrays(GL_LINE_LOOP, 0, vertices->size()));
+
+    osg::ref_ptr<osg::StateSet> stateSet = outlineGeometry->getOrCreateStateSet();
+    stateSet->setAttributeAndModes(material, osg::StateAttribute::ON);
+    stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+
+    osg::ref_ptr<osg::Point> pointSize = new osg::Point();
+    pointSize->setSize(20.0f);
+    pointSize->setDistanceAttenuation(osg::Vec3(1.0f, 1.0f, 0.0f));  // Enable distance attenuation for world-scale point size
+    outlineGeometry->getOrCreateStateSet()->setAttributeAndModes(pointSize, osg::StateAttribute::ON);
+
+    osg::ref_ptr<osg::Vec4Array> pointColors = new osg::Vec4Array;
+    pointColors->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0f));  // Red color for points
+    outlineGeometry->setColorArray(pointColors, osg::Array::BIND_OVERALL);
+    outlineGeometry->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, vertices->size()));
+
+    outlineGeode->addDrawable(outlineGeometry.get());
+    outlineGeode->setNodeMask(NODE_MASK_OBJ_OUTLINE);
+    modelgroup->addChild(outlineGeode);
+}
+
+EntityModel* Viewer::CreateEntityModel(std::string                    modelFilepath,
+                                       osg::Vec4                      trail_color,
+                                       EntityModel::EntityType        type,
+                                       bool                           road_sensor,
+                                       std::string                    name,
+                                       OSCBoundingBox*                boundingBox,
+                                       double                         refpoint_x_offset,
+                                       double                         model_x_offset,
+                                       const std::vector<SE_Point2D>* outline,
+                                       EntityScaleMode                scaleMode)
 {
     // Load 3D model
     osg::ref_ptr<osg::Group>                     group             = new osg::Group;
@@ -2210,9 +2258,15 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         modelgroup = geode;
     }
 
-    // Then create a bounding box visual representation
+    // Then create a bounding box visual representation and any specified outline
     bbGroup                          = new osg::Group;
     osg::ref_ptr<osg::Geode> bbGeode = new osg::Geode;
+
+    // Create 2D shape outline, if specified
+    if (outline != nullptr)
+    {
+        CreateEntityOutline2D(bbGroup, outline, refpoint_x_offset, material);
+    }
 
     if (scaleMode == EntityScaleMode::NONE || scaleMode == EntityScaleMode::MODEL_TO_BB)
     {
@@ -3582,6 +3636,14 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
                 mask = ((mask + 1) % 4) * NodeMask::NODE_MASK_ENTITY_MODEL;
 
                 viewer_->SetNodeMaskBits(NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB, mask);
+            }
+        }
+        break;
+        case (osgGA::GUIEventAdapter::KEY_Semicolon):
+        {
+            if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+            {
+                viewer_->ToggleNodeMaskBits(NodeMask::NODE_MASK_OBJ_OUTLINE);
             }
         }
         break;

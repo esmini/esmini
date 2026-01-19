@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2026-01-20T10:00:00" description="2D shape outlines for various object types" author="esmini team"/>
+   <ParameterDeclarations/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../../../resources/xodr/straight_500m.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Box">
+         <MiscObject name="box" miscObjectCategory="obstacle" mass="200.0" model3d="../models/box_cc_by.osgb">
+            <ParameterDeclarations/>
+            <BoundingBox>
+               <Center x="0.0" y="0.0" z="1.0"/>
+               <Dimensions width="1.0" length="2.0" height="2.0"/>
+            </BoundingBox>
+            <Properties>
+               <Property name="scaleMode" value="ModelToBB"/>
+               <Property name="model_id" value="15"/>
+               <Property name="outline" value="-1,-0.5;1,-0.5;1,0.5;0.0,0.5;0.0,0.7;-0.7,0.7;-0.7,0.5;-1,0.5"/>
+            </Properties>
+         </MiscObject>
+      </ScenarioObject>
+      <ScenarioObject name="Pedestrian">
+         <Pedestrian mass="80" model="" name="pedestrian_adult" pedestrianCategory="pedestrian" model3d="../models/walkman.osgb">
+            <ParameterDeclarations/>
+            <BoundingBox>
+               <Center x="0.06" y="0.0" z="0.923"/>
+               <Dimensions height="1.8" length="0.8" width="0.3"/>
+            </BoundingBox>
+            <Properties>
+               <Property name="scaleMode" value="ModelToBB"/>
+               <Property name="outline" value="-0.5,-0.2;-0.2,-0.2;-0.2,-0.4;0.2,-0.4;0.2,-0.2;0.5,-0.2;0.5,0.2;0.2,0.2;0.2,0.4;-0.2,0.4;-0.2,0.2;-0.5,0.2"/>
+            </Properties>
+         </Pedestrian>
+      </ScenarioObject>
+      <ScenarioObject name="Bicycle">
+         <Vehicle name="bicycle" vehicleCategory="bicycle" model3d="../models/cyclist.osgb">
+            <BoundingBox>
+               <Center x="0.5" y="0" z="0.85"/>
+               <Dimensions width="0.35" length="1.8" height="1.7"/>
+            </BoundingBox>
+            <Performance maxSpeed="40" maxDeceleration="10" maxAcceleration="5"/>
+            <Axles>
+               <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.7" trackWidth="0.7" positionX="2.7" positionZ="0.35"/>
+               <RearAxle maxSteering="0.523598775598" wheelDiameter="0.7" trackWidth="0.7" positionX="0" positionZ="0.35"/>
+            </Axles>
+            <Properties>
+               <Property name="scaleMode" value="ModelToBB"/>
+               <Property name="outline" value="-0.5,-0.2;0.2,-0.2;0.2,-0.4;0.8,-0.4;0.8,-0.2;1.5,-0.2;1.5,0.2;0.8,0.2;0.8,0.4;0.2,0.4;0.2,0.2;-0.5,0.2"/>
+            </Properties>
+         </Vehicle>
+      </ScenarioObject>
+      <ScenarioObject name="Car">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_with_outline"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Box">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="50.0" y="-1.5" h="0.8" z="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Pedestrian">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="51.0" y="-4.0" h="1.57" z="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Bicycle">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="47.0" y="1.5" h="${pi}" z="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Car">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="60.0" y="-1.5" h="0.0" z="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="StopTrigger" delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="20" rule="greaterOrEqual"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

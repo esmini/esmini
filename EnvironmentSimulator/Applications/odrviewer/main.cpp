@@ -158,6 +158,7 @@ int SpawnCar(viewer::Viewer *viewer, const roadmanager::Road *road, const roadma
                                                  0,
                                                  0.0,
                                                  0.0,
+                                                 nullptr,
                                                  EntityScaleMode::BB_TO_MODEL)) == 0)
     {
         delete car_;
@@ -333,6 +334,7 @@ int SetupCarsSpecial(roadmanager::OpenDrive *odrManager, viewer::Viewer *viewer)
                                                  0,
                                                  0.0,
                                                  0.0,
+                                                 nullptr,
                                                  EntityScaleMode::BB_TO_MODEL)) == 0)
     {
         delete car_;

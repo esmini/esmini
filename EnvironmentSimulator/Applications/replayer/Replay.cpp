@@ -689,6 +689,12 @@ int Replay::ParsePackets()
                     element_state_changes_.values.emplace_back(timestamp_, esc);
                     break;
                 }
+                case static_cast<id_t>(Dat::PacketId::SHAPE_2D_OUTLINE):
+                {
+                    std::vector<SE_Point2D> outline = dat_reader_->ReadOutlinePacket(gp);
+                    current_object_timeline_->outline_.values.emplace_back(timestamp_, outline);
+                    break;
+                }
                 case static_cast<id_t>(Dat::PacketId::DT):
                 case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
                 default:  // Intentially ignored packets

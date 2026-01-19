@@ -841,7 +841,7 @@ TEST(OSI, TestTrafficLightStates)
     delete player;
 }
 
-TEST(OSI, TestOrientation)
+TEST(OSI, TestOrientationAndOutline)
 {
     const char* args[] =
         {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/curve_slope_simple.xosc", "--headless", "--osi_file", "--disable_stdout"};
@@ -895,6 +895,63 @@ TEST(OSI, TestOrientation)
     EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().yaw(), 3.0742), 0.0, 1e-3);
     EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().pitch(), 5.9978), 0.0, 1e-3);
     EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().roll(), 0.0), 0.0, 1e-3);
+
+    // OSI 2D shape outline
+    EXPECT_EQ(osi_gt_ptr->moving_object(0).base().base_polygon_size(), 24);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().base_polygon(0).x(), 3.42, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().base_polygon(0).y(), -0.97, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().base_polygon(23).x(), 2.71, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().base_polygon(23).y(), -1.02, 1e-3);
+
+    delete player;
+}
+
+TEST(OSI, TestOutlineOfVariousObjectTypes)
+{
+    const char* args[] =
+        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/shape_outlines.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+
+    // Check number of outline points, and check a few coordinates
+    EXPECT_EQ(osi_gt_ptr->moving_object(0).base().base_polygon_size(), 12);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().base_polygon(0).x(), -0.5, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().base_polygon(0).y(), -0.2, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().base_polygon(5).x(), 0.5, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().base_polygon(5).y(), -0.2, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().base_polygon(11).x(), -0.5, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().base_polygon(11).y(), 0.2, 1e-3);
+
+    EXPECT_EQ(osi_gt_ptr->moving_object(1).base().base_polygon_size(), 12);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(1).base().base_polygon(0).x(), -0.5, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(1).base().base_polygon(0).y(), -0.2, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(1).base().base_polygon(5).x(), 1.5, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(1).base().base_polygon(5).y(), -0.2, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(1).base().base_polygon(11).x(), -0.5, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(1).base().base_polygon(11).y(), 0.2, 1e-3);
+
+    EXPECT_EQ(osi_gt_ptr->moving_object(2).base().base_polygon_size(), 24);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(2).base().base_polygon(0).x(), 3.42, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(2).base().base_polygon(0).y(), -0.97, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(2).base().base_polygon(10).x(), 0.56, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(2).base().base_polygon(10).y(), 0.97, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(2).base().base_polygon(23).x(), 2.71, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(2).base().base_polygon(23).y(), -1.02, 1e-3);
+
+    EXPECT_EQ(osi_gt_ptr->stationary_object(0).base().base_polygon_size(), 8);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon(0).x(), -1.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon(0).y(), -0.5, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon(4).x(), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon(4).y(), 0.7, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon(7).x(), -1.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->stationary_object(0).base().base_polygon(7).y(), 0.5, 1e-3);
 
     delete player;
 }

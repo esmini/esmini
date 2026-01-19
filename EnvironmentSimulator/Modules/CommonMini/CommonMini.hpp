@@ -222,6 +222,12 @@ public:
     static const float (&Color2RBG(Color color_enum))[3];
 };
 
+struct SE_Point2D
+{
+    double x;
+    double y;
+};
+
 class SE_Vector
 {
 public:

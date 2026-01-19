@@ -450,6 +450,8 @@ int ScenarioEngine::step(double deltaSimTime)
                                             obj->refpoint_x_offset_,
                                             obj->model3d_x_offset_);
 
+            scenarioGateway.reportObjectOutline(obj->id_, obj->outline_2d_);
+
             if (obj->type_ == Object::Type::VEHICLE)
             {
                 scenarioGateway.updateObjectWheelData(obj->id_, static_cast<Vehicle*>(obj)->GetWheelData());

@@ -254,7 +254,7 @@ int ParseEntities(Replay* player)
             // If not available, create it
             if (sc == nullptr)
             {
-                ScenarioEntity new_sc;
+                auto& new_sc = scenarioEntity.emplace_back();
 
                 new_sc.id             = id;
                 new_sc.pos            = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f, 0.0f, 0.0f};
@@ -308,6 +308,11 @@ int ParseEntities(Replay* player)
                 double model_x_offset =
                     (timelines.model_x_offset_.values.empty()) ? 0.0 : static_cast<double>(timelines.model_x_offset_.values.front().second);
 
+                if (!timelines.outline_.values.empty())
+                {
+                    new_sc.outline_2d = timelines.outline_.values.front().second;
+                }
+
                 bool found = false;
                 if ((new_sc.entityModel = viewer_->CreateEntityModel(
                          LocateFile(filename, {CombineDirectoryPathAndFilepath(res_path, "models")}, "Entity 3D model", found),
@@ -318,6 +323,7 @@ int ParseEntities(Replay* player)
                          &timelines.bounding_box_.values.front().second,
                          refpoint_x_offset,
                          model_x_offset,
+                         &new_sc.outline_2d,
                          static_cast<EntityScaleMode>(timelines.scale_mode_.values.front().second))) == 0)
                 {
                     return -1;
@@ -343,10 +349,9 @@ int ParseEntities(Replay* player)
                 }
 #endif  // _USE_OSG
 
-                scenarioEntity.push_back(new_sc);
                 // cppcheck-suppress unreadVariable
                 // This variable is used if we compile with OSG
-                sc = &scenarioEntity.back();
+                sc = &new_sc;
             }
 
 #ifdef _USE_OSG

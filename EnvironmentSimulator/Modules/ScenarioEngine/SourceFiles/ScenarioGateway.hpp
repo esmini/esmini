@@ -48,6 +48,7 @@ namespace scenarioengine
 
     struct ObjectStateStruct
     {
+        std::vector<SE_Point2D> outline;
         struct ObjectInfoStruct info;
         roadmanager::Position   pos;
     };
@@ -341,6 +342,8 @@ namespace scenarioengine
                                 id_t           roadId,
                                 double         lateralOffset,
                                 double         s);
+
+        int reportObjectOutline(int id, const std::vector<SE_Point2D> &outline_points);
 
         int updateObjectPos(int id, double timestamp, const roadmanager::Position *pos);
         int updateObjectRoadPos(int id, double timestamp, id_t roadId, double lateralOffset, double s);

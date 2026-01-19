@@ -44,7 +44,8 @@ namespace Dat
         MODEL_X_OFFSET    = 25,
         OBJ_MODEL3D       = 26,
         ELEM_STATE_CHANGE = 27,
-        PACKET_ID_SIZE    = 28  // Keep this last
+        SHAPE_2D_OUTLINE  = 28,
+        PACKET_ID_SIZE    = 29  // Keep this last
     };
 
     struct PacketString
@@ -102,30 +103,36 @@ namespace Dat
         std::vector<char> data;
     };
 
+    struct PacketShape2DOutline
+    {
+        std::vector<SE_Point2D> points;
+    };
+
     struct ObjState  // Could this be ObjectStateStruct with some additional fields?
     {
-        int         obj_id_            = -1;
-        bool        active_            = false;
-        float       speed_             = std::nanf("");
-        Pose        pose_              = {};
-        int         model_id_          = -1;
-        int         obj_type_          = -1;
-        int         obj_category_      = -1;
-        int         ctrl_type_         = -1;
-        float       wheel_angle_       = std::nanf("");
-        float       wheel_rot_         = std::nanf("");
-        BoundingBox bounding_box_      = {};
-        int         scale_mode_        = -1;
-        int         visibility_mask_   = -1;
-        std::string name_              = {};
-        id_t        road_id_           = ID_UNDEFINED;
-        int         lane_id_           = -LARGE_NUMBER_INT;
-        float       pos_offset_        = std::nanf("");
-        float       pos_t_             = std::nanf("");
-        float       pos_s_             = std::nanf("");
-        float       refpoint_x_offset_ = std::nanf("");
-        float       model_x_offset_    = std::nanf("");
-        std::string model3d_           = {};
+        int                     obj_id_            = -1;
+        bool                    active_            = false;
+        float                   speed_             = std::nanf("");
+        Pose                    pose_              = {};
+        int                     model_id_          = -1;
+        int                     obj_type_          = -1;
+        int                     obj_category_      = -1;
+        int                     ctrl_type_         = -1;
+        float                   wheel_angle_       = std::nanf("");
+        float                   wheel_rot_         = std::nanf("");
+        BoundingBox             bounding_box_      = {};
+        int                     scale_mode_        = -1;
+        int                     visibility_mask_   = -1;
+        std::string             name_              = {};
+        id_t                    road_id_           = ID_UNDEFINED;
+        int                     lane_id_           = -LARGE_NUMBER_INT;
+        float                   pos_offset_        = std::nanf("");
+        float                   pos_t_             = std::nanf("");
+        float                   pos_s_             = std::nanf("");
+        float                   refpoint_x_offset_ = std::nanf("");
+        float                   model_x_offset_    = std::nanf("");
+        std::string             model3d_           = {};
+        std::vector<SE_Point2D> outline_2d         = {};
     };
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?
@@ -222,6 +229,11 @@ namespace Dat
             return sizeof(p.size) + p.string.size();
         }
 
+        size_t SerializedSize(const PacketShape2DOutline& p)
+        {
+            return p.points.size() * sizeof(SE_Point2D);
+        }
+
         template <typename T>
         size_t SerializedSize(const T& val)
         {
@@ -235,6 +247,11 @@ namespace Dat
 
             memcpy(write_ptr, p.string.data(), p.string.size());
             write_ptr += p.string.size();
+        }
+
+        void WriteToBuffer(char*& write_ptr, const PacketShape2DOutline& p)
+        {
+            memcpy(write_ptr, p.points.data(), p.points.size() * sizeof(SE_Point2D));
         }
 
         template <typename T>
@@ -265,6 +282,9 @@ namespace Dat
 
         std::string ReadStringPacket(const Dat::PacketGeneric& pkt);
         int         ReadStringPacket(std::string& str);
+
+        std::vector<SE_Point2D> ReadOutlinePacket(const Dat::PacketGeneric& pkt);
+        int                     ReadOutlinePacket(std::vector<SE_Point2D>& points);
 
         int            FillDatHeader(bool quiet = false);
         Dat::DatHeader GetDatHeader() const

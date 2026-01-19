@@ -473,6 +473,11 @@ namespace viewer
         int  GetCameraRelativePos(osg::Vec3& pos);
         int  AddCustomLightSource(double x, double y, double z, double intensity);
 
+        void CreateEntityOutline2D(osg::ref_ptr<osg::Group>       modelgroup,
+                                   const std::vector<SE_Point2D>* outline,
+                                   double                         refpoint_x_offset,
+                                   osg::Material*                 material);
+
         /**
          * Set mode of the esmini camera model
          * @param mode According to the RubberbandManipulator::CAMERA_MODE enum, plus any number of custom cameras. Set -1 to select the last.
@@ -486,15 +491,16 @@ namespace viewer
         {
             return currentCarInFocus_;
         }
-        EntityModel*             CreateEntityModel(std::string             modelFilepath,
-                                                   osg::Vec4               trail_color,
-                                                   EntityModel::EntityType type,
-                                                   bool                    road_sensor,
-                                                   std::string             name,
-                                                   OSCBoundingBox*         boundingBox,
-                                                   double                  refpoint_x_offset,
-                                                   double                  modlel_x_offset,
-                                                   EntityScaleMode         scaleMode = EntityScaleMode::NONE);
+        EntityModel*             CreateEntityModel(std::string                    modelFilepath,
+                                                   osg::Vec4                      trail_color,
+                                                   EntityModel::EntityType        type,
+                                                   bool                           road_sensor,
+                                                   std::string                    name,
+                                                   OSCBoundingBox*                boundingBox,
+                                                   double                         refpoint_x_offset,
+                                                   double                         modlel_x_offset,
+                                                   const std::vector<SE_Point2D>* outline,
+                                                   EntityScaleMode                scaleMode = EntityScaleMode::NONE);
         int                      AddEntityModel(EntityModel* model);
         void                     RemoveCar(int index);
         void                     RemoveCar(std::string name);
