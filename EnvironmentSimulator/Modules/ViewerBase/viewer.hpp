@@ -338,7 +338,7 @@ namespace viewer
     public:
         std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> front_wheel_;
         std::vector<osg::ref_ptr<osg::PositionAttitudeTransform>> rear_wheel_;
-        std::vector<osg::ref_ptr<osg::Geode>>                     light_material_;
+        std::vector<osg::ref_ptr<osg::Material>>                  light_material_;
         double                                                    wheel_angle_;
         double                                                    wheel_rot_;
         static const EntityType                                   entity_type_ = EntityType::VEHICLE;

@@ -40,7 +40,37 @@
             </Properties>
         </Vehicle>
 
-       <Vehicle name="car_blue" vehicleCategory="car" model3d="../models/car_blue.osgb">
+        <Vehicle name="car_white_with_lights" vehicleCategory="car" model3d="../models/car_white_with_lights.osgb">
+            <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
+            <ParameterDeclarations>
+                <ParameterDeclaration name="EgoModelId" parameterType="integer" value="0"/>
+                <ParameterDeclaration name="ScaleMode" parameterType="string" value="None"/>
+                <ParameterDeclaration name="TrailerRef" parameterType="string" value=""/>
+                <ParameterDeclaration name="MaxSpeed" parameterType="double" value="${250/3.6}"/>
+                <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="10"/>
+                <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="5"/>
+            </ParameterDeclarations>
+            <BoundingBox>
+                <Center x="1.4" y="0.0" z="0.75"/>
+                <Dimensions width="2.0" length="5.04" height="1.5"/>
+            </BoundingBox>
+            <Performance maxSpeed="$MaxSpeed" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
+            <Axles>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <TrailerHitch dx="-1.2"/>
+            <Trailer>
+                <TrailerRef entityRef="$TrailerRef"/>
+            </Trailer>
+            <Properties>
+                <Property name="model_id" value="$EgoModelId"/>
+                <!-- Scale modes: None, BBToModel, ModelToBB -->
+                <Property name="scaleMode" value="$ScaleMode"/>
+            </Properties>
+        </Vehicle>
+
+        <Vehicle name="car_blue" vehicleCategory="car" model3d="../models/car_blue.osgb">
             <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
             <ParameterDeclarations>
                 <ParameterDeclaration name="DimX" parameterType="double" value="4.5"/>
@@ -418,7 +448,7 @@
 
         <!-- Tractor + Semi-trailer + Trailer -->
         <Vehicle name="semi_truck_with_extra_trailer" vehicleCategory="truck" model3d="../models/semi_tractor.osgb">
-            <!-- tractor model bounding box xyz: 2.20, 0.00, 1.68 lwh: 5.70, 2.60, 3.36 -->  
+            <!-- tractor model bounding box xyz: 2.20, 0.00, 1.68 lwh: 5.70, 2.60, 3.36 -->
             <BoundingBox>
                 <Center x="2.20" y="0.0" z="1.68"/>
                 <Dimensions width="2.6" length="5.70" height="3.36"/>
@@ -485,7 +515,7 @@
 
         <!-- Tractor + Semi-trailer + Trailer with rotating axle -->
         <Vehicle name="semi_truck_with_extra_trailer_rotating_axle" vehicleCategory="truck" model3d="../models/semi_tractor.osgb">
-            <!-- tractor model bounding box xyz: 2.20, 0.00, 1.68 lwh: 5.70, 2.60, 3.36 -->  
+            <!-- tractor model bounding box xyz: 2.20, 0.00, 1.68 lwh: 5.70, 2.60, 3.36 -->
             <BoundingBox>
                 <Center x="2.20" y="0.0" z="1.68"/>
                 <Dimensions width="2.6" length="5.70" height="3.36"/>

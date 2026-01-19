@@ -14,7 +14,7 @@
     </RoadNetwork>
     <Entities>
         <ScenarioObject name="Ego">
-            <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_white_with_lights"/>
         </ScenarioObject>
     </Entities>
     <Storyboard>

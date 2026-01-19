@@ -999,16 +999,16 @@ void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool showLights)
             continue;
         }
 
-        // Process each found node
+        // Process each found node, assume structure is Geode (with given name) -> Geometry -> StateSet -> Material
         bool materialFound = false;
         for (size_t i = 0; i < nodes.size(); i++)
         {
-            osg::ref_ptr<osg::Group> groupNew = static_cast<osg::Group*>(nodes[i]->getChild(0));
-            osg::ref_ptr<osg::Geode> geode    = static_cast<osg::Geode*>(groupNew->getChild(0));
+            osg::ref_ptr<osg::Geode> geode = static_cast<osg::Geode*>(nodes[i]);
 
-            if (geode->getName() == (lightName + "-material"))
+            if (geode->getName() == lightName && geode->getChild(0) != nullptr)
             {
-                light_material_.push_back(geode);
+                osg::Geometry* geom = static_cast<osg::Geometry*>(geode->getChild(0));
+                light_material_.push_back(static_cast<osg::Material*>(geom->getOrCreateStateSet()->getAttribute(osg::StateAttribute::MATERIAL)));
                 geode->setNodeMask(NodeMask::NODE_MASK_LIGHTS_STATE);
                 materialFound = true;
                 break;  // Stop searching once the correct material is found
@@ -1247,14 +1247,8 @@ void CarModel::UpdateLightMaterial(Object::VehicleLightType lightType, const osg
 {
     if (light_material_[lightType] != nullptr)
     {
-        osg::Material* material =
-            static_cast<osg::Material*>(light_material_[lightType]->getOrCreateStateSet()->getAttribute(osg::StateAttribute::MATERIAL));
-
-        if (material)
-        {
-            material->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
-            material->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
-        }
+        light_material_[lightType]->setDiffuse(osg::Material::FRONT_AND_BACK, diffuseRgb);
+        light_material_[lightType]->setEmission(osg::Material::FRONT_AND_BACK, emissionRgb);
     }
     else
     {

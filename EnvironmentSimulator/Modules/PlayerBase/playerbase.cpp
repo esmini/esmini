@@ -1156,12 +1156,11 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
                 {
                     if (model->light_material_[j] != nullptr)
                     {
-                        std::string materialName = model->light_material_[j]->getOrCreateStateSet()->getName();
+                        std::string materialName = model->light_material_[j]->getName();
                         if (obj->LightType2Str(lightType) == materialName)
                         {
                             // Extract material properties
-                            osg::Material* material = static_cast<osg::Material*>(
-                                model->light_material_[j]->getOrCreateStateSet()->getAttribute(osg::StateAttribute::MATERIAL));
+                            osg::Material* material = model->light_material_[j];
 
                             if (material)
                             {
