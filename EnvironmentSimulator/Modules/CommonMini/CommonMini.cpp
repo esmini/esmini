@@ -1211,6 +1211,35 @@ std::string FileNameWithoutExtOf(const std::string& fname)
     }
 }
 
+bool ArrayZeroToOne(double array[], int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        if (array[i] > 0.0 - SMALL_NUMBER && array[i] < 1.0 + SMALL_NUMBER)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+int AdjustByOffsetArray(double (&array)[3], double limit)
+{
+    double fraction = 1.0;
+    double max_val  = MAX(array[0], MAX(array[1], array[2]));
+    if (max_val > SMALL_NUMBER)
+    {
+        fraction = limit / max_val;
+    }
+
+    array[0] *= fraction;
+    array[1] *= fraction;
+    array[2] *= fraction;
+
+    return 0;
+}
+
 std::string FilePathWithoutExtOf(const std::string& fpath)
 {
     size_t end_pos = fpath.find_last_of(".");

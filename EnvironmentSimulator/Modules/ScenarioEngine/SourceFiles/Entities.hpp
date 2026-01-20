@@ -88,7 +88,8 @@ namespace scenarioengine
             ALIGN_MODE_R_UPDATE = (1 << 20),
             CONTROLLER          = (1 << 21),
             BOUNDING_BOX        = (1 << 22),
-            LANE_TYPE_SNAP_MASK = (1 << 23)
+            LANE_TYPE_SNAP_MASK = (1 << 23),
+            LIGHT_STATE         = (1 << 24)
         } DirtyBit;
 
         typedef enum
@@ -135,6 +136,64 @@ namespace scenarioengine
             Percent = 0,
             Force   = 1
         };
+
+        enum class VehicleLightType
+        {
+            UNKNOWN = -1,
+            DAYTIME_RUNNING_LIGHTS,
+            LOW_BEAM,
+            HIGH_BEAM,
+            FOG_LIGHTS,
+            FOG_LIGHTS_FRONT,
+            FOG_LIGHTS_REAR,
+            BRAKE_LIGHTS,
+            WARNING_LIGHTS,
+            INDICATOR_LEFT,
+            INDICATOR_RIGHT,
+            REVERSING_LIGHTS,
+            LICENSE_PLATE_ILLUMINATION,
+            SPECIAL_PURPOSE_LIGHTS,
+            NUMBER_OF_VEHICLE_LIGHTS,
+            VEHICLE_LIGHT_SIZE
+        };
+
+        enum class VehicleLightMode
+        {
+            OFF = 0,
+            ON,
+            FLASHING,
+            UNKNOWN
+        };
+
+        enum class VehicleLightColor
+        {
+            OTHER = 0,
+            RED,
+            YELLOW,
+            GREEN,
+            BLUE,
+            VIOLET,
+            ORANGE,
+            BROWN,
+            BLACK,
+            GREY,
+            WHITE,
+            UNKNOWN  // Denotes color node itself missing
+        };
+
+        struct VehicleLightStatus
+        {
+            VehicleLightType  type              = VehicleLightType::UNKNOWN;
+            VehicleLightMode  mode              = VehicleLightMode::UNKNOWN;
+            VehicleLightColor color             = VehicleLightColor::UNKNOWN;
+            double            luminousIntensity = -1.0;                // -1 denotes missing from scenario
+            double            diffuseRgb[3]     = {-1.0, -1.0, -1.0};  // current diffuseRbg
+            double            emissionRgb[3]    = {0.0, 0.0, 0.0};     // current emissionRbg
+            double            baseRgb[3]        = {-1.0, -1.0, -1.0};  // base rbg
+        };
+
+        VehicleLightStatus vehLghtStsList[static_cast<size_t>(VehicleLightType::VEHICLE_LIGHT_SIZE)];
+        std::string        LightType2Str(VehicleLightType lightType);
 
         struct OverrideActionStatus
         {
