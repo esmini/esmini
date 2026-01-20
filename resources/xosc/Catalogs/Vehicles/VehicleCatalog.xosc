@@ -85,6 +85,38 @@
                 <Property name="outline" value="$Outline"/>
             </Properties>
         </Vehicle>
+        
+        <Vehicle name="car_white_with_lights" vehicleCategory="car" model3d="../models/car_white.osgb">
+            <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
+            <ParameterDeclarations>
+                <ParameterDeclaration name="EgoModelId" parameterType="integer" value="0"/>
+                <ParameterDeclaration name="ScaleMode" parameterType="string" value="None"/>
+                <ParameterDeclaration name="TrailerRef" parameterType="string" value=""/>
+                <ParameterDeclaration name="MaxSpeed" parameterType="double" value="${250/3.6}"/>
+                <ParameterDeclaration name="MaxDeceleration" parameterType="double" value="10"/>
+                <ParameterDeclaration name="MaxAcceleration" parameterType="double" value="5"/>
+                <ParameterDeclaration name="RefPointXOffset" parameterType="double" value="0.0"/>
+            </ParameterDeclarations>
+            <BoundingBox>
+                <Center x="1.4" y="0.0" z="0.75"/>
+                <Dimensions width="2.0" length="5.04" height="1.5"/>
+            </BoundingBox>
+            <Performance maxSpeed="$MaxSpeed" maxDeceleration="$MaxDeceleration" maxAcceleration="$MaxAcceleration"/>
+            <Axles>
+                <FrontAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="2.98" positionZ="0.4"/>
+                <RearAxle maxSteering="0.523598775598" wheelDiameter="0.8" trackWidth="1.68" positionX="0" positionZ="0.4"/>
+            </Axles>
+            <TrailerHitch dx="-1.2"/>
+            <Trailer>
+                <TrailerRef entityRef="$TrailerRef"/>
+            </Trailer>
+            <Properties>
+                <!-- Scale modes: None, BBToModel, ModelToBB -->
+                <Property name="scaleMode" value="$ScaleMode"/>
+                <!-- source_reference is populated to OSI moving object -->
+                <Property name="refpoint_x_offset" value="$RefPointXOffset"/>
+            </Properties>
+        </Vehicle>
 
         <Vehicle name="car_blue" vehicleCategory="car" model3d="../models/car_blue.osgb">
             <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->

@@ -743,6 +743,16 @@ void SwapByteOrder(unsigned char* buf, int data_type_size, int buf_size);
 bool IsNumber(const std::string& str, int max_digits = -1);
 
 /**
+        Check whether array contains at least one non-zero element
+*/
+bool ArrayZeroToOne(double array[], int size);
+
+/**
+        Adjust array values by limit
+*/
+int AdjustByOffsetArray(double (&array)[3], double limit);
+
+/**
  * Checks if a given string conforms to the ISO 8601 combined date and time representation format.
  * Specifically, the format is: YYYY-MM-DDTHH:MM:SS.mmm+ZZZZ or YYYY-MM-DDTHH:MM:SS.mmm-ZZZZ.
  */

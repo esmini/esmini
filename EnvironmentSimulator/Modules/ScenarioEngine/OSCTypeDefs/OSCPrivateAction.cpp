@@ -3095,6 +3095,74 @@ void VisibilityAction::Step(double simTime, double dt)
     OSCAction::End();
 }
 
+void LightStateAction::Start(double simTime)
+{
+    std::copy_n(vehicleLightStatus_.emissionRgb, RGB_ARRAY_SIZE_, initEmissionRgb_);
+    std::copy_n(vehicleLightStatus_.diffuseRgb, RGB_ARRAY_SIZE_, initDiffuseRgb_);
+
+    bool accepted = true;
+    if (vehicleLightStatus_.type == Object::VehicleLightType::UNKNOWN)
+    {
+        accepted = ArrayZeroToOne(vehicleLightStatus_.baseRgb, RGB_ARRAY_SIZE_);
+
+        if (accepted && rgbFromLightType_)
+        {
+            AdjustByOffsetArray(vehicleLightStatus_.baseRgb, RGB_OFFSET_);
+        }
+        else  // What case is this?
+        {
+            for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
+            {
+                vehicleLightStatus_.baseRgb[i] = -1.0;
+            }
+        }
+
+        // vehicleLightStatus_.color
+    }
+
+    if (vehicleLightStatus_.luminousIntensity == -1.0 &&
+        (vehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING || vehicleLightStatus_.mode == Object::VehicleLightMode::ON))
+    {
+        vehicleLightStatus_.luminousIntensity = (previousIntensity_ != -1.0) ? previousIntensity_ : DEFAULT_LUMINOUS_INTENSITY_;
+    }
+}
+
+Object::VehicleLightType LightStateAction::GetVehicleLightType(const std::string& lightType)
+{
+    auto lightTypeEnum = Object::VehicleLightType::UNKNOWN;
+    auto it            = lightTypeMap.find(lightType);
+    if (it != lightTypeMap.end())
+    {
+        lightTypeEnum = it->second;
+    }
+
+    return lightTypeEnum;
+}
+
+Object::VehicleLightColor LightStateAction::GetVehicleLightColor(const std::string& colorType)
+{
+    auto lightColorEnum = Object::VehicleLightColor::OTHER;  // TODO: Why other not unknown?
+    auto it             = lightColorMap.find(colorType);
+    if (it != lightColorMap.end())
+    {
+        lightColorEnum = it->second;
+    }
+
+    return lightColorEnum;
+}
+
+Object::VehicleLightMode LightStateAction::GetVehicleLightMode(const std::string& mode)
+{
+    auto lightModeEnum = Object::VehicleLightMode::UNKNOWN;
+    auto it            = lightModeMap.find(mode);
+    if (it != lightModeMap.end())
+    {
+        lightModeEnum = it->second;
+    }
+
+    return lightModeEnum;
+}
+
 int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status)
 {
     overrideActionList.push_back(status);

@@ -1424,6 +1424,113 @@ namespace scenarioengine
         void Start(double simTime);
     };
 
+    class LightStateAction : public OSCPrivateAction
+    {
+    public:
+        LightStateAction(StoryBoardElement* parent)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT))
+        //   transitionTime_(0.0),
+        //   flashingOffDuration_(0.5),
+        //   flashingOnDuration_(0.5),
+        //   transitionTimer_(0.0),
+        //   flashingTimer_(0.0),
+        //   cmyk_{-1.0, -1.0, -1.0, -1.0},
+        //   vehicleLightStatus_(object_->vehLghtStsList[static_cast<size_t>(vehicleLightStatus_.type)]),
+        //   previousMode_(vehicleLightStatus_.mode),
+        //   previousIntensity_(vehicleLightStatus_.luminousIntensity),
+        //   RGB_ARRAY_SIZE_(sizeof(vehicleLightStatus_.baseRgb) / sizeof(vehicleLightStatus_.baseRgb[0])),
+        //   rgbFromLightType_(false),
+        //   RGB_OFFSET_(0.4),
+        //   DEFAULT_LUMINOUS_INTENSITY_(6000.0)
+        {
+        }
+
+        enum class FlashingStatus
+        {
+            LOW = 0,
+            HIGH,
+            UNDEFINED
+        };
+
+        // void                     Step(double simTime, double dt);
+        void Start(double simTime);
+
+        Object::VehicleLightType  GetVehicleLightType(const std::string& lightType);
+        Object::VehicleLightMode  GetVehicleLightMode(const std::string& mode);
+        Object::VehicleLightColor GetVehicleLightColor(const std::string& colorType);
+        // void                     AddVehicleLightActionStatus(Object::VehicleLightStatus& lightStatus);
+        // void                     SetbaseRgbAndPrepare(Object::VehicleLightStatus& lightStatus);
+        // Object::VehicleLightType GetLightType();
+
+        void SetTransitionTime(const double& time)
+        {
+            transitionTime_ = time;
+        }
+        void SetFlashingOffDuration(const double& duration)
+        {
+            flashingOffDuration_ = duration;
+        }
+        void SetFlashingOnDuration(const double& duration)
+        {
+            flashingOnDuration_ = duration;
+        }
+        void SetCMYK(double c, double m, double y, double k)
+        {
+            cmyk_[0] = c;
+            cmyk_[1] = m;
+            cmyk_[2] = y;
+            cmyk_[3] = k;
+        }
+
+        std::unordered_map<std::string, Object::VehicleLightType> lightTypeMap = {
+            {"daytimeRunningLights", Object::VehicleLightType::DAYTIME_RUNNING_LIGHTS},
+            {"lowBeam", Object::VehicleLightType::LOW_BEAM},
+            {"highBeam", Object::VehicleLightType::HIGH_BEAM},
+            {"fogLights", Object::VehicleLightType::FOG_LIGHTS},
+            {"fogLightsFront", Object::VehicleLightType::FOG_LIGHTS_FRONT},
+            {"fogLightsRear", Object::VehicleLightType::FOG_LIGHTS_REAR},
+            {"brakeLights", Object::VehicleLightType::BRAKE_LIGHTS},
+            {"warningLights", Object::VehicleLightType::WARNING_LIGHTS},
+            {"indicatorLeft", Object::VehicleLightType::INDICATOR_LEFT},
+            {"indicatorRight", Object::VehicleLightType::INDICATOR_RIGHT},
+            {"reversingLights", Object::VehicleLightType::REVERSING_LIGHTS},
+            {"licensePlateIllumination", Object::VehicleLightType::LICENSE_PLATE_ILLUMINATION},
+            {"specialPurposeLights", Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS}};
+
+        std::unordered_map<std::string, Object::VehicleLightColor> lightColorMap = {{"other", Object::VehicleLightColor::OTHER},
+                                                                                    {"red", Object::VehicleLightColor::RED},
+                                                                                    {"yellow", Object::VehicleLightColor::YELLOW},
+                                                                                    {"green", Object::VehicleLightColor::GREEN},
+                                                                                    {"blue", Object::VehicleLightColor::BLUE},
+                                                                                    {"violet", Object::VehicleLightColor::VIOLET},
+                                                                                    {"orange", Object::VehicleLightColor::ORANGE},
+                                                                                    {"brown", Object::VehicleLightColor::BROWN},
+                                                                                    {"black", Object::VehicleLightColor::BLACK},
+                                                                                    {"grey", Object::VehicleLightColor::GREY},
+                                                                                    {"white", Object::VehicleLightColor::WHITE}};
+
+        std::unordered_map<std::string, Object::VehicleLightMode> lightModeMap = {{"on", Object::VehicleLightMode::ON},
+                                                                                  {"off", Object::VehicleLightMode::OFF},
+                                                                                  {"flashing", Object::VehicleLightMode::FLASHING}};
+
+    private:
+        double                     transitionTime_;
+        double                     flashingOffDuration_;
+        double                     flashingOnDuration_;
+        double                     transitionTimer_;
+        double                     flashingTimer_;
+        double                     cmyk_[4];
+        Object::VehicleLightStatus vehicleLightStatus_;
+        Object::VehicleLightMode   previousMode_;
+        double                     previousIntensity_;
+        int                        RGB_ARRAY_SIZE_;
+        bool                       rgbFromLightType_;
+        double                     RGB_OFFSET_;
+        double                     DEFAULT_LUMINOUS_INTENSITY_;
+        double                     initEmissionRgb_[3];
+        double                     initDiffuseRgb_[3];
+    };
+
     class OverrideControlAction : public OSCPrivateAction
     {
     public:

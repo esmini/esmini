@@ -210,6 +210,7 @@ namespace scenarioengine
         int                   versionMinor_;
         std::string           description_;
         StoryBoard*           story_board_;
+        bool                  lightStatusOn_;
 
         int             ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
         ConditionGroup* ParseConditionGroup(pugi::xml_node node);
