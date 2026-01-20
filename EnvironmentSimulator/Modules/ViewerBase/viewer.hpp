@@ -503,11 +503,12 @@ namespace viewer
             osg::ref_ptr<osg::MatrixTransform> rolling_part;
             double                             wheel_z_offset;
         };
-        std::vector<WheelCompound> front_wheel_;
-        std::vector<WheelCompound> rear_wheel_;
-        double                     wheel_angle_;
-        double                     wheel_rot_;
-        virtual EntityType         GetType() override
+        std::vector<WheelCompound>               front_wheel_;
+        std::vector<WheelCompound>               rear_wheel_;
+        std::vector<osg::ref_ptr<osg::Material>> light_material_;
+        double                                   wheel_angle_;
+        double                                   wheel_rot_;
+        virtual EntityType                       GetType() override
         {
             return EntityType::VEHICLE;
         }
@@ -520,7 +521,8 @@ namespace viewer
                  osg::ref_ptr<osg::Node>  dot_node,
                  osg::ref_ptr<osg::Group> route_waypoint_parent,
                  osg::Vec4                trail_color,
-                 std::string              name);
+                 std::string              name,
+                 bool                     show_lights);
         ~CarModel();
         int  AddWheel(osg::ref_ptr<osg::Node> carNode, const WheelInfo& wheelInfo);
         void UpdateWheels(double wheel_angle,
@@ -531,6 +533,9 @@ namespace viewer
                           double roll_angle  = 0.0);
         void UpdateWheelsDelta(double wheel_angle, double wheel_rotation_delta);
         void UpdatePitchAndRoll(double pitch, double roll);
+        void AddLights(osg::ref_ptr<osg::Group> group, bool add_lights);
+        void UpdateLight(Object::VehicleLightStatus* vehicle_lights_status);
+        void UpdateLightMaterial(Object::VehicleLightType light_type, const osg::Vec4d& diffuse_rgb, const osg::Vec4d& emission_rgb);
     };
 
     class VisibilityCallback : public osg::NodeCallback
@@ -782,6 +787,10 @@ namespace viewer
         void                     CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
         void                     SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
         osg::ref_ptr<osg::Image> CreateShadowTexture(int tex_size, double max_alpha, double radius_offset, int mode);
+        void                     SetShowLights(bool val)
+        {
+            showLights_ = val;
+        }
 
     private:
         int        CreateTunnels(roadmanager::OpenDrive* od);
@@ -813,6 +822,7 @@ namespace viewer
         std::vector<float>                    fogColor_;
         osg::StateSet*                        axis_indicator_stateset_;
         int                                   axis_indicator_mode_ = 0;
+        bool                                  showLights_;
 
         struct
         {
