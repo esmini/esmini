@@ -1428,20 +1428,24 @@ namespace scenarioengine
     {
     public:
         LightStateAction(StoryBoardElement* parent)
-            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT))
-        //   transitionTime_(0.0),
-        //   flashingOffDuration_(0.5),
-        //   flashingOnDuration_(0.5),
-        //   transitionTimer_(0.0),
-        //   flashingTimer_(0.0),
-        //   cmyk_{-1.0, -1.0, -1.0, -1.0},
-        //   vehicleLightStatus_(object_->vehLghtStsList[static_cast<size_t>(vehicleLightStatus_.type)]),
-        //   previousMode_(vehicleLightStatus_.mode),
-        //   previousIntensity_(vehicleLightStatus_.luminousIntensity),
-        //   RGB_ARRAY_SIZE_(sizeof(vehicleLightStatus_.baseRgb) / sizeof(vehicleLightStatus_.baseRgb[0])),
-        //   rgbFromLightType_(false),
-        //   RGB_OFFSET_(0.4),
-        //   DEFAULT_LUMINOUS_INTENSITY_(6000.0)
+            : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT)),
+          transitionTime_(0.0),
+          flashingOffDuration_(0.5),
+          flashingOnDuration_(0.5),
+          transitionTimer_(0.0),
+          flashingTimer_(0.0),
+          cmyk_{-1.0, -1.0, -1.0, -1.0},
+          rgb_{-1.0, -1.0, -1.0},
+          RGB_ARRAY_SIZE_(3),
+          rgbFromLightType_(false),
+          RGB_OFFSET_(0.4),
+          DEFAULT_LUMINOUS_INTENSITY_(6000.0),
+          vehicleLightMode_(Object::VehicleLightMode::UNKNOWN),
+          previousMode_(vehicleLightMode_),
+          luminousIntensity_(-1.0),
+          previousIntensity_(luminousIntensity_),
+          vehicleLightType_(Object::VehicleLightType::UNKNOWN),
+          vehicleLightColor_(Object::VehicleLightColor::UNKNOWN)
         {
         }
 
@@ -1474,12 +1478,34 @@ namespace scenarioengine
         {
             flashingOnDuration_ = duration;
         }
-        void SetCMYK(double c, double m, double y, double k)
+        void SetCMYK(const double& c, const double& m, const double& y, const double& k)
         {
             cmyk_[0] = c;
             cmyk_[1] = m;
             cmyk_[2] = y;
             cmyk_[3] = k;
+        }
+        void SetRGB(const double& r, const double& g, const double& b)
+        {
+            rgb_[0] = r;
+            rgb_[1] = g;
+            rgb_[2] = b;
+        }
+        void SetVehicleLightType(const Object::VehicleLightType& type)
+        {
+            vehicleLightType_ = type;
+        }
+        void SetLuminousIntensity(const double& intensity)
+        {
+            luminousIntensity_ = intensity;
+        }
+        void SetVehicleLightMode(const Object::VehicleLightMode& mode)
+        {
+            vehicleLightMode_ = mode;
+        }
+        void SetVehicleLightColor(const Object::VehicleLightColor& color)
+        {
+            vehicleLightColor_ = color;
         }
 
         std::unordered_map<std::string, Object::VehicleLightType> lightTypeMap = {
@@ -1520,13 +1546,20 @@ namespace scenarioengine
         double                     transitionTimer_;
         double                     flashingTimer_;
         double                     cmyk_[4];
-        Object::VehicleLightStatus vehicleLightStatus_;
-        Object::VehicleLightMode   previousMode_;
-        double                     previousIntensity_;
-        int                        RGB_ARRAY_SIZE_;
+        double                     rgb_[3];
+        const int                  RGB_ARRAY_SIZE_;
         bool                       rgbFromLightType_;
-        double                     RGB_OFFSET_;
-        double                     DEFAULT_LUMINOUS_INTENSITY_;
+        const double               RGB_OFFSET_;
+        const double               DEFAULT_LUMINOUS_INTENSITY_;
+        Object::VehicleLightStatus vehicleLightStatus_;
+        Object::VehicleLightMode   vehicleLightMode_;
+        Object::VehicleLightMode   previousMode_;
+        double                     luminousIntensity_;
+        double                     previousIntensity_;
+        Object::VehicleLightType   vehicleLightType_;
+        Object::VehicleLightColor  vehicleLightColor_;
+
+
         double                     initEmissionRgb_[3];
         double                     initDiffuseRgb_[3];
     };
