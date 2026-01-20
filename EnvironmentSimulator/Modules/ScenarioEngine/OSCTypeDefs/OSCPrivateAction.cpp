@@ -3097,37 +3097,36 @@ void VisibilityAction::Step(double simTime, double dt)
 
 void LightStateAction::Start(double simTime)
 {
-    std::copy_n(vehicleLightStatus_.emissionRgb, RGB_ARRAY_SIZE_, initEmissionRgb_);
-    std::copy_n(vehicleLightStatus_.diffuseRgb, RGB_ARRAY_SIZE_, initDiffuseRgb_);
+    auto& vehicleLightStatus = object_->vehLghtStsList[static_cast<size_t>(vehicleLightType_)];
 
     bool accepted = true;
-    if (vehicleLightStatus_.type == Object::VehicleLightType::UNKNOWN)
+    if (this->vehicleLightType_ == Object::VehicleLightType::UNKNOWN)
     {
-        accepted = ArrayZeroToOne(vehicleLightStatus_.baseRgb, RGB_ARRAY_SIZE_);
+        accepted = ArrayZeroToOne(this->rgb_, RGB_ARRAY_SIZE_);
 
         if (accepted && rgbFromLightType_)
         {
-            AdjustByOffsetArray(vehicleLightStatus_.baseRgb, RGB_OFFSET_);
+            AdjustByOffsetArray(vehicleLightStatus.baseRgb, RGB_OFFSET_);
         }
         else  // What case is this?
         {
             for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
             {
-                vehicleLightStatus_.baseRgb[i] = -1.0;
+                vehicleLightStatus.baseRgb[i] = -1.0;
             }
         }
 
         // vehicleLightStatus_.color
     }
 
-    if (vehicleLightStatus_.luminousIntensity == -1.0 &&
-        (vehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING || vehicleLightStatus_.mode == Object::VehicleLightMode::ON))
+    if (vehicleLightStatus.luminousIntensity == -1.0 &&
+        (vehicleLightStatus.mode == Object::VehicleLightMode::FLASHING || vehicleLightStatus.mode == Object::VehicleLightMode::ON))
     {
-        vehicleLightStatus_.luminousIntensity = (previousIntensity_ != -1.0) ? previousIntensity_ : DEFAULT_LUMINOUS_INTENSITY_;
+        vehicleLightStatus.luminousIntensity = (previousIntensity_ != -1.0) ? previousIntensity_ : DEFAULT_LUMINOUS_INTENSITY_;
     }
 }
 
-Object::VehicleLightType LightStateAction::GetVehicleLightType(const std::string& lightType)
+Object::VehicleLightType LightStateAction::GetVehicleLightTypeFromStr(const std::string& lightType)
 {
     auto lightTypeEnum = Object::VehicleLightType::UNKNOWN;
     auto it            = lightTypeMap.find(lightType);
@@ -3139,9 +3138,9 @@ Object::VehicleLightType LightStateAction::GetVehicleLightType(const std::string
     return lightTypeEnum;
 }
 
-Object::VehicleLightColor LightStateAction::GetVehicleLightColor(const std::string& colorType)
+Object::VehicleLightColor LightStateAction::GetVehicleLightColorFromStr(const std::string& colorType)
 {
-    auto lightColorEnum = Object::VehicleLightColor::OTHER;  // TODO: Why other not unknown?
+    auto lightColorEnum = Object::VehicleLightColor::UNKNOWN;
     auto it             = lightColorMap.find(colorType);
     if (it != lightColorMap.end())
     {
@@ -3151,7 +3150,7 @@ Object::VehicleLightColor LightStateAction::GetVehicleLightColor(const std::stri
     return lightColorEnum;
 }
 
-Object::VehicleLightMode LightStateAction::GetVehicleLightMode(const std::string& mode)
+Object::VehicleLightMode LightStateAction::GetVehicleLightModeFromStr(const std::string& mode)
 {
     auto lightModeEnum = Object::VehicleLightMode::UNKNOWN;
     auto it            = lightModeMap.find(mode);
@@ -3161,6 +3160,116 @@ Object::VehicleLightMode LightStateAction::GetVehicleLightMode(const std::string
     }
 
     return lightModeEnum;
+}
+
+void LightStateAction::CmykToRgb(const double* cmyk, double* rgb)
+{
+    rgb[0] = (1 - cmyk[0]) * (1 - cmyk[3]);
+    rgb[1] = (1 - cmyk[1]) * (1 - cmyk[3]);
+    rgb[2] = (1 - cmyk[2]) * (1 - cmyk[3]);
+}
+
+void LightStateAction::SetRgbFromColorEnum(const Object::VehicleLightColor& color)
+{
+    switch (color)
+    {
+        case Object::VehicleLightColor::RED:
+            this->rgb_[0] = 0.5;
+            this->rgb_[1] = 0.0;
+            this->rgb_[2] = 0.0;
+            break;
+        case Object::VehicleLightColor::YELLOW:
+            this->rgb_[0] = 0.5;
+            this->rgb_[1] = 0.5;
+            this->rgb_[2] = 0.3;
+            break;
+        case Object::VehicleLightColor::GREEN:
+            this->rgb_[0] = 0.0;
+            this->rgb_[1] = 0.5;
+            this->rgb_[2] = 0.0;
+            break;
+        case Object::VehicleLightColor::BLUE:
+            this->rgb_[0] = 0.0;
+            this->rgb_[1] = 0.0;
+            this->rgb_[2] = 0.5;
+            break;
+        case Object::VehicleLightColor::VIOLET:
+            this->rgb_[0] = 0.53;
+            this->rgb_[1] = 0.31;
+            this->rgb_[2] = 0.02;
+            break;
+        case Object::VehicleLightColor::ORANGE:
+            this->rgb_[0] = 0.5;
+            this->rgb_[1] = 0.15;
+            this->rgb_[2] = 0.0;
+            break;
+        case Object::VehicleLightColor::BROWN:
+            this->rgb_[0] = 0.15;
+            this->rgb_[1] = 0.06;
+            this->rgb_[2] = 0.06;
+            break;
+        case Object::VehicleLightColor::BLACK:
+            this->rgb_[0] = 0.0;
+            this->rgb_[1] = 0.0;
+            this->rgb_[2] = 0.0;
+            break;
+        case Object::VehicleLightColor::GREY:
+            this->rgb_[0] = 0.3;
+            this->rgb_[1] = 0.3;
+            this->rgb_[2] = 0.3;
+            break;
+        case Object::VehicleLightColor::WHITE:
+            this->rgb_[0] = 0.6;
+            this->rgb_[1] = 0.6;
+            this->rgb_[2] = 0.6;
+            break;
+        default:
+            break;
+    }
+
+    return;
+}
+
+void LightStateAction::SetRgbFromTypeEnum(const Object::VehicleLightType& type)
+{
+    switch (type)
+    {
+        case Object::VehicleLightType::DAYTIME_RUNNING_LIGHTS:
+        case Object::VehicleLightType::LOW_BEAM:
+        case Object::VehicleLightType::HIGH_BEAM:
+        case Object::VehicleLightType::REVERSING_LIGHTS:
+        case Object::VehicleLightType::LICENSE_PLATE_ILLUMINATION:
+            this->rgb_[0] = 0.5;
+            this->rgb_[0] = 0.5;
+            this->rgb_[0] = 0.5;
+            break;
+        case Object::VehicleLightType::FOG_LIGHTS:
+        case Object::VehicleLightType::FOG_LIGHTS_FRONT:
+        case Object::VehicleLightType::FOG_LIGHTS_REAR:
+            this->rgb_[0] = 0.5;
+            this->rgb_[0] = 0.5;
+            this->rgb_[0] = 0.4;
+            break;
+        case Object::VehicleLightType::BRAKE_LIGHTS:
+            this->rgb_[0] = 0.5;
+            this->rgb_[0] = 0.0;
+            this->rgb_[0] = 0.0;
+            break;
+        case Object::VehicleLightType::WARNING_LIGHTS:
+        case Object::VehicleLightType::INDICATOR_LEFT:
+        case Object::VehicleLightType::INDICATOR_RIGHT:
+            this->rgb_[0] = 0.5;
+            this->rgb_[0] = 0.35;
+            this->rgb_[0] = 0.14;
+            break;
+        case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
+            this->rgb_[0] = 0.3;
+            this->rgb_[0] = 0.3;
+            this->rgb_[0] = 0.5;
+            break;
+        default:
+            break;
+    }
 }
 
 int OverrideControlAction::AddOverrideStatus(Object::OverrideActionStatus status)
