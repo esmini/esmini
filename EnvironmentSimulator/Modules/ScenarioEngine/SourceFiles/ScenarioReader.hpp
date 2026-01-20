@@ -174,6 +174,10 @@ namespace scenarioengine
         {
             return versionMinor_;
         }
+        bool HasLightStateAction() const
+        {
+            return has_lightstate_action_;
+        }
 
         int  RemoveController(Controller* controller);
         void AddController(Controller* controller)
@@ -204,6 +208,7 @@ namespace scenarioengine
         int                   versionMinor_;
         std::string           description_;
         StoryBoard*           story_board_;
+        bool                  has_lightstate_action_;
 
         int             ParseTransitionDynamics(pugi::xml_node node, OSCPrivateAction::TransitionDynamics& td);
         ConditionGroup* ParseConditionGroup(pugi::xml_node node);

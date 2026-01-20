@@ -297,6 +297,43 @@ scenarioengine::Controller* Object::GetController(std::string name) const
     return nullptr;
 }
 
+std::string Object::LightType2Str(VehicleLightType lightType)
+{
+    switch (lightType)
+    {
+        case Object::VehicleLightType::DAYTIME_RUNNING_LIGHTS:
+            return "light_daytime_running";
+        case Object::VehicleLightType::LOW_BEAM:
+            return "light_low_beam";
+        case Object::VehicleLightType::HIGH_BEAM:
+            return "light_high_beam";
+        case Object::VehicleLightType::FOG_LIGHTS:
+            return "fog_light";
+        case Object::VehicleLightType::FOG_LIGHTS_FRONT:
+            return "light_fog_front";
+        case Object::VehicleLightType::FOG_LIGHTS_REAR:
+            return "light_fog_rear";
+        case Object::VehicleLightType::BRAKE_LIGHTS:
+            return "light_brake";
+        case Object::VehicleLightType::WARNING_LIGHTS:
+            return "warning_lights";
+        case Object::VehicleLightType::INDICATOR_LEFT:
+            return "light_indicator_left";
+        case Object::VehicleLightType::INDICATOR_RIGHT:
+            return "light_indicator_right";
+        case Object::VehicleLightType::REVERSING_LIGHTS:
+            return "light_reversing";
+        case Object::VehicleLightType::LICENSE_PLATE_ILLUMINATION:
+            return "light_license_plate";
+        case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
+            return "light_special_purpose";
+        case Object::VehicleLightType::VEHICLE_LIGHT_SIZE:
+            return "Unknown_light";
+        default:
+            return "none";
+    }
+}
+
 void Object::SetVisibilityMask(int mask)
 {
     visibilityMask_ = mask;
