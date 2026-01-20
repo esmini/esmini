@@ -139,7 +139,6 @@ namespace scenarioengine
 
         enum class VehicleLightType
         {
-            UNKNOWN = -1,
             DAYTIME_RUNNING_LIGHTS,
             LOW_BEAM,
             HIGH_BEAM,
@@ -154,6 +153,7 @@ namespace scenarioengine
             LICENSE_PLATE_ILLUMINATION,
             SPECIAL_PURPOSE_LIGHTS,
             NUMBER_OF_VEHICLE_LIGHTS,
+            UNKNOWN = 0,
             VEHICLE_LIGHT_SIZE
         };
 

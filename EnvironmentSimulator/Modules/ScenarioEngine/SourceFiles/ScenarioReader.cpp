@@ -3976,7 +3976,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     {
                         if (lightTypeChild.name() == std::string("VehicleLight"))
                         {
-                            auto lightType = lightStateAction->GetVehicleLightType(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"));
+                            auto lightType =
+                                lightStateAction->GetVehicleLightTypeFromStr(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"));
                             if (lightType != Object::VehicleLightType::UNKNOWN)
                             {
                                 lightStateAction->SetVehicleLightType(lightType);
@@ -4033,13 +4034,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                         if (const auto &val = parameters.ReadAttribute(colorChild, "colorType"); !val.empty())
                         {
-                            auto color = lightStateAction->GetVehicleLightColor(val);
-                            if (color == Object::VehicleLightColor::UNKNOWN)
-                            {
-                                LOG_WARN("LightStateAction: Missing mandatory attribute colorType");
-                                ok = false;
-                                break;
-                            }
+                            auto color = lightStateAction->GetVehicleLightColorFromStr(val);
                             lightStateAction->SetVehicleLightColor(color);
                         }
 
@@ -4085,6 +4080,40 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                             LOG_WARN("LightStateAction: Can't set both colorRgb and colorCmyk");
                             ok = false;
                             break;
+                        }
+                        else if (colorCmykSet)
+                        {
+                            lightStateAction->CmykToRgb(lightStateAction->GetCmyk(), lightStateAction->GetRgb());
+                        }
+                        else if (colorRgbSet)
+                        {
+                            // TODO: PostProcessing of array for some reason
+                        }
+                        else  // No Color values set, check semantic color
+                        {
+                            if (lightStateAction->GetVehicleLightColor() == Object::VehicleLightColor::OTHER ||
+                                lightStateAction->GetVehicleLightColor() == Object::VehicleLightColor::UNKNOWN)
+                            {
+                                lightStateAction->SetRgbFromTypeEnum(lightStateAction->GetVehicleLightType());
+                            }
+                            else
+                            {
+                                lightStateAction->SetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());
+                            }
+                        }
+
+                        if (lightStateAction->GetVehicleLightType() == Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS)
+                        {
+                            auto rgb = lightStateAction->GetRgb();
+                            if (rgb[0] >= rgb[1] && rgb[0] >= rgb[2])
+                            {
+                                lightStateAction->SetVehicleLightColor(Object::VehicleLightColor::ORANGE);
+                            }
+                            else
+                            {
+                                lightStateAction->SetVehicleLightColor(Object::VehicleLightColor::BLUE);
+                            }
+                            lightStateAction->SetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());
                         }
                     }
                 }

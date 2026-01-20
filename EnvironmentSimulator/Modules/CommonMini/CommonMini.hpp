@@ -745,7 +745,7 @@ bool IsNumber(const std::string& str, int max_digits = -1);
 /**
         Check whether array contains at least one non-zero element
 */
-bool ArrayZeroToOne(double array[], int size);
+bool ArrayZeroToOne(double array[], size_t size);
 
 /**
         Adjust array values by limit
