@@ -3967,8 +3967,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 return 0;
             }
 
-            LightStateAction          *lightStateAction = new LightStateAction(parent);
-            lightStatusOn_ = true;  // TODO: Needs to be here?
+            LightStateAction *lightStateAction = new LightStateAction(parent);
+            lightStatusOn_                     = true;  // TODO: Needs to be here?
 
             if (const auto &val = parameters.ReadAttribute(appearanceActionChild, "transitionTime"); !val.empty())
             {
@@ -4070,7 +4070,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                     break;
                                 }
                                 lightStateAction->SetRGB(strtod(r), strtod(g), strtod(b));
-                                colorRgbSet                   = true;
+                                colorRgbSet = true;
                             }
                             else if (colorDesChild.name() == std::string("ColorCmyk"))
                             {
@@ -4104,12 +4104,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     ok = false;
                 }
 
-                if (!ok) // Correct cleanup?
+                if (!ok)  // Correct cleanup?
                 {
                     delete lightStateAction;
                     return 0;
                 }
-                
+
                 // Register vehicleLightState?
                 action = lightStateAction;
             }

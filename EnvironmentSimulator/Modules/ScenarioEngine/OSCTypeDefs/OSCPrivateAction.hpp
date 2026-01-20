@@ -1429,23 +1429,23 @@ namespace scenarioengine
     public:
         LightStateAction(StoryBoardElement* parent)
             : OSCPrivateAction(OSCPrivateAction::ActionType::LIGHT_STATE_ACTION, parent, static_cast<unsigned int>(ControlDomains::DOMAIN_LIGHT)),
-          transitionTime_(0.0),
-          flashingOffDuration_(0.5),
-          flashingOnDuration_(0.5),
-          transitionTimer_(0.0),
-          flashingTimer_(0.0),
-          cmyk_{-1.0, -1.0, -1.0, -1.0},
-          rgb_{-1.0, -1.0, -1.0},
-          RGB_ARRAY_SIZE_(3),
-          rgbFromLightType_(false),
-          RGB_OFFSET_(0.4),
-          DEFAULT_LUMINOUS_INTENSITY_(6000.0),
-          vehicleLightMode_(Object::VehicleLightMode::UNKNOWN),
-          previousMode_(vehicleLightMode_),
-          luminousIntensity_(-1.0),
-          previousIntensity_(luminousIntensity_),
-          vehicleLightType_(Object::VehicleLightType::UNKNOWN),
-          vehicleLightColor_(Object::VehicleLightColor::UNKNOWN)
+              transitionTime_(0.0),
+              flashingOffDuration_(0.5),
+              flashingOnDuration_(0.5),
+              transitionTimer_(0.0),
+              flashingTimer_(0.0),
+              cmyk_{-1.0, -1.0, -1.0, -1.0},
+              rgb_{-1.0, -1.0, -1.0},
+              RGB_ARRAY_SIZE_(3),
+              rgbFromLightType_(false),
+              RGB_OFFSET_(0.4),
+              DEFAULT_LUMINOUS_INTENSITY_(6000.0),
+              vehicleLightMode_(Object::VehicleLightMode::UNKNOWN),
+              previousMode_(vehicleLightMode_),
+              luminousIntensity_(-1.0),
+              previousIntensity_(luminousIntensity_),
+              vehicleLightType_(Object::VehicleLightType::UNKNOWN),
+              vehicleLightColor_(Object::VehicleLightColor::UNKNOWN)
         {
         }
 
@@ -1559,9 +1559,8 @@ namespace scenarioengine
         Object::VehicleLightType   vehicleLightType_;
         Object::VehicleLightColor  vehicleLightColor_;
 
-
-        double                     initEmissionRgb_[3];
-        double                     initDiffuseRgb_[3];
+        double initEmissionRgb_[3];
+        double initDiffuseRgb_[3];
     };
 
     class OverrideControlAction : public OSCPrivateAction
