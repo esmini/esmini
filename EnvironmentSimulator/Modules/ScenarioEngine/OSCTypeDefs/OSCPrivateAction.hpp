@@ -1436,6 +1436,8 @@ namespace scenarioengine
               flashingTimer_(0.0),
               cmyk_{-1.0, -1.0, -1.0, -1.0},
               rgb_{-1.0, -1.0, -1.0},
+              initEmissionRgb_{0.0, 0.0, 0.0},
+              initDiffuseRgb_{-1.0, -1.0, -1.0},
               RGB_ARRAY_SIZE_(3),
               rgbFromLightType_(false),
               RGB_OFFSET_(0.4),
@@ -1459,12 +1461,31 @@ namespace scenarioengine
         // void                     Step(double simTime, double dt);
         void Start(double simTime);
 
-        Object::VehicleLightType  GetVehicleLightType(const std::string& lightType);
-        Object::VehicleLightMode  GetVehicleLightMode(const std::string& mode);
-        Object::VehicleLightColor GetVehicleLightColor(const std::string& colorType);
+        Object::VehicleLightType  GetVehicleLightTypeFromStr(const std::string& lightType);
+        Object::VehicleLightMode  GetVehicleLightModeFromStr(const std::string& mode);
+        Object::VehicleLightColor GetVehicleLightColorFromStr(const std::string& colorType);
+        void                      CmykToRgb(const double* cmyk, double* rgb);
+        void                      SetRgbFromColorEnum(const Object::VehicleLightColor& color);
+        void                      SetRgbFromTypeEnum(const Object::VehicleLightType& type);
         // void                     AddVehicleLightActionStatus(Object::VehicleLightStatus& lightStatus);
         // void                     SetbaseRgbAndPrepare(Object::VehicleLightStatus& lightStatus);
         // Object::VehicleLightType GetLightType();
+        double* GetCmyk()
+        {
+            return cmyk_;
+        }
+        double* GetRgb()
+        {
+            return rgb_;
+        }
+        Object::VehicleLightColor GetVehicleLightColor() const
+        {
+            return vehicleLightColor_;
+        }
+        Object::VehicleLightType GetVehicleLightType() const
+        {
+            return vehicleLightType_;
+        }
 
         void SetTransitionTime(const double& time)
         {
@@ -1540,27 +1561,25 @@ namespace scenarioengine
                                                                                   {"flashing", Object::VehicleLightMode::FLASHING}};
 
     private:
-        double                     transitionTime_;
-        double                     flashingOffDuration_;
-        double                     flashingOnDuration_;
-        double                     transitionTimer_;
-        double                     flashingTimer_;
-        double                     cmyk_[4];
-        double                     rgb_[3];
-        const int                  RGB_ARRAY_SIZE_;
-        bool                       rgbFromLightType_;
-        const double               RGB_OFFSET_;
-        const double               DEFAULT_LUMINOUS_INTENSITY_;
-        Object::VehicleLightStatus vehicleLightStatus_;
-        Object::VehicleLightMode   vehicleLightMode_;
-        Object::VehicleLightMode   previousMode_;
-        double                     luminousIntensity_;
-        double                     previousIntensity_;
-        Object::VehicleLightType   vehicleLightType_;
-        Object::VehicleLightColor  vehicleLightColor_;
-
-        double initEmissionRgb_[3];
-        double initDiffuseRgb_[3];
+        double                    transitionTime_;
+        double                    flashingOffDuration_;
+        double                    flashingOnDuration_;
+        double                    transitionTimer_;
+        double                    flashingTimer_;
+        double                    cmyk_[4];
+        double                    rgb_[3];
+        double                    initEmissionRgb_[3];
+        double                    initDiffuseRgb_[3];
+        const size_t              RGB_ARRAY_SIZE_;
+        bool                      rgbFromLightType_;
+        const double              RGB_OFFSET_;
+        const double              DEFAULT_LUMINOUS_INTENSITY_;
+        Object::VehicleLightMode  vehicleLightMode_;
+        Object::VehicleLightMode  previousMode_;
+        double                    luminousIntensity_;
+        double                    previousIntensity_;
+        Object::VehicleLightType  vehicleLightType_;
+        Object::VehicleLightColor vehicleLightColor_;
     };
 
     class OverrideControlAction : public OSCPrivateAction
