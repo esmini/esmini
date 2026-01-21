@@ -3100,11 +3100,11 @@ void LightStateAction::Start(double simTime)
     auto& vehicleLightStatus = object_->vehLghtStsList[static_cast<size_t>(vehicleLightType_)];
 
     bool accepted = true;
-    if (this->vehicleLightType_ == Object::VehicleLightType::UNKNOWN)
+    if (this->vehicleLightType_ == Object::VehicleLightType::UNDEFINED)
     {
         accepted = ArrayZeroToOne(this->rgb_, RGB_ARRAY_SIZE_);
 
-        if (accepted && rgbFromLightType_)
+        if (accepted && rgbDeducedFromLightType_)
         {
             AdjustByOffsetArray(vehicleLightStatus.baseRgb, RGB_OFFSET_);
         }
@@ -3128,7 +3128,7 @@ void LightStateAction::Start(double simTime)
 
 Object::VehicleLightType LightStateAction::GetVehicleLightTypeFromStr(const std::string& lightType)
 {
-    auto lightTypeEnum = Object::VehicleLightType::UNKNOWN;
+    auto lightTypeEnum = Object::VehicleLightType::UNDEFINED;
     auto it            = lightTypeMap.find(lightType);
     if (it != lightTypeMap.end())
     {

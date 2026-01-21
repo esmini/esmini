@@ -139,6 +139,7 @@ namespace scenarioengine
 
         enum class VehicleLightType
         {
+            UNDEFINED = 0,
             DAYTIME_RUNNING_LIGHTS,
             LOW_BEAM,
             HIGH_BEAM,
@@ -153,7 +154,6 @@ namespace scenarioengine
             LICENSE_PLATE_ILLUMINATION,
             SPECIAL_PURPOSE_LIGHTS,
             NUMBER_OF_VEHICLE_LIGHTS,
-            UNKNOWN = 0,
             VEHICLE_LIGHT_SIZE
         };
 
@@ -183,7 +183,7 @@ namespace scenarioengine
 
         struct VehicleLightStatus
         {
-            VehicleLightType  type              = VehicleLightType::UNKNOWN;
+            VehicleLightType  type              = VehicleLightType::UNDEFINED;
             VehicleLightMode  mode              = VehicleLightMode::UNKNOWN;
             VehicleLightColor color             = VehicleLightColor::UNKNOWN;
             double            luminousIntensity = -1.0;                // -1 denotes missing from scenario
