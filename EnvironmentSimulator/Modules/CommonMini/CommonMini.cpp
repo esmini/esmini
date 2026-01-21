@@ -1224,7 +1224,7 @@ bool ArrayZeroToOne(double array[], size_t size)
     return false;
 }
 
-int AdjustByOffsetArray(double (&array)[3], double limit)
+int AdjustByOffsetArray(double *array, double limit)
 {
     double fraction = 1.0;
     double max_val  = MAX(array[0], MAX(array[1], array[2]));

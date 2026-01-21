@@ -3969,16 +3969,19 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                  lightStateActionChild                = lightStateActionChild.next_sibling())
             {
                 bool ok = true;
+                bool light_type = false;
+                bool light_state = false;
                 if (lightStateActionChild.name() == std::string("LightType"))
                 {
                     for (pugi::xml_node lightTypeChild = lightStateActionChild.first_child(); lightTypeChild;
                          lightTypeChild                = lightTypeChild.next_sibling())
                     {
+                        light_type = true;
                         if (lightTypeChild.name() == std::string("VehicleLight"))
                         {
                             auto lightType =
                                 lightStateAction->GetVehicleLightTypeFromStr(parameters.ReadAttribute(lightTypeChild, "vehicleLightType"));
-                            if (lightType != Object::VehicleLightType::UNKNOWN)
+                            if (lightType != Object::VehicleLightType::UNDEFINED)
                             {
                                 lightStateAction->SetVehicleLightType(lightType);
                                 continue;
@@ -3998,6 +4001,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
                 else if (lightStateActionChild.name() == std::string("LightState"))
                 {
+                    light_state = true;
                     if (const auto &val = parameters.ReadAttribute(lightStateActionChild, "flashingOffDuration"); !val.empty())
                     {
                         lightStateAction->SetFlashingOffDuration(strtod(val));
@@ -4015,7 +4019,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                     if (const auto &val = parameters.ReadAttribute(lightStateActionChild, "mode"); !val.empty())
                     {
-                        lightStateAction->SetVehicleLightMode(static_cast<Object::VehicleLightMode>(stoi(val)));
+                        auto mode = lightStateAction->GetVehicleLightModeFromStr(val);
+                        lightStateAction->SetVehicleLightMode(mode);
                     }
                     else
                     {  // shall be stoped
@@ -4054,7 +4059,16 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                     ok = false;
                                     break;
                                 }
-                                lightStateAction->SetRGB(strtod(r), strtod(g), strtod(b));
+
+                                double rgb_arr[3] = {strtod(r), strtod(g), strtod(b)};
+                                if (!ArrayZeroToOne(rgb_arr, 3))
+                                {
+                                    LOG_WARN("LightStateAction: RGB values out of valid range (0..1), skipping");
+                                    ok = false;
+                                    break;
+                                }
+
+                                lightStateAction->SetRGB(rgb_arr[0], rgb_arr[1], rgb_arr[2]);
                                 colorRgbSet = true;
                             }
                             else if (colorDesChild.name() == std::string("ColorCmyk"))
@@ -4070,7 +4084,16 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                     ok = false;
                                     break;
                                 }
-                                lightStateAction->SetCMYK(strtod(c), strtod(m), strtod(y), strtod(k));
+
+                                double cmyk_arr[4] = {strtod(c), strtod(m), strtod(y), strtod(k)};
+                                if (!ArrayZeroToOne(cmyk_arr, 4))
+                                {
+                                    LOG_WARN("LightStateAction: CMYK values out of valid range (0..1), skipping");
+                                    ok = false;
+                                    break;
+                                }
+
+                                lightStateAction->SetCMYK(cmyk_arr[0], cmyk_arr[1], cmyk_arr[2], cmyk_arr[3]);
                                 colorCmykSet = true;
                             }
                         }
@@ -4087,7 +4110,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                         else if (colorRgbSet)
                         {
-                            // TODO: PostProcessing of array for some reason
+                            AdjustByOffsetArray(lightStateAction->GetRgb(), lightStateAction->GetRgbOffset());
                         }
                         else  // No Color values set, check semantic color
                         {
@@ -4095,6 +4118,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 lightStateAction->GetVehicleLightColor() == Object::VehicleLightColor::UNKNOWN)
                             {
                                 lightStateAction->SetRgbFromTypeEnum(lightStateAction->GetVehicleLightType());
+                                lightStateAction->SetDeducedRgbFromLightType(true);
                             }
                             else
                             {
@@ -4117,19 +4141,20 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                     }
                 }
-                else
+                
+                if (!(light_state && light_type))
                 {
                     LOG_WARN("LightStateAction: Either LightType or LightState missing in: {}", actionChild.name());
                     ok = false;
                 }
 
-                if (!ok)  // Correct cleanup?
+                if (!ok)  // TODO: Test correct cleanup?
                 {
                     delete lightStateAction;
                     return 0;
                 }
 
-                // Register vehicleLightState?
+                lightStateAction->SetVehicleLightInitStatus(); // Register initial values for a vehicle light to be used when initializing the viewer
                 action = lightStateAction;
             }
         }

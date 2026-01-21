@@ -750,7 +750,7 @@ bool ArrayZeroToOne(double array[], size_t size);
 /**
         Adjust array values by limit
 */
-int AdjustByOffsetArray(double (&array)[3], double limit);
+int AdjustByOffsetArray(double *array, double limit);
 
 /**
  * Checks if a given string conforms to the ISO 8601 combined date and time representation format.
