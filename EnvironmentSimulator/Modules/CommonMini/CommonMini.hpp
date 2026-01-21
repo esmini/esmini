@@ -74,6 +74,7 @@ using idx_t = uint32_t;
 #define DAT_FILENAME                  "sim.dat"
 #define GHOST_TRAIL_SAMPLE_TIME       0.2  // default value, can be overridden by ghost_trail_dt option
 #define LOGICAL_OR(X, Y)              ((X || Y) && !(X && Y))
+#define MAX_INTENSITY_LUM             (12E+3)
 
 const std::string CONFIG_FILE_OPTION_NAME = "config_file_path";
 const std::string DEFAULT_CONFIG_FILE     = "config.yml";
@@ -744,7 +745,7 @@ bool ArrayZeroToOne(double array[], size_t size);
 /**
         Adjust array values by limit
 */
-int AdjustByOffsetArray(double *array, double limit);
+int AdjustByOffsetArray(double* array, double limit);
 
 /**
  * Checks if a given string conforms to the ISO 8601 combined date and time representation format.
