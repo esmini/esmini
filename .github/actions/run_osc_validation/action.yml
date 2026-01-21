@@ -4,10 +4,12 @@ runs:
   using: "composite"
   steps:
 
-    - name: Clone osc-validation
-      shell: bash
-      run: |
-        git clone --branch testing --single-branch https://github.com/PMSFIT/osc-validation.git
+    - name: Checkout osc-validation
+      uses: actions/checkout@v4
+      with:
+        repository: PMSFIT/osc-validation
+        ref: 44c6a2f
+        fetch-depth: 1
 
     - name: Set up Python venv
       shell: bash
