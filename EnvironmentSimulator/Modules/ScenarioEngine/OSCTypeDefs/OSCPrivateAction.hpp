@@ -1608,7 +1608,7 @@ namespace scenarioengine
         Object::VehicleLightType   vehicleLightType_;
         Object::VehicleLightColor  vehicleLightColor_;
         Object::VehicleLightStatus vehicleLightStatus_;
-        FlashingStatus flashStatus_;
+        FlashingStatus             flashStatus_;
     };
 
     class OverrideControlAction : public OSCPrivateAction

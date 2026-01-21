@@ -3914,7 +3914,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             }
 
             LightStateAction *lightStateAction = new LightStateAction(parent);
-            lightStatusOn_                     = true;  // TODO: Needs to be here?
 
             if (const auto &val = parameters.ReadAttribute(appearanceActionChild, "transitionTime"); !val.empty())
             {
@@ -4113,7 +4112,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
 
                 lightStateAction->SetVehicleLightInitStatus();  // Register initial values for a vehicle light to be used when initializing the viewer
-                action = lightStateAction;
+                action         = lightStateAction;
+                lightStatusOn_ = true;
             }
         }
         else

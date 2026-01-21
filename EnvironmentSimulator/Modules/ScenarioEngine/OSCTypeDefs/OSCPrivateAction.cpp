@@ -3229,10 +3229,9 @@ void LightStateAction::LightsFlashing(double dt)
     }
     else
     {
-        flashStatus_ = FlashingStatus::UNDEFINED;
+        flashStatus_   = FlashingStatus::UNDEFINED;
         flashingTimer_ = 0.0;
     }
-
 }
 
 void LightStateAction::SetLightTransitionValues(const Object::VehicleLightMode& mode)
@@ -3245,7 +3244,6 @@ void LightStateAction::SetLightTransitionValues(const Object::VehicleLightMode& 
     {
         SmoothTransition();
     }
-
 }
 void LightStateAction::RapidTransition()
 {
@@ -3288,18 +3286,16 @@ void LightStateAction::RapidTransition()
         std::copy_n(emissionRgb, RGB_ARRAY_SIZE_, vehicleLightStatus.emissionRgb);
         std::copy_n(diffuseRgb, RGB_ARRAY_SIZE_, vehicleLightStatus.diffuseRgb);
     }
-
-
 }
 void LightStateAction::SmoothTransition()
 {
     auto& vehicleLightStatus = object_->vehLghtStsList[static_cast<size_t>(vehicleLightStatus_.type)];
 
-    double proportion =  transitionTimer_ / transitionTime_;
+    double proportion = transitionTimer_ / transitionTime_;
     for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
     {
         vehicleLightStatus.emissionRgb[i] = initEmissionRgb_[i] + (proportion * (finalEmissionRgb_[i] - initEmissionRgb_[i]));
-        vehicleLightStatus.diffuseRgb[i] = initDiffusionRgb_[i] + (proportion * (finalDiffusionRgb_[i] - initDiffusionRgb_[i]));
+        vehicleLightStatus.diffuseRgb[i]  = initDiffusionRgb_[i] + (proportion * (finalDiffusionRgb_[i] - initDiffusionRgb_[i]));
     }
 }
 
