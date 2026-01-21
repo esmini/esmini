@@ -1438,10 +1438,13 @@ namespace scenarioengine
               rgb_{-1.0, -1.0, -1.0},
               initEmissionRgb_{0.0, 0.0, 0.0},
               initDiffuseRgb_{-1.0, -1.0, -1.0},
+              finalEmissionRgb_{0.0, 0.0, 0.0},
+              finalDiffusionRgb_{0.0, 0.0, 0.0},
               RGB_ARRAY_SIZE_(3),
               rgbDeducedFromLightType_(false),
               RGB_OFFSET_(0.4),
               DEFAULT_LUMINOUS_INTENSITY_(6000.0),
+              LUMINOUS_MAX_(0.9),
               vehicleLightMode_(Object::VehicleLightMode::UNKNOWN),
               previousMode_(vehicleLightMode_),
               luminousIntensity_(-1.0),
@@ -1468,6 +1471,7 @@ namespace scenarioengine
         void                      CmykToRgb(const double* cmyk, double* rgb);
         void                      SetRgbFromColorEnum(const Object::VehicleLightColor& color);
         void                      SetRgbFromTypeEnum(const Object::VehicleLightType& type);
+        int                       CheckAndSetColorError(double* value, int n);
         // void                     AddVehicleLightActionStatus(Object::VehicleLightStatus& lightStatus);
         // void                     SetbaseRgbAndPrepare(Object::VehicleLightStatus& lightStatus);
         // Object::VehicleLightType GetLightType();
@@ -1539,10 +1543,10 @@ namespace scenarioengine
         }
         void SetVehicleLightInitStatus()
         {
-            vehicleLightStatus_.type = this->vehicleLightType_;
+            vehicleLightStatus_.type              = this->vehicleLightType_;
             vehicleLightStatus_.luminousIntensity = this->luminousIntensity_;
-            vehicleLightStatus_.mode = this->vehicleLightMode_;
-            vehicleLightStatus_.color = this->vehicleLightColor_;
+            vehicleLightStatus_.mode              = this->vehicleLightMode_;
+            vehicleLightStatus_.color             = this->vehicleLightColor_;
             std::copy_n(this->rgb_, RGB_ARRAY_SIZE_, vehicleLightStatus_.baseRgb);
         }
 
@@ -1578,25 +1582,28 @@ namespace scenarioengine
                                                                                   {"flashing", Object::VehicleLightMode::FLASHING}};
 
     private:
-        double                    transitionTime_;
-        double                    flashingOffDuration_;
-        double                    flashingOnDuration_;
-        double                    transitionTimer_;
-        double                    flashingTimer_;
-        double                    cmyk_[4];
-        double                    rgb_[3];
-        double                    initEmissionRgb_[3];
-        double                    initDiffuseRgb_[3];
-        const size_t              RGB_ARRAY_SIZE_;
-        bool                      rgbDeducedFromLightType_;
-        const double              RGB_OFFSET_;
-        const double              DEFAULT_LUMINOUS_INTENSITY_;
-        Object::VehicleLightMode  vehicleLightMode_;
-        Object::VehicleLightMode  previousMode_;
-        double                    luminousIntensity_;
-        double                    previousIntensity_;
-        Object::VehicleLightType  vehicleLightType_;
-        Object::VehicleLightColor vehicleLightColor_;
+        double                     transitionTime_;
+        double                     flashingOffDuration_;
+        double                     flashingOnDuration_;
+        double                     transitionTimer_;
+        double                     flashingTimer_;
+        double                     cmyk_[4];
+        double                     rgb_[3];
+        double                     initEmissionRgb_[3];
+        double                     initDiffuseRgb_[3];
+        double                     finalEmissionRgb_[3];
+        double                     finalDiffusionRgb_[3];
+        const size_t               RGB_ARRAY_SIZE_;
+        bool                       rgbDeducedFromLightType_;
+        const double               RGB_OFFSET_;
+        const double               DEFAULT_LUMINOUS_INTENSITY_;
+        const double               LUMINOUS_MAX_;
+        Object::VehicleLightMode   vehicleLightMode_;
+        Object::VehicleLightMode   previousMode_;
+        double                     luminousIntensity_;
+        double                     previousIntensity_;
+        Object::VehicleLightType   vehicleLightType_;
+        Object::VehicleLightColor  vehicleLightColor_;
         Object::VehicleLightStatus vehicleLightStatus_;
     };
 
