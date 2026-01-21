@@ -1437,7 +1437,7 @@ namespace scenarioengine
               cmyk_{-1.0, -1.0, -1.0, -1.0},
               rgb_{-1.0, -1.0, -1.0},
               initEmissionRgb_{0.0, 0.0, 0.0},
-              initDiffuseRgb_{-1.0, -1.0, -1.0},
+              initDiffusionRgb_{-1.0, -1.0, -1.0},
               finalEmissionRgb_{0.0, 0.0, 0.0},
               finalDiffusionRgb_{0.0, 0.0, 0.0},
               RGB_ARRAY_SIZE_(3),
@@ -1451,7 +1451,8 @@ namespace scenarioengine
               previousIntensity_(luminousIntensity_),
               vehicleLightType_(Object::VehicleLightType::UNDEFINED),
               vehicleLightColor_(Object::VehicleLightColor::UNKNOWN),
-              vehicleLightStatus_({})
+              vehicleLightStatus_({}),
+              flashStatus_(FlashingStatus::UNDEFINED)
         {
         }
 
@@ -1462,8 +1463,8 @@ namespace scenarioengine
             UNDEFINED
         };
 
-        // void                     Step(double simTime, double dt);
         void Start(double simTime);
+        void Step(double simTime, double dt);
 
         Object::VehicleLightType  GetVehicleLightTypeFromStr(const std::string& lightType);
         Object::VehicleLightMode  GetVehicleLightModeFromStr(const std::string& mode);
@@ -1472,8 +1473,10 @@ namespace scenarioengine
         void                      SetRgbFromColorEnum(const Object::VehicleLightColor& color);
         void                      SetRgbFromTypeEnum(const Object::VehicleLightType& type);
         int                       CheckAndSetColorError(double* value, int n);
-        // void                     AddVehicleLightActionStatus(Object::VehicleLightStatus& lightStatus);
-        // void                     SetbaseRgbAndPrepare(Object::VehicleLightStatus& lightStatus);
+        void                      LightsFlashing(double dt);
+        void                      SetLightTransitionValues(const Object::VehicleLightMode& mode);
+        void                      RapidTransition();
+        void                      SmoothTransition();
         // Object::VehicleLightType GetLightType();
         double* GetCmyk()
         {
@@ -1590,7 +1593,7 @@ namespace scenarioengine
         double                     cmyk_[4];
         double                     rgb_[3];
         double                     initEmissionRgb_[3];
-        double                     initDiffuseRgb_[3];
+        double                     initDiffusionRgb_[3];
         double                     finalEmissionRgb_[3];
         double                     finalDiffusionRgb_[3];
         const size_t               RGB_ARRAY_SIZE_;
@@ -1605,6 +1608,7 @@ namespace scenarioengine
         Object::VehicleLightType   vehicleLightType_;
         Object::VehicleLightColor  vehicleLightColor_;
         Object::VehicleLightStatus vehicleLightStatus_;
+        FlashingStatus flashStatus_;
     };
 
     class OverrideControlAction : public OSCPrivateAction
