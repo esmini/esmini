@@ -1439,15 +1439,16 @@ namespace scenarioengine
               initEmissionRgb_{0.0, 0.0, 0.0},
               initDiffuseRgb_{-1.0, -1.0, -1.0},
               RGB_ARRAY_SIZE_(3),
-              rgbFromLightType_(false),
+              rgbDeducedFromLightType_(false),
               RGB_OFFSET_(0.4),
               DEFAULT_LUMINOUS_INTENSITY_(6000.0),
               vehicleLightMode_(Object::VehicleLightMode::UNKNOWN),
               previousMode_(vehicleLightMode_),
               luminousIntensity_(-1.0),
               previousIntensity_(luminousIntensity_),
-              vehicleLightType_(Object::VehicleLightType::UNKNOWN),
-              vehicleLightColor_(Object::VehicleLightColor::UNKNOWN)
+              vehicleLightType_(Object::VehicleLightType::UNDEFINED),
+              vehicleLightColor_(Object::VehicleLightColor::UNKNOWN),
+              vehicleLightStatus_({})
         {
         }
 
@@ -1477,6 +1478,10 @@ namespace scenarioengine
         double* GetRgb()
         {
             return rgb_;
+        }
+        double GetRgbOffset() const
+        {
+            return RGB_OFFSET_;
         }
         Object::VehicleLightColor GetVehicleLightColor() const
         {
@@ -1528,6 +1533,18 @@ namespace scenarioengine
         {
             vehicleLightColor_ = color;
         }
+        void SetDeducedRgbFromLightType(bool val)
+        {
+            rgbDeducedFromLightType_ = val;
+        }
+        void SetVehicleLightInitStatus()
+        {
+            vehicleLightStatus_.type = this->vehicleLightType_;
+            vehicleLightStatus_.luminousIntensity = this->luminousIntensity_;
+            vehicleLightStatus_.mode = this->vehicleLightMode_;
+            vehicleLightStatus_.color = this->vehicleLightColor_;
+            std::copy_n(this->rgb_, RGB_ARRAY_SIZE_, vehicleLightStatus_.baseRgb);
+        }
 
         std::unordered_map<std::string, Object::VehicleLightType> lightTypeMap = {
             {"daytimeRunningLights", Object::VehicleLightType::DAYTIME_RUNNING_LIGHTS},
@@ -1571,7 +1588,7 @@ namespace scenarioengine
         double                    initEmissionRgb_[3];
         double                    initDiffuseRgb_[3];
         const size_t              RGB_ARRAY_SIZE_;
-        bool                      rgbFromLightType_;
+        bool                      rgbDeducedFromLightType_;
         const double              RGB_OFFSET_;
         const double              DEFAULT_LUMINOUS_INTENSITY_;
         Object::VehicleLightMode  vehicleLightMode_;
@@ -1580,6 +1597,7 @@ namespace scenarioengine
         double                    previousIntensity_;
         Object::VehicleLightType  vehicleLightType_;
         Object::VehicleLightColor vehicleLightColor_;
+        Object::VehicleLightStatus vehicleLightStatus_;
     };
 
     class OverrideControlAction : public OSCPrivateAction
