@@ -3968,8 +3968,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             for (pugi::xml_node lightStateActionChild = appearanceActionChild.first_child(); lightStateActionChild;
                  lightStateActionChild                = lightStateActionChild.next_sibling())
             {
-                bool ok = true;
-                bool light_type = false;
+                bool ok          = true;
+                bool light_type  = false;
                 bool light_state = false;
                 if (lightStateActionChild.name() == std::string("LightType"))
                 {
@@ -4063,6 +4063,8 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                                 double rgb_arr[3] = {strtod(r), strtod(g), strtod(b)};
                                 if (!ArrayZeroToOne(rgb_arr, 3))
                                 {
+                                    // TODO: Shall we proceed in case someone has given out of range values? If yes, set isModelRgbAccepted in
+                                    // LightStateAction and update Start()
                                     LOG_WARN("LightStateAction: RGB values out of valid range (0..1), skipping");
                                     ok = false;
                                     break;
@@ -4141,7 +4143,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                     }
                 }
-                
+
                 if (!(light_state && light_type))
                 {
                     LOG_WARN("LightStateAction: Either LightType or LightState missing in: {}", actionChild.name());
@@ -4154,7 +4156,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     return 0;
                 }
 
-                lightStateAction->SetVehicleLightInitStatus(); // Register initial values for a vehicle light to be used when initializing the viewer
+                lightStateAction->SetVehicleLightInitStatus();  // Register initial values for a vehicle light to be used when initializing the viewer
                 action = lightStateAction;
             }
         }
