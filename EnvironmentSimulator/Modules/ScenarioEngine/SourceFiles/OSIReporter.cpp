@@ -2198,6 +2198,7 @@ int OSIReporter::UpdateOSILaneBoundary()
         }
     }
 
+    // set barriers as lane boundaries
     for (unsigned int i = 0; i < opendrive->GetNumOfRoads(); i++)
     {
         roadmanager::Road *road = opendrive->GetRoadByIdx(i);
@@ -2246,6 +2247,7 @@ int OSIReporter::UpdateOSILaneBoundary()
             }
         }
     }
+
     return 0;
 }
 
