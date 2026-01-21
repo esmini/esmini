@@ -2004,6 +2004,53 @@ int OSIReporter::UpdateOSILaneBoundary()
         }
     }
 
+    // set barriers as lane boundaries
+    for (unsigned int i = 0; i < opendrive->GetNumOfRoads(); i++)
+    {
+        roadmanager::Road *road = opendrive->GetRoadByIdx(i);
+        if (road)
+        {
+            for (unsigned int j = 0; j < road->GetNumberOfObjects(); j++)
+            {
+                roadmanager::RMObject *object = road->GetRoadObject(j);
+                if (object)
+                {
+                    auto obj_type = object->GetType();
+                    if (obj_type == roadmanager::RMObject::ObjectType::BARRIER)
+                    {
+                        osi3::LaneBoundary *osi_laneboundary = obj_osi_internal.static_gt->add_lane_boundary();
+
+                        // set id and points
+                        osi_laneboundary->mutable_id()->set_value(object->GetGlobalId());
+                        osi_laneboundary->mutable_classification()->set_type(osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_BARRIER);    //todo: differentiate between barrier and guard rail
+                        if (object->GetNumberOfOutlines() > 0)
+                        {
+                            for (unsigned int k = 0; k < object->GetNumberOfOutlines(); k++)
+                            {
+                                roadmanager::Outline *outline = object->GetOutline(k);
+                                if (outline)
+                                {
+                                    for (size_t l = 0; l < outline->corner_.size(); l++)
+                                    {
+                                        double x, y, z;
+                                        outline->corner_[l]->GetPos(x, y, z);
+                                        osi3::LaneBoundary::BoundaryPoint *boundary_point = osi_laneboundary->add_boundary_line();
+                                        boundary_point->mutable_position()->set_x(x);
+                                        boundary_point->mutable_position()->set_y(y);
+                                        boundary_point->mutable_position()->set_z(z);
+                                        boundary_point->set_height(outline->corner_[l]->GetHeight());
+                                        boundary_point->set_width(0.1);     //todo: come up with solution to specify the width
+                                    }
+                                }
+                            }
+                        }
+                        obj_osi_internal.lnb.push_back(osi_laneboundary);
+                    }
+                }
+            }
+        }
+    }
+
     return 0;
 }
 
