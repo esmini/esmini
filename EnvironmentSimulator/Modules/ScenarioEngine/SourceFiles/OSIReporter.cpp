@@ -2030,7 +2030,7 @@ int OSIReporter::UpdateOSILaneBoundary()
                                 roadmanager::Outline *outline = object->GetOutline(k);
                                 if (outline)
                                 {
-                                    for (size_t l = 0; l < outline->corner_.size(); l++)
+                                    for (size_t l = 0; l < outline->corner_.size()/2; l++)  //todo: only use one side of the outline for the lane boundary, but it is not clear, if this is always the case.
                                     {
                                         double x, y, z;
                                         outline->corner_[l]->GetPos(x, y, z);
