@@ -8,8 +8,9 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: PMSFIT/osc-validation
-        ref: 44c6a2f
+        ref: 44c6a2f4c8363aebf8fcb8e9822fdcca677d51f6
         fetch-depth: 1
+        path: osc-validation
 
     - name: Set up Python venv
       shell: bash
@@ -22,6 +23,7 @@ runs:
         popd
 
     - name: Run osc-validation pytest suite
+      id: run_tests
       shell: bash
       run: |
         pushd osc-validation
