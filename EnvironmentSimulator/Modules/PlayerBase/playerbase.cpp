@@ -485,6 +485,11 @@ void ScenarioPlayer::ViewerFrame()
                 {
                     car->UpdateWheels(obj->wheel_angle_, obj->wheel_rot_);
                 }
+
+                if (this->scenarioEngine->scenarioReader->HasLightStateAction())
+                {
+                    car->UpdateLight(obj->vehLghtStsList);
+                }
             }
 
             viewer::MovingModel* mov = static_cast<viewer::MovingModel*>(entity);
@@ -853,6 +858,12 @@ int ScenarioPlayer::InitViewer()
     else if (opt.GetOptionValue("road_features") == "off")
     {
         viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ODR_FEATURES);
+    }
+
+    if (opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->HasLightStateAction())
+    {
+        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_LIGHT_STATE);
+        viewer_->SetShowLights(true);
     }
 
     if (opt.GetOptionSet("hide_route_waypoints"))
@@ -1317,6 +1328,62 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
                                    : obj->visibilityMask_ &= ~(Object::Visibility::SENSORS));
     }
 
+    // Light material details
+    if (this->scenarioEngine->scenarioReader->HasLightStateAction())
+    {
+        for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS); i++)
+        {
+            auto& light = obj->vehLghtStsList[i];
+
+            if (light.type != Object::VehicleLightType::UNDEFINED)
+            {
+                continue;
+            }
+
+            // This light hasn't been set in the scenario, so we process it now?
+            Object::VehicleLightType light_type = static_cast<Object::VehicleLightType>(i);
+
+            if (light_type == Object::VehicleLightType::FOG_LIGHTS)
+            {
+                light_type = Object::VehicleLightType::FOG_LIGHTS_REAR;  // Use rear fog light as the base
+            }
+            else if (light_type == Object::VehicleLightType::WARNING_LIGHTS)
+            {
+                light_type = Object::VehicleLightType::INDICATOR_LEFT;  // Use left indicator as the base
+            }
+
+            for (const auto& material : model->light_material_)
+            {
+                if (material == nullptr || obj->LightType2Str(light_type) != material->getName())
+                {
+                    continue;
+                }
+
+                // Get diffuse and emission colors
+                const osg::Vec4& diffuseColor = material->getDiffuseFrontAndBack() ? material->getDiffuse(osg::Material::FRONT_AND_BACK)
+                                                                                   : material->getDiffuse(osg::Material::FRONT);
+
+                const osg::Vec4& emissionColor = material->getEmissionFrontAndBack() ? material->getEmission(osg::Material::FRONT_AND_BACK)
+                                                                                     : material->getEmission(osg::Material::FRONT);
+
+                // Update light status with material colors
+                light.baseRgb[0] = diffuseColor.r();
+                light.baseRgb[1] = diffuseColor.g();
+                light.baseRgb[2] = diffuseColor.b();
+
+                light.diffuseRgb[0] = diffuseColor.r();
+                light.diffuseRgb[1] = diffuseColor.g();
+                light.diffuseRgb[2] = diffuseColor.b();
+
+                light.emissionRgb[0] = emissionColor.r();
+                light.emissionRgb[1] = emissionColor.g();
+                light.emissionRgb[2] = emissionColor.b();
+
+                break;
+            }
+        }
+    }
+
     viewer_->entities_.back()->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
 }
 #endif
@@ -1455,6 +1522,9 @@ int ScenarioPlayer::Init()
     opt.AddOption("ignore_p", "Ignore provided pitch values from OSC file and place vehicle relative to road");
     opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
+#ifdef _USE_OSG
+    opt.AddOption("lights", "Show lights for light state actions");
+#endif
     opt.AddOption("log_append", "Log all scenarios in the same txt file");
     opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", LOG_FILENAME, true);
     opt.AddOption("log_meta_data", "Log file name, function name and line number");
