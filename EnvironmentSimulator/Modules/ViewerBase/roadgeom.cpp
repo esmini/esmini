@@ -1299,6 +1299,7 @@ namespace roadgeom
                                 vertices_left_side  = new osg::Vec3Array;
                                 vertices_right_side = new osg::Vec3Array;
                                 vertices_top        = new osg::Vec3Array;
+                                vertices_bottom     = new osg::Vec3Array;
                                 group               = new osg::Group();
                             }
                         }
@@ -1557,7 +1558,7 @@ namespace roadgeom
 
                         // Add floor
                         geom[2]->setVertexArray(vertices_bottom.get());
-                        geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, static_cast<int>(vertices_top->size())));
+                        geom[2]->addPrimitiveSet(new osg::DrawArrays(GL_QUAD_STRIP, 0, static_cast<int>(vertices_bottom->size())));
 
                         osgUtil::Tessellator tessellator;
                         tessellator.retessellatePolygons(*geom[1]);
