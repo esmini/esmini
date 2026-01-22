@@ -75,7 +75,7 @@ ScenarioReader::ScenarioReader(Entities *entities, Catalogs *catalogs, OSCEnviro
       environment_(environment),
       disable_controllers_(disable_controllers),
       story_board_(nullptr),
-      lightStatusOn_(false)
+      has_lightstate_action_(false)
 {
     parameters.Clear();
 }
@@ -3920,18 +3920,18 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 lightStateAction->SetTransitionTime(strtod(val));
             }
 
+            bool ok          = true;
+            bool light_type  = false;
+            bool light_state = false;
             for (pugi::xml_node lightStateActionChild = appearanceActionChild.first_child(); lightStateActionChild;
                  lightStateActionChild                = lightStateActionChild.next_sibling())
             {
-                bool ok          = true;
-                bool light_type  = false;
-                bool light_state = false;
                 if (lightStateActionChild.name() == std::string("LightType"))
                 {
+                    light_type = true;
                     for (pugi::xml_node lightTypeChild = lightStateActionChild.first_child(); lightTypeChild;
                          lightTypeChild                = lightTypeChild.next_sibling())
                     {
-                        light_type = true;
                         if (lightTypeChild.name() == std::string("VehicleLight"))
                         {
                             auto lightType =
@@ -4098,23 +4098,23 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         }
                     }
                 }
-
-                if (!(light_state && light_type))
-                {
-                    LOG_WARN("LightStateAction: Either LightType or LightState missing in: {}", actionChild.name());
-                    ok = false;
-                }
-
-                if (!ok)  // TODO: Test correct cleanup?
-                {
-                    delete lightStateAction;
-                    return 0;
-                }
-
-                lightStateAction->SetVehicleLightInitStatus();  // Register initial values for a vehicle light to be used when initializing the viewer
-                action         = lightStateAction;
-                lightStatusOn_ = true;
             }
+
+            if (!(light_state && light_type))
+            {
+                LOG_WARN("LightStateAction: Either LightType or LightState missing in: {}", actionChild.name());
+                ok = false;
+            }
+
+            if (!ok)  // TODO: Test correct cleanup?
+            {
+                delete lightStateAction;
+                return 0;
+            }
+
+            lightStateAction->SetVehicleLightInitStatus();  // Register initial values for a vehicle light to be used when initializing the viewer
+            action                 = lightStateAction;
+            has_lightstate_action_ = true;
         }
         else
         {

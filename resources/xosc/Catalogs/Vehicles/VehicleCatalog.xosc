@@ -47,7 +47,7 @@
             </Properties>
         </Vehicle>
         
-        <Vehicle name="car_white_with_lights" vehicleCategory="car" model3d="../models/car_white.osgb">
+        <Vehicle name="car_white_with_lights" vehicleCategory="car" model3d="../models/car_white_with_lights.osgb">
             <!-- model bounding box xyz: 1.46, 0.00, 0.77 lwh: 5.04, 2.04, 1.49 -->
             <ParameterDeclarations>
                 <ParameterDeclaration name="EgoModelId" parameterType="integer" value="0"/>
