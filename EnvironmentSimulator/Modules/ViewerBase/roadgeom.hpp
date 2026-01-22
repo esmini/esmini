@@ -45,6 +45,7 @@ namespace roadgeom
         NODE_MASK_WEATHER          = (1 << 15),
         NODE_MASK_OBJ_OUTLINE      = (1 << 16),
         NODE_MASK_AXIS_INDICATOR   = (1 << 17),
+        NODE_MASK_LIGHT_STATE      = (1 << 18),
     } NodeMask;
 
     uint64_t  GenerateMaterialKey(double r, double g, double b, double a, uint8_t t, uint8_t f);
