@@ -3185,7 +3185,7 @@ void LightStateAction::Step(double simTime, double dt)
 
     auto& vehicleLightStatus = object_->vehLghtStsList[static_cast<size_t>(vehicleLightStatus_.type)];
 
-    if (transitionTime_ < transitionTimer_)
+    if (transitionTime_ <= transitionTimer_)
     {
         // Light/color intensity, increase until transition time
         if (vehicleLightStatus.mode == Object::VehicleLightMode::FLASHING)
@@ -3425,32 +3425,32 @@ void LightStateAction::SetRgbFromTypeEnum(const Object::VehicleLightType& type)
         case Object::VehicleLightType::REVERSING_LIGHTS:
         case Object::VehicleLightType::LICENSE_PLATE_ILLUMINATION:
             this->rgb_[0] = 0.5;
-            this->rgb_[0] = 0.5;
-            this->rgb_[0] = 0.5;
+            this->rgb_[1] = 0.5;
+            this->rgb_[2] = 0.5;
             break;
         case Object::VehicleLightType::FOG_LIGHTS:
         case Object::VehicleLightType::FOG_LIGHTS_FRONT:
         case Object::VehicleLightType::FOG_LIGHTS_REAR:
             this->rgb_[0] = 0.5;
-            this->rgb_[0] = 0.5;
-            this->rgb_[0] = 0.4;
+            this->rgb_[1] = 0.5;
+            this->rgb_[2] = 0.4;
             break;
         case Object::VehicleLightType::BRAKE_LIGHTS:
             this->rgb_[0] = 0.5;
-            this->rgb_[0] = 0.0;
-            this->rgb_[0] = 0.0;
+            this->rgb_[1] = 0.0;
+            this->rgb_[2] = 0.0;
             break;
         case Object::VehicleLightType::WARNING_LIGHTS:
         case Object::VehicleLightType::INDICATOR_LEFT:
         case Object::VehicleLightType::INDICATOR_RIGHT:
             this->rgb_[0] = 0.5;
-            this->rgb_[0] = 0.35;
-            this->rgb_[0] = 0.14;
+            this->rgb_[1] = 0.35;
+            this->rgb_[2] = 0.14;
             break;
         case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
             this->rgb_[0] = 0.3;
-            this->rgb_[0] = 0.3;
-            this->rgb_[0] = 0.5;
+            this->rgb_[1] = 0.3;
+            this->rgb_[2] = 0.5;
             break;
         default:
             break;
