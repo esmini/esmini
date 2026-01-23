@@ -1,5 +1,5 @@
 esmini:
-  window: 60 60 800 400
+  window: 800 2500 800 400
 replayer:
   window: 60 60 800 400
   res_path: ./resources
