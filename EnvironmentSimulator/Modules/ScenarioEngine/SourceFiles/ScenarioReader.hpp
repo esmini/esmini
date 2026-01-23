@@ -178,7 +178,7 @@ namespace scenarioengine
         {
             return versionMinor_;
         }
-        bool HasLightStateAction()
+        bool HasLightStateAction() const
         {
             return has_lightstate_action_;
         }

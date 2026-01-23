@@ -3247,8 +3247,6 @@ void LightStateAction::SetLightTransitionValues(const Object::VehicleLightMode& 
 }
 void LightStateAction::RapidTransition()
 {
-    auto& vehicleLightStatus = object_->vehLghtStsList[static_cast<size_t>(vehicleLightStatus_.type)];
-
     const double* emissionRgb = nullptr;
     const double* diffuseRgb  = nullptr;
 
@@ -3283,6 +3281,7 @@ void LightStateAction::RapidTransition()
 
     if (emissionRgb && diffuseRgb)
     {
+        auto& vehicleLightStatus = object_->vehLghtStsList[static_cast<size_t>(vehicleLightStatus_.type)];
         std::copy_n(emissionRgb, RGB_ARRAY_SIZE_, vehicleLightStatus.emissionRgb);
         std::copy_n(diffuseRgb, RGB_ARRAY_SIZE_, vehicleLightStatus.diffuseRgb);
     }
