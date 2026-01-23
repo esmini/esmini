@@ -3143,7 +3143,7 @@ void LightStateAction::Start(double simTime)
 
     auto& current_mode = vehicleLightStatus_.mode;
     if (current_mode == Object::VehicleLightMode::ON ||
-        (current_mode == Object::VehicleLightMode::FLASHING && previousMode_ == Object::VehicleLightMode::ON))
+        (current_mode == Object::VehicleLightMode::FLASHING && previousMode_ != Object::VehicleLightMode::ON))
     {
         const double finalLumPerc = std::min(vehicleLightStatus_.luminousIntensity / MAX_INTENSITY_LUM, 1.0);
         for (size_t i = 0; i < this->RGB_ARRAY_SIZE_; i++)
