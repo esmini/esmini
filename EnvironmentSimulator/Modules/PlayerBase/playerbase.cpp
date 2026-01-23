@@ -1331,7 +1331,7 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
     // Light material details
     if (this->scenarioEngine->scenarioReader->HasLightStateAction())
     {
-        for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS); i++)
+        for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
         {
             auto& light = obj->vehLghtStsList[i];
 

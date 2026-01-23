@@ -139,7 +139,7 @@ namespace scenarioengine
 
         enum class VehicleLightType
         {
-            UNDEFINED = 0,
+            UNDEFINED = -1,
             DAYTIME_RUNNING_LIGHTS,
             LOW_BEAM,
             HIGH_BEAM,
@@ -153,7 +153,6 @@ namespace scenarioengine
             REVERSING_LIGHTS,
             LICENSE_PLATE_ILLUMINATION,
             SPECIAL_PURPOSE_LIGHTS,
-            NUMBER_OF_VEHICLE_LIGHTS,
             VEHICLE_LIGHT_SIZE
         };
 

@@ -1017,12 +1017,16 @@ std::string LightTypeInd2Str(Object::VehicleLightType type)
             return "light_low_beam";
         case Object::VehicleLightType::HIGH_BEAM:
             return "light_high_beam";
+        case Object::VehicleLightType::FOG_LIGHTS:
+            return "fog_light";
         case Object::VehicleLightType::FOG_LIGHTS_FRONT:
             return "light_fog_front";
         case Object::VehicleLightType::FOG_LIGHTS_REAR:
             return "light_fog_rear";
         case Object::VehicleLightType::BRAKE_LIGHTS:
             return "light_brake";
+        case Object::VehicleLightType::WARNING_LIGHTS:
+            return "warning_lights";
         case Object::VehicleLightType::INDICATOR_LEFT:
             return "light_indicator_left";
         case Object::VehicleLightType::INDICATOR_RIGHT:
@@ -1033,11 +1037,7 @@ std::string LightTypeInd2Str(Object::VehicleLightType type)
             return "light_license_plate";
         case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
             return "light_special_purpose";
-        case Object::VehicleLightType::FOG_LIGHTS:
-            return "fog_light";
-        case Object::VehicleLightType::WARNING_LIGHTS:
-            return "warning_lights";
-        case Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS:
+        case Object::VehicleLightType::VEHICLE_LIGHT_SIZE:
             return "Unknown_light";
         default:
             return "none";
@@ -1052,10 +1052,14 @@ void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool show_lights)
         LOG_WARN("Invalid group provided to AddLights - skipping light addition.");
         return;
     }
-    for (size_t j = 0; j < static_cast<size_t>(Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS); j++)
+    for (size_t j = 0; j < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); j++)
     {
         std::string lightName = LightTypeInd2Str(static_cast<Object::VehicleLightType>(j));
 
+        if (lightName == LightTypeInd2Str(Object::VehicleLightType::UNDEFINED))
+        {
+            continue;
+        }
         // Skip fog lights and warning lights as they are combinations of other lights
         if (lightName == LightTypeInd2Str(Object::VehicleLightType::FOG_LIGHTS) ||
             lightName == LightTypeInd2Str(Object::VehicleLightType::WARNING_LIGHTS))
@@ -1317,7 +1321,7 @@ const osg::Vec3d* viewer::EntityModel::GetPosition() const
 
 void CarModel::UpdateLight(Object::VehicleLightStatus* vehicle_lights_status)
 {
-    for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::NUMBER_OF_VEHICLE_LIGHTS); i++)
+    for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
     {
         const auto& light = vehicle_lights_status[i];
         if (light.type == Object::VehicleLightType::UNDEFINED)

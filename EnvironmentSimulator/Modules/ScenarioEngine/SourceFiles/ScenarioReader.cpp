@@ -4113,33 +4113,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         {
                             AdjustByOffsetArray(lightStateAction->GetRgb(), lightStateAction->GetRgbOffset());
                         }
-                        else  // No Color values set, check semantic color
-                        {
-                            if (lightStateAction->GetVehicleLightColor() == Object::VehicleLightColor::OTHER ||
-                                lightStateAction->GetVehicleLightColor() == Object::VehicleLightColor::UNKNOWN)
-                            {
-                                lightStateAction->SetRgbFromTypeEnum(lightStateAction->GetVehicleLightType());
-                                lightStateAction->SetDeducedRgbFromLightType(true);
-                            }
-                            else
-                            {
-                                lightStateAction->SetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());
-                            }
-                        }
-
-                        if (lightStateAction->GetVehicleLightType() == Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS)
-                        {
-                            auto rgb = lightStateAction->GetRgb();
-                            if (rgb[0] >= rgb[1] && rgb[0] >= rgb[2])
-                            {
-                                lightStateAction->SetVehicleLightColor(Object::VehicleLightColor::ORANGE);
-                            }
-                            else
-                            {
-                                lightStateAction->SetVehicleLightColor(Object::VehicleLightColor::BLUE);
-                            }
-                            lightStateAction->SetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());
-                        }
                     }
                 }
             }
@@ -4154,6 +4127,32 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             {
                 delete lightStateAction;
                 return 0;
+            }
+
+            // No Color values set, check semantic color
+            if (lightStateAction->GetVehicleLightColor() == Object::VehicleLightColor::OTHER ||
+                lightStateAction->GetVehicleLightColor() == Object::VehicleLightColor::UNKNOWN)
+            {
+                lightStateAction->SetRgbFromTypeEnum(lightStateAction->GetVehicleLightType());
+                lightStateAction->SetDeducedRgbFromLightType(true);
+            }
+            else
+            {
+                lightStateAction->SetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());
+            }
+
+            if (lightStateAction->GetVehicleLightType() == Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS)
+            {
+                auto rgb = lightStateAction->GetRgb();
+                if (rgb[0] >= rgb[1] && rgb[0] >= rgb[2])
+                {
+                    lightStateAction->SetVehicleLightColor(Object::VehicleLightColor::ORANGE);
+                }
+                else
+                {
+                    lightStateAction->SetVehicleLightColor(Object::VehicleLightColor::BLUE);
+                }
+                lightStateAction->SetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());
             }
 
             lightStateAction->SetVehicleLightInitStatus();  // Register initial values for a vehicle light to be used when initializing the viewer
