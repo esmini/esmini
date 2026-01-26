@@ -490,6 +490,7 @@ int main(int argc, char** argv)
     opt.AddOption("help", "Show this help message (-h works as well)");
 #ifdef _USE_OSG
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
+    opt.AddOption("hide_obj_outline", "Hide any object 2D shape outlines (toggle key ';')");
 #endif  // _USE_OSG
     // opt.AddOption("include_ghost_reset", "Include ghost reset in the replay or not");
 #ifdef _USE_OSG

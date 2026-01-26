@@ -36,6 +36,8 @@ Options:
       Show this help message (-h works as well)
   --hide_trajectories
       Hide trajectories from start (toggle with key 'n')
+  --hide_obj_outline
+      Hide any object 2D shape outlines (toggle key ';')
   --info_text [mode]  (default if option or value omitted: 1)
       Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'
   --logfile_path [path]  (default if option or value omitted: replayer_log.txt)

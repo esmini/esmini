@@ -26,6 +26,7 @@ Key shortcuts \n\
     i:             Toggle on-screen info text modes \n\
     n:             Toggle show active trajectories \n\
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
+    ; (shift + ,): Toggle show/hide object outlines \n\
     K:             Print current camera position and orientation to console \n\
     ESC:           quit \n\
     \n\

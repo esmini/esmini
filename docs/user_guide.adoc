@@ -1732,7 +1732,7 @@ image::outlines_car.jpg[]
 This is, for example, useful for NCAP scenarios where a more precise collision detection is required, see https://www.euroncap.com/media/95012/ca-004-data-acquisition-and-assessment-criteria-calculation-v11.pdf#page=9[Euro NCAP Data Acquisition
 And Assessment Criteria Calculation]
 
-Currently OpenSCENARIO XML does not support defining 2D shape outlines in a standardized way. However, the Property elements of https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/EntityObject.html[EntityObject] (Vehicle, Pedestrian, MiscObject) can be utilized for this purpose. From version 2.57.3 esmini supports reading 2D shape outlines defined as property with name `outline` and value on the format: `x0,y0;x1,y1;x2,y2,...`. Example of four points:
+Currently OpenSCENARIO XML does not support defining 2D shape outlines in a standardized way. However, the Property elements of https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/EntityObject.html[EntityObject] (Vehicle, Pedestrian, MiscObject) can be utilized for this purpose. From version 2.58.0 esmini supports reading 2D shape outlines defined as property with name `outline` and value on the format: `x0,y0;x1,y1;x2,y2,...`. Example of four points:
 
 [source,xml]
 ----
@@ -1741,14 +1741,16 @@ Currently OpenSCENARIO XML does not support defining 2D shape outlines in a stan
 
 resulting in a rectangular shape outline 3x4 meters, centered at the reference point of the entity.
 
-A full example, shown in image above, can be found in the esmini demo vehicle catalog https://github.com/esmini/esmini/blob/3c008aaac1b363beaab51041284164199156d027/resources/xosc/Catalogs/Vehicles/VehicleCatalog.xosc#L53-L87[VehicleCatalog.xosc/car_white_with_outline]. Points calculated using this https://docs.google.com/spreadsheets/d/1Bc6T6FH1yP6PzW9zeZdmwzWGdaDU6vs17frhorkltHI/edit?usp=sharing[Google sheet] (`File -> Make a copy` to edit your own values).
+A full example, shown in image above, can be found in the esmini demo vehicle catalog https://github.com/esmini/esmini/blob/cf7387b5071870128959712739002fa1c685c0e1/resources/xosc/Catalogs/Vehicles/VehicleCatalog.xosc#L53-L87[VehicleCatalog.xosc/car_white_with_outline]. Points calculated using this https://docs.google.com/spreadsheets/d/1Bc6T6FH1yP6PzW9zeZdmwzWGdaDU6vs17frhorkltHI/edit?usp=sharing[Google sheet] (`File -> Make a copy` to edit your own values).
 
-The test scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/shape_outlines.xosc[shape_outlines.xosc] includes a few more examples for various entity types.
+The test scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/shape_outlines.xosc[shape_outlines.xosc] includes a few more examples for various entity types. Video clip https://youtu.be/YZX2P4F5Rj8[here].
 
 .Further outline examples
 image::outlines.jpg[]
 
 Note that the outline is independent and does not have to exactly match the 3D model of the entity.
+
+The visualization of the 2D shape outlines is activated by default. It can be disabled by option `--hide_obj_outline` and toggled on/off in `esmini` and `replayer` with `;` (shift + comma).
 
 === SUMO integration
 

@@ -30,6 +30,7 @@ Key shortcuts \n\
     j:             Toggle show trails after vehicles(4 modes: none / dots / lines / both) \n\
     n:             Toggle show active trajectories \n\
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
+    ; (shift + ,): Toggle show/hide object outlines \n\
     K:             Print current camera position and orientation to console \n\
     ESC:           quit \n\
     \n\

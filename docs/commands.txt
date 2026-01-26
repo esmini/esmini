@@ -56,6 +56,8 @@ Options:
       Hide trajectories from start. Toggle key 'n'
   --hide_ghost
       Do not visualize ghost
+  --hide_obj_outline
+      Hide any object 2D shape outlines (toggle key ';')
   --ignore_heading_for_traj_motion
       Ignore heading when deciding motion direction along trajectory
   --ignore_odr_offset
