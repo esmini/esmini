@@ -185,10 +185,12 @@ namespace scenarioengine
             VehicleLightType  type              = VehicleLightType::UNDEFINED;
             VehicleLightMode  mode              = VehicleLightMode::UNKNOWN;
             VehicleLightColor color             = VehicleLightColor::UNKNOWN;
-            double            luminousIntensity = -1.0;                // -1 denotes missing from scenario
-            double            diffuseRgb[3]     = {-1.0, -1.0, -1.0};  // current diffuseRbg
-            double            emissionRgb[3]    = {0.0, 0.0, 0.0};     // current emissionRbg
-            double            baseRgb[3]        = {-1.0, -1.0, -1.0};  // base rbg
+            double            luminousIntensity = 0.0;                 // denotes missing from scenario
+            double            emission[3]       = {-1.0, -1.0, -1.0};  // current diffuseRbg
+            double            rgb[3]            = {0.0, 0.0, 0.0};     // current emissionRbg
+            double            baseRgb[3]        = {0.0, 0.0, 0.0};
+            double            maxRgb[3]         = {0.0, 0.0, 0.0};  // Init as the base materials max
+            bool              active            = false;
         };
 
         VehicleLightStatus vehLghtStsList[static_cast<size_t>(VehicleLightType::VEHICLE_LIGHT_SIZE)];
