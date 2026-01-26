@@ -421,6 +421,11 @@ int ScenarioEngine::step(double deltaSimTime)
                 scenarioGateway.updateObjectBoundingBox(obj->id_, obj->boundingbox_);
             }
 
+            if (obj->CheckDirtyBits(Object::DirtyBit::LIGHT_STATE))
+            {
+                scenarioGateway.updateObjectLightState(obj->id_, obj->vehLghtStsList);
+            }
+
             // Friction is not considered
         }
         else
@@ -448,7 +453,8 @@ int ScenarioEngine::step(double deltaSimTime)
                                             &obj->pos_,
                                             obj->GetSourceReference(),
                                             obj->refpoint_x_offset_,
-                                            obj->model3d_x_offset_);
+                                            obj->model3d_x_offset_,
+                                            obj->vehLghtStsList);
 
             scenarioGateway.reportObjectOutline(obj->id_, obj->outline_2d_);
 
