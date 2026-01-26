@@ -654,6 +654,7 @@ int main(int argc, char** argv)
         if (viewer_ == nullptr)
         {
             printf("Failed to create viewer");
+            CleanUp();
             return -1;
         }
 
@@ -811,7 +812,8 @@ int main(int argc, char** argv)
             opt.PrintUsage();
 #ifdef _USE_OSG
             PrintOSGUsage();
-#endif                  // _USE_OSG
+#endif  // _USE_OSG
+            CleanUp();
             return -1;  // we harmonize all applications to quit on unknown arguments
         }
 
