@@ -1301,7 +1301,6 @@ void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool show_lights)
         for (size_t i = 0; i < nodes.size(); i++)
         {
             osg::ref_ptr<osg::Geode> geode = static_cast<osg::Geode*>(nodes[i]);
-
             if (geode->getName() == lightName && geode->getChild(0) != nullptr)
             {
                 osg::Geometry* geom = static_cast<osg::Geometry*>(geode->getChild(0));
@@ -1528,15 +1527,12 @@ void CarModel::UpdateLight(Object::VehicleLightStatus* vehicle_lights_status)
 {
     for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
     {
-        const auto& light = vehicle_lights_status[i];
-        if (light.type == Object::VehicleLightType::UNDEFINED)
-        {
-            continue;  // Skip undefined light types
-        }
+        const auto& light         = vehicle_lights_status[i];
+        const auto& warning_light = vehicle_lights_status[static_cast<size_t>(Object::VehicleLightType::WARNING_LIGHTS)];
 
         // Create OSG color vectors from the light status
-        osg::Vec4d diffuseRgb(light.diffuseRgb[0], light.diffuseRgb[1], light.diffuseRgb[2], 1.0);
-        osg::Vec4d emissionRgb(light.emissionRgb[0], light.emissionRgb[1], light.emissionRgb[2], 1.0);
+        osg::Vec4d diffuseRgb(light.rgb[0], light.rgb[1], light.rgb[2], 1.0);
+        osg::Vec4d emissionRgb(light.emission[0], light.emission[1], light.emission[2], 1.0);
 
         // Handle special light types (e.g., warning lights and fog lights)
         if (light.type == Object::VehicleLightType::WARNING_LIGHTS)
@@ -1544,10 +1540,19 @@ void CarModel::UpdateLight(Object::VehicleLightStatus* vehicle_lights_status)
             UpdateLightMaterial(Object::VehicleLightType::INDICATOR_LEFT, diffuseRgb, emissionRgb);
             UpdateLightMaterial(Object::VehicleLightType::INDICATOR_RIGHT, diffuseRgb, emissionRgb);
         }
+        else if ((light.type == Object::VehicleLightType::INDICATOR_LEFT || light.type == Object::VehicleLightType::INDICATOR_RIGHT) && !light.active)
+        {
+            continue;  // We dont update the lights to avoid setting warning lights to OFF
+        }
         else if (light.type == Object::VehicleLightType::FOG_LIGHTS)
         {
             UpdateLightMaterial(Object::VehicleLightType::FOG_LIGHTS_FRONT, diffuseRgb, emissionRgb);
             UpdateLightMaterial(Object::VehicleLightType::FOG_LIGHTS_REAR, diffuseRgb, emissionRgb);
+        }
+        else if ((light.type == Object::VehicleLightType::FOG_LIGHTS_FRONT || light.type == Object::VehicleLightType::FOG_LIGHTS_REAR) &&
+                 !light.active)
+        {
+            continue;  // We dont update the lights to avoid setting fog lights to OFF
         }
         else
         {
@@ -1562,10 +1567,11 @@ void CarModel::UpdateLightMaterial(Object::VehicleLightType light_type, const os
     {
         light_material_[static_cast<size_t>(light_type)]->setDiffuse(osg::Material::FRONT_AND_BACK, diffuse_rgb);
         light_material_[static_cast<size_t>(light_type)]->setEmission(osg::Material::FRONT_AND_BACK, emission_rgb);
+        light_material_[static_cast<size_t>(light_type)]->setAmbient(osg::Material::FRONT_AND_BACK, diffuse_rgb);
     }
     else
     {
-        LOG_WARN_ONCE("Missing light node - {} - ignoring visualization", LightTypeInd2Str(light_type));
+        LOG_DEBUG("Missing light node - {} - ignoring visualization", LightTypeInd2Str(light_type));
     }
 }
 

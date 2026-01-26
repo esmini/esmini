@@ -1374,6 +1374,10 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
                 light_type = Object::VehicleLightType::INDICATOR_LEFT;  // Use left indicator as the base
             }
 
+            light.type  = static_cast<Object::VehicleLightType>(i);
+            light.mode  = Object::VehicleLightMode::UNKNOWN;
+            light.color = Object::VehicleLightColor::UNKNOWN;
+
             for (const auto& material : model->light_material_)
             {
                 if (material == nullptr || obj->LightType2Str(light_type) != material->getName())
@@ -1389,17 +1393,31 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
                                                                                      : material->getEmission(osg::Material::FRONT);
 
                 // Update light status with material colors
+                light.rgb[0] = diffuseColor.r();
+                light.rgb[1] = diffuseColor.g();
+                light.rgb[2] = diffuseColor.b();
+
+                // Save the material color
                 light.baseRgb[0] = diffuseColor.r();
                 light.baseRgb[1] = diffuseColor.g();
                 light.baseRgb[2] = diffuseColor.b();
 
-                light.diffuseRgb[0] = diffuseColor.r();
-                light.diffuseRgb[1] = diffuseColor.g();
-                light.diffuseRgb[2] = diffuseColor.b();
+                light.emission[0] = emissionColor.r();
+                light.emission[1] = emissionColor.g();
+                light.emission[2] = emissionColor.b();
 
-                light.emissionRgb[0] = emissionColor.r();
-                light.emissionRgb[1] = emissionColor.g();
-                light.emissionRgb[2] = emissionColor.b();
+                GetRgbMinMaxColor(light.baseRgb, light.rgb, light.maxRgb);
+                LOG_DEBUG("Init LightState: Setting light {} with rgb {}, {}, {} to min rgb {}, {}, {} and max rgb {}, {}, {}",
+                          obj->LightType2Str(static_cast<Object::VehicleLightType>(i)),
+                          light.baseRgb[0],
+                          light.baseRgb[1],
+                          light.baseRgb[2],
+                          light.rgb[0],
+                          light.rgb[1],
+                          light.rgb[2],
+                          light.maxRgb[0],
+                          light.maxRgb[1],
+                          light.maxRgb[2]);
 
                 break;
             }
@@ -1931,6 +1949,7 @@ int ScenarioPlayer::Init()
     osiReporter->SetCounterPtr(&frame_counter_);
     osiReporter->SetStationaryModelReference(scenarioEngine->getSceneGraphFilename());
     scenarioEngine->storyBoard.SetOSIReporter(osiReporter);
+    osiReporter->SetHasLightStateAction(scenarioEngine->scenarioReader->HasLightStateAction());
 
     if (opt.GetOptionSet("osi_receiver_ip"))
     {

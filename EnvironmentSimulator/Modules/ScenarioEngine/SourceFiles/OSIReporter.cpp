@@ -904,115 +904,100 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     {
         obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_VEHICLE);
 
-        if (obj.category_ == Vehicle::Category::CAR)
+        switch (static_cast<Vehicle::Category>(objectState->state_.info.obj_category))
         {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MEDIUM_CAR);
-        }
-        else if (obj.category_ == Vehicle::Category::BICYCLE)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_BICYCLE);
-        }
-        else if (obj.category_ == Vehicle::Category::BUS)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_BUS);
-        }
-        else if (obj.category_ == Vehicle::Category::MOTORBIKE)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MOTORBIKE);
-        }
-        else if (obj.category_ == Vehicle::Category::SEMITRAILER)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_SEMITRAILER);
-        }
-        else if (obj.category_ == Vehicle::Category::TRAIN)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_TRAIN);
-        }
-        else if (obj.category_ == Vehicle::Category::TRAM)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_TRAM);
-        }
-        else if (obj.category_ == Vehicle::Category::TRUCK)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_HEAVY_TRUCK);
-        }
-        else if (obj.category_ == Vehicle::Category::TRAILER)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_TRAILER);
-        }
-        else if (obj.category_ == Vehicle::Category::VAN)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_DELIVERY_VAN);
-        }
-        else
-        {
-            LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle category: {} ({}). Set to UNKNOWN.",
-                      obj.category_,
-                      Vehicle::Category2String(obj.category_));
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN);
+            case Vehicle::Category::CAR:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MEDIUM_CAR);
+                break;
+            case Vehicle::Category::VAN:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_DELIVERY_VAN);
+                break;
+            case Vehicle::Category::TRUCK:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_HEAVY_TRUCK);
+                break;
+            case Vehicle::Category::SEMITRAILER:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_SEMITRAILER);
+                break;
+            case Vehicle::Category::TRAILER:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_TRAILER);
+                break;
+            case Vehicle::Category::BUS:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_BUS);
+                break;
+            case Vehicle::Category::MOTORBIKE:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MOTORBIKE);
+                break;
+            case Vehicle::Category::BICYCLE:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_BICYCLE);
+                break;
+            case Vehicle::Category::TRAIN:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_TRAIN);
+                break;
+            case Vehicle::Category::TRAM:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_DELIVERY_VAN);
+                break;
+            default:
+                LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle category: {} ({}). Set to UNKNOWN.",
+                          objectState->state_.info.obj_category,
+                          Vehicle::Category2String(objectState->state_.info.obj_category));
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN);
+                break;
         }
 
-        if (obj.role_ == Object::Role::AMBULANCE)
+        switch (static_cast<Object::Role>(objectState->state_.info.obj_role))
         {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_AMBULANCE);
-        }
-        else if (obj.role_ == Object::Role::CIVIL)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_CIVIL);
-        }
-        else if (obj.role_ == Object::Role::FIRE)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_FIRE);
-        }
-        else if (obj.role_ == Object::Role::MILITARY)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_MILITARY);
-        }
-        else if (obj.role_ == Object::Role::POLICE)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_POLICE);
-        }
-        else if (obj.role_ == Object::Role::PUBLIC_TRANSPORT)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_PUBLIC_TRANSPORT);
-        }
-        else if (obj.role_ == Object::Role::ROAD_ASSISTANCE)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_ROAD_ASSISTANCE);
-        }
-        else if (obj.role_ == Object::Role::NONE)
-        {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
-        }
-        else
-        {
-            LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle role: {} ({}). Set classification UNKNOWN.",
-                      obj.role_,
-                      Vehicle::Role2String(obj.role_).c_str());
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
+            case Object::Role::NONE:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
+                break;
+            case Object::Role::AMBULANCE:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_AMBULANCE);
+                break;
+            case Object::Role::CIVIL:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_CIVIL);
+                break;
+            case Object::Role::FIRE:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_FIRE);
+                break;
+            case Object::Role::MILITARY:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_MILITARY);
+                break;
+            case Object::Role::POLICE:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_POLICE);
+                break;
+            case Object::Role::PUBLIC_TRANSPORT:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_PUBLIC_TRANSPORT);
+                break;
+            case Object::Role::ROAD_ASSISTANCE:
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_ROAD_ASSISTANCE);
+                break;
+            default:
+                LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle role: {} ({}). Set classification UNKNOWN.",
+                          objectState->state_.info.obj_role,
+                          Vehicle::Role2String(objectState->state_.info.obj_role).c_str());
+                obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
+                break;
         }
     }
     else if (obj.GetType() == Object::Type::PEDESTRIAN)
     {
         entity_type = "Pedestrian";
-        if (obj.category_ == Pedestrian::Category::PEDESTRIAN)
+        switch (static_cast<Pedestrian::Category>(objectState->state_.info.obj_category))
         {
-            obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_PEDESTRIAN);
-        }
-        else if (obj.category_ == Pedestrian::Category::ANIMAL)
-        {
-            obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_ANIMAL);
-        }
-        else if (obj.category_ == Pedestrian::Category::WHEELCHAIR)
-        {
-            obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_OTHER);
-        }
-        else
-        {
-            LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object pedestrian category: {} ({}). Set type UNKNOWN.",
-                      obj.category_,
-                      Pedestrian::Category2String(obj.category_));
-            obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
+            case Pedestrian::Category::PEDESTRIAN:
+                obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_PEDESTRIAN);
+                break;
+            case Pedestrian::Category::WHEELCHAIR:
+                obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_OTHER);
+                break;
+            case Pedestrian::Category::ANIMAL:
+                obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_ANIMAL);
+                break;
+            default:
+                LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object pedestrian category: {} ({}). Set type UNKNOWN.",
+                          objectState->state_.info.obj_category,
+                          Pedestrian::Category2String(objectState->state_.info.obj_category));
+                obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
+                break;
         }
     }
     else
@@ -1021,6 +1006,73 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
                   obj.GetType(),
                   Object::Type2String(obj.GetType()));
         obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
+    }
+
+    // Update LightState
+    if (has_lightstate_action_)
+    {
+        for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
+        {
+            const Object::VehicleLightMode &light_mode = objectState->state_.info.light_state[i].mode;
+
+            if (light_mode == Object::VehicleLightMode::UNKNOWN)
+            {
+                continue;  // If mode not set, move to next light
+            }
+
+            const Object::VehicleLightType &light_type  = objectState->state_.info.light_state[i].type;
+            auto                            light_state = obj_osi_internal.mobj->mutable_vehicle_classification()->mutable_light_state();
+
+            switch (light_type)
+            {
+                case Object::VehicleLightType::DAYTIME_RUNNING_LIGHTS:
+                case Object::VehicleLightType::LOW_BEAM:
+                    light_state->set_head_light(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::HIGH_BEAM:
+                    light_state->set_high_beam(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::FOG_LIGHTS:
+                    light_state->set_front_fog_light(GetGenericLightMode(light_mode));
+                    light_state->set_rear_fog_light(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::FOG_LIGHTS_FRONT:
+                    light_state->set_front_fog_light(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::FOG_LIGHTS_REAR:
+                    light_state->set_rear_fog_light(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::BRAKE_LIGHTS:
+                    light_state->set_brake_light_state(GetBrakeLightMode(light_mode, objectState->state_.info.light_state[i].luminousIntensity));
+                    break;
+                case Object::VehicleLightType::WARNING_LIGHTS:
+                case Object::VehicleLightType::INDICATOR_LEFT:
+                case Object::VehicleLightType::INDICATOR_RIGHT:
+                    light_state->set_indicator_state(GetIndicatorLightMode(light_mode, light_type));
+                    break;
+                case Object::VehicleLightType::REVERSING_LIGHTS:
+                    light_state->set_reversing_light(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::LICENSE_PLATE_ILLUMINATION:
+                    light_state->set_license_plate_illumination_rear(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
+                {
+                    const auto &role = static_cast<Object::Role>(objectState->state_.info.obj_role);
+                    if (role == Object::Role::AMBULANCE || role == Object::Role::POLICE || role == Object::Role::FIRE)
+                    {
+                        light_state->set_emergency_vehicle_illumination(GetSpecialPurposeLightMode(light_mode, role));
+                    }
+                    else
+                    {
+                        light_state->set_service_vehicle_illumination(GetServiceVehicleLightMode(light_mode));
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
     }
 
     // Set OSI Moving Object Control Type
@@ -1144,6 +1196,111 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     }
 
     return 0;
+}
+
+osi3::MovingObject_VehicleClassification_LightState_GenericLightState OSIReporter::GetServiceVehicleLightMode(
+    const Object::VehicleLightMode &mode) const
+{
+    switch (mode)
+    {
+        case Object::VehicleLightMode::OFF:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_OFF;
+        case Object::VehicleLightMode::FLASHING:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_FLASHING_AMBER;
+        case Object::VehicleLightMode::ON:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_ON;
+        default:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_OTHER;
+    }
+}
+
+osi3::MovingObject_VehicleClassification_LightState_GenericLightState OSIReporter::GetSpecialPurposeLightMode(const Object::VehicleLightMode &mode,
+                                                                                                              const Object::Role &role) const
+{
+    switch (mode)
+    {
+        case Object::VehicleLightMode::OFF:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_OFF;
+        case Object::VehicleLightMode::FLASHING:
+            if (role == Object::Role::AMBULANCE || role == Object::Role::POLICE)
+            {
+                return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_FLASHING_BLUE;
+            }
+            else if (role == Object::Role::FIRE)
+            {
+                return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_FLASHING_BLUE_AND_RED;
+            }
+            else
+            {
+                return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_ON;
+            }
+            break;
+        case Object::VehicleLightMode::ON:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_ON;
+        default:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_OTHER;
+    }
+}
+
+osi3::MovingObject_VehicleClassification_LightState_BrakeLightState OSIReporter::GetBrakeLightMode(const Object::VehicleLightMode &mode,
+                                                                                                   const double                   &luminousity) const
+{
+    switch (mode)
+    {
+        case Object::VehicleLightMode::OFF:
+            return osi3::MovingObject_VehicleClassification_LightState::BRAKE_LIGHT_STATE_OFF;
+        case Object::VehicleLightMode::FLASHING:
+        case Object::VehicleLightMode::ON:
+            return (luminousity > 6000.0 + SMALL_NUMBER) ? osi3::MovingObject_VehicleClassification_LightState::BRAKE_LIGHT_STATE_STRONG
+                                                         : osi3::MovingObject_VehicleClassification_LightState::BRAKE_LIGHT_STATE_NORMAL;
+        default:
+            return osi3::MovingObject_VehicleClassification_LightState::BRAKE_LIGHT_STATE_OTHER;
+    }
+}
+
+osi3::MovingObject_VehicleClassification_LightState_IndicatorState OSIReporter::GetIndicatorLightMode(const Object::VehicleLightMode &mode,
+                                                                                                      const Object::VehicleLightType &type) const
+{
+    switch (mode)
+    {
+        case Object::VehicleLightMode::OFF:
+            return osi3::MovingObject_VehicleClassification_LightState::INDICATOR_STATE_OFF;
+        case Object::VehicleLightMode::FLASHING:
+        case Object::VehicleLightMode::ON:
+            if (type == Object::VehicleLightType::INDICATOR_LEFT)
+            {
+                return osi3::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_LEFT;
+            }
+            else if (type == Object::VehicleLightType::INDICATOR_RIGHT)
+            {
+                return osi3::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_RIGHT;
+            }
+            else if (type == Object::VehicleLightType::WARNING_LIGHTS)
+            {
+                return osi3::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_WARNING;
+            }
+            else
+            {
+                LOG_WARN("OSIReporter: Indicator type neither left/right/warning, setting other");
+                return osi3::MovingObject_VehicleClassification_LightState::INDICATOR_STATE_OTHER;
+            }
+        default:
+            return osi3::MovingObject_VehicleClassification_LightState::INDICATOR_STATE_OTHER;
+    }
+}
+
+osi3::MovingObject_VehicleClassification_LightState_GenericLightState OSIReporter::GetGenericLightMode(const Object::VehicleLightMode &mode) const
+{
+    switch (mode)
+    {
+        case Object::VehicleLightMode::OFF:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_OFF;
+        case Object::VehicleLightMode::FLASHING:
+        case Object::VehicleLightMode::ON:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_ON;
+        default:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_OTHER;
+    }
 }
 
 int OSIReporter::UpdateOSIIntersection()
