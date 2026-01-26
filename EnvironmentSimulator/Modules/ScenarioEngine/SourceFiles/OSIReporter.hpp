@@ -111,7 +111,7 @@ public:
     /**
     Fills up the osi message with Moving Object
     */
-    int UpdateOSIMovingObject(ObjectState* objectState);
+    int UpdateOSIMovingObject(ObjectState* objectState) const;
     /**
     Fills up the osi message with Lane Boundary
     */
@@ -211,7 +211,7 @@ public:
     void              GetOSILaneBoundaryIds(const std::vector<std::unique_ptr<ObjectState>>& objectState, std::vector<id_t>& ids, int object_id);
     const char*       GetOSISensorDataRaw();
     osi3::SensorView* GetSensorView();
-    void              CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState>& objectState);
+    void              CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState>& objectState) const;
     bool              IsCentralOSILane(int lane_idx);
     idx_t             GetLaneIdxfromIdOSI(id_t lane_id);
     osi3::Lane*       GetOSILaneFromGlobalId(id_t g_id);
@@ -264,6 +264,14 @@ public:
     {
         return osi_freq_;
     }
+
+    osi3::MovingObject_VehicleClassification_LightState_GenericLightState GetGenericLightMode(const Object::VehicleLightMode& mode) const;
+    osi3::MovingObject_VehicleClassification_LightState_IndicatorState    GetIndicatorLightMode(const Object::VehicleLightMode& mode,
+                                                                                                const Object::VehicleLightType& type) const;
+    osi3::MovingObject_VehicleClassification_LightState_BrakeLightState   GetBrakeLightMode(const Object::VehicleLightMode& mode,
+                                                                                            const double&                   luminousity) const;
+    osi3::MovingObject_VehicleClassification_LightState_GenericLightState GetSpecialPurposeLightMode(const Object::VehicleLightMode&  mode,
+                                                                                                     const Object::VehicleLightColor& color) const;
 
     /**
     Set explicit timestap

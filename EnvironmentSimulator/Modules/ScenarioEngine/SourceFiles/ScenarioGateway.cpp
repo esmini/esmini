@@ -55,7 +55,8 @@ ObjectState::ObjectState(int                          id,
                          const roadmanager::Position* pos,
                          std::vector<std::string>     source_reference,
                          double                       refpoint_x_offset,
-                         double                       model_x_offset)
+                         double                       model_x_offset,
+                         Object::VehicleLightStatus*  light_state)
     : dirty_(0)
 {
     state_.info.id           = id;
@@ -78,6 +79,13 @@ ObjectState::ObjectState(int                          id,
     state_.info.visibilityMask    = visibilityMask;
     state_.info.refpoint_x_offset = refpoint_x_offset;
     state_.info.model_x_offset    = model_x_offset;
+    if (light_state != nullptr)
+    {
+        for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
+        {
+            state_.info.light_state[i] = light_state[i];
+        }
+    }
 
     for (auto& w : state_.info.wheel_data)
     {
@@ -88,7 +96,7 @@ ObjectState::ObjectState(int                          id,
     state_.info.source_reference = source_reference;
 
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
-             Object::DirtyBit::WHEEL_ROTATION;
+             Object::DirtyBit::WHEEL_ROTATION | Object::DirtyBit::LIGHT_STATE;
 }
 
 ObjectState::ObjectState(int            id,
@@ -346,29 +354,30 @@ int ScenarioGateway::updateObjectInfo(ObjectState* obj_state,
     return 0;
 }
 
-int ScenarioGateway::reportObjectPos(int                      id,
-                                     id_t                     g_id,
-                                     std::string              name,
-                                     int                      obj_type,
-                                     int                      obj_category,
-                                     int                      obj_role,
-                                     int                      model_id,
-                                     std::string              model3d,
-                                     int                      ctrl_type,
-                                     OSCBoundingBox           boundingbox,
-                                     int                      scaleMode,
-                                     int                      visibilityMask,
-                                     double                   timestamp,
-                                     double                   speed,
-                                     double                   wheel_angle,
-                                     double                   wheel_rot,
-                                     double                   rear_axle_z_pos,
-                                     double                   front_axle_x_pos,
-                                     double                   front_axle_z_pos,
-                                     roadmanager::Position*   pos,
-                                     std::vector<std::string> source_reference,
-                                     double                   refpoint_x_offset,
-                                     double                   model_x_offset)
+int ScenarioGateway::reportObjectPos(int                         id,
+                                     id_t                        g_id,
+                                     std::string                 name,
+                                     int                         obj_type,
+                                     int                         obj_category,
+                                     int                         obj_role,
+                                     int                         model_id,
+                                     std::string                 model3d,
+                                     int                         ctrl_type,
+                                     OSCBoundingBox              boundingbox,
+                                     int                         scaleMode,
+                                     int                         visibilityMask,
+                                     double                      timestamp,
+                                     double                      speed,
+                                     double                      wheel_angle,
+                                     double                      wheel_rot,
+                                     double                      rear_axle_z_pos,
+                                     double                      front_axle_x_pos,
+                                     double                      front_axle_z_pos,
+                                     roadmanager::Position*      pos,
+                                     std::vector<std::string>    source_reference,
+                                     double                      refpoint_x_offset,
+                                     double                      model_x_offset,
+                                     Object::VehicleLightStatus* light_state)
 {
     ObjectState* obj_state = getObjectStatePtrById(id);
 
@@ -397,7 +406,8 @@ int ScenarioGateway::reportObjectPos(int                      id,
                                     pos,
                                     source_reference,
                                     refpoint_x_offset,
-                                    model_x_offset);
+                                    model_x_offset,
+                                    light_state);
 
         // Add object to collection
         obj_state->dirty_ |= Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL;
@@ -1058,6 +1068,28 @@ int ScenarioGateway::updateObjectWheelData(int id, std::vector<WheelData> wheel_
     }
 
     obj_state->dirty_ |= Object::DirtyBit::FRICTION | Object::DirtyBit::WHEEL_ANGLE | Object::DirtyBit::WHEEL_ROTATION;
+
+    return 0;
+}
+
+int ScenarioGateway::updateObjectLightState(int id, Object::VehicleLightStatus* light_state)
+{
+    ObjectState* obj_state = getObjectStatePtrById(id);
+
+    if (obj_state == nullptr)
+    {
+        LOG_ERROR("Can't set lights for object %d yet. Please register object using reportObject() first.", id);
+        return -1;
+    }
+
+    for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
+    {
+        if (light_state[i].type != Object::VehicleLightType::UNDEFINED)
+        {
+            obj_state->state_.info.light_state[i] = light_state[i];
+        }
+    }
+    obj_state->dirty_ |= Object::DirtyBit::LIGHT_STATE;
 
     return 0;
 }
