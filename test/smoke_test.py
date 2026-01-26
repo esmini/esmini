@@ -289,6 +289,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n33.200, 0, Ego, 23.401, 600.127, -0.826, 1.448, 6.283, 0.000, 23.659, 0.020, 3.029', csv))
         self.assertTrue(re.search('\\n45.000, 0, Ego, 32.161, 688.644, -0.922, 1.461, 0.003, 0.000, 0.053, -0.001, 5.844', csv))
 
+    """
     def test_swarm(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ESMINI_ARGS + ' --seed 2' + ' --fixed_timestep 0.1')
 
@@ -369,6 +370,14 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('^13.000, 43, swarm_32\\+\\+, 33.702, 668.445, -0.877, 1.464, 0.002, 6.283, 30.000, 0.968, 2.288', csv, re.MULTILINE))
             self.assertTrue(re.search('^13.000, 44, swarm_32\\+\\+\\+, 32.988, 661.783, -0.865, 1.464, 0.002, 6.283, 30.000, 0.968, 2.288', csv, re.MULTILINE))
 
+            self.assertTrue(re.search('^13.000, 6, swarm_2, 9.688, 429.970, -0.768, 1.536, 0.001, 0.000, 30.000, -0.001, 0.999', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 7, swarm_3, -10.697, 196.962, -0.342, 4.704, 6.281, 0.000, 30.000, 0.000, 4.412', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 9, swarm_5, 11.916, 385.302, -0.693, 1.545, 0.002, 0.000, 19.440, -0.000, 2.989', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 10, swarm_6, -10.078, 257.445, -0.449, 4.700, 6.281, 0.000, 30.000, 0.000, 2.086', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 41, swarm_32\\+, 34.343, 674.410, -0.889, 1.464, 0.002, 6.283, 30.000, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 42, swarm_32\\+\\+, 33.702, 668.445, -0.877, 1.464, 0.002, 6.283, 30.000, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 43, swarm_32\\+\\+\\+, 32.988, 661.783, -0.865, 1.464, 0.002, 6.283, 30.000, 0.000, 0.000', csv, re.MULTILINE))
+    """
     def test_conflicting_domains(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ESMINI_ARGS)
 

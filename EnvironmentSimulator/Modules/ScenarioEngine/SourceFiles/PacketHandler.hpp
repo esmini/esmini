@@ -11,7 +11,8 @@
 namespace scenarioengine
 {
     class ObjectState;
-}
+    class Object;
+}  // namespace scenarioengine
 
 namespace Dat
 {
@@ -48,7 +49,8 @@ namespace Dat
         SHAPE_2D_OUTLINE  = 28,
         ENVIRONMENT       = 29,
         BB_COLOR          = 30,
-        PACKET_ID_SIZE    = 31  // Keep this last
+        LIGHT_STATE       = 31,
+        PACKET_ID_SIZE    = 32  // Keep this last
     };
 
     struct PacketString
@@ -109,6 +111,18 @@ namespace Dat
         double friction_scale_factor        = 1.0;
     };
 
+    struct LightState
+    {
+        int    light_type = -1;
+        bool   active     = false;
+        double r          = -1;
+        double g          = -1;
+        double b          = -1;
+        double e_r        = -1;
+        double e_g        = -1;
+        double e_b        = -1;
+    };
+
     struct PacketGeneric
     {
         PacketHeader      header;
@@ -147,6 +161,7 @@ namespace Dat
         std::vector<SE_Point2D> outline_2d_        = {};
         std::string             bb_color_          = {};
         bool                    is_trailer_        = false;
+        std::vector<LightState> light_state_{static_cast<size_t>(scenarioengine::Object::VehicleLightType::VEHICLE_LIGHT_SIZE), LightState{}};
     };
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?
@@ -186,6 +201,7 @@ namespace Dat
         bool IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const;
         bool IsEnvironmentEqual(const Environment& env, const scenarioengine::OSCEnvironment& environment) const;
         void UpdateEnvironmentCache(const scenarioengine::OSCEnvironment& environment);
+        bool IsLightStateEqual(const LightState& ls, const scenarioengine::Object::VehicleLightStatus& osc_ls) const;
         void ResetCurrentIds();
         void CheckDeletedObjects();
 
@@ -247,9 +263,10 @@ namespace Dat
             return sizeof(p.size) + p.string.size();
         }
 
-        size_t SerializedSize(const PacketShape2DOutline& p)
+        template <typename T>
+        size_t SerializedSize(const std::vector<T>& val)
         {
-            return p.points.size() * sizeof(SE_Point2D);
+            return val.size() * sizeof(T);
         }
 
         template <typename T>
@@ -267,9 +284,10 @@ namespace Dat
             write_ptr += p.string.size();
         }
 
-        void WriteToBuffer(char*& write_ptr, const PacketShape2DOutline& p)
+        template <typename T>
+        void WriteToBuffer(char*& write_ptr, const std::vector<T>& p)
         {
-            memcpy(write_ptr, p.points.data(), p.points.size() * sizeof(SE_Point2D));
+            memcpy(write_ptr, p.data(), p.size() * sizeof(T));
         }
 
         template <typename T>
@@ -300,9 +318,6 @@ namespace Dat
 
         std::string ReadStringPacket(const Dat::PacketGeneric& pkt);
         int         ReadStringPacket(std::string& str);
-
-        std::vector<SE_Point2D> ReadOutlinePacket(const Dat::PacketGeneric& pkt);
-        int                     ReadOutlinePacket(std::vector<SE_Point2D>& points);
 
         int            FillDatHeader(bool quiet = false);
         Dat::DatHeader GetDatHeader() const
@@ -368,6 +383,28 @@ namespace Dat
             else if (exceeded_bounds)
             {
                 LOG_DEBUG("Reading previous partial version of packet id: {}", gp.header.id);
+            }
+
+            return 0;
+        }
+
+        template <typename T>
+        int ReadVectorPacket(const Dat::PacketGeneric& pkt, std::vector<T>& ret)
+        {
+            static_assert(std::is_trivially_copyable_v<T>, "ReadVectorPacket requires trivially copyable T");
+
+            if (pkt.header.data_size % sizeof(T) != 0 || pkt.data.size() < pkt.header.data_size)
+            {
+                return -1;
+            }
+
+            const size_t count = pkt.header.data_size / sizeof(T);
+
+            ret.resize(count);
+
+            if (count > 0)
+            {
+                std::memcpy(ret.data(), pkt.data.data(), pkt.header.data_size);
             }
 
             return 0;

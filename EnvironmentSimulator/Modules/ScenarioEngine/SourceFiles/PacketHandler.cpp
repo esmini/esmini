@@ -324,7 +324,7 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
             cache_it->second.outline_2d_ = obj->outline_2d_;
 
             PacketShape2DOutline packet_shape = {cache_it->second.outline_2d_};
-            Write(PacketId::SHAPE_2D_OUTLINE, packet_shape);
+            Write(PacketId::SHAPE_2D_OUTLINE, packet_shape.points);
         }
 
         if (cache_it->second.bb_color_.size() == 0 && obj->GetColorStr().size() > 0)
@@ -333,6 +333,26 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
 
             PacketString p_str = {static_cast<unsigned int>(cache_it->second.bb_color_.size()), cache_it->second.bb_color_};
             Write(PacketId::BB_COLOR, p_str);
+        }
+
+        if (object_state->ReadDirtyBits() & scenarioengine::Object::DirtyBit::LIGHT_STATE)
+        {
+            for (size_t i = 0; i < cache_it->second.light_state_.size(); i++)
+            {
+                if (!IsLightStateEqual(cache_it->second.light_state_[i], state->info.light_state[i]))
+                {
+                    const auto& light                = state->info.light_state[i];
+                    cache_it->second.light_state_[i] = {static_cast<int>(light.type),
+                                                        light.active,
+                                                        light.rgb[0],
+                                                        light.rgb[1],
+                                                        light.rgb[2],
+                                                        light.emission[0],
+                                                        light.emission[1],
+                                                        light.emission[2]};
+                    Write(PacketId::LIGHT_STATE, cache_it->second.light_state_[i]);
+                }
+            }
         }
 
         this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state
@@ -445,6 +465,12 @@ void Dat::DatWriter::UpdateEnvironmentCache(const scenarioengine::OSCEnvironment
     object_state_cache_.environment_.sun_intensity_factor         = environment.GetSunIntensityFactor();
 }
 
+bool Dat::DatWriter::IsLightStateEqual(const LightState& ls, const scenarioengine::Object::VehicleLightStatus& osc_ls) const
+{
+    return (ls.active == osc_ls.active && ls.r == osc_ls.rgb[0] && ls.g == osc_ls.rgb[1] && ls.b == osc_ls.rgb[2] && ls.e_r == osc_ls.emission[0] &&
+            ls.e_g == osc_ls.emission[1] && ls.e_b == osc_ls.emission[2]);
+}
+
 size_t Dat::DatWriter::SerializedSize(const std::string& str)
 {
     return str.size();
@@ -545,16 +571,6 @@ int Dat::DatReader::ReadStringPacket(std::string& str)
         return -1;
     }
     return 0;
-}
-
-std::vector<SE_Point2D> Dat::DatReader::ReadOutlinePacket(const Dat::PacketGeneric& pkt)
-{
-    const char* ptr = pkt.data.data();
-
-    std::vector<SE_Point2D> points(pkt.header.data_size / sizeof(SE_Point2D));
-    memcpy(points.data(), ptr, pkt.header.data_size);
-
-    return points;
 }
 
 int Dat::DatReader::FillDatHeader(bool quiet)
