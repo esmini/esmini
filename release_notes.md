@@ -1,13 +1,29 @@
 ## esmini release notes
 
-### DRAFT Notes 2026-1-16
-- Reworked Replayer packet handling
-- Updated dat-merging strategy
-- Updated bin/dat2csv
-  - Use esmini Options
-  - Extended behavior
-- Replace all instances of scripts/dat2csv.py with bin/dat2csv
-- Removed scripts/dat2csv.py and scripts/dat.py
+### 2026-01-26 Version 2.58.0
+
+Breaking changes:
+- Remove scripts/dat2csv.py and scripts/dat.py
+  - use updated bin/dat2csv instead
+
+New features:
+- Support 2D shape outline
+  - for vehicles, pedestrians and misc objects
+  - see info in [User guide - 2D shape outline](https://esmini.github.io/#_2d_shape_outline)
+  - video clip [here](https://youtu.be/YZX2P4F5Rj8)
+- Add default option capability
+  - for esmini (`--osc`), odrviewer (`--odr`) and replayer (`--file`)
+  - example: `./bin/esmini ./resources/xosc/cut-in.xosc`
+  - default option indicated in help by `[]`, e.g: `[--osc] <filename>`
+
+Improvements and fixes:
+- Fix and improve replayer dat merge operation
+- Update bin/dat2csv
+  - supporting same arguments and features as scripts/dat2csv.py
+  - run `./bin/dat2csv` or `./bin/dat2csv --help` for usage info
+- Truncate negative roadmark `sOffset` values, fixing freeze issue [#766](https://github.com/esmini/esmini/issues/766)
+- Fix picture captions in [User guide - Heading behavior in Road vs Lane Position](https://esmini.github.io/#_heading_behavior_in_road_vs_lane_position)
+- A few additional minor fixes
 
 ### 2026-01-08 Version 2.57.2
 
