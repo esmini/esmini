@@ -1071,9 +1071,21 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState) const
                 light_state->set_license_plate_illumination_rear(GetGenericLightMode(light_mode));
                 break;
             case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
-                light_state->set_emergency_vehicle_illumination(
-                    GetSpecialPurposeLightMode(light_mode, objectState->state_.info.light_state[i].color));
-                break;
+            {
+                Object::Role role = static_cast<Object::Role>(objectState->state_.info.obj_role);
+                if (role == Object::Role::AMBULANCE || role == Object::Role::FIRE || role == Object::Role::POLICE)
+                {
+                    light_state->set_emergency_vehicle_illumination(
+                        GetSpecialPurposeLightMode(light_mode, objectState->state_.info.light_state[i].color));
+                }
+                else
+                {
+                    light_state->set_service_vehicle_illumination(
+                        GetServiceVehicleLightMode(light_mode, objectState->state_.info.light_state[i].color));
+                }
+            }
+
+            break;
             default:
                 break;
         }
@@ -1191,6 +1203,31 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState) const
     return 0;
 }
 
+osi3::MovingObject_VehicleClassification_LightState_GenericLightState OSIReporter::GetServiceVehicleLightMode(
+    const Object::VehicleLightMode  &mode,
+    const Object::VehicleLightColor &color) const
+{
+    switch (mode)
+    {
+        case Object::VehicleLightMode::OFF:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_OFF;
+        case Object::VehicleLightMode::FLASHING:
+            if (color == Object::VehicleLightColor::ORANGE)
+            {
+                return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_FLASHING_AMBER;
+            }
+            else
+            {
+                return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_ON;
+            }
+            break;
+        case Object::VehicleLightMode::ON:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_ON;
+        default:
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_OTHER;
+    }
+}
+
 osi3::MovingObject_VehicleClassification_LightState_GenericLightState OSIReporter::GetSpecialPurposeLightMode(
     const Object::VehicleLightMode  &mode,
     const Object::VehicleLightColor &color) const
@@ -1204,14 +1241,14 @@ osi3::MovingObject_VehicleClassification_LightState_GenericLightState OSIReporte
             {
                 return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_FLASHING_BLUE;
             }
-            else if (color == Object::VehicleLightColor::ORANGE)
+            else if (color == Object::VehicleLightColor::RED)
             {
-                return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_FLASHING_AMBER;
+                return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_FLASHING_BLUE_AND_RED;
             }
             else
             {
                 // TODO: How to support GENERIC_LIGHT_STATE_FLASHING_BLUE_AND_RED ?
-                return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_OTHER;
+                return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_ON;
             }
             break;
         case Object::VehicleLightMode::ON:

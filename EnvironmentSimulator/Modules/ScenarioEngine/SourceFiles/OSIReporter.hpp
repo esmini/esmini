@@ -272,6 +272,8 @@ public:
                                                                                             const double&                   luminousity) const;
     osi3::MovingObject_VehicleClassification_LightState_GenericLightState GetSpecialPurposeLightMode(const Object::VehicleLightMode&  mode,
                                                                                                      const Object::VehicleLightColor& color) const;
+    osi3::MovingObject_VehicleClassification_LightState_GenericLightState GetServiceVehicleLightMode(const Object::VehicleLightMode&  mode,
+                                                                                                     const Object::VehicleLightColor& color) const;
 
     /**
     Set explicit timestap
