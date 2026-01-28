@@ -607,7 +607,7 @@ void ControllerRel2Abs::Step(double timeStep)
                               object_->GetSourceReference(),
                               object_->model3d_x_offset_,
                               object_->refpoint_x_offset_,
-                              object_->vehLghtStsList);
+                              nullptr);
 
     Controller::Step(timeStep);
 }
