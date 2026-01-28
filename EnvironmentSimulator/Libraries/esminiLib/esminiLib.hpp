@@ -1305,6 +1305,29 @@ extern "C"
                                             bool         inRoadDrivingDirection);
 
     /**
+            Get information suitable for driver modeling of a point at a specified distance from object along the route ahead
+            @param object_id Handle to the position object from which to measure
+            @param lookahead_distance The distance, along the road, to the point
+            @param data Struct including all result values, see typedef for details
+            @param lookAheadMode Measurement strategy: Along 0=lane center, 1=road center (ref line) or 2=current lane offset. See
+            roadmanager::Position::LookAheadMode enum
+            @param inRoadDrivingDirection If true look along lane driving direction. If false, look in closest direction according to object heading.
+            @return 0 = OK,
+                    ERROR_OFF_ROAD = -4,
+                    ERROR_END_OF_ROUTE = -3,
+                    ERROR_END_OF_ROAD = -2,
+                    ERROR_GENERIC = -1,
+                    ENTERED_NEW_ROAD = 1,
+                    MADE_JUNCTION_CHOICE = 2
+                    (see roadmanager.hpp -> Position::ReturnCode)
+    */
+    SE_DLL_API int SE_GetRoadInfoAlongRoute(int          object_id,
+                                            float        lookahead_distance,
+                                            SE_RoadInfo *data,
+                                            int          lookAheadMode,
+                                            bool         inRoadDrivingDirection);
+
+    /**
             Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle
             @param object_id Id of the object from which to measure (the actual externally controlled Ego vehicle, not ghost)
             @param lookahead_distance The distance, along the ghost trail, to the point from the current Ego vehicle location

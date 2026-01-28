@@ -8533,7 +8533,7 @@ Position::XYZ2TrackPos(double x3, double y3, double z3, int mode, bool connected
         // Add resistance to leave current road or directly connected ones
         // actual weights are totally unscientific... up to tuning
         // but when looking only along route, disregard connectivity wrt current road
-        if (!along_route && road != current_road)
+        if (!(along_route && route_ && route_->IsValid()) && road != current_road)
         {
             if (current_road && current_road->IsDirectlyConnected(road, &curvature, lane_id_))
             {
@@ -10281,7 +10281,7 @@ int Position::SetInertiaPos(double x, double y, double z, double h, double p, do
     return SetInertiaPosMode(x, y, z, h, p, r, GetMode(PosModeType::SET), updateTrackPos);
 }
 
-int Position::SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos)
+int Position::SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos, bool alongRoute)
 {
     x = std::isnan(x) ? x_ : x;
     y = std::isnan(y) ? y_ : y;
@@ -10300,7 +10300,7 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
 
     if (updateTrackPos)
     {
-        XYZ2TrackPos(x, y, z, mode);
+        XYZ2TrackPos(x, y, z, mode, false, ID_UNDEFINED, false, alongRoute);
     }
     else
     {
@@ -10386,7 +10386,7 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
     return 0;
 }
 
-int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos)
+int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos, bool alongRoute)
 {
     // apply current position align mode - using current SET mode for heading and UPDATE mode for pitch and roll
     return SetInertiaPosMode(
@@ -10394,13 +10394,14 @@ int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos)
         y,
         h,
         (GetMode(PosModeType::SET) & PosMode::H_MASK) | (GetMode(PosModeType::UPDATE) & (PosMode::Z_MASK | PosMode::P_MASK | PosMode::R_MASK)),
-        updateTrackPos);
+        updateTrackPos,
+        alongRoute);
 }
 
-int Position::SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos)
+int Position::SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos, bool alongRoute)
 {
     // Apply zero z, p, r to be aligned according to specified mode
-    return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode, updateTrackPos);
+    return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode, updateTrackPos, alongRoute);
 }
 
 void Position::SetHeading(double heading, bool evaluate)
@@ -11568,7 +11569,7 @@ Position::ReturnCode Position::CalcProbeInfo(Position* target, RoadProbeInfo* da
     return retval;
 }
 
-Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbeInfo* data, LookAheadMode lookAheadMode) const
+Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbeInfo* data, LookAheadMode lookAheadMode, bool along_route) const
 {
     ReturnCode retval = ReturnCode::OK;
 
@@ -11585,6 +11586,13 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
     }
 
     target.Duplicate(*this);
+
+    if (along_route && GetRoute() != nullptr && GetRoute()->IsValid() && GetRoute()->OnRoute())
+    {
+        // If route is valid, use current point snapped to route as pivot to find the target position
+        target.CopyLocation(GetRoute()->currentPos_);
+        target.CopyRoute(*this);
+    }
 
     if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER)
     {

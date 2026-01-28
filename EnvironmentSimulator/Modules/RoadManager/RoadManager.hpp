@@ -3817,7 +3817,8 @@ namespace roadmanager
         @param updateTrackPos True: road position will be calculated False: don't update road position
         @return Non zero return value indicates error of some kind
         */
-        int SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos = true);
+        int
+        SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos = true, bool alongRoute = false);
 
         /**
         Specify position by cartesian x, y and heading using current SET mode for heading and UPDATE mode for pitch and roll
@@ -3825,9 +3826,10 @@ namespace roadmanager
         @param y y
         @param h heading
         @param updateTrackPos True: road position will be calculated False: don't update road position
+        @param alongRoute True: road position will snap to closest position along route, of defined False: ignore any route
         @return Non zero return value indicates error of some kind
         */
-        int SetInertiaPos(double x, double y, double h, bool updateTrackPos = true);
+        int SetInertiaPos(double x, double y, double h, bool updateTrackPos = true, bool alongRoute = false);
 
         /**
         Specify position by cartesian x, y and heading. Z, pitch and roll will be set to zero.
@@ -3840,7 +3842,7 @@ namespace roadmanager
         @param updateTrackPos True: road position will be calculated False: don't update road position
         @return Non zero return value indicates error of some kind
         */
-        int  SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos = true);
+        int  SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos = true, bool alongRoute = false);
         void SetHeading(double heading, bool evaluate = true);
         void SetHeadingRelative(double heading, bool evaluate = true);
         void SetHeadingRelativeRoadDirection(double heading, bool evaluate = true);
@@ -4055,10 +4057,11 @@ namespace roadmanager
         @param lookahead_distance The distance, along the road, to the point
         @param data Struct to fill in calculated values, see typdef for details
         @param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode
+        @param along_route Follow any defined route (true) or default routing (false)
         enum
         @return 0 if successful, other codes see Position::ReturnCode
         */
-        ReturnCode GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookAheadMode lookAheadMode) const;
+        ReturnCode GetProbeInfo(double lookahead_distance, RoadProbeInfo *data, LookAheadMode lookAheadMode, bool along_route = false) const;
 
         /**
         Get information of current lane at a specified distance from object along the road ahead

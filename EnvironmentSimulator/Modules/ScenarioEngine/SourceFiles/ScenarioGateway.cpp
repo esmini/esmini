@@ -770,7 +770,7 @@ int ScenarioGateway::updateObjectWorldPosXYH(int id, double timestamp, double x,
     else
     {
         // Update status
-        obj_state->state_.pos.SetInertiaPos(x, y, h);
+        obj_state->state_.pos.SetInertiaPos(x, y, h, true, true);
         obj_state->state_.info.timeStamp = timestamp;
         obj_state->dirty_ |= Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL;
     }

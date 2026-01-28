@@ -441,7 +441,18 @@ namespace ESMini
         /// <param name="lookAheadMode">Measurement strategy: Along 0=lane center, 1=road center(ref line) or 2=current lane offset.See roadmanager::Position::LookAheadMode enum</param>
         /// <param name="inRoadDrivingDirection">If true always look along primary driving direction.If false, look in most straightforward direction according to object heading.</param>
         /// <returns>0 if successful, 1 if probe reached end of road, 2 if end ouf route, -1 if some error</returns>
-        public static extern int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, ref RoadInfo data, int along_road_center);
+        public static extern int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, ref RoadInfo data, int lookAheadMode, bool inRoadDrivingDirection);
+
+        [DllImport(LIB_NAME, EntryPoint = "SE_GetRoadInfoAlongRoute")]
+        /// <summary>Get information suitable for driver modeling of a point at a specified distance from object along the route ahead</summary>
+        /// <param name="object_id">Handle to the position object from which to measure</param>
+        /// <param name="lookahead_distance">The distance, along the road, to the point</param>
+        /// <param name="data">Struct including all result values, see typedef for details</param>
+        /// <param name="along_road_center">Measure along the reference lane, i.e. at center of the road. Should be false for normal use cases</param>
+        /// <param name="lookAheadMode">Measurement strategy: Along 0=lane center, 1=road center(ref line) or 2=current lane offset.See roadmanager::Position::LookAheadMode enum</param>
+        /// <param name="inRoadDrivingDirection">If true always look along primary driving direction.If false, look in most straightforward direction according to object heading.</param>
+        /// <returns>0 if successful, 1 if probe reached end of road, 2 if end ouf route, -1 if some error</returns>
+        public static extern int SE_GetRoadInfoAlongRoute(int object_id, float lookahead_distance, ref RoadInfo data, int lookAheadMode, bool inRoadDrivingDirection);
 
         /// <summary>Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle</summary>
         /// <param name="object_id">Id of the object from which to measure</param>
