@@ -302,7 +302,8 @@ namespace Dat
             packet.header = header;
             packet.data.resize(header.data_size);
 
-            if (!file_.read(packet.data.data(), packet.header.data_size))
+            file_.read(packet.data.data(), packet.header.data_size);
+            if (file_.gcount() != packet.header.data_size && !file_.eof())
             {
                 LOG_ERROR("Failed to create generic packet");
             }

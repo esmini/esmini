@@ -441,14 +441,12 @@ void Dat::DatReader::SetFileSize()
 
 bool Dat::DatReader::ReadFile(Dat::PacketHeader& header)
 {
-    if (file_.tellg() >= file_size_)
-    {
-        return false;
-    }
-
     if (!file_.read(reinterpret_cast<char*>(&header), sizeof(header)))
     {
-        LOG_ERROR("Failed to read packet header.");
+        if (!file_.eof())
+        {
+            LOG_ERROR("Failed to read packet header.");
+        }
         return false;
     }
 
