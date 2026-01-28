@@ -1031,63 +1031,68 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState) const
     }
 
     // Update LightState
-    for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
+    if (has_lightstate_action_)
     {
-        const Object::VehicleLightMode &light_mode  = objectState->state_.info.light_state[i].mode;
-        const Object::VehicleLightType &light_type  = objectState->state_.info.light_state[i].type;
-        auto                            light_state = obj_osi_internal.mobj->mutable_vehicle_classification()->mutable_light_state();
-
-        switch (light_type)
+        for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
         {
-            case Object::VehicleLightType::DAYTIME_RUNNING_LIGHTS:
-            case Object::VehicleLightType::LOW_BEAM:
-                light_state->set_head_light(GetGenericLightMode(light_mode));
-                break;
-            case Object::VehicleLightType::HIGH_BEAM:
-                light_state->set_high_beam(GetGenericLightMode(light_mode));
-                break;
-            case Object::VehicleLightType::FOG_LIGHTS:
-                light_state->set_front_fog_light(GetGenericLightMode(light_mode));
-                light_state->set_rear_fog_light(GetGenericLightMode(light_mode));
-                break;
-            case Object::VehicleLightType::FOG_LIGHTS_FRONT:
-                light_state->set_front_fog_light(GetGenericLightMode(light_mode));
-                break;
-            case Object::VehicleLightType::FOG_LIGHTS_REAR:
-                light_state->set_rear_fog_light(GetGenericLightMode(light_mode));
-                break;
-            case Object::VehicleLightType::BRAKE_LIGHTS:
-                light_state->set_brake_light_state(GetBrakeLightMode(light_mode, objectState->state_.info.light_state[i].luminousIntensity));
-                break;
-            case Object::VehicleLightType::WARNING_LIGHTS:
-            case Object::VehicleLightType::INDICATOR_LEFT:
-            case Object::VehicleLightType::INDICATOR_RIGHT:
-                light_state->set_indicator_state(GetIndicatorLightMode(light_mode, light_type));
-                break;
-            case Object::VehicleLightType::REVERSING_LIGHTS:
-                light_state->set_reversing_light(GetGenericLightMode(light_mode));
-                break;
-            case Object::VehicleLightType::LICENSE_PLATE_ILLUMINATION:
-                light_state->set_license_plate_illumination_rear(GetGenericLightMode(light_mode));
-                break;
-            case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
+            const Object::VehicleLightType &light_type = objectState->state_.info.light_state[i].type;
+            if (light_type == Object::VehicleLightType::UNDEFINED)
             {
-                Object::Role role = static_cast<Object::Role>(objectState->state_.info.obj_role);
-                if (role == Object::Role::AMBULANCE || role == Object::Role::FIRE || role == Object::Role::POLICE)
-                {
-                    light_state->set_emergency_vehicle_illumination(
-                        GetSpecialPurposeLightMode(light_mode, objectState->state_.info.light_state[i].color));
-                }
-                else
-                {
-                    light_state->set_service_vehicle_illumination(
-                        GetServiceVehicleLightMode(light_mode, objectState->state_.info.light_state[i].color));
-                }
+                continue;  // If undefined move to next light, this to avoid having empty light_state struct in gt data
             }
 
-            break;
-            default:
-                break;
+            const Object::VehicleLightMode &light_mode  = objectState->state_.info.light_state[i].mode;
+            auto                            light_state = obj_osi_internal.mobj->mutable_vehicle_classification()->mutable_light_state();
+
+            switch (light_type)
+            {
+                case Object::VehicleLightType::DAYTIME_RUNNING_LIGHTS:
+                case Object::VehicleLightType::LOW_BEAM:
+                    light_state->set_head_light(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::HIGH_BEAM:
+                    light_state->set_high_beam(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::FOG_LIGHTS:
+                    light_state->set_front_fog_light(GetGenericLightMode(light_mode));
+                    light_state->set_rear_fog_light(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::FOG_LIGHTS_FRONT:
+                    light_state->set_front_fog_light(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::FOG_LIGHTS_REAR:
+                    light_state->set_rear_fog_light(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::BRAKE_LIGHTS:
+                    light_state->set_brake_light_state(GetBrakeLightMode(light_mode, objectState->state_.info.light_state[i].luminousIntensity));
+                    break;
+                case Object::VehicleLightType::WARNING_LIGHTS:
+                case Object::VehicleLightType::INDICATOR_LEFT:
+                case Object::VehicleLightType::INDICATOR_RIGHT:
+                    light_state->set_indicator_state(GetIndicatorLightMode(light_mode, light_type));
+                    break;
+                case Object::VehicleLightType::REVERSING_LIGHTS:
+                    light_state->set_reversing_light(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::LICENSE_PLATE_ILLUMINATION:
+                    light_state->set_license_plate_illumination_rear(GetGenericLightMode(light_mode));
+                    break;
+                case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
+                {
+                    const auto &role = static_cast<Object::Role>(objectState->state_.info.obj_role);
+                    if (role == Object::Role::AMBULANCE || role == Object::Role::POLICE || role == Object::Role::FIRE)
+                    {
+                        light_state->set_emergency_vehicle_illumination(GetSpecialPurposeLightMode(light_mode, role));
+                    }
+                    else
+                    {
+                        light_state->set_service_vehicle_illumination(GetServiceVehicleLightMode(light_mode));
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
         }
     }
 
@@ -1204,23 +1209,14 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState) const
 }
 
 osi3::MovingObject_VehicleClassification_LightState_GenericLightState OSIReporter::GetServiceVehicleLightMode(
-    const Object::VehicleLightMode  &mode,
-    const Object::VehicleLightColor &color) const
+    const Object::VehicleLightMode &mode) const
 {
     switch (mode)
     {
         case Object::VehicleLightMode::OFF:
             return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_OFF;
         case Object::VehicleLightMode::FLASHING:
-            if (color == Object::VehicleLightColor::ORANGE)
-            {
-                return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_FLASHING_AMBER;
-            }
-            else
-            {
-                return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_ON;
-            }
-            break;
+            return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_FLASHING_AMBER;
         case Object::VehicleLightMode::ON:
             return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_ON;
         default:
@@ -1228,26 +1224,24 @@ osi3::MovingObject_VehicleClassification_LightState_GenericLightState OSIReporte
     }
 }
 
-osi3::MovingObject_VehicleClassification_LightState_GenericLightState OSIReporter::GetSpecialPurposeLightMode(
-    const Object::VehicleLightMode  &mode,
-    const Object::VehicleLightColor &color) const
+osi3::MovingObject_VehicleClassification_LightState_GenericLightState OSIReporter::GetSpecialPurposeLightMode(const Object::VehicleLightMode &mode,
+                                                                                                              const Object::Role &role) const
 {
     switch (mode)
     {
         case Object::VehicleLightMode::OFF:
             return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_OFF;
         case Object::VehicleLightMode::FLASHING:
-            if (color == Object::VehicleLightColor::BLUE)
+            if (role == Object::Role::AMBULANCE || role == Object::Role::POLICE)
             {
                 return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_FLASHING_BLUE;
             }
-            else if (color == Object::VehicleLightColor::RED)
+            else if (role == Object::Role::FIRE)
             {
                 return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_FLASHING_BLUE_AND_RED;
             }
             else
             {
-                // TODO: How to support GENERIC_LIGHT_STATE_FLASHING_BLUE_AND_RED ?
                 return osi3::MovingObject_VehicleClassification_LightState::GENERIC_LIGHT_STATE_ON;
             }
             break;
