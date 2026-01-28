@@ -224,7 +224,7 @@ void ControllerSumo::Step(double timeStep)
                                                   vehicle->GetSourceReference(),
                                                   vehicle->refpoint_x_offset_,
                                                   vehicle->model3d_x_offset_,
-                                                  vehicle->vehLghtStsList);
+                                                  nullptr);
 
                         vehicle = static_cast<Vehicle*>(vehicle->TrailerVehicle());
                     }
