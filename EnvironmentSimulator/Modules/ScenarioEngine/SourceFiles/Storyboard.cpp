@@ -211,67 +211,67 @@ void Event::Start(double simTime)
         {
             OSCPrivateAction* pa  = static_cast<OSCPrivateAction*>(action_[i]);
             Object*           obj = pa->object_;
-            if (obj == nullptr)
+            if (obj != nullptr)
             {
-                continue;
-            }
-
-            // First check init actions
-            for (size_t j = 0; j < obj->initActions_.size(); j++)
-            {
-                if (obj->initActions_[j]->GetBaseType() == OSCAction::BaseType::PRIVATE &&
-                    obj->initActions_[j]->GetCurrentState() == StoryBoardElement::State::RUNNING &&
-                    static_cast<int>(obj->initActions_[j]->GetDomains()) & static_cast<int>(pa->GetDomains()))
+                // First check init actions
+                for (size_t j = 0; j < obj->initActions_.size(); j++)
                 {
-                    // Domains overlap, at least one domain in common. Terminate old action.
-                    LOG_WARN("Stopping {} on conflicting {} domain(s)",
-                             obj->initActions_[j]->GetName(),
-                             ControlDomain2Str(static_cast<ControlDomains>(obj->initActions_[j]->GetDomains())));
-                    obj->initActions_[j]->End();
-                }
-            }
-
-            // Then check Storyboard event actions
-            for (size_t j = 0; j < pa->object_->objectEvents_.size(); j++)
-            {
-                for (size_t k = 0; k < obj->objectEvents_[j]->action_.size(); k++)
-                {
-                    // Make sure the object's action is of private type
-                    if (obj->objectEvents_[j]->action_[k]->GetBaseType() != OSCAction::BaseType::PRIVATE)
+                    if (obj->initActions_[j]->GetBaseType() == OSCAction::BaseType::PRIVATE &&
+                        obj->initActions_[j]->GetCurrentState() == StoryBoardElement::State::RUNNING)
                     {
-                        continue;
-                    }
-
-                    OSCPrivateAction* pa2 = static_cast<OSCPrivateAction*>(obj->objectEvents_[j]->action_[k]);
-                    if (pa2 != pa && pa2->object_->GetId() == pa->object_->GetId() && pa2->GetCurrentState() == StoryBoardElement::State::RUNNING &&
-                        pa2->GetBaseType() == OSCAction::BaseType::PRIVATE &&
-                        static_cast<int>(pa2->GetDomains()) & static_cast<int>(pa->GetDomains()))
-                    {
-                        if (static_cast<int>(pa2->GetDomains()) == (static_cast<int>(ControlDomains::DOMAIN_LIGHT)))
-                        {
-                            LightStateAction* action2 = static_cast<LightStateAction*>(pa2);
-                            LightStateAction* action1 = static_cast<LightStateAction*>(pa);
-
-                            if (action2->action_type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
-                                action1->action_type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
-                                action2->GetVehicleLightType() == action1->GetVehicleLightType())
-                            {
-                                // LightType overlap, at least one light type in common. Terminate old action.
-                                LOG_WARN("Stopping object {} {} on conflicting {} light(s)",
-                                         obj->GetName(),
-                                         action2->GetName(),
-                                         obj->LightType2Str(action2->GetVehicleLightType()));
-                                action2->End();
-                            }
-                        }
-                        else
+                        if (static_cast<int>(obj->initActions_[j]->GetDomains()) & static_cast<int>(pa->GetDomains()))
                         {
                             // Domains overlap, at least one domain in common. Terminate old action.
-                            LOG_WARN("Stopping object {} {} on conflicting {} domain(s)",
-                                     obj->GetName(),
-                                     pa2->GetName(),
-                                     ControlDomain2Str(static_cast<ControlDomains>(pa2->GetDomains())));
-                            pa2->End();
+                            LOG_WARN("Stopping {} on conflicting {} domain(s)",
+                                     obj->initActions_[j]->GetName(),
+                                     ControlDomainMask2Str(obj->initActions_[j]->GetDomains()));
+                            obj->initActions_[j]->End();
+                        }
+                    }
+                }
+
+                // Then check Storyboard event actions
+                for (size_t j = 0; j < pa->object_->objectEvents_.size(); j++)
+                {
+                    for (size_t k = 0; k < obj->objectEvents_[j]->action_.size(); k++)
+                    {
+                        // Make sure the object's action is of private type
+                        if (obj->objectEvents_[j]->action_[k]->GetBaseType() != OSCAction::BaseType::PRIVATE)
+                        {
+                            continue;
+                        }
+
+                        OSCPrivateAction* pa2 = static_cast<OSCPrivateAction*>(obj->objectEvents_[j]->action_[k]);
+                        if (pa2 != pa && pa2->object_->GetId() == pa->object_->GetId() &&
+                            pa2->GetCurrentState() == StoryBoardElement::State::RUNNING && pa2->GetBaseType() == OSCAction::BaseType::PRIVATE &&
+                            static_cast<int>(pa2->GetDomains()) & static_cast<int>(pa->GetDomains()))
+                        {
+                            if (static_cast<int>(pa2->GetDomains()) & (static_cast<int>(ControlDomainMasks::DOMAIN_MASK_LIGHT)))
+                            {
+                                LightStateAction* action2 = static_cast<LightStateAction*>(pa2);
+                                LightStateAction* action1 = static_cast<LightStateAction*>(pa);
+
+                                if (action2->action_type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
+                                    action1->action_type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
+                                    action2->GetVehicleLightType() == action1->GetVehicleLightType())
+                                {
+                                    // LightType overlap, at least one light type in common. Terminate old action.
+                                    LOG_WARN("Stopping object {} {} on conflicting {} light(s)",
+                                             obj->GetName(),
+                                             action2->GetName(),
+                                             obj->LightType2Str(action2->GetVehicleLightType()));
+                                    action2->End();
+                                }
+                            }
+                            else
+                            {
+                                // Domains overlap, at least one domain in common. Terminate old action.
+                                LOG_WARN("Stopping object {} {} on conflicting {} domain(s)",
+                                         obj->GetName(),
+                                         pa2->GetName(),
+                                         ControlDomainMask2Str(pa2->GetDomains()));
+                                pa2->End();
+                            }
                         }
                     }
                 }
