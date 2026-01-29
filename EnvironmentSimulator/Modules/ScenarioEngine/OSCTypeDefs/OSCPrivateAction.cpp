@@ -3097,16 +3097,16 @@ void VisibilityAction::Step(double simTime, double dt)
 
 void LightStateAction::Start(double simTime)
 {
-    auto& vehicleLightStatus = object_->vehLghtStsList[static_cast<size_t>(vehicleLightStatus_.type)];
-    previousIntensity_       = vehicleLightStatus.luminousIntensity;
-    previousMode_            = vehicleLightStatus.mode;
-    std::copy_n(vehicleLightStatus.emissionRgb, this->RGB_ARRAY_SIZE_, this->initEmissionRgb_);
-    std::copy_n(vehicleLightStatus.diffuseRgb, this->RGB_ARRAY_SIZE_, this->initDiffusionRgb_);
+    auto& vehicleLight = object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
+    previousIntensity_ = vehicleLight.luminousIntensity;
+    previousMode_      = vehicleLight.mode;
+    std::copy_n(vehicleLight.emissionRgb, this->RGB_ARRAY_SIZE_, this->initEmissionRgb_);
+    std::copy_n(vehicleLight.diffuseRgb, this->RGB_ARRAY_SIZE_, this->initDiffusionRgb_);
 
     bool accepted = true;
-    if (vehicleLightStatus.type == Object::VehicleLightType::UNDEFINED)
+    if (vehicleLight.type == Object::VehicleLightType::UNDEFINED)
     {
-        bool valid_arr = ArrayZeroToOne(vehicleLightStatus.baseRgb, RGB_ARRAY_SIZE_);
+        bool valid_arr = ArrayZeroToOne(vehicleLight.baseRgb, RGB_ARRAY_SIZE_);
         if (!valid_arr)
         {
             accepted = false;
@@ -3114,38 +3114,38 @@ void LightStateAction::Start(double simTime)
 
         if (accepted && rgbDeducedFromLightType_)
         {
-            AdjustByOffsetArray(vehicleLightStatus.baseRgb, RGB_OFFSET_);
+            AdjustByOffsetArray(vehicleLight.baseRgb, RGB_OFFSET_);
         }
         else  // TODO: What case is this? Really necessary?
         {
-            std::copy_n(vehicleLightStatus_.baseRgb, this->RGB_ARRAY_SIZE_, vehicleLightStatus.baseRgb);
+            std::copy_n(actionVehicleLightStatus_.baseRgb, this->RGB_ARRAY_SIZE_, vehicleLight.baseRgb);
         }
     }
 
-    if (vehicleLightStatus_.luminousIntensity == -1.0 &&
-        (vehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING || vehicleLightStatus_.mode == Object::VehicleLightMode::ON))
+    if (actionVehicleLightStatus_.luminousIntensity == -1.0 &&
+        (actionVehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING || actionVehicleLightStatus_.mode == Object::VehicleLightMode::ON))
     {
-        vehicleLightStatus_.luminousIntensity = (previousIntensity_ != -1.0) ? previousIntensity_ : DEFAULT_LUMINOUS_INTENSITY_;
+        actionVehicleLightStatus_.luminousIntensity = (previousIntensity_ != -1.0) ? previousIntensity_ : DEFAULT_LUMINOUS_INTENSITY_;
     }
 
-    if (vehicleLightStatus.type == Object::VehicleLightType::UNDEFINED)
+    if (vehicleLight.type == Object::VehicleLightType::UNDEFINED)
     {
-        vehicleLightStatus.color = vehicleLightStatus_.color;
+        vehicleLight.color = actionVehicleLightStatus_.color;
     }
-    else if (vehicleLightStatus_.color != Object::VehicleLightColor::UNKNOWN)
+    else if (actionVehicleLightStatus_.color != Object::VehicleLightColor::UNKNOWN)
     {
-        vehicleLightStatus.color = vehicleLightStatus_.color;
-        std::copy_n(vehicleLightStatus_.baseRgb, this->RGB_ARRAY_SIZE_, vehicleLightStatus.baseRgb);
+        vehicleLight.color = actionVehicleLightStatus_.color;
+        std::copy_n(actionVehicleLightStatus_.baseRgb, this->RGB_ARRAY_SIZE_, vehicleLight.baseRgb);
     }
 
     double temp_rgb[3];
-    std::copy_n(vehicleLightStatus.baseRgb, this->RGB_ARRAY_SIZE_, temp_rgb);
+    std::copy_n(vehicleLight.baseRgb, this->RGB_ARRAY_SIZE_, temp_rgb);
 
-    auto& current_mode = vehicleLightStatus_.mode;
+    auto& current_mode = actionVehicleLightStatus_.mode;
     if (current_mode == Object::VehicleLightMode::ON ||
         (current_mode == Object::VehicleLightMode::FLASHING && previousMode_ != Object::VehicleLightMode::ON))
     {
-        const double finalLumPerc = std::min(vehicleLightStatus_.luminousIntensity / MAX_INTENSITY_LUM, 1.0);
+        const double finalLumPerc = std::min(actionVehicleLightStatus_.luminousIntensity / MAX_INTENSITY_LUM, 1.0);
         for (size_t i = 0; i < this->RGB_ARRAY_SIZE_; i++)
         {
             finalEmissionRgb_[i] = temp_rgb[i] + ((this->LUMINOUS_MAX_ - temp_rgb[i]) * finalLumPerc);
@@ -3167,9 +3167,9 @@ void LightStateAction::Start(double simTime)
         }
     }
 
-    vehicleLightStatus.mode              = current_mode;
-    vehicleLightStatus.luminousIntensity = vehicleLightStatus_.luminousIntensity;
-    vehicleLightStatus.type              = vehicleLightStatus_.type;
+    vehicleLight.mode              = current_mode;
+    vehicleLight.luminousIntensity = actionVehicleLightStatus_.luminousIntensity;
+    vehicleLight.type              = actionVehicleLightStatus_.type;
 
     CheckAndSetColorError(initEmissionRgb_, RGB_ARRAY_SIZE_);
     CheckAndSetColorError(finalEmissionRgb_, RGB_ARRAY_SIZE_);
@@ -3183,26 +3183,26 @@ void LightStateAction::Step(double simTime, double dt)
 {
     (void)simTime;
 
-    auto& vehicleLightStatus = object_->vehLghtStsList[static_cast<size_t>(vehicleLightStatus_.type)];
+    auto& vehicleLight = object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
 
     if (transitionTime_ <= transitionTimer_)
     {
         // Light/color intensity, increase until transition time
-        if (vehicleLightStatus.mode == Object::VehicleLightMode::FLASHING)
+        if (vehicleLight.mode == Object::VehicleLightMode::FLASHING)
         {
             LightsFlashing(dt);
         }
         else
         {
             // Final rgb values
-            std::copy_n(finalEmissionRgb_, RGB_ARRAY_SIZE_, vehicleLightStatus.emissionRgb);
-            std::copy_n(finalDiffusionRgb_, RGB_ARRAY_SIZE_, vehicleLightStatus.diffuseRgb);
+            std::copy_n(finalEmissionRgb_, RGB_ARRAY_SIZE_, vehicleLight.emissionRgb);
+            std::copy_n(finalDiffusionRgb_, RGB_ARRAY_SIZE_, vehicleLight.diffuseRgb);
             OSCAction::End();
         }
     }
     else
     {
-        if (!(vehicleLightStatus.mode == Object::VehicleLightMode::FLASHING && previousMode_ == Object::VehicleLightMode::OFF))
+        if (!(vehicleLight.mode == Object::VehicleLightMode::FLASHING && previousMode_ == Object::VehicleLightMode::OFF))
         {
             SetLightTransitionValues(Object::VehicleLightMode::ON);
         }
@@ -3281,20 +3281,20 @@ void LightStateAction::RapidTransition()
 
     if (emissionRgb && diffuseRgb)
     {
-        auto& vehicleLightStatus = object_->vehLghtStsList[static_cast<size_t>(vehicleLightStatus_.type)];
-        std::copy_n(emissionRgb, RGB_ARRAY_SIZE_, vehicleLightStatus.emissionRgb);
-        std::copy_n(diffuseRgb, RGB_ARRAY_SIZE_, vehicleLightStatus.diffuseRgb);
+        auto& vehicleLight = object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
+        std::copy_n(emissionRgb, RGB_ARRAY_SIZE_, vehicleLight.emissionRgb);
+        std::copy_n(diffuseRgb, RGB_ARRAY_SIZE_, vehicleLight.diffuseRgb);
     }
 }
 void LightStateAction::SmoothTransition()
 {
-    auto& vehicleLightStatus = object_->vehLghtStsList[static_cast<size_t>(vehicleLightStatus_.type)];
+    auto& vehicleLight = object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
 
     double proportion = transitionTimer_ / transitionTime_;
     for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
     {
-        vehicleLightStatus.emissionRgb[i] = initEmissionRgb_[i] + (proportion * (finalEmissionRgb_[i] - initEmissionRgb_[i]));
-        vehicleLightStatus.diffuseRgb[i]  = initDiffusionRgb_[i] + (proportion * (finalDiffusionRgb_[i] - initDiffusionRgb_[i]));
+        vehicleLight.emissionRgb[i] = initEmissionRgb_[i] + (proportion * (finalEmissionRgb_[i] - initEmissionRgb_[i]));
+        vehicleLight.diffuseRgb[i]  = initDiffusionRgb_[i] + (proportion * (finalDiffusionRgb_[i] - initDiffusionRgb_[i]));
     }
 }
 
@@ -3355,63 +3355,28 @@ void LightStateAction::CmykToRgb(const double* cmyk, double* rgb)
 
 void LightStateAction::SetRgbFromColorEnum(const Object::VehicleLightColor& color)
 {
-    switch (color)
+    std::vector<double> base_color = {rgb_[0], rgb_[1], rgb_[2]};
+    auto                it         = baseColorMap.find(color);
+    if (it != baseColorMap.end())
     {
-        case Object::VehicleLightColor::RED:
-            this->rgb_[0] = 0.5;
-            this->rgb_[1] = 0.0;
-            this->rgb_[2] = 0.0;
-            break;
-        case Object::VehicleLightColor::YELLOW:
-            this->rgb_[0] = 0.5;
-            this->rgb_[1] = 0.5;
-            this->rgb_[2] = 0.3;
-            break;
-        case Object::VehicleLightColor::GREEN:
-            this->rgb_[0] = 0.0;
-            this->rgb_[1] = 0.5;
-            this->rgb_[2] = 0.0;
-            break;
-        case Object::VehicleLightColor::BLUE:
-            this->rgb_[0] = 0.0;
-            this->rgb_[1] = 0.0;
-            this->rgb_[2] = 0.5;
-            break;
-        case Object::VehicleLightColor::VIOLET:
-            this->rgb_[0] = 0.53;
-            this->rgb_[1] = 0.31;
-            this->rgb_[2] = 0.02;
-            break;
-        case Object::VehicleLightColor::ORANGE:
-            this->rgb_[0] = 0.5;
-            this->rgb_[1] = 0.15;
-            this->rgb_[2] = 0.0;
-            break;
-        case Object::VehicleLightColor::BROWN:
-            this->rgb_[0] = 0.15;
-            this->rgb_[1] = 0.06;
-            this->rgb_[2] = 0.06;
-            break;
-        case Object::VehicleLightColor::BLACK:
-            this->rgb_[0] = 0.0;
-            this->rgb_[1] = 0.0;
-            this->rgb_[2] = 0.0;
-            break;
-        case Object::VehicleLightColor::GREY:
-            this->rgb_[0] = 0.3;
-            this->rgb_[1] = 0.3;
-            this->rgb_[2] = 0.3;
-            break;
-        case Object::VehicleLightColor::WHITE:
-            this->rgb_[0] = 0.6;
-            this->rgb_[1] = 0.6;
-            this->rgb_[2] = 0.6;
-            break;
-        default:
-            break;
+        base_color = it->second;
     }
 
+    std::copy_n(base_color.data(), RGB_ARRAY_SIZE_, rgb_);
+
     return;
+}
+
+std::vector<double> LightStateAction::GetRgbFromColorEnum(const Object::VehicleLightColor& color)
+{
+    std::vector<double> base_color = {rgb_[0], rgb_[1], rgb_[2]};
+    auto                it         = baseColorMap.find(color);
+    if (it != baseColorMap.end())
+    {
+        base_color = it->second;
+    }
+
+    return base_color;
 }
 
 void LightStateAction::SetRgbFromTypeEnum(const Object::VehicleLightType& type)
