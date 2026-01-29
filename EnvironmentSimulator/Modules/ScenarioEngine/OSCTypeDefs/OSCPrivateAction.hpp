@@ -1453,7 +1453,7 @@ namespace scenarioengine
               previousIntensity_(luminousIntensity_),
               vehicleLightType_(Object::VehicleLightType::UNDEFINED),
               vehicleLightColor_(Object::VehicleLightColor::UNKNOWN),
-              vehicleLightStatus_({}),
+              actionVehicleLightStatus_({}),
               flashStatus_(FlashingStatus::UNDEFINED)
         {
         }
@@ -1471,6 +1471,7 @@ namespace scenarioengine
         Object::VehicleLightType  GetVehicleLightTypeFromStr(const std::string& lightType);
         Object::VehicleLightMode  GetVehicleLightModeFromStr(const std::string& mode);
         Object::VehicleLightColor GetVehicleLightColorFromStr(const std::string& colorType);
+        std::vector<double>       GetRgbFromColorEnum(const Object::VehicleLightColor& color);
         void                      CmykToRgb(const double* cmyk, double* rgb);
         void                      SetRgbFromColorEnum(const Object::VehicleLightColor& color);
         void                      SetRgbFromTypeEnum(const Object::VehicleLightType& type);
@@ -1548,11 +1549,11 @@ namespace scenarioengine
         }
         void SetVehicleLightInitStatus()
         {
-            vehicleLightStatus_.type              = this->vehicleLightType_;
-            vehicleLightStatus_.luminousIntensity = this->luminousIntensity_;
-            vehicleLightStatus_.mode              = this->vehicleLightMode_;
-            vehicleLightStatus_.color             = this->vehicleLightColor_;
-            std::copy_n(this->rgb_, RGB_ARRAY_SIZE_, vehicleLightStatus_.baseRgb);
+            actionVehicleLightStatus_.type              = this->vehicleLightType_;
+            actionVehicleLightStatus_.luminousIntensity = this->luminousIntensity_;
+            actionVehicleLightStatus_.mode              = this->vehicleLightMode_;
+            actionVehicleLightStatus_.color             = this->vehicleLightColor_;
+            std::copy_n(this->rgb_, RGB_ARRAY_SIZE_, actionVehicleLightStatus_.baseRgb);
         }
 
         std::unordered_map<std::string, Object::VehicleLightType> lightTypeMap = {
@@ -1586,6 +1587,19 @@ namespace scenarioengine
                                                                                   {"off", Object::VehicleLightMode::OFF},
                                                                                   {"flashing", Object::VehicleLightMode::FLASHING}};
 
+        std::unordered_map<Object::VehicleLightColor, std::vector<double>> baseColorMap = {
+            {Object::VehicleLightColor::RED, {0.5, 0.0, 0.0}},
+            {Object::VehicleLightColor::YELLOW, {0.5, 0.5, 0.3}},
+            {Object::VehicleLightColor::GREEN, {0.0, 0.5, 0.0}},
+            {Object::VehicleLightColor::BLUE, {0.0, 0.0, 0.5}},
+            {Object::VehicleLightColor::VIOLET, {0.53, 0.31, 0.02}},
+            {Object::VehicleLightColor::ORANGE, {0.5, 0.15, 0.0}},
+            {Object::VehicleLightColor::BROWN, {0.15, 0.06, 0.06}},
+            {Object::VehicleLightColor::BLACK, {0.0, 0.0, 0.0}},
+            {Object::VehicleLightColor::GREY, {0.3, 0.3, 0.3}},
+            {Object::VehicleLightColor::WHITE, {0.6, 0.6, 0.6}},
+        };
+
     private:
         double                     transitionTime_;
         double                     flashingOffDuration_;
@@ -1609,7 +1623,7 @@ namespace scenarioengine
         double                     previousIntensity_;
         Object::VehicleLightType   vehicleLightType_;
         Object::VehicleLightColor  vehicleLightColor_;
-        Object::VehicleLightStatus vehicleLightStatus_;
+        Object::VehicleLightStatus actionVehicleLightStatus_;
         FlashingStatus             flashStatus_;
     };
 

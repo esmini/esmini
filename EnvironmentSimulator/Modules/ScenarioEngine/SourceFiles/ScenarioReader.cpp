@@ -3974,11 +3974,13 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 lightStateAction->SetTransitionTime(strtod(val));
             }
 
-            bool ok           = true;
-            bool light_type   = false;
-            bool light_state  = false;
-            bool colorRgbSet  = false;
-            bool colorCmykSet = false;
+            bool        ok           = true;
+            bool        light_type   = false;
+            bool        light_state  = false;
+            bool        color_set    = false;
+            bool        colorRgbSet  = false;
+            bool        colorCmykSet = false;
+            std::string color        = "";
             for (pugi::xml_node lightStateActionChild = appearanceActionChild.first_child(); lightStateActionChild;
                  lightStateActionChild                = lightStateActionChild.next_sibling())
             {
@@ -4050,8 +4052,10 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
 
                         if (const auto &val = parameters.ReadAttribute(colorChild, "colorType"); !val.empty())
                         {
-                            auto color = lightStateAction->GetVehicleLightColorFromStr(val);
-                            lightStateAction->SetVehicleLightColor(color);
+                            color           = val;
+                            auto color_enum = lightStateAction->GetVehicleLightColorFromStr(val);
+                            lightStateAction->SetVehicleLightColor(color_enum);
+                            color_set = true;
                         }
 
                         for (pugi::xml_node colorDesChild = colorChild.first_child(); colorDesChild; colorDesChild = colorDesChild.next_sibling())
@@ -4118,11 +4122,20 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 ok = false;
             }
 
+            if (color_set && !(colorRgbSet || colorCmykSet))
+            {
+                auto rgb = lightStateAction->GetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());
+                LOG_WARN("LightStateAction: Color set but colorRgb or colorCmyk not set, setting default for color {} (r:{} g:{} b:{})",
+                         color,
+                         rgb[0],
+                         rgb[1],
+                         rgb[2]);
+            }
+
             if (colorRgbSet && colorCmykSet)
             {
-                LOG_WARN("LightStateAction: Can't set both colorRgb and colorCmyk");
+                LOG_WARN("LightStateAction: Can't set both colorRgb and colorCmyk, skipping");
                 ok = false;
-                break;
             }
 
             if (!ok)  // TODO: Test correct cleanup?
@@ -4154,7 +4167,11 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             if (lightStateAction->GetVehicleLightType() == Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS)
             {
                 auto rgb = lightStateAction->GetRgb();
-                if (rgb[0] >= rgb[1] && rgb[0] >= rgb[2])
+                if (lightStateAction->GetVehicleLightColor() != Object::VehicleLightColor::UNKNOWN)
+                {
+                    // Do nothing
+                }
+                else if (rgb[0] >= rgb[1] && rgb[0] >= rgb[2])
                 {
                     lightStateAction->SetVehicleLightColor(Object::VehicleLightColor::ORANGE);
                 }
