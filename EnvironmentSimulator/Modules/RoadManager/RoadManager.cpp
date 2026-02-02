@@ -2323,8 +2323,8 @@ double LaneSection::GetTotalLaneWidthPrim(double s, int lane_id, bool center) co
         Lane* lane = GetLaneById(id);
         if (lane == nullptr)
         {
-            LOG_WARN("GetOffsetHeading: No lane with id {} in lane section at s {:.2f}", id, s_);
-            return 0.0;
+            LOG_DEBUG("GetOffsetHeading: No lane with id {} in lane section at s {:.2f}", id, s_);
+            continue;
         }
 
         LaneWidth* lane_width = lane->GetWidthByS(s - s_);
