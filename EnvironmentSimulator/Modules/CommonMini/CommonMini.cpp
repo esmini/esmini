@@ -795,14 +795,34 @@ bool IsDoubleEqual(double a, double b)
 
 bool IsValidDateTimeFormat(const std::string& dateTimeString)
 {
-    std::regex pattern(R"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[+-]\d{2}:\d{2})");
-    if (!std::regex_match(dateTimeString, pattern))
+    std::regex datetimePattern(R"(^(\d{4})-(\d{1,2})-(\d{1,2})T(\d{1,2}):(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?$)");
+    std::regex timezonePattern(R"(^[+-]\d{4}$)");
+
+    std::string datetimePart = dateTimeString;
+    std::string timezonePart;
+    auto        pos = dateTimeString.find_last_of("+-");
+    if (pos != std::string::npos && pos > dateTimeString.find("T"))
+    {
+        datetimePart = dateTimeString.substr(0, pos);
+        timezonePart = dateTimeString.substr(pos);
+    }
+
+    std::smatch m;
+    if (!std::regex_match(datetimePart, m, datetimePattern))
     {
         return false;  // Invalid format
     }
 
+    /* 2026-02-02: Skipping this check for now, there's no clear pattern of input and timezone offset isn't used
+    if (!timezonePart.empty() && !std::regex_match(timezonePart, timezonePattern))
+    {
+        LOG_WARN("EnvironmentAction: Missing mandatory timezone offset, assuming +0000");
+        return false;
+    }
+    */
+
     std::tm           timeStruct = {};
-    std::stringstream ss(dateTimeString);
+    std::stringstream ss(datetimePart);
     ss >> std::get_time(&timeStruct, "%Y-%m-%dT%H:%M:%S");
 
     if (ss.fail())
@@ -835,7 +855,7 @@ bool IsValidDateTimeFormat(const std::string& dateTimeString)
     }
 
     // Check milliseconds
-    std::string millisecondsStr = dateTimeString.substr(20, 3);
+    std::string millisecondsStr = (m[7].matched) ? std::string(m[7]) : "";
     try
     {
         int milliseconds = std::stoi(millisecondsStr);
@@ -849,12 +869,6 @@ bool IsValidDateTimeFormat(const std::string& dateTimeString)
         LOG_ERROR("IsValidDateTimeFormat: {}", e.what());
         return false;  // Invalid milliseconds
     }
-
-    // Check timezone offset
-    std::string timezoneStr = dateTimeString.substr(23);
-    std::regex  timezonePattern(R"([+-]\d{2}:\d{2})");
-    if (!std::regex_match(timezoneStr, timezonePattern))
-        return false;
 
     return true;  // Valid date and time
 }
