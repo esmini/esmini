@@ -1360,7 +1360,7 @@ void CarModel::UpdateLightMaterial(Object::VehicleLightType light_type, const os
     }
     else
     {
-        LOG_WARN_ONCE("Missing light node - {} - ignoring visualization", LightTypeInd2Str(light_type));
+        LOG_DEBUG("Missing light node - {} - ignoring visualization", LightTypeInd2Str(light_type));
     }
 }
 

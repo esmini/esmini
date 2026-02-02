@@ -97,6 +97,12 @@ namespace Dat
         int          lamp_mode        = static_cast<int>(roadmanager::Signal::LampMode::MODE_UNDEFINED);
     };
 
+    // struct VehicleLightState
+    // {
+    //     int light_type;
+
+    // };
+
     struct PacketGeneric
     {
         PacketHeader      header;
@@ -229,9 +235,10 @@ namespace Dat
             return sizeof(p.size) + p.string.size();
         }
 
-        size_t SerializedSize(const PacketShape2DOutline& p)
+        template <typename T>
+        size_t SerializedSize(const std::vector<T>& val)
         {
-            return p.points.size() * sizeof(SE_Point2D);
+            return val.size() * sizeof(T);
         }
 
         template <typename T>
@@ -249,9 +256,10 @@ namespace Dat
             write_ptr += p.string.size();
         }
 
-        void WriteToBuffer(char*& write_ptr, const PacketShape2DOutline& p)
+        template <typename T>
+        void WriteToBuffer(char*& write_ptr, const std::vector<T>& p)
         {
-            memcpy(write_ptr, p.points.data(), p.points.size() * sizeof(SE_Point2D));
+            memcpy(write_ptr, p.data(), p.size() * sizeof(T));
         }
 
         template <typename T>
@@ -282,9 +290,6 @@ namespace Dat
 
         std::string ReadStringPacket(const Dat::PacketGeneric& pkt);
         int         ReadStringPacket(std::string& str);
-
-        std::vector<SE_Point2D> ReadOutlinePacket(const Dat::PacketGeneric& pkt);
-        int                     ReadOutlinePacket(std::vector<SE_Point2D>& points);
 
         int            FillDatHeader(bool quiet = false);
         Dat::DatHeader GetDatHeader() const
@@ -349,6 +354,28 @@ namespace Dat
             else if (exceeded_bounds)
             {
                 LOG_DEBUG("Reading previous partial version of packet id: {}", gp.header.id);
+            }
+
+            return 0;
+        }
+
+        template <typename T>
+        int ReadVectorPacket(const Dat::PacketGeneric& pkt, std::vector<T>& ret)
+        {
+            static_assert(std::is_trivially_copyable_v<T>, "ReadVectorPacket requires trivially copyable T");
+
+            if (pkt.header.data_size % sizeof(T) != 0 || pkt.data.size() < pkt.header.data_size)
+            {
+                return -1;
+            }
+
+            const size_t count = pkt.header.data_size / sizeof(T);
+
+            ret.resize(count);
+
+            if (count > 0)
+            {
+                std::memcpy(ret.data(), pkt.data.data(), pkt.header.data_size);
             }
 
             return 0;

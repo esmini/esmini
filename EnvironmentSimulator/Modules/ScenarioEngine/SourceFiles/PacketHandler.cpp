@@ -309,7 +309,7 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
             cache_it->second.outline_2d = state->outline;
 
             PacketShape2DOutline packet_shape = {cache_it->second.outline_2d};
-            Write(PacketId::SHAPE_2D_OUTLINE, packet_shape);
+            Write(PacketId::SHAPE_2D_OUTLINE, packet_shape.points);
         }
 
         this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state
@@ -492,16 +492,6 @@ int Dat::DatReader::ReadStringPacket(std::string& str)
         return -1;
     }
     return 0;
-}
-
-std::vector<SE_Point2D> Dat::DatReader::ReadOutlinePacket(const Dat::PacketGeneric& pkt)
-{
-    const char* ptr = pkt.data.data();
-
-    std::vector<SE_Point2D> points(pkt.header.data_size / sizeof(SE_Point2D));
-    memcpy(points.data(), ptr, pkt.header.data_size);
-
-    return points;
 }
 
 int Dat::DatReader::FillDatHeader(bool quiet)
