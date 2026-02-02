@@ -691,7 +691,12 @@ int Replay::ParsePackets()
                 }
                 case static_cast<id_t>(Dat::PacketId::SHAPE_2D_OUTLINE):
                 {
-                    std::vector<SE_Point2D> outline = dat_reader_->ReadOutlinePacket(gp);
+                    std::vector<SE_Point2D> outline;
+                    if (dat_reader_->ReadVectorPacket(gp, outline) != 0)
+                    {
+                        LOG_ERROR("Failed to read 2D outline");
+                        return -1;
+                    }
                     current_object_timeline_->outline_.values.emplace_back(timestamp_, outline);
                     break;
                 }
