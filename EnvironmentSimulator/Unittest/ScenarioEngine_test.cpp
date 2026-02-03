@@ -5413,7 +5413,7 @@ TEST(EnvironmentTest, ParsingMissingWeatherAttribute)
 
     pugi::xml_node todNode = envNode.append_child("TimeOfDay");
     todNode.append_attribute("animation").set_value(false);
-    todNode.append_attribute("dateTime").set_value("2021-12-02T11:30:30");  // missing timezone
+    todNode.append_attribute("dateTime").set_value("2021-12-02T11:30");  // Invalid datetime entry
 
     // Weather and attributes
     pugi::xml_node weatherNode = envNode.append_child("Weather");
@@ -5495,9 +5495,9 @@ TEST(EnvironmentTest, TimeOfDayFormat)
     EXPECT_FALSE(IsValidDateTimeFormat(dateTime6));
     std::string dateTime7 = "2024-01-01T23:59:59.1234+00:00";  // invalid milisec
     EXPECT_FALSE(IsValidDateTimeFormat(dateTime7));
-    std::string dateTime8 = "2024-01-01T23:59:59.123+0:00";  // valid timezone
+    std::string dateTime8 = "2024-01-01T23:59:59.123+0:00";  // valid timezone (We dont check timezone at all)
     EXPECT_TRUE(IsValidDateTimeFormat(dateTime8));
-    std::string dateTime9 = "2011-03-10T11:23:56.000+0100";  // valid timezone
+    std::string dateTime9 = "2011-03-10T11:23:56.000+0100";  // valid timezone (We dont check timezone at all)
     EXPECT_TRUE(IsValidDateTimeFormat(dateTime9));
     std::string yearMonthSwapped1 = "03-2023-10T12:00:00.000+00:00";  // MM-YYYY-DD
     EXPECT_FALSE(IsValidDateTimeFormat(yearMonthSwapped1));
@@ -5509,7 +5509,7 @@ TEST(EnvironmentTest, TimeOfDayFormat)
     EXPECT_FALSE(IsValidDateTimeFormat(wrongFromat1));
     std::string invalidFormat2 = "2023-11-15 10:30:00.123+05:30";  // Missing T
     EXPECT_FALSE(IsValidDateTimeFormat(invalidFormat2));
-    std::string invalidFormat3 = "2023-11-15T10:30:00.123+05:30Z";  // Valid timezone
+    std::string invalidFormat3 = "2023-11-15T10:30:00.123+05:30Z";  // Valid timezone (We dont check timezone at all)
     EXPECT_TRUE(IsValidDateTimeFormat(invalidFormat3));
     std::string invalidFormat4 = "2023-11-15T10:30:00.123+0530+05:30";  // Invalid timezone
     EXPECT_FALSE(IsValidDateTimeFormat(invalidFormat4));

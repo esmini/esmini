@@ -855,7 +855,7 @@ bool IsValidDateTimeFormat(const std::string& dateTimeString)
     }
 
     // Check milliseconds
-    std::string millisecondsStr = (m[7].matched) ? std::string(m[7]) : "";
+    std::string millisecondsStr = (m[7].matched) ? std::string(m[7]) : "0";
     try
     {
         int milliseconds = std::stoi(millisecondsStr);
