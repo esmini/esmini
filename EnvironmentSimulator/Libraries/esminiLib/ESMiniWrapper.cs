@@ -356,7 +356,7 @@ namespace ESMini
         /// See lane type definitions in roadmanager::Lane::LaneType enum.
         /// Example 1: Check if on border lane: SE_GetObjectLaneType(id) == (1 << 6)
         /// Example 2: Check if on any drivable lane: SE_GetObjectLaneType(id) & 1966594
-        /// Example 3: Check if on any road lane: SE_GetObjectLaneType(id) & 1966726
+        /// Example 3: Check if on any road lane: SE_GetObjectLaneType(id) & 1966990
         /// Example 4: Check for no lane(outside defined lanes): SE_GetObjectLaneType(id) == 1
         /// </summary>
         /// <param name="object_id">Id of the object (not index, use GetId(index) to find out the id)</param>

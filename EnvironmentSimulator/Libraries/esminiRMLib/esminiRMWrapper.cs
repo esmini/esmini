@@ -283,7 +283,7 @@ namespace OpenDRIVE
         public static extern void SetObjectPositionModeDefault(int handle, int type);
 
         /// <summary>
-        /// * Specify which lane types the position object snaps to (is aware of) examples: ANY_DRIVING = 1966594, ANY_ROAD = 1966734, ANY = -1 /
+        /// * Specify which lane types the position object snaps to (is aware of) examples: ANY_DRIVING = 1966594, ANY_ROAD = 1966990, ANY = -1 /
         /// </summary>
         /// <param name="handle">Handle to the position object</param>
         /// <param name="laneTypes">A combination (bitmask) of lane types according to roadmanager::Lane::LaneType</param>

@@ -239,7 +239,7 @@ extern "C"
     Specify which lane types the position object snaps to (is aware of)
     @param handle Handle to the position object
     @param laneTypes A combination (bitmask) of lane types according to roadmanager::Lane::LaneType
-    examples: ANY_DRIVING = 1966594, ANY_ROAD = 1966734, ANY = -1
+    examples: ANY_DRIVING = 1966594, ANY_ROAD = 1966990, ANY = -1
     @return 0 if successful, -1 if not
     */
     RM_DLL_API int RM_SetSnapLaneTypes(int handle, int laneTypes);
@@ -550,7 +550,7 @@ extern "C"
     Can be used for checking exact lane type or combinations by bitmask.
     Example 1: Check if on border lane: SE_GetObjectLaneType(id) == (1 << 6)
     Example 2: Check if on any drivable lane: SE_GetObjectLaneType(id) & 1966594
-    Example 3: Check if on any road lane: SE_GetObjectLaneType(id) & 1966726
+    Example 3: Check if on any road lane: SE_GetObjectLaneType(id) & 1966990
     Example 4: Check for no lane (outside defined lanes): SE_GetObjectLaneType(id) == 1
     @param handle Handle to the position object to check
     @return lane type according to enum roadmanager::Lane::LaneType
