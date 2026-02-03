@@ -997,7 +997,13 @@ namespace roadgeom
                                 geom->getOrCreateStateSet()->setAttributeAndModes(
                                     new osg::PolygonOffset(-POLYGON_OFFSET_SIDEWALK, -SIGN(POLYGON_OFFSET_SIDEWALK)));
                             }
-                            else if (lane->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BORDER) && k > 0 && k + 1 < lane_ids.size())
+                            // for border and grass materials, consider also lane position and neighbor lanes
+                            // If lane is inner; either has neighbor lanes on both sides or is the first lane next to center:
+                            // "none" type will get border material
+                            // "border" type will get grass material
+                            else if (((k > 0 && k + 1 < lane_ids.size()) || abs(lane->GetId()) == 1) &&
+                                     (lane->IsType(roadmanager::Lane::LaneType::LANE_TYPE_BORDER) ||
+                                      lane->IsType(roadmanager::Lane::LaneType::LANE_TYPE_NONE)))
                             {
                                 material_t = MaterialType::BORDER;
                                 osg::ref_ptr<osg::Material> materialBorderInner_ =
