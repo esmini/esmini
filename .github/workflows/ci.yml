@@ -100,7 +100,7 @@ jobs:
         with:
           submodules: true
           fetch-tags: true
-          fetch-depth: 200
+          fetch-depth: 0
           ref: ${{ github.ref }}
 
       - uses: ./.github/actions/setup_tools_shared

@@ -9,6 +9,8 @@ execute_process(
     OUTPUT_VARIABLE VERSION
     ERROR_QUIET)
 
+message("Version: " ${VERSION})
+
 # Strip prefix "v" and any trailing line break
 string(SUBSTRING "${VERSION}" 1 -1 VERSION )
 string(STRIP "${VERSION}" VERSION)
