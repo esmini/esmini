@@ -165,12 +165,12 @@ typedef struct
 
 typedef struct
 {
-    bool active;  // True: override; false: stop overriding
-    int  type;    // According to Entities::OverrideType
-    int  number;
+    bool active;      // True: override; false: stop overriding
+    int  type;        // According to Entities::OverrideType
+    int  number;      // Gear number/mode depending on value_type
     int  value_type;  // According to Entities::OverrideGearType
                       // Manual type: Negative number are indicating reverse gears. Zero is neutral gear.
-                      // Automatic type: (-1:Reverse, 0:Neutral, 1:Gear 1, 2:Gear 2, and so on.)
+                      // Automatic type: (-1:Reverse, 0:Neutral, 1:Park, 2:Drive)
 } SE_OverrideActionStatusGear;
 
 typedef struct

@@ -4117,6 +4117,60 @@ TEST(TestGetAndSet, OverrideActionTest)
     SE_Close();
 }
 
+TEST(TestGetAndSet, OverrideGearTest)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/override_action_with_group_type.xosc";
+    const char* Scenario_file = scenario_file.c_str();
+    float       dt            = 0.1f;
+    float       t             = 0.0f;
+
+    SE_OverrideActionList list;
+
+    ASSERT_EQ(SE_Init(Scenario_file, 0, 0, 0, 0), 0);
+
+    for (; t < 5.1f; t += dt)
+    {
+        SE_StepDT(dt);
+    }
+
+    // Manual gear
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+    EXPECT_EQ(list.gear.value_type, 0);
+    EXPECT_EQ(list.gear.number, -2);
+
+    for (; t < 7.1f; t += dt)
+    {
+        SE_StepDT(dt);
+    }
+
+    // Automatic gea Automatic gearr
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+    EXPECT_EQ(list.gear.value_type, 1);
+    EXPECT_EQ(list.gear.active, true);
+    EXPECT_EQ(list.gear.number, -1);
+
+    SE_StepDT(dt);
+
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+    EXPECT_EQ(list.gear.value_type, 1);
+    EXPECT_EQ(list.gear.active, true);
+    EXPECT_EQ(list.gear.number, 1);
+
+    SE_StepDT(dt);
+
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+    EXPECT_EQ(list.gear.value_type, 1);
+    EXPECT_EQ(list.gear.active, false);
+    EXPECT_EQ(list.gear.number, 0);
+
+    SE_StepDT(dt);
+
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+    EXPECT_EQ(list.gear.value_type, 1);
+    EXPECT_EQ(list.gear.active, true);
+    EXPECT_EQ(list.gear.number, 2);
+}
+
 TEST(TestGetAndSet, PropertyTest)
 {
     std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/VehiclePropertyTest.xosc";
