@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='utf-8'?>
+<OpenDRIVE>
+   <header name="super elevation fixed change rate" revMajor="1" revMinor="8" date="2026-02-04 08:20:00" north="0.0" south="0.0" east="0.0" west="0.0"/>
+   <road rule="RHT" id="1" junction="-1" length="40">
+      <link/>
+      <planView>
+         <geometry s="0" x="0" y="0" hdg="0" length="40">
+            <line/>
+         </geometry>
+      </planView>
+      <elevationProfile>
+         <elevation s="0.0" a="0.0" b="0.0" c="0" d="0"/>
+      </elevationProfile>
+      <lateralProfile>
+         <superelevation s="0.0" a="0.0" b="-0.03" c="0.0" d="0.0"/>
+      </lateralProfile>
+      <lanes>
+         <laneSection s="0">
+            <left>
+               <lane id="1" type="driving" level="false">
+                  <width a="12.5" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+            </left>
+            <center>
+               <lane id="0" type="none" level="false">
+                  <roadMark sOffset="0" type="broken" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+            </center>
+            <right>
+               <lane id="-1" type="driving" level="false">
+                  <width a="12.5" b="0.0" c="0.0" d="0.0" sOffset="0"/>
+                  <roadMark sOffset="0" type="solid" weight="standard" color="standard" height="0.02" width="0.2"/>
+               </lane>
+            </right>
+         </laneSection>
+      </lanes>
+   </road>
+</OpenDRIVE>

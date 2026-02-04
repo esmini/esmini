@@ -245,8 +245,8 @@ TEST(AlignmentTest, TestPosMode)
     // Test some operations
     pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
     player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
-    EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 1.4019, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0036, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.486, 1e-3);
     player->Frame(0.1);
 
@@ -269,8 +269,8 @@ TEST(AlignmentTest, TestPosMode)
 
     pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
     player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
-    EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 1.4019, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0036, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.486 + 0.1, 1e-3);
     player->Frame(0.1);
 
@@ -292,7 +292,7 @@ TEST(AlignmentTest, TestPosMode)
     pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
     player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
     EXPECT_NEAR(GetAngleDifference(pos.GetH(), 1.4), 0.0, 1e-3);
-    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0041), 0.0, 1e-3);
     EXPECT_NEAR(GetAngleDifference(pos.GetR(), 0.1), 0.0, 1e-3);
     player->Frame(0.1);
 
@@ -343,7 +343,7 @@ TEST(AlignmentTest, TestPosMode)
     pos.SetInertiaPos(100.0, 85.0, -10.0, 0.5, 0.0, 0.3);
     player->scenarioEngine->entities_.object_[0]->SetSpeed(0.0);
     EXPECT_NEAR(pos.GetH(), 0.5, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0016, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.3, 1e-3);
 
     // Test some settings
@@ -864,17 +864,17 @@ TEST(OSI, TestOrientationAndOutline)
     EXPECT_NEAR(obj->pos_.GetX(), 99.8824, 1e-3);
     EXPECT_NEAR(obj->pos_.GetY(), 82.7725, 1e-3);
     EXPECT_NEAR(obj->pos_.GetZ(), -0.7169, 1e-3);
-    EXPECT_NEAR(obj->pos_.GetH(), 1.4000, 1e-3);
-    EXPECT_NEAR(obj->pos_.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 1.4019, 1e-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.0036, 1e-3);
     EXPECT_NEAR(obj->pos_.GetR(), 0.48599, 1e-3);
 
     // OSI position
-    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 100.4656, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), 84.0926, 1e-3);
-    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().z(), -0.0538, 1e-3);
-    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().yaw(), 1.4000), 0.0, 1e-3);
-    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().pitch(), 0.0), 0.0, 1e-3);
-    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().roll(), 0.48599), 0.0, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().x(), 100.4635, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().y(), 84.0961, 1e-3);
+    EXPECT_NEAR(osi_gt_ptr->moving_object(0).base().position().z(), -0.0589, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().yaw(), 1.4019), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().pitch(), 0.0036), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(osi_gt_ptr->moving_object(0).base().orientation().roll(), 0.4859), 0.0, 1e-3);
 
     // move forward to the uphill part
     obj->MoveAlongS(170.0);

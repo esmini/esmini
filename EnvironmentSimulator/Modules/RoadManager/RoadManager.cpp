@@ -10779,7 +10779,7 @@ void Position::EvaluateHPR(int mode)
                          CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS) ? 0.0 : GetPRoad(),
                          CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_ABS) ? 0.0 : GetRRoad(),
                          CheckBitsEqual(mode, PosMode::H_MASK, PosMode::H_ABS) ? GetAngleDifference(h_, GetHRoad()) : GetHRelative() + GetHOffset(),
-                         CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS) ? p_ : GetPRelative(),
+                         CheckBitsEqual(mode, PosMode::P_MASK, PosMode::P_ABS) ? p_ : GetPRelative() + GetPOffset(),
                          CheckBitsEqual(mode, PosMode::R_MASK, PosMode::R_ABS) ? r_ : GetRRelative(),
                          h_,
                          p_,
@@ -10842,6 +10842,11 @@ double Position::GetHOffset() const
     }
 
     return 0.0;
+}
+
+double Position::GetPOffset() const
+{
+    return cos(GetHRelative()) * atan(tan(roadSuperElevationPrim_) * -t_);
 }
 
 int Position::GetDrivingDirectionRelativeRoad() const

@@ -3908,8 +3908,8 @@ TEST(PositionModeTest, TestModeBitmasks)
 
     // Test some operations
     pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
-    EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 1.4019, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0036, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.486, 1e-3);
 
     pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_REL);
@@ -3926,8 +3926,8 @@ TEST(PositionModeTest, TestModeBitmasks)
     EXPECT_NEAR(pos.GetR(), 0.6, 1e-3);
     EXPECT_NEAR(pos.GetRRoad(), 0.6 - 0.1, 1e-3);
     pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
-    EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 1.4019, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0036, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.486 + 0.1, 1e-3);
 
     pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_ABS);
@@ -3945,7 +3945,7 @@ TEST(PositionModeTest, TestModeBitmasks)
 
     pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
     EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
-    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0041), 0.0, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.1, 1e-3);
 
     pos.SetLanePos(road->GetId(), -1, 300.0, 0.0);
@@ -3988,7 +3988,7 @@ TEST(PositionModeTest, TestModeBitmasks)
                   roadmanager::Position::PosMode::R_ABS);
     pos.SetInertiaPos(100.0, 85.0, -10.0, 0.5, 0.0, 0.3);
     EXPECT_NEAR(pos.GetH(), 0.5, 1e-3);
-    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0016), 0.0, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.3, 1e-3);
 
     // Test some settings

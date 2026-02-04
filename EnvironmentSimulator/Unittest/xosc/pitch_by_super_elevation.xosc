@@ -1,0 +1,106 @@
+<?xml version="1.0"?>
+<OpenSCENARIO>
+   <FileHeader author="esmini team" date="2026-02-04T08:20:00" description="test pitch as effect of super elevation" revMajor="1" revMinor="3"/>
+   <ParameterDeclarations />
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/pitch_by_super_elevation.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="car1">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+      </ScenarioObject>
+      <ScenarioObject name="car2">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+      </ScenarioObject>
+      <ScenarioObject name="car3">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_blue"/>
+      </ScenarioObject>
+      <ScenarioObject name="car4">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_yellow"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="car1">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition laneId="1" roadId="1" s="1" offset="5">
+                           <Orientation h="${pi}" type="relative"/>
+                        </LanePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="1"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="car2">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition laneId="1" roadId="1" s="36" offset="5">
+                           <Orientation h="${pi}" type="relative"/>
+                        </LanePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="car3">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition laneId="-1" roadId="1" s="1" offset="-5">
+                           <Orientation h="0.0" type="relative"/>
+                        </LanePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="1"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="car4">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition laneId="-1" roadId="1" s="36" offset="-5">
+                           <Orientation h="0.0" type="relative"/>
+                        </LanePosition>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition conditionEdge="none" delay="0.0" name="Quit">
+               <ByValueCondition>
+                  <SimulationTimeCondition rule="greaterOrEqual" value="20"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>

@@ -4315,6 +4315,11 @@ namespace roadmanager
         double GetHOffset(Road *road, LaneSection *lane_section) const;
 
         /**
+        Retrieve the additional pitch as result of super elevation change rate
+        */
+        double GetPOffset() const;
+
+        /**
         Retrieve the driving direction considering lane ID and rult (lef or right hand traffic)
         Will be either 1 (road direction) or -1 (opposite road direction)
         */
