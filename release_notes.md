@@ -1,5 +1,45 @@
 ## esmini release notes
 
+### 2026-02-05 Version 2.59.0
+
+Breaking changes:
+- Implement true road superelevation (banking)
+  - rotate road instead of just elevate road edges
+  - velodrome example video clip: https://youtu.be/vWHJKRoTHOc
+  - this might slightly affect XY-coordinates on banked roads
+- Report OpenDRIVE object outlines in local coordinates on OSI
+  - consumer needs to apply heading from parent object
+- Add OSI points in reverse order for linear/open OpenDRIVE outlines
+  - to avoid unwanted area/volume by OSI closing any open outline
+- Include `parking` lane type in `any_road` lane snap/awareness group
+
+New features:
+- Support [OpenDRIVE lane height](https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/11_lanes/11_06_lane_geometry.html#sec-d30c9ef9-cb82-4683-9fb6-6487e9dffd2f) (issues [#471](https://github.com/esmini/esmini/issues/471) [#756](https://github.com/esmini/esmini/issues/756))
+  - useful for elevated sidewalks and similar
+- Add optional XYZ (RGB) axis indicator
+  - enable with `--axis_indicator <mode>` (modes 0:off 1:on 2:xray)
+  - cycle mode with 'x' key
+
+Improvements and fixes:
+- Consider road superelevation in entity pitch calculations
+  - video clip: https://youtu.be/zddEvf-vWHQ
+- Improve road-mark polygon alignment with road surface
+- Add functionality for lookahead along route (issue [#759](https://github.com/esmini/esmini/issues/759))
+- Limit grass to outer lanes of `border` or `none` type
+  - other lanes of `none` type will get gray material (as border)
+- Improve parsing of dataTime in EnvironmentAction
+  - properly handle leading zeros
+  - any timezone offset format allowed
+  - accept missing milliseconds
+- Separate visualization of OSI points from road features
+- Fix limitation in accumulated lane width calculation
+  - accept gaps in lane id numbering
+- Clarify [OverrideGear API status type](https://github.com/esmini/esmini/blob/19c5d9e34dd6bd3a829412c05c24f2de85c8ce3b/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L166-L174) and add testcase
+- Fix error in calculation of heading wrt lane width and offset
+- Fix CI hick-up due to missing esmini version string
+- Relax plot_dat.py to run from anywhere
+- A few additional minor fixes
+
 ### 2026-01-26 Version 2.58.0
 
 Breaking changes:
