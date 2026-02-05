@@ -1088,7 +1088,6 @@ void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool show_lights)
         for (size_t i = 0; i < nodes.size(); i++)
         {
             osg::ref_ptr<osg::Geode> geode = static_cast<osg::Geode*>(nodes[i]);
-
             if (geode->getName() == lightName && geode->getChild(0) != nullptr)
             {
                 osg::Geometry* geom = static_cast<osg::Geometry*>(geode->getChild(0));
@@ -1357,6 +1356,7 @@ void CarModel::UpdateLightMaterial(Object::VehicleLightType light_type, const os
     {
         light_material_[static_cast<size_t>(light_type)]->setDiffuse(osg::Material::FRONT_AND_BACK, diffuse_rgb);
         light_material_[static_cast<size_t>(light_type)]->setEmission(osg::Material::FRONT_AND_BACK, emission_rgb);
+        light_material_[static_cast<size_t>(light_type)]->setAmbient(osg::Material::FRONT_AND_BACK, diffuse_rgb);
     }
     else
     {

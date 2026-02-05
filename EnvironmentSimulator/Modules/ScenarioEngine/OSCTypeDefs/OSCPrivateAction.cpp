@@ -3097,31 +3097,39 @@ void VisibilityAction::Step(double simTime, double dt)
 
 void LightStateAction::Start(double simTime)
 {
+    // Fetch current status of the vehicle lamp
     auto& vehicleLight = object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
     previousIntensity_ = vehicleLight.luminousIntensity;
     previousMode_      = vehicleLight.mode;
-    std::copy_n(vehicleLight.emissionRgb, this->RGB_ARRAY_SIZE_, this->initEmissionRgb_);
-    std::copy_n(vehicleLight.diffuseRgb, this->RGB_ARRAY_SIZE_, this->initDiffusionRgb_);
 
-    bool accepted = true;
-    if (vehicleLight.type == Object::VehicleLightType::UNDEFINED)
+    // We don't have a color specified in the action, so we should work with the color from the material
+    if (!colorSet_)
     {
-        bool valid_arr = ArrayZeroToOne(vehicleLight.baseRgb, RGB_ARRAY_SIZE_);
-        if (!valid_arr)
-        {
-            accepted = false;
-        }
-
-        if (accepted && rgbDeducedFromLightType_)
-        {
-            AdjustByOffsetArray(vehicleLight.baseRgb, RGB_OFFSET_);
-        }
-        else  // TODO: What case is this? Really necessary?
-        {
-            std::copy_n(actionVehicleLightStatus_.baseRgb, this->RGB_ARRAY_SIZE_, vehicleLight.baseRgb);
-        }
+        std::copy_n(vehicleLight.baseRgb, RGB_ARRAY_SIZE_, rgb_);
     }
 
+    // Find min/max rgb for the color to scale between
+    SetRgbMinMaxColor();
+
+    // Copy vehicle lamp status to actions initial emission/diffusion
+    // std::copy_n(vehicleLight.emissionRgb, this->RGB_ARRAY_SIZE_, this->initEmissionRgb_);
+    // std::copy_n(vehicleLight.diffuseRgb, this->RGB_ARRAY_SIZE_, this->initDiffusionRgb_);
+
+    // If lamp hasn't been set before or the desired state is off
+    if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::OFF)
+    {
+        std::copy_n(minRgb_, RGB_ARRAY_SIZE_, vehicleLight.baseRgb);
+        std::copy_n(minRgb_, RGB_ARRAY_SIZE_, vehicleLight.diffuseRgb);
+        UpdateArray(vehicleLight.emissionRgb, RGB_ARRAY_SIZE_, {0.0, 0.0, 0.0});
+    }
+    else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::ON)
+    {
+        std::copy_n(maxRgb_, RGB_ARRAY_SIZE_, vehicleLight.baseRgb);
+        std::copy_n(rgb_, RGB_ARRAY_SIZE_, vehicleLight.diffuseRgb);
+        std::copy_n(maxRgb_, RGB_ARRAY_SIZE_, vehicleLight.emissionRgb);
+    }
+
+    /*
     if (actionVehicleLightStatus_.luminousIntensity == -1.0 &&
         (actionVehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING || actionVehicleLightStatus_.mode == Object::VehicleLightMode::ON))
     {
@@ -3141,7 +3149,6 @@ void LightStateAction::Start(double simTime)
     double temp_rgb[3];
     std::copy_n(vehicleLight.baseRgb, this->RGB_ARRAY_SIZE_, temp_rgb);
 
-    auto& current_mode = actionVehicleLightStatus_.mode;
     if (current_mode == Object::VehicleLightMode::ON ||
         (current_mode == Object::VehicleLightMode::FLASHING && previousMode_ != Object::VehicleLightMode::ON))
     {
@@ -3166,6 +3173,8 @@ void LightStateAction::Start(double simTime)
             std::copy_n(temp_rgb, RGB_ARRAY_SIZE_, initDiffusionRgb_);
         }
     }
+    */
+    auto& current_mode = actionVehicleLightStatus_.mode;
 
     vehicleLight.mode              = current_mode;
     vehicleLight.luminousIntensity = actionVehicleLightStatus_.luminousIntensity;
@@ -3195,8 +3204,8 @@ void LightStateAction::Step(double simTime, double dt)
         else
         {
             // Final rgb values
-            std::copy_n(finalEmissionRgb_, RGB_ARRAY_SIZE_, vehicleLight.emissionRgb);
-            std::copy_n(finalDiffusionRgb_, RGB_ARRAY_SIZE_, vehicleLight.diffuseRgb);
+            // std::copy_n(finalEmissionRgb_, RGB_ARRAY_SIZE_, vehicleLight.emissionRgb);
+            // std::copy_n(finalDiffusionRgb_, RGB_ARRAY_SIZE_, vehicleLight.diffuseRgb);
             OSCAction::End();
         }
     }
@@ -3377,6 +3386,85 @@ std::vector<double> LightStateAction::GetRgbFromColorEnum(const Object::VehicleL
     }
 
     return base_color;
+}
+
+void LightStateAction::UpdateArray(double* arr, size_t size, const std::vector<double>& vals)
+{
+    if (vals.size() != size)
+    {
+        return;
+    }
+    for (size_t i = 0; i < vals.size(); i++)
+    {
+        arr[i] = vals[i];
+    }
+}
+
+void LightStateAction::SetRgbMinMaxColor()
+{
+    const double        MAX_VALUE_MAX = 1.0;
+    const double        MAX_RGB       = 0.8;
+    const double        MIN_RGB       = 0.2;
+    std::vector<double> rgb           = {rgb_[0], rgb_[1], rgb_[2]};
+
+    // All values are equal, they get MIN/MAX RGB if higher/lower than them, else unchanged
+    if (rgb[0] == rgb[1] && rgb[1] == rgb[2])
+    {
+        if (rgb[0] < MAX_RGB)
+        {
+            UpdateArray(maxRgb_, RGB_ARRAY_SIZE_, {MAX_RGB, MAX_RGB, MAX_RGB});
+        }
+        if (rgb[0] > MIN_RGB)
+        {
+            UpdateArray(minRgb_, RGB_ARRAY_SIZE_, {MIN_RGB, MIN_RGB, MIN_RGB});
+        }
+
+        return;
+    }
+
+    auto   max_it  = std::max_element(rgb.begin(), rgb.end());
+    size_t max_idx = std::distance(rgb.begin(), max_it);
+    double max_val = rgb[max_idx];
+
+    auto   min_it  = std::min_element(rgb.begin(), rgb.end());
+    size_t min_idx = std::distance(rgb.begin(), min_it);
+    double min_val = rgb[min_idx];
+
+    size_t mid_idx = 3 - max_idx - min_idx;
+    double mid_val = rgb[mid_idx];
+
+    /* min rgb
+    Examples:
+        [0.8, 0.4, 0.3] -> [0.2, 0.1, 0.075] (scale factor 0.2 / 0.8 = 0.25)
+        [0.7, 0.1, 0.2] -> [0.2, 0.02857, 0.057] (scale factor 0.2 / 0.7 = 0.2857)
+    */
+    if (max_val > 0.2)
+    {
+        double scale_factor = MIN_RGB / max_val;
+        for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
+        {
+            minRgb_[i] = rgb[i] * scale_factor;
+        }
+    }
+
+    /* max rgb
+    Examples:
+        [0.8, 0.4, 0.3] -> [1.0, 0.84, 0.8]
+        [0.75, 0.5, 0.25] -> [1.0, 0.9, 0.8]
+        [0.3, 0.29, 0.28] -> [1.0, 0.9665, 0.933]
+        [0.7, 0.1, 0.0] -> [1.0, 0.82857, 0.8]
+    */
+
+    if (min_val < 0.8)
+    {
+        double scale_factor = MAX_VALUE_MAX / max_val;
+
+        maxRgb_[max_idx] = MAX_VALUE_MAX;
+        maxRgb_[min_idx] = (scale_factor * rgb[min_idx] < MAX_RGB) ? MAX_RGB : scale_factor * rgb[min_idx];  // at least 0.8 or higher
+        maxRgb_[mid_idx] = maxRgb_[min_idx] +
+                           (mid_val - min_val) * ((maxRgb_[max_idx] - maxRgb_[min_idx]) /
+                                                  (max_val - min_val));  // final mid value is same ratio as before scaleup but from new rgb-min-value
+    }
 }
 
 void LightStateAction::SetRgbFromTypeEnum(const Object::VehicleLightType& type)

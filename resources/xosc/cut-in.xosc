@@ -41,6 +41,13 @@
    <Storyboard>
       <Init>
          <Actions>
+            <GlobalAction>
+               <EnvironmentAction>
+                     <Environment name="weather">
+                        <TimeOfDay animation="true" dateTime="2025-06-13T00:00:00.100"/>
+                     </Environment>
+               </EnvironmentAction>
+            </GlobalAction>
             <Private entityRef="Ego">
                <PrivateAction>
                   <TeleportAction>
