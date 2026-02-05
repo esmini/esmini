@@ -188,7 +188,9 @@ namespace scenarioengine
             double            luminousIntensity = -1.0;                // -1 denotes missing from scenario
             double            diffuseRgb[3]     = {-1.0, -1.0, -1.0};  // current diffuseRbg
             double            emissionRgb[3]    = {0.0, 0.0, 0.0};     // current emissionRbg
-            double            baseRgb[3]        = {-1.0, -1.0, -1.0};  // base rbg
+            double            baseRgb[3]        = {-1.0, -1.0, -1.0};  // base rbg, off state
+            double            minRgb[3]         = {-1.0, -1.0, -1.0};
+            double            maxRgb[3]         = {-1.0, -1.0, -1.0};
         };
 
         VehicleLightStatus vehLghtStsList[static_cast<size_t>(VehicleLightType::VEHICLE_LIGHT_SIZE)];

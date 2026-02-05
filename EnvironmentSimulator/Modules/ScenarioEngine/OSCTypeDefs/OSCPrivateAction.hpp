@@ -1442,7 +1442,10 @@ namespace scenarioengine
               initDiffusionRgb_{-1.0, -1.0, -1.0},
               finalEmissionRgb_{0.0, 0.0, 0.0},
               finalDiffusionRgb_{0.0, 0.0, 0.0},
+              minRgb_{-1.0, -1.0, -1.0},
+              maxRgb_{-1.0, -1.0, -1.0},
               RGB_ARRAY_SIZE_(3),
+              CMYK_ARRAY_SIZE_(4),
               rgbDeducedFromLightType_(false),
               RGB_OFFSET_(0.4),
               DEFAULT_LUMINOUS_INTENSITY_(6000.0),
@@ -1454,7 +1457,8 @@ namespace scenarioengine
               vehicleLightType_(Object::VehicleLightType::UNDEFINED),
               vehicleLightColor_(Object::VehicleLightColor::UNKNOWN),
               actionVehicleLightStatus_({}),
-              flashStatus_(FlashingStatus::UNDEFINED)
+              flashStatus_(FlashingStatus::UNDEFINED),
+              colorSet_(false)
         {
         }
 
@@ -1480,7 +1484,11 @@ namespace scenarioengine
         void                      SetLightTransitionValues(const Object::VehicleLightMode& mode);
         void                      RapidTransition();
         void                      SmoothTransition();
+        void                      SetRgbMinMaxColor();
+        void                      UpdateArray(double* arr, size_t size, const std::vector<double>& vals);
         // Object::VehicleLightType GetLightType();
+
+        // Getters
         double* GetCmyk()
         {
             return cmyk_;
@@ -1501,7 +1509,12 @@ namespace scenarioengine
         {
             return vehicleLightType_;
         }
+        bool GetColorSet() const
+        {
+            return colorSet_;
+        }
 
+        // Setters
         void SetTransitionTime(const double& time)
         {
             transitionTime_ = time;
@@ -1516,16 +1529,11 @@ namespace scenarioengine
         }
         void SetCMYK(const double& c, const double& m, const double& y, const double& k)
         {
-            cmyk_[0] = c;
-            cmyk_[1] = m;
-            cmyk_[2] = y;
-            cmyk_[3] = k;
+            UpdateArray(cmyk_, CMYK_ARRAY_SIZE_, {c, m, y, k});
         }
         void SetRGB(const double& r, const double& g, const double& b)
         {
-            rgb_[0] = r;
-            rgb_[1] = g;
-            rgb_[2] = b;
+            UpdateArray(rgb_, RGB_ARRAY_SIZE_, {r, g, b});
         }
         void SetVehicleLightType(const Object::VehicleLightType& type)
         {
@@ -1554,6 +1562,10 @@ namespace scenarioengine
             actionVehicleLightStatus_.mode              = this->vehicleLightMode_;
             actionVehicleLightStatus_.color             = this->vehicleLightColor_;
             std::copy_n(this->rgb_, RGB_ARRAY_SIZE_, actionVehicleLightStatus_.baseRgb);
+        }
+        void SetColorSet(bool val)
+        {
+            colorSet_ = val;
         }
 
         std::unordered_map<std::string, Object::VehicleLightType> lightTypeMap = {
@@ -1612,7 +1624,10 @@ namespace scenarioengine
         double                     initDiffusionRgb_[3];
         double                     finalEmissionRgb_[3];
         double                     finalDiffusionRgb_[3];
+        double                     minRgb_[3];
+        double                     maxRgb_[3];
         const size_t               RGB_ARRAY_SIZE_;
+        const size_t               CMYK_ARRAY_SIZE_;
         bool                       rgbDeducedFromLightType_;
         const double               RGB_OFFSET_;
         const double               DEFAULT_LUMINOUS_INTENSITY_;
@@ -1625,6 +1640,7 @@ namespace scenarioengine
         Object::VehicleLightColor  vehicleLightColor_;
         Object::VehicleLightStatus actionVehicleLightStatus_;
         FlashingStatus             flashStatus_;
+        bool                       colorSet_;
     };
 
     class OverrideControlAction : public OSCPrivateAction

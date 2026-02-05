@@ -4130,6 +4130,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                          rgb[0],
                          rgb[1],
                          rgb[2]);
+                lightStateAction->SetColorSet(true);
             }
 
             if (colorRgbSet && colorCmykSet)
@@ -4148,10 +4149,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             if (colorCmykSet)
             {
                 lightStateAction->CmykToRgb(lightStateAction->GetCmyk(), lightStateAction->GetRgb());
+                lightStateAction->SetColorSet(true);
             }
             else if (colorRgbSet)
             {
-                AdjustByOffsetArray(lightStateAction->GetRgb(), lightStateAction->GetRgbOffset());
+                // AdjustByOffsetArray(lightStateAction->GetRgb(), lightStateAction->GetRgbOffset());
+                lightStateAction->SetColorSet(true);
             }
             else if (lightStateAction->GetVehicleLightColor() == Object::VehicleLightColor::OTHER ||
                      lightStateAction->GetVehicleLightColor() == Object::VehicleLightColor::UNKNOWN)
@@ -4179,7 +4182,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 {
                     lightStateAction->SetVehicleLightColor(Object::VehicleLightColor::BLUE);
                 }
-                lightStateAction->SetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());
+                lightStateAction->SetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());  // Forcing ORANGE or BLUE... no correct?
             }
 
             lightStateAction->SetVehicleLightInitStatus();  // Register initial values for a vehicle light to be used when initializing the viewer
