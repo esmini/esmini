@@ -1367,17 +1367,18 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
                                                                                      : material->getEmission(osg::Material::FRONT);
 
                 // Update light status with material colors
-                light.baseRgb[0] = diffuseColor.r();
-                light.baseRgb[1] = diffuseColor.g();
-                light.baseRgb[2] = diffuseColor.b();
+                light.rgb[0] = diffuseColor.r();
+                light.rgb[1] = diffuseColor.g();
+                light.rgb[2] = diffuseColor.b();
 
-                light.diffuseRgb[0] = diffuseColor.r();
-                light.diffuseRgb[1] = diffuseColor.g();
-                light.diffuseRgb[2] = diffuseColor.b();
+                // Save for later
+                light.materialRgb[0] = diffuseColor.r();
+                light.materialRgb[1] = diffuseColor.g();
+                light.materialRgb[2] = diffuseColor.b();
 
-                light.emissionRgb[0] = emissionColor.r();
-                light.emissionRgb[1] = emissionColor.g();
-                light.emissionRgb[2] = emissionColor.b();
+                light.emission[0] = emissionColor.r();
+                light.emission[1] = emissionColor.g();
+                light.emission[2] = emissionColor.b();
 
                 break;
             }
