@@ -4169,6 +4169,8 @@ TEST(TestGetAndSet, OverrideGearTest)
     EXPECT_EQ(list.gear.value_type, 1);
     EXPECT_EQ(list.gear.active, true);
     EXPECT_EQ(list.gear.number, 2);
+
+    SE_Close();
 }
 
 TEST(TestGetAndSet, PropertyTest)
