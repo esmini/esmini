@@ -1329,8 +1329,8 @@ void CarModel::UpdateLight(Object::VehicleLightStatus* vehicle_lights_status)
         }
 
         // Create OSG color vectors from the light status
-        osg::Vec4d diffuseRgb(light.diffuseRgb[0], light.diffuseRgb[1], light.diffuseRgb[2], 1.0);
-        osg::Vec4d emissionRgb(light.emissionRgb[0], light.emissionRgb[1], light.emissionRgb[2], 1.0);
+        osg::Vec4d diffuseRgb(light.rgb[0], light.rgb[1], light.rgb[2], 1.0);
+        osg::Vec4d emissionRgb(light.emission[0], light.emission[1], light.emission[2], 1.0);
 
         // Handle special light types (e.g., warning lights and fog lights)
         if (light.type == Object::VehicleLightType::WARNING_LIGHTS)

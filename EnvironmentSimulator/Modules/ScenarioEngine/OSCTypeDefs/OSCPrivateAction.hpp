@@ -1485,6 +1485,7 @@ namespace scenarioengine
         void                      RapidTransition();
         void                      SmoothTransition();
         void                      SetRgbMinMaxColor();
+        void                      ScaleRgbFromLuminousity(double* rgb, double ly);
         void                      UpdateArray(double* arr, size_t size, const std::vector<double>& vals);
         // Object::VehicleLightType GetLightType();
 
@@ -1561,7 +1562,7 @@ namespace scenarioengine
             actionVehicleLightStatus_.luminousIntensity = this->luminousIntensity_;
             actionVehicleLightStatus_.mode              = this->vehicleLightMode_;
             actionVehicleLightStatus_.color             = this->vehicleLightColor_;
-            std::copy_n(this->rgb_, RGB_ARRAY_SIZE_, actionVehicleLightStatus_.baseRgb);
+            std::copy_n(rgb_, RGB_ARRAY_SIZE_, actionVehicleLightStatus_.rgb);
         }
         void SetColorSet(bool val)
         {
