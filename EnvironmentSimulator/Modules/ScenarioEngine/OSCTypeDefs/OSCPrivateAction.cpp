@@ -3095,15 +3095,16 @@ void VisibilityAction::Step(double simTime, double dt)
     OSCAction::End();
 }
 
-void LightStateAction::ScaleRgbFromLuminousity(double* rgb, double ly)
+void LightStateAction::SetEmissionFromLuminousity(double* emission, double ly)
 {
     if (ly == -1)
     {
         ly = DEFAULT_LUMINOUS_INTENSITY_;
     }
+
     for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
     {
-        rgb[i] *= ly / MAX_INTENSITY_LUM;
+        emission[i] = maxRgb_[i] * ly / MAX_INTENSITY_LUM;
     }
 }
 
@@ -3128,8 +3129,7 @@ void LightStateAction::Start(double simTime)
     // std::copy_n(vehicleLight.diffuseRgb, this->RGB_ARRAY_SIZE_, this->initDiffusionRgb_);
 
     // If lamp hasn't been set before or the desired state is off
-    if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::OFF ||
-        (actionVehicleLightStatus_.mode == Object::VehicleLightMode::ON && NEAR_NUMBERS(actionVehicleLightStatus_.luminousIntensity, 0.0)))
+    if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::OFF)
     {
         std::copy_n(minRgb_, RGB_ARRAY_SIZE_, vehicleLight.rgb);
         vehicleLight.emission[0] = 0.0;
@@ -3139,15 +3139,11 @@ void LightStateAction::Start(double simTime)
     else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::ON)
     {
         double emission_max[3];
-        for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
-        {
-            emission_max[i] = maxRgb_[i];
-        }
-        ScaleRgbFromLuminousity(emission_max, actionVehicleLightStatus_.luminousIntensity);
+        SetEmissionFromLuminousity(emission_max, actionVehicleLightStatus_.luminousIntensity);
         std::copy_n(minRgb_, RGB_ARRAY_SIZE_, vehicleLight.rgb);
         std::copy_n(emission_max, RGB_ARRAY_SIZE_, vehicleLight.emission);
     }
-
+    LOG_INFO("Input rgb: r:{} g:{} b:{}", rgb_[0], rgb_[1], rgb_[2]);
     LOG_INFO("Setting colors r:{} g:{} b:{}", vehicleLight.rgb[0], vehicleLight.rgb[1], vehicleLight.rgb[2]);
     LOG_INFO("Setting emission r:{} g:{} b:{}", vehicleLight.emission[0], vehicleLight.emission[1], vehicleLight.emission[2]);
 
