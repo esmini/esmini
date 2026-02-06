@@ -1448,13 +1448,14 @@ namespace scenarioengine
               LUMINOUS_MAX_(0.9),
               vehicleLightMode_(Object::VehicleLightMode::UNKNOWN),
               previousMode_(vehicleLightMode_),
-              luminousIntensity_(-1.0),
+              luminousIntensity_(0.0),
               previousIntensity_(luminousIntensity_),
               vehicleLightType_(Object::VehicleLightType::UNDEFINED),
               vehicleLightColor_(Object::VehicleLightColor::UNKNOWN),
               actionVehicleLightStatus_({}),
               flashStatus_(FlashingStatus::UNDEFINED),
-              colorSet_(false)
+              colorSet_(false),
+              vehicleLight_(nullptr)
         {
         }
 
@@ -1481,8 +1482,8 @@ namespace scenarioengine
         void                      RapidTransition();
         void                      SmoothTransition();
         void                      SetRgbMinMaxColor();
-        void                      SetEmissionFromLuminousity(double* emission, double ly);
         void                      UpdateArray(double* arr, size_t size, const std::vector<double>& vals);
+        void                      SetVehicleLightState(Object::VehicleLightStatus* vehicleLight, double luminousity, double transitionFactor = 1.0);
         // Object::VehicleLightType GetLightType();
 
         // Getters
@@ -1610,30 +1611,31 @@ namespace scenarioengine
         };
 
     private:
-        double                     transitionTime_;
-        double                     flashingOffDuration_;
-        double                     flashingOnDuration_;
-        double                     transitionTimer_;
-        double                     flashingTimer_;
-        double                     cmyk_[4];
-        double                     rgb_[3];
-        double                     minRgb_[3];
-        double                     maxRgb_[3];
-        const size_t               RGB_ARRAY_SIZE_;
-        const size_t               CMYK_ARRAY_SIZE_;
-        bool                       rgbDeducedFromLightType_;
-        const double               RGB_OFFSET_;
-        const double               DEFAULT_LUMINOUS_INTENSITY_;
-        const double               LUMINOUS_MAX_;
-        Object::VehicleLightMode   vehicleLightMode_;
-        Object::VehicleLightMode   previousMode_;
-        double                     luminousIntensity_;
-        double                     previousIntensity_;
-        Object::VehicleLightType   vehicleLightType_;
-        Object::VehicleLightColor  vehicleLightColor_;
-        Object::VehicleLightStatus actionVehicleLightStatus_;
-        FlashingStatus             flashStatus_;
-        bool                       colorSet_;
+        double                      transitionTime_;
+        double                      flashingOffDuration_;
+        double                      flashingOnDuration_;
+        double                      transitionTimer_;
+        double                      flashingTimer_;
+        double                      cmyk_[4];
+        double                      rgb_[3];
+        double                      minRgb_[3];
+        double                      maxRgb_[3];
+        const size_t                RGB_ARRAY_SIZE_;
+        const size_t                CMYK_ARRAY_SIZE_;
+        bool                        rgbDeducedFromLightType_;
+        const double                RGB_OFFSET_;
+        const double                DEFAULT_LUMINOUS_INTENSITY_;
+        const double                LUMINOUS_MAX_;
+        Object::VehicleLightMode    vehicleLightMode_;
+        Object::VehicleLightMode    previousMode_;
+        double                      luminousIntensity_;
+        double                      previousIntensity_;
+        Object::VehicleLightType    vehicleLightType_;
+        Object::VehicleLightColor   vehicleLightColor_;
+        Object::VehicleLightStatus  actionVehicleLightStatus_;
+        FlashingStatus              flashStatus_;
+        bool                        colorSet_;
+        Object::VehicleLightStatus* vehicleLight_;
     };
 
     class OverrideControlAction : public OSCPrivateAction
