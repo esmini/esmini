@@ -1438,10 +1438,6 @@ namespace scenarioengine
               flashingTimer_(0.0),
               cmyk_{-1.0, -1.0, -1.0, -1.0},
               rgb_{-1.0, -1.0, -1.0},
-              initEmissionRgb_{0.0, 0.0, 0.0},
-              initDiffusionRgb_{-1.0, -1.0, -1.0},
-              finalEmissionRgb_{0.0, 0.0, 0.0},
-              finalDiffusionRgb_{0.0, 0.0, 0.0},
               minRgb_{-1.0, -1.0, -1.0},
               maxRgb_{-1.0, -1.0, -1.0},
               RGB_ARRAY_SIZE_(3),
@@ -1621,10 +1617,6 @@ namespace scenarioengine
         double                     flashingTimer_;
         double                     cmyk_[4];
         double                     rgb_[3];
-        double                     initEmissionRgb_[3];
-        double                     initDiffusionRgb_[3];
-        double                     finalEmissionRgb_[3];
-        double                     finalDiffusionRgb_[3];
         double                     minRgb_[3];
         double                     maxRgb_[3];
         const size_t               RGB_ARRAY_SIZE_;

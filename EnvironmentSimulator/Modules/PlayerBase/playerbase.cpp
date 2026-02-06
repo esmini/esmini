@@ -1371,11 +1371,6 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
                 light.rgb[1] = diffuseColor.g();
                 light.rgb[2] = diffuseColor.b();
 
-                // Save for later
-                light.materialRgb[0] = diffuseColor.r();
-                light.materialRgb[1] = diffuseColor.g();
-                light.materialRgb[2] = diffuseColor.b();
-
                 light.emission[0] = emissionColor.r();
                 light.emission[1] = emissionColor.g();
                 light.emission[2] = emissionColor.b();

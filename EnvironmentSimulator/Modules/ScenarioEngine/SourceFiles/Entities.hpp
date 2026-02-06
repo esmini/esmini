@@ -190,7 +190,6 @@ namespace scenarioengine
             double            rgb[3]            = {0.0, 0.0, 0.0};     // current emissionRbg
             double            minRgb[3]         = {-1.0, -1.0, -1.0};
             double            maxRgb[3]         = {-1.0, -1.0, -1.0};
-            double            materialRgb[3]    = {-1.0, -1.0, -1.0};
         };
 
         VehicleLightStatus vehLghtStsList[static_cast<size_t>(VehicleLightType::VEHICLE_LIGHT_SIZE)];
