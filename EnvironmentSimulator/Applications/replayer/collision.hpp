@@ -18,6 +18,7 @@ typedef struct
     viewer::EntityModel*         entityModel;
     osg::ref_ptr<osg::Vec3Array> trajPoints;
     viewer::PolyLine*            trajectory;
+    std::vector<SE_Point2D>      outline_2d;
 #endif  // _USE_OSG
 } ScenarioEntity;
 

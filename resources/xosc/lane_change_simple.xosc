@@ -12,7 +12,7 @@
                description="Basic lane change repeated after reaching end-of-road"
                author="esmini-team"/>
    <ParameterDeclarations>
-      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white"/>
+      <ParameterDeclaration name="EgoVehicle" parameterType="string" value="car_white_with_outline"/>
    </ParameterDeclarations>
    <CatalogLocations>
       <VehicleCatalog>

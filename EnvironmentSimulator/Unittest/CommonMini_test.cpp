@@ -208,31 +208,67 @@ TEST(LinearAlgebra, TestAngleBetweenVectors)
 {
     double v1[2] = {1.0, 0.0};
     double v2[2] = {1.0, 0.2};
-    EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), 0.197, 1E-3);
+    EXPECT_NEAR(GetSignedAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), 0.197, 1E-3);
 
     v1[0] = 0.0;
     v1[1] = 10.0;
     v2[0] = 0.0;
     v2[1] = -10.0;
-    EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), M_PI, 1E-3);
+    EXPECT_NEAR(fabs(GetSignedAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1])), M_PI, 1E-3);
+
+    v1[0] = -0.0001;
+    v1[1] = 10.0;
+    v2[0] = 0.0;
+    v2[1] = -10.0;
+    EXPECT_NEAR(GetSignedAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), 3.1415, 1E-3);
 
     v1[0] = -3.0;
     v1[1] = 1.0;
     v2[0] = 1.0;
     v2[1] = 3.0;
-    EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), M_PI_2, 1E-3);
+    EXPECT_NEAR(GetSignedAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), -M_PI_2, 1E-3);
 
     v1[0] = 1.0;
     v1[1] = 3.0;
     v2[0] = -3.0;
     v2[1] = 1.0;
-    EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), M_PI_2, 1E-3);
+    EXPECT_NEAR(GetSignedAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), M_PI_2, 1E-3);
 
     v1[0] = -5.0;
     v1[1] = 1.0;
     v2[0] = 1.0;
     v2[1] = -0.6;
-    EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), 2.798, 1E-3);
+    EXPECT_NEAR(GetSignedAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), 2.798, 1E-3);
+
+    v1[0] = 0.0;
+    v1[1] = 0.0;
+    v2[0] = 1.0;
+    v2[1] = 1.0;
+    EXPECT_NEAR(GetSignedAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), 0.0, 1E-3);
+
+    v1[0] = 1.0;
+    v1[1] = 1.0;
+    v2[0] = 0.0;
+    v2[1] = 0.0;
+    EXPECT_NEAR(GetSignedAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), 0.0, 1E-3);
+
+    v1[0] = 1.0;
+    v1[1] = 0.0;
+    v2[0] = -1.0;
+    v2[1] = 0.0;
+    EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), M_PI, 1E-3);
+
+    v1[0] = 0.0;
+    v1[1] = 1.0;
+    v2[0] = 0.0;
+    v2[1] = -1.0;
+    EXPECT_NEAR(GetAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), M_PI, 1E-3);
+
+    v1[0] = 0.0;
+    v1[1] = 0.0;
+    v2[0] = 0.0;
+    v2[1] = 0.0;
+    EXPECT_NEAR(GetSignedAngleBetweenVectors(v1[0], v1[1], v2[0], v2[1]), 0.0, 1E-3);
 }
 
 TEST(ProgramOptions, TestConfigOptionPostprocessing)
@@ -335,6 +371,29 @@ TEST(MathFunctions, TestGetDistanceFromPointToLine2DWithAngle)
     EXPECT_NEAR(DistanceFromPointToLine2DWithAngle(-0.1, 0.9, -10.0, 10.0, 3 * M_PI_4), 0.5656, 1e-3);
     EXPECT_NEAR(DistanceFromPointToLine2DWithAngle(-0.1, 0.1, -10.0, 10.0, 3 * M_PI_4), 0.0, 1e-3);
     EXPECT_NEAR(DistanceFromPointToLine2DWithAngle(-0.9, 0.1, -10.0, 10.0, 3 * M_PI_4), -0.5656, 1e-3);
+}
+
+TEST(MathFunctions, TestPointToLineDistance2DSigned)
+{
+    EXPECT_NEAR(PointToLineDistance2DSigned(0.5, 3.0, 0.0, 0.0, 1.0, 0.0), 3.0, 1e-3);
+    EXPECT_NEAR(PointToLineDistance2DSigned(0.5, 3.0, -10.0, 0.0, 10.0, 0.0), 3.0, 1e-3);
+    EXPECT_NEAR(PointToLineDistance2DSigned(0.5, -3.0, 0.0, 0.0, 1.0, 0.0), -3.0, 1e-3);
+    EXPECT_NEAR(PointToLineDistance2DSigned(0.5, 3.0, 10.0, 0.0, -10.0, 0.0), -3.0, 1e-3);
+}
+
+TEST(MathFunctions, TestPointToLineDistance3DSigned)
+{
+    // as 2D (z=0)
+    EXPECT_NEAR(PointToLineDistance3DSigned(0.5, 3.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0), 3.0, 1e-3);
+    EXPECT_NEAR(PointToLineDistance3DSigned(0.5, 3.0, 0.0, -10.0, 0.0, 0.0, 10.0, 0.0, 0.0), 3.0, 1e-3);
+    EXPECT_NEAR(PointToLineDistance3DSigned(0.5, -3.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0), -3.0, 1e-3);
+    EXPECT_NEAR(PointToLineDistance3DSigned(0.5, 3.0, 0.0, 10.0, 0.0, 0.0, -10.0, 0.0, 0.0), -3.0, 1e-3);
+
+    // some 3D ones
+    EXPECT_NEAR(PointToLineDistance3DSigned(5.0, 6.0, 5.0, 0.0, 0.0, 0.0, 10.0, 10.0, 10.0), 0.8165, 1e-3);
+    EXPECT_NEAR(PointToLineDistance3DSigned(5.0, 4.0, 5.0, 0.0, 0.0, 0.0, 10.0, 10.0, 10.0), -0.8165, 1e-3);
+    EXPECT_NEAR(PointToLineDistance3DSigned(0.0, 5.0, 0.0, 0.0, 0.0, 10.0, 10.0, 0.0, 10.0), 11.1803, 1e-3);
+    EXPECT_NEAR(PointToLineDistance3DSigned(0.0, -5.0, 0.0, 0.0, 0.0, 10.0, 10.0, 0.0, 10.0), -11.1803, 1e-3);
 }
 
 static bool log_msg_received = false;

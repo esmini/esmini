@@ -165,12 +165,12 @@ typedef struct
 
 typedef struct
 {
-    bool active;  // True: override; false: stop overriding
-    int  type;    // According to Entities::OverrideType
-    int  number;
+    bool active;      // True: override; false: stop overriding
+    int  type;        // According to Entities::OverrideType
+    int  number;      // Gear number/mode depending on value_type
     int  value_type;  // According to Entities::OverrideGearType
                       // Manual type: Negative number are indicating reverse gears. Zero is neutral gear.
-                      // Automatic type: (-1:Reverse, 0:Neutral, 1:Gear 1, 2:Gear 2, and so on.)
+                      // Automatic type: (-1:Reverse, 0:Neutral, 1:Park, 2:Drive)
 } SE_OverrideActionStatusGear;
 
 typedef struct
@@ -1067,7 +1067,7 @@ extern "C"
             Specify which lane types the position object snaps to (is aware of)
             @param object_id Id of the object
             @param laneTypes A combination (bitmask) of lane types according to roadmanager::Lane::LaneType
-            examples: ANY_DRIVING = 1966594, ANY_ROAD = 1966734, ANY = -1
+            examples: ANY_DRIVING = 1966594, ANY_ROAD = 1966990, ANY = -1
             @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_SetSnapLaneTypes(int object_id, int laneTypes);
@@ -1120,7 +1120,7 @@ extern "C"
         Can be used for checking exact lane type or combinations by bitmask.
         Example 1: Check if on border lane: SE_GetObjectLaneType(id) == (1 << 6)
         Example 2: Check if on any drivable lane: SE_GetObjectLaneType(id) & 1966594
-        Example 3: Check if on any road lane: SE_GetObjectLaneType(id) & 1966726
+        Example 3: Check if on any road lane: SE_GetObjectLaneType(id) & 1966990
         Example 4: Check for no lane (outside defined lanes): SE_GetObjectLaneType(id) == 1
         @param object_id Id of the object
         @return lane type according to enum roadmanager::Lane::LaneType
@@ -1299,6 +1299,29 @@ extern "C"
                     (see roadmanager.hpp -> Position::ReturnCode)
     */
     SE_DLL_API int SE_GetRoadInfoAtDistance(int          object_id,
+                                            float        lookahead_distance,
+                                            SE_RoadInfo *data,
+                                            int          lookAheadMode,
+                                            bool         inRoadDrivingDirection);
+
+    /**
+            Get information suitable for driver modeling of a point at a specified distance from object along the route ahead
+            @param object_id Handle to the position object from which to measure
+            @param lookahead_distance The distance, along the road, to the point
+            @param data Struct including all result values, see typedef for details
+            @param lookAheadMode Measurement strategy: Along 0=lane center, 1=road center (ref line) or 2=current lane offset. See
+            roadmanager::Position::LookAheadMode enum
+            @param inRoadDrivingDirection If true look along lane driving direction. If false, look in closest direction according to object heading.
+            @return 0 = OK,
+                    ERROR_OFF_ROAD = -4,
+                    ERROR_END_OF_ROUTE = -3,
+                    ERROR_END_OF_ROAD = -2,
+                    ERROR_GENERIC = -1,
+                    ENTERED_NEW_ROAD = 1,
+                    MADE_JUNCTION_CHOICE = 2
+                    (see roadmanager.hpp -> Position::ReturnCode)
+    */
+    SE_DLL_API int SE_GetRoadInfoAlongRoute(int          object_id,
                                             float        lookahead_distance,
                                             SE_RoadInfo *data,
                                             int          lookAheadMode,

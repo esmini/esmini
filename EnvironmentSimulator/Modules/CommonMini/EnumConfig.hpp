@@ -108,6 +108,8 @@ namespace esmini_options
         FILE_REFS,                       // 97
         PRINT_CSV,                       // 98
         CSV,                             // 99
+        HIDE_OBJ_OUTLINE,                // 100
+        AXIS_INDICATOR,                  // 101
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -211,7 +213,9 @@ namespace esmini_options
         {"hide_ghost", HIDE_GHOST},
         {"ghost_trail_dt", GHOST_TRAIL_DT},
         {"wireframe", WIREFRAME},
-        {"view_ghost_restart", VIEW_GHOST_RESTART}};
+        {"view_ghost_restart", VIEW_GHOST_RESTART},
+        {"hide_obj_outline", HIDE_OBJ_OUTLINE},
+        {"axis_indicator", AXIS_INDICATOR}};
 
     CONFIG_ENUM ConvertStrKeyToEnum(const std::string& key);
 }  // namespace esmini_options

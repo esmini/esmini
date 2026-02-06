@@ -251,7 +251,12 @@ static void CopyRoadInfo(SE_RoadInfo *r_data, roadmanager::RoadProbeInfo *s_data
     }
 }
 
-static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_RoadInfo *r_data, int lookAheadMode)
+static int GetRoadInfoAtDistance(int          object_id,
+                                 float        lookahead_distance,
+                                 bool         inRoadDrivingDirection,
+                                 SE_RoadInfo *r_data,
+                                 int          lookAheadMode,
+                                 bool         along_route)
 {
     roadmanager::RoadProbeInfo s_data;
     Object                    *main_object = nullptr;
@@ -260,9 +265,22 @@ static int GetRoadInfoAtDistance(int object_id, float lookahead_distance, SE_Roa
         return -1;
     }
 
-    roadmanager::Position            *pos = &player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos;
-    roadmanager::Position::ReturnCode retval =
-        pos->GetProbeInfo(lookahead_distance, &s_data, static_cast<roadmanager::Position::LookAheadMode>(lookAheadMode));
+    float signedLookaheadDistance = lookahead_distance;
+
+    if (inRoadDrivingDirection)
+    {
+        // Look in the driving direction of current lane
+        if (main_object->pos_.GetHRelativeDrivingDirection() > M_PI_2 && main_object->pos_.GetHRelativeDrivingDirection() < 3 * M_PI_2)
+        {
+            signedLookaheadDistance = -lookahead_distance;
+        }
+    }
+
+    // look ahead, either by default routing or along any defined route
+    roadmanager::Position::ReturnCode retval = main_object->pos_.GetProbeInfo(signedLookaheadDistance,
+                                                                              &s_data,
+                                                                              static_cast<roadmanager::Position::LookAheadMode>(lookAheadMode),
+                                                                              along_route);
 
     if (retval != roadmanager::Position::ReturnCode::ERROR_GENERIC)
     {
@@ -2260,24 +2278,16 @@ extern "C"
                                             int          lookAheadMode,
                                             bool         inRoadDrivingDirection)
     {
-        Object *obj = nullptr;
-        if (getObjectById(object_id, obj) == -1)
-        {
-            return -1;
-        }
+        return GetRoadInfoAtDistance(object_id, lookahead_distance, inRoadDrivingDirection, data, lookAheadMode, false);
+    }
 
-        float adjustedLookaheadDistance = lookahead_distance;
-
-        if (inRoadDrivingDirection)
-        {
-            // Look in the driving direction of current lane
-            if (obj->pos_.GetHRelativeDrivingDirection() > M_PI_2 && obj->pos_.GetHRelativeDrivingDirection() < 3 * M_PI_2)
-            {
-                adjustedLookaheadDistance = -lookahead_distance;
-            }
-        }
-
-        return GetRoadInfoAtDistance(object_id, adjustedLookaheadDistance, data, lookAheadMode);
+    SE_DLL_API int SE_GetRoadInfoAlongRoute(int          object_id,
+                                            float        lookahead_distance,
+                                            SE_RoadInfo *data,
+                                            int          lookAheadMode,
+                                            bool         inRoadDrivingDirection)
+    {
+        return GetRoadInfoAtDistance(object_id, lookahead_distance, inRoadDrivingDirection, data, lookAheadMode, true);
     }
 
     SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost, float *timestamp)

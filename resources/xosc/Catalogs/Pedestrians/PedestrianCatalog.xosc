@@ -13,10 +13,10 @@
             <Dimensions height="1.8" length="0.6" width="0.5"/>
          </BoundingBox>
          <Properties>
-            <Property name="model_id" value="7"/>       
+            <Property name="model_id" value="7"/>
             <!-- Scale modes: None, BBToModel, ModelToBB -->
             <Property name="source_reference" value="date_of_birth:1969"/>
-            <Property name="scaleMode" value="BBToModel"/>  
+            <Property name="scaleMode" value="BBToModel"/>
          </Properties>
       </Pedestrian>
       <Pedestrian mass="70" model="EPTa" name="pedestrian_adult2" pedestrianCategory="pedestrian" model3d="../models/walkman.osgb">
@@ -26,9 +26,9 @@
             <Dimensions height="1.8" length="0.6" width="0.5"/>
          </BoundingBox>
          <Properties>
-            <Property name="model_id" value="7"/>                    
+            <Property name="model_id" value="7"/>
             <!-- Scale modes: None, BBToModel, ModelToBB -->
-            <Property name="scaleMode" value="BBToModel"/>  
+            <Property name="scaleMode" value="BBToModel"/>
          </Properties>
       </Pedestrian>
       <Pedestrian mass="80" model="moose-standard-model" name="moose" pedestrianCategory="animal" model3d="../models/moose_cc0.osgb">
@@ -38,9 +38,9 @@
             <Dimensions height="1.9" length="2.82" width="0.3"/>
          </BoundingBox>
          <Properties>
-            <Property name="model_id" value="8"/>            
+            <Property name="model_id" value="8"/>
             <!-- Scale modes: None, BBToModel, ModelToBB -->
-            <Property name="scaleMode" value="BBToModel"/>  
+            <Property name="scaleMode" value="BBToModel"/>
          </Properties>
       </Pedestrian>
    </Catalog>

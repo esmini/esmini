@@ -11,8 +11,8 @@ Key shortcuts
     H (shift + h): Print this help text to console
     Space:         Toggle pause/play simulation
     Return:        Step simulation (one timestep) then pause
-    TAB:           Move camera to next vehicle (0, 1, 2..., ALL, ROAD)
-    Shift + TAB:   Move camera to previous vehicle
+    TAB:           Move camera to next entity (0, 1, 2..., ALL, ROAD)
+    Shift + TAB:   Move camera to previous entity
     Delete:        Same as above (Shift + TAB)
     o:             Toggle show / hide OpenDRIVE road feature lines
     O:             Toggle show / hide odr signal bounding boxes
@@ -26,6 +26,7 @@ Key shortcuts
     n:             Toggle show active trajectories
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None
     K:             Print current camera position and orientation to console
+    x:             Cycle axis indicator view mode (off, on, xray)
     ESC:           quit
 
     Arrow keys is used to drive externally controlled Ego vehicle:

@@ -385,6 +385,7 @@ void ScenarioPlayer::ViewerFrame()
                                                            &obj->boundingbox_,
                                                            obj->refpoint_x_offset_,
                                                            obj->model3d_x_offset_,
+                                                           &obj->outline_2d_,
                                                            obj->scaleMode_));
 
         if (obj->scaleMode_ == EntityScaleMode::BB_TO_MODEL)
@@ -1098,6 +1099,7 @@ int ScenarioPlayer::InitViewer()
                                                                &obj->boundingbox_,
                                                                obj->refpoint_x_offset_,
                                                                obj->model3d_x_offset_,
+                                                               &obj->outline_2d_,
                                                                obj->scaleMode_)) != 0)
         {
             CloseViewer();
@@ -1404,6 +1406,7 @@ int ScenarioPlayer::Init()
     // use an ArgumentParser object to manage the program arguments.
     opt.AddOption("osc", "OpenSCENARIO filename (required) - if path includes spaces, enclose with \"\"", "filename", "", false, true, true);
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
+    opt.AddOption("axis_indicator", "0:off 1:on 2:xray, cycle key 'x'", "mode");
     opt.AddOption("align_routepositions", "Align t-axis of route positions to the direction of the route");
     opt.AddOption("bounding_boxes", "Show entities as bounding boxes. Toggle key ','");
     opt.AddOption("capture_screen", "Continuous screen capture. Warning: Many jpeg files will be created");
@@ -1446,6 +1449,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization. Toggle key 'R'");
     opt.AddOption("hide_trajectories", "Hide trajectories from start. Toggle key 'n'");
     opt.AddOption("hide_ghost", "Do not visualize ghost");
+    opt.AddOption("hide_obj_outline", "Hide any object 2D shape outlines (toggle key ';')");
     opt.AddOption("ignore_heading_for_traj_motion", "Ignore heading when deciding motion direction along trajectory");
     opt.AddOption("ignore_odr_offset", "Ignore any offset specified in the OpenDRIVE file header");
     opt.AddOption("ignore_z", "Ignore provided z values from OSC file and place vehicle relative to road");

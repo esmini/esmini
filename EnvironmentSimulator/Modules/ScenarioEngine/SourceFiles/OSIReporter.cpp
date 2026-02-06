@@ -783,6 +783,17 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
                 }
                 // replace any previous height value with the average height of the outline corners
                 obj_osi_internal.sobj->mutable_base()->mutable_dimension()->set_height(height);
+
+                if (!outline->closed_)
+                {
+                    // Repeat intermediate vertices to close the polygon, avoiding single edge between last and first vertices
+                    for (int l = static_cast<int>(outline->corner_.size()) - 2; l > 0; l--)
+                    {
+                        osi3::Vector2d *vec = obj_osi_internal.sobj->mutable_base()->add_base_polygon();
+                        vec->set_x(obj_osi_internal.sobj->mutable_base()->base_polygon().at(l).x());
+                        vec->set_y(obj_osi_internal.sobj->mutable_base()->base_polygon().at(l).y());
+                    }
+                }
             }
         }
     }
@@ -906,6 +917,18 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
     obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetR()));
     obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_pitch(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetP()));
     obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_yaw(GetAngleInIntervalMinusPIPlusPI(objectState->state_.pos.GetH()));
+
+    // Set outline for scenario MiscObjects, if available
+    Object *obj = scenario_engine_->entities_.GetObjectById(objectState->state_.info.id);
+    if (obj != nullptr)
+    {
+        for (const auto &p : obj->outline_2d_)
+        {
+            osi3::Vector2d *vec = obj_osi_internal.sobj->mutable_base()->add_base_polygon();
+            vec->set_x(p.x);
+            vec->set_y(p.y);
+        }
+    }
 
     objectState->SetOSIIndex(obj_osi_internal.static_gt->stationary_object_size());
 
@@ -1151,6 +1174,18 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
         for (const auto &ref : objectState->state_.info.source_reference)
         {
             source_reference->add_identifier(ref);
+        }
+    }
+
+    // Set outline if available
+    Object *obj = scenario_engine_->entities_.GetObjectById(objectState->state_.info.id);
+    if (obj != nullptr)
+    {
+        for (const auto &p : obj->outline_2d_)
+        {
+            osi3::Vector2d *vec = obj_osi_internal.mobj->mutable_base()->add_base_polygon();
+            vec->set_x(p.x);
+            vec->set_y(p.y);
         }
     }
 

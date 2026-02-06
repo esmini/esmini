@@ -473,6 +473,11 @@ namespace viewer
         int  GetCameraRelativePos(osg::Vec3& pos);
         int  AddCustomLightSource(double x, double y, double z, double intensity);
 
+        void CreateEntityOutline2D(osg::ref_ptr<osg::Group>       modelgroup,
+                                   const std::vector<SE_Point2D>* outline,
+                                   double                         refpoint_x_offset,
+                                   osg::Material*                 material);
+
         /**
          * Set mode of the esmini camera model
          * @param mode According to the RubberbandManipulator::CAMERA_MODE enum, plus any number of custom cameras. Set -1 to select the last.
@@ -486,15 +491,16 @@ namespace viewer
         {
             return currentCarInFocus_;
         }
-        EntityModel*             CreateEntityModel(std::string             modelFilepath,
-                                                   osg::Vec4               trail_color,
-                                                   EntityModel::EntityType type,
-                                                   bool                    road_sensor,
-                                                   std::string             name,
-                                                   OSCBoundingBox*         boundingBox,
-                                                   double                  refpoint_x_offset,
-                                                   double                  modlel_x_offset,
-                                                   EntityScaleMode         scaleMode = EntityScaleMode::NONE);
+        EntityModel*             CreateEntityModel(std::string                    modelFilepath,
+                                                   osg::Vec4                      trail_color,
+                                                   EntityModel::EntityType        type,
+                                                   bool                           road_sensor,
+                                                   std::string                    name,
+                                                   OSCBoundingBox*                boundingBox,
+                                                   double                         refpoint_x_offset,
+                                                   double                         modlel_x_offset,
+                                                   const std::vector<SE_Point2D>* outline,
+                                                   EntityScaleMode                scaleMode = EntityScaleMode::NONE);
         int                      AddEntityModel(EntityModel* model);
         void                     RemoveCar(int index);
         void                     RemoveCar(std::string name);
@@ -584,22 +590,25 @@ namespace viewer
         void   Frame(double time);
         void   SetFrictionScaleFactor(const double factor);
         double GetFrictionScaleFactor() const;
+        void   SetAxisIndicatorMode(int mode);
+        void   CycleAxisIndicatorMode();
 
     private:
-        int  CreateTunnels(roadmanager::OpenDrive* od);
-        int  InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
-                        int                                        x,
-                        int                                        y,
-                        int                                        w,
-                        int                                        h,
-                        int                                        samples,
-                        bool                                       decoration,
-                        int                                        screenNum,
-                        bool                                       headless);
-        bool CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
-        bool CreateRoadMarkLines(roadmanager::OpenDrive* od);
-        void CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
-        void SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
+        int        CreateTunnels(roadmanager::OpenDrive* od);
+        int        InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
+                              int                                        x,
+                              int                                        y,
+                              int                                        w,
+                              int                                        h,
+                              int                                        samples,
+                              bool                                       decoration,
+                              int                                        screenNum,
+                              bool                                       headless);
+        bool       CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
+        bool       CreateRoadMarkLines(roadmanager::OpenDrive* od);
+        void       CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
+        void       SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
+        osg::Node* CreateAxisIndicator();
 
         bool                                  keyUp_;
         bool                                  keyDown_;
@@ -614,6 +623,8 @@ namespace viewer
         double                                frictionScaleFactor_;
         bool                                  defaultClearColorUsed_;
         std::vector<float>                    fogColor_;
+        osg::StateSet*                        axis_indicator_stateset_;
+        int                                   axis_indicator_mode_ = 0;
 
         struct
         {

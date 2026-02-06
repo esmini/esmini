@@ -8,6 +8,8 @@ Options:
       Simulation recording data file (.dat)
   --aa_mode [mode]  (default if value omitted: 4)
       Anti-alias mode=number of multisamples (subsamples, 0=off)
+  --axis_indicator <mode>
+      0:off 1:on 2:xray, cycle key 'x'
   --camera_mode [mode]  (default if option or value omitted: orbit)
       Initial camera mode ("orbit", "fixed", "flex", "flex-orbit", "top", "driver", "custom"). Toggle key 'k'
   --capture_screen
@@ -36,6 +38,8 @@ Options:
       Show this help message (-h works as well)
   --hide_trajectories
       Hide trajectories from start (toggle with key 'n')
+  --hide_obj_outline
+      Hide any object 2D shape outlines (toggle key ';')
   --info_text [mode]  (default if option or value omitted: 1)
       Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'
   --logfile_path [path]  (default if option or value omitted: replayer_log.txt)
@@ -94,8 +98,8 @@ Additional OSG graphics options:
 Key shortcuts
 
     H (shift + h): Print this help text to console
-    TAB:           Move camera to next vehicle (0, 1, 2..., ALL, ROAD)
-    Shift + TAB:   Move camera to previous vehicle
+    TAB:           Move camera to next entity (0, 1, 2..., ALL, ROAD)
+    Shift + TAB:   Move camera to previous entity
     Delete:        Same as above (Shift + TAB)
     Space:         Toggle pause / play
     g:             Toggle show / hide ghost models
@@ -107,6 +111,7 @@ Key shortcuts
     n:             Toggle show active trajectories
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None
     K:             Print current camera position and orientation to console
+    x:             Cycle axis indicator view mode (off, on, xray)
     ESC:           quit
 
     Arrow keys

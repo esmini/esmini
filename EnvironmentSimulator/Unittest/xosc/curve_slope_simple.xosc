@@ -14,7 +14,11 @@
 	</RoadNetwork>
 	<Entities>
 		<ScenarioObject name="Ego">
-			<CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+			<CatalogReference catalogName="VehicleCatalog" entryName="car_white">
+				<ParameterAssignments>
+					<ParameterAssignment parameterRef="Outline" value="3.42,-0.97;3.75,-0.65;3.87,-0.32;3.92,0;3.87,0.32;3.75,0.65;3.42,0.97;2.71,1.02;1.99,0.97;1.28,0.96;0.56,0.97;-0.15,1.02;-0.87,0.97;-1.02,0.65;-1.1,0.32;-1.12,0;-1.1,-0.32;-1.02,-0.65;-0.87,-0.97;-0.15,-1.02;0.56,-0.97;1.28,-0.96;1.99,-0.97;2.71,-1.02"/>
+				</ParameterAssignments>
+			</CatalogReference>
 		</ScenarioObject>
 	</Entities>
 	<Storyboard>

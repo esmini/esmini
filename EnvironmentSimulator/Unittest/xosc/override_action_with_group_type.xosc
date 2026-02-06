@@ -131,6 +131,72 @@
                         </ConditionGroup>
                      </StartTrigger>
                   </Event>
+                  <Event name="SetOverrideEvent4" maximumExecutionCount="2" priority="overwrite">
+                  <Action name="SetOverrideAction4">
+                     <PrivateAction>
+                        <ControllerAction>
+                           <OverrideControllerValueAction>
+                              <Gear active="true">
+                                 <AutomaticGear gear="p"/>
+                              </Gear>
+                           </OverrideControllerValueAction>
+                        </ControllerAction>
+                     </PrivateAction>
+                  </Action>
+                  <StartTrigger>
+                     <ConditionGroup>
+                        <Condition name="SetOverrideActionTrigger4" delay="0" conditionEdge="none">
+                           <ByValueCondition>
+                              <SimulationTimeCondition value="7.1" rule="greaterThan"/>
+                           </ByValueCondition>
+                        </Condition>
+                     </ConditionGroup>
+                  </StartTrigger>
+               </Event>
+                  <Event name="SetOverrideEvent5" maximumExecutionCount="2" priority="overwrite">
+                  <Action name="SetOverrideAction5">
+                     <PrivateAction>
+                        <ControllerAction>
+                           <OverrideControllerValueAction>
+                              <Gear active="false">
+                                 <AutomaticGear gear="n"/>
+                              </Gear>
+                           </OverrideControllerValueAction>
+                        </ControllerAction>
+                     </PrivateAction>
+                  </Action>
+                  <StartTrigger>
+                     <ConditionGroup>
+                        <Condition name="SetOverrideActionTrigger5" delay="0" conditionEdge="none">
+                           <ByValueCondition>
+                              <SimulationTimeCondition value="7.2" rule="greaterThan"/>
+                           </ByValueCondition>
+                        </Condition>
+                     </ConditionGroup>
+                  </StartTrigger>
+               </Event>
+                  <Event name="SetOverrideEvent6" maximumExecutionCount="2" priority="overwrite">
+                  <Action name="SetOverrideAction6">
+                     <PrivateAction>
+                        <ControllerAction>
+                           <OverrideControllerValueAction>
+                              <Gear active="true">
+                                 <AutomaticGear gear="d"/>
+                              </Gear>
+                           </OverrideControllerValueAction>
+                        </ControllerAction>
+                     </PrivateAction>
+                  </Action>
+                  <StartTrigger>
+                     <ConditionGroup>
+                        <Condition name="SetOverrideActionTrigger6" delay="0" conditionEdge="none">
+                           <ByValueCondition>
+                              <SimulationTimeCondition value="7.3" rule="greaterThan"/>
+                           </ByValueCondition>
+                        </Condition>
+                     </ConditionGroup>
+                  </StartTrigger>
+               </Event>
                </Maneuver>
             </ManeuverGroup>
             <StartTrigger>

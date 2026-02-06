@@ -79,6 +79,8 @@ Object::Object(Type type)
     front_axle_       = {0.0, 0.0, 0.0, 0.0, 0.0};
     rear_axle_        = {0.0, 0.0, 0.0, 0.0, 0.0};
     model3d_x_offset_ = 0.0;
+
+    outline_2d_.reserve(24);  // default for cars in NCAP programs
 }
 
 void Object::SetEndOfRoad(bool state, double time)

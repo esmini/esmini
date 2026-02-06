@@ -1,11 +1,15 @@
 import argparse
 import os
+import sys
 import subprocess
 from typing import List
 import numpy as np
+
+SCRIPT_FOLDER = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(SCRIPT_FOLDER)  # add script folder to path to find dependent modules
 import plot
 
-ESMINI_PATH = os.path.realpath(os.getcwd())
+ESMINI_PATH = os.path.realpath(os.path.join(SCRIPT_FOLDER, '..'))  # path to esmini root folder
 
 def get_labels_line_extended() -> List[str]:
     """ Get the extended labels line """
@@ -29,7 +33,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     esmini_args = [os.path.join(ESMINI_PATH,'bin','dat2csv'), "--file", args.filename, '--extended', '--print_csv']
-    process = subprocess.Popen(esmini_args, cwd=ESMINI_PATH, stdout=subprocess.PIPE, text=True)
+    process = subprocess.Popen(esmini_args, stdout=subprocess.PIPE, text=True)
     csv_data = process.stdout.read().strip().splitlines()
 
     data = np.genfromtxt(csv_data[1:], delimiter=',', names=True, dtype=None, encoding=None, autostrip=True)

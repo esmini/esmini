@@ -1555,7 +1555,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
     SE_DisableOSIFile();
 
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9989);
+    EXPECT_EQ(fileStatus.st_size, 9881);
 
     // Read OSI file
     FILE* file = FileOpen("gt.osi", "rb");
@@ -1633,7 +1633,7 @@ TEST(GroundTruthTests, check_frequency_implicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_implicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9989);
+    EXPECT_EQ(fileStatus.st_size, 9881);
 
     // Read OSI file
     FILE* file = FileOpen("gt_implicit.osi", "rb");
@@ -1703,7 +1703,7 @@ TEST(GroundTruthTests, check_frequency_explicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_explicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 9989);
+    EXPECT_EQ(fileStatus.st_size, 9881);
 
     // Read OSI file
     FILE* file = FileOpen("gt_explicit.osi", "rb");
@@ -1843,7 +1843,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 11128);
+    EXPECT_EQ(fileStatus.st_size, 11020);
 }
 
 TEST(GroundTruthTests, check_update_osi_ground_truth_api_and_log)
@@ -1878,7 +1878,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api_and_log)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 17777);
+    EXPECT_EQ(fileStatus.st_size, 17561);
 }
 
 TEST(GroundTruthTests, check_update_gt_twice_same_frame)
@@ -1896,7 +1896,7 @@ TEST(GroundTruthTests, check_update_gt_twice_same_frame)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 7711);
+    EXPECT_EQ(fileStatus.st_size, 7603);
 }
 
 TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
@@ -4117,6 +4117,62 @@ TEST(TestGetAndSet, OverrideActionTest)
     SE_Close();
 }
 
+TEST(TestGetAndSet, OverrideGearTest)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/override_action_with_group_type.xosc";
+    const char* Scenario_file = scenario_file.c_str();
+    float       dt            = 0.1f;
+    float       t             = 0.0f;
+
+    SE_OverrideActionList list;
+
+    ASSERT_EQ(SE_Init(Scenario_file, 0, 0, 0, 0), 0);
+
+    for (; t < 5.1f; t += dt)
+    {
+        SE_StepDT(dt);
+    }
+
+    // Manual gear
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+    EXPECT_EQ(list.gear.value_type, 0);
+    EXPECT_EQ(list.gear.number, -2);
+
+    for (; t < 7.1f; t += dt)
+    {
+        SE_StepDT(dt);
+    }
+
+    // Automatic gea Automatic gearr
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+    EXPECT_EQ(list.gear.value_type, 1);
+    EXPECT_EQ(list.gear.active, true);
+    EXPECT_EQ(list.gear.number, -1);
+
+    SE_StepDT(dt);
+
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+    EXPECT_EQ(list.gear.value_type, 1);
+    EXPECT_EQ(list.gear.active, true);
+    EXPECT_EQ(list.gear.number, 1);
+
+    SE_StepDT(dt);
+
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+    EXPECT_EQ(list.gear.value_type, 1);
+    EXPECT_EQ(list.gear.active, false);
+    EXPECT_EQ(list.gear.number, 0);
+
+    SE_StepDT(dt);
+
+    EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
+    EXPECT_EQ(list.gear.value_type, 1);
+    EXPECT_EQ(list.gear.active, true);
+    EXPECT_EQ(list.gear.number, 2);
+
+    SE_Close();
+}
+
 TEST(TestGetAndSet, PropertyTest)
 {
     std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/VehiclePropertyTest.xosc";
@@ -4455,10 +4511,10 @@ TEST(ExternalController, TestPositionAlignment)
         double h;
         double p;
         double r;
-    } test[n_tests] = {{6.0000, 101.8704, 98.8925, -1.0125, 1.5589, 0.0006, 0.4948},
-                       {13.5000, 15.2391, 200.7041, 9.7422, 2.9904, 5.9919, 0.0002},
-                       {19.0000, -79.7515, 163.3215, 8.7630, 4.0404, 0.2896, 6.2829},
-                       {20.0000, -90.3175, 147.0343, 3.5332, 4.2312, 0.5000, 0.2000}};
+    } test[n_tests] = {{6.0000, 101.7058, 98.9449, -0.8232, 1.5596, 6.2802, 0.4947},
+                       {13.5000, 15.1098, 200.7295, 9.7809, 2.9916, 5.9917, 0.0002},
+                       {19.0000, -79.8340, 163.2274, 8.7264, 4.0415, 0.2894, 6.2829},
+                       {20.0000, -90.3801, 146.9273, 3.5046, 4.2324, 0.5000, 0.2000}};
 
     SE_AddPath("../../../resources/models");
 
@@ -4568,7 +4624,7 @@ TEST(PositionMode, TestRoadAlignmentModes)
         double h;
         double p;
         double r;
-    } result[2][4] = {{{10.0, 100.739, 87.310, -0.830, 3.015, 0.000, 0.000},
+    } result[2][4] = {{{10.0, 100.5555, 87.3330, -0.7301, 3.015, 0.000, 0.000},
                        {10.0, 75.249, 87.375, 33.144, 2.677, 0.067, 0.000},
                        {10.0, 70.115, 87.356, 7.888, 2.245, 0.070, 5.629},
                        {10.0, 60.000, 70.000, 2.000, 2.356, 0.152, 6.083}},

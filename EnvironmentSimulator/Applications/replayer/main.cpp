@@ -254,7 +254,7 @@ int ParseEntities(Replay* player)
             // If not available, create it
             if (sc == nullptr)
             {
-                ScenarioEntity new_sc;
+                auto& new_sc = scenarioEntity.emplace_back();
 
                 new_sc.id             = id;
                 new_sc.pos            = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f, 0.0f, 0.0f};
@@ -308,6 +308,11 @@ int ParseEntities(Replay* player)
                 double model_x_offset =
                     (timelines.model_x_offset_.values.empty()) ? 0.0 : static_cast<double>(timelines.model_x_offset_.values.front().second);
 
+                if (!timelines.outline_.values.empty())
+                {
+                    new_sc.outline_2d = timelines.outline_.values.front().second;
+                }
+
                 bool found = false;
                 if ((new_sc.entityModel = viewer_->CreateEntityModel(
                          LocateFile(filename, {CombineDirectoryPathAndFilepath(res_path, "models")}, "Entity 3D model", found),
@@ -318,6 +323,7 @@ int ParseEntities(Replay* player)
                          &timelines.bounding_box_.values.front().second,
                          refpoint_x_offset,
                          model_x_offset,
+                         &new_sc.outline_2d,
                          static_cast<EntityScaleMode>(timelines.scale_mode_.values.front().second))) == 0)
                 {
                     return -1;
@@ -343,10 +349,9 @@ int ParseEntities(Replay* player)
                 }
 #endif  // _USE_OSG
 
-                scenarioEntity.push_back(new_sc);
                 // cppcheck-suppress unreadVariable
                 // This variable is used if we compile with OSG
-                sc = &scenarioEntity.back();
+                sc = &new_sc;
             }
 
 #ifdef _USE_OSG
@@ -454,6 +459,7 @@ int main(int argc, char** argv)
     opt.AddOption("file", "Simulation recording data file (.dat)", "filename", "", false, true, true);
 #ifdef _USE_OSG
     opt.AddOption("aa_mode", "Anti-alias mode=number of multisamples (subsamples, 0=off)", "mode", "4");
+    opt.AddOption("axis_indicator", "0:off 1:on 2:xray, cycle key 'x'", "mode");
     opt.AddOption("camera_mode",
                   "Initial camera mode (\"orbit\", \"fixed\", \"flex\", \"flex-orbit\", \"top\", \"driver\", \"custom\"). Toggle key 'k'",
                   "mode",
@@ -485,6 +491,7 @@ int main(int argc, char** argv)
     opt.AddOption("help", "Show this help message (-h works as well)");
 #ifdef _USE_OSG
     opt.AddOption("hide_trajectories", "Hide trajectories from start (toggle with key 'n')");
+    opt.AddOption("hide_obj_outline", "Hide any object 2D shape outlines (toggle key ';')");
 #endif  // _USE_OSG
     // opt.AddOption("include_ghost_reset", "Include ghost reset in the replay or not");
 #ifdef _USE_OSG
@@ -649,6 +656,7 @@ int main(int argc, char** argv)
         if (viewer_ == nullptr)
         {
             printf("Failed to create viewer");
+            CleanUp();
             return -1;
         }
 
@@ -806,7 +814,8 @@ int main(int argc, char** argv)
             opt.PrintUsage();
 #ifdef _USE_OSG
             PrintOSGUsage();
-#endif                  // _USE_OSG
+#endif  // _USE_OSG
+            CleanUp();
             return -1;  // we harmonize all applications to quit on unknown arguments
         }
 

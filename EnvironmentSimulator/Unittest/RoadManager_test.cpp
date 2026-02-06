@@ -248,7 +248,9 @@ TEST_F(OSIPointsTestFixture, TestConstructorEmpty)
 
 TEST_F(OSIPointsTestFixture, TestConstructorArgument)
 {
-    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, true}};
+    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, 0, 0, 0, 0, false},
+                                                    {-1, -1, -1, -1, -1, -1, -1, -1, -1, false},
+                                                    {2, 2, 2, 2, 2, 2, 2, 2, 2, true}};
 
     OSIPoints osi_points_test_object = OSIPoints(osi_points_test_set);
 
@@ -266,7 +268,9 @@ TEST_F(OSIPointsTestFixture, TestConstructorArgument)
 
 TEST_F(OSIPointsTestFixture, TestSetGet)
 {
-    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, true}};
+    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, 0, 0, 0, 0, false},
+                                                    {-1, -1, -1, -1, -1, -1, -1, -1, -1, false},
+                                                    {2, 2, 2, 2, 2, 2, 2, 2, 2, true}};
 
     osi_points.Set(osi_points_test_set);
 
@@ -294,7 +298,9 @@ TEST_F(OSIPointsTestFixture, TestGetFromIdxEmpty)
 
 TEST_F(OSIPointsTestFixture, TestGetFromIdx)
 {
-    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, true}};
+    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, 0, 0, 0, 0, false},
+                                                    {-1, -1, -1, -1, -1, -1, -1, -1, -1, false},
+                                                    {2, 2, 2, 2, 2, 2, 2, 2, 2, true}};
 
     OSIPoints osi_points_test_object = OSIPoints(osi_points_test_set);
 
@@ -315,7 +321,9 @@ TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
 {
     ASSERT_EQ(osi_points.GetNumOfOSIPoints(), 0);
 
-    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, false}, {-1, -1, -1, -1, -1, false}, {2, 2, 2, 2, 2, true}};
+    std::vector<PointStruct> osi_points_test_set = {{0, 0, 0, 0, 0, 0, 0, 0, 0, false},
+                                                    {-1, -1, -1, -1, -1, -1, -1, -1, -1, false},
+                                                    {2, 2, 2, 2, 2, 2, 2, 2, 2, true}};
     // std::vector<double>      s{0, -1, 2};
     // std::vector<double>      x{0, -1, 2};
     // std::vector<double>      y{0, -1, 2};
@@ -3900,8 +3908,8 @@ TEST(PositionModeTest, TestModeBitmasks)
 
     // Test some operations
     pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
-    EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 1.4019, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0036, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.486, 1e-3);
 
     pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_REL);
@@ -3918,8 +3926,8 @@ TEST(PositionModeTest, TestModeBitmasks)
     EXPECT_NEAR(pos.GetR(), 0.6, 1e-3);
     EXPECT_NEAR(pos.GetRRoad(), 0.6 - 0.1, 1e-3);
     pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
-    EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
-    EXPECT_NEAR(pos.GetP(), 0.0, 1e-3);
+    EXPECT_NEAR(pos.GetH(), 1.4019, 1e-3);
+    EXPECT_NEAR(pos.GetP(), 0.0036, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.486 + 0.1, 1e-3);
 
     pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_ABS);
@@ -3937,7 +3945,7 @@ TEST(PositionModeTest, TestModeBitmasks)
 
     pos.SetLanePos(road->GetId(), -1, 140.0, 0.0);
     EXPECT_NEAR(pos.GetH(), 1.4, 1e-3);
-    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0041), 0.0, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.1, 1e-3);
 
     pos.SetLanePos(road->GetId(), -1, 300.0, 0.0);
@@ -3980,7 +3988,7 @@ TEST(PositionModeTest, TestModeBitmasks)
                   roadmanager::Position::PosMode::R_ABS);
     pos.SetInertiaPos(100.0, 85.0, -10.0, 0.5, 0.0, 0.3);
     EXPECT_NEAR(pos.GetH(), 0.5, 1e-3);
-    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0), 0.0, 1e-3);
+    EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0016), 0.0, 1e-3);
     EXPECT_NEAR(pos.GetR(), 0.3, 1e-3);
 
     // Test some settings
@@ -4323,6 +4331,32 @@ TEST(PositionTest, TestClosestRoadPosFromXY)
     EXPECT_NEAR(pos.GetS(), 171.34, 1e-2);
 }
 
+// Verify that closest points are correctly found on pitched and rolled roads
+// where simple 2D projection will not work
+TEST(PositionTest, TestClosestPosOnPitchedAndRolledRoadsFromXY)
+{
+    Position::GetOpenDrive()->LoadOpenDriveFile("../../../EnvironmentSimulator/Unittest/xodr/two_pitched_and_rolled_roads.xodr");
+    OpenDrive *odr = Position::GetOpenDrive();
+    ASSERT_NE(odr, nullptr);
+    EXPECT_EQ(odr->GetNumOfRoads(), 2);
+
+    Position pos;
+
+    // initial position, x=10.5, is past road 1 (ends at x=10.0) in XY plane, but not in 3D
+    pos.SetInertiaPosMode(10.5, 1.5, 10.0, 0.0, 0.0, 0.0, roadmanager::Position::PosMode::Z_ABS);
+    EXPECT_EQ(pos.GetTrackId(), 1);
+    EXPECT_EQ(pos.GetLaneId(), 1);
+    EXPECT_NEAR(pos.GetS(), 9.439, 1e-2);
+    EXPECT_NEAR(pos.GetZ(), 10.0, 1e-2);
+
+    // next position, x=11.5, is at road 2 (past road 1) in XY plane, and also in 3D
+    pos.SetInertiaPosMode(11.5, 1.5, 10.0, 0.0, 0.0, 0.0, roadmanager::Position::PosMode::Z_ABS);
+    EXPECT_EQ(pos.GetTrackId(), 2);
+    EXPECT_EQ(pos.GetLaneId(), 1);
+    EXPECT_NEAR(pos.GetS(), 0.439, 1e-2);
+    EXPECT_NEAR(pos.GetZ(), 10.0, 1e-2);
+}
+
 TEST(LaneType, TestLaneTypeMasks)
 {
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_NONE, 1 << 0);
@@ -4350,7 +4384,7 @@ TEST(LaneType, TestLaneTypeMasks)
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_CONNECTING_RAMP, 1 << 22);
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_REFERENCE_LINE, 1 << 0);
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_DRIVING, 1966594);
-    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD, 1966734);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD, 1966990);
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY, -1);
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_TUNNEL, -2);
 }

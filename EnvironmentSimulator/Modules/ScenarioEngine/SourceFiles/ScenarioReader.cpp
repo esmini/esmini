@@ -554,6 +554,9 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     vehicle->typeName_ = parameters.ReadAttribute(vehicleNode, "name");
     ParseOSCProperties(vehicle->properties_, vehicleNode);
 
+    // Parse 2D shape outline
+    Parse2DShapeOutline(static_cast<Object *>(vehicle));
+
     OSCBoundingBox boundingbox = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     ParseOSCBoundingBox(boundingbox, vehicleNode);
     vehicle->boundingbox_ = boundingbox;
@@ -843,6 +846,41 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     return vehicle;
 }
 
+int ScenarioReader::Parse2DShapeOutline(Object *obj)
+{
+    std::string point_str = obj->properties_.GetValueStr("outline");
+
+    if (point_str.empty())
+    {
+        return 1;  // return 1 to indicate no outline defined
+    }
+
+    std::stringstream ss(point_str);
+    std::string       pair;
+
+    // 1. Split by semicolon to get each "x,y" pair
+    while (std::getline(ss, pair, ';'))
+    {
+        std::stringstream pairStream(pair);
+        std::string       x_str, y_str;
+
+        // 2. Split each pair by comma to get x and y
+        if (std::getline(pairStream, x_str, ',') && std::getline(pairStream, y_str))
+        {
+            obj->outline_2d_.push_back({std::stod(x_str), std::stod(y_str)});
+        }
+    }
+
+    if (obj->outline_2d_.size() < 3)
+    {
+        LOG_ERROR("Expect at least 3 shape outline points, got {}", obj->outline_2d_.size());
+        obj->outline_2d_.clear();
+        return -1;  // unexpected
+    }
+
+    return 0;
+}
+
 Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
 {
     Pedestrian *pedestrian = new Pedestrian();
@@ -887,6 +925,9 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
     }
 
     ParseOSCProperties(pedestrian->properties_, pedestrianNode);
+
+    // Parse 2D shape outline
+    Parse2DShapeOutline(static_cast<Object *>(pedestrian));
 
     // Overwrite default values if 3D model specified
     if (!pedestrianNode.attribute("model3d").empty())
@@ -965,6 +1006,9 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
     miscObject->boundingbox_ = boundingbox;
 
     ParseOSCProperties(miscObject->properties_, miscObjectNode);
+
+    // Parse 2D shape outline
+    Parse2DShapeOutline(static_cast<Object *>(miscObject));
 
     // Overwrite default values if 3D model specified
     if (!miscObjectNode.attribute("model3d").empty())

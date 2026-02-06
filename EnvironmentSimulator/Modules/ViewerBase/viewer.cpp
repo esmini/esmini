@@ -1554,6 +1554,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     SetNodeMaskBits(NodeMask::NODE_MASK_INFO);
     SetNodeMaskBits(NodeMask::NODE_MASK_TRAJECTORY_LINES);
     SetNodeMaskBits(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
+    SetNodeMaskBits(NodeMask::NODE_MASK_OBJ_OUTLINE);
 
     roadSensors_ = new osg::Group;
     roadSensors_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
@@ -1561,7 +1562,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     trails_ = new osg::Group;
     root_origin2odr_->addChild(trails_);
     odrLines_ = new osg::Group;
-    odrLines_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
     root_origin2odr_->addChild(odrLines_);
     osiFeatures_ = new osg::Group;
     root_origin2odr_->addChild(osiFeatures_);
@@ -1778,6 +1778,11 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
         stateSetManipulator->setPolygonMode(osg::PolygonMode::Mode::LINE);
     }
 
+    if (SE_Env::Inst().GetOptions().GetOptionSetByEnum(esmini_options::HIDE_OBJ_OUTLINE))
+    {
+        ClearNodeMaskBits(NodeMask::NODE_MASK_OBJ_OUTLINE);
+    }
+
     // Light
     osgViewer_->setLightingMode(osg::View::LightingMode::SKY_LIGHT);
     osg::Light* light = osgViewer_->getLight();
@@ -1819,6 +1824,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     infoTextCamera->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
     infoTextCamera->setProjectionMatrix(osg::Matrix::ortho2D(0, traits->width, 0, traits->height));
     rootnode_->addChild(infoTextCamera);
+
+    rootnode_->addChild(CreateAxisIndicator());
 
     fetch_image_ = new FetchImage(this);
     if (opt->GetOptionSet("osg_screenshot_event_handler"))
@@ -2088,15 +2095,57 @@ int Viewer::AddCustomLightSource(double x, double y, double z, double intensity)
     return 0;
 }
 
-EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
-                                       osg::Vec4               trail_color,
-                                       EntityModel::EntityType type,
-                                       bool                    road_sensor,
-                                       std::string             name,
-                                       OSCBoundingBox*         boundingBox,
-                                       double                  refpoint_x_offset,
-                                       double                  model_x_offset,
-                                       EntityScaleMode         scaleMode)
+void Viewer::CreateEntityOutline2D(osg::ref_ptr<osg::Group>       modelgroup,
+                                   const std::vector<SE_Point2D>* outline,
+                                   double                         refpoint_x_offset,
+                                   osg::Material*                 material)
+{
+    if (!outline)
+    {
+        return;
+    }
+
+    osg::ref_ptr<osg::Geode>     outlineGeode    = new osg::Geode;
+    osg::ref_ptr<osg::Geometry>  outlineGeometry = new osg::Geometry;
+    osg::ref_ptr<osg::Vec3Array> vertices        = new osg::Vec3Array;
+
+    for (const auto& p : *outline)
+    {
+        vertices->push_back(osg::Vec3(static_cast<float>(p.x - refpoint_x_offset), static_cast<float>(p.y), 0.05f));
+    }
+
+    outlineGeometry->setVertexArray(vertices.get());
+    outlineGeometry->addPrimitiveSet(new osg::DrawArrays(GL_LINE_LOOP, 0, vertices->size()));
+
+    osg::ref_ptr<osg::StateSet> stateSet = outlineGeometry->getOrCreateStateSet();
+    stateSet->setAttributeAndModes(material, osg::StateAttribute::ON);
+    stateSet->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+
+    osg::ref_ptr<osg::Point> pointSize = new osg::Point();
+    pointSize->setSize(20.0f);
+    pointSize->setDistanceAttenuation(osg::Vec3(1.0f, 1.0f, 0.0f));  // Enable distance attenuation for world-scale point size
+    outlineGeometry->getOrCreateStateSet()->setAttributeAndModes(pointSize, osg::StateAttribute::ON);
+
+    osg::ref_ptr<osg::Vec4Array> pointColors = new osg::Vec4Array;
+    pointColors->push_back(osg::Vec4(color_white[0], color_white[1], color_white[2], 1.0f));  // Red color for points
+    outlineGeometry->setColorArray(pointColors, osg::Array::BIND_OVERALL);
+    outlineGeometry->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, vertices->size()));
+
+    outlineGeode->addDrawable(outlineGeometry.get());
+    outlineGeode->setNodeMask(NODE_MASK_OBJ_OUTLINE);
+    modelgroup->addChild(outlineGeode);
+}
+
+EntityModel* Viewer::CreateEntityModel(std::string                    modelFilepath,
+                                       osg::Vec4                      trail_color,
+                                       EntityModel::EntityType        type,
+                                       bool                           road_sensor,
+                                       std::string                    name,
+                                       OSCBoundingBox*                boundingBox,
+                                       double                         refpoint_x_offset,
+                                       double                         model_x_offset,
+                                       const std::vector<SE_Point2D>* outline,
+                                       EntityScaleMode                scaleMode)
 {
     // Load 3D model
     osg::ref_ptr<osg::Group>                     group             = new osg::Group;
@@ -2210,9 +2259,15 @@ EntityModel* Viewer::CreateEntityModel(std::string             modelFilepath,
         modelgroup = geode;
     }
 
-    // Then create a bounding box visual representation
+    // Then create a bounding box visual representation and any specified outline
     bbGroup                          = new osg::Group;
     osg::ref_ptr<osg::Geode> bbGeode = new osg::Geode;
+
+    // Create 2D shape outline, if specified
+    if (outline != nullptr)
+    {
+        CreateEntityOutline2D(bbGroup, outline, refpoint_x_offset, material);
+    }
 
     if (scaleMode == EntityScaleMode::NONE || scaleMode == EntityScaleMode::MODEL_TO_BB)
     {
@@ -2723,6 +2778,7 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
         kp_geom->addPrimitiveSet(new osg::DrawArrays(GL_POINTS, 0, static_cast<int>(kp_points->size())));
         kp_geom->getOrCreateStateSet()->setAttributeAndModes(kp_point, osg::StateAttribute::ON);
         kp_geom->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+        kp_geom->setNodeMask(NODE_MASK_ODR_FEATURES);
 
         odrLines_->addChild(kp_geom);
 
@@ -2733,11 +2789,12 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
             {
                 roadmanager::Lane* lane = lane_section->GetLaneByIdx(j);
 
-                // visualize both lane boundary and lane center and
+                // For laneId = 0, visualize reference line (k=0, laneId=0) and center lane (k=1)
+                // Other lanes visualize lane center (k=0) and lane boundary (k=1)
                 for (unsigned int k = 0; k < 2; k++)
                 {
                     // skip lane center for all non driving lanes except center lane
-                    if ((k == 1 && lane->GetId() != 0) && !lane->IsDriving())
+                    if ((k == 0 && lane->GetId() != 0) && !lane->IsDriving())
                     {
                         continue;
                     }
@@ -2747,7 +2804,7 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
 
                     if (k == 0 && lane->GetId() == 0)
                     {
-                        // visualize road reference line
+                        // road reference line
                         roadmanager::OSIPoints ref_line_osi_points = lane_section->GetRefLineOSIPoints();
                         for (const auto& ref_line_point : ref_line_osi_points.GetPoints())
                         {
@@ -2760,15 +2817,15 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                     {
                         curr_osi = nullptr;
 
-                        if (k == 1)
+                        if (k == 0 || lane->GetId() == 0)
                         {
-                            curr_osi = lane->GetOSIPoints();
+                            curr_osi = lane->GetOSIPoints();  // road center lane and mid driving lanes
                         }
                         else
                         {
                             if (lane->GetLaneBoundary() != nullptr)
                             {
-                                curr_osi = lane->GetLaneBoundary()->GetOSIPoints();
+                                curr_osi = lane->GetLaneBoundary()->GetOSIPoints();  // lane boundary
                             }
                         }
 
@@ -2804,18 +2861,18 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                         else
                         {
                             // center lane
-                            AddPolyLine(viewer,
-                                        odrLines_,
-                                        vertices,
-                                        osg::Vec4(SE_Color::Color2RBG(SE_Color::Color::RED)[0],
-                                                  SE_Color::Color2RBG(SE_Color::Color::RED)[1],
-                                                  SE_Color::Color2RBG(SE_Color::Color::RED)[2],
-                                                  1.0),
-                                        6.0,
-                                        OSI_DOT_SIZE);
+                            pline = AddPolyLine(viewer,
+                                                odrLines_,
+                                                vertices,
+                                                osg::Vec4(SE_Color::Color2RBG(SE_Color::Color::RED)[0],
+                                                          SE_Color::Color2RBG(SE_Color::Color::RED)[1],
+                                                          SE_Color::Color2RBG(SE_Color::Color::RED)[2],
+                                                          1.0),
+                                                6.0,
+                                                OSI_DOT_SIZE);
                         }
                     }
-                    else if (k == 1)
+                    else if (k == 0)
                     {
                         pline = AddPolyLine(viewer,
                                             odrLines_,
@@ -2841,7 +2898,16 @@ bool Viewer::CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od)
                     }
                     if (pline != nullptr)
                     {
-                        pline->SetNodeMaskDots(NodeMask::NODE_MASK_OSI_POINTS);
+                        pline->SetNodeMaskLines(NodeMask::NODE_MASK_ODR_FEATURES);
+
+                        if (lane->GetId() == 0 && k == 1)
+                        {
+                            pline->SetNodeMaskDots(NodeMask::NODE_MASK_ODR_FEATURES);
+                        }
+                        else
+                        {
+                            pline->SetNodeMaskDots(NodeMask::NODE_MASK_OSI_POINTS);
+                        }
                     }
                 }
             }
@@ -3348,6 +3414,113 @@ double Viewer::GetFrictionScaleFactor() const
     return frictionScaleFactor_;
 }
 
+#include <osg/Geode>
+#include <osg/Geometry>
+#include <osg/LineWidth>
+#include <osgText/Text>
+#include <osgViewer/Viewer>
+
+/**
+ * @brief Creates a 3D coordinate system indicator node.
+ *
+ * This function generates an OpenSceneGraph node that draws a visual
+ * representation of the X, Y, and Z axes at the origin.
+ * - X-axis is Red
+ * - Y-axis is Green
+ * - Z-axis is Blue
+ * Each axis line is 1 meter long.
+ *
+ * @return A pointer to an osg::Node containing the axis geometry.
+ */
+osg::Node* Viewer::CreateAxisIndicator()
+{
+    // Create a Geode to hold our geometry
+    osg::ref_ptr<osg::Geode> geode = new osg::Geode();
+
+    // --- Create the axis lines ---
+    osg::ref_ptr<osg::Geometry> geom = new osg::Geometry();
+
+    // Define the vertices for the 3 lines
+    osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array();
+    // X-axis
+    vertices->push_back(osg::Vec3(0.0f, 0.0f, 0.0f));
+    vertices->push_back(osg::Vec3(1.0f, 0.0f, 0.0f));
+    // Y-axis
+    vertices->push_back(osg::Vec3(0.0f, 0.0f, 0.0f));
+    vertices->push_back(osg::Vec3(0.0f, 1.0f, 0.0f));
+    // Z-axis
+    vertices->push_back(osg::Vec3(0.0f, 0.0f, 0.0f));
+    vertices->push_back(osg::Vec3(0.0f, 0.0f, 1.0f));
+    geom->setVertexArray(vertices.get());
+
+    // Define the colors for each vertex
+    osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array();
+
+    colors->push_back(osg::Vec4(1.0, 0.1, 0.1, 1.0f));  // Red for X
+    colors->push_back(osg::Vec4(1.0, 0.1, 0.1, 1.0f));
+    colors->push_back(osg::Vec4(0.1, 0.9, 0.2, 1.0f));  // Green for Y
+    colors->push_back(osg::Vec4(0.1, 0.9, 0.2, 1.0f));
+    colors->push_back(osg::Vec4(0.1, 0.1, 1.0, 1.0f));  // Blue for Z
+    colors->push_back(osg::Vec4(0.1, 0.1, 1.0, 1.0f));
+    geom->setColorArray(colors.get());
+
+    // Use BIND_PER_VERTEX to apply the color to each vertex
+    geom->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+
+    // Tell OSG to draw the 6 vertices as 3 separate lines
+    geom->addPrimitiveSet(new osg::DrawArrays(GL_LINES, 0, 6));
+
+    // Add the geometry to the geode
+    geode->addDrawable(geom.get());
+
+    // --- Set rendering states ---
+    axis_indicator_stateset_ = geode->getOrCreateStateSet();
+    // Disable lighting to see the raw colors
+    axis_indicator_stateset_->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+    // Set line width to make them more visible
+    axis_indicator_stateset_->setAttributeAndModes(new osg::LineWidth(2.5f), osg::StateAttribute::ON);
+
+    geom->setNodeMask(NodeMask::NODE_MASK_AXIS_INDICATOR);
+
+    SetAxisIndicatorMode(strtoi(SE_Env::Inst().GetOptions().GetOptionValueByEnum(esmini_options::AXIS_INDICATOR)));
+
+    return geode.release();
+}
+
+void Viewer::SetAxisIndicatorMode(int mode)
+{
+    switch (mode)
+    {
+        case 0:  // off
+            ClearNodeMaskBits(NodeMask::NODE_MASK_AXIS_INDICATOR);
+            break;
+        case 1:  // on, depth test
+            SetNodeMaskBits(NodeMask::NODE_MASK_AXIS_INDICATOR);
+            // Disable depth test to always show on top
+            axis_indicator_stateset_->setMode(GL_DEPTH, osg::StateAttribute::ON);
+            axis_indicator_stateset_->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+            axis_indicator_stateset_->setRenderBinToInherit();
+            break;
+        case 2:  // on, no depth test
+            SetNodeMaskBits(NodeMask::NODE_MASK_AXIS_INDICATOR);
+            // Disable depth test to always show on top
+            axis_indicator_stateset_->setMode(GL_DEPTH, osg::StateAttribute::OFF);
+            axis_indicator_stateset_->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+            axis_indicator_stateset_->setRenderBinDetails(INT_MAX, "RenderBin");
+            break;
+        default:
+            LOG_WARN("SetAxisIndicatorMode: Invalid mode {} - no change", mode);
+            return;
+    }
+
+    axis_indicator_mode_ = mode;
+}
+
+void Viewer::CycleAxisIndicatorMode()
+{
+    SetAxisIndicatorMode((axis_indicator_mode_ + 1) % 3);
+}
+
 bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter&)
 {
     switch (ea.getEventType())
@@ -3585,6 +3758,14 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
             }
         }
         break;
+        case (osgGA::GUIEventAdapter::KEY_Semicolon):
+        {
+            if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+            {
+                viewer_->ToggleNodeMaskBits(NodeMask::NODE_MASK_OBJ_OUTLINE);
+            }
+        }
+        break;
         case (osgGA::GUIEventAdapter::KEY_I):
         {
             if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
@@ -3617,6 +3798,14 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
             if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
             {
                 viewer_->ToggleNodeMaskBits(NodeMask::NODE_MASK_OBJECT_SENSORS);
+            }
+        }
+        break;
+        case ('x'):
+        {
+            if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+            {
+                viewer_->CycleAxisIndicatorMode();
             }
         }
         break;

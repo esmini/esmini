@@ -1,0 +1,35 @@
+<?xml version="1.0" ?>
+<OpenDRIVE>
+   <header revMajor="1" revMinor="6" name="test" version="1" date="" north="0.0" south="0.0" east="0.0" west="0.0"/>
+   <road name="lane_offset" length="10" id="4" junction="-1">
+      <link>
+        </link>
+      <planView>
+         <geometry s="0" x="10" y="-10" hdg="1" length="10">
+            <line/>
+         </geometry>
+      </planView>
+      <lanes>
+         <laneOffset s="0" a="0.0" b="1" c="0.0" d="0.0"/>
+         <laneOffset s="10" a="10.0" b="0.0" c="0.0" d="0.0"/>
+         <laneSection s="0">
+            <center>
+               <lane id="0" type="driving" level="false">
+                  <link/>
+                  <roadMark sOffset="0" type="solid" weight="standard" color="standard" width="0.12" laneChange="both" height="02"/>
+               </lane>
+            </center>
+            <right>
+               <lane id="-1" type="driving" level="false">
+                  <link>
+                      <predecessor id="-1"/>
+                  </link>
+                  <width sOffset="0" a="0.0" b="1" c="0.0" d="0.0"/>
+                  <width sOffset="10" a="10.0" b="0.0" c="0.0" d="0.0"/>
+                  <roadMark sOffset="10" type="broken" weight="standard" color="standard" width="0.12" laneChange="none" height="02"/>
+               </lane>
+            </right>
+         </laneSection>
+      </lanes>
+   </road>
+</OpenDRIVE>

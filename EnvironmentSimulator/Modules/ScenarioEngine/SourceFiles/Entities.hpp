@@ -253,6 +253,8 @@ namespace scenarioengine
             double h_rate;
         } state_old;
 
+        std::vector<SE_Point2D> outline_2d_;
+
         std::vector<Object*> collisions_;
 
         Object(Type type);

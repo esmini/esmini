@@ -14,8 +14,8 @@ static const char* helpText = "\n\
 Key shortcuts \n\
     \n\
     H (shift + h): Print this help text to console \n\
-    TAB:           Move camera to next vehicle (0, 1, 2..., ALL, ROAD)\n\
-    Shift + TAB:   Move camera to previous vehicle \n\
+    TAB:           Move camera to next entity (0, 1, 2..., ALL, ROAD) \n\
+    Shift + TAB:   Move camera to previous entity \n\
     Delete:        Same as above (Shift + TAB) \n\
     Space:         Toggle pause / play \n\
     g:             Toggle show / hide ghost models \n\
@@ -26,7 +26,9 @@ Key shortcuts \n\
     i:             Toggle on-screen info text modes \n\
     n:             Toggle show active trajectories \n\
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
+    ; (shift + ,): Toggle show/hide object outlines \n\
     K:             Print current camera position and orientation to console \n\
+    x:             Cycle axis indicator view mode (off, on, xray)\n\
     ESC:           quit \n\
     \n\
     Arrow keys \n\
