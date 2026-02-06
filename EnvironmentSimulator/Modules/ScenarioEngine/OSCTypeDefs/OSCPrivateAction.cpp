@@ -3118,15 +3118,11 @@ void LightStateAction::Start(double simTime)
     // We don't have a color specified in the action, so we should work with the color from the material
     if (!colorSet_)
     {
-        std::copy_n(vehicleLight.materialRgb, RGB_ARRAY_SIZE_, rgb_);
+        std::copy_n(vehicleLight.rgb, RGB_ARRAY_SIZE_, rgb_);
     }
 
     // Find min/max rgb for the color to scale between
     SetRgbMinMaxColor();
-
-    // Copy vehicle lamp status to actions initial emission/diffusion
-    // std::copy_n(vehicleLight.emissionRgb, this->RGB_ARRAY_SIZE_, this->initEmissionRgb_);
-    // std::copy_n(vehicleLight.diffuseRgb, this->RGB_ARRAY_SIZE_, this->initDiffusionRgb_);
 
     // If lamp hasn't been set before or the desired state is off
     if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::OFF)
@@ -3143,9 +3139,6 @@ void LightStateAction::Start(double simTime)
         std::copy_n(minRgb_, RGB_ARRAY_SIZE_, vehicleLight.rgb);
         std::copy_n(emission_max, RGB_ARRAY_SIZE_, vehicleLight.emission);
     }
-    LOG_INFO("Input rgb: r:{} g:{} b:{}", rgb_[0], rgb_[1], rgb_[2]);
-    LOG_INFO("Setting colors r:{} g:{} b:{}", vehicleLight.rgb[0], vehicleLight.rgb[1], vehicleLight.rgb[2]);
-    LOG_INFO("Setting emission r:{} g:{} b:{}", vehicleLight.emission[0], vehicleLight.emission[1], vehicleLight.emission[2]);
 
     /*
     if (actionVehicleLightStatus_.luminousIntensity == -1.0 &&
@@ -3198,11 +3191,6 @@ void LightStateAction::Start(double simTime)
     vehicleLight.luminousIntensity = actionVehicleLightStatus_.luminousIntensity;
     vehicleLight.type              = actionVehicleLightStatus_.type;
 
-    CheckAndSetColorError(initEmissionRgb_, RGB_ARRAY_SIZE_);
-    CheckAndSetColorError(finalEmissionRgb_, RGB_ARRAY_SIZE_);
-    CheckAndSetColorError(initDiffusionRgb_, RGB_ARRAY_SIZE_);
-    CheckAndSetColorError(finalDiffusionRgb_, RGB_ARRAY_SIZE_);
-
     OSCAction::Start(simTime);
 }
 
@@ -3221,9 +3209,6 @@ void LightStateAction::Step(double simTime, double dt)
         }
         else
         {
-            // Final rgb values
-            // std::copy_n(finalEmissionRgb_, RGB_ARRAY_SIZE_, vehicleLight.emissionRgb);
-            // std::copy_n(finalDiffusionRgb_, RGB_ARRAY_SIZE_, vehicleLight.diffuseRgb);
             OSCAction::End();
         }
     }
@@ -3276,35 +3261,37 @@ void LightStateAction::RapidTransition()
 {
     const double* emissionRgb = nullptr;
     const double* diffuseRgb  = nullptr;
+    (void)emissionRgb;
+    (void)diffuseRgb;
 
-    if (flashStatus_ == FlashingStatus::HIGH)
-    {
-        // Set the biggest value between initial and final values
-        if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::UNKNOWN)
-        {
-            emissionRgb = finalEmissionRgb_;
-            diffuseRgb  = finalDiffusionRgb_;
-        }
-        else
-        {
-            emissionRgb = initEmissionRgb_;
-            diffuseRgb  = initDiffusionRgb_;
-        }
-    }
-    else if (flashStatus_ == FlashingStatus::LOW)
-    {
-        // Set the lowest value between initial and final values
-        if (previousMode_ == Object::VehicleLightMode::ON)
-        {
-            emissionRgb = finalEmissionRgb_;
-            diffuseRgb  = finalDiffusionRgb_;
-        }
-        else
-        {
-            emissionRgb = initEmissionRgb_;
-            diffuseRgb  = initDiffusionRgb_;
-        }
-    }
+    // if (flashStatus_ == FlashingStatus::HIGH)
+    // {
+    //     // Set the biggest value between initial and final values
+    //     if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::UNKNOWN)
+    //     {
+    //         emissionRgb = finalEmissionRgb_;
+    //         diffuseRgb  = finalDiffusionRgb_;
+    //     }
+    //     else
+    //     {
+    //         emissionRgb = initEmissionRgb_;
+    //         diffuseRgb  = initDiffusionRgb_;
+    //     }
+    // }
+    // else if (flashStatus_ == FlashingStatus::LOW)
+    // {
+    //     // Set the lowest value between initial and final values
+    //     if (previousMode_ == Object::VehicleLightMode::ON)
+    //     {
+    //         emissionRgb = finalEmissionRgb_;
+    //         diffuseRgb  = finalDiffusionRgb_;
+    //     }
+    //     else
+    //     {
+    //         emissionRgb = initEmissionRgb_;
+    //         diffuseRgb  = initDiffusionRgb_;
+    //     }
+    // }
 
     // if (emissionRgb && diffuseRgb)
     // {
@@ -3440,12 +3427,22 @@ void LightStateAction::SetRgbMinMaxColor()
         return;
     }
 
-    auto   max_it  = std::max_element(rgb.begin(), rgb.end());
-    size_t max_idx = std::distance(rgb.begin(), max_it);
+    auto max_it   = std::max_element(rgb.begin(), rgb.end());
+    auto max_dist = std::distance(rgb.begin(), max_it);
+    if (max_dist < 0)
+    {
+        LOG_ERROR_AND_QUIT("LightStateAction: Invalid rgb values, no max value found");
+    }
+    size_t max_idx = static_cast<size_t>(max_dist);
     double max_val = rgb[max_idx];
 
-    auto   min_it  = std::min_element(rgb.begin(), rgb.end());
-    size_t min_idx = std::distance(rgb.begin(), min_it);
+    auto min_it   = std::min_element(rgb.begin(), rgb.end());
+    auto min_dist = std::distance(rgb.begin(), min_it);
+    if (min_dist < 0)
+    {
+        LOG_ERROR_AND_QUIT("LightStateAction: Invalid rgb values, no min value found");
+    }
+    size_t min_idx = static_cast<size_t>(min_dist);
     double min_val = rgb[min_idx];
 
     size_t mid_idx = 3 - max_idx - min_idx;
