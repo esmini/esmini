@@ -3421,7 +3421,7 @@ void LightStateAction::UpdateArray(double* arr, size_t size, const std::vector<d
 void LightStateAction::SetRgbMinMaxColor()
 {
     const double        MAX_VALUE_MAX = 1.0;
-    const double        MAX_RGB       = 0.3;
+    const double        MAX_RGB       = 0.7;
     const double        MIN_RGB       = 0.2;
     std::vector<double> rgb           = {rgb_[0], rgb_[1], rgb_[2]};
 
