@@ -1485,7 +1485,7 @@ namespace scenarioengine
         void                      RapidTransition();
         void                      SmoothTransition();
         void                      SetRgbMinMaxColor();
-        void                      ScaleRgbFromLuminousity(double* rgb, double ly);
+        void                      SetEmissionFromLuminousity(double* emission, double ly);
         void                      UpdateArray(double* arr, size_t size, const std::vector<double>& vals);
         // Object::VehicleLightType GetLightType();
 
