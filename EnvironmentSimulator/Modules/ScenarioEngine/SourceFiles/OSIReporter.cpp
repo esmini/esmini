@@ -701,7 +701,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_VEGETATION);
     }
-    else if (obj_type == roadmanager::RMObject::ObjectType::BARRIER)
+    else if (obj_type == roadmanager::RMObject::ObjectType::BARRIER || obj_type == roadmanager::RMObject::ObjectType::RAILING)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
@@ -724,7 +724,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
 
         source_reference->add_identifier()->assign(object->GetParkingSpace().GetRestrictions());
     }
-    else if (obj_type == roadmanager::RMObject::ObjectType::OBSTACLE || obj_type == roadmanager::RMObject::ObjectType::RAILING ||
+    else if (obj_type == roadmanager::RMObject::ObjectType::OBSTACLE ||
              obj_type == roadmanager::RMObject::ObjectType::PATCH || obj_type == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||
              obj_type == roadmanager::RMObject::ObjectType::CROSSWALK || obj_type == roadmanager::RMObject::ObjectType::STREETLAMP ||
              obj_type == roadmanager::RMObject::ObjectType::GANTRY || obj_type == roadmanager::RMObject::ObjectType::SOUNDBARRIER ||
@@ -844,7 +844,8 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
             obj_osi_internal.sobj->mutable_classification()->set_type(
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_VEGETATION);
         }
-        else if (objectState->state_.info.obj_category == static_cast<int>(MiscObject::Category::BARRIER))
+        else if (objectState->state_.info.obj_category == static_cast<int>(MiscObject::Category::BARRIER) ||
+                 objectState->state_.info.obj_category == static_cast<int>(MiscObject::Category::RAILING))
         {
             obj_osi_internal.sobj->mutable_classification()->set_type(
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
@@ -856,7 +857,6 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
         }
         else if (objectState->state_.info.obj_category == static_cast<int>(MiscObject::Category::OBSTACLE) ||
                  objectState->state_.info.obj_category == static_cast<int>(MiscObject::Category::PARKINGSPACE) ||
-                 objectState->state_.info.obj_category == static_cast<int>(MiscObject::Category::RAILING) ||
                  objectState->state_.info.obj_category == static_cast<int>(MiscObject::Category::PATCH) ||
                  objectState->state_.info.obj_category == static_cast<int>(MiscObject::Category::TRAFFICISLAND) ||
                  objectState->state_.info.obj_category == static_cast<int>(MiscObject::Category::CROSSWALK) ||
@@ -2051,7 +2051,7 @@ int OSIReporter::UpdateOSILaneBoundary()
                 if (object)
                 {
                     auto obj_type = object->GetType();
-                    if (obj_type == roadmanager::RMObject::ObjectType::BARRIER)
+                    if (obj_type == roadmanager::RMObject::ObjectType::BARRIER || obj_type == roadmanager::RMObject::ObjectType::RAILING)
                     {
                         osi3::LaneBoundary *osi_laneboundary = obj_osi_internal.static_gt->add_lane_boundary();
 
