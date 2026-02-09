@@ -3095,36 +3095,33 @@ void VisibilityAction::Step(double simTime, double dt)
     OSCAction::End();
 }
 
-void LightStateAction::SetVehicleLightState(Object::VehicleLightStatus* vehicleLight, double luminousity, double transitionFactor)
+void LightStateAction::SetVehicleLightState(double* maxRgb, double luminousity)
 {
     if (luminousity == -1)
     {
         luminousity = DEFAULT_LUMINOUS_INTENSITY_;
     }
 
-    luminousity      = CLAMP(luminousity, 0.0, MAX_INTENSITY_LUM);
-    transitionFactor = CLAMP(transitionFactor, 0.0, 1.0);
-
-    double finalLum = (luminousity / MAX_INTENSITY_LUM) * transitionFactor;
+    luminousity = CLAMP(luminousity, 0.0, MAX_INTENSITY_LUM);
 
     for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
     {
-        vehicleLight->emission[i] = maxRgb_[i] * finalLum;
+        vehicleLight_->emission[i] = maxRgb[i] * (luminousity / MAX_INTENSITY_LUM);
     }
 
-    vehicleLight->luminousIntensity = finalLum * MAX_INTENSITY_LUM;
+    vehicleLight_->luminousIntensity = luminousity;
 
     return;
 }
 
 void LightStateAction::Start(double simTime)
 {
-    // Fetch current status of the vehicle lamp
+    // Fetch current status of the vehicle lamp and save old state for potential transitions
     vehicleLight_      = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
     previousMode_      = vehicleLight_->mode;
     previousIntensity_ = vehicleLight_->luminousIntensity;
-    std::copy_n(minRgb_, RGB_ARRAY_SIZE_, previousMinRgb_);
-    std::copy_n(maxRgb_, RGB_ARRAY_SIZE_, previousMaxRgb_);
+    std::copy_n(vehicleLight_->minRgb, RGB_ARRAY_SIZE_, previousMinRgb_);
+    std::copy_n(vehicleLight_->maxRgb, RGB_ARRAY_SIZE_, previousMaxRgb_);
 
     vehicleLight_->mode  = actionVehicleLightStatus_.mode;
     vehicleLight_->type  = actionVehicleLightStatus_.type;
@@ -3139,9 +3136,12 @@ void LightStateAction::Start(double simTime)
     // Find min/max rgb for the color to scale between
     SetRgbMinMaxColor();
 
-    std::copy_n(minRgb_, RGB_ARRAY_SIZE_, vehicleLight_->minRgb);
-    std::copy_n(maxRgb_, RGB_ARRAY_SIZE_, vehicleLight_->maxRgb);
-    std::copy_n(minRgb_, RGB_ARRAY_SIZE_, vehicleLight_->rgb);  // Base color always the same in the action
+    // -1 if action has never been triggered, so then we take whatever is set. (Should be material I guess?)
+    if (previousMinRgb_[0] == -1 && previousMinRgb_[1] == -1 && previousMinRgb_[2] == -1)
+    {
+        std::copy_n(minRgb_, RGB_ARRAY_SIZE_, previousMinRgb_);
+        std::copy_n(maxRgb_, RGB_ARRAY_SIZE_, previousMaxRgb_);
+    }
 
     OSCAction::Start(simTime);
 }
@@ -3150,43 +3150,39 @@ void LightStateAction::Step(double simTime, double dt)
 {
     (void)simTime;
 
-    // OFF -> ON
-    // OFF -> FLASHING
-    // OFF -> OFF
-    // ON -> OFF
-    // ON -> FLASHING
-    // ON -> ON
-    // FLASHING -> OFF
-    // FLASHING -> ON
-    // FLASHING -> FLASHING
+    // min/maxRgb_ are the target rgb to reach, set in the action.
+    // We save them, and either instantly shift to them or gradually transition there from the previous rgb values depending on transition time
+    double minRgb[3] = {minRgb_[0], minRgb_[1], minRgb_[2]};
+    double maxRgb[3] = {maxRgb_[0], maxRgb_[1], maxRgb_[2]};
 
+    double intensity;
     if (transitionTime_ == 0.0)
     {
-        double intensity;
-        switch (actionVehicleLightStatus_.mode)
+        if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::OFF)
         {
-            case Object::VehicleLightMode::OFF:
-                intensity = 0.0;
-                break;
-            case Object::VehicleLightMode::ON:
-                intensity = actionVehicleLightStatus_.luminousIntensity;
-                break;
-            case Object::VehicleLightMode::FLASHING:
-                if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::FLASHING)
-                {
-                    intensity = actionVehicleLightStatus_.luminousIntensity;
-                }
-                else if (previousMode_ == Object::VehicleLightMode::ON)
-                {
-                    intensity = 0.0;
-                }
-                break;
-            default:
-                LOG_ERROR("LightStateAction: Unknown vehicle mode");
-                return;
+            intensity = 0.0;
         }
-
-        SetVehicleLightState(vehicleLight_, intensity);
+        else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::ON)
+        {
+            intensity = actionVehicleLightStatus_.luminousIntensity;
+        }
+        else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING)
+        {
+            if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::FLASHING)
+            {
+                intensity = actionVehicleLightStatus_.luminousIntensity;
+            }
+            else if (previousMode_ == Object::VehicleLightMode::ON)
+            {
+                intensity = 0.0;
+            }
+        }
+        else
+        {
+            LOG_ERROR("LightStateAction: Unknown vehicle light mode");
+            OSCAction::End();
+            return;
+        }
     }
     else if (transitionTimer_ <= transitionTime_ + SMALL_NUMBER)
     {
@@ -3196,26 +3192,48 @@ void LightStateAction::Step(double simTime, double dt)
             transitionFactor = transitionTimer_ / transitionTime_;
         }
 
-        double intensity;
-        switch (actionVehicleLightStatus_.mode)
+        if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::ON)
         {
-            case Object::VehicleLightMode::ON:
-                intensity = previousIntensity_ + (actionVehicleLightStatus_.luminousIntensity - previousIntensity_) * transitionFactor;
-                break;
-            case Object::VehicleLightMode::OFF:
-                intensity = previousIntensity_ - previousIntensity_ * transitionFactor;
-            default:
-                break;
+            for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
+            {
+                minRgb[i] = previousMinRgb_[i] + (minRgb_[i] - previousMinRgb_[i]) * transitionFactor;
+                maxRgb[i] = previousMaxRgb_[i] + (maxRgb_[i] - previousMaxRgb_[i]) * transitionFactor;
+            }
+            intensity = previousIntensity_ + (actionVehicleLightStatus_.luminousIntensity - previousIntensity_) * transitionFactor;
         }
-
-        SetVehicleLightState(vehicleLight_, intensity);
+        else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::OFF)
+        {
+            for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
+            {
+                minRgb[i] = previousMinRgb_[i] + (minRgb_[i] - previousMinRgb_[i]) * transitionFactor;
+                maxRgb[i] = previousMaxRgb_[i] + (maxRgb_[i] - previousMaxRgb_[i]) * transitionFactor;
+            }
+            intensity = previousIntensity_ - previousIntensity_ * transitionFactor;
+        }
+        else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING)
+        {
+            // TODO
+        }
+        else
+        {
+            LOG_ERROR("LightStateAction: Unknown vehicle light mode");
+            OSCAction::End();
+            return;
+        }
 
         transitionTimer_ += dt;
     }
     else
     {
         OSCAction::End();
+        return;
     }
+
+    std::copy_n(minRgb, RGB_ARRAY_SIZE_, vehicleLight_->minRgb);
+    std::copy_n(maxRgb, RGB_ARRAY_SIZE_, vehicleLight_->maxRgb);
+    std::copy_n(minRgb, RGB_ARRAY_SIZE_, vehicleLight_->rgb);  // Base color always the same in the action
+
+    SetVehicleLightState(maxRgb, intensity);
 
     // Light has been manipulated, this dirty
     object_->SetDirtyBits(Object::DirtyBit::LIGHT_STATE);
