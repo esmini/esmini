@@ -3123,6 +3123,8 @@ void LightStateAction::Start(double simTime)
     vehicleLight_      = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
     previousMode_      = vehicleLight_->mode;
     previousIntensity_ = vehicleLight_->luminousIntensity;
+    std::copy_n(minRgb_, RGB_ARRAY_SIZE_, previousMinRgb_);
+    std::copy_n(maxRgb_, RGB_ARRAY_SIZE_, previousMaxRgb_);
 
     vehicleLight_->mode  = actionVehicleLightStatus_.mode;
     vehicleLight_->type  = actionVehicleLightStatus_.type;
@@ -3200,6 +3202,8 @@ void LightStateAction::Step(double simTime, double dt)
             case Object::VehicleLightMode::ON:
                 intensity = previousIntensity_ + (actionVehicleLightStatus_.luminousIntensity - previousIntensity_) * transitionFactor;
                 break;
+            case Object::VehicleLightMode::OFF:
+                intensity = previousIntensity_ - previousIntensity_ * transitionFactor;
             default:
                 break;
         }
