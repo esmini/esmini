@@ -1440,6 +1440,8 @@ namespace scenarioengine
               rgb_{-1.0, -1.0, -1.0},
               minRgb_{-1.0, -1.0, -1.0},
               maxRgb_{-1.0, -1.0, -1.0},
+              previousMinRgb_{-1.0, -1.0, -1.0},
+              previousMaxRgb_{-1.0, -1.0, -1.0},
               RGB_ARRAY_SIZE_(3),
               CMYK_ARRAY_SIZE_(4),
               rgbDeducedFromLightType_(false),
@@ -1620,6 +1622,8 @@ namespace scenarioengine
         double                      rgb_[3];
         double                      minRgb_[3];
         double                      maxRgb_[3];
+        double                      previousMinRgb_[3];
+        double                      previousMaxRgb_[3];
         const size_t                RGB_ARRAY_SIZE_;
         const size_t                CMYK_ARRAY_SIZE_;
         bool                        rgbDeducedFromLightType_;
