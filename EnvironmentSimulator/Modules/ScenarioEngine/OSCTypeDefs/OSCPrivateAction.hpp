@@ -1452,6 +1452,7 @@ namespace scenarioengine
               previousMode_(vehicleLightMode_),
               luminousIntensity_(0.0),
               previousIntensity_(luminousIntensity_),
+              currentLuminousIntensity_(0.0),
               vehicleLightType_(Object::VehicleLightType::UNDEFINED),
               vehicleLightColor_(Object::VehicleLightColor::UNKNOWN),
               actionVehicleLightStatus_({}),
@@ -1634,6 +1635,7 @@ namespace scenarioengine
         Object::VehicleLightMode    previousMode_;
         double                      luminousIntensity_;
         double                      previousIntensity_;
+        double                      currentLuminousIntensity_;
         Object::VehicleLightType    vehicleLightType_;
         Object::VehicleLightColor   vehicleLightColor_;
         Object::VehicleLightStatus  actionVehicleLightStatus_;
