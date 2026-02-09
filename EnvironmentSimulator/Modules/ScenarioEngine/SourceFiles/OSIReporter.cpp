@@ -951,7 +951,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object, roa
             obj_osi_internal.sobj->mutable_classification()->set_type(
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_VEGETATION);
         }
-        else if (obj_type == roadmanager::RMObject::ObjectType::BARRIER)
+        else if (obj_type == roadmanager::RMObject::ObjectType::BARRIER || obj_type == roadmanager::RMObject::ObjectType::RAILING)
         {
             obj_osi_internal.sobj->mutable_classification()->set_type(
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
@@ -990,11 +990,11 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object, roa
             {
                 obj_osi_internal.sobj->mutable_classification()->set_type(osi_type);
             }
-            else if (obj_type == roadmanager::RMObject::ObjectType::OBSTACLE || obj_type == roadmanager::RMObject::ObjectType::RAILING ||
-                     obj_type == roadmanager::RMObject::ObjectType::PATCH || obj_type == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||
-                     obj_type == roadmanager::RMObject::ObjectType::CROSSWALK || obj_type == roadmanager::RMObject::ObjectType::STREETLAMP ||
-                     obj_type == roadmanager::RMObject::ObjectType::GANTRY || obj_type == roadmanager::RMObject::ObjectType::SOUNDBARRIER ||
-                     obj_type == roadmanager::RMObject::ObjectType::WIND || obj_type == roadmanager::RMObject::ObjectType::ROADMARK)
+            else if (obj_type == roadmanager::RMObject::ObjectType::OBSTACLE || obj_type == roadmanager::RMObject::ObjectType::PATCH ||
+                     obj_type == roadmanager::RMObject::ObjectType::TRAFFICISLAND || obj_type == roadmanager::RMObject::ObjectType::CROSSWALK ||
+                     obj_type == roadmanager::RMObject::ObjectType::STREETLAMP || obj_type == roadmanager::RMObject::ObjectType::GANTRY ||
+                     obj_type == roadmanager::RMObject::ObjectType::SOUNDBARRIER || obj_type == roadmanager::RMObject::ObjectType::WIND ||
+                     obj_type == roadmanager::RMObject::ObjectType::ROADMARK)
             {
                 // if subtype not matched, but the object type is one of the known types, classify as TYPE_OTHER
                 obj_osi_internal.sobj->mutable_classification()->set_type(
@@ -1247,7 +1247,7 @@ int OSIReporter::UpdateOSIStationaryObject(Object &obj)
             obj_osi_internal.sobj->mutable_classification()->set_type(
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_VEGETATION);
         }
-        else if (obj.category_ == MiscObject::Category::BARRIER)
+        else if (obj.category_ == MiscObject::Category::BARRIER || obj.category_ == MiscObject::Category::RAILING)
         {
             obj_osi_internal.sobj->mutable_classification()->set_type(
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
@@ -1258,11 +1258,10 @@ int OSIReporter::UpdateOSIStationaryObject(Object &obj)
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BUILDING);
         }
         else if (obj.category_ == MiscObject::Category::OBSTACLE || obj.category_ == MiscObject::Category::PARKINGSPACE ||
-                 obj.category_ == MiscObject::Category::RAILING || obj.category_ == MiscObject::Category::PATCH ||
-                 obj.category_ == MiscObject::Category::TRAFFICISLAND || obj.category_ == MiscObject::Category::CROSSWALK ||
-                 obj.category_ == MiscObject::Category::STREETLAMP || obj.category_ == MiscObject::Category::GANTRY ||
-                 obj.category_ == MiscObject::Category::SOUNDBARRIER || obj.category_ == MiscObject::Category::WIND ||
-                 obj.category_ == MiscObject::Category::ROADMARK)
+                 obj.category_ == MiscObject::Category::PATCH || obj.category_ == MiscObject::Category::TRAFFICISLAND ||
+                 obj.category_ == MiscObject::Category::CROSSWALK || obj.category_ == MiscObject::Category::STREETLAMP ||
+                 obj.category_ == MiscObject::Category::GANTRY || obj.category_ == MiscObject::Category::SOUNDBARRIER ||
+                 obj.category_ == MiscObject::Category::WIND || obj.category_ == MiscObject::Category::ROADMARK)
         {
             obj_osi_internal.sobj->mutable_classification()->set_type(
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
@@ -2717,13 +2716,15 @@ int OSIReporter::UpdateOSILaneBoundary()
                 if (object)
                 {
                     auto obj_type = object->GetType();
-                    if (obj_type == roadmanager::RMObject::ObjectType::BARRIER)
+                    if (obj_type == roadmanager::RMObject::ObjectType::BARRIER || obj_type == roadmanager::RMObject::ObjectType::RAILING)
                     {
                         osi3::LaneBoundary *osi_laneboundary = obj_osi_internal.static_gt->add_lane_boundary();
 
                         // set id and points
                         osi_laneboundary->mutable_id()->set_value(object->GetGlobalId());
-                        osi_laneboundary->mutable_classification()->set_type(osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_BARRIER);    //todo: differentiate between barrier and guard rail
+                        osi_laneboundary->mutable_classification()->set_type(
+                            osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_BARRIER);  // todo: differentiate between
+                                                                                                                     // barrier and guard rail
                         if (object->GetNumberOfOutlines() > 0)
                         {
                             for (unsigned int k = 0; k < object->GetNumberOfOutlines(); k++)
@@ -2731,7 +2732,9 @@ int OSIReporter::UpdateOSILaneBoundary()
                                 roadmanager::Outline *outline = object->GetOutline(k);
                                 if (outline)
                                 {
-                                    for (size_t l = 0; l < outline->corner_.size()/2; l++)  //todo: only use one side of the outline for the lane boundary, but it is not clear, if this is always the case.
+                                    for (size_t l = 0; l < outline->corner_.size() / 2;
+                                         l++)  // todo: only use one side of the outline for the lane boundary, but it is not clear, if this is always
+                                               // the case.
                                     {
                                         double x, y, z;
                                         outline->corner_[l]->GetPos(x, y, z);
@@ -2740,7 +2743,7 @@ int OSIReporter::UpdateOSILaneBoundary()
                                         boundary_point->mutable_position()->set_y(y);
                                         boundary_point->mutable_position()->set_z(z);
                                         boundary_point->set_height(outline->corner_[l]->GetHeight());
-                                        boundary_point->set_width(0.1);     //todo: come up with solution to specify the width
+                                        boundary_point->set_width(0.1);  // todo: come up with solution to specify the width
                                     }
                                 }
                             }
