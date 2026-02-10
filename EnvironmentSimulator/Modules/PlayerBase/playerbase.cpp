@@ -1352,6 +1352,10 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
                 light_type = Object::VehicleLightType::INDICATOR_LEFT;  // Use left indicator as the base
             }
 
+            light.type = static_cast<Object::VehicleLightType>(i);
+            light.mode = Object::VehicleLightMode::OFF;
+            light.color = Object::VehicleLightColor::UNKNOWN;
+
             for (const auto& material : model->light_material_)
             {
                 if (material == nullptr || obj->LightType2Str(light_type) != material->getName())
@@ -1371,9 +1375,16 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
                 light.rgb[1] = diffuseColor.g();
                 light.rgb[2] = diffuseColor.b();
 
+                // Save the material color
+                light.baseRgb[0] = diffuseColor.r();
+                light.baseRgb[1] = diffuseColor.g();
+                light.baseRgb[2] = diffuseColor.b();
+
                 light.emission[0] = emissionColor.r();
                 light.emission[1] = emissionColor.g();
                 light.emission[2] = emissionColor.b();
+
+                GetRgbMinMaxColor(light.baseRgb, light.rgb, light.maxRgb);
 
                 break;
             }
