@@ -1484,7 +1484,6 @@ namespace scenarioengine
         void                      SetLightTransitionValues(const Object::VehicleLightMode& mode);
         void                      RapidTransition();
         void                      SmoothTransition();
-        void                      SetRgbMinMaxColor();
         void                      UpdateArray(double* arr, size_t size, const std::vector<double>& vals);
         void                      SetVehicleLightState(double* maxRgb, double luminousity);
         // Object::VehicleLightType GetLightType();
@@ -1568,6 +1567,10 @@ namespace scenarioengine
         {
             colorSet_ = val;
         }
+        void SetLuminousitySet(bool val)
+        {
+            luminousitySet_ = val;
+        }
 
         std::unordered_map<std::string, Object::VehicleLightType> lightTypeMap = {
             {"daytimeRunningLights", Object::VehicleLightType::DAYTIME_RUNNING_LIGHTS},
@@ -1643,6 +1646,7 @@ namespace scenarioengine
         bool                        colorSet_;
         Object::VehicleLightStatus* vehicleLight_;
         bool                        transitioned_ = false;
+        bool                        luminousitySet_ = false;
     };
 
     class OverrideControlAction : public OSCPrivateAction

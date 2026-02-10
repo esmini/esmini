@@ -744,6 +744,12 @@ void SwapByteOrder(unsigned char* buf, int data_type_size, int buf_size);
 bool IsNumber(const std::string& str, int max_digits = -1);
 
 /**
+ * Given an input baseRgb, get the scaled minimum and maximum values for each channel
+ * Useful if needing to make a color dark/bright while maintaining color relations
+*/
+void GetRgbMinMaxColor(const double* baseRgb, double* minRgb, double* maxRgb, size_t RGB_ARRAY_SIZE = 3);
+
+/**
         Check whether array contains at least one non-zero element
 */
 bool ArrayZeroToOne(double array[], size_t size);

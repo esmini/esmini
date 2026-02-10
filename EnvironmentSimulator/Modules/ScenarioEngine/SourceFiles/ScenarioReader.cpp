@@ -4018,6 +4018,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                     if (const auto &val = parameters.ReadAttribute(lightStateActionChild, "luminousIntensity"); !val.empty())
                     {
                         lightStateAction->SetLuminousIntensity(strtod(val));
+                        lightStateAction->SetLuminousitySet(true);
                     }
 
                     if (const auto &val = parameters.ReadAttribute(lightStateActionChild, "mode"); !val.empty())

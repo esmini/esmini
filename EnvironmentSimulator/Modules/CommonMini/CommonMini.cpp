@@ -1211,6 +1211,107 @@ std::string FileNameWithoutExtOf(const std::string& fname)
     }
 }
 
+void GetRgbMinMaxColor(const double* baseRgb, double* minRgb, double* maxRgb, size_t RGB_ARRAY_SIZE)
+{
+    if (RGB_ARRAY_SIZE != 3)
+    {
+        LOG_ERROR("Can't calculate min/max rgb values on array != 3");
+        return;
+    }
+    const double        MAX_VALUE_MAX = 1.0;
+    const double        MAX_RGB       = 0.7;
+    const double        MIN_RGB       = 0.5;
+    std::vector<double> rgb           = {baseRgb[0], baseRgb[1], baseRgb[2]};
+
+    // All values are equal, they get MIN/MAX RGB if higher/lower than them, else unchanged
+    if (rgb[0] == rgb[1] && rgb[1] == rgb[2])
+    {
+        if (rgb[0] < MAX_RGB)
+        {
+            maxRgb[0] = MAX_VALUE_MAX;
+            maxRgb[1] = MAX_VALUE_MAX;
+            maxRgb[2] = MAX_VALUE_MAX;
+        }
+        else
+        {
+            maxRgb[0] = rgb[0];
+            maxRgb[1] = rgb[1];
+            maxRgb[2] = rgb[2];
+        }
+
+        if (rgb[0] > MIN_RGB)
+        {
+            minRgb[0] = MIN_RGB;
+            minRgb[1] = MIN_RGB;
+            minRgb[2] = MIN_RGB;
+        }
+        else
+        {
+            minRgb[0] = rgb[0];
+            minRgb[1] = rgb[1];
+            minRgb[2] = rgb[2];
+        }
+
+        return;
+    }
+
+    auto max_it   = std::max_element(rgb.begin(), rgb.end());
+    auto max_dist = std::distance(rgb.begin(), max_it);
+    if (max_dist < 0)
+    {
+        LOG_ERROR_AND_QUIT("LightStateAction: Invalid rgb values, no max value found");
+    }
+    size_t max_idx = static_cast<size_t>(max_dist);
+    double max_val = rgb[max_idx];
+
+    auto min_it   = std::min_element(rgb.begin(), rgb.end());
+    auto min_dist = std::distance(rgb.begin(), min_it);
+    if (min_dist < 0)
+    {
+        LOG_ERROR_AND_QUIT("LightStateAction: Invalid rgb values, no min value found");
+    }
+    size_t min_idx = static_cast<size_t>(min_dist);
+    double min_val = rgb[min_idx];
+
+    size_t mid_idx = 3 - max_idx - min_idx;
+    double mid_val = rgb[mid_idx];
+
+    /* min rgb
+    Examples:
+        [0.8, 0.4, 0.3] -> [0.2, 0.1, 0.075] (scale factor 0.2 / 0.8 = 0.25)
+        [0.7, 0.1, 0.2] -> [0.2, 0.02857, 0.057] (scale factor 0.2 / 0.7 = 0.2857)
+    */
+    double scale_factor_down = 1.0;
+    if (max_val > 0.5)
+    {
+        scale_factor_down = MIN_RGB / max_val;
+    }
+
+    for (size_t i = 0; i < RGB_ARRAY_SIZE; i++)
+    {
+        minRgb[i] = rgb[i] * scale_factor_down;
+    }
+
+    /* max rgb
+    Examples:
+        [0.8, 0.4, 0.3] -> [1.0, 0.84, 0.8]
+        [0.75, 0.5, 0.25] -> [1.0, 0.9, 0.8]
+        [0.3, 0.29, 0.28] -> [1.0, 0.9665, 0.933]
+        [0.7, 0.1, 0.0] -> [1.0, 0.82857, 0.8]
+    */
+
+    if (min_val < 0.8)
+    {
+        double scale_factor = MAX_VALUE_MAX / max_val;
+
+        maxRgb[max_idx] = MAX_VALUE_MAX;
+        maxRgb[min_idx] = (scale_factor * rgb[min_idx] < MAX_RGB) ? MAX_RGB : scale_factor * rgb[min_idx];  // at least 0.8 or higher
+        maxRgb[mid_idx] = maxRgb[min_idx] +
+                           (mid_val - min_val) * ((maxRgb[max_idx] - maxRgb[min_idx]) /
+                                                  (max_val - min_val));  // final mid value is same ratio as before scaleup but from new rgb-min-value
+    }
+}
+
 bool ArrayZeroToOne(double array[], size_t size)
 {
     for (size_t i = 0; i < size; i++)
