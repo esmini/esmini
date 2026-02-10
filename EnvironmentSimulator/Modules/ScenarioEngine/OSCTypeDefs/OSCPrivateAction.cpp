@@ -3120,6 +3120,7 @@ void LightStateAction::Start(double simTime)
     vehicleLight_      = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
     previousMode_      = vehicleLight_->mode;
     previousIntensity_ = vehicleLight_->luminousIntensity;
+    // vehicleLight_->rgb/maxRgb are initialized with min/max values for the material color
     std::copy_n(vehicleLight_->rgb, RGB_ARRAY_SIZE_, previousMinRgb_);
     std::copy_n(vehicleLight_->maxRgb, RGB_ARRAY_SIZE_, previousMaxRgb_);
 
@@ -3128,7 +3129,7 @@ void LightStateAction::Start(double simTime)
     vehicleLight_->color = actionVehicleLightStatus_.color;
 
     // We don't have a color specified in the action, so we should work with the color from the material
-    if (!colorSet_)
+    if (!GetColorSet())
     {
         std::copy_n(vehicleLight_->rgb, RGB_ARRAY_SIZE_, rgb_);  // or target rgb?
     }
@@ -3148,7 +3149,7 @@ void LightStateAction::Step(double simTime, double dt)
     double minRgb[3] = {minRgb_[0], minRgb_[1], minRgb_[2]};
     double maxRgb[3] = {maxRgb_[0], maxRgb_[1], maxRgb_[2]};
 
-    if (transitionTime_ == 0.0)
+    if (NEAR_NUMBERS(transitionTime_, 0.0) && !transitioned_)
     {
         if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::OFF)
         {
@@ -3165,10 +3166,12 @@ void LightStateAction::Step(double simTime, double dt)
             if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::FLASHING)
             {
                 currentLuminousIntensity_ = actionVehicleLightStatus_.luminousIntensity;
+                flashingTimer_            = flashingOnDuration_;
             }
             else if (previousMode_ == Object::VehicleLightMode::ON)
             {
                 currentLuminousIntensity_ = 0.0;
+                flashingTimer_            = flashingOffDuration_;
             }
         }
         else
@@ -3177,6 +3180,7 @@ void LightStateAction::Step(double simTime, double dt)
             OSCAction::End();
             return;
         }
+        transitioned_ = true;  // Make sure we only enter this if-statement once
     }
     else if (transitionTimer_ <= transitionTime_ + SMALL_NUMBER)
     {
@@ -3200,10 +3204,12 @@ void LightStateAction::Step(double simTime, double dt)
             {
                 currentLuminousIntensity_ =
                     previousIntensity_ + (actionVehicleLightStatus_.luminousIntensity - previousIntensity_) * transitionFactor;
+                flashingTimer_ = flashingOnDuration_;
             }
             else if (previousMode_ == Object::VehicleLightMode::ON)
             {
                 currentLuminousIntensity_ = previousIntensity_ - previousIntensity_ * transitionFactor;
+                flashingTimer_            = flashingOffDuration_;
             }
         }
         else
@@ -3221,7 +3227,8 @@ void LightStateAction::Step(double simTime, double dt)
 
         transitionTimer_ += dt;
     }
-    else  // Timer has expired, we want to quit the action, but not if we are in mode FLASHING
+
+    if (NEAR_NUMBERS(transitionTime_, 0.0) || transitionTimer_ > transitionTime_ + SMALL_NUMBER)
     {
         if (actionVehicleLightStatus_.mode != Object::VehicleLightMode::FLASHING)
         {
@@ -3234,7 +3241,6 @@ void LightStateAction::Step(double simTime, double dt)
                 currentLuminousIntensity_ = luminousIntensity_;
                 flashingTimer_            = 0.0;
             }
-            flashingTimer_ += dt;
         }
         else
         {
@@ -3243,12 +3249,13 @@ void LightStateAction::Step(double simTime, double dt)
                 currentLuminousIntensity_ = 0.0;
                 flashingTimer_            = 0.0;
             }
-            flashingTimer_ += dt;
         }
+
+        flashingTimer_ += dt;
     }
 
     std::copy_n(maxRgb, RGB_ARRAY_SIZE_, vehicleLight_->maxRgb);
-    std::copy_n(minRgb, RGB_ARRAY_SIZE_, vehicleLight_->rgb);  // Base color always the same in the action
+    std::copy_n(minRgb, RGB_ARRAY_SIZE_, vehicleLight_->rgb);
 
     SetVehicleLightState(maxRgb, currentLuminousIntensity_);
 
