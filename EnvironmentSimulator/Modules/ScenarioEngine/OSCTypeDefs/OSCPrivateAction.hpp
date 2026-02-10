@@ -1642,6 +1642,7 @@ namespace scenarioengine
         FlashingStatus              flashStatus_;
         bool                        colorSet_;
         Object::VehicleLightStatus* vehicleLight_;
+        bool                        transitioned_ = false;
     };
 
     class OverrideControlAction : public OSCPrivateAction

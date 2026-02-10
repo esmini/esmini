@@ -4153,7 +4153,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             }
             else if (colorRgbSet)
             {
-                // AdjustByOffsetArray(lightStateAction->GetRgb(), lightStateAction->GetRgbOffset());
                 lightStateAction->SetColorSet(true);
             }
             else if (lightStateAction->GetVehicleLightColor() == Object::VehicleLightColor::OTHER ||
