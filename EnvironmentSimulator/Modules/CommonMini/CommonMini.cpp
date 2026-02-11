@@ -1219,8 +1219,8 @@ void GetRgbMinMaxColor(const double* baseRgb, double* minRgb, double* maxRgb, si
         return;
     }
     const double        MAX_VALUE_MAX = 1.0;
-    const double        MAX_RGB       = 0.7;
-    const double        MIN_RGB       = 0.5;
+    const double        MAX_RGB       = 0.6;
+    const double        MIN_RGB       = 0.25;
     std::vector<double> rgb           = {baseRgb[0], baseRgb[1], baseRgb[2]};
 
     // All values are equal, they get MIN/MAX RGB if higher/lower than them, else unchanged
@@ -1273,16 +1273,13 @@ void GetRgbMinMaxColor(const double* baseRgb, double* minRgb, double* maxRgb, si
     size_t min_idx = static_cast<size_t>(min_dist);
     double min_val = rgb[min_idx];
 
-    size_t mid_idx = 3 - max_idx - min_idx;
-    double mid_val = rgb[mid_idx];
-
     /* min rgb
     Examples:
         [0.8, 0.4, 0.3] -> [0.2, 0.1, 0.075] (scale factor 0.2 / 0.8 = 0.25)
         [0.7, 0.1, 0.2] -> [0.2, 0.02857, 0.057] (scale factor 0.2 / 0.7 = 0.2857)
     */
-    double scale_factor_down = 1.0;
-    if (max_val > 0.5)
+    double scale_factor_down = MAX_VALUE_MAX;
+    if (max_val > MIN_RGB)
     {
         scale_factor_down = MIN_RGB / max_val;
     }
@@ -1292,23 +1289,15 @@ void GetRgbMinMaxColor(const double* baseRgb, double* minRgb, double* maxRgb, si
         minRgb[i] = rgb[i] * scale_factor_down;
     }
 
-    /* max rgb
-    Examples:
-        [0.8, 0.4, 0.3] -> [1.0, 0.84, 0.8]
-        [0.75, 0.5, 0.25] -> [1.0, 0.9, 0.8]
-        [0.3, 0.29, 0.28] -> [1.0, 0.9665, 0.933]
-        [0.7, 0.1, 0.0] -> [1.0, 0.82857, 0.8]
-    */
-
-    if (min_val < 0.8)
+    if (min_val < MAX_RGB)
     {
-        double scale_factor = MAX_VALUE_MAX / max_val;
+        double gamma = 0.15;
 
-        maxRgb[max_idx] = MAX_VALUE_MAX;
-        maxRgb[min_idx] = (scale_factor * rgb[min_idx] < MAX_RGB) ? MAX_RGB : scale_factor * rgb[min_idx];  // at least 0.8 or higher
-        maxRgb[mid_idx] = maxRgb[min_idx] +
-                           (mid_val - min_val) * ((maxRgb[max_idx] - maxRgb[min_idx]) /
-                                                  (max_val - min_val));  // final mid value is same ratio as before scaleup but from new rgb-min-value
+        for (int i = 0; i < 3; ++i)
+        {
+            double x  = rgb[i] / max_val;
+            maxRgb[i] = CLAMP(pow(x, gamma), MAX_RGB, MAX_VALUE_MAX);
+        }
     }
 }
 

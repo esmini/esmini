@@ -221,11 +221,31 @@ void Event::Start(double simTime)
                     {
                         if (static_cast<int>(obj->initActions_[j]->GetDomains()) & static_cast<int>(pa->GetDomains()))
                         {
-                            // Domains overlap, at least one domain in common. Terminate old action.
-                            LOG_WARN("Stopping {} on conflicting {} domain(s)",
-                                     obj->initActions_[j]->GetName(),
-                                     ControlDomainMask2Str(obj->initActions_[j]->GetDomains()));
-                            obj->initActions_[j]->End();
+                            if (static_cast<int>(obj->initActions_[j]->GetDomains()) & (static_cast<int>(ControlDomainMasks::DOMAIN_MASK_LIGHT)))
+                            {
+                                LightStateAction* action2 = static_cast<LightStateAction*>(obj->initActions_[j]);
+                                LightStateAction* action1 = static_cast<LightStateAction*>(pa);
+
+                                if (action2->action_type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
+                                    action1->action_type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
+                                    action2->GetVehicleLightType() == action1->GetVehicleLightType())
+                                {
+                                    // LightType overlap, at least one light type in common. Terminate old action.
+                                    LOG_WARN("Stopping object {} {} on conflicting {} light(s)",
+                                             obj->GetName(),
+                                             action2->GetName(),
+                                             obj->LightType2Str(action2->GetVehicleLightType()));
+                                    action2->End();
+                                }
+                            }
+                            else
+                            {
+                                // Domains overlap, at least one domain in common. Terminate old action.
+                                LOG_WARN("Stopping {} on conflicting {} domain(s)",
+                                         obj->initActions_[j]->GetName(),
+                                         ControlDomainMask2Str(obj->initActions_[j]->GetDomains()));
+                                obj->initActions_[j]->End();
+                            }
                         }
                     }
                 }
