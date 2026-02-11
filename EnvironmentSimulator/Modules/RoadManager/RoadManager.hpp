@@ -3602,7 +3602,8 @@ namespace roadmanager
         CS_ENTITY,
         CS_LANE,
         CS_ROAD,
-        CS_TRAJECTORY
+        CS_TRAJECTORY,
+        CS_WORLD
     };
 
     enum class RelativeDistanceType
@@ -4375,6 +4376,11 @@ namespace roadmanager
         Retrieve the relative roll angle (radians)
         */
         double GetRRelative() const;
+
+        /**
+        Retrieve the road road value, driving direction considered
+        */
+        double GetRRoadInDrivingDirection() const;
 
         /**
         Retrieve the road pitch value, driving direction considered

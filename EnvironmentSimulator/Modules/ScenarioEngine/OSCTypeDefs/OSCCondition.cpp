@@ -1402,6 +1402,104 @@ std::string TrigByAcceleration::GetAdditionalLogInfo()
     return fmt::format("acceleration: {:.2f} {} {:.2f}, edge: {}", current_acceleration_, Rule2Str(rule_), value_, Edge2Str());
 }
 
+bool TrigByAngle::CheckCondition(double sim_time)
+{
+    (void)sim_time;
+
+    triggered_by_entities_.clear();
+    bool result    = false;
+    current_angle_ = 0.0;
+
+    for (const auto& entity : triggering_entities_.entity_)
+    {
+        if (!entity.object_->IsActive())
+        {
+            continue;
+        }
+
+        double current_heading = entity.object_->pos_.GetH();
+        double current_pitch   = entity.object_->pos_.GetP();
+        double current_roll    = entity.object_->pos_.GetR();
+        if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
+        {
+            if (angle_type_ == AngleType::HEADING)
+            {
+                current_angle_ = current_heading - entity.object_->pos_.GetHRoad();
+            }
+            else if (angle_type_ == AngleType::PITCH)
+            {
+                current_angle_ = current_pitch - entity.object_->pos_.GetPRoad();
+            }
+            else if (angle_type_ == AngleType::ROLL)
+            {
+                current_angle_ = current_roll - entity.object_->pos_.GetRRoad();
+            }
+            else
+            {
+                LOG_ERROR_AND_QUIT("TrigByAngle: Cant resolve angleType, quitting");
+            }
+        }
+        else if (cs_ == roadmanager::CoordinateSystem::CS_LANE)
+        {
+            if (angle_type_ == AngleType::HEADING)
+            {
+                // Lane heading
+            }
+            else if (angle_type_ == AngleType::PITCH)
+            {
+                // Lane pitch
+            }
+            else if (angle_type_ == AngleType::ROLL)
+            {
+                // Lane roll
+            }
+            else
+            {
+                LOG_ERROR_AND_QUIT("TrigByAngle: Cant resolve angleType, quitting");
+            }
+        }
+        else if (cs_ == roadmanager::CoordinateSystem::CS_WORLD || cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
+        {
+            if (angle_type_ == AngleType::HEADING)
+            {
+                current_angle_ = current_heading;
+            }
+            else if (angle_type_ == AngleType::PITCH)
+            {
+                current_angle_ = current_pitch;
+            }
+            else if (angle_type_ == AngleType::ROLL)
+            {
+                current_angle_ = current_roll;
+            }
+            else
+            {
+                LOG_ERROR_AND_QUIT("TrigByAngle: Cant resolve angleType, quitting");
+            }
+        }
+        else if (cs_ == roadmanager::CoordinateSystem::CS_TRAJECTORY)
+        {
+            // Traj info
+        }
+
+        current_angle_ = GetAngleInIntervalMinusPIPlusPI(current_angle_);
+        auto diff      = GetAbsAngleDifference(current_angle_, value_);
+        result         = diff <= tolerance_;
+
+        if (EvalDone(result, triggering_entity_rule_))
+        {
+            break;
+        }
+    }
+
+    return result;
+}
+
+std::string TrigByAngle::GetAdditionalLogInfo()
+{
+    return fmt::format("angle: {:.2f} ({:.2f} <= {:.2f} <= {:.2f})", current_angle_, value_ - tolerance_, current_angle_, value_ + tolerance_);
+}
+
 bool TrigBySpeed::CheckCondition(double sim_time)
 {
     (void)sim_time;

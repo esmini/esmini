@@ -34,4 +34,12 @@ namespace scenarioengine
         UNDEFINED_DIRECTION
     } Direction;
 
+    typedef enum
+    {
+        HEADING,
+        PITCH,
+        ROLL,
+        UNDEFINED_ANGLE
+    } AngleType;
+
 }  // namespace scenarioengine
