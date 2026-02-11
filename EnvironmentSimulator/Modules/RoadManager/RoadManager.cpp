@@ -10880,6 +10880,11 @@ double Position::GetPRoadInDrivingDirection() const
     return GetPRoad() * GetDrivingDirectionRelativeRoad();
 }
 
+double Position::GetRRoadInDrivingDirection() const
+{
+    return GetRRoad() * GetDrivingDirectionRelativeRoad();
+}
+
 double Position::GetHRelativeDrivingDirection() const
 {
     return GetAngleDifference(h_, GetDrivingDirection());

@@ -4378,6 +4378,11 @@ namespace roadmanager
         double GetRRelative() const;
 
         /**
+        Retrieve the road road value, driving direction considered
+        */
+        double GetRRoadInDrivingDirection() const;
+
+        /**
         Retrieve the road pitch value, driving direction considered
         */
         double GetPRoadInDrivingDirection() const;

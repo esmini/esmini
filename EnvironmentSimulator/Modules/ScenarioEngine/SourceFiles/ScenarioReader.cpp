@@ -423,10 +423,12 @@ roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_no
 {
     roadmanager::CoordinateSystem cs = defaultValue;
 
-    std::string str = parameters.ReadAttribute(node, "coordinateSystem");
+    std::string str   = parameters.ReadAttribute(node, "coordinateSystem");
+    int         major = GetVersionMajor();
+    int         minor = GetVersionMinor();
     if (!str.empty())
     {
-        if (GetVersionMajor() == 1 && GetVersionMinor() == 0)
+        if (major == 1 && minor == 0)
         {
             LOG_INFO("coordinateSystem introduced in v1.1. Reading it anyway.");
         }
@@ -446,6 +448,14 @@ roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_no
         else if (str == "trajectory")
         {
             cs = roadmanager::CoordinateSystem::CS_ROAD;
+        }
+        else if (str == "world")
+        {
+            if (major == 1 && minor < 3)
+            {
+                LOG_INFO("coordinateSystem 'world' introduced in v1.3. Reading it anyway");
+            }
+            cs = roadmanager::CoordinateSystem::CS_WORLD;
         }
         else
         {
@@ -4631,6 +4641,8 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             LOG_ERROR_AND_QUIT("AngleCondition: Missing mandatory attribute AngleType, quitting");
                         }
                         trigger->cs_ = ParseCoordinateSystem(condition_node, roadmanager::CoordinateSystem::CS_WORLD);
+
+                        condition = trigger;
                     }
                     else if (condition_type == "SpeedCondition")
                     {

@@ -415,6 +415,7 @@ namespace scenarioengine
         double                        tolerance_;
         roadmanager::CoordinateSystem cs_;
         AngleType                     angle_type_;
+        double                        current_angle_;
 
         bool CheckCondition(double sim_time);
         TrigByAngle()
@@ -422,7 +423,8 @@ namespace scenarioengine
               value_(0.0),
               tolerance_(0.0),
               cs_(roadmanager::CoordinateSystem::CS_UNDEFINED),
-              angle_type_(AngleType::UNDEFINED_ANGLE)
+              angle_type_(AngleType::UNDEFINED_ANGLE),
+              current_angle_(0.0)
         {
         }
         std::string GetAdditionalLogInfo() override;
