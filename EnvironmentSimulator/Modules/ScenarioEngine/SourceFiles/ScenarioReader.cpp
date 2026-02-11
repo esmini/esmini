@@ -4201,6 +4201,27 @@ static Direction ParseDirection(std::string direction)
     return Direction::UNDEFINED_DIRECTION;
 }
 
+static AngleType ParseAngleType(std::string angleType)
+{
+    if (angleType == "heading")
+    {
+        return AngleType::HEADING;
+    }
+    else if (angleType == "pitch")
+    {
+        return AngleType::PITCH;
+    }
+    else if (angleType == "roll")
+    {
+        return AngleType::ROLL;
+    }
+    else
+    {
+        LOG_ERROR("Invalid or missing AngleType");
+        return AngleType::UNDEFINED_ANGLE;
+    }
+}
+
 static TrigByState::CondElementState ParseState(std::string state)
 {
     if (state == "startTransition")
@@ -4590,6 +4611,26 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                         }
 
                         condition = trigger;
+                    }
+                    else if (condition_type == "AngleCondition")
+                    {
+                        if (GetVersionMajor() == 1 && GetVersionMinor() < 3)
+                        {
+                            LOG_WARN("AngleCondition introduced in version 1.3. Reading it anyway");
+                        }
+
+                        TrigByAngle *trigger = new TrigByAngle;
+                        trigger->value_      = strtod(parameters.ReadAttribute(condition_node, "angle"));
+                        trigger->tolerance_  = strtod(parameters.ReadAttribute(condition_node, "angleTolerance"));
+                        if (!condition_node.attribute("angleType").empty())
+                        {
+                            trigger->angle_type_ = ParseAngleType(parameters.ReadAttribute(condition_node, "angleType"));
+                        }
+                        else
+                        {
+                            LOG_ERROR_AND_QUIT("AngleCondition: Missing mandatory attribute AngleType, quitting");
+                        }
+                        trigger->cs_ = ParseCoordinateSystem(condition_node, roadmanager::CoordinateSystem::CS_WORLD);
                     }
                     else if (condition_type == "SpeedCondition")
                     {

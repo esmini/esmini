@@ -1402,6 +1402,17 @@ std::string TrigByAcceleration::GetAdditionalLogInfo()
     return fmt::format("acceleration: {:.2f} {} {:.2f}, edge: {}", current_acceleration_, Rule2Str(rule_), value_, Edge2Str());
 }
 
+bool TrigByAngle::CheckCondition(double sim_time)
+{
+    (void)sim_time;
+    return true;
+}
+
+std::string TrigByAngle::GetAdditionalLogInfo()
+{
+    return fmt::format("angle ...");
+}
+
 bool TrigBySpeed::CheckCondition(double sim_time)
 {
     (void)sim_time;

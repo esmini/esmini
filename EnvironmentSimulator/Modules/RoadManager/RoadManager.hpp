@@ -3602,7 +3602,8 @@ namespace roadmanager
         CS_ENTITY,
         CS_LANE,
         CS_ROAD,
-        CS_TRAJECTORY
+        CS_TRAJECTORY,
+        CS_WORLD
     };
 
     enum class RelativeDistanceType
