@@ -1479,11 +1479,6 @@ namespace scenarioengine
         void                      CmykToRgb(const double* cmyk, double* rgb);
         void                      SetRgbFromColorEnum(const Object::VehicleLightColor& color);
         void                      SetRgbFromTypeEnum(const Object::VehicleLightType& type);
-        int                       CheckAndSetColorError(double* value, int n);
-        void                      LightsFlashing(double dt);
-        void                      SetLightTransitionValues(const Object::VehicleLightMode& mode);
-        void                      RapidTransition();
-        void                      SmoothTransition();
         void                      UpdateArray(double* arr, size_t size, const std::vector<double>& vals);
         void                      SetVehicleLightState(double* maxRgb, double luminousity);
         // Object::VehicleLightType GetLightType();
@@ -1645,7 +1640,7 @@ namespace scenarioengine
         FlashingStatus              flashStatus_;
         bool                        colorSet_;
         Object::VehicleLightStatus* vehicleLight_;
-        bool                        transitioned_ = false;
+        bool                        transitioned_   = false;
         bool                        luminousitySet_ = false;
     };
 
