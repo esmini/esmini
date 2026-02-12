@@ -3124,8 +3124,6 @@ void LightStateAction::Start(double simTime)
     std::copy_n(vehicleLight_->rgb, RGB_ARRAY_SIZE_, previousMinRgb_);
     std::copy_n(vehicleLight_->maxRgb, RGB_ARRAY_SIZE_, previousMaxRgb_);
 
-    vehicleLight_->mode  = actionVehicleLightStatus_.mode;
-    vehicleLight_->type  = actionVehicleLightStatus_.type;
     vehicleLight_->color = actionVehicleLightStatus_.color;
 
     // We don't have a color specified in the action, so we should work with the color from the material
@@ -3139,6 +3137,8 @@ void LightStateAction::Start(double simTime)
 
     std::copy_n(minRgb_, RGB_ARRAY_SIZE_, vehicleLight_->rgb);
     std::copy_n(maxRgb_, RGB_ARRAY_SIZE_, vehicleLight_->maxRgb);
+
+    vehicleLight_->active = true;
 
     OSCAction::Start(simTime);
 }
@@ -3176,10 +3176,9 @@ void LightStateAction::Step(double simTime, double dt)
         else
         {
             LOG_ERROR("LightStateAction: Unknown vehicle light mode");
-            OSCAction::End();
-            return;
+            end_action = true;
         }
-        transitioned_ = true;  // Make sure we only enter this if-statement once
+        vehicleLight_->mode = actionVehicleLightStatus_.mode;
     }
     else if (transitionTimer_ <= transitionTime_ + SMALL_NUMBER)
     {
@@ -3214,8 +3213,7 @@ void LightStateAction::Step(double simTime, double dt)
         else
         {
             LOG_ERROR("LightStateAction: Unknown vehicle light mode");
-            OSCAction::End();
-            return;
+            end_action = true;
         }
 
         // Transitioning from one state to another will alter the lights rgb values, so we need to update them until transition is complete.
@@ -3228,14 +3226,23 @@ void LightStateAction::Step(double simTime, double dt)
         transitionTimer_ += dt;
     }
 
-    if (NEAR_NUMBERS(transitionTime_, 0.0) || transitionTimer_ > transitionTime_ + SMALL_NUMBER)
+    if ((NEAR_NUMBERS(transitionTime_, 0.0) || transitionTimer_ > transitionTime_ + SMALL_NUMBER) && !transitioned_)
     {
+        // Update mode only after transition is complete
+        vehicleLight_->mode = actionVehicleLightStatus_.mode;
+        LOG_INFO("LightStateAction: Transition completed in {:.2f}s", transitionTimer_);
+
         if (actionVehicleLightStatus_.mode != Object::VehicleLightMode::FLASHING)
         {
             end_action = true;
         }
+        transitioned_ = true;  // Make sure we only enter this if-statement once
+    }
+
+    if (vehicleLight_->mode == Object::VehicleLightMode::FLASHING)
+    {
         // Lamp off, we want to turn it on after the off-timer has expired
-        else if (NEAR_NUMBERS(currentLuminousIntensity_, 0.0))
+        if (NEAR_NUMBERS(currentLuminousIntensity_, 0.0))
         {
             if (flashingTimer_ > flashingOffDuration_ + SMALL_NUMBER)
             {
@@ -3263,6 +3270,7 @@ void LightStateAction::Step(double simTime, double dt)
 
     if (end_action)
     {
+        vehicleLight_->active = false;
         OSCAction::End();
         return;
     }

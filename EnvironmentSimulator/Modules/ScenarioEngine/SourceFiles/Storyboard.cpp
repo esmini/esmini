@@ -226,9 +226,24 @@ void Event::Start(double simTime)
                                 LightStateAction* action2 = static_cast<LightStateAction*>(obj->initActions_[j]);
                                 LightStateAction* action1 = static_cast<LightStateAction*>(pa);
 
-                                if (action2->action_type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
-                                    action1->action_type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
-                                    action2->GetVehicleLightType() == action1->GetVehicleLightType())
+                                bool same_action_type      = action1->action_type_ == action2->action_type_;
+                                auto light_type1           = action1->GetVehicleLightType();
+                                auto light_type2           = action2->GetVehicleLightType();
+                                bool same_light_type       = light_type1 == light_type2;
+                                bool confl_indicator_types = (light_type1 == Object::VehicleLightType::WARNING_LIGHTS &&
+                                                              (light_type2 == Object::VehicleLightType::INDICATOR_LEFT ||
+                                                               light_type2 == Object::VehicleLightType::INDICATOR_RIGHT)) ||
+                                                             (light_type2 == Object::VehicleLightType::WARNING_LIGHTS &&
+                                                              (light_type1 == Object::VehicleLightType::INDICATOR_LEFT ||
+                                                               light_type1 == Object::VehicleLightType::INDICATOR_RIGHT));
+                                bool confl_fog_light_types = (light_type1 == Object::VehicleLightType::FOG_LIGHTS &&
+                                                              (light_type2 == Object::VehicleLightType::FOG_LIGHTS_FRONT ||
+                                                               light_type2 == Object::VehicleLightType::FOG_LIGHTS_REAR)) ||
+                                                             (light_type2 == Object::VehicleLightType::FOG_LIGHTS &&
+                                                              (light_type1 == Object::VehicleLightType::FOG_LIGHTS_FRONT ||
+                                                               light_type1 == Object::VehicleLightType::FOG_LIGHTS_REAR));
+
+                                if (same_action_type && (same_light_type || confl_indicator_types || confl_fog_light_types))
                                 {
                                     // LightType overlap, at least one light type in common. Terminate old action.
                                     LOG_WARN("Stopping object {} {} on conflicting {} light(s)",
@@ -271,9 +286,24 @@ void Event::Start(double simTime)
                                 LightStateAction* action2 = static_cast<LightStateAction*>(pa2);
                                 LightStateAction* action1 = static_cast<LightStateAction*>(pa);
 
-                                if (action2->action_type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
-                                    action1->action_type_ == OSCPrivateAction::ActionType::LIGHT_STATE_ACTION &&
-                                    action2->GetVehicleLightType() == action1->GetVehicleLightType())
+                                bool same_action_type      = action1->action_type_ == action2->action_type_;
+                                auto light_type1           = action1->GetVehicleLightType();
+                                auto light_type2           = action2->GetVehicleLightType();
+                                bool same_light_type       = light_type1 == light_type2;
+                                bool confl_indicator_types = (light_type1 == Object::VehicleLightType::WARNING_LIGHTS &&
+                                                              (light_type2 == Object::VehicleLightType::INDICATOR_LEFT ||
+                                                               light_type2 == Object::VehicleLightType::INDICATOR_RIGHT)) ||
+                                                             (light_type2 == Object::VehicleLightType::WARNING_LIGHTS &&
+                                                              (light_type1 == Object::VehicleLightType::INDICATOR_LEFT ||
+                                                               light_type1 == Object::VehicleLightType::INDICATOR_RIGHT));
+                                bool confl_fog_light_types = (light_type1 == Object::VehicleLightType::FOG_LIGHTS &&
+                                                              (light_type2 == Object::VehicleLightType::FOG_LIGHTS_FRONT ||
+                                                               light_type2 == Object::VehicleLightType::FOG_LIGHTS_REAR)) ||
+                                                             (light_type2 == Object::VehicleLightType::FOG_LIGHTS &&
+                                                              (light_type1 == Object::VehicleLightType::FOG_LIGHTS_FRONT ||
+                                                               light_type1 == Object::VehicleLightType::FOG_LIGHTS_REAR));
+
+                                if (same_action_type && (same_light_type || confl_indicator_types || confl_fog_light_types))
                                 {
                                     // LightType overlap, at least one light type in common. Terminate old action.
                                     LOG_WARN("Stopping object {} {} on conflicting {} light(s)",
