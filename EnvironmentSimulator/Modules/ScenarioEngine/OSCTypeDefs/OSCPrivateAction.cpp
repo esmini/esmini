@@ -3137,6 +3137,9 @@ void LightStateAction::Start(double simTime)
     // Find min/max rgb for the color to scale between
     GetRgbMinMaxColor(rgb_, minRgb_, maxRgb_);
 
+    std::copy_n(minRgb_, RGB_ARRAY_SIZE_, vehicleLight_->rgb);
+    std::copy_n(maxRgb_, RGB_ARRAY_SIZE_, vehicleLight_->maxRgb);
+
     OSCAction::Start(simTime);
 }
 
@@ -3144,10 +3147,6 @@ void LightStateAction::Step(double simTime, double dt)
 {
     (void)simTime;
     bool end_action = false;
-    // min/maxRgb_ are the target rgb to reach, set in the action.
-    // We save them, and either instantly shift to them or gradually transition there from the previous rgb values depending on transition time
-    double minRgb[3] = {minRgb_[0], minRgb_[1], minRgb_[2]};
-    double maxRgb[3] = {maxRgb_[0], maxRgb_[1], maxRgb_[2]};
 
     if (NEAR_NUMBERS(transitionTime_, 0.0) && !transitioned_)
     {
@@ -3219,10 +3218,11 @@ void LightStateAction::Step(double simTime, double dt)
             return;
         }
 
+        // Transitioning from one state to another will alter the lights rgb values, so we need to update them until transition is complete.
         for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
         {
-            minRgb[i] = previousMinRgb_[i] + (minRgb_[i] - previousMinRgb_[i]) * transitionFactor;
-            maxRgb[i] = previousMaxRgb_[i] + (maxRgb_[i] - previousMaxRgb_[i]) * transitionFactor;
+            vehicleLight_->rgb[i]    = previousMinRgb_[i] + (minRgb_[i] - previousMinRgb_[i]) * transitionFactor;
+            vehicleLight_->maxRgb[i] = previousMaxRgb_[i] + (maxRgb_[i] - previousMaxRgb_[i]) * transitionFactor;
         }
 
         transitionTimer_ += dt;
@@ -3234,6 +3234,7 @@ void LightStateAction::Step(double simTime, double dt)
         {
             end_action = true;
         }
+        // Lamp off, we want to turn it on after the off-timer has expired
         else if (NEAR_NUMBERS(currentLuminousIntensity_, 0.0))
         {
             if (flashingTimer_ > flashingOffDuration_ + SMALL_NUMBER)
@@ -3242,6 +3243,7 @@ void LightStateAction::Step(double simTime, double dt)
                 flashingTimer_            = 0.0;
             }
         }
+        // Lamp on, we want to turn it off after the on-timer has expired
         else
         {
             if (flashingTimer_ > flashingOnDuration_ + SMALL_NUMBER)
@@ -3254,10 +3256,7 @@ void LightStateAction::Step(double simTime, double dt)
         flashingTimer_ += dt;
     }
 
-    std::copy_n(maxRgb, RGB_ARRAY_SIZE_, vehicleLight_->maxRgb);
-    std::copy_n(minRgb, RGB_ARRAY_SIZE_, vehicleLight_->rgb);
-
-    SetVehicleLightState(maxRgb, currentLuminousIntensity_);
+    SetVehicleLightState(vehicleLight_->maxRgb, currentLuminousIntensity_);
 
     // Light has been manipulated, this dirty
     object_->SetDirtyBits(Object::DirtyBit::LIGHT_STATE);
