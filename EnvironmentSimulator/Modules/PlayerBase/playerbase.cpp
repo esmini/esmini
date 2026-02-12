@@ -1353,7 +1353,7 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
             }
 
             light.type  = static_cast<Object::VehicleLightType>(i);
-            light.mode  = Object::VehicleLightMode::OFF;
+            light.mode  = Object::VehicleLightMode::UNKNOWN;
             light.color = Object::VehicleLightColor::UNKNOWN;
 
             for (const auto& material : model->light_material_)
