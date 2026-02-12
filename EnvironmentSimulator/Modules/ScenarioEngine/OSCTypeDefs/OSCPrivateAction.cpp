@@ -3126,6 +3126,12 @@ void LightStateAction::Start(double simTime)
 
     vehicleLight_->color = actionVehicleLightStatus_.color;
 
+    // If never been set before, we start with OFF
+    if (vehicleLight_->mode == Object::VehicleLightMode::UNKNOWN)
+    {
+        vehicleLight_->mode = Object::VehicleLightMode::OFF;
+    }
+
     // We don't have a color specified in the action, so we should work with the color from the material
     if (!GetColorSet())
     {

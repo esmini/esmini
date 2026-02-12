@@ -1047,13 +1047,14 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState) const
     {
         for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
         {
-            const Object::VehicleLightType &light_type = objectState->state_.info.light_state[i].type;
-            if (light_type == Object::VehicleLightType::UNDEFINED)
+            const Object::VehicleLightMode &light_mode = objectState->state_.info.light_state[i].mode;
+
+            if (light_mode == Object::VehicleLightMode::UNKNOWN)
             {
-                continue;  // If undefined move to next light, this to avoid having empty light_state struct in gt data
+                continue;  // If mode not set, move to next light
             }
 
-            const Object::VehicleLightMode &light_mode  = objectState->state_.info.light_state[i].mode;
+            const Object::VehicleLightType &light_type  = objectState->state_.info.light_state[i].type;
             auto                            light_state = obj_osi_internal.mobj->mutable_vehicle_classification()->mutable_light_state();
 
             switch (light_type)
