@@ -270,24 +270,28 @@ extern "C"
     {
         if (odrManager != nullptr)
         {
-            return odrManager->GetRoadByIdx(index)->GetId();
+            roadmanager::Road* road = odrManager->GetRoadByIdx(index);
+            if (road != nullptr)
+            {
+                return road->GetId();
+            }
         }
-        else
-        {
-            return RM_ID_UNDEFINED;
-        }
+
+        return RM_ID_UNDEFINED;
     }
 
     RM_DLL_API float RM_GetRoadLength(id_t id)
     {
         if (odrManager != nullptr)
         {
-            return static_cast<float>((odrManager->GetRoadById(id)->GetLength()));
+            roadmanager::Road* road = odrManager->GetRoadById(id);
+            if (road != nullptr)
+            {
+                return static_cast<float>(road->GetLength());
+            }
         }
-        else
-        {
-            return 0.0f;
-        }
+
+        return 0.0f;
     }
 
     RM_DLL_API const char* RM_GetRoadIdString(id_t road_id)
