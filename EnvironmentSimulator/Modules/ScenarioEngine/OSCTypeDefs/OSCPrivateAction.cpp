@@ -3163,15 +3163,15 @@ void LightStateAction::Step(double simTime, double dt)
         }
         else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING)
         {
+            // Lights was OFF until flashing, so we start the flashing sequence with lights ON
             if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::FLASHING)
             {
                 currentLuminousIntensity_ = actionVehicleLightStatus_.luminousIntensity;
-                flashingTimer_            = flashingOnDuration_;
             }
+            // Lights was ON until the flashing sequence, so we start with lights OFF
             else if (previousMode_ == Object::VehicleLightMode::ON)
             {
                 currentLuminousIntensity_ = 0.0;
-                flashingTimer_            = flashingOffDuration_;
             }
         }
         else
@@ -3200,16 +3200,16 @@ void LightStateAction::Step(double simTime, double dt)
         }
         else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING)
         {
+            // Lights was OFF until flashing, so we transition to ON then start flashing sequence by instantly turning ligts OFF
             if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::FLASHING)
             {
                 currentLuminousIntensity_ =
                     previousIntensity_ + (actionVehicleLightStatus_.luminousIntensity - previousIntensity_) * transitionFactor;
-                flashingTimer_ = flashingOnDuration_;
             }
+            // Lights was OFF until flashing, so we transition to OFF then start flashing sequence with instantly turning lights ON
             else if (previousMode_ == Object::VehicleLightMode::ON)
             {
                 currentLuminousIntensity_ = previousIntensity_ - previousIntensity_ * transitionFactor;
-                flashingTimer_            = flashingOffDuration_;
             }
         }
         else
