@@ -1322,11 +1322,8 @@ void CarModel::UpdateLight(Object::VehicleLightStatus* vehicle_lights_status)
 {
     for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
     {
-        const auto& light = vehicle_lights_status[i];
-        if (light.type == Object::VehicleLightType::UNDEFINED)
-        {
-            continue;  // Skip undefined light types
-        }
+        const auto& light         = vehicle_lights_status[i];
+        const auto& warning_light = vehicle_lights_status[static_cast<size_t>(Object::VehicleLightType::WARNING_LIGHTS)];
 
         // Create OSG color vectors from the light status
         osg::Vec4d diffuseRgb(light.rgb[0], light.rgb[1], light.rgb[2], 1.0);
@@ -1338,10 +1335,19 @@ void CarModel::UpdateLight(Object::VehicleLightStatus* vehicle_lights_status)
             UpdateLightMaterial(Object::VehicleLightType::INDICATOR_LEFT, diffuseRgb, emissionRgb);
             UpdateLightMaterial(Object::VehicleLightType::INDICATOR_RIGHT, diffuseRgb, emissionRgb);
         }
+        else if ((light.type == Object::VehicleLightType::INDICATOR_LEFT || light.type == Object::VehicleLightType::INDICATOR_RIGHT) && !light.active)
+        {
+            continue;  // We dont update the lights to avoid setting warning lights to OFF
+        }
         else if (light.type == Object::VehicleLightType::FOG_LIGHTS)
         {
             UpdateLightMaterial(Object::VehicleLightType::FOG_LIGHTS_FRONT, diffuseRgb, emissionRgb);
             UpdateLightMaterial(Object::VehicleLightType::FOG_LIGHTS_REAR, diffuseRgb, emissionRgb);
+        }
+        else if ((light.type == Object::VehicleLightType::FOG_LIGHTS_FRONT || light.type == Object::VehicleLightType::FOG_LIGHTS_REAR) &&
+                 !light.active)
+        {
+            continue;  // We dont update the lights to avoid setting fog lights to OFF
         }
         else
         {
