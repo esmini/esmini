@@ -167,7 +167,7 @@ namespace OpenDRIVE
 	            laneInfo.position = GetUnityPosition(tmpLaneInfo.pos.x, tmpLaneInfo.pos.y, tmpLaneInfo.pos.z);
 	            laneInfo.rotation = GetUnityRotation(tmpLaneInfo.heading, tmpLaneInfo.pitch, tmpLaneInfo.roll);
 	            laneInfo.curvature = -Mathf.Sign(laneId) * tmpLaneInfo.curvature;
-	            laneInfo.speedLimit = tmpLaneInfo.speed_limit;
+	            laneInfo.speedLimit = tmpLaneInfo.speedLimit;
 	            laneInfo.width = tmpLaneInfo.width;
 	            laneInfo.roadId = tmpLaneInfo.roadId;
 	            laneInfo.laneId = tmpLaneInfo.laneId;
@@ -176,7 +176,7 @@ namespace OpenDRIVE
 	            laneInfo.t = tmpLaneInfo.t;
 	            laneInfo.junctionId = tmpLaneInfo.junctionId;
 	        }
-            return retVal; 
+            return retVal;
         }
 
         /// <summary>
@@ -196,7 +196,7 @@ namespace OpenDRIVE
 	            probeInfo.roadLaneInfo.position = GetUnityPosition(tmpProbeInfo.laneInfo.pos.x, tmpProbeInfo.laneInfo.pos.y, tmpProbeInfo.laneInfo.pos.z);
 	            probeInfo.roadLaneInfo.rotation = GetUnityRotation(tmpProbeInfo.laneInfo.heading, tmpProbeInfo.laneInfo.pitch, tmpProbeInfo.laneInfo.roll);
 	            probeInfo.roadLaneInfo.curvature = tmpProbeInfo.laneInfo.curvature;
-	            probeInfo.roadLaneInfo.speedLimit = tmpProbeInfo.laneInfo.speed_limit;
+	            probeInfo.roadLaneInfo.speedLimit = tmpProbeInfo.laneInfo.speedLimit;
 	            probeInfo.roadLaneInfo.width = tmpProbeInfo.laneInfo.width;
 	            probeInfo.roadLaneInfo.roadId = tmpProbeInfo.laneInfo.roadId;
 	            probeInfo.roadLaneInfo.laneId = tmpProbeInfo.laneInfo.laneId;
