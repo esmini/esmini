@@ -250,6 +250,11 @@ void AddEntityAction::Start(double simTime)
 
     entity_->pos_.TeleportTo(pos_);
 
+    if (!entity_->TowVehicle() && entity_->TrailerVehicle())
+    {
+        (static_cast<Vehicle*>(entity_))->AlignTrailers();
+    }
+
     LOG_INFO("Added entity {}", entity_->GetName());
 
     OSCAction::Start(simTime);
