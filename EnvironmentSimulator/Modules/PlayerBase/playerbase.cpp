@@ -1443,7 +1443,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
     opt.AddOption("ghost_trail_dt", "Ghost trail sample delta time", "dt", std::to_string(GHOST_TRAIL_SAMPLE_TIME));
-    opt.AddOption("ground_plane", "Add a large flat ground surface");
+    opt.AddOption("ground_plane", "Add a large flat ground surface. Modes: on, off, auto", "mode", "auto", true);
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("help", "Show this help message (-h works as well)");
     opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization. Toggle key 'R'");

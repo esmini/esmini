@@ -46,8 +46,8 @@ Options:
       Do not apply textures on any generated road model (set colors instead as for missing textures)
   --ghost_trail_dt [dt]  (default if value omitted: 0.200000)
       Ghost trail sample delta time
-  --ground_plane
-      Add a large flat ground surface
+  --ground_plane [mode]  (default if option or value omitted: auto)
+      Add a large flat ground surface. Modes: on, off, auto
   --headless
       Run without viewer window
   --help

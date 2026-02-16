@@ -1612,14 +1612,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     bool gen_road_surface = (environment_ == nullptr || opt->GetOptionSet("enforce_generate_model")) && odrManager->GetNumOfRoads() > 0;
     bool gen_road_objects = !(opt && opt->GetOptionSet("generate_no_road_objects"));
     bool optimize         = !SE_Env::Inst().GetOptions().GetOptionSet("save_generated_model");
-    roadGeom              = std::make_unique<RoadGeom>(odrManager,
-                                          environment_,
-                                          origin_,
-                                          gen_road_surface,
-                                          gen_road_objects,
-                                          opt->GetOptionSet("ground_plane"),
-                                          exe_path_,
-                                          optimize);
+    roadGeom              = std::make_unique<RoadGeom>(odrManager, environment_, origin_, gen_road_surface, gen_road_objects, exe_path_, optimize);
 
     if (roadGeom->root_ != nullptr)
     {

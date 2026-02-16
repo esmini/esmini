@@ -42,8 +42,8 @@ Options:
       Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)
   --generate_without_textures
       Do not apply textures on any generated road model (set colors instead as for missing textures)
-  --ground_plane
-      Add a large flat ground surface
+  --ground_plane [mode]  (default if option or value omitted: auto)
+      Add a large flat ground surface. Modes: on, off, auto
   --headless
       Run without viewer window
   --log_append

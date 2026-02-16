@@ -484,7 +484,7 @@ int main(int argc, char** argv)
                   "path");
     opt.AddOption("fixed_timestep", "Use fixed timestep for the replay", "s", "");
 #ifdef _USE_OSG
-    opt.AddOption("ground_plane", "Add a large flat ground surface");
+    opt.AddOption("ground_plane", "Add a large flat ground surface. Modes: on, off, auto", "mode", "auto", true);
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
 #endif  // _USE_OSG
     opt.AddOption("headless", "Run without viewer window");

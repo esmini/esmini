@@ -517,7 +517,6 @@ namespace roadgeom
                        osg::Vec3d              origin,
                        bool                    generate_road_surface,
                        bool                    generate_road_objects,
-                       bool                    add_ground_plane,
                        std::string             exe_path,
                        bool                    optimize)
         : environment_(environment),
@@ -528,21 +527,21 @@ namespace roadgeom
             return;
         }
 
-        exe_dir_                          = DirNameOf(exe_path);
-        root_                             = new osg::Group;
-        osg::ref_ptr<osg::Group> r_group_ = new osg::Group;
-        r_group_->setName("roads");
-        osg::ref_ptr<osg::Group> rm_group_ = new osg::Group;
-        rm_group_->setName("roadmarks");
-        root_->setName("esmini_generated_road_model");
-        root_->addChild(rm_group_);
-        root_->addChild(r_group_);
-
+        exe_dir_    = DirNameOf(exe_path);
         odrManager_ = odr;
+        root_       = new osg::Group;
+        root_->setName("esmini_generated_road_model");
 
         if (generate_road_surface)
         {
             LOG_INFO("Generating a simplistic 3D model of the road network");
+
+            osg::ref_ptr<osg::Group> r_group_ = new osg::Group;
+            r_group_->setName("roads");
+            osg::ref_ptr<osg::Group> rm_group_ = new osg::Group;
+            rm_group_->setName("roadmarks");
+            root_->addChild(rm_group_);
+            root_->addChild(r_group_);
 
             if (!SE_Env::Inst().GetOptions().GetOptionSet("generate_without_textures"))
             {
@@ -1132,7 +1131,8 @@ namespace roadgeom
             }
         }
 
-        if (add_ground_plane)
+        std::string opt_groundplane = SE_Env::Inst().GetOptions().GetOptionValueByEnum(esmini_options::GROUND_PLANE);
+        if ((opt_groundplane == "auto" && (!generate_road_surface && environment == nullptr)) || opt_groundplane == "on")
         {
             AddGroundSurface();
         }
@@ -1919,7 +1919,7 @@ namespace roadgeom
         osg::ComputeBoundsVisitor cbv;
         osg::BoundingBox          bb;
 
-        osg::Node* bb_node = environment_ != nullptr ? environment_ : root_->asNode();
+        osg::Node* bb_node = environment_ != nullptr ? environment_ : root_->getNumChildren() > 0 ? root_->asNode() : nullptr;
         if (bb_node != nullptr)
         {
             bb_node->accept(cbv);

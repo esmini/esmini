@@ -28,8 +28,8 @@ Options:
       Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
   --fixed_timestep <s>
       Use fixed timestep for the replay
-  --ground_plane
-      Add a large flat ground surface
+  --ground_plane [mode]  (default if option or value omitted: auto)
+      Add a large flat ground surface. Modes: on, off, auto
   --generate_without_textures
       Do not apply textures on any generated road model (set colors instead as for missing textures)
   --headless
