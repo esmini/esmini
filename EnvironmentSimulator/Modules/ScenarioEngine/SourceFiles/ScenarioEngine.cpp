@@ -493,11 +493,26 @@ int ScenarioEngine::step(double deltaSimTime)
                     v0                             = v0.Rotate(tow_pos->GetH()) + SE_Vector(tow_pos->GetX(), tow_pos->GetY());
                     SE_Vector v1                   = SE_Vector(trailer->pos_.GetX(), trailer->pos_.GetY()) - v0;
                     v1.SetLength(trailer->trailer_coupler_->dx_);
-                    scenarioGateway.updateObjectWorldPosXYH(trailer->GetId(),
-                                                            getSimulationTime(),
-                                                            v0.x() + v1.x(),
-                                                            v0.y() + v1.y(),
-                                                            GetAngleInInterval2PI(atan2(v1.y(), v1.x()) + M_PI));
+                    if (obj->pos_.GetTrajectory() != nullptr && (obj->pos_.GetTrajectory()->GetPosMode() & roadmanager::Position::PosMode::Z_ABS))
+                    {
+                        scenarioGateway.updateObjectWorldPosMode(trailer->GetId(),
+                                                                 getSimulationTime(),
+                                                                 v0.x() + v1.x(),
+                                                                 v0.y() + v1.y(),
+                                                                 o->state_.pos.GetZ(),
+                                                                 GetAngleInInterval2PI(atan2(v1.y(), v1.x()) + M_PI),
+                                                                 0.0,
+                                                                 0.0,
+                                                                 roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS);
+                    }
+                    else
+                    {
+                        scenarioGateway.updateObjectWorldPosXYH(trailer->GetId(),
+                                                                getSimulationTime(),
+                                                                v0.x() + v1.x(),
+                                                                v0.y() + v1.y(),
+                                                                GetAngleInInterval2PI(atan2(v1.y(), v1.x()) + M_PI));
+                    }
                     trailer->SetSpeed(tow_vehicle->GetSpeed());
 
                     tow_vehicle = trailer;
