@@ -15,14 +15,30 @@
 
 using namespace scenarioengine;
 
-static void SetPositionModesGeneric(roadmanager::Position &position, double *z, OSCOrientation *orientation)
+static void SetPositionModesGeneric(roadmanager::Position &position, double *z, double *dz, OSCOrientation *orientation)
 {
     position.SetModeDefault(roadmanager::Position::PosModeType::SET);
     position.SetModeDefault(roadmanager::Position::PosModeType::UPDATE);
+    int mask = 0;
+
+    if (z != nullptr)
+    {
+        if (!std::isnan(*z))
+        {
+            mask |= roadmanager::Position::PosMode::Z_ABS;
+        }
+    }
+    else if (dz != nullptr)
+    {
+        if (!std::isnan(*dz))
+        {
+            mask |= roadmanager::Position::PosMode::Z_REL;
+        }
+    }
+
     position.SetModeBits(
         roadmanager::Position::PosModeType::INIT,
-        ((z == nullptr || std::isnan(*z)) ? 0 : roadmanager::Position::PosMode::Z_ABS) |
-
+        mask |
             (orientation == nullptr || std::isnan(orientation->h_)
                  ? 0
                  : (orientation->type_ == roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE ? roadmanager::Position::PosMode::H_ABS
@@ -73,13 +89,13 @@ OSCPositionWorld::OSCPositionWorld(double x, double y, double z, double h, doubl
     }
 
     OSCOrientation orientation(roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE, h, p, r);
-    SetPositionModesGeneric(position_, &z, &orientation);
+    SetPositionModesGeneric(position_, &z, nullptr, &orientation);
     position_.SetInertiaPosMode(x, y, z, h, p, r, None2Relative(position_.GetMode(roadmanager::Position::PosModeType::INIT)));
 }
 
 OSCPositionLane::OSCPositionLane(id_t roadId, int laneId, double s, double offset, OSCOrientation orientation) : OSCPosition(PositionType::LANE)
 {
-    SetPositionModesGeneric(position_, nullptr, &orientation);
+    SetPositionModesGeneric(position_, nullptr, nullptr, &orientation);
 
     if (!roadmanager::Position::GetOpenDrive())
     {
@@ -141,7 +157,7 @@ OSCPositionRoad::OSCPositionRoad(id_t roadId, double s, double t, OSCOrientation
         LOG_ERROR_AND_QUIT("Reffered road ID {} not available in road network", roadId);
     }
 
-    SetPositionModesGeneric(position_, nullptr, &orientation);
+    SetPositionModesGeneric(position_, nullptr, nullptr, &orientation);
 
     if (orientation.type_ == roadmanager::Position::OrientationType::ORIENTATION_RELATIVE || std::isnan(orientation.h_))
     {
@@ -177,7 +193,7 @@ OSCPositionRelativeObject::OSCPositionRelativeObject(Object *object, double dx, 
     : OSCPosition(PositionType::RELATIVE_OBJECT),
       object_(object)
 {
-    SetPositionModesGeneric(position_, nullptr, &orientation);
+    SetPositionModesGeneric(position_, nullptr, &dz, &orientation);
 
     position_.relative_.dh = std::isnan(orientation.h_) ? 0.0 : orientation.h_;
     position_.relative_.dp = std::isnan(orientation.p_) ? 0.0 : orientation.p_;
@@ -199,7 +215,7 @@ OSCPositionRelativeWorld::OSCPositionRelativeWorld(Object *object, double dx, do
     : OSCPosition(PositionType::RELATIVE_WORLD),
       object_(object)
 {
-    SetPositionModesGeneric(position_, nullptr, &orientation);
+    SetPositionModesGeneric(position_, nullptr, &dz, &orientation);
 
     position_.relative_.dx = dx;
     position_.relative_.dy = dy;
@@ -226,7 +242,7 @@ OSCPositionRelativeLane::OSCPositionRelativeLane(Object                         
     : OSCPosition(PositionType::RELATIVE_LANE),
       object_(object)
 {
-    SetPositionModesGeneric(position_, nullptr, &orientation);
+    SetPositionModesGeneric(position_, nullptr, nullptr, &orientation);
 
     position_.relative_.dLane  = dLane;
     position_.relative_.ds     = ds;
@@ -249,7 +265,7 @@ OSCPositionRelativeRoad::OSCPositionRelativeRoad(Object *object, double ds, doub
     : OSCPosition(PositionType::RELATIVE_ROAD),
       object_(object)
 {
-    SetPositionModesGeneric(position_, nullptr, &orientation);
+    SetPositionModesGeneric(position_, nullptr, nullptr, &orientation);
 
     position_.relative_.ds = ds;
     position_.relative_.dt = dt;
