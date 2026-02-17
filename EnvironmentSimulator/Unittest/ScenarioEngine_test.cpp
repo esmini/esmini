@@ -2739,6 +2739,61 @@ TEST_F(StraightRoadTest, TestObjectOverlap)
     EXPECT_EQ(ego.OverlappingFront(&target, 0.01), Object::OverlapType::INSIDE_AND_FULL);
 }
 
+TEST_F(StraightRoadTest, AngleConditionTest)
+{
+    Object obj(scenarioengine::Object::Type::VEHICLE);
+    obj.SetActive(true);
+
+    TrigByAngle cond;
+    cond.triggering_entities_.entity_.push_back({&obj});
+
+    obj.pos_.SetLanePos(1, -1, 10, 0.0);
+    cond.cs_         = roadmanager::CoordinateSystem::CS_WORLD;
+    cond.angle_type_ = AngleType::HEADING;
+    cond.tolerance_  = 0.02;
+    cond.value_      = 0.5;
+    EXPECT_EQ(cond.Evaluate(0.0), false);
+
+    cond.value_ = 0.019;
+    EXPECT_EQ(cond.Evaluate(0.0), true);
+
+    cond.value_ = 0.3;
+    cond.cs_    = roadmanager::CoordinateSystem::CS_ROAD;
+    obj.pos_.SetInertiaPos(50, -1.5, 0.321);
+    EXPECT_EQ(cond.Evaluate(0.0), false);
+    obj.pos_.SetInertiaPos(50, -1.5, 0.320);
+    EXPECT_EQ(cond.Evaluate(0.0), true);
+
+    cond.value_ = -0.3;
+    cond.cs_    = roadmanager::CoordinateSystem::CS_ROAD;
+    obj.pos_.SetInertiaPos(50, -1.5, -0.321);
+    EXPECT_EQ(cond.Evaluate(0.0), false);
+    obj.pos_.SetInertiaPos(50, -1.5, -0.320);
+    EXPECT_EQ(cond.Evaluate(0.0), true);
+
+    cond.cs_ = roadmanager::CoordinateSystem::CS_LANE;
+    obj.pos_.SetInertiaPos(50, 1.5, M_PI);
+    EXPECT_NEAR(obj.pos_.GetH(), M_PI, 1e-3);
+    cond.value_ = 0.01;
+    EXPECT_EQ(cond.Evaluate(0.0), true);
+    cond.value_ = 0.021;
+    EXPECT_EQ(cond.Evaluate(0.0), false);
+
+    cond.cs_    = roadmanager::CoordinateSystem::CS_ROAD;
+    cond.value_ = M_PI + 0.01;
+    EXPECT_EQ(cond.Evaluate(0.0), true);
+    cond.value_ = M_PI + 0.021;
+    EXPECT_EQ(cond.Evaluate(0.0), false);
+
+    cond.cs_ = roadmanager::CoordinateSystem::CS_ROAD;
+    obj.pos_.SetInertiaPos(50, 1.5, 0.0);
+    EXPECT_NEAR(obj.pos_.GetH(), 0.0, 1e-3);
+    cond.value_ = 0.01;
+    EXPECT_EQ(cond.Evaluate(0.0), true);
+    cond.value_ = 0.021;
+    EXPECT_EQ(cond.Evaluate(0.0), false);
+}
+
 TEST(SpeedTest, TestAbsoluteSpeed)
 {
     double          dt = 0.05;

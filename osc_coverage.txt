@@ -274,6 +274,7 @@ Common classes
                     routingAlgorithm (1.2)     No
                 RelativeDistance               Yes
                 RelativeClearance (1.2)        Yes
+                AngleCondition (1.3)           Yes (limitation: trajectory type only works for heading, not pitch and roll)
         ByState (<=1.0)
             AfterTermination                   Yes
             AtStart                            Yes

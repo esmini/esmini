@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+   <FileHeader revMajor="1" revMinor="3" date="2026-01-27T10:00:00" description="Trajectory with stand-still phase" author="esmini team"/>
+   <ParameterDeclarations/>
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/straight_500_superelevation_elevation_curve.xodr"/>
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Ego">
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white"/>
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <Private entityRef="Ego">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" s="0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="${10/3.6}"/>
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="MyStory">
+         <Act name="MyAct">
+            <ManeuverGroup maximumExecutionCount="1" name="MyManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="MyManeuver">
+                  <Event name="WorldPositionTrajectoryEvent" priority="override" maximumExecutionCount="1">
+                     <Action name="WorldPositionTrajectoryAction">
+                        <PrivateAction>
+                           <RoutingAction>
+                              <FollowTrajectoryAction>
+                                 <Trajectory closed="false" name="TrajectoryPLine">
+                                    <ParameterDeclarations/>
+                                    <Shape>
+                                       <Polyline>
+                                          <Vertex>
+                                             <Position>
+                                                <WorldPosition x="0" y="-1.5"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex>
+                                             <Position>
+                                                <WorldPosition x="10" y="2.0"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex>
+                                             <Position>
+                                                <WorldPosition x="20" y="0.0" h="-0.5"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex>
+                                             <Position>
+                                                <WorldPosition x="30" y="6.0"/>
+                                             </Position>
+                                          </Vertex>
+                                       </Polyline>
+                                    </Shape>
+                                 </Trajectory>
+                                 <TimeReference>
+                                    <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
+                                 </TimeReference>
+                                 <TrajectoryFollowingMode followingMode="position"/>
+                              </FollowTrajectoryAction>
+                           </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="AngleCondition1" delay="0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <AngleCondition angle="0.2" angleTolerance="0.1" angleType="heading" coordinateSystem="world"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="ElevatedTrajectoryEvent" priority="override" maximumExecutionCount="1">
+                     <Action name="ElevatedTrajectoryAction">
+                        <PrivateAction>
+                           <RoutingAction>
+                              <FollowTrajectoryAction>
+                                 <Trajectory closed="false" name="TrajectoryPLine">
+                                    <ParameterDeclarations/>
+                                    <Shape>
+                                       <Polyline>
+                                          <Vertex>
+                                             <Position>
+                                                <RelativeWorldPosition dx="0.0" dy="0.0" entityRef="Ego"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex>
+                                             <Position>
+                                                <RelativeWorldPosition dx="10.0" dy="2.0" dz="1.0" entityRef="Ego"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex>
+                                             <Position>
+                                                <RelativeWorldPosition dx="20.0" dy="4.0" dz="5.0" entityRef="Ego"/>
+                                             </Position>
+                                          </Vertex>
+                                       </Polyline>
+                                    </Shape>
+                                 </Trajectory>
+                                 <TimeReference>
+                                    <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
+                                 </TimeReference>
+                                 <TrajectoryFollowingMode followingMode="position"/>
+                              </FollowTrajectoryAction>
+                           </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="AngleCondition2" delay="0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <AngleCondition angle="0.1" angleTolerance="0.05" angleType="heading" coordinateSystem="trajectory"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="RelativeLanePosTrajectoryEvent" priority="override" maximumExecutionCount="1">
+                     <Action name="RelativeLanePosTrajectoryAction">
+                        <PrivateAction>
+                           <RoutingAction>
+                              <FollowTrajectoryAction>
+                                 <Trajectory closed="false" name="TrajectoryPLine">
+                                    <ParameterDeclarations/>
+                                    <Shape>
+                                       <Polyline>
+                                          <Vertex>
+                                             <Position>
+                                                <RelativeLanePosition dLane="0" ds="0" offset="0" entityRef="Ego"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex>
+                                             <Position>
+                                                <RelativeLanePosition dLane="-1" ds="10" offset="0" entityRef="Ego"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex>
+                                             <Position>
+                                                <RelativeLanePosition dLane="0" ds="20" offset="0" entityRef="Ego"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex>
+                                             <Position>
+                                                <RelativeLanePosition dLane="-1" ds="30" offset="0" entityRef="Ego"/>
+                                             </Position>
+                                          </Vertex>
+                                          <Vertex>
+                                             <Position>
+                                                <RelativeLanePosition dLane="-1" ds="31" offset="0" entityRef="Ego"/>
+                                             </Position>
+                                          </Vertex>
+                                       </Polyline>
+                                    </Shape>
+                                 </Trajectory>
+                                 <TimeReference>
+                                    <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
+                                 </TimeReference>
+                                 <TrajectoryFollowingMode followingMode="position"/>
+                              </FollowTrajectoryAction>
+                           </RoutingAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="AngleCondition3" delay="0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Ego"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <AngleCondition angle="-0.28" angleTolerance="0.1" angleType="pitch" coordinateSystem="lane"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger/>
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="Quit" delay="0.0" conditionEdge="none">
+               <ByEntityCondition>
+                  <TriggeringEntities triggeringEntitiesRule="any">
+                     <EntityRef entityRef="Ego"/>
+                  </TriggeringEntities>
+                  <EntityCondition>
+                     <AngleCondition angle="0.15" angleTolerance="0.05" angleType="roll" coordinateSystem="world"/>
+                  </EntityCondition>
+               </ByEntityCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>
