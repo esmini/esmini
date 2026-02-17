@@ -2531,6 +2531,10 @@ int SE_Options::ParseArgs(int argc, const char* const argv[])
 {
     std::vector<const char*> args = {argv, std::next(argv, argc)};
 
+    if (args.size() == 0)
+    {
+        return -1;
+    }
     app_name_     = FileNameWithoutExtOf(args[0]);
     int returnVal = 0;
 
