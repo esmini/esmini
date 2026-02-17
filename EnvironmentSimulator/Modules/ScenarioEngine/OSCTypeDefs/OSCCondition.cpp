@@ -1420,7 +1420,7 @@ bool TrigByAngle::CheckCondition(double sim_time)
         double current_heading = entity.object_->pos_.GetH();
         double current_pitch   = entity.object_->pos_.GetP();
         double current_roll    = entity.object_->pos_.GetR();
-        if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
+        if (cs_ == roadmanager::CoordinateSystem::CS_ROAD || cs_ == roadmanager::CoordinateSystem::CS_LANE)
         {
             if (angle_type_ == AngleType::HEADING)
             {
@@ -1439,26 +1439,7 @@ bool TrigByAngle::CheckCondition(double sim_time)
                 LOG_ERROR_AND_QUIT("TrigByAngle: Cant resolve angleType, quitting");
             }
         }
-        else if (cs_ == roadmanager::CoordinateSystem::CS_LANE)
-        {
-            if (angle_type_ == AngleType::HEADING)
-            {
-                // Lane heading
-            }
-            else if (angle_type_ == AngleType::PITCH)
-            {
-                // Lane pitch
-            }
-            else if (angle_type_ == AngleType::ROLL)
-            {
-                // Lane roll
-            }
-            else
-            {
-                LOG_ERROR_AND_QUIT("TrigByAngle: Cant resolve angleType, quitting");
-            }
-        }
-        else if (cs_ == roadmanager::CoordinateSystem::CS_WORLD || cs_ == roadmanager::CoordinateSystem::CS_ENTITY)
+        else if (cs_ == roadmanager::CoordinateSystem::CS_WORLD)
         {
             if (angle_type_ == AngleType::HEADING)
             {
@@ -1479,12 +1460,21 @@ bool TrigByAngle::CheckCondition(double sim_time)
         }
         else if (cs_ == roadmanager::CoordinateSystem::CS_TRAJECTORY)
         {
-            // Traj info
+            RMTrajectory* traj = entity.object_->pos_.GetTrajectory();
+            if (traj == nullptr)
+            {
+                continue;
+            }
+            else if (angle_type_ == AngleType::HEADING)  // no support for pitch and roll yet
+            {
+                current_angle_ = current_heading - traj->GetHTrue();
+            }
         }
+        //  for case cs_ == roadmanager::CoordinateSystem::CS_ENTITY => angle = 0 => no update needed
 
-        current_angle_ = GetAngleInIntervalMinusPIPlusPI(current_angle_);
-        auto diff      = GetAbsAngleDifference(current_angle_, value_);
-        result         = diff <= tolerance_;
+        double current_angle_adjusted = GetAngleInIntervalMinusPIPlusPI(current_angle_);
+        auto   diff                   = GetAbsAngleDifference(current_angle_adjusted, value_);
+        result                        = diff < tolerance_ + SMALL_NUMBER;
 
         if (EvalDone(result, triggering_entity_rule_))
         {

@@ -447,7 +447,7 @@ roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_no
         }
         else if (str == "trajectory")
         {
-            cs = roadmanager::CoordinateSystem::CS_ROAD;
+            cs = roadmanager::CoordinateSystem::CS_TRAJECTORY;
         }
         else if (str == "world")
         {
@@ -4641,6 +4641,11 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                             LOG_ERROR_AND_QUIT("AngleCondition: Missing mandatory attribute AngleType, quitting");
                         }
                         trigger->cs_ = ParseCoordinateSystem(condition_node, roadmanager::CoordinateSystem::CS_WORLD);
+
+                        if (trigger->cs_ == roadmanager::CoordinateSystem::CS_TRAJECTORY && trigger->angle_type_ != AngleType::HEADING)
+                        {
+                            LOG_ERROR("AngleCondition: Only angleType heading supported for coordinateSystem trajectory");
+                        }
 
                         condition = trigger;
                     }
