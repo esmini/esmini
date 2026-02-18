@@ -78,8 +78,8 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('Loading .*trajectory-test.xosc', log)  is not None)
 
             # Check some scenario events
-            self.assertTrue(re.search('\\n.8.00.*FollowTrajectoryClothoidTrigger: true, delay: 0.00, FollowTrajectoryPLineEvent, COMPLETE / END_TRANSITION == END_TRANSITION, edge: rising', log)  is not None)
-            self.assertTrue(re.search('\\n.24.21.* FollowTrajectoryNurbsAction runningState -> endTransition -> completeState', log)  is not None)
+            self.assertTrue(re.search('\\n.7.990.*FollowTrajectoryClothoidTrigger: true, delay: 0.00, FollowTrajectoryPLineEvent, COMPLETE / END_TRANSITION == END_TRANSITION, edge: rising', log)  is not None)
+            self.assertTrue(re.search('\\n.24.180.* FollowTrajectoryNurbsAction runningState -> endTransition -> completeState', log)  is not None)
 
             # Check vehicle key positions
             csv = generate_csv()
@@ -87,11 +87,11 @@ class TestSuite(unittest.TestCase):
             self.assertTrue(re.search('\\n4.100.*, 0, Ego, 115.042, 4.864, -3.006, 0.281, 0.032, 0.000, 16.000', csv))
             self.assertTrue(re.search('\\n4.100, 1, Target, 129.852, 14.341, -3.467, 0.558, 0.020, 0.003, 24.524, -0.000, 2.983', csv))
             self.assertTrue(re.search('\\n11.100.*, 0, Ego, 200.713, 72.600, -2.443, 1.057, 6.263, 0.000, 16.000', csv))
-            self.assertTrue(re.search('\\n11.100, 1, Target, 205.945, 66.378, -2.497, 2.507, 6.281, 6.263, 17.500, -0.235, 1.324', csv))
+            self.assertTrue(re.search('\\n11.100, 1, Target, 205.601, 66.273, -2.502, 2.491, 6.281, 6.263, 17.500, -0.235, 1.043', csv))
             self.assertTrue(re.search('\\n17.250.*, 0, Ego, 217.345, 167.663, 1.989, 1.738, 6.209, 0.000, 16.000', csv))
-            self.assertTrue(re.search('\\n17.250, 1, Target, 210.637, 157.437, 1.289, 1.225, 6.216, 0.032, 14.906, 0.047, 2.746', csv))
+            self.assertTrue(re.search('\\n17.250, 1, Target, 210.772, 157.307, 1.278, 1.227, 6.216, 0.032, 15.011, 0.047, 2.271', csv))
             self.assertTrue(re.search('\\n25.000.*, 0, Ego, 206.081, 288.506, 5.436, 1.188, 6.238, 0.000, 16.000', csv))
-            self.assertTrue(re.search('\\n25.000, 1, Target, 216.246, 307.463, 6.701, 0.969, 6.214, (0.000|6.283), 21.101, -0.030, 5.562', csv))
+            self.assertTrue(re.search('\\n25.000, 1, Target, 216.244, 307.459, 6.701, 0.969, 6.214, 0.000, 21.101, -0.030, 5.507', csv))
         else:
             print('skipping test_trajectory check for non OSI builds ', end='', file=sys.stderr)
 
@@ -2030,13 +2030,13 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('.8.900.* Init scooter1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.8.900.* Init car_white RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.8.900.* Init car_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init car_blue RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.8.900.* Init car_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.8.900.* Init van_red RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init motorbike RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.8.900.* Init car_trailer RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.8.900.* Init semi_tractor RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('.9.000.* Init truck_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('.9.000.* Init car_blue RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('.9.000.* Init motorbike RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init truck_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
 
         # Check some scenario events
         self.assertTrue(re.search('.10.100.* StopCondition: true, delay: 0.00, 10.1000 > 10.0000, edge: none', log)  is not None)
@@ -2095,13 +2095,13 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('10.000, 1, scooter1, 25.099, 51.103, 0.000, 5.977, 0.000, 0.000, 0.000, -0.077, -5.815', csv, re.MULTILINE))
         self.assertTrue(re.search('10.000, 2, car_white, -0.001, 38.001, 0.000, 2.618, 0.000, 0.000, 0.000, 0.000, 5.815', csv, re.MULTILINE))
         self.assertTrue(re.search('10.000, 3, car_red, -15.001, 42.001, 0.000, 5.760, 0.000, 0.000, 0.000, -0.000, -5.815', csv, re.MULTILINE))
-        self.assertTrue(re.search('10.000, 4, car_blue, -30.866, 46.500, 0.000, 2.618, 0.000, 0.000, 0.000, 0.000, 2.386', csv, re.MULTILINE))
+        self.assertTrue(re.search('10.000, 4, car_blue, -30.000, 46.000, 0.000, 2.618, 0.000, 0.000, 0.000, 0.000, 5.812', csv, re.MULTILINE))
         self.assertTrue(re.search('10.000, 5, car_yellow, -45.001, 50.001, 0.000, 2.620, 0.000, 0.000, 0.000, 0.000, 5.815', csv, re.MULTILINE))
         self.assertTrue(re.search('10.000, 6, van_red, -90.000, 24.000, 0.000, 0.000, 0.000, 0.000, 0.000, -0.000, -5.815', csv, re.MULTILINE))
-        self.assertTrue(re.search('10.000, 7, motorbike, -75.867, 58.498, 0.000, 2.620, 0.000, 0.000, 0.000, 0.000, 2.386', csv, re.MULTILINE))
+        self.assertTrue(re.search('10.000, 7, motorbike, -75.000, 58.000, 0.000, 2.620, 0.000, 0.000, 0.000, 0.000, 5.812', csv, re.MULTILINE))
         self.assertTrue(re.search('10.000, 8, car_trailer, -120.000, 32.000, 0.000, 3.142, 0.000, 0.000, 0.000, 0.000, 5.815', csv, re.MULTILINE))
         self.assertTrue(re.search('10.000, 9, semi_tractor, -104.999, 65.999, 0.000, 5.762, 0.000, 0.000, 0.000, -0.000, -5.815', csv, re.MULTILINE))
-        self.assertTrue(re.search('10.000, 10, truck_yellow, -120.867, 70.498, 0.000, 5.762, 0.000, 0.000, 0.000, -0.000, -2.386', csv, re.MULTILINE))
+        self.assertTrue(re.search('10.000, 10, truck_yellow, -120.000, 70.000, 0.000, 5.762, 0.000, 0.000, 0.000, -0.000, -5.812', csv, re.MULTILINE))
 
     def test_traj_speed(self):
         # This test case checks correct handling of driving speed wrt specified speed and trajectory control point headings, specified or not
@@ -2114,9 +2114,9 @@ class TestSuite(unittest.TestCase):
 
         # Check some initialization steps
         self.assertTrue(re.search('Loading .*trajectory_speed.xosc', log)  is not None)
-        self.assertTrue(re.search('.9.000.* Init car_blue RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('.9.000.* Init motorbike RoutingAction runningState -> endTransition -> completeState', log)  is not None)
-        self.assertTrue(re.search('.9.000.* Init truck_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init car_blue RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init motorbike RoutingAction runningState -> endTransition -> completeState', log)  is not None)
+        self.assertTrue(re.search('.8.900.* Init truck_yellow RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.13.200.* Init bicycle1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.13.200.* Init scooter1 RoutingAction runningState -> endTransition -> completeState', log)  is not None)
         self.assertTrue(re.search('.13.200.* Init car_white RoutingAction runningState -> endTransition -> completeState', log)  is not None)
@@ -2171,13 +2171,13 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('13.200, 1, scooter1, -4.000, -14.340, 0.000, 4.713, 0.000, 0.000, 19.600, -0.001, 4.397', csv, re.MULTILINE))
         self.assertTrue(re.search('13.200, 2, car_white, -8.000, -29.340, 0.000, 1.571, 0.000, 0.000, -19.600, -0.000, -4.397', csv, re.MULTILINE))
         self.assertTrue(re.search('13.200, 3, car_red, -12.000, -44.340, 0.000, 4.712, 0.000, 0.000, 19.600, 0.000, 4.397', csv, re.MULTILINE))
-        self.assertTrue(re.search('13.200, 4, car_blue, -46.450, -30.779, 0.000, 4.189, 0.000, 0.000, 0.000, 0.000, 2.100', csv, re.MULTILINE))
+        self.assertTrue(re.search('13.200, 4, car_blue, -46.000, -30.000, 0.000, 4.189, 0.000, 0.000, 0.000, 0.000, 5.812', csv, re.MULTILINE))
         self.assertTrue(re.search('13.200, 5, car_yellow, -20.000, -74.340, 0.000, 1.570, 0.000, 0.000, -19.600, -0.000, -4.397', csv, re.MULTILINE))
         self.assertTrue(re.search('13.200, 6, van_red, -53.670, -59.428, 0.000, 4.190, 0.000, 0.000, 19.600, 0.000, 4.397', csv, re.MULTILINE))
-        self.assertTrue(re.search('13.200, 7, motorbike, -58.449, -75.780, 0.000, 4.190, 0.000, 0.000, 0.000, 0.000, 2.100', csv, re.MULTILINE))
+        self.assertTrue(re.search('13.200, 7, motorbike, -58.000, -75.000, 0.000, 4.190, 0.000, 0.000, 0.000, 0.000, 5.812', csv, re.MULTILINE))
         self.assertTrue(re.search('13.200, 8, car_trailer, -61.670, -89.428, 0.000, 1.048, 0.000, 0.000, -19.600, (-0.000|0.000), -4.397', csv, re.MULTILINE))
         self.assertTrue(re.search('13.200, 9, semi_tractor, -36.000, -134.340, 0.000, 4.712, 0.000, 0.000, 19.600, 0.000, 4.397', csv, re.MULTILINE))
-        self.assertTrue(re.search('13.200, 10, truck_yellow, -70.549, -120.953, 0.000, 1.048, 0.000, 0.000, 0.000, -0.000, -2.671', csv, re.MULTILINE))
+        self.assertTrue(re.search('13.200, 10, truck_yellow, -70.000, -120.000, 0.000, 1.048, 0.000, 0.000, 0.000, -0.000, -5.812', csv, re.MULTILINE))
 
         self.assertTrue(re.search('', csv, re.MULTILINE))
 

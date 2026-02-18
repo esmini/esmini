@@ -508,6 +508,12 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
     // Adjust absolute time for any ghost headstart
     double timeOffset = (timing_domain_ == TimingDomain::TIMING_ABSOLUTE && object_->IsGhost()) ? object_->GetHeadstartTime() : 0.0;
 
+    // add any specified time offset
+    if (timing_domain_ != TimingDomain::NONE)
+    {
+        timeOffset += timing_offset_;
+    }
+
     Move(simTime, dt);
 
     // Check end conditions:
@@ -519,7 +525,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
     if (((timing_domain_ == TimingDomain::NONE && !traj_->closed_) && dt > 0.0 &&
          ((movingDirection_ * fabs(object_->GetSpeed()) > 0.0 && object_->pos_.GetTrajectoryS() > (traj_->GetLength() - SMALL_NUMBER)) ||
           (movingDirection_ * fabs(object_->GetSpeed()) < 0.0 && object_->pos_.GetTrajectoryS() < SMALL_NUMBER))) ||
-        (timing_domain_ != TimingDomain::NONE && time_ + timeOffset >= traj_->GetStartTime() + traj_->GetDuration()))
+        (timing_domain_ != TimingDomain::NONE && time_ + timeOffset > traj_->GetStartTime() + traj_->GetDuration() - SMALL_NUMBER))
     {
         // Reached end, or start, of trajectory
         double remaningDistance = 0.0;
@@ -529,7 +535,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
             // Move the remaning distance along road at current lane offset
             remaningDistance = fabs(object_->speed_) * dt - fabs(object_->pos_.GetTrajectoryS() - old_s);
         }
-        else if (timing_domain_ != TimingDomain::NONE && time_ + timeOffset >= traj_->GetStartTime() + traj_->GetDuration())
+        else if (timing_domain_ != TimingDomain::NONE && time_ + timeOffset > traj_->GetStartTime() + traj_->GetDuration() - SMALL_NUMBER)
         {
             // Move the remaning distance along road at current lane offset
             double remaningTime = time_ + timeOffset - (traj_->GetStartTime() + traj_->GetDuration());
