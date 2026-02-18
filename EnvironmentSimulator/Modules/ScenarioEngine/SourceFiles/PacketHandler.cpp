@@ -312,6 +312,28 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
             Write(PacketId::SHAPE_2D_OUTLINE, packet_shape.points);
         }
 
+        for (size_t i = 0; i < cache_it->second.light_state_.size(); i++)
+        {
+            if (state->info.light_state[i].type == scenarioengine::Object::VehicleLightType::UNDEFINED)
+            {
+                break;
+            }
+
+            if (!IsLightStateEqual(cache_it->second.light_state_[i], state->info.light_state[i]))
+            {
+                const auto& light                = state->info.light_state[i];
+                cache_it->second.light_state_[i] = {static_cast<int>(light.type),
+                                                    light.active,
+                                                    light.rgb[0],
+                                                    light.rgb[1],
+                                                    light.rgb[2],
+                                                    light.emission[0],
+                                                    light.emission[1],
+                                                    light.emission[2]};
+                Write(PacketId::LIGHT_STATE, cache_it->second.light_state_[i]);
+            }
+        }
+
         this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state
     }
 
@@ -388,6 +410,12 @@ bool Dat::DatWriter::IsBoundingBoxEqual(const BoundingBox& bb, const scenarioeng
 {
     return (bb.x == osc_bb.center_.x_ && bb.y == osc_bb.center_.y_ && bb.z == osc_bb.center_.z_ && bb.length == osc_bb.dimensions_.length_ &&
             bb.width == osc_bb.dimensions_.width_ && bb.height == osc_bb.dimensions_.height_);
+}
+
+bool Dat::DatWriter::IsLightStateEqual(const LightState& ls, const scenarioengine::Object::VehicleLightStatus& osc_ls) const
+{
+    return (ls.active == osc_ls.active && ls.r == osc_ls.rgb[0] && ls.g == osc_ls.rgb[1] && ls.b == osc_ls.rgb[2] && ls.e_r == osc_ls.emission[0] &&
+            ls.e_g == osc_ls.emission[1] && ls.e_b == osc_ls.emission[2]);
 }
 
 size_t Dat::DatWriter::SerializedSize(const std::string& str)

@@ -831,6 +831,12 @@ int main(int argc, char** argv)
 #endif  // _USE_OSG
         }
 
+        if (player_->HasLightStates())
+        {
+            viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_LIGHT_STATE);
+            viewer_->SetShowLights(true);
+        }
+
         if (opt.GetOptionSet("repeat"))
         {
             player_->SetRepeat(true);
@@ -1297,6 +1303,13 @@ int main(int argc, char** argv)
                     if (c->entityModel->GetType() == viewer::EntityModel::EntityType::VEHICLE)
                     {
                         (static_cast<viewer::CarModel*>(c->entityModel))->UpdateWheels(c->wheel_angle, c->wheel_rotation);
+
+                        auto& cache = player_->object_state_cache_[c->id];
+                        if (!player_->HasLightStates() || !cache.has_lightstate_)
+                        {
+                            continue;
+                        }
+                        static_cast<viewer::CarModel*>(c->entityModel)->UpdateLight(cache.state.info.light_state);
                     }
                 }
             }

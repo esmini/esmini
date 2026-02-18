@@ -1235,7 +1235,10 @@ CarModel::CarModel(Viewer*                  viewer,
     }
 
     // Add light material
-    AddLights(group_, show_lights);
+    if (show_lights)
+    {
+        AddLights(group_, show_lights);
+    }
 }
 
 CarModel::~CarModel()
@@ -1322,7 +1325,13 @@ void CarModel::UpdateLight(Object::VehicleLightStatus* vehicle_lights_status)
 {
     for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
     {
-        const auto& light         = vehicle_lights_status[i];
+        const auto& light = vehicle_lights_status[i];
+
+        if (light.type == Object::VehicleLightType::UNDEFINED)
+        {
+            continue;
+        }
+
         const auto& warning_light = vehicle_lights_status[static_cast<size_t>(Object::VehicleLightType::WARNING_LIGHTS)];
 
         // Create OSG color vectors from the light status
