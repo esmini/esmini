@@ -317,6 +317,8 @@ namespace scenarioengine
         Timeline<float>                   model_x_offset_;
         Timeline<std::string>             model3d_;
         Timeline<std::vector<SE_Point2D>> outline_;
+
+        Timeline<Dat::LightState> light_state_[static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE)];
     };
 
     // Custom comparator ensuring map has ids ordered as:
@@ -339,6 +341,7 @@ namespace scenarioengine
     {
         ObjectStateStructDat state;
         double               odometer;
+        bool                 has_lightstate_ = false;
     };
 
 #ifdef _USE_OSG
@@ -433,6 +436,10 @@ namespace scenarioengine
         {
             repeat_ = repeat;
         }
+        bool HasLightStates() const
+        {
+            return has_lightstates_;
+        }
 
     private:
         std::vector<std::string> scenarios_;
@@ -446,7 +453,8 @@ namespace scenarioengine
         bool                     repeat_     = false;
         std::string              create_datfile_;
         std::vector<id_t>        unknown_pids;
-        bool                     eos_received_ = false;  // end of scenario packet
+        bool                     eos_received_    = false;  // end of scenario packet
+        bool                     has_lightstates_ = false;
 
         /* PacketHandler stuff */
         std::unique_ptr<Dat::DatReader>              dat_reader_;

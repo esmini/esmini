@@ -700,6 +700,19 @@ int Replay::ParsePackets()
                     current_object_timeline_->outline_.values.emplace_back(timestamp_, outline);
                     break;
                 }
+                case static_cast<id_t>(Dat::PacketId::LIGHT_STATE):
+                {
+                    Dat::LightState light_state;
+                    if (dat_reader_->ReadPacket(gp, light_state) != 0)
+                    {
+                        LOG_ERROR("Failed to read light state");
+                        return -1;
+                    }
+
+                    current_object_timeline_->light_state_[light_state.light_type].values.emplace_back(timestamp_, light_state);
+                    has_lightstates_ = true;
+                    break;
+                }
                 case static_cast<id_t>(Dat::PacketId::DT):
                 case static_cast<id_t>(Dat::PacketId::END_OF_SCENARIO):
                 default:  // Intentially ignored packets
@@ -1333,6 +1346,28 @@ ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, double t) const
     entry.state.pos.s               = timeline.pos_s_.get_value_incremental(t).value();
     entry.odometer                  = timeline.odometer_.get_value_incremental(t).value();
 
+    if (HasLightStates())
+    {
+        // Some car in the scenario has a lightstate, if we find that any light doesn't have initial values, that car doesn't have lights and we break
+        entry.has_lightstate_ = true;
+        for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
+        {
+            auto data = timeline.light_state_[i].get_value_incremental(t).value_or(Dat::LightState{});
+            if (data.light_type == -1)
+            {
+                entry.has_lightstate_ = false;
+                break;
+            }
+            entry.state.info.light_state[i].active      = data.active;
+            entry.state.info.light_state[i].type        = static_cast<Object::VehicleLightType>(data.light_type);
+            entry.state.info.light_state[i].rgb[0]      = data.r;
+            entry.state.info.light_state[i].rgb[1]      = data.g;
+            entry.state.info.light_state[i].rgb[2]      = data.b;
+            entry.state.info.light_state[i].emission[0] = data.e_r;
+            entry.state.info.light_state[i].emission[1] = data.e_g;
+            entry.state.info.light_state[i].emission[2] = data.e_b;
+        }
+    }
     return entry;
 }
 

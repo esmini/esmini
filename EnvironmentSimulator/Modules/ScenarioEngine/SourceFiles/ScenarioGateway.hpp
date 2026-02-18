@@ -56,20 +56,21 @@ namespace scenarioengine
 
     struct ObjectInfoStructDat
     {
-        int            id;
-        int            model_id;
-        int            obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
-        int            obj_category;  // sub type for vehicle, pedestrian and miscobj
-        int            ctrl_type;     // See Controller::Type enum
-        float          timeStamp;
-        std::string    name;
-        float          speed;
-        float          wheel_angle;  // Only used for vehicle
-        float          wheel_rot;    // Only used for vehicle
-        OSCBoundingBox boundingbox;
-        int            scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
-        int            visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
-        bool           active;
+        int                        id;
+        int                        model_id;
+        int                        obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
+        int                        obj_category;  // sub type for vehicle, pedestrian and miscobj
+        int                        ctrl_type;     // See Controller::Type enum
+        float                      timeStamp;
+        std::string                name;
+        float                      speed;
+        float                      wheel_angle;  // Only used for vehicle
+        float                      wheel_rot;    // Only used for vehicle
+        OSCBoundingBox             boundingbox;
+        int                        scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
+        int                        visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        bool                       active;
+        Object::VehicleLightStatus light_state[static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE)];
     };
 
     struct ObjectPositionStructDat
