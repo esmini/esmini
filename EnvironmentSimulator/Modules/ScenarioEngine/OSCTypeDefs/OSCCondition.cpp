@@ -1420,7 +1420,7 @@ bool TrigByAngle::CheckCondition(double sim_time)
         double current_heading = entity.object_->pos_.GetH();
         double current_pitch   = entity.object_->pos_.GetP();
         double current_roll    = entity.object_->pos_.GetR();
-        if (cs_ == roadmanager::CoordinateSystem::CS_ROAD || cs_ == roadmanager::CoordinateSystem::CS_LANE)
+        if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
         {
             if (angle_type_ == AngleType::HEADING)
             {
@@ -1433,6 +1433,25 @@ bool TrigByAngle::CheckCondition(double sim_time)
             else if (angle_type_ == AngleType::ROLL)
             {
                 current_angle_ = current_roll - entity.object_->pos_.GetRRoad();
+            }
+            else
+            {
+                LOG_ERROR_AND_QUIT("TrigByAngle: Cant resolve angleType, quitting");
+            }
+        }
+        else if (cs_ == roadmanager::CoordinateSystem::CS_LANE)
+        {
+            if (angle_type_ == AngleType::HEADING)
+            {
+                current_angle_ = current_heading - entity.object_->pos_.GetHRoadInDrivingDirection();
+            }
+            else if (angle_type_ == AngleType::PITCH)
+            {
+                current_angle_ = current_pitch - entity.object_->pos_.GetPRoadInDrivingDirection();
+            }
+            else if (angle_type_ == AngleType::ROLL)
+            {
+                current_angle_ = current_roll - entity.object_->pos_.GetRRoadInDrivingDirection();
             }
             else
             {
