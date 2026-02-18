@@ -11,7 +11,8 @@
 namespace scenarioengine
 {
     class ObjectState;
-}
+    class Object;
+}  // namespace scenarioengine
 
 namespace Dat
 {
@@ -46,7 +47,8 @@ namespace Dat
         OBJ_MODEL3D       = 26,
         ELEM_STATE_CHANGE = 27,
         SHAPE_2D_OUTLINE  = 28,
-        PACKET_ID_SIZE    = 29  // Keep this last
+        LIGHT_STATE       = 29,
+        PACKET_ID_SIZE    = 30  // Keep this last
     };
 
     struct PacketString
@@ -98,11 +100,17 @@ namespace Dat
         int          lamp_mode        = static_cast<int>(roadmanager::Signal::LampMode::MODE_UNDEFINED);
     };
 
-    // struct VehicleLightState
-    // {
-    //     int light_type;
-
-    // };
+    struct LightState
+    {
+        int    light_type = -1;
+        bool   active     = false;
+        double r          = -1;
+        double g          = -1;
+        double b          = -1;
+        double e_r        = -1;
+        double e_g        = -1;
+        double e_b        = -1;
+    };
 
     struct PacketGeneric
     {
@@ -140,6 +148,7 @@ namespace Dat
         double                  model_x_offset_    = std::nanf("");
         std::string             model3d_           = {};
         std::vector<SE_Point2D> outline_2d         = {};
+        std::vector<LightState> light_state_{static_cast<size_t>(scenarioengine::Object::VehicleLightType::VEHICLE_LIGHT_SIZE), LightState{}};
     };
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?
@@ -175,6 +184,7 @@ namespace Dat
         void SetSimulationTime(const double simulation_time, const double dt);
         bool IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const;
         bool IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const;
+        bool IsLightStateEqual(const LightState& ls, const scenarioengine::Object::VehicleLightStatus& osc_ls) const;
         void ResetCurrentIds();
         void CheckDeletedObjects();
 
