@@ -195,6 +195,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
         }
 #endif
         scenarioEngine->mutex_.Lock();
+        scenarioEngine->ClearDirtyBits();
         retval = ScenarioFrame(timestep_s, true);
 
         if (SE_Env::Inst().GetGhostMode() != GhostMode::NORMAL)
@@ -204,8 +205,6 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
                 Draw();
                 if (!IsPaused() && !IsQuitRequested())
                 {
-                    // clear bits from previous frame
-                    scenarioGateway->clearDirtyBits();
                     retval = ScenarioFrame(ghost_solo_dt, false);
                 }
             }
@@ -240,7 +239,6 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
         {
             scenarioEngine->mutex_.Lock();
             ScenarioPostFrame();
-            scenarioGateway->clearDirtyBits();  // clear bits enabling identifying external updates
             scenarioEngine->mutex_.Unlock();
         }
     }
@@ -275,21 +273,19 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
             // Check for any callbacks to be made
             for (size_t i = 0; i < objCallback.size(); i++)
             {
-                ObjectState* os = scenarioGateway->getObjectStatePtrById(objCallback[i].id);
-                if (os)
+                Object* obj = scenarioEngine->entities_.GetObjectById(objCallback[i].id);
+                if (obj != nullptr)
                 {
-                    ObjectStateStruct state;
-                    state = os->getStruct();
-                    objCallback[i].func(&state, objCallback[i].data);
+                    objCallback[i].func(obj, objCallback[i].data);
                 }
             }
         }
 
         scenarioEngine->prepareGroundTruth(timestep_s);
 
-        scenarioGateway->SetDynamicSignals(roadmanager::Position::GetOpenDrive()->GetDynamicSignals());
-        scenarioGateway->UpdateStoryBoardStateChanges(scenarioEngine->storyBoard.GetChanges());
-        scenarioGateway->WriteStatesToFile(scenarioEngine->getSimulationTime(), timestep_s);
+        // Write to dat
+        WriteStatesToFile(scenarioEngine->getSimulationTime(), timestep_s);
+
         scenarioEngine->storyBoard.ClearStateChanges();
 
         if (CSV_Log)
@@ -312,6 +308,30 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
     return retval;
 }
 
+void ScenarioPlayer::WriteStatesToFile(const double simulation_time, const double dt)
+{
+    if (dat_writer_.IsWriteFileOpen())
+    {
+        dat_writer_.SetSimulationTime(simulation_time, dt);
+        dat_writer_.WriteDtToDat();
+        dat_writer_.WriteTrafficLightsToDat(roadmanager::Position::GetOpenDrive()->GetDynamicSignals());
+        dat_writer_.WriteStoryBoardStateChangesToDat(scenarioEngine->storyBoard.GetChanges());
+        dat_writer_.WriteObjectStatesToDat(scenarioEngine->entities_.object_);
+        dat_writer_.SetTimestampWritten(false);
+    }
+}
+
+int ScenarioPlayer::RecordToFile(std::string filename, std::string odr_filename, std::string model_filename, std::string git_rev)
+{
+    if (filename.empty())
+    {
+        LOG_ERROR("Filename is empty");
+        return -1;
+    }
+
+    return dat_writer_.Init(filename, odr_filename, model_filename, git_rev);
+}
+
 void ScenarioPlayer::ScenarioPostFrame()
 {
     mutex.Lock();
@@ -327,9 +347,7 @@ void ScenarioPlayer::ScenarioPostFrame()
         if (osiReporter->GetOSIFrequency() > 0)
         {
             osiReporter->ReportSensors(sensor);
-
-            osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-
+            osiReporter->UpdateOSIGroundTruth(scenarioEngine->entities_.object_);
             osiReporter->UpdateOSITrafficCommand();
         }
     }
@@ -387,12 +405,6 @@ void ScenarioPlayer::ViewerFrame()
                                                            obj->model3d_x_offset_,
                                                            &obj->outline_2d_,
                                                            obj->scaleMode_));
-
-        if (obj->scaleMode_ == EntityScaleMode::BB_TO_MODEL)
-        {
-            // report updated bounding box
-            scenarioGateway->updateObjectBoundingBox(obj->GetId(), obj->boundingbox_);
-        }
 
         // Connect callback for setting transparency
         viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(obj, viewer_->entities_.back());
@@ -1829,9 +1841,8 @@ int ScenarioPlayer::Init()
         }
     }
 
-    // Fetch scenario gateway and OpenDRIVE manager objects
-    scenarioGateway = scenarioEngine->getScenarioGateway();
-    odr_manager     = scenarioEngine->getRoadManager();
+    // Fetch OpenDRIVE manager objects
+    odr_manager = scenarioEngine->getRoadManager();
 
 #ifdef _USE_OSI
     osiReporter = new OSIReporter(scenarioEngine);
@@ -1950,9 +1961,9 @@ int ScenarioPlayer::Init()
         }
     }
 
-    // Create a data file for later replay?
     if ((arg_str = opt.GetOptionValue("record")) != "")
     {
+        // Create a data file for later replay
         std::string filename;
 
         if (!arg_str.empty())
@@ -1977,10 +1988,7 @@ int ScenarioPlayer::Init()
         }
 
         LOG_INFO("Recording data to file {}", filename);
-        scenarioGateway->RecordToFile(filename,
-                                      scenarioEngine->getOdrFilename(),
-                                      scenarioEngine->getSceneGraphFilename(),
-                                      std::string(esmini_git_rev()));
+        RecordToFile(filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename(), std::string(esmini_git_rev()));
     }
 
     if (launch_server)
@@ -2284,24 +2292,44 @@ int ScenarioPlayer::SetVariableValue(const char* name, bool value)
     return scenarioEngine->scenarioReader->variables.setParameterValue(name, value);
 }
 
-// todo
 int ScenarioPlayer::GetNumberOfProperties(int index)
 {
-    return static_cast<int>(scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]->properties_.property_.size());
+    if (index >= 0 && index < scenarioEngine->entities_.object_.size())
+    {
+        return static_cast<int>(scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]->properties_.property_.size());
+    }
+
+    return -1;
 }
 
 const char* ScenarioPlayer::GetPropertyName(int index, int propertyIndex)
 {
-    return scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]
-        ->properties_.property_[static_cast<unsigned int>(propertyIndex)]
-        .name_.c_str();
+    if (index >= 0 && index < scenarioEngine->entities_.object_.size())
+    {
+        Object* obj = scenarioEngine->entities_.object_[static_cast<unsigned int>(index)];
+
+        if (propertyIndex >= 0 && propertyIndex < obj->properties_.property_.size())
+        {
+            return obj->properties_.property_[static_cast<unsigned int>(propertyIndex)].name_.c_str();
+        }
+    }
+
+    return "";
 }
 
 const char* ScenarioPlayer::GetPropertyValue(int index, int propertyIndex)
 {
-    return scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]
-        ->properties_.property_[static_cast<unsigned int>(propertyIndex)]
-        .value_.c_str();
+    if (index >= 0 && index < scenarioEngine->entities_.object_.size())
+    {
+        Object* obj = scenarioEngine->entities_.object_[static_cast<unsigned int>(index)];
+
+        if (propertyIndex >= 0 && propertyIndex < obj->properties_.property_.size())
+        {
+            return obj->properties_.property_[static_cast<unsigned int>(propertyIndex)].value_.c_str();
+        }
+    }
+
+    return "";
 }
 
 #ifdef _USE_OSG

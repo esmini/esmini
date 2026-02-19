@@ -18,9 +18,10 @@
 #include <set>
 #include <optional>
 #include "CommonMini.hpp"
-#include "ScenarioGateway.hpp"
 #ifdef _USE_OSG
 #include "trafficlightmodel.hpp"
+#include "OSCBoundingBox.hpp"
+#include "PacketHandler.hpp"
 #endif  // _USE_OSG
 
 namespace scenarioengine
@@ -333,6 +334,30 @@ namespace scenarioengine
                 return lhs < rhs;
             return lhs > rhs;
         }
+    };
+
+    struct ObjectInfoStructDat
+    {
+        int            id;
+        int            model_id;
+        int            obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
+        int            obj_category;  // sub type for vehicle, pedestrian and miscobj
+        int            ctrl_type;     // See Controller::Type enum
+        float          timeStamp;
+        std::string    name;
+        float          speed;
+        float          wheel_angle;  // Only used for vehicle
+        float          wheel_rot;    // Only used for vehicle
+        OSCBoundingBox boundingbox;
+        int            scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
+        int            visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        bool           active;
+    };
+
+    struct ObjectStateStructDat
+    {
+        struct ObjectInfoStructDat     info;
+        struct ObjectPositionStructDat pos;
     };
 
     struct ReplayEntry

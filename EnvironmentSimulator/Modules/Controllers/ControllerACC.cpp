@@ -17,7 +17,6 @@
 #include "ControllerACC.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 #include "playerbase.hpp"
 #include "logger.hpp"
 
@@ -218,18 +217,17 @@ void ControllerACC::Step(double timeStep)
     if (mode_ == ControlOperationMode::MODE_OVERRIDE && !virtual_)
     {
         object_->MoveAlongS(currentSpeed_ * timeStep);
-        gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
     }
 
     if (virtual_)
     {
         double acc_v[2] = {0.0, 0.0};
         RotateVec2D(acc, 0.0, object_->pos_.GetH(), acc_v[0], acc_v[1]);
-        gateway_->updateObjectAcc(object_->GetId(), 0.0, acc_v[0], acc_v[1], 0.0);
+        object_->SetAcc(acc_v[0], acc_v[1], 0.0);
     }
     else
     {
-        gateway_->updateObjectSpeed(object_->GetId(), 0.0, currentSpeed_);
+        object_->SetSpeed(currentSpeed_);
     }
 
     Controller::Step(timeStep);

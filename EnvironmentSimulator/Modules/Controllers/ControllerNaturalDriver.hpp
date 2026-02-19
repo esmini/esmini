@@ -48,11 +48,12 @@ namespace scenarioengine
     public:
         ControllerNaturalDriver(InitArgs* args);
 
-        const char* GetTypeName() override
+        const char* GetTypeName() const override
         {
             return CONTROLLER_NATURAL_DRIVER_TYPE_NAME;
         }
-        int GetType() override
+
+        Type GetType() const override
         {
             return CONTROLLER_TYPE_NATURAL_DRIVER;
         }

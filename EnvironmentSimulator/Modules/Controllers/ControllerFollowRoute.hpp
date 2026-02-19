@@ -42,11 +42,12 @@ namespace scenarioengine
         ControllerFollowRoute(InitArgs *args);
         ~ControllerFollowRoute();
 
-        virtual const char *GetTypeName()
+        virtual const char *GetTypeName() const
         {
             return CONTROLLER_FOLLOW_ROUTE_TYPE_NAME;
         }
-        virtual int GetType()
+
+        virtual Type GetType() const
         {
             return CONTROLLER_TYPE_FOLLOW_ROUTE;
         }

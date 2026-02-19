@@ -13,7 +13,6 @@
 #include "ControllerOffroadFollower.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 #include "logger.hpp"
 
 #include <random>
@@ -94,19 +93,17 @@ void ControllerOffroadFollower::Step(double timeStep)
     vehicle_.DrivingControlAnalog(timeStep, throttle, steering);
 
     // Finally, report updated entity data
-    gateway_->updateObjectWorldPosMode(object_->id_,
-                                       0.0,
-                                       vehicle_.posX_,
-                                       vehicle_.posY_,
-                                       0.0,
-                                       vehicle_.heading_,
-                                       0.0,
-                                       0.0,
-                                       roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS |
-                                           roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_ABS);
+    object_->pos_.SetInertiaPosMode(vehicle_.posX_,
+                                    vehicle_.posY_,
+                                    0.0,
+                                    vehicle_.heading_,
+                                    0.0,
+                                    0.0,
+                                    roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS |
+                                        roadmanager::Position::PosMode::P_REL | roadmanager::Position::PosMode::R_ABS);
 
-    gateway_->updateObjectSpeed(object_->id_, 0.0, vehicle_.speed_);
-    gateway_->updateObjectWheelAngle(object_->id_, 0.0, vehicle_.wheelAngle_);
+    object_->SetSpeed(vehicle_.speed_);
+    object_->wheel_angle_ = vehicle_.wheelAngle_;
 
     // run step method of the base class
     Controller::Step(timeStep);

@@ -24,7 +24,6 @@ namespace scenarioengine
 {
     // Forward declarations
     class ScenarioPlayer;
-    class ScenarioGateway;
     class ScenarioEngine;
     class Entities;
     class Object;
@@ -35,7 +34,8 @@ namespace scenarioengine
     public:
         enum Type
         {
-            CONTROLLER_TYPE_DEFAULT,
+            CONTROLLER_TYPE_BASE_ID = -1,
+            CONTROLLER_TYPE_DEFAULT = 0,
             CONTROLLER_TYPE_EXTERNAL,
             CONTROLLER_TYPE_FOLLOW_GHOST,
             CONTROLLER_TYPE_FOLLOW_ROUTE,
@@ -61,24 +61,24 @@ namespace scenarioengine
 
         typedef struct
         {
-            std::string      name;
-            std::string      type;
-            OSCProperties*   properties;
-            ScenarioGateway* gateway;
-            ScenarioEngine*  scenario_engine;
-            Parameters*      parameters;
+            std::string     name;
+            std::string     type;
+            OSCProperties*  properties;
+            ScenarioEngine* scenario_engine;
+            Parameters*     parameters;
         } InitArgs;
 
         Controller(InitArgs* args = nullptr);
         virtual ~Controller() = default;
 
-        virtual const char* GetTypeName()
+        virtual const char* GetTypeName() const
         {
             return CONTROLLER_BASE_TYPE_NAME;
         }
-        virtual int GetType()
+
+        virtual Controller::Type GetType() const
         {
-            return CONTROLLER_BASE_TYPE_ID;
+            return CONTROLLER_TYPE_BASE_ID;
         }
 
         virtual void LinkObject(Object* object);
@@ -161,7 +161,6 @@ namespace scenarioengine
         std::string          name_;
         std::string          type_name_;
         Entities*            entities_;
-        ScenarioGateway*     gateway_;
         ScenarioEngine*      scenario_engine_;
         ScenarioPlayer*      player_;
         bool                 align_to_road_heading_on_deactivation_ = false;

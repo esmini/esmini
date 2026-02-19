@@ -74,11 +74,12 @@ namespace scenarioengine
         void ReportKeyEvent(int key, bool down);
         void CopyPosition(Object* object, position_copy* obj_copy);
 
-        virtual const char* GetTypeName()
+        virtual const char* GetTypeName() const
         {
             return CONTROLLER_REL2ABS_TYPE_NAME;
         }
-        virtual int GetType()
+
+        virtual Type GetType() const
         {
             return Controller::Type::CONTROLLER_TYPE_REL2ABS;
         }

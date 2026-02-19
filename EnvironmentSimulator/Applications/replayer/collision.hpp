@@ -5,15 +5,15 @@
 
 typedef struct
 {
-    int                                            id;
-    std::string                                    name;
-    struct scenarioengine::ObjectPositionStructDat pos;
-    float                                          wheel_angle;
-    float                                          wheel_rotation;
-    bool                                           visible;
-    scenarioengine::OSCBoundingBox                 bounding_box;
-    std::vector<SE_Vector>                         corners;
-    std::vector<int>                               overlap_entity_ids;
+    int                            id;
+    std::string                    name;
+    struct ObjectPositionStructDat pos;
+    float                          wheel_angle;
+    float                          wheel_rotation;
+    bool                           visible;
+    scenarioengine::OSCBoundingBox bounding_box;
+    std::vector<SE_Vector>         corners;
+    std::vector<int>               overlap_entity_ids;
 #ifdef _USE_OSG
     viewer::EntityModel*         entityModel;
     osg::ref_ptr<osg::Vec3Array> trajPoints;

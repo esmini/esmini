@@ -117,52 +117,53 @@ static void ConvertArguments()
     }
 }
 
-static void copyStateFromScenarioGateway(SE_ScenarioObjectState *state, ObjectStateStruct *gw_state)
+static void copyStateFromScenarioObject(SE_ScenarioObjectState *state, const scenarioengine::Object &obj)
 {
-    state->id        = gw_state->info.id;
-    state->model_id  = gw_state->info.model_id;
-    state->ctrl_type = gw_state->info.ctrl_type;
-    //	strncpy(state->name, gw_state->info.name, NAME_LEN);
-    state->timestamp      = static_cast<float>(gw_state->info.timeStamp);
-    state->x              = static_cast<float>(gw_state->pos.GetX());
-    state->y              = static_cast<float>(gw_state->pos.GetY());
-    state->z              = static_cast<float>(gw_state->pos.GetZ());
-    state->h              = static_cast<float>(gw_state->pos.GetH());
-    state->p              = static_cast<float>(gw_state->pos.GetP());
-    state->r              = static_cast<float>(gw_state->pos.GetR());
-    state->speed          = static_cast<float>(gw_state->info.speed);
-    state->roadId         = gw_state->pos.GetTrackId();
-    state->junctionId     = gw_state->pos.GetJunctionId();
-    state->t              = static_cast<float>(gw_state->pos.GetT());
-    state->laneId         = gw_state->pos.GetLaneId();
-    state->s              = static_cast<float>(gw_state->pos.GetS());
-    state->laneOffset     = static_cast<float>(gw_state->pos.GetOffset());
-    state->centerOffsetX  = gw_state->info.boundingbox.center_.x_;
-    state->centerOffsetY  = gw_state->info.boundingbox.center_.y_;
-    state->centerOffsetZ  = gw_state->info.boundingbox.center_.z_;
-    state->width          = gw_state->info.boundingbox.dimensions_.width_;
-    state->length         = gw_state->info.boundingbox.dimensions_.length_;
-    state->height         = gw_state->info.boundingbox.dimensions_.height_;
-    state->objectType     = gw_state->info.obj_type;
-    state->objectCategory = gw_state->info.obj_category;
+    state->id             = obj.id_;
+    state->model_id       = obj.model_id_;
+    state->ctrl_type      = static_cast<int>(obj.GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG));
+    state->timestamp      = static_cast<float>(player->scenarioEngine->getSimulationTime());
+    state->x              = static_cast<float>(obj.pos_.GetX());
+    state->y              = static_cast<float>(obj.pos_.GetY());
+    state->z              = static_cast<float>(obj.pos_.GetZ());
+    state->h              = static_cast<float>(obj.pos_.GetH());
+    state->p              = static_cast<float>(obj.pos_.GetP());
+    state->r              = static_cast<float>(obj.pos_.GetR());
+    state->speed          = static_cast<float>(obj.GetSpeed());
+    state->roadId         = obj.pos_.GetTrackId();
+    state->junctionId     = obj.pos_.GetJunctionId();
+    state->t              = static_cast<float>(obj.pos_.GetT());
+    state->laneId         = obj.pos_.GetLaneId();
+    state->s              = static_cast<float>(obj.pos_.GetS());
+    state->laneOffset     = static_cast<float>(obj.pos_.GetOffset());
+    state->centerOffsetX  = obj.boundingbox_.center_.x_;
+    state->centerOffsetY  = obj.boundingbox_.center_.y_;
+    state->centerOffsetZ  = obj.boundingbox_.center_.z_;
+    state->width          = obj.boundingbox_.dimensions_.width_;
+    state->length         = obj.boundingbox_.dimensions_.length_;
+    state->height         = obj.boundingbox_.dimensions_.height_;
+    state->objectType     = static_cast<int>(obj.GetType());
+    state->objectCategory = static_cast<int>(obj.category_);
     // assume first wheel is on front axle and steering
-    state->wheel_angle    = gw_state->info.wheel_data.size() > 0 ? static_cast<float>(gw_state->info.wheel_data[0].h) : 0.0f;
-    state->wheel_rot      = gw_state->info.wheel_data.size() > 0 ? static_cast<float>(gw_state->info.wheel_data[0].p) : 0.0f;
-    state->visibilityMask = gw_state->info.visibilityMask;
+    state->wheel_angle    = static_cast<float>(obj.GetWheelAngle());
+    state->wheel_rot      = static_cast<float>(obj.GetWheelRotation());
+    state->visibilityMask = obj.visibilityMask_;
 }
 
-static void copyWheelDataFromScenarioGateway(SE_WheelData *wheeldata, ObjectStateStruct *gw_state, int wheel_index)
+static void copyWheelDataFromScenarioObject(SE_WheelData *wheeldata, const scenarioengine::Vehicle &veh, int wheel_index)
 {
-    if (wheel_index >= 0 && wheel_index < static_cast<int>(gw_state->info.wheel_data.size()))
+    if (veh.GetType() == Object::Type::VEHICLE && wheel_index >= 0 && wheel_index < static_cast<int>(veh.GetWheelData().size()))
     {
-        wheeldata->x                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].x);
-        wheeldata->y                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].y);
-        wheeldata->z                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].z);
-        wheeldata->h                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].h);
-        wheeldata->p                    = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].p);
-        wheeldata->friction_coefficient = static_cast<float>(gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].friction_coefficient);
-        wheeldata->axle                 = gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].axle;
-        wheeldata->index                = gw_state->info.wheel_data[static_cast<unsigned int>(wheel_index)].index;
+        const WheelData &wd = veh.GetWheelData()[wheel_index];
+
+        wheeldata->x                    = wd.x;
+        wheeldata->y                    = static_cast<float>(wd.y);
+        wheeldata->z                    = static_cast<float>(wd.z);
+        wheeldata->h                    = static_cast<float>(wd.h);
+        wheeldata->p                    = static_cast<float>(wd.p);
+        wheeldata->friction_coefficient = static_cast<float>(wd.friction_coefficient);
+        wheeldata->axle                 = wd.axle;
+        wheeldata->index                = wd.index;
     }
 }
 
@@ -183,6 +184,7 @@ static int getObjectById(int object_id, Object *&obj)
     }
     return 0;
 }
+
 static int copyOverrideActionListfromScenarioEngine(SE_OverrideActionList *list, Object *obj)
 {
     if (obj == 0)
@@ -828,7 +830,7 @@ extern "C"
 
     SE_DLL_API int SE_GetNumberOfProperties(int index)
     {
-        if (player != nullptr && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
+        if (player != nullptr)
         {
             return player->GetNumberOfProperties(index);
         }
@@ -838,13 +840,9 @@ extern "C"
 
     SE_DLL_API const char *SE_GetObjectPropertyName(int index, int propertyIndex)
     {
-        if (player != nullptr && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
+        if (player != nullptr)
         {
-            int number = player->GetNumberOfProperties(index);
-            if (number > 0 && propertyIndex < number && propertyIndex >= 0)
-            {
-                return player->GetPropertyName(index, propertyIndex);
-            }
+            return player->GetPropertyName(index, propertyIndex);
         }
 
         return "";
@@ -852,7 +850,7 @@ extern "C"
 
     SE_DLL_API const char *SE_GetObjectPropertyValue(int index, const char *objectPropertyName)
     {
-        if (player != nullptr && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
+        if (player != nullptr)
         {
             for (int i = 0; i < player->GetNumberOfProperties(index); i++)
             {
@@ -1063,12 +1061,10 @@ extern "C"
         if (player != nullptr)
         {
             Object *obj = nullptr;
-            if (getObjectById(object_id, obj) == -1)
+            if (getObjectById(object_id, obj) == 0)
             {
-                return;
+                obj->pos_.SetMode(static_cast<roadmanager::Position::PosModeType>(type), static_cast<roadmanager::Position::PosMode>(mode));
             }
-
-            player->scenarioGateway->setObjectPositionMode(object_id, type, mode);
         }
     }
 
@@ -1077,12 +1073,10 @@ extern "C"
         if (player != nullptr)
         {
             Object *obj = nullptr;
-            if (getObjectById(object_id, obj) == -1)
+            if (getObjectById(object_id, obj) == 0)
             {
-                return;
+                obj->pos_.SetModeDefault(static_cast<roadmanager::Position::PosModeType>(type));
             }
-
-            player->scenarioGateway->setObjectPositionModeDefault(object_id, type);
         }
     }
 
@@ -1145,7 +1139,7 @@ extern "C"
 
                 object->scaleMode_   = static_cast<EntityScaleMode>(scale_mode);
                 object->category_    = object_category;
-                object->role_        = object_role;
+                object->role_        = static_cast<scenarioengine::Object::Role>(object_role);
                 object->boundingbox_ = bb;
                 player->scenarioEngine->entities_.addObject(object, true);
                 object->name_ = (object_name == nullptr) ? "obj_" + std::to_string(object->id_) : object_name;
@@ -1163,7 +1157,7 @@ extern "C"
                 if (object_type == scenarioengine::Object::Type::VEHICLE || object_type == scenarioengine::Object::Type::PEDESTRIAN)
                 {
                     ctrl_type                 = Controller::Type::CONTROLLER_TYPE_EXTERNAL;
-                    Controller::InitArgs args = {"", "", 0, 0, 0, 0};
+                    Controller::InitArgs args = {"", "", 0, 0, 0};
                     args.type                 = CONTROLLER_EXTERNAL_TYPE_NAME;
                     Controller *ctrl          = InstantiateControllerExternal(&args);
                     if (ctrl != nullptr)
@@ -1179,33 +1173,6 @@ extern "C"
             {
                 LOG_ERROR("SE_AddObject: Object type {} not supported yet", object_type);
                 return -1;
-            }
-
-            if (player->scenarioGateway->reportObjectXYZHPR(object->id_,
-                                                            object->g_id_,
-                                                            object->name_,
-                                                            object->type_,
-                                                            object->category_,
-                                                            object->role_,
-                                                            object->model_id_,
-                                                            model_3d == nullptr ? "" : object->GetModel3DFullPath(),
-                                                            ctrl_type,
-                                                            bb,
-                                                            scale_mode,
-                                                            0xff,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0) == 0)
-            {
-                return object->id_;
             }
         }
 
@@ -1230,7 +1197,6 @@ extern "C"
                 player->scenarioEngine->scenarioReader->RemoveController(ctrl);
             }
             player->scenarioEngine->entities_.removeObject(object_id);
-            player->scenarioGateway->removeObject(object_id);
             return 0;
         }
 
@@ -1245,7 +1211,8 @@ extern "C"
             return -1;
         }
 
-        player->scenarioGateway->updateObjectWorldPos(object_id, timestamp, x, y, z, h, p, r);
+        obj->pos_.SetInertiaPos(x, y, z, h, p, r);
+        obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;
     }
@@ -1258,7 +1225,8 @@ extern "C"
             return -1;
         }
 
-        player->scenarioGateway->updateObjectWorldPosMode(object_id, timestamp, x, y, z, h, p, r, mode);
+        obj->pos_.SetInertiaPosMode(x, y, z, h, p, r, mode);
+        obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;
     }
@@ -1271,7 +1239,8 @@ extern "C"
             return -1;
         }
 
-        player->scenarioGateway->updateObjectWorldPosXYH(object_id, timestamp, x, y, h);
+        obj->pos_.SetInertiaPos(x, y, h);
+        obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;
     }
@@ -1284,7 +1253,8 @@ extern "C"
             return -1;
         }
 
-        player->scenarioGateway->updateObjectLanePos(object_id, timestamp, roadId, laneId, laneOffset, s);
+        obj->pos_.SetLanePos(roadId, laneId, s, laneOffset);
+        obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;
     }
@@ -1296,7 +1266,9 @@ extern "C"
         {
             return -1;
         }
-        player->scenarioGateway->updateObjectSpeed(object_id, 0.0, speed);
+
+        obj->SetSpeed(speed);
+        obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
 
         return 0;
     }
@@ -1309,26 +1281,8 @@ extern "C"
             return -1;
         }
 
-        player->scenarioGateway->reportObjectRoadPos(object_id,
-                                                     obj->g_id_,
-                                                     obj->name_,
-                                                     obj->type_,
-                                                     obj->category_,
-                                                     obj->role_,
-                                                     obj->model_id_,
-                                                     obj->GetModel3DFilename(),
-                                                     obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
-                                                     obj->boundingbox_,
-                                                     static_cast<int>(obj->scaleMode_),
-                                                     obj->visibilityMask_,
-                                                     0.0,
-                                                     obj->GetSpeed(),
-                                                     obj->wheel_angle_,
-                                                     obj->wheel_rot_,
-                                                     obj->rear_axle_.positionZ,
-                                                     obj->pos_.GetTrackId(),
-                                                     t,
-                                                     obj->pos_.GetS());
+        obj->pos_.SetTrackPos(obj->pos_.GetTrackId(), obj->pos_.GetS(), t);
+        obj->SetDirtyBits(Object::DirtyBit::LATERAL);
 
         return 0;
     }
@@ -1342,27 +1296,8 @@ extern "C"
             return -1;
         }
 
-        player->scenarioGateway->reportObjectLanePos(object_id,
-                                                     obj->g_id_,
-                                                     obj->name_,
-                                                     obj->type_,
-                                                     obj->category_,
-                                                     obj->role_,
-                                                     obj->model_id_,
-                                                     obj->GetModel3DFilename(),
-                                                     obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
-                                                     obj->boundingbox_,
-                                                     static_cast<int>(obj->scaleMode_),
-                                                     obj->visibilityMask_,
-                                                     0.0,
-                                                     obj->GetSpeed(),
-                                                     obj->wheel_angle_,
-                                                     obj->wheel_rot_,
-                                                     obj->rear_axle_.positionZ,
-                                                     obj->pos_.GetTrackId(),
-                                                     obj->pos_.GetLaneId(),
-                                                     laneOffset,
-                                                     obj->pos_.GetS());
+        obj->pos_.SetLanePos(obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), obj->pos_.GetS(), laneOffset);
+        obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;
     }
@@ -1375,9 +1310,9 @@ extern "C"
         {
             return -1;
         }
-        player->scenarioGateway->updateObjectVel(object_id, 0.0, x_vel, y_vel, z_vel);
-        // Also update velocities directly in scenario object, in case we're in a callback
+
         obj->SetVel(x_vel, y_vel, z_vel);
+        obj->SetDirtyBits(Object::DirtyBit::VELOCITY);
 
         return 0;
     }
@@ -1390,9 +1325,9 @@ extern "C"
         {
             return -1;
         }
-        player->scenarioGateway->updateObjectAngularVel(object_id, 0.0, h_rate, p_rate, r_rate);
-        // Also update accelerations directly in scenario object, in case we're in a callback
+
         obj->SetAngularVel(h_rate, p_rate, r_rate);
+        obj->SetDirtyBits(Object::DirtyBit::ANGULAR_RATE);
 
         return 0;
     }
@@ -1405,9 +1340,9 @@ extern "C"
         {
             return -1;
         }
-        player->scenarioGateway->updateObjectAcc(object_id, 0.0, x_acc, y_acc, z_acc);
-        // Also update accelerations directly in scenario object, in case we're in a callback
+
         obj->SetAcc(x_acc, y_acc, z_acc);
+        obj->SetDirtyBits(Object::DirtyBit::ACCELERATION);
 
         return 0;
     }
@@ -1420,9 +1355,9 @@ extern "C"
         {
             return -1;
         }
-        player->scenarioGateway->updateObjectAngularAcc(object_id, 0.0, h_acc, p_acc, r_acc);
-        // Also update accelerations directly in scenario object, in case we're in a callback
+
         obj->SetAngularAcc(h_acc, p_acc, r_acc);
+        obj->SetDirtyBits(Object::DirtyBit::ANGULAR_ACC);
 
         return 0;
     }
@@ -1434,8 +1369,12 @@ extern "C"
         {
             return -1;
         }
-        player->scenarioGateway->updateObjectWheelRotation(object_id, 0, rotation);
-        player->scenarioGateway->updateObjectWheelAngle(object_id, 0, angle);
+
+        obj->wheel_rot_ = rotation;
+        obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+
+        obj->wheel_angle_ = angle;
+        obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
 
         return 0;
     }
@@ -1450,7 +1389,8 @@ extern "C"
 
         if (object_id >= 0 && object_id < static_cast<int>(player->scenarioEngine->entities_.object_.size()))
         {
-            player->scenarioGateway->updateObjectLaneTypeSnapMask(object_id, 0.0, laneTypes);
+            obj->pos_.SetSnapLaneTypes(laneTypes);
+            obj->SetDirtyBits(Object::DirtyBit::LANE_TYPE_SNAP_MASK);
         }
         else
         {
@@ -1470,7 +1410,7 @@ extern "C"
 
         if (object_id >= 0 && object_id < static_cast<int>(player->scenarioEngine->entities_.object_.size()))
         {
-            player->scenarioGateway->getObjectStatePtrByIdx(object_id)->state_.pos.SetLockOnLane(mode);
+            obj->pos_.SetLockOnLane(mode);
         }
         else
         {
@@ -1487,17 +1427,17 @@ extern "C"
             return -1;
         }
 
-        return player->scenarioGateway->getNumberOfObjects();
+        return player->scenarioEngine->entities_.object_.size();
     }
 
     SE_DLL_API int SE_GetId(int index)
     {
-        if (player == nullptr || index < 0 || index >= player->scenarioGateway->getNumberOfObjects())
+        if (player != nullptr && index >= 0 && index < player->scenarioEngine->entities_.object_.size())
         {
-            return -1;
+            return player->scenarioEngine->entities_.GetObjectIdxById(index);
         }
 
-        return player->scenarioGateway->getObjectStatePtrByIdx(index)->state_.info.id;
+        return -1;
     }
 
     SE_DLL_API int SE_GetIdByName(const char *name)
@@ -1520,16 +1460,16 @@ extern "C"
 
     SE_DLL_API int SE_GetObjectState(int object_id, SE_ScenarioObjectState *state)
     {
-        scenarioengine::ObjectState obj_state;
-
         if (player == nullptr)
         {
             return -1;
         }
 
-        if (player->scenarioGateway->getObjectStateById(object_id, obj_state) != -1)
+        Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+
+        if (obj != nullptr)
         {
-            copyStateFromScenarioGateway(state, &obj_state.state_);
+            copyStateFromScenarioObject(state, *obj);
             return 0;
         }
 
@@ -1664,7 +1604,7 @@ extern "C"
             {
                 player->osiReporter->SetOSIFrequency(1);
             }
-            player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);  //, player->scenarioEngine->environment);
+            player->osiReporter->UpdateOSIGroundTruth(player->scenarioEngine->entities_.object_);
             return player->osiReporter->GetOSIGroundTruth(size);
         }
 
@@ -1684,7 +1624,7 @@ extern "C"
             {
                 player->osiReporter->SetOSIFrequency(1);
             }
-            player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);  //, player->scenarioEngine->environment);
+            player->osiReporter->UpdateOSIGroundTruth(player->scenarioEngine->entities_.object_);
             return player->osiReporter->GetOSIGroundTruthRaw();
         }
 #endif  // _USE_OSI
@@ -1736,7 +1676,7 @@ extern "C"
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            return player->osiReporter->GetOSIRoadLane(player->scenarioGateway->objectState_, size, object_id);
+            return player->osiReporter->GetOSIRoadLane(player->scenarioEngine->entities_.object_, size, object_id);
         }
 
         *size = 0;
@@ -1771,7 +1711,7 @@ extern "C"
         if (player != nullptr)
         {
             std::vector<id_t> ids_vector;
-            player->osiReporter->GetOSILaneBoundaryIds(player->scenarioGateway->objectState_, ids_vector, object_id);
+            player->osiReporter->GetOSILaneBoundaryIds(player->scenarioEngine->entities_.object_, ids_vector, object_id);
             if (!ids_vector.empty())
             {
                 ids->far_left_lb_id  = ids_vector[0];
@@ -1923,9 +1863,7 @@ extern "C"
 
         if (ghost)
         {
-            scenarioengine::ObjectState obj_state;
-            player->scenarioGateway->getObjectStateById(ghost->id_, obj_state);
-            copyStateFromScenarioGateway(state, &obj_state.state_);
+            copyStateFromScenarioObject(state, *ghost);
         }
         else
         {
@@ -2107,11 +2045,11 @@ extern "C"
 
     SE_DLL_API int SE_GetObjectNumberOfWheels(int object_id)
     {
-        scenarioengine::ObjectState gw_obj_state;
+        Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
 
-        if (player->scenarioGateway->getObjectStateById(object_id, gw_obj_state) != -1)
+        if (obj != nullptr && obj->GetType() == Object::Type::VEHICLE)
         {
-            return static_cast<int>(gw_obj_state.state_.info.wheel_data.size());
+            return static_cast<int>(static_cast<Vehicle *>(obj)->GetWheelData().size());
         }
 
         return -1;
@@ -2119,17 +2057,12 @@ extern "C"
 
     SE_DLL_API int SE_GetObjectWheelData(int object_id, int wheel_index, SE_WheelData *wheeldata)
     {
-        scenarioengine::ObjectState gw_obj_state;
+        Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
 
-        if (player->scenarioGateway->getObjectStateById(object_id, gw_obj_state) != -1)
+        if (obj != nullptr && obj->GetType() == Object::Type::VEHICLE)
         {
-            int number_of_wheels = static_cast<int>(gw_obj_state.state_.info.wheel_data.size());
-
-            if (wheel_index >= 0 && wheel_index < number_of_wheels)
-            {
-                copyWheelDataFromScenarioGateway(wheeldata, &gw_obj_state.state_, wheel_index);
-                return 0;
-            }
+            copyWheelDataFromScenarioObject(wheeldata, static_cast<Vehicle &>(*obj), wheel_index);
+            return 0;
         }
 
         return -1;
@@ -2160,19 +2093,18 @@ extern "C"
 
     SE_DLL_API int SE_GetObjectStates(int *nObjects, SE_ScenarioObjectState *state)
     {
-        int i;
-        *nObjects = 0;
-
         if (player == nullptr)
         {
+            *nObjects = 0;
             return -1;
         }
 
-        for (i = 0; i < *nObjects && i < player->scenarioGateway->getNumberOfObjects(); i++)
+        *nObjects = static_cast<int>(player->scenarioEngine->entities_.object_.size());
+
+        for (unsigned int i = 0; i < player->scenarioEngine->entities_.object_.size(); i++)
         {
-            copyStateFromScenarioGateway(&state[i], &player->scenarioGateway->getObjectStatePtrByIdx(i)->state_);
+            copyStateFromScenarioObject(&state[i], *player->scenarioEngine->entities_.object_[i]);
         }
-        *nObjects = i;
 
         return 0;
     }
@@ -2238,7 +2170,7 @@ extern "C"
         if (player != nullptr)
         {
             player->SetOSIFileStatus(true, filename);
-            player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
+            player->osiReporter->UpdateOSIGroundTruth(player->scenarioEngine->entities_.object_);
         }
 #else
         (void)filename;
@@ -2385,14 +2317,14 @@ extern "C"
         return obj_found;
     }
 
-    void objCallbackFn(ObjectStateStruct *state, void *my_data)
+    void objCallbackFn(scenarioengine::Object *obj, void *my_data)
     {
         for (size_t i = 0; i < objCallback.size(); i++)
         {
-            if (objCallback[i].id == state->info.id)
+            if (objCallback[i].id == obj->GetId())
             {
                 SE_ScenarioObjectState se_state;
-                copyStateFromScenarioGateway(&se_state, state);
+                copyStateFromScenarioObject(&se_state, *obj);
                 objCallback[i].func(&se_state, my_data);
             }
         }

@@ -13,7 +13,6 @@
 #include "ControllerSloppyDriver.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 #include "logger.hpp"
 
 #include <random>
@@ -75,7 +74,7 @@ void ControllerSloppyDriver::Step(double timeStep)
 
     currentSpeed_ = object_->GetSpeed();
 
-    // Do modification to a local position object and then report to gateway
+    // Do modification to a local position object and then report
     if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
     {
         if (speedTimer_.Expired(time_))
@@ -172,8 +171,7 @@ void ControllerSloppyDriver::Step(double timeStep)
         }
     }
 
-    gateway_->updateObjectPos(object_->id_, 0.0, &object_->pos_);
-    gateway_->updateObjectSpeed(object_->GetId(), 0.0, currentSpeed_);
+    object_->SetSpeed(currentSpeed_);
 
     Controller::Step(timeStep);
 }

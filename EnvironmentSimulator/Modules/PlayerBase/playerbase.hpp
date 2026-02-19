@@ -20,6 +20,7 @@
 #include "CommonMini.hpp"
 #include "Server.hpp"
 #include "IdealSensor.hpp"
+#include "PacketHandler.hpp"
 
 #ifdef _USE_OSI
 #include "OSIReporter.hpp"
@@ -73,7 +74,7 @@ namespace scenarioengine
             PLAYER_STATE_STEP
         } PlayerState;
 
-        typedef void (*ObjCallbackFunc)(ObjectStateStruct *, void *);
+        typedef void (*ObjCallbackFunc)(Object *, void *);
 
         typedef struct
         {
@@ -101,6 +102,8 @@ namespace scenarioengine
         int  Frame(double timestep_s, bool server_mode = false);
         void ScenarioPostFrame();
         int  ScenarioFrame(double timestep_s, bool keyframe);
+        void WriteStatesToFile(const double simulation_time, const double dt);
+        int  RecordToFile(std::string filename, std::string odr_filename, std::string model_filename, std::string git_rev);
         void ShowObjectSensors(bool mode);
 
         void DynamicPitchUpdate(Object *obj, double dt, double a_min = -12.0, double a_max = 10.0) const;
@@ -231,8 +234,6 @@ namespace scenarioengine
         }
         int LoadParameterDistribution(std::string filename);
 
-        // TODO
-        // int GetNumberOfVehicleProperties(){return 4;};
         int                     GetNumberOfProperties(int index);
         const char             *GetPropertyName(int index, int propertyIndex);
         const char             *GetPropertyValue(int index, int propertyIndex);
@@ -245,7 +246,6 @@ namespace scenarioengine
 
         CSV_Logger                   *CSV_Log;
         ScenarioEngine               *scenarioEngine;
-        ScenarioGateway              *scenarioGateway;
         std::unique_ptr<PlayerServer> player_server_;
 
 #ifdef _USE_OSI
@@ -284,6 +284,7 @@ namespace scenarioengine
         std::string                 exe_path_;
         SE_Semaphore                player_init_semaphore;
         SE_Semaphore                viewer_init_semaphore;
+        Dat::DatWriter              dat_writer_;
 
     private:
         double       trail_dt;

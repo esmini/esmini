@@ -3,6 +3,7 @@
 #include <fstream>
 #include "CommonMini.hpp"
 #include "RoadManager.hpp"
+#include "scenarioengine.hpp"
 
 #define DAT_FILE_FORMAT_VERSION_MAJOR 4
 #define DAT_FILE_FORMAT_VERSION_MINOR 3
@@ -150,7 +151,7 @@ namespace Dat
         int            WriteDtToDat();
         int            WriteTrafficLightsToDat(const std::vector<roadmanager::Signal*>& dynamic_signals);
         int            WriteStoryBoardStateChangesToDat(const std::vector<std::string>& state_changes);
-        int            WriteObjectStatesToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states);
+        int            WriteObjectStatesToDat(const std::vector<scenarioengine::Object*>& objects);
         constexpr bool ShouldWriteObjId(PacketId p_id) const noexcept;
 
         size_t SerializedSize(const std::string& str);

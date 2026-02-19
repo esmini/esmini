@@ -211,8 +211,7 @@ void ControllerNaturalDriver::Step(double dt)
     }
 
     object_->MoveAlongS(current_speed_ * dt);
-    gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
-    gateway_->updateObjectSpeed(object_->GetId(), 0.0, current_speed_);
+    object_->SetSpeed(current_speed_);
 
     Controller::Step(dt);
 }

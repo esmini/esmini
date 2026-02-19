@@ -14,7 +14,6 @@
 #include "CommonMini.hpp"
 #include "Entities.hpp"
 #include "ScenarioEngine.hpp"
-#include "ScenarioGateway.hpp"
 #include "playerbase.hpp"
 #include "logger.hpp"
 
@@ -405,13 +404,13 @@ void ControllerLooming::Step(double timeStep)
     prevNearAngle = nearAngle;
     prevFarAngle  = far_angle;
 
-    gateway_->getObjectStatePtrByIdx(object_->GetId())->state_.pos.SetLockOnLane(true);
+    object_->pos_.SetLockOnLane(true);
     vehicle_.DrivingControlAnalog(timeStep, CLAMP(acc, -1, 1), steering);
 
-    gateway_->updateObjectWorldPosXYH(object_->GetId(), 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
-    gateway_->updateObjectWheelAngle(object_->GetId(), 0.0, vehicle_.wheelAngle_);
+    object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
 
-    gateway_->updateObjectSpeed(object_->GetId(), 0.0, vehicle_.speed_);
+    object_->wheel_angle_ = vehicle_.wheelAngle_;
+    object_->SetSpeed(vehicle_.speed_);
     object_->sensor_pos_[0] = far_x;
     object_->sensor_pos_[1] = far_y;
 

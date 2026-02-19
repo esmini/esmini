@@ -14,7 +14,6 @@
 #include "CommonMini.hpp"
 #include "Entities.hpp"
 #include "ScenarioEngine.hpp"
-#include "ScenarioGateway.hpp"
 #include "logger.hpp"
 
 using namespace scenarioengine;
@@ -237,10 +236,9 @@ void ControllerALKS_R157SM::Step(double timeStep)
     if (mode_ == ControlOperationMode::MODE_OVERRIDE)
     {
         object_->MoveAlongS(speed * timeStep);
-        gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
     }
 
-    gateway_->updateObjectSpeed(object_->GetId(), 0.0, speed);
+    object_->SetSpeed(speed);
 
     Controller::Step(timeStep);
 }

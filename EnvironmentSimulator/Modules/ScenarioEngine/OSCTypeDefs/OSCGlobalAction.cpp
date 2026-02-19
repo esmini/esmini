@@ -282,8 +282,6 @@ void DeleteEntityAction::Start(double simTime)
         return;
     }
 
-    gateway_->removeObject(entity_->name_);
-
     LOG_INFO("Deleted entity {}", entity_->GetName());
 
     OSCAction::Start(simTime);
@@ -686,7 +684,6 @@ void SwarmTrafficAction::spawn(Solutions sols, int replace, double simTime)
             args.name            = "Swarm ACC controller";
             args.type            = CONTROLLER_ACC_TYPE_NAME;
             args.scenario_engine = scenario_engine_;
-            args.gateway         = gateway_;
             args.parameters      = 0;
             args.properties      = 0;
 
@@ -845,8 +842,6 @@ int SwarmTrafficAction::despawn(double simTime)
                 {
                     trailer = static_cast<Vehicle*>(v->TrailerVehicle());
 
-                    gateway_->removeObject(v->name_);
-
                     if (v->objectEvents_.size() > 0 || v->initActions_.size() > 0)
                     {
                         entities_->deactivateObject(v);
@@ -863,7 +858,6 @@ int SwarmTrafficAction::despawn(double simTime)
 
             if (vehicle)
             {
-                gateway_->removeObject(vehicle->name_);
                 if (vehicle->objectEvents_.size() > 0 || vehicle->initActions_.size() > 0)
                 {
                     entities_->deactivateObject(vehicle);
