@@ -1478,7 +1478,7 @@ namespace scenarioengine
         std::vector<double>       GetRgbFromColorEnum(const Object::VehicleLightColor& color);
         void                      CmykToRgb(const double* cmyk, double* rgb);
         void                      SetRgbFromColorEnum(const Object::VehicleLightColor& color);
-        void                      SetRgbFromTypeEnum(const Object::VehicleLightType& type);
+        void                      SetRgbFromTypeEnum(const Object::VehicleLightType& type, double* arr);
         void                      UpdateArray(double* arr, size_t size, const std::vector<double>& vals);
         void                      SetVehicleLightState(double* maxRgb, double luminousity);
         // Object::VehicleLightType GetLightType();

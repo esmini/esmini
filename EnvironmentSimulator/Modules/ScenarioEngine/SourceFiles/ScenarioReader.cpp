@@ -4159,7 +4159,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             else if (lightStateAction->GetVehicleLightColor() == Object::VehicleLightColor::OTHER ||
                      lightStateAction->GetVehicleLightColor() == Object::VehicleLightColor::UNKNOWN)
             {
-                lightStateAction->SetRgbFromTypeEnum(lightStateAction->GetVehicleLightType());
+                lightStateAction->SetRgbFromTypeEnum(lightStateAction->GetVehicleLightType(), lightStateAction->GetRgb());
                 lightStateAction->SetDeducedRgbFromLightType(true);
             }
             else
