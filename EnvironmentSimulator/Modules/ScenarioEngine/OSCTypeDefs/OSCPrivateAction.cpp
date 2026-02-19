@@ -3117,7 +3117,21 @@ void LightStateAction::SetVehicleLightState(double* maxRgb, double luminousity)
 void LightStateAction::Start(double simTime)
 {
     // Fetch current status of the vehicle lamp and save old state for potential transitions
-    vehicleLight_      = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
+    vehicleLight_ = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
+    if (vehicleLight_->type == Object::VehicleLightType::UNDEFINED)
+    {
+        for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
+        {
+            auto& light       = object_->vehLghtStsList[i];
+            light.type        = static_cast<Object::VehicleLightType>(i);
+            light.mode        = Object::VehicleLightMode::OFF;
+            light.emission[0] = 0.0;
+            light.emission[1] = 0.0;
+            light.emission[2] = 0.0;
+            SetRgbFromTypeEnum(light.type, light.baseRgb);
+            GetRgbMinMaxColor(light.baseRgb, light.rgb, light.maxRgb);
+        }
+    }
     previousMode_      = vehicleLight_->mode;
     previousIntensity_ = vehicleLight_->luminousIntensity;
     // vehicleLight_->rgb/maxRgb are initialized with min/max values for the material color
@@ -3363,7 +3377,7 @@ void LightStateAction::UpdateArray(double* arr, size_t size, const std::vector<d
     }
 }
 
-void LightStateAction::SetRgbFromTypeEnum(const Object::VehicleLightType& type)
+void LightStateAction::SetRgbFromTypeEnum(const Object::VehicleLightType& type, double* arr)
 {
     switch (type)
     {
@@ -3372,33 +3386,33 @@ void LightStateAction::SetRgbFromTypeEnum(const Object::VehicleLightType& type)
         case Object::VehicleLightType::HIGH_BEAM:
         case Object::VehicleLightType::REVERSING_LIGHTS:
         case Object::VehicleLightType::LICENSE_PLATE_ILLUMINATION:
-            this->rgb_[0] = 0.5;
-            this->rgb_[1] = 0.5;
-            this->rgb_[2] = 0.5;
+            arr[0] = 0.5;
+            arr[1] = 0.5;
+            arr[2] = 0.5;
             break;
         case Object::VehicleLightType::FOG_LIGHTS:
         case Object::VehicleLightType::FOG_LIGHTS_FRONT:
         case Object::VehicleLightType::FOG_LIGHTS_REAR:
-            this->rgb_[0] = 0.5;
-            this->rgb_[1] = 0.5;
-            this->rgb_[2] = 0.4;
+            arr[0] = 0.8;
+            arr[1] = 0.8;
+            arr[2] = 0.8;
             break;
         case Object::VehicleLightType::BRAKE_LIGHTS:
-            this->rgb_[0] = 0.5;
-            this->rgb_[1] = 0.0;
-            this->rgb_[2] = 0.0;
+            arr[0] = 0.5;
+            arr[1] = 0.0;
+            arr[2] = 0.0;
             break;
         case Object::VehicleLightType::WARNING_LIGHTS:
         case Object::VehicleLightType::INDICATOR_LEFT:
         case Object::VehicleLightType::INDICATOR_RIGHT:
-            this->rgb_[0] = 0.5;
-            this->rgb_[1] = 0.35;
-            this->rgb_[2] = 0.14;
+            arr[0] = 1.0;
+            arr[1] = 0.1;
+            arr[2] = 0.05;
             break;
         case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
-            this->rgb_[0] = 0.3;
-            this->rgb_[1] = 0.3;
-            this->rgb_[2] = 0.5;
+            arr[0] = 0.3;
+            arr[1] = 0.3;
+            arr[2] = 0.5;
             break;
         default:
             break;
