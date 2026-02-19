@@ -70,7 +70,6 @@ static std::vector<StoryBoardElementTriggerInfo> storyboard_element_triggers;
 ScenarioReader::ScenarioReader(Entities *entities, Catalogs *catalogs, OSCEnvironment *environment, bool disable_controllers)
     : entities_(entities),
       catalogs_(catalogs),
-      gateway_(nullptr),
       scenarioEngine_(nullptr),
       environment_(environment),
       disable_controllers_(disable_controllers),
@@ -1128,7 +1127,6 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
         Controller::InitArgs args;
         args.name            = name;
         args.type            = ctrlType;
-        args.gateway         = gateway_;
         args.scenario_engine = scenarioEngine_;
         args.parameters      = &parameters;
         args.properties      = &properties;
@@ -2402,7 +2400,6 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 trafficSwarmAction->SetSemiMinorAxes(std::stod(radius));
 
                 trafficSwarmAction->SetScenarioEngine(scenarioEngine_);
-                trafficSwarmAction->SetGateway(gateway_);
                 trafficSwarmAction->SetReader(this);
 
                 // Number of vehicles
@@ -2441,7 +2438,6 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 {
                     DeleteEntityAction *deleteEntityAction = new DeleteEntityAction(entity, parent);
                     deleteEntityAction->SetEntities(entities_);
-                    deleteEntityAction->SetGateway(gateway_);
 
                     action = deleteEntityAction;
                 }

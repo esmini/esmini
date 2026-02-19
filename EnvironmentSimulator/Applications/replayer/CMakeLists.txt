@@ -28,7 +28,6 @@ set(TARGET1_INCLUDES
 set(TARGET2_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/dat2csv.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Replay.cpp
-    ${SCENARIO_ENGINE_PATH}/SourceFiles/ScenarioGateway.cpp
     ${SCENARIO_ENGINE_PATH}/SourceFiles/PacketHandler.cpp)
 
 set(TARGET3_SOURCES
