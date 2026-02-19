@@ -1481,6 +1481,7 @@ namespace scenarioengine
         void                      SetRgbFromTypeEnum(const Object::VehicleLightType& type, double* arr);
         void                      UpdateArray(double* arr, size_t size, const std::vector<double>& vals);
         void                      SetVehicleLightState(double* maxRgb, double luminousity);
+        void                      InitializeAllLights();
         // Object::VehicleLightType GetLightType();
 
         // Getters
