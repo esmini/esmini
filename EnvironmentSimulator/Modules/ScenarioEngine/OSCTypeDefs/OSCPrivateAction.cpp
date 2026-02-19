@@ -3118,20 +3118,14 @@ void LightStateAction::Start(double simTime)
 {
     // Fetch current status of the vehicle lamp and save old state for potential transitions
     vehicleLight_ = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
+
     if (vehicleLight_->type == Object::VehicleLightType::UNDEFINED)
     {
-        for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
-        {
-            auto& light       = object_->vehLghtStsList[i];
-            light.type        = static_cast<Object::VehicleLightType>(i);
-            light.mode        = Object::VehicleLightMode::OFF;
-            light.emission[0] = 0.0;
-            light.emission[1] = 0.0;
-            light.emission[2] = 0.0;
-            SetRgbFromTypeEnum(light.type, light.baseRgb);
-            GetRgbMinMaxColor(light.baseRgb, light.rgb, light.maxRgb);
-        }
+        // The light attached to the action hasn't been initialized, so we assume no light has been initialized.
+        // Thus, we initialize all of them with basic values below. This should only happen when running headless...
+        InitializeAllLights();
     }
+
     previousMode_      = vehicleLight_->mode;
     previousIntensity_ = vehicleLight_->luminousIntensity;
     // vehicleLight_->rgb/maxRgb are initialized with min/max values for the material color
@@ -3293,6 +3287,21 @@ void LightStateAction::Step(double simTime, double dt)
         vehicleLight_->active = false;
         OSCAction::End();
         return;
+    }
+}
+
+void LightStateAction::InitializeAllLights()
+{
+    for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
+    {
+        auto& light       = object_->vehLghtStsList[i];
+        light.type        = static_cast<Object::VehicleLightType>(i);
+        light.mode        = Object::VehicleLightMode::OFF;
+        light.emission[0] = 0.0;
+        light.emission[1] = 0.0;
+        light.emission[2] = 0.0;
+        SetRgbFromTypeEnum(light.type, light.baseRgb);
+        GetRgbMinMaxColor(light.baseRgb, light.rgb, light.maxRgb);
     }
 }
 
