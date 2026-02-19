@@ -706,7 +706,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     }
     else
     {
-        // No 3D model attribute present. Apply model file based on Category, and set default 3D model id
+        // No 3D model attribute present. Apply model file based on Category
         if (vehicle->category_ == Vehicle::Category::BICYCLE)
         {
             vehicle->SetModel3DFullPath("cyclist.osgb", DirNameOf(SE_Env::Inst().GetOSCFilePath()) + "/../models");

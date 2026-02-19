@@ -539,7 +539,7 @@ All collisions (overlap) between entity bounding boxes will be registered in the
 Replay a scenario recording (.dat file): +
 ``./bin/replayer --window 60 60 800 400 --res_path ./resources --file sim.dat``
 
-The `--res_path` is a special path directive should normally point to esmini/resources folder, where it will look for the OpenDRIVE file, 3D models and model_ids table (model_ids.txt). It also works to add one or multiple --path <path> directives, like for esmini.
+The `--res_path` is a special path directive should normally point to esmini/resources folder, where it will look for the OpenDRIVE file, 3D models, traffic signal mappings and more. It also works to add one or multiple --path <path> directives, like for esmini.
 
 Once loaded the scenario recording will start playing in normal speed. Here are a few key commands:
 
@@ -679,7 +679,7 @@ To see what parameters are available for plot: +
 will output a list similar to: +
 ``
 Plottable parameters: +
-id, model_id, obj_type, obj_category, ctrl_type, time, speed, wheel_angle, wheel_rot, centerOffsetX, centerOffsetY, centerOffsetZ, width, length, height, scaleMode, visibilityMask, x, y, z, h, p, r, roadId, laneId, offset, t, s
+id, obj_type, obj_category, ctrl_type, time, speed, wheel_angle, wheel_rot, centerOffsetX, centerOffsetY, centerOffsetZ, width, length, height, scaleMode, visibilityMask, x, y, z, h, p, r, roadId, laneId, offset, t, s
 ``
 
 Most parameters does normally not make sense to plot, but it depends on the test case. Maybe it's interesting to see when a car makes a lane change. Plot laneId over time: +
@@ -2322,13 +2322,11 @@ Settings for `m1_audi_q7_2015` (in openx_assets_3d.catalog.xosc):
 <Properties>
    <Property name="model_x_offset" value="1.5542"/>
    <Property name="refpoint_x_offset" value="2.98"/>
-   <Property name="model_id" value="21"/>
 </Properties>
 ----
 
 * `model_x_offset`: Align the 3D model to the OpenSCENARIO reference point (it's at center in this model)
 * `refpoint_x_offset`: Move the reference point along the vehicle x-axis
-* `model_id`: Specifies which 3D model for any use use in replayer
 
 == Controllers
 
@@ -3443,7 +3441,6 @@ esmini/
 |  |_ esminiLib
 |  |_ esminiRMLib
 |_ resources/
-   |_ model_ids.txt
    |_ traffic_signals/
    |_ models/
    |_ xodr/
@@ -3452,7 +3449,7 @@ esmini/
 ----
 
 * `bin` all executables and shared libraries (esminiLib.so/dll and esminiRMLib.so/dll)
-* `model_ids.txt` a simple mapping of model Id and 3D model file. This is used when replaying `.dat` files which contains only model ID number instead of full 3D model file path (for bandwidth reasons).
+* `model_ids.txt` a simple mapping of model Id and 3D model file. This is used when replaying `.dat` files which contains only model ID number instead of full 3D model file path (for bandwidth reasons). NOTE: Deprecated, will be removed. Use `model3d` attribute instead.
 * `traffic_signals` files mapping road sign ID to OSI type, per country
 * `models` 3D model files and textures
 * `xodr` OpenDRIVE files
@@ -3502,6 +3499,8 @@ Order of search locations:
 
 * Default location relative executable (or library): `<path_to_exe>/resources/model_ids.txt`
 * Relative current directory: `./resources/model_ids.txt`
+
+NOTE: model_id concept is deprecated and will be removed. `model3d` attribute being used instead.
 
 *traffic_signals*
 

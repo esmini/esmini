@@ -1,5 +1,35 @@
 ## esmini release notes
 
+### 2026-02-19 Version 2.60.0
+
+New features:
+- Support [AngleCondition](https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/AngleCondition.html)
+  - limitation: only `heading` supported for `trajectory` coordinate system
+  - for `lane` coordinate system type, the reference heading aligns with driving direction
+
+Improvements and fixes:
+- Align trailer to any given Z value (issue [#769](https://github.com/esmini/esmini/issues/769))
+  - useful for airborne trajectories not bound to road or ground
+- Make `ground_plane` option value explicit
+  - three modes: `auto`, `on`, `off`
+  - `auto` depends on road model existence (generated or loaded)
+- Fix trajectory time offset issue (issue [#773](https://github.com/esmini/esmini/issues/773))
+  - take time offset into account for end of action
+- Update trajectory end condition accounting for floating point precision tolerance
+  - might cause slight deviation in scenario output
+- Align any trailer on AddEntity action
+- Fix esminiRMLib segfault on missing road ID (issue [#774](https://github.com/esmini/esmini/issues/774))
+- Accept repeated SE_Init without closing scenario (SE_Close) in between
+- Bump protobuf from 5.29.5 to 5.29.6 (issue [#771](https://github.com/esmini/esmini/issues/771))
+- Sync struct member names in esminiRMUnityUtil.cs with recent C# wrapper updates
+- Fix heading wrongly affecting RelativeWorldPosition
+- Accept relative Z values in trajectories
+  - like absolute Z values affecting the elevation of the trajectory
+  - still, omitted Z values will align entity on the road surface
+- Update User guide wrt deprecated model_id concept
+  - use Vehicle `model3d` attribute instead
+- A few additional minor fixes
+
 ### 2026-02-05 Version 2.59.0
 
 Breaking changes:
