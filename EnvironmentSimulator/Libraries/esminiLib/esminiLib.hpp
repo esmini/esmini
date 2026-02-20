@@ -1144,11 +1144,11 @@ extern "C"
 
     /**
             Get the overrideActionStatus of specified object
-            @param objectId Id of the object
+            @param object_id Id of the object
             @param list Pointer/reference to a SE_OverrideActionList struct to be filled in
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_GetOverrideActionStatus(int objectId, SE_OverrideActionList *list);
+    SE_DLL_API int SE_GetOverrideActionStatus(int object_id, SE_OverrideActionList *list);
 
     /**
             Get the type name of the specifed vehicle-, pedestrian- or misc object
@@ -1180,7 +1180,7 @@ extern "C"
 
     /**
             Get ID of the ghost associated with given object
-            @param object_id Id of the ghost object
+            @param object_id Id of the object to which the ghost is attached
             @return ghost object ID, -1 if ghost does not exist for given object
     */
     SE_DLL_API int SE_GetObjectGhostId(int object_id);
@@ -1624,7 +1624,7 @@ extern "C"
 
     /**
             The SE_GetOSILaneBoundaryIds function the global ids for left, far left, right and far right lane boundaries
-            @param object_id Handle to the object to which the sensor should be attached
+            @param object_id Id of the object
             @param ids Reference to a struct which will be filled with the Ids
     */
     SE_DLL_API void SE_GetOSILaneBoundaryIds(int object_id, SE_LaneBoundaryId *ids);
