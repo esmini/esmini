@@ -466,7 +466,7 @@ namespace scenarioengine
         std::vector<std::vector<Dat::PacketGeneric>> generic_packets_ = {};
         std::vector<PacketSlice>                     packet_slices_   = {};
         std::vector<std::vector<PacketSlice>>        ghost_restarts_;
-        std::vector<std::pair<double, double>>       restart_timestamps_;  // start, stop of each ghost reset
+        std::vector<std::pair<double, double>>       restart_timestamps_;  // start & stop of each ghost reset
         Timeline<double>                             dts_;
     };
 
