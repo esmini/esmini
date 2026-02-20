@@ -1128,6 +1128,21 @@ extern "C"
     SE_DLL_API int SE_GetObjectInLaneType(int object_id);
 
     /**
+            Check if lane change is possible for specified object based on number of drivable lanes
+            and road mark (line type) restrictions. A lane change direction is only reported as
+            possible when a neighboring driving lane exists AND the road mark on the boundary
+            allows crossing in that direction (e.g. broken line or laneChange="both"/"increase"/"decrease").
+            If the object is not currently in a driving lane, returns 0 (no lane change possible).
+            @param object_id Id of the object
+            @return 0 = no lane change possible (including when object is not in a driving lane),
+                    1 = lane change to the left is possible,
+                    2 = lane change to the right is possible,
+                    3 = lane change to both left and right is possible,
+                   -1 = error (e.g. invalid object or missing road)
+    */
+    SE_DLL_API int SE_ObjectCanChangeLanes(int object_id);
+
+    /**
             Get the overrideActionStatus of specified object
             @param objectId Id of the object
             @param list Pointer/reference to a SE_OverrideActionList struct to be filled in
