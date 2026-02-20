@@ -732,6 +732,17 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     if (!modelIdStr.empty())
     {
         vehicle->model_id_ = strtoi(modelIdStr);
+
+        // If no explicit model3d was specified, update the 3D model path based on model_id
+        if (!model3d_attr && vehicle->properties_.file_.filepath_.empty())
+        {
+            std::string modelFilename = SE_Env::Inst().GetModelFilenameById(vehicle->model_id_);
+            if (!modelFilename.empty())
+            {
+                vehicle->SetModel3DFullPath(modelFilename, DirNameOf(SE_Env::Inst().GetOSCFilePath()) + "/../models");
+            }
+        }
+        
         if (SE_Env::Inst().GetOptions().IsOptionArgumentSet("record"))
         {
             CheckModelId(vehicle);
