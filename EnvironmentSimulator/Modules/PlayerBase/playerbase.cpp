@@ -204,8 +204,6 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
                 Draw();
                 if (!IsPaused() && !IsQuitRequested())
                 {
-                    // clear bits from previous frame
-                    scenarioGateway->clearDirtyBits();
                     retval = ScenarioFrame(ghost_solo_dt, false);
                 }
             }
@@ -240,7 +238,6 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
         {
             scenarioEngine->mutex_.Lock();
             ScenarioPostFrame();
-            scenarioGateway->clearDirtyBits();  // clear bits enabling identifying external updates
             scenarioEngine->mutex_.Unlock();
         }
     }
@@ -275,22 +272,23 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
             // Check for any callbacks to be made
             for (size_t i = 0; i < objCallback.size(); i++)
             {
-                ObjectState* os = scenarioGateway->getObjectStatePtrById(objCallback[i].id);
-                if (os)
+                Object* obj = scenarioEngine->entities_.GetObjectById(objCallback[i].id);
+                if (obj != nullptr)
                 {
-                    ObjectStateStruct state;
-                    state = os->getStruct();
-                    objCallback[i].func(&state, objCallback[i].data);
+                    objCallback[i].func(obj, objCallback[i].data);
                 }
             }
         }
 
         scenarioEngine->prepareGroundTruth(timestep_s);
 
+        // TODO: write to dat
+#if 0
         scenarioGateway->SetDynamicSignals(roadmanager::Position::GetOpenDrive()->GetDynamicSignals());
         scenarioGateway->UpdateStoryBoardStateChanges(scenarioEngine->storyBoard.GetChanges());
         scenarioGateway->WriteStatesToFile(scenarioEngine->getSimulationTime(), timestep_s);
         scenarioEngine->storyBoard.ClearStateChanges();
+#endif
 
         if (CSV_Log)
         {
@@ -327,9 +325,9 @@ void ScenarioPlayer::ScenarioPostFrame()
         if (osiReporter->GetOSIFrequency() > 0)
         {
             osiReporter->ReportSensors(sensor);
-
+#if 0  // TODO: Update OSI
             osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-
+#endif
             osiReporter->UpdateOSITrafficCommand();
         }
     }
@@ -387,12 +385,6 @@ void ScenarioPlayer::ViewerFrame()
                                                            obj->model3d_x_offset_,
                                                            &obj->outline_2d_,
                                                            obj->scaleMode_));
-
-        if (obj->scaleMode_ == EntityScaleMode::BB_TO_MODEL)
-        {
-            // report updated bounding box
-            scenarioGateway->updateObjectBoundingBox(obj->GetId(), obj->boundingbox_);
-        }
 
         // Connect callback for setting transparency
         viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(obj, viewer_->entities_.back());
@@ -1829,9 +1821,8 @@ int ScenarioPlayer::Init()
         }
     }
 
-    // Fetch scenario gateway and OpenDRIVE manager objects
-    scenarioGateway = scenarioEngine->getScenarioGateway();
-    odr_manager     = scenarioEngine->getRoadManager();
+    // Fetch OpenDRIVE manager objects
+    odr_manager = scenarioEngine->getRoadManager();
 
 #ifdef _USE_OSI
     osiReporter = new OSIReporter(scenarioEngine);
@@ -1950,6 +1941,7 @@ int ScenarioPlayer::Init()
         }
     }
 
+#if 0  // TODO: Save to DAT
     // Create a data file for later replay?
     if ((arg_str = opt.GetOptionValue("record")) != "")
     {
@@ -1982,6 +1974,7 @@ int ScenarioPlayer::Init()
                                       scenarioEngine->getSceneGraphFilename(),
                                       std::string(esmini_git_rev()));
     }
+#endif
 
     if (launch_server)
     {

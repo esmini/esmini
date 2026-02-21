@@ -14,7 +14,6 @@
 
 #include "UDP.hpp"
 #include "IdealSensor.hpp"
-#include "ScenarioGateway.hpp"
 #include "ScenarioEngine.hpp"
 #include "osi_sensordata.pb.h"
 #include "osi_object.pb.h"
@@ -80,7 +79,7 @@ public:
     /**
     Calls UpdateOSIStaticGroundTruth and UpdateOSIDynamicGroundTruth
     */
-    int UpdateOSIGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
+    int UpdateOSIGroundTruth(const std::vector<scenarioengine::Object*>& objects);
     /**
     Fills up the osi message with static GroundTruth from OpenDRIVE. Should only be called once.
     @return -1 on error, 0 on no updates performed, else number of odr objects updated
@@ -90,11 +89,11 @@ public:
     Fills up the osi message with  static GroundTruth
     @return -1 on error, 0 on no updates performed, else number of misc objects updated
     */
-    int UpdateOSIStaticGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
+    int UpdateOSIStaticGroundTruth(const std::vector<scenarioengine::Object*>& objects);
     /**
     Fills up the osi message with dynamic GroundTruth
     */
-    int UpdateOSIDynamicGroundTruth(const std::vector<std::unique_ptr<ObjectState>>& objectState);
+    int UpdateOSIDynamicGroundTruth(const std::vector<scenarioengine::Object*>& objects);
     /**
     Fills up the osi message with Stationary Object from the OpenDRIVE description
     */
@@ -103,15 +102,11 @@ public:
     Fills up the osi message with Stationary Object
     @return -1 on error, 0 on no updates performed, else 1
     */
-    int UpdateOSIStationaryObject(ObjectState* objectState);
-    /**
-    Fills up the osi message with Host Vehicle data
-    */
-    int UpdateOSIHostVehicleData(ObjectState* objectState);
+    int UpdateOSIStationaryObject(scenarioengine::Object& obj);
     /**
     Fills up the osi message with Moving Object
     */
-    int UpdateOSIMovingObject(ObjectState* objectState);
+    int UpdateOSIMovingObject(const Object& obj);
     /**
     Fills up the osi message with Lane Boundary
     */
@@ -206,12 +201,12 @@ public:
     const char*       GetOSIGroundTruth(int* size);
     const char*       GetOSIGroundTruthRaw();
     const char*       GetOSITrafficCommandRaw();
-    const char*       GetOSIRoadLane(const std::vector<std::unique_ptr<ObjectState>>& objectState, int* size, int object_id);
+    const char*       GetOSIRoadLane(const std::vector<scenarioengine::Object*>& objects, int* size, int object_id);
     const char*       GetOSIRoadLaneBoundary(int* size, int g_id);
-    void              GetOSILaneBoundaryIds(const std::vector<std::unique_ptr<ObjectState>>& objectState, std::vector<id_t>& ids, int object_id);
+    void              GetOSILaneBoundaryIds(const std::vector<scenarioengine::Object*>& objects, std::vector<id_t>& ids, int object_id);
     const char*       GetOSISensorDataRaw();
     osi3::SensorView* GetSensorView();
-    void              CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState>& objectState);
+    void              CheckDynamicTypeAndUpdate(const scenarioengine::Object& obj);
     bool              IsCentralOSILane(int lane_idx);
     idx_t             GetLaneIdxfromIdOSI(id_t lane_id);
     osi3::Lane*       GetOSILaneFromGlobalId(id_t g_id);

@@ -1,4 +1,3 @@
-#include "ScenarioGateway.hpp"
 #include "PacketHandler.hpp"
 
 Dat::DatWriter::~DatWriter()

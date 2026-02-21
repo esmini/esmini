@@ -24,7 +24,6 @@ namespace scenarioengine
 {
     // Forward declarations
     class ScenarioPlayer;
-    class ScenarioGateway;
     class ScenarioEngine;
     class Entities;
     class Object;
@@ -61,12 +60,11 @@ namespace scenarioengine
 
         typedef struct
         {
-            std::string      name;
-            std::string      type;
-            OSCProperties*   properties;
-            ScenarioGateway* gateway;
-            ScenarioEngine*  scenario_engine;
-            Parameters*      parameters;
+            std::string     name;
+            std::string     type;
+            OSCProperties*  properties;
+            ScenarioEngine* scenario_engine;
+            Parameters*     parameters;
         } InitArgs;
 
         Controller(InitArgs* args = nullptr);
@@ -161,7 +159,6 @@ namespace scenarioengine
         std::string          name_;
         std::string          type_name_;
         Entities*            entities_;
-        ScenarioGateway*     gateway_;
         ScenarioEngine*      scenario_engine_;
         ScenarioPlayer*      player_;
         bool                 align_to_road_heading_on_deactivation_ = false;

@@ -15,7 +15,6 @@
 #include <string.h>
 
 #include "CommonMini.hpp"
-#include "ScenarioGateway.hpp"
 #include "Server.hpp"
 #include "UDP.hpp"
 
@@ -31,10 +30,10 @@ enum
     SERV_STOPPED
 };
 
-static int              state = SERV_NOT_STARTED;
-static SE_Thread        thread;
-static SE_Mutex         mutex;
-static ScenarioGateway *scenarioGateway = 0;
+static int             state = SERV_NOT_STARTED;
+static SE_Thread       thread;
+static SE_Mutex        mutex;
+static ScenarioEngine *scenario_engine = nullptr;
 
 namespace scenarioengine
 {
@@ -50,10 +49,11 @@ namespace scenarioengine
 
         LOG_INFO("Server listening on port {}", ESMINI_DEFAULT_INPORT);
 
-        state            = SERV_RUNNING;
-        double x_old     = 0.0;
-        double y_old     = 0.0;
-        double wheel_rot = 0.0;
+        state             = SERV_RUNNING;
+        double  x_old     = 0.0;
+        double  y_old     = 0.0;
+        double  wheel_rot = 0.0;
+        Object *ego       = scenario_engine->entities_.object_.size() > 0 ? scenario_engine->entities_.object_[0] : nullptr;
 
         while (state == SERV_RUNNING)
         {
@@ -62,7 +62,6 @@ namespace scenarioengine
 #ifdef SWAP_BYTE_ORDER_ESMINI
             SwapByteOrder((unsigned char *)&buf, 4, sizeof(buf));
 #endif
-
             if (ret >= 0)
             {
                 // Find out wheel rotation from x, y displacement
@@ -88,29 +87,10 @@ namespace scenarioengine
 
                 OSCBoundingBox bbox = {0, 0, 0, 0, 0, 0};  // dummy bariable just to feed into the function
 
-                scenarioGateway->reportObjectXYZHPR(0,
-                                                    ID_UNDEFINED,  // no global id
-                                                    "Ego",
-                                                    static_cast<int>(Object::Type::VEHICLE),
-                                                    static_cast<int>(Vehicle::Category::CAR),
-                                                    static_cast<int>(Vehicle::Role::NONE),
-                                                    0,
-                                                    "",  // no model3d filename
-                                                    1,
-                                                    bbox,
-                                                    static_cast<int>(EntityScaleMode::NONE),
-                                                    0xff,
-                                                    0.0,
-                                                    buf.speed,
-                                                    buf.wheel_angle,
-                                                    0.0,
-                                                    wheel_rot,
-                                                    buf.x,
-                                                    buf.y,
-                                                    buf.z,
-                                                    buf.h,
-                                                    buf.p,
-                                                    buf.r);
+                ego->pos_.SetInertiaPos(buf.x, buf.y, buf.z, buf.h, buf.p, buf.r);
+                ego->SetSpeed(buf.speed);
+                ego->wheel_angle_ = buf.wheel_angle;
+                ego->wheel_rot_   = wheel_rot;
 
                 mutex.Unlock();
             }
@@ -123,8 +103,8 @@ namespace scenarioengine
 
     void StartServer(ScenarioEngine *scenarioEngine)
     {
-        // Fetch ScenarioGateway
-        scenarioGateway = scenarioEngine->getScenarioGateway();
+        // Fetch scenarioengine
+        scenario_engine = scenarioEngine;
 
         thread.Start(ServerThread, NULL);
     }

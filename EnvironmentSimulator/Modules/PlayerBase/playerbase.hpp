@@ -73,7 +73,7 @@ namespace scenarioengine
             PLAYER_STATE_STEP
         } PlayerState;
 
-        typedef void (*ObjCallbackFunc)(ObjectStateStruct *, void *);
+        typedef void (*ObjCallbackFunc)(Object *, void *);
 
         typedef struct
         {
@@ -245,7 +245,6 @@ namespace scenarioengine
 
         CSV_Logger                   *CSV_Log;
         ScenarioEngine               *scenarioEngine;
-        ScenarioGateway              *scenarioGateway;
         std::unique_ptr<PlayerServer> player_server_;
 
 #ifdef _USE_OSI

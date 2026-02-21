@@ -19,7 +19,6 @@
 #include "ControllerALKS.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 
 using namespace scenarioengine;
 

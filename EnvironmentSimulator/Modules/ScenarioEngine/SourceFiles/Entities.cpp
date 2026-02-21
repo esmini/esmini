@@ -226,7 +226,7 @@ bool Object::IsControllerModeOnAnyOfDomains(ControlOperationMode mode, unsigned 
     return false;
 }
 
-scenarioengine::Controller* scenarioengine::Object::GetAssignedControllerOftype(Controller::Type type)
+scenarioengine::Controller* scenarioengine::Object::GetAssignedControllerOftype(Controller::Type type) const
 {
     std::vector<Controller*>::iterator itr =
         std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->GetType() == type; });
@@ -237,7 +237,7 @@ scenarioengine::Controller* scenarioengine::Object::GetAssignedControllerOftype(
     return nullptr;
 }
 
-bool scenarioengine::Object::IsAnyAssignedControllerOfType(Controller::Type type)
+bool scenarioengine::Object::IsAnyAssignedControllerOfType(Controller::Type type) const
 {
     std::vector<Controller*>::iterator itr =
         std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->GetType() == type; });
@@ -248,7 +248,7 @@ bool scenarioengine::Object::IsAnyAssignedControllerOfType(Controller::Type type
     return false;
 }
 
-bool Object::IsAnyActiveControllerOfType(Controller::Type type)
+bool Object::IsAnyActiveControllerOfType(Controller::Type type) const
 {
     std::vector<Controller*>::iterator itr =
         std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->IsActive() && ctrl->GetType() == type; });
@@ -259,7 +259,7 @@ bool Object::IsAnyActiveControllerOfType(Controller::Type type)
     return false;
 }
 
-scenarioengine::Controller* Object::GetControllerActiveOnDomainMask(ControlDomainMasks domain_mask)
+scenarioengine::Controller* Object::GetControllerActiveOnDomainMask(ControlDomainMasks domain_mask) const
 {
     std::vector<Controller*>::iterator itr =
         std::find_if(controllers_.begin(),
@@ -272,12 +272,12 @@ scenarioengine::Controller* Object::GetControllerActiveOnDomainMask(ControlDomai
     return nullptr;
 }
 
-scenarioengine::Controller* Object::GetControllerActiveOnDomain(ControlDomains domain)
+scenarioengine::Controller* Object::GetControllerActiveOnDomain(ControlDomains domain) const
 {
     return GetControllerActiveOnDomainMask(ControlDomain2DomainMask(domain));
 }
 
-scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(ControlDomains domain)
+scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(ControlDomains domain) const
 {
     scenarioengine::Controller* ctrl = GetControllerActiveOnDomain(domain);
 
@@ -293,7 +293,7 @@ scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(Control
     return Controller::Type::CONTROLLER_TYPE_DEFAULT;
 }
 
-scenarioengine::Controller* Object::GetController(std::string name)
+scenarioengine::Controller* Object::GetController(std::string name) const
 {
     std::vector<Controller*>::iterator itr =
         std::find_if(controllers_.begin(), controllers_.end(), [&name](Controller* ctrl) { return ctrl->GetName() == name; });
@@ -1806,9 +1806,9 @@ std::string Vehicle::Category2String(int category)
     }
 }
 
-std::string Object::Role2String(int role)
+std::string Object::Role2String(Role role)
 {
-    switch (static_cast<Object::Role>(role))
+    switch (role)
     {
         case Role::AMBULANCE:
             return "ambulance";
@@ -1990,7 +1990,7 @@ Object* Object::TrailerVehicle()
     return trailer_vehicle;
 }
 
-std::string Object::Type2String(int type)
+std::string Object::Type2String(Type type)
 {
     switch (type)
     {

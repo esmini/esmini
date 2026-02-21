@@ -13,7 +13,6 @@
 #include "CommonMini.hpp"
 #include "ControllerSumo.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 #include "ScenarioEngine.hpp"
 #include "pugixml.hpp"
 #include "logger.hpp"
@@ -197,36 +196,6 @@ void ControllerSumo::Step(double timeStep)
                     vehicle->reset_    = true;
                     LOG_INFO("SUMO controller: Add vehicle {} to scenario", vehicle->name_);
                     entities_->addObject(vehicle, true);
-
-                    // report vehicle and any trailers to gateway
-                    while (vehicle != nullptr)
-                    {
-                        gateway_->reportObjectPos(vehicle->id_,
-                                                  vehicle->g_id_,
-                                                  vehicle->name_,
-                                                  static_cast<int>(vehicle->type_),
-                                                  vehicle->category_,
-                                                  vehicle->role_,
-                                                  vehicle->model_id_,
-                                                  vehicle->GetModel3DFullPath(),
-                                                  vehicle->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
-                                                  vehicle->boundingbox_,
-                                                  static_cast<int>(vehicle->scaleMode_),
-                                                  0xff,
-                                                  time_,
-                                                  vehicle->speed_,
-                                                  vehicle->wheel_angle_,
-                                                  vehicle->wheel_rot_,
-                                                  vehicle->rear_axle_.positionZ,
-                                                  vehicle->front_axle_.positionX,
-                                                  vehicle->front_axle_.positionZ,
-                                                  &vehicle->pos_,
-                                                  vehicle->GetSourceReference(),
-                                                  vehicle->refpoint_x_offset_,
-                                                  vehicle->model3d_x_offset_);
-
-                        vehicle = static_cast<Vehicle*>(vehicle->TrailerVehicle());
-                    }
                 }
             }
         }

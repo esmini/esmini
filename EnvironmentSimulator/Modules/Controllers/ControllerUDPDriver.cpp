@@ -19,8 +19,8 @@
 #include "ControllerUDPDriver.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 #include "logger.hpp"
+#include "ScenarioEngine.hpp"
 
 #include <random>
 
@@ -199,6 +199,9 @@ void ControllerUDPDriver::Step(double timeStep)
         }
     }
 
+    Object*                obj = nullptr;
+    roadmanager::Position* pos = nullptr;
+
     if (receivedNrOfBytes > 0)
     {
         // Message received, handle it
@@ -216,43 +219,48 @@ void ControllerUDPDriver::Step(double timeStep)
             LOG_ERROR_ONCE("ControllerUDPDriver: Got unsupported msg version {} (only accepting version {})",
                            msg.header.version,
                            UDP_DRIVER_MESSAGE_VERSION);
+
+            return;
         }
+
+        obj = scenario_engine_->entities_.GetObjectById(msg.header.objectId);
+        if (obj == nullptr)
+        {
+            LOG_ERROR("ControllerUDPDriver: Received message for unknown object id {}, ignoring", msg.header.objectId);
+            return;
+        }
+
+        pos = &obj->pos_;
 
         if (msg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYZHPR))
         {
-            roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
             pos->SetMode(roadmanager::Position::PosModeType::SET,
-
                          roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_ABS |
                              roadmanager::Position::PosMode::R_ABS);
 
             // Update object state via gateway
-            gateway_->updateObjectWorldPos(object_->id_,
-                                           0.0,
-                                           msg.message.stateXYZHPR.x,
-                                           msg.message.stateXYZHPR.y,
-                                           msg.message.stateXYZHPR.z,
-                                           msg.message.stateXYZHPR.h,
-                                           msg.message.stateXYZHPR.p,
-                                           msg.message.stateXYZHPR.r);
-            gateway_->updateObjectSpeed(object_->id_, 0.0, msg.message.stateXYZHPR.speed);
-            gateway_->updateObjectWheelAngle(object_->id_, 0.0, msg.message.stateXYZHPR.wheelAngle);
+            pos->SetInertiaPos(msg.message.stateXYZHPR.x,
+                               msg.message.stateXYZHPR.y,
+                               msg.message.stateXYZHPR.z,
+                               msg.message.stateXYZHPR.h,
+                               msg.message.stateXYZHPR.p,
+                               msg.message.stateXYZHPR.r);
+            obj->SetSpeed(msg.message.stateXYZHPR.speed);
+            obj->wheel_angle_ = msg.message.stateXYZHPR.wheelAngle;
 
             // Also update the internal vehicle model, in case next message is driver input
             vehicle_.SetPos(msg.message.stateXYZHPR.x, msg.message.stateXYZHPR.y, msg.message.stateXYZHPR.z, msg.message.stateXYZHPR.h);
         }
         else if (msg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_XYH))
         {
-            roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
             pos->SetMode(roadmanager::Position::PosModeType::SET,
-
                          roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
                              roadmanager::Position::PosMode::R_REL);
 
             // Update object state via gateway
-            gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, msg.message.stateXYH.x, msg.message.stateXYH.y, msg.message.stateXYH.h);
-            gateway_->updateObjectSpeed(object_->id_, 0.0, msg.message.stateXYH.speed);
-            gateway_->updateObjectWheelAngle(object_->id_, 0.0, msg.message.stateXYH.wheelAngle);
+            pos->SetInertiaPos(msg.message.stateXYH.x, msg.message.stateXYH.y, msg.message.stateXYH.h);
+            obj->SetSpeed(msg.message.stateXYH.speed);
+            obj->wheel_angle_ = msg.message.stateXYH.wheelAngle;
 
             // Also update the internal vehicle model, in case next message is driver input
             vehicle_.SetPos(msg.message.stateXYH.x, msg.message.stateXYH.y, pos->GetZ(), msg.message.stateXYH.h);
@@ -262,16 +270,14 @@ void ControllerUDPDriver::Step(double timeStep)
         }
         else if (msg.header.inputMode == static_cast<int>(InputMode::VEHICLE_STATE_H))
         {
-            roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
             pos->SetMode(roadmanager::Position::PosModeType::SET,
-
                          roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
                              roadmanager::Position::PosMode::R_REL);
 
             // Update object state via gateway
-            gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, pos->GetX(), pos->GetY(), msg.message.stateH.h);
-            gateway_->updateObjectSpeed(object_->id_, 0.0, msg.message.stateH.speed);
-            gateway_->updateObjectWheelAngle(object_->id_, 0.0, msg.message.stateH.wheelAngle);
+            pos->SetInertiaPos(pos->GetX(), pos->GetY(), msg.message.stateH.h);
+            obj->SetSpeed(msg.message.stateH.speed);
+            obj->wheel_angle_ = msg.message.stateH.wheelAngle;
 
             // Also update the internal vehicle model, in case next message is driver input
             vehicle_.SetPos(pos->GetX(), pos->GetY(), pos->GetZ(), msg.message.stateH.h);
@@ -281,9 +287,7 @@ void ControllerUDPDriver::Step(double timeStep)
         }
         else if (msg.header.inputMode == static_cast<int>(InputMode::DRIVER_INPUT))
         {
-            roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
             pos->SetMode(roadmanager::Position::PosModeType::SET,
-
                          roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
                              roadmanager::Position::PosMode::R_REL);
         }
@@ -293,7 +297,7 @@ void ControllerUDPDriver::Step(double timeStep)
         }
     }
 
-    if (timeStep > SMALL_NUMBER)
+    if (timeStep > SMALL_NUMBER && object_ != nullptr)
     {
         if (
             // following states, apply dead reckoning always (when enabled)
@@ -331,7 +335,7 @@ void ControllerUDPDriver::Step(double timeStep)
             double dx = ds * cos(h);
             double dy = ds * sin(h);
 
-            gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, object_->pos_.GetX() + dx, object_->pos_.GetY() + dy, vehicle_.heading_);
+            object_->pos_.SetInertiaPos(object_->pos_.GetX() + dx, object_->pos_.GetY() + dy, vehicle_.heading_);
         }
         else if (lastMsg.header.inputMode == static_cast<int>(InputMode::DRIVER_INPUT))
         {
@@ -341,12 +345,11 @@ void ControllerUDPDriver::Step(double timeStep)
                                           lastMsg.message.driverInput.steeringAngle);
 
             // Register updated vehicle position
-            gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
-            gateway_->updateObjectSpeed(object_->id_, 0.0, vehicle_.speed_);
-            gateway_->updateObjectWheelAngle(object_->id_, 0.0, msg.message.driverInput.steeringAngle);
+            object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
+            object_->SetSpeed(vehicle_.speed_);
+            object_->wheel_angle_ = vehicle_.GetWheelAngle();
 
             // Fetch Z and Pitch from OpenDRIVE position
-            roadmanager::Position* pos = &gateway_->getObjectStatePtrById(static_cast<int>(msg.header.objectId))->state_.pos;
             vehicle_.SetZ(pos->GetZ());
             vehicle_.SetPitch(pos->GetP());
         }

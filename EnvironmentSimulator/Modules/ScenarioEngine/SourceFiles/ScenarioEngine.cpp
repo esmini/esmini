@@ -298,7 +298,6 @@ int ScenarioEngine::step(double deltaSimTime)
                 {
                     SE_Vector v0(tow_vehicle->trailer_hitch_->dx_, 0.0);
 
-                    // Fetch updated state of tow vehicle from gateway
                     roadmanager::Position* tow_pos = &tow_vehicle->pos_;
                     v0                             = v0.Rotate(tow_pos->GetH()) + SE_Vector(tow_pos->GetX(), tow_pos->GetY());
                     SE_Vector v1                   = SE_Vector(trailer->pos_.GetX(), trailer->pos_.GetY()) - v0;
@@ -345,7 +344,7 @@ int ScenarioEngine::step(double deltaSimTime)
                 {
                     double xy_heading = GetAngleInInterval2PI(atan2(v->pos_.GetY() - v->rear_axle_pos_.y(), v->pos_.GetX() - v->rear_axle_pos_.x()));
 
-                    scenarioGateway.updateObjectWorldPosXYH(v->GetId(), getSimulationTime(), v->pos_.GetX(), v->pos_.GetY(), xy_heading);
+                    v->pos_.SetInertiaPos(v->pos_.GetX(), v->pos_.GetY(), xy_heading);
 
                     // calculate new rear axle position and then its speed
                     SE_Vector rac         = SE_Vector(v->pos_.GetX(), v->pos_.GetY()) + SE_Vector(-v->GetRefpointXOffset(), 0.0).Rotate(xy_heading);
@@ -644,7 +643,6 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 {
     for (size_t i = 0; i < entities_.object_.size(); i++)
     {
-        // Fetch external states from gateway
         Object* obj = entities_.object_[i];
 
         // Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
@@ -784,9 +782,6 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             }
         }
 
-        // Report updated pos values to the gateway
-        scenarioGateway.updateObjectPos(obj->id_, simulationTime_, &obj->pos_);
-
         // Wheels (including friction) only needs updates for vehicles
         if (obj->type_ == Object::Type::VEHICLE)
         {
@@ -852,7 +847,6 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                                                      : friction_global;
                 }
             }
-            scenarioGateway.updateObjectWheelData(obj->id_, wheel_data);
         }
 
         // Clear dirty/update bits for any reported velocity and acceleration values, and flag indicating teleport action

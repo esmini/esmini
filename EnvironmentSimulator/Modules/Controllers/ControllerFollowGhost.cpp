@@ -20,7 +20,6 @@
 #include "ControllerFollowGhost.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 #include "ScenarioEngine.hpp"
 #include "logger.hpp"
 
@@ -226,18 +225,18 @@ void ControllerFollowGhost::Step(double timeStep)
     vehicle_.pitch_ = object_->pos_.GetP();
 
     // Register updated vehicle position
-    gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
-    gateway_->updateObjectSpeed(object_->id_, 0.0, vehicle_.speed_);
+    object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
+    object_->SetSpeed(vehicle_.speed_);
 
     // Update wheels wrt domains
     if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
     {
-        gateway_->updateObjectWheelRotation(object_->id_, 0.0, vehicle_.wheelRotation_);
+        object_->wheel_rot_ = vehicle_.wheelRotation_;
     }
 
     if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
     {
-        gateway_->updateObjectWheelAngle(object_->id_, 0.0, vehicle_.wheelAngle_);
+        object_->wheel_angle_ = vehicle_.wheelAngle_;
     }
 
     Controller::Step(timeStep);

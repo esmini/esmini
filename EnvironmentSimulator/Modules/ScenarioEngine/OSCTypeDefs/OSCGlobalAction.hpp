@@ -16,7 +16,6 @@
 #include "Action.hpp"
 #include "CommonMini.hpp"
 #include "Parameters.hpp"
-#include "ScenarioGateway.hpp"
 #include "OSCEnvironment.hpp"
 #include "OSCAABBTree.hpp"
 #include <vector>
@@ -250,27 +249,20 @@ namespace scenarioengine
     class DeleteEntityAction : public OSCGlobalAction
     {
     public:
-        Object*          entity_;
-        Entities*        entities_;
-        ScenarioGateway* gateway_;
+        Object*   entity_;
+        Entities* entities_;
 
-        DeleteEntityAction(StoryBoardElement* parent)
-            : OSCGlobalAction(ActionType::DELETE_ENTITY, parent),
-              entity_(nullptr),
-              entities_(nullptr),
-              gateway_(nullptr){};
+        DeleteEntityAction(StoryBoardElement* parent) : OSCGlobalAction(ActionType::DELETE_ENTITY, parent), entity_(nullptr), entities_(nullptr){};
 
         DeleteEntityAction(Object* entity, StoryBoardElement* parent)
             : OSCGlobalAction(ActionType::DELETE_ENTITY, parent),
               entity_(entity),
-              entities_(nullptr),
-              gateway_(nullptr){};
+              entities_(nullptr){};
 
         DeleteEntityAction(const DeleteEntityAction& action, StoryBoardElement* parent) : OSCGlobalAction(ActionType::DELETE_ENTITY, parent)
         {
             entity_   = action.entity_;
             entities_ = action.entities_;
-            gateway_  = action.gateway_;
         }
 
         OSCGlobalAction* Copy()
@@ -285,10 +277,6 @@ namespace scenarioengine
         void SetEntities(Entities* entities)
         {
             entities_ = entities;
-        }
-        void SetGateway(ScenarioGateway* gateway)
-        {
-            gateway_ = gateway;
         }
 
         void print()
@@ -440,10 +428,6 @@ namespace scenarioengine
         }
         void SetScenarioEngine(ScenarioEngine* scenario_engine);
 
-        void SetGateway(ScenarioGateway* gateway)
-        {
-            gateway_ = gateway;
-        }
         void SetReader(ScenarioReader* reader)
         {
             reader_ = reader;
@@ -460,7 +444,6 @@ namespace scenarioengine
     private:
         double                  velocity_;
         Entities*               entities_;
-        ScenarioGateway*        gateway_;
         ScenarioReader*         reader_;
         ScenarioEngine*         scenario_engine_;
         Object*                 centralObject_;
