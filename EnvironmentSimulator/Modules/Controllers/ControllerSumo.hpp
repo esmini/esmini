@@ -29,11 +29,12 @@ namespace scenarioengine
         ControllerSumo(InitArgs* args);
         ~ControllerSumo();
 
-        virtual const char* GetTypeName()
+        virtual const char* GetTypeName() const
         {
             return CONTROLLER_SUMO_TYPE_NAME;
         }
-        virtual int GetType()
+
+        virtual Type GetType() const
         {
             return CONTROLLER_TYPE_SUMO;
         }

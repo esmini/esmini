@@ -34,7 +34,8 @@ namespace scenarioengine
     public:
         enum Type
         {
-            CONTROLLER_TYPE_DEFAULT,
+            CONTROLLER_TYPE_BASE_ID = -1,
+            CONTROLLER_TYPE_DEFAULT = 0,
             CONTROLLER_TYPE_EXTERNAL,
             CONTROLLER_TYPE_FOLLOW_GHOST,
             CONTROLLER_TYPE_FOLLOW_ROUTE,
@@ -70,13 +71,14 @@ namespace scenarioengine
         Controller(InitArgs* args = nullptr);
         virtual ~Controller() = default;
 
-        virtual const char* GetTypeName()
+        virtual const char* GetTypeName() const
         {
             return CONTROLLER_BASE_TYPE_NAME;
         }
-        virtual int GetType()
+
+        virtual Type GetType() const
         {
-            return CONTROLLER_BASE_TYPE_ID;
+            return CONTROLLER_TYPE_BASE_ID;
         }
 
         virtual void LinkObject(Object* object);

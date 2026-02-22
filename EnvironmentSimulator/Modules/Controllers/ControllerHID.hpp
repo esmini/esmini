@@ -65,22 +65,16 @@ namespace scenarioengine
 
         void Deactivate() override;
 
-        static const char* GetTypeNameStatic()
+        virtual const char* GetTypeName() const
         {
             return CONTROLLER_HID_TYPE_NAME;
         }
-        virtual const char* GetTypeName()
-        {
-            return GetTypeNameStatic();
-        }
-        static int GetTypeStatic()
+
+        virtual Type GetType() const
         {
             return Controller::Type::CONTROLLER_TYPE_HID;
         }
-        virtual int GetType()
-        {
-            return GetTypeStatic();
-        }
+
         int  OpenHID(int device_id);
         void CloseHID();
         int  ReadHID(double& throttle, double& steering);

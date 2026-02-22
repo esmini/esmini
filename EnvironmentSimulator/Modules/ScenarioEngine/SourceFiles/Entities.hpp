@@ -843,6 +843,11 @@ namespace scenarioengine
             }
         }
 
+        std::vector<WheelData>& GetWheelData()
+        {
+            return wheel_data;
+        }
+
         const std::vector<WheelData>& GetWheelData() const
         {
             return wheel_data;

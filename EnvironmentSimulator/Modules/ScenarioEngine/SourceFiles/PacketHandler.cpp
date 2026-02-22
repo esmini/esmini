@@ -111,15 +111,14 @@ int Dat::DatWriter::WriteStoryBoardStateChangesToDat(const std::vector<std::stri
     return 0;
 }
 
-int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states)
+int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Object*>& objects)
 {
     // Write objects
     this->ResetCurrentIds();
-    for (const auto& object_state : object_states)
+    for (const auto& obj : objects)
     {
         // New object state, check if it exists in the cache, else we add it
-        const auto state   = &object_state->state_;
-        current_object_id_ = state->info.id;
+        current_object_id_ = obj->GetId();
         current_ids_.insert(current_object_id_);
 
         auto cache_it = object_state_cache_.state_.find(current_object_id_);
@@ -136,20 +135,20 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
         object_state_cache_.timestamp_ = simulation_time_;
 
         // PacketId::SPEED
-        if (!NEAR_NUMBERSF(cache_it->second.speed_, static_cast<float>(state->info.speed)))
+        if (!NEAR_NUMBERSF(cache_it->second.speed_, static_cast<float>(obj->GetSpeed())))
         {
-            cache_it->second.speed_ = static_cast<float>(state->info.speed);
+            cache_it->second.speed_ = static_cast<float>(obj->GetSpeed());
             Write(PacketId::SPEED, cache_it->second.speed_);
         }
         // PacketId::POSE
-        if (!IsPoseEqual(cache_it->second.pose_, state->pos))
+        if (!IsPoseEqual(cache_it->second.pose_, obj->pos_))
         {
-            cache_it->second.pose_.x = static_cast<float>(state->pos.GetX());
-            cache_it->second.pose_.y = static_cast<float>(state->pos.GetY());
-            cache_it->second.pose_.z = static_cast<float>(state->pos.GetZ());
-            cache_it->second.pose_.h = static_cast<float>(state->pos.GetH());
-            cache_it->second.pose_.p = static_cast<float>(state->pos.GetP());
-            cache_it->second.pose_.r = static_cast<float>(state->pos.GetR());
+            cache_it->second.pose_.x = static_cast<float>(obj->pos_.GetX());
+            cache_it->second.pose_.y = static_cast<float>(obj->pos_.GetY());
+            cache_it->second.pose_.z = static_cast<float>(obj->pos_.GetZ());
+            cache_it->second.pose_.h = static_cast<float>(obj->pos_.GetH());
+            cache_it->second.pose_.p = static_cast<float>(obj->pos_.GetP());
+            cache_it->second.pose_.r = static_cast<float>(obj->pos_.GetR());
 
             Write(PacketId::POSE,
                   cache_it->second.pose_.x,
@@ -161,35 +160,36 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
         }
 
         // PacketId::MODEL_ID
-        if (cache_it->second.model_id_ != state->info.model_id)
+        if (cache_it->second.model_id_ != obj->model_id_)
         {
-            cache_it->second.model_id_ = state->info.model_id;
+            cache_it->second.model_id_ = obj->model_id_;
             Write(PacketId::MODEL_ID, cache_it->second.model_id_);
         }
 
         // PacketId::OBJ_TYPE
-        if (cache_it->second.obj_type_ != state->info.obj_type)
+        if (cache_it->second.obj_type_ != obj->GetType())
         {
-            cache_it->second.obj_type_ = state->info.obj_type;
+            cache_it->second.obj_type_ = obj->model_id_;
             Write(PacketId::OBJ_TYPE, cache_it->second.obj_type_);
         }
 
         // PacketId::OBJ_CATEGORY
-        if (cache_it->second.obj_category_ != state->info.obj_category)
+        if (cache_it->second.obj_category_ != obj->category_)
         {
-            cache_it->second.obj_category_ = state->info.obj_category;
+            cache_it->second.obj_category_ = obj->category_;
             Write(PacketId::OBJ_CATEGORY, cache_it->second.obj_category_);
         }
 
         // PacketId::CTRL_TYPE
-        if (cache_it->second.ctrl_type_ != state->info.ctrl_type)
+        scenarioengine::Controller::Type ctrl_type = obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG);
+        if (cache_it->second.ctrl_type_ != ctrl_type)
         {
-            cache_it->second.ctrl_type_ = state->info.ctrl_type;
+            cache_it->second.ctrl_type_ = ctrl_type;
             Write(PacketId::CTRL_TYPE, cache_it->second.ctrl_type_);
         }
 
         // PacketId::WHEEL_ANGLE
-        float wheel_angle = (state->info.wheel_data.empty()) ? 0.0f : static_cast<float>(state->info.wheel_data[0].h);
+        float wheel_angle = static_cast<float>(obj->GetWheelAngle());
         if (!NEAR_NUMBERSF(cache_it->second.wheel_angle_, wheel_angle))
         {
             cache_it->second.wheel_angle_ = wheel_angle;
@@ -197,7 +197,7 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
         }
 
         // PacketId::WHEEL_ROT
-        float wheel_rot = (state->info.wheel_data.empty()) ? 0.0f : static_cast<float>(state->info.wheel_data[0].p);
+        float wheel_rot = static_cast<float>(obj->GetWheelRotation());
         if (!NEAR_NUMBERSF(cache_it->second.wheel_rot_, wheel_rot))
         {
             cache_it->second.wheel_rot_ = wheel_rot;
@@ -205,14 +205,14 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
         }
 
         // PacketId::BOUNDING_BOX
-        if (!IsBoundingBoxEqual(cache_it->second.bounding_box_, state->info.boundingbox))
+        if (!IsBoundingBoxEqual(cache_it->second.bounding_box_, obj->boundingbox_))
         {
-            cache_it->second.bounding_box_.x      = state->info.boundingbox.center_.x_;
-            cache_it->second.bounding_box_.y      = state->info.boundingbox.center_.y_;
-            cache_it->second.bounding_box_.z      = state->info.boundingbox.center_.z_;
-            cache_it->second.bounding_box_.length = state->info.boundingbox.dimensions_.length_;
-            cache_it->second.bounding_box_.width  = state->info.boundingbox.dimensions_.width_;
-            cache_it->second.bounding_box_.height = state->info.boundingbox.dimensions_.height_;
+            cache_it->second.bounding_box_.x      = obj->boundingbox_.center_.x_;
+            cache_it->second.bounding_box_.y      = obj->boundingbox_.center_.y_;
+            cache_it->second.bounding_box_.z      = obj->boundingbox_.center_.z_;
+            cache_it->second.bounding_box_.length = obj->boundingbox_.dimensions_.length_;
+            cache_it->second.bounding_box_.width  = obj->boundingbox_.dimensions_.width_;
+            cache_it->second.bounding_box_.height = obj->boundingbox_.dimensions_.height_;
 
             Write(PacketId::BOUNDING_BOX,
                   cache_it->second.bounding_box_.x,
@@ -224,88 +224,89 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
         }
 
         // PacketId::SCALE_MODE
-        if (cache_it->second.scale_mode_ != state->info.scaleMode)
+        int scale_mode = static_cast<int>(obj->scaleMode_);
+        if (cache_it->second.scale_mode_ != scale_mode)
         {
-            cache_it->second.scale_mode_ = state->info.scaleMode;
+            cache_it->second.scale_mode_ = scale_mode;
             Write(PacketId::SCALE_MODE, cache_it->second.scale_mode_);
         }
 
         // PacketId::VISIBILITY_MASK
-        if (cache_it->second.visibility_mask_ != state->info.visibilityMask)
+        if (cache_it->second.visibility_mask_ != obj->visibilityMask_)
         {
-            cache_it->second.visibility_mask_ = state->info.visibilityMask;
+            cache_it->second.visibility_mask_ = obj->visibilityMask_;
             Write(PacketId::VISIBILITY_MASK, cache_it->second.visibility_mask_);
         }
         // PacketId::NAME
-        if (std::strcmp(cache_it->second.name_.c_str(), state->info.name) != 0)
+        if (cache_it->second.name_.c_str() != obj->GetName())
         {
-            cache_it->second.name_ = std::string(state->info.name);
+            cache_it->second.name_ = obj->GetName();
 
             PacketString p_str = {static_cast<unsigned int>(cache_it->second.name_.size()), cache_it->second.name_};
             Write(PacketId::NAME, p_str);
         }
         // PacketId::ROAD_ID
-        if (cache_it->second.road_id_ != state->pos.GetTrackId())
+        if (cache_it->second.road_id_ != obj->pos_.GetTrackId())
         {
-            cache_it->second.road_id_ = state->pos.GetTrackId();
+            cache_it->second.road_id_ = obj->pos_.GetTrackId();
             Write(PacketId::ROAD_ID, cache_it->second.road_id_);
         }
 
         // PacketId::LANE_ID
-        if (cache_it->second.lane_id_ != state->pos.GetLaneId())
+        if (cache_it->second.lane_id_ != obj->pos_.GetLaneId())
         {
-            cache_it->second.lane_id_ = state->pos.GetLaneId();
+            cache_it->second.lane_id_ = obj->pos_.GetLaneId();
             Write(PacketId::LANE_ID, cache_it->second.lane_id_);
         }
 
         // PacketId::POS_OFFSET
-        if (!NEAR_NUMBERSF(cache_it->second.pos_offset_, static_cast<float>(state->pos.GetOffset())))
+        if (!NEAR_NUMBERSF(cache_it->second.pos_offset_, static_cast<float>(obj->pos_.GetOffset())))
         {
-            cache_it->second.pos_offset_ = static_cast<float>(state->pos.GetOffset());
+            cache_it->second.pos_offset_ = static_cast<float>(obj->pos_.GetOffset());
             Write(PacketId::POS_OFFSET, cache_it->second.pos_offset_);
         }
 
         // PacketId::POS_T
-        if (!NEAR_NUMBERSF(cache_it->second.pos_t_, static_cast<float>(state->pos.GetT())))
+        if (!NEAR_NUMBERSF(cache_it->second.pos_t_, static_cast<float>(obj->pos_.GetT())))
         {
-            cache_it->second.pos_t_ = static_cast<float>(state->pos.GetT());
+            cache_it->second.pos_t_ = static_cast<float>(obj->pos_.GetT());
             Write(PacketId::POS_T, cache_it->second.pos_t_);
         }
 
         // PacketId::POS_S
-        if (!NEAR_NUMBERSF(cache_it->second.pos_s_, static_cast<float>(state->pos.GetS())))
+        if (!NEAR_NUMBERSF(cache_it->second.pos_s_, static_cast<float>(obj->pos_.GetS())))
         {
-            cache_it->second.pos_s_ = static_cast<float>(state->pos.GetS());
+            cache_it->second.pos_s_ = static_cast<float>(obj->pos_.GetS());
             Write(PacketId::POS_S, cache_it->second.pos_s_);
         }
 
         // PacketId::REFPOINT_X_OFFSET
-        if (!NEAR_NUMBERSF(cache_it->second.refpoint_x_offset_, static_cast<float>(state->info.refpoint_x_offset)))
+        if (!NEAR_NUMBERSF(cache_it->second.refpoint_x_offset_, static_cast<float>(obj->refpoint_x_offset_)))
         {
-            cache_it->second.refpoint_x_offset_ = static_cast<float>(state->info.refpoint_x_offset);
+            cache_it->second.refpoint_x_offset_ = static_cast<float>(obj->refpoint_x_offset_);
             Write(PacketId::REFPOINT_X_OFFSET, cache_it->second.refpoint_x_offset_);
         }
 
         // PacketId::MODEL_X_OFFSET
-        if (!NEAR_NUMBERSF(cache_it->second.model_x_offset_, static_cast<float>(state->info.model_x_offset)))
+        if (!NEAR_NUMBERSF(cache_it->second.model_x_offset_, static_cast<float>(obj->model3d_x_offset_)))
         {
-            cache_it->second.model_x_offset_ = static_cast<float>(state->info.model_x_offset);
+            cache_it->second.model_x_offset_ = static_cast<float>(obj->model3d_x_offset_);
             Write(PacketId::MODEL_X_OFFSET, cache_it->second.model_x_offset_);
         }
 
         // PacketId::OBJ_MODEL3D
-        if (std::strcmp(cache_it->second.model3d_.c_str(), state->info.model3d.c_str()) != 0)
+        if (cache_it->second.model3d_ != obj->GetModel3DFullPath())
         {
-            cache_it->second.model3d_ = state->info.model3d;
+            cache_it->second.model3d_ = obj->GetModel3DFullPath();
 
             PacketString p_str = {static_cast<unsigned int>(cache_it->second.model3d_.size()), cache_it->second.model3d_};
             Write(PacketId::OBJ_MODEL3D, p_str);
         }
 
         // PacketId::SHAPE_2D_OUTLINE
-        if (cache_it->second.outline_2d.size() == 0 && state->outline.size() > 0)
+        if (cache_it->second.outline_2d.size() == 0 && obj->outline_2d_.size() > 0)
         {
-            cache_it->second.outline_2d = state->outline;
+            cache_it->second.outline_2d = obj->outline_2d_;
 
             PacketShape2DOutline packet_shape = {cache_it->second.outline_2d};
             Write(PacketId::SHAPE_2D_OUTLINE, packet_shape);

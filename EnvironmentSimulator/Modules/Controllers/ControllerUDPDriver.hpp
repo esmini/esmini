@@ -113,11 +113,12 @@ namespace scenarioengine
         int  Activate(const ControlActivationMode (&mode)[static_cast<unsigned int>(ControlDomains::COUNT)]);
         void ReportKeyEvent(int key, bool down);
 
-        virtual const char* GetTypeName()
+        virtual const char* GetTypeName() const
         {
             return CONTROLLER_UDP_DRIVER_TYPE_NAME;
         }
-        virtual int GetType()
+
+        virtual Type GetType() const
         {
             return Controller::Type::CONTROLLER_TYPE_UDP_DRIVER;
         }

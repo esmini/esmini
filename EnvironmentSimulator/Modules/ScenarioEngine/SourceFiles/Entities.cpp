@@ -228,8 +228,7 @@ bool Object::IsControllerModeOnAnyOfDomains(ControlOperationMode mode, unsigned 
 
 scenarioengine::Controller* scenarioengine::Object::GetAssignedControllerOftype(Controller::Type type) const
 {
-    std::vector<Controller*>::iterator itr =
-        std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->GetType() == type; });
+    auto itr = std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->GetType() == type; });
     if (itr != controllers_.end())
     {
         return *itr;
@@ -239,8 +238,7 @@ scenarioengine::Controller* scenarioengine::Object::GetAssignedControllerOftype(
 
 bool scenarioengine::Object::IsAnyAssignedControllerOfType(Controller::Type type) const
 {
-    std::vector<Controller*>::iterator itr =
-        std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->GetType() == type; });
+    auto itr = std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->GetType() == type; });
     if (itr != controllers_.end())
     {
         return true;
@@ -250,7 +248,7 @@ bool scenarioengine::Object::IsAnyAssignedControllerOfType(Controller::Type type
 
 bool Object::IsAnyActiveControllerOfType(Controller::Type type) const
 {
-    std::vector<Controller*>::iterator itr =
+    auto itr =
         std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->IsActive() && ctrl->GetType() == type; });
     if (itr != controllers_.end())
     {
@@ -261,10 +259,9 @@ bool Object::IsAnyActiveControllerOfType(Controller::Type type) const
 
 scenarioengine::Controller* Object::GetControllerActiveOnDomainMask(ControlDomainMasks domain_mask) const
 {
-    std::vector<Controller*>::iterator itr =
-        std::find_if(controllers_.begin(),
-                     controllers_.end(),
-                     [&domain_mask](Controller* ctrl) { return ctrl->IsActiveOnDomains(static_cast<unsigned int>(domain_mask)); });
+    auto itr = std::find_if(controllers_.begin(),
+                            controllers_.end(),
+                            [&domain_mask](Controller* ctrl) { return ctrl->IsActiveOnDomains(static_cast<unsigned int>(domain_mask)); });
     if (itr != controllers_.end())
     {
         return *itr;
@@ -295,8 +292,7 @@ scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(Control
 
 scenarioengine::Controller* Object::GetController(std::string name) const
 {
-    std::vector<Controller*>::iterator itr =
-        std::find_if(controllers_.begin(), controllers_.end(), [&name](Controller* ctrl) { return ctrl->GetName() == name; });
+    auto itr = std::find_if(controllers_.begin(), controllers_.end(), [&name](Controller* ctrl) { return ctrl->GetName() == name; });
     if (itr != controllers_.end())
     {
         return *itr;

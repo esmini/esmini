@@ -67,11 +67,12 @@ namespace scenarioengine
     public:
         ControllerSloppyDriver(InitArgs* args);
 
-        virtual const char* GetTypeName()
+        virtual const char* GetTypeName() const
         {
             return CONTROLLER_SLOPPY_DRIVER_TYPE_NAME;
         }
-        virtual int GetType()
+
+        virtual Type GetType() const
         {
             return Controller::Type::CONTROLLER_TYPE_SLOPPY_DRIVER;
         }

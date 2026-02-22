@@ -306,7 +306,7 @@ int ScenarioEngine::step(double deltaSimTime)
                     {
                         trailer->pos_.SetInertiaPosMode(v0.x() + v1.x(),
                                                         v0.y() + v1.y(),
-                                                        o->state_.pos.GetZ(),
+                                                        tow_pos->GetZ(),
                                                         GetAngleInInterval2PI(atan2(v1.y(), v1.x()) + M_PI),
                                                         0.0,
                                                         0.0,
@@ -314,7 +314,7 @@ int ScenarioEngine::step(double deltaSimTime)
                     }
                     else
                     {
-                        trailer->pos_.SetInertiaPosMode(v0.x() + v1.x(), v0.y() + v1.y(), GetAngleInInterval2PI(atan2(v1.y(), v1.x()) + M_PI));
+                        trailer->pos_.SetInertiaPos(v0.x() + v1.x(), v0.y() + v1.y(), GetAngleInInterval2PI(atan2(v1.y(), v1.x()) + M_PI));
                     }
                     trailer->SetSpeed(tow_vehicle->GetSpeed());
 
