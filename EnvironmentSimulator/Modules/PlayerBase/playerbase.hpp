@@ -20,6 +20,7 @@
 #include "CommonMini.hpp"
 #include "Server.hpp"
 #include "IdealSensor.hpp"
+#include "PacketHandler.hpp"
 
 #ifdef _USE_OSI
 #include "OSIReporter.hpp"
@@ -101,6 +102,8 @@ namespace scenarioengine
         int  Frame(double timestep_s, bool server_mode = false);
         void ScenarioPostFrame();
         int  ScenarioFrame(double timestep_s, bool keyframe);
+        void WriteStatesToFile(const double simulation_time, const double dt);
+        int  RecordToFile(std::string filename, std::string odr_filename, std::string model_filename, std::string git_rev);
         void ShowObjectSensors(bool mode);
 
         void DynamicPitchUpdate(Object *obj, double dt, double a_min = -12.0, double a_max = 10.0) const;
@@ -283,6 +286,7 @@ namespace scenarioengine
         std::string                 exe_path_;
         SE_Semaphore                player_init_semaphore;
         SE_Semaphore                viewer_init_semaphore;
+        Dat::DatWriter              dat_writer_;
 
     private:
         double       trail_dt;

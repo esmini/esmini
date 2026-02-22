@@ -13,7 +13,6 @@
 #include "ControllerInteractive.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 
 #include <random>
 
@@ -93,7 +92,7 @@ void ControllerInteractive::Step(double timeStep)
         vehicle_.heading_ = object_->pos_.GetH();
     }
 
-    gateway_->updateObjectWorldPosXYH(object_->id_, 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
+    object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
 
     // Fetch Z and Pitch from OpenDRIVE position
     vehicle_.posZ_  = object_->pos_.GetZRoad();
@@ -101,12 +100,13 @@ void ControllerInteractive::Step(double timeStep)
 
     if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
     {
-        gateway_->updateObjectSpeed(object_->id_, 0.0, vehicle_.speed_);
+        object_->SetSpeed(vehicle_.speed_);
     }
 
     if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
     {
-        gateway_->updateObjectWheelAngle(object_->id_, 0.0, vehicle_.wheelAngle_);
+        object_->wheel_rot_   = vehicle_.wheelRotation_;
+        object_->wheel_angle_ = vehicle_.wheelAngle_;
     }
 
     Controller::Step(timeStep);

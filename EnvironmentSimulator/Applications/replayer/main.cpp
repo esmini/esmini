@@ -28,7 +28,6 @@
 #endif  // _USE_OSG
 
 #include "CommonMini.hpp"
-#include "ScenarioGateway.hpp"
 #include "collision.hpp"
 #include "RoadManager.hpp"
 #include "Replay.hpp"

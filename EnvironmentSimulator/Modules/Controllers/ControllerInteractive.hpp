@@ -42,7 +42,7 @@ namespace scenarioengine
             return CONTROLLER_INTERACTIVE_TYPE_NAME;
         }
 
-        virtual int GetType() const
+        virtual Type GetType() const
         {
             return Controller::Type::CONTROLLER_TYPE_INTERACTIVE;
         }

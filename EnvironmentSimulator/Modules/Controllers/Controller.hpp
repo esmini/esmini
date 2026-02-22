@@ -76,7 +76,7 @@ namespace scenarioengine
             return CONTROLLER_BASE_TYPE_NAME;
         }
 
-        virtual Type GetType() const
+        virtual Controller::Type GetType() const
         {
             return CONTROLLER_TYPE_BASE_ID;
         }

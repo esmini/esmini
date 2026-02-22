@@ -13,7 +13,6 @@
 #include <numeric>
 
 #include "Replay.hpp"
-#include "ScenarioGateway.hpp"
 #include "CommonMini.hpp"
 #include "dirent.h"
 #include "PacketHandler.hpp"

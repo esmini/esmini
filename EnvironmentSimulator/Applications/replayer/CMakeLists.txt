@@ -109,6 +109,8 @@ target_link_libraries(
     PRIVATE project_options
             RoadManager
             CommonMini
+            ScenarioEngine
+            Controllers
             ${TIME_LIB})
 
 target_include_directories(

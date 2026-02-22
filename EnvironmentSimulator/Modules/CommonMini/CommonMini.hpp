@@ -222,6 +222,21 @@ public:
     static const float (&Color2RBG(Color color_enum))[3];
 };
 
+struct ObjectPositionStructDat
+{
+    float x;
+    float y;
+    float z;
+    float h;
+    float p;
+    float r;
+    id_t  roadId;
+    int   laneId;
+    float offset;
+    float t;
+    float s;
+};
+
 struct SE_Point2D
 {
     double x;

@@ -20,7 +20,6 @@ static void scenario_step(ScenarioEngine *scenario_engine, double dt)
 {
     scenario_engine->step(dt);
     scenario_engine->prepareGroundTruth(dt);
-    scenario_engine->getScenarioGateway()->clearDirtyBits();
 }
 
 class FollowRouteControllerTest : public ::testing::Test

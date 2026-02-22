@@ -276,7 +276,7 @@ scenarioengine::Controller* Object::GetControllerActiveOnDomain(ControlDomains d
 
 scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(ControlDomains domain) const
 {
-    scenarioengine::Controller* ctrl = GetControllerActiveOnDomain(domain);
+    const scenarioengine::Controller* ctrl = GetControllerActiveOnDomain(domain);
 
     if (ctrl != nullptr)
     {

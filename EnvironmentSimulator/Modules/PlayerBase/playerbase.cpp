@@ -282,13 +282,10 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
 
         scenarioEngine->prepareGroundTruth(timestep_s);
 
-        // TODO: write to dat
-#if 0
-        scenarioGateway->SetDynamicSignals(roadmanager::Position::GetOpenDrive()->GetDynamicSignals());
-        scenarioGateway->UpdateStoryBoardStateChanges(scenarioEngine->storyBoard.GetChanges());
-        scenarioGateway->WriteStatesToFile(scenarioEngine->getSimulationTime(), timestep_s);
+        // Write to dat
+        WriteStatesToFile(scenarioEngine->getSimulationTime(), timestep_s);
+
         scenarioEngine->storyBoard.ClearStateChanges();
-#endif
 
         if (CSV_Log)
         {
@@ -308,6 +305,30 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
     quit_request |= scenarioEngine->GetQuitFlag();
 
     return retval;
+}
+
+void ScenarioPlayer::WriteStatesToFile(const double simulation_time, const double dt)
+{
+    if (dat_writer_.IsWriteFileOpen())
+    {
+        dat_writer_.SetSimulationTime(simulation_time, dt);
+        dat_writer_.WriteDtToDat();
+        dat_writer_.WriteTrafficLightsToDat(roadmanager::Position::GetOpenDrive()->GetDynamicSignals());
+        dat_writer_.WriteStoryBoardStateChangesToDat(scenarioEngine->storyBoard.GetChanges());
+        dat_writer_.WriteObjectStatesToDat(scenarioEngine->entities_.object_);
+        dat_writer_.SetTimestampWritten(false);
+    }
+}
+
+int ScenarioPlayer::RecordToFile(std::string filename, std::string odr_filename, std::string model_filename, std::string git_rev)
+{
+    if (filename.empty())
+    {
+        LOG_ERROR("Filename is empty");
+        return -1;
+    }
+
+    return dat_writer_.Init(filename, odr_filename, model_filename, git_rev);
 }
 
 void ScenarioPlayer::ScenarioPostFrame()
@@ -1941,10 +1962,9 @@ int ScenarioPlayer::Init()
         }
     }
 
-#if 0  // TODO: Save to DAT
-    // Create a data file for later replay?
     if ((arg_str = opt.GetOptionValue("record")) != "")
     {
+        // Create a data file for later replay
         std::string filename;
 
         if (!arg_str.empty())
@@ -1969,12 +1989,8 @@ int ScenarioPlayer::Init()
         }
 
         LOG_INFO("Recording data to file {}", filename);
-        scenarioGateway->RecordToFile(filename,
-                                      scenarioEngine->getOdrFilename(),
-                                      scenarioEngine->getSceneGraphFilename(),
-                                      std::string(esmini_git_rev()));
+        RecordToFile(filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename(), std::string(esmini_git_rev()));
     }
-#endif
 
     if (launch_server)
     {

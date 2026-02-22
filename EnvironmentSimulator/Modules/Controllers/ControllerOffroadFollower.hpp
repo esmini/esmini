@@ -42,7 +42,7 @@ namespace scenarioengine
             return CONTROLLER_OFFROAD_FOLLOWER_TYPE_NAME;
         }
 
-        virtual int GetType() const
+        virtual Controller::Type GetType() const
         {
             return Controller::Type::CONTROLLER_TYPE_INTERACTIVE;
         }

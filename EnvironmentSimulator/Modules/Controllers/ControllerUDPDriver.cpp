@@ -347,7 +347,7 @@ void ControllerUDPDriver::Step(double timeStep)
             // Register updated vehicle position
             object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
             object_->SetSpeed(vehicle_.speed_);
-            object_->wheel_angle_ = vehicle_.GetWheelAngle();
+            object_->wheel_angle_ = vehicle_.wheelAngle_;
 
             // Fetch Z and Pitch from OpenDRIVE position
             vehicle_.SetZ(pos->GetZ());

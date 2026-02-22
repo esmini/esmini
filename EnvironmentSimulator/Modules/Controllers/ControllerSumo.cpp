@@ -190,7 +190,7 @@ void ControllerSumo::Step(double timeStep)
                         // override vehicle scale mode (controlling bounding box and 3D model dimensions)
                         vehicle->scaleMode_ = scale_mode_;
                     }
-                    vehicle->role_     = static_cast<int>(Object::Role::CIVIL);
+                    vehicle->role_     = Object::Role::CIVIL;
                     vehicle->category_ = Vehicle::Category::CAR;
                     vehicle->odometer_ = 0.0;
                     vehicle->reset_    = true;
@@ -215,7 +215,6 @@ void ControllerSumo::Step(double timeStep)
                     if (obj != nullptr)
                     {
                         LOG_INFO("SUMO controller: Remove vehicle {} from scenario", arrivelist[i]);
-                        gateway_->removeObject(arrivelist[i]);
                         if (obj->objectEvents_.size() > 0 || obj->initActions_.size() > 0)
                         {
                             entities_->deactivateObject(obj);
@@ -266,7 +265,7 @@ void ControllerSumo::Step(double timeStep)
             {
                 std::string            sumoid = obj->name_;
                 libsumo::TraCIPosition pos    = libsumo::Vehicle::getPosition3D(sumoid);
-                obj->speed_                   = libsumo::Vehicle::getSpeed(sumoid);
+                obj->SetSpeed(libsumo::Vehicle::getSpeed(sumoid));
                 obj->pos_.SetInertiaPosMode(pos.x - static_cast<double>(sumo_x_offset_),
                                             pos.y - static_cast<double>(sumo_y_offset_),
                                             pos.z,
@@ -287,16 +286,6 @@ void ControllerSumo::Step(double timeStep)
                 }
 
                 obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
-
-                // Report updated state to the gateway
-                gateway_->updateObjectPos(obj->id_, scenario_engine_->getSimulationTime(), &obj->pos_);
-                gateway_->updateObjectSpeed(obj->id_, scenario_engine_->getSimulationTime(), obj->GetSpeed());
-
-                if (obj->GetDirtyBitMask() & Object::DirtyBit::BOUNDING_BOX)
-                {
-                    // Update bounding box if it has changed
-                    gateway_->updateObjectBoundingBox(obj->id_, obj->boundingbox_);
-                }
             }
             else if (!obj->IsGhost() && obj->TowVehicle() == nullptr)  // skip ghosts and trailers
             {

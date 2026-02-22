@@ -25,7 +25,6 @@ static void scenario_step(ScenarioEngine* scenario_engine, double dt)
 {
     scenario_engine->step(dt);
     scenario_engine->prepareGroundTruth(dt);
-    scenario_engine->getScenarioGateway()->clearDirtyBits();
 }
 
 TEST(DistanceTest, CalcDistanceVariations)
@@ -1508,7 +1507,6 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
         args.name       = "UDPDriverModel Controller";
         args.type       = CONTROLLER_UDP_DRIVER_TYPE_NAME;
         args.parameters = 0;
-        args.gateway    = se->getScenarioGateway();
         args.properties = new OSCProperties();
         OSCProperties::Property property;
         property.name_  = "port";
@@ -1619,7 +1617,6 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
         args.name       = "UDPDriverModel Controller";
         args.type       = CONTROLLER_UDP_DRIVER_TYPE_NAME;
         args.parameters = 0;
-        args.gateway    = se->getScenarioGateway();
         args.properties = new OSCProperties();
         OSCProperties::Property property;
         property.name_  = "execMode";
@@ -2416,7 +2413,6 @@ TEST(ControllerTest, ALKS_R157_TestR157RegulationMinDist)
     args.name            = "ALKS_R157SM_Controller";
     args.type            = CONTROLLER_ALKS_R157SM_TYPE_NAME;
     args.parameters      = 0;
-    args.gateway         = se->getScenarioGateway();
     args.scenario_engine = se;
     args.properties      = new OSCProperties();
     OSCProperties::Property property;
@@ -3935,7 +3931,7 @@ TEST(PositionTest, TestClosestPosOnPitchedAndRolledRoadsFromXY)
     EXPECT_NEAR(entities->object_[0]->pos_.GetS(), 9.439, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 8.378, 1E-3);
 
-    se->getScenarioGateway()->updateObjectWorldPosMode(0, 0.0, 11.5, 1.5, 10.0, 0.0, 0.0, 0.0, Position::PosMode::Z_REL);
+    se->entities_.object_[0]->pos_.SetInertiaPosMode(11.5, 1.5, 10.0, 0.0, 0.0, 0.0, Position::PosMode::Z_REL);
 
     scenario_step(se, 0.0);
 
@@ -4263,26 +4259,27 @@ TEST(Friction, TestFrictionPerWheel)
     ASSERT_NE(se, nullptr);
     scenario_step(se, 0.0);
 
-    scenarioengine::Entities* entities = &se->entities_;
+    const scenarioengine::Entities* entities = &se->entities_;
     ASSERT_NE(entities, nullptr);
     ASSERT_EQ(entities->object_.size(), 2);
-
-    ScenarioGateway* gw = se->getScenarioGateway();
 
     // Check friction per wheel at some key time stamps
 
     // time = 0.0
-    ObjectStateStruct* state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
+    ASSERT_EQ(entities->object_[0]->GetType(), Object::Type::VEHICLE);
+    ASSERT_EQ(entities->object_[1]->GetType(), Object::Type::VEHICLE);
 
-    ObjectStateStruct* target_state = &gw->objectState_[1]->state_;
-    EXPECT_NEAR(target_state->info.wheel_data[0].friction_coefficient, 0.8, 1E-3);
-    EXPECT_NEAR(target_state->info.wheel_data[1].friction_coefficient, 0.8, 1E-3);
-    EXPECT_NEAR(target_state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(target_state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
+    Vehicle* obj = static_cast<Vehicle*>(entities->object_[0]);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
+
+    Vehicle* obj = static_cast<Vehicle*>(entities->object_[1]);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 0.8, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.8, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
     while (se->getSimulationTime() < 1.8 + SMALL_NUMBER)
     {
