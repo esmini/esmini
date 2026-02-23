@@ -312,21 +312,23 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
             Write(PacketId::SHAPE_2D_OUTLINE, packet_shape.points);
         }
 
-        for (size_t i = 0; i < cache_it->second.light_state_.size(); i++)
+        if (object_state->ReadDirtyBits() & scenarioengine::Object::DirtyBit::LIGHT_STATE)
         {
-            if (state->info.light_state[i].type != scenarioengine::Object::VehicleLightType::UNDEFINED &&
-                !IsLightStateEqual(cache_it->second.light_state_[i], state->info.light_state[i]))
+            for (size_t i = 0; i < cache_it->second.light_state_.size(); i++)
             {
-                const auto& light                = state->info.light_state[i];
-                cache_it->second.light_state_[i] = {static_cast<int>(light.type),
-                                                    light.active,
-                                                    light.rgb[0],
-                                                    light.rgb[1],
-                                                    light.rgb[2],
-                                                    light.emission[0],
-                                                    light.emission[1],
-                                                    light.emission[2]};
-                Write(PacketId::LIGHT_STATE, cache_it->second.light_state_[i]);
+                if (!IsLightStateEqual(cache_it->second.light_state_[i], state->info.light_state[i]))
+                {
+                    const auto& light                = state->info.light_state[i];
+                    cache_it->second.light_state_[i] = {static_cast<int>(light.type),
+                                                        light.active,
+                                                        light.rgb[0],
+                                                        light.rgb[1],
+                                                        light.rgb[2],
+                                                        light.emission[0],
+                                                        light.emission[1],
+                                                        light.emission[2]};
+                    Write(PacketId::LIGHT_STATE, cache_it->second.light_state_[i]);
+                }
             }
         }
 

@@ -79,13 +79,6 @@ ObjectState::ObjectState(int                          id,
     state_.info.visibilityMask    = visibilityMask;
     state_.info.refpoint_x_offset = refpoint_x_offset;
     state_.info.model_x_offset    = model_x_offset;
-    if (light_state != nullptr)
-    {
-        for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
-        {
-            state_.info.light_state[i] = light_state[i];
-        }
-    }
 
     for (auto& w : state_.info.wheel_data)
     {
@@ -96,7 +89,19 @@ ObjectState::ObjectState(int                          id,
     state_.info.source_reference = source_reference;
 
     dirty_ = Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
-             Object::DirtyBit::WHEEL_ROTATION | Object::DirtyBit::LIGHT_STATE;
+             Object::DirtyBit::WHEEL_ROTATION;
+
+    if (light_state != nullptr)
+    {
+        for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
+        {
+            state_.info.light_state[i] = light_state[i];
+            if (!(dirty_ & Object::DirtyBit::LIGHT_STATE) && state_.info.light_state[i].mode != Object::VehicleLightMode::UNKNOWN)
+            {
+                dirty_ |= Object::DirtyBit::LIGHT_STATE;
+            }
+        }
+    }
 }
 
 ObjectState::ObjectState(int            id,
