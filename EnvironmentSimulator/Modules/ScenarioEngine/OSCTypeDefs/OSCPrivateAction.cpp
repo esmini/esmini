@@ -3296,7 +3296,7 @@ void LightStateAction::InitializeAllLights()
     {
         auto& light       = object_->vehLghtStsList[i];
         light.type        = static_cast<Object::VehicleLightType>(i);
-        light.mode        = Object::VehicleLightMode::OFF;
+        light.mode        = Object::VehicleLightMode::UNKNOWN;
         light.emission[0] = 0.0;
         light.emission[1] = 0.0;
         light.emission[2] = 0.0;
