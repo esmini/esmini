@@ -1059,14 +1059,14 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
     {
         for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
         {
-            const Object::VehicleLightMode &light_mode = objectState->state_.info.light_state[i].mode;
+            const Object::VehicleLightMode &light_mode = obj.vehLghtStsList[i].mode;
 
             if (light_mode == Object::VehicleLightMode::UNKNOWN)
             {
                 continue;  // If mode not set, move to next light
             }
 
-            const Object::VehicleLightType &light_type  = objectState->state_.info.light_state[i].type;
+            const Object::VehicleLightType &light_type  = obj.vehLghtStsList[i].type;
             auto                            light_state = obj_osi_internal.mobj->mutable_vehicle_classification()->mutable_light_state();
 
             switch (light_type)
@@ -1089,7 +1089,7 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
                     light_state->set_rear_fog_light(GetGenericLightMode(light_mode));
                     break;
                 case Object::VehicleLightType::BRAKE_LIGHTS:
-                    light_state->set_brake_light_state(GetBrakeLightMode(light_mode, objectState->state_.info.light_state[i].luminousIntensity));
+                    light_state->set_brake_light_state(GetBrakeLightMode(light_mode, obj.vehLghtStsList[i].luminousIntensity));
                     break;
                 case Object::VehicleLightType::WARNING_LIGHTS:
                 case Object::VehicleLightType::INDICATOR_LEFT:
@@ -1104,7 +1104,7 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
                     break;
                 case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
                 {
-                    const auto &role = static_cast<Object::Role>(objectState->state_.info.obj_role);
+                    const auto &role = static_cast<Object::Role>(obj.role_);
                     if (role == Object::Role::AMBULANCE || role == Object::Role::POLICE || role == Object::Role::FIRE)
                     {
                         light_state->set_emergency_vehicle_illumination(GetSpecialPurposeLightMode(light_mode, role));
