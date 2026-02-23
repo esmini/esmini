@@ -1000,7 +1000,19 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     }
 
     // Update LightState
-    if (has_lightstate_action_)
+    Object &obj    = *scenario_engine_->entities_.GetObjectById(objectState->state_.info.id);
+    id_t    obj_id = static_cast<id_t>(obj.id_);
+    if (obj.CheckDirtyBits(static_cast<int>(Object::DirtyBit::LIGHT_STATE)))
+    {
+        if (obj_id >= has_lightstate_action_.size())
+        {
+            has_lightstate_action_.resize(obj_id + 1, 0);
+        }
+
+        has_lightstate_action_[obj_id] = 1;
+    }
+
+    if (obj_id < has_lightstate_action_.size() && has_lightstate_action_[obj_id] == 1)
     {
         for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
         {
