@@ -314,12 +314,8 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<std::unique_ptr<sce
 
         for (size_t i = 0; i < cache_it->second.light_state_.size(); i++)
         {
-            if (state->info.light_state[i].type == scenarioengine::Object::VehicleLightType::UNDEFINED)
-            {
-                break;
-            }
-
-            if (!IsLightStateEqual(cache_it->second.light_state_[i], state->info.light_state[i]))
+            if (state->info.light_state[i].type != scenarioengine::Object::VehicleLightType::UNDEFINED &&
+                !IsLightStateEqual(cache_it->second.light_state_[i], state->info.light_state[i]))
             {
                 const auto& light                = state->info.light_state[i];
                 cache_it->second.light_state_[i] = {static_cast<int>(light.type),
