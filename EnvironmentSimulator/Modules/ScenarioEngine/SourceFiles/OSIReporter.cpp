@@ -528,7 +528,7 @@ void OSIReporter::CropOSIDynamicGroundTruth(const int id, const double radius)
     LOG_INFO("CropGroundTruth: Added crop for entity id {} with radius {}", id, radius);
 }
 
-void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &objectState) const
+void OSIReporter::CheckDynamicTypeAndUpdate(const std::unique_ptr<ObjectState> &objectState)
 {
     if (objectState->state_.info.obj_type == static_cast<int>(Object::Type::VEHICLE) ||
         objectState->state_.info.obj_type == static_cast<int>(Object::Type::PEDESTRIAN))
@@ -924,7 +924,7 @@ int OSIReporter::UpdateOSIStationaryObject(ObjectState *objectState)
     return 1;
 }
 
-int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState) const
+int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState)
 {
     // Create OSI Moving object
     obj_osi_internal.mobj = obj_osi_internal.dynamic_gt->add_moving_object();
@@ -1043,7 +1043,19 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState) const
     }
 
     // Update LightState
-    if (has_lightstate_action_)
+    Object &obj    = *scenario_engine_->entities_.GetObjectById(objectState->state_.info.id);
+    id_t    obj_id = static_cast<id_t>(obj.id_);
+    if (obj.CheckDirtyBits(static_cast<int>(Object::DirtyBit::LIGHT_STATE)))
+    {
+        if (obj_id >= has_lightstate_action_.size())
+        {
+            has_lightstate_action_.resize(obj_id + 1, 0);
+        }
+
+        has_lightstate_action_[obj_id] = 1;
+    }
+
+    if (obj_id < has_lightstate_action_.size() && has_lightstate_action_[obj_id] == 1)
     {
         for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
         {
@@ -1219,15 +1231,11 @@ int OSIReporter::UpdateOSIMovingObject(ObjectState *objectState) const
     }
 
     // Set outline if available
-    Object *obj = scenario_engine_->entities_.GetObjectById(objectState->state_.info.id);
-    if (obj != nullptr)
+    for (const auto &p : obj.outline_2d_)
     {
-        for (const auto &p : obj->outline_2d_)
-        {
-            osi3::Vector2d *vec = obj_osi_internal.mobj->mutable_base()->add_base_polygon();
-            vec->set_x(p.x);
-            vec->set_y(p.y);
-        }
+        osi3::Vector2d *vec = obj_osi_internal.mobj->mutable_base()->add_base_polygon();
+        vec->set_x(p.x);
+        vec->set_y(p.y);
     }
 
     return 0;

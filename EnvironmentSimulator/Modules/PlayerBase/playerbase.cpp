@@ -1925,7 +1925,6 @@ int ScenarioPlayer::Init()
     osiReporter->SetCounterPtr(&frame_counter_);
     osiReporter->SetStationaryModelReference(scenarioEngine->getSceneGraphFilename());
     scenarioEngine->storyBoard.SetOSIReporter(osiReporter);
-    osiReporter->SetHasLightStateAction(scenarioEngine->scenarioReader->HasLightStateAction());
 
     if (opt.GetOptionSet("osi_receiver_ip"))
     {

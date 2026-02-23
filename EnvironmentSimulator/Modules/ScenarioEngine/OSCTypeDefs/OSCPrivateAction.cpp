@@ -3123,7 +3123,7 @@ void LightStateAction::Start(double simTime)
     {
         // The light attached to the action hasn't been initialized, so we assume no light has been initialized.
         // Thus, we initialize all of them with basic values below. This should only happen when running headless...
-        InitializeAllLights();
+        InitializeLights();
     }
 
     previousMode_      = vehicleLight_->mode;
@@ -3290,11 +3290,16 @@ void LightStateAction::Step(double simTime, double dt)
     }
 }
 
-void LightStateAction::InitializeAllLights()
+void LightStateAction::InitializeLights()
 {
     for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
     {
-        auto& light       = object_->vehLghtStsList[i];
+        auto& light = object_->vehLghtStsList[i];
+        if (light.type != Object::VehicleLightType::UNDEFINED)
+        {
+            continue;
+        }
+
         light.type        = static_cast<Object::VehicleLightType>(i);
         light.mode        = Object::VehicleLightMode::UNKNOWN;
         light.emission[0] = 0.0;
