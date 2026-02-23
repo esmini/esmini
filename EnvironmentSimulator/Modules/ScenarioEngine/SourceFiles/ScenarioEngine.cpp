@@ -166,7 +166,7 @@ int ScenarioEngine::step(double deltaSimTime)
 
             obj->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
                                 Object::DirtyBit::WHEEL_ROTATION | Object::DirtyBit::ACCELERATION | Object::DirtyBit::CONTROLLER |
-                                Object::DirtyBit::BOUNDING_BOX);
+                                Object::DirtyBit::BOUNDING_BOX | Object::DirtyBit::LIGHT_STATE);
             obj->reset_ = false;
 
             // Fetch dirty bits from gateway, indicating what has been reported externally and needs to be protected
