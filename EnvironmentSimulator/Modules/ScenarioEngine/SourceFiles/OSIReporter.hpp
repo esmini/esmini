@@ -269,11 +269,6 @@ public:
                                                                                                      const Object::Role&             role) const;
     osi3::MovingObject_VehicleClassification_LightState_GenericLightState GetServiceVehicleLightMode(const Object::VehicleLightMode& mode) const;
 
-    void SetHasLightStateAction(const bool val)
-    {
-        has_lightstate_action_ = val;
-    }
-
     /**
     Set explicit timestap
     @param nanoseconds Nano (1e-9) seconds since 1970-01-01 (epoch time)
@@ -297,5 +292,5 @@ private:
     OSIStaticReportMode                 static_update_mode_ = OSIStaticReportMode::DEFAULT;
     std::vector<std::pair<int, double>> osi_crop_           = {};       // id, radius
     std::optional<int64_t>              environment_timestamp_offset_;  // Offset to apply to environment timestamp, in seconds
-    bool                                has_lightstate_action_ = false;
+    std::vector<uint8_t>                has_lightstate_action_ = {};
 };
