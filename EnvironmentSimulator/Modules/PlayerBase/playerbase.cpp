@@ -860,9 +860,9 @@ int ScenarioPlayer::InitViewer()
         viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ODR_FEATURES);
     }
 
-    std::string show                  = opt.GetOptionValue("show_lights");
+    std::string show_lights           = opt.GetOptionValue("show_lights");
     bool        has_lightstate_action = this->scenarioEngine->scenarioReader->HasLightStateAction();
-    if (show == "on" || (show == "auto" && has_lightstate_action))
+    if (show_lights == "on" || (show_lights == "auto" && has_lightstate_action))
     {
         viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_LIGHT_STATE);
     }
