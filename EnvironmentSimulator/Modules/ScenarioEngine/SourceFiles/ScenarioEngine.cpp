@@ -157,19 +157,6 @@ int ScenarioEngine::step(double deltaSimTime)
             obj->reset_           = true;
         }
     }
-    else
-    {
-        // reset update bits and indicators of applied control
-        for (size_t i = 0; i < entities_.object_.size(); i++)
-        {
-            Object* obj = entities_.object_[i];
-
-            obj->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED | Object::DirtyBit::WHEEL_ANGLE |
-                                Object::DirtyBit::WHEEL_ROTATION | Object::DirtyBit::ACCELERATION | Object::DirtyBit::CONTROLLER |
-                                Object::DirtyBit::BOUNDING_BOX);
-            obj->reset_ = false;
-        }
-    }
 
     storyBoard.Step(simulationTime_, deltaSimTime);
 
@@ -800,13 +787,13 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                     wheel.h = static_cast<float>(obj->wheel_angle_);  // I assume always 0 due to fixed rear axis. Better to have = 0?
                 }
 
-                Object::Axle* axle = wheel.axle == 0 ? &obj->front_axle_ : &obj->rear_axle_;
+                Object::Axle* axle  = wheel.axle == 0 ? &obj->front_axle_ : &obj->rear_axle_;
+                wheel.wheel_radius  = axle->wheelDiameter / 2;
+                wheel.rotation_rate = obj->speed_ / wheel.wheel_radius;
 
                 if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
                 {
-                    wheel.p             = static_cast<float>(obj->wheel_rot_);
-                    wheel.wheel_radius  = axle->wheelDiameter / 2;
-                    wheel.rotation_rate = obj->speed_ / wheel.wheel_radius;
+                    wheel.p = static_cast<float>(obj->wheel_rot_);
                 }
 
                 // Update wheel frictions
@@ -848,10 +835,6 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                 }
             }
         }
-
-        // Clear dirty/update bits for any reported velocity and acceleration values, and flag indicating teleport action
-        obj->ClearDirtyBits(Object::DirtyBit::VELOCITY | Object::DirtyBit::ANGULAR_RATE | Object::DirtyBit::ACCELERATION |
-                            Object::DirtyBit::ANGULAR_ACC | Object::DirtyBit::TELEPORT);
     }
 }
 

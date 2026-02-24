@@ -88,6 +88,7 @@ unittest(
     "${ScenarioEngineDll_sources}"
     esminiLib
     ScenarioEngine
+    Controllers
     RoadManager
     ${OSI_LIBRARIES})
 

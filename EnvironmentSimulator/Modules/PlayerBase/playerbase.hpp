@@ -234,8 +234,6 @@ namespace scenarioengine
         }
         int LoadParameterDistribution(std::string filename);
 
-        // TODO
-        // int GetNumberOfVehicleProperties(){return 4;};
         int                     GetNumberOfProperties(int index);
         const char             *GetPropertyName(int index, int propertyIndex);
         const char             *GetPropertyValue(int index, int propertyIndex);

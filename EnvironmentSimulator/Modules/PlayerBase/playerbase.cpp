@@ -346,13 +346,18 @@ void ScenarioPlayer::ScenarioPostFrame()
         if (osiReporter->GetOSIFrequency() > 0)
         {
             osiReporter->ReportSensors(sensor);
-#if 0  // TODO: Update OSI
-            osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-#endif
+            osiReporter->UpdateOSIGroundTruth(scenarioEngine->entities_.object_);
             osiReporter->UpdateOSITrafficCommand();
         }
     }
 #endif  // _USE_OSI
+
+    for (const auto& obj : scenarioEngine->entities_.object_)
+    {
+        // reset update bits and indicators of applied control
+        obj->ClearDirtyBits();
+        obj->reset_ = false;
+    }
 
     mutex.Unlock();
 }
@@ -2293,24 +2298,44 @@ int ScenarioPlayer::SetVariableValue(const char* name, bool value)
     return scenarioEngine->scenarioReader->variables.setParameterValue(name, value);
 }
 
-// todo
 int ScenarioPlayer::GetNumberOfProperties(int index)
 {
-    return static_cast<int>(scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]->properties_.property_.size());
+    if (index >= 0 && index < scenarioEngine->entities_.object_.size())
+    {
+        return static_cast<int>(scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]->properties_.property_.size());
+    }
+
+    return -1;
 }
 
 const char* ScenarioPlayer::GetPropertyName(int index, int propertyIndex)
 {
-    return scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]
-        ->properties_.property_[static_cast<unsigned int>(propertyIndex)]
-        .name_.c_str();
+    if (index >= 0 && index < scenarioEngine->entities_.object_.size())
+    {
+        Object* obj = scenarioEngine->entities_.object_[static_cast<unsigned int>(index)];
+
+        if (propertyIndex < 0 && propertyIndex < obj->properties_.property_.size())
+        {
+            return obj->properties_.property_[static_cast<unsigned int>(propertyIndex)].name_.c_str();
+        }
+    }
+
+    return "";
 }
 
 const char* ScenarioPlayer::GetPropertyValue(int index, int propertyIndex)
 {
-    return scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]
-        ->properties_.property_[static_cast<unsigned int>(propertyIndex)]
-        .value_.c_str();
+    if (index >= 0 && index < scenarioEngine->entities_.object_.size())
+    {
+        Object* obj = scenarioEngine->entities_.object_[static_cast<unsigned int>(index)];
+
+        if (propertyIndex < 0 && propertyIndex < obj->properties_.property_.size())
+        {
+            return obj->properties_.property_[static_cast<unsigned int>(propertyIndex)].value_.c_str();
+        }
+    }
+
+    return "";
 }
 
 #ifdef _USE_OSG

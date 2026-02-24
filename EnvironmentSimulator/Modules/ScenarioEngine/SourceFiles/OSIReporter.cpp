@@ -783,7 +783,7 @@ int OSIReporter::UpdateOSIStationaryObject(Object &obj)
     obj_osi_internal.sobj = obj_osi_internal.static_updated_gt->add_stationary_object();
 
     // Set OSI Stationary Object Mutable ID
-    obj_osi_internal.sobj->mutable_id()->set_value(obj.GetId());
+    obj_osi_internal.sobj->mutable_id()->set_value(obj.g_id_);
 
     // Set OSI Stationary Object Type and Classification
     if (obj.GetType() == Object::Type::MISC_OBJECT)
@@ -889,9 +889,10 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     obj_osi_internal.mobj = obj_osi_internal.dynamic_gt->add_moving_object();
 
     // Set OSI Moving Object Mutable ID
-    obj_osi_internal.mobj->mutable_id()->set_value(obj.id_);
+    obj_osi_internal.mobj->mutable_id()->set_value(obj.g_id_);
 
     // Set OSI Moving Object Type and Classification
+    std::string entity_type = "Vehicle";
     if (obj.GetType() == Object::Type::VEHICLE)
     {
         obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_VEHICLE);
@@ -986,6 +987,7 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     }
     else if (obj.GetType() == Object::Type::PEDESTRIAN)
     {
+        entity_type = "Pedestrian";
         if (obj.category_ == Pedestrian::Category::PEDESTRIAN)
         {
             obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_PEDESTRIAN);
@@ -1102,7 +1104,7 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     source_reference->set_type(SOURCE_REF_TYPE_OSC);
 
     source_reference->add_identifier(fmt::format("entity_id:{}", obj.GetId()));
-    source_reference->add_identifier(fmt::format("entity_type:{}", obj.GetType()));
+    source_reference->add_identifier(fmt::format("entity_type:{}", entity_type));
     source_reference->add_identifier(fmt::format("entity_name:{}", obj.GetName()));
 
     // Set source reference if available

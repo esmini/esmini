@@ -93,6 +93,7 @@ void ControllerInteractive::Step(double timeStep)
     }
 
     object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
+    object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
     // Fetch Z and Pitch from OpenDRIVE position
     vehicle_.posZ_  = object_->pos_.GetZRoad();
@@ -105,8 +106,8 @@ void ControllerInteractive::Step(double timeStep)
 
     if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
     {
-        object_->wheel_rot_   = vehicle_.wheelRotation_;
         object_->wheel_angle_ = vehicle_.wheelAngle_;
+        object_->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
     }
 
     Controller::Step(timeStep);

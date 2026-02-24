@@ -4275,7 +4275,7 @@ TEST(Friction, TestFrictionPerWheel)
     EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
-    Vehicle* obj = static_cast<Vehicle*>(entities->object_[1]);
+    obj = static_cast<Vehicle*>(entities->object_[1]);
     EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 0.8, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.8, 1E-3);
     EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
@@ -4285,71 +4285,65 @@ TEST(Friction, TestFrictionPerWheel)
     {
         scenario_step(se, 0.1);
     }
-    state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
+    obj = static_cast<Vehicle*>(entities->object_[0]);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
     while (se->getSimulationTime() < 1.9 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 0.8, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.8, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
     while (se->getSimulationTime() < 3.9 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
     while (se->getSimulationTime() < 4.0 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 0.8, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 0.8, 1E-3);
 
     while (se->getSimulationTime() < 12.1 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 0.4, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 0.4, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
     while (se->getSimulationTime() < 13.7 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 0.4, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 0.4, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 0.4, 1E-3);
 
     while (se->getSimulationTime() < 20.0 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->info.wheel_data[0].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].friction_coefficient, 1.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].friction_coefficient, 1.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].friction_coefficient, 1.0, 1E-3);
 
     delete se;
 }
@@ -4364,46 +4358,45 @@ TEST(WheelData, TestWheelData)
     ASSERT_NE(entities, nullptr);
     ASSERT_EQ(entities->object_.size(), 3);
 
-    ScenarioGateway* gw = se->getScenarioGateway();
-
     // Check friction per wheel at some key time stamps
 
     // time = 0.0
-    ObjectStateStruct* state = &gw->objectState_[0]->state_;
-    EXPECT_EQ(state->info.wheel_data[0].axle, 0);
-    EXPECT_EQ(state->info.wheel_data[1].axle, 0);
-    EXPECT_EQ(state->info.wheel_data[2].axle, 1);
-    EXPECT_EQ(state->info.wheel_data[3].axle, 1);
+    ASSERT_EQ(entities->object_[0]->GetType(), Object::Type::VEHICLE);
+    Vehicle* obj = static_cast<Vehicle*>(entities->object_[0]);
+    EXPECT_EQ(obj->GetWheelData()[0].axle, 0);
+    EXPECT_EQ(obj->GetWheelData()[1].axle, 0);
+    EXPECT_EQ(obj->GetWheelData()[2].axle, 1);
+    EXPECT_EQ(obj->GetWheelData()[3].axle, 1);
 
-    EXPECT_NEAR(state->info.wheel_data[0].h, 0.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].h, 0.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].h, 0.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].h, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].h, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].h, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].h, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].h, 0.0, 1E-3);
 
-    EXPECT_EQ(state->info.wheel_data[0].index, 0);
-    EXPECT_EQ(state->info.wheel_data[1].index, 1);
-    EXPECT_EQ(state->info.wheel_data[2].index, 0);
-    EXPECT_EQ(state->info.wheel_data[3].index, 1);
+    EXPECT_EQ(obj->GetWheelData()[0].index, 0);
+    EXPECT_EQ(obj->GetWheelData()[1].index, 1);
+    EXPECT_EQ(obj->GetWheelData()[2].index, 0);
+    EXPECT_EQ(obj->GetWheelData()[3].index, 1);
 
-    EXPECT_NEAR(state->info.wheel_data[0].p, 0.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].p, 0.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].p, 0.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].p, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].p, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].p, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].p, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].p, 0.0, 1E-3);
 
-    EXPECT_NEAR(state->info.wheel_data[0].x, 2.98, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].x, 2.98, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].x, 0.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].x, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].x, 2.98, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].x, 2.98, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].x, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].x, 0.0, 1E-3);
 
-    EXPECT_NEAR(state->info.wheel_data[0].y, -0.840, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].y, 0.840, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].y, -0.840, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].y, 0.840, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].y, -0.840, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].y, 0.840, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].y, -0.840, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].y, 0.840, 1E-3);
 
-    EXPECT_NEAR(state->info.wheel_data[0].z, 0.4, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].z, 0.4, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].z, 0.4, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].z, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].z, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].z, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].z, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].z, 0.4, 1E-3);
 
     while (se->getSimulationTime() < 5.8 + SMALL_NUMBER)
     {
@@ -4411,43 +4404,44 @@ TEST(WheelData, TestWheelData)
     }
 
     // check overtaking car, some wheel heading expected
-    state = &gw->objectState_[2]->state_;
+    ASSERT_EQ(entities->object_[2]->GetType(), Object::Type::VEHICLE);
+    obj = static_cast<Vehicle*>(se->entities_.object_[2]);
 
-    EXPECT_EQ(state->info.wheel_data[0].axle, 0);
-    EXPECT_EQ(state->info.wheel_data[1].axle, 0);
-    EXPECT_EQ(state->info.wheel_data[2].axle, 1);
-    EXPECT_EQ(state->info.wheel_data[3].axle, 1);
+    EXPECT_EQ(obj->GetWheelData()[0].axle, 0);
+    EXPECT_EQ(obj->GetWheelData()[1].axle, 0);
+    EXPECT_EQ(obj->GetWheelData()[2].axle, 1);
+    EXPECT_EQ(obj->GetWheelData()[3].axle, 1);
 
-    EXPECT_NEAR(state->info.wheel_data[0].h, 0.0507, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].h, 0.0507, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].h, 0.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].h, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].h, 0.0507, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].h, 0.0507, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].h, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].h, 0.0, 1E-3);
 
-    EXPECT_EQ(state->info.wheel_data[0].index, 0);
-    EXPECT_EQ(state->info.wheel_data[1].index, 1);
-    EXPECT_EQ(state->info.wheel_data[2].index, 0);
-    EXPECT_EQ(state->info.wheel_data[3].index, 1);
+    EXPECT_EQ(obj->GetWheelData()[0].index, 0);
+    EXPECT_EQ(obj->GetWheelData()[1].index, 1);
+    EXPECT_EQ(obj->GetWheelData()[2].index, 0);
+    EXPECT_EQ(obj->GetWheelData()[3].index, 1);
 
-    EXPECT_NEAR(state->info.wheel_data[0].p, 1.989, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].p, 1.989, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].p, 1.989, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].p, 1.989, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].p, 1.989, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].p, 1.989, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].p, 1.989, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].p, 1.989, 1E-3);
 
-    EXPECT_NEAR(state->info.wheel_data[0].x, 2.98, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].x, 2.98, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].x, 0.0, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].x, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].x, 2.98, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].x, 2.98, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].x, 0.0, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].x, 0.0, 1E-3);
 
-    EXPECT_NEAR(state->info.wheel_data[0].y, -0.840, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].y, 0.840, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].y, -0.840, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].y, 0.840, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].y, -0.840, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].y, 0.840, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].y, -0.840, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].y, 0.840, 1E-3);
 
     // ensure z=0 even when the car is on a crest
-    EXPECT_NEAR(state->info.wheel_data[0].z, 0.4, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[1].z, 0.4, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[2].z, 0.4, 1E-3);
-    EXPECT_NEAR(state->info.wheel_data[3].z, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[0].z, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[1].z, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[2].z, 0.4, 1E-3);
+    EXPECT_NEAR(obj->GetWheelData()[3].z, 0.4, 1E-3);
 
     delete se;
 }
@@ -4462,97 +4456,97 @@ TEST(LaneChange, TestLaneChangeEdgeCase)
     ASSERT_NE(entities, nullptr);
     ASSERT_EQ(entities->object_.size(), 2);
 
-    ScenarioGateway* gw = se->getScenarioGateway();
+    ASSERT_EQ(entities->object_[0]->GetType(), Object::Type::VEHICLE);
+    Vehicle* obj = static_cast<Vehicle*>(entities->object_[0]);
 
     // Check expected position and orientation at some specific time stamps
     while (se->getSimulationTime() < 21.0 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    ObjectStateStruct* state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->pos.GetX(), 121.059, 1E-3);
-    EXPECT_NEAR(state->pos.GetY(), 5.245, 1E-3);
-    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetX(), 121.059, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 5.245, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.000, 1E-3);
 
     while (se->getSimulationTime() < 21.6 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    EXPECT_NEAR(state->pos.GetX(), 121.604, 1E-3);
-    EXPECT_NEAR(state->pos.GetY(), 4.992, 1E-3);
-    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetH(), 5.609, 1E-3);
-    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetX(), 121.604, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 4.992, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 5.609, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.000, 1E-3);
 
     while (se->getSimulationTime() < 22.3 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    EXPECT_NEAR(state->pos.GetX(), 121.802, 1E-3);
-    EXPECT_NEAR(state->pos.GetY(), 3.987, 1E-3);
-    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetH(), 4.712, 1E-3);
-    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetX(), 121.802, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 3.987, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 4.712, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.000, 1E-3);
 
     while (se->getSimulationTime() < 22.3 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    EXPECT_NEAR(state->pos.GetX(), 121.802, 1E-3);
-    EXPECT_NEAR(state->pos.GetY(), 3.987, 1E-3);
-    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetH(), 4.712, 1E-3);
-    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetX(), 121.802, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 3.987, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 4.712, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.000, 1E-3);
 
     while (se->getSimulationTime() < 25.7 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    EXPECT_NEAR(state->pos.GetX(), 123.581, 1E-3);
-    EXPECT_NEAR(state->pos.GetY(), 1.751, 1E-3);
-    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetX(), 123.581, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 1.751, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.000, 1E-3);
 
     while (se->getSimulationTime() < 26.7 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    EXPECT_NEAR(state->pos.GetX(), 124.400, 1E-3);
-    EXPECT_NEAR(state->pos.GetY(), 2.263, 1E-3);
-    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetH(), 1.103, 1E-3);
-    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetX(), 124.400, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 2.263, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 1.103, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.000, 1E-3);
 
     while (se->getSimulationTime() < 28.4 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    EXPECT_NEAR(state->pos.GetX(), 124.424, 1E-3);
-    EXPECT_NEAR(state->pos.GetY(), 4.313, 1E-3);
-    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetH(), 1.571, 1E-3);
-    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetX(), 124.424, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 4.313, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 1.571, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.000, 1E-3);
 
     while (se->getSimulationTime() < 29.5 + SMALL_NUMBER)
     {
         scenario_step(se, 0.1);
     }
-    EXPECT_NEAR(state->pos.GetX(), 125.203, 1E-3);
-    EXPECT_NEAR(state->pos.GetY(), 5.250, 1E-3);
-    EXPECT_NEAR(state->pos.GetZ(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetH(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetP(), 0.000, 1E-3);
-    EXPECT_NEAR(state->pos.GetR(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetX(), 125.203, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetY(), 5.250, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetZ(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetH(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.000, 1E-3);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.000, 1E-3);
 
     delete se;
 }
@@ -4568,60 +4562,57 @@ TEST(Trajectory, TestOrientationInterpolation)
     ASSERT_NE(entities, nullptr);
     ASSERT_EQ(entities->object_.size(), 1);
 
-    ScenarioGateway* gw = se->getScenarioGateway();
+    ASSERT_EQ(entities->object_[0]->GetType(), Object::Type::VEHICLE);
+    Vehicle* obj = static_cast<Vehicle*>(entities->object_[0]);
 
     // Check expected position and orientation at some specific time stamps
     while (se->getSimulationTime() < 2.95 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
-    ObjectStateStruct* state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->pos.GetX(), 120.83, 1E-2);
-    EXPECT_NEAR(state->pos.GetY(), -2.54, 1E-2);
-    EXPECT_NEAR(state->pos.GetZ(), 0.00, 1E-2);
-    EXPECT_NEAR(state->pos.GetH(), 0.00, 1E-2);
-    EXPECT_NEAR(state->pos.GetP(), 0.00, 1E-2);
-    EXPECT_NEAR(state->pos.GetR(), 0.00, 1E-2);
-    EXPECT_NEAR(state->info.speed, 6.94, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetX(), 120.83, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetY(), -2.54, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetZ(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetH(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetR(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->GetSpeed(), 6.94, 1E-2);
 
     while (se->getSimulationTime() < 3.85 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
-    state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->pos.GetX(), 127.08, 1E-2);
-    EXPECT_NEAR(state->pos.GetY(), -2.54, 1E-2);
-    EXPECT_NEAR(state->pos.GetZ(), 0.00, 1E-2);
-    EXPECT_NEAR(state->pos.GetH(), 0.00, 1E-2);
-    EXPECT_NEAR(state->pos.GetP(), 0.00, 1E-2);
-    EXPECT_NEAR(state->pos.GetR(), 1.31, 1E-2);
-    EXPECT_NEAR(state->info.speed, 6.94, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetX(), 127.08, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetY(), -2.54, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetZ(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetH(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetR(), 1.31, 1E-2);
+    EXPECT_NEAR(obj->GetSpeed(), 6.94, 1E-2);
 
     while (se->getSimulationTime() < 4.75 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
-    state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->pos.GetX(), 130.61, 1E-2);
-    EXPECT_NEAR(state->pos.GetY(), -2.54, 1E-2);
-    EXPECT_NEAR(state->pos.GetZ(), 0.00, 1E-2);
-    EXPECT_NEAR(state->pos.GetH(), 0.00, 1E-2);
-    EXPECT_NEAR(state->pos.GetP(), 0.00, 1E-2);
-    EXPECT_NEAR(state->pos.GetR(), 1.57, 1E-2);
-    EXPECT_NEAR(state->info.speed, 0.54, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetX(), 130.61, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetY(), -2.54, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetZ(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetH(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetR(), 1.57, 1E-2);
+    EXPECT_NEAR(obj->GetSpeed(), 0.54, 1E-2);
 
     while (se->getSimulationTime() < 4.95 + SMALL_NUMBER)
     {
         scenario_step(se, dt);
     }
-    state = &gw->objectState_[0]->state_;
-    EXPECT_NEAR(state->pos.GetX(), 130.62, 1E-2);
-    EXPECT_NEAR(state->pos.GetY(), -2.54, 1E-2);
-    EXPECT_NEAR(state->pos.GetZ(), 0.00, 1E-2);
-    EXPECT_NEAR(state->pos.GetH(), 0.00, 1E-2);
-    EXPECT_NEAR(state->pos.GetP(), 0.00, 1E-2);
-    EXPECT_NEAR(state->pos.GetR(), 1.57, 1E-2);
-    EXPECT_NEAR(state->info.speed, 0.0, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetX(), 130.62, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetY(), -2.54, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetZ(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetH(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetP(), 0.00, 1E-2);
+    EXPECT_NEAR(obj->pos_.GetR(), 1.57, 1E-2);
+    EXPECT_NEAR(obj->GetSpeed(), 0.0, 1E-2);
 
     delete se;
 }

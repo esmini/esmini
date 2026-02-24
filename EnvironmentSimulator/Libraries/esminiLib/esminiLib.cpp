@@ -150,6 +150,23 @@ static void copyStateFromScenarioObject(SE_ScenarioObjectState *state, const sce
     state->visibilityMask = obj.visibilityMask_;
 }
 
+static void copyWheelDataFromScenarioObject(SE_WheelData *wheeldata, const scenarioengine::Vehicle &veh, int wheel_index)
+{
+    if (veh.GetType() == Object::Type::VEHICLE && wheel_index >= 0 && wheel_index < static_cast<int>(veh.GetWheelData().size()))
+    {
+        const WheelData &wd = veh.GetWheelData()[wheel_index];
+
+        wheeldata->x                    = wd.x;
+        wheeldata->y                    = static_cast<float>(wd.y);
+        wheeldata->z                    = static_cast<float>(wd.z);
+        wheeldata->h                    = static_cast<float>(wd.h);
+        wheeldata->p                    = static_cast<float>(wd.p);
+        wheeldata->friction_coefficient = static_cast<float>(wd.friction_coefficient);
+        wheeldata->axle                 = wd.axle;
+        wheeldata->index                = wd.index;
+    }
+}
+
 static int getObjectById(int object_id, Object *&obj)
 {
     if (player == nullptr)
@@ -813,7 +830,7 @@ extern "C"
 
     SE_DLL_API int SE_GetNumberOfProperties(int index)
     {
-        if (player != nullptr && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
+        if (player != nullptr)
         {
             return player->GetNumberOfProperties(index);
         }
@@ -823,13 +840,9 @@ extern "C"
 
     SE_DLL_API const char *SE_GetObjectPropertyName(int index, int propertyIndex)
     {
-        if (player != nullptr && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
+        if (player != nullptr)
         {
-            int number = player->GetNumberOfProperties(index);
-            if (number > 0 && propertyIndex < number && propertyIndex >= 0)
-            {
-                return player->GetPropertyName(index, propertyIndex);
-            }
+            return player->GetPropertyName(index, propertyIndex);
         }
 
         return "";
@@ -837,7 +850,7 @@ extern "C"
 
     SE_DLL_API const char *SE_GetObjectPropertyValue(int index, const char *objectPropertyName)
     {
-        if (player != nullptr && index >= 0 && index < player->scenarioGateway->getNumberOfObjects())
+        if (player != nullptr)
         {
             for (int i = 0; i < player->GetNumberOfProperties(index); i++)
             {
@@ -1048,12 +1061,10 @@ extern "C"
         if (player != nullptr)
         {
             Object *obj = nullptr;
-            if (getObjectById(object_id, obj) == -1)
+            if (getObjectById(object_id, obj) == 0)
             {
-                return;
+                obj->pos_.SetMode(static_cast<roadmanager::Position::PosModeType>(type), static_cast<roadmanager::Position::PosMode>(mode));
             }
-
-            player->scenarioGateway->setObjectPositionMode(object_id, type, mode);
         }
     }
 
@@ -1062,12 +1073,10 @@ extern "C"
         if (player != nullptr)
         {
             Object *obj = nullptr;
-            if (getObjectById(object_id, obj) == -1)
+            if (getObjectById(object_id, obj) == 0)
             {
-                return;
+                obj->pos_.SetModeDefault(static_cast<roadmanager::Position::PosModeType>(type));
             }
-
-            player->scenarioGateway->setObjectPositionModeDefault(object_id, type);
         }
     }
 
@@ -1130,7 +1139,7 @@ extern "C"
 
                 object->scaleMode_   = static_cast<EntityScaleMode>(scale_mode);
                 object->category_    = object_category;
-                object->role_        = object_role;
+                object->role_        = static_cast<scenarioengine::Object::Role>(object_role);
                 object->boundingbox_ = bb;
                 player->scenarioEngine->entities_.addObject(object, true);
                 object->name_ = (object_name == nullptr) ? "obj_" + std::to_string(object->id_) : object_name;
@@ -1148,7 +1157,7 @@ extern "C"
                 if (object_type == scenarioengine::Object::Type::VEHICLE || object_type == scenarioengine::Object::Type::PEDESTRIAN)
                 {
                     ctrl_type                 = Controller::Type::CONTROLLER_TYPE_EXTERNAL;
-                    Controller::InitArgs args = {"", "", 0, 0, 0, 0};
+                    Controller::InitArgs args = {"", "", 0, 0, 0};
                     args.type                 = CONTROLLER_EXTERNAL_TYPE_NAME;
                     Controller *ctrl          = InstantiateControllerExternal(&args);
                     if (ctrl != nullptr)
@@ -1164,33 +1173,6 @@ extern "C"
             {
                 LOG_ERROR("SE_AddObject: Object type {} not supported yet", object_type);
                 return -1;
-            }
-
-            if (player->scenarioGateway->reportObjectXYZHPR(object->id_,
-                                                            object->g_id_,
-                                                            object->name_,
-                                                            object->type_,
-                                                            object->category_,
-                                                            object->role_,
-                                                            object->model_id_,
-                                                            model_3d == nullptr ? "" : object->GetModel3DFullPath(),
-                                                            ctrl_type,
-                                                            bb,
-                                                            scale_mode,
-                                                            0xff,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0,
-                                                            0.0) == 0)
-            {
-                return object->id_;
             }
         }
 
@@ -1450,12 +1432,12 @@ extern "C"
 
     SE_DLL_API int SE_GetId(int index)
     {
-        if (player == nullptr || index < 0 || index >= player->scenarioGateway->getNumberOfObjects())
+        if (player != nullptr && index >= 0 && index < player->scenarioEngine->entities_.object_.size())
         {
-            return -1;
+            return player->scenarioEngine->entities_.GetObjectIdxById(index);
         }
 
-        return player->scenarioEngine->entities_.GetObjectIdxById(index);
+        return -1;
     }
 
     SE_DLL_API int SE_GetIdByName(const char *name)
@@ -1487,7 +1469,7 @@ extern "C"
 
         if (obj != nullptr)
         {
-            copyStateFromScenarioObject(state, obj);
+            copyStateFromScenarioObject(state, *obj);
             return 0;
         }
 
@@ -1622,7 +1604,7 @@ extern "C"
             {
                 player->osiReporter->SetOSIFrequency(1);
             }
-            player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);  //, player->scenarioEngine->environment);
+            player->osiReporter->UpdateOSIGroundTruth(player->scenarioEngine->entities_.object_);
             return player->osiReporter->GetOSIGroundTruth(size);
         }
 
@@ -1642,7 +1624,7 @@ extern "C"
             {
                 player->osiReporter->SetOSIFrequency(1);
             }
-            player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);  //, player->scenarioEngine->environment);
+            player->osiReporter->UpdateOSIGroundTruth(player->scenarioEngine->entities_.object_);
             return player->osiReporter->GetOSIGroundTruthRaw();
         }
 #endif  // _USE_OSI
@@ -1694,7 +1676,7 @@ extern "C"
 #ifdef _USE_OSI
         if (player != nullptr)
         {
-            return player->osiReporter->GetOSIRoadLane(player->scenarioGateway->objectState_, size, object_id);
+            return player->osiReporter->GetOSIRoadLane(player->scenarioEngine->entities_.object_, size, object_id);
         }
 
         *size = 0;
@@ -1729,7 +1711,7 @@ extern "C"
         if (player != nullptr)
         {
             std::vector<id_t> ids_vector;
-            player->osiReporter->GetOSILaneBoundaryIds(player->scenarioGateway->objectState_, ids_vector, object_id);
+            player->osiReporter->GetOSILaneBoundaryIds(player->scenarioEngine->entities_.object_, ids_vector, object_id);
             if (!ids_vector.empty())
             {
                 ids->far_left_lb_id  = ids_vector[0];
@@ -1881,9 +1863,7 @@ extern "C"
 
         if (ghost)
         {
-            scenarioengine::ObjectState obj_state;
-            player->scenarioGateway->getObjectStateById(ghost->id_, obj_state);
-            copyStateFromScenarioGateway(state, &obj_state.state_);
+            copyStateFromScenarioObject(state, *ghost);
         }
         else
         {
@@ -2065,11 +2045,11 @@ extern "C"
 
     SE_DLL_API int SE_GetObjectNumberOfWheels(int object_id)
     {
-        scenarioengine::ObjectState gw_obj_state;
+        Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
 
-        if (player->scenarioGateway->getObjectStateById(object_id, gw_obj_state) != -1)
+        if (obj != nullptr && obj->GetType() == Object::Type::VEHICLE)
         {
-            return static_cast<int>(gw_obj_state.state_.info.wheel_data.size());
+            return static_cast<int>(static_cast<Vehicle *>(obj)->GetWheelData().size());
         }
 
         return -1;
@@ -2077,17 +2057,12 @@ extern "C"
 
     SE_DLL_API int SE_GetObjectWheelData(int object_id, int wheel_index, SE_WheelData *wheeldata)
     {
-        scenarioengine::ObjectState gw_obj_state;
+        Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
 
-        if (player->scenarioGateway->getObjectStateById(object_id, gw_obj_state) != -1)
+        if (obj != nullptr && obj->GetType() == Object::Type::VEHICLE)
         {
-            int number_of_wheels = static_cast<int>(gw_obj_state.state_.info.wheel_data.size());
-
-            if (wheel_index >= 0 && wheel_index < number_of_wheels)
-            {
-                copyWheelDataFromScenarioGateway(wheeldata, &gw_obj_state.state_, wheel_index);
-                return 0;
-            }
+            copyWheelDataFromScenarioObject(wheeldata, static_cast<Vehicle &>(*obj), wheel_index);
+            return 0;
         }
 
         return -1;
@@ -2118,19 +2093,18 @@ extern "C"
 
     SE_DLL_API int SE_GetObjectStates(int *nObjects, SE_ScenarioObjectState *state)
     {
-        int i;
-        *nObjects = 0;
-
         if (player == nullptr)
         {
+            *nObjects = 0;
             return -1;
         }
 
-        for (i = 0; i < *nObjects && i < player->scenarioGateway->getNumberOfObjects(); i++)
+        *nObjects = static_cast<int>(player->scenarioEngine->entities_.object_.size());
+
+        for (unsigned int i = 0; i < player->scenarioEngine->entities_.object_.size(); i++)
         {
-            copyStateFromScenarioGateway(&state[i], &player->scenarioGateway->getObjectStatePtrByIdx(i)->state_);
+            copyStateFromScenarioObject(&state[i], *player->scenarioEngine->entities_.object_[i]);
         }
-        *nObjects = i;
 
         return 0;
     }
@@ -2196,7 +2170,7 @@ extern "C"
         if (player != nullptr)
         {
             player->SetOSIFileStatus(true, filename);
-            player->osiReporter->UpdateOSIGroundTruth(player->scenarioGateway->objectState_);
+            player->osiReporter->UpdateOSIGroundTruth(player->scenarioEngine->entities_.object_);
         }
 #else
         (void)filename;
@@ -2350,7 +2324,7 @@ extern "C"
             if (objCallback[i].id == obj->GetId())
             {
                 SE_ScenarioObjectState se_state;
-                copyStateFromScenarioObject(state, *obj);
+                copyStateFromScenarioObject(&se_state, *obj);
                 objCallback[i].func(&se_state, my_data);
             }
         }

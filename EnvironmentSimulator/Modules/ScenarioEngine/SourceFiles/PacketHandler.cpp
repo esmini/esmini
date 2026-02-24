@@ -182,7 +182,6 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
 
         // PacketId::CTRL_TYPE
         scenarioengine::Controller::Type ctrl_type = obj->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG);
-        // scenarioengine::Controller::Type ctrl_type = scenarioengine::Controller::Type::CONTROLLER_TYPE_DEFAULT;
         if (cache_it->second.ctrl_type_ != ctrl_type)
         {
             cache_it->second.ctrl_type_ = ctrl_type;
