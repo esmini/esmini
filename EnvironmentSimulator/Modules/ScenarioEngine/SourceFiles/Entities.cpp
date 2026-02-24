@@ -43,6 +43,7 @@ Object::Object(Type type)
       nextJunctionSelectorAngle_(0.0),
       scaleMode_(EntityScaleMode::NONE),
       dirty_(0),
+      dirty_back_(0),
       is_active_(false),
       model3d_full_path_(""),
       source_reference_({})
@@ -79,7 +80,6 @@ Object::Object(Type type)
     front_axle_       = {0.0, 0.0, 0.0, 0.0, 0.0};
     rear_axle_        = {0.0, 0.0, 0.0, 0.0, 0.0};
     model3d_x_offset_ = 0.0;
-
     outline_2d_.reserve(24);  // default for cars in NCAP programs
 }
 

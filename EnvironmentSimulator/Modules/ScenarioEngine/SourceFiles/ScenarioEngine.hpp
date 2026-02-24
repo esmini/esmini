@@ -157,7 +157,7 @@ namespace scenarioengine
             return init_status_;
         }
 
-        void ClearDirtyBits();
+        void SwapAndClearDirtyBits();
 
 #ifdef _USE_OSI
         void SetOSIReporter(OSIReporter *osi_reporter)

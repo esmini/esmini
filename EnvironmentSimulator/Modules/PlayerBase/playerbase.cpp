@@ -195,7 +195,6 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
         }
 #endif
         scenarioEngine->mutex_.Lock();
-        scenarioEngine->ClearDirtyBits();
         retval = ScenarioFrame(timestep_s, true);
 
         if (SE_Env::Inst().GetGhostMode() != GhostMode::NORMAL)
@@ -206,6 +205,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
                 if (!IsPaused() && !IsQuitRequested())
                 {
                     retval = ScenarioFrame(ghost_solo_dt, false);
+                    scenarioEngine->SwapAndClearDirtyBits();
                 }
             }
         }
@@ -239,6 +239,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
         {
             scenarioEngine->mutex_.Lock();
             ScenarioPostFrame();
+            scenarioEngine->SwapAndClearDirtyBits();
             scenarioEngine->mutex_.Unlock();
         }
     }

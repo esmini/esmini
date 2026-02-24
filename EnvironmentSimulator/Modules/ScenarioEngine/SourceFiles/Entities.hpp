@@ -610,6 +610,11 @@ namespace scenarioengine
             return dirty_;
         }
 
+        int GetDirtyBackBitMask() const
+        {
+            return dirty_back_;
+        }
+
         void ClearDirtyBits(int bits)
         {
             dirty_ &= ~bits;
@@ -714,8 +719,15 @@ namespace scenarioengine
             return osi_index_;
         }
 
+        void SwapDirtyBitBuffers()
+        {
+            dirty_back_ = dirty_;
+            dirty_      = 0;
+        }
+
     private:
         int                      dirty_;
+        int                      dirty_back_;
         bool                     is_active_;
         std::string              model3d_full_path_;
         std::vector<std::string> source_reference_;

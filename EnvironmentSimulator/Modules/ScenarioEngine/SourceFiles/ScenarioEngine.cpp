@@ -212,6 +212,8 @@ int ScenarioEngine::step(double deltaSimTime)
     {
         Object* obj = entities_.object_[i];
 
+        obj->reset_ = false;
+
         // Do not move objects when speed is zero,
         // and only ghosts allowed to execute during ghost restart
         if (!(obj->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE,
@@ -1299,12 +1301,11 @@ int ScenarioEngine::GetDistance(Object*                           object_1,
     return dist_updated;
 }
 
-void ScenarioEngine::ClearDirtyBits()
+void ScenarioEngine::SwapAndClearDirtyBits()
 {
     for (auto& obj : entities_.object_)
     {
         // reset update bits and indicators of applied control
-        obj->ClearDirtyBits();
-        obj->reset_ = false;
+        obj->SwapDirtyBitBuffers();
     }
 }
