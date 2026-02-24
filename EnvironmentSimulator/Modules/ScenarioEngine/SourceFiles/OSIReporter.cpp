@@ -2695,11 +2695,7 @@ int OSIReporter::UpdateStaticTrafficSignals()
 
             if (signal)
             {
-                if (signal->IsDynamic() && !signal->GetHasOSCAction())
-                {
-                    AddTrafficLightToGt(obj_osi_internal.static_gt, signal);
-                }
-                else
+                if (!signal->IsDynamic())
                 {
                     // Traffic Sign
                     osi3::TrafficSign *trafficSign = obj_osi_internal.static_gt->add_traffic_sign();
@@ -2800,6 +2796,10 @@ int OSIReporter::UpdateStaticTrafficSignals()
                         // Set 3D model file as OSI model reference
                         trafficSign->mutable_main_sign()->set_model_reference(signal->GetModel3DFullPath());
                     }
+                }
+                else if (!signal->GetHasOSCAction())
+                {
+                    AddTrafficLightToGt(obj_osi_internal.static_gt, signal);
                 }
             }
         }
