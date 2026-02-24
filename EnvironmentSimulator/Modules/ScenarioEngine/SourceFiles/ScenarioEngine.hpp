@@ -157,6 +157,8 @@ namespace scenarioengine
             return init_status_;
         }
 
+        void SwapAndClearDirtyBits();
+
         void ClearDirtyBits();
 
 #ifdef _USE_OSI
