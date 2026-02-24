@@ -1253,7 +1253,7 @@ extern "C"
             return -1;
         }
 
-        obj->pos_.SetLanePos(roadId, laneId, laneOffset, s);
+        obj->pos_.SetLanePos(roadId, laneId, s, laneOffset);
         obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;
@@ -1281,7 +1281,7 @@ extern "C"
             return -1;
         }
 
-        obj->pos_.SetTrackPos(obj->pos_.GetTrackId(), t, obj->pos_.GetS());
+        obj->pos_.SetTrackPos(obj->pos_.GetTrackId(), obj->pos_.GetS(), t);
         obj->SetDirtyBits(Object::DirtyBit::LATERAL);
 
         return 0;
@@ -1296,7 +1296,7 @@ extern "C"
             return -1;
         }
 
-        obj->pos_.SetLanePos(obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), laneOffset, obj->pos_.GetS());
+        obj->pos_.SetLanePos(obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), obj->pos_.GetS(), laneOffset);
         obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;

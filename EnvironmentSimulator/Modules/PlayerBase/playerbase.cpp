@@ -195,6 +195,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
         }
 #endif
         scenarioEngine->mutex_.Lock();
+        scenarioEngine->ClearDirtyBits();
         retval = ScenarioFrame(timestep_s, true);
 
         if (SE_Env::Inst().GetGhostMode() != GhostMode::NORMAL)
@@ -351,13 +352,6 @@ void ScenarioPlayer::ScenarioPostFrame()
         }
     }
 #endif  // _USE_OSI
-
-    for (const auto& obj : scenarioEngine->entities_.object_)
-    {
-        // reset update bits and indicators of applied control
-        obj->ClearDirtyBits();
-        obj->reset_ = false;
-    }
 
     mutex.Unlock();
 }
@@ -2314,7 +2308,7 @@ const char* ScenarioPlayer::GetPropertyName(int index, int propertyIndex)
     {
         Object* obj = scenarioEngine->entities_.object_[static_cast<unsigned int>(index)];
 
-        if (propertyIndex < 0 && propertyIndex < obj->properties_.property_.size())
+        if (propertyIndex >= 0 && propertyIndex < obj->properties_.property_.size())
         {
             return obj->properties_.property_[static_cast<unsigned int>(propertyIndex)].name_.c_str();
         }
@@ -2329,7 +2323,7 @@ const char* ScenarioPlayer::GetPropertyValue(int index, int propertyIndex)
     {
         Object* obj = scenarioEngine->entities_.object_[static_cast<unsigned int>(index)];
 
-        if (propertyIndex < 0 && propertyIndex < obj->properties_.property_.size())
+        if (propertyIndex >= 0 && propertyIndex < obj->properties_.property_.size())
         {
             return obj->properties_.property_[static_cast<unsigned int>(propertyIndex)].value_.c_str();
         }

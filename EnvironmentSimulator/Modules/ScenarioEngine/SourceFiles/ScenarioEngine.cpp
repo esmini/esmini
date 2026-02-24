@@ -1298,3 +1298,13 @@ int ScenarioEngine::GetDistance(Object*                           object_1,
 
     return dist_updated;
 }
+
+void ScenarioEngine::ClearDirtyBits()
+{
+    for (auto& obj : entities_.object_)
+    {
+        // reset update bits and indicators of applied control
+        obj->ClearDirtyBits();
+        obj->reset_ = false;
+    }
+}
