@@ -1427,10 +1427,7 @@ CarModel::CarModel(Viewer*                  viewer,
     }
 
     // Add light material
-    if (show_lights)
-    {
-        AddLights(group_, show_lights);
-    }
+    AddLights(group_, show_lights);
 }
 
 CarModel::~CarModel()
@@ -1952,10 +1949,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     SetNodeMaskBits(NodeMask::NODE_MASK_ROUTE_WAYPOINTS);
     SetNodeMaskBits(NodeMask::NODE_MASK_OBJ_OUTLINE);
 
-    if (!opt->GetOptionSet("lights"))
-    {
-        ClearNodeMaskBits(NodeMask::NODE_MASK_LIGHT_STATE);
-    }
+    ClearNodeMaskBits(NodeMask::NODE_MASK_LIGHT_STATE);
 
     roadSensors_ = new osg::Group;
     roadSensors_->setNodeMask(NodeMask::NODE_MASK_ODR_FEATURES);
@@ -4089,6 +4083,7 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
                 viewer_->ToggleNodeMaskBits(NodeMask::NODE_MASK_LIGHT_STATE);
             }
         }
+        break;
         case (osgGA::GUIEventAdapter::KEY_P):
         {
             if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
