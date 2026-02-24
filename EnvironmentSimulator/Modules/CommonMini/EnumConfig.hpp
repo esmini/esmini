@@ -110,7 +110,7 @@ namespace esmini_options
         CSV,                             // 99
         HIDE_OBJ_OUTLINE,                // 100
         AXIS_INDICATOR,                  // 101
-        LIGHTS,                          // 102
+        SHOW_LIGHTS,                     // 102
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -150,7 +150,7 @@ namespace esmini_options
         {"ignore_p", IGNORE_P},
         {"ignore_r", IGNORE_R},
         {"info_text", INFO_TEXT},
-        {"lights", LIGHTS},
+        {"show_lights", SHOW_LIGHTS},
         {"log_append", LOG_APPEND},
         {"logfile_path", LOGFILE_PATH},
         {"log_meta_data", LOG_META_DATA},
