@@ -860,11 +860,17 @@ int ScenarioPlayer::InitViewer()
         viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ODR_FEATURES);
     }
 
-    if (opt.GetOptionSet("lights") || this->scenarioEngine->scenarioReader->HasLightStateAction())
+    std::string show                  = opt.GetOptionValue("show_lights");
+    bool        has_lightstate_action = this->scenarioEngine->scenarioReader->HasLightStateAction();
+    if (show == "on" || (show == "auto" && has_lightstate_action))
     {
         viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_LIGHT_STATE);
-        viewer_->SetShowLights(true);
     }
+    else
+    {
+        viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_LIGHT_STATE);
+    }
+    viewer_->SetShowLights(has_lightstate_action);
 
     if (opt.GetOptionSet("hide_route_waypoints"))
     {
@@ -1540,9 +1546,6 @@ int ScenarioPlayer::Init()
     opt.AddOption("ignore_p", "Ignore provided pitch values from OSC file and place vehicle relative to road");
     opt.AddOption("ignore_r", "Ignore provided roll values from OSC file and place vehicle relative to road");
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
-#ifdef _USE_OSG
-    opt.AddOption("lights", "Show lights for light state actions");
-#endif
     opt.AddOption("log_append", "Log all scenarios in the same txt file");
     opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", LOG_FILENAME, true);
     opt.AddOption("log_meta_data", "Log file name, function name and line number");
@@ -1587,6 +1590,9 @@ int ScenarioPlayer::Init()
     opt.AddOption("seed", "Specify seed number for random generator", "number");
     opt.AddOption("sensors", "Show sensor frustums. Toggle key 'r'");
     opt.AddOption("server", "Launch server to receive state of external Ego simulator");
+#ifdef _USE_OSG
+    opt.AddOption("show_lights", "Show lights for light state actions. Modes: on, off, auto", "mode", "auto", true);
+#endif
     opt.AddOption("text_scale", "Scale screen overlay text", "size factor", "1.0", true);
     opt.AddOption("threads", "Run viewer in a separate thread, parallel to scenario engine");
     opt.AddOption("trail_mode", "Show trail lines and/or dots. Modes: 0=None 1=lines 2=dots 3=both. Toggle key 'j'", "mode", "0");
