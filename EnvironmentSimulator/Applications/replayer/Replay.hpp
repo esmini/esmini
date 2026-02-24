@@ -367,7 +367,7 @@ namespace scenarioengine
     {
         ObjectStateStructDat state;
         double               odometer;
-        bool                 has_lightstate_ = false;
+        bool                 has_lightstate = false;
     };
 
 #ifdef _USE_OSG
@@ -480,8 +480,9 @@ namespace scenarioengine
         bool                     repeat_     = false;
         std::string              create_datfile_;
         std::vector<id_t>        unknown_pids;
-        bool                     eos_received_    = false;  // end of scenario packet
-        bool                     has_lightstates_ = false;
+        bool                     eos_received_       = false;  // end of scenario packet
+        bool                     has_lightstates_    = false;
+        std::vector<uint8_t>     lightstate_entities = {};
 
         /* PacketHandler stuff */
         std::unique_ptr<Dat::DatReader>              dat_reader_;
