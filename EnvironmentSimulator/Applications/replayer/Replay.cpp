@@ -710,6 +710,12 @@ int Replay::ParsePackets()
                     }
 
                     current_object_timeline_->light_state_[light_state.light_type].values.emplace_back(timestamp_, light_state);
+
+                    if (static_cast<size_t>(current_object_id_) >= lightstate_entities.size())
+                    {
+                        lightstate_entities.resize(static_cast<size_t>(current_object_id_) + 1, 1);
+                    }
+
                     has_lightstates_ = true;
                     break;
                 }
@@ -1346,10 +1352,9 @@ ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, double t) const
     entry.state.pos.s               = timeline.pos_s_.get_value_incremental(t).value();
     entry.odometer                  = timeline.odometer_.get_value_incremental(t).value();
 
-    if (HasLightStates())
+    if (id >= 0 && static_cast<size_t>(id) < lightstate_entities.size() && lightstate_entities[static_cast<size_t>(id)] == 1)
     {
-        // Some car in the scenario has a lightstate, if we find that any light doesn't have initial values, that car doesn't have lights and we break
-        entry.has_lightstate_ = true;
+        entry.has_lightstate = true;
         for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
         {
             auto data                                   = timeline.light_state_[i].get_value_incremental(t).value_or(Dat::LightState{});

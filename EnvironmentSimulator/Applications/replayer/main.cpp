@@ -514,6 +514,9 @@ int main(int argc, char** argv)
     opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
 #endif  // _USEOSG
     opt.AddOption("save_merged", "Save merged data into one dat file, instead of viewing", "filename");
+#ifdef _USE_OSG
+    opt.AddOption("show_lights", "Show lights for light state actions. Modes: on, off, auto", "mode", "auto", true);
+#endif  // _USEOSG
     opt.AddOption("start_time", "Start playing at timestamp", "ms");
     opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
 #ifdef _USE_OSG
@@ -831,11 +834,16 @@ int main(int argc, char** argv)
 #endif  // _USE_OSG
         }
 
-        if (player_->HasLightStates())
+        std::string show_lights = opt.GetOptionValue("show_lights");
+        if (show_lights == "on" || (show_lights == "auto" && player_->HasLightStates()))
         {
             viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_LIGHT_STATE);
-            viewer_->SetShowLights(true);
         }
+        else
+        {
+            viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_LIGHT_STATE);
+        }
+        viewer_->SetShowLights(player_->HasLightStates());
 
         if (opt.GetOptionSet("repeat"))
         {
@@ -1305,11 +1313,10 @@ int main(int argc, char** argv)
                         (static_cast<viewer::CarModel*>(c->entityModel))->UpdateWheels(c->wheel_angle, c->wheel_rotation);
 
                         auto& cache = player_->object_state_cache_[c->id];
-                        if (!player_->HasLightStates() || !cache.has_lightstate_)
+                        if (cache.has_lightstate)
                         {
-                            continue;
+                            static_cast<viewer::CarModel*>(c->entityModel)->UpdateLight(cache.state.info.light_state);
                         }
-                        static_cast<viewer::CarModel*>(c->entityModel)->UpdateLight(cache.state.info.light_state);
                     }
                 }
             }
