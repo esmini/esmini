@@ -33,7 +33,6 @@ Object::Object(Type type)
       end_of_road_timestamp_(0.0),
       off_road_timestamp_(0.0),
       stand_still_timestamp_(0),
-      reset_(0),
       headstart_time_(0),
       ghost_(0),
       ghost_Ego_(0),
@@ -42,8 +41,7 @@ Object::Object(Type type)
       junctionSelectorStrategy_(Junction::JunctionStrategyType::RANDOM),
       nextJunctionSelectorAngle_(0.0),
       scaleMode_(EntityScaleMode::NONE),
-      dirty_(0),
-      dirty_back_(0),
+      dirty_{0, 0},
       is_active_(false),
       model3d_full_path_(""),
       source_reference_({})
@@ -303,31 +301,31 @@ scenarioengine::Controller* Object::GetController(std::string name) const
 void Object::SetVisibilityMask(int mask)
 {
     visibilityMask_ = mask;
-    SetDirtyBits(dirty_ | DirtyBit::VISIBILITY);
+    SetDirtyBits(DirtyBit::VISIBILITY);
 }
 
 void Object::SetVel(double x_vel, double y_vel, double z_vel)
 {
     pos_.SetVel(x_vel, y_vel, z_vel);
-    SetDirtyBits(dirty_ | DirtyBit::VELOCITY);
+    SetDirtyBits(DirtyBit::VELOCITY);
 }
 
 void Object::SetAcc(double x_acc, double y_acc, double z_acc)
 {
     pos_.SetAcc(x_acc, y_acc, z_acc);
-    SetDirtyBits(dirty_ | DirtyBit::ACCELERATION);
+    SetDirtyBits(DirtyBit::ACCELERATION);
 }
 
 void Object::SetAngularVel(double h_vel, double p_vel, double r_vel)
 {
     pos_.SetAngularVel(h_vel, p_vel, r_vel);
-    SetDirtyBits(dirty_ | DirtyBit::ANGULAR_RATE);
+    SetDirtyBits(DirtyBit::ANGULAR_RATE);
 }
 
 void Object::SetAngularAcc(double h_acc, double p_acc, double r_acc)
 {
     pos_.SetAngularAcc(h_acc, p_acc, r_acc);
-    SetDirtyBits(dirty_ | DirtyBit::ANGULAR_ACC);
+    SetDirtyBits(DirtyBit::ANGULAR_ACC);
 }
 
 void Object::SetJunctionSelectorAngle(double angle)

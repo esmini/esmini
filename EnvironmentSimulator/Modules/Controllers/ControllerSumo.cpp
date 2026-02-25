@@ -193,7 +193,7 @@ void ControllerSumo::Step(double timeStep)
                     vehicle->role_     = Object::Role::CIVIL;
                     vehicle->category_ = Vehicle::Category::CAR;
                     vehicle->odometer_ = 0.0;
-                    vehicle->reset_    = true;
+                    vehicle->SetDirtyBits(Object::DirtyBit::TELEPORT);  // indicate object pops up or discontinuous movement, skip odometer update
                     LOG_INFO("SUMO controller: Add vehicle {} to scenario", vehicle->name_);
                     entities_->addObject(vehicle, true);
                 }
@@ -275,7 +275,7 @@ void ControllerSumo::Step(double timeStep)
                                             roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS |
                                                 roadmanager::Position::PosMode::P_ABS | roadmanager::Position::PosMode::R_REL);
 
-                if (obj->reset_ && !obj->TowVehicle() && obj->TrailerVehicle())
+                if (obj->CheckDirtyBits(Object::DirtyBit::TELEPORT) && !obj->TowVehicle() && obj->TrailerVehicle())
                 {
                     static_cast<Vehicle*>(obj)->AlignTrailers();
                 }

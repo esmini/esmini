@@ -154,7 +154,7 @@ int ScenarioEngine::step(double deltaSimTime)
             obj->state_old.vel_z  = obj->pos_.GetVelZ();
             obj->state_old.h      = obj->pos_.GetH();
             obj->state_old.h_rate = obj->pos_.GetHRate();
-            obj->reset_           = true;
+            obj->SetDirtyBits(Object::DirtyBit::TELEPORT);  // indicate new position
         }
     }
 
@@ -729,7 +729,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             obj->state_old.h      = obj->pos_.GetH();
             obj->state_old.h_rate = obj->pos_.GetHRate();
 
-            if (!obj->reset_)
+            if (!obj->CheckDirtyBits(Object::DirtyBit::TELEPORT))
             {
                 obj->odometer_ += abs(sqrt(dx * dx + dy * dy));  // odometer always measure all movements as positive, I guess...
             }
@@ -1280,7 +1280,8 @@ int ScenarioEngine::GetDistance(Object*                           object_1,
 
     int  dist_updated = -2;
     auto it           = object_distance_map_.find(key);
-    bool needs_update = (it == object_distance_map_.end() || simulationTime_ > it->second.next_update_ || object_1->reset_ || object_2->reset_);
+    bool needs_update = (it == object_distance_map_.end() || simulationTime_ > it->second.next_update_ ||
+                         object_1->CheckDirtyBits(Object::DirtyBit::TELEPORT) || object_2->CheckDirtyBits(Object::DirtyBit::TELEPORT));
     if (needs_update)
     {
         dist_updated = UpdateDistance(object_1, object_2, dist_type, key, rev_key, tracking_limit);
@@ -1308,11 +1309,11 @@ void ScenarioEngine::SwapAndClearDirtyBits()
     }
 }
 
-void scenarioengine::ScenarioEngine::ClearResetFlags()
+void ScenarioEngine::ClearDirtyBits()
 {
     for (auto& obj : entities_.object_)
     {
         // reset update bits and indicators of applied control
-        obj->reset_ = false;
+        obj->ClearDirtyBits();
     }
 }

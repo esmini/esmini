@@ -202,7 +202,6 @@ namespace scenarioengine
         double end_of_road_timestamp_;
         double off_road_timestamp_;
         double stand_still_timestamp_;
-        bool   reset_;  // indicate discreet movement, teleporting, no odometer update
 
         std::vector<Controller*>                    controllers_;  // reference to all assigned controller objects
         double                                      headstart_time_;
@@ -592,37 +591,32 @@ namespace scenarioengine
 
         bool CheckDirtyBits(int bits) const
         {
-            return bool(dirty_ & bits);
+            return bool(dirty_[SE_Env::Inst().GetDirtyReadLayer()] & bits);
         }
 
         void SetDirtyBits(int bits)
         {
-            dirty_ |= bits;
+            dirty_[SE_Env::Inst().GetDirtyWriteLayer()] |= bits;
         }
 
         void SetDirty(int bitmask)
         {
-            dirty_ = bitmask;
+            dirty_[SE_Env::Inst().GetDirtyWriteLayer()] = bitmask;
         }
 
         int GetDirtyBitMask() const
         {
-            return dirty_;
-        }
-
-        int GetDirtyBackBitMask() const
-        {
-            return dirty_back_;
+            return dirty_[SE_Env::Inst().GetDirtyReadLayer()];
         }
 
         void ClearDirtyBits(int bits)
         {
-            dirty_ &= ~bits;
+            dirty_[SE_Env::Inst().GetDirtyWriteLayer()] &= ~bits;
         }
 
         void ClearDirtyBits()
         {
-            dirty_ = 0;
+            dirty_[SE_Env::Inst().GetDirtyWriteLayer()] = 0;
         }
 
         void SetRole(std::string role)
@@ -721,13 +715,12 @@ namespace scenarioengine
 
         void SwapDirtyBitBuffers()
         {
-            dirty_back_ = dirty_;
-            dirty_      = 0;
+            dirty_[SE_Env::Inst().GetDirtyBackLayer()]  = dirty_[SE_Env::Inst().GetDirtyFrontLayer()];
+            dirty_[SE_Env::Inst().GetDirtyFrontLayer()] = 0;
         }
 
     private:
-        int                      dirty_;
-        int                      dirty_back_;
+        int                      dirty_[2];
         bool                     is_active_;
         std::string              model3d_full_path_;
         std::vector<std::string> source_reference_;

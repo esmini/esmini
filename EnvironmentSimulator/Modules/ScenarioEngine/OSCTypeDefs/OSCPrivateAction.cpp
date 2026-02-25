@@ -2412,7 +2412,6 @@ void TeleportAction::Start(double simTime)
     object_->pos_.Print();
 
     object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED | Object::DirtyBit::TELEPORT);
-    object_->reset_ = true;
 }
 
 void TeleportAction::Step(double simTime, double dt)

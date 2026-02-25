@@ -1416,6 +1416,12 @@ private:
     std::mt19937 gen_;
 };
 
+enum class DirtyLayer
+{
+    FRONT,
+    BACK
+};
+
 class SE_Env
 {
 public:
@@ -1429,7 +1435,9 @@ public:
           saveImagesToRAM_(false),
           ghost_mode_(GhostMode::NORMAL),
           ghost_headstart_(0.0),
-          osiTimeStamp_(OSI_TIMESTAMP_UNDEFINED)
+          osiTimeStamp_(OSI_TIMESTAMP_UNDEFINED),
+          dirty_read_layer_(DirtyLayer::BACK),
+          dirty_write_layer_(DirtyLayer::FRONT)
     {
     }
 
@@ -1564,6 +1572,36 @@ public:
         ghost_headstart_ = headstart_time;
     }
 
+    void SetDirtyReadLayer(DirtyLayer layer)
+    {
+        dirty_read_layer_ = layer;
+    }
+
+    void SetDirtyWriteLayer(DirtyLayer layer)
+    {
+        dirty_write_layer_ = layer;
+    }
+
+    idx_t GetDirtyReadLayer() const
+    {
+        return static_cast<idx_t>(dirty_read_layer_);
+    }
+
+    idx_t GetDirtyWriteLayer() const
+    {
+        return static_cast<idx_t>(dirty_write_layer_);
+    }
+
+    idx_t GetDirtyFrontLayer() const
+    {
+        return static_cast<idx_t>(DirtyLayer::FRONT);
+    }
+
+    idx_t GetDirtyBackLayer() const
+    {
+        return static_cast<idx_t>(DirtyLayer::BACK);
+    }
+
     SE_Options& GetOptions()
     {
         return opt;
@@ -1584,6 +1622,8 @@ private:
     double                     ghost_headstart_;
     SE_Options                 opt;
     unsigned long long         osiTimeStamp_;
+    DirtyLayer                 dirty_read_layer_;
+    DirtyLayer                 dirty_write_layer_;
 };
 
 /**

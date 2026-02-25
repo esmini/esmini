@@ -159,7 +159,7 @@ namespace scenarioengine
 
         void SwapAndClearDirtyBits();
 
-        void ClearResetFlags();
+        void ClearDirtyBits();
 
 #ifdef _USE_OSI
         void SetOSIReporter(OSIReporter *osi_reporter)

@@ -196,7 +196,8 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
 #endif
         scenarioEngine->mutex_.Lock();
 
-        scenarioEngine->ClearResetFlags();
+        SE_Env::Inst().SetDirtyReadLayer(DirtyLayer::FRONT);
+        SE_Env::Inst().SetDirtyWriteLayer(DirtyLayer::FRONT);
         retval = ScenarioFrame(timestep_s, true);
 
         if (SE_Env::Inst().GetGhostMode() != GhostMode::NORMAL)
@@ -206,7 +207,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
                 Draw();
                 if (!IsPaused() && !IsQuitRequested())
                 {
-                    scenarioEngine->SwapAndClearDirtyBits();
+                    scenarioEngine->ClearDirtyBits();
                     retval = ScenarioFrame(ghost_solo_dt, false);
                 }
             }
@@ -242,6 +243,8 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
             scenarioEngine->mutex_.Lock();
             ScenarioPostFrame();
             scenarioEngine->SwapAndClearDirtyBits();
+            SE_Env::Inst().SetDirtyReadLayer(DirtyLayer::BACK);
+            SE_Env::Inst().SetDirtyWriteLayer(DirtyLayer::FRONT);
             scenarioEngine->mutex_.Unlock();
         }
     }
