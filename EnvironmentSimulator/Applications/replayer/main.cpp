@@ -22,9 +22,17 @@
 #include <map>
 
 #ifdef _USE_OSG
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 #include "viewer.hpp"
 #include "RubberbandManipulator.hpp"
 #include "helpText.hpp"
+#define GL_SILENCE_DEPRECATION
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+#include <GLES2/gl2.h>
+#endif
+#include <GLFW/glfw3.h>  // Will drag system OpenGL headers
 #endif  // _USE_OSG
 
 #include "CommonMini.hpp"
@@ -58,8 +66,10 @@ static bool    no_ghost_restart = true;
 static Replay* player_          = nullptr;
 #ifdef _USE_OSG
 static viewer::Viewer* viewer_    = nullptr;
+static GLFWwindow* window = nullptr;
 static double          time_scale = 1.0;
 double                 deltaSimTime;  // external - used by Viewer::RubberBandCamera
+float mytime = 0.0f;
 
 void setEntityVisibility(int index, bool visible)
 {
@@ -194,6 +204,12 @@ void CleanUp()
         viewer_->renderSemaphore.Release();  // allow rendering thread to finish
         delete viewer_;
     }
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
 #endif  // _USE_OSG
 }
 
@@ -441,6 +457,11 @@ std::vector<int> GetGhostIdx()
     return ghostIndices;
 }
 
+void glfw_error_callback(int error, const char* description)
+{
+    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+}
+
 int main(int argc, char** argv)
 {
     double      simTime      = 0;
@@ -633,6 +654,41 @@ int main(int argc, char** argv)
         return -1;
     }
 
+    glfwSetErrorCallback(glfw_error_callback);
+
+    if(!glfwInit())
+    {
+        LOG_ERROR_AND_QUIT("Something went wrong, cant init Imgui");
+    }
+
+    const char* glsl_version = "#version 330";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    
+    window = glfwCreateWindow(800, 600, "Lineplot", nullptr, nullptr);
+    if (window == nullptr)
+    {
+        LOG_ERROR_AND_QUIT("Something went wrong, cant create window");
+    }
+    glfwMakeContextCurrent(window);
+    glfwSwapInterval(1);  // Enable vsync
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    static_cast<void>(io);
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    // ImGui::StyleColorsLight();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
     try
     {
 #ifdef _USE_OSG
@@ -652,7 +708,6 @@ int main(int argc, char** argv)
         roadmanager::OpenDrive* odrManager    = roadmanager::Position::GetOpenDrive();
         osg::ArgumentParser     arguments(&argc_, argv_);
         viewer_ = new viewer::Viewer(odrManager, player_->dat_header_.model_filename.string.c_str(), NULL, argv_[0], arguments, &opt);
-
         if (viewer_ == nullptr)
         {
             printf("Failed to create viewer");
@@ -1003,7 +1058,7 @@ int main(int argc, char** argv)
                 col_pause = false;
             }
         }
-
+        mytime = player_->GetStartTime();
         while (!(
 #ifdef _USE_OSG
             viewer_->osgViewer_->done() ||
@@ -1304,6 +1359,39 @@ int main(int argc, char** argv)
 
             // Update graphics
             viewer_->Frame(0.0);
+            bool show_gui = true;
+            // IMGUI STUFF
+            glfwPollEvents();
+            ImGui_ImplOpenGL3_NewFrame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+            ImGui::Begin("Controls", &show_gui);
+            ImGui::Text("Adjust");
+            if (ImGui::SliderFloat("Time", &mytime, static_cast<float>(player_->GetStartTime()), static_cast<float>(player_->GetStopTime())))
+            {
+                pause_player = true;
+                player_->GoToTime(mytime);
+            }
+            mytime = static_cast<float>(simTime);
+            if (ImGui::Button("Play/Pause"))
+            {
+                pause_player = !pause_player;
+            }
+            else if (ImGui::Button("Restart"))
+            {
+                player_->GoToStart();
+                pause_player = true;
+            }
+            ImGui::End();
+            ImGui::Render();
+            int display_w, display_h;
+            glfwGetFramebufferSize(window, &display_w, &display_h);
+            glViewport(0, 0, display_w, display_h);
+            glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            glfwSwapBuffers(window);
+
 #endif  // _USE_OSG
         }
         CleanUp();

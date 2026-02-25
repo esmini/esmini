@@ -57,7 +57,8 @@ if(BUILD_REPLAYER)
         PUBLIC ${ROAD_MANAGER_PATH}
                ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_PUGIXML_PATH}
-               ${EXTERNALS_DIRENT_INCLUDES})
+               ${EXTERNALS_DIRENT_INCLUDES}
+               ${EXTERNALS_IMPLOT_INCLUDES})
 
     if(USE_OSG)
         target_include_directories(
@@ -73,7 +74,8 @@ if(BUILD_REPLAYER)
                 RoadManager
                 CommonMini
                 Controllers
-                ${TIME_LIB})
+                ${TIME_LIB}
+                )
 
     if(USE_OSG)
         target_link_libraries(
@@ -81,7 +83,9 @@ if(BUILD_REPLAYER)
             PRIVATE ViewerBase
                     RoadGeom
                     ScenarioEngine
-                    ${OSG_LIBRARIES})
+                    ${OSG_LIBRARIES}
+                    ${IMPLOT_LIBRARIES}
+                    )
     endif()
 
     if(USE_OSI)
