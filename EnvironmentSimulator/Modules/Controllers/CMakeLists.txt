@@ -69,7 +69,15 @@ target_include_directories(
            ${EXTERNALS_SUMO_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_OSG_INCLUDES}
-           ${EXTERNALS_FMT_INCLUDES})
+           ${EXTERNALS_FMT_INCLUDES}
+           ${EXTERNALS_IMPLOT_INCLUDES})
+
+if(USE_IMPLOT)
+    target_include_directories(
+        ${TARGET}
+        SYSTEM
+        PUBLIC ${EXTERNALS_IMPLOT_INCLUDES})
+endif()
 
 disable_iwyu(${TARGET})
 enable_fpic(${TARGET})

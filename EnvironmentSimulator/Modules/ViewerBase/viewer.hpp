@@ -28,6 +28,17 @@
 #include <osgGA/StateSetManipulator>
 #include <string>
 
+#ifdef _USE_IMPLOT
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#define GL_SILENCE_DEPRECATION
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+#include <GLES2/gl2.h>
+#endif
+#include <GLFW/glfw3.h>
+#endif  // _USE_IMPLOT
+
 #include "RubberbandManipulator.hpp"
 #include "IdealSensor.hpp"
 #include "RoadManager.hpp"
@@ -42,6 +53,128 @@ using namespace roadgeom;
 namespace viewer
 {
     class Viewer;  // forward declaration
+
+#ifdef _USE_IMPLOT
+    enum PlaybackCmd : uint32_t
+    {
+        CMD_NONE        = 0,
+        CMD_GOTO_START  = 1 << 0,
+        CMD_STEP_BACK_B = 1 << 1,
+        CMD_STEP_BACK_S = 1 << 2,
+        CMD_FRAME_BACK  = 1 << 3,
+        CMD_TOGGLE_PLAY = 1 << 4,
+        CMD_FRAME_FWD   = 1 << 5,
+        CMD_STEP_FWD_S  = 1 << 6,
+        CMD_STEP_FWD_B  = 1 << 7,
+        CMD_GOTO_END    = 1 << 8
+    };
+
+    class OsgImGuiHandler : public osgGA::GUIEventHandler
+    {
+    public:
+        OsgImGuiHandler();
+        using osgGA::GUIEventHandler::handle;  // Needed to tell compiler to include all handle signatures
+        bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object* obj, osg::NodeVisitor* nv) override;
+
+    protected:
+        virtual void drawUi() = 0;
+
+    private:
+        void setCameraCallbacks(osg::Camera* camera);
+        void newFrame(osg::RenderInfo& renderInfo);
+        void render(osg::RenderInfo& renderInfo);
+
+        struct ImGuiNewFrameCallback;
+        struct ImGuiRenderCallback;
+
+        bool initialized_;
+    };
+
+    class ImGuiInitOperation : public osg::Operation
+    {
+    public:
+        ImGuiInitOperation() : osg::Operation("ImGuiInitOperation", false)
+        {
+        }
+
+        void operator()(osg::Object* object) override
+        {
+            osg::GraphicsContext* context = dynamic_cast<osg::GraphicsContext*>(object);
+            if (!context)
+            {
+                return;
+            }
+
+#ifdef __APPLE__
+            const char* glsl_version = "#version 150";
+#else
+            const char* glsl_version = nullptr;  // Deduces version automatically
+#endif
+
+            if (!ImGui_ImplOpenGL3_Init(glsl_version))
+            {
+                LOG_ERROR("ImGuiImplOpenGL3_Init() failed");
+            }
+        }
+    };
+
+    class ImGuiShutdownOperation : public osg::Operation
+    {
+    public:
+        ImGuiShutdownOperation() : osg::Operation("ImGuiShutdownOperation", false)
+        {
+        }
+
+        void operator()(osg::Object* object) override
+        {
+            (void)object;
+
+            ImGui_ImplOpenGL3_Shutdown();
+
+            if (ImGui::GetCurrentContext())
+            {
+                ImGui::DestroyContext();
+            }
+        }
+    };
+
+    class ImGuiOverlay : public OsgImGuiHandler
+    {
+    public:
+        ImGuiOverlay(){};
+
+        void     Init(const double& time, const double& min_time, const double& max_time);
+        uint32_t ConsumeCmdMask();
+
+        void SetTime(double time)
+        {
+            time_ = static_cast<float>(time);
+        }
+        double GetTime() const
+        {
+            return static_cast<double>(time_);
+        }
+        bool SliderChanged() const
+        {
+            return slider_changed_;
+        }
+        void ToggleDrawUi()
+        {
+            draw_ui_ = !draw_ui_;
+        }
+
+    protected:
+        void drawUi() override;
+
+    private:
+        bool     draw_ui_        = true;
+        bool     slider_changed_ = false;
+        float    time_           = 0.0f;
+        float    min_time_       = 0.0f;
+        float    max_time_       = 0.0f;
+        uint32_t cmdMask_        = PlaybackCmd::CMD_NONE;
+    };
+#endif  // _USE_IMPLOT
 
     class PolyLine
     {
@@ -440,6 +573,11 @@ namespace viewer
         void                                         CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment);
         void                                         UpdateFrictonScaleFactorInMaterial(const double factor);
 
+// Imgui stuff
+#ifdef _USE_IMPLOT
+        osg::ref_ptr<ImGuiOverlay> imguiOverlay_;
+#endif  // _USE_IMPLOT
+
         std::string                   exe_path_;
         std::vector<KeyEventCallback> callback_;
         ImageCallback                 imgCallback_;
@@ -464,7 +602,8 @@ namespace viewer
                const char*             scenarioFilename,
                const char*             exe_path,
                osg::ArgumentParser     arguments,
-               SE_Options*             opt = 0);
+               SE_Options*             opt     = 0,
+               bool                    overlay = false);
         ~Viewer();
         void AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos);
         void AddCustomCamera(double x, double y, double z, bool fixed_pos);

@@ -14,6 +14,13 @@ if(USE_OSG)
         RoadGeom)
 endif()
 
+if(USE_IMPLOT)
+    list(
+        APPEND
+        VIEWER_LIBS_FOR_TEST
+        ${IMPLOT_LIBRARIES})
+endif()
+
 set(OperatingSystem_test_sources
     OperatingSystem_test.cpp)
 
@@ -89,7 +96,8 @@ unittest(
     ScenarioEngine
     Controllers
     RoadManager
-    ${OSI_LIBRARIES})
+    ${OSI_LIBRARIES}
+    ${IMPLOT_LIBRARIES})
 
 # ############################### Creating executable (RoadManagerDll_test) ##########################################
 

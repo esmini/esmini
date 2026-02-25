@@ -59,6 +59,7 @@ static Replay* player_          = nullptr;
 static viewer::Viewer* viewer_    = nullptr;
 static double          time_scale = 1.0;
 double                 deltaSimTime;  // external - used by Viewer::RubberBandCamera
+// float mytime = 0.0f;
 
 void setEntityVisibility(int index, bool visible)
 {
@@ -180,8 +181,89 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             no_ghost_model = !no_ghost_model;
             ShowGhosts(player, !no_ghost_model);
         }
+#ifdef _USE_IMPLOT
+        else if (keyEvent->key_ == static_cast<int>('I') && viewer_ != nullptr && viewer_->imguiOverlay_ != nullptr)
+        {
+            viewer_->imguiOverlay_->ToggleDrawUi();
+        }
+#endif  // _USE_IMPLOT
     }
 }
+
+#ifdef _USE_IMPLOT
+void ProcessGUI()
+{
+    // GUI checks
+    uint32_t cmd            = viewer_->imguiOverlay_->ConsumeCmdMask();
+    bool     slider_changed = viewer_->imguiOverlay_->SliderChanged();
+
+    // Manual interaction always pauses simulation, except potential toggle play/pause
+    if (slider_changed || (cmd != viewer::PlaybackCmd::CMD_NONE && !(cmd & viewer::PlaybackCmd::CMD_TOGGLE_PLAY)))
+    {
+        pause_player = true;
+    }
+
+    if (slider_changed)
+    {
+        player_->GoToTime(viewer_->imguiOverlay_->GetTime());
+    }
+
+    if (cmd != viewer::PlaybackCmd::CMD_NONE)
+    {
+        if (cmd & viewer::PlaybackCmd::CMD_TOGGLE_PLAY)
+        {
+            pause_player = !pause_player;
+        }
+
+        // Start / End
+        if (cmd & viewer::PlaybackCmd::CMD_GOTO_START)
+        {
+            player_->GoToStart(true);
+        }
+        if (cmd & viewer::PlaybackCmd::CMD_GOTO_END)
+        {
+            player_->GoToEnd(true);
+        }
+
+        // Backward
+        if (cmd & viewer::PlaybackCmd::CMD_STEP_BACK_B)
+        {
+            player_->GoToDeltaTime(-JUMP_DELTA_TIME_LARGE);
+        }
+        if (cmd & viewer::PlaybackCmd::CMD_STEP_BACK_S)
+        {
+            player_->GoToDeltaTime(-JUMP_DELTA_TIME_SMALL);
+        }
+        if (cmd & viewer::PlaybackCmd::CMD_FRAME_BACK)
+        {
+            player_->GoToPreviousFrame();
+        }
+
+        // Forward
+        if (cmd & viewer::PlaybackCmd::CMD_FRAME_FWD)
+        {
+            player_->GoToNextFrame();
+        }
+        if (cmd & viewer::PlaybackCmd::CMD_STEP_FWD_S)
+        {
+            player_->GoToDeltaTime(JUMP_DELTA_TIME_SMALL);
+        }
+        if (cmd & viewer::PlaybackCmd::CMD_STEP_FWD_B)
+        {
+            player_->GoToDeltaTime(JUMP_DELTA_TIME_LARGE);
+        }
+    }
+
+    if (pause_player)
+    {
+        // Snap to nearest valid timestamp
+        player_->SetTimeToNearestTimestamp();
+    }
+
+    // Keep GUI in sync with replayer
+    viewer_->imguiOverlay_->SetTime(player_->GetTime());
+}
+#endif  // _USE_IMPLOT
 #endif  // _USE_OSG
 
 void CleanUp()
@@ -193,6 +275,7 @@ void CleanUp()
         viewer_->renderSemaphore.Release();  // allow rendering thread to finish
         delete viewer_;
     }
+
 #endif  // _USE_OSG
 }
 
@@ -480,6 +563,9 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
     opt.AddOption("ground_plane", "Add a large flat ground surface. Modes: on, off, auto", "mode", "auto", true);
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
+#ifdef _USE_IMPLOT
+    opt.AddOption("gui", "Show gui overlay on graphics window. Modes: on, off", "mode", "on", true);
+#endif  // _USE_IMPLOT
 #endif  // _USE_OSG
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("help", "Show this help message (-h works as well)");
@@ -631,6 +717,19 @@ int main(int argc, char** argv)
     {
 #ifdef _USE_OSG
 
+        bool gui_overlay = true;
+#ifdef _USE_IMPLOT
+        if ((arg_str = opt.GetOptionValue("gui")) != "")
+        {
+            if (arg_str == "off")
+            {
+                gui_overlay = false;
+            }
+        }
+#else
+        gui_overlay = false;
+#endif  // _USE_IMPLOT
+
         if (strcmp(player_->dat_header_.odr_filename.string.c_str(), ""))
         {
             bool found = false;
@@ -645,14 +744,20 @@ int main(int argc, char** argv)
         double                  targetSimTime = simTime;
         roadmanager::OpenDrive* odrManager    = roadmanager::Position::GetOpenDrive();
         osg::ArgumentParser     arguments(&argc_, argv_);
-        viewer_ = new viewer::Viewer(odrManager, player_->dat_header_.model_filename.string.c_str(), NULL, argv_[0], arguments, &opt);
-
+        viewer_ = new viewer::Viewer(odrManager, player_->dat_header_.model_filename.string.c_str(), NULL, argv_[0], arguments, &opt, gui_overlay);
         if (viewer_ == nullptr)
         {
             printf("Failed to create viewer");
             CleanUp();
             return -1;
         }
+
+#ifdef _USE_IMPLOT
+        if (gui_overlay && viewer_->imguiOverlay_ == nullptr)
+        {
+            LOG_ERROR("Failed to create overlay");
+        }
+#endif  // _USE_IMPLOT
 
         if ((arg_str = opt.GetOptionValue("camera_mode")) != "")
         {
@@ -986,6 +1091,12 @@ int main(int argc, char** argv)
         bool col_pause =
 #ifdef _USE_OSG
             true;
+#ifdef _USE_IMPLOT
+        if (viewer_->imguiOverlay_ != nullptr)
+        {
+            viewer_->imguiOverlay_->Init(simTime, player_->GetStartTime(), player_->GetStopTime());
+        }
+#endif  // _USE_IMPLOT
 #else
             false;
 #endif  // _USE_OSG
@@ -1296,8 +1407,17 @@ int main(int argc, char** argv)
                 }
             }
 
+#ifdef _USE_IMPLOT
+            // Check GUI
+            if (viewer_->imguiOverlay_ != nullptr)
+            {
+                ProcessGUI();
+            }
+#endif
+
             // Update graphics
             viewer_->Frame(0.0);
+
 #endif  // _USE_OSG
         }
         CleanUp();

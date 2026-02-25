@@ -81,6 +81,199 @@ USE_GRAPHICSWINDOW()
 
 using namespace viewer;
 
+#ifdef _USE_IMPLOT
+struct OsgImGuiHandler::ImGuiNewFrameCallback : public osg::Camera::DrawCallback
+{
+    ImGuiNewFrameCallback(OsgImGuiHandler& handler) : handler_(handler)
+    {
+    }
+
+    void operator()(osg::RenderInfo& renderInfo) const override
+    {
+        handler_.newFrame(renderInfo);
+    }
+
+private:
+    OsgImGuiHandler& handler_;
+};
+
+struct OsgImGuiHandler::ImGuiRenderCallback : public osg::Camera::DrawCallback
+{
+    ImGuiRenderCallback(OsgImGuiHandler& handler) : handler_(handler)
+    {
+    }
+
+    void operator()(osg::RenderInfo& renderInfo) const override
+    {
+        handler_.render(renderInfo);
+    }
+
+private:
+    OsgImGuiHandler& handler_;
+};
+
+OsgImGuiHandler::OsgImGuiHandler() : initialized_(false)
+{
+    // Compare library linked to with header versions
+    IMGUI_CHECKVERSION();
+
+    ImGui::CreateContext();
+}
+
+void OsgImGuiHandler::setCameraCallbacks(osg::Camera* camera)
+{
+    camera->setPreDrawCallback(new ImGuiNewFrameCallback(*this));
+    camera->setPostDrawCallback(new ImGuiRenderCallback(*this));
+}
+
+void OsgImGuiHandler::newFrame(osg::RenderInfo& renderInfo)
+{
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGuiIO&       io       = ImGui::GetIO();
+    osg::Viewport* viewport = renderInfo.getCurrentCamera()->getViewport();
+    io.DisplaySize          = ImVec2(viewport->width(), viewport->height());
+    ImGui::NewFrame();
+}
+void OsgImGuiHandler::render(osg::RenderInfo& renderInfo)
+{
+    drawUi();
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+bool OsgImGuiHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object* obj, osg::NodeVisitor* nv)
+{
+    (void)obj;
+    (void)nv;
+
+    if (!initialized_)
+    {
+        auto view = aa.asView();
+        if (view)
+        {
+            setCameraCallbacks(view->getCamera());
+            initialized_ = true;
+        }
+    }
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    switch (ea.getEventType())
+    {
+        case osgGA::GUIEventAdapter::PUSH:
+        case osgGA::GUIEventAdapter::RELEASE:
+        case osgGA::GUIEventAdapter::MOVE:
+        case osgGA::GUIEventAdapter::DRAG:
+        {
+            io.MousePos = ImVec2(ea.getX(), ea.getWindowHeight() - ea.getY());
+
+            io.MouseDown[0] = (ea.getButtonMask() & osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) != 0;
+            io.MouseDown[1] = (ea.getButtonMask() & osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON) != 0;
+
+            break;
+        }
+        default:
+            break;
+    }
+
+    if (io.WantCaptureMouse)
+    {
+        const_cast<osgGA::GUIEventAdapter&>(ea).setButtonMask(0);
+        return true;
+    }
+
+    return false;
+}
+
+void ImGuiOverlay::Init(const double& time, const double& min_time, const double& max_time)
+{
+    time_     = static_cast<float>(time);
+    min_time_ = static_cast<float>(min_time);
+    max_time_ = static_cast<float>(max_time);
+}
+
+uint32_t ImGuiOverlay::ConsumeCmdMask()
+{
+    uint32_t tmp = cmdMask_;
+    cmdMask_     = CMD_NONE;
+    return tmp;
+}
+
+void ImGuiOverlay::drawUi()
+{
+    if (!draw_ui_)
+    {
+        return;
+    }
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    float height = 80.0f;
+    ImGui::SetNextWindowPos(ImVec2(0, io.DisplaySize.y - height));
+    ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, height));
+
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+
+    ImGui::Begin("PlaybackControls", nullptr, ImGuiWindowFlags_NoDecoration);
+
+    ImGui::PushItemWidth(-1.0f);  // -1.0f means "use all avail. space"
+    slider_changed_ = ImGui::SliderFloat("##Time", &time_, min_time_, max_time_);
+    ImGui::PopItemWidth();
+
+    float styleSpacing    = ImGui::GetStyle().ItemSpacing.x;
+    float totalAvailWidth = ImGui::GetContentRegionAvail().x;
+    float btnWidth        = (totalAvailWidth - (styleSpacing * 8.0f)) / 9.0f;
+
+    if (ImGui::Button("|<", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_GOTO_START;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("<<<", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_STEP_BACK_B;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("<<", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_STEP_BACK_S;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("<", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_FRAME_BACK;
+    }
+    ImGui::SameLine();
+    const char* playLabel = "Play/Pause";
+    if (ImGui::Button(playLabel, ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_TOGGLE_PLAY;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(">", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_FRAME_FWD;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(">>", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_STEP_FWD_S;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(">>>", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_STEP_FWD_B;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(">|", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_GOTO_END;
+    }
+    ImGui::End();
+    ImGui::PopStyleColor();
+}
+#endif  // _USE_IMPLOT
+
 // Derive a class from NodeVisitor to find a node with a  specific name.
 class FindNamedNode : public osg::NodeVisitor
 {
@@ -1402,7 +1595,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
                const char*             scenarioFilename,
                const char*             exe_path,
                osg::ArgumentParser     arguments,
-               SE_Options*             opt)
+               SE_Options*             opt,
+               bool                    overlay)
 {
     (void)scenarioFilename;
     odrManager_             = odrManager;
@@ -1434,6 +1628,9 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     frictionScaleFactor_          = 1.0;  // default friction scale factor
     defaultClearColorUsed_        = false;
     fogColor_                     = {0.75f, 0.75f, 0.75f};  // Default fog color, average of color_background
+#ifdef _USE_IMPLOT
+    imguiOverlay_ = nullptr;
+#endif  // _USE_IMPLOT
 
     bool decoration = true;
     int  screenNum  = -1;
@@ -1831,6 +2028,16 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     initialThreadingModel_ = osgViewer_->getThreadingModel();
 
+#ifdef _USE_IMPLOT
+    // Imgui initialization
+    if (overlay)
+    {
+        osgViewer_->setRealizeOperation(new ImGuiInitOperation);
+        imguiOverlay_ = new ImGuiOverlay;
+        osgViewer_->addEventHandler(imguiOverlay_.get());
+    }
+#endif  // _USE_IMPLOT
+
     osgViewer_->realize();
 }
 
@@ -1929,6 +2136,20 @@ Viewer::~Viewer()
 
     if (osgViewer_ != nullptr)
     {
+#ifdef _USE_IMPLOT
+        if (imguiOverlay_ != nullptr)
+        {
+            osgViewer::Viewer::Contexts contexts;
+            osgViewer_->getContexts(contexts);
+            for (auto* context : contexts)
+            {
+                context->add(new ImGuiShutdownOperation());
+            }
+            osgViewer_->removeEventHandler(imguiOverlay_.get());
+            imguiOverlay_ = nullptr;
+        }
+#endif
+
         osgViewer_->setDone(true);  // flag OSG to tear down
 
         while (!osgViewer_->done() || osgViewer_->areThreadsRunning())

@@ -78,7 +78,7 @@ set(DYN_PROTOBUF
 set(USE_IMPLOT
     ON
     CACHE BOOL
-          "If implot for real-time plotting should be compiled.")
+          "If implot for replayer gui or esmini real-time plotting should be compiled.")
 
 set(BUILD_ODRPLOT
     ON
@@ -91,7 +91,7 @@ set(BUILD_REPLAYER
           "If replayer should be compiled.")
 
 set(BUILD_EXAMPLES
-    ON
+    OFF
     CACHE BOOL
           "If examples should be compiled.")
 

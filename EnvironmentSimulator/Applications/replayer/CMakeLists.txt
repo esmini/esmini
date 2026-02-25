@@ -64,6 +64,13 @@ if(BUILD_REPLAYER)
             PUBLIC ${EXTERNALS_OSG_INCLUDES})
     endif()
 
+    if(USE_IMPLOT)
+        target_include_directories(
+            ${TARGET1}
+            SYSTEM
+            PUBLIC ${EXTERNALS_IMPLOT_INCLUDES})
+    endif()
+
     target_link_libraries(
         ${TARGET1}
         PRIVATE project_options
@@ -82,6 +89,12 @@ if(BUILD_REPLAYER)
                     RoadGeom
                     ScenarioEngine
                     ${OSG_LIBRARIES})
+    endif()
+
+    if(USE_IMPLOT)
+        target_link_libraries(
+            ${TARGET1}
+            PRIVATE ${IMPLOT_LIBRARIES})
     endif()
 
     if(USE_OSI)
