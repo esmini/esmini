@@ -82,7 +82,7 @@ int main(int argc, char* argv[])
             }
             else
             {
-                SE_ReportObjectPos(cars[i].id, 0.0f, static_cast<float>(cars[i].x), -1.5f, 0.0f, 0.0f, 0.0f, 0.0f);
+                SE_ReportObjectPos(cars[i].id, static_cast<float>(cars[i].x), -1.5f, 0.0f, 0.0f, 0.0f, 0.0f);
                 SE_ReportObjectSpeed(cars[i].id, static_cast<float>(speed));
             }
         }
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
                                                  "box_cc_by.osgb",
                                                  {0.0, 0.0, 1.0, 2.0f * tmp, 1.0, 2.0},
                                                  2);
-            SE_ReportObjectPosXYH(id, 0.0f, tmp * 100.0f, 5.0f, 0.0f);
+            SE_ReportObjectPosXYH(id, tmp * 100.0f, 5.0f, 0.0f);
             n_misc_objects++;
         }
 

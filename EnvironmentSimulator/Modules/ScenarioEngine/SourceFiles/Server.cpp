@@ -85,8 +85,6 @@ namespace scenarioengine
                 // Update Ego state
                 mutex.Lock();
 
-                OSCBoundingBox bbox = {0, 0, 0, 0, 0, 0};  // dummy bariable just to feed into the function
-
                 ego->pos_.SetInertiaPos(buf.x, buf.y, buf.z, buf.h, buf.p, buf.r);
                 ego->SetSpeed(buf.speed);
                 ego->wheel_angle_ = buf.wheel_angle;

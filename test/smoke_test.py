@@ -339,13 +339,13 @@ class TestSuite(unittest.TestCase):
 
         elif platform == "linux" or platform == "linux2":
             self.assertTrue(re.search('^13.000, 0, Ego, 13.261, 429.831, -0.768, 1.536, 0.001, 0.000, 10.000, -0.001, 0.721', csv, re.MULTILINE))
-            self.assertTrue(re.search('^13.000, 6, swarm_2, 9.688, 429.970, -0.768, 1.536, 0.001, 0.000, 30.000, -0.001, 0.999', csv, re.MULTILINE))
-            self.assertTrue(re.search('^13.000, 7, swarm_3, -10.697, 196.962, -0.342, 4.704, 6.281, 0.000, 30.000, 0.000, 4.412', csv, re.MULTILINE))
-            self.assertTrue(re.search('^13.000, 9, swarm_5, 11.916, 385.302, -0.693, 1.545, 0.002, 0.000, 19.440, -0.000, 2.989', csv, re.MULTILINE))
-            self.assertTrue(re.search('^13.000, 10, swarm_6, -10.078, 257.445, -0.449, 4.700, 6.281, 0.000, 30.000, 0.000, 2.086', csv, re.MULTILINE))
-            self.assertTrue(re.search('^13.000, 41, swarm_32\\+, 34.343, 674.410, -0.889, 1.464, 0.002, 6.283, 30.000, 0.000, 0.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^13.000, 42, swarm_32\\+\\+, 33.702, 668.445, -0.877, 1.464, 0.002, 6.283, 30.000, 0.000, 0.000', csv, re.MULTILINE))
-            self.assertTrue(re.search('^13.000, 43, swarm_32\\+\\+\\+, 32.988, 661.783, -0.865, 1.464, 0.002, 6.283, 30.000, 0.000, 0.000', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 6, swarm_2, 9.688, 429.970, -0.768, 1.536, 0.001, 0.000, 30.000, -0.001, 3.287', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 7, swarm_3, -10.697, 196.962, -0.342, 4.704, 6.281, 0.000, 30.000, 0.000, 0.417', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 9, swarm_5, 11.916, 385.302, -0.693, 1.545, 0.002, 0.000, 19.440, -0.000, 5.278', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 10, swarm_6, -10.078, 257.445, -0.449, 4.700, 6.281, 0.000, 30.000, 0.000, 4.374', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 41, swarm_32\\+, 34.343, 674.410, -0.889, 1.464, 0.002, 6.283, 30.000, 0.968, 2.288', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 42, swarm_32\\+\\+, 33.702, 668.445, -0.877, 1.464, 0.002, 6.283, 30.000, 0.968, 2.288', csv, re.MULTILINE))
+            self.assertTrue(re.search('^13.000, 43, swarm_32\\+\\+\\+, 32.988, 661.783, -0.865, 1.464, 0.002, 6.283, 30.000, 0.968, 2.288', csv, re.MULTILINE))
 
     def test_conflicting_domains(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/conflicting-domains.xosc'), COMMON_ESMINI_ARGS)
@@ -2405,8 +2405,8 @@ class TestSuite(unittest.TestCase):
                 self.assertTrue(re.search('^22.000, 3, bus1, -5.162, 102.463, -0.140, 4.707, 0.000, 0.000, 13.840, 0.000, 1.751', csv, re.MULTILINE))
                 self.assertTrue(re.search('^22.000, 4, truck1, -4.528, 199.247, -0.346, 4.703, 0.005, 0.000, 14.041, -0.000, 4.474', csv, re.MULTILINE))
                 self.assertTrue(re.search('^22.000, 5, car2, 14.079, 223.659, -0.390, 1.561, 0.000, 0.000, 13.017, 0.000, 5.180', csv, re.MULTILINE))
-                self.assertTrue(re.search('^22.000, 6, car3, 13.872, 202.079, -0.350, 1.563, 0.000, 0.000, 13.323, -0.000, 6.023', csv, re.MULTILINE))
-                self.assertTrue(re.search('^22.000, 7, car4, 13.670, 176.972, -0.305, 1.563, 6.278, 0.000, 14.603, 0.000, 3.893', csv, re.MULTILINE))
+                self.assertTrue(re.search('^22.000, 6, car3, 13.872, 202.079, -0.350, 1.563, 0.000, 0.000, 13.323, -0.000, 6.237', csv, re.MULTILINE))
+                self.assertTrue(re.search('^22.000, 7, car4, 13.670, 176.972, -0.305, 1.563, 6.278, 0.000, 14.603, 0.000, 4.314', csv, re.MULTILINE))
 
                 self.assertTrue(re.search('^33.000, 0, Ego, 11.107, 350.701, -0.627, 1.550, 0.002, 0.000, 20.000, -0.000, 0.259', csv, re.MULTILINE))
                 self.assertTrue(re.search('^33.000, 1, Target1, 12.843, 417.357, -0.748, 1.539, 0.002, 0.000, 25.000, -0.001, 2.545', csv, re.MULTILINE))
@@ -2414,8 +2414,8 @@ class TestSuite(unittest.TestCase):
                 self.assertTrue(re.search('^33.000, 3, bus1, 6.910, 44.418, -0.030, 1.560, 0.000, 0.000, 13.826, 0.000, 3.629', csv, re.MULTILINE))
                 self.assertTrue(re.search('^33.000, 4, truck1, -5.394, 44.610, -0.030, 4.709, 0.000, 0.000, 14.047, -0.000, 0.137', csv, re.MULTILINE))
                 self.assertTrue(re.search('^33.000, 5, car2, 16.278, 366.520, -0.660, 1.549, 0.000, 0.000, 12.971, -0.001, 5.207', csv, re.MULTILINE))
-                self.assertTrue(re.search('^33.000, 6, car3, 13.803, 346.028, -0.620, 1.549, 0.000, 0.000, 12.965, -0.001, 2.165', csv, re.MULTILINE))
-                self.assertTrue(re.search('^33.000, 7, car4, 12.867, 325.249, -0.579, 1.559, 6.278, 0.000, 13.042, -0.000, 5.417', csv, re.MULTILINE))
+                self.assertTrue(re.search('^33.000, 6, car3, 13.803, 346.028, -0.620, 1.549, 0.000, 0.000, 12.965, -0.001, 2.379', csv, re.MULTILINE))
+                self.assertTrue(re.search('^33.000, 7, car4, 12.867, 325.249, -0.579, 1.559, 6.278, 0.000, 13.042, -0.000, 5.838', csv, re.MULTILINE))
         else:
             print("Skipping due to lacking SUMO support ", end='', file=sys.stderr)
 

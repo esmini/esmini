@@ -1,5 +1,14 @@
 ## esmini release notes
 
+### 2026-03-01 Version 2.60.0 DRAFT
+
+Breaking changes:
+- Removed unused timestamp from esminiLib report functions
+
+New features:
+- Support [AngleCondition](https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/AngleCondition.html)
+  - limitation: only `heading` supported for `trajectory` coordinate system
+
 ### 2026-02-19 Version 2.60.0
 
 New features:

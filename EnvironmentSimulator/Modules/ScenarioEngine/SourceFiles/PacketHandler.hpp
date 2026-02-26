@@ -3,7 +3,7 @@
 #include <fstream>
 #include "CommonMini.hpp"
 #include "RoadManager.hpp"
-#include "scenarioengine.hpp"
+#include "ScenarioEngine.hpp"
 
 #define DAT_FILE_FORMAT_VERSION_MAJOR 4
 #define DAT_FILE_FORMAT_VERSION_MINOR 3

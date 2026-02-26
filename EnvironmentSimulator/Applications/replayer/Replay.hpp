@@ -18,10 +18,11 @@
 #include <set>
 #include <optional>
 #include "CommonMini.hpp"
+#include "PacketHandler.hpp"
+
 #ifdef _USE_OSG
 #include "trafficlightmodel.hpp"
 #include "OSCBoundingBox.hpp"
-#include "PacketHandler.hpp"
 #endif  // _USE_OSG
 
 namespace scenarioengine

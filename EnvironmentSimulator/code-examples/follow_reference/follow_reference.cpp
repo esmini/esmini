@@ -152,7 +152,7 @@ int main(int argc, char* argv[])
             // Fetch updated Ego state and report to scenario engine
             SE_SimpleVehicleGetState(ego_handle, &ego_state);
 
-            SE_ReportObjectPosXYH(ego_id, 0.0f, ego_state.x, ego_state.y, ego_state.h);
+            SE_ReportObjectPosXYH(ego_id, ego_state.x, ego_state.y, ego_state.h);
             SE_ReportObjectWheelStatus(ego_id, ego_state.wheel_rotation, ego_state.wheel_angle);
             SE_ReportObjectSpeed(ego_id, ego_state.speed);
         }

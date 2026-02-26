@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 
         // Fetch updated state and report to scenario engine
         SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-        SE_ReportObjectPosXYH(0, 0, vehicleState.x, vehicleState.y, vehicleState.h);
+        SE_ReportObjectPosXYH(0, vehicleState.x, vehicleState.y, vehicleState.h);
 
         // wheel status (revolution and steering angles)
         SE_ReportObjectWheelStatus(0, vehicleState.wheel_rotation, vehicleState.wheel_angle);

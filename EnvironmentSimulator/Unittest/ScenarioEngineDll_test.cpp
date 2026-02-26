@@ -2245,17 +2245,17 @@ TEST(TestGetAndSet, ReportObjectAcc)
     double seconds = static_cast<double>(osi_gt->timestamp().seconds()) + 1E-9 * static_cast<double>(osi_gt->timestamp().nanos());
     EXPECT_DOUBLE_EQ(seconds, 0.001);
 
-    SE_ReportObjectAcc(0, 0, 1, 2, 3);
+    SE_ReportObjectAcc(0, 1, 2, 3);
     SE_StepDT(0.001f);
     EXPECT_EQ(osi_gt->moving_object(0).base().acceleration().x(), 1.0);
 
-    SE_ReportObjectAcc(0, 0, 4, 1, 8);
+    SE_ReportObjectAcc(0, 4, 1, 8);
     SE_StepDT(0.001f);
     EXPECT_EQ(osi_gt->moving_object(0).base().acceleration().x(), 4.0);
     EXPECT_EQ(osi_gt->moving_object(0).base().acceleration().y(), 1.0);
     EXPECT_EQ(osi_gt->moving_object(0).base().acceleration().z(), 8.0);
 
-    SE_ReportObjectAngularAcc(1, 0, 5, 4, 3);
+    SE_ReportObjectAngularAcc(1, 5, 4, 3);
     SE_StepDT(0.001f);
     EXPECT_EQ(osi_gt->moving_object(1).base().orientation_acceleration().yaw(), 5.0);
     EXPECT_EQ(osi_gt->moving_object(1).base().orientation_acceleration().pitch(), 4.0);
@@ -2284,17 +2284,17 @@ TEST(TestGetAndSet, ReportObjectVel)
     double seconds = static_cast<double>(osi_gt->timestamp().seconds()) + 1E-9 * static_cast<double>(osi_gt->timestamp().nanos());
     EXPECT_DOUBLE_EQ(seconds, 0.001);
 
-    SE_ReportObjectVel(0, 0, 11, 12, 13);
+    SE_ReportObjectVel(0, 11, 12, 13);
     SE_StepDT(0.001f);
     EXPECT_EQ(osi_gt->moving_object(0).base().velocity().x(), 11.0);
 
-    SE_ReportObjectVel(0, 0, 21, 22, 23);
+    SE_ReportObjectVel(0, 21, 22, 23);
     SE_StepDT(0.001f);
     EXPECT_EQ(osi_gt->moving_object(0).base().velocity().x(), 21.0);
     EXPECT_EQ(osi_gt->moving_object(0).base().velocity().y(), 22.0);
     EXPECT_EQ(osi_gt->moving_object(0).base().velocity().z(), 23.0);
 
-    SE_ReportObjectAngularVel(1, 0, 25, 24, 23);
+    SE_ReportObjectAngularVel(1, 25, 24, 23);
     SE_StepDT(0.001f);
     EXPECT_EQ(osi_gt->moving_object(1).base().orientation_rate().yaw(), 25.0);
     EXPECT_EQ(osi_gt->moving_object(1).base().orientation_rate().pitch(), 24.0);
@@ -3283,7 +3283,7 @@ TEST(ExternalControlTest, TestTimings)
             ego_state.y = road_info.global_pos_y;
             ego_state.h = road_info.trail_heading;
 
-            SE_ReportObjectPosXYH(0, 0, ego_state.x, ego_state.y, ego_state.h);
+            SE_ReportObjectPosXYH(0, ego_state.x, ego_state.y, ego_state.h);
             SE_ReportObjectSpeed(0, ghost_speed);
 
             // Finally, update scenario using same time step as for vehicle model
@@ -4272,7 +4272,7 @@ TEST(ObjectIds, check_ids)
 
 void objectCallback(SE_ScenarioObjectState* state, void*)
 {
-    SE_ReportObjectRoadPos(state->id, state->timestamp, state->roadId, 5, -2.3f, state->s);
+    SE_ReportObjectRoadPos(state->id, state->roadId, 5, -2.3f, state->s);
 }
 
 TEST(GatewayTest, TestReportToGatewayInCallback)
@@ -4476,7 +4476,7 @@ TEST(ExternalController, TestExternalDriver)
             }
 
             // Report updated vehicle position and heading. z, pitch and roll will be aligned to the road
-            SE_ReportObjectPosXYH(0, 0, vehicleState.x, vehicleState.y, vehicleState.h);
+            SE_ReportObjectPosXYH(0, vehicleState.x, vehicleState.y, vehicleState.h);
             SE_ReportObjectWheelStatus(0, vehicleState.wheel_rotation, vehicleState.wheel_angle);
             SE_ReportObjectSpeed(0, vehicleState.speed);
 
@@ -4566,14 +4566,14 @@ TEST(ExternalController, TestPositionAlignment)
             SE_SetObjectPositionMode(0,
                                      SE_PositionModeType::SE_SET,
                                      SE_PositionMode::SE_H_ABS | SE_PositionMode::SE_Z_REL | SE_PositionMode::SE_P_REL | SE_PositionMode::SE_R_REL);
-            SE_ReportObjectPos(0, 0, vehicleState.x, vehicleState.y, z_rel, vehicleState.h, p_rel, 0.0f);
+            SE_ReportObjectPos(0, vehicleState.x, vehicleState.y, z_rel, vehicleState.h, p_rel, 0.0f);
         }
         else
         {
             SE_SetObjectPositionMode(0,
                                      SE_PositionModeType::SE_SET,
                                      SE_PositionMode::SE_H_ABS | SE_PositionMode::SE_Z_REL | SE_PositionMode::SE_P_ABS | SE_PositionMode::SE_R_REL);
-            SE_ReportObjectPos(0, 0, vehicleState.x, vehicleState.y, 0.0f, vehicleState.h, 0.5f, 0.2f);
+            SE_ReportObjectPos(0, vehicleState.x, vehicleState.y, 0.0f, vehicleState.h, 0.5f, 0.2f);
         }
 
         // wheel status (revolution and steering angles)
@@ -4649,7 +4649,6 @@ TEST(PositionMode, TestRoadAlignmentModes)
         {
             SE_ReportObjectPosMode(
                 0,
-                0.0f,
                 std::nanf(""),
                 std::nanf(""),
                 0.0f,
@@ -4667,7 +4666,6 @@ TEST(PositionMode, TestRoadAlignmentModes)
         else if (state == 1 && SE_GetSimulationTime() > 15.0f)
         {
             SE_ReportObjectPosMode(0,
-                                   0.0f,
                                    std::nanf(""),
                                    std::nanf(""),
                                    1.0f,
@@ -4744,7 +4742,7 @@ TEST(SimpleVehicleTest, TestControl)
     {
         SE_SimpleVehicleControlTarget(vehicleHandle, dt, 30.0, 0.2);
         SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-        SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h);
+        SE_ReportObjectPosXYH(0, vehicleState.x, vehicleState.y, vehicleState.h);
 
         SE_StepDT(dt);
     }
@@ -4758,7 +4756,7 @@ TEST(SimpleVehicleTest, TestControl)
     {
         SE_SimpleVehicleControlTarget(vehicleHandle, dt, 60.0, -0.2);
         SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-        SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h);
+        SE_ReportObjectPosXYH(0, vehicleState.x, vehicleState.y, vehicleState.h);
 
         SE_StepDT(dt);
     }
@@ -4774,7 +4772,7 @@ TEST(SimpleVehicleTest, TestControl)
     {
         SE_SimpleVehicleControlTarget(vehicleHandle, dt, 80.0, 0.0);
         SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-        SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h);
+        SE_ReportObjectPosXYH(0, vehicleState.x, vehicleState.y, vehicleState.h);
         SE_ReportObjectSpeed(0, vehicleState.speed);
 
         SE_StepDT(dt);
@@ -4792,7 +4790,7 @@ TEST(SimpleVehicleTest, TestControl)
     {
         SE_SimpleVehicleControlBinary(vehicleHandle, dt, 0, 0);
         SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-        SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h);
+        SE_ReportObjectPosXYH(0, vehicleState.x, vehicleState.y, vehicleState.h);
         SE_ReportObjectSpeed(0, vehicleState.speed);
 
         SE_StepDT(dt);
@@ -4810,7 +4808,7 @@ TEST(SimpleVehicleTest, TestControl)
     {
         SE_SimpleVehicleControlAnalog(vehicleHandle, dt, 0, 0);  // no throttle -> engine brake applied
         SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
-        SE_ReportObjectPosXYH(0, 0.0f, vehicleState.x, vehicleState.y, vehicleState.h);
+        SE_ReportObjectPosXYH(0, vehicleState.x, vehicleState.y, vehicleState.h);
         SE_ReportObjectSpeed(0, vehicleState.speed);
 
         SE_StepDT(dt);
@@ -5653,7 +5651,7 @@ TEST(GetFunctionsTest, TestGetAccelerations)
         else if (state == 2)
         {
             // Set explicit acceleration
-            SE_ReportObjectAcc(1, 0.0, 1.0, 2.0, 3.0);
+            SE_ReportObjectAcc(1, 1.0, 2.0, 3.0);
 
             state++;
         }
@@ -5709,7 +5707,7 @@ TEST(StringIds, TestRoadStringIds)
         }
         else if (test_state == 3)
         {
-            SE_ReportObjectRoadPos(SE_GetId(0), 0.0f, SE_GetRoadIdFromString("2Kalle3"), -1, 0.0, 1.0);
+            SE_ReportObjectRoadPos(SE_GetId(0), SE_GetRoadIdFromString("2Kalle3"), -1, 0.0, 1.0);
             test_state++;
         }
         else if (test_state == 4)
