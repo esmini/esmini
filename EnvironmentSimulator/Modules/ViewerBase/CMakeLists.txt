@@ -80,7 +80,8 @@ target_include_directories(
            ${EXTERNALS_OSG_INCLUDES}
            ${EXTERNALS_OSI_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
-           ${EXTERNALS_FMT_INCLUDES})
+           ${EXTERNALS_FMT_INCLUDES}
+           ${EXTERNALS_IMPLOT_INCLUDES})
 
 foreach(
     TARGET

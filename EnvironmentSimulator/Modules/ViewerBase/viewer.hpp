@@ -28,6 +28,15 @@
 #include <osgGA/StateSetManipulator>
 #include <string>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#define GL_SILENCE_DEPRECATION
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+#include <GLES2/gl2.h>
+#endif
+#include <GLFW/glfw3.h>  // Will drag system OpenGL headers
+
 #include "RubberbandManipulator.hpp"
 #include "IdealSensor.hpp"
 #include "RoadManager.hpp"
@@ -42,6 +51,85 @@ using namespace roadgeom;
 namespace viewer
 {
     class Viewer;  // forward declaration
+
+    class OsgImGuiHandler : public osgGA::GUIEventHandler
+    {
+    public:
+        OsgImGuiHandler();
+
+        bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa) override;
+
+    protected:
+        virtual void drawUi() = 0;
+
+    private:
+        void init();
+        void setCameraCallbacks(osg::Camera* camera);
+        void newFrame(osg::RenderInfo& renderInfo);
+        void render(osg::RenderInfo& renderInfo);
+
+        struct ImGuiNewFrameCallback;
+        struct ImGuiRenderCallback;
+
+        bool initialized_;
+    };
+
+    class ImGuiInitOperation : public osg::Operation
+    {
+    public:
+        ImGuiInitOperation() : osg::Operation("ImGuiInitOperation", false)
+        {
+            LOG_INFO("INITIALIZED IMGUI");
+        }
+
+        void operator()(osg::Object* object) override
+        {
+            osg::GraphicsContext* context = dynamic_cast<osg::GraphicsContext*>(object);
+            if (!context)
+            {
+                return;
+            }
+
+            if (!ImGui_ImplOpenGL3_Init())
+            {
+                LOG_ERROR_AND_QUIT("ImGuiImplOpenGL3_Init() failed");
+            }
+        }
+    };
+
+    class ImGuiApp : public OsgImGuiHandler
+    {
+    protected:
+        void drawUi() override
+        {
+            float mytime = 0.0f;
+            ImGuiIO& io = ImGui::GetIO();
+
+            // 1. Force the ImGui Window to match the OSG Viewport
+            float height = 50.0f;
+            ImGui::SetNextWindowPos(ImVec2(0, io.DisplaySize.y - height));
+            ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, height));
+
+            // 2. Use flags to remove the background/title bar if you want a clean overlay
+            // ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | 
+            //                         ImGuiWindowFlags_NoResize | 
+            //                         ImGuiWindowFlags_NoBackground;
+            // Push an opaque color for the slider track
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+
+            ImGui::Begin("Slider", nullptr, ImGuiWindowFlags_NoDecoration);
+
+            // 3. Make the next item (the slider) span the full width of this window
+            // -1.0f means "use all available space"
+            ImGui::PushItemWidth(-1.0f); 
+            
+            ImGui::SliderFloat("##Time", &mytime, 0.0f, 100.0f);
+            
+            ImGui::PopItemWidth();
+            ImGui::End();
+            ImGui::PopStyleColor();
+        }
+    };
 
     class PolyLine
     {

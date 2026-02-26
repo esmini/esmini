@@ -81,6 +81,87 @@ USE_GRAPHICSWINDOW()
 
 using namespace viewer;
 
+struct OsgImGuiHandler::ImGuiNewFrameCallback : public osg::Camera::DrawCallback
+{
+    ImGuiNewFrameCallback(OsgImGuiHandler& handler) : handler_(handler) 
+    {
+    }
+
+    void operator()(osg::RenderInfo& renderInfo) const override
+    {
+        handler_.newFrame(renderInfo);
+    }
+
+private:
+    OsgImGuiHandler& handler_;
+};
+
+struct OsgImGuiHandler::ImGuiRenderCallback : public osg::Camera::DrawCallback
+{
+    ImGuiRenderCallback(OsgImGuiHandler& handler) : handler_(handler)
+    {
+    }
+
+    void operator()(osg::RenderInfo& renderInfo) const override
+    {
+        handler_.render(renderInfo);
+    }
+
+private:
+    OsgImGuiHandler& handler_;
+};
+
+OsgImGuiHandler::OsgImGuiHandler() : initialized_(false)
+{
+    //IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    init();
+}
+
+void OsgImGuiHandler::init()
+{
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
+}
+
+void OsgImGuiHandler::setCameraCallbacks(osg::Camera* camera)
+{
+    camera->setPreDrawCallback(new ImGuiNewFrameCallback(*this));
+    camera->setPostDrawCallback(new ImGuiRenderCallback(*this));
+}
+
+void OsgImGuiHandler::newFrame(osg::RenderInfo& renderInfo)
+{
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGuiIO& io = ImGui::GetIO();
+    osg::Viewport* viewport = renderInfo.getCurrentCamera()->getViewport();
+    io.DisplaySize = ImVec2(viewport->width(), viewport->height());
+    ImGui::NewFrame();
+
+}
+void OsgImGuiHandler::render(osg::RenderInfo& renderInfo)
+{
+    drawUi();
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+bool OsgImGuiHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa)
+{
+    if (!initialized_)
+    {
+        auto view = aa.asView();
+        if (view)
+        {
+            setCameraCallbacks(view->getCamera());
+            initialized_ = true;
+        }
+    }
+
+    return true;
+    // More stuff
+}
+
 // Derive a class from NodeVisitor to find a node with a  specific name.
 class FindNamedNode : public osg::NodeVisitor
 {
@@ -1830,6 +1911,10 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     SetOffScreenActive(SE_Env::Inst().GetSaveImagesToRAM());
 
     initialThreadingModel_ = osgViewer_->getThreadingModel();
+
+    // Imgui initialization
+    osgViewer_->setRealizeOperation(new ImGuiInitOperation);
+    osgViewer_->addEventHandler(new ImGuiApp);
 
     osgViewer_->realize();
 }

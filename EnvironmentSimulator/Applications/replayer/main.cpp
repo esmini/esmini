@@ -66,10 +66,10 @@ static bool    no_ghost_restart = true;
 static Replay* player_          = nullptr;
 #ifdef _USE_OSG
 static viewer::Viewer* viewer_    = nullptr;
-static GLFWwindow* window = nullptr;
+// static GLFWwindow* window = nullptr;
 static double          time_scale = 1.0;
 double                 deltaSimTime;  // external - used by Viewer::RubberBandCamera
-float mytime = 0.0f;
+// float mytime = 0.0f;
 
 void setEntityVisibility(int index, bool visible)
 {
@@ -204,12 +204,12 @@ void CleanUp()
         viewer_->renderSemaphore.Release();  // allow rendering thread to finish
         delete viewer_;
     }
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    // ImGui_ImplOpenGL3_Shutdown();
+    // ImGui_ImplGlfw_Shutdown();
+    // ImGui::DestroyContext();
 
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    // glfwDestroyWindow(window);
+    // glfwTerminate();
 #endif  // _USE_OSG
 }
 
@@ -653,6 +653,7 @@ int main(int argc, char** argv)
         LOG_ERROR("Exception: ", e.what());
         return -1;
     }
+    /*
 
     glfwSetErrorCallback(glfw_error_callback);
 
@@ -688,7 +689,7 @@ int main(int argc, char** argv)
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
-
+    */
     try
     {
 #ifdef _USE_OSG
@@ -1058,7 +1059,7 @@ int main(int argc, char** argv)
                 col_pause = false;
             }
         }
-        mytime = player_->GetStartTime();
+        // mytime = static_cast<float>(player_->GetStartTime());
         while (!(
 #ifdef _USE_OSG
             viewer_->osgViewer_->done() ||
@@ -1359,38 +1360,39 @@ int main(int argc, char** argv)
 
             // Update graphics
             viewer_->Frame(0.0);
-            bool show_gui = true;
-            // IMGUI STUFF
-            glfwPollEvents();
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
-            ImGui::Begin("Controls", &show_gui);
-            ImGui::Text("Adjust");
-            if (ImGui::SliderFloat("Time", &mytime, static_cast<float>(player_->GetStartTime()), static_cast<float>(player_->GetStopTime())))
-            {
-                pause_player = true;
-                player_->GoToTime(mytime);
-            }
-            mytime = static_cast<float>(simTime);
-            if (ImGui::Button("Play/Pause"))
-            {
-                pause_player = !pause_player;
-            }
-            else if (ImGui::Button("Restart"))
-            {
-                player_->GoToStart();
-                pause_player = true;
-            }
-            ImGui::End();
-            ImGui::Render();
-            int display_w, display_h;
-            glfwGetFramebufferSize(window, &display_w, &display_h);
-            glViewport(0, 0, display_w, display_h);
-            glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-            glClear(GL_COLOR_BUFFER_BIT);
-            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-            glfwSwapBuffers(window);
+            // bool show_gui = true;
+            // // IMGUI STUFF
+            // glfwPollEvents();
+            // ImGui_ImplOpenGL3_NewFrame();
+            // ImGui_ImplGlfw_NewFrame();
+            // ImGui::NewFrame();
+            // ImGui::ShowDemoWindow();
+            // ImGui::Begin("Controls", &show_gui);
+            // ImGui::Text("Adjust");
+            // if (ImGui::SliderFloat("Time", &mytime, static_cast<float>(player_->GetStartTime()), static_cast<float>(player_->GetStopTime())))
+            // {
+            //     pause_player = true;
+            //     player_->GoToTime(mytime);
+            // }
+            // mytime = static_cast<float>(simTime);
+            // if (ImGui::Button("Play/Pause"))
+            // {
+            //     pause_player = !pause_player;
+            // }
+            // else if (ImGui::Button("Restart"))
+            // {
+            //     player_->GoToStart();
+            //     pause_player = true;
+            // }
+            // ImGui::End();
+            // ImGui::Render();
+            // int display_w, display_h;
+            // glfwGetFramebufferSize(window, &display_w, &display_h);
+            // glViewport(0, 0, display_w, display_h);
+            // glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+            // glClear(GL_COLOR_BUFFER_BIT);
+            // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            // glfwSwapBuffers(window);
 
 #endif  // _USE_OSG
         }
