@@ -158,8 +158,33 @@ bool OsgImGuiHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionA
         }
     }
 
-    return true;
-    // More stuff
+    ImGuiIO& io = ImGui::GetIO();
+
+    switch (ea.getEventType())
+    {
+        case osgGA::GUIEventAdapter::PUSH:
+        case osgGA::GUIEventAdapter::RELEASE:
+        case osgGA::GUIEventAdapter::MOVE:
+        case osgGA::GUIEventAdapter::DRAG:
+        {
+            io.MousePos = ImVec2(ea.getX(), ea.getWindowHeight() - ea.getY());
+
+            io.MouseDown[0] = (ea.getButtonMask() & osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) != 0;
+            io.MouseDown[1] = (ea.getButtonMask() & osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON) != 0;
+
+            break;
+        }
+        default:
+            break;
+    }
+
+    if (io.WantCaptureMouse)
+    {
+        const_cast<osgGA::GUIEventAdapter&>(ea).setButtonMask(0);
+        return true;
+    }
+
+    return false;
 }
 
 // Derive a class from NodeVisitor to find a node with a  specific name.
