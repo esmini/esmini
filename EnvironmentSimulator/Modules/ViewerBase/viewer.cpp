@@ -1939,7 +1939,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     // Imgui initialization
     osgViewer_->setRealizeOperation(new ImGuiInitOperation);
-    osgViewer_->addEventHandler(new ImGuiApp);
+    imguiHandler_ = new ImGuiApp;
+    osgViewer_->addEventHandler(imguiHandler_.get());
 
     osgViewer_->realize();
 }

@@ -96,13 +96,36 @@ namespace viewer
             }
         }
     };
+        
 
     class ImGuiApp : public OsgImGuiHandler
     {
+    public:
+        ImGuiApp(){};
+        void SetTime(double time)
+        {
+            time_ = static_cast<float>(time);
+        }
+        void SetMinTime(double min_time)
+        {
+            min_time_ = static_cast<float>(min_time);
+        }
+        void SetMaxTime(double max_time)
+        {
+            max_time_ = static_cast<float>(max_time);
+        }
+        double GetTime() const
+        {
+            return static_cast<double>(time_);
+        }
+        bool SliderChanged()
+        {
+            return slider_changed_;
+        }
+
     protected:
         void drawUi() override
         {
-            float mytime = 0.0f;
             ImGuiIO& io = ImGui::GetIO();
 
             // 1. Force the ImGui Window to match the OSG Viewport
@@ -122,13 +145,18 @@ namespace viewer
             // 3. Make the next item (the slider) span the full width of this window
             // -1.0f means "use all available space"
             ImGui::PushItemWidth(-1.0f); 
-            
-            ImGui::SliderFloat("##Time", &mytime, 0.0f, 100.0f);
+            slider_changed_ = ImGui::SliderFloat("##Time", &time_, min_time_, max_time_);
             
             ImGui::PopItemWidth();
             ImGui::End();
             ImGui::PopStyleColor();
         }
+    
+    private:
+        bool slider_changed_ = false;
+        float time_ = 0.0f;
+        float min_time_ = 0.0f;
+        float max_time_ = 0.0f;
     };
 
     class PolyLine
@@ -527,6 +555,9 @@ namespace viewer
         osg::ref_ptr<osg::PositionAttitudeTransform> fogBoundingBox_;
         void                                         CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment);
         void                                         UpdateFrictonScaleFactorInMaterial(const double factor);
+
+        // Imgui stuff
+        osg::ref_ptr<ImGuiApp> imguiHandler_;
 
         std::string                   exe_path_;
         std::vector<KeyEventCallback> callback_;
