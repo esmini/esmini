@@ -223,7 +223,7 @@ void ControllerUDPDriver::Step(double timeStep)
             return;
         }
 
-        obj = scenario_engine_->entities_.GetObjectById(msg.header.objectId);
+        obj = scenario_engine_->entities_.GetObjectById(static_cast<int>(msg.header.objectId));
         if (obj == nullptr)
         {
             LOG_ERROR("ControllerUDPDriver: Received message for unknown object id {}, ignoring", msg.header.objectId);

@@ -24,7 +24,6 @@ int main(int argc, char* argv[])
         {
             SE_ReportObjectPosMode(
                 0,
-                0.0f,
                 std::nanf(""),
                 std::nanf(""),
                 0.0f,
@@ -48,7 +47,6 @@ int main(int argc, char* argv[])
         else if (state == 2 && SE_GetSimulationTime() > 15.0f)
         {
             SE_ReportObjectPosMode(0,
-                                   0.0f,
                                    std::nanf(""),
                                    std::nanf(""),
                                    1.0f,

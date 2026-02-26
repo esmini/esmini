@@ -2298,7 +2298,7 @@ int ScenarioPlayer::SetVariableValue(const char* name, bool value)
 
 int ScenarioPlayer::GetNumberOfProperties(int index)
 {
-    if (index >= 0 && index < scenarioEngine->entities_.object_.size())
+    if (index >= 0 && index < static_cast<int>(scenarioEngine->entities_.object_.size()))
     {
         return static_cast<int>(scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]->properties_.property_.size());
     }
@@ -2308,11 +2308,11 @@ int ScenarioPlayer::GetNumberOfProperties(int index)
 
 const char* ScenarioPlayer::GetPropertyName(int index, int propertyIndex)
 {
-    if (index >= 0 && index < scenarioEngine->entities_.object_.size())
+    if (index >= 0 && index < static_cast<int>(scenarioEngine->entities_.object_.size()))
     {
         Object* obj = scenarioEngine->entities_.object_[static_cast<unsigned int>(index)];
 
-        if (propertyIndex >= 0 && propertyIndex < obj->properties_.property_.size())
+        if (propertyIndex >= 0 && propertyIndex < static_cast<int>(obj->properties_.property_.size()))
         {
             return obj->properties_.property_[static_cast<unsigned int>(propertyIndex)].name_.c_str();
         }
@@ -2323,11 +2323,11 @@ const char* ScenarioPlayer::GetPropertyName(int index, int propertyIndex)
 
 const char* ScenarioPlayer::GetPropertyValue(int index, int propertyIndex)
 {
-    if (index >= 0 && index < scenarioEngine->entities_.object_.size())
+    if (index >= 0 && index < static_cast<int>(scenarioEngine->entities_.object_.size()))
     {
         Object* obj = scenarioEngine->entities_.object_[static_cast<unsigned int>(index)];
 
-        if (propertyIndex >= 0 && propertyIndex < obj->properties_.property_.size())
+        if (propertyIndex >= 0 && propertyIndex < static_cast<int>(obj->properties_.property_.size()))
         {
             return obj->properties_.property_[static_cast<unsigned int>(propertyIndex)].value_.c_str();
         }

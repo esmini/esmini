@@ -278,7 +278,7 @@ scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(Control
 
     if (ctrl != nullptr)
     {
-        return static_cast<Controller::Type>(ctrl->GetType());
+        return ctrl->GetType();
     }
     else if (IsGhost())
     {

@@ -150,13 +150,13 @@ static void copyStateFromScenarioObject(SE_ScenarioObjectState *state, const sce
     state->visibilityMask = obj.visibilityMask_;
 }
 
-static void copyWheelDataFromScenarioObject(SE_WheelData *wheeldata, const scenarioengine::Vehicle &veh, int wheel_index)
+static void copyWheelDataFromScenarioObject(SE_WheelData *wheeldata, const scenarioengine::Vehicle &veh, unsigned int wheel_index)
 {
-    if (veh.GetType() == Object::Type::VEHICLE && wheel_index >= 0 && wheel_index < static_cast<int>(veh.GetWheelData().size()))
+    if (veh.GetType() == Object::Type::VEHICLE && wheel_index < veh.GetWheelData().size())
     {
         const WheelData &wd = veh.GetWheelData()[wheel_index];
 
-        wheeldata->x                    = wd.x;
+        wheeldata->x                    = static_cast<float>(wd.x);
         wheeldata->y                    = static_cast<float>(wd.y);
         wheeldata->z                    = static_cast<float>(wd.z);
         wheeldata->h                    = static_cast<float>(wd.h);
@@ -1118,8 +1118,7 @@ extern "C"
             bb.dimensions_.length_ = bounding_box.dimensions_.length_;
             bb.dimensions_.width_  = bounding_box.dimensions_.width_;
 
-            scenarioengine::Controller::Type ctrl_type = scenarioengine::Controller::Type::CONTROLLER_TYPE_UNDEFINED;
-            Object                          *object    = nullptr;
+            Object *object = nullptr;
 
             if (object_type == scenarioengine::Object::Type::VEHICLE || object_type == scenarioengine::Object::Type::PEDESTRIAN ||
                 object_type == scenarioengine::Object::Type::MISC_OBJECT)
@@ -1155,7 +1154,6 @@ extern "C"
 
                 if (object_type == scenarioengine::Object::Type::VEHICLE || object_type == scenarioengine::Object::Type::PEDESTRIAN)
                 {
-                    ctrl_type                 = Controller::Type::CONTROLLER_TYPE_EXTERNAL;
                     Controller::InitArgs args = {"", "", 0, 0, 0};
                     args.type                 = CONTROLLER_EXTERNAL_TYPE_NAME;
                     Controller *ctrl          = InstantiateControllerExternal(&args);
@@ -1206,7 +1204,7 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API int SE_ReportObjectPos(int object_id, float timestamp, float x, float y, float z, float h, float p, float r)
+    SE_DLL_API int SE_ReportObjectPos(int object_id, float x, float y, float z, float h, float p, float r)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1220,7 +1218,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectPosMode(int object_id, float timestamp, float x, float y, float z, float h, float p, float r, int mode)
+    SE_DLL_API int SE_ReportObjectPosMode(int object_id, float x, float y, float z, float h, float p, float r, int mode)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1234,7 +1232,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectPosXYH(int object_id, float timestamp, float x, float y, float h)
+    SE_DLL_API int SE_ReportObjectPosXYH(int object_id, float x, float y, float h)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1248,7 +1246,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectRoadPos(int object_id, float timestamp, id_t roadId, int laneId, float laneOffset, float s)
+    SE_DLL_API int SE_ReportObjectRoadPos(int object_id, id_t roadId, int laneId, float laneOffset, float s)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1305,9 +1303,8 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectVel(int object_id, float timestamp, float x_vel, float y_vel, float z_vel)
+    SE_DLL_API int SE_ReportObjectVel(int object_id, float x_vel, float y_vel, float z_vel)
     {
-        (void)timestamp;
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
         {
@@ -1320,9 +1317,8 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectAngularVel(int object_id, float timestamp, float h_rate, float p_rate, float r_rate)
+    SE_DLL_API int SE_ReportObjectAngularVel(int object_id, float h_rate, float p_rate, float r_rate)
     {
-        (void)timestamp;
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
         {
@@ -1335,9 +1331,8 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectAcc(int object_id, float timestamp, float x_acc, float y_acc, float z_acc)
+    SE_DLL_API int SE_ReportObjectAcc(int object_id, float x_acc, float y_acc, float z_acc)
     {
-        (void)timestamp;
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
         {
@@ -1350,9 +1345,8 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectAngularAcc(int object_id, float timestamp, float h_acc, float p_acc, float r_acc)
+    SE_DLL_API int SE_ReportObjectAngularAcc(int object_id, float h_acc, float p_acc, float r_acc)
     {
-        (void)timestamp;
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
         {
@@ -1435,7 +1429,7 @@ extern "C"
 
     SE_DLL_API int SE_GetId(int index)
     {
-        if (player != nullptr && index >= 0 && index < player->scenarioEngine->entities_.object_.size())
+        if (player != nullptr && index >= 0 && index < static_cast<int>(player->scenarioEngine->entities_.object_.size()))
         {
             return player->scenarioEngine->entities_.GetObjectIdxById(index);
         }
@@ -2062,37 +2056,14 @@ extern "C"
     {
         Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
 
-        if (obj != nullptr && obj->GetType() == Object::Type::VEHICLE)
+        if (wheel_index >= 0 && obj != nullptr && obj->GetType() == Object::Type::VEHICLE)
         {
-            copyWheelDataFromScenarioObject(wheeldata, static_cast<Vehicle &>(*obj), wheel_index);
+            copyWheelDataFromScenarioObject(wheeldata, static_cast<Vehicle &>(*obj), static_cast<unsigned int>(wheel_index));
             return 0;
         }
 
         return -1;
     }
-
-    /*SE_DLL_API int SE_GetObjectGhostStateFromOSI(const char* output, int index)
-    {
-            if (player)
-            {
-                    if (index < player->scenarioEngine->entities_.object_.size())
-                    {
-                            for (size_t i = 0; i < player->scenarioEngine->entities_.object_.size(); i++)  // ghost index always higher than external
-    buddy
-                            {
-                                    if (player->scenarioEngine->entities_.object_[index]->ghost_)
-                                    {
-                                            scenarioengine::ObjectState obj_state;
-                                            player->scenarioGateway->getObjectStateById(player->scenarioEngine->entities_.object_[index]->ghost_->id_,
-    obj_state); copyStateFromScenarioGatewayToOSI(&output, &obj_state.state_);
-                                    }
-                            }
-                    }
-            }
-
-            return 0;
-
-    }*/
 
     SE_DLL_API int SE_GetObjectStates(int *nObjects, SE_ScenarioObjectState *state)
     {

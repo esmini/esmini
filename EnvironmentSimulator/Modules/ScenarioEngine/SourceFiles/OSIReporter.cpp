@@ -861,9 +861,12 @@ int OSIReporter::UpdateOSIStationaryObject(Object &obj)
     }
 
     // Set OSI Stationary Object Position
-    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(obj.pos_.GetX() + obj.boundingbox_.center_.x_ * cos(obj.pos_.GetH()));
-    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(obj.pos_.GetY() + obj.boundingbox_.center_.x_ * sin(obj.pos_.GetH()));
-    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(obj.pos_.GetZ() + obj.boundingbox_.dimensions_.height_ / 2.0);
+    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(obj.pos_.GetX() +
+                                                                     static_cast<double>(obj.boundingbox_.center_.x_) * cos(obj.pos_.GetH()));
+    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(obj.pos_.GetY() +
+                                                                     static_cast<double>(obj.boundingbox_.center_.x_) * sin(obj.pos_.GetH()));
+    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(obj.pos_.GetZ() +
+                                                                     static_cast<double>(obj.boundingbox_.dimensions_.height_) / 2.0);
 
     // Set OSI Stationary Object Orientation
     obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(obj.pos_.GetR()));
@@ -878,7 +881,7 @@ int OSIReporter::UpdateOSIStationaryObject(Object &obj)
         vec->set_y(p.y);
     }
 
-    obj.SetOSIIndex(obj_osi_internal.static_gt->stationary_object_size());
+    obj.SetOSIIndex(static_cast<unsigned int>(obj_osi_internal.static_gt->stationary_object_size()));
 
     return 1;
 }
@@ -1023,10 +1026,13 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     // Set OSI Moving Object Boundingbox
     obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_x(-obj.boundingbox_.center_.x_);
     obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_y(-obj.boundingbox_.center_.y_);
-    obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_z(obj.rear_axle_.positionZ - obj.boundingbox_.center_.z_);
-    obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_front()->set_x(obj.front_axle_.positionX - obj.boundingbox_.center_.x_);
+    obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_rear()->set_z(obj.rear_axle_.positionZ -
+                                                                                           static_cast<double>(obj.boundingbox_.center_.z_));
+    obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_front()->set_x(obj.front_axle_.positionX -
+                                                                                            static_cast<double>(obj.boundingbox_.center_.x_));
     obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_front()->set_y(-obj.boundingbox_.center_.y_);
-    obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_front()->set_z(obj.front_axle_.positionZ - obj.boundingbox_.center_.z_);
+    obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_bbcenter_to_front()->set_z(obj.front_axle_.positionZ -
+                                                                                            static_cast<double>(obj.boundingbox_.center_.z_));
     obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_height(obj.boundingbox_.dimensions_.height_);
     obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_width(obj.boundingbox_.dimensions_.width_);
     obj_osi_internal.mobj->mutable_base()->mutable_dimension()->set_length(obj.boundingbox_.dimensions_.length_);
@@ -1077,12 +1083,12 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
                 // create wheel data message
                 int ii = static_cast<int>(i);
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->add_wheel_data();
-                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(ii)->mutable_position()->set_x(wd.x -
-                                                                                                                       obj.boundingbox_.center_.x_);
-                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(ii)->mutable_position()->set_y(wd.y -
-                                                                                                                       obj.boundingbox_.center_.y_);
-                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(ii)->mutable_position()->set_z(wd.z -
-                                                                                                                       obj.boundingbox_.center_.z_);
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(ii)->mutable_position()->set_x(
+                    wd.x - static_cast<double>(obj.boundingbox_.center_.x_));
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(ii)->mutable_position()->set_y(
+                    wd.y - static_cast<double>(obj.boundingbox_.center_.y_));
+                obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(ii)->mutable_position()->set_z(
+                    wd.z - static_cast<double>(obj.boundingbox_.center_.z_));
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(ii)->mutable_orientation()->set_yaw(wd.h);
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(ii)->mutable_orientation()->set_pitch(wd.p);
                 obj_osi_internal.mobj->mutable_vehicle_attributes()->mutable_wheel_data(ii)->set_friction_coefficient(wd.friction_coefficient);
@@ -2938,10 +2944,16 @@ const char *OSIReporter::GetOSITrafficCommandRaw()
 const char *OSIReporter::GetOSIRoadLane(const std::vector<scenarioengine::Object *> &objects, int *size, int object_id)
 {
     // Check if object_id exists
-    if (object_id >= objects.size())
+    if (object_id >= static_cast<int>(objects.size()))
     {
         LOG_ERROR("Object {} not available, only {} registered", object_id, objects.size());
         *size = 0;
+        return 0;
+    }
+
+    if (object_id < 0)
+    {
+        LOG_ERROR("Invalid object_id {}", object_id);
         return 0;
     }
 

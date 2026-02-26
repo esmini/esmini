@@ -84,7 +84,7 @@ void objectCallback(SE_ScenarioObjectState* state, void* my_data)
         else
         {
             float latOffset = static_cast<float>(latOffset0 + latDist * (static_cast<double>(SE_GetSimulationTime()) - startTrigTime) / duration);
-            SE_ReportObjectRoadPos(state->id, state->timestamp, state->roadId, state->laneId, latOffset, state->s);
+            SE_ReportObjectRoadPos(state->id, state->roadId, state->laneId, latOffset, state->s);
         }
     }
 }
