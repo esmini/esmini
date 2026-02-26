@@ -23,8 +23,13 @@ using namespace scenarioengine;
 
 static void scenario_step(ScenarioEngine* scenario_engine, double dt)
 {
+    SE_Env::Inst().SetDirtyReadLayer(DirtyLayer::FRONT);
+
     scenario_engine->step(dt);
     scenario_engine->prepareGroundTruth(dt);
+
+    scenario_engine->SwapAndClearDirtyBits();
+    SE_Env::Inst().SetDirtyReadLayer(DirtyLayer::BACK);
 }
 
 TEST(DistanceTest, CalcDistanceVariations)
@@ -1504,10 +1509,11 @@ TEST(ControllerTest, UDPDriverModelTestAsynchronous)
     for (size_t i = 0; i < 2; i++)
     {
         scenarioengine::Controller::InitArgs args;
-        args.name       = "UDPDriverModel Controller";
-        args.type       = CONTROLLER_UDP_DRIVER_TYPE_NAME;
-        args.parameters = 0;
-        args.properties = new OSCProperties();
+        args.name            = "UDPDriverModel Controller";
+        args.type            = CONTROLLER_UDP_DRIVER_TYPE_NAME;
+        args.parameters      = 0;
+        args.scenario_engine = se;
+        args.properties      = new OSCProperties();
         OSCProperties::Property property;
         property.name_  = "port";
         property.value_ = std::to_string(0);
@@ -1614,10 +1620,11 @@ TEST(ControllerTest, UDPDriverModelTestSynchronous)
     for (size_t i = 0; i < 2; i++)
     {
         scenarioengine::Controller::InitArgs args;
-        args.name       = "UDPDriverModel Controller";
-        args.type       = CONTROLLER_UDP_DRIVER_TYPE_NAME;
-        args.parameters = 0;
-        args.properties = new OSCProperties();
+        args.name            = "UDPDriverModel Controller";
+        args.type            = CONTROLLER_UDP_DRIVER_TYPE_NAME;
+        args.parameters      = 0;
+        args.scenario_engine = se;
+        args.properties      = new OSCProperties();
         OSCProperties::Property property;
         property.name_  = "execMode";
         property.value_ = "synchronous";

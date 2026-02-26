@@ -18,8 +18,13 @@ using namespace scenarioengine;
 
 static void scenario_step(ScenarioEngine *scenario_engine, double dt)
 {
+    SE_Env::Inst().SetDirtyReadLayer(DirtyLayer::FRONT);
+
     scenario_engine->step(dt);
     scenario_engine->prepareGroundTruth(dt);
+
+    scenario_engine->SwapAndClearDirtyBits();
+    SE_Env::Inst().SetDirtyReadLayer(DirtyLayer::BACK);
 }
 
 class FollowRouteControllerTest : public ::testing::Test

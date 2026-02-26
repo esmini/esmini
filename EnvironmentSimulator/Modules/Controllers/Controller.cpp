@@ -73,21 +73,14 @@ void Controller::Step(double timeStep)
     (void)timeStep;
     if (object_)
     {
-        if (mode_ == ControlOperationMode::MODE_OVERRIDE)
+        if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
         {
-            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
-            {
-                object_->SetDirtyBits(Object::DirtyBit::LATERAL);
-            }
-
-            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
-            {
-                object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
-            }
+            object_->SetDirtyBits(Object::DirtyBit::LATERAL);
         }
-        else
+
+        if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
         {
-            object_->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+            object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
         }
     }
 }

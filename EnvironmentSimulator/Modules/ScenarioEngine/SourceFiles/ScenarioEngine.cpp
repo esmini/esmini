@@ -268,18 +268,6 @@ int ScenarioEngine::step(double deltaSimTime)
         }
     }
 
-    // now that any positional updates are done, calculate closest point on any assigned route
-    for (auto& obj : entities_.object_)
-    {
-        if (obj->CheckDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
-        {
-            if (obj->pos_.route_ != nullptr)
-            {
-                obj->pos_.CalcRoutePosition();
-            }
-        }
-    }
-
     // Update any trailers now that tow vehicles have been updated by Default or custom controllers
     for (size_t i = 0; i < entities_.object_.size(); i++)
     {
@@ -643,6 +631,15 @@ void ScenarioEngine::prepareGroundTruth(double dt)
     for (size_t i = 0; i < entities_.object_.size(); i++)
     {
         Object* obj = entities_.object_[i];
+
+        // now that any positional updates are done, calculate closest point on any assigned route
+        if (obj->CheckDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
+        {
+            if (obj->pos_.route_ != nullptr)
+            {
+                obj->pos_.CalcRoutePosition();
+            }
+        }
 
         // Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
         double dx = obj->pos_.GetX() - obj->state_old.pos_x;
