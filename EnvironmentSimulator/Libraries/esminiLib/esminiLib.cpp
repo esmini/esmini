@@ -1141,8 +1141,7 @@ extern "C"
                 object->category_    = object_category;
                 object->role_        = static_cast<scenarioengine::Object::Role>(object_role);
                 object->boundingbox_ = bb;
-                player->scenarioEngine->entities_.addObject(object, true);
-                object->name_ = (object_name == nullptr) ? "obj_" + std::to_string(object->id_) : object_name;
+                object->name_        = (object_name == nullptr) ? "obj_" + std::to_string(object->id_) : object_name;
 
                 if (model_3d != nullptr && strlen(model_3d) > 0)
                 {
@@ -1168,12 +1167,16 @@ extern "C"
                             {ControlActivationMode::ON, ControlActivationMode::ON, ControlActivationMode::OFF, ControlActivationMode::OFF});
                     }
                 }
+
+                player->scenarioEngine->entities_.addObject(object, true);
             }
             else
             {
                 LOG_ERROR("SE_AddObject: Object type {} not supported yet", object_type);
                 return -1;
             }
+
+            return object->id_;
         }
 
         return -1;

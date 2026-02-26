@@ -632,6 +632,15 @@ void ScenarioEngine::prepareGroundTruth(double dt)
     {
         Object* obj = entities_.object_[i];
 
+        // now that any positional updates are done, calculate closest point on any assigned route
+        if (obj->CheckDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
+        {
+            if (obj->pos_.route_ != nullptr)
+            {
+                obj->pos_.CalcRoutePosition();
+            }
+        }
+
         // Calculate resulting updated velocity, acceleration and heading rate (rad/s) NOTE: in global coordinate sys
         double dx = obj->pos_.GetX() - obj->state_old.pos_x;
         double dy = obj->pos_.GetY() - obj->state_old.pos_y;
