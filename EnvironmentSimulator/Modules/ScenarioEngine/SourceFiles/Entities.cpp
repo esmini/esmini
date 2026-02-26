@@ -1448,6 +1448,9 @@ int Entities::addObject(Object* obj, bool activate, int call_index)
     }
 
     obj->SetActive(activate);
+    obj->SetDirtyBits(Object::DirtyBit::TELEPORT);  // indicate object is new and has a virgin location
+
+    LOG_INFO("Add and {}activate new object \"{}\" (id {})", activate ? "" : "de", obj->GetName(), obj->GetId());
 
     Vehicle* trailer_vehicle = static_cast<Vehicle*>(obj->TrailerVehicle());
     if (trailer_vehicle && trailer_vehicle != obj)
