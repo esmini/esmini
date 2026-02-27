@@ -206,15 +206,17 @@ uint32_t ImGuiOverlay::ConsumeCmdMask()
 
 void ImGuiOverlay::drawUi()
 {
+    if (!draw_ui_)
+    {
+        return;
+    }
+
     ImGuiIO& io = ImGui::GetIO();
 
     float height = 80.0f;
     ImGui::SetNextWindowPos(ImVec2(0, io.DisplaySize.y - height));
     ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, height));
 
-    // ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar |
-    //                         ImGuiWindowFlags_NoResize |
-    //                         ImGuiWindowFlags_NoBackground;
     ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
 
     ImGui::Begin("PlaybackControls", nullptr, ImGuiWindowFlags_NoDecoration);

@@ -73,7 +73,7 @@ namespace viewer
     {
     public:
         OsgImGuiHandler();
-        using osgGA::GUIEventHandler::handle;
+        using osgGA::GUIEventHandler::handle;  // Needed to tell compiler to include all handle signatures
         bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object* obj, osg::NodeVisitor* nv) override;
 
     protected:
@@ -133,11 +133,16 @@ namespace viewer
         {
             return slider_changed_;
         }
+        void ToggleDrawUi()
+        {
+            draw_ui_ = !draw_ui_;
+        }
 
     protected:
         void drawUi() override;
 
     private:
+        bool     draw_ui_        = true;
         bool     slider_changed_ = false;
         float    time_           = 0.0f;
         float    min_time_       = 0.0f;

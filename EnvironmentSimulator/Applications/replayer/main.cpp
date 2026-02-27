@@ -182,6 +182,12 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
             no_ghost_model = !no_ghost_model;
             ShowGhosts(player, !no_ghost_model);
         }
+#ifdef _USE_IMPLOT
+        else if (keyEvent->key_ == static_cast<int>('I'))
+        {
+            viewer_->imguiOverlay_->ToggleDrawUi();
+        }
+#endif  // _USE_IMPLOT
     }
 }
 
