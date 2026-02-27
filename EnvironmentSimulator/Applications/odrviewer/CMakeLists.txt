@@ -34,7 +34,8 @@ target_include_directories(
     PUBLIC ${ROAD_MANAGER_PATH}
            ${EXTERNALS_OSI_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
-           ${EXTERNALS_OSG_INCLUDES})
+           ${EXTERNALS_OSG_INCLUDES}
+           ${EXTERNALS_IMPLOT_INCLUDES})
 
 target_link_libraries(
     ${TARGET}
@@ -50,7 +51,8 @@ if(USE_OSG)
                 RoadGeom
                 ScenarioEngine
                 Controllers
-                ${OSG_LIBRARIES})
+                ${OSG_LIBRARIES}
+                ${IMPLOT_LIBRARIES})
 endif()
 
 if(USE_OSI)

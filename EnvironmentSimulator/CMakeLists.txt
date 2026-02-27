@@ -27,7 +27,7 @@ add_subdirectory(Libraries/esminiRMLib)
 # ############################### Building Applications ################################################################
 
 add_subdirectory(Applications/esmini)
-add_subdirectory(Applications/esmini-dyn)
+# add_subdirectory(Applications/esmini-dyn)
 if(USE_OSG)
     add_subdirectory(Applications/odrviewer)
 endif(USE_OSG)
@@ -88,9 +88,9 @@ set_folder(
 set_folder(
     esmini
     ${ApplicationsFolder})
-set_folder(
-    esmini-dyn
-    ${ApplicationsFolder})
+# set_folder(
+#     esmini-dyn
+#     ${ApplicationsFolder})
 set_folder(
     dat2csv
     ${ApplicationsFolder})

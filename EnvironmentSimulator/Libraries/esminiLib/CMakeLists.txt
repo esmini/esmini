@@ -77,8 +77,8 @@ foreach(
         PUBLIC ${ROAD_MANAGER_PATH}
                ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_OSG_INCLUDES}
-               ${EXTERNALS_PUGIXML_PATH})
-    # ${EXTERNALS_FMT_INCLUDES})
+               ${EXTERNALS_PUGIXML_PATH}
+               ${EXTERNALS_IMPLOT_INCLUDES})
 
     target_link_libraries(
         ${TARGET}
@@ -87,7 +87,6 @@ foreach(
                 CommonMini
                 Controllers
                 RoadManager
-                # ${FMT_LIBRARIES}
                 ${TIME_LIB}
                 ${SOCK_LIB})
 
@@ -96,7 +95,8 @@ foreach(
             ${TARGET}
             PRIVATE ViewerBase
                     RoadGeom
-                    ${OSG_LIBRARIES})
+                    ${OSG_LIBRARIES}
+                    ${IMPLOT_LIBRARIES})
     endif()
 
     if(USE_SUMO)
