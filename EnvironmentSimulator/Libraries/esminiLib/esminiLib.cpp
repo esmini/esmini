@@ -1424,7 +1424,7 @@ extern "C"
             return -1;
         }
 
-        return player->scenarioEngine->entities_.object_.size();
+        return static_cast<int>(player->scenarioEngine->entities_.object_.size());
     }
 
     SE_DLL_API int SE_GetId(int index)

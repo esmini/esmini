@@ -1,7 +1,9 @@
 #ifndef COLLISION_HPP
 #define COLLISION_HPP
 
+#include <algorithm>
 #include "CommonMini.hpp"
+#include "OSCBoundingBox.hpp"
 
 typedef struct
 {
