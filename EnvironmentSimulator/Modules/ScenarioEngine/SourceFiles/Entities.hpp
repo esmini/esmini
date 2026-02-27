@@ -416,7 +416,7 @@ namespace scenarioengine
         void SetSpeed(double speed)
         {
             speed_ = speed;
-            SetDirtyBits(Object::DirtyBit::SPEED);
+            dirty_.SetBits(Object::DirtyBit::SPEED);
         }
         double GetSpeed() const
         {
@@ -589,35 +589,7 @@ namespace scenarioengine
             return objectEvents_;
         }
 
-        bool CheckDirtyBits(int bits) const
-        {
-            return bool(dirty_[SE_Env::Inst().GetDirtyReadLayer()] & bits);
-        }
-
-        void SetDirtyBits(int bits)
-        {
-            dirty_[SE_Env::Inst().GetDirtyWriteLayer()] |= bits;
-        }
-
-        void SetDirty(int bitmask)
-        {
-            dirty_[SE_Env::Inst().GetDirtyWriteLayer()] = bitmask;
-        }
-
-        int GetDirtyBitMask() const
-        {
-            return dirty_[SE_Env::Inst().GetDirtyReadLayer()];
-        }
-
-        void ClearDirtyBits(int bits)
-        {
-            dirty_[SE_Env::Inst().GetDirtyWriteLayer()] &= ~bits;
-        }
-
-        void ClearDirtyBits()
-        {
-            dirty_[SE_Env::Inst().GetDirtyWriteLayer()] = 0;
-        }
+        DirtyBits dirty_;
 
         void SetRole(std::string role)
         {
@@ -713,14 +685,7 @@ namespace scenarioengine
             return osi_index_;
         }
 
-        void SwapDirtyBitBuffers()
-        {
-            dirty_[SE_Env::Inst().GetDirtyBackLayer()]  = dirty_[SE_Env::Inst().GetDirtyFrontLayer()];
-            dirty_[SE_Env::Inst().GetDirtyFrontLayer()] = 0;
-        }
-
     private:
-        int                      dirty_[2];
         bool                     is_active_;
         std::string              model3d_full_path_;
         std::vector<std::string> source_reference_;

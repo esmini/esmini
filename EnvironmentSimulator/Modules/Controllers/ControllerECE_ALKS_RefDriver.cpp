@@ -404,7 +404,7 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
         }
     }
 
-    if (object_->CheckDirtyBits(Object::DirtyBit::SPEED))
+    if (object_->dirty_.Check(Object::DirtyBit::SPEED))
     {
         // Speed has been set from somewhere else (another action or controller), respect it
         setSpeed_ = object_->GetSpeed();

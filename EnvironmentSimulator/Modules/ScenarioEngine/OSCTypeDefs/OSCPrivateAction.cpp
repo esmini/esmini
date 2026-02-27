@@ -307,7 +307,7 @@ void AssignRouteAction::Start(double simTime)
 {
     route_->setObjName(object_->GetName());
     object_->pos_.SetRoute(route_);
-    object_->SetDirtyBits(Object::DirtyBit::ROUTE);
+    object_->dirty_.SetBits(Object::DirtyBit::ROUTE);
 
     OSCAction::Start(simTime);
 }
@@ -495,7 +495,7 @@ void FollowTrajectoryAction::Step(double simTime, double dt)
     }
 
     // signal that an action owns control
-    object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+    object_->dirty_.SetBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
 
     if (!object_->IsGhost() && simTime < 0.0)
     {
@@ -685,7 +685,7 @@ void AcquirePositionAction::Start(double simTime)
     route_->AddWaypoint(target_position_);
 
     object_->pos_.SetRoute(route_);
-    object_->SetDirtyBits(Object::DirtyBit::ROUTE);
+    object_->dirty_.SetBits(Object::DirtyBit::ROUTE);
 
     OSCAction::Start(simTime);
 
@@ -825,7 +825,7 @@ void ActivateControllerAction::Start(double simTime)
 
             if (controller_->Activate(activation_mode_) == 0)
             {
-                object_->SetDirtyBits(Object::DirtyBit::CONTROLLER);
+                object_->dirty_.SetBits(Object::DirtyBit::CONTROLLER);
                 LOG_INFO("Controller {} active on domains: {} (mask=0x{})",
                          controller_->GetName(),
                          ControlDomainMask2Str(controller_->GetActiveDomains()),
@@ -908,7 +908,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
     }
 
     // signal that an action owns control
-    object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+    object_->dirty_.SetBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
 
     if (!object_->IsGhost() && simTime < 0.0)
     {
@@ -989,7 +989,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
                      object_->pos_.GetTrackId(),
                      internal_pos_.GetTrackId());
             object_->pos_.SetRoute(nullptr);
-            object_->SetDirtyBits(Object::DirtyBit::ROUTE);
+            object_->dirty_.SetBits(Object::DirtyBit::ROUTE);
         }
     }
 
@@ -1020,7 +1020,7 @@ void LatLaneChangeAction::Step(double simTime, double dt)
         OSCAction::End();
     }
 
-    object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+    object_->dirty_.SetBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
 }
 
 void LatLaneChangeAction::ReplaceObjectRefs(Object* obj1, Object* obj2)
@@ -1115,7 +1115,7 @@ void LatLaneOffsetAction::Step(double simTime, double dt)
                                                       angle);
     }
 
-    object_->SetDirtyBits(Object::DirtyBit::LATERAL);
+    object_->dirty_.SetBits(Object::DirtyBit::LATERAL);
 
     transition_.Step(dt);
 }
@@ -2209,7 +2209,7 @@ void LatDistanceAction::Step(double simTime, double dt)
                 }
             }
         }
-        object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
+        object_->dirty_.SetBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED);
     }
     else if (cs_ == roadmanager::CoordinateSystem::CS_ROAD)
     {
@@ -2257,7 +2257,7 @@ void LatDistanceAction::Step(double simTime, double dt)
                 }
                 old_x_ = object_->pos_.GetX();
                 old_y_ = object_->pos_.GetY();
-                object_->SetDirtyBits(Object::DirtyBit::LATERAL);
+                object_->dirty_.SetBits(Object::DirtyBit::LATERAL);
             }
             break;
             case (MoveState::MOVE_DYNAMIC):
@@ -2322,7 +2322,7 @@ void LatDistanceAction::Step(double simTime, double dt)
                 object_->pos_.SetHeading(atan2(object_->pos_.GetY() - old_y_, object_->pos_.GetX() - old_x_));
 
                 object_->SetSpeed(object_->GetSpeed());
-                object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED);
+                object_->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL | Object::DirtyBit::SPEED);
 
                 old_x_ = object_->pos_.GetX();
                 old_y_ = object_->pos_.GetY();
@@ -2411,7 +2411,7 @@ void TeleportAction::Start(double simTime)
     LOG_INFO("{} New position:", object_->name_);
     object_->pos_.Print();
 
-    object_->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED | Object::DirtyBit::TELEPORT);
+    object_->dirty_.SetBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED | Object::DirtyBit::TELEPORT);
 }
 
 void TeleportAction::Step(double simTime, double dt)

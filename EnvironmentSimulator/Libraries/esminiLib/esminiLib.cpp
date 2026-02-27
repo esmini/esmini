@@ -1213,7 +1213,7 @@ extern "C"
         }
 
         obj->pos_.SetInertiaPos(x, y, z, h, p, r);
-        obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
+        obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;
     }
@@ -1227,7 +1227,7 @@ extern "C"
         }
 
         obj->pos_.SetInertiaPosMode(x, y, z, h, p, r, mode);
-        obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
+        obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;
     }
@@ -1241,7 +1241,7 @@ extern "C"
         }
 
         obj->pos_.SetInertiaPos(x, y, h);
-        obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
+        obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;
     }
@@ -1255,7 +1255,7 @@ extern "C"
         }
 
         obj->pos_.SetLanePos(roadId, laneId, s, laneOffset);
-        obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
+        obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;
     }
@@ -1269,7 +1269,7 @@ extern "C"
         }
 
         obj->SetSpeed(speed);
-        obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
+        obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL);
 
         return 0;
     }
@@ -1283,7 +1283,7 @@ extern "C"
         }
 
         obj->pos_.SetTrackPos(obj->pos_.GetTrackId(), obj->pos_.GetS(), t);
-        obj->SetDirtyBits(Object::DirtyBit::LATERAL);
+        obj->dirty_.SetBits(Object::DirtyBit::LATERAL);
 
         return 0;
     }
@@ -1298,7 +1298,7 @@ extern "C"
         }
 
         obj->pos_.SetLanePos(obj->pos_.GetTrackId(), obj->pos_.GetLaneId(), obj->pos_.GetS(), laneOffset);
-        obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
+        obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;
     }
@@ -1312,7 +1312,7 @@ extern "C"
         }
 
         obj->SetVel(x_vel, y_vel, z_vel);
-        obj->SetDirtyBits(Object::DirtyBit::VELOCITY);
+        obj->dirty_.SetBits(Object::DirtyBit::VELOCITY);
 
         return 0;
     }
@@ -1326,7 +1326,7 @@ extern "C"
         }
 
         obj->SetAngularVel(h_rate, p_rate, r_rate);
-        obj->SetDirtyBits(Object::DirtyBit::ANGULAR_RATE);
+        obj->dirty_.SetBits(Object::DirtyBit::ANGULAR_RATE);
 
         return 0;
     }
@@ -1340,7 +1340,7 @@ extern "C"
         }
 
         obj->SetAcc(x_acc, y_acc, z_acc);
-        obj->SetDirtyBits(Object::DirtyBit::ACCELERATION);
+        obj->dirty_.SetBits(Object::DirtyBit::ACCELERATION);
 
         return 0;
     }
@@ -1354,7 +1354,7 @@ extern "C"
         }
 
         obj->SetAngularAcc(h_acc, p_acc, r_acc);
-        obj->SetDirtyBits(Object::DirtyBit::ANGULAR_ACC);
+        obj->dirty_.SetBits(Object::DirtyBit::ANGULAR_ACC);
 
         return 0;
     }
@@ -1368,10 +1368,10 @@ extern "C"
         }
 
         obj->wheel_rot_ = rotation;
-        obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+        obj->dirty_.SetBits(Object::DirtyBit::WHEEL_ROTATION);
 
         obj->wheel_angle_ = angle;
-        obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
+        obj->dirty_.SetBits(Object::DirtyBit::WHEEL_ANGLE);
 
         return 0;
     }
@@ -1387,7 +1387,7 @@ extern "C"
         if (object_id >= 0 && object_id < static_cast<int>(player->scenarioEngine->entities_.object_.size()))
         {
             obj->pos_.SetSnapLaneTypes(laneTypes);
-            obj->SetDirtyBits(Object::DirtyBit::LANE_TYPE_SNAP_MASK);
+            obj->dirty_.SetBits(Object::DirtyBit::LANE_TYPE_SNAP_MASK);
         }
         else
         {

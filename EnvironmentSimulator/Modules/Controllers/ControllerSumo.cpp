@@ -193,7 +193,7 @@ void ControllerSumo::Step(double timeStep)
                     vehicle->role_     = Object::Role::CIVIL;
                     vehicle->category_ = Vehicle::Category::CAR;
                     vehicle->odometer_ = 0.0;
-                    vehicle->SetDirtyBits(Object::DirtyBit::TELEPORT);  // indicate object pops up or discontinuous movement, skip odometer update
+                    vehicle->dirty_.SetBits(Object::DirtyBit::TELEPORT);  // indicate object pops up or discontinuous movement, skip odometer update
                     LOG_INFO("SUMO controller: Add vehicle {} to scenario", vehicle->name_);
                     entities_->addObject(vehicle, true);
                 }
@@ -275,7 +275,7 @@ void ControllerSumo::Step(double timeStep)
                                             roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS |
                                                 roadmanager::Position::PosMode::P_ABS | roadmanager::Position::PosMode::R_REL);
 
-                if (obj->CheckDirtyBits(Object::DirtyBit::TELEPORT) && !obj->TowVehicle() && obj->TrailerVehicle())
+                if (obj->dirty_.Check(Object::DirtyBit::TELEPORT) && !obj->TowVehicle() && obj->TrailerVehicle())
                 {
                     static_cast<Vehicle*>(obj)->AlignTrailers();
                 }
@@ -285,7 +285,7 @@ void ControllerSumo::Step(double timeStep)
                     static_cast<Vehicle*>(obj)->AlignRearAxlePosition();
                 }
 
-                obj->SetDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+                obj->dirty_.SetBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
             }
             else if (!obj->IsGhost() && obj->TowVehicle() == nullptr)  // skip ghosts and trailers
             {

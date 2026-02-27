@@ -221,15 +221,15 @@ void ControllerRel2Abs::Step(double timeStep)
                         steplen += steplen * curvature * offset;
                     }
 
-                    if (!object->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL))
+                    if (!object->dirty_.Check(Object::DirtyBit::LONGITUDINAL))
                     {
                         object->pos_.MoveAlongS(steplen);
                     }
 
                     LOG_DEBUG("Object[{}] speed = {:.2f}, y: {:.2f}", object->id_, object->GetSpeed(), object->pos_.GetY());
 
-                    object->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED |
-                                           Object::DirtyBit::WHEEL_ANGLE | Object::DirtyBit::WHEEL_ROTATION);
+                    object->dirty_.ClearBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED |
+                                             Object::DirtyBit::WHEEL_ANGLE | Object::DirtyBit::WHEEL_ROTATION);
 
                     if (object == object_)
                     {
@@ -248,7 +248,7 @@ void ControllerRel2Abs::Step(double timeStep)
                 position_copy* cpy  = positionsCopied[i];
                 cpy->object->pos_   = *cpy->pos;
                 cpy->object->speed_ = cpy->speed;
-                cpy->object->SetDirty(cpy->dirtyBits);
+                cpy->object->dirty_.Set(cpy->dirtyBits);
                 delete (positionsCopied[i]);
             }
 
@@ -625,5 +625,5 @@ void ControllerRel2Abs::CopyPosition(Object* object, position_copy* obj_copy)
     obj_copy->object    = object;
     obj_copy->pos       = saved_pos;
     obj_copy->speed     = saved_speed;
-    obj_copy->dirtyBits = object->GetDirtyBitMask();
+    obj_copy->dirtyBits = object->dirty_.Get();
 }

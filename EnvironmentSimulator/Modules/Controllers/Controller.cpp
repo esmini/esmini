@@ -75,12 +75,12 @@ void Controller::Step(double timeStep)
     {
         if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
         {
-            object_->SetDirtyBits(Object::DirtyBit::LATERAL);
+            object_->dirty_.SetBits(Object::DirtyBit::LATERAL);
         }
 
         if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
         {
-            object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
+            object_->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL);
         }
     }
 }

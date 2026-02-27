@@ -41,7 +41,6 @@ Object::Object(Type type)
       junctionSelectorStrategy_(Junction::JunctionStrategyType::RANDOM),
       nextJunctionSelectorAngle_(0.0),
       scaleMode_(EntityScaleMode::NONE),
-      dirty_{0, 0},
       is_active_(false),
       model3d_full_path_(""),
       source_reference_({})
@@ -301,31 +300,31 @@ scenarioengine::Controller* Object::GetController(std::string name) const
 void Object::SetVisibilityMask(int mask)
 {
     visibilityMask_ = mask;
-    SetDirtyBits(DirtyBit::VISIBILITY);
+    dirty_.SetBits(DirtyBit::VISIBILITY);
 }
 
 void Object::SetVel(double x_vel, double y_vel, double z_vel)
 {
     pos_.SetVel(x_vel, y_vel, z_vel);
-    SetDirtyBits(DirtyBit::VELOCITY);
+    dirty_.SetBits(DirtyBit::VELOCITY);
 }
 
 void Object::SetAcc(double x_acc, double y_acc, double z_acc)
 {
     pos_.SetAcc(x_acc, y_acc, z_acc);
-    SetDirtyBits(DirtyBit::ACCELERATION);
+    dirty_.SetBits(DirtyBit::ACCELERATION);
 }
 
 void Object::SetAngularVel(double h_vel, double p_vel, double r_vel)
 {
     pos_.SetAngularVel(h_vel, p_vel, r_vel);
-    SetDirtyBits(DirtyBit::ANGULAR_RATE);
+    dirty_.SetBits(DirtyBit::ANGULAR_RATE);
 }
 
 void Object::SetAngularAcc(double h_acc, double p_acc, double r_acc)
 {
     pos_.SetAngularAcc(h_acc, p_acc, r_acc);
-    SetDirtyBits(DirtyBit::ANGULAR_ACC);
+    dirty_.SetBits(DirtyBit::ANGULAR_ACC);
 }
 
 void Object::SetJunctionSelectorAngle(double angle)
@@ -1448,7 +1447,7 @@ int Entities::addObject(Object* obj, bool activate, int call_index)
     }
 
     obj->SetActive(activate);
-    obj->SetDirtyBits(Object::DirtyBit::TELEPORT);  // indicate object is new and has a virgin location
+    obj->dirty_.SetBits(Object::DirtyBit::TELEPORT);  // indicate object is new and has a virgin location
 
     LOG_INFO("Add and {}activate new object \"{}\" (id {})", activate ? "" : "de", obj->GetName(), obj->GetId());
 

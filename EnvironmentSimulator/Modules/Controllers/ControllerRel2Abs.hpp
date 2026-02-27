@@ -40,7 +40,7 @@ namespace scenarioengine
             Object*                object;
             roadmanager::Position* pos;
             double                 speed;
-            int                    dirtyBits;
+            uint64_t               dirtyBits;
         };
 
         std::vector<PreSimData> data_vector;

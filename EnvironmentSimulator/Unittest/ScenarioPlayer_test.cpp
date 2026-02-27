@@ -134,7 +134,7 @@ TEST(AlignmentTest, TestPositionAlignmentVariants)
     EXPECT_NEAR(obj->pos_.GetZ(), 0.0, 1E-3);
 
     obj->pos_.SetInertiaPos(164.65, -4.63, 10.0, 6.14, 0.0, 0.0);
-    obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
+    obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
     player->Frame(0.0);
     EXPECT_NEAR(obj->pos_.GetZ(), 10.0, 1E-3);
     obj->SetSpeed(15.0);
@@ -150,7 +150,7 @@ TEST(AlignmentTest, TestPositionAlignmentVariants)
               roadmanager::Position::PosMode::Z_REL);
     // use default z mode = relative
     obj->pos_.SetInertiaPos(221.381, -22.974, 1.0, 5.575, 0.0, 0.0);
-    obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
+    obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
     obj->SetSpeed(15.0);
     player->Frame(0.1);
     EXPECT_NEAR(obj->pos_.GetX(), 221.381, 1E-3);
@@ -166,7 +166,7 @@ TEST(AlignmentTest, TestPositionAlignmentVariants)
 
     // Update with z mode = absolute, ignore road
     obj->pos_.SetInertiaPosMode(221.381, -22.974, 5.0, 5.575, 0.0, 0.0, Position::PosMode::Z_ABS);
-    obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
+    obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
     obj->SetSpeed(15.0);
     player->Frame(0.1);
@@ -182,7 +182,7 @@ TEST(AlignmentTest, TestPositionAlignmentVariants)
               roadmanager::Position::PosMode::Z_ABS);
 
     obj->pos_.SetInertiaPosMode(221.381, -22.974, 3.0, 5.575, 0.0, 0.0, roadmanager::Position::PosMode::Z_ABS);
-    obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
+    obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
     obj->SetSpeed(15.0);
     player->Frame(0.1);
     EXPECT_NEAR(obj->pos_.GetZ(), 3.0, 1E-3);
@@ -191,7 +191,7 @@ TEST(AlignmentTest, TestPositionAlignmentVariants)
 
     // Align to road surface
     obj->pos_.SetInertiaPosMode(221.381, -22.974, 0.0, 0.0, 0.0, 0.0, roadmanager::Position::PosMode::Z_REL);
-    obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
+    obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
     obj->pos_.SetMode(roadmanager::Position::PosModeType::UPDATE, roadmanager::Position::PosMode::Z_REL);
     obj->SetSpeed(15.0);

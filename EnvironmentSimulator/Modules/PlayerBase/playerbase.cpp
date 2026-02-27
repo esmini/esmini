@@ -196,7 +196,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
 #endif
         scenarioEngine->mutex_.Lock();
 
-        SE_Env::Inst().SetDirtyReadLayer(DirtyLayer::FRONT);
+        DirtyBits::SetReadFront();
         retval = ScenarioFrame(timestep_s, true);
 
         if (SE_Env::Inst().GetGhostMode() != GhostMode::NORMAL)
@@ -242,7 +242,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
             scenarioEngine->mutex_.Lock();
             ScenarioPostFrame();
             scenarioEngine->SwapAndClearDirtyBits();
-            SE_Env::Inst().SetDirtyReadLayer(DirtyLayer::BACK);
+            DirtyBits::SetReadBack();
             scenarioEngine->mutex_.Unlock();
         }
     }
@@ -469,10 +469,10 @@ void ScenarioPlayer::ViewerFrame()
             entity->trajectory_->Disable();
         }
 
-        if (obj->CheckDirtyBits(Object::DirtyBit::ROUTE))
+        if (obj->dirty_.Check(Object::DirtyBit::ROUTE))
         {
             entity->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
-            obj->ClearDirtyBits(Object::DirtyBit::ROUTE);
+            obj->dirty_.ClearBits(Object::DirtyBit::ROUTE);
         }
         else if (entity->routewaypoints_->group_all_wp_->getNumChildren() && obj->pos_.GetRoute() == nullptr)
         {

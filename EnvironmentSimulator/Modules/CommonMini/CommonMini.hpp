@@ -1416,10 +1416,58 @@ private:
     std::mt19937 gen_;
 };
 
-enum class DirtyLayer
+class DirtyBits
 {
-    FRONT,
-    BACK
+public:
+    bool Check(uint64_t bits) const
+    {
+        return bool(bits_[readLayer] & bits);
+    }
+
+    void Set(uint64_t bitmask)
+    {
+        bits_[0] = bitmask;
+    }
+
+    void SetBits(uint64_t bits)
+    {
+        bits_[0] |= bits;
+    }
+
+    uint64_t Get() const
+    {
+        return bits_[readLayer];
+    }
+
+    void ClearBits(uint64_t bits)
+    {
+        bits_[0] &= ~bits;
+    }
+
+    void Clear()
+    {
+        bits_[0] = 0;
+    }
+
+    void SwapAndClear()
+    {
+        bits_[1] = bits_[0];
+        bits_[0] = 0;
+    }
+
+    static void SetReadFront()
+    {
+        readLayer = 0;
+    }
+
+    static void SetReadBack()
+    {
+        readLayer = 1;
+    }
+
+private:
+    uint64_t              bits_[2]  = {0, 0};  // two layers; 0/FRONT (current step) and BACK/0 (previous step)
+    static inline uint8_t readLayer = 0;       // 0 = FRONT, 1 = BACK (write index is always FRONT)
 };
 
 class SE_Env
@@ -1435,9 +1483,7 @@ public:
           saveImagesToRAM_(false),
           ghost_mode_(GhostMode::NORMAL),
           ghost_headstart_(0.0),
-          osiTimeStamp_(OSI_TIMESTAMP_UNDEFINED),
-          dirty_read_layer_(DirtyLayer::BACK),
-          dirty_write_layer_(DirtyLayer::FRONT)
+          osiTimeStamp_(OSI_TIMESTAMP_UNDEFINED)
     {
     }
 
@@ -1572,36 +1618,6 @@ public:
         ghost_headstart_ = headstart_time;
     }
 
-    void SetDirtyReadLayer(DirtyLayer layer)
-    {
-        dirty_read_layer_ = layer;
-    }
-
-    void SetDirtyWriteLayer(DirtyLayer layer)
-    {
-        dirty_write_layer_ = layer;
-    }
-
-    idx_t GetDirtyReadLayer() const
-    {
-        return static_cast<idx_t>(dirty_read_layer_);
-    }
-
-    idx_t GetDirtyWriteLayer() const
-    {
-        return static_cast<idx_t>(dirty_write_layer_);
-    }
-
-    idx_t GetDirtyFrontLayer() const
-    {
-        return static_cast<idx_t>(DirtyLayer::FRONT);
-    }
-
-    idx_t GetDirtyBackLayer() const
-    {
-        return static_cast<idx_t>(DirtyLayer::BACK);
-    }
-
     SE_Options& GetOptions()
     {
         return opt;
@@ -1622,8 +1638,6 @@ private:
     double                     ghost_headstart_;
     SE_Options                 opt;
     unsigned long long         osiTimeStamp_;
-    DirtyLayer                 dirty_read_layer_;
-    DirtyLayer                 dirty_write_layer_;
 };
 
 /**

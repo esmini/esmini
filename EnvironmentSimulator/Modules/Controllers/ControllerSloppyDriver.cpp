@@ -101,7 +101,7 @@ void ControllerSloppyDriver::Step(double timeStep)
         }
         else
         {
-            if (object_->CheckDirtyBits(Object::DirtyBit::SPEED))
+            if (object_->dirty_.Check(Object::DirtyBit::SPEED))
             {
                 // Default Driver has moved by reference speed
                 steplen = (currentSpeed_ - referenceSpeed_) * timeStep;

@@ -154,7 +154,7 @@ int ScenarioEngine::step(double deltaSimTime)
             obj->state_old.vel_z  = obj->pos_.GetVelZ();
             obj->state_old.h      = obj->pos_.GetH();
             obj->state_old.h_rate = obj->pos_.GetHRate();
-            obj->SetDirtyBits(Object::DirtyBit::TELEPORT);  // indicate new position
+            obj->dirty_.SetBits(Object::DirtyBit::TELEPORT);  // indicate new position
         }
     }
 
@@ -602,7 +602,7 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
 {
     int retval = 0;
 
-    if (!obj->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL))  // No action has updated longitudinal dimension
+    if (!obj->dirty_.Check(Object::DirtyBit::LONGITUDINAL))  // No action has updated longitudinal dimension
     {
         if (!obj->IsControllerModeOnDomains(ControlOperationMode::MODE_OVERRIDE, static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
         {
@@ -616,8 +616,8 @@ int ScenarioEngine::defaultController(Object* obj, double dt)
                     // Something went wrong, couldn't move vehicle forward. Stop.
                     obj->SetSpeed(0.0);
                 }
-                obj->SetDirtyBits(Object::DirtyBit::LONGITUDINAL |
-                                  Object::DirtyBit::SPEED  // indicate that speed has been applied, prevent automatically set from velocity
+                obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL |
+                                    Object::DirtyBit::SPEED  // indicate that speed has been applied, prevent automatically set from velocity
                 );
             }
         }
@@ -633,7 +633,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
         Object* obj = entities_.object_[i];
 
         // now that any positional updates are done, calculate closest point on any assigned route
-        if (obj->CheckDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
+        if (obj->dirty_.Check(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL))
         {
             if (obj->pos_.route_ != nullptr)
             {
@@ -652,9 +652,9 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             if (dt > SMALL_NUMBER)
             {
                 // If velocity has not been reported, calculate it based on movement
-                if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
+                if (!obj->dirty_.Check(Object::DirtyBit::VELOCITY))
                 {
-                    if (obj->CheckDirtyBits(Object::DirtyBit::TELEPORT))
+                    if (obj->dirty_.Check(Object::DirtyBit::TELEPORT))
                     {
                         // if teleport occured, calculate approximated velocity vector based on current heading
                         obj->SetVel(obj->speed_ * cos(obj->pos_.GetH()), obj->speed_ * sin(obj->pos_.GetH()), 0.0);
@@ -667,12 +667,12 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                 }
 
                 // If speed has not been reported or set by any controller, calculate it based on velocity
-                if (!obj->CheckDirtyBits(Object::DirtyBit::SPEED))
+                if (!obj->dirty_.Check(Object::DirtyBit::SPEED))
                 {
                     obj->SetSpeed(GetLengthOfVector2D(obj->pos_.GetVelX(), obj->pos_.GetVelY()));
                 }
 
-                if (!obj->CheckDirtyBits(Object::DirtyBit::ACCELERATION))
+                if (!obj->dirty_.Check(Object::DirtyBit::ACCELERATION))
                 {
                     // If not already reported, calculate linear acceleration
                     obj->SetAcc((obj->pos_.GetVelX() - obj->state_old.vel_x) / dt,
@@ -682,13 +682,13 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 
                 double heading_diff     = GetAngleDifference(obj->pos_.GetH(), obj->state_old.h);
                 double heading_rate_new = heading_diff / dt;
-                if (!obj->CheckDirtyBits(Object::DirtyBit::ANGULAR_RATE))
+                if (!obj->dirty_.Check(Object::DirtyBit::ANGULAR_RATE))
                 {
                     // If not already reported, calculate angular velocity/rate
                     obj->SetAngularVel(heading_rate_new, 0.0, 0.0);
                 }
 
-                if (!obj->CheckDirtyBits(Object::DirtyBit::ANGULAR_ACC))
+                if (!obj->dirty_.Check(Object::DirtyBit::ANGULAR_ACC))
                 {
                     // If not already reported, calculate angular acceleration
                     obj->SetAngularAcc(GetAngleDifference(heading_rate_new, obj->state_old.h_rate) / dt, 0.0, 0.0);
@@ -699,29 +699,29 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                     Vehicle* v = static_cast<Vehicle*>(obj);
 
                     // Update wheel rotations of internal scenario objects
-                    if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
+                    if (!obj->dirty_.Check(Object::DirtyBit::WHEEL_ANGLE))
                     {
                         if (fabs(obj->GetSpeed()) > SMALL_NUMBER)
                         {
                             // Calculate steering angle according to simple bicycle model
                             obj->wheel_angle_ =
                                 SIGN(v->rear_axle_speed_) * atan2(heading_rate_new * v->front_axle_.positionX, fabs(v->rear_axle_speed_));
-                            obj->SetDirtyBits(Object::DirtyBit::WHEEL_ANGLE);
+                            obj->dirty_.SetBits(Object::DirtyBit::WHEEL_ANGLE);
                         }
                     }
 
-                    if (!obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
+                    if (!obj->dirty_.Check(Object::DirtyBit::WHEEL_ROTATION))
                     {
                         // Update wheel rotation based on sign of rear axle speed and magnitude of reference point speed
                         obj->wheel_rot_ = fmod(obj->wheel_rot_ + SIGN(v->rear_axle_speed_) * fabs(obj->GetSpeed()) * dt / WHEEL_RADIUS, 2 * M_PI);
-                        obj->SetDirtyBits(Object::DirtyBit::WHEEL_ROTATION);
+                        obj->dirty_.SetBits(Object::DirtyBit::WHEEL_ROTATION);
                     }
                 }
             }
             else
             {
                 // calculate approximated velocity vector based on current heading
-                if (!obj->CheckDirtyBits(Object::DirtyBit::VELOCITY))
+                if (!obj->dirty_.Check(Object::DirtyBit::VELOCITY))
                 {
                     // If not already reported, calculate approximated velocity vector based on current heading
                     obj->SetVel(obj->speed_ * cos(obj->pos_.GetH()), obj->speed_ * sin(obj->pos_.GetH()), 0.0);
@@ -738,7 +738,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             obj->state_old.h      = obj->pos_.GetH();
             obj->state_old.h_rate = obj->pos_.GetHRate();
 
-            if (!obj->CheckDirtyBits(Object::DirtyBit::TELEPORT))
+            if (!obj->dirty_.Check(Object::DirtyBit::TELEPORT))
             {
                 obj->odometer_ += abs(sqrt(dx * dx + dy * dy));  // odometer always measure all movements as positive, I guess...
             }
@@ -791,7 +791,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             // Update wheel positions
             for (auto& wheel : wheel_data)
             {
-                if (wheel.axle == 0 && obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ANGLE))
+                if (wheel.axle == 0 && obj->dirty_.Check(Object::DirtyBit::WHEEL_ANGLE))
                 {
                     wheel.h = static_cast<float>(obj->wheel_angle_);  // I assume always 0 due to fixed rear axis. Better to have = 0?
                 }
@@ -800,7 +800,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
                 wheel.wheel_radius  = axle->wheelDiameter / 2;
                 wheel.rotation_rate = obj->speed_ / wheel.wheel_radius;
 
-                if (obj->CheckDirtyBits(Object::DirtyBit::WHEEL_ROTATION))
+                if (obj->dirty_.Check(Object::DirtyBit::WHEEL_ROTATION))
                 {
                     wheel.p = static_cast<float>(obj->wheel_rot_);
                 }
@@ -1290,7 +1290,7 @@ int ScenarioEngine::GetDistance(Object*                           object_1,
     int  dist_updated = -2;
     auto it           = object_distance_map_.find(key);
     bool needs_update = (it == object_distance_map_.end() || simulationTime_ > it->second.next_update_ ||
-                         object_1->CheckDirtyBits(Object::DirtyBit::TELEPORT) || object_2->CheckDirtyBits(Object::DirtyBit::TELEPORT));
+                         object_1->dirty_.Check(Object::DirtyBit::TELEPORT) || object_2->dirty_.Check(Object::DirtyBit::TELEPORT));
     if (needs_update)
     {
         dist_updated = UpdateDistance(object_1, object_2, dist_type, key, rev_key, tracking_limit);
@@ -1314,7 +1314,7 @@ void ScenarioEngine::SwapAndClearDirtyBits()
     for (auto& obj : entities_.object_)
     {
         // reset update bits and indicators of applied control
-        obj->SwapDirtyBitBuffers();
+        obj->dirty_.SwapAndClear();
     }
 }
 
@@ -1323,6 +1323,6 @@ void ScenarioEngine::ClearDirtyBits()
     for (auto& obj : entities_.object_)
     {
         // reset update bits and indicators of applied control
-        obj->ClearDirtyBits();
+        obj->dirty_.Clear();
     }
 }
