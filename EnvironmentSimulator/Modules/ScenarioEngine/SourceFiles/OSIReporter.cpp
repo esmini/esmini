@@ -1550,20 +1550,34 @@ int OSIReporter::UpdateOSIIntersection()
                             incomming_road->GetDrivingLaneById(incomming_s_value, junctionlanelink->from_)->GetGlobalId());
 
                         roadmanager::Lane *lane = connecting_road->GetDrivingLaneById(connecting_outgoing_s_value, junctionlanelink->to_);
-                        roadmanager::Lane *successor_lane =
-                            lane != nullptr ? outgoing_road->GetDrivingLaneById(outgoing_s_value, lane->GetLink(connecting_road_link_type)->GetId())
-                                            : nullptr;
-                        if (lane != nullptr && successor_lane != nullptr)
-                        {
-                            laneparing->mutable_successor_lane_id()->set_value(successor_lane->GetGlobalId());
-                        }
-                        else
-                        {
+                        if (!lane) {
                             LOG_ERROR("Connecting road {} incoming road {} failed get lane by id {}",
                                       connecting_road->GetId(),
                                       connection->GetIncomingRoad()->GetId(),
                                       junctionlanelink->to_);
+                            continue;
                         }
+
+                        roadmanager::LaneLink *lane_link = lane->GetLink(connecting_road_link_type);
+                        if (!lane_link) {
+                            LOG_ERROR("Connecting road {} incoming road {} failed get lane by id {}, missing link: maybe vanishing lane?",
+                                      connecting_road->GetId(),
+                                      connection->GetIncomingRoad()->GetId(),
+                                      junctionlanelink->to_);
+                            continue;
+                        }
+
+                        roadmanager::Lane *successor_lane = outgoing_road->GetDrivingLaneById(outgoing_s_value, lane_link->GetId());
+                        if (!successor_lane)
+                        {
+                            LOG_ERROR("Outgoing road {} incoming road {} failed get lane by id {}",
+                                      outgoing_road->GetId(),
+                                      connection->GetIncomingRoad()->GetId(),
+                                      lane_link->GetId());
+                            continue;
+                        }
+
+                        laneparing->mutable_successor_lane_id()->set_value(successor_lane->GetGlobalId());
                     }
                 }
             }
