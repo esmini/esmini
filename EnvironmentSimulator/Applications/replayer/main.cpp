@@ -188,8 +188,8 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
 void ProcessGUI()
 {
     // GUI checks
-    uint32_t cmd            = viewer_->imguiHandler_->ConsumeCmdMask();
-    bool     slider_changed = viewer_->imguiHandler_->SliderChanged();
+    uint32_t cmd            = viewer_->imguiOverlay_->ConsumeCmdMask();
+    bool     slider_changed = viewer_->imguiOverlay_->SliderChanged();
 
     // Manual interaction always pauses simulation, except potential toggle play/pause
     if (slider_changed || (cmd != viewer::PlaybackCmd::CMD_NONE && !(cmd & viewer::PlaybackCmd::CMD_TOGGLE_PLAY)))
@@ -199,7 +199,7 @@ void ProcessGUI()
 
     if (slider_changed)
     {
-        player_->GoToTime(viewer_->imguiHandler_->GetTime());
+        player_->GoToTime(viewer_->imguiOverlay_->GetTime());
     }
 
     if (cmd != viewer::PlaybackCmd::CMD_NONE)
@@ -209,24 +209,43 @@ void ProcessGUI()
             pause_player = !pause_player;
         }
 
+        // Start / End
         if (cmd & viewer::PlaybackCmd::CMD_GOTO_START)
+        {
             player_->GoToStart(true);
+        }
         if (cmd & viewer::PlaybackCmd::CMD_GOTO_END)
+        {
             player_->GoToEnd(true);
+        }
 
+        // Backward
         if (cmd & viewer::PlaybackCmd::CMD_STEP_BACK_B)
+        {
             player_->GoToDeltaTime(-JUMP_DELTA_TIME_LARGE);
+        }
         if (cmd & viewer::PlaybackCmd::CMD_STEP_BACK_S)
+        {
             player_->GoToDeltaTime(-JUMP_DELTA_TIME_SMALL);
+        }
         if (cmd & viewer::PlaybackCmd::CMD_FRAME_BACK)
+        {
             player_->GoToPreviousFrame();
+        }
 
+        // Forward
         if (cmd & viewer::PlaybackCmd::CMD_FRAME_FWD)
+        {
             player_->GoToNextFrame();
+        }
         if (cmd & viewer::PlaybackCmd::CMD_STEP_FWD_S)
+        {
             player_->GoToDeltaTime(JUMP_DELTA_TIME_SMALL);
+        }
         if (cmd & viewer::PlaybackCmd::CMD_STEP_FWD_B)
+        {
             player_->GoToDeltaTime(JUMP_DELTA_TIME_LARGE);
+        }
     }
 
     if (pause_player)
@@ -236,7 +255,7 @@ void ProcessGUI()
     }
 
     // Keep GUI in sync with replayer
-    viewer_->imguiHandler_->SetTime(player_->GetTime());
+    viewer_->imguiOverlay_->SetTime(player_->GetTime());
 }
 #endif  // _USE_OSG
 
@@ -713,7 +732,7 @@ int main(int argc, char** argv)
         roadmanager::OpenDrive* odrManager    = roadmanager::Position::GetOpenDrive();
         osg::ArgumentParser     arguments(&argc_, argv_);
         viewer_ = new viewer::Viewer(odrManager, player_->dat_header_.model_filename.string.c_str(), NULL, argv_[0], arguments, &opt);
-        if (viewer_ == nullptr || viewer_->imguiHandler_ == nullptr)
+        if (viewer_ == nullptr || viewer_->imguiOverlay_ == nullptr)
         {
             printf("Failed to create viewer");
             CleanUp();
@@ -1064,7 +1083,7 @@ int main(int argc, char** argv)
             }
         }
 
-        viewer_->imguiHandler_->Init(simTime, player_->GetStartTime(), player_->GetStopTime());
+        viewer_->imguiOverlay_->Init(simTime, player_->GetStartTime(), player_->GetStopTime());
 
         while (!(
 #ifdef _USE_OSG

@@ -186,6 +186,92 @@ bool OsgImGuiHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionA
     return false;
 }
 
+void ImGuiOverlay::Init(const double& time, const double& min_time, const double& max_time)
+{
+    time_     = static_cast<float>(time);
+    min_time_ = static_cast<float>(min_time);
+    max_time_ = static_cast<float>(max_time);
+}
+
+uint32_t ImGuiOverlay::ConsumeCmdMask()
+{
+    uint32_t tmp = cmdMask_;
+    cmdMask_     = CMD_NONE;
+    return tmp;
+}
+
+void ImGuiOverlay::drawUi()
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    float height = 80.0f;
+    ImGui::SetNextWindowPos(ImVec2(0, io.DisplaySize.y - height));
+    ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, height));
+
+    // ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar |
+    //                         ImGuiWindowFlags_NoResize |
+    //                         ImGuiWindowFlags_NoBackground;
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+
+    ImGui::Begin("PlaybackControls", nullptr, ImGuiWindowFlags_NoDecoration);
+
+    ImGui::PushItemWidth(-1.0f);  // -1.0f means "use all avail. space"
+    slider_changed_ = ImGui::SliderFloat("##Time", &time_, min_time_, max_time_);
+    ImGui::PopItemWidth();
+
+    float styleSpacing    = ImGui::GetStyle().ItemSpacing.x;
+    float totalAvailWidth = ImGui::GetContentRegionAvail().x;
+    float btnWidth        = (totalAvailWidth - (styleSpacing * 8.0f)) / 9.0f;
+
+    if (ImGui::Button("|<", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_GOTO_START;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("<<<", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_STEP_BACK_B;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("<<", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_STEP_BACK_S;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("<", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_FRAME_BACK;
+    }
+    ImGui::SameLine();
+    const char* playLabel = "Play/Pause";
+    if (ImGui::Button(playLabel, ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_TOGGLE_PLAY;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(">", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_FRAME_FWD;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(">>", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_STEP_FWD_S;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(">>>", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_STEP_FWD_B;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(">|", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_GOTO_END;
+    }
+    ImGui::End();
+    ImGui::PopStyleColor();
+}
+
 // Derive a class from NodeVisitor to find a node with a  specific name.
 class FindNamedNode : public osg::NodeVisitor
 {
@@ -1938,8 +2024,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     // Imgui initialization
     osgViewer_->setRealizeOperation(new ImGuiInitOperation);
-    imguiHandler_ = new ImGuiApp;
-    osgViewer_->addEventHandler(imguiHandler_.get());
+    imguiOverlay_ = new ImGuiOverlay;
+    osgViewer_->addEventHandler(imguiOverlay_.get());
 
     osgViewer_->realize();
 }
