@@ -1593,7 +1593,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
                const char*             scenarioFilename,
                const char*             exe_path,
                osg::ArgumentParser     arguments,
-               SE_Options*             opt)
+               SE_Options*             opt,
+               bool                    overlay)
 {
     (void)scenarioFilename;
     odrManager_             = odrManager;
@@ -1625,6 +1626,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     frictionScaleFactor_          = 1.0;  // default friction scale factor
     defaultClearColorUsed_        = false;
     fogColor_                     = {0.75f, 0.75f, 0.75f};  // Default fog color, average of color_background
+    imguiOverlay_                 = nullptr;
 
     bool decoration = true;
     int  screenNum  = -1;
@@ -2023,9 +2025,12 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     initialThreadingModel_ = osgViewer_->getThreadingModel();
 
     // Imgui initialization
-    osgViewer_->setRealizeOperation(new ImGuiInitOperation);
-    imguiOverlay_ = new ImGuiOverlay;
-    osgViewer_->addEventHandler(imguiOverlay_.get());
+    if (overlay)
+    {
+        osgViewer_->setRealizeOperation(new ImGuiInitOperation);
+        imguiOverlay_ = new ImGuiOverlay;
+        osgViewer_->addEventHandler(imguiOverlay_.get());
+    }
 
     osgViewer_->realize();
 }

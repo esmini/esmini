@@ -566,7 +566,8 @@ namespace viewer
                const char*             scenarioFilename,
                const char*             exe_path,
                osg::ArgumentParser     arguments,
-               SE_Options*             opt = 0);
+               SE_Options*             opt     = 0,
+               bool                    overlay = false);
         ~Viewer();
         void AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos);
         void AddCustomCamera(double x, double y, double z, bool fixed_pos);

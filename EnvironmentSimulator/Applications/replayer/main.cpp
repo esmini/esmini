@@ -566,6 +566,7 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
     opt.AddOption("ground_plane", "Add a large flat ground surface. Modes: on, off, auto", "mode", "auto", true);
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
+    opt.AddOption("gui", "Show gui overlay on graphics window. Modes: on, off", "mode", "on", true);
 #endif  // _USE_OSG
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("help", "Show this help message (-h works as well)");
@@ -717,6 +718,15 @@ int main(int argc, char** argv)
     {
 #ifdef _USE_OSG
 
+        bool gui_overlay = true;
+        if ((arg_str = opt.GetOptionValue("gui")) != "")
+        {
+            if (arg_str == "off")
+            {
+                gui_overlay = false;
+            }
+        }
+
         if (strcmp(player_->dat_header_.odr_filename.string.c_str(), ""))
         {
             bool found = false;
@@ -731,12 +741,17 @@ int main(int argc, char** argv)
         double                  targetSimTime = simTime;
         roadmanager::OpenDrive* odrManager    = roadmanager::Position::GetOpenDrive();
         osg::ArgumentParser     arguments(&argc_, argv_);
-        viewer_ = new viewer::Viewer(odrManager, player_->dat_header_.model_filename.string.c_str(), NULL, argv_[0], arguments, &opt);
-        if (viewer_ == nullptr || viewer_->imguiOverlay_ == nullptr)
+        viewer_ = new viewer::Viewer(odrManager, player_->dat_header_.model_filename.string.c_str(), NULL, argv_[0], arguments, &opt, gui_overlay);
+        if (viewer_ == nullptr)
         {
             printf("Failed to create viewer");
             CleanUp();
             return -1;
+        }
+
+        if (gui_overlay && viewer_->imguiOverlay_ == nullptr)
+        {
+            LOG_ERROR("Failed to create overlay");
         }
 
         if ((arg_str = opt.GetOptionValue("camera_mode")) != "")
@@ -1083,7 +1098,10 @@ int main(int argc, char** argv)
             }
         }
 
-        viewer_->imguiOverlay_->Init(simTime, player_->GetStartTime(), player_->GetStopTime());
+        if (viewer_->imguiOverlay_ != nullptr)
+        {
+            viewer_->imguiOverlay_->Init(simTime, player_->GetStartTime(), player_->GetStopTime());
+        }
 
         while (!(
 #ifdef _USE_OSG
@@ -1384,7 +1402,10 @@ int main(int argc, char** argv)
             }
 
             // Check GUI
-            ProcessGUI();
+            if (viewer_->imguiOverlay_ != nullptr)
+            {
+                ProcessGUI();
+            }
 
             // Update graphics
             viewer_->Frame(0.0);
