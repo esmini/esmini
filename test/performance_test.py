@@ -45,7 +45,6 @@ from test_common import *
 
 ESMINI_PATH = '../'
 COMMON_ESMINI_ARGS = '--headless --record sim.dat --seed 0'
-TOLERANCE = 0.4
 executables = []
 scenarios = []
 time_vals = []
@@ -124,8 +123,8 @@ class TestSuiteBase(unittest.TestCase):
                 file=sys.stderr,
                 flush=True, end='')
 
-            if ref_cpu_time > 0:
-                self.assertLess(median_cpu_total, ref_cpu_time * (1 + TOLERANCE))
+            if ref_cpu_time > 0 and args.tolerance >= 0:
+                self.assertLess(median_cpu_total, ref_cpu_time * (1 + args.tolerance))
 
             time_vals_run.append(median_cpu_total)
 
@@ -223,6 +222,7 @@ if __name__ == "__main__":
     parser.add_argument("--disable_plot", action="store_true", help="disable plot (not even store file)")
     parser.add_argument("-t", "--timeout", type=int, default=40, help="timeout per testcase (default: %(default)s)")
     parser.add_argument("-a", "--esmini_args", nargs=1, type=str, default="", help="additional esmini arguments (multiple args within \"\")")
+    parser.add_argument("-o", "--tolerance", type=float, default=0.4, help="tolerance for performance comparison (default: %(default)s, set -1 to disable check)")
     parser.add_argument("testcase", nargs="?", help="run only this testcase")
     args = parser.parse_args()
 
@@ -241,7 +241,10 @@ if __name__ == "__main__":
         scenarios += [os.path.realpath(s) for s in expand_wildcards(args.scenarios)]
 
     print("timeout:", args.timeout, file=sys.stderr, flush=True)
-    print("tolerance: {:.2f} ({:.0f}%)".format(TOLERANCE, 100 * TOLERANCE), file=sys.stderr, flush=True)
+    if (args.tolerance >= 0):
+        print("tolerance: {:.2f} ({:.0f}%)".format(args.tolerance, 100 * args.tolerance), file=sys.stderr, flush=True)
+    else:
+        print("tolerance: disabled", file=sys.stderr, flush=True)
     if len(scenarios) > 0:
         print('runs:', args.runs, file=sys.stderr, flush=True)
 
