@@ -77,8 +77,14 @@ foreach(
         PUBLIC ${ROAD_MANAGER_PATH}
                ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_OSG_INCLUDES}
-               ${EXTERNALS_PUGIXML_PATH}
-               ${EXTERNALS_IMPLOT_INCLUDES})
+               ${EXTERNALS_PUGIXML_PATH})
+
+    if(USE_IMPLOT)
+        target_include_directories(
+            ${TARGET}
+            SYSTEM
+            PUBLIC ${EXTERNALS_IMPLOT_INCLUDES})
+    endif()
 
     target_link_libraries(
         ${TARGET}
@@ -95,8 +101,13 @@ foreach(
             ${TARGET}
             PRIVATE ViewerBase
                     RoadGeom
-                    ${OSG_LIBRARIES}
-                    ${IMPLOT_LIBRARIES})
+                    ${OSG_LIBRARIES})
+    endif()
+
+    if(USE_IMPLOT)
+        target_link_libraries(
+            ${TARGET}
+            PRIVATE ${IMPLOT_LIBRARIES})
     endif()
 
     if(USE_SUMO)

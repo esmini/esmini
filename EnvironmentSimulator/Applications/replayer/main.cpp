@@ -185,6 +185,7 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
     }
 }
 
+#ifdef _USE_IMPLOT
 void ProcessGUI()
 {
     // GUI checks
@@ -257,6 +258,7 @@ void ProcessGUI()
     // Keep GUI in sync with replayer
     viewer_->imguiOverlay_->SetTime(player_->GetTime());
 }
+#endif  // _USE_IMPLOT
 #endif  // _USE_OSG
 
 void CleanUp()
@@ -516,11 +518,6 @@ std::vector<int> GetGhostIdx()
     return ghostIndices;
 }
 
-void glfw_error_callback(int error, const char* description)
-{
-    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
-}
-
 int main(int argc, char** argv)
 {
     double      simTime      = 0;
@@ -566,7 +563,9 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
     opt.AddOption("ground_plane", "Add a large flat ground surface. Modes: on, off, auto", "mode", "auto", true);
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
+#ifdef _USE_IMPLOT
     opt.AddOption("gui", "Show gui overlay on graphics window. Modes: on, off", "mode", "on", true);
+#endif  // _USE_IMPLOT
 #endif  // _USE_OSG
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("help", "Show this help message (-h works as well)");
@@ -719,6 +718,7 @@ int main(int argc, char** argv)
 #ifdef _USE_OSG
 
         bool gui_overlay = true;
+#ifdef _USE_IMPLOT
         if ((arg_str = opt.GetOptionValue("gui")) != "")
         {
             if (arg_str == "off")
@@ -726,6 +726,9 @@ int main(int argc, char** argv)
                 gui_overlay = false;
             }
         }
+#else
+        gui_overlay = false;
+#endif  // _USE_IMPLOT
 
         if (strcmp(player_->dat_header_.odr_filename.string.c_str(), ""))
         {
@@ -749,10 +752,12 @@ int main(int argc, char** argv)
             return -1;
         }
 
+#ifdef _USE_IMPLOT
         if (gui_overlay && viewer_->imguiOverlay_ == nullptr)
         {
             LOG_ERROR("Failed to create overlay");
         }
+#endif  // _USE_IMPLOT
 
         if ((arg_str = opt.GetOptionValue("camera_mode")) != "")
         {
@@ -1086,6 +1091,12 @@ int main(int argc, char** argv)
         bool col_pause =
 #ifdef _USE_OSG
             true;
+#ifdef _USE_IMPLOT
+        if (viewer_->imguiOverlay_ != nullptr)
+        {
+            viewer_->imguiOverlay_->Init(simTime, player_->GetStartTime(), player_->GetStopTime());
+        }
+#endif  // _USE_IMPLOT
 #else
             false;
 #endif  // _USE_OSG
@@ -1096,11 +1107,6 @@ int main(int argc, char** argv)
             {
                 col_pause = false;
             }
-        }
-
-        if (viewer_->imguiOverlay_ != nullptr)
-        {
-            viewer_->imguiOverlay_->Init(simTime, player_->GetStartTime(), player_->GetStopTime());
         }
 
         while (!(
@@ -1401,11 +1407,13 @@ int main(int argc, char** argv)
                 }
             }
 
+#ifdef _USE_IMPLOT
             // Check GUI
             if (viewer_->imguiOverlay_ != nullptr)
             {
                 ProcessGUI();
             }
+#endif
 
             // Update graphics
             viewer_->Frame(0.0);

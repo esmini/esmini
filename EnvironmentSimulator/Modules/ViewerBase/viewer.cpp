@@ -81,6 +81,7 @@ USE_GRAPHICSWINDOW()
 
 using namespace viewer;
 
+#ifdef _USE_IMPLOT
 struct OsgImGuiHandler::ImGuiNewFrameCallback : public osg::Camera::DrawCallback
 {
     ImGuiNewFrameCallback(OsgImGuiHandler& handler) : handler_(handler)
@@ -271,6 +272,7 @@ void ImGuiOverlay::drawUi()
     ImGui::End();
     ImGui::PopStyleColor();
 }
+#endif  // _USE_IMPLOT
 
 // Derive a class from NodeVisitor to find a node with a  specific name.
 class FindNamedNode : public osg::NodeVisitor
@@ -1626,7 +1628,9 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     frictionScaleFactor_          = 1.0;  // default friction scale factor
     defaultClearColorUsed_        = false;
     fogColor_                     = {0.75f, 0.75f, 0.75f};  // Default fog color, average of color_background
-    imguiOverlay_                 = nullptr;
+#ifdef _USE_IMPLOT
+    imguiOverlay_ = nullptr;
+#endif  // _USE_IMPLOT
 
     bool decoration = true;
     int  screenNum  = -1;
@@ -2024,6 +2028,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     initialThreadingModel_ = osgViewer_->getThreadingModel();
 
+#ifdef _USE_IMPLOT
     // Imgui initialization
     if (overlay)
     {
@@ -2031,6 +2036,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
         imguiOverlay_ = new ImGuiOverlay;
         osgViewer_->addEventHandler(imguiOverlay_.get());
     }
+#endif  // _USE_IMPLOT
 
     osgViewer_->realize();
 }

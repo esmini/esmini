@@ -73,6 +73,13 @@ target_include_directories(
            ${EXTERNALS_FMT_INCLUDES}
            ${EXTERNALS_IMPLOT_INCLUDES})
 
+if(USE_IMPLOT)
+    target_include_directories(
+        ${TARGET}
+        SYSTEM
+        PUBLIC ${EXTERNALS_IMPLOT_INCLUDES})
+endif()
+
 disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})
 enable_fpic(${TARGET})

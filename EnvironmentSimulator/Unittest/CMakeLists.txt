@@ -12,8 +12,11 @@ include(${CMAKE_SOURCE_DIR}/support/cmake/common/unittest.cmake)
 if(USE_OSG)
     set(VIEWER_LIBS_FOR_TEST
         ViewerBase
-        RoadGeom
-        ${IMPLOT_LIBRARIES})
+        RoadGeom)
+endif()
+
+if(USE_IMPLOT)
+    list(APPEND VIEWER_LIBS_FOR_TEST ${IMPLOT_LIBRARIES})
 endif()
 
 set(OperatingSystem_test_sources

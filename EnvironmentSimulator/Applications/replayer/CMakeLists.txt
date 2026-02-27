@@ -57,14 +57,20 @@ if(BUILD_REPLAYER)
         PUBLIC ${ROAD_MANAGER_PATH}
                ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_PUGIXML_PATH}
-               ${EXTERNALS_DIRENT_INCLUDES}
-               ${EXTERNALS_IMPLOT_INCLUDES})
+               ${EXTERNALS_DIRENT_INCLUDES})
 
     if(USE_OSG)
         target_include_directories(
             ${TARGET1}
             SYSTEM
             PUBLIC ${EXTERNALS_OSG_INCLUDES})
+    endif()
+
+    if(USE_IMPLOT)
+        target_include_directories(
+            ${TARGET1}
+            SYSTEM
+            PUBLIC ${EXTERNALS_IMPLOT_INCLUDES})
     endif()
 
     target_link_libraries(
@@ -83,9 +89,13 @@ if(BUILD_REPLAYER)
             PRIVATE ViewerBase
                     RoadGeom
                     ScenarioEngine
-                    ${OSG_LIBRARIES}
-                    ${IMPLOT_LIBRARIES}
-                    )
+                    ${OSG_LIBRARIES})
+    endif()
+
+    if(USE_IMPLOT)
+        target_link_libraries(
+            ${TARGET1}
+            PRIVATE ${IMPLOT_LIBRARIES})
     endif()
 
     if(USE_OSI)

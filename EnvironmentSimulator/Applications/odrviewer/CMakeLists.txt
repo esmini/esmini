@@ -37,6 +37,13 @@ target_include_directories(
            ${EXTERNALS_OSG_INCLUDES}
            ${EXTERNALS_IMPLOT_INCLUDES})
 
+if(USE_IMPLOT)
+    target_include_directories(
+        ${TARGET}
+        SYSTEM
+        PUBLIC ${EXTERNALS_IMPLOT_INCLUDES})
+endif()
+
 target_link_libraries(
     ${TARGET}
     PRIVATE project_options
@@ -51,8 +58,13 @@ if(USE_OSG)
                 RoadGeom
                 ScenarioEngine
                 Controllers
-                ${OSG_LIBRARIES}
-                ${IMPLOT_LIBRARIES})
+                ${OSG_LIBRARIES})
+endif()
+
+if(USE_IMPLOT)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE ${IMPLOT_LIBRARIES})
 endif()
 
 if(USE_OSI)

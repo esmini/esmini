@@ -28,6 +28,7 @@
 #include <osgGA/StateSetManipulator>
 #include <string>
 
+#ifdef _USE_IMPLOT
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -35,7 +36,8 @@
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
 #endif
-#include <GLFW/glfw3.h>  // Will drag system OpenGL headers
+#include <GLFW/glfw3.h>
+#endif  // _USE_IMPLOT
 
 #include "RubberbandManipulator.hpp"
 #include "IdealSensor.hpp"
@@ -52,6 +54,7 @@ namespace viewer
 {
     class Viewer;  // forward declaration
 
+#ifdef _USE_IMPLOT
     enum PlaybackCmd : uint32_t
     {
         CMD_NONE        = 0,
@@ -141,6 +144,7 @@ namespace viewer
         float    max_time_       = 0.0f;
         uint32_t cmdMask_        = PlaybackCmd::CMD_NONE;
     };
+#endif  // _USE_IMPLOT
 
     class PolyLine
     {
@@ -539,8 +543,10 @@ namespace viewer
         void                                         CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment);
         void                                         UpdateFrictonScaleFactorInMaterial(const double factor);
 
-        // Imgui stuff
+// Imgui stuff
+#ifdef _USE_IMPLOT
         osg::ref_ptr<ImGuiOverlay> imguiOverlay_;
+#endif  // _USE_IMPLOT
 
         std::string                   exe_path_;
         std::vector<KeyEventCallback> callback_;
