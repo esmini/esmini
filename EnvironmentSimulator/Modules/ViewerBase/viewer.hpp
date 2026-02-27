@@ -73,7 +73,7 @@ namespace viewer
     {
     public:
         OsgImGuiHandler();
-
+        using osgGA::GUIEventHandler::handle;
         bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object* obj, osg::NodeVisitor* nv) override;
 
     protected:
