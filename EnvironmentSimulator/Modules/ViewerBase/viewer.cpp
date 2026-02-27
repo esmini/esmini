@@ -146,8 +146,11 @@ void OsgImGuiHandler::render(osg::RenderInfo& renderInfo)
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-bool OsgImGuiHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa)
+bool OsgImGuiHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object* obj, osg::NodeVisitor* nv)
 {
+    (void)obj;
+    (void)nv;
+
     if (!initialized_)
     {
         auto view = aa.asView();

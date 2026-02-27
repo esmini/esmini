@@ -74,7 +74,7 @@ namespace viewer
     public:
         OsgImGuiHandler();
 
-        bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa) override;
+        bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object* obj, osg::NodeVisitor* nv) override;
 
     protected:
         virtual void drawUi() = 0;
