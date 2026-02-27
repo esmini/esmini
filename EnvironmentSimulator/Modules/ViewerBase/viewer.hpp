@@ -129,7 +129,7 @@ namespace viewer
         {
             return static_cast<double>(time_);
         }
-        bool SliderChanged()
+        bool SliderChanged() const
         {
             return slider_changed_;
         }
