@@ -16,7 +16,10 @@ if(USE_OSG)
 endif()
 
 if(USE_IMPLOT)
-    list(APPEND VIEWER_LIBS_FOR_TEST ${IMPLOT_LIBRARIES})
+    list(
+        APPEND
+        VIEWER_LIBS_FOR_TEST
+        ${IMPLOT_LIBRARIES})
 endif()
 
 set(OperatingSystem_test_sources

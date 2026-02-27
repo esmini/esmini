@@ -80,8 +80,7 @@ if(BUILD_REPLAYER)
                 RoadManager
                 CommonMini
                 Controllers
-                ${TIME_LIB}
-                )
+                ${TIME_LIB})
 
     if(USE_OSG)
         target_link_libraries(

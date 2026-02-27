@@ -88,9 +88,7 @@ set_folder(
 set_folder(
     esmini
     ${ApplicationsFolder})
-# set_folder(
-#     esmini-dyn
-#     ${ApplicationsFolder})
+# set_folder( esmini-dyn ${ApplicationsFolder})
 set_folder(
     dat2csv
     ${ApplicationsFolder})
