@@ -1279,7 +1279,7 @@ void Replay::SetTimeToNearestTimestamp()
         return;
     }
 
-    auto it = std::lower_bound(timestamps_.begin(), timestamps_.end(), time_);
+    auto it = std::lower_bound(timestamps_.begin(), timestamps_.end(), time_ - SMALL_NUMBER);
 
     if (it == timestamps_.begin())
     {

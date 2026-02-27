@@ -83,7 +83,7 @@ using namespace viewer;
 
 struct OsgImGuiHandler::ImGuiNewFrameCallback : public osg::Camera::DrawCallback
 {
-    ImGuiNewFrameCallback(OsgImGuiHandler& handler) : handler_(handler) 
+    ImGuiNewFrameCallback(OsgImGuiHandler& handler) : handler_(handler)
     {
     }
 
@@ -113,7 +113,7 @@ private:
 
 OsgImGuiHandler::OsgImGuiHandler() : initialized_(false)
 {
-    //IMGUI_CHECKVERSION();
+    // IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     init();
 }
@@ -133,11 +133,10 @@ void OsgImGuiHandler::setCameraCallbacks(osg::Camera* camera)
 void OsgImGuiHandler::newFrame(osg::RenderInfo& renderInfo)
 {
     ImGui_ImplOpenGL3_NewFrame();
-    ImGuiIO& io = ImGui::GetIO();
+    ImGuiIO&       io       = ImGui::GetIO();
     osg::Viewport* viewport = renderInfo.getCurrentCamera()->getViewport();
-    io.DisplaySize = ImVec2(viewport->width(), viewport->height());
+    io.DisplaySize          = ImVec2(viewport->width(), viewport->height());
     ImGui::NewFrame();
-
 }
 void OsgImGuiHandler::render(osg::RenderInfo& renderInfo)
 {

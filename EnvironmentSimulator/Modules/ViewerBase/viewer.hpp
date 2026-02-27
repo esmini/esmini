@@ -52,6 +52,20 @@ namespace viewer
 {
     class Viewer;  // forward declaration
 
+    enum PlaybackCmd : uint32_t
+    {
+        CMD_NONE        = 0,
+        CMD_GOTO_START  = 1 << 0,
+        CMD_STEP_BACK_B = 1 << 1,
+        CMD_STEP_BACK_S = 1 << 2,
+        CMD_FRAME_BACK  = 1 << 3,
+        CMD_TOGGLE_PLAY = 1 << 4,
+        CMD_FRAME_FWD   = 1 << 5,
+        CMD_STEP_FWD_S  = 1 << 6,
+        CMD_STEP_FWD_B  = 1 << 7,
+        CMD_GOTO_END    = 1 << 8
+    };
+
     class OsgImGuiHandler : public osgGA::GUIEventHandler
     {
     public:
@@ -96,23 +110,15 @@ namespace viewer
             }
         }
     };
-        
 
     class ImGuiApp : public OsgImGuiHandler
     {
     public:
         ImGuiApp(){};
+
         void SetTime(double time)
         {
             time_ = static_cast<float>(time);
-        }
-        void SetMinTime(double min_time)
-        {
-            min_time_ = static_cast<float>(min_time);
-        }
-        void SetMaxTime(double max_time)
-        {
-            max_time_ = static_cast<float>(max_time);
         }
         double GetTime() const
         {
@@ -122,41 +128,98 @@ namespace viewer
         {
             return slider_changed_;
         }
+        void Init(const double& time, const double& min_time, const double& max_time)
+        {
+            time_     = static_cast<float>(time);
+            min_time_ = static_cast<float>(min_time);
+            max_time_ = static_cast<float>(max_time);
+        }
+        uint32_t ConsumeCmdMask()
+        {
+            uint32_t tmp = cmdMask_;
+            cmdMask_     = CMD_NONE;
+            return tmp;
+        }
 
     protected:
         void drawUi() override
         {
             ImGuiIO& io = ImGui::GetIO();
 
-            // 1. Force the ImGui Window to match the OSG Viewport
-            float height = 50.0f;
+            float height = 80.0f;
             ImGui::SetNextWindowPos(ImVec2(0, io.DisplaySize.y - height));
             ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, height));
 
-            // 2. Use flags to remove the background/title bar if you want a clean overlay
-            // ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar | 
-            //                         ImGuiWindowFlags_NoResize | 
+            // ImGuiWindowFlags flags = ImGuiWindowFlags_NoTitleBar |
+            //                         ImGuiWindowFlags_NoResize |
             //                         ImGuiWindowFlags_NoBackground;
-            // Push an opaque color for the slider track
             ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
 
-            ImGui::Begin("Slider", nullptr, ImGuiWindowFlags_NoDecoration);
+            ImGui::Begin("PlaybackControls", nullptr, ImGuiWindowFlags_NoDecoration);
 
-            // 3. Make the next item (the slider) span the full width of this window
-            // -1.0f means "use all available space"
-            ImGui::PushItemWidth(-1.0f); 
+            ImGui::PushItemWidth(-1.0f);  // -1.0f means "use all avail. space"
             slider_changed_ = ImGui::SliderFloat("##Time", &time_, min_time_, max_time_);
-            
             ImGui::PopItemWidth();
+
+            float styleSpacing    = ImGui::GetStyle().ItemSpacing.x;
+            float totalAvailWidth = ImGui::GetContentRegionAvail().x;
+            float btnWidth        = (totalAvailWidth - (styleSpacing * 8.0f)) / 9.0f;
+
+            if (ImGui::Button("|<", ImVec2(btnWidth, 0)))
+            {
+                cmdMask_ |= CMD_GOTO_START;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("<<<", ImVec2(btnWidth, 0)))
+            {
+                cmdMask_ |= CMD_STEP_BACK_B;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("<<", ImVec2(btnWidth, 0)))
+            {
+                cmdMask_ |= CMD_STEP_BACK_S;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("<", ImVec2(btnWidth, 0)))
+            {
+                cmdMask_ |= CMD_FRAME_BACK;
+            }
+            ImGui::SameLine();
+            const char* playLabel = "Play/Pause";
+            if (ImGui::Button(playLabel, ImVec2(btnWidth, 0)))
+            {
+                cmdMask_ |= CMD_TOGGLE_PLAY;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(">", ImVec2(btnWidth, 0)))
+            {
+                cmdMask_ |= CMD_FRAME_FWD;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(">>", ImVec2(btnWidth, 0)))
+            {
+                cmdMask_ |= CMD_STEP_FWD_S;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(">>>", ImVec2(btnWidth, 0)))
+            {
+                cmdMask_ |= CMD_STEP_FWD_B;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button(">|", ImVec2(btnWidth, 0)))
+            {
+                cmdMask_ |= CMD_GOTO_END;
+            }
             ImGui::End();
             ImGui::PopStyleColor();
         }
-    
+
     private:
-        bool slider_changed_ = false;
-        float time_ = 0.0f;
-        float min_time_ = 0.0f;
-        float max_time_ = 0.0f;
+        bool     slider_changed_ = false;
+        float    time_           = 0.0f;
+        float    min_time_       = 0.0f;
+        float    max_time_       = 0.0f;
+        uint32_t cmdMask_        = PlaybackCmd::CMD_NONE;
     };
 
     class PolyLine

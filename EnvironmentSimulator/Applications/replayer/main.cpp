@@ -184,6 +184,60 @@ void ReportKeyEvent(viewer::KeyEvent* keyEvent, void* data)
         }
     }
 }
+
+void ProcessGUI()
+{
+    // GUI checks
+    uint32_t cmd            = viewer_->imguiHandler_->ConsumeCmdMask();
+    bool     slider_changed = viewer_->imguiHandler_->SliderChanged();
+
+    // Manual interaction always pauses simulation, except potential toggle play/pause
+    if (slider_changed || (cmd != viewer::PlaybackCmd::CMD_NONE && !(cmd & viewer::PlaybackCmd::CMD_TOGGLE_PLAY)))
+    {
+        pause_player = true;
+    }
+
+    if (slider_changed)
+    {
+        player_->GoToTime(viewer_->imguiHandler_->GetTime());
+    }
+
+    if (cmd != viewer::PlaybackCmd::CMD_NONE)
+    {
+        if (cmd & viewer::PlaybackCmd::CMD_TOGGLE_PLAY)
+        {
+            pause_player = !pause_player;
+        }
+
+        if (cmd & viewer::PlaybackCmd::CMD_GOTO_START)
+            player_->GoToStart(true);
+        if (cmd & viewer::PlaybackCmd::CMD_GOTO_END)
+            player_->GoToEnd(true);
+
+        if (cmd & viewer::PlaybackCmd::CMD_STEP_BACK_B)
+            player_->GoToDeltaTime(-JUMP_DELTA_TIME_LARGE);
+        if (cmd & viewer::PlaybackCmd::CMD_STEP_BACK_S)
+            player_->GoToDeltaTime(-JUMP_DELTA_TIME_SMALL);
+        if (cmd & viewer::PlaybackCmd::CMD_FRAME_BACK)
+            player_->GoToPreviousFrame();
+
+        if (cmd & viewer::PlaybackCmd::CMD_FRAME_FWD)
+            player_->GoToNextFrame();
+        if (cmd & viewer::PlaybackCmd::CMD_STEP_FWD_S)
+            player_->GoToDeltaTime(JUMP_DELTA_TIME_SMALL);
+        if (cmd & viewer::PlaybackCmd::CMD_STEP_FWD_B)
+            player_->GoToDeltaTime(JUMP_DELTA_TIME_LARGE);
+    }
+
+    if (pause_player)
+    {
+        // Snap to nearest valid timestamp
+        player_->SetTimeToNearestTimestamp();
+    }
+
+    // Keep GUI in sync with replayer
+    viewer_->imguiHandler_->SetTime(player_->GetTime());
+}
 #endif  // _USE_OSG
 
 void CleanUp()
@@ -666,7 +720,6 @@ int main(int argc, char** argv)
             return -1;
         }
 
-
         if ((arg_str = opt.GetOptionValue("camera_mode")) != "")
         {
             if (arg_str == "orbit")
@@ -1010,10 +1063,8 @@ int main(int argc, char** argv)
                 col_pause = false;
             }
         }
-    
-        viewer_->imguiHandler_->SetTime(simTime);
-        viewer_->imguiHandler_->SetMinTime(player_->GetStartTime());
-        viewer_->imguiHandler_->SetMaxTime(player_->GetStopTime());
+
+        viewer_->imguiHandler_->Init(simTime, player_->GetStartTime(), player_->GetStopTime());
 
         while (!(
 #ifdef _USE_OSG
@@ -1313,17 +1364,10 @@ int main(int argc, char** argv)
                 }
             }
 
-            // Update graphics
-            if (viewer_->imguiHandler_->SliderChanged())
-            {
-                player_->GoToTime(viewer_->imguiHandler_->GetTime());
-                pause_player = true;
-            }
-            else
-            {
-                viewer_->imguiHandler_->SetTime(simTime);
-            }
+            // Check GUI
+            ProcessGUI();
 
+            // Update graphics
             viewer_->Frame(0.0);
 
 #endif  // _USE_OSG
