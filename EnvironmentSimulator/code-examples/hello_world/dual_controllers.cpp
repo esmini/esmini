@@ -61,7 +61,7 @@ int main(int argc, char** argv)
         // wheel status (revolution and steering angles)
         SE_ReportObjectWheelStatus(0, vehicleState.wheel_rotation, vehicleState.wheel_angle);
 
-        SE_StepDT(static_cast<float>(dt));
+        SE_StepDT(dt);
     }
 
     SE_SimpleVehicleDelete(vehicleHandle);

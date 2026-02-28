@@ -671,7 +671,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                      -vehicle->rear_axle_.positionX,
                      vehicle->GetTypeName());
             vehicle->model3d_x_offset_ = -vehicle->rear_axle_.positionX;
-            vehicle->boundingbox_.center_.x_ -= static_cast<float>(vehicle->rear_axle_.positionX);
+            vehicle->boundingbox_.center_.x_ -= vehicle->rear_axle_.positionX;
             vehicle->front_axle_.positionX -= vehicle->rear_axle_.positionX;
             vehicle->rear_axle_.positionX = 0.0;
         }
@@ -747,7 +747,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     if (!refpoint_x_offset.empty())
     {
         vehicle->SetRefpointXOffset(strtod(refpoint_x_offset));
-        vehicle->boundingbox_.center_.x_ -= static_cast<float>(vehicle->GetRefpointXOffset());
+        vehicle->boundingbox_.center_.x_ -= vehicle->GetRefpointXOffset();
     }
 
     // Trailer related elements

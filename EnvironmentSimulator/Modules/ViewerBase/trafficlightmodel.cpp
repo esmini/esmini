@@ -46,8 +46,8 @@ osg::ref_ptr<osg::Geode> TrafficLightModel::CreateOpenBox()
     osg::ref_ptr<osg::Vec3Array> vertices_top   = new osg::Vec3Array(4);   // one set for roof
 
     // Set vertices
-    float y       = box_width_ / 2.0f;
-    float v[4][2] = {{-y, 0}, {-y, box_height_ * n_lights_}, {y, box_height_ * n_lights_}, {y, 0}};
+    double y       = box_width_ / 2.0;
+    double v[4][2] = {{-y, 0}, {-y, box_height_ * n_lights_}, {y, box_height_ * n_lights_}, {y, 0}};
     for (size_t i = 0; i < 5; i++)
     {
         (*vertices_sides)[i * 2].set(-box_depth_, v[i % 4][0], v[i % 4][1]);  // closed quad strip bottom vertices
@@ -92,9 +92,9 @@ osg::ref_ptr<osg::Switch> TrafficLightModel::CreateFrontSwitchNode(int index, os
     osg::ref_ptr<osg::Vec3Array> vertices_top = new osg::Vec3Array(4);  // one set for the face
 
     // Set vertices
-    float l       = box_width_ / 2.0f;
-    float z0      = index * box_height_;
-    float v[4][2] = {{-l, z0}, {l, z0}, {l, z0 + box_height_}, {-l, z0 + box_height_}};
+    double l       = box_width_ / 2.0;
+    double z0      = index * box_height_;
+    double v[4][2] = {{-l, z0}, {l, z0}, {l, z0 + box_height_}, {-l, z0 + box_height_}};
     for (size_t i = 0; i < 4; i++)
     {
         (*vertices_top)[i].set(-box_depth_, v[i][0], v[i][1]);
@@ -123,10 +123,10 @@ osg::ref_ptr<osg::Switch> TrafficLightModel::CreateFrontSwitchNode(int index, os
 
     // Texture Coordinates (passed as arguments)
     osg::ref_ptr<osg::Vec2Array> texcoords = new osg::Vec2Array;
-    texcoords->push_back(osg::Vec2(1, static_cast<float>(index) / n_lights_));
-    texcoords->push_back(osg::Vec2(0, static_cast<float>(index) / n_lights_));
-    texcoords->push_back(osg::Vec2(0, static_cast<float>(index + 1) / n_lights_));
-    texcoords->push_back(osg::Vec2(1, static_cast<float>(index + 1) / n_lights_));
+    texcoords->push_back(osg::Vec2(1, index / n_lights_));
+    texcoords->push_back(osg::Vec2(0, index / n_lights_));
+    texcoords->push_back(osg::Vec2(0, index + 1 / n_lights_));
+    texcoords->push_back(osg::Vec2(1, index + 1 / n_lights_));
     geom->setTexCoordArray(0, texcoords);  // Channel 0
 
     // Create a StateSet for the textured face and make if unaffected by lighting

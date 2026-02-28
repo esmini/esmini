@@ -29,49 +29,49 @@ typedef uint32_t id_t;
 
 typedef struct
 {
-    int   id;              // Automatically generated unique object id
-    int   model_id;        // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
-    int   ctrl_type;       // 0: DefaultController 1: External. Further values see Controller::Type enum
-    float timestamp;       // Not used yet (idea is to use it to interpolate position for increased sync bewtween simulators)
-    float x;               // global x coordinate of position
-    float y;               // global y coordinate of position
-    float z;               // global z coordinate of position
-    float h;               // heading/yaw in global coordinate system
-    float p;               // pitch in global coordinate system
-    float r;               // roll in global coordinate system
-    id_t  roadId;          // road ID
-    id_t  junctionId;      // Junction ID (-1 if not in a junction)
-    float t;               // lateral position in road coordinate system
-    int   laneId;          // lane ID
-    float laneOffset;      // lateral offset from lane center
-    float s;               // longitudinal position in road coordinate system
-    float speed;           // speed
-    float centerOffsetX;   // x coordinate of bounding box center relative object reference point (local coordinate system)
-    float centerOffsetY;   // y coordinate of bounding box center relative object reference point (local coordinate system)
-    float centerOffsetZ;   // z coordinate of bounding box center relative object reference point (local coordinate system)
-    float width;           // width
-    float length;          // length
-    float height;          // height
-    int   objectType;      // Main type according to entities.hpp / Object / Type
-    int   objectCategory;  // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
-    float wheel_angle;     // Steering angle of the wheel
-    float wheel_rot;       // Rotation angle of the wheel
-    int   visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+    int    id;              // Automatically generated unique object id
+    int    model_id;        // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
+    int    ctrl_type;       // 0: DefaultController 1: External. Further values see Controller::Type enum
+    double timestamp;       // Not used yet (idea is to use it to interpolate position for increased sync bewtween simulators)
+    double x;               // global x coordinate of position
+    double y;               // global y coordinate of position
+    double z;               // global z coordinate of position
+    double h;               // heading/yaw in global coordinate system
+    double p;               // pitch in global coordinate system
+    double r;               // roll in global coordinate system
+    id_t   roadId;          // road ID
+    id_t   junctionId;      // Junction ID (-1 if not in a junction)
+    double t;               // lateral position in road coordinate system
+    int    laneId;          // lane ID
+    double laneOffset;      // lateral offset from lane center
+    double s;               // longitudinal position in road coordinate system
+    double speed;           // speed
+    double centerOffsetX;   // x coordinate of bounding box center relative object reference point (local coordinate system)
+    double centerOffsetY;   // y coordinate of bounding box center relative object reference point (local coordinate system)
+    double centerOffsetZ;   // z coordinate of bounding box center relative object reference point (local coordinate system)
+    double width;           // width
+    double length;          // length
+    double height;          // height
+    int    objectType;      // Main type according to entities.hpp / Object / Type
+    int    objectCategory;  // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
+    double wheel_angle;     // Steering angle of the wheel
+    double wheel_rot;       // Rotation angle of the wheel
+    int    visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
 } SE_ScenarioObjectState;
 
 typedef struct
 {
-    float x;  // global x coordinate of position
-    float y;  // global y coordinate of position
-    float z;  // global z coordinate of position
-    float h;  // heading/yaw in global coordinate system
-    float p;  // pitch in global coordinate system
-    // float r;                     // roll in global coordinate system
-    // float width;                 // median width of the tire
-    float wheel_radius;          // median radius of the wheel measured from the center of the wheel to the outer part of the tire
-    float friction_coefficient;  // the value describes the kinetic friction of the tyre's contact point
-    // float rotation_rate;         // rotation rate of the wheel
-    // float rim_radius;  // 	median radius of the rim measured from the center to the outer, visible part of the rim
+    double x;  // global x coordinate of position
+    double y;  // global y coordinate of position
+    double z;  // global z coordinate of position
+    double h;  // heading/yaw in global coordinate system
+    double p;  // pitch in global coordinate system
+    // double r;                     // roll in global coordinate system
+    // double width;                 // median width of the tire
+    double wheel_radius;          // median radius of the wheel measured from the center of the wheel to the outer part of the tire
+    double friction_coefficient;  // the value describes the kinetic friction of the tyre's contact point
+    // double rotation_rate;         // rotation rate of the wheel
+    // double rim_radius;  // 	median radius of the rim measured from the center to the outer, visible part of the rim
     int axle;   // 0=front, 1=next axle from front and so on. -1 indicates wheel is not existing.
     int index;  // The index of the wheel on the axle, counting in the direction of positive-y, that is, right-to-left. -1 indicates wheel
     // not existing.
@@ -80,45 +80,45 @@ typedef struct
 // asciidoc tag::SE_RoadInfo_struct[]
 typedef struct
 {
-    float global_pos_x;       // target position, in global coordinate system
-    float global_pos_y;       // target position, in global coordinate system
-    float global_pos_z;       // target position, in global coordinate system
-    float local_pos_x;        // target position, relative vehicle (pivot position object) coordinate system
-    float local_pos_y;        // target position, relative vehicle (pivot position object) coordinate system
-    float local_pos_z;        // target position, relative vehicle (pivot position object) coordinate system
-    float angle;              // heading angle to target from and relative vehicle (pivot position object) coordinate system
-    float road_heading;       // road heading at steering target point
-    float road_pitch;         // road pitch (inclination) at steering target point
-    float road_roll;          // road roll (camber) at target point
-    float trail_heading;      // trail heading (only when used for trail lookups, else equals road_heading)
-    float curvature;          // road curvature at steering target point
-    float speed_limit;        // speed limit given by OpenDRIVE speed max entry in m/s
-    id_t  roadId;             // target position, road ID
-    id_t  junctionId;         // target position, junction ID (SE_ID_UNDEFINED if not in a junction)
-    int   laneId;             // target position, lane ID
-    float laneOffset;         // target position, lane offset (lateral distance from lane center)
-    float s;                  // target position, s (longitudinal distance along reference line)
-    float t;                  // target position, t (lateral distance from reference line)
-    int   road_type;          // road type given by OpenDRIVE road type, maps to roadmanager::Road::RoadType
-    int   road_rule;          // road rule given by OpenDRIVE rule entry, maps to roadmanager::Road::RoadRule
-    int   lane_type;          // lane type given by OpenDRIVE lane type, maps to roadmanager::Road::LaneType
-    float trail_wheel_angle;  // trail wheel angle (only when used for trail lookups, e.g. ghost, else 0)
+    double global_pos_x;       // target position, in global coordinate system
+    double global_pos_y;       // target position, in global coordinate system
+    double global_pos_z;       // target position, in global coordinate system
+    double local_pos_x;        // target position, relative vehicle (pivot position object) coordinate system
+    double local_pos_y;        // target position, relative vehicle (pivot position object) coordinate system
+    double local_pos_z;        // target position, relative vehicle (pivot position object) coordinate system
+    double angle;              // heading angle to target from and relative vehicle (pivot position object) coordinate system
+    double road_heading;       // road heading at steering target point
+    double road_pitch;         // road pitch (inclination) at steering target point
+    double road_roll;          // road roll (camber) at target point
+    double trail_heading;      // trail heading (only when used for trail lookups, else equals road_heading)
+    double curvature;          // road curvature at steering target point
+    double speed_limit;        // speed limit given by OpenDRIVE speed max entry in m/s
+    id_t   roadId;             // target position, road ID
+    id_t   junctionId;         // target position, junction ID (SE_ID_UNDEFINED if not in a junction)
+    int    laneId;             // target position, lane ID
+    double laneOffset;         // target position, lane offset (lateral distance from lane center)
+    double s;                  // target position, s (longitudinal distance along reference line)
+    double t;                  // target position, t (lateral distance from reference line)
+    int    road_type;          // road type given by OpenDRIVE road type, maps to roadmanager::Road::RoadType
+    int    road_rule;          // road rule given by OpenDRIVE rule entry, maps to roadmanager::Road::RoadRule
+    int    lane_type;          // lane type given by OpenDRIVE lane type, maps to roadmanager::Road::LaneType
+    double trail_wheel_angle;  // trail wheel angle (only when used for trail lookups, e.g. ghost, else 0)
 } SE_RoadInfo;
 // asciidoc end::SE_RoadInfo_struct[]
 
 typedef struct
 {
-    float x;           // Route point in the global coordinate system
-    float y;           // Route point in the global coordinate system
-    float z;           // Route point in the global coordinate system
-    float h;           // Route point, heading in the global coordinate system
-    id_t  roadId;      // Route point, road ID
-    id_t  junctionId;  // Route point, junction ID (-1 if not in a junction)
-    int   laneId;      // Route point, lane ID
-    int   osiLaneId;   // Route point, osi lane ID
-    float laneOffset;  // Route point, lane offset (lateral distance from lane center)
-    float s;           // Route point, s (longitudinal distance along reference line)
-    float t;           // Route point, t (lateral distance from reference line)
+    double x;           // Route point in the global coordinate system
+    double y;           // Route point in the global coordinate system
+    double z;           // Route point in the global coordinate system
+    double h;           // Route point, heading in the global coordinate system
+    id_t   roadId;      // Route point, road ID
+    id_t   junctionId;  // Route point, junction ID (-1 if not in a junction)
+    int    laneId;      // Route point, lane ID
+    int    osiLaneId;   // Route point, osi lane ID
+    double laneOffset;  // Route point, lane offset (lateral distance from lane center)
+    double s;           // Route point, s (longitudinal distance along reference line)
+    double t;           // Route point, t (lateral distance from reference line)
 } SE_RouteInfo;
 
 typedef struct
@@ -131,24 +131,24 @@ typedef struct
 
 typedef struct
 {
-    float ds;             // delta s (longitudinal distance)
-    float dt;             // delta t (lateral distance)
-    int   dLaneId;        // delta laneId (increasing left and decreasing to the right)
-    float dx;             // delta x (world coordinate system)
-    float dy;             // delta y (world coordinate system)
-    bool  oppositeLanes;  // true if the two position objects are in opposite sides of reference lane
+    double ds;             // delta s (longitudinal distance)
+    double dt;             // delta t (lateral distance)
+    int    dLaneId;        // delta laneId (increasing left and decreasing to the right)
+    double dx;             // delta x (world coordinate system)
+    double dy;             // delta y (world coordinate system)
+    bool   oppositeLanes;  // true if the two position objects are in opposite sides of reference lane
 } SE_PositionDiff;
 
 typedef struct
 {
-    float x;
-    float y;
-    float z;
-    float h;
-    float p;
-    float speed;
-    float wheel_rotation;
-    float wheel_angle;
+    double x;
+    double y;
+    double z;
+    double h;
+    double p;
+    double speed;
+    double wheel_rotation;
+    double wheel_angle;
 } SE_SimpleVehicleState;
 
 typedef struct
@@ -210,19 +210,19 @@ typedef struct
 typedef struct
 {
     int         id;           // just an unique identifier of the sign
-    float       x;            // global x coordinate of sign position
-    float       y;            // global y coordinate of sign position
-    float       z;            // global z coordinate of sign position
-    float       z_offset;     // z offset from road level
-    float       h;            // global heading of sign orientation
+    double      x;            // global x coordinate of sign position
+    double      y;            // global y coordinate of sign position
+    double      z;            // global z coordinate of sign position
+    double      z_offset;     // z offset from road level
+    double      h;            // global heading of sign orientation
     int         roadId;       // road id of sign road position
-    float       s;            // longitudinal position along road
-    float       t;            // lateral position from road reference line
+    double      s;            // longitudinal position along road
+    double      t;            // lateral position from road reference line
     const char *name;         // sign name, typically used for 3D model filename
     int         orientation;  // 1=facing traffic in road direction, -1=facing traffic opposite road direction
-    float       length;       // length as specified in OpenDRIVE
-    float       height;       // height as specified in OpenDRIVE
-    float       width;        // width as specified in OpenDRIVE
+    double      length;       // length as specified in OpenDRIVE
+    double      height;       // height as specified in OpenDRIVE
+    double      width;        // width as specified in OpenDRIVE
 } SE_RoadSign;
 
 typedef struct
@@ -242,16 +242,16 @@ typedef struct
 
 typedef struct
 {
-    float x_;  // Center offset in x direction.
-    float y_;  // Center offset in y direction.
-    float z_;  // Center offset in z direction.
+    double x_;  // Center offset in x direction.
+    double y_;  // Center offset in y direction.
+    double z_;  // Center offset in z direction.
 } SE_Center;
 
 typedef struct
 {
-    float width_;   // Width of the entity's bounding box. Unit: m; Range: [0..inf[.
-    float length_;  // Length of the entity's bounding box. Unit: m; Range: [0..inf[.
-    float height_;  // Height of the entity's bounding box. Unit: m; Range: [0..inf[.
+    double width_;   // Width of the entity's bounding box. Unit: m; Range: [0..inf[.
+    double length_;  // Length of the entity's bounding box. Unit: m; Range: [0..inf[.
+    double height_;  // Height of the entity's bounding box. Unit: m; Range: [0..inf[.
 } SE_Dimensions;
 
 typedef struct
@@ -262,29 +262,29 @@ typedef struct
 
 typedef struct
 {
-    int   id;  // id of object to perform action
-    float speed;
-    int   transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
-    int   transition_dim;    // 0 = distance, 1 = rate, 2 = time
-    float transition_value;
+    int    id;  // id of object to perform action
+    double speed;
+    int    transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
+    int    transition_dim;    // 0 = distance, 1 = rate, 2 = time
+    double transition_value;
 } SE_SpeedActionStruct;
 
 typedef struct
 {
-    int   id;                // id of object to perform action
-    int   mode;              // 0 = absolute, 1 = relative (own vehicle)
-    int   target;            // target lane id (absolute or relative)
-    int   transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
-    int   transition_dim;    // 0 = distance, 1 = rate, 2 = time
-    float transition_value;
+    int    id;                // id of object to perform action
+    int    mode;              // 0 = absolute, 1 = relative (own vehicle)
+    int    target;            // target lane id (absolute or relative)
+    int    transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
+    int    transition_dim;    // 0 = distance, 1 = rate, 2 = time
+    double transition_value;
 } SE_LaneChangeActionStruct;
 
 typedef struct
 {
-    int   id;  // id of object to perform action
-    float offset;
-    float maxLateralAcc;     // 0 = distance, 1 = rate, 2 = time
-    int   transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
+    int    id;  // id of object to perform action
+    double offset;
+    double maxLateralAcc;     // 0 = distance, 1 = rate, 2 = time
+    int    transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
 } SE_LaneOffsetActionStruct;
 
 // Modes for interpret Z, Head, Pitch, Roll coordinate value as absolute or relative
@@ -604,7 +604,7 @@ extern "C"
             @param dt time step in seconds
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_StepDT(float dt);
+    SE_DLL_API int SE_StepDT(double dt);
 
     /**
             Step the simulation forward. Time step will be elapsed system (world) time since last step. Useful for interactive/realtime use cases.
@@ -632,9 +632,9 @@ extern "C"
     SE_DLL_API void SE_CollisionDetection(bool mode);
 
     /**
-            Get simulation time in seconds - float (32 bit) precision
+            Get simulation time in seconds - double (64 bit) precision
     */
-    SE_DLL_API float SE_GetSimulationTime();  // Get simulation time in seconds
+    SE_DLL_API double SE_GetSimulationTime();  // Get simulation time in seconds
 
     /**
             Get simulation time in seconds - double (64 bit) precision
@@ -646,7 +646,7 @@ extern "C"
             The time step is calculated as difference since last call to same funtion.
             Clamped to some reasonable values. First call returns smallest delta (typically 1 ms).
     */
-    SE_DLL_API float SE_GetSimTimeStep();
+    SE_DLL_API double SE_GetSimTimeStep();
 
     /**
             Is esmini about to quit?
@@ -942,7 +942,7 @@ extern "C"
             @param r Roll, set std::nanf("") to ignore, i.e. re-use current value (#include <cmath>)
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_ReportObjectPos(int object_id, float x, float y, float z, float h, float p, float r);
+    SE_DLL_API int SE_ReportObjectPos(int object_id, double x, double y, double z, double h, double p, double r);
 
     /**
             Report object position in cartesian coordinates, with detailed control of absolute or relative coordinates
@@ -956,7 +956,7 @@ extern "C"
             @param mode Explicit mode, override current setting. E.g. POS_REL_Z | POS_ABS_H, see SE_PositionMode enum
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_ReportObjectPosMode(int object_id, float x, float y, float z, float h, float p, float r, int mode);
+    SE_DLL_API int SE_ReportObjectPosMode(int object_id, double x, double y, double z, double h, double p, double r, int mode);
 
     /**
             Report object position in limited set of cartesian coordinates x, y and heading,
@@ -967,7 +967,7 @@ extern "C"
             @param h Heading / yaw
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_ReportObjectPosXYH(int object_id, float x, float y, float h);
+    SE_DLL_API int SE_ReportObjectPosXYH(int object_id, double x, double y, double h);
 
     /**
             Report object position in road coordinates
@@ -978,7 +978,7 @@ extern "C"
             @param s Longitudinal distance of the position along the specified road
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_ReportObjectRoadPos(int object_id, id_t roadId, int laneId, float laneOffset, float s);
+    SE_DLL_API int SE_ReportObjectRoadPos(int object_id, id_t roadId, int laneId, double laneOffset, double s);
 
     /**
             Report object longitudinal speed. Useful for an external longitudinal controller.
@@ -986,7 +986,7 @@ extern "C"
             @param speed Speed in forward direction of the enitity
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_ReportObjectSpeed(int object_id, float speed);
+    SE_DLL_API int SE_ReportObjectSpeed(int object_id, double speed);
 
     /**
             Report object lateral position relative road centerline. Useful for an external lateral controller.
@@ -994,7 +994,7 @@ extern "C"
             @param t Lateral position
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_ReportObjectLateralPosition(int object_id, float t);
+    SE_DLL_API int SE_ReportObjectLateralPosition(int object_id, double t);
 
     /**
             Report object lateral position by lane id and lane offset. Useful for an external lateral controller.
@@ -1003,7 +1003,7 @@ extern "C"
             @param laneOffset Lateral offset from center of specified lane
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_ReportObjectLateralLanePosition(int object_id, int laneId, float laneOffset);
+    SE_DLL_API int SE_ReportObjectLateralLanePosition(int object_id, int laneId, double laneOffset);
 
     /**
             Report object position in cartesian coordinates
@@ -1014,7 +1014,7 @@ extern "C"
             @return 0 if successful, -1 if not
 
     */
-    SE_DLL_API int SE_ReportObjectVel(int object_id, float x_vel, float y_vel, float z_vel);
+    SE_DLL_API int SE_ReportObjectVel(int object_id, double x_vel, double y_vel, double z_vel);
 
     /**
             Report object position in cartesian coordinates
@@ -1024,7 +1024,7 @@ extern "C"
             @param r_vel Roll component of angular velocity
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_ReportObjectAngularVel(int object_id, float h_rate, float p_rate, float r_rate);
+    SE_DLL_API int SE_ReportObjectAngularVel(int object_id, double h_rate, double p_rate, double r_rate);
 
     /**
             Report object position in cartesian coordinates
@@ -1034,7 +1034,7 @@ extern "C"
             @param z_acc Z component of linear acceleration
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_ReportObjectAcc(int object_id, float x_acc, float y_acc, float z_acc);
+    SE_DLL_API int SE_ReportObjectAcc(int object_id, double x_acc, double y_acc, double z_acc);
 
     /**
             Report object position in cartesian coordinates
@@ -1044,7 +1044,7 @@ extern "C"
             @param r_acc Roll component of angular acceleration
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_ReportObjectAngularAcc(int object_id, float h_acc, float p_acc, float r_acc);
+    SE_DLL_API int SE_ReportObjectAngularAcc(int object_id, double h_acc, double p_acc, double r_acc);
 
     /**
             Report object wheel status
@@ -1053,7 +1053,7 @@ extern "C"
             @param angle Wheel steering angle
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_ReportObjectWheelStatus(int object_id, float rotation, float angle);
+    SE_DLL_API int SE_ReportObjectWheelStatus(int object_id, double rotation, double angle);
 
     /**
             Specify which lane types the position object snaps to (is aware of)
@@ -1190,7 +1190,7 @@ extern "C"
             @param object_id Id of the object
             @return traveled distance if successful, std::nanf if not
     */
-    SE_DLL_API float SE_GetObjectOdometer(int object_id);
+    SE_DLL_API double SE_GetObjectOdometer(int object_id);
 
     /**
            Get the angular velocity of the specified object
@@ -1200,7 +1200,7 @@ extern "C"
            @param z reference to a variable returning the velocity along global z-axis
            @return 0 if successful.
     */
-    SE_DLL_API int SE_GetObjectVelocityGlobalXYZ(int object_id, float *vel_x, float *vel_y, float *vel_z);
+    SE_DLL_API int SE_GetObjectVelocityGlobalXYZ(int object_id, double *vel_x, double *vel_y, double *vel_z);
 
     /**
             Get the angular velocity of the specified object
@@ -1210,7 +1210,7 @@ extern "C"
             @param r_rate The rate of the roll.
             @return 0 if successful.
      */
-    SE_DLL_API int SE_GetObjectAngularVelocity(int object_id, float *h_rate, float *p_rate, float *r_rate);
+    SE_DLL_API int SE_GetObjectAngularVelocity(int object_id, double *h_rate, double *p_rate, double *r_rate);
 
     /**
             Get the angular velocity of the specified object
@@ -1220,14 +1220,14 @@ extern "C"
             @param r_acc The rate of the roll.
             @return 0 if successful.
      */
-    SE_DLL_API int SE_GetObjectAngularAcceleration(int object_id, float *h_acc, float *p_acc, float *r_acc);
+    SE_DLL_API int SE_GetObjectAngularAcceleration(int object_id, double *h_acc, double *p_acc, double *r_acc);
 
     /**
             Get the acceleration magnitude of specified object
             @param object_id Id of the object
             @return the acceleration if successful, std::nanf if not
     */
-    SE_DLL_API float SE_GetObjectAcceleration(int object_id);
+    SE_DLL_API double SE_GetObjectAcceleration(int object_id);
 
     /**
             Get the acceleration components of specified object in global x, y, z coordinates
@@ -1237,7 +1237,7 @@ extern "C"
             @param z reference to a variable returning the acceleration along global z-axis
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_GetObjectAccelerationGlobalXYZ(int object_id, float *acc_x, float *acc_y, float *acc_z);
+    SE_DLL_API int SE_GetObjectAccelerationGlobalXYZ(int object_id, double *acc_x, double *acc_y, double *acc_z);
 
     /**
             Get the acceleration components of specified object in local x,y coordinates
@@ -1246,7 +1246,7 @@ extern "C"
             @param long reference to a variable returning the acceleration along local x-axis
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_GetObjectAccelerationLocalLatLong(int object_id, float *acc_lat, float *acc_long);
+    SE_DLL_API int SE_GetObjectAccelerationLocalLatLong(int object_id, double *acc_lat, double *acc_long);
 
     /**
             Get the number of wheels of an object
@@ -1291,7 +1291,7 @@ extern "C"
                     (see roadmanager.hpp -> Position::ReturnCode)
     */
     SE_DLL_API int SE_GetRoadInfoAtDistance(int          object_id,
-                                            float        lookahead_distance,
+                                            double       lookahead_distance,
                                             SE_RoadInfo *data,
                                             int          lookAheadMode,
                                             bool         inRoadDrivingDirection);
@@ -1314,7 +1314,7 @@ extern "C"
                     (see roadmanager.hpp -> Position::ReturnCode)
     */
     SE_DLL_API int SE_GetRoadInfoAlongRoute(int          object_id,
-                                            float        lookahead_distance,
+                                            double       lookahead_distance,
                                             SE_RoadInfo *data,
                                             int          lookAheadMode,
                                             bool         inRoadDrivingDirection);
@@ -1327,7 +1327,7 @@ extern "C"
             @param speed_ghost reference to a variable returning the speed that the ghost had at this point along trail
             @return 0 if successful, < 0 see SE_GhostTrailReturnCode enum for error/information codes
     */
-    SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost, float *timestamp);
+    SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, double lookahead_distance, SE_RoadInfo *data, double *speed_ghost, double *timestamp);
 
     /**
             Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle
@@ -1337,7 +1337,7 @@ extern "C"
             @param speed_ghost reference to a variable returning the speed that the ghost had at this point along trail
             @return 0 if successful, < 0 see SE_GhostTrailReturnCode enum for error/information codes
     */
-    SE_DLL_API int SE_GetRoadInfoGhostTrailTime(int object_id, float time, SE_RoadInfo *data, float *speed_ghost);
+    SE_DLL_API int SE_GetRoadInfoGhostTrailTime(int object_id, double time, SE_RoadInfo *data, double *speed_ghost);
 
     /**
             Find out the delta between two objects, e.g. distance (long and lat) and delta laneId
@@ -1382,7 +1382,8 @@ extern "C"
             @param maxObj Maximum number of objects theat the sensor can track
             @return Sensor ID (Global index of sensor), -1 if unsucessful
     */
-    SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj);
+    SE_DLL_API int
+    SE_AddObjectSensor(int object_id, double x, double y, double z, double h, double rangeNear, double rangeFar, double fovH, int maxObj);
 
     /**
             Retrieve the total number of sensors attached to any objects
@@ -1645,7 +1646,7 @@ extern "C"
             @param speed Initial speed
             @return Handle to the created object
     */
-    SE_DLL_API void *SE_SimpleVehicleCreate(float x, float y, float h, float length, float speed);
+    SE_DLL_API void *SE_SimpleVehicleCreate(double x, double y, double h, double length, double speed);
 
     /**
             Delete an instance of the simplistic vehicle model
@@ -1665,7 +1666,7 @@ extern "C"
                                                   int    steering);  // throttle and steering [-1, 0 or 1]
 
     /**
-            Control the speed and steering with floating values in the range [-1, 1], suitable for driver models.
+            Control the speed and steering with doubleing values in the range [-1, 1], suitable for driver models.
             The function also steps the vehicle model, updating its position according to motion state and timestep.
             @param dt timesStep (s)
             @param throttle Longitudinal control, -1: maximum brake, 0: no acceleration, +1: maximum acceleration
@@ -1688,7 +1689,7 @@ extern "C"
             Set speed, use together with control binary/analog with throttle set to zero
             @param speed Speed (m/s)
     */
-    SE_DLL_API void SE_SimpleVehicleSetSpeed(void *handleSimpleVehicle, float speed);
+    SE_DLL_API void SE_SimpleVehicleSetSpeed(void *handleSimpleVehicle, double speed);
 
     /**
             Deactivate or re-activate throttle/brake
@@ -1706,7 +1707,7 @@ extern "C"
             Set speed, use together with control binary/analog with throttle set to zero
             @param speed Speed (m/s)
     */
-    SE_DLL_API void SE_SimpleVehicleSetSpeed(void *handleSimpleVehicle, float speed);
+    SE_DLL_API void SE_SimpleVehicleSetSpeed(void *handleSimpleVehicle, double speed);
 
     /**
             Control the speed and steering by providing steering and speed targets
@@ -1721,43 +1722,43 @@ extern "C"
             Set maximum vehicle speed.
             @param speed Maximum speed (km/h)
     */
-    SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void *handleSimpleVehicle, float speed);
+    SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void *handleSimpleVehicle, double speed);
 
     /**
             Set maximum vehicle acceleration.
             @param speed Maximum acceleration (m/s^2)
     */
-    SE_DLL_API void SE_SimpleVehicleSetMaxAcceleration(void *handleSimpleVehicle, float maxAcceleration);
+    SE_DLL_API void SE_SimpleVehicleSetMaxAcceleration(void *handleSimpleVehicle, double maxAcceleration);
 
     /**
             Set maximum vehicle deceleration.
             @param speed Maximum deceleration (m/s^2)
     */
-    SE_DLL_API void SE_SimpleVehicleSetMaxDeceleration(void *handleSimpleVehicle, float maxDeceleration);
+    SE_DLL_API void SE_SimpleVehicleSetMaxDeceleration(void *handleSimpleVehicle, double maxDeceleration);
 
     /**
             Set engine brake factor, applied when no throttle is applied
             @param engineBrakeFactor recommended range = [0.0, 0.01], default = 0.001
     */
-    SE_DLL_API void SE_SimpleVehicleSetEngineBrakeFactor(void *handleSimpleVehicle, float engineBrakeFactor);
+    SE_DLL_API void SE_SimpleVehicleSetEngineBrakeFactor(void *handleSimpleVehicle, double engineBrakeFactor);
 
     /**
             Set steering scale factor, which will limit the steering range as speed increases
             @param steeringScale recommended range = [0.0, 0.1], default = 0.018
     */
-    SE_DLL_API void SE_SimpleVehicleSteeringScale(void *handleSimpleVehicle, float steeringScale);
+    SE_DLL_API void SE_SimpleVehicleSteeringScale(void *handleSimpleVehicle, double steeringScale);
 
     /**
             Set steering return factor, which will make the steering wheel strive to neutral position (0 angle)
             @param steeringScale recommended range = [0.0, 10], default = 4.0
     */
-    SE_DLL_API void SE_SimpleVehicleSteeringReturnFactor(void *handleSimpleVehicle, float steeringReturnFactor);
+    SE_DLL_API void SE_SimpleVehicleSteeringReturnFactor(void *handleSimpleVehicle, double steeringReturnFactor);
 
     /**
             Set steering rate, which will affect the angular speed of which the steering wheel will turn
             @param steeringRate recommended range = [0.0, 50.0], default = 8.0
     */
-    SE_DLL_API void SE_SimpleVehicleSteeringRate(void *handleSimpleVehicle, float steeringRate);
+    SE_DLL_API void SE_SimpleVehicleSteeringRate(void *handleSimpleVehicle, double steeringRate);
 
     /**
             Get current state of the vehicle. Typically called after Control has been applied.
@@ -1907,7 +1908,7 @@ extern "C"
     @param r reference to a variable returning the camera roll
     @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_GetCameraPos(float *x, float *y, float *z, float *h, float *p, float *r);
+    SE_DLL_API int SE_GetCameraPos(double *x, double *y, double *z, double *h, double *p, double *r);
 
     /**
             Get the number Route points assigned for a specific vehicle
@@ -1929,7 +1930,7 @@ extern "C"
         @param object_id Id of the object
         @return Length (m) of route, 0.0 if no route is assigned
     */
-    SE_DLL_API float SE_GetRouteTotalLength(int object_id);
+    SE_DLL_API double SE_GetRouteTotalLength(int object_id);
 
     /**
             Inject a speed action

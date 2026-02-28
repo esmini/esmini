@@ -4,8 +4,8 @@
 
 int main(int argc, char **argv)
 {
-    float acc   = 10;    // initial acceleration
-    float speed = 2.0f;  // initial speed
+    double acc   = 10;   // initial acceleration
+    double speed = 2.0;  // initial speed
 
     if (argc > 1)
     {

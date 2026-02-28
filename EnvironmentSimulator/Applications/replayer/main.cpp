@@ -227,7 +227,7 @@ int ParseEntities(Replay* player)
 {
     struct OdoInfo
     {
-        float x, y, odometer;
+        double x, y, odometer;
     };
 
     for (auto& [id, timelines] : player->objects_timeline_)
@@ -363,9 +363,8 @@ int ParseEntities(Replay* player)
 
             if (sc->trajPoints->size() == 0)
             {
-                sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(entry.state.pos.x) - viewer_->origin_[0]),
-                                                     static_cast<float>(static_cast<double>(entry.state.pos.y) - viewer_->origin_[1]),
-                                                     entry.state.pos.z + static_cast<float>(z_offset)));
+                sc->trajPoints->push_back(
+                    osg::Vec3(entry.state.pos.x - viewer_->origin_[0], entry.state.pos.y - viewer_->origin_[1], entry.state.pos.z + z_offset));
             }
             else
             {
@@ -377,22 +376,20 @@ int ParseEntities(Replay* player)
                                                                     (*sc->trajPoints)[sc->trajPoints->size() - 2][1]) < minTrajPointDist)
                 {
                     // Replace last point until distance is above threshold
-                    sc->trajPoints->back() = osg::Vec3f(static_cast<float>(static_cast<double>(entry.state.pos.x) - viewer_->origin_[0]),
-                                                        static_cast<float>(static_cast<double>(entry.state.pos.y) - viewer_->origin_[1]),
-                                                        entry.state.pos.z + static_cast<float>(z_offset));
+                    sc->trajPoints->back() =
+                        osg::Vec3(entry.state.pos.x - viewer_->origin_[0], entry.state.pos.y - viewer_->origin_[1], entry.state.pos.z + z_offset);
                 }
                 else
                 {
-                    sc->trajPoints->push_back(osg::Vec3f(static_cast<float>(static_cast<double>(entry.state.pos.x) - viewer_->origin_[0]),
-                                                         static_cast<float>(static_cast<double>(entry.state.pos.y) - viewer_->origin_[1]),
-                                                         entry.state.pos.z + static_cast<float>(z_offset)));
+                    sc->trajPoints->push_back(
+                        osg::Vec3(entry.state.pos.x - viewer_->origin_[0], entry.state.pos.y - viewer_->origin_[1], entry.state.pos.z + z_offset));
                 }
             }
 #endif  // _USE_OSG
 
             // calculate odometer
             double delta = GetLengthOfLine2D(odo_entry.x, odo_entry.y, entry.state.pos.x, entry.state.pos.y);
-            odo_entry.odometer += static_cast<float>(delta);
+            odo_entry.odometer += delta;
             odo_entry.x = entry.state.pos.x;
             odo_entry.y = entry.state.pos.y;
 

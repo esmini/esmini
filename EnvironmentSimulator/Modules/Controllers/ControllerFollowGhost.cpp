@@ -185,9 +185,9 @@ void ControllerFollowGhost::Step(double timeStep)
     if (ret_val == static_cast<int>(roadmanager::PolyLineBase::GhostTrailReturnCode::GHOST_TRAIL_NO_VERTICES) ||
         ret_val == static_cast<int>(roadmanager::PolyLineBase::GhostTrailReturnCode::GHOST_TRAIL_ERROR))
     {
-        steering_target_point.x = static_cast<float>(object_->pos_.GetX());
-        steering_target_point.y = static_cast<float>(object_->pos_.GetY());
-        steering_target_point.z = static_cast<float>(object_->pos_.GetZ());
+        steering_target_point.x = object_->pos_.GetX();
+        steering_target_point.y = object_->pos_.GetY();
+        steering_target_point.z = object_->pos_.GetZ();
         speed_point.speed       = 0;
     }
 

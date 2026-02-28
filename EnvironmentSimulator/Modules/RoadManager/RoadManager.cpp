@@ -8376,7 +8376,7 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
 
                     for (auto o : rm_obj)
                     {
-                        o->GetColor()[3] = static_cast<float>(1.0 - tunnel->transparency_);  // set semitransparent
+                        o->GetColor()[3] = 1.0 - tunnel->transparency_;  // set semitransparent
                     }
                 }
             }

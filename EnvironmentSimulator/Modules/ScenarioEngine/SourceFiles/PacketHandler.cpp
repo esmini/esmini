@@ -135,20 +135,20 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
         object_state_cache_.timestamp_ = simulation_time_;
 
         // PacketId::SPEED
-        if (!NEAR_NUMBERSF(cache_it->second.speed_, static_cast<float>(obj->GetSpeed())))
+        if (!NEAR_NUMBERSF(cache_it->second.speed_, obj->GetSpeed()))
         {
-            cache_it->second.speed_ = static_cast<float>(obj->GetSpeed());
+            cache_it->second.speed_ = obj->GetSpeed();
             Write(PacketId::SPEED, cache_it->second.speed_);
         }
         // PacketId::POSE
         if (!IsPoseEqual(cache_it->second.pose_, obj->pos_))
         {
-            cache_it->second.pose_.x = static_cast<float>(obj->pos_.GetX());
-            cache_it->second.pose_.y = static_cast<float>(obj->pos_.GetY());
-            cache_it->second.pose_.z = static_cast<float>(obj->pos_.GetZ());
-            cache_it->second.pose_.h = static_cast<float>(obj->pos_.GetH());
-            cache_it->second.pose_.p = static_cast<float>(obj->pos_.GetP());
-            cache_it->second.pose_.r = static_cast<float>(obj->pos_.GetR());
+            cache_it->second.pose_.x = obj->pos_.GetX();
+            cache_it->second.pose_.y = obj->pos_.GetY();
+            cache_it->second.pose_.z = obj->pos_.GetZ();
+            cache_it->second.pose_.h = obj->pos_.GetH();
+            cache_it->second.pose_.p = obj->pos_.GetP();
+            cache_it->second.pose_.r = obj->pos_.GetR();
 
             Write(PacketId::POSE,
                   cache_it->second.pose_.x,
@@ -189,7 +189,7 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
         }
 
         // PacketId::WHEEL_ANGLE
-        float wheel_angle = static_cast<float>(obj->GetWheelAngle());
+        double wheel_angle = obj->GetWheelAngle();
         if (!NEAR_NUMBERSF(cache_it->second.wheel_angle_, wheel_angle))
         {
             cache_it->second.wheel_angle_ = wheel_angle;
@@ -197,7 +197,7 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
         }
 
         // PacketId::WHEEL_ROT
-        float wheel_rot = static_cast<float>(obj->GetWheelRotation());
+        double wheel_rot = obj->GetWheelRotation();
         if (!NEAR_NUMBERSF(cache_it->second.wheel_rot_, wheel_rot))
         {
             cache_it->second.wheel_rot_ = wheel_rot;
@@ -260,37 +260,37 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
         }
 
         // PacketId::POS_OFFSET
-        if (!NEAR_NUMBERSF(cache_it->second.pos_offset_, static_cast<float>(obj->pos_.GetOffset())))
+        if (!NEAR_NUMBERSF(cache_it->second.pos_offset_, obj->pos_.GetOffset()))
         {
-            cache_it->second.pos_offset_ = static_cast<float>(obj->pos_.GetOffset());
+            cache_it->second.pos_offset_ = obj->pos_.GetOffset();
             Write(PacketId::POS_OFFSET, cache_it->second.pos_offset_);
         }
 
         // PacketId::POS_T
-        if (!NEAR_NUMBERSF(cache_it->second.pos_t_, static_cast<float>(obj->pos_.GetT())))
+        if (!NEAR_NUMBERSF(cache_it->second.pos_t_, obj->pos_.GetT()))
         {
-            cache_it->second.pos_t_ = static_cast<float>(obj->pos_.GetT());
+            cache_it->second.pos_t_ = obj->pos_.GetT();
             Write(PacketId::POS_T, cache_it->second.pos_t_);
         }
 
         // PacketId::POS_S
-        if (!NEAR_NUMBERSF(cache_it->second.pos_s_, static_cast<float>(obj->pos_.GetS())))
+        if (!NEAR_NUMBERSF(cache_it->second.pos_s_, obj->pos_.GetS()))
         {
-            cache_it->second.pos_s_ = static_cast<float>(obj->pos_.GetS());
+            cache_it->second.pos_s_ = obj->pos_.GetS();
             Write(PacketId::POS_S, cache_it->second.pos_s_);
         }
 
         // PacketId::REFPOINT_X_OFFSET
-        if (!NEAR_NUMBERSF(cache_it->second.refpoint_x_offset_, static_cast<float>(obj->refpoint_x_offset_)))
+        if (!NEAR_NUMBERSF(cache_it->second.refpoint_x_offset_, obj->refpoint_x_offset_))
         {
-            cache_it->second.refpoint_x_offset_ = static_cast<float>(obj->refpoint_x_offset_);
+            cache_it->second.refpoint_x_offset_ = obj->refpoint_x_offset_;
             Write(PacketId::REFPOINT_X_OFFSET, cache_it->second.refpoint_x_offset_);
         }
 
         // PacketId::MODEL_X_OFFSET
-        if (!NEAR_NUMBERSF(cache_it->second.model_x_offset_, static_cast<float>(obj->model3d_x_offset_)))
+        if (!NEAR_NUMBERSF(cache_it->second.model_x_offset_, obj->model3d_x_offset_))
         {
-            cache_it->second.model_x_offset_ = static_cast<float>(obj->model3d_x_offset_);
+            cache_it->second.model_x_offset_ = obj->model3d_x_offset_;
             Write(PacketId::MODEL_X_OFFSET, cache_it->second.model_x_offset_);
         }
 
@@ -380,8 +380,8 @@ void Dat::DatWriter::ResetCurrentIds()
 
 bool Dat::DatWriter::IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const
 {
-    return (pose.x == static_cast<float>(pos.GetX()) && pose.y == static_cast<float>(pos.GetY()) && pose.z == static_cast<float>(pos.GetZ()) &&
-            pose.h == static_cast<float>(pos.GetH()) && pose.p == static_cast<float>(pos.GetP()) && pose.r == static_cast<float>(pos.GetR()));
+    return (pose.x == pos.GetX() && pose.y == pos.GetY() && pose.z == pos.GetZ() && pose.h == pos.GetH() && pose.p == pos.GetP() &&
+            pose.r == pos.GetR());
 }
 
 bool Dat::DatWriter::IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const

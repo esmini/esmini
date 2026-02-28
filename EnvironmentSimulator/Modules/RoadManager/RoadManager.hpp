@@ -2641,7 +2641,7 @@ namespace roadmanager
         {
             return parking_space_;
         }
-        float *GetColor()
+        double *GetColor()
         {
             return color_;
         }
@@ -2681,7 +2681,7 @@ namespace roadmanager
         Repeat                *repeat_ = nullptr;
         std::vector<Repeat *>  repeats_;
         ParkingSpace           parking_space_;
-        float                  color_[4]              = {0.0, 0.0, 0.0, 0.0};
+        double                 color_[4]              = {0.0, 0.0, 0.0, 0.0};
         TunnelComponentType    tunnel_component_type_ = TunnelComponentType::NO_TUNNEL;
         std::string            model3d_full_path_;
     };

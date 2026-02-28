@@ -224,17 +224,17 @@ public:
 
 struct ObjectPositionStructDat
 {
-    float x;
-    float y;
-    float z;
-    float h;
-    float p;
-    float r;
-    id_t  roadId;
-    int   laneId;
-    float offset;
-    float t;
-    float s;
+    double x;
+    double y;
+    double z;
+    double h;
+    double p;
+    double r;
+    id_t   roadId;
+    int    laneId;
+    double offset;
+    double t;
+    double s;
 };
 
 struct SE_Point2D
@@ -1154,7 +1154,7 @@ public:
     }
     double GetS() const
     {
-        return 1E-3 * static_cast<double>((SE_getSystemTimeMilliseconds() - start_time_));
+        return 1E-3 * (SE_getSystemTimeMilliseconds() - start_time_);
     }
 };
 
@@ -1191,7 +1191,7 @@ public:
     }
     double Elapsed() const
     {
-        return 1E-3 * static_cast<double>((SE_getSystemTimeMilliseconds() - start_time_));
+        return 1E-3 * (SE_getSystemTimeMilliseconds() - start_time_);
     }
     double Remaining() const
     {

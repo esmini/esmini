@@ -21,14 +21,14 @@
 
 typedef struct
 {
-    float x;            // m
-    float y;            // m
-    float z;            // m
-    float h;            // rad
-    float p;            // rad
-    float r;            // rad
-    float speed;        // m/s
-    float wheel_angle;  // rad
+    double x;            // m
+    double y;            // m
+    double z;            // m
+    double h;            // rad
+    double p;            // rad
+    double r;            // rad
+    double speed;        // m/s
+    double wheel_angle;  // rad
 } EgoStateBuffer_t;
 
 namespace scenarioengine

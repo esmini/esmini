@@ -51,7 +51,7 @@ namespace osgGA
             }
             CustomCamera(osg::Vec3 pos, double rot)
                 : pos_(pos),
-                  rot_(osg::Vec3(static_cast<float>(rot), static_cast<float>(M_PI_2) - 1e-5f, 0.0f)),
+                  rot_(osg::Vec3(rot, M_PI_2 - 1e-5f, 0.0f)),
                   fixed_pos_(true),
                   fixed_rot_(true),
                   ortho_(true)

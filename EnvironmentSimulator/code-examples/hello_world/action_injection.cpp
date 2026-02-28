@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv)
 {
-    float dt = -1.0f;  // default to variable timestep
+    double dt = -1.0;  // default to variable timestep
 
     if (argc > 2)
     {
@@ -18,7 +18,7 @@ int main(int argc, char **argv)
         {
             if (i < argc - 1 && strcmp(argv[i], "--fixed_timestep") == 0)
             {
-                dt = static_cast<float>(atof(argv[i + 1]));  // use any provided fixed timestep
+                dt = atof(argv[i + 1]);  // use any provided fixed timestep
             }
         }
     }

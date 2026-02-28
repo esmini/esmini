@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
     SE_ScenarioObjectState objectState;
     SE_RoadInfo            roadInfo;
 
-    float dt = 0.0f;
+    double dt = 0.0;
 
     // look for specified timestep, else run in realtime mode
     bool fixed_timestep = false;
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
         if (i < argc - 1 && strcmp(argv[i], "--fixed_timestep") == 0)
         {
             fixed_timestep = true;
-            dt             = static_cast<float>(atof(argv[i + 1]));  // use any provided fixed timestep
+            dt             = atof(argv[i + 1]);  // use any provided fixed timestep
         }
         else if (strcmp(argv[i], "--headless") == 0)
         {

@@ -19,7 +19,7 @@ int main(int argc, char* argv[])
     const double defaultTargetSpeed = 50.0;
     const double curveWeight        = 30.0;
     const double throttleWeight     = 0.1;
-    const float  duration           = 35.0f;
+    const double duration           = 35.0;
     bool         ghostMode[3]       = {false, true, true};
 
     SE_SimpleVehicleState  vehicleState = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -52,15 +52,15 @@ int main(int argc, char* argv[])
         while (SE_GetSimulationTime() < duration && SE_GetQuitFlag() != 1)
         {
             // Get simulation delta time since last call (first will be minimum timestep)
-            float dt = SE_GetSimTimeStep();
+            double dt = SE_GetSimTimeStep();
 
             // Get road information at a point some speed dependent distance ahead
             double targetSpeed;
             if (ghostMode[i] == true)
             {
                 // ghost version
-                float ghost_speed = 0.0f;
-                float timestamp   = 0.0f;
+                double ghost_speed = 0.0;
+                double timestamp   = 0.0;
 
                 if (i % 2 == 0)  // alternate between time based and position based look ahead modes
                 {

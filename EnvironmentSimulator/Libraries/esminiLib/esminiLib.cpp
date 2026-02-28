@@ -122,20 +122,20 @@ static void copyStateFromScenarioObject(SE_ScenarioObjectState *state, const sce
     state->id             = obj.id_;
     state->model_id       = obj.model_id_;
     state->ctrl_type      = static_cast<int>(obj.GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG));
-    state->timestamp      = static_cast<float>(player->scenarioEngine->getSimulationTime());
-    state->x              = static_cast<float>(obj.pos_.GetX());
-    state->y              = static_cast<float>(obj.pos_.GetY());
-    state->z              = static_cast<float>(obj.pos_.GetZ());
-    state->h              = static_cast<float>(obj.pos_.GetH());
-    state->p              = static_cast<float>(obj.pos_.GetP());
-    state->r              = static_cast<float>(obj.pos_.GetR());
-    state->speed          = static_cast<float>(obj.GetSpeed());
+    state->timestamp      = player->scenarioEngine->getSimulationTime();
+    state->x              = obj.pos_.GetX();
+    state->y              = obj.pos_.GetY();
+    state->z              = obj.pos_.GetZ();
+    state->h              = obj.pos_.GetH();
+    state->p              = obj.pos_.GetP();
+    state->r              = obj.pos_.GetR();
+    state->speed          = obj.GetSpeed();
     state->roadId         = obj.pos_.GetTrackId();
     state->junctionId     = obj.pos_.GetJunctionId();
-    state->t              = static_cast<float>(obj.pos_.GetT());
+    state->t              = obj.pos_.GetT();
     state->laneId         = obj.pos_.GetLaneId();
-    state->s              = static_cast<float>(obj.pos_.GetS());
-    state->laneOffset     = static_cast<float>(obj.pos_.GetOffset());
+    state->s              = obj.pos_.GetS();
+    state->laneOffset     = obj.pos_.GetOffset();
     state->centerOffsetX  = obj.boundingbox_.center_.x_;
     state->centerOffsetY  = obj.boundingbox_.center_.y_;
     state->centerOffsetZ  = obj.boundingbox_.center_.z_;
@@ -145,8 +145,8 @@ static void copyStateFromScenarioObject(SE_ScenarioObjectState *state, const sce
     state->objectType     = static_cast<int>(obj.GetType());
     state->objectCategory = static_cast<int>(obj.category_);
     // assume first wheel is on front axle and steering
-    state->wheel_angle    = static_cast<float>(obj.GetWheelAngle());
-    state->wheel_rot      = static_cast<float>(obj.GetWheelRotation());
+    state->wheel_angle    = obj.GetWheelAngle();
+    state->wheel_rot      = obj.GetWheelRotation();
     state->visibilityMask = obj.visibilityMask_;
 }
 
@@ -156,12 +156,12 @@ static void copyWheelDataFromScenarioObject(SE_WheelData *wheeldata, const scena
     {
         const WheelData &wd = veh.GetWheelData()[wheel_index];
 
-        wheeldata->x                    = static_cast<float>(wd.x);
-        wheeldata->y                    = static_cast<float>(wd.y);
-        wheeldata->z                    = static_cast<float>(wd.z);
-        wheeldata->h                    = static_cast<float>(wd.h);
-        wheeldata->p                    = static_cast<float>(wd.p);
-        wheeldata->friction_coefficient = static_cast<float>(wd.friction_coefficient);
+        wheeldata->x                    = wd.x;
+        wheeldata->y                    = wd.y;
+        wheeldata->z                    = wd.z;
+        wheeldata->h                    = wd.h;
+        wheeldata->p                    = wd.p;
+        wheeldata->friction_coefficient = wd.friction_coefficient;
         wheeldata->axle                 = wd.axle;
         wheeldata->index                = wd.index;
     }
@@ -229,24 +229,24 @@ static void CopyRoadInfo(SE_RoadInfo *r_data, roadmanager::RoadProbeInfo *s_data
 {
     if (r_data && s_data)
     {
-        r_data->local_pos_x  = static_cast<float>(s_data->relative_pos[0]);
-        r_data->local_pos_y  = static_cast<float>(s_data->relative_pos[1]);
-        r_data->local_pos_z  = static_cast<float>(s_data->relative_pos[2]);
-        r_data->global_pos_x = static_cast<float>(s_data->road_lane_info.pos[0]);
-        r_data->global_pos_y = static_cast<float>(s_data->road_lane_info.pos[1]);
-        r_data->global_pos_z = static_cast<float>(s_data->road_lane_info.pos[2]);
-        r_data->angle        = static_cast<float>(s_data->relative_h);
-        r_data->curvature    = static_cast<float>(s_data->road_lane_info.curvature);
-        r_data->road_heading = static_cast<float>(s_data->road_lane_info.heading);
-        r_data->road_pitch   = static_cast<float>(s_data->road_lane_info.pitch);
-        r_data->road_roll    = static_cast<float>(s_data->road_lane_info.roll);
-        r_data->speed_limit  = static_cast<float>(s_data->road_lane_info.speed_limit);
+        r_data->local_pos_x  = s_data->relative_pos[0];
+        r_data->local_pos_y  = s_data->relative_pos[1];
+        r_data->local_pos_z  = s_data->relative_pos[2];
+        r_data->global_pos_x = s_data->road_lane_info.pos[0];
+        r_data->global_pos_y = s_data->road_lane_info.pos[1];
+        r_data->global_pos_z = s_data->road_lane_info.pos[2];
+        r_data->angle        = s_data->relative_h;
+        r_data->curvature    = s_data->road_lane_info.curvature;
+        r_data->road_heading = s_data->road_lane_info.heading;
+        r_data->road_pitch   = s_data->road_lane_info.pitch;
+        r_data->road_roll    = s_data->road_lane_info.roll;
+        r_data->speed_limit  = s_data->road_lane_info.speed_limit;
         r_data->junctionId   = s_data->road_lane_info.junctionId;
         r_data->roadId       = s_data->road_lane_info.roadId;
         r_data->laneId       = s_data->road_lane_info.laneId;
-        r_data->laneOffset   = static_cast<float>(s_data->road_lane_info.laneOffset);
-        r_data->s            = static_cast<float>(s_data->road_lane_info.s);
-        r_data->t            = static_cast<float>(s_data->road_lane_info.t);
+        r_data->laneOffset   = s_data->road_lane_info.laneOffset;
+        r_data->s            = s_data->road_lane_info.s;
+        r_data->t            = s_data->road_lane_info.t;
         r_data->road_type    = static_cast<int>(s_data->road_lane_info.road_type);
         r_data->road_rule    = static_cast<int>(s_data->road_lane_info.road_rule);
         r_data->lane_type    = static_cast<int>(s_data->road_lane_info.lane_type);
@@ -254,7 +254,7 @@ static void CopyRoadInfo(SE_RoadInfo *r_data, roadmanager::RoadProbeInfo *s_data
 }
 
 static int GetRoadInfoAtDistance(int          object_id,
-                                 float        lookahead_distance,
+                                 double       lookahead_distance,
                                  bool         inRoadDrivingDirection,
                                  SE_RoadInfo *r_data,
                                  int          lookAheadMode,
@@ -267,7 +267,7 @@ static int GetRoadInfoAtDistance(int          object_id,
         return -1;
     }
 
-    float signedLookaheadDistance = lookahead_distance;
+    double signedLookaheadDistance = lookahead_distance;
 
     if (inRoadDrivingDirection)
     {
@@ -296,7 +296,7 @@ static int GetRoadInfoAtDistance(int          object_id,
     return static_cast<int>(retval);
 }
 
-static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *r_data, float *speed_ghost, float *timestamp)
+static int GetRoadInfoAlongGhostTrail(int object_id, double lookahead_distance, SE_RoadInfo *r_data, double *speed_ghost, double *timestamp)
 {
     roadmanager::RoadProbeInfo s_data;
 
@@ -337,11 +337,11 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     obj->pos_.CalcProbeInfo(&pos, &s_data);
 
     CopyRoadInfo(r_data, &s_data);
-    r_data->trail_heading     = static_cast<float>(trailPos.h);
-    r_data->trail_wheel_angle = static_cast<float>(trailPos.wheel_angle);
+    r_data->trail_heading     = trailPos.h;
+    r_data->trail_wheel_angle = trailPos.wheel_angle;
 
-    *speed_ghost = static_cast<float>(trailPos.speed);
-    *timestamp   = static_cast<float>(trailPos.time);
+    *speed_ghost = trailPos.speed;
+    *timestamp   = trailPos.time;
 
     // Update object sensor position for visualization
     obj->sensor_pos_[0] = trailPos.x;
@@ -351,7 +351,7 @@ static int GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, S
     return returncode;
 }
 
-static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r_data, float *speed_ghost)
+static int GetRoadInfoAtGhostTrailTime(int object_id, double time, SE_RoadInfo *r_data, double *speed_ghost)
 {
     roadmanager::RoadProbeInfo s_data;
 
@@ -370,8 +370,7 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     }
 
     roadmanager::TrajVertex trailPos;
-    trailPos.h =
-        static_cast<float>(obj->pos_.GetH());  // Set default trail heading aligned with road - in case trail is less than two points (no heading)
+    trailPos.h = obj->pos_.GetH();  // Set default trail heading aligned with road - in case trail is less than two points (no heading)
 
     int returncode = ghost->trail_.FindPointAtTime(static_cast<double>(time) - ghost->GetHeadstartTime(), trailPos, obj->trail_follow_index_);
 
@@ -397,10 +396,10 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, float time, SE_RoadInfo *r
     obj->pos_.CalcProbeInfo(&pos, &s_data);
 
     CopyRoadInfo(r_data, &s_data);
-    r_data->trail_heading     = static_cast<float>(trailPos.h);
-    r_data->trail_wheel_angle = static_cast<float>(trailPos.wheel_angle);
+    r_data->trail_heading     = trailPos.h;
+    r_data->trail_wheel_angle = trailPos.wheel_angle;
 
-    *speed_ghost = static_cast<float>(trailPos.speed);
+    *speed_ghost = trailPos.speed;
 
     // Update object sensor position for visualization
     obj->sensor_pos_[0] = trailPos.x;
@@ -1012,7 +1011,7 @@ extern "C"
         }
     }
 
-    SE_DLL_API int SE_StepDT(float dt)
+    SE_DLL_API int SE_StepDT(double dt)
     {
         if (player != nullptr)
         {
@@ -1026,34 +1025,24 @@ extern "C"
         }
     }
 
-    SE_DLL_API float SE_GetSimulationTime()
+    SE_DLL_API double SE_GetSimulationTime()
     {
         if (player == nullptr)
         {
             return 0.0f;
-        }
-
-        return static_cast<float>(player->scenarioEngine->getSimulationTime());
-    }
-
-    SE_DLL_API double SE_GetSimulationTimeDouble()
-    {
-        if (player == nullptr)
-        {
-            return 0.0;
         }
 
         return player->scenarioEngine->getSimulationTime();
     }
 
-    SE_DLL_API float SE_GetSimTimeStep()
+    SE_DLL_API double SE_GetSimTimeStep()
     {
         if (player == nullptr)
         {
             return 0.0f;
         }
 
-        return static_cast<float>(SE_getSimTimeStep(time_stamp, 0.001, 0.1));
+        return SE_getSimTimeStep(time_stamp, 0.001, 0.1);
     }
 
     SE_DLL_API void SE_SetObjectPositionMode(int object_id, SE_PositionModeType type, int mode)
@@ -1204,7 +1193,7 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API int SE_ReportObjectPos(int object_id, float x, float y, float z, float h, float p, float r)
+    SE_DLL_API int SE_ReportObjectPos(int object_id, double x, double y, double z, double h, double p, double r)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1218,7 +1207,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectPosMode(int object_id, float x, float y, float z, float h, float p, float r, int mode)
+    SE_DLL_API int SE_ReportObjectPosMode(int object_id, double x, double y, double z, double h, double p, double r, int mode)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1232,7 +1221,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectPosXYH(int object_id, float x, float y, float h)
+    SE_DLL_API int SE_ReportObjectPosXYH(int object_id, double x, double y, double h)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1246,7 +1235,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectRoadPos(int object_id, id_t roadId, int laneId, float laneOffset, float s)
+    SE_DLL_API int SE_ReportObjectRoadPos(int object_id, id_t roadId, int laneId, double laneOffset, double s)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1260,7 +1249,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectSpeed(int object_id, float speed)
+    SE_DLL_API int SE_ReportObjectSpeed(int object_id, double speed)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1274,7 +1263,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectLateralPosition(int object_id, float t)
+    SE_DLL_API int SE_ReportObjectLateralPosition(int object_id, double t)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1288,7 +1277,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectLateralLanePosition(int object_id, int laneId, float laneOffset)
+    SE_DLL_API int SE_ReportObjectLateralLanePosition(int object_id, int laneId, double laneOffset)
     {
         (void)laneId;
         Object *obj = nullptr;
@@ -1303,7 +1292,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectVel(int object_id, float x_vel, float y_vel, float z_vel)
+    SE_DLL_API int SE_ReportObjectVel(int object_id, double x_vel, double y_vel, double z_vel)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1317,7 +1306,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectAngularVel(int object_id, float h_rate, float p_rate, float r_rate)
+    SE_DLL_API int SE_ReportObjectAngularVel(int object_id, double h_rate, double p_rate, double r_rate)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1331,7 +1320,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectAcc(int object_id, float x_acc, float y_acc, float z_acc)
+    SE_DLL_API int SE_ReportObjectAcc(int object_id, double x_acc, double y_acc, double z_acc)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1345,7 +1334,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectAngularAcc(int object_id, float h_acc, float p_acc, float r_acc)
+    SE_DLL_API int SE_ReportObjectAngularAcc(int object_id, double h_acc, double p_acc, double r_acc)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1359,7 +1348,7 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_ReportObjectWheelStatus(int object_id, float rotation, float angle)
+    SE_DLL_API int SE_ReportObjectWheelStatus(int object_id, double rotation, double angle)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -1910,35 +1899,35 @@ extern "C"
         return obj->collisions_[static_cast<unsigned int>(index)]->GetId();
     }
 
-    SE_DLL_API float SE_GetObjectOdometer(int object_id)
+    SE_DLL_API double SE_GetObjectOdometer(int object_id)
     {
         if (player != nullptr)
         {
             Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
             if (obj != nullptr)
             {
-                return static_cast<float>(obj->odometer_);
+                return obj->odometer_;
             }
         }
 
         return std::nanf("");
     }
 
-    SE_DLL_API float SE_GetObjectAcceleration(int object_id)
+    SE_DLL_API double SE_GetObjectAcceleration(int object_id)
     {
         if (player != nullptr)
         {
             Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
             if (obj != nullptr)
             {
-                return static_cast<float>(obj->pos_.GetAcc());
+                return obj->pos_.GetAcc();
             }
         }
 
         return std::nanf("");
     }
 
-    SE_DLL_API int SE_GetObjectVelocityGlobalXYZ(int object_id, float *vel_x, float *vel_y, float *vel_z)
+    SE_DLL_API int SE_GetObjectVelocityGlobalXYZ(int object_id, double *vel_x, double *vel_y, double *vel_z)
     {
         if (player == nullptr)
         {
@@ -1949,32 +1938,14 @@ extern "C"
         {
             return -1;
         }
-        *vel_x = static_cast<float>(obj->pos_.GetVelX());
-        *vel_y = static_cast<float>(obj->pos_.GetVelY());
-        *vel_z = static_cast<float>(obj->pos_.GetVelZ());
+        *vel_x = obj->pos_.GetVelX();
+        *vel_y = obj->pos_.GetVelY();
+        *vel_z = obj->pos_.GetVelZ();
 
         return 0;
     }
 
-    SE_DLL_API int SE_GetObjectAngularVelocity(int object_id, float *h_rate, float *p_rate, float *r_rate)
-    {
-        if (player == nullptr)
-        {
-            return -1;
-        }
-
-        Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
-        if (obj == nullptr)
-        {
-            return -1;
-        }
-        *h_rate = static_cast<float>(obj->pos_.GetHRate());
-        *p_rate = static_cast<float>(obj->pos_.GetPRate());
-        *r_rate = static_cast<float>(obj->pos_.GetRRate());
-        return 0;
-    }
-
-    SE_DLL_API int SE_GetObjectAngularAcceleration(int object_id, float *h_acc, float *p_acc, float *r_acc)
+    SE_DLL_API int SE_GetObjectAngularVelocity(int object_id, double *h_rate, double *p_rate, double *r_rate)
     {
         if (player == nullptr)
         {
@@ -1986,13 +1957,31 @@ extern "C"
         {
             return -1;
         }
-        *h_acc = static_cast<float>(obj->pos_.GetHAcc());
-        *p_acc = static_cast<float>(obj->pos_.GetPAcc());
-        *r_acc = static_cast<float>(obj->pos_.GetRAcc());
+        *h_rate = obj->pos_.GetHRate();
+        *p_rate = obj->pos_.GetPRate();
+        *r_rate = obj->pos_.GetRRate();
         return 0;
     }
 
-    SE_DLL_API int SE_GetObjectAccelerationGlobalXYZ(int object_id, float *acc_x, float *acc_y, float *acc_z)
+    SE_DLL_API int SE_GetObjectAngularAcceleration(int object_id, double *h_acc, double *p_acc, double *r_acc)
+    {
+        if (player == nullptr)
+        {
+            return -1;
+        }
+
+        Object *obj = player->scenarioEngine->entities_.GetObjectById(object_id);
+        if (obj == nullptr)
+        {
+            return -1;
+        }
+        *h_acc = obj->pos_.GetHAcc();
+        *p_acc = obj->pos_.GetPAcc();
+        *r_acc = obj->pos_.GetRAcc();
+        return 0;
+    }
+
+    SE_DLL_API int SE_GetObjectAccelerationGlobalXYZ(int object_id, double *acc_x, double *acc_y, double *acc_z)
     {
         if (player != nullptr)
         {
@@ -2001,15 +1990,15 @@ extern "C"
             {
                 if (acc_x != nullptr)
                 {
-                    *acc_x = static_cast<float>(obj->pos_.GetAccX());
+                    *acc_x = obj->pos_.GetAccX();
                 }
                 if (acc_y != nullptr)
                 {
-                    *acc_y = static_cast<float>(obj->pos_.GetAccY());
+                    *acc_y = obj->pos_.GetAccY();
                 }
                 if (acc_z != nullptr)
                 {
-                    *acc_z = static_cast<float>(obj->pos_.GetAccZ());
+                    *acc_z = obj->pos_.GetAccZ();
                 }
                 return 0;
             }
@@ -2018,7 +2007,7 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API int SE_GetObjectAccelerationLocalLatLong(int object_id, float *acc_lat, float *acc_long)
+    SE_DLL_API int SE_GetObjectAccelerationLocalLatLong(int object_id, double *acc_lat, double *acc_long)
     {
         if (player != nullptr)
         {
@@ -2027,11 +2016,11 @@ extern "C"
             {
                 if (acc_lat != nullptr)
                 {
-                    *acc_lat = static_cast<float>(obj->pos_.GetAccLat());
+                    *acc_lat = obj->pos_.GetAccLat();
                 }
                 if (acc_long != nullptr)
                 {
-                    *acc_long = static_cast<float>(obj->pos_.GetAccLong());
+                    *acc_long = obj->pos_.GetAccLong();
                 }
                 return 0;
             }
@@ -2083,7 +2072,8 @@ extern "C"
         return 0;
     }
 
-    SE_DLL_API int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj)
+    SE_DLL_API int
+    SE_AddObjectSensor(int object_id, double x, double y, double z, double h, double rangeNear, double rangeFar, double fovH, int maxObj)
     {
         Object *obj = nullptr;
 
@@ -2183,7 +2173,7 @@ extern "C"
     }
 
     SE_DLL_API int SE_GetRoadInfoAtDistance(int          object_id,
-                                            float        lookahead_distance,
+                                            double       lookahead_distance,
                                             SE_RoadInfo *data,
                                             int          lookAheadMode,
                                             bool         inRoadDrivingDirection)
@@ -2192,7 +2182,7 @@ extern "C"
     }
 
     SE_DLL_API int SE_GetRoadInfoAlongRoute(int          object_id,
-                                            float        lookahead_distance,
+                                            double       lookahead_distance,
                                             SE_RoadInfo *data,
                                             int          lookAheadMode,
                                             bool         inRoadDrivingDirection)
@@ -2200,7 +2190,7 @@ extern "C"
         return GetRoadInfoAtDistance(object_id, lookahead_distance, inRoadDrivingDirection, data, lookAheadMode, true);
     }
 
-    SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost, float *timestamp)
+    SE_DLL_API int SE_GetRoadInfoAlongGhostTrail(int object_id, double lookahead_distance, SE_RoadInfo *data, double *speed_ghost, double *timestamp)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -2211,7 +2201,7 @@ extern "C"
         return GetRoadInfoAlongGhostTrail(object_id, lookahead_distance, data, speed_ghost, timestamp);
     }
 
-    SE_DLL_API int SE_GetRoadInfoGhostTrailTime(int object_id, float time, SE_RoadInfo *data, float *speed_ghost)
+    SE_DLL_API int SE_GetRoadInfoGhostTrailTime(int object_id, double time, SE_RoadInfo *data, double *speed_ghost)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -2252,10 +2242,10 @@ extern "C"
         if (obj_found)
         {
             pos_diff->dLaneId       = diff.dLaneId;
-            pos_diff->ds            = static_cast<float>(diff.ds);
-            pos_diff->dt            = static_cast<float>(diff.dt);
-            pos_diff->dx            = static_cast<float>(diff.dx);
-            pos_diff->dy            = static_cast<float>(diff.dy);
+            pos_diff->ds            = diff.ds;
+            pos_diff->dt            = diff.dt;
+            pos_diff->dx            = diff.dx;
+            pos_diff->dy            = diff.dy;
             pos_diff->oppositeLanes = diff.dOppLane;
         }
 
@@ -2357,17 +2347,17 @@ extern "C"
                     road_sign->id          = s->GetId();
                     returnString           = s->GetName();
                     road_sign->name        = returnString.c_str();
-                    road_sign->x           = static_cast<float>(pos.GetX());
-                    road_sign->y           = static_cast<float>(pos.GetY());
-                    road_sign->z           = static_cast<float>(pos.GetZ());
-                    road_sign->h           = static_cast<float>(pos.GetH());
-                    road_sign->s           = static_cast<float>(pos.GetS());
-                    road_sign->t           = static_cast<float>(pos.GetT());
+                    road_sign->x           = pos.GetX();
+                    road_sign->y           = pos.GetY();
+                    road_sign->z           = pos.GetZ();
+                    road_sign->h           = pos.GetH();
+                    road_sign->s           = pos.GetS();
+                    road_sign->t           = pos.GetT();
                     road_sign->orientation = s->GetOrientation() == roadmanager::Signal::Orientation::NEGATIVE ? -1 : 1;
-                    road_sign->z_offset    = static_cast<float>(s->GetZOffset());
-                    road_sign->length      = static_cast<float>(s->GetLength());
-                    road_sign->height      = static_cast<float>(s->GetHeight());
-                    road_sign->width       = static_cast<float>(s->GetWidth());
+                    road_sign->z_offset    = s->GetZOffset();
+                    road_sign->length      = s->GetLength();
+                    road_sign->height      = s->GetHeight();
+                    road_sign->width       = s->GetWidth();
 
                     return 0;
                 }
@@ -2483,7 +2473,7 @@ extern "C"
     }
 
     // Simple vehicle
-    SE_DLL_API void *SE_SimpleVehicleCreate(float x, float y, float h, float length, float speed)
+    SE_DLL_API void *SE_SimpleVehicleCreate(double x, double y, double h, double length, double speed)
     {
         vehicle::Vehicle *v = new vehicle::Vehicle(x, y, h, length, speed);
         return (void *)v;
@@ -2533,7 +2523,7 @@ extern "C"
         ((vehicle::Vehicle *)handleSimpleVehicle)->DrivingControlAccAndSteer(dt, acceleration, steering_angle);
     }
 
-    SE_DLL_API void SE_SimpleVehicleSetSpeed(void *handleSimpleVehicle, float speed)
+    SE_DLL_API void SE_SimpleVehicleSetSpeed(void *handleSimpleVehicle, double speed)
     {
         if (handleSimpleVehicle == 0)
         {
@@ -2573,7 +2563,7 @@ extern "C"
         ((vehicle::Vehicle *)handleSimpleVehicle)->DrivingControlTarget(dt, target_speed, heading_to_target);
     }
 
-    SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void *handleSimpleVehicle, float speed)
+    SE_DLL_API void SE_SimpleVehicleSetMaxSpeed(void *handleSimpleVehicle, double speed)
     {
         if (handleSimpleVehicle == 0)
         {
@@ -2582,7 +2572,7 @@ extern "C"
         ((vehicle::Vehicle *)handleSimpleVehicle)->SetMaxSpeed(static_cast<double>(speed) / 3.6);
     }
 
-    SE_DLL_API void SE_SimpleVehicleSetMaxAcceleration(void *handleSimpleVehicle, float maxAcceleration)
+    SE_DLL_API void SE_SimpleVehicleSetMaxAcceleration(void *handleSimpleVehicle, double maxAcceleration)
     {
         if (handleSimpleVehicle == 0)
         {
@@ -2591,7 +2581,7 @@ extern "C"
         ((vehicle::Vehicle *)handleSimpleVehicle)->SetMaxAcc(maxAcceleration);
     }
 
-    SE_DLL_API void SE_SimpleVehicleSetMaxDeceleration(void *handleSimpleVehicle, float maxDeceleration)
+    SE_DLL_API void SE_SimpleVehicleSetMaxDeceleration(void *handleSimpleVehicle, double maxDeceleration)
     {
         if (handleSimpleVehicle == 0)
         {
@@ -2600,7 +2590,7 @@ extern "C"
         ((vehicle::Vehicle *)handleSimpleVehicle)->SetMaxDec(maxDeceleration);
     }
 
-    SE_DLL_API void SE_SimpleVehicleSetEngineBrakeFactor(void *handleSimpleVehicle, float engineBrakeFactor)
+    SE_DLL_API void SE_SimpleVehicleSetEngineBrakeFactor(void *handleSimpleVehicle, double engineBrakeFactor)
     {
         if (handleSimpleVehicle == 0)
         {
@@ -2609,7 +2599,7 @@ extern "C"
         ((vehicle::Vehicle *)handleSimpleVehicle)->SetEngineBrakeFactor(engineBrakeFactor);
     }
 
-    SE_DLL_API void SE_SimpleVehicleSteeringScale(void *handleSimpleVehicle, float steeringScale)
+    SE_DLL_API void SE_SimpleVehicleSteeringScale(void *handleSimpleVehicle, double steeringScale)
     {
         if (handleSimpleVehicle == 0)
         {
@@ -2618,7 +2608,7 @@ extern "C"
         ((vehicle::Vehicle *)handleSimpleVehicle)->SetSteeringScale(steeringScale);
     }
 
-    SE_DLL_API void SE_SimpleVehicleSteeringReturnFactor(void *handleSimpleVehicle, float steeringReturnFactor)
+    SE_DLL_API void SE_SimpleVehicleSteeringReturnFactor(void *handleSimpleVehicle, double steeringReturnFactor)
     {
         if (handleSimpleVehicle == 0)
         {
@@ -2627,7 +2617,7 @@ extern "C"
         ((vehicle::Vehicle *)handleSimpleVehicle)->SetSteeringReturnFactor(steeringReturnFactor);
     }
 
-    SE_DLL_API void SE_SimpleVehicleSteeringRate(void *handleSimpleVehicle, float steeringRate)
+    SE_DLL_API void SE_SimpleVehicleSteeringRate(void *handleSimpleVehicle, double steeringRate)
     {
         if (handleSimpleVehicle == 0)
         {
@@ -2642,14 +2632,14 @@ extern "C"
         {
             return;
         }
-        state->x              = static_cast<float>(((vehicle::Vehicle *)handleSimpleVehicle)->posX_);
-        state->y              = static_cast<float>(((vehicle::Vehicle *)handleSimpleVehicle)->posY_);
-        state->z              = static_cast<float>(((vehicle::Vehicle *)handleSimpleVehicle)->posZ_);
-        state->h              = static_cast<float>(((vehicle::Vehicle *)handleSimpleVehicle)->heading_);
-        state->p              = static_cast<float>(((vehicle::Vehicle *)handleSimpleVehicle)->pitch_);
-        state->speed          = static_cast<float>(((vehicle::Vehicle *)handleSimpleVehicle)->speed_);
-        state->wheel_rotation = static_cast<float>(((vehicle::Vehicle *)handleSimpleVehicle)->wheelRotation_);
-        state->wheel_angle    = static_cast<float>(((vehicle::Vehicle *)handleSimpleVehicle)->wheelAngle_);
+        state->x              = ((vehicle::Vehicle *)handleSimpleVehicle)->posX_;
+        state->y              = ((vehicle::Vehicle *)handleSimpleVehicle)->posY_;
+        state->z              = ((vehicle::Vehicle *)handleSimpleVehicle)->posZ_;
+        state->h              = ((vehicle::Vehicle *)handleSimpleVehicle)->heading_;
+        state->p              = ((vehicle::Vehicle *)handleSimpleVehicle)->pitch_;
+        state->speed          = ((vehicle::Vehicle *)handleSimpleVehicle)->speed_;
+        state->wheel_rotation = ((vehicle::Vehicle *)handleSimpleVehicle)->wheelRotation_;
+        state->wheel_angle    = ((vehicle::Vehicle *)handleSimpleVehicle)->wheelAngle_;
     }
 
     SE_DLL_API int SE_SaveImagesToRAM(bool state)
@@ -2855,7 +2845,7 @@ extern "C"
         return -1;
     }
 
-    SE_DLL_API int SE_GetCameraPos(float *x, float *y, float *z, float *h, float *p, float *r)
+    SE_DLL_API int SE_GetCameraPos(double *x, double *y, double *z, double *h, double *p, double *r)
     {
 #ifdef _USE_OSG
         if (player && player->viewer_)
@@ -2924,23 +2914,23 @@ extern "C"
 
         roadmanager::Road *road = player->odr_manager->GetRoadById(route->all_waypoints_[route_index].GetTrackId());
 
-        routeinfo->x          = static_cast<float>(route->all_waypoints_[route_index].GetX());
-        routeinfo->y          = static_cast<float>(route->all_waypoints_[route_index].GetY());
-        routeinfo->z          = static_cast<float>(route->all_waypoints_[route_index].GetZ());
-        routeinfo->h          = static_cast<float>(route->all_waypoints_[route_index].GetH());
+        routeinfo->x          = route->all_waypoints_[route_index].GetX();
+        routeinfo->y          = route->all_waypoints_[route_index].GetY();
+        routeinfo->z          = route->all_waypoints_[route_index].GetZ();
+        routeinfo->h          = route->all_waypoints_[route_index].GetH();
         routeinfo->roadId     = route->all_waypoints_[route_index].GetTrackId();
         routeinfo->junctionId = route->all_waypoints_[route_index].GetJunctionId();
         routeinfo->laneId     = route->all_waypoints_[route_index].GetLaneId();
         routeinfo->osiLaneId  = static_cast<int>(
             road->GetDrivingLaneById(route->all_waypoints_[route_index].GetS(), route->all_waypoints_[route_index].GetLaneId())->GetGlobalId());
-        routeinfo->laneOffset = static_cast<float>(route->all_waypoints_[route_index].GetOffset());
-        routeinfo->s          = static_cast<float>(route->all_waypoints_[route_index].GetS());
-        routeinfo->t          = static_cast<float>(route->all_waypoints_[route_index].GetT());
+        routeinfo->laneOffset = route->all_waypoints_[route_index].GetOffset();
+        routeinfo->s          = route->all_waypoints_[route_index].GetS();
+        routeinfo->t          = route->all_waypoints_[route_index].GetT();
 
         return 0;
     }
 
-    SE_DLL_API float SE_GetRouteTotalLength(int object_id)
+    SE_DLL_API double SE_GetRouteTotalLength(int object_id)
     {
         Object *obj = nullptr;
         if (getObjectById(object_id, obj) == -1)
@@ -2952,7 +2942,7 @@ extern "C"
 
         if (route != nullptr)
         {
-            return static_cast<float>(route->GetLength());
+            return route->GetLength();
         }
 
         return 0.0f;

@@ -40,9 +40,9 @@ private:
     std::vector<osg::ref_ptr<osg::Switch>>       switches_;
     osg::ref_ptr<osg::PositionAttitudeTransform> tx_;
     unsigned int                                 n_lights_;
-    float                                        box_height_ = 0.4f;
-    float                                        box_width_  = 0.4f;
-    float                                        box_depth_  = 0.1f;
+    double                                       box_height_ = 0.4;
+    double                                       box_width_  = 0.4;
+    double                                       box_depth_  = 0.1;
     bool                                         dirty_      = false;  // indicates whether graphics needs to update
 };
 

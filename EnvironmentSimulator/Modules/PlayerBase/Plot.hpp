@@ -64,8 +64,8 @@ public:
     }
 
     void        updateData(const std::vector<Object*>& objects, double time);
-    void        renderPlot(const char* name);  //, float window_width, float window_height);
-    void        adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<float>>& d, const size_t item);
+    void        renderPlot(const char* name);
+    void        adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<double>>& d, const size_t item);
     void        adjustSelectedObjectsPlotDataAxis(const PlotCategories& y_category);
     void        createImguiWindow();
     static void glfw_error_callback(int error, const char* description);
@@ -76,26 +76,25 @@ private:
     class PlotObject
     {
     public:
-        // PlotObject(float max_acc, float max_decel, float max_speed);
         PlotObject(Object* object);
         void updateData(Object* object, double time);
 
         // Getters
-        float       getTimeMax() const;
-        float       getMaxAcc() const;
-        float       getMaxDecel() const;
-        float       getMaxSpeed() const;
+        double      getTimeMax() const;
+        double      getMaxAcc() const;
+        double      getMaxDecel() const;
+        double      getMaxSpeed() const;
         std::string getName() const;
 
         // Data
-        std::unordered_map<PlotCategories, std::vector<float>> plotData{};
+        std::unordered_map<PlotCategories, std::vector<double>> plotData{};
 
     private:
         // Constants
-        const float       time_max_  = {};
-        const float       max_acc_   = {};
-        const float       max_decel_ = {};
-        const float       max_speed_ = {};
+        const double      time_max_  = {};
+        const double      max_acc_   = {};
+        const double      max_decel_ = {};
+        const double      max_speed_ = {};
         const std::string name_      = {};
     };
     // GLFW, glsl
@@ -105,10 +104,10 @@ private:
     int window_width  = 1000;
     int window_height = 1000;
     // Dynamic window
-    int         window_w         = {};
-    int         window_h         = {};
-    const float checkbox_padding = 55.0;
-    bool        quit_flag_       = false;
+    int          window_w         = {};
+    int          window_h         = {};
+    const double checkbox_padding = 55.0;
+    bool         quit_flag_       = false;
 
     // Settings
     ImPlotAxisFlags x_scaling = ImPlotAxisFlags_None;
@@ -131,7 +130,7 @@ private:
 
     size_t            plotcategories_size_ = {};
     std::vector<char> selected_object_     = {};
-    float             time_axis_min_       = -5.0f;
+    double            time_axis_min_       = -5.0;
 
     // Runtime variables
     ScenarioEngine* scenarioengine_;

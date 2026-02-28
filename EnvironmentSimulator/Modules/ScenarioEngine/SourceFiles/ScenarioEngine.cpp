@@ -745,14 +745,16 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 
             if (!(obj->IsGhost() && SE_Env::Inst().GetGhostMode() == GhostMode::RESTART))  // skip ghost sample during restart
             {
-                if (obj->trail_.GetNumberOfVertices() == 0 || simulationTime_ - obj->trail_.GetVertices().back().time > ghost_trail_dt_)
+                if (obj->trail_.GetNumberOfVertices() == 0 ||
+                    simulationTime_ - obj->trail_.GetVertices().back().time > ghost_trail_dt_ - SMALL_NUMBER)
                 {
                     // Only add trail vertex when speed is not stable at 0
                     if (obj->trail_.GetNumberOfVertices() == 0 || fabs(obj->trail_.GetVertices().back().speed) > SMALL_NUMBER ||
                         fabs(obj->GetSpeed()) > SMALL_NUMBER)
                     {
                         // If considerable time has passed, copy previous steady-state sample
-                        if (obj->trail_.vertex_.size() > 0 && simulationTime_ - obj->trail_.GetVertices().back().time > 2 * ghost_trail_dt_)
+                        if (obj->trail_.vertex_.size() > 0 &&
+                            simulationTime_ - obj->trail_.GetVertices().back().time > 2 * ghost_trail_dt_ - SMALL_NUMBER)
                         {
                             obj->trail_.AddVertex(obj->trail_.vertex_.back());
                             // with modified timestamp
@@ -793,7 +795,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
             {
                 if (wheel.axle == 0 && obj->dirty_.Check(Object::DirtyBit::WHEEL_ANGLE))
                 {
-                    wheel.h = static_cast<float>(obj->wheel_angle_);  // I assume always 0 due to fixed rear axis. Better to have = 0?
+                    wheel.h = obj->wheel_angle_;  // I assume always 0 due to fixed rear axis. Better to have = 0?
                 }
 
                 Object::Axle* axle  = wheel.axle == 0 ? &obj->front_axle_ : &obj->rear_axle_;
@@ -802,7 +804,7 @@ void ScenarioEngine::prepareGroundTruth(double dt)
 
                 if (obj->dirty_.Check(Object::DirtyBit::WHEEL_ROTATION))
                 {
-                    wheel.p = static_cast<float>(obj->wheel_rot_);
+                    wheel.p = obj->wheel_rot_;
                 }
 
                 // Update wheel frictions

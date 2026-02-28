@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
     (void)argv;
 
     const double x_offset     = 2.8;  // Distance from the reference point at the rear axle to the front axle which is used for steering control
-    const float  fixed_dt     = 1.0f / 60.0f;
+    const double fixed_dt     = 1.0 / 60.0;
     const bool   use_fixed_dt = false;
     const bool   visualize    = true;
 
@@ -124,7 +124,7 @@ int main(int argc, char* argv[])
     // Run for specified duration or until 'Esc' button is pressed
     while (SE_GetQuitFlag() == 0)
     {
-        float dt = use_fixed_dt ? fixed_dt : SE_GetSimTimeStep();
+        double dt = use_fixed_dt ? fixed_dt : SE_GetSimTimeStep();
         if (!SE_GetPauseFlag())
         {
             // find lateral distance between Ego and reference vehicle x-axis

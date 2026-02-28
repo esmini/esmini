@@ -20,9 +20,9 @@ int main(int argc, char* argv[])
     (void)argc;
     (void)argv;
 
-    int   enable_viewer  = 1;
-    float dt             = 0.1f;
-    int   n_misc_objects = 0;
+    int    enable_viewer  = 1;
+    double dt             = 0.1;
+    int    n_misc_objects = 0;
 
     SE_AddPath("../../../../resources");
     SE_AddPath("../../../../resources/models");
@@ -82,15 +82,15 @@ int main(int argc, char* argv[])
             }
             else
             {
-                SE_ReportObjectPos(cars[i].id, static_cast<float>(cars[i].x), -1.5f, 0.0f, 0.0f, 0.0f, 0.0f);
-                SE_ReportObjectSpeed(cars[i].id, static_cast<float>(speed));
+                SE_ReportObjectPos(cars[i].id, cars[i].x, -1.5f, 0.0f, 0.0f, 0.0f, 0.0f);
+                SE_ReportObjectSpeed(cars[i].id, speed);
             }
         }
 
         // add misc objects
         if ((counter == 2 && n_misc_objects == 0) || (counter == 3 && n_misc_objects == 1))
         {
-            float tmp = static_cast<float>(counter - 1.0);
+            double tmp = counter - 1.0;
 
             int id = SE_AddObjectWithBoundingBox((std::string("misc_object_") + std::to_string(n_misc_objects)).c_str(),
                                                  3,

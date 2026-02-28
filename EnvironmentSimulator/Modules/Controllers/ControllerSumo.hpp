@@ -46,8 +46,8 @@ namespace scenarioengine
         static std::string SUMOVClass2OSCVehicleCategory(const std::string& vclass);
 
     private:
-        float              sumo_x_offset_ = 0.0f;
-        float              sumo_y_offset_ = 0.0f;
+        double             sumo_x_offset_ = 0.0;
+        double             sumo_y_offset_ = 0.0;
         double             time_          = 0.0;
         pugi::xml_document docsumo_;
         std::string        model_filepath_;

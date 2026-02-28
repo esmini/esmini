@@ -10,8 +10,8 @@ typedef struct
     int                            id;
     std::string                    name;
     struct ObjectPositionStructDat pos;
-    float                          wheel_angle;
-    float                          wheel_rotation;
+    double                         wheel_angle;
+    double                         wheel_rotation;
     bool                           visible;
     scenarioengine::OSCBoundingBox bounding_box;
     std::vector<SE_Vector>         corners;

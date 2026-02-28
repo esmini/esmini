@@ -72,7 +72,7 @@ void objectCallback(SE_ScenarioObjectState* state, void* my_data)
 
     printf("mydata.counter: %d\n", stuff->counter);
 
-    if (static_cast<double>(SE_GetSimulationTime()) > startTrigTime && static_cast<double>(SE_GetSimulationTime()) < startTrigTime + duration)
+    if (SE_GetSimulationTime() > startTrigTime && SE_GetSimulationTime() < startTrigTime + duration)
     {
         static bool   firstTime = true;
         static double latOffset0;
@@ -83,7 +83,7 @@ void objectCallback(SE_ScenarioObjectState* state, void* my_data)
         }
         else
         {
-            float latOffset = static_cast<float>(latOffset0 + latDist * (static_cast<double>(SE_GetSimulationTime()) - startTrigTime) / duration);
+            double latOffset = latOffset0 + latDist * (SE_GetSimulationTime() - startTrigTime) / duration;
             SE_ReportObjectRoadPos(state->id, state->roadId, state->laneId, latOffset, state->s);
         }
     }
@@ -196,10 +196,10 @@ int main(int argc, const char* argv[])
 
 #if DEMONSTRATE_SENSORS
         // Add four sensors around the vehicle
-        SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 0.0f, 6.0f, 50.0f, static_cast<float>(50.0 * M_PI / 180.0), MAX_DETECTIONS);
-        SE_AddObjectSensor(0, 2.0f, 1.05f, 0.5f, 1.5f, 1.0f, 20.0f, static_cast<float>(120.0 * M_PI / 180.0), MAX_DETECTIONS);
-        SE_AddObjectSensor(0, 2.0f, -1.05f, 0.5f, -1.5f, 1.0f, 20.0f, static_cast<float>(120.0 * M_PI / 180.0), MAX_DETECTIONS);
-        SE_AddObjectSensor(0, -1.1f, 0.0f, 0.5f, 3.14f, 5.0f, 30.0f, static_cast<float>(50.0 * M_PI / 180.0), MAX_DETECTIONS);
+        SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 0.0f, 6.0f, 50.0f, 50.0 * M_PI / 180.0, MAX_DETECTIONS);
+        SE_AddObjectSensor(0, 2.0f, 1.05f, 0.5f, 1.5f, 1.0f, 20.0f, 120.0 * M_PI / 180.0, MAX_DETECTIONS);
+        SE_AddObjectSensor(0, 2.0f, -1.05f, 0.5f, -1.5f, 1.0f, 20.0f, 120.0 * M_PI / 180.0, MAX_DETECTIONS);
+        SE_AddObjectSensor(0, -1.1f, 0.0f, 0.5f, 3.14f, 5.0f, 30.0f, 50.0 * M_PI / 180.0, MAX_DETECTIONS);
 
         SE_ViewerShowFeature(1, true);  // show sensor frustoms (see NodeMask in viewer.hpp)
 #endif
@@ -211,7 +211,7 @@ int main(int argc, const char* argv[])
         SE_OSIFileOpen(0);
 #endif
 
-        for (int i = 0; static_cast<float>(i) * TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++)
+        for (int i = 0; static_cast<double>(i) * TIME_STEP < DURATION && !(SE_GetQuitFlag() == 1); i++)
         {
 #if DEMONSTRATE_PARAMETER  // try with lane_change.xosc which sets "DummyParameter"
             double value;
@@ -307,7 +307,7 @@ int main(int argc, const char* argv[])
 
 #if DEMONSTRATE_ROADINFO  // set to 1 to demonstrate example of how to query road information
             SE_RoadInfo data;
-            float       look_ahead_distance = 10;
+            double      look_ahead_distance = 10;
             int         id                  = 0;
 
             SE_GetRoadInfoAtDistance(id, look_ahead_distance, &data, 0);

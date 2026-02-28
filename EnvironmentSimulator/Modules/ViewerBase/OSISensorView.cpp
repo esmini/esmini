@@ -130,23 +130,20 @@ void OSISensorDetection::SensorUpdate(osi3::SensorView* sv)
                 // If the moving object ID isn't in the cars map then we create one and added to the map
                 if (detected_cars_.count(id) == 0)
                 {
-                    detected_cars_.emplace(id,
-                                           new OSIDetectedCar(osg::Vec3(static_cast<float>(moving_object_position.x()),
-                                                                        static_cast<float>(moving_object_position.y()),
-                                                                        static_cast<float>(moving_object_position.z() + z_offset)),
-                                                              moving_object_dimension.height() + 1.0,
-                                                              moving_object_dimension.width() + 1.0,
-                                                              moving_object_dimension.length() + 1.0,
-                                                              detected_bb_group_));
+                    detected_cars_.emplace(
+                        id,
+                        new OSIDetectedCar(osg::Vec3(moving_object_position.x(), moving_object_position.y(), moving_object_position.z() + z_offset),
+                                           moving_object_dimension.height() + 1.0,
+                                           moving_object_dimension.width() + 1.0,
+                                           moving_object_dimension.length() + 1.0,
+                                           detected_bb_group_));
                 }
                 else
                 {
                     // Otherwise update the visual object
                     osg::Vec3 bb_dimension = detected_cars_.find(id)->second->bb_dimensions_;
                     detected_cars_.find(id)->second->Update(
-                        osg::Vec3(static_cast<float>(moving_object_position.x()),
-                                  static_cast<float>(moving_object_position.y()),
-                                  static_cast<float>(moving_object_position.z()) + bb_dimension.z() + static_cast<float>(z_offset)));
+                        osg::Vec3(moving_object_position.x(), moving_object_position.y(), moving_object_position.z() + bb_dimension.z() + z_offset));
                 }
             }
 
@@ -164,18 +161,17 @@ void OSISensorDetection::SensorUpdate(osi3::SensorView* sv)
                     // If the lane boundary ID isn't in the points map then we create one and added to the map
                     if (detected_points_.count(id) == 0)
                     {
-                        detected_points_.emplace(id,
-                                                 new OSIDetectedPoint(osg::Vec3(static_cast<float>(boundary_line_position.x()),
-                                                                                static_cast<float>(boundary_line_position.y()),
-                                                                                static_cast<float>(boundary_line_position.z() + z_offset)),
-                                                                      detected_points_group_));
+                        detected_points_.emplace(
+                            id,
+                            new OSIDetectedPoint(
+                                osg::Vec3(boundary_line_position.x(), boundary_line_position.y(), boundary_line_position.z() + z_offset),
+                                detected_points_group_));
                     }
                     else
                     {
                         // Otherwise update the visual object
-                        detected_points_.find(id)->second->Update(osg::Vec3(static_cast<float>(boundary_line_position.x()),
-                                                                            static_cast<float>(boundary_line_position.y()),
-                                                                            static_cast<float>(boundary_line_position.z() + z_offset)));
+                        detected_points_.find(id)->second->Update(
+                            osg::Vec3(boundary_line_position.x(), boundary_line_position.y(), boundary_line_position.z() + z_offset));
                     }
                 }
             }
@@ -230,7 +226,7 @@ OSIDetectedPoint::~OSIDetectedPoint()
 OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double l, osg::ref_ptr<osg::Group> parent)
 {
     parent_ = parent;
-    bb_dimensions_.set(static_cast<float>(l), static_cast<float>(w), static_cast<float>(h));
+    bb_dimensions_.set(l, w, h);
 
     car_                     = new osg::Group;
     osi_detection_geode_box_ = new osg::Geode;
@@ -243,7 +239,7 @@ OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double
 
     // Set color of vehicle based on its index
     const float(*color)[3] = &SE_Color::Color2RBG(SE_Color::Color::GREEN);
-    float b                = 1.0;  // brighness range (0,1)
+    double b               = 1.0;  // brighness range (0,1)
 
     material->setAmbient(osg::Material::FRONT, osg::Vec4(b * (*color)[0], b * (*color)[1], b * (*color)[2], 1.0f));
     material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * (*color)[0], b * (*color)[1], b * (*color)[2], 1.0f));

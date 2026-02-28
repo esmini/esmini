@@ -72,22 +72,22 @@ namespace Dat
 
     struct Pose
     {
-        float x = std::nanf("");
-        float y = std::nanf("");
-        float z = std::nanf("");
-        float h = std::nanf("");
-        float p = std::nanf("");
-        float r = std::nanf("");
+        double x = std::nanf("");
+        double y = std::nanf("");
+        double z = std::nanf("");
+        double h = std::nanf("");
+        double p = std::nanf("");
+        double r = std::nanf("");
     };
 
     struct BoundingBox
     {
-        float x      = std::nanf("");
-        float y      = std::nanf("");
-        float z      = std::nanf("");
-        float length = std::nanf("");
-        float width  = std::nanf("");
-        float height = std::nanf("");
+        double x      = std::nanf("");
+        double y      = std::nanf("");
+        double z      = std::nanf("");
+        double length = std::nanf("");
+        double width  = std::nanf("");
+        double height = std::nanf("");
     };
 
     struct TrafficLightLamp
@@ -113,25 +113,25 @@ namespace Dat
     {
         int                     obj_id_            = -1;
         bool                    active_            = false;
-        float                   speed_             = std::nanf("");
+        double                  speed_             = std::nanf("");
         Pose                    pose_              = {};
         int                     model_id_          = -1;
         int                     obj_type_          = -1;
         int                     obj_category_      = -1;
         int                     ctrl_type_         = -1;
-        float                   wheel_angle_       = std::nanf("");
-        float                   wheel_rot_         = std::nanf("");
+        double                  wheel_angle_       = std::nanf("");
+        double                  wheel_rot_         = std::nanf("");
         BoundingBox             bounding_box_      = {};
         int                     scale_mode_        = -1;
         int                     visibility_mask_   = -1;
         std::string             name_              = {};
         id_t                    road_id_           = ID_UNDEFINED;
         int                     lane_id_           = -LARGE_NUMBER_INT;
-        float                   pos_offset_        = std::nanf("");
-        float                   pos_t_             = std::nanf("");
-        float                   pos_s_             = std::nanf("");
-        float                   refpoint_x_offset_ = std::nanf("");
-        float                   model_x_offset_    = std::nanf("");
+        double                  pos_offset_        = std::nanf("");
+        double                  pos_t_             = std::nanf("");
+        double                  pos_s_             = std::nanf("");
+        double                  refpoint_x_offset_ = std::nanf("");
+        double                  model_x_offset_    = std::nanf("");
         std::string             model3d_           = {};
         std::vector<SE_Point2D> outline_2d         = {};
     };

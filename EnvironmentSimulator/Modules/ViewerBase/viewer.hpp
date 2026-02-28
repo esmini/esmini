@@ -424,7 +424,7 @@ namespace viewer
         osg::ref_ptr<osgGA::RubberbandManipulator>  rubberbandManipulator_;
         osg::ref_ptr<osgGA::NodeTrackerManipulator> nodeTrackerManipulator_;
         std::vector<EntityModel*>                   entities_;
-        float                                       lodScale_;
+        double                                      lodScale_;
         osg::ref_ptr<osgViewer::Viewer>             osgViewer_;
         osg::MatrixTransform*                       rootnode_;
         osg::ref_ptr<osg::Group>                    roadSensors_;
