@@ -157,18 +157,18 @@ void Plot::adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<
         }
         case (PlotCategories::LatVel):
         {
-            ImPlot::SetNextAxesLimits(time_axis_min_, plot_objects_[item]->getTimeMax(), -1.0f, 1.0f);
+            ImPlot::SetNextAxesLimits(time_axis_min_, plot_objects_[item]->getTimeMax(), -1.0, 1.0);
             break;
         }
         case (PlotCategories::LongVel):
         {
-            double min_y_axis = 0.0f;
+            double min_y_axis = 0.0;
             if (d.second.back() < min_y_axis)
             {
                 min_y_axis = d.second.back();
                 y_scaling  = ImPlotAxisFlags_AutoFit;
             }
-            ImPlot::SetNextAxesLimits(time_axis_min_, plot_objects_[item]->getTimeMax(), min_y_axis, plot_objects_[item]->getMaxSpeed() + 5.0f);
+            ImPlot::SetNextAxesLimits(time_axis_min_, plot_objects_[item]->getTimeMax(), min_y_axis, plot_objects_[item]->getMaxSpeed() + 5.0);
             break;
         }
         case (PlotCategories::LatA):
@@ -194,7 +194,7 @@ void Plot::adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<
         }
         case (PlotCategories::LaneID):
         {
-            if (d.second.back() < -5.0f || d.second.back() > 5.0f)
+            if (d.second.back() < -5.0 || d.second.back() > 5.0)
             {
                 y_scaling = ImPlotAxisFlags_AutoFit;
             }
@@ -212,7 +212,7 @@ void Plot::renderPlot(const char* name)
                                           lineplot_selection_.end(),
                                           [](const auto& selection) { return selection.first != PlotCategories::Time && selection.second; }));
 
-    ImGui::SetNextWindowSize(ImVec2(window_w, window_h), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(static_cast<float>(window_w), static_cast<float>(window_h)), ImGuiCond_Once);
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Once);
     ImGui::Begin(name, nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar);
 
@@ -235,10 +235,10 @@ void Plot::renderPlot(const char* name)
         {
             if (n.second != "Time")
             {
-                ImGui::SetCursorPos(ImVec2(820, y_pos));
+                ImGui::SetCursorPos(ImVec2(820, static_cast<float>(y_pos)));
                 ImGui::Checkbox(n.second.c_str(), &lineplot_selection_[n.first]);
                 auto box_size = ImGui::CalcTextSize("Signal 0");
-                y_pos += box_size[1] + 10;
+                y_pos += static_cast<double>(box_size[1]) + 10;
             }
         }
     }
@@ -258,7 +258,9 @@ void Plot::renderPlot(const char* name)
         std::string plot_name = get_category_name_[y_category];
         std::string unit      = get_category_unit_[y_category];
 
-        if (ImPlot::BeginPlot(plot_name.c_str(), ImVec2(window_w - 200.0f, (window_h - checkbox_padding) / lineplot_objects), ImPlotFlags_NoLegend))
+        if (ImPlot::BeginPlot(plot_name.c_str(),
+                              ImVec2(static_cast<float>(window_w - 200.0), static_cast<float>((window_h - checkbox_padding) / lineplot_objects)),
+                              ImPlotFlags_NoLegend))
         {
             ImPlot::SetupAxes(get_category_name_[PlotCategories::Time].c_str(), unit.c_str(), x_scaling, y_scaling);
 
@@ -401,7 +403,7 @@ void Plot::glfw_error_callback(int error, const char* description)
 
 // PlotObject
 Plot::PlotObject::PlotObject(Object* object)
-    : time_max_(30.0f),
+    : time_max_(30.0),
       max_acc_(object->GetMaxAcceleration()),
       max_decel_(-object->GetMaxDeceleration()),
       max_speed_(object->GetMaxSpeed()),

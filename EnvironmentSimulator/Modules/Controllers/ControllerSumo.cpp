@@ -244,13 +244,7 @@ void ControllerSumo::Step(double timeStep)
             std::string id = obj->name_;
             LOG_INFO("SUMO controller: Add vehicle {} to SUMO", id);
             libsumo::Vehicle::add(id, "", "DEFAULT_VEHTYPE");
-            libsumo::Vehicle::moveToXY(id,
-                                       "random",
-                                       0,
-                                       obj->pos_.GetX() + static_cast<double>(sumo_x_offset_),
-                                       obj->pos_.GetY() + static_cast<double>(sumo_y_offset_),
-                                       obj->pos_.GetH(),
-                                       0);
+            libsumo::Vehicle::moveToXY(id, "random", 0, obj->pos_.GetX() + sumo_x_offset_, obj->pos_.GetY() + sumo_y_offset_, obj->pos_.GetH(), 0);
             libsumo::Vehicle::setSpeed(id, obj->speed_);
         }
     }
@@ -266,8 +260,8 @@ void ControllerSumo::Step(double timeStep)
                 std::string            sumoid = obj->name_;
                 libsumo::TraCIPosition pos    = libsumo::Vehicle::getPosition3D(sumoid);
                 obj->SetSpeed(libsumo::Vehicle::getSpeed(sumoid));
-                obj->pos_.SetInertiaPosMode(pos.x - static_cast<double>(sumo_x_offset_),
-                                            pos.y - static_cast<double>(sumo_y_offset_),
+                obj->pos_.SetInertiaPosMode(pos.x - sumo_x_offset_,
+                                            pos.y - sumo_y_offset_,
                                             pos.z,
                                             -libsumo::Vehicle::getAngle(sumoid) * M_PI / 180 + M_PI / 2,
                                             libsumo::Vehicle::getSlope(sumoid) * M_PI / 180,
@@ -293,8 +287,8 @@ void ControllerSumo::Step(double timeStep)
                 libsumo::Vehicle::moveToXY(obj->name_,
                                            "random",
                                            0,
-                                           obj->pos_.GetX() + static_cast<double>(sumo_x_offset_),
-                                           obj->pos_.GetY() + static_cast<double>(sumo_y_offset_),
+                                           obj->pos_.GetX() + sumo_x_offset_,
+                                           obj->pos_.GetY() + sumo_y_offset_,
                                            obj->pos_.GetH(),
                                            0);
                 libsumo::Vehicle::setSpeed(obj->name_, obj->speed_);

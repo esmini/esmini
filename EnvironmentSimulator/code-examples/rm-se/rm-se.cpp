@@ -26,28 +26,28 @@ int main(int argc, char* argv[])
         RM_GetPositionData(p0, &posData);
 
         printf("current pos1: s %.2f laneId %d offset %.2f x %.2f y %.2f z %.2f \n",
-               static_cast<double>(posData.s),
+               posData.s,
                laneInfo.laneId,
-               static_cast<double>(laneInfo.laneOffset),
-               static_cast<double>(posData.x),
-               static_cast<double>(posData.y),
-               static_cast<double>(posData.z));
+               laneInfo.laneOffset,
+               posData.x,
+               posData.y,
+               posData.z);
 
         // Move the position object
         RM_SetLanePosition(p0, laneInfo.roadId, laneInfo.laneId + 1, 0.0, 200.0, true);
         RM_GetLaneInfo(p0, 0.0, &laneInfo, 2, false);  // LookAheadMode = 2 looks at current lane offset
         RM_GetPositionData(p0, &posData);
         printf("current pos2: s %.2f laneId %d offset %.2f x %.2f y %.2f z %.2f \n",
-               static_cast<double>(posData.s),
+               posData.s,
                laneInfo.laneId,
-               static_cast<double>(laneInfo.laneOffset),
-               static_cast<double>(posData.x),
-               static_cast<double>(posData.y),
-               static_cast<double>(posData.z));
+               laneInfo.laneOffset,
+               posData.x,
+               posData.y,
+               posData.z);
 
         for (int i = 0; i < 10; i++)
         {
-            SE_StepDT(0.1f);
+            SE_StepDT(0.1);
 
             for (int j = 0; j < SE_GetNumberOfObjects(); j++)
             {
@@ -55,12 +55,12 @@ int main(int argc, char* argv[])
 
                 SE_GetObjectState(j, &state);
                 printf("time %.2f object[%d] type %d category %d pos (%.2f, %.2f) \n",
-                       static_cast<double>(state.timestamp),
+                       state.timestamp,
                        j,
                        state.objectType,
                        state.objectCategory,
-                       static_cast<double>(state.x),
-                       static_cast<double>(state.y));
+                       state.x,
+                       state.y);
             }
         }
 

@@ -334,7 +334,7 @@ TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
     ASSERT_EQ(osi_points_second.GetNumOfOSIPoints(), 3);
 }
 
-class OSIPointsCloseCheck : public ::testing::TestWithParam<std::tuple<float, float, float, float, float, float, float, float, int>>
+class OSIPointsCloseCheck : public ::testing::TestWithParam<std::tuple<double, double, double, double, double, double, double, double, int>>
 {
 };
 // eight points (start and end for two lines)
@@ -376,11 +376,11 @@ TEST_P(OSIPointsCloseCheck, ClosenessChecker)
 
 INSTANTIATE_TEST_SUITE_P(OSI_Points_check_test,
                          OSIPointsCloseCheck,
-                         ::testing::Values(std::make_tuple(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1),
-                                           std::make_tuple(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 2),
-                                           std::make_tuple(0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 1.0f, 1.0f, 0),
-                                           std::make_tuple(0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f, 0.0f, 1),
-                                           std::make_tuple(0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 2)));
+                         ::testing::Values(std::make_tuple(0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1),
+                                           std::make_tuple(0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 2),
+                                           std::make_tuple(0.0, 0.0, 0.0, 1.0, 0.0, 2.0, 1.0, 1.0, 0),
+                                           std::make_tuple(0.0, 0.0, 0.0, 1.0, 0.0, 2.0, 0.0, 0.0, 1),
+                                           std::make_tuple(0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 2)));
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////

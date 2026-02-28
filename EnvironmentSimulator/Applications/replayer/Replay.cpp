@@ -406,10 +406,10 @@ int Replay::ParsePackets()
                         // Initialize timelines for this object
                         objects_timeline_[current_object_id_] = {};
                         current_object_timeline_              = &objects_timeline_[current_object_id_];
-                        current_object_timeline_->odometer_.values.emplace_back(timestamp_, 0.0f);
+                        current_object_timeline_->odometer_.values.emplace_back(timestamp_, 0.0);
                         if (timestamp_ > 0.0)
                         {
-                            current_object_timeline_->active_.values.emplace_back(0.0f, false);  // Object was inactive from start of simulation
+                            current_object_timeline_->active_.values.emplace_back(0.0, false);  // Object was inactive from start of simulation
                             current_object_timeline_->active_.values.emplace_back(timestamp_, true);
                         }
                         else

@@ -291,7 +291,7 @@ extern "C"
             }
         }
 
-        return 0.0f;
+        return 0.0;
     }
 
     RM_DLL_API const char* RM_GetRoadIdString(id_t road_id)

@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     // for (int i = 0; i < 100; i++)
     while (SE_GetQuitFlag() == 0)
     {
-        SE_StepDT(0.1f);
+        SE_StepDT(0.1);
 
         SE_UpdateOSITrafficCommand();
 

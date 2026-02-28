@@ -2918,31 +2918,31 @@ roadmanager::RMObject::RMObject(double      s,
     // Set color based on object type
     if (type_ == ObjectType::BUILDING || type_ == ObjectType::BARRIER)
     {
-        color_[0] = 0.6f;
-        color_[1] = 0.6f;
-        color_[2] = 0.6f;
-        color_[3] = 1.0f;
+        color_[0] = 0.6;
+        color_[1] = 0.6;
+        color_[2] = 0.6;
+        color_[3] = 1.0;
     }
     else if (type_ == ObjectType::OBSTACLE)
     {
-        color_[0] = 0.5f;
-        color_[1] = 0.3f;
-        color_[2] = 0.3f;
-        color_[3] = 1.0f;
+        color_[0] = 0.5;
+        color_[1] = 0.3;
+        color_[2] = 0.3;
+        color_[3] = 1.0;
     }
     else if (type_ == ObjectType::TREE || type_ == ObjectType::VEGETATION)
     {
-        color_[0] = 0.22f;
-        color_[1] = 0.32f;
-        color_[2] = 0.22f;
-        color_[3] = 1.0f;
+        color_[0] = 0.22;
+        color_[1] = 0.32;
+        color_[2] = 0.22;
+        color_[3] = 1.0;
     }
     else
     {
-        color_[0] = 0.4f;
-        color_[1] = 0.4f;
-        color_[2] = 0.4f;
-        color_[3] = 1.0f;
+        color_[0] = 0.4;
+        color_[1] = 0.4;
+        color_[2] = 0.4;
+        color_[3] = 1.0;
     }
 }
 

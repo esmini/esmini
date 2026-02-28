@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 
         SE_Init("../resources/xosc/cut-in.xosc", 0, 1, 0, 0);
 
-        while (SE_GetSimulationTime() < 20.0f && SE_GetQuitFlag() != 1)
+        while (SE_GetSimulationTime() < 20.0 && SE_GetQuitFlag() != 1)
         {
             SE_Step();
         }

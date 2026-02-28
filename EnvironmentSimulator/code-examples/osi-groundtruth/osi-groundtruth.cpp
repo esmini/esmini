@@ -37,8 +37,8 @@ int main(int argc, char* argv[])
 
     for (int i = 0; i < 4; i++)
     {
-        SE_StepDT(0.01f);  // ground truth will be automatically updated each step if we have either an OSIFile or fetched a pointer to the
-                           // osi3::GroundTruth struct
+        SE_StepDT(0.01);  // ground truth will be automatically updated each step if we have either an OSIFile or fetched a pointer to the
+                          // osi3::GroundTruth struct
 
         // Print timestamp
         printf("Frame %d timestamp: %.2f\n",

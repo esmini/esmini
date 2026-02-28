@@ -39,11 +39,11 @@ int main(int argc, char* argv[])
         for (int j = 0; j < 3; j++)  // camera views
         {
             SE_SetCameraMode(first_cam_index + j);
-            SE_StepDT(0.0f);  // render scene at same timestep but from another camera
+            SE_StepDT(0.0);  // render scene at same timestep but from another camera
             SaveImage(i, j);
         }
 
-        SE_StepDT(0.1f);  // step simulation
+        SE_StepDT(0.1);  // step simulation
     }
 
     SE_Close();

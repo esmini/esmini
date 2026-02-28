@@ -11,14 +11,14 @@ void PrintInfo(int pos_id)
     RM_GetPositionData(pos_id, &posData);
 
     printf("current pos: s %.2f laneId %d offset %.2f x %.2f y %.2f z %.2f p %.2f r %.2f road_type %d lane_type %d\n",
-           static_cast<double>(posData.s),
+           posData.s,
            laneInfo.laneId,
-           static_cast<double>(laneInfo.laneOffset),
-           static_cast<double>(posData.x),
-           static_cast<double>(posData.y),
-           static_cast<double>(posData.z),
-           static_cast<double>(posData.p),
-           static_cast<double>(posData.r),
+           laneInfo.laneOffset,
+           posData.x,
+           posData.y,
+           posData.z,
+           posData.p,
+           posData.r,
            laneInfo.road_type,
            laneInfo.lane_type);
 }
@@ -37,10 +37,10 @@ int main(int argc, char* argv[])
     // Create a position object
     int p0 = RM_CreatePosition();
 
-    RM_SetLanePosition(p0, 1, -1, 0.0f, 49.5f, true);
+    RM_SetLanePosition(p0, 1, -1, 0.0, 49.5, true);
     PrintInfo(p0);
 
-    RM_PositionMoveForward(p0, 1.5f, 0.0f);
+    RM_PositionMoveForward(p0, 1.5, 0.0);
     PrintInfo(p0);
 
     RM_Close();

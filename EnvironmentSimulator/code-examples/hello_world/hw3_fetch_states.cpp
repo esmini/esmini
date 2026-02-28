@@ -22,14 +22,14 @@ int main(int argc, char* argv[])
 
             SE_GetObjectState(SE_GetId(j), &state);
             printf("time [%.2f] object[%d] id %d pos[%.2f, %.2f] %.2f %.2f odometer: %.2f\n",
-                   static_cast<double>(state.timestamp),
+                   state.timestamp,
                    j,
                    SE_GetId(j),
-                   static_cast<double>(state.x),
-                   static_cast<double>(state.y),
-                   static_cast<double>(state.wheel_angle),
-                   static_cast<double>(state.wheel_rot),
-                   static_cast<double>(SE_GetObjectOdometer(SE_GetId(j))));
+                   state.x,
+                   state.y,
+                   state.wheel_angle,
+                   state.wheel_rot,
+                   SE_GetObjectOdometer(SE_GetId(j)));
         }
     }
 

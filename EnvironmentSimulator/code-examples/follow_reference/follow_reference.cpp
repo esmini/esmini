@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
     int ref_id = 1;
 
     // initialize esmini, establish initial states for given scenario
-    if (SE_Init("../../../../EnvironmentSimulator/code-examples/follow_reference/follow_reference.xosc", 0, visualize ? 1 : 0, 0, 1) != 0)
+    if (SE_Init("../EnvironmentSimulator/code-examples/follow_reference/follow_reference_code_ex.xosc", 0, visualize ? 1 : 0, 0, 1) != 0)
     {
         printf("Failed to initialize the scenario, quit\n");
         SE_LogMessage("Failed to initialize the scenario, quit\n");
@@ -129,21 +129,18 @@ int main(int argc, char* argv[])
         {
             // find lateral distance between Ego and reference vehicle x-axis
             double front_axle[2] = {0.0, 0.0};
-            if (ego_state.speed >= 0.0f)
+            if (ego_state.speed >= 0.0)
             {
                 // measure from Ego front axle when driving forward
                 rotate_vec(x_offset, 0.0, ego_state.h, front_axle[0], front_axle[1]);
             }
-            double dy = distance_point_to_line(static_cast<double>(ego_state.x) + front_axle[0],
-                                               static_cast<double>(ego_state.y) + front_axle[1],
-                                               ref_state.x,
-                                               ref_state.y,
-                                               ref_state.h);
+            double dy = distance_point_to_line(ego_state.x + front_axle[0], ego_state.y + front_axle[1], ref_state.x, ref_state.y, ref_state.h);
 
             // find longitudinal distance and heading difference between Ego and reference vehicle
-            double dx = distance_point_to_line(ego_state.x, ego_state.y, ref_state.x, ref_state.y, static_cast<double>(ref_state.h) + M_PI_2);
+            double dx = distance_point_to_line(ego_state.x, ego_state.y, ref_state.x, ref_state.y, ref_state.h + M_PI_2);
             double dh = normalize_angle(ref_state.h - ego_state.h);
 
+            printf("time %.2f dx %.2f speed %.2f\n", SE_GetSimulationTime(), dx, ego_state.speed - ref_state.speed);
             SE_SimpleVehicleControlAccAndSteer(ego_handle,
                                                dt,
                                                speed_ctrl.computeAcceleration(dx, ego_state.speed - ref_state.speed),

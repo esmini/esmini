@@ -3357,7 +3357,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_NEAR(entry.state.pos.y, -1.5, 1E-3);
 
             // Check timestep after 0.0
-            time  = static_cast<double>(dt);
+            time  = dt;
             entry = replay.GetReplayEntryAtTimeBinary(ids[0], time);
             EXPECT_NEAR(entry.state.info.timeStamp, time, 1E-3);
             EXPECT_STREQ(entry.state.info.name.c_str(), "Ego");
@@ -3426,7 +3426,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_NEAR(entry.state.pos.y, -1.5, 1E-3);
 
             // Check timestep after 0.0
-            time  = static_cast<double>(dt);
+            time  = dt;
             entry = replay.GetReplayEntryAtTimeBinary(ids[0], time);
             EXPECT_NEAR(entry.state.info.timeStamp, time, 1E-3);
             EXPECT_STREQ(entry.state.info.name.c_str(), "Ego");
@@ -3653,7 +3653,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_EQ(fread(msg_buf, 1, static_cast<size_t>(msg_size), file), static_cast<size_t>(msg_size));
             osi_gt.ParseFromArray(msg_buf, msg_size);
 
-            seconds = static_cast<double>(osi_gt.mutable_timestamp()->seconds()) + 1E-9 * static_cast<double>(osi_gt.mutable_timestamp()->nanos());
+            seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
 
             EXPECT_NEAR(seconds, time_stamps[0], 1E-3);
 
@@ -3676,8 +3676,7 @@ TEST(ExternalControlTest, TestTimings)
                 EXPECT_EQ(fread(msg_buf, 1, static_cast<size_t>(msg_size), file), static_cast<size_t>(msg_size));
                 osi_gt.ParseFromArray(msg_buf, msg_size);
 
-                seconds =
-                    static_cast<double>(osi_gt.mutable_timestamp()->seconds()) + 1E-9 * static_cast<double>(osi_gt.mutable_timestamp()->nanos());
+                seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
             }
 
             // Read second OSI message (should be at 2.1s)
@@ -3686,7 +3685,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_EQ(fread(msg_buf, 1, static_cast<size_t>(msg_size), file), static_cast<size_t>(msg_size));
             osi_gt.ParseFromArray(msg_buf, msg_size);
 
-            seconds = static_cast<double>(osi_gt.mutable_timestamp()->seconds()) + 1E-9 * static_cast<double>(osi_gt.mutable_timestamp()->nanos());
+            seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
 
             EXPECT_NEAR(seconds, time_stamps[1], 1E-3);
 
@@ -3704,7 +3703,7 @@ TEST(ExternalControlTest, TestTimings)
             EXPECT_EQ(fread(msg_buf, 1, static_cast<size_t>(msg_size), file), static_cast<size_t>(msg_size));
             osi_gt.ParseFromArray(msg_buf, msg_size);
 
-            seconds = static_cast<double>(osi_gt.mutable_timestamp()->seconds()) + 1E-9 * static_cast<double>(osi_gt.mutable_timestamp()->nanos());
+            seconds = osi_gt.mutable_timestamp()->seconds() + 1E-9 * osi_gt.mutable_timestamp()->nanos();
 
             EXPECT_NEAR(seconds, time_stamps[2], 1E-3);
 
@@ -4366,14 +4365,14 @@ TEST(ExternalController, TestExternalDriver)
                 SE_GetRoadInfoAtDistance(0, 5 + 0.75 * vehicleState.speed, &roadInfo, 0, true);
 
                 // Slow down when curve ahead - CURVE_WEIGHT is the tuning parameter
-                targetSpeed = defaultTargetSpeed / (1 + curveWeight * fabs(static_cast<double>(roadInfo.angle)));
+                targetSpeed = defaultTargetSpeed / (1 + curveWeight * fabs(roadInfo.angle));
             }
 
             // Steer towards where the point
             double steerAngle = roadInfo.angle;
 
             // Accelerate or decelerate towards target speed - THROTTLE_WEIGHT tunes magnitude
-            double throttle = throttleWeight * (targetSpeed - static_cast<double>(vehicleState.speed));
+            double throttle = throttleWeight * (targetSpeed - vehicleState.speed);
 
             // Step vehicle model with driver input, but wait until time > 0
             if (SE_GetSimulationTime() > SMALL_NUMBER && !SE_GetPauseFlag())
@@ -4549,7 +4548,7 @@ TEST(ExternalController, TestPositionAlignment)
         double steerAngle = roadInfo.angle;
 
         // Accelerate or decelerate towards target speed - THROTTLE_WEIGHT tunes magnitude
-        double throttle = throttleWeight * (targetSpeed - static_cast<double>(vehicleState.speed));
+        double throttle = throttleWeight * (targetSpeed - vehicleState.speed);
 
         // Step vehicle model with driver input, but wait until time > 0
         if (SE_GetSimulationTime() > 0 && !SE_GetPauseFlag())
@@ -4685,7 +4684,7 @@ TEST(PositionMode, TestRoadAlignmentModes)
             state++;
         }
 
-        if (result_state < 2 && static_cast<double>(SE_GetSimulationTime()) > result[result_state][0].time - SMALL_NUMBER)
+        if (result_state < 2 && SE_GetSimulationTime() > result[result_state][0].time - SMALL_NUMBER)
         {
             SE_ScenarioObjectState obj_state;
             for (int i = 0; i < 4; i++)
@@ -5334,7 +5333,7 @@ TEST(RoadmanagerTest, TestGetPositionDiff)
     EXPECT_NEAR(diff.dy, 53.693, 1e-3);
     EXPECT_EQ(diff.oppositeLanes, false);
 
-    while (SE_GetSimulationTime() < 30.9f)
+    while (SE_GetSimulationTime() < 30.9)
     {
         SE_StepDT(dt);
     }
@@ -5347,7 +5346,7 @@ TEST(RoadmanagerTest, TestGetPositionDiff)
     EXPECT_NEAR(diff.dy, -19.1543, 1e-3);
     EXPECT_EQ(diff.oppositeLanes, false);
 
-    while (SE_GetSimulationTime() < 35.0f)
+    while (SE_GetSimulationTime() < 35.0)
     {
         SE_StepDT(dt);
     }
@@ -5620,10 +5619,10 @@ TEST(GetFunctionsTest, TestGetAccelerations)
     double acc_lat  = 0.0;
     double acc_long = 0.0;
 
-    while (SE_GetSimulationTime() < 8.0f && state < 4)
+    while (SE_GetSimulationTime() < 8.0 - SMALL_NUMBER && state < 4)
     {
         SE_StepDT(0.1);
-        if (state == 0 && SE_GetSimulationTime() > 6.5f)
+        if (state == 0 && SE_GetSimulationTime() > 6.5 + SMALL_NUMBER)
         {
             EXPECT_EQ(SE_GetObjectAccelerationGlobalXYZ(1, &acc_x, &acc_y, &acc_z), 0);
             EXPECT_NEAR(acc_x, 0.0, 1e-3);
@@ -5636,7 +5635,7 @@ TEST(GetFunctionsTest, TestGetAccelerations)
 
             state++;
         }
-        else if (state == 1 && SE_GetSimulationTime() > 7.5f)
+        else if (state == 1 && SE_GetSimulationTime() > 7.5 + SMALL_NUMBER)
         {
             EXPECT_EQ(SE_GetObjectAccelerationGlobalXYZ(1, &acc_x, &acc_y, &acc_z), 0);
             EXPECT_NEAR(acc_x, -0.054, 1e-3);
@@ -5685,21 +5684,21 @@ TEST(StringIds, TestRoadStringIds)
     SE_ScenarioObjectState obj_state;
     while (SE_GetQuitFlag() == 0)
     {
-        if (test_state == 0 && SE_GetSimulationTime() > 0.1f)
+        if (test_state == 0 && SE_GetSimulationTime() > 0.1 + SMALL_NUMBER)
         {
             SE_GetObjectState(SE_GetId(0), &obj_state);
             EXPECT_EQ(obj_state.roadId, 0);
             EXPECT_STREQ(SE_GetRoadIdString(obj_state.roadId), "0");
             test_state++;
         }
-        else if (test_state == 1 && SE_GetSimulationTime() > 1.25f)
+        else if (test_state == 1 && SE_GetSimulationTime() > 1.25 + SMALL_NUMBER)
         {
             SE_GetObjectState(SE_GetId(0), &obj_state);
             EXPECT_EQ(obj_state.roadId, 127);
             EXPECT_STREQ(SE_GetRoadIdString(obj_state.roadId), "ConnectingRoad9");
             test_state++;
         }
-        else if (test_state == 2 && SE_GetSimulationTime() > 2.0f)
+        else if (test_state == 2 && SE_GetSimulationTime() > 2.0 + SMALL_NUMBER)
         {
             SE_GetObjectState(SE_GetId(0), &obj_state);
             EXPECT_EQ(obj_state.roadId, 3);
@@ -5794,7 +5793,7 @@ TEST(APITest, TestWheelData)
     EXPECT_NEAR(wheel_data.y, 0.840, 1E-3);
     EXPECT_NEAR(wheel_data.z, 0.4, 1E-3);
 
-    while (SE_GetSimulationTime() < 5.81f)
+    while (SE_GetSimulationTime() < 5.81 - SMALL_NUMBER)
     {
         SE_StepDT(0.1);
     }
@@ -5846,13 +5845,13 @@ TEST(RoutingTest, TestRouteStatus)
     EXPECT_EQ(SE_GetNumberOfObjects(), 1);
     EXPECT_EQ(SE_GetObjectRouteStatus(SE_GetId(0)), 2);
 
-    while (SE_GetSimulationTime() < 0.7f)
+    while (SE_GetSimulationTime() < 0.7 - SMALL_NUMBER)
     {
         SE_StepDT(0.1);
     }
     EXPECT_EQ(SE_GetObjectRouteStatus(SE_GetId(0)), 1);
 
-    while (SE_GetSimulationTime() < 8.9f)
+    while (SE_GetSimulationTime() < 8.9 - SMALL_NUMBER)
     {
         SE_StepDT(0.1);
     }
@@ -5944,7 +5943,7 @@ TEST_P(TrailTest, TrailTestPositionMode)
     double      speed, timestamp;
 
     // in border lane
-    while (SE_GetSimulationTime() < (std::get<0>(GetParam()) == "position" ? 2.0f : 1.0f) + SMALL_NUMBERF)
+    while (SE_GetSimulationTime() < (std::get<0>(GetParam()) == "position" ? 2.0 : 1.0) + SMALL_NUMBER)
     {
         SE_StepDT(0.1);
     }
@@ -5959,7 +5958,7 @@ TEST_P(TrailTest, TrailTestPositionMode)
     EXPECT_NEAR(road_info.trail_wheel_angle, std::get<4>(GetParam()), 1e-3);
 
     // in shoulder lane
-    while (SE_GetSimulationTime() < (std::get<0>(GetParam()) == "position" ? 2.9f : 1.5f) + SMALL_NUMBERF)
+    while (SE_GetSimulationTime() < (std::get<0>(GetParam()) == "position" ? 2.9 : 1.5) + SMALL_NUMBER)
     {
         SE_StepDT(0.1);
     }
@@ -5973,7 +5972,7 @@ TEST_P(TrailTest, TrailTestPositionMode)
     EXPECT_NEAR(road_info.trail_wheel_angle, std::get<8>(GetParam()), 1e-3);
 
     // in driving lane
-    while (SE_GetSimulationTime() < (std::get<0>(GetParam()) == "position" ? 3.4f : 2.0f) + SMALL_NUMBERF)
+    while (SE_GetSimulationTime() < (std::get<0>(GetParam()) == "position" ? 3.4 : 2.0) + SMALL_NUMBER)
     {
         SE_StepDT(0.1);
     }

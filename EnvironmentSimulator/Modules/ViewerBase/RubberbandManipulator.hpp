@@ -49,12 +49,7 @@ namespace osgGA
             CustomCamera(osg::Vec3 pos, bool fixed_pos) : pos_(pos), fixed_pos_(fixed_pos), fixed_rot_(false), ortho_(false)
             {
             }
-            CustomCamera(osg::Vec3 pos, double rot)
-                : pos_(pos),
-                  rot_(osg::Vec3(rot, M_PI_2 - 1e-5f, 0.0f)),
-                  fixed_pos_(true),
-                  fixed_rot_(true),
-                  ortho_(true)
+            CustomCamera(osg::Vec3 pos, float rot) : pos_(pos), rot_(rot, M_PI_2 - 1e-5, 0.0), fixed_pos_(true), fixed_rot_(true), ortho_(true)
             {
             }
 

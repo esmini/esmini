@@ -3,6 +3,8 @@
 #include <string.h>
 #include <iostream>
 
+#define SMALL_NUMBER 1e-6
+
 int main(int argc, char **argv)
 {
     double dt = -1.0;  // default to variable timestep
@@ -37,33 +39,33 @@ int main(int argc, char **argv)
     }
 
     int state = 0;
-    while (SE_GetQuitFlag() == 0 && SE_GetSimulationTime() < 17.0f)
+    while (SE_GetQuitFlag() == 0 && SE_GetSimulationTime() < 17.0)
     {
-        if (state == 0 && SE_GetSimulationTime() > 2.0f)
+        if (state == 0 && SE_GetSimulationTime() > 2.0 + SMALL_NUMBER)
         {
             printf("Injecting lane offset action\n");
             SE_LaneOffsetActionStruct lane_offset;
-            lane_offset.id               = 0;       // id of object to perform action
-            lane_offset.offset           = -0.45f;  // target offset in m
-            lane_offset.maxLateralAcc    = 0.5f;    // max lateral acceleration in m/s^2
-            lane_offset.transition_shape = 0;       // cubic
+            lane_offset.id               = 0;      // id of object to perform action
+            lane_offset.offset           = -0.45;  // target offset in m
+            lane_offset.maxLateralAcc    = 0.5;    // max lateral acceleration in m/s^2
+            lane_offset.transition_shape = 0;      // cubic
             SE_InjectLaneOffsetAction(&lane_offset);
             state++;
         }
-        else if (state == 1 && SE_GetSimulationTime() > 7.0f)
+        else if (state == 1 && SE_GetSimulationTime() > 7.0 + SMALL_NUMBER)
         {
             printf("Injecting lane change action\n");
             SE_LaneChangeActionStruct lane_change;
-            lane_change.id               = 0;     // id of object to perform action
-            lane_change.mode             = 1;     // relative (own vehicle)
-            lane_change.target           = 1;     // target lane id (relative)
-            lane_change.transition_shape = 2;     // sinusoidal
-            lane_change.transition_dim   = 2;     // time
-            lane_change.transition_value = 3.0f;  // s
+            lane_change.id               = 0;    // id of object to perform action
+            lane_change.mode             = 1;    // relative (own vehicle)
+            lane_change.target           = 1;    // target lane id (relative)
+            lane_change.transition_shape = 2;    // sinusoidal
+            lane_change.transition_dim   = 2;    // time
+            lane_change.transition_value = 3.0;  // s
             SE_InjectLaneChangeAction(&lane_change);
             state++;
         }
-        else if (state == 2 && SE_GetSimulationTime() > 8.0f)
+        else if (state == 2 && SE_GetSimulationTime() > 8.0 + SMALL_NUMBER)
         {
             if (SE_InjectedActionOngoing(5))  // 5 = LAT_LANE_CHANGE
             {
@@ -73,42 +75,42 @@ int main(int argc, char **argv)
             {
                 printf("Injecting lane change action 2\n");
                 SE_LaneChangeActionStruct lane_change;
-                lane_change.id               = 0;     // id of object to perform action
-                lane_change.mode             = 1;     // relative (own vehicle)
-                lane_change.target           = -1;    // target lane id (relative)
-                lane_change.transition_shape = 2;     // sinusoidal
-                lane_change.transition_dim   = 2;     // time
-                lane_change.transition_value = 3.0f;  // s
+                lane_change.id               = 0;    // id of object to perform action
+                lane_change.mode             = 1;    // relative (own vehicle)
+                lane_change.target           = -1;   // target lane id (relative)
+                lane_change.transition_shape = 2;    // sinusoidal
+                lane_change.transition_dim   = 2;    // time
+                lane_change.transition_value = 3.0;  // s
                 SE_InjectLaneChangeAction(&lane_change);
             }
             state++;
         }
-        else if (state == 3 && SE_GetSimulationTime() > 9.5f)  // slightly overlapping lane change action
+        else if (state == 3 && SE_GetSimulationTime() > 9.5 + SMALL_NUMBER)  // slightly overlapping lane change action
         {
             printf("Injecting speed action - soft brake\n");
             SE_SpeedActionStruct speed;
-            speed.id               = 0;     // id of object to perform action
-            speed.speed            = 0.0f;  // target speed in m/s
-            speed.transition_shape = 0;     // cubic
-            speed.transition_dim   = 1;     // rate
-            speed.transition_value = 3.0f;  // m/s^2
+            speed.id               = 0;    // id of object to perform action
+            speed.speed            = 0.0;  // target speed in m/s
+            speed.transition_shape = 0;    // cubic
+            speed.transition_dim   = 1;    // rate
+            speed.transition_value = 3.0;  // m/s^2
             SE_InjectSpeedAction(&speed);
             state++;
         }
-        else if (state == 4 && SE_GetSimulationTime() > 11.0f)  // slightly overlapping lane change action
+        else if (state == 4 && SE_GetSimulationTime() > 11.0 + SMALL_NUMBER)  // slightly overlapping lane change action
         {
             printf("Injecting speed action - hard brake\n");
             SE_SpeedActionStruct speed;
-            speed.id               = 0;     // id of object to perform action
-            speed.speed            = 0.0f;  // target speed in m/s
-            speed.transition_shape = 1;     // cubic
-            speed.transition_dim   = 1;     // rate
-            speed.transition_value = 8.0f;  // m/s^2
+            speed.id               = 0;    // id of object to perform action
+            speed.speed            = 0.0;  // target speed in m/s
+            speed.transition_shape = 1;    // cubic
+            speed.transition_dim   = 1;    // rate
+            speed.transition_value = 8.0;  // m/s^2
             SE_InjectSpeedAction(&speed);
             state++;
         }
 
-        if (dt < 0.0f)
+        if (dt < 0.0)
         {
             SE_Step();
         }

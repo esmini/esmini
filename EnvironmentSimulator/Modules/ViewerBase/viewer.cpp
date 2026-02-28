@@ -48,8 +48,8 @@ namespace fs = std::experimental::filesystem;
 #define LOD_DIST                3000
 #define LOD_SCALE_DEFAULT       1.0
 #define DEFAULT_AA_MULTISAMPLES 4
-#define OSI_LINE_WIDTH          2.0f
-#define OSI_LINE_WIDTH_BOLD     4.0f
+#define OSI_LINE_WIDTH          2.0
+#define OSI_LINE_WIDTH_BOLD     4.0
 #define OSI_DOT_SIZE            6.0
 #define TRAIL_WIDTH             2
 #define TRAIL_DOT_SIZE          10
@@ -1971,7 +1971,8 @@ void Viewer::AddCustomCamera(double x, double y, double z, bool fixed_pos)
 
 void Viewer::AddCustomFixedTopCamera(double x, double y, double z, double rot)
 {
-    osgGA::RubberbandManipulator::CustomCamera cam(osg::Vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)), rot);
+    osgGA::RubberbandManipulator::CustomCamera cam(osg::Vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)),
+                                                   static_cast<float>(rot));
     rubberbandManipulator_->AddCustomCamera(cam);
 
     UpdateCameraFOV();

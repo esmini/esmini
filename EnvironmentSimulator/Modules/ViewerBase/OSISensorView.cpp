@@ -194,7 +194,7 @@ OSIDetectedPoint::OSIDetectedPoint(const osg::Vec3 point, osg::ref_ptr<osg::Grou
                                               SE_Color::Color2RBG(SE_Color::Color::GREEN)[2],
                                               1.0));
 
-    osi_detection_point->setSize(8.0f);
+    osi_detection_point->setSize(8.0);
     osi_detection_geom_->getOrCreateStateSet()->setAttributeAndModes(osi_detection_point, osg::StateAttribute::ON);
     osi_detection_geom_->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
     osi_detection_geom_->getOrCreateStateSet()->setDataVariance(osg::Object::DYNAMIC);
@@ -241,8 +241,8 @@ OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double
     const float(*color)[3] = &SE_Color::Color2RBG(SE_Color::Color::GREEN);
     double b               = 1.0;  // brighness range (0,1)
 
-    material->setAmbient(osg::Material::FRONT, osg::Vec4(b * (*color)[0], b * (*color)[1], b * (*color)[2], 1.0f));
-    material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * (*color)[0], b * (*color)[1], b * (*color)[2], 1.0f));
+    material->setAmbient(osg::Material::FRONT, osg::Vec4(b * (*color)[0], b * (*color)[1], b * (*color)[2], 1.0));
+    material->setDiffuse(osg::Material::FRONT, osg::Vec4(b * (*color)[0], b * (*color)[1], b * (*color)[2], 1.0));
 
     // Set dimensions of the entity "box"
     osi_detection_tx_->setScale(bb_dimensions_);
@@ -258,7 +258,7 @@ OSIDetectedCar::OSIDetectedCar(const osg::Vec3 point, double h, double w, double
     osi_detection_geode_box_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);
 
     osi_detection_geode_center_ = new osg::Geode;
-    osi_detection_geode_center_->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0.0f, 0.0f, 0.0f), 0.2f)));
+    osi_detection_geode_center_->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0.0, 0.0, 0.0), 0.2)));
     osi_detection_geode_center_->getDrawable(0)->setDataVariance(osg::Object::DYNAMIC);
 
     osi_detection_geode_center_->setNodeMask(NodeMask::NODE_MASK_OBJECT_SENSORS);

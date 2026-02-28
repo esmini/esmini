@@ -50,9 +50,7 @@ using idx_t = uint32_t;
 #define IDX_UNDEFINED                 0xffffffff
 #define IDX_MAX                       0xfffffffe
 #define SMALL_NUMBER                  (1E-6)
-#define SMALL_NUMBERF                 (1E-6f)
 #define LARGE_NUMBER                  (1E+10)
-#define LARGE_NUMBERF                 (1E+10f)
 #define LARGE_NUMBER_INT              (0x7fffffff)  // largest signed 32 bit integer number
 #define SIGN(X)                       ((X < 0) ? -1 : 1)
 #define MAX(x, y)                     ((y) > (x) ? (y) : (x))
@@ -63,7 +61,6 @@ using idx_t = uint32_t;
 #define AVOID_ZERO(x)                 (SIGN(x) * MAX(SMALL_NUMBER, fabs(x)))
 #define NEAR_ZERO(x)                  (abs(x) < SMALL_NUMBER)
 #define NEAR_NUMBERS(x, y)            (abs((x) - (y)) < SMALL_NUMBER)
-#define NEAR_NUMBERSF(x, y)           (abs((x) - (y)) < SMALL_NUMBERF)
 #define IS_IN_SPAN(x, y, z)           ((x) >= (y) && (x) <= (z))
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION     0.05
@@ -1154,7 +1151,7 @@ public:
     }
     double GetS() const
     {
-        return 1E-3 * (SE_getSystemTimeMilliseconds() - start_time_);
+        return 1E-3 * static_cast<double>(SE_getSystemTimeMilliseconds() - start_time_);
     }
 };
 
@@ -1191,7 +1188,7 @@ public:
     }
     double Elapsed() const
     {
-        return 1E-3 * (SE_getSystemTimeMilliseconds() - start_time_);
+        return 1E-3 * static_cast<double>(SE_getSystemTimeMilliseconds() - start_time_);
     }
     double Remaining() const
     {

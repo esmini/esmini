@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
         // Initialize the vehicle model, fetch initial state from the scenario
         SE_GetObjectState(0, &objectState);
         void* vehicleHandle = SE_SimpleVehicleCreate(objectState.x, objectState.y, objectState.h, 4.0, 0.0);
-        SE_SimpleVehicleSteeringRate(vehicleHandle, 6.0f);
+        SE_SimpleVehicleSteeringRate(vehicleHandle, 6.0);
 
         // show some road features, including road sensor
         SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),
@@ -65,26 +65,26 @@ int main(int argc, char* argv[])
                 if (i % 2 == 0)  // alternate between time based and position based look ahead modes
                 {
                     // Time based look ahead
-                    SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime() + 0.25f, &roadInfo, &ghost_speed);
+                    SE_GetRoadInfoGhostTrailTime(0, SE_GetSimulationTime() + 0.25, &roadInfo, &ghost_speed);
                 }
                 else
                 {
                     // Position based Time based look ahead
-                    SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75f * vehicleState.speed, &roadInfo, &ghost_speed, &timestamp);
+                    SE_GetRoadInfoAlongGhostTrail(0, 5 + 0.75 * vehicleState.speed, &roadInfo, &ghost_speed, &timestamp);
                 }
                 targetSpeed = ghost_speed;
             }
             else
             {
                 // Look ahead along the road, to establish target info for the driver model
-                SE_GetRoadInfoAtDistance(0, 5 + 0.75f * vehicleState.speed, &roadInfo, 0, true);
+                SE_GetRoadInfoAtDistance(0, 5 + 0.75 * vehicleState.speed, &roadInfo, 0, true);
 
                 // Slow down when curve ahead - CURVE_WEIGHT is the tuning parameter
-                targetSpeed = defaultTargetSpeed / (1 + curveWeight * static_cast<double>(fabs(roadInfo.angle)));
+                targetSpeed = defaultTargetSpeed / (1 + curveWeight * fabs(roadInfo.angle));
             }
 
             // Accelerate or decelerate towards target speed - THROTTLE_WEIGHT tunes magnitude
-            double throttle = throttleWeight * (targetSpeed - static_cast<double>(vehicleState.speed));
+            double throttle = throttleWeight * (targetSpeed - vehicleState.speed);
 
             // Step vehicle model with driver input, but wait until time > 0
             if (SE_GetSimulationTime() > 0 && !SE_GetPauseFlag())

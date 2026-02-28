@@ -4496,16 +4496,12 @@ If you have a different version installed or don't want to install 2.17 system-w
 
 ====== For Linux and macOS
 
-Download Cppcheck 2.17.1 source from:
+Example how to clone and build cppcheck 2.17.1, from home directory:
 
-https://github.com/danmar/cppcheck/archive/refs/tags/2.17.1.tar.gz
-
-Extract it to your home directory (for example, to ~/cppcheck-2.17.1).
-
-Build it:
 [source, txt]
 ----
-cd ~/cppcheck-2.17.1
+git clone --branch 2.17.1 --depth 1 https://github.com/danmar/cppcheck.git
+cd cppcheck
 mkdir build
 cd build
 cmake ..
@@ -4514,11 +4510,11 @@ cmake --build .
 
 To temporarily use your locally built Cppcheck 2.17 without changing your system default, run the following from your esmini root folder:
 
-`PATH="$HOME/cppcheck-2.17.1/build/bin:$PATH" pre-commit run cppcheck --all-files`
+`PATH="$HOME/cppcheck/build/bin:$PATH" pre-commit run cppcheck --all-files`
 
 To make this change more permanent, you can add the following line to your shell configuration file (e.g. ~/.bashrc):
 
-`export PATH="$HOME/cppcheck-2.17.1/build/bin":$PATH`
+`export PATH="$HOME/cppcheck/build/bin":$PATH`
 
 ====== For Windows
 

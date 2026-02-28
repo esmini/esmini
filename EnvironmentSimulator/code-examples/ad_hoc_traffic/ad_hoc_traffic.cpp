@@ -9,6 +9,8 @@
 #include <string.h>
 #include <vector>
 
+#define SMALL_NUMBER 1e-6
+
 typedef struct
 {
     int    id;
@@ -48,14 +50,14 @@ int main(int argc, char* argv[])
     double timestamp_now = SE_GetSimulationTime();
     double timestamp_old = timestamp_now;
 
-    while (timestamp_now < 30.0 && !(SE_GetQuitFlag() == 1))
+    while (timestamp_now < 30.0 - SMALL_NUMBER && !(SE_GetQuitFlag() == 1))
     {
         // add vehicles
-        if (timestamp_now > (distance * static_cast<double>(counter)) / speed)
+        if (timestamp_now > (distance * static_cast<double>(counter)) / speed - SMALL_NUMBER)
         {
             // Add a vehicle at regular distance
             std::string name = "object_" + std::to_string(counter);
-            Car         car  = {0, 0.0f};
+            Car         car  = {0, 0.0};
 
             car.id = SE_AddObject(name.c_str(), 1, 0, 0, counter % 11, nullptr);
             if (car.id >= 0)
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
         for (unsigned int i = 0; i < cars.size(); i++)
         {
             cars[i].x += speed * (timestamp_now - timestamp_old);
-            if (cars[i].x > 500)
+            if (cars[i].x > 500 + SMALL_NUMBER)
             {
                 printf("Removing car with id %d\n", cars[i].id);
                 SE_DeleteObject(cars[i].id);
@@ -82,7 +84,7 @@ int main(int argc, char* argv[])
             }
             else
             {
-                SE_ReportObjectPos(cars[i].id, cars[i].x, -1.5f, 0.0f, 0.0f, 0.0f, 0.0f);
+                SE_ReportObjectPos(cars[i].id, cars[i].x, -1.5, 0.0, 0.0, 0.0, 0.0);
                 SE_ReportObjectSpeed(cars[i].id, speed);
             }
         }
@@ -98,9 +100,9 @@ int main(int argc, char* argv[])
                                                  0,
                                                  0,
                                                  "box_cc_by.osgb",
-                                                 {0.0, 0.0, 1.0, 2.0f * tmp, 1.0, 2.0},
+                                                 {0.0, 0.0, 1.0, 2.0 * tmp, 1.0, 2.0},
                                                  2);
-            SE_ReportObjectPosXYH(id, tmp * 100.0f, 5.0f, 0.0f);
+            SE_ReportObjectPosXYH(id, tmp * 100.0, 5.0, 0.0);
             n_misc_objects++;
         }
 

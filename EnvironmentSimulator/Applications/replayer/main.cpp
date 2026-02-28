@@ -256,9 +256,9 @@ int ParseEntities(Replay* player)
                 auto& new_sc = scenarioEntity.emplace_back();
 
                 new_sc.id             = id;
-                new_sc.pos            = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, 0.0f, 0.0f, 0.0f};
-                new_sc.wheel_angle    = 0.0f;
-                new_sc.wheel_rotation = 0.0f;
+                new_sc.pos            = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0.0, 0.0, 0.0};
+                new_sc.wheel_angle    = 0.0;
+                new_sc.wheel_rotation = 0.0;
                 new_sc.name           = timelines.name_.values.front().second;
                 new_sc.visible        = true;
                 new_sc.bounding_box   = timelines.bounding_box_.values.front().second;
@@ -302,10 +302,8 @@ int ParseEntities(Replay* player)
                     LOG_WARN("No 3D model resolved for entity {} {}", new_sc.id, new_sc.name);
                 }
 
-                double refpoint_x_offset =
-                    (timelines.refpoint_x_offset_.values.empty()) ? 0.0 : static_cast<double>(timelines.refpoint_x_offset_.values.front().second);
-                double model_x_offset =
-                    (timelines.model_x_offset_.values.empty()) ? 0.0 : static_cast<double>(timelines.model_x_offset_.values.front().second);
+                double refpoint_x_offset = (timelines.refpoint_x_offset_.values.empty()) ? 0.0 : timelines.refpoint_x_offset_.values.front().second;
+                double model_x_offset    = (timelines.model_x_offset_.values.empty()) ? 0.0 : timelines.model_x_offset_.values.front().second;
 
                 if (!timelines.outline_.values.empty())
                 {
@@ -348,8 +346,8 @@ int ParseEntities(Replay* player)
                 }
 #endif  // _USE_OSG
 
-                // cppcheck-suppress unreadVariable
                 // This variable is used if we compile with OSG
+                // cppcheck-suppress unreadVariable
                 sc = &new_sc;
             }
 
@@ -364,7 +362,7 @@ int ParseEntities(Replay* player)
             if (sc->trajPoints->size() == 0)
             {
                 sc->trajPoints->push_back(
-                    osg::Vec3(entry.state.pos.x - viewer_->origin_[0], entry.state.pos.y - viewer_->origin_[1], entry.state.pos.z + z_offset));
+                    osg::Vec3d(entry.state.pos.x - viewer_->origin_[0], entry.state.pos.y - viewer_->origin_[1], entry.state.pos.z + z_offset));
             }
             else
             {
@@ -377,12 +375,12 @@ int ParseEntities(Replay* player)
                 {
                     // Replace last point until distance is above threshold
                     sc->trajPoints->back() =
-                        osg::Vec3(entry.state.pos.x - viewer_->origin_[0], entry.state.pos.y - viewer_->origin_[1], entry.state.pos.z + z_offset);
+                        osg::Vec3d(entry.state.pos.x - viewer_->origin_[0], entry.state.pos.y - viewer_->origin_[1], entry.state.pos.z + z_offset);
                 }
                 else
                 {
                     sc->trajPoints->push_back(
-                        osg::Vec3(entry.state.pos.x - viewer_->origin_[0], entry.state.pos.y - viewer_->origin_[1], entry.state.pos.z + z_offset));
+                        osg::Vec3d(entry.state.pos.x - viewer_->origin_[0], entry.state.pos.y - viewer_->origin_[1], entry.state.pos.z + z_offset));
                 }
             }
 #endif  // _USE_OSG
@@ -1125,16 +1123,16 @@ int main(int argc, char** argv)
                              state->info.name.c_str(),
                              state->info.id,
                              entry.odometer,
-                             3.6 * static_cast<double>(state->info.speed),
+                             3.6 * state->info.speed,
                              sc->pos.roadId,
                              sc->pos.laneId,
-                             static_cast<double>(fabs(sc->pos.offset)) < SMALL_NUMBER ? 0 : static_cast<double>(sc->pos.offset),
-                             static_cast<double>(sc->pos.s),
-                             static_cast<double>(sc->pos.x),
-                             static_cast<double>(sc->pos.y),
-                             static_cast<double>(sc->pos.h),
-                             static_cast<double>(sc->pos.x + sc->bounding_box.center_.x_ * cos(sc->pos.h)),
-                             static_cast<double>(sc->pos.y + sc->bounding_box.center_.x_ * sin(sc->pos.h)));
+                             fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset,
+                             sc->pos.s,
+                             sc->pos.x,
+                             sc->pos.y,
+                             sc->pos.h,
+                             sc->pos.x + sc->bounding_box.center_.x_ * cos(sc->pos.h),
+                             sc->pos.y + sc->bounding_box.center_.x_ * sin(sc->pos.h));
                     sc->entityModel->on_screen_info_.osg_text_->setText(sc->entityModel->on_screen_info_.string_);
 
                     if (index == viewer_->currentCarInFocus_)
@@ -1147,16 +1145,16 @@ int main(int argc, char** argv)
                                  viewer_->currentCarInFocus_,
                                  state->info.name.c_str(),
                                  state->info.id,
-                                 static_cast<double>(state->info.timeStamp),
-                                 3.6 * static_cast<double>(state->info.speed),
+                                 state->info.timeStamp,
+                                 3.6 * state->info.speed,
                                  entry.odometer,
                                  sc->pos.roadId,
                                  sc->pos.laneId,
-                                 static_cast<double>(fabs(sc->pos.offset)) < SMALL_NUMBER ? 0 : static_cast<double>(sc->pos.offset),
-                                 static_cast<double>(sc->pos.s),
-                                 static_cast<double>(sc->pos.x),
-                                 static_cast<double>(sc->pos.y),
-                                 static_cast<double>(sc->pos.h),
+                                 fabs(sc->pos.offset) < SMALL_NUMBER ? 0 : sc->pos.offset,
+                                 sc->pos.s,
+                                 sc->pos.x,
+                                 sc->pos.y,
+                                 sc->pos.h,
                                  time_scale);
                         viewer_->SetInfoText(info_str_buf);
                     }
@@ -1243,8 +1241,8 @@ int main(int argc, char** argv)
                                         pause_player     = col_pause ? true : false;
                                         double rel_speed = abs((player_->GetState(scenarioEntity[i].id))->info.speed -
                                                                (player_->GetState(scenarioEntity[j].id)->info.speed)) *
-                                                           3.6f;
-                                        double rel_angle = static_cast<double>(scenarioEntity[i].pos.h - scenarioEntity[j].pos.h) * 180.0 / M_PI;
+                                                           3.6;
+                                        double rel_angle = (scenarioEntity[i].pos.h - scenarioEntity[j].pos.h) * 180.0 / M_PI;
                                         LOG_WARN(
                                             "Collision between {} (id {}) and {} (id {}) at time {:.2f}, Relative speed {:.2f} km/h, Angle {:.2f} degrees (ego to target)",
                                             scenarioEntity[i].name,

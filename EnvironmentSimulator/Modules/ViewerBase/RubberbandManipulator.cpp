@@ -374,13 +374,13 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
     {
         cameraRotation_ = -90;
         cameraAngle_    = 90;
-        x               = -GetCameraDistance() * (cosf(cameraRotation_ * 0.0174533f) * cosf(cameraAngle_ * 0.0174533f));
-        y               = -GetCameraDistance() * (sinf(cameraRotation_ * 0.0174533f) * cosf(cameraAngle_ * 0.0174533f));
+        x               = -GetCameraDistance() * (cosf(cameraRotation_ * 0.0174533) * cosf(cameraAngle_ * 0.0174533));
+        y               = -GetCameraDistance() * (sinf(cameraRotation_ * 0.0174533) * cosf(cameraAngle_ * 0.0174533));
         relative_pos_.set(x, y, GetCameraDistance());  // Put a small number to prevent undefined camera angle
     }
     else if (mode_ == RB_MODE_RUBBER_BAND)
     {
-        relative_pos_.set(-GetCameraDistance(), 0.0, GetCameraDistance() * atan(cameraAngle_ * 0.0174533f));
+        relative_pos_.set(-GetCameraDistance(), 0.0, GetCameraDistance() * atan(cameraAngle_ * 0.0174533));
     }
     else if (mode_ == RB_MODE_DRIVER)
     {
@@ -406,9 +406,9 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
         {
             cameraRotation_ = 0;
         }
-        x = -GetCameraDistance() * (cosf(cameraRotation_ * 0.0174533f) * cosf(cameraAngle_ * 0.0174533f));
-        y = -GetCameraDistance() * (sinf(cameraRotation_ * 0.0174533f) * cosf(cameraAngle_ * 0.0174533f));
-        z = GetCameraDistance() * sinf(cameraAngle_ * 0.0174533f);
+        x = -GetCameraDistance() * (cosf(cameraRotation_ * 0.0174533) * cosf(cameraAngle_ * 0.0174533));
+        y = -GetCameraDistance() * (sinf(cameraRotation_ * 0.0174533) * cosf(cameraAngle_ * 0.0174533));
+        z = GetCameraDistance() * sinf(cameraAngle_ * 0.0174533);
 
         relative_pos_.set(x, y, z);
     }
@@ -433,11 +433,11 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
     {
         if (dt < 0)
         {
-            dt = 0.0f;
+            dt = 0.0;
         }
         if (dt > 0.1)
         {
-            dt = 0.1f;
+            dt = 0.1;
         }
 
         // Find the vector between target position and actual camera position

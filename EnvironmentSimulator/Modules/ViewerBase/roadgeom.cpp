@@ -121,7 +121,7 @@ namespace roadgeom
     osg::Vec4 ODR2OSGColor(roadmanager::RoadMarkColor color)
     {
         const float(&rgb)[3] = SE_Color::Color2RBG(roadmanager::ODRColor2SEColor(color));
-        return osg::Vec4(rgb[0], rgb[1], rgb[2], 1.0f);
+        return osg::Vec4(rgb[0], rgb[1], rgb[2], 1.0);
     }
 
     osg::ref_ptr<osg::Material> RoadGeom::GetOrCreateMaterial(const std::string& basename,
@@ -325,10 +325,7 @@ namespace roadgeom
                                 osg::ref_ptr<osg::TessellationHints> th = new osg::TessellationHints();
                                 th->setDetailRatio(0.3f);
                                 osg::ref_ptr<osg::ShapeDrawable> shape =
-                                    new osg::ShapeDrawable(new osg::Cylinder(osg::Vec3(0.0, 0.0, 0.0),
-                                                                             static_cast<float>(botts_dot_size),
-                                                                             0.3f * static_cast<float>(botts_dot_size)),
-                                                           th);
+                                    new osg::ShapeDrawable(new osg::Cylinder(osg::Vec3(0.0, 0.0, 0.0), botts_dot_size, 0.3 * botts_dot_size), th);
                                 shape->setColor(ODR2OSGColor(lane_roadmark->GetColor()));
                                 dot = new osg::Geode;
                                 dot->addDrawable(shape);

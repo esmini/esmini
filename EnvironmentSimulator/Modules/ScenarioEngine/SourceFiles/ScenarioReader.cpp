@@ -411,9 +411,9 @@ Vehicle *ScenarioReader::createRandomOSCVehicle(std::string name)
 
     // Set some default bounding box just to avoid division-by-zero-problems
     vehicle->boundingbox_                     = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    vehicle->boundingbox_.dimensions_.length_ = 4.0f;
-    vehicle->boundingbox_.dimensions_.width_  = 2.0f;
-    vehicle->boundingbox_.dimensions_.height_ = 1.2f;
+    vehicle->boundingbox_.dimensions_.length_ = 4.0;
+    vehicle->boundingbox_.dimensions_.width_  = 2.0;
+    vehicle->boundingbox_.dimensions_.height_ = 1.2;
 
     return vehicle;
 }

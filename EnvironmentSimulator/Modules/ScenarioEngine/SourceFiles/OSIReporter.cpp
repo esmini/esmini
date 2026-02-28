@@ -217,11 +217,9 @@ void OSIReporter::ReportSensors(std::vector<ObjectSensor *> sensor)
             // Populate sensor data
             mobj->mutable_id()->set_value(sensor[i]->hitList_[j].obj_->g_id_);
             mobj->mutable_base()->mutable_position()->set_x(sensor[i]->hitList_[j].x_ +
-                                                            static_cast<double>(sensor[i]->hitList_[j].obj_->boundingbox_.center_.x_) *
-                                                                cos(sensor[i]->hitList_[j].yaw_));
+                                                            sensor[i]->hitList_[j].obj_->boundingbox_.center_.x_ * cos(sensor[i]->hitList_[j].yaw_));
             mobj->mutable_base()->mutable_position()->set_y(sensor[i]->hitList_[j].y_ +
-                                                            static_cast<double>(sensor[i]->hitList_[j].obj_->boundingbox_.center_.x_) *
-                                                                sin(sensor[i]->hitList_[j].yaw_));
+                                                            sensor[i]->hitList_[j].obj_->boundingbox_.center_.x_ * sin(sensor[i]->hitList_[j].yaw_));
             mobj->mutable_base()->mutable_position()->set_z(sensor[i]->hitList_[j].z_);
             mobj->mutable_base()->mutable_velocity()->set_x(sensor[i]->hitList_[j].velX_);
             mobj->mutable_base()->mutable_velocity()->set_y(sensor[i]->hitList_[j].velY_);
@@ -861,12 +859,9 @@ int OSIReporter::UpdateOSIStationaryObject(Object &obj)
     }
 
     // Set OSI Stationary Object Position
-    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(obj.pos_.GetX() +
-                                                                     static_cast<double>(obj.boundingbox_.center_.x_) * cos(obj.pos_.GetH()));
-    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(obj.pos_.GetY() +
-                                                                     static_cast<double>(obj.boundingbox_.center_.x_) * sin(obj.pos_.GetH()));
-    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(obj.pos_.GetZ() +
-                                                                     static_cast<double>(obj.boundingbox_.dimensions_.height_) / 2.0);
+    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(obj.pos_.GetX() + obj.boundingbox_.center_.x_ * cos(obj.pos_.GetH()));
+    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(obj.pos_.GetY() + obj.boundingbox_.center_.x_ * sin(obj.pos_.GetH()));
+    obj_osi_internal.sobj->mutable_base()->mutable_position()->set_z(obj.pos_.GetZ() + obj.boundingbox_.dimensions_.height_ / 2.0);
 
     // Set OSI Stationary Object Orientation
     obj_osi_internal.sobj->mutable_base()->mutable_orientation()->set_roll(GetAngleInIntervalMinusPIPlusPI(obj.pos_.GetR()));

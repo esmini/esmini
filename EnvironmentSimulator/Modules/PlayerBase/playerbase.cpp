@@ -182,9 +182,8 @@ void ScenarioPlayer::Draw()
 
 int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
 {
-    static bool messageShown  = false;
-    int         retval        = 0;
-    double      ghost_solo_dt = (GetFixedTimestep() < 0.0) ? 0.05 : GetFixedTimestep();
+    int    retval        = 0;
+    double ghost_solo_dt = (GetFixedTimestep() < 0.0) ? 0.05 : GetFixedTimestep();
 
     if (!IsPaused() || server_mode)
     {
@@ -221,6 +220,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
 
     if (!server_mode)
     {
+        static bool messageShown = false;
         Draw();
 
         if (scenarioEngine->getSimulationTime() > 3600 && !messageShown)
@@ -557,8 +557,8 @@ void ScenarioPlayer::ViewerFrame()
                  obj->pos_.GetX(),
                  obj->pos_.GetY(),
                  obj->pos_.GetH(),
-                 obj->pos_.GetX() + static_cast<double>(obj->boundingbox_.center_.x_) * cos(obj->pos_.GetH()),
-                 obj->pos_.GetY() + static_cast<double>(obj->boundingbox_.center_.x_) * sin(obj->pos_.GetH()));
+                 obj->pos_.GetX() + obj->boundingbox_.center_.x_ * cos(obj->pos_.GetH()),
+                 obj->pos_.GetY() + obj->boundingbox_.center_.x_ * sin(obj->pos_.GetH()));
         entity->on_screen_info_.osg_text_->setText(entity->on_screen_info_.string_);
     }
 

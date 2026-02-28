@@ -433,15 +433,14 @@ bool Object::CollisionAndRelativeDistLatLong(Object* target, double* distLat, do
                 Object* obj = (k == 0 ? obj0 : obj1);
 
                 // Specify bounding box corner vertices, starting at first quadrant
-                double vertices[4][2] = {
-                    {static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                     static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                    {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                     static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                    {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                     static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                    {static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                     static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0}};
+                double vertices[4][2] = {{obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                                          obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                                         {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                                          obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                                         {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                                          obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0},
+                                         {obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                                          obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0}};
 
                 for (int l = 0; l < 4; l++)
                 {
@@ -556,15 +555,14 @@ double Object::PointCollision(double x, double y)
         double min[2] = {0.0, 0.0}, max[2] = {0.0, 0.0};
 
         // Specify bounding box corner vertices, starting at first quadrant
-        double vertices[4][2] = {
-            {static_cast<double>(obj0->boundingbox_.center_.x_) + static_cast<double>(obj0->boundingbox_.dimensions_.length_) / 2.0,
-             static_cast<double>(obj0->boundingbox_.center_.y_) + static_cast<double>(obj0->boundingbox_.dimensions_.width_) / 2.0},
-            {static_cast<double>(obj0->boundingbox_.center_.x_) - static_cast<double>(obj0->boundingbox_.dimensions_.length_) / 2.0,
-             static_cast<double>(obj0->boundingbox_.center_.y_) + static_cast<double>(obj0->boundingbox_.dimensions_.width_) / 2.0},
-            {static_cast<double>(obj0->boundingbox_.center_.x_) - static_cast<double>(obj0->boundingbox_.dimensions_.length_) / 2.0,
-             static_cast<double>(obj0->boundingbox_.center_.y_) - static_cast<double>(obj0->boundingbox_.dimensions_.width_) / 2.0},
-            {static_cast<double>(obj0->boundingbox_.center_.x_) + static_cast<double>(obj0->boundingbox_.dimensions_.length_) / 2.0,
-             static_cast<double>(obj0->boundingbox_.center_.y_) - static_cast<double>(obj0->boundingbox_.dimensions_.width_) / 2.0}};
+        double vertices[4][2] = {{obj0->boundingbox_.center_.x_ + obj0->boundingbox_.dimensions_.length_ / 2.0,
+                                  obj0->boundingbox_.center_.y_ + obj0->boundingbox_.dimensions_.width_ / 2.0},
+                                 {obj0->boundingbox_.center_.x_ - obj0->boundingbox_.dimensions_.length_ / 2.0,
+                                  obj0->boundingbox_.center_.y_ + obj0->boundingbox_.dimensions_.width_ / 2.0},
+                                 {obj0->boundingbox_.center_.x_ - obj0->boundingbox_.dimensions_.length_ / 2.0,
+                                  obj0->boundingbox_.center_.y_ - obj0->boundingbox_.dimensions_.width_ / 2.0},
+                                 {obj0->boundingbox_.center_.x_ + obj0->boundingbox_.dimensions_.length_ / 2.0,
+                                  obj0->boundingbox_.center_.y_ - obj0->boundingbox_.dimensions_.width_ / 2.0}};
 
         for (int l = 0; l < 4; l++)
         {
@@ -635,14 +633,14 @@ double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDi
         Object* obj = (i == 0 ? this : target);
 
         // Specify bounding box corner vertices, starting at first quadrant
-        double vtmp[4][2] = {{static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                             {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                             {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                             {static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0}};
+        double vtmp[4][2] = {{obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                             {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                             {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0},
+                             {obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0}};
 
         for (int j = 0; j < 4; j++)  // for all vertices
         {
@@ -706,14 +704,14 @@ double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, doubl
     double vertices[4][2];
 
     // Specify bounding box corner vertices, starting at first quadrant
-    double vtmp[4][2] = {{static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                         {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                         {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                         {static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0}};
+    double vtmp[4][2] = {{obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                          obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                         {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                          obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                         {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                          obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0},
+                         {obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                          obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0}};
 
     for (int j = 0; j < 4; j++)  // for all vertices
     {
@@ -767,18 +765,14 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
     if (cs == CoordinateSystem::CS_LANE)
     {
         LOG_WARN("freespace LANE coordinateSystem not supported yet, falling back to freespace ROAD");
-        cs = CoordinateSystem::CS_ROAD;
     }
 
     // Specify bounding box corner vertices, starting at first quadrant
-    double vtmp[4][2] = {{static_cast<double>(boundingbox_.center_.x_) + static_cast<double>(boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(boundingbox_.center_.y_) + static_cast<double>(boundingbox_.dimensions_.width_) / 2.0},
-                         {static_cast<double>(boundingbox_.center_.x_) - static_cast<double>(boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(boundingbox_.center_.y_) + static_cast<double>(boundingbox_.dimensions_.width_) / 2.0},
-                         {static_cast<double>(boundingbox_.center_.x_) - static_cast<double>(boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(boundingbox_.center_.y_) - static_cast<double>(boundingbox_.dimensions_.width_) / 2.0},
-                         {static_cast<double>(boundingbox_.center_.x_) + static_cast<double>(boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(boundingbox_.center_.y_) - static_cast<double>(boundingbox_.dimensions_.width_) / 2.0}};
+    double vtmp[4][2] = {
+        {boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ + boundingbox_.dimensions_.width_ / 2.0},
+        {boundingbox_.center_.x_ - boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ + boundingbox_.dimensions_.width_ / 2.0},
+        {boundingbox_.center_.x_ - boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ - boundingbox_.dimensions_.width_ / 2.0},
+        {boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ - boundingbox_.dimensions_.width_ / 2.0}};
 
     // Align points to object heading and position
     double vertices[4][3];
@@ -916,14 +910,14 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, PositionDiff* posDif
         Object* obj = (i == 0 ? this : target);
 
         // Specify bounding box corner vertices, starting at first quadrant
-        double vtmp[4][2] = {{static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                             {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                             {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                             {static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0}};
+        double vtmp[4][2] = {{obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                             {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                             {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0},
+                             {obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0}};
 
         for (int j = 0; j < 4; j++)  // for all vertices
         {
@@ -1324,8 +1318,8 @@ Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
     // At least one vertex on each side of front line: OVERLAP_FULL
 
     // Own object front side of bounding box
-    SE_Vector front_left(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0f, boundingbox_.dimensions_.width_ / 2.0f);
-    SE_Vector front_right(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0f, -boundingbox_.dimensions_.width_ / 2.0f);
+    SE_Vector front_left(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.dimensions_.width_ / 2.0);
+    SE_Vector front_right(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, -boundingbox_.dimensions_.width_ / 2.0);
 
     // Rotate and translate front line
     front_left  = front_left.Rotate(pos_.GetH());
@@ -1334,14 +1328,14 @@ Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
     front_right += SE_Vector(pos_.GetX(), pos_.GetY());
 
     // Specify target object bounding box corner vertices, starting at first quadrant going clock wise
-    SE_Vector vertex[4] = {{target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0f,
-                            target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0f},
-                           {target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0f,
-                            target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0f},
-                           {target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0f,
-                            target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0f},
-                           {target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0f,
-                            target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0f}};
+    SE_Vector vertex[4] = {{target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0,
+                            target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0},
+                           {target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0,
+                            target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0},
+                           {target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0,
+                            target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0},
+                           {target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0,
+                            target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0}};
 
     for (int i = 0; i < 4; i++)  // for all vertices
     {
@@ -1379,11 +1373,11 @@ Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
         {
             inside_count++;
 
-            if (s_norm * static_cast<double>(boundingbox_.dimensions_.width_) < tolerance)  // s_norm is factor (0..1) along front line
+            if (s_norm * boundingbox_.dimensions_.width_ < tolerance)  // s_norm is factor (0..1) along front line
             {
                 outside_left_count++;
             }
-            else if ((1 - s_norm) * static_cast<double>(boundingbox_.dimensions_.width_) < tolerance)
+            else if ((1 - s_norm) * boundingbox_.dimensions_.width_ < tolerance)
             {
                 outside_right_count++;
             }

@@ -647,11 +647,11 @@ bool ControllerALKS_R157SM::Regulation::CheckSafety(ObjectInfo* info)
         else
         {
             // Use front side of bounding box
-            x = static_cast<double>(info->obj->boundingbox_.dimensions_.length_) / 2.0;
+            x = info->obj->boundingbox_.dimensions_.length_ / 2.0;
         }
 
         // Look at side towards Ego vehicle lane
-        double y  = -1 * SIGN(info->dLaneId) * static_cast<double>(info->obj->boundingbox_.dimensions_.width_) / 2.0;
+        double y  = -1 * SIGN(info->dLaneId) * info->obj->boundingbox_.dimensions_.width_ / 2.0;
         double xr = 0.0, yr = 0.0;
         RotateVec2D(x, y, info->obj->pos_.GetHRelative(), xr, yr);
         double offset = info->obj->pos_.GetOffset() + yr;

@@ -135,7 +135,7 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
         object_state_cache_.timestamp_ = simulation_time_;
 
         // PacketId::SPEED
-        if (!NEAR_NUMBERSF(cache_it->second.speed_, obj->GetSpeed()))
+        if (!NEAR_NUMBERS(cache_it->second.speed_, obj->GetSpeed()))
         {
             cache_it->second.speed_ = obj->GetSpeed();
             Write(PacketId::SPEED, cache_it->second.speed_);
@@ -190,7 +190,7 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
 
         // PacketId::WHEEL_ANGLE
         double wheel_angle = obj->GetWheelAngle();
-        if (!NEAR_NUMBERSF(cache_it->second.wheel_angle_, wheel_angle))
+        if (!NEAR_NUMBERS(cache_it->second.wheel_angle_, wheel_angle))
         {
             cache_it->second.wheel_angle_ = wheel_angle;
             Write(PacketId::WHEEL_ANGLE, cache_it->second.wheel_angle_);
@@ -198,7 +198,7 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
 
         // PacketId::WHEEL_ROT
         double wheel_rot = obj->GetWheelRotation();
-        if (!NEAR_NUMBERSF(cache_it->second.wheel_rot_, wheel_rot))
+        if (!NEAR_NUMBERS(cache_it->second.wheel_rot_, wheel_rot))
         {
             cache_it->second.wheel_rot_ = wheel_rot;
             Write(PacketId::WHEEL_ROT, cache_it->second.wheel_rot_);
@@ -260,35 +260,35 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
         }
 
         // PacketId::POS_OFFSET
-        if (!NEAR_NUMBERSF(cache_it->second.pos_offset_, obj->pos_.GetOffset()))
+        if (!NEAR_NUMBERS(cache_it->second.pos_offset_, obj->pos_.GetOffset()))
         {
             cache_it->second.pos_offset_ = obj->pos_.GetOffset();
             Write(PacketId::POS_OFFSET, cache_it->second.pos_offset_);
         }
 
         // PacketId::POS_T
-        if (!NEAR_NUMBERSF(cache_it->second.pos_t_, obj->pos_.GetT()))
+        if (!NEAR_NUMBERS(cache_it->second.pos_t_, obj->pos_.GetT()))
         {
             cache_it->second.pos_t_ = obj->pos_.GetT();
             Write(PacketId::POS_T, cache_it->second.pos_t_);
         }
 
         // PacketId::POS_S
-        if (!NEAR_NUMBERSF(cache_it->second.pos_s_, obj->pos_.GetS()))
+        if (!NEAR_NUMBERS(cache_it->second.pos_s_, obj->pos_.GetS()))
         {
             cache_it->second.pos_s_ = obj->pos_.GetS();
             Write(PacketId::POS_S, cache_it->second.pos_s_);
         }
 
         // PacketId::REFPOINT_X_OFFSET
-        if (!NEAR_NUMBERSF(cache_it->second.refpoint_x_offset_, obj->refpoint_x_offset_))
+        if (!NEAR_NUMBERS(cache_it->second.refpoint_x_offset_, obj->refpoint_x_offset_))
         {
             cache_it->second.refpoint_x_offset_ = obj->refpoint_x_offset_;
             Write(PacketId::REFPOINT_X_OFFSET, cache_it->second.refpoint_x_offset_);
         }
 
         // PacketId::MODEL_X_OFFSET
-        if (!NEAR_NUMBERSF(cache_it->second.model_x_offset_, obj->model3d_x_offset_))
+        if (!NEAR_NUMBERS(cache_it->second.model_x_offset_, obj->model3d_x_offset_))
         {
             cache_it->second.model_x_offset_ = obj->model3d_x_offset_;
             Write(PacketId::MODEL_X_OFFSET, cache_it->second.model_x_offset_);

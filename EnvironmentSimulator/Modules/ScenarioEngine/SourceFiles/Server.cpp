@@ -71,16 +71,16 @@ namespace scenarioengine
                 y_old = buf.y;
 
                 printf("Server: Received Ego pos (%.2f, %.2f, %.2f) rot: (%.2f, %.2f, %.2f) speed: %.2f (%.2f km/h) wheel_angle: %.2f (%.2f deg)\n",
-                       static_cast<double>(buf.x),
-                       static_cast<double>(buf.y),
-                       static_cast<double>(buf.z),
-                       static_cast<double>(buf.h),
-                       static_cast<double>(buf.p),
-                       static_cast<double>(buf.r),
-                       static_cast<double>(buf.speed),
-                       3.6 * static_cast<double>(buf.speed),
-                       static_cast<double>(buf.wheel_angle),
-                       180 * static_cast<double>(buf.wheel_angle) / M_PI);
+                       buf.x,
+                       buf.y,
+                       buf.z,
+                       buf.h,
+                       buf.p,
+                       buf.r,
+                       buf.speed,
+                       3.6 * buf.speed,
+                       buf.wheel_angle,
+                       180 * buf.wheel_angle / M_PI);
 
                 // Update Ego state
                 mutex.Lock();

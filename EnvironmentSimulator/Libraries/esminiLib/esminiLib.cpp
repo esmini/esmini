@@ -372,13 +372,13 @@ static int GetRoadInfoAtGhostTrailTime(int object_id, double time, SE_RoadInfo *
     roadmanager::TrajVertex trailPos;
     trailPos.h = obj->pos_.GetH();  // Set default trail heading aligned with road - in case trail is less than two points (no heading)
 
-    int returncode = ghost->trail_.FindPointAtTime(static_cast<double>(time) - ghost->GetHeadstartTime(), trailPos, obj->trail_follow_index_);
+    int returncode = ghost->trail_.FindPointAtTime(time - ghost->GetHeadstartTime(), trailPos, obj->trail_follow_index_);
 
     if (returncode == SE_GHOST_TRAIL_NO_VERTICES || returncode == SE_GHOST_TRAIL_ERROR)
     {
         LOG_ERROR("Failed to lookup point at time {:.2f} (time arg = {:.2f}) along ghost ({}) trail",
-                  player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + static_cast<double>(time),
-                  static_cast<double>(time),
+                  player->scenarioEngine->getSimulationTime() - ghost->GetHeadstartTime() + time,
+                  time,
                   ghost->GetId());
         return returncode;
     }
@@ -1029,7 +1029,7 @@ extern "C"
     {
         if (player == nullptr)
         {
-            return 0.0f;
+            return 0.0;
         }
 
         return player->scenarioEngine->getSimulationTime();
@@ -1039,7 +1039,7 @@ extern "C"
     {
         if (player == nullptr)
         {
-            return 0.0f;
+            return 0.0;
         }
 
         return SE_getSimTimeStep(time_stamp, 0.001, 0.1);
@@ -2569,7 +2569,7 @@ extern "C"
         {
             return;
         }
-        ((vehicle::Vehicle *)handleSimpleVehicle)->SetMaxSpeed(static_cast<double>(speed) / 3.6);
+        ((vehicle::Vehicle *)handleSimpleVehicle)->SetMaxSpeed(speed / 3.6);
     }
 
     SE_DLL_API void SE_SimpleVehicleSetMaxAcceleration(void *handleSimpleVehicle, double maxAcceleration)
@@ -2945,7 +2945,7 @@ extern "C"
             return route->GetLength();
         }
 
-        return 0.0f;
+        return 0.0;
     }
 
     SE_DLL_API void SE_InjectSpeedAction(SE_SpeedActionStruct *action)

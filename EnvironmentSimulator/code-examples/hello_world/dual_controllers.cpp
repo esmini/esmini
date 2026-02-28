@@ -2,6 +2,8 @@
 #include "esminiLib.hpp"
 #include <iostream>
 
+#define SMALL_NUMBER 1e-6
+
 int main(int argc, char** argv)
 {
     int retval = 0;
@@ -31,7 +33,7 @@ int main(int argc, char** argv)
     SE_SimpleVehicleState vehicleState = {0, 0, 0, 0, 0, 0, 0, 0};
 
     double dt = 0.01;
-    while (SE_GetQuitFlag() == 0 && SE_GetSimulationTime() < 60.0f)
+    while (SE_GetQuitFlag() == 0 && SE_GetSimulationTime() < 60.0)
     {
         // find out and apply speed set by acc controller
         SE_GetObjectState(0, &objectState);
@@ -39,15 +41,15 @@ int main(int argc, char** argv)
 
         // Step vehicle model with driver input
         int steering = 0;
-        if (SE_GetSimulationTime() > 1.0f && SE_GetSimulationTime() < 1.1f)
+        if (SE_GetSimulationTime() > 1.0 + SMALL_NUMBER && SE_GetSimulationTime() < 1.1 - SMALL_NUMBER)
         {
             steering = 1;
         }
-        else if (SE_GetSimulationTime() > 3.0f && SE_GetSimulationTime() < 3.25f)
+        else if (SE_GetSimulationTime() > 3.0 + SMALL_NUMBER && SE_GetSimulationTime() < 3.25 - SMALL_NUMBER)
         {
             steering = -1;
         }
-        else if (SE_GetSimulationTime() > 4.0f && SE_GetSimulationTime() < 4.18f)
+        else if (SE_GetSimulationTime() > 4.0 + SMALL_NUMBER && SE_GetSimulationTime() < 4.18 - SMALL_NUMBER)
         {
             steering = 1;
         }

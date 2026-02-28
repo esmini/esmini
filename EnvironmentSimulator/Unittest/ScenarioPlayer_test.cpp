@@ -457,7 +457,7 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
                           "600",
                           "--disable_stdout"};
     int         argc   = sizeof(args) / sizeof(char*);
-    double      dt     = 0.1f;
+    double      dt     = 0.1;
 
     SE_Env::Inst().AddPath("../../../resources/models");
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
@@ -853,7 +853,7 @@ TEST(OSI, TestOrientationAndOutline)
     const char* args[] =
         {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/curve_slope_simple.xosc", "--headless", "--osi_file", "--disable_stdout"};
     int             argc   = sizeof(args) / sizeof(char*);
-    double          dt     = 0.1f;
+    double          dt     = 0.1;
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
 
     ASSERT_NE(player, nullptr);

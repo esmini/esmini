@@ -45,8 +45,8 @@
 #define DEMONSTRATE_CUSTOM_CAMERA             1
 
 #define MAX_N_OBJECTS  10
-#define TIME_STEP      0.017f
-#define DURATION       25.0f
+#define TIME_STEP      0.017
+#define DURATION       25.0
 #define MAX_DETECTIONS 8
 
 // static SE_ScenarioObjectState states[MAX_N_OBJECTS];
@@ -196,10 +196,10 @@ int main(int argc, const char* argv[])
 
 #if DEMONSTRATE_SENSORS
         // Add four sensors around the vehicle
-        SE_AddObjectSensor(0, 4.0f, 0.0f, 0.5f, 0.0f, 6.0f, 50.0f, 50.0 * M_PI / 180.0, MAX_DETECTIONS);
-        SE_AddObjectSensor(0, 2.0f, 1.05f, 0.5f, 1.5f, 1.0f, 20.0f, 120.0 * M_PI / 180.0, MAX_DETECTIONS);
-        SE_AddObjectSensor(0, 2.0f, -1.05f, 0.5f, -1.5f, 1.0f, 20.0f, 120.0 * M_PI / 180.0, MAX_DETECTIONS);
-        SE_AddObjectSensor(0, -1.1f, 0.0f, 0.5f, 3.14f, 5.0f, 30.0f, 50.0 * M_PI / 180.0, MAX_DETECTIONS);
+        SE_AddObjectSensor(0, 4.0, 0.0, 0.5, 0.0, 6.0, 50.0, 50.0 * M_PI / 180.0, MAX_DETECTIONS);
+        SE_AddObjectSensor(0, 2.0, 1.05, 0.5, 1.5, 1.0, 20.0, 120.0 * M_PI / 180.0, MAX_DETECTIONS);
+        SE_AddObjectSensor(0, 2.0, -1.05, 0.5, -1.5, 1.0, 20.0, 120.0 * M_PI / 180.0, MAX_DETECTIONS);
+        SE_AddObjectSensor(0, -1.1, 0.0, 0.5, 3.14, 5.0, 30.0, 50.0 * M_PI / 180.0, MAX_DETECTIONS);
 
         SE_ViewerShowFeature(1, true);  // show sensor frustoms (see NodeMask in viewer.hpp)
 #endif
@@ -357,7 +357,7 @@ int main(int argc, const char* argv[])
 
 #if DEMONSTRATE_DRIVER_MODEL
             SE_RoadInfo roadInfo;
-            SE_GetRoadInfoAtDistance(0, 5 + 0.5f * vehicle.state.speed, &roadInfo, 0);
+            SE_GetRoadInfoAtDistance(0, 5 + 0.5 * vehicle.state.speed, &roadInfo, 0);
 
             double steering = 0;
             if (fabs(roadInfo.angle) > 0.01)
@@ -383,7 +383,7 @@ int main(int argc, const char* argv[])
 
             if (DEMONSTRATE_THREAD)
             {
-                if (i == static_cast<int>(0.2f * DURATION / TIME_STEP))
+                if (i == static_cast<int>(0.2 * DURATION / TIME_STEP))
                 {
                     // Halfway through, pause the simulation for a few seconds
                     // to demonstrate how camera can still move independently
