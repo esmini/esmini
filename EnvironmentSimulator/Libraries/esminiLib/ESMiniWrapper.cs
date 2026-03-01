@@ -15,696 +15,1505 @@
  * simply mirroring the interface in terms of datatypes and functions
  */
 
-using System.Runtime.InteropServices;
 using System;
-
+using System.Runtime.InteropServices;
 
 namespace ESMini
 {
-
+    /// <summary>
+    /// Represents the state of a scenario object at a given point in time.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    [Serializable]
     public struct ScenarioObjectState
     {
-        public int id;          // Automatically generated unique object id
-        public int model_id;    // Id to control what 3D model to represent the vehicle - see carModelsFiles_[] in scenarioenginedll.cpp
-        public int ctrl_type;     // 0: DefaultController 1: External. Further values see esmini/EnvironmentSimulator/Controllers/Controller::Type enum
-        public float timestamp;
-        public float x;
-        public float y;
-        public float z;
-        public float h;
-        public float p;
-        public float r;
+        public int id;
+        public int model_id;
+        public int ctrl_type;
+        public double timestamp;
+        public double x;
+        public double y;
+        public double z;
+        public double h;
+        public double p;
+        public double r;
+        public double speed;
         public int roadId;
         public int junctionId;
-        public float t;
+        public double t;
         public int laneId;
-        public float laneOffset;
-        public float s;
-        public float speed;
-        public float centerOffsetX;
-        public float centerOffsetY;
-        public float centerOffsetZ;
-        public float width;
-        public float length;
-        public float height;
-        public int objectType;     // Main type according to entities.hpp / Object / Type (NONE=0, VEHICLE=1, PEDESTRIAN=2, MISC_OBJECT=3)
-        public int objectCategory; // Sub category within type, according to entities.hpp / Vehicle, Pedestrian, MiscObject / Category
-        public float wheel_angle;
-        public float wheel_rotation;
-        public int visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
-    };
+        public double s;
+        public double laneOffset;
+        public double centerOffsetX;
+        public double centerOffsetY;
+        public double centerOffsetZ;
+        public double width;
+        public double length;
+        public double height;
+        public int objectType;
+        public int objectCategory;
+        public double wheel_angle;
+        public double wheel_rotation;
+        public int visibilityMask;
+    }
 
+    /// <summary>
+    /// Contains information about the road network at a specific location.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    [Serializable]
     public struct RoadInfo
     {
-        public float global_pos_x;     // steering target position, in global coordinate system
-        public float global_pos_y;     // steering target position, in global coordinate system
-        public float global_pos_z;     // steering target position, in global coordinate system
-        public float local_pos_x;      // steering target position, relative vehicle (pivot position object) coordinate system
-        public float local_pos_y;      // steering target position, relative vehicle (pivot position object) coordinate system
-        public float local_pos_z;      // steering target position, relative vehicle (pivot position object) coordinate system
-        public float angle;            // heading angle to steering target from and relatove to vehicle (pivot position)
-        public float road_heading;     // road heading at steering target point
-        public float road_pitch;       // road pitch (inclination) at steering target point
-        public float road_roll;        // road roll (camber) at steering target point
-        public float trail_heading;    // trail heading (only when used for trail lookups, else equals road_heading)
-        public float curvature;        // road curvature at steering target point
-        public float speed_limit;      // speed limit given by OpenDRIVE type entry
-        public int roadId;             // target position, road ID
-        public int junctionId;         // target position, junction ID (-1 if not in a junction)
-        public int laneId;             // target position, lane ID
-        public float laneOffset;       // target position, lane offset (lateral distance from lane center)
-        public float s;                // target position, s (longitudinal distance along reference line)
-        public float t;                // target position, t (lateral distance from reference line)
-        public int road_type;          // road type given by OpenDRIVE type entry, maps to roadmanager::Road::RoadType
-        public int road_rule;          // road rule given by OpenDRIVE rule entry, maps to roadmanager::Road::RoadRule
-    };
+        public double local_pos_x;
+        public double local_pos_y;
+        public double local_pos_z;
+        public double global_pos_x;
+        public double global_pos_y;
+        public double global_pos_z;
+        public double angle;
+        public double curvature;
+        public double road_heading;
+        public double road_pitch;
+        public double road_roll;
+        public double speed_limit;
+        public int junctionId;
+        public int roadId;
+        public int laneId;
+        public double laneOffset;
+        public double s;
+        public double t;
+        public int road_type;
+        public int road_rule;
+        public int lane_type;
+        public double trail_heading;
+        public double trail_wheel_angle;
+    }
 
+    /// <summary>
+    /// State of a simple vehicle model.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    [Serializable]
     public struct SimpleVehicleState
     {
-        public float x;
-        public float y;
-        public float z;
-        public float h;
-        public float p;
-        public float speed;
-        public float wheel_rotation;
-        public float wheel_angle;
-    };
+        public double x;
+        public double y;
+        public double z;
+        public double h;
+        public double p;
+        public double speed;
+        public double wheel_rotation;
+        public double wheel_angle;
+    }
 
+    /// <summary>
+    /// Identifiers for lane boundaries surrounding a lane.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    [Serializable]
     public struct LaneBoundaryId
     {
         public int far_left_lb_id;
         public int left_lb_id;
         public int right_lb_id;
         public int far_right_lb_id;
-    };
+    }
 
+    /// <summary>
+    /// Represents the difference in position between two objects or locations.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    [Serializable]
     public struct PositionDiff
     {
-        public float ds;            // delta s (longitudinal distance)
-        public float dt;            // delta t (lateral distance)
-        public int d_lane_id;       // delta laneId (increasing left and decreasing to the right)
-        public float dx;            // delta x (world coordinate system)
-        public float dy;            // delta y (world coordinate system)
-        public bool opposite_lanes; // true if the two position objects are in opposite sides of reference lane
-    };
+        public int dLaneId;
+        public double ds;
+        public double dt;
+        public double dx;
+        public double dy;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool oppositeLanes;
+    }
 
     [StructLayout(LayoutKind.Sequential)]
-    [Serializable]
     public struct Center
     {
-        public float x_;            // Center offset in x direction.
-        public float y_;            // Center offset in y direction.
-        public float z_;            // Center offset in z direction.
-    };
+        public double x_;
+        public double y_;
+        public double z_;
+    }
 
     [StructLayout(LayoutKind.Sequential)]
-    [Serializable]
     public struct Dimensions
     {
-        public float width_;            // Width of the entity's bounding box. Unit: m; Range: [0..inf[.
-        public float length_;           // Length of the entity's bounding box. Unit: m; Range: [0..inf[.
-        public float height_;           // Height of the entity's bounding box. Unit: m; Range: [0..inf[.
-    };
+        public double width_;
+        public double length_;
+        public double height_;
+    }
 
+    /// <summary>
+    /// Represents an oriented bounding box.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    [Serializable]
     public struct OSCBoundingBox
     {
-        public Center center_;           // Represents the geometrical center of the bounding box
-        public Dimensions dimensions_;   // Width, length and height of the bounding box.
-    };
+        public Center center_;
+        public Dimensions dimensions_;
+    }
 
+    /// <summary>
+    /// Data for a specific wheel of a vehicle.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct WheelData
+    {
+        public double x;
+        public double y;
+        public double z;
+        public double h;
+        public double p;
+        public double friction_coefficient;
+        public int axle;
+        public int index;
+    }
+
+    /// <summary>
+    /// Information about a road sign.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RoadSign
+    {
+        public int id;
+        public IntPtr name; // const char*
+        public double x;
+        public double y;
+        public double z;
+        public double h;
+        public double s;
+        public double t;
+        public int orientation;
+        public double z_offset;
+        public double length;
+        public double height;
+        public double width;
+    }
+
+    /// <summary>
+    /// Validity record for a road object (e.g., sign), defining the lanes it applies to.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RoadObjValidity
+    {
+        public int fromLane;
+        public int toLane;
+    }
+
+    /// <summary>
+    /// Represents an image buffer.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Image
+    {
+        public int width;
+        public int height;
+        public int pixelSize;
+        public int pixelFormat;
+        public IntPtr data; // unsigned char*
+    }
+
+    /// <summary>
+    /// Information about a point along a route.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RouteInfo
+    {
+        public double x;
+        public double y;
+        public double z;
+        public double h;
+        public int roadId;
+        public int junctionId;
+        public int laneId;
+        public int osiLaneId;
+        public double laneOffset;
+        public double s;
+        public double t;
+    }
+
+    /// <summary>
+    /// A generic parameter key-value pair.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Parameter
+    {
+        public string name;
+        public string value;
+    }
+
+    /// <summary>
+    /// A generic variable key-value pair.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Variable
+    {
+        public string name;
+        public string value;
+    }
+
+    // Helper structs for OverrideActionList
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ActionStatus
+    {
+        [MarshalAs(UnmanagedType.I1)] public bool active;
+        public double maxRate;
+        public int type;
+        public double value;
+        public int value_type;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct GearActionStatus
+    {
+        [MarshalAs(UnmanagedType.I1)] public bool active;
+        public double number;
+        public int type;
+        public int value_type;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ClutchActionStatus
+    {
+        [MarshalAs(UnmanagedType.I1)] public bool active;
+        public double value;
+        public double maxRate;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ThrottleActionStatus
+    {
+        [MarshalAs(UnmanagedType.I1)] public bool active;
+        public double value;
+        public double maxRate;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SteeringActionStatus
+    {
+        [MarshalAs(UnmanagedType.I1)] public bool active;
+        public double maxRate;
+        public double maxTorque;
+        public double value;
+    }
+
+    /// <summary>
+    /// List of override actions currently active on an object.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct OverrideActionList
+    {
+        public ActionStatus brake;
+        public ActionStatus parkingBrake;
+        public GearActionStatus gear;
+        public ClutchActionStatus clutch;
+        public ThrottleActionStatus throttle;
+        public SteeringActionStatus steeringWheel;
+    }
 
     public static class ESMiniLib
     {
         private const string LIB_NAME = "esminiLib";
+        private const CallingConvention CALL_CONV = CallingConvention.Cdecl;
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_AddPath")]
-        /// <summary>Add a search path for OpenDRIVE and 3D model files </summary>
-        /// <param name="path">Path to a directory</param>
-        /// <returns>0 on success, -1 on failure for any reason</returns>
+        /// <summary>
+        /// Adds a path to the list of paths searched for resources (e.g., models, catalogs).
+        /// </summary>
+        /// <param name="path">The directory path to add.</param>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
         public static extern int SE_AddPath(string path);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_ClearPaths")]
-        /// <summary>Clear all search paths for OpenDRIVE and 3D model files </summary>
+        /// <summary>
+        /// Clears all added resource search paths.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
         public static extern void SE_ClearPaths();
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_SetLogFilePath")]
-        /// <summary>Specify logfile name, optionally including directory path
-        /// examples: "../logfile.txt" "c:/tmp/esmini.log" "my.log"
-        /// Set "" to disable logfile
-        /// Note: Needs to be called prior to calling SE_Init() </summary>
-        /// <param name="path">Logfile path</param>
-        /// <returns>0 on success, -1 on failure for any reason</returns>
-        public static extern int SE_SetLogFilePath(string path);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_RegisterParameterDeclarationCallback")]
         /// <summary>
-        /// Register a function and optional argument (ref) to be called back from esmini after ParameterDeclarations has been parsed,
-        /// but before the scenario is initialized, i.e.before applying the actions in the Init block.One use-case is to
-        /// set parameter values for initial entity states, e.g.s value in lane position. So this callback will happen just
-        /// after parameters has been parsed, but before they are applied, providing an opportunity to control the initial
-        /// states via API.
-        /// Registered init callbacks are be cleared between SE_Init calls, i.e.needs to be registered
+        /// Sets the file path for the log file.
         /// </summary>
-        /// <param name="func">Reference to the callback function to be invoked</param>
-        /// <param name="user_data">Optional pointer to a local data object that will be passed as argument in the callback.
-        /// Set 0/NULL if not needed.</param>
-        public static extern void SE_RegisterParameterDeclarationCallback(Action<IntPtr> callback, IntPtr user_data);
+        /// <param name="logFilePath">The full path to the log file.</param>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SetLogFilePath(string logFilePath);
 
-        public delegate void ConditionCallback(string name, double timestamp);
-        [DllImport(LIB_NAME, EntryPoint = "SE_RegisterConditionCallback")]
         /// <summary>
-        /// Registers a function to be called back from esmini every time a condition is triggered.
-        /// The name of the respective condition and the current timestamp will be returned.
-        /// Registered callbacks will be cleared between SE_Init calls.
+        /// Sets the file path for the recording (.dat) file.
         /// </summary>
-        /// <param name="cc">The callback function to be invoked</param>
-        public static extern void SE_RegisterConditionCallback(ConditionCallback cc);
+        /// <param name="datFilePath">The full path to the .dat file.</param>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SetDatFilePath(string datFilePath);
 
-	public delegate void StateChangeCallback(string name, int type, int state, string full_path);
-        [DllImport(LIB_NAME, EntryPoint = "SE_RegisterStoryBoardElementStateChangeCallback")]
         /// <summary>
-        /// Registers a function to be called back from esmini every time a storyboard element state change is triggered.
-        /// The name of the respective condition, the type, state and full path will be returned.
-        /// Registered callbacks will be cleared between SE_Init calls.
+        /// Gets the current seed used for random number generation.
         /// </summary>
-        /// <param name="scc">The callback function to be invoked</param>
-	    public static extern void SE_RegisterStoryBoardElementStateChangeCallback(StateChangeCallback scc);
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern uint SE_GetSeed();
 
-        public delegate void EventCallback(string name, double timeStamp, bool isStart);
-        [DllImport(LIB_NAME, EntryPoint = "SE_RegisterEventCallback")]
         /// <summary>
-        /// Registers a function to be called back from esmini every time an event starts or ends.
-        /// The name of the respective event, the current timestamp and whether the event
-        /// starts(true) or ends(false) will be returned.
-        /// In case an event starts and ends within the same simulation step, only the end-transition may occur.
-        /// Registered callbacks will be cleared between SE_Init calls.
+        /// Sets the seed for random number generation.
         /// </summary>
-        /// <param name="cc">The callback function to be invoked</param>
-        public static extern void SE_RegisterEventCallback(EventCallback ec);
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SetSeed(uint seed);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_Init")]
-        /// <summary>Initialize the scenario engine</summary>
-        /// <param name="oscFilename">Path to the OpenSCEANRIO file</param>
-        /// <param name="disable_ctrls">1=Any controller will be disabled 0=Controllers applied according to OSC file</param>
-        /// <param name="use_viewer">0=no viewer, 1=use viewer</param>
-        /// <param name="threads">0=single thread, 1=viewer in a separate thread, parallel to scenario engine</param>
-        /// <param name="record">Create recording for later playback 0=no recording 1=recording</param>
-        /// <returns>0 on success, -1 on failure for any reason</returns>
-        public static extern int SE_Init(string oscFilename, int disable_ctrls = 0, int use_viewer = 0, int threads = 0, int record = 0);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_InitWithString")]
-        /// <summary>Initialize the scenario engine, privding OSC XML string instead of filename</summary>
-        /// <param name="oscAsXMLString">OpenSCENARIO XML as string</param>
-        /// <param name="disable_ctrls"> 1=Any controller will be disabled 0=Controllers applied according to OSC file</param>
-        /// <param name="use_viewer">0=no viewer, 1=use viewer</param>
-        /// <param name="threads"> 0=single thread, 1=viewer in a separate thread, parallel to scenario engine</param>
-        /// <param name="record"> Create recording for later playback 0=no recording 1=recording</param>
-        /// <return>0 if successful, -1 if not</return>
-        public static extern int SE_InitWithString(string oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_StepDT")]
-        public static extern int SE_StepDT(float dt);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_Step")]
-        public static extern int SE_Step();
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_Close")]
-        public static extern void SE_Close();
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetQuitFlag")]
-        /// <summary>Is esmini about to quit?</summary>
-        /// <return>0 if not, 1 if yes, -1 if some error e.g. scenario not loaded</return>
-        public static extern int SE_GetQuitFlag();
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetODRFilename")]
-        //[return: MarshalAs(UnmanagedType.LPStr)]
-        /// <summary>Get name of currently referred and loaded OpenDRIVE file</summary>
-        /// <returns>Filename as string. Use with: Marshal.PtrToStringAnsi(SE_GetODRFilename())</returns>
-        public static extern IntPtr SE_GetODRFilename();
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetSceneGraphFilename")]
-        //[return: MarshalAs(UnmanagedType.LPStr)]
-        /// <summary>Get name of currently referred and loaded SceneGraph file</summary>
-        /// <returns>Filename as string. Use with: Marshal.PtrToStringAnsi(SE_GetSceneGraphFilename())</returns>
-        public static extern IntPtr SE_GetSceneGraphFilename();
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetSimulationTime")]
-        public static extern float SE_GetSimulationTime();
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetId")]
-        /// <summary>Get the Id of an entity present in the current scenario</summary>
-        /// <param name="index">Index of the object. Note: not ID</param>
-        /// <returns>Id of the object, -1 on error e.g. scenario not initialized</returns>
-        public static extern int SE_GetId(int index);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_AddObject")]
-        /// <summary>Add object with bounding box automatically adapted to 3D model (scale mode BB_TO_MODEL).
-        /// Should be followed by one of the SE_Report functions to establish initial state.</summary>
-        /// <param name="object_name">Name of the object, preferably be unique</param>
-        /// <param name="object_type">Type of the object. See Entities.hpp::Object::Type. Default=1 (VEHICLE).</param>
-        /// <param name="object_category">Category of the object. Depends on type, see descendants of Entities.hpp::Object. Set to 0 if not known.</param>
-        /// <param name="object_role"> role of the object. Depends on type, See Entities.hpp::Object::Role. Set to 0 if not known.</param>
-        /// <param name="model_id">Id of the 3D model to represent the object. See resources/model_ids.txt.</param>
-        /// <returns> @return Id [0..inf] of the added object successful, -1 on failure</returns>
-        public static extern int SE_AddObject(string object_name, int object_type, int object_category, int object_role, int model_id);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_AddObjectWithBoundingBox")]
-        /// <summary>Add object with specified bounding box. Should be followed by one of the SE_Report functions to establish initial state.
-        /// For scale_mode BB_TO_MODEL, set bounding_box to whatever, e.g. {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, or use SE_AddObject()</summary>
-        /// <param name="object_name">Name of the object, preferably be unique</param>
-        /// <param name="object_type">Type of the object. See Entities.hpp::Object::Type. Default=1 (VEHICLE).</param>
-        /// <param name="object_category">Category of the object. Depends on type, see descendants of Entities.hpp::Object. Set to 0 if not known.</param>
-        /// <param name="object_role"> role of the object. Depends on type, See Entities.hpp::Object::Role. Set to 0 if not known.</param>
-        /// <param name="model_id">Id of the 3D model to represent the object. See resources/model_ids.txt.</param>
-        /// <param name="bounding_box">sets the internal bounding box of the model and will also be used to scale 3D model accordingly.</param>
-        /// <param name="scale_mode">0=NONE, 1=BB_TO_MODEL, 2=MODEL_TO_BB (recommended). See CommonMini::EntityScaleMode enum for details.</param>
-        /// <returns> @return Id [0..inf] of the added object successful, -1 on failure</returns>
-        public static extern int SE_AddObjectWithBoundingBox(string object_name, int object_type, int object_category, int object_role, int model_id, ref OSCBoundingBox bounding_box, int scale_mode);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_DeleteObject")]
-        /// <summary>Delete object</summary>
-        /// <param name="object_id">Id of the object</param>
-        /// <returns>0 on success, -1 on failure for any reason</returns>
-        public static extern int SE_DeleteObject(int object_id);
-
-        #region ObjectReporter
-        [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectPos")]
-        public static extern int SE_ReportObjectPos(int id, float timestamp, float x, float y, float z, float h, float p, float r);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectRoadPos")]
-        public static extern int SE_ReportObjectRoadPos(int id, float timestamp, int roadId, int laneId, float laneOffset, float s);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectSpeed")]
-        public static extern int SE_ReportObjectSpeed(int id, float speed);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectVel")]
-        public static extern int SE_ReportObjectVel(int id, float timestamp, float x_vel, float y_vel, float z_vel);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectAcc")]
-        public static extern int SE_ReportObjectAcc(int id, float timestamp, float x_acc, float y_acc, float z_acc);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectAngularVel")]
-        public static extern int SE_ReportObjectAngularVel(int id, float timestamp, float h_vel, float p_vel, float r_vel);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_ReportObjectAngularAcc")]
-        public static extern int SE_ReportObjectAngularAcc(int id, float timestamp, float h_acc, float p_acc, float r_acc);
-
-        #endregion
-        [DllImport(LIB_NAME, EntryPoint = "SE_SetSnapLaneTypes")]
-        /// <summary>Specify which lane types the position object snaps to (is aware of)</summary>
-        /// <param name="object_id">Id of the object (not index, use GetId(index) to find out the id)</param>
-        /// <param name="laneTypes">laneTypes A combination (bitmask) of lane types according to roadmanager::Lane::LaneType</parameter>
-        /// <return>0 if successful, -1 if not</return>
-        public static extern int SE_SetSnapLaneTypes(int object_id, int laneTypes);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SetLockOnLane")]
-        /// <summary>Controls whether to keep lane ID regardless of lateral position or snap to closest lane (default)</summary>
-        /// <param name="object_id">Id of the object (not index, use GetId(index) to find out the id)</param>
-        /// <param name="mode">True=keep lane False=Snap to closest (default)</parameter>
-        /// <return>0 if successful, -1 if not</return>
-        public static extern int SE_SetLockOnLane(int object_id, bool mode);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetNumberOfObjects")]
-        /// <summary>Get the number of entities in the current scenario</summary>
-        /// <return>Number of entities, -1 on error e.g. scenario not initialized</return>
-        public static extern int SE_GetNumberOfObjects();
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectState")]
-        /// <summary>Get the state of specified object</summary>
-        /// <param name="object_id">Id of the object (not index, use GetId(index) to find out the id)</param>
-        /// <param name="state">Reference to a ScenarioObjectState struct to be filled in</param>
-        /// <return>0 if successful, -1 if not</return>
-        public static extern int SE_GetObjectState(int object_id, ref ScenarioObjectState state);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectInLaneType")]
         /// <summary>
-        /// Find out what lane type object is currently in, reference point projected on road
-        /// Can be used for checking exact lane type or combinations by bitmask.
-        /// See lane type definitions in roadmanager::Lane::LaneType enum.
-        /// Example 1: Check if on border lane: SE_GetObjectLaneType(id) == (1 << 6)
-        /// Example 2: Check if on any drivable lane: SE_GetObjectLaneType(id) & 1966594
-        /// Example 3: Check if on any road lane: SE_GetObjectLaneType(id) & 1966990
-        /// Example 4: Check for no lane(outside defined lanes): SE_GetObjectLaneType(id) == 1
+        /// Sets a boolean option flag (equivalent to setting it to "true").
         /// </summary>
-        /// <param name="object_id">Id of the object (not index, use GetId(index) to find out the id)</param>
-        /// <return>true if off road, else false</return>
-        public static extern int SE_GetObjectInLaneType(int object_id);
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetOption(string name);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectTypeName")]
-        //[return: MarshalAs(UnmanagedType.LPStr)]
-        /// <summary>Get the type name of the specifed vehicle-, pedestrian- or misc object</summary>
-        /// <param name="object_id">Id of the object</param>
-        /// <return>Name</return>
-        public static extern IntPtr SE_GetObjectTypeName(int object_id);
+        /// <summary>
+        /// Unsets an option flag.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_UnsetOption(string name);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectName")]
-        //[return: MarshalAs(UnmanagedType.LPStr)]
-        /// <summary>Get the name of specified object</summary>
-        /// <param name="object_id">Id of the object</param>
-        /// <return>Name</return>
-        public static extern IntPtr SE_GetObjectName(int object_id);
+        /// <summary>
+        /// Sets an option with a specific value.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetOptionValue(string name, string value);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectModelFileName")]
-        //[return: MarshalAs(UnmanagedType.LPStr)]
-        /// <summary>Get the 3D model filename of the specifed object</summary>
-        /// <param name="object_id">Id of the object</param>
-        /// <return>Name</return>
-        public static extern IntPtr SE_GetObjectModelFileName(int object_id);
+        /// <summary>
+        /// Sets a persistent option flag that survives scenario resets.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetOptionPersistent(string name);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_ObjectHasGhost")]
-        /// <summary>Check whether an object has a ghost (special purpose lead vehicle)</summary>
-        /// <param name="object_id">Id of the object</param>
-        /// <return>1 if ghost, 0 if not, -1 indicates error e.g. scenario not loaded</return>
-        public static extern int SE_ObjectHasGhost(int object_id);
+        /// <summary>
+        /// Sets a persistent option value that survives scenario resets.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetOptionValuePersistent(string name, string value);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectGhostState")]
-        /// <summary>Get the state of specified object's ghost (special purpose lead vehicle)</summary>
-        /// <param name="object_id">Id of the object to which the ghost is attached</param>
-        /// <param name="state">Reference to a ScenarioObjectState struct to be filled in</param>
-        /// <return>0 if successful, -1 if not</return>
-        public static extern int SE_GetObjectGhostState(int object_id, ref ScenarioObjectState state);
+        /// <summary>
+        /// Gets the value of an option.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetOptionValue(string name);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectAcceleration")]
-        /// <summary>Get the acceleration magnitude of specified object</summary>
-        /// <param name="object_id">Id of the object to which the ghost is attached</param>
-        /// <returns>the acceleration if successful, std::nanf if not</returns>
-        public static extern float SE_GetObjectAcceleration(int object_id);
+        /// <summary>
+        /// Gets an option value by its enum identifier.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetOptionValueByEnum(uint enum_value);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetSpeedUnit")]
-        /// <summary>Get the unit of specified speed</summary>
-        /// All roads will be looped in search for such an element. First found will be used.
-        /// If speed is specified withouth the optional unit, SI unit m/s is assumed.
-        /// If no speed entries is found, undefined will be returned.
-        /// <returns>-1=Error, 0=Undefined, 1=km/h 2=m/s, 3=mph</returns>
-        public static extern int GetSpeedUnit();
+        /// <summary>
+        /// Gets a specific value from a list of values for an option.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetOptionValueByIndex(string name, uint index);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_AddObjectSensor")]
-        /// <summary>Create an ideal object sensor and attach to specified vehicle</summary>
-        /// <param name="object_id">Id of the object to which the sensor should be attached</param>
-        /// <param name="x">Position x coordinate of the sensor in vehicle local coordinates</param>
-        /// <param name="y">Position y coordinate of the sensor in vehicle local coordinates</param>
-        /// <param name="z">Position z coordinate of the sensor in vehicle local coordinates</param>
-        /// <param name="h">Position heading of the sensor in vehicle local coordinates</param>
-        /// <param name="fovH">Horizontal field of view, in degrees</param>
-        /// <param name="rangeNear">Near value of the sensor depth range</param>
-        /// <param name="rangeFar">Far value of the sensor depth range</param>
-        /// <param name="maxObj"> Maximum number of objects theat the sensor can track</param>
-        /// <returns>0 on success, -1 on failure for any reason</returns>
-        public static extern int SE_AddObjectSensor(int object_id, float x, float y, float z, float h, float rangeNear, float rangeFar, float fovH, int maxObj);
+        /// <summary>
+        /// Gets the number of values associated with an option.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetOptionValuesCount(string name);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_FetchSensorObjectList")]
-        /// <summary>Fetch list of identified objects from a sensor</summary>
-        /// <param name="object_id">Id of the object to which the sensor should is attached</param>
-        /// <param name="list">Array of object indices</param>
-        /// <returns> Number of identified objects, i.e.length of list. -1 on failure</returns>
-        public static extern int SE_FetchSensorObjectList(int object_id, int[] list);
+        /// <summary>
+        /// Checks if an option is set.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool SE_GetOptionSet(string name);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetRoadInfoAtDistance")]
-        /// <summary>Get information suitable for driver modeling of a point at a specified distance from object along the road ahead</summary>
-        /// <param name="object_id">Handle to the position object from which to measure</param>
-        /// <param name="lookahead_distance">The distance, along the road, to the point</param>
-        /// <param name="data">Struct including all result values, see typedef for details</param>
-        /// <param name="along_road_center">Measure along the reference lane, i.e. at center of the road. Should be false for normal use cases</param>
-        /// <param name="lookAheadMode">Measurement strategy: Along 0=lane center, 1=road center(ref line) or 2=current lane offset.See roadmanager::Position::LookAheadMode enum</param>
-        /// <param name="inRoadDrivingDirection">If true always look along primary driving direction.If false, look in most straightforward direction according to object heading.</param>
-        /// <returns>0 if successful, 1 if probe reached end of road, 2 if end ouf route, -1 if some error</returns>
-        public static extern int SE_GetRoadInfoAtDistance(int object_id, float lookahead_distance, ref RoadInfo data, int lookAheadMode, bool inRoadDrivingDirection);
+        /// <summary>
+        /// Loads a parameter distribution file.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetParameterDistribution(string filename);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetRoadInfoAlongRoute")]
-        /// <summary>Get information suitable for driver modeling of a point at a specified distance from object along the route ahead</summary>
-        /// <param name="object_id">Handle to the position object from which to measure</param>
-        /// <param name="lookahead_distance">The distance, along the road, to the point</param>
-        /// <param name="data">Struct including all result values, see typedef for details</param>
-        /// <param name="along_road_center">Measure along the reference lane, i.e. at center of the road. Should be false for normal use cases</param>
-        /// <param name="lookAheadMode">Measurement strategy: Along 0=lane center, 1=road center(ref line) or 2=current lane offset.See roadmanager::Position::LookAheadMode enum</param>
-        /// <param name="inRoadDrivingDirection">If true always look along primary driving direction.If false, look in most straightforward direction according to object heading.</param>
-        /// <returns>0 if successful, 1 if probe reached end of road, 2 if end ouf route, -1 if some error</returns>
-        public static extern int SE_GetRoadInfoAlongRoute(int object_id, float lookahead_distance, ref RoadInfo data, int lookAheadMode, bool inRoadDrivingDirection);
-
-        /// <summary>Get information suitable for driver modeling of a ghost vehicle driving ahead of the ego vehicle</summary>
-        /// <param name="object_id">Id of the object from which to measure</param>
-        /// <param name="lookahead_distance">The distance, along the road, to the point</param>
-        /// <param name="data">Struct including all result values, see typedef for details</param>
-        /// <param name="speed_ghost">Speed of the ghost vehicle at specifed point</param>
-        /// <returns>0 on success, -1 on failure for any reason</returns>
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetRoadInfoAlongGhostTrail")]
-        public static extern int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, ref RoadInfo data, ref float speed_ghost);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetDistanceToObject")]
-        /// <summary>Find out the delta between two objects, e.g. distance (long and lat) and delta laneId. Search range is 1000 meters</summary>
-        /// <param name="object_a_id">Id of the object from which to measure</param>
-        /// <param name="object_b_id">Id of the object from which to measure</param>
-        /// <param name="freespace">Measure distance between bounding boxes (true) or between ref points (false)</param>
-        /// <param name="pos_diff">Reference to struct including all result values, see typedef for details</param>
-        /// <returns>0 if successful, -1 if not</returns>
-        public static extern int SE_GetDistanceToObject(int object_a_id, int object_b_id, bool free_space, ref PositionDiff pos_diff);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetNumberOfParameters")]
-        /// <summary>Get the number of parameters in the current scenario</summary>
-        /// <return>Number of parameters, -1 on error e.g. scenario not initialized</return>
-        public static extern int SE_GetNumberOfParameters();
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterName")]
-        /// <summary>Get name of parameter with specifed index</summary>
-        /// <param name="index">Index of the parameter</param>
-        /// <param name="parameterType">Returns the type of the parameter</param>///
-        /// <returns>Parameter name as string. Use with: Marshal.PtrToStringAnsi(SE_GetParameterName())</returns>
-        //[return: MarshalAs(UnmanagedType.LPStr)]
-        public static extern IntPtr SE_GetParameterName(int index, out int parameterType);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterInt")]
-        public static extern int SE_GetParameterInt(string parameterName, out int value);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterDouble")]
-        public static extern int SE_GetParameterDouble(string parameterName, out double value);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterString")]
-        /// <summary>Get string parameter value </summary>
-        /// <param name="value">the string value as output parameter. Use: IntPtr intPtr; string str = Marshal.PtrToStringAnsi(intPtr);</param>
-        /// <returns>0 on success, -1 on failure for any reason</returns>
-        public static extern int SE_GetParameterString(string parameterName, out IntPtr value);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetParameterBool")]
-        public static extern int SE_GetParameterBool(string parameterName, out bool value);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SetParameterInt")]
-        public static extern int SE_SetParameterInt(string parameterName, int value);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SetParameterDouble")]
-        public static extern int SE_SetParameterDouble(string parameterName, double value);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SetParameterString")]
-        public static extern int SE_SetParameterString(string parameterName, string value);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SetParameterBool")]
-        public static extern int SE_SetParameterBool(string parameterName, bool value);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetObjectPropertyValue")]
-        public static extern IntPtr SE_GetObjectPropertyValue(int index, string value);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_ResetParameterDistribution")]
+        /// <summary>
+        /// Resets the parameter distribution.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
         public static extern void SE_ResetParameterDistribution();
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetNumberOfPermutations")]
+        /// <summary>
+        /// Gets the total number of permutations in the loaded parameter distribution.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
         public static extern uint SE_GetNumberOfPermutations();
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_SelectPermutation")]
+        /// <summary>
+        /// Selects a specific permutation index for the next simulation run.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
         public static extern int SE_SelectPermutation(uint index);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetPermutationIndex")]
+        /// <summary>
+        /// Gets the index of the currently selected permutation.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
         public static extern int SE_GetPermutationIndex();
 
-        // Simple vehicle
+        /// <summary>
+        /// Sets the position and size of the viewer window.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SetWindowPosAndSize(int x, int y, int w, int h);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleCreate")]
-        /// <summary>Create an instance of a simplistic vehicle based on a 2D bicycle kincematic model</summary>
-        /// <param name="x"> Initial position X world coordinate</param>
-        /// <param name="y"> Initial position Y world coordinate</param>
-        /// <param name="h"> Initial heading</param>
-        /// <param name="length"> Length of the vehicle</param>
-        /// <param name="speed"> Initial speed</param>
-        /// <returns>Handle to the created object</returns>
-        public static extern IntPtr SE_SimpleVehicleCreate(float x, float y, float h, float length, float speed);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleDelete")]
-        /// <summary>Delete an instance of the simplistic vehicle model</summary>
-        /// <param name="handleSimpleVehicle">Handle to the object</param>
-        public static extern void SE_SimpleVehicleDelete(IntPtr handleSimpleVehicle);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleControlBinary")]
-        /// <summary>Control the speed and steering with discreet [-1, 0, 1] values, suitable for keyboard
-        /// control (e.g. up/none/down). The function also steps the vehicle model, updating its position
-        /// according to motion state and timestep</summary>
-        /// <param name="handleSimpleVehicle">Handle to the object</param>
-        /// <param name="dt"> timesStep (s)</param>
-        /// <param name="throttle">Longitudinal control, -1: brake, 0: none, +1: accelerate</param>
-        /// <param name="steering">Lateral control, -1: left, 0: straight, 1: right</param>
-        public static extern void SE_SimpleVehicleControlBinary(IntPtr handleSimpleVehicle,
-                                                                double dt,
-                                                                int throttle,
-                                                                int steering);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleControlAnalog")]
-        /// <summary>Control the speed and steering with floating values in the range [-1, 1], suitable for
-        /// models. The function also steps the vehicle model, updating its position according to motion
-        /// state and timestep.</summary>
-        /// <param name="handleSimpleVehicle">Handle to the object</param>
-        /// <param name="dt"> timesStep (s)</param>
-        /// <param name="throttle">Longitudinal control, -1: maximum brake, 0: no acceleration, +1: maximum acceleration</param>
-        /// <param name="steering">Lateral control, -1: max left, 0: straight, 1: max right</param>
-        public static extern void SE_SimpleVehicleControlAnalog(IntPtr handleSimpleVehicle,
-                                                                double dt,
-                                                                double throttle,
-                                                                double steering);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleControlTarget")]
-        /// <summary>Control the speed and steering by providing steering and speed targets. The function
-        /// also steps the vehicle model, updating its position according to motion state and timestep.</summary>
-        /// <param name="handleSimpleVehicle">Handle to the object</param>
-        /// <param name="dt"> timesStep (s)</param>
-        /// <param name="target_speed">Requested speed</param>
-        /// <param name="heading_to_target">Heading angle to a target position</param>
-        public static extern void SE_SimpleVehicleControlTarget(IntPtr handleSimpleVehicle,
-                                                                double dt,
-                                                                double target_speed,
-                                                                double heading_to_target);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSetMaxSpeed")]
-        /// <summary>Set maximum vehicle speed</summary>
-        /// <param name="handleSimpleVehicle">Handle to the object</param>
-        /// <param name="speed">speed Maximum speed (km/h)</param>
-        public static extern void SE_SimpleVehicleSetMaxSpeed(IntPtr handleSimpleVehicle, float speed);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSetMaxAcceleration")]
-        /// <summary>Set maximum vehicle acceleration</summary>
-        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
-        /// <param name="maxAcceleration">speed Maximum acceleration (m/s^2)</param>
-        public static extern void SE_SimpleVehicleSetMaxAcceleration(IntPtr handleSimpleVehicle, float maxAcceleration);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSetMaxDeceleration")]
-        /// <summary>Set maximum vehicle deceleration</summary>
-        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
-        /// <param name="maxDeceleration">Maximum deceleration (m/s^2)</param>
-        public static extern void SE_SimpleVehicleSetMaxDeceleration(IntPtr handleSimpleVehicle, float maxDeceleration);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSetEngineBrakeFactor")]
-        /// <summary>Set engine brake factor, applied when no throttle is applied</summary>
-        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
-        /// <param name="engineBrakeFactor">Recommended range = [0.0, 0.01], default = 0.001</param>
-        public static extern void SE_SimpleVehicleSetEngineBrakeFactor(IntPtr handleSimpleVehicle, float engineBrakeFactor);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSteeringScale")]
-        /// <summary>Set steering scale factor, which will limit the steering range as speed increases</summary>
-        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
-        /// <param name="steeringScale">Recommended range = [0.0, 0.1], default = 0.018</param>
-        public static extern void SE_SimpleVehicleSteeringScale(IntPtr handleSimpleVehicle, float steeringScale);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSteeringReturnFactor")]
-        /// <summary>Set steering return factor, which will make the steering wheel strive to neutral position (0 angle)</summary>
-        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
-        /// <param name="steeringScale">Recommended range = [0.0, 10], default = 4.0</param>
-        public static extern void SE_SimpleVehicleSteeringReturnFactor(IntPtr handleSimpleVehicle, float steeringReturnFactor);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleSteeringRate")]
-        /// <summary>Set steering rate, which will affect the angular speed of which the steering wheel will turn</summary>
-        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
-        /// <param name="steeringRate">Recommended range = [0.0, 50.0], default = 8.0</param>
-        public static extern void SE_SimpleVehicleSteeringRate(IntPtr handleSimpleVehicle, float steeringRate);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SimpleVehicleGetState")]
-        /// <summary>Get current state of the vehicle. Typically called after Control has been applied</summary>
-        /// <param name="handleSimpleVehicle">Set maximum vehicle acceleration.</param>
-        /// <param name="engineBrakeFactor">Reference to a SE_SimpleVehicleState struct to be filled in</param>
-        public static extern void SE_SimpleVehicleGetState(IntPtr handleSimpleVehicle, ref SimpleVehicleState state);
-
-        // OSI interface (subset)
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_SetOSITolerances")]
-        /// <summary>Configure tolerances/resolution for OSI road features</summary>
-        /// <param name="max_longitudinal_distance">Maximum distance between OSI points, even on straight road. Default=50(m)</param>
-        /// <param name="max_lateral_deviation">Control resolution w.r.t. curvature default=0.05(m)</param>
-        /// <returns>0 if successful, -1 if not</returns>
+        /// <summary>
+        /// Sets tolerances for OSI (Open Simulation Interface) reporting.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
         public static extern int SE_SetOSITolerances(double maxLongitudinalDistance, double maxLateralDeviation);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_OpenOSISocket")]
-        /// <summary>Send OSI packages over UDP to specified IP address</summary>
-        /// <param name="ipaddr">ip address, e.g. "127.0.0.1" (local host)</param>
-        /// <returns>0 if successful, -1 if not</returns>
+        /// <summary>
+        /// Initializes the engine with command line arguments.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_InitWithArgs(int argc, string[] argv);
+
+        /// <summary>
+        /// Initializes the engine with an OpenSCENARIO XML string.
+        /// </summary>
+        /// <param name="oscAsXMLString">The OpenSCENARIO content as a string.</param>
+        /// <param name="disable_ctrls">1 to disable internal controllers, 0 otherwise.</param>
+        /// <param name="use_viewer">Bitmask: 1=enable viewer, 2=off-screen, 4=capture-to-file, 8=disable info-text.</param>
+        /// <param name="threads">1 to enable threading, 0 otherwise.</param>
+        /// <param name="record">1 to enable recording, 0 otherwise.</param>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_InitWithString(string oscAsXMLString, int disable_ctrls, int use_viewer, int threads, int record);
+
+        public delegate void ParameterDeclarationCallback(IntPtr user_data);
+        /// <summary>
+        /// Registers a callback to be called during parameter declaration.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_RegisterParameterDeclarationCallback(ParameterDeclarationCallback callback, IntPtr user_data);
+
+        /// <summary>
+        /// Initializes the engine with an OpenSCENARIO file.
+        /// </summary>
+        /// <param name="oscFilename">Path to the OpenSCENARIO file.</param>
+        /// <param name="disable_ctrls">1 to disable internal controllers, 0 otherwise.</param>
+        /// <param name="use_viewer">Bitmask: 1=enable viewer, 2=off-screen, 4=capture-to-file, 8=disable info-text.</param>
+        /// <param name="threads">1 to enable threading, 0 otherwise.</param>
+        /// <param name="record">1 to enable recording, 0 otherwise.</param>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_Init(string oscFilename, int disable_ctrls, int use_viewer, int threads, int record);
+
+        /// <summary>
+        /// Checks if the quit flag has been set (e.g., by closing the window or end of scenario).
+        /// </summary>
+        /// <returns>1 if quit is requested, 0 otherwise.</returns>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetQuitFlag();
+
+        /// <summary>
+        /// Checks if the simulation is currently paused.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetPauseFlag();
+
+        /// <summary>
+        /// Gets the filename of the OpenDRIVE road network being used.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetODRFilename();
+
+        /// <summary>
+        /// Gets the filename of the OpenSceneGraph scene graph being used.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetSceneGraphFilename();
+
+        /// <summary>
+        /// Gets the number of parameters defined in the scenario.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetNumberOfParameters();
+
+        /// <summary>
+        /// Gets the name and type of a parameter by index.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetParameterName(int index, out int type);
+
+        /// <summary>
+        /// Gets the number of variables defined in the scenario.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetNumberOfVariables();
+
+        /// <summary>
+        /// Gets the name and type of a variable by index.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetVariableName(int index, out int type);
+
+        /// <summary>
+        /// Gets the number of properties for a specific object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetNumberOfProperties(int index);
+
+        /// <summary>
+        /// Gets the name of a property for a specific object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetObjectPropertyName(int index, int propertyIndex);
+
+        /// <summary>
+        /// Gets the value of a property for a specific object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetObjectPropertyValue(int index, string objectPropertyName);
+
+        /// <summary>
+        /// Sets a parameter value.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetParameter(Parameter parameter);
+
+        /// <summary>
+        /// Gets a parameter value.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetParameter(ref Parameter parameter);
+
+        /// <summary>
+        /// Gets a parameter value as an integer.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetParameterInt(string parameterName, out int value);
+
+        /// <summary>
+        /// Gets a parameter value as a double.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetParameterDouble(string parameterName, out double value);
+
+        /// <summary>
+        /// Gets a parameter value as a string.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetParameterString(string parameterName, out IntPtr value);
+
+        /// <summary>
+        /// Gets a parameter value as a boolean.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetParameterBool(string parameterName, [MarshalAs(UnmanagedType.I1)] out bool value);
+
+        /// <summary>
+        /// Sets a parameter value as an integer.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetParameterInt(string parameterName, int value);
+
+        /// <summary>
+        /// Sets a parameter value as a double.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetParameterDouble(string parameterName, double value);
+
+        /// <summary>
+        /// Sets a parameter value as a string.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetParameterString(string parameterName, string value);
+
+        /// <summary>
+        /// Sets a parameter value as a boolean.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetParameterBool(string parameterName, [MarshalAs(UnmanagedType.I1)] bool value);
+
+        /// <summary>
+        /// Sets a variable value.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetVariable(Variable variable);
+
+        /// <summary>
+        /// Gets a variable value.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetVariable(ref Variable variable);
+
+        /// <summary>
+        /// Gets a variable value as an integer.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetVariableInt(string variableName, out int value);
+
+        /// <summary>
+        /// Gets a variable value as a double.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetVariableDouble(string variableName, out double value);
+
+        /// <summary>
+        /// Gets a variable value as a string.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetVariableString(string variableName, out IntPtr value);
+
+        /// <summary>
+        /// Gets a variable value as a boolean.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetVariableBool(string variableName, [MarshalAs(UnmanagedType.I1)] out bool value);
+
+        /// <summary>
+        /// Sets a variable value as an integer.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetVariableInt(string variableName, int value);
+
+        /// <summary>
+        /// Sets a variable value as a double.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetVariableDouble(string variableName, double value);
+
+        /// <summary>
+        /// Sets a variable value as a string.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetVariableString(string variableName, string value);
+
+        /// <summary>
+        /// Sets a variable value as a boolean.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetVariableBool(string variableName, [MarshalAs(UnmanagedType.I1)] bool value);
+
+        /// <summary>
+        /// Gets the pointer to the OpenDRIVE manager.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetODRManager();
+
+        /// <summary>
+        /// Closes the scenario engine and releases resources.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_Close();
+
+        /// <summary>
+        /// Enables or disables logging to the console (stdout).
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_LogToConsole([MarshalAs(UnmanagedType.I1)] bool mode);
+
+        /// <summary>
+        /// Enables or disables collision detection.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_CollisionDetection([MarshalAs(UnmanagedType.I1)] bool mode);
+
+        /// <summary>
+        /// Steps the simulation by one frame (using the default or previously set timestep).
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_Step();
+
+        /// <summary>
+        /// Steps the simulation by a specific time delta.
+        /// </summary>
+        /// <param name="dt">The time step in seconds.</param>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_StepDT(double dt);
+
+        /// <summary>
+        /// Gets the current simulation time.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern double SE_GetSimulationTime();
+
+        /// <summary>
+        /// Gets the current simulation time step.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern double SE_GetSimTimeStep();
+
+        /// <summary>
+        /// Sets the position mode for an object (e.g., relative to road, global coordinates).
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SetObjectPositionMode(int object_id, int type, int mode);
+
+        /// <summary>
+        /// Sets the default position mode for an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SetObjectPositionModeDefault(int object_id, int type);
+
+        /// <summary>
+        /// Adds a new object to the scenario.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_AddObject(string object_name, int object_type, int object_category, int object_role, int model_id, string model_3d);
+
+        /// <summary>
+        /// Adds a new object with a specific bounding box.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_AddObjectWithBoundingBox(string object_name, int object_type, int object_category, int object_role, int model_id, string model_3d, OSCBoundingBox bounding_box, int scale_mode);
+
+        /// <summary>
+        /// Deletes an object from the scenario.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_DeleteObject(int object_id);
+
+        /// <summary>
+        /// Reports (updates) the position and rotation of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ReportObjectPos(int object_id, double x, double y, double z, double h, double p, double r);
+
+        /// <summary>
+        /// Reports the position of an object with a specific mode.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ReportObjectPosMode(int object_id, double x, double y, double z, double h, double p, double r, int mode);
+
+        /// <summary>
+        /// Reports the position (X, Y) and heading (H) of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ReportObjectPosXYH(int object_id, double x, double y, double h);
+
+        /// <summary>
+        /// Reports the position of an object relative to the road network (RoadId, LaneId, S, Offset).
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ReportObjectRoadPos(int object_id, int roadId, int laneId, double laneOffset, double s);
+
+        /// <summary>
+        /// Reports the speed of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ReportObjectSpeed(int object_id, double speed);
+
+        /// <summary>
+        /// Reports the lateral position (t-coordinate) of an object on the current road.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ReportObjectLateralPosition(int object_id, double t);
+
+        /// <summary>
+        /// Reports the lateral position of an object relative to a specific lane.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ReportObjectLateralLanePosition(int object_id, int laneId, double laneOffset);
+
+        /// <summary>
+        /// Reports the velocity vector of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ReportObjectVel(int object_id, double x_vel, double y_vel, double z_vel);
+
+        /// <summary>
+        /// Reports the angular velocity of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ReportObjectAngularVel(int object_id, double h_rate, double p_rate, double r_rate);
+
+        /// <summary>
+        /// Reports the acceleration vector of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ReportObjectAcc(int object_id, double x_acc, double y_acc, double z_acc);
+
+        /// <summary>
+        /// Reports the angular acceleration of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ReportObjectAngularAcc(int object_id, double h_acc, double p_acc, double r_acc);
+
+        /// <summary>
+        /// Reports the wheel status (rotation and steering angle) of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ReportObjectWheelStatus(int object_id, double rotation, double angle);
+
+        /// <summary>
+        /// Sets the lane types that an object should snap to.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetSnapLaneTypes(int object_id, int laneTypes);
+
+        /// <summary>
+        /// Enables or disables locking an object to its current lane.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetLockOnLane(int object_id, [MarshalAs(UnmanagedType.I1)] bool mode);
+
+        /// <summary>
+        /// Gets the total number of objects in the scenario.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetNumberOfObjects();
+
+        /// <summary>
+        /// Gets the ID of an object by its index.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetId(int index);
+
+        /// <summary>
+        /// Gets the ID of an object by its name.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetIdByName(string name);
+
+        /// <summary>
+        /// Retrieves the full state of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectState(int object_id, ref ScenarioObjectState state);
+
+        /// <summary>
+        /// Gets the route status of an object (e.g., on route, off route).
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectRouteStatus(int object_id);
+
+        /// <summary>
+        /// Gets the type of lane the object is currently in.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectInLaneType(int object_id);
+
+        /// <summary>
+        /// Gets the status of override actions (e.g., throttle, brake override) for an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetOverrideActionStatus(int objectId, ref OverrideActionList list);
+
+        /// <summary>
+        /// Gets the type name of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetObjectTypeName(int object_id);
+
+        /// <summary>
+        /// Gets the name of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetObjectName(int object_id);
+
+        /// <summary>
+        /// Gets the 3D model filename associated with an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetObjectModelFileName(int object_id);
+
+        /// <summary>
+        /// Opens a socket for sending OSI data.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
         public static extern int SE_OpenOSISocket(string ipaddr);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_DisableOSIFile")]
-        /// <summary>Switch off logging to OSI file(s)</summary>
-        /// <returns>0 if successful, -1 if not</returns>
-        public static extern void SE_DisableOSIFile();
+        /// <summary>
+        /// Sets the mode for OSI static data reporting.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SetOSIStaticReportMode(int mode);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_EnableOSIFile")]
-        /// <summary>Switch on logging to OSI file(s)</summary>
-        /// <param name="filename">Optional filename, including path.Set to 0 or "" to use default.</param>
-        /// <returns>0 if successful, -1 if not</returns>
-        public static extern void SE_EnableOSIFile(string filename);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_FlushOSIFile")]
-        /// <summary>Enforce flushing OSI file (save all buffered data to file)</summary>
-        public static extern void SE_FlushOSIFile();
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_UpdateOSIGroundTruth")]
-        /// <summary>Updates OSI Groundtruth</summary>
-        public static extern void SE_UpdateOSIGroundTruth();
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSIGroundTruth")]
-        //[return: MarshalAs(UnmanagedType.LPStr)]
-        /// <summary>char array containing the osi GroundTruth serialized to a string</summary>
-        /// <param name="size">Size of the retuned OSI string</param>
-        /// <returns>osi3::GroundTruth*</returns>
+        /// <summary>
+        /// Gets the OSI GroundTruth data.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
         public static extern IntPtr SE_GetOSIGroundTruth(ref int size);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSIGroundTruthRaw")]
-        //[return: MarshalAs(UnmanagedType.LPStr)]
-        /// <summary>char array containing the OSI GroundTruth information</summary>
-        /// <returns>osi3::GroundTruth*</returns>
+        /// <summary>
+        /// Gets the raw OSI GroundTruth data pointer.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
         public static extern IntPtr SE_GetOSIGroundTruthRaw();
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSIRoadLane")]
-        //[return: MarshalAs(UnmanagedType.LPStr)]
-        /// <summary>Get information of the lane where the object with object_id is</summary>
-        /// <param name="size">Size of the retuned OSI string</param>
-        /// <param name="object_id">Id of the object</param>
-        /// <returns>a char array containing the osi Lane information/message, serialized to a string</returns>
+        /// <summary>
+        /// Gets the raw OSI TrafficCommand data pointer.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetOSITrafficCommandRaw();
+
+        /// <summary>
+        /// Sets raw OSI SensorData.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetOSISensorDataRaw(string sensordata);
+
+        /// <summary>
+        /// Gets OSI lane data for a specific object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
         public static extern IntPtr SE_GetOSIRoadLane(ref int size, int object_id);
 
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSILaneBoundary")]
-        //[return: MarshalAs(UnmanagedType.LPStr)]
-        /// <summary>Get information of the lane boundary where the object with object_id is</summary>
-        /// <param name="size">Size of the retuned OSI string</param>
-        /// <param name="object_id">Id of the object</param>
-        /// <returns>a char array containing the osi Lane Boundary information/message, serialized to a string</returns>
-        public static extern IntPtr SE_GetOSILaneBoundary(ref int size, int object_id);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_GetOSILaneBoundaryIds")]
-        //[return: MarshalAs(UnmanagedType.LPStr)]
-        /// <summary>Get the global ids for left, far left, right and far right lane boundaries, relative an object</summary>
-        /// <param name="object_id">Id of the object</param>
-        /// <param name="ids">Reference to a struct which will be filled with the Ids</param>
-        public static extern IntPtr SE_GetOSILaneBoundaryIds(int object_id, ref LaneBoundaryId ids);
-
-        [DllImport(LIB_NAME, EntryPoint = "SE_ClearOSIGroundTruth")]
         /// <summary>
-        /// The SE_ClearOSIGroundTruth clears the certain groundtruth data.
-        /// This function should only be used together with SE_UpdateOSIStaticGroundTruth and SE_UpdateOSIDynamicGroundTruth
+        /// Gets OSI lane boundary data.
         /// </summary>
-        public static extern int SE_ClearOSIGroundTruth();
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetOSILaneBoundary(ref int size, int g_id);
+
+        /// <summary>
+        /// Gets the IDs of lane boundaries surrounding an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_GetOSILaneBoundaryIds(int object_id, ref LaneBoundaryId ids);
+
+        /// <summary>
+        /// Excludes the ghost object from OSI GroundTruth.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_ExcludeGhostFromGroundTruth();
+
+        /// <summary>
+        /// Sets the frequency of OSI updates.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetOSIFrequency(int frequency);
+
+        /// <summary>
+        /// Crops the OSI dynamic ground truth to a radius around an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_CropOSIDynamicGroundTruth(int id, double radius);
+
+        /// <summary>
+        /// Updates the OSI TrafficCommand.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_UpdateOSITrafficCommand();
+
+        /// <summary>
+        /// Gets the raw OSI SensorData pointer.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetOSISensorDataRaw();
+
+        /// <summary>
+        /// Sets the timestamp for OSI messages.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_OSISetTimeStamp(ulong nanoseconds);
+
+        /// <summary>
+        /// Logs a message to the esmini log.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_LogMessage(string message);
+
+        /// <summary>
+        /// Closes the log file.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_CloseLogFile();
+
+        /// <summary>
+        /// Checks if an object has a ghost object associated with it.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ObjectHasGhost(int object_id);
+
+        /// <summary>
+        /// Gets the ID of the ghost object associated with an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectGhostId(int object_id);
+
+        /// <summary>
+        /// Gets the state of the ghost object associated with an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectGhostState(int object_id, ref ScenarioObjectState state);
+
+        /// <summary>
+        /// Gets the speed unit used in the OpenDRIVE file.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetSpeedUnit();
+
+        /// <summary>
+        /// Gets the number of collisions involving an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectNumberOfCollisions(int object_id);
+
+        /// <summary>
+        /// Gets the ID of the object involved in a specific collision.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectCollision(int object_id, int index);
+
+        /// <summary>
+        /// Gets the odometer value (distance traveled) for an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern double SE_GetObjectOdometer(int object_id);
+
+        /// <summary>
+        /// Gets the scalar acceleration of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern double SE_GetObjectAcceleration(int object_id);
+
+        /// <summary>
+        /// Gets the global velocity vector (X, Y, Z) of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectVelocityGlobalXYZ(int object_id, out double vel_x, out double vel_y, out double vel_z);
+
+        /// <summary>
+        /// Gets the angular velocity (roll, pitch, heading rates) of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectAngularVelocity(int object_id, out double h_rate, out double p_rate, out double r_rate);
+
+        /// <summary>
+        /// Gets the angular acceleration of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectAngularAcceleration(int object_id, out double h_acc, out double p_acc, out double r_acc);
+
+        /// <summary>
+        /// Gets the global acceleration vector (X, Y, Z) of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectAccelerationGlobalXYZ(int object_id, out double acc_x, out double acc_y, out double acc_z);
+
+        /// <summary>
+        /// Gets the local acceleration (lateral, longitudinal) of an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectAccelerationLocalLatLong(int object_id, out double acc_lat, out double acc_long);
+
+        /// <summary>
+        /// Gets the number of wheels on a vehicle object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectNumberOfWheels(int object_id);
+
+        /// <summary>
+        /// Gets data for a specific wheel of a vehicle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectWheelData(int object_id, int wheel_index, ref WheelData wheeldata);
+
+        /// <summary>
+        /// Gets the states of all objects in the scenario.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectStates(out int nObjects, [In, Out] ScenarioObjectState[] state);
+
+        /// <summary>
+        /// Adds a sensor to an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_AddObjectSensor(int object_id, double x, double y, double z, double h, double rangeNear, double rangeFar, double fovH, int maxObj);
+
+        /// <summary>
+        /// Gets the total number of object sensors.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetNumberOfObjectSensors();
+
+        /// <summary>
+        /// Visualizes sensor data for an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_ViewSensorData(int object_id);
+
+        /// <summary>
+        /// Disables writing to the OSI file.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_DisableOSIFile();
+
+        /// <summary>
+        /// Enables writing to an OSI file.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_EnableOSIFile(string filename);
+
+        /// <summary>
+        /// Flushes the OSI file buffer.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_FlushOSIFile();
+
+        /// <summary>
+        /// Fetches the list of objects detected by a sensor.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_FetchSensorObjectList(int sensor_id, [In, Out] int[] list);
+
+        /// <summary>
+        /// Retrieves information about the road at a specific distance ahead of an object.
+        /// </summary>
+        /// <param name="object_id">The ID of the object (e.g., vehicle) to query from.</param>
+        /// <param name="lookahead_distance">The distance ahead (in meters) to query the road info.</param>
+        /// <param name="data">Reference to a RoadInfo struct to be populated with the road information.</param>
+        /// <param name="lookAheadMode">Strategy for lookahead: 0 = along road reference line, 1 = along lane center.</param>
+        /// <param name="inRoadDrivingDirection">If true, the lookahead is performed in the direction of the lane's traffic flow. If false, it uses the object's heading.</param>
+        /// <returns>0 on success, non-zero on failure.</returns>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetRoadInfoAtDistance(int object_id, double lookahead_distance, ref RoadInfo data, int lookAheadMode, [MarshalAs(UnmanagedType.I1)] bool inRoadDrivingDirection);
+
+        /// <summary>
+        /// Retrieves information about the road at a specific distance ahead of an object, following the object's assigned route.
+        /// </summary>
+        /// <param name="object_id">The ID of the object (e.g., vehicle) to query from.</param>
+        /// <param name="lookahead_distance">The distance ahead (in meters) to query the road info.</param>
+        /// <param name="data">Reference to a RoadInfo struct to be populated with the road information.</param>
+        /// <param name="lookAheadMode">Strategy for lookahead: 0 = along road reference line, 1 = along lane center.</param>
+        /// <param name="inRoadDrivingDirection">If true, the lookahead is performed in the direction of the lane's traffic flow. If false, it uses the object's heading.</param>
+        /// <returns>0 on success, non-zero on failure (e.g., object not found or off-route).</returns>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetRoadInfoAlongRoute(int object_id, double lookahead_distance, ref RoadInfo data, int lookAheadMode, [MarshalAs(UnmanagedType.I1)] bool inRoadDrivingDirection);
+
+        /// <summary>
+        /// Gets road information along the ghost object's trail at a lookahead distance.
+        /// </summary>
+        /// <param name="object_id">The ID of the object.</param>
+        /// <param name="lookahead_distance">The distance ahead to query.</param>
+        /// <param name="data">Reference to a RoadInfo struct to be populated.</param>
+        /// <param name="speed_ghost">Output parameter for the ghost's speed at that point.</param>
+        /// <param name="timestamp">Output parameter for the timestamp at that point.</param>
+        /// <returns>0 on success, non-zero on failure.</returns>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetRoadInfoAlongGhostTrail(int object_id, double lookahead_distance, ref RoadInfo data, out double speed_ghost, out double timestamp);
+
+        /// <summary>
+        /// Gets road information along the ghost object's trail at a specific time.
+        /// </summary>
+        /// <param name="object_id">The ID of the object.</param>
+        /// <param name="time">The simulation time to query.</param>
+        /// <param name="data">Reference to a RoadInfo struct to be populated.</param>
+        /// <param name="speed_ghost">Output parameter for the ghost's speed at that time.</param>
+        /// <returns>0 on success, non-zero on failure.</returns>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetRoadInfoGhostTrailTime(int object_id, double time, ref RoadInfo data, out double speed_ghost);
+
+        /// <summary>
+        /// Gets the distance between two objects.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetDistanceToObject(int object_a_id, int object_b_id, [MarshalAs(UnmanagedType.I1)] bool free_space, ref PositionDiff pos_diff);
+
+        /// <summary>
+        /// Gets a simplified distance between two objects.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SimpleGetDistanceToObject(int object_a_id, int object_b_id, int dist_type, double tracking_limit, out double distance, out double timestamp);
+
+        public delegate void ObjectCallback(ref ScenarioObjectState state, IntPtr user_data);
+        /// <summary>
+        /// Registers a callback to be called for a specific object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_RegisterObjectCallback(int object_id, ObjectCallback callback, IntPtr user_data);
+
+        public delegate void ConditionCallback(string name, double timestamp);
+        /// <summary>
+        /// Registers a callback to be called when a condition is triggered.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_RegisterConditionCallback(ConditionCallback callback);
+
+        public delegate void StateChangeCallback(string name, int type, int state, string full_path);
+        /// <summary>
+        /// Registers a callback to be called when a storyboard element changes state.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_RegisterStoryBoardElementStateChangeCallback(StateChangeCallback callback);
+
+        /// <summary>
+        /// Gets the number of road signs on a specific road.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern uint SE_GetNumberOfRoadSigns(int road_id);
+
+        /// <summary>
+        /// Gets information about a specific road sign.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetRoadSign(int road_id, uint index, ref RoadSign road_sign);
+
+        /// <summary>
+        /// Gets the number of validity records for a road sign.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern uint SE_GetNumberOfRoadSignValidityRecords(int road_id, uint index);
+
+        /// <summary>
+        /// Gets a validity record for a road sign.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetRoadSignValidityRecord(int road_id, uint signIndex, uint validityIndex, ref RoadObjValidity validity);
+
+        /// <summary>
+        /// Gets the string ID of a road from its integer ID.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetRoadIdString(int road_id);
+
+        /// <summary>
+        /// Gets the integer ID of a road from its string ID.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetRoadIdFromString(string road_id_str);
+
+        /// <summary>
+        /// Gets the string ID of a junction from its integer ID.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_GetJunctionIdString(int junction_id);
+
+        /// <summary>
+        /// Gets the integer ID of a junction from its string ID.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetJunctionIdFromString(string junction_id_str);
+
+        /// <summary>
+        /// Shows or hides a specific feature in the viewer.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_ViewerShowFeature(int featureType, [MarshalAs(UnmanagedType.I1)] bool enable);
+
+        /// <summary>
+        /// Creates a simple vehicle model.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern IntPtr SE_SimpleVehicleCreate(double x, double y, double h, double length, double speed);
+
+        /// <summary>
+        /// Deletes a simple vehicle model.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleDelete(IntPtr handleSimpleVehicle);
+
+        /// <summary>
+        /// Controls a simple vehicle with binary inputs (throttle/brake, steering).
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleControlBinary(IntPtr handleSimpleVehicle, double dt, int throttle, int steering);
+
+        /// <summary>
+        /// Controls a simple vehicle with analog inputs.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleControlAnalog(IntPtr handleSimpleVehicle, double dt, double throttle, double steering);
+
+        /// <summary>
+        /// Controls a simple vehicle with acceleration and steering angle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleControlAccAndSteer(IntPtr handleSimpleVehicle, double dt, double acceleration, double steering_angle);
+
+        /// <summary>
+        /// Sets the speed of a simple vehicle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleSetSpeed(IntPtr handleSimpleVehicle, double speed);
+
+        /// <summary>
+        /// Disables throttle control for a simple vehicle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleSetThrottleDisabled(IntPtr handleSimpleVehicle, [MarshalAs(UnmanagedType.I1)] bool disabled);
+
+        /// <summary>
+        /// Disables steering control for a simple vehicle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleSetSteeringDisabled(IntPtr handleSimpleVehicle, [MarshalAs(UnmanagedType.I1)] bool disabled);
+
+        /// <summary>
+        /// Controls a simple vehicle to reach a target speed and heading.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleControlTarget(IntPtr handleSimpleVehicle, double dt, double target_speed, double heading_to_target);
+
+        /// <summary>
+        /// Sets the maximum speed of a simple vehicle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleSetMaxSpeed(IntPtr handleSimpleVehicle, double speed);
+
+        /// <summary>
+        /// Sets the maximum acceleration of a simple vehicle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleSetMaxAcceleration(IntPtr handleSimpleVehicle, double maxAcceleration);
+
+        /// <summary>
+        /// Sets the maximum deceleration of a simple vehicle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleSetMaxDeceleration(IntPtr handleSimpleVehicle, double maxDeceleration);
+
+        /// <summary>
+        /// Sets the engine brake factor for a simple vehicle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleSetEngineBrakeFactor(IntPtr handleSimpleVehicle, double engineBrakeFactor);
+
+        /// <summary>
+        /// Sets the steering scale for a simple vehicle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleSteeringScale(IntPtr handleSimpleVehicle, double steeringScale);
+
+        /// <summary>
+        /// Sets the steering return factor for a simple vehicle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleSteeringReturnFactor(IntPtr handleSimpleVehicle, double steeringReturnFactor);
+
+        /// <summary>
+        /// Sets the steering rate for a simple vehicle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleSteeringRate(IntPtr handleSimpleVehicle, double steeringRate);
+
+        /// <summary>
+        /// Gets the state of a simple vehicle.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_SimpleVehicleGetState(IntPtr handleSimpleVehicle, ref SimpleVehicleState state);
+
+        /// <summary>
+        /// Enables or disables saving images to RAM.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SaveImagesToRAM([MarshalAs(UnmanagedType.I1)] bool state);
+
+        /// <summary>
+        /// Saves a sequence of images to files.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SaveImagesToFile(int nrOfFrames);
+
+        /// <summary>
+        /// Fetches the latest captured image.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_FetchImage(ref Image image);
+
+        public delegate void ImageCallback(ref Image image, IntPtr user_data);
+        /// <summary>
+        /// Registers a callback to receive captured images.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_RegisterImageCallback(ImageCallback callback, IntPtr user_data);
+
+        /// <summary>
+        /// Writes an image to a PPM file.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_WritePPMImage(string filename, int width, int height, IntPtr data, int pixelSize, int pixelFormat, [MarshalAs(UnmanagedType.I1)] bool upsidedown);
+
+        /// <summary>
+        /// Writes an image to a TGA file.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_WriteTGAImage(string filename, int width, int height, IntPtr data, int pixelSize, int pixelFormat, [MarshalAs(UnmanagedType.I1)] bool upsidedown);
+
+        /// <summary>
+        /// Adds a custom camera at a specific position and orientation.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_AddCustomCamera(double x, double y, double z, double h, double p);
+
+        /// <summary>
+        /// Adds a custom fixed camera.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_AddCustomFixedCamera(double x, double y, double z, double h, double p);
+
+        /// <summary>
+        /// Adds a custom camera aiming at a target.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_AddCustomAimingCamera(double x, double y, double z);
+
+        /// <summary>
+        /// Adds a custom fixed camera aiming at a target.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_AddCustomFixedAimingCamera(double x, double y, double z);
+
+        /// <summary>
+        /// Adds a custom fixed top-down camera.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_AddCustomFixedTopCamera(double x, double y, double z, double rot);
+
+        /// <summary>
+        /// Sets the camera mode.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetCameraMode(int mode);
+
+        /// <summary>
+        /// Sets the camera to focus on a specific object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_SetCameraObjectFocus(int object_id);
+
+        /// <summary>
+        /// Gets the ID of the object currently in camera focus.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetObjectInCameraFocus();
+
+        /// <summary>
+        /// Gets the current camera position and orientation.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetCameraPos(out double x, out double y, out double z, out double h, out double p, out double r);
+
+        /// <summary>
+        /// Gets the number of route points for an object.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetNumberOfRoutePoints(int object_id);
+
+        /// <summary>
+        /// Gets information about a specific route point.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern int SE_GetRoutePoint(int object_id, uint route_index, ref RouteInfo routeinfo);
+
+        /// <summary>
+        /// Gets the total length of an object's route.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern double SE_GetRouteTotalLength(int object_id);
+
+        /// <summary>
+        /// Injects a speed action.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_InjectSpeedAction(IntPtr action);
+
+        /// <summary>
+        /// Injects a lane change action.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_InjectLaneChangeAction(IntPtr action);
+
+        /// <summary>
+        /// Injects a lane offset action.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        public static extern void SE_InjectLaneOffsetAction(IntPtr action);
+
+        /// <summary>
+        /// Checks if an injected action of a specific type is currently ongoing.
+        /// </summary>
+        [DllImport(LIB_NAME, CallingConvention = CALL_CONV)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        public static extern bool SE_InjectedActionOngoing(int action_type);
     }
 }
