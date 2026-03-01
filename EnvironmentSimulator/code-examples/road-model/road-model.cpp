@@ -40,7 +40,7 @@ void PrintNodeRecursive(const osg::Node* node)
 
 int main(int argc, char* argv[])
 {
-    std::string filename = "../../../../resources/xodr/crest-curve.xodr";  // default file
+    std::string filename = "../resources/xodr/crest-curve.xodr";  // default file
 
     if (argc > 1)
     {
