@@ -1258,7 +1258,6 @@ extern "C"
         }
 
         obj->SetSpeed(speed);
-        obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL);
 
         return 0;
     }
