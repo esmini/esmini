@@ -43,7 +43,7 @@ public class esminiUnityExample : MonoBehaviour
     public bool disable_controllers = true;
 
     private GameObject cam;
-    private ScenarioObjectState state;
+    private SE_ScenarioObjectState state;
     private List<GameObject> cars = new List<GameObject>();
     private GameObject envModel;
 
@@ -89,7 +89,7 @@ public class esminiUnityExample : MonoBehaviour
 
     private void Start()
     {
-        state = new ScenarioObjectState();
+        state = new SE_ScenarioObjectState();
         cam = GameObject.FindWithTag("MainCamera");
 
         // Prepare and register callback for initializing scneario parameters
@@ -176,7 +176,10 @@ public class esminiUnityExample : MonoBehaviour
     public void Reload()
     {
         Debug.Log("Reload");
-        cam.transform.SetParent(null);
+        if (cam)
+        {
+            cam.transform.SetParent(null, true);
+        }
         ESMiniLib.SE_Close();
         InitScenario();
     }
@@ -209,7 +212,7 @@ public class esminiUnityExample : MonoBehaviour
         // Check nr of objects
         for (int i = 0; i < ESMiniLib.SE_GetNumberOfObjects(); i++)
         {
-            ESMiniLib.SE_GetObjectState(i, ref state);
+            ESMiniLib.SE_GetObjectState(i, out state);
 
             // Instantiate objects
             if (cars.Count <= i)
@@ -231,8 +234,8 @@ public class esminiUnityExample : MonoBehaviour
             }
 
             // Adapt to Unity coordinate system
-            cars[i].transform.position = RH2Unity(new Vector3(state.x, state.y, state.z));
-            cars[i].transform.rotation = Quaternion.Euler(RHHPR2UnityXYZ(new Vector3(state.h, state.p, state.r)));
+            cars[i].transform.position = RH2Unity(new Vector3((float)state.x, (float)state.y, (float)state.z));
+            cars[i].transform.rotation = Quaternion.Euler(RHHPR2UnityXYZ(new Vector3((float)state.h, (float)state.p, (float)state.r)));
         }
     }
 }
