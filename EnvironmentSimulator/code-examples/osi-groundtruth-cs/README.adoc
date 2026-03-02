@@ -16,8 +16,8 @@ To have the correct relative path to the scenario file and also access to esmini
 
 [source]
 ----
-cd ..\..\..\..\bin
-..\EnvironmentSimulator\code-examples\osi-groundtruth-cs\build\Release\osi-groundtruth.exe
+cd ../../../../bin
+../EnvironmentSimulator/code-examples/osi-groundtruth-cs/build/Release/osi-groundtruth
 ----
 
 === How to create the osi3 C# files

@@ -1,6 +1,11 @@
 ﻿using System;
 using ESMini;
 
+// simple example how to use esminiLib
+// add it together with ESMiniWrapper.cs to your project
+// also add ESMiniLib (.dll, .so, .dylib) to the folder from where to execute
+// and possibly update the path to the scenario in SE_Init
+
 namespace esmini_csharp
 {
     class Program
