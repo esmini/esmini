@@ -1,9 +1,17 @@
 ## esmini release notes
 
-### 2026-03-01 Version 2.60.0 DRAFT
+### 2026-03-04 Version 3.0.0 DRAFT
+
+TODO:
+- update Unity package for 3.0.0
 
 Breaking changes:
-- Removed unused timestamp from esminiLib report functions
+- Replace all float (32 bits) types with double (64 bits) in esminiLib and esminiRMLib
+  - only affecting external interface, esmini always used 64 bit precision internally
+- Removed unused timestamp argument from some esminiLib report functions
+- Update all testcases and code examples accordingly
+
+
 
 New features:
 - Support [AngleCondition](https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/AngleCondition.html)

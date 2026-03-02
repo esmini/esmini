@@ -1602,12 +1602,6 @@ extern "C"
     SE_DLL_API void SE_GetOSILaneBoundaryIds(int object_id, SE_LaneBoundaryId *ids);
 
     /**
-            The SE_GetOSISensorDataRaw function returns a char array containing the OSI SensorData information
-            @return osi3::SensorData*
-    */
-    SE_DLL_API const char *SE_GetOSISensorDataRaw();
-
-    /**
             Set explicit OSI timestap
             Note that this timestamp does NOT affect esmini simulation time
             Also note that setting timestamp with this function will move into explicit time mode
@@ -1679,12 +1673,6 @@ extern "C"
             @param steering_angle Lateral steering angle
     */
     SE_DLL_API void SE_SimpleVehicleControlAccAndSteer(void *handleSimpleVehicle, double dt, double acceleration, double steering_angle);
-
-    /**
-            Set speed, use together with control binary/analog with throttle set to zero
-            @param speed Speed (m/s)
-    */
-    SE_DLL_API void SE_SimpleVehicleSetSpeed(void *handleSimpleVehicle, double speed);
 
     /**
             Deactivate or re-activate throttle/brake
