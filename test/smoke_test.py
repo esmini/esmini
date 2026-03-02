@@ -2314,26 +2314,29 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^35.010, 1, LeadVehicle, 387.300, -1.535, 0.000, 0.000, 0.000, 0.000, 5.000, 0.000, 2.387', csv, re.MULTILINE))
 
     def test_osi_traffic_command(self):
-        # this test case verify that OpenSCENARIO XML actions are registered as OSI traffic commands
-        log, duration, cpu_time, stdout = run_scenario(esmini_arguments=COMMON_ESMINI_ARGS + " --headless", application='code-examples-bin/osi-traffic_command')
+        if use_package("OSI"):
+            # this test case verify that OpenSCENARIO XML actions are registered as OSI traffic commands
+            log, duration, cpu_time, stdout = run_scenario(esmini_arguments=COMMON_ESMINI_ARGS + " --headless", application='code-examples-bin/osi-traffic_command')
 
-        # Check some initialization steps
-        self.assertTrue(re.search('Loading .*lane_change_simple.xosc', stdout)  is not None)
+            # Check some initialization steps
+            self.assertTrue(re.search('Loading .*lane_change_simple.xosc', stdout)  is not None)
 
-        # Check some scenario events
-        self.assertTrue(re.search('.0.000.* OSI tracefile ground_truth.osi opened', stdout, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('.4.500.* Lane change condition: true, delay: 0.00, distance 0.84 < tolerance \\(1.00\\), edge: rising', stdout, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('.4.500.* Lane change action initState -> startTransition -> runningState', stdout, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^Lane change action \\(id 2\\) started: objId 0 deltaLane 1 shapeType 3 duration 4.00 distance 0.00', stdout, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('.175.400.* End Of Road condition: true', stdout, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('.175.400.* Act 2 End Of Road teleport action initState -> startTransition -> runningState', stdout, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('^Teleport action \\(id 7\\) started: objId 0 x 10.00 y -1.53 z 0.00 h 0.00 p 0.00 r 0.00', stdout, re.MULTILINE)  is not None)
+            # Check some scenario events
+            self.assertTrue(re.search('.0.000.* OSI tracefile ground_truth.osi opened', stdout, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('.4.500.* Lane change condition: true, delay: 0.00, distance 0.84 < tolerance \\(1.00\\), edge: rising', stdout, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('.4.500.* Lane change action initState -> startTransition -> runningState', stdout, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^Lane change action \\(id 2\\) started: objId 0 deltaLane 1 shapeType 3 duration 4.00 distance 0.00', stdout, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('.175.400.* End Of Road condition: true', stdout, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('.175.400.* Act 2 End Of Road teleport action initState -> startTransition -> runningState', stdout, re.MULTILINE)  is not None)
+            self.assertTrue(re.search('^Teleport action \\(id 7\\) started: objId 0 x 10.00 y -1.53 z 0.00 h 0.00 p 0.00 r 0.00', stdout, re.MULTILINE)  is not None)
 
-        # Check vehicle key positions
-        csv = generate_csv()
+            # Check vehicle key positions
+            csv = generate_csv()
 
-        self.assertTrue(re.search('^35.600, 0, Ego, 598.465, 200.000, 0.000, 1.571, 0.000, 0.000, 0.000, 0.000, 2.276', csv, re.MULTILINE))
-        self.assertTrue(re.search('^35.700, 0, Ego, 10.000, -1.535, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 2.276', csv, re.MULTILINE))
+            self.assertTrue(re.search('^35.600, 0, Ego, 598.465, 200.000, 0.000, 1.571, 0.000, 0.000, 0.000, 0.000, 2.276', csv, re.MULTILINE))
+            self.assertTrue(re.search('^35.700, 0, Ego, 10.000, -1.535, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 2.276', csv, re.MULTILINE))
+        else:
+            print("Skipping due to lacking OSI support ", end='', file=sys.stderr)
 
     def controller_conflict_common(self, osc_version):
         s = 'EnvironmentSimulator/Unittest/xosc/controller_conflict_' + osc_version + '.xosc'

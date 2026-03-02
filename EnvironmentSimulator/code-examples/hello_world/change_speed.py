@@ -21,11 +21,11 @@ else:
     print("Unsupported platform: {}".format(sys.platform))
     quit()
 
-se.SE_GetSimulationTime.restype = ctypes.c_float
+se.SE_GetSimulationTime.restype = ctypes.c_double
 
 se.SE_ReportObjectSpeed.argtypes = [
     ctypes.c_int,
-    ctypes.c_float
+    ctypes.c_double
 ]
 
 if se.SE_Init(b"../../../resources/xosc/cut-in.xosc", 0, 1, 0, 0) != 0:

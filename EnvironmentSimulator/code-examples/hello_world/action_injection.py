@@ -1,12 +1,21 @@
+'''
+   demonstrate how to inject scenario actions
+
+   Instruction:
+     - make sure the esmini shared library (esminiLib.dll or esminiLib.so) is present in esmini/bin folder
+     - if not, either compile esmini (see User guide) or fetch bin package release
+     - from this folder (where this code module is), run: python ./action_injection.py ../../../resources/xosc/cut-in.xosc
+'''
+
 import ctypes as ct
 import sys
 
 if sys.platform == "linux" or sys.platform == "linux2":
-    se = ct.CDLL("../bin/libesminiLib.so")
+    se = ct.CDLL("../../../bin/libesminiLib.so")
 elif sys.platform == "darwin":
-    se = ct.CDLL("../bin/libesminiLib.dylib")
+    se = ct.CDLL("../../../bin/libesminiLib.dylib")
 elif sys.platform == "win32":
-    se = ct.CDLL("../bin/esminiLib.dll")
+    se = ct.CDLL("../../../bin/esminiLib.dll")
 else:
     print("Unsupported platform: {}".format(sys.platform))
     quit()
@@ -19,10 +28,10 @@ if (len(sys.argv) < 2):
 class SESpeedActionStruct(ct.Structure):
     _fields_ = [
         ("id", ct.c_int),                # id of object to perform action
-        ("speed", ct.c_float),
+        ("speed", ct.c_double),
         ("transition_shape", ct.c_int),  # 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
         ("transition_dim", ct.c_int),    # 0 = distance, 1 = rate, 2 = time
-        ("transition_value", ct.c_float),
+        ("transition_value", ct.c_double),
     ]
 
 class SELaneChangeActionStruct(ct.Structure):
@@ -32,21 +41,21 @@ class SELaneChangeActionStruct(ct.Structure):
         ("target", ct.c_int),            # target lane id (absolute or relative)
         ("transition_shape", ct.c_int),  # 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
         ("transition_dim", ct.c_int),    # 0 = distance, 1 = rate, 2 = time
-        ("transition_value", ct.c_float),
+        ("transition_value", ct.c_double),
     ]
 
 class SELaneOffsetActionStruct(ct.Structure):
     _fields_ = [
         ("id", ct.c_int),                # id of object to perform action
-        ("offset", ct.c_float),
-        ("max_lateral_acc", ct.c_float),
+        ("offset", ct.c_double),
+        ("max_lateral_acc", ct.c_double),
         ("transition_shape", ct.c_int),  # 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
     ]
 
 
 # specify some arguments and return types of useful functions
-se.SE_StepDT.argtypes = [ct.c_float]
-se.SE_GetSimulationTime.restype = ct.c_float
+se.SE_StepDT.argtypes = [ct.c_double]
+se.SE_GetSimulationTime.restype = ct.c_double
 
 # initialize some structs needed for actions
 lane_offset_action = SELaneOffsetActionStruct()

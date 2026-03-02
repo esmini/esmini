@@ -1,5 +1,11 @@
-# similar example as Python variant
-# run from this folder (esmini/EnvironmentSimulator/code-examples/ad_hoc_traffic)
+'''
+   demonstrate how to inject scenario actions, similar to the c++ variant
+
+   Instruction:
+     - make sure the esmini shared library (esminiLib.dll or esminiLib.so) is present in esmini/bin folder
+     - if not, either compile esmini (see User guide) or fetch bin package release
+     - from this folder (where this code module is), run: python ./ad_hoc_traffic.py
+'''
 
 import ctypes
 from sys import platform
@@ -15,21 +21,20 @@ else:
     quit()
 
 # Need to specify some function return and argument types
-se.SE_GetSimulationTime.restype = ctypes.c_float
+se.SE_GetSimulationTime.restype = ctypes.c_double
 se.SE_ReportObjectPos.argtypes = [
         ctypes.c_int,
-        ctypes.c_float,
-        ctypes.c_float,
-        ctypes.c_float,
-        ctypes.c_float,
-        ctypes.c_float,
-        ctypes.c_float,
-        ctypes.c_float,
-        ctypes.c_float
+        ctypes.c_double,
+        ctypes.c_double,
+        ctypes.c_double,
+        ctypes.c_double,
+        ctypes.c_double,
+        ctypes.c_double,
+        ctypes.c_double
     ]
 se.SE_ReportObjectSpeed.argtypes = [
         ctypes.c_int,
-        ctypes.c_float
+        ctypes.c_double
     ]
 
 # Define class Car to hold id and current position
@@ -38,8 +43,8 @@ class Car():
         self.id = id
         self.x_pos = x_pos
 
-se.SE_AddPath(b"../../../resources")
-se.SE_Init(b"../../../EnvironmentSimulator/code-examples/ad_hoc_traffic/empty_scenario.xosc", 1, 1, 0, 0)
+se.SE_AddPath(b"../../../resources/models")
+se.SE_Init(b"empty_scenario.xosc", 1, 1, 0, 0)
 
 cars = []  # list of cars
 speed = 100.0 / 3.6
@@ -54,7 +59,7 @@ while (timestamp_now < 30.0 and not se.SE_GetQuitFlag() == 1):
     if timestamp_now > distance * counter / speed:
         # Add a vehicle at regular distance
         name = "object_" + str(counter)
-        car_id = se.SE_AddObject(b"name", 1, 0, 0, counter % 11)
+        car_id = se.SE_AddObject(name.encode('utf-8'), 1, 0, 0, counter % 11, 0)
         if car_id >= 0:
             cars.append(Car(car_id, 0.0))
         else:
@@ -70,7 +75,7 @@ while (timestamp_now < 30.0 and not se.SE_GetQuitFlag() == 1):
             del cars[i]
             i -= 1
         else:
-            se.SE_ReportObjectPos(cars[i].id, 0.0, cars[i].x_pos, -1.5, 0.0, 0.0, 0.0, 0.0, speed)
+            se.SE_ReportObjectPos(cars[i].id, cars[i].x_pos, -1.5, 0.0, 0.0, 0.0, 0.0, speed)
             se.SE_ReportObjectSpeed(cars[i].id, speed)
         i += 1
 

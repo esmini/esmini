@@ -1,14 +1,23 @@
+'''
+   demonstrate how to grab storyboard element state changes via callback in Python context
+
+   Instruction:
+     - make sure the esmini shared library (esminiLib.dll or esminiLib.so) is present in esmini/bin folder
+     - if not, either compile esmini (see User guide) or fetch bin package release
+     - from this folder (where this code module is), run: python ./storyboard_state_callback.py
+'''
+
 import ctypes as ct
 import codecs
 from sys import platform
 
 
 if platform == "linux" or platform == "linux2":
-    se = ct.CDLL("../bin/libesminiLib.so")
+    se = ct.CDLL("../../../bin/libesminiLib.so")
 elif platform == "darwin":
-    se = ct.CDLL("../bin/libesminiLib.dylib")
+    se = ct.CDLL("../../../bin/libesminiLib.dylib")
 elif platform == "win32":
-    se = ct.CDLL("../bin/esminiLib.dll")
+    se = ct.CDLL("../../../bin/esminiLib.dll")
 else:
     print("Unsupported platform: {}".format(platform))
     quit()

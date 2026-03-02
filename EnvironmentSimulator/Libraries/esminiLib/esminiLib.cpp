@@ -1762,18 +1762,6 @@ extern "C"
 #endif  // _USE_OSI
     }
 
-    SE_DLL_API int SE_UpdateOSITrafficCommand()
-    {
-#ifdef _USE_OSI
-        if (player != nullptr)
-        {
-            return player->osiReporter->UpdateOSITrafficCommand();
-        }
-#endif  // _USE_OSI
-
-        return 0;
-    }
-
     SE_DLL_API const char *SE_GetOSISensorDataRaw()
     {
 #ifdef _USE_OSI

@@ -8,8 +8,8 @@
 
    How to run:
    1. Open two terminals in esmini root folder
-   2. From terminal 1, run: ./EnvironmentSimulator/code-examples/hello_world/inject_actions_udp.py
-   3. From terminal 2, run: ./bin/esmini --window 80 80 800 400 --osc ./EnvironmentSimulator/Unittest/xosc/dummy_mw.xosc --player_server
+   2. From terminal 1, run: python ./EnvironmentSimulator/code-examples/hello_world/inject_actions_udp.py
+   3. From terminal 2, run: ./bin/esmini ./EnvironmentSimulator/Unittest/xosc/dummy_mw.xosc --player_server
 
    In step 3, add --pause to make esmini stop after initialization and wait for further commands
 
@@ -43,58 +43,58 @@ class ActionType(IntEnum):
 
 class SpeedActionStruct(ct.Structure):
     _fields_ = [
-        ("action_type", ct.c_int),
+        ("action_type", ct.c_int64),  # first an int32, then pad 4 bytes to align to 8 bytes
         ("id", ct.c_int),
-        ("speed", ct.c_float),
+        ("speed", ct.c_double),
         ("transition_shape", ct.c_int),
         ("transition_dim", ct.c_int),
-        ("transition_value", ct.c_float),
+        ("transition_value", ct.c_double),
     ]
 
 class LaneChangeActionStruct(ct.Structure):
     _fields_ = [
-        ("action_type", ct.c_int),
+        ("action_type", ct.c_int64),
         ("id", ct.c_int),
         ("mode", ct.c_int),
         ("target", ct.c_int),
         ("transition_shape", ct.c_int),
         ("transition_dim", ct.c_int),
-        ("transition_value", ct.c_float),
+        ("transition_value", ct.c_double),
     ]
 
 class LaneOffsetActionStruct(ct.Structure):
     _fields_ = [
-        ("action_type", ct.c_int),
+        ("action_type", ct.c_int64),
         ("id", ct.c_int),
-        ("offset", ct.c_float),
-        ("maxLateralAcc", ct.c_float),
+        ("offset", ct.c_double),
+        ("maxLateralAcc", ct.c_double),
         ("transition_shape", ct.c_int),
     ]
 
 class PlayActionStruct(ct.Structure):
     _fields_ = [
-        ("action_type", ct.c_int),
+        ("action_type", ct.c_int32),
     ]
 
 class PauseActionStruct(ct.Structure):
     _fields_ = [
-        ("action_type", ct.c_int),
+        ("action_type", ct.c_int32),
     ]
 
 class StepActionStruct(ct.Structure):
     _fields_ = [
-        ("action_type", ct.c_int),
+        ("action_type", ct.c_int32),
     ]
 
 class StepDTActionStruct(ct.Structure):
     _fields_ = [
-        ("action_type", ct.c_int),
-        ("dt", ct.c_float),
+        ("action_type", ct.c_int64),
+        ("dt", ct.c_double),
     ]
 
 class QuitActionStruct(ct.Structure):
     _fields_ = [
-        ("action_type", ct.c_int),
+        ("action_type", ct.c_int32),
     ]
 
 class Application(Frame):

@@ -1552,11 +1552,6 @@ extern "C"
     SE_DLL_API int SE_SetOSIFrequency(int frequency);
 
     /**
-            @return 0
-    */
-    SE_DLL_API int SE_UpdateOSITrafficCommand();
-
-    /**
             The SE_GetOSIGroundTruth function updates the OSI ground truth and returns a char array containing the osi GroundTruth serialized to a
        string
             @return osi3::GroundTruth*

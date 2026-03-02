@@ -4,8 +4,8 @@
     Python dependencies:
         pip install keyboard
 
-    Run from esmini/Hello-World_coding-example or esmini/bin:
-        python ../EnvironmentSimulator/code-examples/hello_world/drive.py
+    from this folder (where this code module is), run:
+        python ./drive.py
 
     Drive with arrow keys
     Tune behavior with SE_SimpleVehicle* methods, e.g. SE_SimpleVehicleSteeringScale()
@@ -17,18 +17,18 @@ from keyboard._keyboard_event import KEY_DOWN, KEY_UP
 from enum import IntEnum
 
 
-esmini_path = '../'
-se = ct.CDLL(esmini_path + "/bin/esminiLib.dll")
+esmini_path = '../../../'
+se = ct.CDLL(esmini_path + "./bin/esminiLib.dll")
 
 # specify some arguments and return types of useful functions
-se.SE_SimpleVehicleCreate.argtypes = [ct.c_float, ct.c_float, ct.c_float, ct.c_float, ct.c_float]
+se.SE_SimpleVehicleCreate.argtypes = [ct.c_double, ct.c_double, ct.c_double, ct.c_double, ct.c_double]
 se.SE_SimpleVehicleCreate.restype = ct.c_void_p
 se.SE_SimpleVehicleGetState.argtypes = [ct.c_void_p, ct.c_void_p]
 se.SE_SimpleVehicleControlBinary.argtypes = [ct.c_void_p, ct.c_double, ct.c_int, ct.c_int]
-se.SE_ReportObjectWheelStatus.argtypes = [ct.c_int, ct.c_float, ct.c_float]
-se.SE_ReportObjectPosXYH.argtypes = [ct.c_int, ct.c_float, ct.c_float, ct.c_float, ct.c_float]
-se.SE_GetSimTimeStep.restype = ct.c_float
-se.SE_StepDT.argtypes = [ct.c_float]
+se.SE_ReportObjectWheelStatus.argtypes = [ct.c_int, ct.c_double, ct.c_double]
+se.SE_ReportObjectPosXYH.argtypes = [ct.c_int, ct.c_double, ct.c_double, ct.c_double]
+se.SE_GetSimTimeStep.restype = ct.c_double
+se.SE_StepDT.argtypes = [ct.c_double]
 
 # Definition of SE_ScenarioObjectState struct
 class SEScenarioObjectState(ct.Structure):
@@ -36,43 +36,44 @@ class SEScenarioObjectState(ct.Structure):
         ("id", ct.c_int),
         ("model_id", ct.c_int),
         ("control", ct.c_int),
-        ("timestamp", ct.c_float),
-        ("x", ct.c_float),
-        ("y", ct.c_float),
-        ("z", ct.c_float),
-        ("h", ct.c_float),
-        ("p", ct.c_float),
-        ("r", ct.c_float),
+        ("timestamp", ct.c_double),
+        ("x", ct.c_double),
+        ("y", ct.c_double),
+        ("z", ct.c_double),
+        ("h", ct.c_double),
+        ("p", ct.c_double),
+        ("r", ct.c_double),
         ("roadId", ct.c_int),
         ("junctionId", ct.c_int),
-        ("t", ct.c_float),
+        ("t", ct.c_double),
         ("laneId", ct.c_int),
-        ("laneOffset", ct.c_float),
-        ("s", ct.c_float),
-        ("speed", ct.c_float),
-        ("centerOffsetX", ct.c_float),
-        ("centerOffsetY", ct.c_float),
-        ("centerOffsetZ", ct.c_float),
-        ("width", ct.c_float),
-        ("length", ct.c_float),
-        ("height", ct.c_float),
+        ("laneOffset", ct.c_double),
+        ("s", ct.c_double),
+        ("speed", ct.c_double),
+        ("centerOffsetX", ct.c_double),
+        ("centerOffsetY", ct.c_double),
+        ("centerOffsetZ", ct.c_double),
+        ("width", ct.c_double),
+        ("length", ct.c_double),
+        ("height", ct.c_double),
         ("objectType", ct.c_int),
         ("objectCategory", ct.c_int),
-        ("wheelAngle", ct.c_float),
-        ("wheelRot", ct.c_float),
+        ("wheelAngle", ct.c_double),
+        ("wheelRot", ct.c_double),
+        ("visibilityMask", ct.c_int)
     ]
 
 # Definition of SE_SimpleVehicleState struct
 class SESimpleVehicleState(ct.Structure):
     _fields_ = [
-         ("x", ct.c_float),
-         ("y", ct.c_float),
-         ("z", ct.c_float),
-         ("h", ct.c_float),
-         ("p", ct.c_float),
-         ("speed", ct.c_float),
-         ("wheel_rotation", ct.c_float),
-         ("wheel_angle", ct.c_float),
+         ("x", ct.c_double),
+         ("y", ct.c_double),
+         ("z", ct.c_double),
+         ("h", ct.c_double),
+         ("p", ct.c_double),
+         ("speed", ct.c_double),
+         ("wheel_rotation", ct.c_double),
+         ("wheel_angle", ct.c_double),
     ]
 
 class Vehicle:
@@ -127,7 +128,7 @@ vehicle = Vehicle(obj_state.x, obj_state.y, obj_state.h)
 while se.SE_GetQuitFlag() == 0:
     dt = se.SE_GetSimTimeStep()
     vehicle.update(dt)
-    se.SE_ReportObjectPosXYH(se.SE_GetId(0), 0.0, vehicle.vh_state.x, ct.c_float(vehicle.vh_state.y), vehicle.vh_state.h)
+    se.SE_ReportObjectPosXYH(se.SE_GetId(0), vehicle.vh_state.x, vehicle.vh_state.y, vehicle.vh_state.h)
     se.SE_ReportObjectWheelStatus(0, vehicle.vh_state.wheel_rotation, vehicle.vh_state.wheel_angle)
     se.SE_Step()
 

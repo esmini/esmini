@@ -1,12 +1,21 @@
+'''
+   demonstrate how to use esmini esminiRMLib (road manager lib) in a Python context
+
+   Instruction:
+     - make sure the esmini shared library (esminiLib.dll or esminiLib.so) is present in esmini/bin folder
+     - if not, either compile esmini (see User guide) or fetch bin package release
+     - from this folder (where this code module is), run: python ./use_roadmanager.py
+'''
+
 import ctypes as ct
 import sys
 
 if sys.platform == "linux" or sys.platform == "linux2":
-    rm = ct.CDLL("../bin/libesminiRMLib.so")
+    rm = ct.CDLL("../../../bin/libesminiRMLib.so")
 elif sys.platform == "darwin":
-    rm = ct.CDLL("../bin/libesminiRMLib.dylib")
+    rm = ct.CDLL("../../../bin/libesminiRMLib.dylib")
 elif sys.platform == "win32":
-    rm = ct.CDLL("../bin/esminiRMLib.dll")
+    rm = ct.CDLL("../../../bin/esminiRMLib.dll")
 else:
     print("Unsupported platform: {}".format(sys.platform))
     sys.exit(-1)
@@ -14,27 +23,27 @@ else:
 # Definition of RM_PositionData struct - should match esminiRMLib::RM_PositionData struct
 class RM_PositionData(ct.Structure):
     _fields_ = [
-        ("x", ct.c_float),
-        ("y", ct.c_float),
-        ("z", ct.c_float),
-        ("h", ct.c_float),
-        ("p", ct.c_float),
-        ("r", ct.c_float),
-        ("h_relative", ct.c_float),
+        ("x", ct.c_double),
+        ("y", ct.c_double),
+        ("z", ct.c_double),
+        ("h", ct.c_double),
+        ("p", ct.c_double),
+        ("r", ct.c_double),
+        ("h_relative", ct.c_double),
         ("road_id", ct.c_int),
         ("junction_id", ct.c_int),  # -1 if not in a junction
         ("lane_id", ct.c_int),
-        ("lane_offset", ct.c_float),
-        ("s", ct.c_float),
+        ("lane_offset", ct.c_double),
+        ("s", ct.c_double),
     ]
 
 # Specify argument types to a few functions
-rm.RM_SetWorldPosition.argtypes = [ct.c_int, ct.c_float, ct.c_float, ct.c_float, ct.c_float, ct.c_float, ct.c_float]
-rm.RM_SetLanePosition.argtypes = [ct.c_int, ct.c_int, ct.c_int, ct.c_float, ct.c_float]
+rm.RM_SetWorldPosition.argtypes = [ct.c_int, ct.c_double, ct.c_double, ct.c_double, ct.c_double, ct.c_double, ct.c_double]
+rm.RM_SetLanePosition.argtypes = [ct.c_int, ct.c_int, ct.c_int, ct.c_double, ct.c_double]
 
 
 # Initialize esmini RoadManger with given OpenDRIVE file
-odr = '../resources/xodr/straight_500m.xodr'
+odr = '../../../resources/xodr/straight_500m.xodr'
 if rm.RM_Init(odr.encode()) == -1:   # encode() converts string to pure byte array
     print("Failed to load OpenDRIVE file ", )
     sys.exit(-1)

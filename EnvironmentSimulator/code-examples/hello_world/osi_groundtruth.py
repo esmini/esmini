@@ -1,9 +1,15 @@
 '''
+   demonstrate how to fetch OSI data from esmini in Python context
+
    Python dependencies:
       pip install protobuf==3.20.2
 
-   Note: No need to install OSI as long as
-   esmini/scripts/osi3 folder is available
+   Note: No need to install OSI as long as esmini/scripts/osi3 folder is available
+
+   Instruction:
+     - make sure the esmini shared library (esminiLib.dll or esminiLib.so) is present in esmini/bin folder
+     - if not, either compile esmini (see User guide) or fetch bin package release
+     - from this folder (where this code module is), run: python ./osi_groundtruth.py
 '''
 
 import os
@@ -18,11 +24,11 @@ from osi3.osi_groundtruth_pb2 import GroundTruth
 
 # Import esmini lib
 if sys.platform == "linux" or sys.platform == "linux2":
-    se = ct.CDLL("../bin/libesminiLib.so")
+    se = ct.CDLL("../../../bin/libesminiLib.so")
 elif sys.platform == "darwin":
-    se = ct.CDLL("../bin/libesminiLib.dylib")
+    se = ct.CDLL("../../../bin/libesminiLib.dylib")
 elif sys.platform == "win32":
-    se = ct.CDLL("../bin/esminiLib.dll")
+    se = ct.CDLL("../../../bin/esminiLib.dll")
 else:
     print("Unsupported platform: {}".format(platform))
     quit()
@@ -31,7 +37,7 @@ else:
 # Specify argument and return types of some esmini functions
 se.SE_GetOSIGroundTruth.restype = ct.c_void_p
 se.SE_GetOSIGroundTruth.argtypes = [ct.c_void_p]
-se.SE_StepDT.argtypes = [ct.c_float]
+se.SE_StepDT.argtypes = [ct.c_double]
 
 class Sim:
     def __init__(self, scenario):

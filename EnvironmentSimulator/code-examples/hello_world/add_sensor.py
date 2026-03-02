@@ -1,28 +1,37 @@
+'''
+   demonstrate how to add and monitor ideal object sensors
+
+   Instruction:
+     - make sure the esmini shared library (esminiLib.dll or esminiLib.so) is present in esmini/bin folder
+     - if not, either compile esmini (see User guide) or fetch bin package release
+     - from this folder (where this code module is), run: python ./add_sensor.py
+'''
+
 import ctypes
 from sys import platform
 
 if platform == "linux" or platform == "linux2":
-    se = ctypes.CDLL("../bin/libesminiLib.so")
+    se = ctypes.CDLL("../../../bin/libesminiLib.so")
 elif platform == "darwin":
-    se = ctypes.CDLL("../bin/libesminiLib.dylib")
+    se = ctypes.CDLL("../../../bin/libesminiLib.dylib")
 elif platform == "win32":
-    se = ctypes.CDLL("../bin/esminiLib.dll")
+    se = ctypes.CDLL("../../../bin/esminiLib.dll")
 else:
     print("Unsupported platform: {}".format(platform))
     quit()
 
-# specify some function return and argument types (needed for the floats)
-se.SE_GetSimulationTime.restype = ctypes.c_float
+# specify some function return and argument types (needed for the doubles)
+se.SE_GetSimulationTime.restype = ctypes.c_double
 
 se.SE_AddObjectSensor.argtypes = [
     ctypes.c_int,
-    ctypes.c_float,
-    ctypes.c_float,
-    ctypes.c_float,
-    ctypes.c_float,
-    ctypes.c_float,
-    ctypes.c_float,
-    ctypes.c_float,
+    ctypes.c_double,
+    ctypes.c_double,
+    ctypes.c_double,
+    ctypes.c_double,
+    ctypes.c_double,
+    ctypes.c_double,
+    ctypes.c_double,
     ctypes.c_int
 ]
 

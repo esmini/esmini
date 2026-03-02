@@ -1,15 +1,13 @@
-## Convert any world positions in trajectories to lane position type
-##
-## This script demonstrates how esmini RoadManager can be used to manipulate positions
-## in an OpenSCENARIO file. E.g. converting to lane or road positions to make the scenario
-## less dependent on specific road network. In other words making the scenario portable.
-##
-## Usage example, run from esmini/bin folder as:
-##   ../EnvironmentSimulator/code-examples/convert_position_type/manipulate_positions.py ../resources/xosc/lane-change_trajectory_wp.xosc ../resources/xodr/straight_500m.xodr
-## or if .py is not associated with Python:
-##   python ../EnvironmentSimulator/code-examples/convert_position_type/manipulate_positions.py ../resources/xosc/lane-change_trajectory_wp.xosc ../resources/xodr/straight_500m.xodr
-## or perhaps (typically on linux):
-##   python3 ../EnvironmentSimulator/code-examples/convert_position_type/manipulate_positions.py ../resources/xosc/lane-change_trajectory_wp.xosc ../resources/xodr/straight_500m.xodr
+'''
+   Convert any world positions in trajectories to lane position type
+
+   This script demonstrates how esmini RoadManager can be used to manipulate positions
+   in an OpenSCENARIO file. E.g. converting to lane or road positions to make the scenario
+   less dependent on specific road network. In other words making the scenario portable.
+
+   Usage example, run from this folder (where this code module is):
+      python manipulate_positions.py ../../../resources/xosc/lane-change_trajectory_wp.xosc ../../../resources/xodr/straight_500m.xodr
+'''
 
 import os
 import argparse
@@ -18,11 +16,11 @@ import ctypes as ct
 import sys
 
 if sys.platform == "linux" or sys.platform == "linux2":
-    rm = ct.CDLL("../bin/libesminiRMLib.so")
+    rm = ct.CDLL("../../../bin/libesminiRMLib.so")
 elif sys.platform == "darwin":
-    rm = ct.CDLL("../bin/libesminiRMLib.dylib")
+    rm = ct.CDLL("../../../bin/libesminiRMLib.dylib")
 elif sys.platform == "win32":
-    rm = ct.CDLL("../bin/esminiRMLib.dll")
+    rm = ct.CDLL("../../../bin/esminiRMLib.dll")
 else:
     print("Unsupported platform: {}".format(sys.platform))
     sys.exit(-1)
@@ -30,23 +28,23 @@ else:
 # Definition of RM_PositionData struct - should match esminiRMLib::RM_PositionData struct
 class RM_PositionData(ct.Structure):
     _fields_ = [
-        ("x", ct.c_float),
-        ("y", ct.c_float),
-        ("z", ct.c_float),
-        ("h", ct.c_float),
-        ("p", ct.c_float),
-        ("r", ct.c_float),
-        ("h_relative", ct.c_float),
+        ("x", ct.c_double),
+        ("y", ct.c_double),
+        ("z", ct.c_double),
+        ("h", ct.c_double),
+        ("p", ct.c_double),
+        ("r", ct.c_double),
+        ("h_relative", ct.c_double),
         ("road_id", ct.c_int),
         ("junction_id", ct.c_int),  # -1 if not in a junction
         ("lane_id", ct.c_int),
-        ("lane_offset", ct.c_float),
-        ("s", ct.c_float),
+        ("lane_offset", ct.c_double),
+        ("s", ct.c_double),
     ]
 
 # Specify argument types to a few esmini RoadManager functions
-rm.RM_SetWorldPosition.argtypes = [ct.c_int, ct.c_float, ct.c_float, ct.c_float, ct.c_float, ct.c_float, ct.c_float]
-rm.RM_SetWorldXYHPosition.argtypes = [ct.c_int, ct.c_float, ct.c_float, ct.c_float]
+rm.RM_SetWorldPosition.argtypes = [ct.c_int, ct.c_double, ct.c_double, ct.c_double, ct.c_double, ct.c_double, ct.c_double]
+rm.RM_SetWorldXYHPosition.argtypes = [ct.c_int, ct.c_double, ct.c_double, ct.c_double]
 
 # specify necessary arguments
 parser = argparse.ArgumentParser(description='Convert any trajectory world position into lane position')
