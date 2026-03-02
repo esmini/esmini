@@ -103,7 +103,7 @@ namespace Dat
     struct LightState
     {
         int    light_type = -1;
-        bool   active     = false;
+        int    light_mode = -1;
         double r          = -1;
         double g          = -1;
         double b          = -1;

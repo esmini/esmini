@@ -1533,7 +1533,8 @@ void CarModel::UpdateLight(Object::VehicleLightStatus* vehicle_lights_status)
             UpdateLightMaterial(Object::VehicleLightType::INDICATOR_LEFT, diffuseRgb, emissionRgb);
             UpdateLightMaterial(Object::VehicleLightType::INDICATOR_RIGHT, diffuseRgb, emissionRgb);
         }
-        else if ((light.type == Object::VehicleLightType::INDICATOR_LEFT || light.type == Object::VehicleLightType::INDICATOR_RIGHT) && !light.active)
+        else if ((light.type == Object::VehicleLightType::INDICATOR_LEFT || light.type == Object::VehicleLightType::INDICATOR_RIGHT) &&
+                 light.mode == Object::VehicleLightMode::UNKNOWN)
         {
             continue;  // We dont update the lights to avoid setting warning lights to OFF
         }
@@ -1543,7 +1544,7 @@ void CarModel::UpdateLight(Object::VehicleLightStatus* vehicle_lights_status)
             UpdateLightMaterial(Object::VehicleLightType::FOG_LIGHTS_REAR, diffuseRgb, emissionRgb);
         }
         else if ((light.type == Object::VehicleLightType::FOG_LIGHTS_FRONT || light.type == Object::VehicleLightType::FOG_LIGHTS_REAR) &&
-                 !light.active)
+                 light.mode == Object::VehicleLightMode::UNKNOWN)
         {
             continue;  // We dont update the lights to avoid setting fog lights to OFF
         }
