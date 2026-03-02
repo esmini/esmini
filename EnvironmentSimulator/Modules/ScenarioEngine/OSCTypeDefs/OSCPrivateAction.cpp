@@ -3131,6 +3131,17 @@ void LightStateAction::Start(double simTime)
         // Thus, we initialize all of them with basic values below. This should only happen when running headless...
         InitializeLights();
     }
+    // If we have warning lights or fog lights, they need to set overlapping lights to unknown, this due to order lights being rendered
+    else if (vehicleLight_->type == Object::VehicleLightType::WARNING_LIGHTS)
+    {
+        object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_LEFT)].mode  = Object::VehicleLightMode::UNKNOWN;
+        object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_RIGHT)].mode = Object::VehicleLightMode::UNKNOWN;
+    }
+    else if (vehicleLight_->type == Object::VehicleLightType::FOG_LIGHTS)
+    {
+        object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS_FRONT)].mode = Object::VehicleLightMode::UNKNOWN;
+        object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS_REAR)].mode  = Object::VehicleLightMode::UNKNOWN;
+    }
 
     previousMode_      = vehicleLight_->mode;
     previousIntensity_ = vehicleLight_->luminousIntensity;
@@ -3143,6 +3154,7 @@ void LightStateAction::Start(double simTime)
     // If never been set before, we start with OFF
     if (vehicleLight_->mode == Object::VehicleLightMode::UNKNOWN)
     {
+        previousMode_       = Object::VehicleLightMode::OFF;
         vehicleLight_->mode = Object::VehicleLightMode::OFF;
     }
 
@@ -3157,8 +3169,6 @@ void LightStateAction::Start(double simTime)
 
     std::copy_n(minRgb_, RGB_ARRAY_SIZE_, vehicleLight_->rgb);
     std::copy_n(maxRgb_, RGB_ARRAY_SIZE_, vehicleLight_->maxRgb);
-
-    vehicleLight_->active = true;
 
     OSCAction::Start(simTime);
 }
@@ -3290,7 +3300,6 @@ void LightStateAction::Step(double simTime, double dt)
 
     if (end_action)
     {
-        vehicleLight_->active = false;
         OSCAction::End();
         return;
     }
