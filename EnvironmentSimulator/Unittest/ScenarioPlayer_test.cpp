@@ -579,6 +579,45 @@ TEST(TrafficSignals, TestTrafficSignalActions)
 
 #ifdef _USE_OSI
 
+TEST(OSI, TestLightStates)
+{
+    const char* args[] =
+        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/light_test.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    double          dt     = 0.1;
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ScenarioEngine* se = player->scenarioEngine;
+
+    const osi3::GroundTruth* osi_gt_ptr = reinterpret_cast<const osi3::GroundTruth*>(player->osiReporter->GetOSIGroundTruthRaw());
+    ASSERT_NE(osi_gt_ptr, nullptr);
+    ASSERT_EQ(osi_gt_ptr->moving_object_size(), 2);
+
+    using Brakes     = osi3::MovingObject_VehicleClassification_LightState_BrakeLightState;
+    using Generics   = osi3::MovingObject_VehicleClassification_LightState_GenericLightState;
+    using Indicators = osi3::MovingObject_VehicleClassification_LightState_IndicatorState;
+
+    auto car1_ls = osi_gt_ptr->moving_object(0).vehicle_classification().light_state();
+    EXPECT_EQ(car1_ls.indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_LEFT);
+    EXPECT_EQ(car1_ls.brake_light_state(), Brakes::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_NORMAL);
+    EXPECT_EQ(car1_ls.service_vehicle_illumination(),
+              Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_FLASHING_AMBER);
+    EXPECT_EQ(car1_ls.license_plate_illumination_rear(),
+              Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
+    EXPECT_EQ(car1_ls.reversing_light(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
+
+    auto car2_ls = osi_gt_ptr->moving_object(1).vehicle_classification().light_state();
+
+    EXPECT_EQ(car2_ls.emergency_vehicle_illumination(),
+              Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_FLASHING_BLUE);
+    EXPECT_EQ(car2_ls.brake_light_state(), Brakes::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_STRONG);
+    EXPECT_EQ(car2_ls.indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_LEFT);
+}
+
 TEST(OSI, TestTrafficLights)
 {
     const char*     args[] = {"esmini", "--osc", "../../../resources/xosc/traffic_lights.xosc", "--headless", "--osi_file", "--disable_stdout"};

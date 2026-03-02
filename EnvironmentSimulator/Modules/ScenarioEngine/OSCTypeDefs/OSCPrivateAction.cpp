@@ -3130,9 +3130,9 @@ void LightStateAction::Start(double simTime)
         // Thus, we initialize all of them with basic values below. This should only happen when running headless...
         InitializeLights();
     }
-
     previousMode_      = vehicleLight_->mode;
     previousIntensity_ = vehicleLight_->luminousIntensity;
+
     // vehicleLight_->rgb/maxRgb are initialized with min/max values for the material color
     std::copy_n(vehicleLight_->rgb, RGB_ARRAY_SIZE_, previousMinRgb_);
     std::copy_n(vehicleLight_->maxRgb, RGB_ARRAY_SIZE_, previousMaxRgb_);
@@ -3142,6 +3142,7 @@ void LightStateAction::Start(double simTime)
     // If never been set before, we start with OFF
     if (vehicleLight_->mode == Object::VehicleLightMode::UNKNOWN)
     {
+        previousMode_       = Object::VehicleLightMode::OFF;
         vehicleLight_->mode = Object::VehicleLightMode::OFF;
     }
 
@@ -3156,8 +3157,6 @@ void LightStateAction::Start(double simTime)
 
     std::copy_n(minRgb_, RGB_ARRAY_SIZE_, vehicleLight_->rgb);
     std::copy_n(maxRgb_, RGB_ARRAY_SIZE_, vehicleLight_->maxRgb);
-
-    vehicleLight_->active = true;
 
     OSCAction::Start(simTime);
 }
@@ -3198,6 +3197,7 @@ void LightStateAction::Step(double simTime, double dt)
             end_action = true;
         }
         vehicleLight_->mode = actionVehicleLightStatus_.mode;
+        HandleConflictingLights(vehicleLight_->type);
     }
     else if (transitionTimer_ <= transitionTime_ + SMALL_NUMBER)
     {
@@ -3249,6 +3249,8 @@ void LightStateAction::Step(double simTime, double dt)
     {
         // Update mode only after transition is complete
         vehicleLight_->mode = actionVehicleLightStatus_.mode;
+        HandleConflictingLights(vehicleLight_->type);
+
         LOG_INFO("LightStateAction: Transition completed in {:.2f}s", transitionTimer_);
 
         if (actionVehicleLightStatus_.mode != Object::VehicleLightMode::FLASHING)
@@ -3289,10 +3291,70 @@ void LightStateAction::Step(double simTime, double dt)
 
     if (end_action)
     {
-        vehicleLight_->active = false;
         OSCAction::End();
         return;
     }
+}
+
+void LightStateAction::HandleConflictingLights(const Object::VehicleLightType& type)
+{
+    switch (type)
+    {
+        case Object::VehicleLightType::FOG_LIGHTS:
+            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS_FRONT)]);
+            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS_REAR)]);
+            break;
+        case Object::VehicleLightType::FOG_LIGHTS_FRONT:
+            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS)]);
+            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS_REAR)]);
+            break;
+        case Object::VehicleLightType::FOG_LIGHTS_REAR:
+            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS)]);
+            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS_FRONT)]);
+            break;
+        case Object::VehicleLightType::WARNING_LIGHTS:
+            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_LEFT)]);
+            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_RIGHT)]);
+            break;
+        case Object::VehicleLightType::INDICATOR_LEFT:
+            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::WARNING_LIGHTS)]);
+            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_RIGHT)]);
+            break;
+        case Object::VehicleLightType::INDICATOR_RIGHT:
+            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::WARNING_LIGHTS)]);
+            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_LEFT)]);
+            break;
+        default:
+            break;
+    }
+}
+
+void LightStateAction::ResetLight(Object::VehicleLightStatus& light, Object::VehicleLightMode mode)
+{
+    light.mode        = mode;
+    light.emission[0] = 0.0;
+    light.emission[1] = 0.0;
+    light.emission[2] = 0.0;
+}
+
+bool LightStateAction::CheckConflictingLights(const Object::VehicleLightType& type)
+{
+    bool same_light_type  = this->vehicleLightType_ == type;
+    auto is_flashing_type = [](const Object::VehicleLightType& t)
+    {
+        return t == Object::VehicleLightType::WARNING_LIGHTS || t == Object::VehicleLightType::INDICATOR_LEFT ||
+               t == Object::VehicleLightType::INDICATOR_RIGHT;
+    };
+
+    auto is_fog_type = [](const Object::VehicleLightType& t)
+    {
+        return t == Object::VehicleLightType::FOG_LIGHTS || t == Object::VehicleLightType::FOG_LIGHTS_FRONT ||
+               t == Object::VehicleLightType::FOG_LIGHTS_REAR;
+    };
+    bool confl_indicator_types = is_flashing_type(this->vehicleLightType_) && is_flashing_type(type);
+    bool confl_fog_light_types = is_fog_type(this->vehicleLightType_) && is_fog_type(type);
+
+    return same_light_type || confl_indicator_types || confl_fog_light_types;
 }
 
 void LightStateAction::InitializeLights()

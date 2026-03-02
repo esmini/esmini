@@ -1385,8 +1385,8 @@ ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, double t) const
         for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
         {
             auto data                                   = timeline.light_state_[i].get_value_incremental(t).value_or(Dat::LightState{});
-            entry.state.info.light_state[i].active      = data.active;
             entry.state.info.light_state[i].type        = static_cast<Object::VehicleLightType>(data.light_type);
+            entry.state.info.light_state[i].mode        = static_cast<Object::VehicleLightMode>(data.light_mode);
             entry.state.info.light_state[i].rgb[0]      = data.r;
             entry.state.info.light_state[i].rgb[1]      = data.g;
             entry.state.info.light_state[i].rgb[2]      = data.b;

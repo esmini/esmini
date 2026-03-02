@@ -343,7 +343,7 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
                 {
                     const auto& light                = state->info.light_state[i];
                     cache_it->second.light_state_[i] = {static_cast<int>(light.type),
-                                                        light.active,
+                                                        static_cast<int>(light.mode),
                                                         light.rgb[0],
                                                         light.rgb[1],
                                                         light.rgb[2],
@@ -467,8 +467,8 @@ void Dat::DatWriter::UpdateEnvironmentCache(const scenarioengine::OSCEnvironment
 
 bool Dat::DatWriter::IsLightStateEqual(const LightState& ls, const scenarioengine::Object::VehicleLightStatus& osc_ls) const
 {
-    return (ls.active == osc_ls.active && ls.r == osc_ls.rgb[0] && ls.g == osc_ls.rgb[1] && ls.b == osc_ls.rgb[2] && ls.e_r == osc_ls.emission[0] &&
-            ls.e_g == osc_ls.emission[1] && ls.e_b == osc_ls.emission[2]);
+    return (ls.light_mode == static_cast<int>(osc_ls.mode) && ls.r == osc_ls.rgb[0] && ls.g == osc_ls.rgb[1] && ls.b == osc_ls.rgb[2] &&
+            ls.e_r == osc_ls.emission[0] && ls.e_g == osc_ls.emission[1] && ls.e_b == osc_ls.emission[2]);
 }
 
 size_t Dat::DatWriter::SerializedSize(const std::string& str)
