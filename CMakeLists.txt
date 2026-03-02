@@ -91,7 +91,7 @@ set(BUILD_REPLAYER
           "If replayer should be compiled.")
 
 set(BUILD_EXAMPLES
-    OFF
+    ON
     CACHE BOOL
           "If examples should be compiled.")
 

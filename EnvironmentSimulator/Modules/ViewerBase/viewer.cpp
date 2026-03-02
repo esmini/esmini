@@ -244,8 +244,7 @@ void ImGuiOverlay::drawUi()
         cmdMask_ |= CMD_FRAME_BACK;
     }
     ImGui::SameLine();
-    const char* playLabel = "Play/Pause";
-    if (ImGui::Button(playLabel, ImVec2(btnWidth, 0)))
+    if (ImGui::Button("pause/play", ImVec2(btnWidth, 0)))
     {
         cmdMask_ |= CMD_TOGGLE_PLAY;
     }

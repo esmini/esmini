@@ -21,9 +21,9 @@ macro(set_cloud_links)
             https://esmini.asuscomm.com/AICLOUD972108097/libs/sumo_mac.7z;
             https://www.dropbox.com/s/0x8kwztk7nmacs1/sumo_mac.7z?dl=1)
         set(IMPLOT_PACKAGE_URL
-            https://drive.usercontent.google.com/download?id=1Cjda4pzyOGpOBiKAJ0_nBAeK8wcWzPuT&export=download&authuser=0&confirm=t;
-            https://esmini.asuscomm.com/AICLOUD972108097/libs/implot_mac.7z;
-            https://www.dropbox.com/scl/fi/kg6km3plk755vnz8gv1me/implot_mac.7z?rlkey=zzbpujrhoprlwnjeudv9pcb1o&dl=1)
+            https://drive.usercontent.google.com/download?id=12RycamdsewKIhwg63-AKr33Xr00xSyZ8&export=download&authuser=0&confirm=t;
+            https://esmini.asuscomm.com/AICLOUD972108097/libs/implot_mac_14.7z;
+            https://www.dropbox.com/scl/fi/s1c4ytqqaxk77l5wf3h3l/implot_mac_macos_14.7z?rlkey=xligo4mju7a8f0dtm4mjeliuw&st=ca2lm7jz&dl=1)
     elseif(LINUX)
         set(OSG_PACKAGE_URL
             https://drive.usercontent.google.com/download?id=1NQlZBTFBWHpu-ImEjJN6CIxvwuinelzL&export=download&authuser=0&confirm=t;
@@ -42,9 +42,9 @@ macro(set_cloud_links)
             https://esmini.asuscomm.com/AICLOUD972108097/libs/googletest_linux.7z;
             https://dl.dropboxusercontent.com/s/si7jsjjsy5bpoym/googletest_linux.7z?dl=1)
         set(IMPLOT_PACKAGE_URL
-            https://drive.usercontent.google.com/download?id=1YVetAhT7IBLTvkbDeyCDgZ3mjbExcxFY&export=download&authuser=0&confirm=t;
-            https://esmini.asuscomm.com/AICLOUD972108097/libs/implot_linux_glibc_2_31_gcc_7_5_0.7z;
-            https://www.dropbox.com/scl/fi/d5h6vdqqf6q890d53541b/implot_linux_glibc_2_31_gcc_7_5_0.7z?rlkey=galhhylarlx70lhzfdmih4jim&dl=1)
+            https://drive.usercontent.google.com/download?id=1MC6xvGbEG-GiEsNpwuj6hK_NDx-FPcp8&export=download&authuser=0&confirm=t;
+            https://esmini.asuscomm.com/AICLOUD972108097/libs/implot_linux_glibc_2_31_gcc_9_4_0.7z;
+            https://www.dropbox.com/scl/fi/s4lu9y6z8krlymuq4nxwe/implot_linux_glibc_2_31_gcc_9_4_0.7z?rlkey=1ui1h0azyuiap5ehogumcjrk1&st=82yzvb4f&dl=1)
     elseif(MSVC)
         set(OSG_PACKAGE_URL
             https://esmini.asuscomm.com/AICLOUD972108097/libs/osg_win_vs17_v142_png.7z;
@@ -63,9 +63,9 @@ macro(set_cloud_links)
             https://drive.usercontent.google.com/download?id=1So-3gtrmEdW9RhEvVQisj1QFksHM_otU&export=download&authuser=0&confirm=t;
             https://dl.dropboxusercontent.com/s/aaiehwzc6woqbc6/googletest_v10.7z?dl=1)
         set(IMPLOT_PACKAGE_URL
-            https://esmini.asuscomm.com/AICLOUD972108097/libs/implot_v10.7z;
-            https://drive.usercontent.google.com/download?id=1k7dEITeu3vy6RTqKUw2o4FiTYljVuHkk&export=download&authuser=0&confirm=t;
-            https://www.dropbox.com/scl/fi/txl0jqi49ysreoegcoqk9/implot_v10.7z?rlkey=jh0cd5bkpzrxxt8sn0q4frjpr&dl=1)
+            https://drive.usercontent.google.com/download?id=1zIw35UCHhyRAEVbbUmOuUgqMOfWdj7zO&export=download&authuser=0&confirm=t;
+            https://esmini.asuscomm.com/AICLOUD972108097/libs/implot_vs17_v142.7z;
+            https://www.dropbox.com/scl/fi/cgf93rq4gwtbsv635f90y/implot_vs17_v142.7z?rlkey=0pwhdlyty69qrdcx7agzjdg9x&st=7omkcafx&dl=1)
     elseif(MINGW)
         message("MinGW, enforcing slimmed esmini")
     else()
