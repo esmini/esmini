@@ -1482,7 +1482,9 @@ namespace scenarioengine
         void                      UpdateArray(double* arr, size_t size, const std::vector<double>& vals);
         void                      SetVehicleLightState(double* maxRgb, double luminousity);
         void                      InitializeLights();
-        // Object::VehicleLightType GetLightType();
+        bool                      CheckConflictingLights(const Object::VehicleLightType& type);
+        void                      HandleConflictingLights(const Object::VehicleLightType& type);
+        void                      ResetLight(Object::VehicleLightStatus& light, Object::VehicleLightMode mode = Object::VehicleLightMode::UNKNOWN);
 
         // Getters
         double* GetCmyk()

@@ -4232,7 +4232,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 lightStateAction->SetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());  // Forcing ORANGE or BLUE... no correct?
             }
 
-            lightStateAction->SetVehicleLightInitStatus();  // Register initial values for a vehicle light to be used when initializing the viewer
+            lightStateAction->SetVehicleLightInitStatus();  // Register initial values in the action
             action                 = lightStateAction;
             has_lightstate_action_ = true;
         }
