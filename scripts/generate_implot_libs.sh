@@ -36,18 +36,14 @@ else
 fi
 
 if [ "$OSTYPE" == "msys" ]; then
-    # Visual Studio 2019 - toolkit from Visual Studio 2017
-    GENERATOR=("Visual Studio 16 2019")
-    GENERATOR_TOOLSET="v141"
+    # Visual Studio 2022 - toolkit from Visual Studio 2017
+    GENERATOR=("Visual Studio 17 2022")
+    GENERATOR_TOOLSET="v142"
     GENERATOR_ARGUMENTS="-A x64 -T ${GENERATOR_TOOLSET}"
 
-    # Visual Studio 2019 - default toolkit
-    # GENERATOR=("Visual Studio 16 2019")
+    # Visual Studio 2022 - default toolkit
+    # GENERATOR=("Visual Studio 17 2022")
     # GENERATOR_ARGUMENTS="-A x64 -T ${GENERATOR_TOOLSET}"
-
-    # Visual Studio 2017 - default toolkit
-    # GENERATOR=("Visual Studio 15 2017 Win64")
-    # GENERATOR_ARGUMENTS="-T ${GENERATOR_TOOLSET}"
 
     # Make sure 7zip is available, else download and install it
     # https://www.7-zip.org/download.html
@@ -139,23 +135,23 @@ mkdir build;cd build
 
 if [ "$OSTYPE" == "msys" ]; then
 
-	cmake .. -G "Visual Studio 16 2019" -T v142 -A x64
+	cmake .. -G "Visual Studio 17 2022" -T v143 -A x64
 	cmake --build . -j $PARALLEL_ARG --config Release
 	cmake --build . -j $PARALLEL_ARG --config Debug
 
 elif  [[ "$OSTYPE" == "darwin"* ]] ; then
 
-    cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC" -DCMAKE_CXX_FLAGS="-std=c++11" -DCMAKE_OSX_ARCHITECTURES="$macos_arch"
+    cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_CXX_FLAGS="-fPIC -std=c++11" -DCMAKE_OSX_ARCHITECTURES="$macos_arch"
     cmake --build . $PARALLEL_ARG
 
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
-    cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_BUILD_TYPE=Debug .. -DCMAKE_C_FLAGS="-fPIC"
+    cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_BUILD_TYPE=Debug .. -DCMAKE_CXX_FLAGS="-fPIC"
     cmake --build . $PARALLEL_ARG
     mv libimplot.a libimplotd.a
 
     rm CMakeCache.txt
-    cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_C_FLAGS="-fPIC"
+    cmake -G "${GENERATOR[@]}" ${GENERATOR_ARGUMENTS} -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_CXX_FLAGS="-fPIC"
     cmake --build . $PARALLEL_ARG
 
 fi
