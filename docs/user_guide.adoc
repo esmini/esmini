@@ -106,7 +106,7 @@ image::cut-in.png[]
 Example: +
 ``./bin/replayer --window 60 60 800 400 --file sim.dat`` +
 +
-See <<Use cases>> how to create recordings (``.dat`` files) from esmini.
+See <<Use cases>> how to create recordings (``.dat`` files) from esmini and <<Replay scenario>> for further details about replaying.
 
 *odrviewer*:: Visualize and verify OpenDRIVE road networks. Draw road features, like reference line and lanes, on top of a 3D model (provided or generated). Optionally populate with random traffic that will randomly find its way through the road network. +
 Example: +
@@ -541,10 +541,10 @@ Replay a scenario recording (.dat file): +
 
 The `--res_path` is a special path directive should normally point to esmini/resources folder, where it will look for the OpenDRIVE file, 3D models, traffic signal mappings and more. It also works to add one or multiple --path <path> directives, like for esmini.
 
-Once loaded the scenario recording will start playing in normal speed. Here are a few key commands:
+Once loaded the scenario recording will start playing in normal speed. Here are a few key commands, with gui equivalent in paranthesis:
 
 [horizontal]
-*Space*:: Toggle pause/play simulation
+*Space (pause/play)*:: Toggle pause/play simulation
 *Tab*:: Move camera to next vehicle
 *Shift-Tab or Backspace*:: Move camera to previous vehicle
 *'n'*:: Toggle show active trajectories
@@ -553,12 +553,14 @@ Once loaded the scenario recording will start playing in normal speed. Here are 
 
 Arrow keys:
 [horizontal]
-*Left*:: Pause and move to previous frame
-*Right*:: Pause and move to next frame
-*Shift + Left*:: Pause and jump 10 frames back
-*Shift + Right*:: Pause and jump 10 frames forward
-*Ctrl + Left*:: Jump to beginning
-*Ctrl + Right*:: Jump to end
+*Left (<)*:: Pause and move to previous frame
+*Right (>)*:: Pause and move to next frame
+*Shift + Left (<<)*:: Pause and jump 0.1s back
+*Shift + Right (>>)*:: Pause and jump 0.1s forward
+*Ctrl + Shift + Left (<<<)*:: Pause and jump 1.0s back
+*Ctrl + Shift + Right (>>>)*:: Pause and jump 1.0s forward
+*Ctrl + Left (|<)*:: Jump to beginning
+*Ctrl + Right (>|)*:: Jump to end
 
 See <<Command reference>> for a complete list of key shortcut commands.
 
