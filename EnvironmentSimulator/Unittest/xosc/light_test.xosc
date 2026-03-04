@@ -49,6 +49,17 @@
                   <AppearanceAction>
                      <LightStateAction transitionTime="0">
                         <LightType>
+                           <VehicleLight vehicleLightType="fogLightsRear" />
+                        </LightType>
+                           <LightState mode="off" luminousIntensity="0">
+                        </LightState>
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction transitionTime="0">
+                        <LightType>
                            <VehicleLight vehicleLightType="brakeLights" />
                         </LightType>
                            <LightState mode="on" luminousIntensity="6000">

@@ -3306,12 +3306,8 @@ void LightStateAction::HandleConflictingLights(const Object::VehicleLightType& t
             ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS_REAR)]);
             break;
         case Object::VehicleLightType::FOG_LIGHTS_FRONT:
-            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS)]);
-            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS_REAR)]);
-            break;
         case Object::VehicleLightType::FOG_LIGHTS_REAR:
             ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS)]);
-            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS_FRONT)]);
             break;
         case Object::VehicleLightType::WARNING_LIGHTS:
             ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_LEFT)]);

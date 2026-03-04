@@ -594,21 +594,45 @@ TEST(OSI, TestLightStates)
     using Generics   = osi3::MovingObject_VehicleClassification_LightState_GenericLightState;
     using Indicators = osi3::MovingObject_VehicleClassification_LightState_IndicatorState;
 
-    auto car1_ls = osi_gt_ptr->moving_object(0).vehicle_classification().light_state();
-    EXPECT_EQ(car1_ls.indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_LEFT);
-    EXPECT_EQ(car1_ls.brake_light_state(), Brakes::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_NORMAL);
-    EXPECT_EQ(car1_ls.service_vehicle_illumination(),
+    auto* car1_ls = &osi_gt_ptr->moving_object(0).vehicle_classification().light_state();
+    auto* car2_ls = &osi_gt_ptr->moving_object(1).vehicle_classification().light_state();
+
+    EXPECT_EQ(car1_ls->indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_LEFT);
+    EXPECT_EQ(car1_ls->brake_light_state(), Brakes::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_NORMAL);
+    EXPECT_EQ(car1_ls->service_vehicle_illumination(),
               Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_FLASHING_AMBER);
-    EXPECT_EQ(car1_ls.license_plate_illumination_rear(),
+    EXPECT_EQ(car1_ls->license_plate_illumination_rear(),
               Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
-    EXPECT_EQ(car1_ls.reversing_light(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
+    EXPECT_EQ(car1_ls->reversing_light(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
+    EXPECT_EQ(car1_ls->rear_fog_light(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_OFF);
 
-    auto car2_ls = osi_gt_ptr->moving_object(1).vehicle_classification().light_state();
-
-    EXPECT_EQ(car2_ls.emergency_vehicle_illumination(),
+    EXPECT_EQ(car2_ls->emergency_vehicle_illumination(),
               Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_FLASHING_BLUE);
-    EXPECT_EQ(car2_ls.brake_light_state(), Brakes::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_STRONG);
-    EXPECT_EQ(car2_ls.indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_LEFT);
+    EXPECT_EQ(car2_ls->brake_light_state(), Brakes::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_STRONG);
+    EXPECT_EQ(car2_ls->indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_LEFT);
+
+    while (se->getSimulationTime() < 0.2 + SMALL_NUMBER)
+    {
+        player->Frame(dt);
+    }
+
+    car1_ls = &osi_gt_ptr->moving_object(0).vehicle_classification().light_state();
+
+    EXPECT_EQ(car1_ls->indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_LEFT);
+    EXPECT_EQ(car1_ls->brake_light_state(), Brakes::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_NORMAL);
+    EXPECT_EQ(car1_ls->front_fog_light(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
+    EXPECT_EQ(car1_ls->rear_fog_light(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
+
+    while (se->getSimulationTime() < 0.7 + SMALL_NUMBER)
+    {
+        player->Frame(dt);
+    }
+
+    car1_ls = &osi_gt_ptr->moving_object(0).vehicle_classification().light_state();
+
+    EXPECT_EQ(car1_ls->indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_WARNING);
+    EXPECT_EQ(car1_ls->high_beam(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
+    EXPECT_EQ(car1_ls->head_light(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
 }
 
 TEST(OSI, TestTrafficLights)
