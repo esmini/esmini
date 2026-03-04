@@ -106,6 +106,8 @@ image::cut-in.png[]
 Example: +
 ``./bin/replayer --window 60 60 800 400 --file sim.dat`` +
 +
+image::replayer_gui.jpg[]
++
 See <<Use cases>> how to create recordings (``.dat`` files) from esmini and <<Replay scenario>> for further details about replaying.
 
 *odrviewer*:: Visualize and verify OpenDRIVE road networks. Draw road features, like reference line and lanes, on top of a 3D model (provided or generated). Optionally populate with random traffic that will randomly find its way through the road network. +
