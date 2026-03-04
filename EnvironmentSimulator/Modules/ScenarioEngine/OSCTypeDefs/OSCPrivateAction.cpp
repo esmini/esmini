@@ -3305,12 +3305,8 @@ void LightStateAction::HandleConflictingLights(const Object::VehicleLightType& t
             ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS_REAR)]);
             break;
         case Object::VehicleLightType::FOG_LIGHTS_FRONT:
-            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS)]);
-            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS_REAR)]);
-            break;
         case Object::VehicleLightType::FOG_LIGHTS_REAR:
             ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS)]);
-            ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::FOG_LIGHTS_FRONT)]);
             break;
         case Object::VehicleLightType::WARNING_LIGHTS:
             ResetLight(object_->vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::INDICATOR_LEFT)]);
@@ -3346,13 +3342,14 @@ bool LightStateAction::CheckConflictingLights(const Object::VehicleLightType& ty
                t == Object::VehicleLightType::INDICATOR_RIGHT;
     };
 
-    auto is_fog_type = [](const Object::VehicleLightType& t)
-    {
-        return t == Object::VehicleLightType::FOG_LIGHTS || t == Object::VehicleLightType::FOG_LIGHTS_FRONT ||
-               t == Object::VehicleLightType::FOG_LIGHTS_REAR;
-    };
+    auto is_fog_all_type = [](const Object::VehicleLightType& t) { return t == Object::VehicleLightType::FOG_LIGHTS; };
+
+    auto is_fog_front_rear_type = [](const Object::VehicleLightType& t)
+    { return t == Object::VehicleLightType::FOG_LIGHTS_FRONT || t == Object::VehicleLightType::FOG_LIGHTS_REAR; };
+
     bool confl_indicator_types = is_flashing_type(this->vehicleLightType_) && is_flashing_type(type);
-    bool confl_fog_light_types = is_fog_type(this->vehicleLightType_) && is_fog_type(type);
+    bool confl_fog_light_types = (is_fog_all_type(this->vehicleLightType_) && is_fog_front_rear_type(type)) ||
+                                 (is_fog_all_type(type) && is_fog_front_rear_type(this->vehicleLightType_));
 
     return same_light_type || confl_indicator_types || confl_fog_light_types;
 }
