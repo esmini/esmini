@@ -868,9 +868,13 @@ extern "C"
         return ScenarioReader::parameters.setParameterValue(parameter.name, parameter.value);
     }
 
-    SE_DLL_API int SE_GetParameter(SE_Parameter *parameter)
+    SE_DLL_API int SE_GetParameter(SE_Parameter *parameter_ref)
     {
-        return ScenarioReader::parameters.getParameterValue(parameter->name, parameter->value);
+        if (parameter_ref == nullptr)
+        {
+            return -1;
+        }
+        return ScenarioReader::parameters.getParameterValue(parameter_ref->name, parameter_ref->value);
     }
 
     SE_DLL_API int SE_GetParameterInt(const char *parameterName, int *value)

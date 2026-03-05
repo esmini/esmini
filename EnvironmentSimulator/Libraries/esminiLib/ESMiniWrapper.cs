@@ -13,7 +13,7 @@
 /*
  * This module provides a generic C# interface/wrapper to the esminiLib shared library
  * simply mirroring the interface in terms of datatypes and functions
- * Generated on: 2026-03-04 17:28:59
+ * Generated on: 2026-03-05 12:57:40
  */
 
 using System;
@@ -844,7 +844,7 @@ namespace ESMini
         /// Get simulation time in seconds - double (64 bit) precision
         /// </summary>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern double SE_GetSimulationTimeDouble();
+        public static extern double SE_GetSimulationTime();
 
         /// <summary>
         /// Get simulation time step in seconds
@@ -949,12 +949,12 @@ namespace ESMini
         public static extern int SE_SetParameter(SE_Parameter parameter);
 
         /// <summary>
-        /// Get value of named parameter. The value within the parameter struct will be filled in.
+        /// Get value of parameter. name field is already filled in by caller, value will be filled in.
         /// </summary>
         /// <param name="parameter">Pointer to parameter struct object, see SE_Parameter declaration.</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern int SE_GetParameter(out SE_Parameter parameter);
+        public static extern int SE_GetParameter(ref SE_Parameter parameter_ref);
 
         /// <summary>
         /// Get typed value of named parameter

@@ -143,14 +143,3 @@ unittest(
     ${SUMO_LIBRARIES}
     ${FMT_LIBRARIES}
     ${SOCK_LIB})
-
-# ############################### Creating executable (esminiCSWrapper_test) #######################################
-
-set(esminiCSWrapper_sources
-    esminiCSWrapper_test.cpp
-    ${UNITTEST_COMMON_SRC})
-
-unittest(
-    esminiCSWrapper_test
-    "${esminiCSWrapper_sources}"
-    CMAKE_CURRENT_SOURCE_DIR}/../Libraries/esminiRMLib/esminiRMWrapper.cs)

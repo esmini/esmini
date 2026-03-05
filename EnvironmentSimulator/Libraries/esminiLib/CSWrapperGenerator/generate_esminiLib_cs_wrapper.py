@@ -630,6 +630,8 @@ def cs_arg_decl(arg: ArgDef, all_struct_names: Set[str]) -> str:
             # `const T*` -> `in T`
             return f"in {base_cs_type} {arg.name}"
         else:
+            if arg.name.endswith("_ref"):
+                return f"ref {base_cs_type} {arg.name}"
             # `T*` -> `out T`
             return f"out {base_cs_type} {arg.name}"
 

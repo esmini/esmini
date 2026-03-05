@@ -25,6 +25,7 @@ externals/googletest
 externals/implot
 resources/models
 Hello-World_coding-example/build
+test/CSharpWrappers/build
 .pyenv
 .vscode
 test/OSC-ALKS-scenarios

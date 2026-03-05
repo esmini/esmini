@@ -40,20 +40,22 @@ export LSAN_OPTIONS="print_suppressions=false:suppressions="${workingDir}"/scrip
 export ASAN_OPTIONS="detect_invalid_pointer_pairs=1:strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:fast_unwind_on_malloc=0:suppressions="${workingDir}"/scripts/ASAN.supp"
 
 export UNIT_TEST_FOLDER=${workingDir}/build/EnvironmentSimulator/Unittest
+export CS_WRAPPER_FOLDER=${workingDir}/test/CSharpWrappers
+export ESMINI_CS_WRAPPER_BINARY=${workingDir}/build/test/CSharpWrappers/$build_type/libesmini_cs_wrapper_test
 export SMOKE_TEST_FOLDER=${workingDir}/test
 
 if [[ "$OSTYPE" == "msys" ]]; then
-    export PATH=${PATH}";../Libraries/esminiLib/$build_type;../Libraries/esminiRMLib/$build_type"
+    export PATH=${PATH}":${workingDir}/build/EnvironmentSimulator/Libraries/esminiLib/${build_type}:${workingDir}/build/EnvironmentSimulator/Libraries/esminiRMLib/${build_type}"
     export EXE_FOLDER="./$build_type"
     export PYTHON="python"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    export LD_LIBRARY_PATH=${workingDir}"/externals/OSI/linux/lib-dyn"
+    export LD_LIBRARY_PATH=${workingDir}/build/EnvironmentSimulator"/externals/OSI/linux/lib-dyn"
     export path="../../../bin"
     export EXE_FOLDER="."
     export PYTHON="python3"
     export ASAN_OPTIONS="$ASAN_OPTIONS:detect_leaks=1"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    export LD_LIBRARY_PATH=${workingDir}"/externals/OSI/mac/lib-dyn"
+    export LD_LIBRARY_PATH=${workingDir}/build/EnvironmentSimulator"/externals/OSI/mac/lib-dyn"
     export path="../../../bin"
     export EXE_FOLDER="."
     export PYTHON="python3"
@@ -87,7 +89,7 @@ if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
         exit_with_msg "ScenarioPlayer_test failed"
     fi
 
-    echo $'\n'ScenarioEngineDll_test:
+    echo ${EXE_FOLDER}/ScenarioEngineDll_test
     if ! ${EXE_FOLDER}/ScenarioEngineDll_test --disable_stdout; then
         exit_with_msg "ScenarioEngineDll_test failed"
     fi
@@ -115,10 +117,15 @@ if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
     fi
 fi
 
-cd $SMOKE_TEST_FOLDER
+if [[ "$OSTYPE" == "msys" ]]; then
+    echo $'\n'Run C# esminiLib wrapper tests:
+    cd $CS_WRAPPER_FOLDER
+    $ESMINI_CS_WRAPPER_BINARY
+fi
 
 echo $'\n'Run smoke tests:
 
+cd $SMOKE_TEST_FOLDER
 if ! ${PYTHON} smoke_test.py "-t $timeout"; then
     exit_with_msg "smoke test failed"
 fi

@@ -634,12 +634,7 @@ extern "C"
     /**
             Get simulation time in seconds - double (64 bit) precision
     */
-    SE_DLL_API double SE_GetSimulationTime();  // Get simulation time in seconds
-
-    /**
-            Get simulation time in seconds - double (64 bit) precision
-    */
-    SE_DLL_API double SE_GetSimulationTimeDouble();
+    SE_DLL_API double SE_GetSimulationTime();
 
     /**
             Get simulation time step in seconds
@@ -729,11 +724,11 @@ extern "C"
     SE_DLL_API int SE_SetParameter(SE_Parameter parameter);
 
     /**
-            Get value of named parameter. The value within the parameter struct will be filled in.
+            Get value of parameter. name field is already filled in by caller, value will be filled in.
             @param parameter Pointer to parameter struct object, see SE_Parameter declaration.
             @return 0 if successful, -1 if not
     */
-    SE_DLL_API int SE_GetParameter(SE_Parameter *parameter);
+    SE_DLL_API int SE_GetParameter(SE_Parameter *parameter_ref);
 
     /**
             Get typed value of named parameter

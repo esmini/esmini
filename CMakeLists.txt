@@ -302,3 +302,13 @@ set(EXTERNALS_FMT_PATH
 # ############################### Compiling targets ##################################################################
 
 add_subdirectory(EnvironmentSimulator)
+
+if(WIN32
+   AND ${USE_OSI})
+    add_subdirectory(test/CSharpWrappers)
+    set_folder(
+        libesmini_cs_wrapper_test
+        Test)
+endif(
+    WIN32
+    AND ${USE_OSI})
