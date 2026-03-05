@@ -521,6 +521,199 @@ TEST(Controllers, TestSeparateControllersOnLatLong)
     delete player;
 }
 
+TEST(LightState, TestLightStateColors)
+{
+    const char*     args[] = {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/light_test.xosc", "--headless", "--disable_stdout"};
+    int             argc   = sizeof(args) / sizeof(char*);
+    double          dt     = 0.1;
+    ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
+
+    ASSERT_NE(player, nullptr);
+    int retval = player->Init();
+    ASSERT_EQ(retval, 0);
+
+    ScenarioEngine* se = player->scenarioEngine;
+    ASSERT_EQ(se->entities_.object_.size(), 2);
+
+    using Type              = Object::VehicleLightType;
+    using Mode              = Object::VehicleLightMode;
+    using Color             = Object::VehicleLightColor;
+    double black[3]         = {0.0, 0.0, 0.0};
+    double uninitialized[3] = {-1.0, -1.0, -1.0};
+
+    Object* car_1 = se->entities_.object_[0];
+    Object* car_2 = se->entities_.object_[1];
+
+    for (size_t i = 0; i < static_cast<size_t>(Type::VEHICLE_LIGHT_SIZE); i++)
+    {
+        auto& c1_light = car_1->vehLghtStsList[i];
+        auto& c2_light = car_2->vehLghtStsList[i];
+
+        // Car 1
+        EXPECT_EQ(c1_light.type, static_cast<Type>(i));
+        bool is_black = std::equal(std::begin(c1_light.rgb), std::end(c1_light.rgb), std::begin(black));
+        EXPECT_FALSE(is_black);
+        bool is_uninitialized = std::equal(std::begin(c1_light.emission), std::end(c1_light.emission), std::begin(uninitialized));
+        EXPECT_FALSE(is_uninitialized);
+
+        if (c1_light.type == Type::INDICATOR_RIGHT)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
+            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+        }
+        else if (c1_light.type == Type::FOG_LIGHTS_REAR)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::OFF);
+            EXPECT_EQ(c1_light.color, Color::RED);
+            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+        }
+        else if (c1_light.type == Type::BRAKE_LIGHTS)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::ON);
+            EXPECT_EQ(c1_light.color, Color::VIOLET);
+            EXPECT_EQ(c1_light.luminousIntensity, 6000.0);
+        }
+        else if (c1_light.type == Type::INDICATOR_LEFT)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
+            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+        }
+
+        // Car 2
+        EXPECT_EQ(c2_light.type, static_cast<Type>(i));
+        is_black = std::equal(std::begin(c2_light.rgb), std::end(c2_light.rgb), std::begin(black));
+        EXPECT_FALSE(is_black);
+        is_uninitialized = std::equal(std::begin(c2_light.emission), std::end(c2_light.emission), std::begin(uninitialized));
+        EXPECT_FALSE(is_uninitialized);
+    }
+
+    while (se->getSimulationTime() < 0.2 + SMALL_NUMBER)
+    {
+        player->Frame(dt);
+    }
+
+    for (size_t i = 0; i < static_cast<size_t>(Type::VEHICLE_LIGHT_SIZE); i++)
+    {
+        auto& c1_light = car_1->vehLghtStsList[i];
+
+        // Car 1
+        if (c1_light.type == Type::WARNING_LIGHTS)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
+            EXPECT_EQ(c1_light.color, Color::BLUE);
+            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+        }
+        else if (c1_light.type == Type::BRAKE_LIGHTS)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::OFF);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
+            EXPECT_EQ(c1_light.luminousIntensity, 6000.0);
+        }
+        else if (c1_light.type == Type::FOG_LIGHTS)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::ON);
+            EXPECT_EQ(c1_light.color, Color::GREEN);
+            EXPECT_EQ(c1_light.luminousIntensity, 10000.0);
+        }
+        else if (c1_light.type == Type::FOG_LIGHTS_REAR)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
+            EXPECT_EQ(c1_light.color, Color::RED);
+            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+        }
+        else if (c1_light.type == Type::HIGH_BEAM)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::ON);
+            EXPECT_EQ(c1_light.color, Color::WHITE);
+            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+        }
+        else if (c1_light.type == Type::LOW_BEAM)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::ON);
+            EXPECT_EQ(c1_light.color, Color::WHITE);
+            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+        }
+    }
+
+    while (se->getSimulationTime() < 0.4 + SMALL_NUMBER)
+    {
+        player->Frame(dt);
+    }
+
+    for (size_t i = 0; i < static_cast<size_t>(Type::VEHICLE_LIGHT_SIZE); i++)
+    {
+        auto& c1_light = car_1->vehLghtStsList[i];
+
+        // Car 1
+        if (c1_light.type == Type::WARNING_LIGHTS)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
+            EXPECT_EQ(c1_light.color, Color::BLUE);
+            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+        }
+        else if (c1_light.type == Type::BRAKE_LIGHTS)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::OFF);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
+            EXPECT_EQ(c1_light.luminousIntensity, 3600.0);
+        }
+        else if (c1_light.type == Type::HIGH_BEAM)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::ON);
+            EXPECT_EQ(c1_light.color, Color::WHITE);
+            EXPECT_EQ(c1_light.luminousIntensity, 4000.0);
+        }
+        else if (c1_light.type == Type::LOW_BEAM)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::ON);
+            EXPECT_EQ(c1_light.color, Color::WHITE);
+            EXPECT_EQ(c1_light.luminousIntensity, 4000.0);
+        }
+        // Car 2
+    }
+
+    while (se->getSimulationTime() < 0.7 + SMALL_NUMBER)
+    {
+        player->Frame(dt);
+    }
+
+    for (size_t i = 0; i < static_cast<size_t>(Type::VEHICLE_LIGHT_SIZE); i++)
+    {
+        auto& c1_light = car_1->vehLghtStsList[i];
+        // auto& c2_light = car_2->vehLghtStsList[i];
+
+        // Car 1
+        if (c1_light.type == Type::WARNING_LIGHTS)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
+            EXPECT_EQ(c1_light.color, Color::BLUE);
+            EXPECT_EQ(c1_light.luminousIntensity, 10000.0);
+        }
+        else if (c1_light.type == Type::INDICATOR_LEFT)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
+            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+        }
+        // else if (c1_light.type == Type::FOG_LIGHTS_REAR)
+        // {
+        //     EXPECT_EQ(c1_light.mode, Mode::OFF);
+        //     EXPECT_EQ(c1_light.color, Color::RED);
+        //     EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+        // }
+        // else if (c1_light.type == Type::BRAKE_LIGHTS)
+        // {
+        //     EXPECT_EQ(c1_light.mode, Mode::ON);
+        //     EXPECT_EQ(c1_light.color, Color::VIOLET);
+        //     EXPECT_EQ(c1_light.luminousIntensity, 6000.0);
+        // }
+    }
+
+    delete player;
+}
+
 TEST(TrafficSignals, TestTrafficSignalActions)
 {
     const char*     args[] = {"esmini", "--osc", "../../../resources/xosc/traffic_lights.xosc", "--headless", "--disable_stdout"};
@@ -627,8 +820,8 @@ TEST(OSI, TestLightStates)
     car1_ls = &osi_gt_ptr->moving_object(0).vehicle_classification().light_state();
     car2_ls = &osi_gt_ptr->moving_object(1).vehicle_classification().light_state();
 
-    EXPECT_EQ(car1_ls->indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_LEFT);
-    EXPECT_EQ(car1_ls->brake_light_state(), Brakes::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_NORMAL);
+    EXPECT_EQ(car1_ls->indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_WARNING);
+    EXPECT_EQ(car1_ls->brake_light_state(), Brakes::MovingObject_VehicleClassification_LightState_BrakeLightState_BRAKE_LIGHT_STATE_OFF);
     EXPECT_EQ(car1_ls->front_fog_light(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
     EXPECT_EQ(car1_ls->rear_fog_light(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
 

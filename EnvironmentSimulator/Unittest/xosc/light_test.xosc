@@ -52,6 +52,9 @@
                            <VehicleLight vehicleLightType="fogLightsRear" />
                         </LightType>
                            <LightState mode="off" luminousIntensity="0">
+                              <Color colorType="red">
+                                 <ColorRgb red="0.9" green="0.0" blue="0.1"/>
+                              </Color>
                         </LightState>
                      </LightStateAction>
                   </AppearanceAction>
@@ -63,6 +66,8 @@
                            <VehicleLight vehicleLightType="brakeLights" />
                         </LightType>
                            <LightState mode="on" luminousIntensity="6000">
+                              <Color colorType="violet">
+                              </Color>
                         </LightState>
                      </LightStateAction>
                   </AppearanceAction>
@@ -355,7 +360,7 @@
          <ConditionGroup>
             <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
                <ByValueCondition>
-                  <SimulationTimeCondition value="1.0" rule="greaterThan" />
+                  <SimulationTimeCondition value="2.0" rule="greaterThan" />
                </ByValueCondition>
             </Condition>
          </ConditionGroup>

@@ -1464,8 +1464,8 @@ namespace scenarioengine
 
         enum class FlashingStatus
         {
-            LOW = 0,
-            HIGH,
+            OFF = 0,
+            ON,
             UNDEFINED
         };
 
@@ -1643,8 +1643,9 @@ namespace scenarioengine
         FlashingStatus              flashStatus_;
         bool                        colorSet_;
         Object::VehicleLightStatus* vehicleLight_;
-        bool                        transitioned_   = false;
-        bool                        luminousitySet_ = false;
+        bool                        transitioned_          = false;
+        bool                        luminousitySet_        = false;
+        double                      transitionLuminousity_ = 0.0;
     };
 
     class OverrideControlAction : public OSCPrivateAction
