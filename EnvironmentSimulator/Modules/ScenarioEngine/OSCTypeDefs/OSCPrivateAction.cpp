@@ -3121,7 +3121,6 @@ void LightStateAction::SetVehicleLightState(double* maxRgb, double luminousity)
 
 void LightStateAction::Start(double simTime)
 {
-    // Fetch current status of the vehicle lamp and save old state for potential transitions
     vehicleLight_ = &object_->vehLghtStsList[static_cast<size_t>(actionVehicleLightStatus_.type)];
 
     if (vehicleLight_->type == Object::VehicleLightType::UNDEFINED)
@@ -3130,21 +3129,28 @@ void LightStateAction::Start(double simTime)
         // Thus, we initialize all of them with basic values below. This should only happen when running headless...
         InitializeLights();
     }
-    previousMode_      = vehicleLight_->mode;
+    previousMode_      = (vehicleLight_->mode == Object::VehicleLightMode::UNKNOWN) ? Object::VehicleLightMode::OFF : vehicleLight_->mode;
     previousIntensity_ = vehicleLight_->luminousIntensity;
+
+    if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::FLASHING)
+    {
+        flashStatus_   = FlashingStatus::OFF;
+        flashingTimer_ = flashingOffDuration_;  // Expire off timer, so we turn on the lights instantly
+    }
+    else
+    {
+        flashStatus_   = FlashingStatus::ON;
+        flashingTimer_ = flashingOnDuration_;  // Expire on timer, so we turn off the lights instantly
+    }
+
+    vehicleLight_->mode = actionVehicleLightStatus_.mode;
+    HandleConflictingLights(vehicleLight_->type);
 
     // vehicleLight_->rgb/maxRgb are initialized with min/max values for the material color
     std::copy_n(vehicleLight_->rgb, RGB_ARRAY_SIZE_, previousMinRgb_);
     std::copy_n(vehicleLight_->maxRgb, RGB_ARRAY_SIZE_, previousMaxRgb_);
 
     vehicleLight_->color = actionVehicleLightStatus_.color;
-
-    // If never been set before, we start with OFF
-    if (vehicleLight_->mode == Object::VehicleLightMode::UNKNOWN)
-    {
-        previousMode_       = Object::VehicleLightMode::OFF;
-        vehicleLight_->mode = Object::VehicleLightMode::OFF;
-    }
 
     // We don't have a color specified in the action, so we should work with the color from the material
     if (!GetColorSet())
@@ -3166,40 +3172,23 @@ void LightStateAction::Step(double simTime, double dt)
     (void)simTime;
     bool end_action = false;
 
-    if (NEAR_NUMBERS(transitionTime_, 0.0) && !transitioned_)
+    bool instantTransition = NEAR_NUMBERS(transitionTime_, 0.0);
+    if ((instantTransition || transitionTimer_ > transitionTime_ - SMALL_NUMBER) && !transitioned_)
     {
-        if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::OFF)
+        if (!instantTransition)
         {
-            currentLuminousIntensity_ = 0.0;
-            end_action                = true;
+            LOG_INFO("{}: Transition completed in {:.2f}s", this->GetName(), transitionTimer_);
         }
-        else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::ON)
+
+        if (actionVehicleLightStatus_.mode != Object::VehicleLightMode::FLASHING)
         {
-            currentLuminousIntensity_ = actionVehicleLightStatus_.luminousIntensity;
-            end_action                = true;
-        }
-        else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING)
-        {
-            // Lights was OFF until flashing, so we start the flashing sequence with lights ON
-            if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::FLASHING)
-            {
-                currentLuminousIntensity_ = actionVehicleLightStatus_.luminousIntensity;
-            }
-            // Lights was ON until the flashing sequence, so we start with lights OFF
-            else if (previousMode_ == Object::VehicleLightMode::ON)
-            {
-                currentLuminousIntensity_ = 0.0;
-            }
-        }
-        else
-        {
-            LOG_ERROR("LightStateAction: Unknown vehicle light mode");
             end_action = true;
         }
-        vehicleLight_->mode = actionVehicleLightStatus_.mode;
-        HandleConflictingLights(vehicleLight_->type);
+
+        transitioned_ = true;  // Make sure we only enter this if-statement once
     }
-    else if (transitionTimer_ <= transitionTime_ + SMALL_NUMBER)
+
+    if (transitionTimer_ <= transitionTime_ + SMALL_NUMBER)
     {
         double transitionFactor = 1.0;
         if (transitionTime_ != 0.0)
@@ -3209,29 +3198,28 @@ void LightStateAction::Step(double simTime, double dt)
 
         if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::ON)
         {
-            currentLuminousIntensity_ = previousIntensity_ + (actionVehicleLightStatus_.luminousIntensity - previousIntensity_) * transitionFactor;
+            transitionLuminousity_ = previousIntensity_ + (actionVehicleLightStatus_.luminousIntensity - previousIntensity_) * transitionFactor;
         }
         else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::OFF)
         {
-            currentLuminousIntensity_ = previousIntensity_ - previousIntensity_ * transitionFactor;
+            transitionLuminousity_ = previousIntensity_ - previousIntensity_ * transitionFactor;
         }
         else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING)
         {
-            // Lights was OFF until flashing, so we transition to ON then start flashing sequence by instantly turning ligts OFF
             if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::FLASHING)
             {
-                currentLuminousIntensity_ =
-                    previousIntensity_ + (actionVehicleLightStatus_.luminousIntensity - previousIntensity_) * transitionFactor;
+                // Lights was probably off, so we want to gradually transition to set luminousity
+                transitionLuminousity_ = previousIntensity_ + (actionVehicleLightStatus_.luminousIntensity - previousIntensity_) * transitionFactor;
             }
-            // Lights was OFF until flashing, so we transition to OFF then start flashing sequence with instantly turning lights ON
             else if (previousMode_ == Object::VehicleLightMode::ON)
             {
-                currentLuminousIntensity_ = previousIntensity_ - previousIntensity_ * transitionFactor;
+                // Lights was on, so we want to gradually transition to 0
+                transitionLuminousity_ = previousIntensity_ - previousIntensity_ * transitionFactor;
             }
         }
         else
         {
-            LOG_ERROR("LightStateAction: Unknown vehicle light mode");
+            LOG_ERROR("{}: Unknown vehicle light mode", this->GetName());
             end_action = true;
         }
 
@@ -3245,46 +3233,31 @@ void LightStateAction::Step(double simTime, double dt)
         transitionTimer_ += dt;
     }
 
-    if ((NEAR_NUMBERS(transitionTime_, 0.0) || transitionTimer_ > transitionTime_ + SMALL_NUMBER) && !transitioned_)
-    {
-        // Update mode only after transition is complete
-        vehicleLight_->mode = actionVehicleLightStatus_.mode;
-        HandleConflictingLights(vehicleLight_->type);
-
-        LOG_INFO("LightStateAction: Transition completed in {:.2f}s", transitionTimer_);
-
-        if (actionVehicleLightStatus_.mode != Object::VehicleLightMode::FLASHING)
-        {
-            end_action = true;
-        }
-        transitioned_ = true;  // Make sure we only enter this if-statement once
-    }
-
     if (vehicleLight_->mode == Object::VehicleLightMode::FLASHING)
     {
         // Lamp off, we want to turn it on after the off-timer has expired
-        if (NEAR_NUMBERS(currentLuminousIntensity_, 0.0))
+        if (flashStatus_ == FlashingStatus::OFF && flashingTimer_ >= flashingOffDuration_ - SMALL_NUMBER)
         {
-            if (flashingTimer_ > flashingOffDuration_ + SMALL_NUMBER)
-            {
-                currentLuminousIntensity_ = luminousIntensity_;
-                flashingTimer_            = 0.0;
-            }
+            luminousIntensity_ = transitionLuminousity_;
+            flashingTimer_     = 0.0;
+            flashStatus_       = FlashingStatus::ON;
         }
         // Lamp on, we want to turn it off after the on-timer has expired
-        else
+        else if (flashStatus_ == FlashingStatus::ON && flashingTimer_ >= flashingOnDuration_ - SMALL_NUMBER)
         {
-            if (flashingTimer_ > flashingOnDuration_ + SMALL_NUMBER)
-            {
-                currentLuminousIntensity_ = 0.0;
-                flashingTimer_            = 0.0;
-            }
+            luminousIntensity_ = 0.0;
+            flashingTimer_     = 0.0;
+            flashStatus_       = FlashingStatus::OFF;
         }
 
         flashingTimer_ += dt;
     }
+    else
+    {
+        luminousIntensity_ = transitionLuminousity_;
+    }
 
-    SetVehicleLightState(vehicleLight_->maxRgb, currentLuminousIntensity_);
+    SetVehicleLightState(vehicleLight_->maxRgb, luminousIntensity_);
 
     // Light has been manipulated, this dirty
     object_->SetDirtyBits(Object::DirtyBit::LIGHT_STATE);

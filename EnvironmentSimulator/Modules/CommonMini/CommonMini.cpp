@@ -1399,22 +1399,6 @@ bool ArrayZeroToOne(double array[], size_t size)
     return false;
 }
 
-int AdjustByOffsetArray(double* array, double limit)
-{
-    double fraction = 1.0;
-    double max_val  = MAX(array[0], MAX(array[1], array[2]));
-    if (max_val > SMALL_NUMBER)
-    {
-        fraction = limit / max_val;
-    }
-
-    array[0] *= fraction;
-    array[1] *= fraction;
-    array[2] *= fraction;
-
-    return 0;
-}
-
 std::string FilePathWithoutExtOf(const std::string& fpath)
 {
     size_t end_pos = fpath.find_last_of(".");

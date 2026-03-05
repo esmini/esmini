@@ -2682,6 +2682,24 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^8.500, 0, Ego, 372.500, 1.000, 17.418, 0.000, 0.206, 0.000, 5.000, 0.000, 2.048', csv, re.MULTILINE))
         self.assertTrue(re.search('^14.000, 0, Ego, 400.000, 1.000, 10.000, 0.000, 0.291, 0.000, 5.000, 0.000, 5.221', csv, re.MULTILINE))
 
+    def test_lightstate_action(self):
+        log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/light_test.xosc'), COMMON_ESMINI_ARGS + "--fixed_timestep 0.1")
+
+        # Check some initialization steps
+        self.assertTrue(re.search('Loading .*light_test.xosc', log)  is not None)
+
+        # Check some scenario events
+        self.assertTrue(re.search('LightStateAction: Color set but colorRgb or colorCmyk not set, setting default for color violet \\(r:0.7 g:0.03 b:0.68\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('LightStateAction: Color set but colorRgb or colorCmyk not set, setting default for color green \\(r:0 g:0.5 b:0\\)', log, re.MULTILINE)  is not None)
+        self.assertTrue(re.search('^.0.200.* Stopping object Car1 Init Car1 AppearanceAction on conflicting light_indicator_left light\\(s\\)', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.200.* Stopping object Car2 Init Car2 AppearanceAction on conflicting light_fog_rear light\\(s\\)', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.200.* Stopping object Car2 Init Car2 AppearanceAction on conflicting light_fog_front light\\(s\\)', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.700.* actionWarningLightsFlashingBlue: Transition completed in 0.50s', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.700.* actionBrakeLightsOff: Transition completed in 0.50s', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.700.* actionHighBeamOnBrightWhite: Transition completed in 0.50s', log, re.MULTILINE))
+        self.assertTrue(re.search('^.0.700.* actionLowBeamOnDarkWhite: Transition completed in 0.50s', log, re.MULTILINE))
+
+
 if __name__ == "__main__":
     # execute only if run as a script
 
