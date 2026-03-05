@@ -153,6 +153,17 @@
                      </LightStateAction>
                   </AppearanceAction>
                </PrivateAction>
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction transitionTime="0">
+                        <LightType>
+                           <VehicleLight vehicleLightType="daytimeRunningLights" />
+                        </LightType>
+                           <LightState mode="on" luminousIntensity="12000">
+                        </LightState>
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
             </Private>
          </Actions>
       </Init>
@@ -259,7 +270,7 @@
                                     <VehicleLight vehicleLightType="highBeam" />
                                  </LightType>
                                     <LightState mode="on" luminousIntensity="10000">
-                                    <Color colorType="verywhite">
+                                    <Color colorType="white">
                                        <ColorRgb red="1.0" green="1.0" blue="1.0"/>
                                     </Color>
                                  </LightState>
@@ -275,9 +286,41 @@
                                     <VehicleLight vehicleLightType="lowBeam" />
                                  </LightType>
                                     <LightState mode="on" luminousIntensity="10000">
-                                    <Color colorType="notsowhite">
+                                    <Color colorType="white">
                                        <ColorRgb red="0.1" green="0.1" blue="0.1"/>
                                     </Color>
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="brakeLightsOnActionCondition" delay="0"
+                              conditionEdge="rising">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="0.1" rule="greaterThan" />
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="Car2LightStateActionManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Car2" />
+               </Actors>
+               <Maneuver name="manOnIntensity0">
+                  <Event name="eventOnIntensity0" priority="override" maximumExecutionCount="1">
+                     <Action name="actionOnIntensity0">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="lowBeam" />
+                                 </LightType>
+                                    <LightState mode="off" luminousIntensity="10000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -312,7 +355,7 @@
          <ConditionGroup>
             <Condition name="stop_simulation" delay="0.0" conditionEdge="rising">
                <ByValueCondition>
-                  <SimulationTimeCondition value="16.0" rule="greaterThan" />
+                  <SimulationTimeCondition value="1.0" rule="greaterThan" />
                </ByValueCondition>
             </Condition>
          </ConditionGroup>
