@@ -1038,7 +1038,16 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
             switch (light_type)
             {
                 case Object::VehicleLightType::DAYTIME_RUNNING_LIGHTS:
+                    light_state->set_head_light(GetGenericLightMode(light_mode));
+                    break;
                 case Object::VehicleLightType::LOW_BEAM:
+                    if (obj.vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::DAYTIME_RUNNING_LIGHTS)].mode ==
+                            Object::VehicleLightMode::ON ||
+                        obj.vehLghtStsList[static_cast<size_t>(Object::VehicleLightType::DAYTIME_RUNNING_LIGHTS)].mode ==
+                            Object::VehicleLightMode::FLASHING)
+                    {
+                        break;
+                    }
                     light_state->set_head_light(GetGenericLightMode(light_mode));
                     break;
                 case Object::VehicleLightType::HIGH_BEAM:
