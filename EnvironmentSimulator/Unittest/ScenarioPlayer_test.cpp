@@ -578,7 +578,7 @@ TEST(LightState, TestLightStateColors)
         {
             EXPECT_EQ(c1_light.mode, Mode::FLASHING);
             EXPECT_EQ(c1_light.color, Color::UNKNOWN);
-            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+            EXPECT_EQ(c1_light.luminousIntensity, 12000.0);
         }
 
         // Car 2
@@ -646,7 +646,6 @@ TEST(LightState, TestLightStateColors)
     {
         auto& c1_light = car_1->vehLghtStsList[i];
 
-        // Car 1
         if (c1_light.type == Type::WARNING_LIGHTS)
         {
             EXPECT_EQ(c1_light.mode, Mode::FLASHING);
@@ -671,7 +670,6 @@ TEST(LightState, TestLightStateColors)
             EXPECT_EQ(c1_light.color, Color::WHITE);
             EXPECT_EQ(c1_light.luminousIntensity, 4000.0);
         }
-        // Car 2
     }
 
     while (se->getSimulationTime() < 0.7 + SMALL_NUMBER)
@@ -682,33 +680,37 @@ TEST(LightState, TestLightStateColors)
     for (size_t i = 0; i < static_cast<size_t>(Type::VEHICLE_LIGHT_SIZE); i++)
     {
         auto& c1_light = car_1->vehLghtStsList[i];
-        // auto& c2_light = car_2->vehLghtStsList[i];
 
-        // Car 1
         if (c1_light.type == Type::WARNING_LIGHTS)
         {
             EXPECT_EQ(c1_light.mode, Mode::FLASHING);
             EXPECT_EQ(c1_light.color, Color::BLUE);
-            EXPECT_EQ(c1_light.luminousIntensity, 10000.0);
+            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
         }
         else if (c1_light.type == Type::INDICATOR_LEFT)
         {
             EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
             EXPECT_EQ(c1_light.color, Color::UNKNOWN);
+            EXPECT_EQ(c1_light.luminousIntensity, 12000.0);
+        }
+        else if (c1_light.type == Type::BRAKE_LIGHTS)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::OFF);
+            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
             EXPECT_EQ(c1_light.luminousIntensity, 0.0);
         }
-        // else if (c1_light.type == Type::FOG_LIGHTS_REAR)
-        // {
-        //     EXPECT_EQ(c1_light.mode, Mode::OFF);
-        //     EXPECT_EQ(c1_light.color, Color::RED);
-        //     EXPECT_EQ(c1_light.luminousIntensity, 0.0);
-        // }
-        // else if (c1_light.type == Type::BRAKE_LIGHTS)
-        // {
-        //     EXPECT_EQ(c1_light.mode, Mode::ON);
-        //     EXPECT_EQ(c1_light.color, Color::VIOLET);
-        //     EXPECT_EQ(c1_light.luminousIntensity, 6000.0);
-        // }
+        else if (c1_light.type == Type::HIGH_BEAM)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::ON);
+            EXPECT_EQ(c1_light.color, Color::WHITE);
+            EXPECT_EQ(c1_light.luminousIntensity, 10000.0);
+        }
+        else if (c1_light.type == Type::LOW_BEAM)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::ON);
+            EXPECT_EQ(c1_light.color, Color::WHITE);
+            EXPECT_EQ(c1_light.luminousIntensity, 10000.0);
+        }
     }
 
     delete player;
