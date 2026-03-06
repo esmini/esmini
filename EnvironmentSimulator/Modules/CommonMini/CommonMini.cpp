@@ -1390,13 +1390,13 @@ bool ArrayZeroToOne(double array[], size_t size)
 {
     for (size_t i = 0; i < size; i++)
     {
-        if (array[i] > 0.0 - SMALL_NUMBER && array[i] < 1.0 + SMALL_NUMBER)
+        if (array[i] < 0.0 || array[i] > 1.0 + SMALL_NUMBER)
         {
-            return true;
+            return false;
         }
     }
 
-    return false;
+    return true;
 }
 
 std::string FilePathWithoutExtOf(const std::string& fpath)
