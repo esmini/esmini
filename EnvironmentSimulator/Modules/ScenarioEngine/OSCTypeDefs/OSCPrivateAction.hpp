@@ -1445,20 +1445,20 @@ namespace scenarioengine
               RGB_ARRAY_SIZE_(3),
               CMYK_ARRAY_SIZE_(4),
               rgbDeducedFromLightType_(false),
-              RGB_OFFSET_(0.4),
               DEFAULT_LUMINOUS_INTENSITY_(6000.0),
-              LUMINOUS_MAX_(0.9),
               vehicleLightMode_(Object::VehicleLightMode::UNKNOWN),
               previousMode_(vehicleLightMode_),
               luminousIntensity_(0.0),
               previousIntensity_(luminousIntensity_),
-              currentLuminousIntensity_(0.0),
+              transitionLuminousity_(0.0),
+              luminousitySet_(false),
               vehicleLightType_(Object::VehicleLightType::UNDEFINED),
               vehicleLightColor_(Object::VehicleLightColor::UNKNOWN),
               actionVehicleLightStatus_({}),
               flashStatus_(FlashingStatus::UNDEFINED),
               colorSet_(false),
-              vehicleLight_(nullptr)
+              vehicleLight_(nullptr),
+              transitioned_(false)
         {
         }
 
@@ -1494,10 +1494,6 @@ namespace scenarioengine
         double* GetRgb()
         {
             return rgb_;
-        }
-        double GetRgbOffset() const
-        {
-            return RGB_OFFSET_;
         }
         Object::VehicleLightColor GetVehicleLightColor() const
         {
@@ -1606,7 +1602,7 @@ namespace scenarioengine
             {Object::VehicleLightColor::YELLOW, {0.5, 0.5, 0.3}},
             {Object::VehicleLightColor::GREEN, {0.0, 0.5, 0.0}},
             {Object::VehicleLightColor::BLUE, {0.0, 0.0, 0.5}},
-            {Object::VehicleLightColor::VIOLET, {0.53, 0.31, 0.02}},
+            {Object::VehicleLightColor::VIOLET, {0.7, 0.03, 0.68}},
             {Object::VehicleLightColor::ORANGE, {0.5, 0.15, 0.0}},
             {Object::VehicleLightColor::BROWN, {0.15, 0.06, 0.06}},
             {Object::VehicleLightColor::BLACK, {0.0, 0.0, 0.0}},
@@ -1629,23 +1625,20 @@ namespace scenarioengine
         const size_t                RGB_ARRAY_SIZE_;
         const size_t                CMYK_ARRAY_SIZE_;
         bool                        rgbDeducedFromLightType_;
-        const double                RGB_OFFSET_;
         const double                DEFAULT_LUMINOUS_INTENSITY_;
-        const double                LUMINOUS_MAX_;
         Object::VehicleLightMode    vehicleLightMode_;
         Object::VehicleLightMode    previousMode_;
         double                      luminousIntensity_;
         double                      previousIntensity_;
-        double                      currentLuminousIntensity_;
+        double                      transitionLuminousity_;
+        bool                        luminousitySet_;
         Object::VehicleLightType    vehicleLightType_;
         Object::VehicleLightColor   vehicleLightColor_;
         Object::VehicleLightStatus  actionVehicleLightStatus_;
         FlashingStatus              flashStatus_;
         bool                        colorSet_;
         Object::VehicleLightStatus* vehicleLight_;
-        bool                        transitioned_          = false;
-        bool                        luminousitySet_        = false;
-        double                      transitionLuminousity_ = 0.0;
+        bool                        transitioned_;
     };
 
     class OverrideControlAction : public OSCPrivateAction
