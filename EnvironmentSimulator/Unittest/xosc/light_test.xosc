@@ -169,6 +169,28 @@
                      </LightStateAction>
                   </AppearanceAction>
                </PrivateAction>
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction transitionTime="1">
+                        <LightType>
+                           <VehicleLight vehicleLightType="fogLightsRear" />
+                        </LightType>
+                           <LightState mode="on" luminousIntensity="0">
+                        </LightState>
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction transitionTime="1">
+                        <LightType>
+                           <VehicleLight vehicleLightType="fogLightsFront" />
+                        </LightType>
+                           <LightState mode="on" luminousIntensity="0">
+                        </LightState>
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
             </Private>
          </Actions>
       </Init>
@@ -179,9 +201,9 @@
                <Actors selectTriggeringEntities="false">
                   <EntityRef entityRef="Car1" />
                </Actors>
-               <Maneuver name="manOnIntensity0">
-                  <Event name="eventOnIntensity0" priority="override" maximumExecutionCount="1">
-                     <Action name="actionOnIntensity0">
+               <Maneuver name="manFlashingWarningLights0">
+                  <Event name="eventWarningLightsFlashingBlue" priority="override" maximumExecutionCount="1">
+                     <Action name="actionWarningLightsFlashingBlue">
                         <PrivateAction>
                            <AppearanceAction>
                               <LightStateAction transitionTime="0.5">
@@ -199,7 +221,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="brakeLightsOnActionCondition" delay="0"
+                           <Condition name="simTimeCondition0" delay="0"
                               conditionEdge="rising">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="0.1" rule="greaterThan" />
@@ -209,9 +231,9 @@
                      </StartTrigger>
                   </Event>
                </Maneuver>
-               <Maneuver name="manOnIntensity1">
-                  <Event name="eventOnIntensity1" priority="override" maximumExecutionCount="1">
-                     <Action name="actionOnIntensity1">
+               <Maneuver name="manOffBrakeLights">
+                  <Event name="eventBrakeLightsOff" priority="override" maximumExecutionCount="1">
+                     <Action name="actionBrakeLightsOff">
                         <PrivateAction>
                            <AppearanceAction>
                               <LightStateAction transitionTime="0.5">
@@ -226,7 +248,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="brakeLightsOnActionCondition" delay="0"
+                           <Condition name="simTimeCondition0" delay="0"
                               conditionEdge="rising">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="0.1" rule="greaterThan" />
@@ -236,9 +258,9 @@
                      </StartTrigger>
                   </Event>
                </Maneuver>
-               <Maneuver name="manOnIntensity1">
-                  <Event name="eventOnIntensity1" priority="override" maximumExecutionCount="1">
-                     <Action name="actionOnIntensity1">
+               <Maneuver name="manOnFogLights">
+                  <Event name="eventFogLightsOnGreen" priority="override" maximumExecutionCount="1">
+                     <Action name="actionFogLightsOnGreen">
                         <PrivateAction>
                            <AppearanceAction>
                               <LightStateAction transitionTime="0">
@@ -255,7 +277,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="brakeLightsOnActionCondition" delay="0"
+                           <Condition name="simTimeCondition0" delay="0"
                               conditionEdge="rising">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="0.1" rule="greaterThan" />
@@ -265,9 +287,9 @@
                      </StartTrigger>
                   </Event>
                </Maneuver>
-               <Maneuver name="manOnIntensity1">
-                  <Event name="eventOnIntensity1" priority="parallel" maximumExecutionCount="1">
-                     <Action name="actionOnIntensity1">
+               <Maneuver name="manOnLowHighBeamBright">
+                  <Event name="eventLowHighBeamsOnWhite" priority="parallel" maximumExecutionCount="1">
+                     <Action name="actionHighBeamOnBrightWhite">
                         <PrivateAction>
                            <AppearanceAction>
                               <LightStateAction transitionTime="0.5">
@@ -283,7 +305,7 @@
                            </AppearanceAction>
                         </PrivateAction>
                      </Action>
-                     <Action name="actionOnIntensity1">
+                     <Action name="actionLowBeamOnDarkWhite">
                         <PrivateAction>
                            <AppearanceAction>
                               <LightStateAction transitionTime="0.5">
@@ -301,7 +323,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="brakeLightsOnActionCondition" delay="0"
+                           <Condition name="simTimeCondition0" delay="0"
                               conditionEdge="rising">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="0.1" rule="greaterThan" />
@@ -316,9 +338,9 @@
                <Actors selectTriggeringEntities="false">
                   <EntityRef entityRef="Car2" />
                </Actors>
-               <Maneuver name="manOnIntensity0">
-                  <Event name="eventOnIntensity0" priority="override" maximumExecutionCount="1">
-                     <Action name="actionOnIntensity0">
+               <Maneuver name="manOffLowBeam">
+                  <Event name="eventLowBeamOff" priority="override" maximumExecutionCount="1">
+                     <Action name="actionLowBeamOff">
                         <PrivateAction>
                            <AppearanceAction>
                               <LightStateAction transitionTime="0">
@@ -331,9 +353,22 @@
                            </AppearanceAction>
                         </PrivateAction>
                      </Action>
+                     <Action name="actionFogLightsOn">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="fogLights" />
+                                 </LightType>
+                                    <LightState mode="off" luminousIntensity="0">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="brakeLightsOnActionCondition" delay="0"
+                           <Condition name="simTimeCondition0" delay="0"
                               conditionEdge="rising">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="0.1" rule="greaterThan" />

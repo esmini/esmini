@@ -3172,9 +3172,13 @@ void LightStateAction::Step(double simTime, double dt)
     (void)simTime;
     bool end_action = false;
 
-    if ((NEAR_NUMBERS(transitionTime_, 0.0) || transitionTimer_ > transitionTime_ - SMALL_NUMBER) && !transitioned_)
+    bool instantTransition = NEAR_NUMBERS(transitionTime_, 0.0);
+    if ((instantTransition || transitionTimer_ > transitionTime_ - SMALL_NUMBER) && !transitioned_)
     {
-        LOG_INFO("LightStateAction: Transition completed in {:.2f}s", transitionTimer_);
+        if (!instantTransition)
+        {
+            LOG_INFO("{}: Transition completed in {:.2f}s", this->GetName(), transitionTimer_);
+        }
 
         if (actionVehicleLightStatus_.mode != Object::VehicleLightMode::FLASHING)
         {
@@ -3215,7 +3219,7 @@ void LightStateAction::Step(double simTime, double dt)
         }
         else
         {
-            LOG_ERROR("LightStateAction: Unknown vehicle light mode");
+            LOG_ERROR("{}: Unknown vehicle light mode", this->GetName());
             end_action = true;
         }
 
