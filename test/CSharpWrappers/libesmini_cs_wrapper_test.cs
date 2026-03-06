@@ -4,7 +4,9 @@ using System.Runtime.InteropServices;
 using Google.Protobuf;
 using ESMini;
 
+#if _USE_OSI
 using static Osi3.GroundTruth;
+#endif
 
 namespace ESMiniTest
 {
@@ -35,7 +37,7 @@ namespace ESMiniTest
             return Math.Abs(a - b) < 1e-6;
         }
 
-        static void PublishResult(bool success)
+        static void PublishResultAndQuit(bool success)
         {
             Console.WriteLine("\n--- Successful Checks ---");
             for (int i = 0; i < successMessages.Count; i++)
@@ -46,6 +48,7 @@ namespace ESMiniTest
             if (success)
             {
                 Console.WriteLine($"\n{successfulAsserts} checks passed\nTest OK");
+                Environment.Exit(0);
             }
             else
             {
@@ -54,7 +57,7 @@ namespace ESMiniTest
             }
         }
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             try
             {
@@ -78,26 +81,31 @@ namespace ESMiniTest
                 parameterCallback = new ESMiniLib.ParameterDeclarationCallback(MyParameterCallback);
                 ESMiniLib.SE_RegisterParameterDeclarationCallback(parameterCallback, (IntPtr)magicNumber);
 
+#if _USE_OSI
                 ESMiniLib.SE_EnableOSIFile("esmini_test.osi");
-
+#endif
                 // Init
-                ASSERT(ESMiniLib.SE_Init("../../resources/xosc/cut-in.xosc", 0, 0, 0, 0) == 0, "Initialize the scenario");
+                ASSERT(ESMiniLib.SE_Init("../resources/xosc/cut-in.xosc", 0, 0, 0, 0) == 0, "Initialize the scenario");
                 //ASSERT(ESMiniLib.SE_Init("../../../../../resources/xosc/cut-in.xosc", 0, 0, 0, 0) == 0, "Initialize the scenario");
 
                 RunPostInitTests();
 
-                PublishResult(true);
+                PublishResultAndQuit(true);
+                return 0;
             }
             catch (Exception ex)
             {
                 failureMessage = $"An error occurred: {ex.Message}\nStack trace: {ex.StackTrace}";
-                PublishResult(false);
+                PublishResultAndQuit(false);
+                return 1;
             }
         }
 
         static void RunPostInitTests()
         {
+#if _USE_OSI
             ASSERT(System.IO.File.Exists("esmini_test.osi"), "OSI file created");
+#endif
 
             ASSERT(NEAR(ESMiniLib.SE_GetSimulationTime(), 0.0), "Initial simulation time is 0.0");
 
@@ -150,6 +158,7 @@ namespace ESMiniTest
             ESMiniLib.SE_GetObjectState(0, out obj_state);
             ASSERT(NEAR(obj_state.s, 120.0), "Object 0 s position modified by callback");
 
+#if _USE_OSI
             int size = 0;
             IntPtr int_ptr = ESMiniLib.SE_GetOSIGroundTruth(out size);
             Byte[] byte_array = new Byte[size];
@@ -157,6 +166,7 @@ namespace ESMiniTest
             Osi3.GroundTruth gt_msg = Osi3.GroundTruth.Parser.ParseFrom(byte_array);
             ASSERT(gt_msg.MovingObject[1].Id.Value == 37, "Object 1 OSI id is 37");
             ASSERT(NEAR(gt_msg.MovingObject[1].Base.Position.Y, 30.0353193), "Object 1 OSI Y position");
+#endif
         }
 
         static void ASSERT(bool condition, string message)
@@ -164,7 +174,7 @@ namespace ESMiniTest
             if (!condition)
             {
                 failureMessage = message;
-                PublishResult(false);
+                PublishResultAndQuit(false);
             }
             else
             {

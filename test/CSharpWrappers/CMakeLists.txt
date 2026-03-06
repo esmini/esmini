@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.11)
 
+set(USE_OSI
+    ON
+    CACHE BOOL
+          "If code that depend on osi should be compiled.")
+
 project(
     libesmini_cs_wrapper_test
     CSharp)
@@ -19,8 +24,11 @@ set(SOURCES
 
 add_executable(
     ${TARGET}
-    EXCLUDE_FROM_ALL
     ${SOURCES})
+
+if(USE_OSI)
+    add_definitions(-D_USE_OSI)
+endif(USE_OSI)
 
 set_property(
     TARGET ${TARGET}

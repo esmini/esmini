@@ -22,6 +22,7 @@ on:
 env:
   ESMINI_SLIM_TEST: -D USE_OSG=OFF -D USE_SUMO=OFF -D USE_OSI=OFF -D USE_GTEST=ON -D USE_IMPLOT=OFF
   ESMINI_CHECKS: -D ENABLE_WARNINGS_AS_ERRORS=ON -D ENABLE_INCLUDE_WHAT_YOU_USE=ON
+  USE_TMATE: false
 
 jobs:
   lint:
@@ -129,12 +130,12 @@ jobs:
       - name: CMake Configure - Windows
         if: runner.os == 'Windows'
         shell: pwsh
-        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -G "Visual Studio 17 2022" -T v142 -A x64
+        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -G "Visual Studio 17 2022" -T v142 -A x64
 
       - name: CMake Configure - Linux
         if: runner.os == 'Linux'
         shell: pwsh
-        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
+        run: cmake . -G Ninja -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
 
       - name: CMake Configure - macOS
         if: runner.os == 'macOS'
@@ -144,16 +145,19 @@ jobs:
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
 
-      - name: Compile C# wrapper tests
-        if: runner.os == 'Windows'
-        run: cmake --build build --config ${{ matrix.configuration }} --target libesmini_cs_wrapper_test
-
       - name: Compile minimal C example
         if: runner.os == 'Linux'
         run: |
           echo -e '#include "esminiLib.hpp"\n\nint main()\n{\n    return 0;\n}' > pure-c.c
           gcc pure-c.c -I EnvironmentSimulator/Libraries/esminiLib/ ./bin/libesminiLib.so -o pure-c
           ./pure-c
+
+      - name: Compile C# wrapper tests
+        if: runner.os == 'Windows'
+        run: |
+          cd test/CSharpWrappers
+          cmake . -B build -G "Visual Studio 17 2022" -T v142 -A x64 -DUSE_OSI=ON
+          cmake --build build --config ${{ matrix.configuration }}
 
       - name: CMake Build OSMP FMU
         if: runner.os == 'Linux'
@@ -199,7 +203,7 @@ jobs:
         if: matrix.configuration == 'Release'
 
       - name: Debugging with tmate
-        if: ${{ failure() }}
+        if: ${{ failure() && env.USE_TMATE == 'true' }}
         uses: mxschmitt/action-tmate@v3
 
   test-no-external-modules:
@@ -242,15 +246,19 @@ jobs:
         if: runner.os == 'Linux' && matrix.configuration == 'Release'
         run: python3 scripts/run_schema_comply.py resources EnvironmentSimulator
 
+      - name: Run C# wrapper check
+        if: runner.os == 'Windows' && matrix.configuration == 'Release'
+        uses: ./.github/actions/wrapper_check
+
       - name: CMake Configure - Windows
         if: runner.os == 'Windows'
         shell: pwsh
-        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build -G "Visual Studio 17 2022" -T v142 -A x64 ${{ env.ESMINI_SLIM_TEST }}
+        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -G "Visual Studio 17 2022" -T v142 -A x64 ${{ env.ESMINI_SLIM_TEST }}
 
       - name: CMake Configure - Linux
         if: runner.os == 'Linux'
         shell: pwsh
-        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }}  -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} ${{ env.ESMINI_SLIM_TEST }}
+        run: cmake . -G Ninja -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} ${{ env.ESMINI_SLIM_TEST }}
 
       - name: CMake Configure - macOS
         if: runner.os == 'macOS'
@@ -259,6 +267,13 @@ jobs:
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
+
+      - name: Compile C# wrapper tests
+        if: runner.os == 'Windows'
+        run: |
+          cd test/CSharpWrappers
+          cmake . -B build -G "Visual Studio 17 2022" -T v142 -A x64 -DUSE_OSI=OFF
+          cmake --build build --config ${{ matrix.configuration }}
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
@@ -272,6 +287,10 @@ jobs:
           MESA_GL_VERSION_OVERRIDE: 4.5
         shell: bash
         run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
+
+      - name: Debugging with tmate
+        if: ${{ failure() && env.USE_TMATE == 'true' }}
+        uses: mxschmitt/action-tmate@v3
 
   release:
     needs: [test, test-no-external-modules]

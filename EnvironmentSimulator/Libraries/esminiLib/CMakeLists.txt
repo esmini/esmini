@@ -8,7 +8,6 @@ set(TARGET_STATIC
 
 # ############################### Loading desired rules ##############################################################################################
 
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 
 # ############################### Setting target files ###############################################################################################
@@ -111,7 +110,6 @@ foreach(
             PRIVATE ${OSI_LIBRARIES})
     endif()
 
-    disable_static_analysis(${TARGET})
     disable_iwyu(${TARGET})
 
 endforeach()

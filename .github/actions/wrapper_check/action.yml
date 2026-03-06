@@ -34,7 +34,7 @@ runs:
     shell: bash
     run: |
       cd EnvironmentSimulator/Libraries/esminiLib/CSWrapperGenerator
-      python ./generate_esminiLib_cs_wrapper.py
+      python ./generate_esminiLib_cs_wrapper.py ../esminiLib.hpp ./ESMiniWrapper.cs --namespace ESMini --class ESMiniLib
 
   - name: Upload generated esminiLib wrapper
     uses: actions/upload-artifact@v4.3.6
@@ -47,12 +47,13 @@ runs:
     shell: bash
     run: |
       cd EnvironmentSimulator/Libraries/esminiLib/CSWrapperGenerator
-      diff ../esminiWrapper.cs esminiWrapper.cs
+      diff ../ESMiniWrapper.cs ESMiniWrapper.cs
 
   - name: What to do
     shell: bash
     if: ${{ failure() }}
     run: |
+      set +x
       echo "Warning::If this job fails, check the diff output above."
       echo "The failing wrapper needs to be regenerated and committed"
       echo ""
@@ -67,3 +68,4 @@ runs:
       echo "python ./generate_esminiLib_cs_wrapper.py"
       echo ""
       echo "Alternatively, use the generated ones in the 'Upload generated wrapper' job"
+      set -x

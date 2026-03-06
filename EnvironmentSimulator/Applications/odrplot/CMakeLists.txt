@@ -5,7 +5,6 @@ set(TARGET
 
 # ############################### Loading desired rules ##############################################################
 
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 
 # ############################### Setting target files ###############################################################
@@ -39,7 +38,6 @@ target_link_libraries(
     PRIVATE CommonMini
     PRIVATE ${TIME_LIB})
 
-disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})
 
 # ############################### Install ############################################################################

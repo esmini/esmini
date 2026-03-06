@@ -46,7 +46,6 @@ macro(
         PRIVATE ${LIBRARIES}
                 ${GTEST_LIBRARIES})
 
-    disable_static_analysis(${TARGET})
     disable_iwyu(${TARGET})
 
     set_folder(

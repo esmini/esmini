@@ -5,7 +5,6 @@ set(TARGET
 
 # ############################### Loading desired rules ##############################################################
 
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/enable_fpic.cmake)
 
@@ -56,6 +55,5 @@ target_include_directories(
            ${EXTERNALS_FMT_INCLUDES}
            ${ROAD_MANAGER_PATH})
 
-disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})
 enable_fpic(${TARGET})

@@ -29,6 +29,7 @@ Create a Python script that generates a C# wrapper for the C++ headerfile esmini
 
 import argparse
 import re
+import os
 from datetime import datetime
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple, Dict, Set
@@ -669,7 +670,7 @@ def generate_cs(
     out.append("/*")
     out.append(" * This module provides a generic C# interface/wrapper to the esminiLib shared library")
     out.append(" * simply mirroring the interface in terms of datatypes and functions")
-    out.append(f" * Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    out.append(f" * Created by {os.path.basename(__file__)} from esminiLib.hpp")
     out.append(" */")
     out.append("")
     out.append("using System;")
@@ -801,8 +802,8 @@ def main():
     parser = argparse.ArgumentParser(description="Generate C# wrapper from a C++ header file.")
     parser.add_argument("input_hpp", help="Path to the input C++ header file (e.g., esminiLib.hpp)")
     parser.add_argument("output_cs", help="Path for the generated C# output file")
-    parser.add_argument("--namespace", default="Esmini", dest="namespace_name", help="C# namespace for the generated code")
-    parser.add_argument("--class", default="EsminiNative", dest="class_name", help="C# static class name for native functions")
+    parser.add_argument("--namespace", default="ESMini", dest="namespace_name", help="C# namespace for the generated code")
+    parser.add_argument("--class", default="ESMiniLib", dest="class_name", help="C# static class name for native functions")
     parser.add_argument("--dll", default="esminiLib", dest="dll_name", help="Name of the native DLL to import")
     args = parser.parse_args()
 
@@ -824,7 +825,7 @@ def main():
     )
 
     try:
-        with open(args.output_cs, "w", encoding="utf-8", newline="\n") as f:
+        with open(args.output_cs, "w", encoding="utf-8", newline="\r\n") as f:
             f.write(cs_code)
         print(f"Successfully generated C# wrapper: {args.output_cs}")
     except IOError as e:

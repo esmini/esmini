@@ -13,7 +13,7 @@
 /*
  * This module provides a generic C# interface/wrapper to the esminiLib shared library
  * simply mirroring the interface in terms of datatypes and functions
- * Generated on: 2026-03-05 12:57:40
+ * Created by generate_esminiLib_cs_wrapper.py from esminiLib.hpp
  */
 
 using System;

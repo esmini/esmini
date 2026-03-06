@@ -66,8 +66,6 @@ if(ENABLE_SANITIZERS)
     enable_sanitizers(project_options)
 endif()
 
-# include(${CMAKE_CURRENT_LIST_DIR}/static_analysis.cmake) if(ENABLE_STATIC_ANALYSIS) enable_static_analysis() endif()
-
 # include(${CMAKE_CURRENT_LIST_DIR}/iwyu.cmake) if(ENABLE_INCLUDE_WHAT_YOU_USE) enable_iwyu() endif()
 
 # include(${CMAKE_CURRENT_LIST_DIR}/valgrind.cmake) enable_valgrind()

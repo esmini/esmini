@@ -11,7 +11,6 @@ set(TARGET3
 
 # ############################### Loading desired rules ##############################################################
 
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 
 # ############################### Setting target files ###############################################################
@@ -69,9 +68,11 @@ if(BUILD_REPLAYER)
         ${TARGET1}
         PRIVATE project_options
                 ScenarioEngine
-                RoadManager
-                CommonMini
                 Controllers
+                CommonMini
+                PlayerBase
+                ScenarioEngine
+                RoadManager
                 ${TIME_LIB})
 
     if(USE_OSG)
@@ -89,7 +90,6 @@ if(BUILD_REPLAYER)
             PRIVATE ${OSI_LIBRARIES})
     endif()
 
-    disable_static_analysis(${TARGET1})
     disable_iwyu(${TARGET1})
 
     install(
@@ -107,10 +107,12 @@ add_executable(
 target_link_libraries(
     ${TARGET2}
     PRIVATE project_options
-            RoadManager
-            CommonMini
             ScenarioEngine
             Controllers
+            CommonMini
+            PlayerBase
+            ScenarioEngine
+            RoadManager
             ${TIME_LIB})
 
 target_include_directories(
@@ -136,7 +138,6 @@ if(USE_OSI)
         PRIVATE ${OSI_LIBRARIES})
 endif()
 
-disable_static_analysis(${TARGET2})
 disable_iwyu(${TARGET2})
 
 install(
@@ -165,7 +166,6 @@ if(USE_OSI)
                 ${SOCK_LIB}
                 ${OSI_LIBRARIES})
 
-    disable_static_analysis(${TARGET3})
     disable_iwyu(${TARGET3})
 
     install(

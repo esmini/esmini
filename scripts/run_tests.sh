@@ -40,9 +40,9 @@ export LSAN_OPTIONS="print_suppressions=false:suppressions="${workingDir}"/scrip
 export ASAN_OPTIONS="detect_invalid_pointer_pairs=1:strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1:fast_unwind_on_malloc=0:suppressions="${workingDir}"/scripts/ASAN.supp"
 
 export UNIT_TEST_FOLDER=${workingDir}/build/EnvironmentSimulator/Unittest
-export CS_WRAPPER_FOLDER=${workingDir}/test/CSharpWrappers
-export ESMINI_CS_WRAPPER_BINARY=${workingDir}/build/test/CSharpWrappers/$build_type/libesmini_cs_wrapper_test
 export SMOKE_TEST_FOLDER=${workingDir}/test
+export ESMINI_CS_WRAPPER_FOLDER=${workingDir}/test/CSharpWrappers/build/${build_type}
+export ESMINI_CS_WRAPPER_BINARY=libesmini_cs_wrapper_test
 
 if [[ "$OSTYPE" == "msys" ]]; then
     export PATH=${PATH}":${workingDir}/build/EnvironmentSimulator/Libraries/esminiLib/${build_type}:${workingDir}/build/EnvironmentSimulator/Libraries/esminiRMLib/${build_type}"
@@ -118,9 +118,11 @@ if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
 fi
 
 if [[ "$OSTYPE" == "msys" ]]; then
-    echo $'\n'Run C# esminiLib wrapper tests:
-    cd $CS_WRAPPER_FOLDER
-    $ESMINI_CS_WRAPPER_BINARY
+    echo $'\n'Run C# esminiLib wrapper test:
+    cd ${workingDir}/bin
+    if ! ${ESMINI_CS_WRAPPER_FOLDER}/${ESMINI_CS_WRAPPER_BINARY}; then
+        exit_with_msg "C# esminiLib wrapper test failed"
+    fi
 fi
 
 echo $'\n'Run smoke tests:

@@ -40,12 +40,6 @@ set(ENABLE_SANITIZERS
     CACHE BOOL
           "Enable sanitizers (Only valid for Linux and Mac OS)")
 
-# static code analysis not in works yet, need prep e.g. excluding external modules
-set(ENABLE_STATIC_ANALYSIS
-    OFF
-    CACHE BOOL
-          "Enable CppCheck and clang-tidy")
-
 set(ENABLE_INCLUDE_WHAT_YOU_USE
     ON
     CACHE BOOL
@@ -302,13 +296,3 @@ set(EXTERNALS_FMT_PATH
 # ############################### Compiling targets ##################################################################
 
 add_subdirectory(EnvironmentSimulator)
-
-if(WIN32
-   AND ${USE_OSI})
-    add_subdirectory(test/CSharpWrappers)
-    set_folder(
-        libesmini_cs_wrapper_test
-        Test)
-endif(
-    WIN32
-    AND ${USE_OSI})

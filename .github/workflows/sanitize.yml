@@ -46,7 +46,8 @@ jobs:
       - name: CMake Configure - Ubuntu
         if: runner.os == 'Linux'
         shell: pwsh
-        run: cmake "--preset=ci-sanitize-$("${{ matrix.os }}".split("-")[0])" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
+        run: cmake . -B build -G Ninja -DENABLE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_OSI=ON -DUSE_GTEST=ON -DUSE_OSG=OFF -DUSE_SUMO=OFF -DUSE_IMPLOT=OFF
+
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2

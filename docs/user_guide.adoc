@@ -4571,6 +4571,16 @@ The smoke test suite is basically execution of a selection of scenarios with som
 
 The smoke test script is found here: https://github.com/esmini/esmini/blob/master/test/smoke_test.py[test/smoke_test.py]
 
+In addition, there's a basic test of the C# esminiLib wrapper. It's available on Windows. Compile and run from esmini root folder as:
+
+[source,console]
+----
+cmake test/CSharpWrappers -B test/CSharpWrappers/build
+cmake --build test/CSharpWrappers/build --config Release
+cd bin
+../test/CSharpWrappers/build/Release/libesmini_cs_wrapper_test.exe
+----
+
 ==== Run tests
 
 For easy execution of all tests, both unit tests and smoke tests, run this main test script: https://github.com/esmini/esmini/blob/master/scripts/run_tests.sh[scripts/run_tests.sh], from esmini root folder:
