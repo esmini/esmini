@@ -5533,6 +5533,206 @@ TEST(GhostConcept, TestMultipleRestartAtCorrectPosition)
     delete se;
 }
 
+TEST(ParsingLightState, ValidLightStates)
+{
+    // Test using ScenarioReader
+    Entities       entities;
+    Catalogs       catalogs;
+    ScenarioReader reader(&entities, &catalogs, nullptr);
+
+    std::vector<const char*> xml = {R"(
+    <PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightType>
+                <VehicleLight vehicleLightType="indicatorLeft"/>
+            </LightType>
+            <LightState mode="on"/>
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)",
+                                    R"(<PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightType>
+                <VehicleLight vehicleLightType="indicatorLeft"/>
+            </LightType>
+            <LightState mode="on" flashingOffDuration="0.1"/>
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)",
+                                    R"(<PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightType>
+                <VehicleLight vehicleLightType="indicatorLeft"/>
+            </LightType>
+            <LightState mode="on" flashingOnDuration="0.1"/>
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)",
+                                    R"(<PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightType>
+                <VehicleLight vehicleLightType="indicatorLeft"/>
+            </LightType>
+            <LightState mode="on" flashingOnDuration="0.1" luminousIntensity="1000"/>
+                <Color colorType="red"/>
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)",
+                                    R"(<PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightType>
+                <VehicleLight vehicleLightType="indicatorLeft"/>
+            </LightType>
+            <LightState mode="on" flashingOnDuration="0.1" luminousIntensity="1000"/>
+                <Color colorType="red">
+                    <ColorRgb red="1.0" green="0.0" blue="0.8"/>
+                </Color
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)"};
+
+    for (size_t i = 0; i < xml.size(); i++)
+    {
+        pugi::xml_document doc;
+        doc.load_string(xml[i]);
+        pugi::xml_node privateNode = doc.child("PrivateAction");
+
+        OSCPrivateAction* privateAct = reader.parseOSCPrivateAction(privateNode, nullptr, nullptr);
+
+        ASSERT_NE(privateAct, nullptr);
+
+        delete privateAct;
+    }
+}
+
+TEST(ParsingLightState, MissingMandatoryFields)
+{
+    // Test using ScenarioReader
+    Entities          entities;
+    Catalogs          catalogs;
+    ScenarioReader    reader(&entities, &catalogs, nullptr);
+    OSCPrivateAction* privateAct = nullptr;
+
+    /* Bad xml:
+        [0]: Missing "LightState"
+        [1]: Invalid "vehicleLightType"
+        [2]: Missing "LightType"
+        [3]: "LightState" missing "mode"
+        [4]: "Color" misspelled as "Bolor"
+        [5]: Missing "blue"
+        [6]: "Red" out of valid range
+        [7]: Invalid with both Cmyk and Rgb
+    */
+    std::vector<const char*> xml = {R"(
+    <PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightType>
+                <VehicleLight vehicleLightType="indicatorLeft"/>
+            </LightType>
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)",
+                                    R"(<PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightType>
+                <VehicleLight vehicleLightType="superTrooper"/>
+            </LightType>
+            <LightState mode="on"/> 
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)",
+                                    R"(<PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightState mode="on"/> 
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)",
+                                    R"(<PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightType>
+                <VehicleLight vehicleLightType="indicatorRight"/>
+            </LightType>
+            <LightState /> 
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)",
+                                    R"(<PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightType>
+                <VehicleLight vehicleLightType="warningLights"/>
+            </LightType>
+            <LightState mode="on">
+                <Bolor colorType="red"/>
+            </LightState> 
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)",
+                                    R"(<PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightType>
+                <VehicleLight vehicleLightType="fogLights"/>
+            </LightType>
+            <LightState mode="on">
+                <Color colorType="red">
+                    <ColorRgb red="1.0" green="0.0"/>
+                </Color
+            </LightState> 
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)",
+                                    R"(<PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightType>
+                <VehicleLight vehicleLightType="fogLightsRear"/>
+            </LightType>
+            <LightState mode="on">
+                <Color colorType="red">
+                    <ColorRgb red="-1.0" green="0.0" blue="0.8"/>
+                </Color
+            </LightState> 
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)",
+                                    R"(<PrivateAction>
+       <AppearanceAction>
+          <LightStateAction>
+            <LightType>
+                <VehicleLight vehicleLightType="fogLightsFront"/>
+            </LightType>
+            <LightState mode="on">
+                <Color colorType="red">
+                    <ColorRgb red="-1.0" green="0.0" blue="0.8"/>
+                    <ColorCmyk red="-1.0" green="0.0" blue="0.8"/>
+                </Color
+            </LightState> 
+          </LightStateAction>
+       </AppearanceAction>
+    </PrivateAction>)"};
+
+    for (size_t i = 0; i < xml.size(); i++)
+    {
+        pugi::xml_document doc;
+        doc.load_string(xml[i]);
+        pugi::xml_node privateNode = doc.child("PrivateAction");
+
+        privateAct = reader.parseOSCPrivateAction(privateNode, nullptr, nullptr);
+
+        EXPECT_EQ(privateAct, nullptr);
+    }
+}
+
 TEST(EnvironmentTest, Basic)
 {
     OSCEnvironment environment;
