@@ -3185,40 +3185,7 @@ void LightStateAction::Step(double simTime, double dt)
         transitioned_ = true;  // Make sure we only enter this if-statement once
     }
 
-    if (NEAR_NUMBERS(transitionTime_, 0.0) && !transitioned_)
-    {
-        if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::OFF)
-        {
-            transitionLuminousity_ = 0.0;
-            end_action             = true;
-        }
-        else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::ON)
-        {
-            transitionLuminousity_ = actionVehicleLightStatus_.luminousIntensity;
-            end_action             = true;
-        }
-        else if (actionVehicleLightStatus_.mode == Object::VehicleLightMode::FLASHING)
-        {
-            if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::FLASHING)
-            {
-                // Lights was probably off, so we want to turn them on
-                transitionLuminousity_ = actionVehicleLightStatus_.luminousIntensity;
-            }
-            else if (previousMode_ == Object::VehicleLightMode::ON)
-            {
-                // Lights was on, so we want to turn them off
-                transitionLuminousity_ = 0.0;
-            }
-        }
-        else
-        {
-            LOG_ERROR("LightStateAction: Unknown vehicle light mode");
-            end_action = true;
-        }
-
-        transitioned_ = true;
-    }
-    else if (transitionTimer_ <= transitionTime_ + SMALL_NUMBER)
+    if (transitionTimer_ <= transitionTime_ + SMALL_NUMBER)
     {
         double transitionFactor = 1.0;
         if (transitionTime_ != 0.0)
