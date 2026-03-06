@@ -786,11 +786,6 @@ void GetRgbMinMaxColor(const double* baseRgb, double* minRgb, double* maxRgb, si
 bool ArrayZeroToOne(double array[], size_t size);
 
 /**
-        Adjust array values by limit
-*/
-int AdjustByOffsetArray(double* array, double limit);
-
-/**
  * Checks if a given string conforms to the ISO 8601 combined date and time representation format.
  * Specifically, the format is: YYYY-MM-DDTHH:MM:SS.mmm+ZZZZ or YYYY-MM-DDTHH:MM:SS.mmm-ZZZZ.
  */
