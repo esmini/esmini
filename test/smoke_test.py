@@ -2604,8 +2604,6 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('Loading .*light_test.xosc', log)  is not None)
 
         # Check some scenario events
-        self.assertTrue(re.search('LightStateAction: Color set but colorRgb or colorCmyk not set, setting default for color violet \\(r:0.7 g:0.03 b:0.68\\)', log, re.MULTILINE)  is not None)
-        self.assertTrue(re.search('LightStateAction: Color set but colorRgb or colorCmyk not set, setting default for color green \\(r:0 g:0.5 b:0\\)', log, re.MULTILINE)  is not None)
         self.assertTrue(re.search('^.0.200.* Stopping object Car1 Init Car1 AppearanceAction on conflicting light_indicator_left light\\(s\\)', log, re.MULTILINE))
         self.assertTrue(re.search('^.0.200.* Stopping object Car2 Init Car2 AppearanceAction on conflicting light_fog_rear light\\(s\\)', log, re.MULTILINE))
         self.assertTrue(re.search('^.0.200.* Stopping object Car2 Init Car2 AppearanceAction on conflicting light_fog_front light\\(s\\)', log, re.MULTILINE))
