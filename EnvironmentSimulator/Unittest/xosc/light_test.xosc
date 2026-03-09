@@ -17,7 +17,7 @@
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Car1">
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_with_lights" />
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
       </ScenarioObject>
       <ScenarioObject name="Car2">
          <CatalogReference catalogName="VehicleCatalog" entryName="car_police" />
@@ -67,6 +67,7 @@
                         </LightType>
                            <LightState mode="on" luminousIntensity="6000">
                               <Color colorType="violet">
+                                 <ColorRgb red="0.7" green="0.1" blue="0.7"/>
                               </Color>
                         </LightState>
                      </LightStateAction>
@@ -269,6 +270,7 @@
                                  </LightType>
                                     <LightState mode="on" luminousIntensity="10000">
                                     <Color colorType="green">
+                                       <ColorRgb red="0.0" green="0.8" blue="0.0"/>
                                     </Color>
                                  </LightState>
                               </LightStateAction>
