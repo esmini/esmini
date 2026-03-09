@@ -4174,7 +4174,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
             {
                 auto rgb = lightStateAction->GetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());
                 LOG_WARN("LightStateAction: Color set but colorRgb or colorCmyk not set, setting default for color {} (r:{} g:{} b:{})",
-                         lightStateAction->GetName(),
                          color,
                          rgb[0],
                          rgb[1],
@@ -4230,7 +4229,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 {
                     lightStateAction->SetVehicleLightColor(Object::VehicleLightColor::BLUE);
                 }
-                lightStateAction->SetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());  // Forcing ORANGE or BLUE... no correct?
+                lightStateAction->SetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());  // Forcing ORANGE or BLUE
             }
 
             lightStateAction->SetVehicleLightInitStatus();  // Register initial values in the action
