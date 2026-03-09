@@ -934,6 +934,7 @@ int main(int argc, char** argv)
 #endif  // _USE_OSG
         }
 
+#ifdef _USE_OSG
         std::string show_lights = opt.GetOptionValue("show_lights");
         if (show_lights == "on" || (show_lights == "auto" && player_->HasLightStates()))
         {
@@ -944,6 +945,7 @@ int main(int argc, char** argv)
             viewer_->ClearNodeMaskBits(roadgeom::NodeMask::NODE_MASK_LIGHT_STATE);
         }
         viewer_->SetShowLights(player_->HasLightStates());
+#endif  // _USE_OSG
 
         if (opt.GetOptionSet("repeat"))
         {
