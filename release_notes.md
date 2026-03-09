@@ -1,21 +1,39 @@
 ## esmini release notes
 
-### 2026-03-04 Version 3.0.0 DRAFT
+### 2026-03-12 Version 3.0.0 DRAFT
 
 TODO:
 - update Unity package for 3.0.0
+- update/replace preset info in Linux build guide
 
 Breaking changes:
-- Replace all float (32 bits) types with double (64 bits) in esminiLib and esminiRMLib
+- In esminiLib and esminiRMLib, replace all 32 bit `float` types with 64 bit `double`
   - only affecting external interface, esmini always used 64 bit precision internally
-- Removed unused timestamp argument from some esminiLib report functions
-- Update all testcases and code examples accordingly
-
-
+- Removed unused timestamp argument from some esminiLib Report* functions
 
 New features:
-- Support [AngleCondition](https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/AngleCondition.html)
-  - limitation: only `heading` supported for `trajectory` coordinate system
+- Add GUI for replayer interactive playback navigation
+  - option `--gui <on|off>` default: on
+  - toggle on/off with "I" (shift-"i")
+- Add mobile radar reflector, as simple pole, to VehicleCatalog
+
+Improvements and fixes:
+- Major code refactorization
+  - completely remove gateway module
+  - rework dirty bit handling
+  - decrease code complexity, increase maintainability
+  - brief documentation updated, see [User guide - Inner workings](https://esmini.github.io/#_inner_workings)
+- esminiLib C# wrapper coverage now 100%
+  - script generating the wrapper
+  - CI check ensuring wrapper in synch with lib
+- Update Unity esmini C# code example
+- Option to modify or even ignore tolerance in performance tests
+- Fix wrong log message on changed parameter value
+- Remove cmake presets
+  - simplifying the message on how to build
+  - update build info in User guide accordingly
+- Update implot build script for vs 2017
+- Add OSI traffic command testcase
 
 ### 2026-02-19 Version 2.60.0
 
