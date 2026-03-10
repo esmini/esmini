@@ -1462,6 +1462,8 @@ namespace scenarioengine
         {
         }
 
+        ~LightStateAction();
+
         enum class FlashingStatus
         {
             OFF = 0,

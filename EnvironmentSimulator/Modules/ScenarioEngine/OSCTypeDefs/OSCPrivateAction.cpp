@@ -3132,18 +3132,21 @@ void LightStateAction::Start(double simTime)
     previousMode_      = (vehicleLight_->mode == Object::VehicleLightMode::UNKNOWN) ? Object::VehicleLightMode::OFF : vehicleLight_->mode;
     previousIntensity_ = vehicleLight_->luminousIntensity;
 
-    if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::FLASHING)
+    vehicleLight_->mode = actionVehicleLightStatus_.mode;
+    if (vehicleLight_->mode == Object::VehicleLightMode::FLASHING)
     {
-        flashStatus_   = FlashingStatus::OFF;
-        flashingTimer_ = flashingOffDuration_;  // Expire off timer, so we turn on the lights instantly
-    }
-    else
-    {
-        flashStatus_   = FlashingStatus::ON;
-        flashingTimer_ = flashingOnDuration_;  // Expire on timer, so we turn off the lights instantly
+        if (previousMode_ == Object::VehicleLightMode::OFF || previousMode_ == Object::VehicleLightMode::FLASHING)
+        {
+            flashStatus_   = FlashingStatus::OFF;
+            flashingTimer_ = flashingOffDuration_;  // Expire off timer, so we turn on the lights instantly
+        }
+        else
+        {
+            flashStatus_   = FlashingStatus::ON;
+            flashingTimer_ = flashingOnDuration_;  // Expire on timer, so we turn off the lights instantly
+        }
     }
 
-    vehicleLight_->mode = actionVehicleLightStatus_.mode;
     HandleConflictingLights(vehicleLight_->type);
 
     // vehicleLight_->rgb/maxRgb are initialized with min/max values for the material color
@@ -3267,6 +3270,11 @@ void LightStateAction::Step(double simTime, double dt)
         OSCAction::End();
         return;
     }
+}
+
+LightStateAction::~LightStateAction()
+{
+    vehicleLight_ = nullptr;
 }
 
 void LightStateAction::HandleConflictingLights(const Object::VehicleLightType& type)

@@ -6,7 +6,7 @@
 #include "ScenarioEngine.hpp"
 
 #define DAT_FILE_FORMAT_VERSION_MAJOR 4
-#define DAT_FILE_FORMAT_VERSION_MINOR 3
+#define DAT_FILE_FORMAT_VERSION_MINOR 4
 
 namespace scenarioengine
 {

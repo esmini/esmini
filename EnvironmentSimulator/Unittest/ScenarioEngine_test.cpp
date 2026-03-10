@@ -5480,10 +5480,9 @@ TEST(GhostConcept, TestMultipleRestartAtCorrectPosition)
 TEST(ParsingLightState, ValidLightStates)
 {
     // Test using ScenarioReader
-    Entities          entities;
-    Catalogs          catalogs;
-    ScenarioReader    reader(&entities, &catalogs, nullptr);
-    OSCPrivateAction* privateAct = nullptr;
+    Entities       entities;
+    Catalogs       catalogs;
+    ScenarioReader reader(&entities, &catalogs, nullptr);
 
     std::vector<const char*> xml = {R"(
     <PrivateAction>
@@ -5547,12 +5546,12 @@ TEST(ParsingLightState, ValidLightStates)
         doc.load_string(xml[i]);
         pugi::xml_node privateNode = doc.child("PrivateAction");
 
-        privateAct = reader.parseOSCPrivateAction(privateNode, nullptr, nullptr);
+        OSCPrivateAction* privateAct = reader.parseOSCPrivateAction(privateNode, nullptr, nullptr);
 
-        EXPECT_NE(privateAct, nullptr);
+        ASSERT_NE(privateAct, nullptr);
+
+        delete privateAct;
     }
-
-    delete privateAct;
 }
 
 TEST(ParsingLightState, MissingMandatoryFields)
@@ -5676,8 +5675,6 @@ TEST(ParsingLightState, MissingMandatoryFields)
 
         EXPECT_EQ(privateAct, nullptr);
     }
-
-    delete privateAct;
 }
 
 TEST(EnvironmentTest, Basic)
