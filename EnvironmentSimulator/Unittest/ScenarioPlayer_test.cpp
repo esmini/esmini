@@ -832,6 +832,8 @@ TEST(OSI, TestLightStates)
     EXPECT_EQ(car1_ls->indicator_state(), Indicators::MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_WARNING);
     EXPECT_EQ(car1_ls->high_beam(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
     EXPECT_EQ(car1_ls->head_light(), Generics::MovingObject_VehicleClassification_LightState_GenericLightState_GENERIC_LIGHT_STATE_ON);
+
+    delete player;
 }
 
 TEST(OSI, TestTrafficLights)
