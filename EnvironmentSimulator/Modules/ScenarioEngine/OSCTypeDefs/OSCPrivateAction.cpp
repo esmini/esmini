@@ -3275,10 +3275,7 @@ void LightStateAction::Step(double simTime, double dt)
 
 LightStateAction::~LightStateAction()
 {
-    if (vehicleLight_ != nullptr)
-    {
-        vehicleLight_ = nullptr;
-    }
+    vehicleLight_ = nullptr;
 }
 
 void LightStateAction::HandleConflictingLights(const Object::VehicleLightType& type)
