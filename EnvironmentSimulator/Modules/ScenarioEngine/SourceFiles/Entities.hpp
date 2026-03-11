@@ -772,6 +772,14 @@ namespace scenarioengine
             {
                 category_ = static_cast<int>(Vehicle::Category::TRAILER);
             }
+            else if (category == "tram")
+            {
+                category_ = static_cast<int>(Vehicle::Category::TRAM);
+            }
+            else if (category == "train")
+            {
+                category_ = static_cast<int>(Vehicle::Category::TRAIN);
+            }
             else if (category == "van")
             {
                 category_ = static_cast<int>(Vehicle::Category::VAN);

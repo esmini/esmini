@@ -47,20 +47,20 @@ macro(set_cloud_links)
             https://www.dropbox.com/scl/fi/s4lu9y6z8krlymuq4nxwe/implot_linux_glibc_2_31_gcc_9_4_0.7z?rlkey=1ui1h0azyuiap5ehogumcjrk1&st=82yzvb4f&dl=1)
     elseif(MSVC)
         set(OSG_PACKAGE_URL
-            https://esmini.asuscomm.com/AICLOUD972108097/libs/osg_win_vs17_v142_png.7z;
             https://drive.usercontent.google.com/download?id=11QIsQkYbY0I8_YsivPH9r7_qqWBqbsfH&export=download&authuser=0&confirm=t;
+            https://esmini.asuscomm.com/AICLOUD972108097/libs/osg_win_vs17_v142_png.7z;
             https://www.dropbox.com/scl/fi/074keimjeec2e6jul3rn0/osg_win_vs17_v142_png.7z?rlkey=1631xcd9muiaayasf5p8jh597&st=ufyogs3h&dl=1)
         set(OSI_PACKAGE_URL
-            https://esmini.asuscomm.com/AICLOUD972108097/libs/osi_3_5_0_win_vs_sdk_142_v2.7z;
             https://drive.usercontent.google.com/download?id=1F0kxK7feXVfZihesDYU0UjaxoHMQ4BI5&export=download&authuser=0&confirm=t;
+            https://esmini.asuscomm.com/AICLOUD972108097/libs/osi_3_5_0_win_vs_sdk_142_v2.7z;
             https://www.dropbox.com/scl/fi/vcvz85nwqbta8zimkfku2/osi_3_5_0_win_vs_sdk_142_v2.7z?dl=1)
         set(SUMO_PACKAGE_URL
-            https://esmini.asuscomm.com/AICLOUD972108097/libs/sumo_v10.7z;
             https://drive.usercontent.google.com/download?id=18PhbSLyvs0IGWTAY3YBoYzpVnMFPbOuR&export=download&authuser=0&confirm=t;
+            https://esmini.asuscomm.com/AICLOUD972108097/libs/sumo_v10.7z;
             https://dl.dropboxusercontent.com/s/5jtpnnd61wonxuh/sumo_v10.7z?dl=1)
         set(GTEST_PACKAGE_URL
-            https://esmini.asuscomm.com/AICLOUD972108097/libs/googletest_v10.7z;
             https://drive.usercontent.google.com/download?id=1So-3gtrmEdW9RhEvVQisj1QFksHM_otU&export=download&authuser=0&confirm=t;
+            https://esmini.asuscomm.com/AICLOUD972108097/libs/googletest_v10.7z;
             https://dl.dropboxusercontent.com/s/aaiehwzc6woqbc6/googletest_v10.7z?dl=1)
         set(IMPLOT_PACKAGE_URL
             https://drive.usercontent.google.com/download?id=1zIw35UCHhyRAEVbbUmOuUgqMOfWdj7zO&export=download&authuser=0&confirm=t;

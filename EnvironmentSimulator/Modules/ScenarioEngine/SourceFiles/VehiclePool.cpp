@@ -93,7 +93,7 @@ int VehiclePool::Initialize(ScenarioReader* reader, const std::vector<std::pair<
     }
     categories = &categories_tmp;
 
-    // Register model filesnames from first vehicle catalog
+    // Register model filenames from first vehicle catalog
     // if no catalog loaded, use same model as central object
     for (size_t i = 0; i < catalogs->catalog_.size(); i++)
     {

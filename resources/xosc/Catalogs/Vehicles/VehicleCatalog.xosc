@@ -640,6 +640,29 @@
             </Properties>
         </Vehicle>
 
+        <Vehicle name="mobile_radar_reflector" vehicleCategory="trailer" model3d="../models/pole.osgb" role="none">
+            <!-- model bounding box xyz: 0.00, 0.00, 0.49 lwh: 0.06, 0.06, 1.00 -->
+            <ParameterDeclarations>
+                <ParameterDeclaration name="Diameter" parameterType="double" value="0.05"/>
+                <!-- height includes both base, height 300 mm, and mounted reflector, height 650 -->
+                <ParameterDeclaration name="Height" parameterType="double" value="0.95"/>
+            </ParameterDeclarations>
+            <BoundingBox>
+                <Center x="0.0" y="0.0" z="${$Height/2.0}"/>
+                <!-- height includes both base, height 300 mm, and mounted reflector, height 650 -->
+                <Dimensions width="$Diameter" length="$Diameter" height="$Height"/>
+            </BoundingBox>
+            <Performance maxSpeed="${250/3.6}" maxDeceleration="10" maxAcceleration="5"/>
+            <Axles>
+                <FrontAxle maxSteering="0.5" wheelDiameter="0.2" trackWidth="1.0" positionX="1.0" positionZ="0.1"/>
+                <RearAxle maxSteering="0.5" wheelDiameter="0.2" trackWidth="1.0" positionX="0" positionZ="0.1"/>
+            </Axles>
+            <Properties>
+                <!-- Scale modes: None, BBToModel, ModelToBB -->
+                <Property name="scaleMode" value="ModelToBB"/>
+            </Properties>
+        </Vehicle>
+
     </Catalog>
 
 </OpenSCENARIO>

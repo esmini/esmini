@@ -114,7 +114,7 @@ ControllerSumo::ControllerSumo(InitArgs* args) : Controller(args)
                                                       {Vehicle::Category::VAN, 2.0},
                                                       {Vehicle::Category::BUS, 1.0},
                                                       {Vehicle::Category::TRUCK, 2.0},
-                                                      {Vehicle::Category::TRAILER, 0.0},  // allow trailsers, but no single trailers
+                                                      {Vehicle::Category::TRAILER, 0.0},  // allow trailers, but no single trailers
                                                       {Vehicle::Category::MOTORBIKE, 1.0}};
     vehicle_pool_.Initialize(scenario_engine_->GetScenarioReader(), &categories, false);
 
