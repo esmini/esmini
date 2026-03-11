@@ -1,0 +1,742 @@
+<?xml version="1.3" encoding="UTF-8"?>
+<!-- scenario with different lights on, off and flash mode -->
+<OpenSCENARIO>
+   <FileHeader revMajor="1"
+               revMinor="3"
+               date="2023-10-24T10:00:00"
+               description="Scenario with different lights on, off and flash mode"
+               author="esmini-team"/>
+   <ParameterDeclarations />
+   <CatalogLocations>
+      <VehicleCatalog>
+         <Directory path="../xosc/Catalogs/Vehicles"/>
+      </VehicleCatalog>
+      <MiscObjectCatalog>
+         <Directory path="../xosc/Catalogs/MiscObjects"/>
+      </MiscObjectCatalog>
+   </CatalogLocations>
+   <RoadNetwork>
+      <LogicFile filepath="../xodr/circle_300m.xodr" />
+   </RoadNetwork>
+   <Entities>
+      <ScenarioObject name="Car1">
+         <!-- <CatalogReference catalogName="VehicleCatalog" entryName="car_white" /> -->
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_with_lights" />
+      </ScenarioObject>
+      <ScenarioObject name="Car2">
+         <!-- <CatalogReference catalogName="VehicleCatalog" entryName="car_white" /> -->
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_with_lights" />
+      </ScenarioObject>
+      <ScenarioObject name="Cone1">
+         <CatalogReference catalogName="MiscObjectCatalog" entryName="cone-100" />
+      </ScenarioObject>
+      <ScenarioObject name="Cone2">
+         <CatalogReference catalogName="MiscObjectCatalog" entryName="cone-100" />
+      </ScenarioObject>
+   </Entities>
+   <Storyboard>
+      <Init>
+         <Actions>
+            <GlobalAction>
+               <EnvironmentAction>
+                     <Environment name="weather">
+                        <TimeOfDay animation="true" dateTime="2025-06-13T00:00:00.000+00:00"/>
+                     </Environment>
+               </EnvironmentAction>
+            </GlobalAction>
+            <Private entityRef="Car1">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="1.0"
+                           dynamicsDimension="time" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="0.0" />
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="-1" s="60.0" offset="0.0" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction transitionTime="0">
+                        <LightType>
+                           <VehicleLight vehicleLightType="fogLights" />
+                        </LightType>
+                           <LightState mode="off" luminousIntensity="0">
+                        </LightState>
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Car2">
+               <PrivateAction>
+                  <LongitudinalAction>
+                     <SpeedAction>
+                        <SpeedActionDynamics dynamicsShape="step" value="1.0"
+                           dynamicsDimension="time" />
+                        <SpeedActionTarget>
+                           <AbsoluteTargetSpeed value="0.0" />
+                        </SpeedActionTarget>
+                     </SpeedAction>
+                  </LongitudinalAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="1" s="250.0" offset="0.0" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <AppearanceAction>
+                     <LightStateAction transitionTime="0">
+                        <LightType>
+                           <VehicleLight vehicleLightType="lowBeam" />
+                        </LightType>
+                           <LightState mode="off" luminousIntensity="0">
+                        </LightState>
+                     </LightStateAction>
+                  </AppearanceAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Cone1">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="1" s="240.0" offset="-1.0" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Cone2">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <LanePosition roadId="1" laneId="1" s="260.0" offset="-1.0" />
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+         </Actions>
+      </Init>
+      <Story name="LightActionStory">
+         <ParameterDeclarations />
+         <Act name="LightActionAct">
+            <ManeuverGroup maximumExecutionCount="1" name="Car1LightStateActionManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Car1" />
+               </Actors>
+               <Maneuver name="manStartCar">
+                  <Event name="eventStartCar" priority="override" maximumExecutionCount="1">
+                     <Action name="actionStartLPI">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="licensePlateIllumination" />
+                                 </LightType>
+                                    <LightState mode="on" luminousIntensity="8000">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="actionStartFogLights">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="fogLights" />
+                                 </LightType>
+                                    <LightState mode="on" luminousIntensity="8000">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="startCarCondition" delay="0"
+                              conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="2" rule="greaterThan" />
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="manDrive">
+                  <Event name="eventDrive" priority="override" maximumExecutionCount="1">
+                     <Action name="actionDrive">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="sinusoidal" value="3.0"
+                                    dynamicsDimension="time" />
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="15.0" />
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="driveCondition"
+                                      delay="2"
+                                      conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
+                                                                  storyboardElementRef="manStartCar"
+                                                                  state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="manLaneChangeLeft">
+                  <Event name="eventLaneChangeLeft" priority="override" maximumExecutionCount="1">
+                     <Action name="actionBlinkingLeft">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="indicatorLeft" />
+                                 </LightType>
+                                    <LightState mode="flashing" luminousIntensity="8000">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="actionLaneChangeLeft">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="cubic" value="2" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <RelativeTargetLane entityRef="Car1" value="1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="laneChangeCondition"
+                                      delay="1"
+                                      conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
+                                                                  storyboardElementRef="manDrive"
+                                                                  state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="manLaneChangeLeftComplete">
+                  <Event name="eventLaneChangeLeftComplete" priority="override" maximumExecutionCount="1">
+                     <Action name="daylightAction">
+                        <GlobalAction>
+                           <EnvironmentAction>
+                                 <Environment name="weather">
+                                    <TimeOfDay animation="true" dateTime="2025-06-13T12:00:00.000+00:00"/>
+                                 </Environment>
+                           </EnvironmentAction>
+                        </GlobalAction>
+                     </Action>
+                     <Action name="actionStopBlinkingLeft">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="indicatorLeft" />
+                                 </LightType>
+                                    <LightState mode="off" luminousIntensity="0">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="stopBlinkingCondition"
+                                      delay="1"
+                                      conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="action"
+                                                                  storyboardElementRef="actionLaneChangeLeft"
+                                                                  state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="manLaneChangeRight">
+                  <Event name="eventLaneChangeRight" priority="override" maximumExecutionCount="1">
+                     <Action name="actionBlinkingLeft">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="indicatorRight" />
+                                 </LightType>
+                                    <LightState mode="flashing" luminousIntensity="8000">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="actionLaneChangeRight">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="cubic" value="2" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <RelativeTargetLane entityRef="Car1" value="-1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="laneChangeRightCondition"
+                                      delay="1"
+                                      conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Car1"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <TimeHeadwayCondition entityRef="Car2"
+                                                          value="4.0"
+                                                          freespace="false"
+                                                          alongRoute="false"
+                                                          rule="lessThan"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="manLaneChangeRightDone">
+                  <Event name="eventLaneChangeRightDone" priority="override" maximumExecutionCount="1">
+                     <Action name="actionIndicatorRightOff">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="indicatorRight" />
+                                 </LightType>
+                                    <LightState mode="off" luminousIntensity="0">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="turnOffIndicatorRightCondition"
+                                      delay="2"
+                                      conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="action"
+                                                                  storyboardElementRef="actionLaneChangeRight"
+                                                                  state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="manBraking">
+                  <Event name="eventBraking" priority="override" maximumExecutionCount="1">
+                     <Action name="brakeLightsOn">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="brakeLights" />
+                                 </LightType>
+                                    <LightState mode="on" luminousIntensity="8000">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="actionBraking">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="sinusoidal" value="5.0"
+                                    dynamicsDimension="time" />
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="0.0" />
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="brakeStartCondition" delay="0" conditionEdge="none">
+                              <ByEntityCondition>
+                                 <TriggeringEntities triggeringEntitiesRule="any">
+                                    <EntityRef entityRef="Car1"/>
+                                 </TriggeringEntities>
+                                 <EntityCondition>
+                                    <TimeHeadwayCondition entityRef="Car2"
+                                                          value="2.0"
+                                                          freespace="false"
+                                                          alongRoute="false"
+                                                          rule="lessThan"/>
+                                 </EntityCondition>
+                              </ByEntityCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="manStopped">
+                  <Event name="eventStopped" priority="override" maximumExecutionCount="1">
+                     <Action name="brakeLightsOff">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="brakeLights" />
+                                 </LightType>
+                                    <LightState mode="off" luminousIntensity="0">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="turnOffLightsCondition"
+                                      delay="0"
+                                      conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
+                                                                  storyboardElementRef="manBraking"
+                                                                  state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="manReversing">
+                  <Event name="eventReversing" priority="override" maximumExecutionCount="1">
+                     <Action name="actionReversingSpeed">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="sinusoidal" value="1.0"
+                                    dynamicsDimension="time" />
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="-3.0" />
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="actionReversingLights">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="reversingLights" />
+                                 </LightType>
+                                    <LightState mode="on" luminousIntensity="8000">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="carStartCondition"
+                                      delay="3"
+                                      conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
+                                                                  storyboardElementRef="manStopped"
+                                                                  state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="manBraking2">
+                  <Event name="eventBraking2" priority="override" maximumExecutionCount="1">
+                     <Action name="brakeLightsOn">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="brakeLights" />
+                                 </LightType>
+                                    <LightState mode="on" luminousIntensity="8000">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="actionBraking">
+                        <PrivateAction>
+                           <LongitudinalAction>
+                              <SpeedAction>
+                                 <SpeedActionDynamics dynamicsShape="sinusoidal" value="2.0"
+                                    dynamicsDimension="time" />
+                                 <SpeedActionTarget>
+                                    <AbsoluteTargetSpeed value="0.0" />
+                                 </SpeedActionTarget>
+                              </SpeedAction>
+                           </LongitudinalAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="brakeStartCondition" delay="3" conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
+                                                                  storyboardElementRef="manReversing"
+                                                                  state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+               <Maneuver name="manStopped2">
+                  <Event name="eventStopped2" priority="override" maximumExecutionCount="1">
+                     <Action name="actionReversingLightsOff">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="reversingLights" />
+                                 </LightType>
+                                    <LightState mode="off" luminousIntensity="0">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="actionBrakeLightsOff">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="brakeLights" />
+                                 </LightType>
+                                    <LightState mode="off" luminousIntensity="0">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="turnOffLightsCondition"
+                                      delay="0"
+                                      conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
+                                                                  storyboardElementRef="manBraking2"
+                                                                  state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="Car1LightStateActionManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Car2" />
+               </Actors>
+               <Maneuver name="manLowBeamOn">
+                  <Event name="eventLowBeamOn" priority="override" maximumExecutionCount="1">
+                     <Action name="actionLowBeamOn">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="1">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="lowBeam" />
+                                 </LightType>
+                                    <LightState mode="on" luminousIntensity="8000">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="turnOnDRLCondition"
+                                      delay="2"
+                                      conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
+                                                                  storyboardElementRef="manStopped2"
+                                                                  state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="eventDRLOn" priority="override" maximumExecutionCount="1">
+                     <Action name="actionDRLOn">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="1">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="daytimeRunningLights" />
+                                 </LightType>
+                                    <LightState mode="on" luminousIntensity="10000">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="turnOnLowBeamCondition"
+                                      delay="3"
+                                      conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
+                                                                  storyboardElementRef="manStopped2"
+                                                                  state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="eventHighBeamOn" priority="override" maximumExecutionCount="1">
+                     <Action name="actionHighBeamOn">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="1">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="highBeam" />
+                                 </LightType>
+                                    <LightState mode="on" luminousIntensity="12000">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="turnOnHighBeamCondition"
+                                      delay="4"
+                                      conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
+                                                                  storyboardElementRef="manStopped2"
+                                                                  state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="eventManyLightsOn" priority="override" maximumExecutionCount="1">
+                     <Action name="actionWarningLightsOn">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="warningLights" />
+                                 </LightType>
+                                    <LightState mode="flashing" luminousIntensity="8000">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="actionSPLightsOn">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="specialPurposeLights" />
+                                 </LightType>
+                                    <LightState mode="flashing" luminousIntensity="8000">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="actionFogLightsOn">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="2">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="fogLights" />
+                                 </LightType>
+                                    <LightState mode="flashing" flashingOnDuration="0.3" flashingOffDuration="0.3" luminousIntensity="8000">
+                                    <Color colorType="blue">
+                                       <ColorRgb red="0.0" green="0.0" blue="0.8"/>
+                                    </Color>
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="turnOnWarningLightsCondition"
+                                      delay="1"
+                                      conditionEdge="none">
+                              <ByValueCondition>
+                                 <StoryboardElementStateCondition storyboardElementType="event"
+                                                                  storyboardElementRef="eventHighBeamOn"
+                                                                  state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger>
+               <ConditionGroup>
+                  <Condition name="LightActionActTrigger" delay="0.0" conditionEdge="none">
+                     <ByValueCondition>
+                        <SimulationTimeCondition value="0.0" rule="greaterThan" />
+                     </ByValueCondition>
+                  </Condition>
+               </ConditionGroup>
+            </StartTrigger>
+            <StopTrigger />
+         </Act>
+      </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="stop_simulation" delay="0.0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="40.0" rule="greaterThan" />
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
+   </Storyboard>
+</OpenSCENARIO>
