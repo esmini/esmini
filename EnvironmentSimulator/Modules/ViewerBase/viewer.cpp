@@ -30,6 +30,7 @@
 #include <osgDB/WriteFile>
 #include <osgUtil/SmoothingVisitor>
 #include <osg/Fog>
+#include <osg/LightModel>
 #include "OSCEnvironment.hpp"
 
 #if __has_include(<filesystem>)
@@ -58,6 +59,7 @@ namespace fs = std::experimental::filesystem;
 #define TRAILDOT3D              1
 #define PERSP_FOV               30.0
 #define ORTHO_FOV               1.0
+#define SUN_WARMTH_FACTOR       0.9  // reduce blue component
 
 float color_green[3]      = {0.2f, 0.6f, 0.3f};
 float color_gray[3]       = {0.7f, 0.7f, 0.7f};
@@ -1982,9 +1984,14 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     light->setPosition(osg::Vec4(-7500., 5000., 10000., 1.0));
     light->setDirection(osg::Vec3(7.5, -5., -10.));
 
+    // disable default global 0.2 ambient level
+    osg::ref_ptr<osg::LightModel> lightModel = new osg::LightModel;
+    lightModel->setAmbientIntensity(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    rootnode_->getOrCreateStateSet()->setAttributeAndModes(lightModel.get(), osg::StateAttribute::ON);
+
     float ambient = 0.4f;
     light->setAmbient(osg::Vec4(ambient, ambient, 0.9 * ambient, 1));
-    light->setDiffuse(osg::Vec4(0.8, 0.8, 0.7, 1));
+    light->setDiffuse(osg::Vec4(0.8, 0.8, 0.8 * SUN_WARMTH_FACTOR, 1));
 
     // Overlay text
     float font_size = 12.0f;
@@ -2068,8 +2075,13 @@ void viewer::Viewer::SetSkyColor(const double sunIntensityFactor, const double f
      background = visual_range * fogcolor + (1 - visual_range) * color_background
      fogColor = color_gray * cloudiness + color_background_gray * (1 - cloudiness)
     */
-    osg::Light* light = osgViewer_->getLight();
-    light->setDiffuse(osg::Vec4(0.9 * sunIntensityFactor - 0.1, 0.9 * sunIntensityFactor - 0.1, 0.8 * sunIntensityFactor - 0.1, 1));
+    osg::Light* light      = osgViewer_->getLight();
+    double      ambientMin = 0.1;
+    light->setDiffuse(osg::Vec4(sunIntensityFactor, sunIntensityFactor, SUN_WARMTH_FACTOR * sunIntensityFactor, 1));
+    double ambientLevel = 0.4 * sunIntensityFactor;
+    light->setAmbient(osg::Vec4(ambientMin + ambientLevel, ambientMin + ambientLevel, ambientMin + ambientLevel, 1.0));
+    double specLevel = 0.4 * sunIntensityFactor;
+    light->setSpecular(osg::Vec4(specLevel, specLevel, specLevel, 1.0));
 
     // Blend background color (blue) with fog color (gray) based on fogVisualRangeFactor (scaled up to have higher influence of fog with low visual
     // range) This creates a smooth transition from blue sky to gray fog as the visual range decreases.
