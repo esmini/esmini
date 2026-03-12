@@ -1990,10 +1990,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     lightModel->setAmbientIntensity(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
     rootnode_->getOrCreateStateSet()->setAttributeAndModes(lightModel.get(), osg::StateAttribute::ON);
 
-    // float ambient = 0.55f;
-    // light->setAmbient(osg::Vec4(ambient, ambient, 0.9 * ambient, 1));
-    // light->setDiffuse(osg::Vec4(0.8, 0.8, 0.7, 1));
-
     SetSkyColor(0.8, 0.0, 0.0);
 
     // Overlay text
