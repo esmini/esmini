@@ -106,7 +106,7 @@ namespace viewer
             }
 
 #ifdef __APPLE__
-            const char* glsl_version = "#version 150";
+            const char* glsl_version = "#version 120";
 #else
             const char* glsl_version = nullptr;  // Deduces version automatically
 #endif
