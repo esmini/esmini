@@ -601,6 +601,7 @@ namespace viewer
         {
             showLights_ = val;
         }
+        void SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
 
     private:
         int        CreateTunnels(roadmanager::OpenDrive* od);
@@ -616,7 +617,6 @@ namespace viewer
         bool       CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
         bool       CreateRoadMarkLines(roadmanager::OpenDrive* od);
         void       CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
-        void       SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
         osg::Node* CreateAxisIndicator();
 
         bool                                  keyUp_;
