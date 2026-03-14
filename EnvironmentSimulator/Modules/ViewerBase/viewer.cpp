@@ -63,7 +63,10 @@ namespace fs = std::experimental::filesystem;
 #define PERSP_FOV               30.0
 #define ORTHO_FOV               1.0
 #define POLYGON_OFFSET_SHADOW   1.1
-#define SUN_WARMTH_FACTOR       0.875  // reduce blue component
+#define MAX_SUN_INTENSITY       0.8
+#define SUN_WARMTH_FACTOR       0.9  // reduce blue component
+#define MAX_AMBIENT_LEVEL       0.45
+#define MIN_AMBIENT_LEVEL       0.05
 
 float color_green[3]      = {0.2f, 0.6f, 0.3f};
 float color_gray[3]       = {0.7f, 0.7f, 0.7f};
@@ -1536,8 +1539,6 @@ void CarModel::UpdateLight(Object::VehicleLightStatus* vehicle_lights_status)
             continue;
         }
 
-        const auto& warning_light = vehicle_lights_status[static_cast<size_t>(Object::VehicleLightType::WARNING_LIGHTS)];
-
         // Create OSG color vectors from the light status
         osg::Vec4d diffuseRgb(light.rgb[0], light.rgb[1], light.rgb[2], 1.0);
         osg::Vec4d emissionRgb(light.emission[0], light.emission[1], light.emission[2], 1.0);
@@ -2194,15 +2195,12 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     light->setPosition(osg::Vec4(-7500., 5000., 10000., 1.0));
     light->setDirection(osg::Vec3(7.5, -5., -10.));
 
-    // disable default global 0.2 ambient level
+    // set minimum ambient scene lighting to avoid complete darkness in tunnels or at night
     osg::ref_ptr<osg::LightModel> lightModel = new osg::LightModel;
-    lightModel->setAmbientIntensity(osg::Vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    lightModel->setAmbientIntensity(osg::Vec4(MIN_AMBIENT_LEVEL, MIN_AMBIENT_LEVEL, MIN_AMBIENT_LEVEL, 1.0f));
     rootnode_->getOrCreateStateSet()->setAttributeAndModes(lightModel.get(), osg::StateAttribute::ON);
 
-    // float ambient = 0.55f;
-    // light->setAmbient(osg::Vec4(ambient, ambient, 0.9 * ambient, 1));
-    // light->setDiffuse(osg::Vec4(0.8, 0.8, 0.7, 1));
-
+    // Set default sky color, at noon
     SetSkyColor(1.0, 0.0, 0.0);
 
     // Overlay text
@@ -2297,27 +2295,36 @@ void viewer::Viewer::SetSkyColor(const double sunIntensityFactor, const double f
      background = visual_range * fogcolor + (1 - visual_range) * color_background
      fogColor = color_gray * cloudiness + color_background_gray * (1 - cloudiness)
     */
-    osg::Light* light                = osgViewer_->getLight();
-    double      ambientMin           = 0.1;
-    double      clamped_sunIntensity = CLAMP(0.0, 0.8, sunIntensityFactor);
-    light->setDiffuse(osg::Vec4(clamped_sunIntensity, clamped_sunIntensity, SUN_WARMTH_FACTOR * clamped_sunIntensity, 1));
-    double ambientLevel = 0.5 * clamped_sunIntensity;
-    light->setAmbient(osg::Vec4(ambientMin + ambientLevel, ambientMin + ambientLevel, SUN_WARMTH_FACTOR * (ambientMin + ambientLevel), 1.0));
-    double specLevel = 0.4 * clamped_sunIntensity;
+    osg::Light* light = osgViewer_->getLight();
+
+    // downscale sun intensity slightly to avoid too bright environment
+    double scaled_sunIntensity = CLAMP(0.0, MAX_SUN_INTENSITY, MAX_SUN_INTENSITY * sunIntensityFactor);
+
+    light->setDiffuse(osg::Vec4(scaled_sunIntensity, scaled_sunIntensity, SUN_WARMTH_FACTOR * scaled_sunIntensity, 1));
+
+    double ambientLevel = MAX_AMBIENT_LEVEL * (scaled_sunIntensity / MAX_SUN_INTENSITY);
+    light->setAmbient(osg::Vec4(ambientLevel, ambientLevel, SUN_WARMTH_FACTOR * ambientLevel, 1.0));
+
+    double specLevel = 0.4 * scaled_sunIntensity;
     light->setSpecular(osg::Vec4(specLevel, specLevel, specLevel, 1.0));
 
     // Blend background color (blue) with fog color (gray) based on fogVisualRangeFactor (scaled up to have higher influence of fog with low visual
-    // range) This creates a smooth transition from blue sky to gray fog as the visual range decreases.
+    // range) This creates a smooth transition from blue sky to gray fog as the visual range decreases. blue component degrading slower than red
+    // and green with sun intensity to keep the sky from looking too gray under low sun intensity.
+
     float clamped_visual_range = CLAMP(0.0, 1.0, fogVisualRangeFactor * 100.0);
     float blended_background_r = clamped_visual_range * fogColor_[0] + (1 - clamped_visual_range) * sunIntensityFactor * color_background[0];
     float blended_background_g = clamped_visual_range * fogColor_[1] + (1 - clamped_visual_range) * sunIntensityFactor * color_background[1];
-    float blended_background_b = clamped_visual_range * fogColor_[2] + (1 - clamped_visual_range) * sunIntensityFactor * color_background[2];
+    float blended_background_b =
+        clamped_visual_range * fogColor_[2] + (1 - clamped_visual_range) * pow(sunIntensityFactor, 0.75) * color_background[2];
 
     // Blend the background color with fog color based on cloudinessFactor (very cloudy sky will be overwhelmingly gray), else blue sky with fog
     // influence
     float r = (1 - cloudinessFactor) * blended_background_r + cloudinessFactor * fogColor_[0];
     float g = (1 - cloudinessFactor) * blended_background_g + cloudinessFactor * fogColor_[1];
     float b = (1 - cloudinessFactor) * blended_background_b + cloudinessFactor * fogColor_[2];
+
+    LOG_DEBUG("sunIntensity {:.2f} scaledSunIntensity {:.2f} clear color ({:.2f}, {:.2f}, {:.2f})", sunIntensityFactor, scaled_sunIntensity, r, g, b);
 
     osgViewer_->getCamera()->setClearColor(osg::Vec4(r, g, b, 0.0f));
 }
