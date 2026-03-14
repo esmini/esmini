@@ -3263,7 +3263,7 @@ void LightStateAction::Step(double simTime, double dt)
     SetVehicleLightState(vehicleLight_->maxRgb, luminousIntensity_);
 
     // Light has been manipulated, this dirty
-    object_->SetDirtyBits(Object::DirtyBit::LIGHT_STATE);
+    object_->dirty_.SetBits(static_cast<uint64_t>(Object::DirtyBit::LIGHT_STATE));
 
     if (end_action)
     {
