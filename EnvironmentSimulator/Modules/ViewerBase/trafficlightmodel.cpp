@@ -123,10 +123,10 @@ osg::ref_ptr<osg::Switch> TrafficLightModel::CreateFrontSwitchNode(int index, os
 
     // Texture Coordinates (passed as arguments)
     osg::ref_ptr<osg::Vec2Array> texcoords = new osg::Vec2Array;
-    texcoords->push_back(osg::Vec2(1, index / n_lights_));
-    texcoords->push_back(osg::Vec2(0, index / n_lights_));
-    texcoords->push_back(osg::Vec2(0, index + 1 / n_lights_));
-    texcoords->push_back(osg::Vec2(1, index + 1 / n_lights_));
+    texcoords->push_back(osg::Vec2(1, static_cast<double>(index) / n_lights_));
+    texcoords->push_back(osg::Vec2(0, static_cast<double>(index) / n_lights_));
+    texcoords->push_back(osg::Vec2(0, static_cast<double>(index + 1) / n_lights_));
+    texcoords->push_back(osg::Vec2(1, static_cast<double>(index + 1) / n_lights_));
     geom->setTexCoordArray(0, texcoords);  // Channel 0
 
     // Create a StateSet for the textured face and make if unaffected by lighting
