@@ -22,18 +22,18 @@ on:
 env:
   ESMINI_SLIM_TEST: -D USE_OSG=OFF -D USE_SUMO=OFF -D USE_OSI=OFF -D USE_GTEST=ON -D USE_IMPLOT=OFF
   ESMINI_CHECKS: -D ENABLE_WARNINGS_AS_ERRORS=ON -D ENABLE_INCLUDE_WHAT_YOU_USE=ON
-  USE_TMATE: false
+  USE_TMATE: true
 
 jobs:
   lint:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Install Python3.8 and dependencies
-        uses: actions/setup-python@v5.6.0
+      - name: Install Python and dependencies
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.8'
+          python-version: '3.12'
           cache: 'pip'
       - run: pip install -r support/python/requirements.txt
 
@@ -46,8 +46,8 @@ jobs:
       - name: Run cmake-format lint
         run: pre-commit run cmake-format --all-files
 
-      - name: Cache Cppcheck 2.17.1
-        uses: actions/cache@v4
+      - name: Cache Cppcheck
+        uses: actions/cache@v5
         id: cache-cppcheck
         with:
           path: ~/.local/cppcheck-2.17.1
@@ -59,7 +59,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libpcre3-dev
 
-      - name: Build and install Cppcheck 2.17.1
+      - name: Build and install Cppcheck
         if: steps.cache-cppcheck.outputs.cache-hit != 'true'
         run: |
           cd /tmp
@@ -86,10 +86,6 @@ jobs:
       - name: Run black-format lint
         run: pre-commit run black-format --all-files
 
-      # TODO: OpenDrive generation currently has too many pylint issues
-      #- name: Run pylint lint
-      #  run: python3 support/python/src/main.py run pylint
-
   test:
     needs: [lint]
 
@@ -97,13 +93,11 @@ jobs:
       matrix:
         os: [ubuntu-22.04, macos-14, windows-2022]
         configuration: [Debug, Release]
-        # os: [windows-2022]
-        # configuration: [Release]
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-tags: true
@@ -116,7 +110,7 @@ jobs:
       - uses: ./.github/actions/generate_offset_run_number
 
       - name: Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             externals/googletest
@@ -191,10 +185,14 @@ jobs:
         # Use xvfb on Linux only
         run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
 
+      - uses: ./.github/actions/setup_mesa
+        with:
+          configuration: ${{ matrix.configuration }}
+
       - name: Run Tests - Windows
         if: runner.os == 'Windows'
         env:
-          GALLIUM_DRIVER: softpipe
+          GALLIUM_DRIVER: llvmpipe
           MESA_GL_VERSION_OVERRIDE: 4.5
         shell: bash
         run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
@@ -217,7 +215,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
@@ -227,7 +225,7 @@ jobs:
       - uses: ./.github/actions/generate_offset_run_number
 
       - name: Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             externals/googletest
@@ -303,7 +301,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
           ref: ${{ github.ref }}

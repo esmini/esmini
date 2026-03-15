@@ -18,7 +18,7 @@ runs:
       ./bin/Release/net8.0/win-x64/Cpp2CSWrapperCreator.exe ../esminiRMLib.hpp esminiRMWrapper.cs
 
   - name: Upload generated esminiRMLib wrapper
-    uses: actions/upload-artifact@v4.3.6
+    uses: actions/upload-artifact@v7
     with:
       name: esminiRMWrapper
       path: EnvironmentSimulator/Libraries/esminiRMLib/CSWrapperGenerator/esminiRMWrapper.cs
@@ -37,7 +37,7 @@ runs:
       python ./generate_esminiLib_cs_wrapper.py ../esminiLib.hpp ./ESMiniWrapper.cs --namespace ESMini --class ESMiniLib
 
   - name: Upload generated esminiLib wrapper
-    uses: actions/upload-artifact@v4.3.6
+    uses: actions/upload-artifact@v7
     with:
       name: esminiWrapper
       path: EnvironmentSimulator/Libraries/esminiLib/CSWrapperGenerator/ESMiniWrapper.cs

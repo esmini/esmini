@@ -1,0 +1,39 @@
+name: Setup Mesa3D
+description: Setup some Mesa3D needed for test involving viewer and images
+
+inputs:
+  configuration:
+    description: 'The build configuration (e.g., Debug, Release)'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Mesa3D - Windows
+      if: runner.os == 'Windows'
+      shell: powershell
+      run: |
+        $version = "24.0.5"
+        Invoke-WebRequest -Uri "https://github.com/pal1000/mesa-dist-win/releases/download/$version/mesa3d-$version-release-msvc.7z" -OutFile "mesa.7z"
+        # Note: 7z is pre-installed on GHA Windows runners
+        7z x mesa.7z -o"mesa_bin"
+        # Copy the specific opengl32.dll to your executable directories
+        cp "mesa_bin/x64/*" ${{github.workspace}}/bin
+        cp "mesa_bin/x64/*" ${{github.workspace}}/build/EnvironmentSimulator/Unittest/${{inputs.configuration}}
+
+    - name: Install wglinfo - Windows
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: curl.exe -L --output wglinfo64.exe --url https://github.com/gkv311/wglinfo/releases/download/22_03/wglinfo64.exe
+
+    - name: Output wglinfo - Windows
+      if: runner.os == 'Windows'
+      shell: cmd
+      env:
+        GALLIUM_DRIVER: llvmpipe
+      run: wglinfo64
+
+    - name: Output glxinfo - Ubuntu
+      if: runner.os == 'Linux'
+      shell: bash
+      run: xvfb-run glxinfo
