@@ -518,6 +518,13 @@ void Signal::SetAllValidLanes(Signal* sig, Road* r)
 {
     std::vector<std::pair<int, Lane*>> drivable_lanes;
     auto                               ls = r->GetLaneSectionByS(sig->GetS());
+
+    if (ls == nullptr)
+    {
+        LOG_ERROR_AND_QUIT("Signal::SetAllValidLanes: No lane section found at s={} for signal id {}", sig->GetS(), sig->GetId());
+        return;  // for cppcheck
+    }
+
     drivable_lanes.reserve(ls->GetNumberOfLanes());
 
     for (unsigned int i = 0; i < ls->GetNumberOfLanes(); i++)
