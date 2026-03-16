@@ -59,8 +59,16 @@ static Replay* player_          = nullptr;
 static viewer::Viewer* viewer_    = nullptr;
 static double          time_scale = 1.0;
 double                 deltaSimTime;  // external - used by Viewer::RubberBandCamera
-// float mytime = 0.0f;
 
+void UpdateEnvironment(const Dat::Environment& env)
+{
+    if (viewer_ != nullptr)
+    {
+        viewer_->CreateFog(env.visibility_range, env.sun_intensity_factor, env.fractional_cloudstate_factor);
+        viewer_->SetSkyColor(env.sun_intensity_factor, env.fog_visibilityrange_factor, env.fractional_cloudstate_factor);
+        viewer_->UpdateFrictonScaleFactorInMaterial(env.friction_scale_factor);
+    }
+}
 void setEntityVisibility(int index, bool visible)
 {
     if (index >= 0 && index < static_cast<int>(scenarioEntity.size()))
@@ -1309,6 +1317,11 @@ int main(int argc, char** argv)
                 else if (viewer_->currentCarInFocus_ > 0 && static_cast<unsigned int>(viewer_->currentCarInFocus_) >= scenarioEntity.size())
                 {
                     viewer_->SetInfoText("All entities in focus");
+                }
+
+                if (!player_->environment_timeline_.values.empty())
+                {
+                    UpdateEnvironment(player_->environment_timeline_.get_value_incremental(simTime).value());
                 }
 #endif  // _USE_OSG
 

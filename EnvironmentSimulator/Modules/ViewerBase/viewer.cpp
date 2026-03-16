@@ -2094,7 +2094,6 @@ void viewer::Viewer::SetSkyColor(const double sunIntensityFactor, const double f
 
 void Viewer::CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment)
 {
-    weatherGroup_ = new osg::PositionAttitudeTransform;
     if (environment.IsFogSet())
     {
         CreateFog(environment.GetFog().visibility_range, environment.GetSunIntensityFactor(), environment.GetFractionalCloudStateFactor());
@@ -2108,8 +2107,6 @@ void Viewer::CreateWeatherGroup(const scenarioengine::OSCEnvironment& environmen
     {
         UpdateFrictonScaleFactorInMaterial(environment.GetRoadCondition().friction_scale_factor);
     }
-
-    rootnode_->addChild(weatherGroup_);
 }
 
 void viewer::Viewer::UpdateFrictonScaleFactorInMaterial(const double factor)

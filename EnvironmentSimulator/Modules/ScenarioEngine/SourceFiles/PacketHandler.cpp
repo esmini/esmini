@@ -60,6 +60,21 @@ int Dat::DatWriter::WriteDtToDat()
     return 0;
 }
 
+int Dat::DatWriter::WriteEnvironmentToDat(const scenarioengine::OSCEnvironment& environment)
+{
+    if (!environment.IsEnvironment())
+    {
+        return 0;
+    }
+
+    if (!IsEnvironmentEqual(object_state_cache_.environment_, environment))
+    {
+        UpdateEnvironmentCache(environment);
+        Write(PacketId::ENVIRONMENT, object_state_cache_.environment_);
+    }
+    return 0;
+}
+
 int Dat::DatWriter::WriteTrafficLightsToDat(const std::vector<roadmanager::Signal*>& dynamic_signals)
 {
     for (size_t i = 0; i < dynamic_signals.size(); i++)
@@ -390,6 +405,38 @@ bool Dat::DatWriter::IsBoundingBoxEqual(const BoundingBox& bb, const scenarioeng
             bb.width == osc_bb.dimensions_.width_ && bb.height == osc_bb.dimensions_.height_);
 }
 
+bool Dat::DatWriter::IsEnvironmentEqual(const Environment& env, const scenarioengine::OSCEnvironment& environment) const
+{
+    if (env.sun_intensity_factor != environment.GetSunIntensityFactor() ||
+        env.fractional_cloudstate_factor != environment.GetFractionalCloudStateFactor())
+    {
+        return false;
+    }
+
+    if (environment.IsFogSet() && env.visibility_range != environment.GetFog().visibility_range)
+    {
+        return false;
+    }
+
+    if (environment.IsRoadConditionSet() && env.friction_scale_factor != environment.GetRoadCondition().friction_scale_factor)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+void Dat::DatWriter::UpdateEnvironmentCache(const scenarioengine::OSCEnvironment& environment)
+{
+    object_state_cache_.environment_.visibility_range = (environment.IsFogSet()) ? environment.GetFog().visibility_range : LARGE_NUMBER;
+    object_state_cache_.environment_.friction_scale_factor =
+        (environment.IsRoadConditionSet()) ? environment.GetRoadCondition().friction_scale_factor : 1.0;
+
+    object_state_cache_.environment_.fog_visibilityrange_factor   = environment.GetFogVisibilityRangeFactor();
+    object_state_cache_.environment_.fractional_cloudstate_factor = environment.GetFractionalCloudStateFactor();
+    object_state_cache_.environment_.sun_intensity_factor         = environment.GetSunIntensityFactor();
+}
+
 size_t Dat::DatWriter::SerializedSize(const std::string& str)
 {
     return str.size();
@@ -408,7 +455,7 @@ constexpr bool Dat::DatWriter::ShouldWriteObjId(PacketId p_id) const noexcept
     constexpr uint64_t skip_mask =
         (uint64_t{1} << static_cast<unsigned int>(PacketId::END_OF_SCENARIO)) | (uint64_t{1} << static_cast<unsigned int>(PacketId::DT)) |
         (uint64_t{1} << static_cast<unsigned int>(PacketId::TIMESTAMP)) | (uint64_t{1} << static_cast<unsigned int>(PacketId::TRAFFIC_LIGHT)) |
-        uint64_t{1} << static_cast<unsigned int>(PacketId::ELEM_STATE_CHANGE);
+        uint64_t{1} << static_cast<unsigned int>(PacketId::ELEM_STATE_CHANGE) | (uint64_t{1} << static_cast<unsigned int>(PacketId::ENVIRONMENT));
 
     // If the bit for p_id is set, we skip writing
     return ((skip_mask >> static_cast<unsigned int>(p_id)) & uint64_t{1}) == 0;

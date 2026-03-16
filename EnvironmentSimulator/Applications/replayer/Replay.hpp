@@ -390,6 +390,7 @@ namespace scenarioengine
         Timeline<std::string>                                             element_state_changes_;
         std::map<int, PropertyTimeline, MapComparator>                    objects_timeline_;
         std::unordered_map<unsigned int, Timeline<Dat::TrafficLightLamp>> traffic_lights_timeline_;
+        Timeline<Dat::Environment>                                        environment_timeline_;
 
         std::vector<ReplayEntry>             data_;
         Dat::DatHeader                       dat_header_;

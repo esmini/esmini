@@ -568,10 +568,8 @@ namespace viewer
         osg::ref_ptr<osg::MatrixTransform>          root_origin2odr_;  // transform objects to the OpenDRIVE origin
 
         // Weather stuff
-        osg::ref_ptr<osg::PositionAttitudeTransform> weatherGroup_;  // parent for all OSC Environment related stuff
-        osg::ref_ptr<osg::PositionAttitudeTransform> fogBoundingBox_;
-        void                                         CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment);
-        void                                         UpdateFrictonScaleFactorInMaterial(const double factor);
+        void CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment);
+        void UpdateFrictonScaleFactorInMaterial(const double factor);
 
 // Imgui stuff
 #ifdef _USE_IMPLOT
@@ -731,6 +729,8 @@ namespace viewer
         double GetFrictionScaleFactor() const;
         void   SetAxisIndicatorMode(int mode);
         void   CycleAxisIndicatorMode();
+        void   CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
+        void   SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
 
     private:
         int        CreateTunnels(roadmanager::OpenDrive* od);
@@ -745,8 +745,6 @@ namespace viewer
                               bool                                       headless);
         bool       CreateRoadLines(Viewer* viewer, roadmanager::OpenDrive* od);
         bool       CreateRoadMarkLines(roadmanager::OpenDrive* od);
-        void       CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
-        void       SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
         osg::Node* CreateAxisIndicator();
 
         bool                                  keyUp_;

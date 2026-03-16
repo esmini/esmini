@@ -318,6 +318,7 @@ void ScenarioPlayer::WriteStatesToFile(const double simulation_time, const doubl
     {
         dat_writer_.SetSimulationTime(simulation_time, dt);
         dat_writer_.WriteDtToDat();
+        dat_writer_.WriteEnvironmentToDat(scenarioEngine->environment);
         dat_writer_.WriteTrafficLightsToDat(roadmanager::Position::GetOpenDrive()->GetDynamicSignals());
         dat_writer_.WriteStoryBoardStateChangesToDat(scenarioEngine->storyBoard.GetChanges());
         dat_writer_.WriteObjectStatesToDat(scenarioEngine->entities_.object_);

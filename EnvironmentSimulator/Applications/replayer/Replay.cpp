@@ -355,7 +355,8 @@ bool Replay::ExtractPacketsAsSlices(bool dt_in_slice, size_t scenario_idx)
 
         // Skip some packages here if its not the first scenario we are parsing (doesn't make sense to merge)
         if (scenario_idx == 0 || (packet.header.id != static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT) &&
-                                  packet.header.id != static_cast<id_t>(Dat::PacketId::ELEM_STATE_CHANGE)))
+                                  packet.header.id != static_cast<id_t>(Dat::PacketId::ELEM_STATE_CHANGE) &&
+                                  packet.header.id != static_cast<id_t>(Dat::PacketId::ENVIRONMENT)))
         {
             current_slice->packets.push_back(packet);
         }
@@ -691,6 +692,23 @@ int Replay::ParsePackets()
                 {
                     std::vector<SE_Point2D> outline = dat_reader_->ReadOutlinePacket(gp);
                     current_object_timeline_->outline_.values.emplace_back(timestamp_, outline);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::ENVIRONMENT):
+                {
+                    Dat::Environment env;
+                    // Make sure we have valid values from the start if env. is triggered after some time in scenario.
+                    if (environment_timeline_.values.empty() && !NEAR_NUMBERS(timestamp_, timestamps_.front()))
+                    {
+                        environment_timeline_.values.emplace_back(timestamps_.front(), env);
+                    }
+
+                    if (dat_reader_->ReadPacket(gp, env) != 0)
+                    {
+                        LOG_ERROR("Failed to read environment");
+                        return -1;
+                    }
+                    environment_timeline_.values.emplace_back(timestamp_, env);
                     break;
                 }
                 case static_cast<id_t>(Dat::PacketId::DT):
