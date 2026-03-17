@@ -312,13 +312,13 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
             Write(PacketId::SHAPE_2D_OUTLINE, packet_shape.points);
         }
 
-        if (object_state->ReadDirtyBits() & scenarioengine::Object::DirtyBit::LIGHT_STATE)
+        if (obj->dirty_.Get() & scenarioengine::Object::DirtyBit::LIGHT_STATE)
         {
             for (size_t i = 0; i < cache_it->second.light_state_.size(); i++)
             {
-                if (!IsLightStateEqual(cache_it->second.light_state_[i], state->info.light_state[i]))
+                if (!IsLightStateEqual(cache_it->second.light_state_[i], obj->vehLghtStsList[i]))
                 {
-                    const auto& light                = state->info.light_state[i];
+                    const auto& light                = obj->vehLghtStsList[i];
                     cache_it->second.light_state_[i] = {static_cast<int>(light.type),
                                                         static_cast<int>(light.mode),
                                                         light.rgb[0],

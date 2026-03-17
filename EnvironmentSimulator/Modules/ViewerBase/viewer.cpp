@@ -1827,10 +1827,10 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     frictionScaleFactor_          = 1.0;  // default friction scale factor
     defaultClearColorUsed_        = false;
     fogColor_                     = {0.75f, 0.75f, 0.75f};  // Default fog color, average of color_background
+    showLights_                   = false;
 #ifdef _USE_IMPLOT
     imguiOverlay_ = nullptr;
 #endif  // _USE_IMPLOT
-    showLights_                   = false;
 
     bool decoration = true;
     int  screenNum  = -1;

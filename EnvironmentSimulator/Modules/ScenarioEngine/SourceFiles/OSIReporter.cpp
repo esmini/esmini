@@ -895,7 +895,7 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     {
         obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_VEHICLE);
 
-        switch (static_cast<Vehicle::Category>(objectState->state_.info.obj_category))
+        switch (static_cast<Vehicle::Category>(obj.category_))
         {
             case Vehicle::Category::CAR:
                 obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MEDIUM_CAR);
@@ -929,13 +929,13 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
                 break;
             default:
                 LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle category: {} ({}). Set to UNKNOWN.",
-                          objectState->state_.info.obj_category,
-                          Vehicle::Category2String(objectState->state_.info.obj_category));
+                          obj.category_,
+                          Vehicle::Category2String(obj.category_));
                 obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_UNKNOWN);
                 break;
         }
 
-        switch (static_cast<Object::Role>(objectState->state_.info.obj_role))
+        switch (static_cast<Object::Role>(obj.role_))
         {
             case Object::Role::NONE:
                 obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
@@ -963,8 +963,8 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
                 break;
             default:
                 LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object vehicle role: {} ({}). Set classification UNKNOWN.",
-                          objectState->state_.info.obj_role,
-                          Vehicle::Role2String(objectState->state_.info.obj_role).c_str());
+                          obj.role_,
+                          Vehicle::Role2String(obj.role_).c_str());
                 obj_osi_internal.mobj->mutable_vehicle_classification()->set_role(osi3::MovingObject_VehicleClassification::ROLE_UNKNOWN);
                 break;
         }
@@ -972,7 +972,7 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     else if (obj.GetType() == Object::Type::PEDESTRIAN)
     {
         entity_type = "Pedestrian";
-        switch (static_cast<Pedestrian::Category>(objectState->state_.info.obj_category))
+        switch (static_cast<Pedestrian::Category>(obj.category_))
         {
             case Pedestrian::Category::PEDESTRIAN:
                 obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_PEDESTRIAN);
@@ -985,8 +985,8 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
                 break;
             default:
                 LOG_ERROR("OSIReporter::UpdateOSIMovingObject -> Unsupported moving object pedestrian category: {} ({}). Set type UNKNOWN.",
-                          objectState->state_.info.obj_category,
-                          Pedestrian::Category2String(objectState->state_.info.obj_category));
+                          obj.category_,
+                          Pedestrian::Category2String(obj.category_));
                 obj_osi_internal.mobj->set_type(osi3::MovingObject::Type::MovingObject_Type_TYPE_UNKNOWN);
                 break;
         }
@@ -1000,9 +1000,8 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     }
 
     // Update LightState
-    Object &obj    = *scenario_engine_->entities_.GetObjectById(objectState->state_.info.id);
-    id_t    obj_id = static_cast<id_t>(obj.id_);
-    if (obj.CheckDirtyBits(static_cast<int>(Object::DirtyBit::LIGHT_STATE)))
+    id_t obj_id = static_cast<id_t>(obj.id_);
+    if (obj.dirty_.Check(static_cast<uint64_t>(Object::DirtyBit::LIGHT_STATE)))
     {
         if (obj_id >= has_lightstate_action_.size())
         {
