@@ -791,7 +791,6 @@ namespace viewer
         {
             showLights_ = val;
         }
-        void SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
 
     private:
         int        CreateTunnels(roadmanager::OpenDrive* od);
