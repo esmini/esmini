@@ -858,6 +858,15 @@ int OSIReporter::UpdateOSIStationaryObject(Object &obj)
         }
     }
 
+    // Color
+    if (!obj.GetColorStr().empty())
+    {
+        auto rgb = obj.GetColorRgb();
+        obj_osi_internal.sobj->mutable_color_description()->mutable_rgb()->set_red(rgb.r);
+        obj_osi_internal.sobj->mutable_color_description()->mutable_rgb()->set_green(rgb.g);
+        obj_osi_internal.sobj->mutable_color_description()->mutable_rgb()->set_blue(rgb.b);
+    }
+
     // Set OSI Stationary Object Position
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_x(obj.pos_.GetX() + obj.boundingbox_.center_.x_ * cos(obj.pos_.GetH()));
     obj_osi_internal.sobj->mutable_base()->mutable_position()->set_y(obj.pos_.GetY() + obj.boundingbox_.center_.x_ * sin(obj.pos_.GetH()));
@@ -1107,6 +1116,15 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
     source_reference->add_identifier(fmt::format("entity_id:{}", obj.GetId()));
     source_reference->add_identifier(fmt::format("entity_type:{}", entity_type));
     source_reference->add_identifier(fmt::format("entity_name:{}", obj.GetName()));
+
+    // Color
+    if (!obj.GetColorStr().empty())
+    {
+        auto rgb = obj.GetColorRgb();
+        obj_osi_internal.mobj->mutable_color_description()->mutable_rgb()->set_red(rgb.r);
+        obj_osi_internal.mobj->mutable_color_description()->mutable_rgb()->set_green(rgb.g);
+        obj_osi_internal.mobj->mutable_color_description()->mutable_rgb()->set_blue(rgb.b);
+    }
 
     // Set source reference if available
     if (!obj.GetSourceReference().empty())

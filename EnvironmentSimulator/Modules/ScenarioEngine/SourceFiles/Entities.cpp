@@ -43,6 +43,7 @@ Object::Object(Type type)
       scaleMode_(EntityScaleMode::NONE),
       is_active_(false),
       model3d_full_path_(""),
+      color_(""),
       source_reference_({})
 {
     sensor_pos_[0] = 0;

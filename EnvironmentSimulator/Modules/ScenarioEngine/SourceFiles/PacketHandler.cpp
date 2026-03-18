@@ -319,12 +319,26 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
         }
 
         // PacketId::SHAPE_2D_OUTLINE
-        if (cache_it->second.outline_2d.size() == 0 && obj->outline_2d_.size() > 0)
+        if (cache_it->second.outline_2d_.size() == 0 && obj->outline_2d_.size() > 0)
         {
-            cache_it->second.outline_2d = obj->outline_2d_;
+            cache_it->second.outline_2d_ = obj->outline_2d_;
 
-            PacketShape2DOutline packet_shape = {cache_it->second.outline_2d};
+            PacketShape2DOutline packet_shape = {cache_it->second.outline_2d_};
             Write(PacketId::SHAPE_2D_OUTLINE, packet_shape);
+        }
+
+        if (cache_it->second.bb_color_.size() == 0 && obj->GetColorStr().size() > 0)
+        {
+            cache_it->second.bb_color_ = obj->GetColorStr();
+
+            PacketString p_str = {static_cast<unsigned int>(cache_it->second.bb_color_.size()), cache_it->second.bb_color_};
+            Write(PacketId::BB_COLOR, p_str);
+        }
+
+        if (cache_it->second.is_trailer_ != (obj->TowVehicle() != nullptr))
+        {
+            cache_it->second.is_trailer_ = (obj->TowVehicle() != nullptr);
+            Write(PacketId::IS_TRAILER, cache_it->second.is_trailer_);
         }
 
         this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state

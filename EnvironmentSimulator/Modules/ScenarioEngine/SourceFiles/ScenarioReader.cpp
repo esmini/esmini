@@ -743,6 +743,19 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         vehicle->SetSourceReference(source_references);
     }
 
+    std::string color = vehicle->properties_.GetValueStr("color");
+    if (!color.empty())
+    {
+        if (color[0] != '#' || color.size() != 7)
+        {
+            LOG_ERROR("Property: color format invalid, shall be #RRGGBB, skipping");
+        }
+        else
+        {
+            vehicle->SetColor(color.substr(1));
+        }
+    }
+
     std::string refpoint_x_offset = vehicle->properties_.GetValueStr("refpoint_x_offset");
     if (!refpoint_x_offset.empty())
     {
@@ -985,6 +998,19 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
         pedestrian->SetSourceReference(source_references);
     }
 
+    std::string color = pedestrian->properties_.GetValueStr("color");
+    if (!color.empty())
+    {
+        if (color[0] != '#' || color.size() != 7)
+        {
+            LOG_ERROR("Property: color format invalid, shall be #RRGGBB, skipping");
+        }
+        else
+        {
+            pedestrian->SetColor(color.substr(1));
+        }
+    }
+
     parameters.RestoreParameterDeclarations();
 
     return pedestrian;
@@ -1064,6 +1090,19 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
     if (!source_references.empty())
     {
         miscObject->SetSourceReference(source_references);
+    }
+
+    std::string color = miscObject->properties_.GetValueStr("color");
+    if (!color.empty())
+    {
+        if (color[0] != '#' || color.size() != 7)
+        {
+            LOG_ERROR("Property: color format invalid, shall be #RRGGBB, skipping");
+        }
+        else
+        {
+            miscObject->SetColor(color.substr(1));
+        }
     }
 
     parameters.RestoreParameterDeclarations();

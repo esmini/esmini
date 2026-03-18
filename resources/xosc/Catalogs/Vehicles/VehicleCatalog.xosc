@@ -7,7 +7,7 @@
                 author="esmini team"/>
 
     <!-- esmini specific vehicle properties: -->
-    <!-- scaleMode [None, BBToModel, ModelToBB] default = None -->
+    <!-- scaleMode (if 3D model specified and loaded) [None, BBToModel, ModelToBB] default = None -->
     <!-- ignoreHeadingForTrajMotion [true, false] default = false/> -->
     <!-- plineInterpolation [segment, corner, off] default = given by followingMode/> -->
 
@@ -46,6 +46,8 @@
                 <Property name="refpoint_x_offset" value="$RefPointXOffset"/>
                 <!-- define 24 points outline ccw starting front right -->
                 <Property name="outline" value="$Outline"/>
+                <!-- define the filled boundingbox color which is also transmitted on OSI rgb -->
+                <Property name="color" value="#F2F2F2"/>
             </Properties>
         </Vehicle>
 
@@ -81,6 +83,8 @@
                 <Property name="refpoint_x_offset" value="$RefPointXOffset"/>
                 <!-- define 24 points outline ccw starting front right -->
                 <Property name="outline" value="$Outline"/>
+                <!-- define the filled boundingbox color which is also transmitted on OSI rgb -->
+                <Property name="color" value="#F2F2F2"/>
             </Properties>
         </Vehicle>
 
@@ -113,6 +117,7 @@
                 <Property name="superdummy" value="3"/>
                 <Property name="refpoint_x_offset" value="$RefPointXOffset"/>
                 <Property name="outline" value="$Outline"/>
+                <Property name="color" value="#073E99"/>
             </Properties>
         </Vehicle>
 
@@ -142,6 +147,7 @@
                 <Property name="source_reference" value="make:esmini_car"/>
                 <Property name="refpoint_x_offset" value="$RefPointXOffset"/>
                 <Property name="outline" value="$Outline"/>
+                <Property name="color" value="#AA0508"/>
             </Properties>
         </Vehicle>
 
@@ -160,6 +166,7 @@
                 <!-- Scale modes: None, BBToModel, ModelToBB -->
                 <Property name="scaleMode" value="ModelToBB"/>
                 <Property name="refpoint_x_offset" value="0.0"/>
+                <Property name="color" value="#DEDE54"/>
             </Properties>
         </Vehicle>
 

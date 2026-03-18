@@ -409,7 +409,9 @@ void ScenarioPlayer::ViewerFrame()
                                                            obj->refpoint_x_offset_,
                                                            obj->model3d_x_offset_,
                                                            &obj->outline_2d_,
-                                                           obj->scaleMode_));
+                                                           obj->scaleMode_,
+                                                           obj->GetColorStr(),
+                                                           obj->TowVehicle() != nullptr));
 
         // Connect callback for setting transparency
         viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(obj, viewer_->entities_.back());
@@ -1055,7 +1057,12 @@ int ScenarioPlayer::InitViewer()
         {
             view_mode = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL | roadgeom::NodeMask::NODE_MASK_ENTITY_BB;
         }
-        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL | roadgeom::NodeMask::NODE_MASK_ENTITY_BB, view_mode);
+        else if (view_mode_string == "filled_boundingbox")
+        {
+            view_mode = roadgeom::NodeMask::NODE_MASK_ENTITY_BB_FILLED;
+        }
+        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL | roadgeom::NodeMask::NODE_MASK_ENTITY_BB | NODE_MASK_ENTITY_BB_FILLED,
+                                 view_mode);
     }
     else if (opt.GetOptionSet("bounding_boxes"))
     {
@@ -1117,7 +1124,9 @@ int ScenarioPlayer::InitViewer()
                                                                obj->refpoint_x_offset_,
                                                                obj->model3d_x_offset_,
                                                                &obj->outline_2d_,
-                                                               obj->scaleMode_)) != 0)
+                                                               obj->scaleMode_,
+                                                               obj->GetColorStr(),
+                                                               obj->TowVehicle() != nullptr)) != 0)
         {
             CloseViewer();
             return -1;
@@ -1525,7 +1534,9 @@ int ScenarioPlayer::Init()
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("vehicle_dynamics", "Visualize simple vehicle dynamics", "<pitch,roll,tension>[,damping]", "2,5,25", false, false);
     opt.AddOption("version", "Show version and quit");
-    opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\" toggle key ','", "view_mode");
+    opt.AddOption("view_mode",
+                  "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"/\"filled_boundingbox\" toggle key ','",
+                  "view_mode");
     opt.AddOption("wireframe", "Global wireframe mode, toggle key 'w'");
 
     if (int ret = OnRequestShowHelpOrVersion(argc_, argv_, opt); ret > 0)

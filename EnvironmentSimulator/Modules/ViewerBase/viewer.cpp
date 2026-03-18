@@ -43,6 +43,8 @@ namespace fs = std::experimental::filesystem;
 #endif
 
 #define SHADOW_SCALE            1.20
+#define SHADOW_MAX_EXTRUSION    1.0
+#define SHADOW_MIN_EXTRUSION    0.1
 #define SHADOW_MODEL_FILEPATH   "shadow_face.osgb"
 #define ARROW_MODEL_FILEPATH    "arrow.osgb"
 #define LOD_DIST                3000
@@ -819,7 +821,8 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
     {
         if (object_->visibilityMask_ & scenarioengine::Object::Visibility::GRAPHICS)
         {
-            entity_->txNode_->getChild(0)->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB);
+            entity_->txNode_->getChild(0)->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB |
+                                                       NodeMask::NODE_MASK_ENTITY_BB_FILLED);
             if (object_->visibilityMask_ & scenarioengine::Object::Visibility::SENSORS)
             {
                 entity_->SetTransparency(0.0);
@@ -1745,6 +1748,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     ClearNodeMaskBits(NodeMask::NODE_MASK_OBJECT_SENSORS);
     ClearNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
     ClearNodeMaskBits(NodeMask::NODE_MASK_ENTITY_BB);
+    ClearNodeMaskBits(NodeMask::NODE_MASK_ENTITY_BB_FILLED);
     ClearNodeMaskBits(NodeMask::NODE_MASK_INFO_PER_OBJ);
     SetNodeMaskBits(NodeMask::NODE_MASK_ENTITY_MODEL);
     SetNodeMaskBits(NodeMask::NODE_MASK_INFO);
@@ -2356,7 +2360,9 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
                                        double                         refpoint_x_offset,
                                        double                         model_x_offset,
                                        const std::vector<SE_Point2D>* outline,
-                                       EntityScaleMode                scaleMode)
+                                       EntityScaleMode                scaleMode,
+                                       std::string                    bb_color,
+                                       bool                           is_trailer)
 {
     // Load 3D model
     osg::ref_ptr<osg::Group>                     group             = new osg::Group;
@@ -2368,6 +2374,8 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     std::vector<std::string>                     file_name_candidates;
     double                                       carStdDim[]  = {4.5, 1.8, 1.5};
     double                                       carStdOrig[] = {1.5, 0.0, 0.75};
+    osg::Vec3d                                   bbCenter(carStdOrig[0], carStdOrig[1], carStdOrig[2]);
+    osg::Vec3d                                   bbDimensions(carStdDim[0], carStdDim[1], carStdDim[2]);
     std::string                                  filepath;
 
     // Check if model already loaded
@@ -2404,24 +2412,36 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     // Make sure we have a 3D model
     // Set color of vehicle based on its index
     const float(*color)[3] = nullptr;
+    float custom_color[3]  = {0.0f, 0.0f, 0.0f};
     float b                = 1.0;  // brighness
     int   index            = entities_.size() % 4;
 
-    if (index == 0)
+    if (bb_color.empty())
     {
-        color = &SE_Color::Color2RBG(SE_Color::Color::LIGHT_GRAY);
-    }
-    else if (index == 1)
-    {
-        color = &SE_Color::Color2RBG(SE_Color::Color::RED);
-    }
-    else if (index == 2)
-    {
-        color = &SE_Color::Color2RBG(SE_Color::Color::BLUE);
+        if (index == 0)
+        {
+            color = &SE_Color::Color2RBG(SE_Color::Color::LIGHT_GRAY);
+        }
+        else if (index == 1)
+        {
+            color = &SE_Color::Color2RBG(SE_Color::Color::RED);
+        }
+        else if (index == 2)
+        {
+            color = &SE_Color::Color2RBG(SE_Color::Color::BLUE);
+        }
+        else
+        {
+            color = &SE_Color::Color2RBG(SE_Color::Color::YELLOW);
+        }
     }
     else
     {
-        color = &SE_Color::Color2RBG(SE_Color::Color::YELLOW);
+        auto rgb        = HexToDouble(bb_color, true);
+        custom_color[0] = static_cast<float>(rgb.r);
+        custom_color[1] = static_cast<float>(rgb.g);
+        custom_color[2] = static_cast<float>(rgb.b);
+        color           = &custom_color;
     }
 
     osg::Material* material = new osg::Material();
@@ -2441,24 +2461,19 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
 
         // Create a dummy cuboid
         osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-        if (boundingBox != nullptr && !(boundingBox->dimensions_.length_ < static_cast<float>(SMALL_NUMBER) &&
-                                        boundingBox->dimensions_.width_ < static_cast<float>(SMALL_NUMBER) &&
-                                        boundingBox->dimensions_.height_ < static_cast<float>(SMALL_NUMBER)))
+        if (boundingBox != nullptr && !(boundingBox->dimensions_.length_ < SMALL_NUMBER && boundingBox->dimensions_.width_ < SMALL_NUMBER &&
+                                        boundingBox->dimensions_.height_ < SMALL_NUMBER))
         {
             geode->addDrawable(
-                new osg::ShapeDrawable(new osg::Box(osg::Vec3(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_),
+                new osg::ShapeDrawable(new osg::Box(osg::Vec3d(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_),
                                                     boundingBox->dimensions_.length_,
                                                     boundingBox->dimensions_.width_,
                                                     boundingBox->dimensions_.height_)));
         }
         else
         {
-            geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(static_cast<float>(carStdOrig[0]) - refpoint_x_offset,
-                                                                             static_cast<float>(carStdOrig[1]),
-                                                                             static_cast<float>(carStdOrig[2])),
-                                                                   static_cast<float>(carStdDim[0]),
-                                                                   static_cast<float>(carStdDim[1]),
-                                                                   static_cast<float>(carStdDim[2]))));
+            geode->addDrawable(new osg::ShapeDrawable(
+                new osg::Box(osg::Vec3d(carStdOrig[0] - refpoint_x_offset, carStdOrig[1], carStdOrig[2]), carStdDim[0], carStdDim[1], carStdDim[2])));
         }
         geode->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
         geode->getOrCreateStateSet()->setAttribute(material);
@@ -2471,8 +2486,9 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     }
 
     // Then create a bounding box visual representation and any specified outline
-    bbGroup                          = new osg::Group;
-    osg::ref_ptr<osg::Geode> bbGeode = new osg::Geode;
+    bbGroup                                = new osg::Group;
+    osg::ref_ptr<osg::Geode> bbGeode       = new osg::Geode;
+    osg::ref_ptr<osg::Geode> bbFilledGeode = new osg::Geode;
 
     // Create 2D shape outline, if specified
     if (outline != nullptr)
@@ -2483,15 +2499,19 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     if (scaleMode == EntityScaleMode::NONE || scaleMode == EntityScaleMode::MODEL_TO_BB)
     {
         // Bounding box should not scale, create one from OSC description if available
-        if (boundingBox != nullptr && !(boundingBox->dimensions_.length_ < static_cast<float>(SMALL_NUMBER) &&
-                                        boundingBox->dimensions_.width_ < static_cast<float>(SMALL_NUMBER) &&
-                                        boundingBox->dimensions_.height_ < static_cast<float>(SMALL_NUMBER)))
+        if (boundingBox != nullptr && !(boundingBox->dimensions_.length_ < SMALL_NUMBER && boundingBox->dimensions_.width_ < SMALL_NUMBER &&
+                                        boundingBox->dimensions_.height_ < SMALL_NUMBER))
         {
-            bbGeode->addDrawable(
-                new osg::ShapeDrawable(new osg::Box(osg::Vec3(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_),
-                                                    boundingBox->dimensions_.length_,
-                                                    boundingBox->dimensions_.width_,
-                                                    boundingBox->dimensions_.height_)));
+            bbCenter.set(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_);
+            bbDimensions.set(boundingBox->dimensions_.length_, boundingBox->dimensions_.width_, boundingBox->dimensions_.height_);
+
+            osg::ref_ptr<osg::Box> sharedBox = new osg::Box(osg::Vec3d(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_),
+                                                            boundingBox->dimensions_.length_,
+                                                            boundingBox->dimensions_.width_,
+                                                            boundingBox->dimensions_.height_);
+
+            bbGeode->addDrawable(new osg::ShapeDrawable(sharedBox.get()));
+            bbFilledGeode->addDrawable(new osg::ShapeDrawable(sharedBox.get()));
         }
         else
         {
@@ -2507,59 +2527,62 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
             }
 
             // No bounding box specified. Create a bounding box of typical car dimension.
-            bbGeode->addDrawable(new osg::ShapeDrawable(
-                new osg::Box(osg::Vec3(static_cast<float>(carStdOrig[0]), static_cast<float>(carStdOrig[1]), static_cast<float>(carStdOrig[2])),
-                             static_cast<float>(carStdDim[0]),
-                             static_cast<float>(carStdDim[1]),
-                             static_cast<float>(carStdDim[2]))));
+            osg::ref_ptr<osg::Box> sharedBox =
+                new osg::Box(osg::Vec3d(carStdOrig[0], carStdOrig[1], carStdOrig[2]), carStdDim[0], carStdDim[1], carStdDim[2]);
+
+            bbGeode->addDrawable(new osg::ShapeDrawable(sharedBox.get()));
+            bbFilledGeode->addDrawable(new osg::ShapeDrawable(sharedBox.get()));
 
             if (boundingBox != nullptr)
             {
                 // Update OSC boundingbox
-                boundingBox->center_.x_          = static_cast<float>(carStdOrig[0]);
-                boundingBox->center_.y_          = static_cast<float>(carStdOrig[1]);
-                boundingBox->center_.z_          = static_cast<float>(carStdOrig[2]);
-                boundingBox->dimensions_.length_ = static_cast<float>(carStdDim[0]);
-                boundingBox->dimensions_.width_  = static_cast<float>(carStdDim[1]);
-                boundingBox->dimensions_.height_ = static_cast<float>(carStdDim[2]);
+                boundingBox->center_.x_          = carStdOrig[0];
+                boundingBox->center_.y_          = carStdOrig[1];
+                boundingBox->center_.z_          = carStdOrig[2];
+                boundingBox->dimensions_.length_ = carStdDim[0];
+                boundingBox->dimensions_.width_  = carStdDim[1];
+                boundingBox->dimensions_.height_ = carStdDim[2];
             }
         }
     }
 
     if (scaleMode == EntityScaleMode::NONE)
     {
-        modeltx->setPosition(osg::Vec3(model_x_offset - refpoint_x_offset, 0.0, 0.0));
+        modeltx->setPosition(osg::Vec3d(model_x_offset - refpoint_x_offset, 0.0, 0.0));
     }
     else if (scaleMode == EntityScaleMode::BB_TO_MODEL)
     {
-        modeltx->setPosition(osg::Vec3(model_x_offset - refpoint_x_offset, 0.0, 0.0));
+        modeltx->setPosition(osg::Vec3d(model_x_offset - refpoint_x_offset, 0.0, 0.0));
 
         // Create visual model of object bounding box, copy values from model bounding box
-        bbGeode->addDrawable(
-            new osg::ShapeDrawable(new osg::Box(osg::Vec3(modelBB.center().x() - model_x_offset, modelBB.center().y(), modelBB.center().z()),
-                                                modelBB._max.x() - modelBB._min.x(),
-                                                modelBB._max.y() - modelBB._min.y(),
-                                                modelBB._max.z() - modelBB._min.z())));
+        bbCenter.set(modelBB.center().x() - model_x_offset, modelBB.center().y(), modelBB.center().z());
+        bbDimensions.set(modelBB._max.x() - modelBB._min.x(), modelBB._max.y() - modelBB._min.y(), modelBB._max.z() - modelBB._min.z());
+
+        osg::ref_ptr<osg::Box> sharedBox =
+            new osg::Box(osg::Vec3d(bbCenter.x(), bbCenter.y(), bbCenter.z()), bbDimensions.x(), bbDimensions.y(), bbDimensions.z());
+
+        bbGeode->addDrawable(new osg::ShapeDrawable(sharedBox.get()));
+        bbFilledGeode->addDrawable(new osg::ShapeDrawable(sharedBox.get()));
 
         // Also update OSC boundingbox
         if (boundingBox != nullptr)
         {
-            boundingBox->center_.x_          = modelBB.center().x();
-            boundingBox->center_.y_          = modelBB.center().y();
-            boundingBox->center_.z_          = modelBB.center().z();
-            boundingBox->dimensions_.length_ = modelBB._max.x() - modelBB._min.x();
-            boundingBox->dimensions_.width_  = modelBB._max.y() - modelBB._min.y();
-            boundingBox->dimensions_.height_ = modelBB._max.z() - modelBB._min.z();
+            boundingBox->center_.x_          = static_cast<double>(modelBB.center().x());
+            boundingBox->center_.y_          = static_cast<double>(modelBB.center().y());
+            boundingBox->center_.z_          = static_cast<double>(modelBB.center().z());
+            boundingBox->dimensions_.length_ = static_cast<double>(modelBB._max.x() - modelBB._min.x());
+            boundingBox->dimensions_.width_  = static_cast<double>(modelBB._max.y() - modelBB._min.y());
+            boundingBox->dimensions_.height_ = static_cast<double>(modelBB._max.z() - modelBB._min.z());
 
             LOG_INFO("Adjusted {} bounding box to model {} - xyz: {:.2f}, {:.2f}, {:.2f} lwh: {:.2f}, {:.2f}, {:.2f}",
                      name,
                      FileNameOf(modelFilepath),
-                     static_cast<double>(boundingBox->center_.x_),
-                     static_cast<double>(boundingBox->center_.y_),
-                     static_cast<double>(boundingBox->center_.z_),
-                     static_cast<double>(boundingBox->dimensions_.length_),
-                     static_cast<double>(boundingBox->dimensions_.width_),
-                     static_cast<double>(boundingBox->dimensions_.height_));
+                     boundingBox->center_.x_,
+                     boundingBox->center_.y_,
+                     boundingBox->center_.z_,
+                     boundingBox->dimensions_.length_,
+                     boundingBox->dimensions_.width_,
+                     boundingBox->dimensions_.height_);
         }
     }
     else if (scaleMode == EntityScaleMode::MODEL_TO_BB)
@@ -2567,18 +2590,79 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
         // Scale loaded 3d model
         modeltx->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
 
-        double sx = boundingBox->dimensions_.length_ / (modelBB._max.x() - modelBB._min.x());
-        double sy = boundingBox->dimensions_.width_ / (modelBB._max.y() - modelBB._min.y());
-        double sz = boundingBox->dimensions_.height_ / (modelBB._max.z() - modelBB._min.z());
+        double sx = boundingBox->dimensions_.length_ / (static_cast<double>(modelBB._max.x() - modelBB._min.x()));
+        double sy = boundingBox->dimensions_.width_ / (static_cast<double>(modelBB._max.y() - modelBB._min.y()));
+        double sz = boundingBox->dimensions_.height_ / (static_cast<double>(modelBB._max.z() - modelBB._min.z()));
 
-        modeltx->setPosition(osg::Vec3(boundingBox->center_.x_ - static_cast<float>(sx) * modelBB.center().x(),
-                                       boundingBox->center_.y_ - static_cast<float>(sy) * modelBB.center().y(),
-                                       boundingBox->center_.z_ - static_cast<float>(sz) * modelBB.center().z()));
-        modeltx->setScale(osg::Vec3(static_cast<float>(sx), static_cast<float>(sy), static_cast<float>(sz)));
+        modeltx->setPosition(osg::Vec3d(boundingBox->center_.x_ - sx * static_cast<double>(modelBB.center().x()),
+                                        boundingBox->center_.y_ - sy * static_cast<double>(modelBB.center().y()),
+                                        boundingBox->center_.z_ - sz * static_cast<double>(modelBB.center().z())));
+        modeltx->setScale(osg::Vec3d(sx, sy, sz));
     }
 
     // Put transform node under modelgroup
     modeltx->addChild(modelgroup);
+
+    // Load and attach shadow node alongside the model so it is present even when hide_vehicle_models_ is set
+    if (!shadow_node_)
+    {
+        LoadShadowfile(modelFilepath);
+    }
+
+    osg::ref_ptr<osg::PositionAttitudeTransform> shadow_tx2 = nullptr;
+
+    if (shadow_node_)
+    {
+        static int elev = 0;  // Avoid shadow node to flicker, put every second on slightly different Z
+        if (is_trailer)
+        {
+            elev = (elev + 1) % 3;
+        }
+        else
+        {
+            elev = 0;
+        }
+
+        float  dx     = modelBB._max.x() - modelBB._min.x();
+        float  dy     = modelBB._max.y() - modelBB._min.y();
+        float  xc     = (modelBB._max.x() + modelBB._min.x()) / 2.0f;
+        float  yc     = (modelBB._max.y() + modelBB._min.y()) / 2.0f;
+        double bbMinZ = bbCenter.z() - bbDimensions.z() / 2.0;
+
+        const double shadowModelSizeX = 2.0;
+        const double shadowModelSizeY = 2.0;
+
+        double modelShadowScaleX    = ComputeShadowScaleFactor(dx, shadowModelSizeX);
+        double modelShadowScaleY    = ComputeShadowScaleFactor(dy, shadowModelSizeY);
+        double filledBBShadowScaleX = ComputeShadowScaleFactor(bbDimensions.x(), shadowModelSizeX);
+        double filledBBShadowScaleY = ComputeShadowScaleFactor(bbDimensions.y(), shadowModelSizeY);
+
+        // By default we use the Z thats baked in to the shadow model
+        double zOffset = 0.05 * elev;
+
+        // If not type moving, we reduce the zOffset by 4cm, leaving the shadow just 1cm off the ground
+        const int MOVING_TYPE_BIT = 1 << 1;
+        if (!(static_cast<int>(type) & MOVING_TYPE_BIT))
+        {
+            zOffset = -0.04;
+        }
+
+        osg::ref_ptr<osg::PositionAttitudeTransform> shadow_tx = new osg::PositionAttitudeTransform;
+        shadow_tx->setName("shadow_tx");
+        shadow_tx->setPosition(osg::Vec3d(xc, yc, zOffset + modelBB._min.z()));
+        shadow_tx->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
+        shadow_tx->setScale(osg::Vec3d(modelShadowScaleX, modelShadowScaleY, 1.0));
+        shadow_tx->addChild(shadow_node_);
+        shadow_tx->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
+        modeltx->addChild(shadow_tx);
+
+        shadow_tx2 = static_cast<osg::PositionAttitudeTransform*>(shadow_tx->clone(osg::CopyOp::DEEP_COPY_ALL));
+
+        shadow_tx2->setName("shadow_tx_filled_bb");
+        shadow_tx2->setPosition(osg::Vec3d(bbCenter.x(), bbCenter.y(), zOffset + bbMinZ));
+        shadow_tx2->setScale(osg::Vec3d(filledBBShadowScaleX, filledBBShadowScaleY, 1.0));
+        shadow_tx2->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB_FILLED);
+    }
 
     // Draw only wireframe
     osg::PolygonMode* polygonMode = new osg::PolygonMode;
@@ -2586,12 +2670,16 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     osg::ref_ptr<osg::StateSet> stateset = bbGeode->getOrCreateStateSet();  // Get the StateSet of the group
     stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
     stateset->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
     bbGeode->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
+    bbFilledGeode->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB_FILLED);
+    bbFilledGeode->getOrCreateStateSet()->setAttribute(material);
 
     osg::ref_ptr<osg::Geode> center = new osg::Geode;
     center->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0.0f, 0.0f, 0.0f), 0.2f)));
     center->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
 
+    bbGroup->addChild(bbFilledGeode);
     bbGroup->addChild(bbGeode);
     bbGroup->addChild(center);
     bbGroup->getOrCreateStateSet()->setAttribute(material);
@@ -2599,6 +2687,10 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
 
     group->addChild(modeltx);
     group->addChild(bbGroup);
+    if (shadow_tx2)
+    {
+        group->addChild(shadow_tx2);
+    }
     group->setName(name);
 
     EntityModel* emodel;
@@ -2679,6 +2771,13 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     group->addChild(emodel->on_screen_info_.geode_.get());
 
     return emodel;
+}
+
+double Viewer::ComputeShadowScaleFactor(double modelSize, double shadowModelSize)
+{
+    double extrusion      = (SHADOW_SCALE - 1.0) * modelSize;
+    double finalExtrusion = MAX(MIN(extrusion, SHADOW_MAX_EXTRUSION), SHADOW_MIN_EXTRUSION);
+    return (modelSize + finalExtrusion) / shadowModelSize;
 }
 
 int Viewer::AddEntityModel(EntityModel* model)
@@ -2768,10 +2867,8 @@ void Viewer::RemoveCar(std::string name)
 
 osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char* filename, osg::BoundingBox& bb)
 {
-    static int                                   elev      = 0;  // Avoid shadow node to flicker, put every second on slightly different Z
-    osg::ref_ptr<osg::PositionAttitudeTransform> shadow_tx = 0;
-    osg::ref_ptr<osg::Node>                      node;
-    osg::ref_ptr<osg::Group>                     group = new osg::Group;
+    osg::ref_ptr<osg::Node>  node;
+    osg::ref_ptr<osg::Group> group = new osg::Group;
 
     node = osgDB::readNodeFile(filename);
     if (!node)
@@ -2783,34 +2880,9 @@ osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char* filename, osg::Boun
     node->accept(cbv);
     bb = cbv.getBoundingBox();
 
-    double xc, yc, dx, dy;
-    dx = bb._max.x() - bb._min.x();
-    dy = bb._max.y() - bb._min.y();
-    xc = (bb._max.x() + bb._min.x()) / 2;
-    yc = (bb._max.y() + bb._min.y()) / 2;
-
-    if (!shadow_node_)
-    {
-        LoadShadowfile(filename);
-    }
-
     node->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
     group->addChild(node);
 
-    if (shadow_node_)
-    {
-        shadow_tx = new osg::PositionAttitudeTransform;
-        shadow_tx->setName("shadow_tx");
-        shadow_tx->setPosition(osg::Vec3d(xc, yc, 0.05 * elev + bb._min.z()));
-        shadow_tx->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
-        shadow_tx->setScale(osg::Vec3d(SHADOW_SCALE * (dx / 2), SHADOW_SCALE * (dy / 2), 1.0));
-        shadow_tx->addChild(shadow_node_);
-
-        shadow_tx->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
-        group->addChild(shadow_tx);
-    }
-
-    elev = (elev + 1) % 3;
     return group;
 }
 
@@ -3959,13 +4031,30 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
         {
             if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
             {
-                int mask =
-                    viewer_->GetNodeMaskBit(NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB) / NodeMask::NODE_MASK_ENTITY_MODEL;
+                const int entity_mask = NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB | NodeMask::NODE_MASK_ENTITY_BB_FILLED;
+                int       mask        = viewer_->GetNodeMaskBit(entity_mask);
 
-                // Toggle between modes: 0: none, 1: model only, 2: bounding box, 3. model + Bounding box
-                mask = ((mask + 1) % 4) * NodeMask::NODE_MASK_ENTITY_MODEL;
+                // Toggle order: 0: none, 1: model only, 2: bounding box, 3: model + bounding box, 4: filled bounding box
+                switch (mask)
+                {
+                    case NodeMask::NODE_MASK_NONE:
+                        mask = NodeMask::NODE_MASK_ENTITY_MODEL;
+                        break;
+                    case NodeMask::NODE_MASK_ENTITY_MODEL:
+                        mask = NodeMask::NODE_MASK_ENTITY_BB;
+                        break;
+                    case NodeMask::NODE_MASK_ENTITY_BB:
+                        mask = NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB;
+                        break;
+                    case (NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB):
+                        mask = NodeMask::NODE_MASK_ENTITY_BB_FILLED;
+                        break;
+                    default:
+                        mask = NodeMask::NODE_MASK_NONE;
+                        break;
+                }
 
-                viewer_->SetNodeMaskBits(NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB, mask);
+                viewer_->SetNodeMaskBits(entity_mask, mask);
             }
         }
         break;

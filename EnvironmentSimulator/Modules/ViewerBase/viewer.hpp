@@ -637,7 +637,9 @@ namespace viewer
                                                    double                         refpoint_x_offset,
                                                    double                         modlel_x_offset,
                                                    const std::vector<SE_Point2D>* outline,
-                                                   EntityScaleMode                scaleMode = EntityScaleMode::NONE);
+                                                   EntityScaleMode                scaleMode  = EntityScaleMode::NONE,
+                                                   std::string                    bb_color   = "",
+                                                   bool                           is_trailer = false);
         int                      AddEntityModel(EntityModel* model);
         void                     RemoveCar(int index);
         void                     RemoveCar(std::string name);
@@ -731,6 +733,8 @@ namespace viewer
         void   CycleAxisIndicatorMode();
         void   CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
         void   SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
+
+        double ComputeShadowScaleFactor(double modelSize, double shadowModelSize);
 
     private:
         int        CreateTunnels(roadmanager::OpenDrive* od);

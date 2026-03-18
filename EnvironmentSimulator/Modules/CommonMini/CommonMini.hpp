@@ -240,6 +240,13 @@ struct SE_Point2D
     double y;
 };
 
+struct Rgb
+{
+    double r;
+    double g;
+    double b;
+};
+
 class SE_Vector
 {
 public:
@@ -388,6 +395,11 @@ int OnRequestShowHelpOrVersion(int argc, char** argv, SE_Options& opt);
     Get the rev of the currently compiled esmini
 */
 const char* esmini_git_rev(void);
+
+/**
+    Convert hex to rgb color. If normalize is true returns each channel in [0, 1], otherwise in [0, 255].
+ */
+Rgb HexToDouble(const std::string& hex, bool normalize);
 
 /**
     Increments a counter to keep ID's unique and global.

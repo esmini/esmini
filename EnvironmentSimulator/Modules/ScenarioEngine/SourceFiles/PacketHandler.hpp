@@ -6,7 +6,7 @@
 #include "ScenarioEngine.hpp"
 
 #define DAT_FILE_FORMAT_VERSION_MAJOR 5
-#define DAT_FILE_FORMAT_VERSION_MINOR 0
+#define DAT_FILE_FORMAT_VERSION_MINOR 1
 
 namespace scenarioengine
 {
@@ -47,7 +47,9 @@ namespace Dat
         ELEM_STATE_CHANGE = 27,
         SHAPE_2D_OUTLINE  = 28,
         ENVIRONMENT       = 29,
-        PACKET_ID_SIZE    = 30  // Keep this last
+        BB_COLOR          = 30,
+        IS_TRAILER        = 31,
+        PACKET_ID_SIZE    = 32  // Keep this last
     };
 
     struct PacketString
@@ -143,7 +145,9 @@ namespace Dat
         double                  refpoint_x_offset_ = std::nan("");
         double                  model_x_offset_    = std::nan("");
         std::string             model3d_           = {};
-        std::vector<SE_Point2D> outline_2d         = {};
+        std::vector<SE_Point2D> outline_2d_        = {};
+        std::string             bb_color_          = {};
+        bool                    is_trailer_        = false;
     };
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?

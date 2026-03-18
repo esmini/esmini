@@ -685,9 +685,27 @@ namespace scenarioengine
             return osi_index_;
         }
 
+        void SetColor(std::string color)
+        {
+            color_     = color;
+            color_rgb_ = HexToDouble(color, true);
+        }
+
+        std::string GetColorStr() const
+        {
+            return color_;
+        }
+
+        Rgb GetColorRgb() const
+        {
+            return color_rgb_;
+        }
+
     private:
         bool                     is_active_;
         std::string              model3d_full_path_;
+        std::string              color_;
+        Rgb                      color_rgb_;
         std::vector<std::string> source_reference_;
         id_t                     osi_index_ = ID_UNDEFINED;  // global OSI index
     };
