@@ -1550,7 +1550,8 @@ int OSIReporter::UpdateOSIIntersection()
                             incomming_road->GetDrivingLaneById(incomming_s_value, junctionlanelink->from_)->GetGlobalId());
 
                         roadmanager::Lane *lane = connecting_road->GetDrivingLaneById(connecting_outgoing_s_value, junctionlanelink->to_);
-                        if (!lane) {
+                        if (!lane) 
+                        {
                             LOG_ERROR("Connecting road {} incoming road {} failed get lane by id {}",
                                       connecting_road->GetId(),
                                       connection->GetIncomingRoad()->GetId(),
@@ -1559,7 +1560,8 @@ int OSIReporter::UpdateOSIIntersection()
                         }
 
                         roadmanager::LaneLink *lane_link = lane->GetLink(connecting_road_link_type);
-                        if (!lane_link) {
+                        if (!lane_link) 
+                        {
                             LOG_ERROR("Connecting road {} incoming road {} failed get lane by id {}, missing link: maybe vanishing lane?",
                                       connecting_road->GetId(),
                                       connection->GetIncomingRoad()->GetId(),
