@@ -5910,6 +5910,38 @@ TEST(RoutingTest, TestRoutePointsWithGhost)
     SE_Close();
 }
 
+// Verify correct ID when initial set of vehicles is not complete (to be added later)
+TEST(IdTest, TestIdOutOfSync)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/add_delete_entity.xosc";
+
+    ASSERT_EQ(SE_Init(scenario_file.c_str(), 0, 0, 0, 0), 0);
+    EXPECT_EQ(SE_GetNumberOfObjects(), 1);
+
+    while (SE_GetSimulationTime() < 4 - SMALL_NUMBER)
+    {
+        SE_StepDT(0.1);
+    }
+    EXPECT_EQ(SE_GetNumberOfObjects(), 2);
+
+    while (SE_GetSimulationTime() < 5 - SMALL_NUMBER)
+    {
+        SE_StepDT(0.1);
+    }
+    EXPECT_EQ(SE_GetNumberOfObjects(), 3);
+
+    while (SE_GetSimulationTime() < 8 - SMALL_NUMBER)
+    {
+        SE_StepDT(0.1);
+    }
+    // At this point, only initial Ego and the box (third object) remains. Second object is deleted.
+    EXPECT_EQ(SE_GetNumberOfObjects(), 2);
+    EXPECT_EQ(SE_GetId(0), 0);
+    EXPECT_EQ(SE_GetId(1), 2);
+
+    SE_Close();
+}
+
 class TrailTest
     : public testing::TestWithParam<std::tuple<std::string, double, double, int, double, double, double, int, double, double, double, int, double>>
 {

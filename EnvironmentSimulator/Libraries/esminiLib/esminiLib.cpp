@@ -1423,7 +1423,7 @@ extern "C"
     {
         if (player != nullptr && index >= 0 && index < static_cast<int>(player->scenarioEngine->entities_.object_.size()))
         {
-            return player->scenarioEngine->entities_.GetObjectIdxById(index);
+            return player->scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]->id_;
         }
 
         return -1;
