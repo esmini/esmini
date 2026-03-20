@@ -482,7 +482,7 @@ extern "C"
     Get the fields of the position of specified index
     @param handle Handle to the position object
     @param data Struct to fill in the values
-    @return 0 if successful, -1 if not
+    @return >=0 if successful, <0 if not. For detailed status see Position::ReturnCode.
     */
     RM_DLL_API int RM_GetPositionData(int handle, RM_PositionData* data);
 
@@ -501,7 +501,7 @@ extern "C"
     @param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
     @param inRoadDrivingDirection If true always look along primary driving direction. If false, look in most straightforward direction according to
     object heading.
-    @return 0 if successful, -1 if not
+    @return >=0 if successful, <0 if not. For detailed status see Position::ReturnCode.
     */
     RM_DLL_API int RM_GetLaneInfo(int handle, double lookahead_distance, RM_RoadLaneInfo* data, int lookAheadMode, bool inRoadDrivingDirection);
 
@@ -513,7 +513,7 @@ extern "C"
     @param lookAheadMode Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum
     @param inRoadDrivingDirection If true always look along primary driving direction. If false, look in most straightforward direction according to
     object heading.
-    @return 0 if successful, other codes see roadmanager::Position::ReturnCode
+    @return >=0 if successful, <0 if not. For detailed status see Position::ReturnCode.
     */
     RM_DLL_API int RM_GetProbeInfo(int handle, double lookahead_distance, RM_RoadProbeInfo* data, int lookAheadMode, bool inRoadDrivingDirection);
 

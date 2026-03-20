@@ -550,7 +550,7 @@ namespace OpenDRIVE
         /// </summary>
         /// <param name="handle">Handle to the position object</param>
         /// <param name="data">Struct to fill in the values</param>
-        /// <returns>0 if successful, -1 if not</returns>
+        /// <returns>>=0 if successful, <0 if not. For detailed status see Position::ReturnCode.</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetPositionData")]
         public static extern int GetPositionData(int handle, ref OpenDrivePositionData data);
 
@@ -570,7 +570,7 @@ namespace OpenDRIVE
         /// <param name="data">Struct including all result values, see RM_RoadLaneInfo typedef</param>
         /// <param name="lookAheadMode">Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum</param>
         /// <param name="inRoadDrivingDirection">If true always look along primary driving direction. If false, look in most straightforward direction according to</param>
-        /// <returns>0 if successful, -1 if not</returns>
+        /// <returns>>=0 if successful, <0 if not. For detailed status see Position::ReturnCode.</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetLaneInfo")]
         public static extern int GetLaneInfo(int handle, double lookaheadDistance, ref RoadLaneInfo data, int lookAheadMode, bool inRoadDrivingDirection);
 
@@ -582,7 +582,7 @@ namespace OpenDRIVE
         /// <param name="data">Struct including all result values, see RM_RoadProbeInfo typedef</param>
         /// <param name="lookAheadMode">Measurement strategy: Along reference lane, lane center or current lane offset. See roadmanager::Position::LookAheadMode enum</param>
         /// <param name="inRoadDrivingDirection">If true always look along primary driving direction. If false, look in most straightforward direction according to</param>
-        /// <returns>0 if successful, other codes see roadmanager::Position::ReturnCode</returns>
+        /// <returns>>=0 if successful, <0 if not. For detailed status see Position::ReturnCode.</returns>
         [DllImport(LIB_NAME, EntryPoint = "RM_GetProbeInfo")]
         public static extern int GetProbeInfo(int handle, double lookaheadDistance, ref RoadProbeInfo data, int lookAheadMode, bool inRoadDrivingDirection);
 
