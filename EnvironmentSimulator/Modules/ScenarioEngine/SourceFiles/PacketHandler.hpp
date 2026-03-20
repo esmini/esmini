@@ -5,8 +5,8 @@
 #include "RoadManager.hpp"
 #include "ScenarioEngine.hpp"
 
-#define DAT_FILE_FORMAT_VERSION_MAJOR 4
-#define DAT_FILE_FORMAT_VERSION_MINOR 4
+#define DAT_FILE_FORMAT_VERSION_MAJOR 5
+#define DAT_FILE_FORMAT_VERSION_MINOR 0
 
 namespace scenarioengine
 {
