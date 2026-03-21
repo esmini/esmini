@@ -1285,27 +1285,29 @@ int OSIReporter::UpdateOSIIntersection()
                 }
 
                 // get needed info about the incomming road
-                if (incomming_road->GetLink(roadmanager::LinkType::SUCCESSOR) != 0)
+                if (incomming_road->GetLink(roadmanager::LinkType::SUCCESSOR) != 0 &&
+                    incomming_road->GetLink(roadmanager::LinkType::SUCCESSOR)->GetElementId() == connecting_road->GetJunction())
                 {
-                    if (incomming_road->GetLink(roadmanager::LinkType::SUCCESSOR)->GetElementId() == connecting_road->GetJunction())
-                    {
-                        incomming_s_value        = incomming_road->GetLength();
-                        incomming_road_link_type = roadmanager::LinkType::SUCCESSOR;
-                    }
-                    else
-                    {
-                        incomming_s_value        = 0;
-                        incomming_road_link_type = roadmanager::LinkType::PREDECESSOR;
-                    }
+                    // junction is a successor (at the end of) the incomming road
+                    incomming_s_value        = incomming_road->GetLength();
+                    incomming_road_link_type = roadmanager::LinkType::SUCCESSOR;
                 }
-                else
+                else if (incomming_road->GetLink(roadmanager::LinkType::PREDECESSOR) != 0 &&
+                         incomming_road->GetLink(roadmanager::LinkType::PREDECESSOR)->GetElementId() == connecting_road->GetJunction())
                 {
+                    // junction is a predecessor (at the start of) the incomming road
                     incomming_s_value        = 0;
                     incomming_road_link_type = roadmanager::LinkType::PREDECESSOR;
                 }
+                else
+                {
+                    // junction is not directly linked to the incomming road
+                    LOG_WARN("Unexpected: Junction {} is not directly linked to the incomming road {}", junction->GetId(), incomming_road->GetId());
+                    continue;
+                }
 
-                // Get info about the connecting road, and to get the correct outgoing road
-                contactpoint = connection->GetContactPoint();
+                // Get info about the connecting road, and to get the correct outgoing road - at the other end from incoming road
+                contactpoint = connection->GetContactPoint();  // Contact point on the connectingRoad (at the connection to the incoming road)
                 if (contactpoint == roadmanager::ContactPointType::CONTACT_POINT_START)
                 {
                     connecting_road_link_type   = roadmanager::LinkType::SUCCESSOR;
@@ -1320,9 +1322,10 @@ int OSIReporter::UpdateOSIIntersection()
                 }
                 else
                 {
-                    LOG_WARN("WARNING: Unknow connection detected, can't establish outgoing connection in OSI junction");
+                    LOG_WARN("WARNING: Unknown connection detected, can't establish outgoing connection in OSI junction");
                     return -1;
                 }
+
                 if (roadlink == nullptr)
                 {
                     LOG_WARN("Failed to resolve {} link of connected road id {} with incoming road id {}",
