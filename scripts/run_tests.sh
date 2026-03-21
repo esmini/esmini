@@ -2,6 +2,7 @@
 
 build_type=Release
 add_performance_test=false
+add_wrapper_test=false
 timeout=40
 
 help_and_exit () {
@@ -10,6 +11,7 @@ help_and_exit () {
     echo "   -h, --help  this help"
     echo "   -b, --build_type <Release|Debug> (default: "$build_type")"
     echo "   -p, --add_performance_test (requires Release build type)"
+    echo "   -w, --add_wrapper_test"
     echo "   -t, --timeout <SECONDS> (default: "$timeout")"
     exit -1
 }
@@ -19,13 +21,14 @@ while [[ "$#" -gt 0 ]]; do
         -h|--help) help_and_exit ;;
         -b|--build_type) build_type="$2"; shift ;;
         -p|--add_performance_test) add_performance_test=true ;;
+        -w|--add_wrapper_test) add_wrapper_test=true ;;
         -t|--timeout) timeout="$2"; shift ;;
         *) echo "Unknown parameter passed: $1"; exit -1 ;;
     esac
     shift
 done
 
-echo "build_type: $build_type, timeout: $timeout, add_performance_test: $add_performance_test"
+echo "build_type: $build_type, timeout: $timeout, add_performance_test: $add_performance_test", "add_wrapper_test: $add_wrapper_test"
 
 # Run from esmini root ddirectory: ./scripts/run_unittests.sh
 
@@ -117,7 +120,7 @@ if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
     fi
 fi
 
-if [[ "$OSTYPE" == "msys" ]]; then
+if [[ "$OSTYPE" == "msys" ]] && [[ "$add_wrapper_test" == true ]]; then
     echo $'\n'Run C# esminiLib wrapper test:
     cd ${workingDir}/bin
     if ! ${ESMINI_CS_WRAPPER_FOLDER}/${ESMINI_CS_WRAPPER_BINARY}; then

@@ -195,7 +195,7 @@ jobs:
           GALLIUM_DRIVER: llvmpipe
           MESA_GL_VERSION_OVERRIDE: 4.5
         shell: bash
-        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
+        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -w
 
       - uses: ./.github/actions/upload_esmini_artifacts
         if: matrix.configuration == 'Release'
@@ -284,7 +284,7 @@ jobs:
           GALLIUM_DRIVER: softpipe
           MESA_GL_VERSION_OVERRIDE: 4.5
         shell: bash
-        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
+        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -w
 
       - name: Debugging with tmate
         if: ${{ failure() && env.USE_TMATE == 'true' }}
