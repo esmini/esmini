@@ -4183,7 +4183,7 @@ Also, g\++ version >= 5 is needed for c++14 code support.
 
 Windows and Mac: Install the https://cmake.org/[cmake] application
 
-=== Run and Debug with Linux and Visual Studio Code
+=== Debug with Linux and VSCode
 
 Here follows a brief step-by-step guide for building, running and debugging esmini with Visual Studio Code on Linux (tested on Ubuntu).
 

@@ -1,39 +1,53 @@
 ## esmini release notes
 
-### 2026-03-12 Version 3.0.0 DRAFT
-
-TODO:
-- update Unity package for 3.0.0
-- update/replace preset info in Linux build guide
+### 2026-03-23 Version 3.0.0
 
 Breaking changes:
 - In esminiLib and esminiRMLib, replace all 32 bit `float` types with 64 bit `double`
   - only affecting external interface, esmini always used 64 bit precision internally
-- Removed unused timestamp argument from some esminiLib Report* functions
+- Removed unused timestamp argument from some esminiLib `Report*` functions
+- Fix irregularity in ghost trail sampling
+  - might affect driver models slightly
+- New GUI feature (see below) depends on updated implot lib.
+  - On any existing local repo:
+    - remove `./externals/implot`, and
+    - run `cmake ..` command again
 
 New features:
 - Add GUI for replayer interactive playback navigation
-  - option `--gui <on|off>` default: on
+  - option `--gui <on|off>` default: `on`
   - toggle on/off with "I" (shift-"i")
 - Add mobile radar reflector, as simple pole, to VehicleCatalog
+- Visualize EnvironmentAction also in replayer
 
 Improvements and fixes:
 - Major code refactorization
   - completely remove gateway module
   - rework dirty bit handling
-  - decrease code complexity, increase maintainability
-  - brief documentation updated, see [User guide - Inner workings](https://esmini.github.io/#_inner_workings)
+  - decreased code complexity, increased maintainability
+  - brief system documentation updated, see [User guide - Inner workings](https://esmini.github.io/#_inner_workings)
 - esminiLib C# wrapper coverage now 100%
-  - script generating the wrapper
+  - add Python script generating the wrapper
   - CI check ensuring wrapper in synch with lib
-- Update Unity esmini C# code example
 - Option to modify or even ignore tolerance in performance tests
+- Fix OSI reporter bug causing segfault for some junctions ([issue #780](https://github.com/esmini/esmini/issues/780))
 - Fix wrong log message on changed parameter value
+- Add OSI traffic command testcase
+- Update implot build script for vs 2017
+- Update Python and C# code examples wrt API updates
+- Fix issues in a few code examples
+- A few additional minor fixes
+- Clarify some return codes in RMLib and its C# wrapper
+  - in general: <0 on error, >=0 on success
+
+Build and CI updates:
 - Remove cmake presets
   - simplifying the message on how to build
-  - update build info in User guide accordingly
-- Update implot build script for vs 2017
-- Add OSI traffic command testcase
+  - update User guide accordingly, e.g. [Debug with Linux and VSCode](https://esmini.github.io/#_debug_with_linux_and_vscode)
+- Bump some github action dependencies
+- Cleanup and update some custom actions
+- Apply dependabot updates to dev branch (instead of master)
+- Make esminiLib C# wrapper tests optional
 
 ### 2026-02-19 Version 2.60.0
 
