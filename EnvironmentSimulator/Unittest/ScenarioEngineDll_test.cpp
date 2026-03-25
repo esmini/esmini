@@ -4070,6 +4070,7 @@ TEST(TestGetAndSet, OverrideActionTest)
     EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
     EXPECT_EQ(list.throttle.active, false);
     EXPECT_DOUBLE_EQ(list.throttle.value, 0.0);
+    EXPECT_DOUBLE_EQ(list.throttle.maxRate, -1.0);
 
     for (; t < 2.5 + SMALL_NUMBER; t += dt)
     {
@@ -4079,6 +4080,7 @@ TEST(TestGetAndSet, OverrideActionTest)
     EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
     EXPECT_EQ(list.throttle.active, false);
     EXPECT_DOUBLE_EQ(list.throttle.value, 0.0);
+    EXPECT_DOUBLE_EQ(list.throttle.maxRate, -1.0);
 
     for (; t < 3.1 + SMALL_NUMBER; t += dt)
     {
@@ -4088,10 +4090,13 @@ TEST(TestGetAndSet, OverrideActionTest)
     EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
     EXPECT_EQ(list.throttle.active, true);
     EXPECT_DOUBLE_EQ(list.throttle.value, 0.5);
+    EXPECT_DOUBLE_EQ(list.throttle.maxRate, 0.4);
     EXPECT_EQ(list.clutch.active, false);
     EXPECT_DOUBLE_EQ(list.clutch.value, 1.0);
+    EXPECT_DOUBLE_EQ(list.clutch.maxRate, -1.0);
     EXPECT_EQ(list.steeringWheel.active, false);
     EXPECT_DOUBLE_EQ(list.steeringWheel.value, 0.0);
+    EXPECT_DOUBLE_EQ(list.steeringWheel.maxRate, -1.0);
 
     for (; t < 5.1 + SMALL_NUMBER; t += dt)
     {
@@ -4100,8 +4105,10 @@ TEST(TestGetAndSet, OverrideActionTest)
     EXPECT_EQ(SE_GetOverrideActionStatus(0, &list), 0);
     EXPECT_EQ(list.throttle.active, true);
     EXPECT_DOUBLE_EQ(list.throttle.value, 0.5);
+    EXPECT_DOUBLE_EQ(list.throttle.maxRate, 0.4);
     EXPECT_EQ(list.clutch.active, true);
     EXPECT_DOUBLE_EQ(list.clutch.value, 0.7);
+    EXPECT_DOUBLE_EQ(list.clutch.maxRate, 0.8);
     EXPECT_EQ(list.steeringWheel.active, false);
     EXPECT_NEAR(list.steeringWheel.value, 2 * M_PI, 0.01);
 
