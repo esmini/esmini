@@ -609,6 +609,7 @@ namespace roadgeom
 
                     std::vector<int> lane_ids;  // all physical lane ids, except center lane which has no area
                     lane_ids.reserve(lsec->GetNumberOfLanes() - 1);
+                    std::unordered_map<int, int> lane_idxs;  // store indexes for all lanes, except center lane (id 0)
 
                     // First make sure there are OSI points of the center lane
                     roadmanager::Lane* lane = lsec->GetLaneById(0);
@@ -674,6 +675,7 @@ namespace roadgeom
                             continue;
                         }
 
+                        lane_idxs[lane->GetId()] = lane_idxs.size();
                         lane_ids.push_back(lane->GetId());
 
                         for (size_t l = 0; l < lane->GetNumberOfMaterials(); l++)
@@ -821,7 +823,8 @@ namespace roadgeom
                         unsigned int geom_idx = 0;
                         for (size_t k = 0; k < all_lane_ids.size(); k++)
                         {
-                            int lane_id = all_lane_ids[k];
+                            int lane_id  = all_lane_ids[k];
+                            int lane_idx = lane_idxs[lane_id];
 
                             if (counter == 0 && lane_id != 0)
                             {
@@ -838,7 +841,7 @@ namespace roadgeom
                             if (lane_id != 0 && counter == 0 || !NEAR_NUMBERS(friction, geom_cache[k].friction))
                             {
                                 // create initial strip or strip with new friction value
-                                geom_strips_list.back().push_back({static_cast<int>(geom_points_list.back()[0].size()), friction});
+                                geom_strips_list[lane_idx].push_back({static_cast<int>(geom_points_list[lane_idx][0].size()), friction});
                             }
 
                             for (auto side : {0, 1})  // left, right
