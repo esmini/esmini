@@ -3748,7 +3748,7 @@ namespace roadmanager
         {
             HEADING_DIRECTION = 0,  // based on entity heading
             ROAD_DIRECTION    = 1,  // reference line s axis
-            LANE_DIRECTION    = 2,  // driving direction
+            LANE_DIRECTION    = 2   // driving direction
         };
 
         bool CheckBitsEqual(int input, int mask, int bits) const
