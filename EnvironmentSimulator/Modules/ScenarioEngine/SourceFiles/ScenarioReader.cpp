@@ -3632,13 +3632,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
                 else if (controllerChild.name() == std::string("OverrideControllerValueAction"))
                 {
-                    OverrideControlAction       *override_action = new OverrideControlAction(parent);
-                    Object::OverrideActionStatus overrideStatus;
-                    bool                         verFromMinor2 = (GetVersionMajor() == 1 && GetVersionMinor() >= 2);
+                    OverrideControlAction *override_action = new OverrideControlAction(parent);
+                    bool                   verFromMinor2   = (GetVersionMajor() == 1 && GetVersionMinor() >= 2);
 
                     for (pugi::xml_node controllerDefNode = controllerChild.first_child(); controllerDefNode;
                          controllerDefNode                = controllerDefNode.next_sibling())
                     {
+                        Object::OverrideActionStatus overrideStatus;
+
                         // read active flag
                         overrideStatus.active = parameters.ReadAttribute(controllerDefNode, "active") == "true" ? true : false;
 
