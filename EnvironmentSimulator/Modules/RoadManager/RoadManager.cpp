@@ -11872,6 +11872,12 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
         // If route is valid, use current point snapped to route as pivot to find the target position
         target.CopyLocation(GetRoute()->currentPos_);
         target.CopyRoute(*this);
+
+        // align heading with route direction
+        if (GetRoute()->waypoint_idx_ != IDX_UNDEFINED)
+        {
+            target.SetHeadingRelative(GetRoute()->GetWaypoint()->GetRouteWaypointDir() < 0 ? M_PI : 0.0);
+        }
     }
 
     if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER)
@@ -14694,6 +14700,8 @@ Position::ReturnCode Route::MovePathDS(double ds, double* remaining_dist, bool u
 
     // Consider route direction
     ds *= GetWaypoint()->GetRouteWaypointDir();
+    // printf("moving along path by ds = %.2f (route dir %d), from road %d s %.2f\n", ds, GetWaypoint()->GetRouteWaypointDir(),
+    // currentPos_.GetTrackId(), currentPos_.GetS());
 
     return SetPathS(GetPathS() + ds, remaining_dist, update_state);
 }
@@ -14820,7 +14828,7 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
     return Position::ReturnCode::ERROR_GENERIC;  // not expected
 }
 
-Position* Route::GetWaypoint(idx_t index)
+const Position* Route::GetWaypoint(idx_t index) const
 {
     if (index == IDX_UNDEFINED)  // Get current
     {

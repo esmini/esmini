@@ -3748,7 +3748,7 @@ namespace roadmanager
         {
             HEADING_DIRECTION = 0,  // based on entity heading
             ROAD_DIRECTION    = 1,  // reference line s axis
-            LANE_DIRECTION    = 2,  // driving direction
+            LANE_DIRECTION    = 2   // driving direction
         };
 
         bool CheckBitsEqual(int input, int mask, int bits) const
@@ -4940,10 +4940,10 @@ namespace roadmanager
         @param index Index of the waypoint, omit or set IDX_UNDEFINED for current
         @return Waypoint position object
          */
-        Position *GetWaypoint(idx_t index = IDX_UNDEFINED);  // -1 means current
-        Road     *GetRoadAtOtherEndOfIncomingRoad(Junction *junction, Road *incoming_road) const;
-        Road     *GetRoadAtOtherEndOfConnectingRoad(Road *incoming_road) const;
-        Position *GetCurrentPosition()
+        const Position *GetWaypoint(idx_t index = IDX_UNDEFINED) const;  // -1 means current
+        Road           *GetRoadAtOtherEndOfIncomingRoad(Junction *junction, Road *incoming_road) const;
+        Road           *GetRoadAtOtherEndOfConnectingRoad(Road *incoming_road) const;
+        Position       *GetCurrentPosition()
         {
             return &currentPos_;
         }
