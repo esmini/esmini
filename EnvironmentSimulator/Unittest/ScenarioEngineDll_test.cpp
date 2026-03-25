@@ -5910,6 +5910,185 @@ TEST(RoutingTest, TestRoutePointsWithGhost)
     SE_Close();
 }
 
+TEST(RoutingTest, TestLookaheadAlongRoute)
+{
+    std::string scenario_file = "../../../EnvironmentSimulator/Unittest/xosc/lookahead_along_route.xosc";
+
+    const double defaultTargetSpeed = 5.0;
+    const double curveWeight        = 4.0;
+    const double throttleWeight     = 0.1;
+    const double steeringRate       = 6.0;
+    const bool   viewer_enabled     = false;
+
+    SE_SimpleVehicleState  vehicleState = {0, 0, 0, 0, 0, 0, 0, 0};
+    SE_ScenarioObjectState objectState;
+    SE_RoadInfo            roadInfo;
+    SE_ScenarioObjectState obj_state;
+
+    SE_SetOptionValue("path", "../../../../resources/xosc/Catalogs/Vehicles");
+    SE_SetOptionValue("path", "../../../../resources/xodr");
+    SE_SetOption("bounding_boxes");
+
+    ASSERT_EQ(SE_Init(scenario_file.c_str(), 0, viewer_enabled, 0, 0), 0);
+    EXPECT_EQ(SE_GetNumberOfObjects(), 1);
+    EXPECT_EQ(SE_GetObjectRouteStatus(SE_GetId(0)), 2);
+
+    // Initialize the vehicle model, fetch initial state from the scenario
+    SE_GetObjectState(0, &objectState);
+    void* vehicleHandle = SE_SimpleVehicleCreate(objectState.x, objectState.y, objectState.h, 4.0, 0.0);
+    SE_SimpleVehicleSteeringRate(vehicleHandle, steeringRate);
+
+    // show some road features, including road sensor in case viewer is enabled
+    SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),
+
+    // Run for specified duration or until 'Esc' button is pressed
+    double dt        = 0.05f;
+    int    test_step = 0;
+    int    ego_id    = SE_GetId(0);
+
+    EXPECT_NEAR(SE_GetRouteTotalLength(ego_id), 59.3177, 1e-3);
+
+    while (SE_GetQuitFlag() == 0)
+    {
+        if (!SE_GetPauseFlag())
+        {
+            // Look ahead along the route, to establish target info for the driver model
+            SE_GetObjectState(0, &objectState);
+            int retval = SE_GetRoadInfoAlongRoute(0, 5 + 0.75 * vehicleState.speed, &roadInfo, 0, true);
+
+            // Slow down when curve ahead - CURVE_WEIGHT is the tuning parameter
+            double targetSpeed = defaultTargetSpeed / (1 + curveWeight * roadInfo.angle);
+
+            // Accelerate or decelerate towards target speed - THROTTLE_WEIGHT tunes magnitude
+            double throttle = throttleWeight * (targetSpeed - vehicleState.speed);
+
+            // Steer towards where the point
+            double steerAngle = roadInfo.angle;
+
+            SE_SimpleVehicleControlAnalog(vehicleHandle, dt, throttle, steerAngle);
+
+            // Fetch updated state and report to scenario engine
+            SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+
+            // Report updated vehicle position and heading. z, pitch and roll will be aligned to the road
+            SE_ReportObjectPosXYH(0, vehicleState.x, vehicleState.y, vehicleState.h);
+
+            // The following values are not necessary to report.
+            // If not reported, esmini will calculate based on motion over time
+            // but for accuracy it's recommendeded to report if available.
+
+            // wheel status (revolution and steering angles)
+            SE_ReportObjectWheelStatus(0, vehicleState.wheel_rotation, vehicleState.wheel_angle);
+
+            // speed (along vehicle longitudinal (x) axis)
+            SE_ReportObjectSpeed(0, vehicleState.speed);
+
+            // Finally, update scenario using same time step as for vehicle model
+            SE_StepDT(dt);
+
+            // Perform checks at some key points along the route
+            if (test_step == 0 && SE_GetSimulationTime() > 2.0 - SMALL_NUMBER)
+            {
+                // before junction
+                EXPECT_EQ(retval, 0);
+                SE_GetObjectState(ego_id, &obj_state);
+                EXPECT_NEAR(obj_state.x, 31.5937, 1e-3);
+                EXPECT_NEAR(obj_state.y, -21.6353, 1e-3);
+                EXPECT_NEAR(obj_state.h, 1.7957, 1e-3);
+                EXPECT_NEAR(obj_state.speed, 4.9859, 1e-3);
+                EXPECT_EQ(SE_GetObjectRouteStatus(ego_id), 2);
+
+                test_step++;
+            }
+            else if (test_step == 1 && SE_GetSimulationTime() > 4.0 - SMALL_NUMBER)
+            {
+                // probe in junction
+                EXPECT_EQ(retval, 2);
+                SE_GetObjectState(ego_id, &obj_state);
+                EXPECT_NEAR(obj_state.x, 29.3986, 1e-3);
+                EXPECT_NEAR(obj_state.y, -12.3355, 1e-3);
+                EXPECT_NEAR(obj_state.h, 1.8425, 1e-3);
+                EXPECT_NEAR(obj_state.speed, 3.9833, 1e-3);
+                EXPECT_EQ(SE_GetObjectRouteStatus(ego_id), 2);
+
+                test_step++;
+            }
+            else if (test_step == 2 && SE_GetSimulationTime() > 6.0 - SMALL_NUMBER)
+            {
+                // both ego and probe in junction
+                EXPECT_EQ(retval, 0);
+                SE_GetObjectState(ego_id, &obj_state);
+                EXPECT_NEAR(obj_state.x, 26.7903, 1e-3);
+                EXPECT_NEAR(obj_state.y, -6.6350, 1e-3);
+                EXPECT_NEAR(obj_state.h, 2.1582, 1e-3);
+                EXPECT_NEAR(obj_state.speed, 2.5938, 1e-3);
+                EXPECT_EQ(SE_GetObjectRouteStatus(ego_id), 2);
+
+                test_step++;
+            }
+            else if (test_step == 3 && SE_GetSimulationTime() > 9.0 - SMALL_NUMBER)
+            {
+                // probe out of junction
+                EXPECT_EQ(retval, 1);
+                SE_GetObjectState(ego_id, &obj_state);
+                EXPECT_NEAR(obj_state.x, 21.3601, 1e-3);
+                EXPECT_NEAR(obj_state.y, -2.7398, 1e-3);
+                EXPECT_NEAR(obj_state.h, 2.8055, 1e-3);
+                EXPECT_NEAR(obj_state.speed, 2.1892, 1e-3);
+                EXPECT_EQ(SE_GetObjectRouteStatus(ego_id), 2);
+
+                test_step++;
+            }
+            else if (test_step == 4 && SE_GetSimulationTime() > 12.0 - SMALL_NUMBER)
+            {
+                // both out of junction
+                EXPECT_EQ(retval, 0);
+                SE_GetObjectState(ego_id, &obj_state);
+                EXPECT_NEAR(obj_state.x, 13.1246, 1e-3);
+                EXPECT_NEAR(obj_state.y, -2.5613, 1e-3);
+                EXPECT_NEAR(obj_state.h, 3.2636, 1e-3);
+                EXPECT_NEAR(obj_state.speed, 3.7004, 1e-3);
+                EXPECT_EQ(SE_GetObjectRouteStatus(ego_id), 2);
+
+                test_step++;
+            }
+            else if (test_step == 5 && SE_GetSimulationTime() > 13.0 - SMALL_NUMBER)
+            {
+                // probe beyond end of route
+                EXPECT_EQ(retval, 0);
+                SE_GetObjectState(ego_id, &obj_state);
+                EXPECT_NEAR(obj_state.x, 9.0125, 1e-3);
+                EXPECT_NEAR(obj_state.y, -3.1985, 1e-3);
+                EXPECT_NEAR(obj_state.h, 3.3057, 1e-3);
+                EXPECT_NEAR(obj_state.speed, 4.5585, 1e-3);
+                EXPECT_EQ(SE_GetObjectRouteStatus(ego_id), 2);
+
+                test_step++;
+            }
+            else if (test_step == 6 && SE_GetSimulationTime() > 15.0 - SMALL_NUMBER)
+            {
+                // both ego and probe beyond end of route
+                EXPECT_EQ(retval, 0);
+                SE_GetObjectState(ego_id, &obj_state);
+                EXPECT_NEAR(obj_state.x, -0.8334, 1e-3);
+                EXPECT_NEAR(obj_state.y, -4.8062, 1e-3);
+                EXPECT_NEAR(obj_state.h, 3.2955, 1e-3);
+                EXPECT_NEAR(obj_state.speed, 5.1267, 1e-3);
+                EXPECT_EQ(SE_GetObjectRouteStatus(ego_id), 1);
+
+                test_step++;
+            }
+        }
+        else
+        {
+            // Step with zero delta time, just to catch event disabling pause mode
+            SE_StepDT(0.0);
+        }
+    }
+
+    SE_Close();
+}
+
 // Verify correct ID when initial set of vehicles is not complete (to be added later)
 TEST(IdTest, TestIdOutOfSync)
 {

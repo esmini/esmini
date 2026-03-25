@@ -11868,6 +11868,12 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
         // If route is valid, use current point snapped to route as pivot to find the target position
         target.CopyLocation(GetRoute()->currentPos_);
         target.CopyRoute(*this);
+
+        // align heading with route direction
+        if (GetRoute()->waypoint_idx_ != IDX_UNDEFINED)
+        {
+            target.SetHeadingRelative(GetRoute()->all_waypoints_[GetRoute()->waypoint_idx_].GetRouteWaypointDir() < 0 ? M_PI : 0.0);
+        }
     }
 
     if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER)
