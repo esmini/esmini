@@ -4195,6 +4195,10 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                             {
                                 lane_type = Lane::LANE_TYPE_ON_RAMP;
                             }
+                            else if (lane_type_str == "connectingRamp")
+                            {
+                                lane_type = Lane::LANE_TYPE_CONNECTING_RAMP;
+                            }
                             else
                             {
                                 LOG_ERROR("unknown lane type: {} (road id={})", lane_type_str, r->GetId());
