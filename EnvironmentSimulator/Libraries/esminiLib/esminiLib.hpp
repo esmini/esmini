@@ -1054,7 +1054,7 @@ extern "C"
             Specify which lane types the position object snaps to (is aware of)
             @param object_id Id of the object
             @param laneTypes A combination (bitmask) of lane types according to roadmanager::Lane::LaneType
-            examples: ANY_DRIVING = 1966594, ANY_ROAD = 1966990, ANY = -1
+            examples: ANY_DRIVING = 6160898, ANY_ROAD = 6161294, ANY = -1
             @return 0 if successful, -1 if not
     */
     SE_DLL_API int SE_SetSnapLaneTypes(int object_id, int laneTypes);

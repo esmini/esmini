@@ -1305,7 +1305,7 @@ namespace ESMini
         /// Specify which lane types the position object snaps to (is aware of)
         /// </summary>
         /// <param name="object_id">Id of the object</param>
-        /// <param name="laneTypes">A combination (bitmask) of lane types according to roadmanager::Lane::LaneType examples: ANY_DRIVING = 1966594, ANY_ROAD = 1966990, ANY = -1</param>
+        /// <param name="laneTypes">A combination (bitmask) of lane types according to roadmanager::Lane::LaneType examples: ANY_DRIVING = 6160898, ANY_ROAD = 6161294, ANY = -1</param>
         /// <returns>0 if successful, -1 if not</returns>
         [DllImport(NativeLibrary, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         public static extern int SE_SetSnapLaneTypes(int object_id, int laneTypes);

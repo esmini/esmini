@@ -4383,8 +4383,8 @@ TEST(LaneType, TestLaneTypeMasks)
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_CURB, 1 << 21);
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_CONNECTING_RAMP, 1 << 22);
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_REFERENCE_LINE, 1 << 0);
-    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_DRIVING, 1966594);
-    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD, 1966990);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_DRIVING, 6160898);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD, 6161294);
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY, -1);
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_TUNNEL, -2);
 }
