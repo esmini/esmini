@@ -48,8 +48,7 @@ namespace Dat
         SHAPE_2D_OUTLINE  = 28,
         ENVIRONMENT       = 29,
         BB_COLOR          = 30,
-        IS_TRAILER        = 31,
-        PACKET_ID_SIZE    = 32  // Keep this last
+        PACKET_ID_SIZE    = 31  // Keep this last
     };
 
     struct PacketString

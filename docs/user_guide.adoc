@@ -1756,6 +1756,27 @@ Note that the outline is independent and does not have to exactly match the 3D m
 
 The visualization of the 2D shape outlines is activated by default. It can be disabled by option `--hide_obj_outline` and toggled on/off in `esmini` and `replayer` with `;` (shift + comma).
 
+=== Boundingbox Colors
+
+On any EntityObject (Vehicle, Pedestrian, MiscObject) in OpenSCENARIO XML, esmini will, in addition to visualizing 3D models and boundingbox wireframe, generate a filled boundingbox with specified boundingbox dimensions and optional color.
+
+*How to enable*
+
+- In simulation: Toggling the view mode with `,`
+- Launch option `--view_mode filled_boundingbox`.
+
+Currently, OpenSCENARIO XML doesn't support setting the color of an object in a standardized way.  However, the Property elements of https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/EntityObject.html[EntityObject] can be utilized for this purpose. From version 3.0.1 esmini supports reading color defined as property with name `color` and value as a hex code with format: `#RRGGBB`. Example of white color:
+
+[source,xml]
+----
+<Property name="color" value="#FFFFFF"/>
+----
+
+For further details refer to the https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Vehicles/VehicleCatalog.xosc[VehicleCatalog].
+
+The hex code for the color will be converted to a value between 0 and 1 and transmitted on its respective channel on OSI https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1ColorRGB.html[ColorRGB] in OSI MovingObject (Vehicle, Pedestrian) and StationaryObject (MiscObject).
+
+
 === SUMO integration
 
 https://eclipse.dev/sumo/[SUMO] is a great open source traffic simulation tool. It has been integrated with esmini, making it possible to run SUMO simulations in esmini, and even mix or co-simulate SUMO vehicles with OpenSCENARIO vehicles.

@@ -541,9 +541,6 @@ namespace viewer
         int                      camMode_;
         osg::ref_ptr<osg::Group> line_node_;
 
-        // Vehicle position debug visualization
-        osg::ref_ptr<osg::Node> shadow_node_;
-
         // Trail dot model
         osg::ref_ptr<osg::Node> dot_node_;
 
@@ -637,14 +634,12 @@ namespace viewer
                                                    double                         refpoint_x_offset,
                                                    double                         modlel_x_offset,
                                                    const std::vector<SE_Point2D>* outline,
-                                                   EntityScaleMode                scaleMode  = EntityScaleMode::NONE,
-                                                   std::string                    bb_color   = "",
-                                                   bool                           is_trailer = false);
+                                                   EntityScaleMode                scaleMode = EntityScaleMode::NONE,
+                                                   std::string                    bb_color  = "");
         int                      AddEntityModel(EntityModel* model);
         void                     RemoveCar(int index);
         void                     RemoveCar(std::string name);
         void                     ReplaceCar(int index, EntityModel* model);
-        int                      LoadShadowfile(std::string vehicleModelFilename);
         int                      LoadEnvironment(const char* filename);
         osg::ref_ptr<osg::Group> LoadEntityModel(const char* filename, osg::BoundingBox& bb);
         void                     UpdateSensor(PointSensor* sensor);
@@ -726,15 +721,14 @@ namespace viewer
             return osg_screenshot_event_handler_;
         }
 
-        void   Frame(double time);
-        void   SetFrictionScaleFactor(const double factor);
-        double GetFrictionScaleFactor() const;
-        void   SetAxisIndicatorMode(int mode);
-        void   CycleAxisIndicatorMode();
-        void   CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
-        void   SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
-
-        double ComputeShadowScaleFactor(double modelSize, double shadowModelSize);
+        void                    Frame(double time);
+        void                    SetFrictionScaleFactor(const double factor);
+        double                  GetFrictionScaleFactor() const;
+        void                    SetAxisIndicatorMode(int mode);
+        void                    CycleAxisIndicatorMode();
+        void                    CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
+        void                    SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
+        osg::ref_ptr<osg::Node> CreateShadow(double bb_x, double bb_y, double bb_z);
 
     private:
         int        CreateTunnels(roadmanager::OpenDrive* od);

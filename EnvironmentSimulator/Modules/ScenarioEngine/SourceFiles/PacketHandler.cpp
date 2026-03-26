@@ -335,12 +335,6 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
             Write(PacketId::BB_COLOR, p_str);
         }
 
-        if (cache_it->second.is_trailer_ != (obj->TowVehicle() != nullptr))
-        {
-            cache_it->second.is_trailer_ = (obj->TowVehicle() != nullptr);
-            Write(PacketId::IS_TRAILER, cache_it->second.is_trailer_);
-        }
-
         this->SetObjectIdWritten(false);  // Indicate we need to write object id for next state
     }
 

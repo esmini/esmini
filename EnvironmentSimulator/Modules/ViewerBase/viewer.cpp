@@ -16,6 +16,7 @@
 #include <osg/ComputeBoundsVisitor>
 #include <osg/LineWidth>
 #include <osg/BlendColor>
+#include <osg/Stencil>
 #include <osg/Geode>
 #include <osg/Group>
 #include <osg/CullFace>
@@ -42,10 +43,9 @@ namespace fs = std::experimental::filesystem;
 #error "Missing <filesystem> header"
 #endif
 
-#define SHADOW_SCALE            1.20
-#define SHADOW_MAX_EXTRUSION    1.0
-#define SHADOW_MIN_EXTRUSION    0.1
-#define SHADOW_MODEL_FILEPATH   "shadow_face.osgb"
+#define SHADOW_MAX_EXTRUSION    0.4
+#define SHADOW_MIN_EXTRUSION    0.05
+#define SHADOW_OPACITY          0.6f
 #define ARROW_MODEL_FILEPATH    "arrow.osgb"
 #define LOD_DIST                3000
 #define LOD_SCALE_DEFAULT       1.0
@@ -65,6 +65,7 @@ float color_green[3]      = {0.2f, 0.6f, 0.3f};
 float color_gray[3]       = {0.7f, 0.7f, 0.7f};
 float color_red[3]        = {0.8f, 0.3f, 0.3f};
 float color_black[3]      = {0.2f, 0.2f, 0.2f};
+float color_shadow[3]     = {0.05f, 0.05f, 0.05f};
 float color_blue[3]       = {0.25f, 0.38f, 0.7f};
 float color_yellow[3]     = {0.75f, 0.7f, 0.4f};
 float color_white[3]      = {1.0f, 1.0f, 0.9f};
@@ -1561,6 +1562,7 @@ int Viewer::InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
     traits->y             = y;
     traits->width         = w;
     traits->height        = h;
+    traits->stencil       = 8;
     traits->samples       = static_cast<unsigned int>(samples);
     traits->sampleBuffers = (traits->samples > 0) ? 1 : 0;
     traits->sharedContext = 0;
@@ -1616,7 +1618,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     keyRight_                     = false;
     quit_request_                 = false;
     camMode_                      = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
-    shadow_node_                  = NULL;
     environment_                  = NULL;
     roadGeom                      = NULL;
     captureCounter_               = 0;
@@ -1714,7 +1715,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osg::ref_ptr<osg::Camera> camera = osgViewer_->getCamera();
 
     camera->setGraphicsContext(gc);
-    camera->setClearMask(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    camera->setClearMask(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     if (!clear_color)
     {
         // Default background color
@@ -2361,22 +2362,19 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
                                        double                         model_x_offset,
                                        const std::vector<SE_Point2D>* outline,
                                        EntityScaleMode                scaleMode,
-                                       std::string                    bb_color,
-                                       bool                           is_trailer)
+                                       std::string                    bb_color)
 {
     // Load 3D model
     osg::ref_ptr<osg::Group>                     group             = new osg::Group;
     osg::ref_ptr<osg::Group>                     modelgroup        = nullptr;
     osg::ref_ptr<osg::Group>                     bbGroup           = nullptr;
-    osg::ref_ptr<osg::Node>                      shadow_node       = nullptr;
     osg::ref_ptr<osg::PositionAttitudeTransform> txVehicleDynamics = new osg::PositionAttitudeTransform;
     osg::BoundingBox                             modelBB;
-    std::vector<std::string>                     file_name_candidates;
+    osg::BoundingBox                             scaledBB;
     double                                       carStdDim[]  = {4.5, 1.8, 1.5};
     double                                       carStdOrig[] = {1.5, 0.0, 0.75};
     osg::Vec3d                                   bbCenter(carStdOrig[0], carStdOrig[1], carStdOrig[2]);
     osg::Vec3d                                   bbDimensions(carStdDim[0], carStdDim[1], carStdDim[2]);
-    std::string                                  filepath;
 
     // Check if model already loaded
     for (size_t i = 0; i < entities_.size(); i++)
@@ -2598,71 +2596,57 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
                                         boundingBox->center_.y_ - sy * static_cast<double>(modelBB.center().y()),
                                         boundingBox->center_.z_ - sz * static_cast<double>(modelBB.center().z())));
         modeltx->setScale(osg::Vec3d(sx, sy, sz));
+
+        osg::Matrix scaleMatrix = osg::Matrix::scale(sx, sy, sz);
+        for (unsigned int i = 0; i < 8; ++i)
+        {
+            scaledBB.expandBy(modelBB.corner(i) * scaleMatrix);
+        }
     }
 
     // Put transform node under modelgroup
     modeltx->addChild(modelgroup);
 
-    // Load and attach shadow node alongside the model so it is present even when hide_vehicle_models_ is set
-    if (!shadow_node_)
+    // Create shadows for models and filled boundingboxes
+    osg::ref_ptr<osg::Node> shadow_node_model     = nullptr;
+    osg::ref_ptr<osg::Node> shadow_node_filled_bb = nullptr;
+
+    // By default we use z-offset 0.05, if not type moving, we set it to 0.01
+    double    zOffset         = 0.05;
+    const int MOVING_TYPE_BIT = 1 << 1;
+    if (!(static_cast<int>(type) & MOVING_TYPE_BIT))
     {
-        LoadShadowfile(modelFilepath);
+        zOffset = 0.01;
     }
 
-    osg::ref_ptr<osg::PositionAttitudeTransform> shadow_tx2 = nullptr;
-
-    if (shadow_node_)
+    // We need to create the models shadow with the scaled dimensions
+    osg::BoundingBox tempModelBB = modelBB;
+    if (scaleMode == EntityScaleMode::MODEL_TO_BB)
     {
-        static int elev = 0;  // Avoid shadow node to flicker, put every second on slightly different Z
-        if (is_trailer)
-        {
-            elev = (elev + 1) % 3;
-        }
-        else
-        {
-            elev = 0;
-        }
-
-        float  dx     = modelBB._max.x() - modelBB._min.x();
-        float  dy     = modelBB._max.y() - modelBB._min.y();
-        float  xc     = (modelBB._max.x() + modelBB._min.x()) / 2.0f;
-        float  yc     = (modelBB._max.y() + modelBB._min.y()) / 2.0f;
-        double bbMinZ = bbCenter.z() - bbDimensions.z() / 2.0;
-
-        const double shadowModelSizeX = 2.0;
-        const double shadowModelSizeY = 2.0;
-
-        double modelShadowScaleX    = ComputeShadowScaleFactor(dx, shadowModelSizeX);
-        double modelShadowScaleY    = ComputeShadowScaleFactor(dy, shadowModelSizeY);
-        double filledBBShadowScaleX = ComputeShadowScaleFactor(bbDimensions.x(), shadowModelSizeX);
-        double filledBBShadowScaleY = ComputeShadowScaleFactor(bbDimensions.y(), shadowModelSizeY);
-
-        // By default we use the Z thats baked in to the shadow model
-        double zOffset = 0.05 * elev;
-
-        // If not type moving, we reduce the zOffset by 4cm, leaving the shadow just 1cm off the ground
-        const int MOVING_TYPE_BIT = 1 << 1;
-        if (!(static_cast<int>(type) & MOVING_TYPE_BIT))
-        {
-            zOffset = -0.04;
-        }
-
-        osg::ref_ptr<osg::PositionAttitudeTransform> shadow_tx = new osg::PositionAttitudeTransform;
-        shadow_tx->setName("shadow_tx");
-        shadow_tx->setPosition(osg::Vec3d(xc, yc, zOffset + modelBB._min.z()));
-        shadow_tx->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
-        shadow_tx->setScale(osg::Vec3d(modelShadowScaleX, modelShadowScaleY, 1.0));
-        shadow_tx->addChild(shadow_node_);
-        shadow_tx->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
-        modeltx->addChild(shadow_tx);
-
-        shadow_tx2 = static_cast<osg::PositionAttitudeTransform*>(shadow_tx->clone(osg::CopyOp::DEEP_COPY_ALL));
-
-        shadow_tx2->setName("shadow_tx_filled_bb");
-        shadow_tx2->setPosition(osg::Vec3d(bbCenter.x(), bbCenter.y(), zOffset + bbMinZ));
-        shadow_tx2->setScale(osg::Vec3d(filledBBShadowScaleX, filledBBShadowScaleY, 1.0));
-        shadow_tx2->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB_FILLED);
+        tempModelBB = scaledBB;
     }
+
+    float  dx     = tempModelBB._max.x() - tempModelBB._min.x();
+    float  dy     = tempModelBB._max.y() - tempModelBB._min.y();
+    float  dz     = tempModelBB._max.z() - tempModelBB._min.z();
+    float  xc     = (modelBB._max.x() + modelBB._min.x()) / 2.0f;
+    float  yc     = (modelBB._max.y() + modelBB._min.y()) / 2.0f;
+    double bbMinZ = bbCenter.z() - bbDimensions.z() / 2.0;
+
+    shadow_node_model                         = CreateShadow(dx, dy, dz);
+    osg::PositionAttitudeTransform* pat_model = static_cast<osg::PositionAttitudeTransform*>(shadow_node_model.get());
+    pat_model->setName("shadow_tx_model");
+    pat_model->setPosition(osg::Vec3d(xc, yc, zOffset + tempModelBB._min.z()));
+    pat_model->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
+    pat_model->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
+
+    shadow_node_filled_bb                         = CreateShadow(bbDimensions.x(), bbDimensions.y(), bbDimensions.z());
+    osg::PositionAttitudeTransform* pat_filled_bb = static_cast<osg::PositionAttitudeTransform*>(shadow_node_filled_bb.get());
+    pat_filled_bb->setName("shadow_tx_filled_bb");
+    pat_filled_bb->setPosition(osg::Vec3d(xc, yc, zOffset + bbMinZ));
+    pat_filled_bb->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
+    pat_filled_bb->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB_FILLED);
+    // Attaching to group later to perserve order
 
     // Draw only wireframe
     osg::PolygonMode* polygonMode = new osg::PolygonMode;
@@ -2686,11 +2670,9 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     bbGroup->setName("BoundingBox");
 
     group->addChild(modeltx);
+    group->addChild(pat_model);
     group->addChild(bbGroup);
-    if (shadow_tx2)
-    {
-        group->addChild(shadow_tx2);
-    }
+    group->addChild(pat_filled_bb);
     group->setName(name);
 
     EntityModel* emodel;
@@ -2773,11 +2755,160 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     return emodel;
 }
 
-double Viewer::ComputeShadowScaleFactor(double modelSize, double shadowModelSize)
+osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb_z)
 {
-    double extrusion      = (SHADOW_SCALE - 1.0) * modelSize;
-    double finalExtrusion = MAX(MIN(extrusion, SHADOW_MAX_EXTRUSION), SHADOW_MIN_EXTRUSION);
-    return (modelSize + finalExtrusion) / shadowModelSize;
+    const double shadow_adjustment_factor = MIN(bb_x, bb_y) * 0.08;  // x% of volume
+
+    const unsigned int FAN_SURFACES         = 3;
+    const double       LENGTH               = bb_x * 0.5 - shadow_adjustment_factor;
+    const double       WIDTH                = bb_y * 0.5 - shadow_adjustment_factor;
+    const double       shadow_min_extrusion = SHADOW_MIN_EXTRUSION + 2 * shadow_adjustment_factor;
+
+    const double extrusion = MAX(shadow_min_extrusion, MIN(0.1 * bb_z, SHADOW_MAX_EXTRUSION));
+
+    const int vert_size =
+        4 + 4 * 2 + 4 * (FAN_SURFACES + 1);  // Rect + 4 extrusions with 2 unique vertices + 4 fan surfaces (2 surface is 3 unique points etc.)
+    osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(vert_size);
+
+    // Back (B) Front (T) Left (L) Right (R)
+    // Inner rectangle
+    (*vertices)[0].set(-LENGTH, -WIDTH, 0.0);  // BL
+    (*vertices)[1].set(LENGTH, -WIDTH, 0.0);   // FR
+    (*vertices)[2].set(LENGTH, WIDTH, 0.0);    // FR
+    (*vertices)[3].set(-LENGTH, WIDTH, 0.0);   // FL
+
+    // Extrusion bottom
+    (*vertices)[4].set(-LENGTH, -WIDTH - extrusion, 0.0);  // L
+    (*vertices)[5].set(LENGTH, -WIDTH - extrusion, 0.0);   // R
+
+    // Extrusion right
+    (*vertices)[6].set(LENGTH + extrusion, -WIDTH, 0.0);  // B
+    (*vertices)[7].set(LENGTH + extrusion, WIDTH, 0.0);   // T
+
+    // Extrusion top
+    (*vertices)[8].set(-LENGTH, WIDTH + extrusion, 0.0);  // L
+    (*vertices)[9].set(LENGTH, WIDTH + extrusion, 0.0);   // R
+
+    // Extrusion left
+    (*vertices)[10].set(-LENGTH - extrusion, -WIDTH, 0.0);  // B
+    (*vertices)[11].set(-LENGTH - extrusion, WIDTH, 0.0);   // T
+
+    int  fans_start_idx   = 12;
+    auto makeExtrusionFan = [&](double start_angle, double corner_x, double corner_y, int fan_offset)
+    {
+        for (int i = 0; i <= FAN_SURFACES; i++)
+        {
+            double angle = start_angle + (i / static_cast<double>(FAN_SURFACES)) * (osg::PI / 2.0);
+            (*vertices)[fans_start_idx + fan_offset + i].set(corner_x + cos(angle) * extrusion, corner_y + sin(angle) * extrusion, 0.0);
+        }
+    };
+
+    makeExtrusionFan(osg::PI, -LENGTH, -WIDTH, 0);                            // BL
+    makeExtrusionFan(3.0 * osg::PI / 2.0, LENGTH, -WIDTH, FAN_SURFACES + 1);  // BR
+    makeExtrusionFan(0.0, LENGTH, WIDTH, 2 * (FAN_SURFACES + 1));             // TR
+    makeExtrusionFan(osg::PI / 2.0, -LENGTH, WIDTH, 3 * (FAN_SURFACES + 1));  // TL
+
+    // Normals
+    osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array;
+    normals->push_back(osg::Vec3(0.0f, 0.0f, 1.0f));
+
+    // Colors
+    osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array(vert_size);
+    for (int i = 0; i < 4; i++)
+    {
+        (*colors)[i].set(color_shadow[0], color_shadow[1], color_shadow[2], SHADOW_OPACITY);
+    }
+
+    for (int i = 4; i < vertices->size(); i++)
+    {
+        (*colors)[i].set(color_shadow[0], color_shadow[1], color_shadow[2], 0.0f);
+    }
+
+    // Base geometry
+    osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry;
+    geometry->setVertexArray(vertices.get());
+    geometry->setNormalArray(normals.get());
+    geometry->setNormalBinding(osg::Geometry::BIND_OVERALL);
+    geometry->setColorArray(colors.get());
+    geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+
+    // Create the shapes
+    osg::ref_ptr<osg::DrawElementsUInt> center = new osg::DrawElementsUInt(GL_QUADS, 4);
+    (*center)[0]                               = 0;
+    (*center)[1]                               = 1;
+    (*center)[2]                               = 2;
+    (*center)[3]                               = 3;
+    geometry->addPrimitiveSet(center.get());
+
+    osg::ref_ptr<osg::DrawElementsUInt> bottom = new osg::DrawElementsUInt(GL_QUADS, 4);
+    (*bottom)[0]                               = 0;
+    (*bottom)[1]                               = 1;
+    (*bottom)[2]                               = 5;
+    (*bottom)[3]                               = 4;
+    geometry->addPrimitiveSet(bottom.get());
+
+    osg::ref_ptr<osg::DrawElementsUInt> right = new osg::DrawElementsUInt(GL_QUADS, 4);
+    (*right)[0]                               = 1;
+    (*right)[1]                               = 2;
+    (*right)[2]                               = 7;
+    (*right)[3]                               = 6;
+    geometry->addPrimitiveSet(right.get());
+
+    osg::ref_ptr<osg::DrawElementsUInt> top = new osg::DrawElementsUInt(GL_QUADS, 4);
+    (*top)[0]                               = 2;
+    (*top)[1]                               = 3;
+    (*top)[2]                               = 8;
+    (*top)[3]                               = 9;
+    geometry->addPrimitiveSet(top.get());
+
+    osg::ref_ptr<osg::DrawElementsUInt> left = new osg::DrawElementsUInt(GL_QUADS, 4);
+    (*left)[0]                               = 3;
+    (*left)[1]                               = 0;
+    (*left)[2]                               = 10;
+    (*left)[3]                               = 11;
+    geometry->addPrimitiveSet(left.get());
+
+    auto makeFan = [&](int base_corner_idx, int start_offset)
+    {
+        osg::ref_ptr<osg::DrawElementsUInt> fan = new osg::DrawElementsUInt(GL_TRIANGLE_FAN, FAN_SURFACES + 2);  // anchor corner + surfaces + 1
+        (*fan)[0]                               = base_corner_idx;                                               // The anchor
+        for (int i = 0; i <= FAN_SURFACES; i++)
+        {
+            (*fan)[i + 1] = start_offset + i;
+        }
+        geometry->addPrimitiveSet(fan.get());
+    };
+
+    makeFan(0, fans_start_idx);
+    makeFan(1, fans_start_idx + FAN_SURFACES + 1);
+    makeFan(2, fans_start_idx + 2 * (FAN_SURFACES + 1));
+    makeFan(3, fans_start_idx + 3 * (FAN_SURFACES + 1));
+
+    osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+    geode->addDrawable(geometry.get());
+
+    osg::StateSet* shadowStateSet = geode->getOrCreateStateSet();
+    shadowStateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
+    shadowStateSet->setAttributeAndModes(new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    shadowStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+
+    osg::ref_ptr<osg::Stencil> stencil = new osg::Stencil;
+    // Only draw on pixels that doesn't have a 1 written on them in any of the bits in 0xFF
+    stencil->setFunction(osg::Stencil::NOTEQUAL, 1, 0xFF);
+    /*
+        arg1: sFail (stencil fail), what to do with the pixel if setFunction test failed, we keep the value already written
+        arg2: zFail (depth fail), pixel passed sFail, but there's something else in the way, we keep whats "in the way"
+        arg3: zPass (all tests passed), the pixel is clear, we can write
+    */
+    stencil->setOperation(osg::Stencil::KEEP, osg::Stencil::KEEP, osg::Stencil::REPLACE);
+    stencil->setWriteMask(0xFF);  // What to write into the stencil
+    shadowStateSet->setAttributeAndModes(stencil, osg::StateAttribute::ON);
+    shadowStateSet->setMode(GL_STENCIL_TEST, osg::StateAttribute::ON);
+
+    osg::ref_ptr<osg::PositionAttitudeTransform> pat = new osg::PositionAttitudeTransform;
+    pat->addChild(geode.get());
+
+    return pat.get();
 }
 
 int Viewer::AddEntityModel(EntityModel* model)
@@ -3337,35 +3468,6 @@ void Viewer::UpdateSensor(PointSensor* sensor)
     {
         sensor->ball_->setPosition(sensor->target_pos);
     }
-}
-
-int Viewer::LoadShadowfile(std::string vehicleModelFilename)
-{
-    bool        found     = false;
-    std::string file_path = LocateFile(SHADOW_MODEL_FILEPATH,
-                                       {DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/models", DirNameOf(vehicleModelFilename)},
-                                       "Shadow face model ",
-                                       found);
-
-    if (found)
-    {
-        // Load shadow geometry
-        shadow_node_ = osgDB::readNodeFile(file_path);
-        if (shadow_node_ != nullptr)
-        {
-            return 0;
-        }
-        else
-        {
-            LOG_ERROR("Shadow face model file {} found, but failed to load", file_path);
-        }
-    }
-    else
-    {
-        LOG_WARN("Shadow face model file {} not located", file_path);
-    }
-
-    return -1;
 }
 
 int Viewer::LoadEnvironment(const char* filename)

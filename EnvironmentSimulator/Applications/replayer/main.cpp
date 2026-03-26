@@ -407,12 +407,6 @@ int ParseEntities(Replay* player)
                     bb_color = timelines.bb_color_.values.front().second;
                 }
 
-                bool is_trailer = false;
-                if (!timelines.is_trailer_.values.empty())  // Will only have data if is trailer
-                {
-                    is_trailer = true;
-                }
-
                 bool found = false;
                 if ((new_sc.entityModel = viewer_->CreateEntityModel(
                          LocateFile(filename, {CombineDirectoryPathAndFilepath(res_path, "models")}, "Entity 3D model", found),
@@ -425,8 +419,7 @@ int ParseEntities(Replay* player)
                          model_x_offset,
                          &new_sc.outline_2d,
                          static_cast<EntityScaleMode>(timelines.scale_mode_.values.front().second),
-                         bb_color,
-                         is_trailer)) == 0)
+                         bb_color)) == 0)
                 {
                     return -1;
                 }

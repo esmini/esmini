@@ -320,7 +320,6 @@ namespace scenarioengine
         Timeline<std::string>             model3d_;
         Timeline<std::vector<SE_Point2D>> outline_;
         Timeline<std::string>             bb_color_;
-        Timeline<bool>                    is_trailer_;
     };
 
     // Custom comparator ensuring map has ids ordered as:
