@@ -309,11 +309,11 @@ jobs:
       # Generate build number based on offset from former AppVeyor CI machine
       - uses: ./.github/actions/generate_offset_run_number
 
-      - uses: actions/download-artifact@v4.1.7
+      - uses: actions/download-artifact@v8
         with:
           name: esmini-bin_${{ runner.os }}
 
-      - uses: actions/download-artifact@v4.1.7
+      - uses: actions/download-artifact@v8
         with:
           name: esmini-demo_${{ runner.os }}
 
@@ -322,7 +322,7 @@ jobs:
         run: echo "ESMINI_VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: 'esmini ${{ env.ESMINI_VERSION }} (build ${{ env.BUILD_NUMBER }})'
           body: 'Demo and binaries. For information about changes and new features see [release notes](https://github.com/esmini/esmini/blob/master/release_notes.md).'
