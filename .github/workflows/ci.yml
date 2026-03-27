@@ -93,13 +93,20 @@ jobs:
       matrix:
         os: [ubuntu-22.04, macos-14, windows-2022]
         configuration: [Debug, Release]
+        include:
+          - os: ubuntu-22.04
+            triplet: x64-linux
+          - os: macos-14
+            triplet: arm64-osx
+          - os: windows-2022
+            triplet: x64-windows-static-md
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v6
         with:
-          submodules: true
+          submodules: recursive
           fetch-tags: true
           fetch-depth: 0
           ref: ${{ github.ref }}
@@ -115,26 +122,50 @@ jobs:
           path: |
             externals/googletest
             externals/osg
-            externals/osi
             externals/sumo
             externals/implot
             resources/models
           key: ${{ runner.os }}-external-resources
 
+      # Phase A: Build and install asam-osi-utilities via vcpkg
+      - name: Setup OSI Utilities
+        id: osi
+        uses: ./.github/actions/setup_osi_utilities
+        with:
+          triplet: ${{ matrix.triplet }}
+          configuration: ${{ matrix.configuration }}
+
       - name: CMake Configure - Windows
         if: runner.os == 'Windows'
         shell: pwsh
-        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -G "Visual Studio 17 2022" -T v142 -A x64
+        run: >
+          cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }}
+          -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
+          -G "Visual Studio 17 2022" -T v142 -A x64
+          -DOSI_UTILITIES_PREFIX=${{ steps.osi.outputs.osi-prefix }}
+          -DCMAKE_PREFIX_PATH="${{ steps.osi.outputs.cmake-prefix-path }}"
+          -DProtobuf_PROTOC_EXECUTABLE=${{ steps.osi.outputs.protoc-executable }}
 
       - name: CMake Configure - Linux
         if: runner.os == 'Linux'
         shell: pwsh
-        run: cmake . -G Ninja -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
+        run: >
+          cmake . -G Ninja -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }}
+          -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
+          -DOSI_UTILITIES_PREFIX=${{ steps.osi.outputs.osi-prefix }}
+          -DCMAKE_PREFIX_PATH="${{ steps.osi.outputs.cmake-prefix-path }}"
+          -DProtobuf_PROTOC_EXECUTABLE=${{ steps.osi.outputs.protoc-executable }}
 
       - name: CMake Configure - macOS
         if: runner.os == 'macOS'
         shell: pwsh
-        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+        run: >
+          cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }}
+          -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
+          -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+          -DOSI_UTILITIES_PREFIX=${{ steps.osi.outputs.osi-prefix }}
+          -DCMAKE_PREFIX_PATH="${{ steps.osi.outputs.cmake-prefix-path }}"
+          -DProtobuf_PROTOC_EXECUTABLE=${{ steps.osi.outputs.protoc-executable }}
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
@@ -157,9 +188,12 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           cd OSMP_FMU
-          mkdir build
+          mkdir -p build
           cd build
-          cmake ..
+          cmake .. \
+            -DOSI_UTILITIES_PREFIX=${{ steps.osi.outputs.osi-prefix }} \
+            -DCMAKE_PREFIX_PATH="${{ steps.osi.outputs.cmake-prefix-path }}" \
+            -DProtobuf_PROTOC_EXECUTABLE=${{ steps.osi.outputs.protoc-executable }}
           cmake --build . -j2
 
       - name: Validate OSMP FMU
@@ -230,12 +264,10 @@ jobs:
           path: |
             externals/googletest
             externals/osg
-            externals/osi
             externals/sumo
             externals/implot
             resources/models
-          key: ${{ runner.os }}-external-resources
-
+          key: ${{ runner.os }}-external-resources-slim
       # run xml validation only here.
       # 1. Only needs to run once
       # 2. It's not dependent on configuration, so it can be run by any config
