@@ -11,3 +11,7 @@
 [submodule "externals/fmt"]
 	path = externals/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "externals/asam-osi-utilities"]
+	path = externals/asam-osi-utilities
+	url = https://github.com/lichtblick-suite/asam-osi-utilities.git
+	branch = main
