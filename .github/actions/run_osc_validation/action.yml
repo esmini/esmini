@@ -8,7 +8,7 @@ runs:
       uses: actions/checkout@v4
       with:
         repository: PMSFIT/osc-validation
-        ref: 44c6a2f4c8363aebf8fcb8e9822fdcca677d51f6
+        ref: 0a3075d4f1c4b663c3e7831b415cf60d3397f51a
         fetch-depth: 1
         path: osc-validation
 
