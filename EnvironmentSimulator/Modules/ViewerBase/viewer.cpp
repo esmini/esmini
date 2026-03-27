@@ -43,9 +43,9 @@ namespace fs = std::experimental::filesystem;
 #error "Missing <filesystem> header"
 #endif
 
-#define SHADOW_MAX_EXTRUSION    0.4
+#define SHADOW_MAX_EXTRUSION    0.5
 #define SHADOW_MIN_EXTRUSION    0.05
-#define SHADOW_OPACITY          0.6f
+#define SHADOW_OPACITY          0.45f
 #define ARROW_MODEL_FILEPATH    "arrow.osgb"
 #define LOD_DIST                3000
 #define LOD_SCALE_DEFAULT       1.0
@@ -65,7 +65,7 @@ float color_green[3]      = {0.2f, 0.6f, 0.3f};
 float color_gray[3]       = {0.7f, 0.7f, 0.7f};
 float color_red[3]        = {0.8f, 0.3f, 0.3f};
 float color_black[3]      = {0.2f, 0.2f, 0.2f};
-float color_shadow[3]     = {0.05f, 0.05f, 0.05f};
+float color_shadow[3]     = {0.0f, 0.0f, 0.0f};
 float color_blue[3]       = {0.25f, 0.38f, 0.7f};
 float color_yellow[3]     = {0.75f, 0.7f, 0.4f};
 float color_white[3]      = {1.0f, 1.0f, 0.9f};
@@ -2423,6 +2423,7 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     osg::Vec3d                                   bbCenter(carStdOrig[0], carStdOrig[1], carStdOrig[2]);
     osg::Vec3d                                   bbDimensions(carStdDim[0], carStdDim[1], carStdDim[2]);
 
+    LOG_INFO("Name: {}", name);
     // Check if model already loaded
     for (size_t i = 0; i < entities_.size(); i++)
     {
@@ -2804,135 +2805,108 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
 
 osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb_z)
 {
-    const double shadow_adjustment_factor = MIN(bb_x, bb_y) * 0.08;  // x% of volume
+    // Factor to subtract from the non-extruding shadow, max 0.15m
+    const double shadow_adjustment_dist = MIN(0.15, MIN(bb_x, bb_y) * 0.10);  // x% of shortest side
 
-    const unsigned int FAN_SURFACES         = 3;
-    const double       LENGTH               = bb_x * 0.5 - shadow_adjustment_factor;
-    const double       WIDTH                = bb_y * 0.5 - shadow_adjustment_factor;
-    const double       shadow_min_extrusion = SHADOW_MIN_EXTRUSION + 2 * shadow_adjustment_factor;
+    // Take away the calculated measurement from each side
+    const double LENGTH = bb_x * 0.5 - shadow_adjustment_dist;
+    const double WIDTH  = bb_y * 0.5 - shadow_adjustment_dist;
 
-    const double extrusion = MAX(shadow_min_extrusion, MIN(0.1 * bb_z, SHADOW_MAX_EXTRUSION));
+    double shadow_extrusion_min = shadow_adjustment_dist;                         // Shadow extrude at least a bit more than the removed inner area
+    double shadow_extrusion_max = shadow_adjustment_dist + SHADOW_MAX_EXTRUSION;  // Shadow extrude at least a bit more than the removed inner area
 
-    const int vert_size =
-        4 + 4 * 2 + 4 * (FAN_SURFACES + 1);  // Rect + 4 extrusions with 2 unique vertices + 4 fan surfaces (2 surface is 3 unique points etc.)
+    // Final extrusion, which is the factor + a bit of height, if that exceeds max extrusion we take max extrusion, and
+    const double extrusion = MIN(shadow_extrusion_min + 0.01 * bb_z, shadow_extrusion_max);
+
+    const int    num_rings = 3;
+    const int    ppc       = 3;                                     // points per corner
+    const size_t pp_ring   = (ppc + 1) * 4;                         // points per ring
+    const int    vert_size = pp_ring * num_rings;                   // total amount of vertices
+    const double desired_r = MIN(bb_x, bb_y) * 0.2;                 // radius of corner x% of shortest side
+    const double r         = std::min({WIDTH, LENGTH, desired_r});  // radius never smaller than half of shortest side
+
+    // corner x/y pos never negative after shifting radius
+    const double cx_pos = std::max(0.0, (LENGTH - r));
+    const double cy_pos = std::max(0.0, (WIDTH - r));
+
     osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(vert_size);
+    osg::ref_ptr<osg::Vec4Array> colors   = new osg::Vec4Array(vert_size);
 
-    // Back (B) Front (T) Left (L) Right (R)
-    // Inner rectangle
-    (*vertices)[0].set(-LENGTH, -WIDTH, 0.0);  // BL
-    (*vertices)[1].set(LENGTH, -WIDTH, 0.0);   // FR
-    (*vertices)[2].set(LENGTH, WIDTH, 0.0);    // FR
-    (*vertices)[3].set(-LENGTH, WIDTH, 0.0);   // FL
-
-    // Extrusion bottom
-    (*vertices)[4].set(-LENGTH, -WIDTH - extrusion, 0.0);  // L
-    (*vertices)[5].set(LENGTH, -WIDTH - extrusion, 0.0);   // R
-
-    // Extrusion right
-    (*vertices)[6].set(LENGTH + extrusion, -WIDTH, 0.0);  // B
-    (*vertices)[7].set(LENGTH + extrusion, WIDTH, 0.0);   // T
-
-    // Extrusion top
-    (*vertices)[8].set(-LENGTH, WIDTH + extrusion, 0.0);  // L
-    (*vertices)[9].set(LENGTH, WIDTH + extrusion, 0.0);   // R
-
-    // Extrusion left
-    (*vertices)[10].set(-LENGTH - extrusion, -WIDTH, 0.0);  // B
-    (*vertices)[11].set(-LENGTH - extrusion, WIDTH, 0.0);   // T
-
-    int  fans_start_idx   = 12;
-    auto makeExtrusionFan = [&](double start_angle, double corner_x, double corner_y, int fan_offset)
+    auto createRing = [&](size_t idx_offset, double radius, float alpha)
     {
-        for (unsigned int i = 0; i <= FAN_SURFACES; i++)
+        size_t idx        = idx_offset;
+        auto   fillCorner = [&](double start_angle, double cx, double cy)
         {
-            double angle = start_angle + (i / static_cast<double>(FAN_SURFACES)) * M_PI_2;
-            (*vertices)[fans_start_idx + fan_offset + i].set(corner_x + cos(angle) * extrusion, corner_y + sin(angle) * extrusion, 0.0);
-        }
+            for (size_t i = 0; i <= ppc; i++)
+            {
+                double delta = (i / static_cast<double>(ppc)) * (osg::PI / 2.0);
+                double angle = start_angle + delta;
+                (*vertices)[idx].set(osg::Vec3(cx + cos(angle) * radius, cy + sin(angle) * radius, 0.0));
+                (*colors)[idx].set(color_shadow[0], color_shadow[1], color_shadow[2], alpha);
+                idx++;
+            }
+        };
+
+        fillCorner(3.0 * osg::PI / 2.0, cx_pos, -cy_pos);
+        fillCorner(0.0, cx_pos, cy_pos);
+        fillCorner(osg::PI / 2.0, -cx_pos, cy_pos);
+        fillCorner(osg::PI, -cx_pos, -cy_pos);
     };
 
-    makeExtrusionFan(osg::PI, -LENGTH, -WIDTH, 0);                            // BL
-    makeExtrusionFan(3.0 * osg::PI / 2.0, LENGTH, -WIDTH, FAN_SURFACES + 1);  // BR
-    makeExtrusionFan(0.0, LENGTH, WIDTH, 2 * (FAN_SURFACES + 1));             // TR
-    makeExtrusionFan(osg::PI / 2.0, -LENGTH, WIDTH, 3 * (FAN_SURFACES + 1));  // TL
+    const double total_extrusion = shadow_adjustment_dist + extrusion;
+    createRing(0, r, SHADOW_OPACITY);
+    createRing(pp_ring, r + total_extrusion * 0.4, SHADOW_OPACITY * 0.45);
+    createRing(pp_ring * 2, r + total_extrusion, 0.0f);
 
     // Normals
     osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array;
     normals->push_back(osg::Vec3(0.0f, 0.0f, 1.0f));
 
-    // Colors
-    osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array(vert_size);
-    for (int i = 0; i < 4; i++)
-    {
-        (*colors)[i].set(color_shadow[0], color_shadow[1], color_shadow[2], SHADOW_OPACITY);
-    }
-
-    for (int i = 4; i < vertices->size(); i++)
-    {
-        (*colors)[i].set(color_shadow[0], color_shadow[1], color_shadow[2], 0.0f);
-    }
-
     // Base geometry
-    osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry;
-    geometry->setVertexArray(vertices.get());
-    geometry->setNormalArray(normals.get());
-    geometry->setNormalBinding(osg::Geometry::BIND_OVERALL);
-    geometry->setColorArray(colors.get());
-    geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+    osg::ref_ptr<osg::Geometry> inner_geometry = new osg::Geometry;
+    inner_geometry->setVertexArray(vertices.get());
+    inner_geometry->setNormalArray(normals.get());
+    inner_geometry->setNormalBinding(osg::Geometry::BIND_OVERALL);
+    inner_geometry->setColorArray(colors.get());
+    inner_geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
 
     // Create the shapes
-    osg::ref_ptr<osg::DrawElementsUInt> center = new osg::DrawElementsUInt(GL_QUADS, 4);
-    (*center)[0]                               = 0;
-    (*center)[1]                               = 1;
-    (*center)[2]                               = 2;
-    (*center)[3]                               = 3;
-    geometry->addPrimitiveSet(center.get());
-
-    osg::ref_ptr<osg::DrawElementsUInt> bottom = new osg::DrawElementsUInt(GL_QUADS, 4);
-    (*bottom)[0]                               = 0;
-    (*bottom)[1]                               = 1;
-    (*bottom)[2]                               = 5;
-    (*bottom)[3]                               = 4;
-    geometry->addPrimitiveSet(bottom.get());
-
-    osg::ref_ptr<osg::DrawElementsUInt> right = new osg::DrawElementsUInt(GL_QUADS, 4);
-    (*right)[0]                               = 1;
-    (*right)[1]                               = 2;
-    (*right)[2]                               = 7;
-    (*right)[3]                               = 6;
-    geometry->addPrimitiveSet(right.get());
-
-    osg::ref_ptr<osg::DrawElementsUInt> top = new osg::DrawElementsUInt(GL_QUADS, 4);
-    (*top)[0]                               = 2;
-    (*top)[1]                               = 3;
-    (*top)[2]                               = 8;
-    (*top)[3]                               = 9;
-    geometry->addPrimitiveSet(top.get());
-
-    osg::ref_ptr<osg::DrawElementsUInt> left = new osg::DrawElementsUInt(GL_QUADS, 4);
-    (*left)[0]                               = 3;
-    (*left)[1]                               = 0;
-    (*left)[2]                               = 10;
-    (*left)[3]                               = 11;
-    geometry->addPrimitiveSet(left.get());
-
-    auto makeFan = [&](int base_corner_idx, int start_offset)
+    osg::ref_ptr<osg::DrawElementsUInt> center = new osg::DrawElementsUInt(GL_POLYGON, pp_ring);
+    for (size_t i = 0; i < pp_ring; i++)
     {
-        osg::ref_ptr<osg::DrawElementsUInt> fan = new osg::DrawElementsUInt(GL_TRIANGLE_FAN, FAN_SURFACES + 2);  // anchor corner + surfaces + 1
-        (*fan)[0]                               = base_corner_idx;                                               // The anchor
-        for (unsigned int i = 0; i <= FAN_SURFACES; i++)
-        {
-            (*fan)[i + 1] = start_offset + i;
-        }
-        geometry->addPrimitiveSet(fan.get());
-    };
+        (*center)[i] = i;
+    }
+    inner_geometry->addPrimitiveSet(center.get());
 
-    makeFan(0, fans_start_idx);
-    makeFan(1, fans_start_idx + FAN_SURFACES + 1);
-    makeFan(2, fans_start_idx + 2 * (FAN_SURFACES + 1));
-    makeFan(3, fans_start_idx + 3 * (FAN_SURFACES + 1));
+    osg::ref_ptr<osg::Geometry> outer_geometry = new osg::Geometry;
+    outer_geometry->setVertexArray(vertices.get());
+    outer_geometry->setNormalArray(normals.get());
+    outer_geometry->setNormalBinding(osg::Geometry::BIND_OVERALL);
+    outer_geometry->setColorArray(colors.get());
+    outer_geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+
+    osg::ref_ptr<osg::DrawElementsUInt> fade    = new osg::DrawElementsUInt(GL_QUAD_STRIP, (num_rings - 1) * (pp_ring * 2 + 2));
+    size_t                              idx_ptr = 0;
+    for (size_t ring = 0; ring < num_rings - 1; ring++)
+    {
+        size_t inner_off = ring * pp_ring;
+        size_t outer_off = (ring + 1) * pp_ring;
+
+        for (size_t i = 0; i < pp_ring; i++)
+        {
+            (*fade)[idx_ptr++] = (i + inner_off);
+            (*fade)[idx_ptr++] = (i + outer_off);
+        }
+
+        (*fade)[idx_ptr++] = inner_off;
+        (*fade)[idx_ptr++] = outer_off;
+    }
+
+    outer_geometry->addPrimitiveSet(fade.get());
 
     osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-    geode->addDrawable(geometry.get());
+    geode->addDrawable(inner_geometry.get());
+    geode->addDrawable(outer_geometry.get());
 
     osg::StateSet* shadowStateSet = geode->getOrCreateStateSet();
     shadowStateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
