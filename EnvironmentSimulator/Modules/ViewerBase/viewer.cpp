@@ -2759,7 +2759,7 @@ osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb
 {
     const double shadow_adjustment_factor = MIN(bb_x, bb_y) * 0.08;  // x% of volume
 
-    const unsigned int FAN_SURFACES         = 3;
+    const unsigned int FAN_SURFACES         = 3;  // Has to be >= 1 surface
     const double       LENGTH               = bb_x * 0.5 - shadow_adjustment_factor;
     const double       WIDTH                = bb_y * 0.5 - shadow_adjustment_factor;
     const double       shadow_min_extrusion = SHADOW_MIN_EXTRUSION + 2 * shadow_adjustment_factor;
@@ -2767,15 +2767,15 @@ osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb
     const double extrusion = MAX(shadow_min_extrusion, MIN(0.1 * bb_z, SHADOW_MAX_EXTRUSION));
 
     const int vert_size =
-        4 + 4 * 2 + 4 * (FAN_SURFACES + 1);  // Rect + 4 extrusions with 2 unique vertices + 4 fan surfaces (2 surface is 3 unique points etc.)
+        4 + 4 * 2 + 4 * (FAN_SURFACES - 1);  // Rect + 4 extrusions with 2 unique vertices + 4 fan surfaces (2 surfaces 1 unique point etc.)
     osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(vert_size);
 
     // Back (B) Front (T) Left (L) Right (R)
     // Inner rectangle
-    (*vertices)[0].set(-LENGTH, -WIDTH, 0.0);  // BL
+    (*vertices)[0].set(-LENGTH, -WIDTH, 0.0);  // BR
     (*vertices)[1].set(LENGTH, -WIDTH, 0.0);   // FR
-    (*vertices)[2].set(LENGTH, WIDTH, 0.0);    // FR
-    (*vertices)[3].set(-LENGTH, WIDTH, 0.0);   // FL
+    (*vertices)[2].set(LENGTH, WIDTH, 0.0);    // FL
+    (*vertices)[3].set(-LENGTH, WIDTH, 0.0);   // BL
 
     // Extrusion bottom
     (*vertices)[4].set(-LENGTH, -WIDTH - extrusion, 0.0);  // L
@@ -2794,19 +2794,22 @@ osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb
     (*vertices)[11].set(-LENGTH - extrusion, WIDTH, 0.0);   // T
 
     int  fans_start_idx   = 12;
-    auto makeExtrusionFan = [&](double start_angle, double corner_x, double corner_y, int fan_offset)
+    auto makeExtrusionFan = [&](double start_angle, double corner_x, double corner_y)
     {
-        for (unsigned int i = 0; i <= FAN_SURFACES; i++)
+        int start_ptr = fans_start_idx;
+        for (int i = 1; i < FAN_SURFACES; i++)
         {
             double angle = start_angle + (i / static_cast<double>(FAN_SURFACES)) * M_PI_2;
-            (*vertices)[fans_start_idx + fan_offset + i].set(corner_x + cos(angle) * extrusion, corner_y + sin(angle) * extrusion, 0.0);
+            (*vertices)[fans_start_idx].set(corner_x + cos(angle) * extrusion, corner_y + sin(angle) * extrusion, 0.0);
+            fans_start_idx++;
         }
+        return start_ptr;
     };
 
-    makeExtrusionFan(osg::PI, -LENGTH, -WIDTH, 0);                            // BL
-    makeExtrusionFan(3.0 * osg::PI / 2.0, LENGTH, -WIDTH, FAN_SURFACES + 1);  // BR
-    makeExtrusionFan(0.0, LENGTH, WIDTH, 2 * (FAN_SURFACES + 1));             // TR
-    makeExtrusionFan(osg::PI / 2.0, -LENGTH, WIDTH, 3 * (FAN_SURFACES + 1));  // TL
+    int fan1_start = makeExtrusionFan(M_PI, -LENGTH, -WIDTH);             // BL
+    int fan2_start = makeExtrusionFan(3.0 * M_PI_2, LENGTH, -WIDTH);  // BR
+    int fan3_start = makeExtrusionFan(0.0, LENGTH, WIDTH);                   // TR
+    int fan4_start = makeExtrusionFan(M_PI_2, -LENGTH, WIDTH);        // TL
 
     // Normals
     osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array;
@@ -2868,21 +2871,25 @@ osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb
     (*left)[3]                               = 11;
     geometry->addPrimitiveSet(left.get());
 
-    auto makeFan = [&](int base_corner_idx, int start_offset)
+    auto makeFan = [&](int base_corner_idx, int side_start, int arc_start, int side_end)
     {
         osg::ref_ptr<osg::DrawElementsUInt> fan = new osg::DrawElementsUInt(GL_TRIANGLE_FAN, FAN_SURFACES + 2);  // anchor corner + surfaces + 1
         (*fan)[0]                               = base_corner_idx;                                               // The anchor
-        for (unsigned int i = 0; i <= FAN_SURFACES; i++)
+        (*fan)[1]                               = side_start;
+
+        unsigned int i = 0;
+        for (; i < FAN_SURFACES - 1; i++)
         {
-            (*fan)[i + 1] = start_offset + i;
+            (*fan)[2 + i] = arc_start + i;
         }
+        (*fan)[2 + i] = side_end;
         geometry->addPrimitiveSet(fan.get());
     };
 
-    makeFan(0, fans_start_idx);
-    makeFan(1, fans_start_idx + FAN_SURFACES + 1);
-    makeFan(2, fans_start_idx + 2 * (FAN_SURFACES + 1));
-    makeFan(3, fans_start_idx + 3 * (FAN_SURFACES + 1));
+    makeFan(0, 4, fan1_start, 10);  // BR
+    makeFan(1, 6, fan2_start, 5);   // FR
+    makeFan(2, 9, fan3_start, 7);   // FL
+    makeFan(3, 11, fan4_start, 8);  // BL
 
     osg::ref_ptr<osg::Geode> geode = new osg::Geode;
     geode->addDrawable(geometry.get());
