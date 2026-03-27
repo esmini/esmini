@@ -53,10 +53,13 @@ runs:
       if: steps.cache-osi.outputs.cache-hit != 'true'
       shell: bash
       run: |
+        VCPKG_TC="${{ runner.temp }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        # Normalize to forward slashes for cross-platform CMake compatibility
+        VCPKG_TC="${VCPKG_TC//\\//}"
         cmake \
           -S externals/asam-osi-utilities \
           -B build-osi-deps \
-          -DCMAKE_TOOLCHAIN_FILE=${{ runner.temp }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
+          -DCMAKE_TOOLCHAIN_FILE="$VCPKG_TC" \
           -DVCPKG_TARGET_TRIPLET=${{ inputs.triplet }} \
           -DCMAKE_BUILD_TYPE=${{ inputs.configuration }} \
           -DBUILD_TESTING=OFF \
