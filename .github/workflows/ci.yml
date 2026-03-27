@@ -97,7 +97,7 @@ jobs:
           - os: ubuntu-22.04
             triplet: x64-linux
           - os: macos-14
-            triplet: arm64-osx
+            triplet: universal-osx
           - os: windows-2022
             triplet: x64-windows-static-md
 
@@ -134,6 +134,7 @@ jobs:
         with:
           triplet: ${{ matrix.triplet }}
           configuration: ${{ matrix.configuration }}
+          overlay-triplets: ${{ github.workspace }}/support/vcpkg-triplets
 
       - name: CMake Configure - Windows
         if: runner.os == 'Windows'

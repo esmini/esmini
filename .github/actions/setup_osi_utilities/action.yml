@@ -6,7 +6,7 @@ description: >
 
 inputs:
   triplet:
-    description: 'vcpkg triplet (e.g. x64-linux, x64-windows-static-md, arm64-osx)'
+    description: 'vcpkg triplet (e.g. x64-linux, x64-windows-static-md, universal-osx)'
     required: true
   configuration:
     description: 'Build configuration (Release, Debug, RelWithDebInfo)'
@@ -16,6 +16,10 @@ inputs:
     description: 'vcpkg git commit to pin (must match asam-osi-utilities vcpkg-configuration.json baseline)'
     required: false
     default: '4f8fe05871555c1798dbcb1957d0d595e94f7b57'
+  overlay-triplets:
+    description: 'Path to overlay triplets directory (for custom triplets like universal-osx)'
+    required: false
+    default: ''
 
 outputs:
   osi-prefix:
@@ -54,13 +58,17 @@ runs:
       shell: bash
       run: |
         VCPKG_TC="${{ runner.temp }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        # Normalize to forward slashes for cross-platform CMake compatibility
         VCPKG_TC="${VCPKG_TC//\\//}"
+        OVERLAY_ARG=""
+        if [ -n "${{ inputs.overlay-triplets }}" ]; then
+          OVERLAY_ARG="-DVCPKG_OVERLAY_TRIPLETS=${{ inputs.overlay-triplets }}"
+        fi
         cmake \
           -S externals/asam-osi-utilities \
           -B build-osi-deps \
           -DCMAKE_TOOLCHAIN_FILE="$VCPKG_TC" \
           -DVCPKG_TARGET_TRIPLET=${{ inputs.triplet }} \
+          $OVERLAY_ARG \
           -DCMAKE_BUILD_TYPE=${{ inputs.configuration }} \
           -DBUILD_TESTING=OFF \
           -DBUILD_EXAMPLES=OFF
