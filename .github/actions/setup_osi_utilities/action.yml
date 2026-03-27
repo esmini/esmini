@@ -13,9 +13,9 @@ inputs:
     required: false
     default: 'Release'
   vcpkg-commit:
-    description: 'vcpkg git commit to pin'
+    description: 'vcpkg git commit to pin (must match asam-osi-utilities vcpkg-configuration.json baseline)'
     required: false
-    default: '86a181505ac6460f37eb56e01cd620e04e5cb378'
+    default: '4f8fe05871555c1798dbcb1957d0d595e94f7b57'
 
 outputs:
   osi-prefix:
@@ -31,13 +31,8 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Setup vcpkg
-      uses: lukka/run-vcpkg@v11
-      with:
-        vcpkgDirectory: ${{ github.workspace }}/vcpkg
-        vcpkgGitCommitId: ${{ inputs.vcpkg-commit }}
-
-    - name: Cache Phase A
+    - name: Cache Phase A install
+      id: cache-osi
       uses: actions/cache@v5
       with:
         path: |
@@ -47,23 +42,33 @@ runs:
         restore-keys: |
           osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-
 
+    - name: Setup vcpkg
+      if: steps.cache-osi.outputs.cache-hit != 'true'
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgDirectory: ${{ runner.temp }}/vcpkg
+        vcpkgGitCommitId: ${{ inputs.vcpkg-commit }}
+
     - name: Phase A - Configure
+      if: steps.cache-osi.outputs.cache-hit != 'true'
       shell: bash
       run: |
         cmake \
           -S externals/asam-osi-utilities \
           -B build-osi-deps \
-          -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
+          -DCMAKE_TOOLCHAIN_FILE=${{ runner.temp }}/vcpkg/scripts/buildsystems/vcpkg.cmake \
           -DVCPKG_TARGET_TRIPLET=${{ inputs.triplet }} \
           -DCMAKE_BUILD_TYPE=${{ inputs.configuration }} \
           -DBUILD_TESTING=OFF \
           -DBUILD_EXAMPLES=OFF
 
     - name: Phase A - Build
+      if: steps.cache-osi.outputs.cache-hit != 'true'
       shell: bash
       run: cmake --build build-osi-deps --config ${{ inputs.configuration }} -j 2
 
     - name: Phase A - Install
+      if: steps.cache-osi.outputs.cache-hit != 'true'
       shell: bash
       run: cmake --install build-osi-deps --config ${{ inputs.configuration }} --prefix osi-deps
 
