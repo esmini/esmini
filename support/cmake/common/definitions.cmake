@@ -21,11 +21,6 @@ macro(set_definitions)
         add_definitions(-D_USE_GTEST)
     endif(USE_GTEST)
 
-    if(DYN_PROTOBUF)
-        add_definitions(-D_DYN_PROTOBUF)
-        add_definitions(-DPROTOBUF_USE_DLLS)
-    endif(DYN_PROTOBUF)
-
     if(USE_IMPLOT)
         add_definitions(-D_USE_IMPLOT)
     endif(USE_IMPLOT)

@@ -63,8 +63,6 @@ macro(set_project_external_paths)
         ${EXTERNALS_PATH}/googletest)
     set(EXTERNALS_OSG_PATH
         ${EXTERNALS_PATH}/osg)
-    set(EXTERNALS_OSI_PATH
-        ${EXTERNALS_PATH}/osi)
     set(EXTERNALS_PUGIXML_PATH
         ${EXTERNALS_PATH}/pugixml)
     set(EXTERNALS_SUMO_PATH
@@ -87,8 +85,6 @@ macro(set_project_os_specific_paths)
     if(APPLE)
         set(EXTERNALS_OSG_OS_SPECIFIC_PATH
             ${EXTERNALS_OSG_PATH}/mac)
-        set(EXTERNALS_OSI_OS_SPECIFIC_PATH
-            ${EXTERNALS_OSI_PATH}/mac)
         set(EXTERNALS_SUMO_OS_SPECIFIC_PATH
             ${EXTERNALS_SUMO_PATH}/mac)
         set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
@@ -100,8 +96,6 @@ macro(set_project_os_specific_paths)
     elseif(LINUX)
         set(EXTERNALS_OSG_OS_SPECIFIC_PATH
             ${EXTERNALS_OSG_PATH}/linux)
-        set(EXTERNALS_OSI_OS_SPECIFIC_PATH
-            ${EXTERNALS_OSI_PATH}/linux)
         set(EXTERNALS_SUMO_OS_SPECIFIC_PATH
             ${EXTERNALS_SUMO_PATH}/linux)
         set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
@@ -123,8 +117,6 @@ macro(set_project_os_specific_paths)
         else()
             set(EXTERNALS_OSG_OS_SPECIFIC_PATH
                 ${EXTERNALS_OSG_PATH}/v10)
-            set(EXTERNALS_OSI_OS_SPECIFIC_PATH
-                ${EXTERNALS_OSI_PATH}/v10)
             set(EXTERNALS_SUMO_OS_SPECIFIC_PATH
                 ${EXTERNALS_SUMO_PATH}/v10)
             set(EXTERNALS_GOOGLETEST_OS_SPECIFIC_PATH
@@ -155,8 +147,7 @@ macro(set_project_includes)
     set(EXTERNALS_OSG_INCLUDES
         ${EXTERNALS_OSG_OS_SPECIFIC_PATH}/build/include
         ${EXTERNALS_OSG_OS_SPECIFIC_PATH}/include)
-    set(EXTERNALS_OSI_INCLUDES
-        ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/include)
+    # EXTERNALS_OSI_INCLUDES is set by set_osi_libs() from imported target
     set(EXTERNALS_SUMO_INCLUDES
         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/include)
     set(EXTERNALS_GOOGLETEST_INCLUDES
@@ -183,14 +174,6 @@ macro(set_project_library_paths)
 
     set(EXTERNALS_OSG_PLUGINS_LIBRARY_PATH
         ${EXTERNALS_OSG_LIBRARY_PATH}/osgPlugins-3.6.5)
-
-    if(DYN_PROTOBUF)
-        set(EXTERNALS_OSI_LIBRARY_PATH
-            ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/lib-dyn)
-    else()
-        set(EXTERNALS_OSI_LIBRARY_PATH
-            ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/lib)
-    endif(DYN_PROTOBUF)
 
     set(EXTERNALS_SUMO_LIBRARY_PATH
         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/lib)

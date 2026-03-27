@@ -40,3 +40,12 @@ pylint_report.txt
 CMakeUserPresets.json
 .DS_Store
 EnvironmentSimulator/Libraries/esminiJS/example/esmini.js
+
+# Download logs from support/cmake/cloud/download.cmake
+*.7z.log
+
+# Windows NUL device artifact
+NUL
+
+# VS Code Dev Containers CLI output
+read-configuration
