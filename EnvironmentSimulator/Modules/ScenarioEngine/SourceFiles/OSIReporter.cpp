@@ -2668,9 +2668,7 @@ int OSIReporter::UpdateStaticTrafficSignals()
                     {
                         trafficSign->mutable_main_sign()->mutable_classification()->set_type(
                             osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_OTHER);
-                        LOG_WARN("OSIReporter: Unknown traffic sign type {} for signal {}, mapping to TYPE_OTHER",
-                                 osi_type,
-                                 signal->GetGlobalId());
+                        LOG_WARN("OSIReporter: Unknown traffic sign type {} for signal {}, mapping to TYPE_OTHER", osi_type, signal->GetGlobalId());
                     }
                     trafficSign->mutable_main_sign()->mutable_classification()->set_country(signal->GetCountry());
 

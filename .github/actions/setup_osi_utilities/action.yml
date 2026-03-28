@@ -35,11 +35,10 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: Cache Phase A install
+    - name: Restore Phase A cache
       id: cache-osi
-      uses: actions/cache@v5
+      uses: actions/cache/restore@v4
       with:
-        save-always: true
         path: |
           ${{ github.workspace }}/osi-deps
           ${{ github.workspace }}/build-osi-deps/vcpkg_installed
@@ -83,6 +82,15 @@ runs:
       if: steps.cache-osi.outputs.cache-hit != 'true'
       shell: bash
       run: cmake --install build-osi-deps --config ${{ inputs.configuration }} --prefix osi-deps
+
+    - name: Save Phase A cache
+      if: steps.cache-osi.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ${{ github.workspace }}/osi-deps
+          ${{ github.workspace }}/build-osi-deps/vcpkg_installed
+        key: osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-${{ hashFiles('externals/asam-osi-utilities/**', '!externals/asam-osi-utilities/build*') }}
 
     - name: Set output paths
       id: paths
