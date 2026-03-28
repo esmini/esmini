@@ -53,7 +53,6 @@ jobs:
         uses: ./.github/actions/setup_osi_utilities
         with:
           triplet: x64-linux
-          configuration: ${{ matrix.configuration }}
 
       - name: CMake Configure - Ubuntu
         if: runner.os == 'Linux'

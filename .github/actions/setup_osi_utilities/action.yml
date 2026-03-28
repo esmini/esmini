@@ -9,7 +9,7 @@ inputs:
     description: 'vcpkg triplet (e.g. x64-linux, x64-windows-static-md, universal-osx)'
     required: true
   configuration:
-    description: 'Build configuration (Release, Debug, RelWithDebInfo)'
+    description: 'Build configuration for Phase A (always Release in CI — debug locally if needed)'
     required: false
     default: 'Release'
   vcpkg-commit:

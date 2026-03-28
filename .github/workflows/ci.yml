@@ -133,7 +133,6 @@ jobs:
         uses: ./.github/actions/setup_osi_utilities
         with:
           triplet: ${{ matrix.triplet }}
-          configuration: ${{ matrix.configuration }}
           overlay-triplets: ${{ github.workspace }}/support/vcpkg-triplets
 
       - name: CMake Configure - Windows
