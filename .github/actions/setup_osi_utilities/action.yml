@@ -42,9 +42,7 @@ runs:
         path: |
           ${{ github.workspace }}/osi-deps
           ${{ github.workspace }}/build-osi-deps/vcpkg_installed
-        key: osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-${{ hashFiles('externals/asam-osi-utilities/**', '!externals/asam-osi-utilities/build*') }}
-        restore-keys: |
-          osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-
+        key: osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-${{ hashFiles('externals/asam-osi-utilities/**', '!externals/asam-osi-utilities/build*', 'support/vcpkg-triplets/**') }}
 
     - name: Setup vcpkg
       if: steps.cache-osi.outputs.cache-hit != 'true'
@@ -63,12 +61,17 @@ runs:
         if [ -n "${{ inputs.overlay-triplets }}" ]; then
           OVERLAY_ARG="-DVCPKG_OVERLAY_TRIPLETS=${{ inputs.overlay-triplets }}"
         fi
+        OSX_ARCH_ARGS=()
+        if [ "$RUNNER_OS" = "macOS" ]; then
+          OSX_ARCH_ARGS=("-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64")
+        fi
         cmake \
           -S externals/asam-osi-utilities \
           -B build-osi-deps \
           -DCMAKE_TOOLCHAIN_FILE="$VCPKG_TC" \
           -DVCPKG_TARGET_TRIPLET=${{ inputs.triplet }} \
           $OVERLAY_ARG \
+          "${OSX_ARCH_ARGS[@]}" \
           -DCMAKE_BUILD_TYPE=${{ inputs.configuration }} \
           -DBUILD_TESTING=OFF \
           -DBUILD_EXAMPLES=OFF
@@ -90,7 +93,7 @@ runs:
         path: |
           ${{ github.workspace }}/osi-deps
           ${{ github.workspace }}/build-osi-deps/vcpkg_installed
-        key: osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-${{ hashFiles('externals/asam-osi-utilities/**', '!externals/asam-osi-utilities/build*') }}
+        key: osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-${{ hashFiles('externals/asam-osi-utilities/**', '!externals/asam-osi-utilities/build*', 'support/vcpkg-triplets/**') }}
 
     - name: Set output paths
       id: paths
