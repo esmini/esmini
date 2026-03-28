@@ -2796,9 +2796,9 @@ osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb
     int  fans_start_idx   = 12;
     auto makeExtrusionFan = [&](double start_angle, double corner_x, double corner_y, int fan_offset)
     {
-        for (int i = 0; i <= FAN_SURFACES; i++)
+        for (unsigned int i = 0; i <= FAN_SURFACES; i++)
         {
-            double angle = start_angle + (i / static_cast<double>(FAN_SURFACES)) * (osg::PI / 2.0);
+            double angle = start_angle + (i / static_cast<double>(FAN_SURFACES)) * M_PI_2;
             (*vertices)[fans_start_idx + fan_offset + i].set(corner_x + cos(angle) * extrusion, corner_y + sin(angle) * extrusion, 0.0);
         }
     };
@@ -2872,7 +2872,7 @@ osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb
     {
         osg::ref_ptr<osg::DrawElementsUInt> fan = new osg::DrawElementsUInt(GL_TRIANGLE_FAN, FAN_SURFACES + 2);  // anchor corner + surfaces + 1
         (*fan)[0]                               = base_corner_idx;                                               // The anchor
-        for (int i = 0; i <= FAN_SURFACES; i++)
+        for (unsigned int i = 0; i <= FAN_SURFACES; i++)
         {
             (*fan)[i + 1] = start_offset + i;
         }
