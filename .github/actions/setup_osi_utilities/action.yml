@@ -39,6 +39,7 @@ runs:
       id: cache-osi
       uses: actions/cache@v5
       with:
+        save-always: true
         path: |
           ${{ github.workspace }}/osi-deps
           ${{ github.workspace }}/build-osi-deps/vcpkg_installed
