@@ -115,4 +115,20 @@ EnvironmentSimulator/
 Install from `support/python/requirements.txt`: `pip install -r support/python/requirements.txt`
 
 ### External Dependencies
-Set `DOWNLOAD_EXTERNALS=ON` (default) to auto-download OSG, OSI, SUMO, ImPlot, GTest, and vehicle/road models. Bundled lightweight deps live in `externals/` (pugixml, fmt, fmi2, dirent, expr, yaml).
+Auto-downloaded (CMake `DOWNLOAD_EXTERNALS=ON` by default): OSG, SUMO, ImPlot, GTest, vehicle/road models.
+
+**OSI** is provided via [asam-osi-utilities](https://github.com/lichtblick-suite/asam-osi-utilities) as a git submodule in `externals/asam-osi-utilities` (recursive). The build uses a two-phase approach:
+- **Phase A**: Build asam-osi-utilities with vcpkg (provides protobuf, OSI, mcap, lz4, zstd) into an install prefix
+- **Phase B**: Configure esmini with `-DOSI_UTILITIES_PREFIX=<prefix> -DCMAKE_PREFIX_PATH=<prefix>;<vcpkg_installed> -DProtobuf_PROTOC_EXECUTABLE=<protoc>`
+
+In CI, Phase A is handled by the reusable composite action `.github/actions/setup_osi_utilities/action.yml` with caching. Phase A always builds Release regardless of esmini's build config.
+
+Bundled lightweight deps live in `externals/` (pugixml, fmt, fmi2, dirent, expr, yaml).
+
+### Python OSI Dependencies
+The `osi3` Python protobuf bindings are provided by `osi-python` (submodule at `externals/asam-osi-utilities/submodules/osi-python`). In CI, both `osi-python` and `asam-osi-utilities` Python packages are pip-installed from the submodule tree in `.github/actions/setup_tools_shared/action.yml`.
+
+### Git Commits
+- Use [Conventional Commits](https://www.conventionalcommits.org/) format
+- Sign off commits with `-s` (DCO)
+- Do **not** add `Co-authored-by` trailers for AI assistants
