@@ -62,15 +62,25 @@ macro(set_special_build_flags)
                         CMAKE_C_FLAGS
                         "${CMAKE_C_FLAGS}")
 
-            # suppress warning 4127 (conditional expression is constant) to avoid harmless warning from Google protobuf header suppress warning 4100
-            # (unreferenced formal parameter) to allow function headers with unreferenced parameters for increased readability
+            # suppress warning 4127 (conditional expression is constant) to avoid harmless warning from Google protobuf header
+            # suppress warning 4100 (unreferenced formal parameter) to allow function headers with unreferenced parameters
+            # suppress protobuf 5.x / abseil header warnings that fire with /W4 /WX:
+            #   4141 ('inline' used more than once), 4267 (size_t narrowing), 4244 (narrowing conversion),
+            #   4189 (local var initialized but unused), 4296 (expression always true), 4459 (hides global)
 
             add_compile_options(
                 /utf-8
                 /permissive-
                 /W4
                 /wd4127
-                /wd4100)
+                /wd4100
+                /wd4141
+                /wd4267
+                /wd4244
+                /wd4189
+                /wd4296
+                /wd4459
+                /external:W0)
         endif()
     elseif(MINGW)
         set(CXX_STD_FLAG

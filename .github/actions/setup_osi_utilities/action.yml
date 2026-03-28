@@ -9,7 +9,7 @@ inputs:
     description: 'vcpkg triplet (e.g. x64-linux, x64-windows-static-md, universal-osx)'
     required: true
   configuration:
-    description: 'Build configuration for Phase A (always Release in CI — debug locally if needed)'
+    description: 'Build configuration for Phase A'
     required: false
     default: 'Release'
   vcpkg-commit:
@@ -18,6 +18,10 @@ inputs:
     default: '4f8fe05871555c1798dbcb1957d0d595e94f7b57'
   overlay-triplets:
     description: 'Path to overlay triplets directory (for custom triplets like universal-osx)'
+    required: false
+    default: ''
+  cmake-generator:
+    description: 'CMake generator args (e.g. -G "Visual Studio 17 2022" -T v142 -A x64)'
     required: false
     default: ''
 
@@ -72,6 +76,7 @@ runs:
           -DVCPKG_TARGET_TRIPLET=${{ inputs.triplet }} \
           $OVERLAY_ARG \
           "${OSX_ARCH_ARGS[@]}" \
+          ${{ inputs.cmake-generator }} \
           -DCMAKE_BUILD_TYPE=${{ inputs.configuration }} \
           -DBUILD_TESTING=OFF \
           -DBUILD_EXAMPLES=OFF

@@ -100,7 +100,7 @@ jobs:
           - os: macos-14
             triplet: universal-osx
           - os: windows-2022
-            triplet: x64-windows-static-md
+            triplet: x64-windows-static-md-v142
 
     runs-on: ${{ matrix.os }}
 
@@ -129,12 +129,16 @@ jobs:
           key: ${{ runner.os }}-external-resources
 
       # Phase A: Build and install asam-osi-utilities via vcpkg
+      # On Windows, match esmini's build configuration (MSVC CRT requires matching Debug/Release).
+      # On Linux/macOS, always build Release (static libs are config-agnostic).
       - name: Setup OSI Utilities
         id: osi
         uses: ./.github/actions/setup_osi_utilities
         with:
           triplet: ${{ matrix.triplet }}
+          configuration: ${{ runner.os == 'Windows' && matrix.configuration || 'Release' }}
           overlay-triplets: ${{ github.workspace }}/support/vcpkg-triplets
+          cmake-generator: ${{ runner.os == 'Windows' && '-G "Visual Studio 17 2022" -T v142 -A x64' || '' }}
 
       - name: CMake Configure - Windows
         if: runner.os == 'Windows'
