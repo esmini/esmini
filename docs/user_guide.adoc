@@ -759,7 +759,7 @@ Only trace file way is described here. To save OSI data, add argument `--osi_fil
 
 ``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --osi_file``
 
-will create `ground_truth.osi` in the current folder. The format is according to the OSI standard "Binary trace file", see OSI documentation https://opensimulationinterface.github.io/osi-documentation/index.html#_osi_trace_files[2.2.6 OSI trace files].
+will create `ground_truth.osi` in the current folder. The format is a legacy single-channel binary trace file (4-byte little-endian length prefix followed by serialized protobuf message, repeated), see https://opensimulationinterface.github.io/osi-antora-generator/asamosi/latest/interface/architecture/trace_file_example.html[OSI documentation: trace file example].
 
 esmini provides a script, osi2csv.py, that converts an OSI trace file into .csv format. The script can also serve as example how to parse and extract data from an OSI trace file:
 
@@ -768,11 +768,11 @@ esmini provides a script, osi2csv.py, that converts an OSI trace file into .csv 
 will create ground_truth.csv. +
 (if file type association is not setup, try: ``python ./scripts/osi2csv.py ground_truth.osi``)
 
-However the .csv file created with osi2csv will not contain all OSI information. To get a readable text file including the complete content of a OSI trace file you can make use of the Python script https://github.com/OpenSimulationInterface/open-simulation-interface/blob/v3.5.0/format/osi2read.py[format/osi2read.py] in the OSI project.
+However the .csv file created with osi2csv will not contain all OSI information. To get a readable text file including the complete content of a OSI trace file you can use the `osi2read` command-line tool provided by https://github.com/OpenSimulationInterface/osi-python[osi-python] (installed via `pip install externals/asam-osi-utilities/submodules/osi-python`).
 
 Use as following example:
 
-`../open-simulation-interface/format/osi2read.py --data ./ground_truth.osi --output ground_truth --type GroundTruth`
+`osi2read --data ./ground_truth.osi --output ground_truth --type GroundTruth`
 
 it should create `ground_truth.txth` which is readable in a text editor.
 
@@ -781,8 +781,6 @@ it should create `ground_truth.txth` which is readable in a text editor.
 **Note**:
 
 See <<OSI for Python on Windows>> for hints how to install dependencies (OSI and Protobuf).
-
-The above script link points to OSI tag v3.5.0. In more recent OSI versions the script has moved to another folder: https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/osi3trace/osi2read.py[osi3trace/osi2read.py].
 ====
 
 === esmini in Unity
@@ -1099,7 +1097,7 @@ In https://www.transportstyrelsen.se/sv/vagtrafik/Vagmarken/[Sweden a speed sign
 In https://en.wikipedia.org/wiki/Road_signs_in_Germany[Germany] there are no similar categories. Instead all signs have a unique group or type number, e.g. speed signs make up group 274. Then the value defines the speed. No need for subtype. So the parameters for a German  speed limit 90 km/h sign becomes: de, 274, -, 90.
 
 ==== esmini sign catalogs
-Instead of hard-coding road sign support esmini will lookup the https://opensimulationinterface.github.io/open-simulation-interface/structosi3_1_1TrafficSign_1_1MainSign_1_1Classification.html[OSI code] from a separate sign definition file, which is unique for each country. Name convention for the file is: `country code` + "_traffic_signals.txt". Example: Swedish catalog is named "se_traffic_signals.txt".
+Instead of hard-coding road sign support esmini will lookup the https://opensimulationinterface.github.io/osi-antora-generator/asamosi/latest/gen/structosi3_1_1TrafficSign_1_1MainSign_1_1Classification.html[OSI code] from a separate sign definition file, which is unique for each country. Name convention for the file is: `country code` + "_traffic_signals.txt". Example: Swedish catalog is named "se_traffic_signals.txt".
 
 The file is a simple text format each line defining a sign ID and corresponding OSI type.
 
@@ -1186,7 +1184,7 @@ Supported semantic states are:
 . counting (no graphics support)
 . broken
 
-For their intended usage and definition see https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1TrafficLight_1_1Classification.html#ae107846d88eaa3dab95d3d931d73fa09[ASAM OSI documentation].
+For their intended usage and definition see https://opensimulationinterface.github.io/osi-antora-generator/asamosi/latest/gen/structosi3_1_1TrafficLight_1_1Classification.html#ae107846d88eaa3dab95d3d931d73fa09[ASAM OSI documentation].
 
 ==== Traffic lights visualization
 
@@ -1774,7 +1772,7 @@ Currently, OpenSCENARIO XML doesn't support setting the color of an object in a 
 
 For further details refer to the https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Vehicles/VehicleCatalog.xosc[VehicleCatalog].
 
-The hex code for the color will be converted to a value between 0 and 1 and transmitted on its respective channel on OSI https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1ColorRGB.html[ColorRGB] in OSI MovingObject (Vehicle, Pedestrian) and StationaryObject (MiscObject).
+The hex code for the color will be converted to a value between 0 and 1 and transmitted on its respective channel on OSI https://opensimulationinterface.github.io/osi-antora-generator/asamosi/latest/gen/structosi3_1_1ColorRGB.html[ColorRGB] in OSI MovingObject (Vehicle, Pedestrian) and StationaryObject (MiscObject).
 
 
 === SUMO integration
@@ -3617,7 +3615,9 @@ or
 
 There are a few external dependencies that takes long time to build from scratch. Instead they are provided in compressed packages including needed headerfiles and prebuilt libraries. The packages are available for Win, Mac and Linux. For Windows and Linux they include Debug mode binaries, in addition to the Release variant.
 
-The cmake script will check for the availability of these libraries, by simply checking for existence of corresponding folders, e.g. osg, osi, sumo, under esmini/externals. If missing, compressed packages will be downloaded and extracted.
+The cmake script will check for the availability of these libraries, by simply checking for existence of corresponding folders, e.g. osg, sumo, under esmini/externals. If missing, compressed packages will be downloaded and extracted.
+
+NOTE: OSI is no longer provided as a prebuilt library package. It is built from source via the asam-osi-utilities submodule and vcpkg. See <<Two-phase build (with OSI)>>.
 
 Not often, but at some points the prebuilt libraries needs to be updated. In most cases it affects the esmini build configuration and/or code. Hence, sometimes an update of esmini comes with a need to update the external libraries as well. Lack of automatic handling, such update needs to be done manually. One way is to delete the specific folder(s) and run ordinary cmake command again. But the simplest way is to enforce redownload of all packages:
 
@@ -3692,34 +3692,25 @@ So the different strategies for `RoadPosition` and `LanePosition` was decided up
 
 Follow the following steps to install OSI (and dependent Google Protobuf) for use by some esmini scripts, e.g. https://github.com/esmini/esmini/blob/master/scripts/osi2csv.py[osi2csv.py].
 
-*Protobuf for Python* (skip if already installed)
+The OSI Python bindings (`osi3` module) are provided by the `osi-python` package, which is
+included as a submodule within asam-osi-utilities. Install from the submodule tree:
 
-. Open a Powershell
-. `pip install protobuf==3.20.2`
+. Open a terminal in the esmini root directory
+. Install general Python dependencies: +
+  `pip install -r support/python/requirements.txt`
+. Install osi-python (provides `osi3` module and `osi2read` tool): +
+  `pip install externals/asam-osi-utilities/submodules/osi-python`
 
-*protoc* (Protobuf compiler)
-[start=3]
-. Download https://github.com/protocolbuffers/protobuf/releases/download/v3.20.2/protoc-3.20.2-win64.zip[protoc-3.20.2-win64.zip] +
-  (release page: https://github.com/protocolbuffers/protobuf/releases/tag/v3.20.2)
-. Unzip (at least protoc.exe) to some location
-
-*OSI for Python*
-[start=5]
-. Open a Powershell in the to-be-parent folder of OSI
-. `git clone https://github.com/OpenSimulationInterface/open-simulation-interface`
-. `cd open-simulation-interface`
-. `git checkout v3.5.0`
-. `./convert-to-proto3.sh`
-. `$env:PROTOC=<location of protoc.exe>` +
-  for example: `$env:PROTOC="C:/tmp/protoc-3.20.2-win64/bin/protoc.exe"`
-. `pip install .`
+NOTE: The `osi-python` package is not published on PyPI. It must be installed from the
+submodule path as shown above. This ensures the Python bindings match the OSI version
+(v3.8.0-rc1) used by esmini's C++ build.
 
 This should be it.
 
 *How to remove old versions* (if needed)
 
 . `pip uninstall protobuf`
-. `pip uninstall open-simulation-interface`
+. `pip uninstall osi-python`
 
 ==== The scenario runs too fast or too slow
 
@@ -4110,14 +4101,62 @@ Note: In addition to <filename> one of the arguments --list_params and --param <
 
 == Build guide
 
-esmini is primarily utilizing cmake for build configuration. The simplest way to get going, in a terminal from esmini root folder:
+esmini is primarily utilizing cmake for build configuration. The repository includes a git submodule for OSI support, so make sure to clone recursively:
+
+....
+git clone --recursive https://github.com/esmini/esmini
+cd esmini
+....
+
+If you already cloned without `--recursive`, fetch the submodule separately:
+
+....
+git submodule update --init --recursive
+....
+
+=== Two-phase build (with OSI)
+
+OSI is provided by the https://github.com/lichtblick-suite/asam-osi-utilities[asam-osi-utilities] submodule and uses https://vcpkg.io[vcpkg] for its dependencies (protobuf, abseil, lz4, zstd). Building esmini with OSI requires a two-phase approach:
+
+*Phase A* — build and install asam-osi-utilities:
+
+....
+cmake -S externals/asam-osi-utilities -B build-deps --preset vcpkg
+cmake --build build-deps --config Release
+cmake --install build-deps --config Release --prefix osi-deps
+....
+
+NOTE: On Windows, use `--preset vcpkg-windows-static-md` instead of `--preset vcpkg` to match esmini's static CRT linkage.
+
+*Phase B* — configure and build esmini, pointing to the installed OSI:
+
+....
+cmake . -B build \
+  -DOSI_UTILITIES_PREFIX=osi-deps \
+  -DCMAKE_PREFIX_PATH="osi-deps;build-deps/vcpkg_installed/<triplet>" \
+  -DProtobuf_PROTOC_EXECUTABLE=build-deps/vcpkg_installed/<triplet>/tools/protobuf/protoc
+cmake --build build --config Release --target install
+....
+
+Replace `<triplet>` with the vcpkg triplet for your platform:
+
+- Linux: `x64-linux`
+- Windows: `x64-windows-static-md`
+- macOS: `universal-osx`
+
+On Windows, append `.exe` to the protoc path.
+
+The CI workflows automate this via the `.github/actions/setup_osi_utilities` composite action.
+
+=== Quick build without OSI
+
+If you do not need OSI support you can skip the two-phase build entirely:
 
 ....
 git clone https://github.com/esmini/esmini
 cd esmini
-mkdir build
-cd build
-cmake ..
+mkdir build && cd build
+cmake .. -DUSE_OSI=OFF
 cmake --build . --config Release --target install
 ....
 
@@ -4171,25 +4210,16 @@ esmini is designed to link all dependencies statically. Main reason is to have a
 
 *Note:* Nothing stops you from going with all dynamic linking, it's just that provided build scripts are not prepared for it.
 
-CMake scripts will download several pre-compiled 3rd party packages and 3D model resource files.
-
-Default location for these resources is Google drive. If there is an issue, try switch to the backup location at Dropbox by changing the following line in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/CMakeLists.txt[EnvironmentSimulator/CMakeLists.txt]:
-
-``set ( FILE_STORAGE "google" )`` +
-to +
-``set ( FILE_STORAGE "dropbox" )`` +
+CMake scripts will download several pre-compiled 3rd party packages (OSG, SUMO) and 3D model resource files.
 
 Links to all packages can be found in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/CMakeLists.txt[EnvironmentSimulator/CMakeLists.txt].
 
 If you need to (re)build a 3rd party lib for some reason, e.g. for an yet unsupported system or need for a specific version, these build scripts might be a starting point:
 
 - https://github.com/esmini/esmini/blob/master/scripts/generate_osg_libs.sh[scripts/generate_osg_libs.sh]
-- https://github.com/esmini/esmini/blob/master/scripts/generate_osi_libs.sh[scripts/generate_osi_libs.sh]
 - https://github.com/esmini/esmini/blob/master/scripts/generate_sumo_libs.sh[scripts/generate_sumo_libs.sh]
 
-or this script that builds all three libs, combining the above ones:
-
-https://github.com/esmini/esmini/blob/master/scripts/generate_osi_sumo_osg_libs.sh[scripts/generate_osi_sumo_osg_libs.sh]
+NOTE: OSI is no longer provided as pre-built binaries. It is built from source via the asam-osi-utilities submodule and vcpkg. See <<Two-phase build (with OSI)>>.
 
 === Additional platform dependencies
 
@@ -4252,27 +4282,90 @@ Run without debug (e.g. skipping breakpoints): Click the Play button from the St
 
 For more info see: https://code.visualstudio.com/docs/cpp/CMake-linux
 
-=== Dynamic protobuf linking
-When linking esmini with software already dependent on Google protobuf there might be need for dynamic linking of shared protobuf library. This can be achieved by defining cmake symbol DYN_PROTOBUF as following example:
+=== OSI linking and version configuration
 
-``cmake .. -D DYN_PROTOBUF=True``
+==== Static linking (default)
 
-Then build as usual. It will link with protobuf shared library instead of linking with a static library.
+By default esmini links OSI and protobuf statically. This is the recommended approach for
+distributing esmini as a self-contained shared library (DLL/dylib/so), e.g. as a plugin in
+Unity, Simulink, or a co-simulation framework. Static linking ensures all protobuf symbols
+are contained in the binary and avoids runtime dependency on shared libraries.
 
-When running esmini, the protobuf shared library needs to be found. Set dynamic library path environment variable to the folder where the library is. Example:
+The two-phase build (see <<Two-phase build (with OSI)>>) produces statically linked OSI by
+default — no additional flags are needed.
 
-Linux: +
-``export LD_LIBRARY_PATH=./externals/OSI/linux/lib-dyn``
+==== Dynamic / shared linking
 
-macOS: +
-``export DYLD_LIBRARY_PATH=./externals/OSI/linux/lib-dyn``
+Dynamic linking of OSI and protobuf is needed when **multiple libraries in the same process**
+each use OSI messages. If two libraries each statically link their own copy of protobuf,
+duplicate global state (descriptor pools, message registries) will cause crashes or undefined
+behavior at runtime.
 
-*Note:* +
-The dynamic versions of protobuf were added Aug 31 2021. So you might need to update the OSI library package. Get the latest from following links:
+Typical scenario:
 
-- https://dl.dropboxusercontent.com/s/an58ckp2qfx5069/osi_v10.7z?dl=0[OSI Windows]
-- https://dl.dropboxusercontent.com/s/kwtdg0c1c8pawa1/osi_linux.7z?dl=0[OSI Linux]
-- https://dl.dropboxusercontent.com/s/m62v19gp0m73dte/osi_mac.7z?dl=0[OSI Mac]
+- Your application loads `libA.so` and `libB.so`
+- Both use OSI messages
+- Both must link against the *same* shared `libprotobuf.so` and `libopen_simulation_interface.so`
+
+To build asam-osi-utilities with shared OSI:
+
+*Linux:*
+
+....
+cmake -S externals/asam-osi-utilities -B build-deps --preset vcpkg-shared-linux
+cmake --build build-deps --config Release
+cmake --install build-deps --config Release --prefix osi-deps
+....
+
+*macOS:*
+
+....
+cmake -S externals/asam-osi-utilities -B build-deps --preset vcpkg-shared-macos
+cmake --build build-deps --config Release
+cmake --install build-deps --config Release --prefix osi-deps
+....
+
+Then configure esmini as usual with `OSI_UTILITIES_PREFIX`. At runtime you need to ensure the
+shared libraries are findable:
+
+....
+# Linux
+export LD_LIBRARY_PATH=/path/to/osi-deps/lib:$LD_LIBRARY_PATH
+
+# macOS
+export DYLD_LIBRARY_PATH=/path/to/osi-deps/lib:$DYLD_LIBRARY_PATH
+....
+
+*Windows:* Shared OSI is currently *not supported* on Windows due to missing `__declspec(dllexport)`
+annotations for protobuf data symbols. See https://github.com/OpenSimulationInterface/osi-cpp/issues/7[osi-cpp#7]
+for details. Use static linking on Windows.
+
+==== Protobuf version
+
+The C++ protobuf version is determined by the vcpkg baseline in
+`externals/asam-osi-utilities/vcpkg-configuration.json`. The current baseline resolves to
+protobuf v5.29.3 (release 29), with abseil as a transitive dependency.
+
+The Python protobuf version is determined by the `osi-python` submodule
+(`externals/asam-osi-utilities/submodules/osi-python/pyproject.toml`), which currently
+requires `protobuf>=6.30.2` (release 30). The C++ and Python versions do not need to be
+identical — protobuf's wire format is stable across major versions, so `.osi` trace files
+written by C++ can always be read by Python and vice versa.
+
+To use a different C++ protobuf version, update the `builtin-baseline` commit in
+`externals/asam-osi-utilities/vcpkg-configuration.json` to a vcpkg commit that provides
+the desired version, then rebuild Phase A.
+
+NOTE: Protobuf 5.x is a major upgrade from the legacy 3.x series. The generated `.pb.h`
+headers use a different API (arena-based allocation, `GetDescriptor()` instead of `descriptor()`).
+Downgrading to protobuf 3.x would require changes in OSIReporter.cpp and is not tested.
+
+==== OSI version
+
+The OSI version is determined by the `open-simulation-interface` submodule pinned inside
+asam-osi-utilities (currently at v3.8.0-rc1). The `.proto` schemas are compiled from source
+at build time. To use a different OSI version, you would need to update the
+`open-simulation-interface` submodule pin inside asam-osi-utilities.
 
 === Slim esmini - customize configration
 
