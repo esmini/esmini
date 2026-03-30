@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.ref }}
-          submodules: true
+          submodules: recursive
           fetch-depth: 0  # Fetch all history for proper branch switching
 
       - name: Conditional Checkout
@@ -38,16 +38,28 @@ jobs:
           path: |
             externals/googletest
             externals/osg
-            externals/osi
             externals/sumo
             resources/models
-          key: ${{ runner.os }}-external-resources
+          key: ${{ runner.os }}-external-resources-sanitize
+
+      # Phase A: Build and install asam-osi-utilities
+      - name: Setup OSI Utilities
+        id: osi
+        uses: ./.github/actions/setup_osi_utilities
+        with:
+          triplet: x64-linux
 
       - name: CMake Configure - Ubuntu
         if: runner.os == 'Linux'
         shell: pwsh
-        run: cmake . -B build -G Ninja -DENABLE_SANITIZERS=ON -DCMAKE_BUILD_TYPE=RelWithDebInfo -DUSE_OSI=ON -DUSE_GTEST=ON -DUSE_OSG=OFF -DUSE_SUMO=OFF -DUSE_IMPLOT=OFF
-
+        run: >
+          cmake . -B build -G Ninja
+          -DENABLE_SANITIZERS=ON
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          -DUSE_OSI=ON -DUSE_GTEST=ON -DUSE_OSG=OFF -DUSE_SUMO=OFF -DUSE_IMPLOT=OFF
+          -DOSI_UTILITIES_PREFIX=${{ steps.osi.outputs.osi-prefix }}
+          -DCMAKE_PREFIX_PATH="${{ steps.osi.outputs.cmake-prefix-path }}"
+          -DProtobuf_PROTOC_EXECUTABLE=${{ steps.osi.outputs.protoc-executable }}
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
