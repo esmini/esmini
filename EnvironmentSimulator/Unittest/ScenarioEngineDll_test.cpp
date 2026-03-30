@@ -6033,6 +6033,7 @@ TEST_P(LookaheadRouteParamTest, ExecSimulation)
             SE_StepDT(0.0);
         }
     }
+    SE_SimpleVehicleDelete(vehicleHandle);
     SE_Close();
 }
 

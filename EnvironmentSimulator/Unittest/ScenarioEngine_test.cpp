@@ -2748,6 +2748,7 @@ TEST_F(StraightRoadTest, AngleConditionTest)
     obj.SetActive(true);
 
     TrigByAngle cond;
+    cond.triggering_entity_rule_ = scenarioengine::TrigByEntity::TriggeringEntitiesRule::ANY;
     cond.triggering_entities_.entity_.push_back({&obj});
 
     obj.pos_.SetLanePos(1, -1, 10, 0.0);

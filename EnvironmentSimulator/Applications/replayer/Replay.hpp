@@ -464,8 +464,8 @@ namespace scenarioengine
 
     private:
         std::vector<std::string> scenarios_;
-        double                   time_;
-        bool                     quiet_;
+        double                   time_       = 0.0;
+        bool                     quiet_      = false;
         double                   startTime_  = 0.0;
         double                   stopTime_   = 0.0;
         unsigned int             startIndex_ = 0;
