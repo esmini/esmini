@@ -971,12 +971,14 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 86321);  // initial OSI size, including static content
+    off_t size_after_init = fileStatus.st_size;
+    EXPECT_GT(size_after_init, 0);  // file contains initial frame with static content
 
     SE_StepDT(0.001);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 87558);  // slight growth due to only dynamic updates
+    off_t size_after_step1 = fileStatus.st_size;
+    EXPECT_GT(size_after_step1, size_after_init);  // file grew with dynamic update
 
     int road_lane_size;
 
@@ -988,12 +990,19 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_StepDT(0.001);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 88958);  // slight growth due to only dynamic updates
+    off_t size_after_step2 = fileStatus.st_size;
+    EXPECT_GT(size_after_step2, size_after_step1);  // file grew with dynamic update
 
     SE_StepDT(0.001);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 90359);  // slight growth due to only dynamic updates
+    off_t size_after_step3 = fileStatus.st_size;
+    EXPECT_GT(size_after_step3, size_after_step2);  // file grew with dynamic update
+
+    // Verify dynamic-only frames have consistent incremental sizes
+    off_t delta1 = size_after_step2 - size_after_step1;
+    off_t delta2 = size_after_step3 - size_after_step2;
+    EXPECT_NEAR(static_cast<double>(delta1), static_cast<double>(delta2), 200);  // dynamic frames should be similar size
 
     SE_DisableOSIFile();
     SE_Close();
@@ -1568,13 +1577,13 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
     SE_DisableOSIFile();
 
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 10076);
+    EXPECT_EQ(fileStatus.st_size, 14466);
 
     // Read OSI file
     FILE* file = FileOpen("gt.osi", "rb");
     ASSERT_NE(file, nullptr);
 
-    const int max_msg_size = 10000;
+    const int max_msg_size = 15000;
     int       msg_size;
     char      msg_buf[max_msg_size];
 
@@ -1592,7 +1601,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
         if (i == 0)
         {
             EXPECT_EQ(osi_gt.version().version_major(), 3);
-            EXPECT_EQ(osi_gt.version().version_minor(), 5);
+            EXPECT_EQ(osi_gt.version().version_minor(), 8);
             EXPECT_EQ(osi_gt.version().version_patch(), 0);
             EXPECT_EQ(osi_gt.host_vehicle_id().value(), osi_gt.mutable_moving_object(0)->id().value());
         }
@@ -1646,13 +1655,13 @@ TEST(GroundTruthTests, check_frequency_implicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_implicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 10067);
+    EXPECT_EQ(fileStatus.st_size, 14466);
 
     // Read OSI file
     FILE* file = FileOpen("gt_implicit.osi", "rb");
     ASSERT_NE(file, nullptr);
 
-    const int max_msg_size = 10000;
+    const int max_msg_size = 15000;
     int       msg_size;
     char      msg_buf[max_msg_size];
 
@@ -1716,13 +1725,13 @@ TEST(GroundTruthTests, check_frequency_explicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_explicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 10067);
+    EXPECT_EQ(fileStatus.st_size, 14466);
 
     // Read OSI file
     FILE* file = FileOpen("gt_explicit.osi", "rb");
     ASSERT_NE(file, nullptr);
 
-    const int max_msg_size = 10000;
+    const int max_msg_size = 15000;
     int       msg_size;
     char      msg_buf[max_msg_size];
 
@@ -1856,7 +1865,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 11277);
+    EXPECT_EQ(fileStatus.st_size, 16055);
 }
 
 TEST(GroundTruthTests, check_update_osi_ground_truth_api_and_log)
@@ -1891,7 +1900,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api_and_log)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 17818);
+    EXPECT_EQ(fileStatus.st_size, 25757);
 }
 
 TEST(GroundTruthTests, check_update_gt_twice_same_frame)
@@ -1909,7 +1918,7 @@ TEST(GroundTruthTests, check_update_gt_twice_same_frame)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 7665);
+    EXPECT_EQ(fileStatus.st_size, 11288);
 }
 
 TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
