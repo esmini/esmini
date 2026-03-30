@@ -2757,14 +2757,17 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
 
 osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb_z)
 {
-    const double shadow_adjustment_factor = MIN(bb_x, bb_y) * 0.08;  // x% of volume
+    const double shadow_adjustment_factor = MIN(bb_x, bb_y) * 0.08;  // x% of shortest side
 
-    const unsigned int FAN_SURFACES         = 3;  // Has to be >= 1 surface
-    const double       LENGTH               = bb_x * 0.5 - shadow_adjustment_factor;
-    const double       WIDTH                = bb_y * 0.5 - shadow_adjustment_factor;
-    const double       shadow_min_extrusion = SHADOW_MIN_EXTRUSION + 2 * shadow_adjustment_factor;
+    const unsigned int FAN_SURFACES = 3;  // Has to be >= 1 surface
+    const double       LENGTH       = bb_x * 0.5 - shadow_adjustment_factor;
+    const double       WIDTH        = bb_y * 0.5 - shadow_adjustment_factor;
 
-    const double extrusion = MAX(shadow_min_extrusion, MIN(0.1 * bb_z, SHADOW_MAX_EXTRUSION));
+    const double shadow_extrusion_factor = 1.75 * shadow_adjustment_factor;  // Extrude at least 1.75x the removed inner area
+    const double shadow_min_extrusion    = shadow_extrusion_factor + SHADOW_MIN_EXTRUSION;
+    const double shadow_max_extrusion    = shadow_extrusion_factor + SHADOW_MAX_EXTRUSION;
+
+    const double extrusion = MAX(shadow_min_extrusion, MIN(shadow_extrusion_factor + 0.1 * bb_z, shadow_max_extrusion));
 
     const int vert_size =
         4 + 4 * 2 + 4 * (FAN_SURFACES - 1);  // Rect + 4 extrusions with 2 unique vertices + 4 fan surfaces (2 surfaces 1 unique point etc.)
@@ -2886,10 +2889,10 @@ osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb
         geometry->addPrimitiveSet(fan.get());
     };
 
-    makeFan(0, 4, fan1_start, 10);  // BR
-    makeFan(1, 6, fan2_start, 5);   // FR
-    makeFan(2, 9, fan3_start, 7);   // FL
-    makeFan(3, 11, fan4_start, 8);  // BL
+    makeFan(0, 10, fan1_start, 4);  // BR
+    makeFan(1, 5, fan2_start, 6);   // FR
+    makeFan(2, 7, fan3_start, 9);   // FL
+    makeFan(3, 8, fan4_start, 11);  // BL
 
     osg::ref_ptr<osg::Geode> geode = new osg::Geode;
     geode->addDrawable(geometry.get());
