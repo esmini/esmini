@@ -5731,7 +5731,7 @@ bool RoadPath::CheckRoad(Road* checkRoad, RoadPath::PathNode* srcNode, Road* fro
     return true;
 }
 
-int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
+int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist, bool addLastNode)
 {
     OpenDrive* odr = startPos_->GetOpenDrive();
     RoadLink*  link;
@@ -5863,6 +5863,8 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
         return -1;
     }
 
+    PathNode* targetNode = nullptr;
+
     for (i = 0; i < 100 && !found && unvisited_.size() > 0 && tmpDist < maxDist; i++)
     {
         found = false;
@@ -5895,6 +5897,12 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
 
             if (nextRoad == targetRoad)
             {
+                targetNode = new PathNode;
+                targetNode->previous = unvisited_[minIndex];
+                targetNode->fromRoad = nextRoad;
+                targetNode->link     = nullptr; // or the proper end link
+                targetNode->fromLaneId = pivotLaneId;
+
                 // Special case: On same road, distance is equal to delta s, direction considered
                 if (link->GetContactPointType() == ContactPointType::CONTACT_POINT_START)
                 {
@@ -5904,6 +5912,8 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
                 {
                     tmpDist += nextRoad->GetLength() - targetPos_->GetS();
                 }
+
+                targetNode->dist = tmpDist;
 
                 found = true;
             }
@@ -5953,6 +5963,15 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
                         LOG_ERROR("Failed to check link in junction");
                         return -1;
                     }
+
+                    targetNode = new PathNode;
+                    targetNode->dist       = tmpDist;
+                    targetNode->link       = nullptr;          // target position has no outgoing link
+                    targetNode->fromRoad   = nextRoad;
+                    targetNode->fromLaneId = pivotLaneId;
+                    targetNode->previous   = unvisited_[minIndex];
+                    targetNode->contactPoint = contact_point;
+
                     found = true;
                 }
                 else
@@ -5965,6 +5984,11 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
         // Mark pivot link as visited (move it from unvisited to visited)
         visited_.push_back(unvisited_[minIndex]);
         unvisited_.erase(unvisited_.begin() + minIndex);
+        
+        if (found && targetNode && addLastNode)
+        {
+            visited_.push_back(targetNode);
+        }
     }
 
     if (found)
@@ -6011,6 +6035,48 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist)
     }
 
     return found ? 0 : -1;
+}
+
+int RoadPath::ExtractFinalPath()
+{
+    only_visited_path_.clear();
+
+    if (visited_.empty())
+    {
+        return -1;
+    }
+
+    // Try to find the target node:
+    // Prefer the last node if it has no outgoing link (Calculate() convention)
+    PathNode* targetNode = nullptr;
+
+    for (auto it = visited_.rbegin(); it != visited_.rend(); ++it)
+    {
+        if ((*it)->link == nullptr)
+        {
+            targetNode = *it;
+            break;
+        }
+    }
+
+    // Fallback: assume last node is target (less safe)
+    if (targetNode == nullptr)
+    {
+        targetNode = visited_.back();
+    }
+
+    // Walk backwards using previous pointers
+    PathNode* node = targetNode;
+    while (node)
+    {
+        only_visited_path_.push_back(node);
+        node = node->previous;
+    }
+
+    // Reverse to get start → target order
+    std::reverse(only_visited_path_.begin(), only_visited_path_.end());
+
+    return 0;
 }
 
 RoadPath::~RoadPath()

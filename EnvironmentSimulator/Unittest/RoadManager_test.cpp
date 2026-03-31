@@ -1773,6 +1773,7 @@ TEST(DistanceTest, CalcDistanceLong)
 
     // however the lateral distance should be affected - road 1 is opposite directed, so lane 1 should be on other side
     pos1.SetLanePos(1, 1, 14.0, 0);
+    
     ASSERT_EQ(pos0.Distance(&pos1, CoordinateSystem::CS_ROAD, RelativeDistanceType::REL_DIST_LATERAL, dist), 0);
     EXPECT_NEAR(dist, 3.5, 1e-5);
 

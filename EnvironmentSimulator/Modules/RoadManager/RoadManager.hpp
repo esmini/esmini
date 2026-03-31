@@ -4922,6 +4922,8 @@ namespace roadmanager
         int                     direction_;  // direction of path from starting pos. 0==not set, 1==forward, -1==backward
         PathNode               *firstNode_;
 
+        std::vector<PathNode*> only_visited_path_; // Contains only the path from start to target, without branches
+
         RoadPath(const Position *startPos, const Position *targetPos)
             : startPos_(startPos),
               targetPos_(targetPos),
@@ -4938,9 +4940,21 @@ namespace roadmanager
         @param dist A reference parameter into which the calculated path distance is stored
         @param bothDirections Set to true in order to search also backwards from object
         @param maxDist If set the search along each path branch will terminate after reaching this distance
+        @param addLastNode If set to true, the last node will be added to the visited list
         @return 0 on success, -1 on failure e.g. path not found
         */
-        int Calculate(double &dist, bool bothDirections = true, double maxDist = LARGE_NUMBER);
+        
+        // [TODO]: hlindst9 - update tests and investigate if addLastNode can be removed and handled nicer
+        int Calculate(double &dist, bool bothDirections = true, double maxDist = LARGE_NUMBER, bool addLastNode = false);
+
+        /**
+        Extracts the final path from visited_ list. Should be run after Calculate()
+        @return 0 on success, -1 on failure e.g. visited_ was empty
+        */
+        int ExtractFinalPath();
+
+        const std::vector<PathNode*>& GetVisitedNodes() const { return visited_; }
+        const std::vector<PathNode*>& GetOnlyVisitedPath() const { return only_visited_path_; }
 
     private:
         bool CheckRoad(Road *checkRoad, RoadPath::PathNode *srcNode, Road *fromRoad, int fromLaneId);

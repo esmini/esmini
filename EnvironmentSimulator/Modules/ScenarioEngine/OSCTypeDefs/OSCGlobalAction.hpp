@@ -725,7 +725,7 @@ namespace scenarioengine
 
     struct RoadCursor
     {
-        int              roadId;
+        id_t              roadId;
         double           s = 0.0;
         std::vector<int> laneIds;
         bool             last = false;
@@ -735,11 +735,11 @@ namespace scenarioengine
         {
         }
 
-        explicit RoadCursor(int id) : roadId(id), s(0.0), laneIds{}, last(false), road_length(-1)
+        explicit RoadCursor(id_t id) : roadId(id), s(0.0), laneIds{}, last(false), road_length(-1)
         {
         }
 
-        RoadCursor(int id, double s_, std::vector<int> lanes = {}, bool last_ = false, double len = 0.0)
+        RoadCursor(id_t id, double s_, std::vector<int> lanes = {}, bool last_ = false, double len = 0.0)
             : roadId(id),
               s(s_),
               laneIds(std::move(lanes)),
@@ -765,6 +765,12 @@ namespace scenarioengine
     {
         return almost_equal(a.length, b.length) && a.roadCursors == b.roadCursors;
     }
+    struct RoadRangePathNode
+    {
+        roadmanager::RoadLink        *link       = 0;
+        double           dist       = 0.0;
+        roadmanager::Road            *fromRoad   = 0;
+    };
 
     class TrafficAreaAction : public TrafficAction
     {
@@ -806,11 +812,16 @@ namespace scenarioengine
 
         void SortPolygonPoints(std::vector<roadmanager::Position>& points);
 
-        void SetRoadRanges(const std::vector<RoadRange> road_ranges)
+        void SetRoadRanges(const std::vector<RoadRange>& road_ranges)
         {
             road_ranges_ = road_ranges;
         }
-        std::vector<RoadRange> GetRoadRanges() const
+        std::vector<RoadRange>& GetRoadRanges()
+        {
+            return road_ranges_;
+        }
+
+        const std::vector<RoadRange>& GetRoadRanges() const
         {
             return road_ranges_;
         }
@@ -827,6 +838,14 @@ namespace scenarioengine
         void LaneSegments();
         void LaneSegmentsForRoad(std::vector<RoadCursor> road_cursors_to_road, double& accumulated_length, const double max_length);
         void HandleLastRoadCursor(std::vector<RoadCursor> last_road_cursors, double& accumulated_length, const double max_length);
+
+        void UpdateRoadCursor(RoadRange& road_range);
+        std::vector<RoadRangePathNode> CalculatePathBetweenCursors(
+    const RoadCursor& start_cursor,
+    const RoadCursor& end_cursor,
+    double& dist);
+        std::vector<RoadRangePathNode> CalculateRoadRangePath(RoadRange& road_range, double &dist);
+        void RoadPathInvestigation(RoadRange& road_range);
 
         roadmanager::Position* GetRandomSpawnPosition();
         roadmanager::Position* pos_;
