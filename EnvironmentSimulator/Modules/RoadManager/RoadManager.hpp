@@ -3711,27 +3711,32 @@ namespace roadmanager
         // example: Relative Z, Absolute H, Default R, Current P = Z_REL | H_ABS | R_DEF = 4151 = 0001 0000 0011 0111
         typedef enum
         {
-            UNDEFINED = 0,
-            Z_SET     = 1,  // 0001
-            Z_DEFAULT = 1,  // 0001
-            Z_ABS     = 3,  // 0011
-            Z_REL     = 7,  // 0111
-            Z_MASK    = 7,  // 0111
-            H_SET     = Z_SET << 4,
-            H_DEFAULT = Z_DEFAULT << 4,
-            H_ABS     = Z_ABS << 4,
-            H_REL     = Z_REL << 4,
-            H_MASK    = Z_MASK << 4,
-            P_SET     = Z_SET << 8,
-            P_DEFAULT = Z_DEFAULT << 8,
-            P_ABS     = Z_ABS << 8,
-            P_REL     = Z_REL << 8,
-            P_MASK    = Z_MASK << 8,
-            R_SET     = Z_SET << 12,
-            R_DEFAULT = Z_DEFAULT << 12,
-            R_ABS     = Z_ABS << 12,
-            R_REL     = Z_REL << 12,
-            R_MASK    = Z_MASK << 12,
+            UNDEFINED             = 0,
+            Z_SET                 = 1,  // 0001
+            Z_DEFAULT             = 1,  // 0001
+            Z_ABS                 = 3,  // 0011
+            Z_REL                 = 7,  // 0111
+            Z_MASK                = 7,  // 0111
+            H_SET                 = Z_SET << 4,
+            H_DEFAULT             = Z_DEFAULT << 4,
+            H_ABS                 = Z_ABS << 4,
+            H_REL                 = Z_REL << 4,
+            H_MASK                = Z_MASK << 4,
+            P_SET                 = Z_SET << 8,
+            P_DEFAULT             = Z_DEFAULT << 8,
+            P_ABS                 = Z_ABS << 8,
+            P_REL                 = Z_REL << 8,
+            P_MASK                = Z_MASK << 8,
+            R_SET                 = Z_SET << 12,
+            R_DEFAULT             = Z_DEFAULT << 12,
+            R_ABS                 = Z_ABS << 12,
+            R_REL                 = Z_REL << 12,
+            R_MASK                = Z_MASK << 12,
+            SNAP_TO_ROUTE_SET     = Z_SET << 16,  // Map position to closest lane along route (if 1) or any lane (if 0)
+            SNAP_TO_ROUTE_DEFAULT = Z_DEFAULT << 16,
+            SNAP_TO_ROUTE_OFF     = Z_ABS << 16,
+            SNAP_TO_ROUTE_ON      = Z_REL << 16,
+            SNAP_TO_ROUTE_MASK    = Z_MASK << 16,
         } PosMode;
 
         // Types of position modes
@@ -3876,8 +3881,7 @@ namespace roadmanager
         @param updateTrackPos True: road position will be calculated False: don't update road position
         @return Non zero return value indicates error of some kind
         */
-        int
-        SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos = true, bool alongRoute = false);
+        int SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos = true);
 
         /**
         Specify position by cartesian x, y and heading using current SET mode for heading and UPDATE mode for pitch and roll
@@ -3885,10 +3889,9 @@ namespace roadmanager
         @param y y
         @param h heading
         @param updateTrackPos True: road position will be calculated False: don't update road position
-        @param alongRoute True: road position will snap to closest position along route, of defined False: ignore any route
         @return Non zero return value indicates error of some kind
         */
-        int SetInertiaPos(double x, double y, double h, bool updateTrackPos = true, bool alongRoute = false);
+        int SetInertiaPos(double x, double y, double h, bool updateTrackPos = true);
 
         /**
         Specify position by cartesian x, y and heading. Z, pitch and roll will be set to zero.
@@ -3901,7 +3904,7 @@ namespace roadmanager
         @param updateTrackPos True: road position will be calculated False: don't update road position
         @return Non zero return value indicates error of some kind
         */
-        int  SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos = true, bool alongRoute = false);
+        int  SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos = true);
         void SetHeading(double heading, bool evaluate = true);
         void SetHeadingRelative(double heading, bool evaluate = true);
         void SetHeadingRelativeRoadDirection(double heading, bool evaluate = true);

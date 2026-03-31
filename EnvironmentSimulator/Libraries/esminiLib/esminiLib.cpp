@@ -1234,7 +1234,7 @@ extern "C"
             return -1;
         }
 
-        obj->pos_.SetInertiaPos(x, y, h, true, true);
+        obj->pos_.SetInertiaPos(x, y, h);
         obj->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::LATERAL);
 
         return 0;

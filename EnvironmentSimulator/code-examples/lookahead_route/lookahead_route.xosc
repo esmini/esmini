@@ -30,7 +30,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="0" laneId="1" offset="0" s="20"/>
+                        <LanePosition roadId="0" laneId="1" offset="0" s="45"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -72,7 +72,7 @@
          <ConditionGroup>
             <Condition name="Quit" delay="0.0" conditionEdge="none">
                <ByValueCondition>
-                  <SimulationTimeCondition value="12.0" rule="greaterOrEqual"/>
+                  <SimulationTimeCondition value="13.0" rule="greaterOrEqual"/>
                </ByValueCondition>
             </Condition>
          </ConditionGroup>

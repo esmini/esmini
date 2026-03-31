@@ -1925,7 +1925,7 @@ See details below in <<Trajectory interpolation and alignment>>
 
 === Position modes
 
-The purpose of position modes is to allow flexible and detailed control whether to interpret Z (elevation), heading, pitch and roll as absolute values or relative to the road. X and Y will always be interpreted as absolute values.
+The purpose of position modes is to allow flexible and detailed control whether to interpret Z (elevation), heading, pitch and roll as absolute values or relative to the road. X and Y will always be interpreted as absolute values. There is also a position mode for snapping position reference to closest lane (default) or along any assigned route.
 
 For some use cases orientation should be aligned to road surface, e.g. a vehicle simply driving along a hilly road. In some cases pitch and roll should be zero, e.g. signs and buildings along the road. External vehicle models can choose whether to report relative or absolute values. It can also be combination, e.g. explicit/absolute heading while z, roll and pitch are realative (to the road) - or any other combination.
 
@@ -1966,8 +1966,8 @@ This way a position object can, for example, maintain relative heading follow th
 There will be a default setting for both SET and UPDATE which will be applied until changed by SetMode() function:
 
 [horizontal]
-*SET*:: PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL
-*UPDATE*:: PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL
+*SET*:: PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL | PosMode::SNAP_TO_ROUTE_OFF
+*UPDATE*:: PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL | PosMode::SNAP_TO_ROUTE_OFF
 
 *Further examples*
 
@@ -1988,27 +1988,27 @@ Mode is coded in four chunks of three bits. One chunk for each of the position c
 ||Z|Comment|Hex|Int
 
 |SKIP
-|XXXX XXXX XXXX XXX0
+|XXXX XXXX XXXX XXXX XXX0
 |first bit is zero
-|0x0000
+|0x00000
 |0
 
 |Z_DEF
-|XXXX XXXX XXXX XX01
+|XXXX XXXX XXXX XXXX XX01
 |first bit is one, second is zero
-|0x0001
+|0x00001
 |1
 
 |Z_ABS
-|XXXX XXXX XXXX X011
+|XXXX XXXX XXXX XXXX X011
 |first and second bit is one, third zero
-|0x0003
+|0x00003
 |3
 
 |Z_REL
-|XXXX XXXX XXXX X111
+|XXXX XXXX XXXX XXXX X111
 |first, second and third bits are all one
-|0x0007
+|0x00007
 |7
 
 |===
@@ -2018,27 +2018,27 @@ Mode is coded in four chunks of three bits. One chunk for each of the position c
 ||H|Comment|Hex|Int
 
 |SKIP
-|XXXX XXXX XXX0 XXXX
+|XXXX XXXX XXXX XXX0 XXXX
 |first bit is zero
 |0x0000
 |0
 
 |H_DEF
-|XXXX XXXX XX01 XXXX
+|XXXX XXXX XXXX XX01 XXXX
 |first bit is one, second is zero
-|0x0010
+|0x00010
 |16
 
 |H_ABS
-|XXXX XXXX X011 XXXX
+|XXXX XXXX XXXX X011 XXXX
 |first and second bit is one, third zero
 |0x0030
 |48
 
 |H_REL
-|XXXX XXXX X111 XXXX
+|XXXX XXXX XXXX X111 XXXX
 |first, second and third bits are all one
-|0x0070
+|0x00070
 |112
 
 |===
@@ -2048,27 +2048,27 @@ Mode is coded in four chunks of three bits. One chunk for each of the position c
 ||P|Comment|Hex|Int
 
 |SKIP
-|XXXX XXX0 XXXX XXXX
+|XXXX XXXX XXX0 XXXX XXXX
 |first bit is zero
-|0x0000
+|0x00000
 |0
 
 |P_DEF
-|XXXX XX01 XXXX XXXX
+|XXXX XXXX XX01 XXXX XXXX
 |first bit is one, second is zero
-|0x0100
+|0x00100
 |256
 
 |P_ABS
-|XXXX X011 XXXX XXXX
+|XXXX XXXX X011 XXXX XXXX
 |first and second bit is one, third zero
-|0x0300
+|0x00300
 |768
 
 |P_REL
-|XXXX X111 XXXX XXXX
+|XXXX XXXX X111 XXXX XXXX
 |first, second and third bits are all one
-|0x0700
+|0x00700
 |1,792
 
 |===
@@ -2078,28 +2078,58 @@ Mode is coded in four chunks of three bits. One chunk for each of the position c
 ||R|Comment|Hex|Int
 
 |SKIP
-|XXX0 XXXX XXXX XXXX
+|XXXX XXX0 XXXX XXXX XXXX
 |first bit is zero
-|0x0000
+|0x00000
 |0
 
 |R_DEF
-|XX01 XXXX XXXX XXXX
+|XXXX XX01 XXXX XXXX XXXX
 |first bit is one, second is zero
-|0x1000
+|0x01000
 |4,096
 
 |R_ABS
-|X011 XXXX XXXX XXXX
+|XXXX X011 XXXX XXXX XXXX
 |first and second bit is one, third zero
-|0x3000
+|0x03000
 |12,288
 
 |R_REL
-|X111 XXXX XXXX XXXX
+|XXXX X111 XXXX XXXX XXXX
 |first, second and third bits are all one
-|0x7000
+|0x07000
 |28,672
+
+|===
+
+[cols="1,2,3,1,1"]
+|===
+||SNAP_TO_ROUTE|Comment|Hex|Int
+
+|SKIP
+|XXX0 XXXX XXXX XXXX XXXX
+|first bit is zero
+|0x00000
+|0
+
+|SNAP_TO_ROUTE_DEF
+|XXXX XX01 XXXX XXXX XXXX
+|first bit is one, second is zero
+|0x10000
+|65,536
+
+|SNAP_TO_ROUTE_OFF
+|XXXX X011 XXXX XXXX XXXX
+|first and second bit is one, third zero
+|0x30000
+|196,608
+
+|SNAP_TO_ROUTE_ON
+|XXXX X111 XXXX XXXX XXXX
+|first, second and third bits are all one
+|0x70000
+|458,752
 
 |===
 
@@ -2145,6 +2175,15 @@ Default controller will now move the pedestrian along the road but rotated 90 de
 `pos.SetZRelative(1.0);` +
 `pos.SetMode(Position::PosModeType::UPDATE, PosMode::Z_REL | PosMode::H_REL);` +
 Default controller will now move the pedestrian along the road 1 meter above ground, with maintained heading relative to the road.
+
+5. Set X,Y position, snap lane association to closest point on any assigned route instead of the closest lane, which is the default: +
+`pos.SetInertiaPosMode(x, y, 0, h, 0, 0, PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL | PosMode::SNAP_TO_ROUTE_ON);` +
+
+6. Set persistent snap to route, affecting any succeeding XY position setting: +
+`pos.SetMode(Position::PosModeType::SET, PosMode::SNAP_TO_ROUTE);` +
+`pos.SetInertiaPos(x, y, h);` +
+Entity road and lane position will be associated with closest point on any assigned route instead of any closest lane. +
+Note: Use SET type for route snap setting +
 
 === Trajectory interpolation and alignment
 

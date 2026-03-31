@@ -65,6 +65,12 @@ namespace ESMini
         SE_R_ABS = SE_Z_ABS << 12,
         SE_R_REL = SE_Z_REL << 12,
         SE_R_MASK = SE_Z_MASK << 12,
+        /// <summary>Map position to closest lane along route (if 1) or any lane (if 0)</summary>
+        SE_SNAP_TO_ROUTE_SET = SE_Z_SET << 16,
+        SE_SNAP_TO_ROUTE_DEFAULT = SE_Z_DEFAULT << 16,
+        SE_SNAP_TO_ROUTE_OFF = SE_Z_ABS << 16,
+        SE_SNAP_TO_ROUTE_ON = SE_Z_REL << 16,
+        SE_SNAP_TO_ROUTE_MASK = SE_Z_MASK << 16,
     }
 
     public enum SE_PositionModeType

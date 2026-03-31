@@ -10533,7 +10533,7 @@ int Position::SetInertiaPos(double x, double y, double z, double h, double p, do
     return SetInertiaPosMode(x, y, z, h, p, r, GetMode(PosModeType::SET), updateTrackPos);
 }
 
-int Position::SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos, bool alongRoute)
+int Position::SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos)
 {
     x = std::isnan(x) ? x_ : x;
     y = std::isnan(y) ? y_ : y;
@@ -10552,7 +10552,7 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
 
     if (updateTrackPos)
     {
-        XYZ2TrackPos(x, y, z, mode, false, ID_UNDEFINED, false, alongRoute);
+        XYZ2TrackPos(x, y, z, mode, false, ID_UNDEFINED, false, CheckBitsEqual(mode, PosMode::SNAP_TO_ROUTE_MASK, PosMode::SNAP_TO_ROUTE_ON));
     }
     else
     {
@@ -10638,22 +10638,21 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
     return 0;
 }
 
-int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos, bool alongRoute)
+int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos)
 {
-    // apply current position align mode - using current SET mode for heading and UPDATE mode for pitch and roll
-    return SetInertiaPosMode(
-        x,
-        y,
-        h,
-        (GetMode(PosModeType::SET) & PosMode::H_MASK) | (GetMode(PosModeType::UPDATE) & (PosMode::Z_MASK | PosMode::P_MASK | PosMode::R_MASK)),
-        updateTrackPos,
-        alongRoute);
+    // apply current position align mode - using current SET mode for heading and UPDATE mode for z, pitch, roll and snap
+    return SetInertiaPosMode(x,
+                             y,
+                             h,
+                             (GetMode(PosModeType::SET) & (PosMode::H_MASK | PosMode::SNAP_TO_ROUTE_MASK)) |
+                                 (GetMode(PosModeType::UPDATE) & (PosMode::Z_MASK | PosMode::P_MASK | PosMode::R_MASK)),
+                             updateTrackPos);
 }
 
-int Position::SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos, bool alongRoute)
+int Position::SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos)
 {
     // Apply zero z, p, r to be aligned according to specified mode
-    return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode, updateTrackPos, alongRoute);
+    return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode, updateTrackPos);
 }
 
 void Position::SetHeading(double heading, bool evaluate)
@@ -11077,11 +11076,11 @@ int Position::GetModeDefault(PosModeType type)
 {
     if (type == PosModeType::SET)
     {
-        return PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL;
+        return PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL | PosMode::SNAP_TO_ROUTE_OFF;
     }
     else if (type == PosModeType::UPDATE)
     {
-        return PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL;
+        return PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL | PosMode::SNAP_TO_ROUTE_OFF;
     }
     else if (type == PosModeType::INIT)
     {
@@ -11124,7 +11123,7 @@ void Position::SetMode(PosModeType type, int mode)
         return;
     }
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 5; i++)
     {
         int mask     = PosMode::Z_MASK << i * 4;
         int set_mask = PosMode::Z_SET << i * 4;
@@ -11132,7 +11131,7 @@ void Position::SetMode(PosModeType type, int mode)
 
         if (mode & set_mask)
         {
-            if (mode == def_mask)
+            if ((mode & mask) == def_mask)
             {
                 *mode_ref = (*mode_ref & ~mask) | (GetModeDefault(type) & mask);
             }
@@ -11867,7 +11866,7 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
 
     target.Duplicate(*this);
 
-    if (along_route && GetRoute() != nullptr && GetRoute()->IsValid() && GetRoute()->OnRoute())
+    if (along_route && GetRoute() != nullptr && GetRoute()->IsValid())
     {
         // If route is valid, use current point snapped to route as pivot to find the target position
         target.CopyLocation(GetRoute()->currentPos_);
