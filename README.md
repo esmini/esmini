@@ -78,7 +78,24 @@ cmake --preset default
 cmake --build build --config Release --target install
 ```
 
-Use `cmake --list-presets` to see all available presets. For a full build with OSI, use the `full` preset after building OSI dependencies — see the [Build guide](https://esmini.github.io/#_build_guide) for details.
+Use `cmake --list-presets` to see all available presets. For a full build with OSI support, first build the dependencies, then esmini itself:
+
+```bash
+# Phase A: Build OSI dependencies (via vcpkg)
+cmake -S externals/asam-osi-utilities -B build-deps --preset vcpkg-windows-static-md  # Windows
+cmake -S externals/asam-osi-utilities -B build-deps --preset vcpkg                    # Linux/macOS
+cmake --build build-deps --config Release
+cmake --install build-deps --config Release --prefix osi-deps
+
+# Phase B: Build esmini (set env vars, then configure + build)
+export ESMINI_OSI_PREFIX=osi-deps                                                        # bash
+export ESMINI_CMAKE_PREFIX_PATH="osi-deps;build-deps/vcpkg_installed/<your-triplet>"     # bash
+export ESMINI_PROTOC=build-deps/vcpkg_installed/<your-triplet>/tools/protobuf/protoc     # bash
+cmake --preset full
+cmake --build build --config Release --target install
+```
+
+Replace `<your-triplet>` with e.g. `x64-windows-static-md` or `x64-linux`. See the [Build guide](https://esmini.github.io/#_build_guide) for full details and platform-specific instructions.
 
 ### Unity support
 esmini shared library works also as plugin in Unity (Win, Linux, Mac). Learn more and find example in [User guide - esmini in Unity](https://esmini.github.io/#_esmini_in_unity).

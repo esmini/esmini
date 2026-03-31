@@ -38,6 +38,7 @@ EnvironmentSimulator/Libraries/esminiJS/build*/*
 support/generated
 pylint_report.txt
 CMakeUserPresets.json
+CMakeFiles/
 
 # Two-phase OSI build output (see docs: cmake --install ... --prefix osi-deps)
 osi-deps/
