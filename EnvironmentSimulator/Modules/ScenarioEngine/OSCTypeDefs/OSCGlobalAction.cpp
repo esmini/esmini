@@ -1134,19 +1134,357 @@ void TrafficAreaAction::UpdateRoadRanges()
 {
     for (auto& rr : road_ranges_)
     {
-        for (auto& rc : rr.roadCursors)
-        {
-            SetAdditionalRoadCursorInfo(rc);
-        }
+        // for (auto& rc : rr.roadCursors)
+        // {
+        //     SetAdditionalRoadCursorInfo(rc);
+        // }
+        UpdateRoadCursor(rr);
+        RoadPathInvestigation(rr);
         SetRoadRangeLength(rr);
         SetLaneSegments(rr);
     }
     // AddComplementaryRoadCursors();
 }
 
+void TrafficAreaAction::UpdateRoadCursor(RoadRange& road_range)
+{
+    for (auto& rc : road_range.roadCursors)
+    {
+        SetAdditionalRoadCursorInfo(rc);
+    }
+}
+
+// Functions to add
+// CheckRoadPath -> Gives if theres a path between A and B
+// CheckMultipleRoadPaths .> Gives if there's a path between A and B and C and D, etc. (for multiple cursors on same road)
+// Handle if Road has LaneSections
+
+std::vector<RoadRangePathNode> TrafficAreaAction::CalculatePathBetweenCursors(const RoadCursor& start_cursor,
+                                                                              const RoadCursor& end_cursor,
+                                                                              double&           dist)
+{
+    std::unique_ptr<roadmanager::Position> start_pos;
+    std::unique_ptr<roadmanager::Position> end_pos;
+    std::unique_ptr<roadmanager::RoadPath> road_path;
+
+    int path_found = -1;
+
+    for (const auto& start_lane : start_cursor.laneIds)
+    {
+        for (const auto& end_lane : end_cursor.laneIds)
+        {
+            start_pos = std::make_unique<roadmanager::Position>(start_cursor.roadId, start_lane, start_cursor.s, 0.0);
+
+            end_pos = std::make_unique<roadmanager::Position>(end_cursor.roadId, end_lane, end_cursor.s, 0.0);
+
+            road_path = std::make_unique<roadmanager::RoadPath>(start_pos.get(), end_pos.get());
+
+            path_found = road_path->Calculate(dist, true, LARGE_NUMBER, true);
+
+            if (path_found == 0)
+                break;
+        }
+        if (path_found == 0)
+            break;
+    }
+
+    if (path_found != 0)
+    {
+        LOG_ERROR("Path failed between road {} and {}. Error: {}", start_cursor.roadId, end_cursor.roadId, path_found);
+        return {};
+    }
+
+    road_path->ExtractFinalPath();
+
+    // auto visited = road_path->GetVisitedNodes();
+
+    auto only_path = road_path->GetOnlyVisitedPath();
+
+    std::vector<RoadRangePathNode> result(only_path.size());
+
+    for (size_t i = 0; i < only_path.size(); ++i)
+    {
+        result[i].link     = only_path[i]->link;
+        result[i].dist     = only_path[i]->dist;
+        result[i].fromRoad = only_path[i]->fromRoad;
+    }
+
+    return result;
+}
+
+std::vector<RoadRangePathNode> TrafficAreaAction::CalculateRoadRangePath(const RoadRange& road_range, double& total_dist)
+{
+    std::vector<RoadRangePathNode> visited_nodes;
+    total_dist = 0.0;
+
+    const auto& cursors = road_range.roadCursors;
+
+    if (cursors.size() < 2)
+        return visited_nodes;
+
+    for (size_t i = 0; i < cursors.size() - 1; ++i)
+    {
+        if (cursors[i].roadId == cursors[i + 1].roadId)
+        {
+            continue;  // Skip if consecutive cursors are on the same road
+        }
+
+        double segment_dist = 0.0;
+
+        auto segment_nodes = CalculatePathBetweenCursors(cursors[i], cursors[i + 1], segment_dist);
+
+        if (segment_nodes.empty())
+        {
+            LOG_ERROR("Failed path between cursor {} and {}", i, i + 1);
+            return {};
+        }
+
+        total_dist += segment_dist;
+
+        // Remove the last node of the accumulated path before appending the new segment,
+        // since the new segment starts from the same cursor position
+        if (!visited_nodes.empty())
+        {
+            visited_nodes.pop_back();
+        }
+
+        visited_nodes.insert(visited_nodes.end(), segment_nodes.begin(), segment_nodes.end());
+    }
+
+    return visited_nodes;
+}
+
+// std::vector<RoadRangePathNode> TrafficAreaAction::CalculateRoadRangePath(RoadRange& road_range, double &dist)
+// {
+
+//     RoadCursor& start_cursor = road_range.roadCursors.front();
+//     RoadCursor& end_cursor   = road_range.roadCursors.back();
+
+//     std::unique_ptr<roadmanager::Position> start_pos;
+//     std::unique_ptr<roadmanager::Position> end_pos;
+//     std::unique_ptr<roadmanager::RoadPath> road_path;
+
+//     int path_found = -1;
+
+//     for (const auto& start_lane: start_cursor.laneIds)
+//     {
+//         for (const auto& end_lane: end_cursor.laneIds)
+//         {
+//             start_pos = std::make_unique<roadmanager::Position>(start_cursor.roadId, start_lane, start_cursor.s, 0.0);
+//             end_pos   = std::make_unique<roadmanager::Position>(end_cursor.roadId, end_lane, end_cursor.s, 0.0);
+
+//             road_path = std::make_unique<roadmanager::RoadPath>(start_pos.get(), end_pos.get());
+//             path_found = road_path->Calculate(dist, true, LARGE_NUMBER, true);
+
+//             if (path_found == 0)
+//             {
+//                 break;
+//             }
+
+//         }
+//         if (path_found == 0)
+//         {
+//             break;
+//         }
+//     }
+
+//     if (path_found != 0)
+//     {
+//         LOG_ERROR("TrafficAreaAction: Road path investigation failed for road range with start road ID {} and end road ID {}. Error code: {}",
+//                   start_cursor.roadId, end_cursor.roadId, path_found);
+//         return std::vector<RoadRangePathNode>{};
+//     }
+
+//     // road_path is still alive here
+//     auto visited = road_path->GetVisitedNodes();
+//     std::vector<RoadRangePathNode> visited_nodes(visited.size());
+//     for (size_t i = 0; i < visited.size(); ++i)
+//     {
+//         visited_nodes[i].link = visited[i]->link;
+//         visited_nodes[i].dist = visited[i]->dist;
+//         visited_nodes[i].fromRoad = visited[i]->fromRoad;
+//     }
+//     // return visited;
+//     return visited_nodes;
+
+// }
+
+void TrafficAreaAction::RoadPathInvestigation(RoadRange& road_range)
+{
+    double dist;
+    auto   visited = CalculateRoadRangePath(road_range, dist);
+    if (visited.empty())
+    {
+        LOG_ERROR("TrafficAreaAction: Road path investigation failed for road range with start road ID {} and end road ID {}.",
+                  road_range.roadCursors.front().roadId,
+                  road_range.roadCursors.back().roadId);
+        return;
+    }
+
+    const RoadCursor&      start_cursor  = road_range.roadCursors.front();
+    std::vector<int> tracked_lanes = start_cursor.laneIds;
+
+    for (size_t i = 0; i < visited.size(); i++)
+    {
+        RoadRangePathNode  node = visited[i];
+        roadmanager::Road* road = node.fromRoad;
+        std::vector<int>   new_tracked;
+
+        // Check if current road has more than one roadcursor
+        std::vector<RoadCursor> roadCursors_to_road;
+
+        std::copy_if(road_range.roadCursors.begin(),
+             road_range.roadCursors.end(),
+             std::back_inserter(roadCursors_to_road),
+             [&](const auto& cursor) { return cursor.roadId == road->GetId(); });
+
+        if (roadCursors_to_road.empty())
+        {
+            // If the current road has no cursors, the lane segments are the full length of the road
+            // [TODO] What about lane sections?
+            for (int lane : tracked_lanes)
+            {
+                LaneSegment ls = {road->GetId(), lane, 0, road->GetLength(), road->GetLength()};
+                lane_segments_.push_back(ls);
+            }
+        }
+        else
+        {
+            // Road has one or more cursors
+            double start_s;
+            double absolute_s;
+            if (node.link != nullptr)
+            {
+                // If node has link, this is not the last node
+                if (node.link->GetType() == roadmanager::SUCCESSOR)
+                {
+                    // Next road is successor, sort RoadCursors by ascending s
+                    std::sort(roadCursors_to_road.begin(),
+                              roadCursors_to_road.end(),
+                              [](const RoadCursor& a, const RoadCursor& b) { return a.s < b.s; });
+                    start_s    = 0;
+                    absolute_s = road->GetLength();
+                }
+                else
+                {
+                    // Next road is predecessor, sort RoadCursors by descending s
+                    std::sort(roadCursors_to_road.begin(),
+                              roadCursors_to_road.end(),
+                              [](const RoadCursor& a, const RoadCursor& b) { return a.s > b.s; });
+                    start_s    = road->GetLength();
+                    absolute_s = 0;
+                }
+            }
+            else
+            {
+                // This is the last node, how did we connect to it?
+                RoadRangePathNode prev_node = visited[i - 1];
+                if (prev_node.link->GetContactPointType() == roadmanager::ContactPointType::CONTACT_POINT_JUNCTION)
+                {
+                    auto junction = context_->GetOdrManager().GetJunctionById(prev_node.link->GetElementId());
+                    auto junction_connections = junction->GetConnections();
+
+                    auto it = std::find_if(
+                        junction_connections.begin(),
+                        junction_connections.end(),
+                        [&](const auto& connection)
+                        {
+                            return connection->GetIncomingRoad()->GetId() == prev_node.fromRoad->GetId() &&
+                                connection->GetConnectingRoad()->GetId() == road->GetId();
+                        });
+
+                    if (it != junction_connections.end())
+                    {
+                        prev_node.link->SetContactPointType((*it)->GetContactPoint());
+                    }
+                }
+
+                if (prev_node.link->GetContactPointType() == roadmanager::ContactPointType::CONTACT_POINT_START)
+                {
+                    // Next road is successor, sort RoadCursors by ascending s
+                    std::sort(roadCursors_to_road.begin(),
+                              roadCursors_to_road.end(),
+                              [](const RoadCursor& a, const RoadCursor& b) { return a.s < b.s; });
+                    start_s    = 0;
+                    absolute_s = road->GetLength();
+                    if (roadCursors_to_road.begin()->s == 0)
+                    {
+                        tracked_lanes = roadCursors_to_road.begin()->laneIds;
+                    }
+                }
+                else
+                {
+                    // Next road is predecessor, sort RoadCursors by descending s
+                    std::sort(roadCursors_to_road.begin(),
+                              roadCursors_to_road.end(),
+                              [](const RoadCursor& a, const RoadCursor& b) { return a.s > b.s; });
+                    start_s    = road->GetLength();
+                    absolute_s = 0;
+                    if (roadCursors_to_road.begin()->s == road->GetLength())
+                    {
+                        tracked_lanes = roadCursors_to_road.begin()->laneIds;
+                    }
+                }
+            }
+
+            // Special case, first cursor, i=0
+            if (i == 0)
+            {
+                start_s = roadCursors_to_road.front().s;
+            }
+            if (i == visited.size() - 1)
+            {
+                absolute_s = roadCursors_to_road.back().s;
+            }
+
+            for (const auto& cursor : roadCursors_to_road)
+            {
+                double end_s = cursor.s;
+
+                if (start_s != end_s)
+                {
+                    for (int lane : tracked_lanes)
+                    {
+                        LaneSegment ls = {road->GetId(), lane, std::min(start_s, end_s), std::max(start_s, end_s), std::abs(end_s - start_s)};
+                        lane_segments_.push_back(ls);
+                    }
+                }
+                start_s       = end_s;
+                tracked_lanes = cursor.laneIds;
+            }
+
+            for (int lane : tracked_lanes)
+            {
+                if (start_s != absolute_s)
+                {
+                    LaneSegment ls = {road->GetId(),
+                                      lane,
+                                      std::min(start_s, absolute_s),
+                                      std::max(start_s, absolute_s),
+                                      std::abs(absolute_s - start_s)};
+                    lane_segments_.push_back(ls);
+                }
+            }
+        }
+
+        if (i != visited.size() - 1)
+        {
+            for (int lane : tracked_lanes)
+            {
+                int nextLane = road->GetConnectingLaneId(node.link, lane, visited[i + 1].fromRoad->GetId());
+
+                if (nextLane != 0)
+                    new_tracked.push_back(nextLane);
+            }
+
+            tracked_lanes = new_tracked;
+        }
+    }
+}
+
 void TrafficAreaAction::SetRoadRangeLength(RoadRange& road_range)
 {
-    std::unordered_set<int> road_ids_in_range;
+    std::unordered_set<id_t> road_ids_in_range;
     for (const auto& rc : road_range.roadCursors)
     {
         road_ids_in_range.insert(rc.roadId);
@@ -1192,7 +1530,7 @@ void TrafficAreaAction::SetRoadRangeLength(RoadRange& road_range)
 
 void TrafficAreaAction::SetAdditionalRoadCursorInfo(RoadCursor& road_cursor)
 {
-    roadmanager::Road* road = context_->GetOdrManager().GetRoadById(static_cast<id_t>(road_cursor.roadId));
+    roadmanager::Road* road = context_->GetOdrManager().GetRoadById(road_cursor.roadId);
     if (!road)
     {
         LOG_ERROR("TrafficAreaAction: Road ID '{}' not found in OpenDRIVE data", road_cursor.roadId);
@@ -1268,7 +1606,7 @@ void TrafficAreaAction::AddComplementaryRoadCursors()
 {
     std::vector<std::pair<id_t, std::string>> all_road_ids = context_->GetOdrManager().GetRoadIds();
 
-    std::vector<int> full_road_id_list(all_road_ids.size());
+    std::vector<id_t> full_road_id_list(all_road_ids.size());
     std::transform(all_road_ids.begin(),
                    all_road_ids.end(),
                    full_road_id_list.begin(),
@@ -1276,10 +1614,10 @@ void TrafficAreaAction::AddComplementaryRoadCursors()
 
     for (auto& rr : road_ranges_)
     {
-        int current_road_id = rr.roadCursors.front().roadId;
-        int last_road_id    = rr.roadCursors.back().roadId;
+        id_t current_road_id = rr.roadCursors.front().roadId;
+        id_t last_road_id    = rr.roadCursors.back().roadId;
 
-        std::unordered_set<int> road_ids_in_range;
+        std::unordered_set<id_t> road_ids_in_range;
         for (const auto& rc : rr.roadCursors)
         {
             road_ids_in_range.insert(rc.roadId);
@@ -1289,7 +1627,7 @@ void TrafficAreaAction::AddComplementaryRoadCursors()
         if (road_ids_in_range.size() > 1)
         {
             bool                    last_found = false;
-            std::unordered_set<int> visited_roads;
+            std::unordered_set<id_t> visited_roads;
             bool                    stuck = false;
             while (!last_found && !stuck)
             {
@@ -1299,8 +1637,8 @@ void TrafficAreaAction::AddComplementaryRoadCursors()
                     if (visited_roads.count(next_road_id))
                         continue;
 
-                    roadmanager::Road* current_road = context_->GetOdrManager().GetRoadById(static_cast<id_t>(current_road_id));
-                    roadmanager::Road* next_road    = context_->GetOdrManager().GetRoadById(static_cast<id_t>(next_road_id));
+                    roadmanager::Road* current_road = context_->GetOdrManager().GetRoadById(current_road_id);
+                    roadmanager::Road* next_road    = context_->GetOdrManager().GetRoadById(next_road_id);
                     if (!current_road->IsSuccessor(next_road))
                     {
                         continue;
@@ -1382,14 +1720,14 @@ void TrafficAreaAction::AddComplementaryRoadCursors()
 
 void TrafficAreaAction::SetLaneSegments(RoadRange& road_range)
 {
-    std::unordered_set<int> road_ids_set;
+    std::unordered_set<id_t> road_ids_set;
     for (const auto& rc : road_range.roadCursors)
     {
         road_ids_set.insert(rc.roadId);
     }
 
     // Sorting the road IDs, but if they are not in order this would not work, need update
-    std::vector<int> road_ids(road_ids_set.begin(), road_ids_set.end());
+    std::vector<id_t> road_ids(road_ids_set.begin(), road_ids_set.end());
     std::sort(road_ids.begin(), road_ids.end());
 
     std::vector<RoadCursor> road_cursors_to_road;
@@ -1596,7 +1934,7 @@ bool TrafficAreaAction::InsideArea(const roadmanager::Position& object_pos) cons
         return std::any_of(lane_segments_.begin(),
                            lane_segments_.end(),
                            [obj_current_road, obj_current_lane, obj_current_s](const LaneSegment& ls) {
-                               return ls.roadId == static_cast<int>(obj_current_road) && ls.laneId == obj_current_lane && obj_current_s >= ls.minS &&
+                               return ls.roadId == obj_current_road && ls.laneId == obj_current_lane && obj_current_s >= ls.minS &&
                                       obj_current_s <= ls.maxS;
                            });
     }
@@ -1606,13 +1944,27 @@ bool TrafficAreaAction::InsideArea(const roadmanager::Position& object_pos) cons
 
 void TrafficAreaAction::SpawnEntities(int number_of_entities_to_spawn)
 {
+    constexpr int max_spawn_attempts = 5;
+
     for (int i = 0; i < number_of_entities_to_spawn; i++)
     {
-        roadmanager::Position* vehicle_spawn_position = GetRandomSpawnPosition();
+        roadmanager::Position* vehicle_spawn_position = nullptr;
+
+        for (int attempt = 0; attempt < max_spawn_attempts; ++attempt)
+        {
+            vehicle_spawn_position = GetRandomSpawnPosition();
+            if (vehicle_spawn_position != nullptr)
+            {
+                break;
+            }
+        }
+
         if (vehicle_spawn_position == nullptr)
         {
+            LOG_INFO("TrafficAreaAction: Failed to find valid spawn position after {} attempts.", max_spawn_attempts);
             continue;
         }
+
         spawn_speed_ = vehicle_spawn_position->GetSpeedLimit();
         SpawnEntity(vehicle_spawn_position);
     }

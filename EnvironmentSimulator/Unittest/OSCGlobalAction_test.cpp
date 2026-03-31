@@ -2,6 +2,7 @@
 #include "playerbase.hpp"
 #include <gtest/gtest.h>
 #include "logger.hpp"
+#include <sstream>
 
 using namespace scenarioengine;
 using namespace roadmanager;
@@ -11,9 +12,10 @@ class TrafficAreaActionTestBase
 protected:
     TrafficAreaAction* trafficAreaAction = nullptr;
 
-    void SetUpBase()
+    void SetUpBase(const char* filename)
     {
-        roadmanager::Position::GetOpenDrive()->LoadOpenDriveFile("../../../resources/xodr/trafficarea.xodr");
+        // roadmanager::Position::GetOpenDrive()->LoadOpenDriveFile(filename);
+        Position::LoadOpenDrive(filename);
         std::shared_ptr<TrafficActionContext> trafficActionContext = std::make_shared<TrafficActionContext>(*roadmanager::Position::GetOpenDrive());
 
         trafficAreaAction = new TrafficAreaAction(nullptr, trafficActionContext);
@@ -41,7 +43,7 @@ class TrafficAreaActionRoadCursorInfoTest : public ::testing::TestWithParam<Road
 protected:
     void SetUp() override
     {
-        SetUpBase();
+        SetUpBase("../../../resources/xodr/trafficarea.xodr");
     }
     void TearDown() override
     {
@@ -99,7 +101,7 @@ struct RoadRangeTestParam
 // protected:
 //     void SetUp() override
 //     {
-//         SetUpBase();
+//         SetUpBase("../../../resources/xodr/trafficarea.xodr");
 //     }
 //     void TearDown() override
 //     {
@@ -203,7 +205,7 @@ class TrafficAreaActionSetRoadRangeLengthTest : public ::testing::TestWithParam<
 protected:
     void SetUp() override
     {
-        SetUpBase();
+        SetUpBase("../../../resources/xodr/trafficarea.xodr");
     }
     void TearDown() override
     {
@@ -325,7 +327,7 @@ class TrafficAreaActionSetLaneSegmentsTest : public ::testing::TestWithParam<Lan
 protected:
     void SetUp() override
     {
-        SetUpBase();
+        SetUpBase("../../../resources/xodr/trafficarea.xodr");
     }
     void TearDown() override
     {
@@ -448,6 +450,201 @@ INSTANTIATE_TEST_SUITE_P(
                                LaneSegment{2, 1, 0, 200, 200},
                                LaneSegment{2, -1, 0, 200, 200},
                                LaneSegment{2, -2, 0, 200, 200}}}));
+
+struct RoadPathTestParam
+{
+    const char*              road_file;
+    RoadRange                inputRange;
+    std::vector<LaneSegment> expectedLaneSegments;
+};
+
+class TrafficAreaActionRoadPathInvestigationTest : public ::testing::TestWithParam<RoadPathTestParam>, public TrafficAreaActionTestBase
+{
+protected:
+    void SetUp() override
+    {
+        SetUpBase(GetParam().road_file);
+        // EnvironmentSimulator/Unittest/xodr/road_range_test/multiple_roads_one_rr.xodr
+        // resources/xodr/trafficarea.xodr
+
+        // EnvironmentSimulator/Unittest/OSCGlobalAction_test.cpp
+    }
+    void TearDown() override
+    {
+        TearDownBase();
+    }
+};
+
+static std::string ToString(const LaneSegment& ls)
+{
+    std::ostringstream os;
+    os << "{roadId=" << ls.roadId << ", laneId=" << ls.laneId << ", minS=" << ls.minS << ", maxS=" << ls.maxS << ", length=" << ls.length << "}";
+    return os.str();
+}
+
+TEST_P(TrafficAreaActionRoadPathInvestigationTest, RoadPathInvestigationTest)
+{
+    RoadRange                road_range             = GetParam().inputRange;
+    std::vector<LaneSegment> expected_lane_segments = GetParam().expectedLaneSegments;
+
+    trafficAreaAction->SetRoadRanges({road_range});
+    trafficAreaAction->UpdateRoadCursor(trafficAreaAction->GetRoadRanges()[0]);
+
+    trafficAreaAction->RoadPathInvestigation(trafficAreaAction->GetRoadRanges()[0]);
+
+    std::vector<LaneSegment> generated_lane_segments = trafficAreaAction->GetLaneSegments();
+
+    ASSERT_EQ(generated_lane_segments.size(), expected_lane_segments.size());
+
+    // for (const auto& ls : generated_lane_segments)
+    // {
+    //     bool found = std::any_of(expected_lane_segments.begin(),
+    //                              expected_lane_segments.end(),
+    //                              [&](const LaneSegment& expected_ls) { return ls == expected_ls; });
+    //     ASSERT_TRUE(found) << "LaneSegment not found in expected_lane_segments";
+    // }
+
+    std::vector<LaneSegment> missing_generated;
+    for (const auto& ls : generated_lane_segments)
+    {
+        bool found = std::any_of(expected_lane_segments.begin(), expected_lane_segments.end(), [&](const LaneSegment& e) { return ls == e; });
+        if (!found)
+            missing_generated.push_back(ls);
+    }
+
+    std::ostringstream msg;
+    for (const auto& ls : missing_generated)
+        msg << ToString(ls) << "\n";
+    EXPECT_TRUE(missing_generated.empty()) << "Generated but not expected:\n" << msg.str();
+
+    for (const auto& expected_ls : expected_lane_segments)
+    {
+        bool found =
+            std::any_of(generated_lane_segments.begin(), generated_lane_segments.end(), [&](const LaneSegment& ls) { return ls == expected_ls; });
+        ASSERT_TRUE(found) << "Expected LaneSegment not found in generated_lane_segments";
+    }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    RoadPathInvestigationTest,
+    TrafficAreaActionRoadPathInvestigationTest,
+    ::testing::Values(
+        RoadPathTestParam{
+            "../../../EnvironmentSimulator/Unittest/xodr/road_range_test/multiple_roads_one_rr.xodr",
+            RoadRange{0,
+                      {RoadCursor{0, 50, {-1, -2}},
+                       RoadCursor{2, 50},
+                       RoadCursor{4, 25, {1, -1, -2}},
+                       RoadCursor{4, 75, {1, -1}},
+                       RoadCursor{5, 50, {-1, -2}}}},
+            {LaneSegment{0, -1, 50, 100, 50}, LaneSegment{0, -2, 50, 100, 50}, LaneSegment{1, -1, 0, 100, 100}, LaneSegment{1, -2, 0, 100, 100},
+             LaneSegment{2, -1, 0, 50, 50},   LaneSegment{2, -2, 0, 50, 50},   LaneSegment{2, 2, 50, 100, 50},  LaneSegment{2, 1, 50, 100, 50},
+             LaneSegment{2, -1, 50, 100, 50}, LaneSegment{2, -2, 50, 100, 50}, LaneSegment{4, 2, 0, 25, 25},    LaneSegment{4, 1, 0, 25, 25},
+             LaneSegment{4, -1, 0, 25, 25},   LaneSegment{4, -2, 0, 25, 25},   LaneSegment{4, 1, 25, 75, 50},   LaneSegment{4, -1, 25, 75, 50},
+             LaneSegment{4, -2, 25, 75, 50},  LaneSegment{4, 1, 75, 100, 25},  LaneSegment{4, -1, 75, 100, 25}, LaneSegment{5, 1, 0, 50, 50},
+             LaneSegment{5, -1, 0, 50, 50}}},
+        RoadPathTestParam{"../../../EnvironmentSimulator/Unittest/xodr/road_range_test/big_offset_junction_creators.xodr",
+                          RoadRange{0, {RoadCursor{0, 50, {-1, -2, -3, -4}}, RoadCursor{5, 50, {-1, -2}}}},
+                          {LaneSegment{0, -1, 50, 100, 50},
+                           LaneSegment{0, -2, 50, 100, 50},
+                           LaneSegment{0, -3, 50, 100, 50},
+                           LaneSegment{0, -4, 50, 100, 50},
+                           LaneSegment{2, -1, 0, 50, 50},
+                           LaneSegment{2, -2, 0, 50, 50},
+                           LaneSegment{4, -1, 0, 50, 50},
+                           LaneSegment{4, -2, 0, 50, 50},
+                           LaneSegment{5, -1, 0, 50, 50},
+                           LaneSegment{5, -2, 0, 50, 50}}},
+        RoadPathTestParam{
+            "../../../EnvironmentSimulator/Unittest/xodr/road_range_test/big_offset_junction_creators.xodr",
+            RoadRange{
+                0,
+                {RoadCursor{0, 50, {-1, -2, -3, -4}}, RoadCursor{5, 50, {-2}}, RoadCursor{9, 0, {-1, -2, -3, -4}}, RoadCursor{9, 50, {-1, -2}}}},
+            {LaneSegment{0, -1, 50, 100, 50},
+             LaneSegment{0, -2, 50, 100, 50},
+             LaneSegment{0, -3, 50, 100, 50},
+             LaneSegment{0, -4, 50, 100, 50},
+             LaneSegment{2, -1, 0, 50, 50},
+             LaneSegment{2, -2, 0, 50, 50},
+             LaneSegment{4, -1, 0, 50, 50},
+             LaneSegment{4, -2, 0, 50, 50},
+             LaneSegment{5, -1, 0, 50, 50},
+             LaneSegment{5, -2, 0, 50, 50},
+             LaneSegment{5, -2, 50, 100, 50},
+             LaneSegment{6, -2, 0, 50, 50},
+             LaneSegment{8, -2, 0, 50, 50},
+             LaneSegment{9, -1, 0, 50, 50},
+             LaneSegment{9, -2, 0, 50, 50},
+             LaneSegment{9, -3, 0, 50, 50},
+             LaneSegment{9, -4, 0, 50, 50}}},
+        RoadPathTestParam{"../../../EnvironmentSimulator/Unittest/xodr/road_range_test/opposite_pointing_roads_LLL.xodr",
+                          RoadRange{0, {RoadCursor{0, 25, {-1, -2}}, RoadCursor{1, 50, {1, -1, -2}}, RoadCursor{2, 75, {1, 2, -1, -2}}}},
+                          {LaneSegment{0, -1, 0, 25, 25},
+                           LaneSegment{0, -2, 0, 25, 25},
+                           LaneSegment{1, -1, 50, 100, 50},
+                           LaneSegment{1, -2, 50, 100, 50},
+                           LaneSegment{1, 1, 0, 50, 50},
+                           LaneSegment{1, -1, 0, 50, 50},
+                           LaneSegment{1, -2, 0, 50, 50},
+                           LaneSegment{2, 1, 75, 100, 25},
+                           LaneSegment{2, -1, 75, 100, 25},
+                           LaneSegment{2, -2, 75, 100, 25}}},
+        RoadPathTestParam{"../../../EnvironmentSimulator/Unittest/xodr/road_range_test/opposite_pointing_roads_LRR.xodr",
+                          RoadRange{0, {RoadCursor{0, 25, {-1, -2}}, RoadCursor{1, 50, {1, -1, -2}}, RoadCursor{2, 75, {1, 2, -1, -2}}}},
+                          {LaneSegment{0, -1, 0, 25, 25},
+                           LaneSegment{0, -2, 0, 25, 25},
+
+                           LaneSegment{1, 1, 0, 50, 50},
+                           LaneSegment{1, 2, 0, 50, 50},
+                           LaneSegment{1, 1, 50, 100, 50},
+                           LaneSegment{1, -1, 50, 100, 50},
+                           LaneSegment{1, -2, 50, 100, 50},
+
+                           LaneSegment{2, 1, 0, 75, 75},
+                           LaneSegment{2, -1, 0, 75, 75},
+                           LaneSegment{2, -2, 0, 75, 75}}},
+        RoadPathTestParam{"../../../EnvironmentSimulator/Unittest/xodr/road_range_test/opposite_pointing_roads_RLR.xodr",
+                          RoadRange{0, {RoadCursor{0, 25, {-1, -2}}, RoadCursor{1, 50, {1, -1, -2}}, RoadCursor{2, 75, {1, 2, -1, -2}}}},
+                          {LaneSegment{0, -1, 25, 100, 75},
+                           LaneSegment{0, -2, 25, 100, 75},
+
+                           LaneSegment{1, 1, 50, 100, 50},
+                           LaneSegment{1, 2, 50, 100, 50},
+
+                           LaneSegment{1, 1, 0, 50, 50},
+                           LaneSegment{1, -1, 0, 50, 50},
+                           LaneSegment{1, -2, 0, 50, 50},
+
+                           LaneSegment{2, -1, 0, 75, 75},
+                           LaneSegment{2, 1, 0, 75, 75},
+                           LaneSegment{2, 2, 0, 75, 75}}},
+        RoadPathTestParam{"../../../EnvironmentSimulator/Unittest/xodr/road_range_test/opposite_pointing_roads_RRL.xodr",
+                          RoadRange{0, {RoadCursor{0, 25, {-1, -2}}, RoadCursor{1, 50, {1, -1, -2}}, RoadCursor{2, 75, {1, 2, -1, -2}}}},
+                          {LaneSegment{0, -1, 25, 100, 75},
+                           LaneSegment{0, -2, 25, 100, 75},
+
+                           LaneSegment{1, -1, 0, 50, 50},
+                           LaneSegment{1, -2, 0, 50, 50},
+
+                           LaneSegment{1, 1, 50, 100, 50},
+                           LaneSegment{1, -1, 50, 100, 50},
+                           LaneSegment{1, -2, 50, 100, 50},
+
+                           LaneSegment{2, -1, 75, 100, 25},
+                           LaneSegment{2, 1, 75, 100, 25},
+                           LaneSegment{2, 2, 75, 100, 25}}},
+        RoadPathTestParam{"../../../EnvironmentSimulator/Unittest/xodr/road_range_test/opposite_pointing_roads_RRR.xodr",
+                          RoadRange{0, {RoadCursor{0, 25, {-1, -2}}, RoadCursor{1, 50, {1, -1, -2}}, RoadCursor{2, 75, {1, 2, -1, -2}}}},
+                          {LaneSegment{0, -1, 25, 100, 75},
+                           LaneSegment{0, -2, 25, 100, 75},
+                           LaneSegment{1, -1, 0, 50, 50},
+                           LaneSegment{1, -2, 0, 50, 50},
+                           LaneSegment{1, 1, 50, 100, 50},
+                           LaneSegment{1, -1, 50, 100, 50},
+                           LaneSegment{1, -2, 50, 100, 50},
+                           LaneSegment{2, 1, 0, 75, 75},
+                           LaneSegment{2, -1, 0, 75, 75},
+                           LaneSegment{2, -2, 0, 75, 75}}}));
 
 int main(int argc, char** argv)
 {
