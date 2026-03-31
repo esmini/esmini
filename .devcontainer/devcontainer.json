@@ -1,6 +1,8 @@
 {
   "name": "esmini",
-  "image": "ghcr.io/bounverif/esmini:latest-devel",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "customizations": {
     "vscode": {
       "extensions": [
