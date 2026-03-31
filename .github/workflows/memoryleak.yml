@@ -54,14 +54,10 @@ jobs:
         with:
           triplet: x64-linux
 
-      - name: CMake Configure - Ubuntu
-        if: runner.os == 'Linux'
+      - name: CMake Configure
         run: >
-          cmake -B build
+          cmake --preset ci-memoryleak
           -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
-          -DOSI_UTILITIES_PREFIX=${{ steps.osi.outputs.osi-prefix }}
-          -DCMAKE_PREFIX_PATH="${{ steps.osi.outputs.cmake-prefix-path }}"
-          -DProtobuf_PROTOC_EXECUTABLE=${{ steps.osi.outputs.protoc-executable }}
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2

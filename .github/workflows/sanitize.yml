@@ -49,17 +49,10 @@ jobs:
         with:
           triplet: x64-linux
 
-      - name: CMake Configure - Ubuntu
-        if: runner.os == 'Linux'
-        shell: pwsh
+      - name: CMake Configure
         run: >
-          cmake . -B build -G Ninja
-          -DENABLE_SANITIZERS=ON
+          cmake --preset ci-sanitize
           -DCMAKE_BUILD_TYPE=RelWithDebInfo
-          -DUSE_OSI=ON -DUSE_GTEST=ON -DUSE_OSG=OFF -DUSE_SUMO=OFF -DUSE_IMPLOT=OFF
-          -DOSI_UTILITIES_PREFIX=${{ steps.osi.outputs.osi-prefix }}
-          -DCMAKE_PREFIX_PATH="${{ steps.osi.outputs.cmake-prefix-path }}"
-          -DProtobuf_PROTOC_EXECUTABLE=${{ steps.osi.outputs.protoc-executable }}
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2

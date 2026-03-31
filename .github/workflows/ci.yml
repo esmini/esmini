@@ -20,8 +20,6 @@ on:
   workflow_dispatch:
 
 env:
-  ESMINI_SLIM_TEST: -D USE_OSG=OFF -D USE_SUMO=OFF -D USE_OSI=OFF -D USE_GTEST=ON -D USE_IMPLOT=OFF
-  ESMINI_CHECKS: -D ENABLE_WARNINGS_AS_ERRORS=ON -D ENABLE_INCLUDE_WHAT_YOU_USE=ON
   USE_TMATE: false
 
 jobs:
@@ -140,37 +138,12 @@ jobs:
           overlay-triplets: ${{ github.workspace }}/support/vcpkg-triplets
           cmake-generator: ${{ runner.os == 'Windows' && '-G "Visual Studio 17 2022" -T v142 -A x64' || '' }}
 
-      - name: CMake Configure - Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
+      - name: CMake Configure
         run: >
-          cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }}
+          cmake --preset
+          ${{ runner.os == 'Windows' && 'ci-windows' || runner.os == 'macOS' && 'ci-macos' || 'ci-linux' }}
+          -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }}
           -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
-          -G "Visual Studio 17 2022" -T v142 -A x64
-          -DOSI_UTILITIES_PREFIX=${{ steps.osi.outputs.osi-prefix }}
-          -DCMAKE_PREFIX_PATH="${{ steps.osi.outputs.cmake-prefix-path }}"
-          -DProtobuf_PROTOC_EXECUTABLE=${{ steps.osi.outputs.protoc-executable }}
-
-      - name: CMake Configure - Linux
-        if: runner.os == 'Linux'
-        shell: pwsh
-        run: >
-          cmake . -G Ninja -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }}
-          -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
-          -DOSI_UTILITIES_PREFIX=${{ steps.osi.outputs.osi-prefix }}
-          -DCMAKE_PREFIX_PATH="${{ steps.osi.outputs.cmake-prefix-path }}"
-          -DProtobuf_PROTOC_EXECUTABLE=${{ steps.osi.outputs.protoc-executable }}
-
-      - name: CMake Configure - macOS
-        if: runner.os == 'macOS'
-        shell: pwsh
-        run: >
-          cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }}
-          -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
-          -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
-          -DOSI_UTILITIES_PREFIX=${{ steps.osi.outputs.osi-prefix }}
-          -DCMAKE_PREFIX_PATH="${{ steps.osi.outputs.cmake-prefix-path }}"
-          -DProtobuf_PROTOC_EXECUTABLE=${{ steps.osi.outputs.protoc-executable }}
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
@@ -196,9 +169,9 @@ jobs:
           mkdir -p build
           cd build
           cmake .. \
-            -DOSI_UTILITIES_PREFIX=${{ steps.osi.outputs.osi-prefix }} \
-            -DCMAKE_PREFIX_PATH="${{ steps.osi.outputs.cmake-prefix-path }}" \
-            -DProtobuf_PROTOC_EXECUTABLE=${{ steps.osi.outputs.protoc-executable }}
+            -DOSI_UTILITIES_PREFIX=$ESMINI_OSI_PREFIX \
+            -DCMAKE_PREFIX_PATH="$ESMINI_CMAKE_PREFIX_PATH" \
+            -DProtobuf_PROTOC_EXECUTABLE=$ESMINI_PROTOC
           cmake --build . -j2
 
       - name: Validate OSMP FMU
@@ -285,20 +258,12 @@ jobs:
         if: runner.os == 'Windows' && matrix.configuration == 'Release'
         uses: ./.github/actions/wrapper_check
 
-      - name: CMake Configure - Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -G "Visual Studio 17 2022" -T v142 -A x64 ${{ env.ESMINI_SLIM_TEST }}
-
-      - name: CMake Configure - Linux
-        if: runner.os == 'Linux'
-        shell: pwsh
-        run: cmake . -G Ninja -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} ${{ env.ESMINI_SLIM_TEST }}
-
-      - name: CMake Configure - macOS
-        if: runner.os == 'macOS'
-        shell: pwsh
-        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" ${{ env.ESMINI_SLIM_TEST }}
+      - name: CMake Configure
+        run: >
+          cmake --preset
+          ${{ runner.os == 'Windows' && 'ci-no-externals-windows' || runner.os == 'macOS' && 'ci-no-externals-macos' || 'ci-no-externals-linux' }}
+          -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }}
+          -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2

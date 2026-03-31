@@ -77,11 +77,21 @@ Now we're ready to build esmini. From esmini root folder:
 
 [source]
 ----
+cmake --preset default
+cmake --build build --config Release --target install
+----
+
+Or equivalently, without presets:
+
+[source]
+----
 mkdir build
 cd build
-cmake ..
+cmake .. -DUSE_OSI=OFF -DUSE_OSG=OFF -DUSE_SUMO=OFF
 cmake --build . --config Release --target install
 ----
+
+The `default` preset builds esmini without optional dependencies (OSI, OSG, SUMO) for a quick start. To see all available presets: `cmake --list-presets`
 
 The build process automatically downloads 3rd party library binaries and the complete 3D model package.
 
@@ -4101,7 +4111,9 @@ Note: In addition to <filename> one of the arguments --list_params and --param <
 
 == Build guide
 
-esmini is primarily utilizing cmake for build configuration. The repository includes a git submodule for OSI support, so make sure to clone recursively:
+esmini is primarily utilizing cmake for build configuration. The repository includes https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html[CMake presets] (`CMakePresets.json`) for common configurations — see <<Using CMake presets>> for the quickest way to get started.
+
+The repository includes a git submodule for OSI support, so make sure to clone recursively:
 
 ....
 git clone --recursive https://github.com/esmini/esmini
@@ -4146,11 +4158,82 @@ Replace `<triplet>` with the vcpkg triplet for your platform:
 
 On Windows, append `.exe` to the protoc path.
 
+TIP: Instead of passing the three `-D` flags manually, you can use the `full` CMake preset. See <<Full build with OSI>> for a simpler alternative using environment variables.
+
 The CI workflows automate this via the `.github/actions/setup_osi_utilities` composite action.
+
+=== Using CMake presets
+
+esmini provides https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html[CMake presets] in `CMakePresets.json` as a convenient alternative to specifying `-D` flags manually. To list available presets for your platform:
+
+....
+cmake --list-presets
+....
+
+==== Quick start (no OSI)
+
+The `default` preset is the easiest way to build esmini without external dependencies:
+
+....
+cmake --preset default
+cmake --build build --config Release --target install
+....
+
+This is equivalent to `cmake . -B build -DUSE_OSI=OFF -DUSE_OSG=OFF -DUSE_SUMO=OFF`.
+
+==== Full build with OSI
+
+The `full` preset enables all features but requires the OSI dependencies to be built first (see <<Two-phase build (with OSI)>>). After completing Phase A, set the following environment variables and configure:
+
+On Linux/macOS:
+....
+export ESMINI_OSI_PREFIX=osi-deps
+export ESMINI_CMAKE_PREFIX_PATH="osi-deps;build-deps/vcpkg_installed/<triplet>"
+export ESMINI_PROTOC=build-deps/vcpkg_installed/<triplet>/tools/protobuf/protoc
+
+cmake --preset full
+cmake --build build --config Release --target install
+....
+
+On Windows (PowerShell):
+....
+$env:ESMINI_OSI_PREFIX = "osi-deps"
+$env:ESMINI_CMAKE_PREFIX_PATH = "osi-deps;build-deps\vcpkg_installed\x64-windows-static-md"
+$env:ESMINI_PROTOC = "build-deps\vcpkg_installed\x64-windows-static-md\tools\protobuf\protoc.exe"
+
+cmake --preset full
+cmake --build build --config Release --target install
+....
+
+==== Available presets
+
+[cols="1,3"]
+|===
+|Preset |Description
+
+|`default`
+|Minimal build without OSI, OSG, or SUMO. No external dependencies required.
+
+|`full`
+|Full build with all features. Requires OSI environment variables (see above).
+|===
+
+NOTE: Additional presets (`ci-linux`, `ci-windows`, etc.) are used by CI workflows and are restricted to their target platform via conditions. They are not intended for local development.
+
+NOTE: Presets require CMake 3.25 or later. If you have an older CMake version, use the manual `-D` flag approach shown in the sections above.
 
 === Quick build without OSI
 
-If you do not need OSI support you can skip the two-phase build entirely:
+If you do not need OSI support you can skip the two-phase build entirely. Using presets:
+
+....
+git clone https://github.com/esmini/esmini
+cd esmini
+cmake --preset default
+cmake --build build --config Release --target install
+....
+
+Or equivalently, with manual flags:
 
 ....
 git clone https://github.com/esmini/esmini

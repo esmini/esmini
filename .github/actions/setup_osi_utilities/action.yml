@@ -108,6 +108,16 @@ runs:
         if [ "$RUNNER_OS" = "Windows" ]; then
           PROTOC_EXT=".exe"
         fi
-        echo "osi-prefix=${{ github.workspace }}/osi-deps" >> "$GITHUB_OUTPUT"
-        echo "cmake-prefix-path=${{ github.workspace }}/osi-deps;${{ github.workspace }}/build-osi-deps/vcpkg_installed/${{ inputs.triplet }}" >> "$GITHUB_OUTPUT"
-        echo "protoc-executable=${{ github.workspace }}/build-osi-deps/vcpkg_installed/${{ inputs.triplet }}/tools/protobuf/protoc${PROTOC_EXT}" >> "$GITHUB_OUTPUT"
+        OSI_PREFIX="${{ github.workspace }}/osi-deps"
+        CMAKE_PFX="${{ github.workspace }}/osi-deps;${{ github.workspace }}/build-osi-deps/vcpkg_installed/${{ inputs.triplet }}"
+        PROTOC="${{ github.workspace }}/build-osi-deps/vcpkg_installed/${{ inputs.triplet }}/tools/protobuf/protoc${PROTOC_EXT}"
+
+        # Step outputs (for workflows that reference steps.osi.outputs.*)
+        echo "osi-prefix=${OSI_PREFIX}" >> "$GITHUB_OUTPUT"
+        echo "cmake-prefix-path=${CMAKE_PFX}" >> "$GITHUB_OUTPUT"
+        echo "protoc-executable=${PROTOC}" >> "$GITHUB_OUTPUT"
+
+        # Environment variables (for CMake presets using $env{})
+        echo "ESMINI_OSI_PREFIX=${OSI_PREFIX}" >> "$GITHUB_ENV"
+        echo "ESMINI_CMAKE_PREFIX_PATH=${CMAKE_PFX}" >> "$GITHUB_ENV"
+        echo "ESMINI_PROTOC=${PROTOC}" >> "$GITHUB_ENV"

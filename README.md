@@ -67,6 +67,19 @@ In addition to internal API ([example](https://esmini.github.io/#_fetch_state_of
 
   OSI is built from source as part of a two-phase build. See the [Build guide](https://esmini.github.io/#_build_guide) for details.
 
+### Building from source
+
+Quick build without optional dependencies (OSI, OSG, SUMO):
+
+```bash
+git clone https://github.com/esmini/esmini
+cd esmini
+cmake --preset default
+cmake --build build --config Release --target install
+```
+
+Use `cmake --list-presets` to see all available presets. For a full build with OSI, use the `full` preset after building OSI dependencies — see the [Build guide](https://esmini.github.io/#_build_guide) for details.
+
 ### Unity support
 esmini shared library works also as plugin in Unity (Win, Linux, Mac). Learn more and find example in [User guide - esmini in Unity](https://esmini.github.io/#_esmini_in_unity).
 
