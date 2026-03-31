@@ -45,7 +45,7 @@ namespace fs = std::experimental::filesystem;
 
 #define SHADOW_MAX_EXTRUSION    0.5
 #define SHADOW_MIN_EXTRUSION    0.05
-#define SHADOW_OPACITY          0.5f
+#define SHADOW_OPACITY          0.45f
 #define ARROW_MODEL_FILEPATH    "arrow.osgb"
 #define LOD_DIST                3000
 #define LOD_SCALE_DEFAULT       1.0
@@ -2759,7 +2759,7 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
 osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb_z)
 {
     // Factor to subtract from the non-extruding shadow, max 0.15m
-    const double shadow_adjustment_dist = MIN(0.10, MIN(bb_x, bb_y) * 0.10);  // x% of shortest side
+    const double shadow_adjustment_dist = MIN(0.15, MIN(bb_x, bb_y) * 0.10);  // x% of shortest side
 
     // Take away the calculated measurement from each side
     const double LENGTH = bb_x * 0.5 - shadow_adjustment_dist;
@@ -2771,9 +2771,10 @@ osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb
     // Final extrusion, which is the factor + a bit of height, if that exceeds max extrusion we take max extrusion, and
     const double extrusion = MIN(shadow_extrusion_min + 0.01 * bb_z, shadow_extrusion_max);
 
-    const int    ppc       = 4;                                     // points per corner
+    const int    num_rings = 3;
+    const int    ppc       = 3;                                     // points per corner
     const size_t pp_ring   = (ppc + 1) * 4;                         // points per ring
-    const int    vert_size = pp_ring * 2;                           // total amount of vertices
+    const int    vert_size = pp_ring * num_rings;                   // total amount of vertices
     const double desired_r = MIN(bb_x, bb_y) * 0.2;                 // radius of corner x% of shortest side
     const double r         = std::min({WIDTH, LENGTH, desired_r});  // radius never smaller than half of shortest side
 
@@ -2805,8 +2806,10 @@ osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb
         fillCorner(osg::PI, -cx_pos, -cy_pos);
     };
 
+    const double total_extrusion = shadow_adjustment_dist + extrusion;
     createRing(0, r, SHADOW_OPACITY);
-    createRing(pp_ring, r + shadow_adjustment_dist + extrusion, 0.0f);
+    createRing(pp_ring, r + total_extrusion * 0.4, SHADOW_OPACITY * 0.45);
+    createRing(pp_ring * 2, r + total_extrusion, 0.0f);
 
     // Normals
     osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array;
@@ -2835,15 +2838,22 @@ osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb
     outer_geometry->setColorArray(colors.get());
     outer_geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
 
-    osg::ref_ptr<osg::DrawElementsUInt> fade    = new osg::DrawElementsUInt(GL_QUAD_STRIP, 2 * pp_ring + 2);
+    osg::ref_ptr<osg::DrawElementsUInt> fade    = new osg::DrawElementsUInt(GL_QUAD_STRIP, (num_rings - 1) * (pp_ring * 2 + 2));
     size_t                              idx_ptr = 0;
-    for (size_t i = 0; i < pp_ring; i++)
+    for (size_t ring = 0; ring < num_rings - 1; ring++)
     {
-        (*fade)[idx_ptr++] = i;
-        (*fade)[idx_ptr++] = i + pp_ring;
+        size_t inner_off = ring * pp_ring;
+        size_t outer_off = (ring + 1) * pp_ring;
+
+        for (size_t i = 0; i < pp_ring; i++)
+        {
+            (*fade)[idx_ptr++] = (i + inner_off);
+            (*fade)[idx_ptr++] = (i + outer_off);
+        }
+
+        (*fade)[idx_ptr++] = inner_off;
+        (*fade)[idx_ptr++] = outer_off;
     }
-    (*fade)[idx_ptr++] = 0;
-    (*fade)[idx_ptr]   = pp_ring;
 
     outer_geometry->addPrimitiveSet(fade.get());
 
