@@ -13,7 +13,7 @@
    <ParameterDeclarations/>
    <CatalogLocations/>
    <RoadNetwork>
-      <LogicFile filepath="../xodr/straight_500m_signs.xodr"/>
+      <LogicFile filepath="../xodr/straight_500m_signs_lht.xodr"/>
    </RoadNetwork>
    <Entities/>
    <Storyboard>

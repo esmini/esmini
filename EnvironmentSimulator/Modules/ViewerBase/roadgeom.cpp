@@ -1,4 +1,3 @@
-#include "roadgeom.hpp"
 /*
  * esmini - Environment Simulator Minimalistic
  * https://github.com/esmini/esmini
@@ -40,19 +39,20 @@ USE_OSGPLUGIN(jpeg)
 USE_SERIALIZER_WRAPPER_LIBRARY(osg)
 USE_COMPRESSOR_WRAPPER(ZLibCompressor)
 
-#define GEOM_TOLERANCE         (0.2 - SMALL_NUMBER)  // Minimum distance between two vertices along road s-axis
-#define TEXTURE_SCALE          2.0                   // Scale factor for asphalt and grass textures 2.0 means whole texture fits in 2 x 2 m square
-#define MAX_GEOM_ERROR         0.25                  // maximum distance from the 3D geometry to the OSI lines
-#define MAX_GEOM_LENGTH        50                    // maximum length of a road geometry mesh segment
-#define MIN_GEOM_LENGTH        0.1                   // minimum length of a road geometry mesh segment, adjust if possible
-#define ROADMARK_TEXTURE_SCALE 3.0                   // scale factor for roadmark textures, 3.0 means whole texture fits in 3 x 3 m square
+#define GEOM_TOLERANCE            (0.2 - SMALL_NUMBER)  // Minimum distance between two vertices along road s-axis
+#define TEXTURE_SCALE             2.0                   // Scale factor for asphalt and grass textures 2.0 means whole texture fits in 2 x 2 m square
+#define MAX_GEOM_ERROR_HORIZONTAL 0.25                  // maximum distance from the 3D geometry to the OSI lines, on road surface plane
+#define MAX_GEOM_ERROR_VERTICAL   0.1                   // maximum distance from the 3D geometry to the OSI lines, vertical to road surface
+#define MAX_GEOM_LENGTH           50                    // maximum length of a road geometry mesh segment
+#define MIN_GEOM_LENGTH           0.1                   // minimum length of a road geometry mesh segment, adjust if possible
+#define ROADMARK_TEXTURE_SCALE    3.0                   // scale factor for roadmark textures, 3.0 means whole texture fits in 3 x 3 m square
 
 #define POLYGON_OFFSET_SIDEWALK  2.0
 #define POLYGON_OFFSET_ROADMARKS 1.0
 #define POLYGON_OFFSET_BORDER    -1.0
 #define POLYGON_OFFSET_GRASS     -2.0
 
-#define ROADMARK_Z_OFFSET 0.02
+#define ROADMARK_Z_OFFSET 0.01
 
 #define DEFAULT_LENGTH_FOR_CONTINUOUS_OBJS 10.0
 #define LOD_DIST_ROAD_FEATURES             500
@@ -324,8 +324,9 @@ namespace roadgeom
                             {
                                 osg::ref_ptr<osg::TessellationHints> th = new osg::TessellationHints();
                                 th->setDetailRatio(0.3f);
-                                osg::ref_ptr<osg::ShapeDrawable> shape =
-                                    new osg::ShapeDrawable(new osg::Cylinder(osg::Vec3(0.0, 0.0, 0.0), botts_dot_size, 0.3 * botts_dot_size), th);
+                                osg::ref_ptr<osg::ShapeDrawable> shape = new osg::ShapeDrawable(
+                                    new osg::Cylinder(osg::Vec3(0.0, 0.0, ROADMARK_Z_OFFSET), botts_dot_size, 0.3 * botts_dot_size),
+                                    th);
                                 shape->setColor(ODR2OSGColor(lane_roadmark->GetColor()));
                                 dot = new osg::Geode;
                                 dot->addDrawable(shape);
@@ -336,7 +337,7 @@ namespace roadgeom
                             osg::ref_ptr<osg::PositionAttitudeTransform> tx = new osg::PositionAttitudeTransform;
                             tx->setPosition(osg::Vec3(static_cast<float>(osi_point0.x - origin[0]),
                                                       static_cast<float>(osi_point0.y - origin[1]),
-                                                      static_cast<float>(osi_point0.z + ROADMARK_Z_OFFSET)));
+                                                      static_cast<float>(osi_point0.z)));
                             tx->addChild(dot);
                             SetNodeName(*tx, prefix_roadmark, rm_group->getNumChildren(), lane_roadmark->Type2Str());
                             rm_group->addChild(tx);
@@ -381,28 +382,51 @@ namespace roadgeom
 
                             if (q < osi_points.size() - 1)
                             {
-                                const double w = lane_roadmarktypeline->GetWidth() / 2;
-                                double       v[3];
+                                // calculate roadmark vertices, y offset based on width, z offset based on ROADMARK_Z_OFFSET, and
+                                // rotation based on heading, pitch and roll of the OSI point
 
-                                RotateY(w, osi_points[q].r, osi_points[q].p, osi_points[q].h, v);
+                                const double w    = lane_roadmarktypeline->GetWidth() / 2;
+                                double       v[3] = {};
+
+                                // right starting point
+                                RotateVec3d(osi_points[q].h, osi_points[q].p, osi_points[q].r, 0.0, w, ROADMARK_Z_OFFSET, v[0], v[1], v[2]);
                                 l1p0l[0] = osi_points[q].x + v[0] - origin[0];
                                 l1p0l[1] = osi_points[q].y + v[1] - origin[1];
-                                l1p0l[2] = osi_points[q].z + v[2] + ROADMARK_Z_OFFSET;
+                                l1p0l[2] = osi_points[q].z + v[2];
 
-                                RotateY(w, osi_points[q + 1].r, osi_points[q + 1].p, osi_points[q + 1].h, v);
+                                // left end point
+                                RotateVec3d(osi_points[q + 1].h,
+                                            osi_points[q + 1].p,
+                                            osi_points[q + 1].r,
+                                            0.0,
+                                            w,
+                                            ROADMARK_Z_OFFSET,
+                                            v[0],
+                                            v[1],
+                                            v[2]);
                                 l1p1l[0] = osi_points[q + 1].x + v[0] - origin[0];
                                 l1p1l[1] = osi_points[q + 1].y + v[1] - origin[1];
-                                l1p1l[2] = osi_points[q + 1].z + v[2] + ROADMARK_Z_OFFSET;
+                                l1p1l[2] = osi_points[q + 1].z + v[2];
 
-                                RotateY(-w, osi_points[q].r, osi_points[q].p, osi_points[q].h, v);
+                                // left starting point
+                                RotateVec3d(osi_points[q].h, osi_points[q].p, osi_points[q].r, 0.0, -w, ROADMARK_Z_OFFSET, v[0], v[1], v[2]);
                                 l1p0r[0] = osi_points[q].x + v[0] - origin[0];
                                 l1p0r[1] = osi_points[q].y + v[1] - origin[1];
-                                l1p0r[2] = osi_points[q].z + v[2] + ROADMARK_Z_OFFSET;
+                                l1p0r[2] = osi_points[q].z + v[2];
 
-                                RotateY(-w, osi_points[q + 1].r, osi_points[q + 1].p, osi_points[q + 1].h, v);
+                                // right end point
+                                RotateVec3d(osi_points[q + 1].h,
+                                            osi_points[q + 1].p,
+                                            osi_points[q + 1].r,
+                                            0.0,
+                                            -w,
+                                            ROADMARK_Z_OFFSET,
+                                            v[0],
+                                            v[1],
+                                            v[2]);
                                 l1p1r[0] = osi_points[q + 1].x + v[0] - origin[0];
                                 l1p1r[1] = osi_points[q + 1].y + v[1] - origin[1];
-                                l1p1r[2] = osi_points[q + 1].z + v[2] + ROADMARK_Z_OFFSET;
+                                l1p1r[2] = osi_points[q + 1].z + v[2];
                             }
                             else if (!osi_points[q].endpoint)
                             {
@@ -444,16 +468,14 @@ namespace roadgeom
                                                                      isect[0],
                                                                      isect[1]) == 0)
                                 {
-                                    (*vertices).push_back(osg::Vec3(static_cast<float>(isect[0]),
-                                                                    static_cast<float>(isect[1]),
-                                                                    static_cast<float>(l0p1l[2] + ROADMARK_Z_OFFSET)));
+                                    (*vertices).push_back(
+                                        osg::Vec3(static_cast<float>(isect[0]), static_cast<float>(isect[1]), static_cast<float>(l0p1l[2])));
                                 }
                                 else
                                 {
                                     // lines parallel, no adjustment needed
-                                    (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0l[0]),
-                                                                    static_cast<float>(l1p0l[1]),
-                                                                    static_cast<float>(l1p0l[2] + ROADMARK_Z_OFFSET)));
+                                    (*vertices).push_back(
+                                        osg::Vec3(static_cast<float>(l1p0l[0]), static_cast<float>(l1p0l[1]), static_cast<float>(l1p0l[2])));
                                 }
 
                                 // right side
@@ -468,16 +490,14 @@ namespace roadgeom
                                                                      isect[0],
                                                                      isect[1]) == 0)
                                 {
-                                    (*vertices).push_back(osg::Vec3(static_cast<float>(isect[0]),
-                                                                    static_cast<float>(isect[1]),
-                                                                    static_cast<float>(l0p1r[2] + ROADMARK_Z_OFFSET)));
+                                    (*vertices).push_back(
+                                        osg::Vec3(static_cast<float>(isect[0]), static_cast<float>(isect[1]), static_cast<float>(l0p1r[2])));
                                 }
                                 else
                                 {
                                     // lines parallel, no adjustment needed
-                                    (*vertices).push_back(osg::Vec3(static_cast<float>(l1p0r[0]),
-                                                                    static_cast<float>(l1p0r[1]),
-                                                                    static_cast<float>(l1p0r[2] + ROADMARK_Z_OFFSET)));
+                                    (*vertices).push_back(
+                                        osg::Vec3(static_cast<float>(l1p0r[0]), static_cast<float>(l1p0r[1]), static_cast<float>(l1p0r[2])));
                                 }
                             }
 
@@ -626,6 +646,8 @@ namespace roadgeom
                         double y;
                         double z;
                         double h;
+                        double p;
+                        double r;
                         double slope;
                         double s;
                     } GeomPoint;
@@ -647,6 +669,7 @@ namespace roadgeom
                         double s;
                         double x;
                         double y;
+                        double z;
                     };
 
                     std::vector<std::vector<std::vector<GeomPoint>>> geom_points_list;                          // two lists of points per lane
@@ -732,6 +755,7 @@ namespace roadgeom
                                         pos2.SetLaneBoundaryPos(road->GetId(), lane->GetId(), candidates_pos[k].s);
                                         candidates_pos[k].x = pos2.GetX();
                                         candidates_pos[k].y = pos2.GetY();
+                                        candidates_pos[k].z = pos2.GetZ();
 
                                         break;
                                     }
@@ -754,19 +778,27 @@ namespace roadgeom
                                     // generate point at pivot s-value
                                     pos.SetLaneBoundaryPos(road->GetId(), lane->GetId(), s_list_sorted[k]);
 
-                                    // calculate horizontal error at this s value
-                                    // find out heading of the previous calculated vertex point
-                                    double h                = lane_osi_index[l] > 0 ? GetAngleOfVector(candidates_pos[l].x - geom_cache[l].point.x,
-                                                                                        candidates_pos[l].y - geom_cache[l].point.y)
-                                                                                    : geom_cache[l].point.h;
-                                    double error_horizontal = abs(
-                                        DistanceFromPointToLine2DWithAngle(pos.GetX(), pos.GetY(), geom_cache[l].point.x, geom_cache[l].point.y, h));
+                                    // create a delta vector from real pos to cache/pivot point
+                                    double diff[3], diff_tx[3];
+                                    diff[0] = pos.GetX() - geom_cache[l].point.x;
+                                    diff[1] = pos.GetY() - geom_cache[l].point.y;
+                                    diff[2] = pos.GetZ() - geom_cache[l].point.z;
 
-                                    // calculate vertical error at this s value
-                                    double error_vertical =
-                                        abs((pos.GetZ() - geom_cache[l].point.z) - geom_cache[l].point.slope * (pos.GetS() - geom_cache[l].point.s));
+                                    // transform delta vector to road local coordinates, to get longitudinal and lateral error
+                                    InverseRotateVec3d(geom_cache[l].point.h,
+                                                       geom_cache[l].point.p,
+                                                       geom_cache[l].point.r,
+                                                       diff[0],
+                                                       diff[1],
+                                                       diff[2],
+                                                       diff_tx[0],
+                                                       diff_tx[1],
+                                                       diff_tx[2]);
 
-                                    if (error_horizontal > MAX_GEOM_ERROR || error_vertical > MAX_GEOM_ERROR)
+                                    double error_horizontal = abs(diff_tx[1]);
+                                    double error_vertical   = abs(diff_tx[2]);
+
+                                    if (error_horizontal > MAX_GEOM_ERROR_HORIZONTAL || error_vertical > MAX_GEOM_ERROR_VERTICAL)
                                     {
                                         break;
                                     }
@@ -862,7 +894,8 @@ namespace roadgeom
                                     pos.SetLaneBoundaryPos(road->GetId(), lane_id, section_current_s);
                                 }
 
-                                GeomPoint gp = {pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), pos.GetZRoadPrim(), pos.GetS()};
+                                GeomPoint gp =
+                                    {pos.GetX(), pos.GetY(), pos.GetZ(), pos.GetH(), pos.GetP(), pos.GetR(), pos.GetZRoadPrim(), pos.GetS()};
 
                                 if (lane_id != 0)
                                 {

@@ -4071,7 +4071,7 @@ TEST(PositionTest, TestZRelativeObjectInTrajectoryVertex)
     EXPECT_NEAR(entities->object_[0]->pos_.GetY(), -1.535, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetZ(), 20.0, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetH(), 0.0, 1E-3);
-    EXPECT_NEAR(entities->object_[0]->pos_.GetP(), 0.0, 1E-3);
+    EXPECT_NEAR(GetAbsAngleDifference(entities->object_[0]->pos_.GetP(), 0.0), 0.0, 1E-3);
     EXPECT_NEAR(entities->object_[0]->pos_.GetR(), 0.0, 1E-3);
 
     while (se->getSimulationTime() < 4.0 - SMALL_NUMBER)

@@ -25,6 +25,7 @@
 #include <osg/ShapeDrawable>
 #include <osg/Point>
 #include <osg/BlendFunc>
+#include <osg/Texture2D>
 #include <osgGA/StateSetManipulator>
 #include <string>
 
@@ -339,6 +340,47 @@ namespace viewer
         osg::ref_ptr<osgText::Text> osg_text_;
     };
 
+    class Shadow
+    {
+    public:
+        Shadow(std::string                  name,
+               double                       x,
+               double                       z,
+               double                       bb_length,
+               double                       bb_width,
+               double                       bb_height,
+               NodeMask                     node_mask,
+               bool                         is_vehicle,
+               osg::ref_ptr<osg::Texture2D> texture);
+
+        void UpdatePositionAndOrientation(roadmanager::Position* pos, double origin_x, double origin_y);
+        void Recalculate();
+
+        osg::ref_ptr<osg::PositionAttitudeTransform> pat_;
+        osg::ref_ptr<osg::Vec3Array>                 vertices_;
+        osg::ref_ptr<osg::Vec4Array>                 color_;
+
+        double z_                    = 0.0;  // relative elevation of object wrt road surface
+        double p_                    = 0.0;  // relative pitch of object wrt road surface
+        double r_                    = 0.0;  // relative roll of object wrt road surface
+        double scale_x_              = 1.0;  // longitudinal scale factor, wrt object orientation
+        double scale_y_              = 1.0;  // lateral scale factor, wrt object orientation
+        double max_z_                = 0.0;
+        double length_               = 0.0;
+        double width_                = 0.0;
+        double height_               = 0.0;
+        double min_alpha_            = 0.0;
+        bool   is_vehicle_           = false;
+        double height_factor_        = 0.0;
+        double roundness_            = 0.0;  // shift inner shadow edge from circle center outwards [0,1]
+        double collar_min_size_      = 0.0;  // minimum size of the collar (outer area where shadow fades)
+        double collar_max_size_      = 0.0;  // maximum size of the collar
+        double collar_offset_factor_ = 0.0;  // offset factor for the collar, moving collar inwards (-) or outwards (+) [-1,1]
+        double vehicle_z_offset_     = 0.0;  // added Z elevation for vehicle ground clearance
+        double offset_z_factor_      = 0.0;  // adjust collar offset based on added Z elevation [-1, 1]
+        double x_offset_             = 0.0;  // x offset from shadow rectangle center
+    };
+
     class EntityModel
     {
     public:
@@ -351,10 +393,10 @@ namespace viewer
 
         osg::ref_ptr<osg::Group>                     group_;
         osg::ref_ptr<osg::Group>                     model_;
+        osg::ref_ptr<osg::Group>                     parent_of_model_and_shadows_;
         osg::ref_ptr<osg::LOD>                       lod_;
         osg::ref_ptr<osg::PositionAttitudeTransform> txNode_;
         osg::ref_ptr<osg::PositionAttitudeTransform> txVehicleDynamics_;
-        osg::PositionAttitudeTransform*              txShadow_;
         osg::Quat                                    quat_;
         osg::ref_ptr<osg::Group>                     parent_;
         osg::BoundingBox                             modelBB_;
@@ -393,18 +435,28 @@ namespace viewer
                     osg::Vec4                trail_color,
                     std::string              name);
         virtual ~EntityModel();
-        void              SetPosition(double x, double y, double z);
-        void              SetRotation(double hRoad, double pRoad, double hRelative, double r);
-        void              SetRotation(double h, double p, double r);
+        void              UpdatePositionAndOrientation(roadmanager::Position* pos);
         const osg::Vec3d* GetPosition() const;
 
         void SetTransparency(double factor);
+        void SetShadowModel(Shadow* shadow)
+        {
+            shadow_model_ = shadow;
+            parent_of_model_and_shadows_->addChild(shadow_model_->pat_);
+        }
+        void SetShadowBB(Shadow* shadow)
+        {
+            shadow_bb_ = shadow;
+            parent_of_model_and_shadows_->addChild(shadow_bb_->pat_);
+        }
 
         std::unique_ptr<PolyLine>       trail_;
         std::unique_ptr<RouteWayPoints> routewaypoints_;
         Viewer*                         viewer_;
         OnScreenText                    on_screen_info_;
         osg::ref_ptr<osg::BlendFunc>    blend_func_;
+        Shadow*                         shadow_model_ = nullptr;
+        Shadow*                         shadow_bb_    = nullptr;
     };
 
     class MovingModel : public EntityModel
@@ -563,6 +615,7 @@ namespace viewer
         std::unique_ptr<RoadGeom>                   roadGeom;
         osg::ref_ptr<osg::MatrixTransform>          env_origin2odr_;   // transform the environment to the OpenDRIVE origin
         osg::ref_ptr<osg::MatrixTransform>          root_origin2odr_;  // transform objects to the OpenDRIVE origin
+        osg::ref_ptr<osg::Texture2D>                shadow_texture_;
 
         // Weather stuff
         void CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment);
@@ -721,14 +774,14 @@ namespace viewer
             return osg_screenshot_event_handler_;
         }
 
-        void                    Frame(double time);
-        void                    SetFrictionScaleFactor(const double factor);
-        double                  GetFrictionScaleFactor() const;
-        void                    SetAxisIndicatorMode(int mode);
-        void                    CycleAxisIndicatorMode();
-        void                    CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
-        void                    SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
-        osg::ref_ptr<osg::Node> CreateShadow(double bb_x, double bb_y, double bb_z);
+        void                     Frame(double time);
+        void                     SetFrictionScaleFactor(const double factor);
+        double                   GetFrictionScaleFactor() const;
+        void                     SetAxisIndicatorMode(int mode);
+        void                     CycleAxisIndicatorMode();
+        void                     CreateFog(const double range, const double sunIntensityFactor, const double cloudinessFactor);
+        void                     SetSkyColor(const double sunIntensityFactor, const double fogVisualRangeFactor, const double cloudinessFactor);
+        osg::ref_ptr<osg::Image> CreateShadowTexture(int tex_size, double max_alpha, double radius_offset, int mode);
 
     private:
         int        CreateTunnels(roadmanager::OpenDrive* od);

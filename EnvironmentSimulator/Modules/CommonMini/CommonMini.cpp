@@ -1835,6 +1835,23 @@ void RotateVec3d(const double h0,
     z1 = v1[2];
 }
 
+void InverseRotateVec3d(double h, double p, double r, double x, double y, double z, double& x_out, double& y_out, double& z_out)
+{
+    // Inverse rotation is rotation by -h, -p, -r.
+    // This corresponds to using the transpose of the rotation matrix.
+    double ch = cos(h);
+    double sh = sin(h);
+    double cp = cos(p);
+    double sp = sin(p);
+    double cr = cos(r);
+    double sr = sin(r);
+
+    // Transposed matrix multiplication
+    x_out = x * (ch * cp) + y * (sh * cp) + z * (-sp);
+    y_out = x * (ch * sp * sr - sh * cr) + y * (sh * sp * sr + ch * cr) + z * (cp * sr);
+    z_out = x * (ch * sp * cr + sh * sr) + y * (sh * sp * cr - ch * sr) + z * (cp * cr);
+}
+
 int SE_Env::AddPath(std::string path)
 {
     // Check if path already in list

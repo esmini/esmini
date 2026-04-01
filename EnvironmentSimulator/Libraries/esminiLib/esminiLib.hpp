@@ -331,7 +331,7 @@ typedef enum
     SE_GHOST_TRAIL_OK          = 0,   // success
     SE_GHOST_TRAIL_ERROR       = -1,  // generic error
     SE_GHOST_TRAIL_NO_VERTICES = -2,  // ghost trail trajectory has no vertices
-    SE_GHOST_TRAIL_TIME_PRIOR  = -3,  // given time < first timestamp in trajectory, snapped to start of trajectory
+    SE_GHOST_TRAIL_TIME_PRIOR  = -3,  //  given time < first timestamp in trajectory, snapped to start of trajectory
     SE_GHOST_TRAIL_TIME_PAST   = -4,  // given time > last timestamp in trajectory, snapped to end of trajectory
 } SE_GhostTrailReturnCode;            // mirror roadmanager::GhostTrailReturnCode
 

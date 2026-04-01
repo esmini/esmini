@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Demonstrate and test ACC controller -->
-<!-- A white car is driving with constant speed, set by init event -->
-<!-- The white car approaches a red leading car -->
-<!-- The red leading car will perform some maneuvers to exercise the ACC function -->
+<!-- Demonstrate various object types, including OpenDRIVE road objects and OpenSCENARIO misc objects -->
+<!-- Also demonstrate shadow features, including smooth edge height dependency and layered above road marks -->
 
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="2"
-               date="2021-08-24T10:00:00"
-               description="Demonstrate Highway Driver"
-               author="esmini-team"/>
+   <FileHeader revMajor="1" revMinor="3" date="2026-04-20T10:00:00" description="Demonstrate various objects and shadows" author="esmini-team"/>
    <ParameterDeclarations>
       <ParameterDeclaration name="HostVehicle" parameterType="string" value="car_red"/>
       <ParameterDeclaration name="TargetVehicle" parameterType="string" value="car_white"/>
@@ -19,27 +13,42 @@
          <Directory path="../../../resources/xosc/Catalogs/Vehicles"/>
       </VehicleCatalog>
       <MiscObjectCatalog>
-	     <Directory path="../../../resources/xosc/Catalogs/MiscObjects"/>
-	  </MiscObjectCatalog>
+         <Directory path="../../../resources/xosc/Catalogs/MiscObjects"/>
+      </MiscObjectCatalog>
    </CatalogLocations>
    <RoadNetwork>
-      <LogicFile filepath="../xodr/straight_500m_signs.xodr"/>
+      <LogicFile filepath="../xodr/straight_500m_signs_lht.xodr"/>
    </RoadNetwork>
    <Entities>
       <ScenarioObject name="Ego">
-        <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+         <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
       </ScenarioObject>
       <ScenarioObject name="Box">
-        <CatalogReference catalogName="MiscObjectCatalog" entryName="box"/>
+         <CatalogReference catalogName="MiscObjectCatalog" entryName="box"/>
       </ScenarioObject>
       <ScenarioObject name="Wall">
-        <CatalogReference catalogName="MiscObjectCatalog" entryName="wall"/>
+         <CatalogReference catalogName="MiscObjectCatalog" entryName="wall"/>
       </ScenarioObject>
       <ScenarioObject name="Cone-45">
-        <CatalogReference catalogName="MiscObjectCatalog" entryName="cone-45"/>
+         <CatalogReference catalogName="MiscObjectCatalog" entryName="cone-45"/>
       </ScenarioObject>
       <ScenarioObject name="Cone-100">
-        <CatalogReference catalogName="MiscObjectCatalog" entryName="cone-100"/>
+         <CatalogReference catalogName="MiscObjectCatalog" entryName="cone-100"/>
+      </ScenarioObject>
+      <ScenarioObject name="Box2">
+         <MiscObject name="box" mass="1000" miscObjectCategory="obstacle" model3d="../models/box_cc_by.osgb">
+            <BoundingBox>
+               <Center x="0.0" y="0.0" z="0.5" />
+               <Dimensions width="1.0" length="2.0" height="1.0" />
+            </BoundingBox>
+            <Properties>
+               <Property name="scaleMode" value="ModelToBB" />
+               <Property name="model_id" value="100" />
+            </Properties>
+         </MiscObject>
+      </ScenarioObject>
+      <ScenarioObject name="Box3">
+         <CatalogReference catalogName="MiscObjectCatalog" entryName="box"/>
       </ScenarioObject>
    </Entities>
    <Storyboard>
@@ -49,7 +58,9 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="0" s="5"/>
+                        <LanePosition roadId="1" laneId="-1" offset="0" s="100">
+                           <Orientation type="relative" h="${pi}"/>
+                        </LanePosition>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -58,7 +69,7 @@
                      <SpeedAction>
                         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="rate" value="1"/>
                         <SpeedActionTarget>
-                           <AbsoluteTargetSpeed value="${50 / 3.6}"/>
+                           <AbsoluteTargetSpeed value="3"/>
                         </SpeedActionTarget>
                      </SpeedAction>
                   </LongitudinalAction>
@@ -77,7 +88,7 @@
                <PrivateAction>
                   <TeleportAction>
                      <Position>
-                        <LanePosition roadId="1" laneId="-1" offset="-4" s="100"/>
+                        <LanePosition roadId="1" laneId="-1" offset="-5" s="100"/>
                      </Position>
                   </TeleportAction>
                </PrivateAction>
@@ -100,9 +111,69 @@
                   </TeleportAction>
                </PrivateAction>
             </Private>
+            <Private entityRef="Box2">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="110" y="-3.0" z="0.0"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+            </Private>
+            <Private entityRef="Box3">
+               <PrivateAction>
+                  <TeleportAction>
+                     <Position>
+                        <WorldPosition x="120" y="0" z="12"/>
+                     </Position>
+                  </TeleportAction>
+               </PrivateAction>
+               <PrivateAction>
+                  <RoutingAction>
+                     <FollowTrajectoryAction>
+                        <Trajectory closed="false" name="MyTrajectory">
+                           <ParameterDeclarations/>
+                           <Shape>
+                              <Polyline>
+                                 <Vertex time="0">
+                                    <Position>
+                                       <WorldPosition x="120" y="-2" z="4" h="0.0" p="0.0" r="0.0"/>
+                                    </Position>
+                                 </Vertex>
+                                 <Vertex time="4">
+                                    <Position>
+                                       <WorldPosition x="125" y="-2" z="0" h="0.0" p="0.0" r="0.0"/>
+                                    </Position>
+                                 </Vertex>
+                                 <Vertex time="8">
+                                    <Position>
+                                       <WorldPosition x="130" y="-2" z="12" h="0.0" p="0.0" r="0.0"/>
+                                    </Position>
+                                 </Vertex>
+                                 <Vertex time="12">
+                                    <Position>
+                                       <WorldPosition x="135" y="-2" z="0" h="0.0" p="0.0" r="0.0"/>
+                                    </Position>
+                                 </Vertex>
+                              </Polyline>
+                           </Shape>
+                        </Trajectory>
+                        <TimeReference>
+                           <Timing domainAbsoluteRelative="absolute" scale="1.0" offset="0.0"/>
+                        </TimeReference>
+                        <TrajectoryFollowingMode followingMode="position"/>
+                     </FollowTrajectoryAction>
+                  </RoutingAction>
+               </PrivateAction>
+            </Private>
+            <!--
+-->
+
+            <!--
+-->
          </Actions>
       </Init>
-      <StopTrigger>
+      <!-- <StopTrigger>
           <ConditionGroup>
                 <Condition name="stop_trigger " delay="0" conditionEdge="none">
                     <ByValueCondition>
@@ -110,6 +181,43 @@
                     </ByValueCondition>
                 </Condition>
           </ConditionGroup>
-      </StopTrigger>
+      </StopTrigger> -->
+      <Story name="MyStory">
+         <ParameterDeclarations/>
+         <Act name="MyAct">
+            <ManeuverGroup maximumExecutionCount="1" name="MyManeuverGroup">
+               <Actors selectTriggeringEntities="false">
+                  <EntityRef entityRef="Ego"/>
+               </Actors>
+               <Maneuver name="MyManeuver">
+                  <Event name="CutInEvent" priority="overwrite">
+                     <Action name="CutInAction">
+                        <PrivateAction>
+                           <LateralAction>
+                              <LaneChangeAction>
+                                 <LaneChangeActionDynamics dynamicsShape="cubic" value="4" dynamicsDimension="time"/>
+                                 <LaneChangeTarget>
+                                    <RelativeTargetLane entityRef="Ego" value="1"/>
+                                 </LaneChangeTarget>
+                              </LaneChangeAction>
+                           </LateralAction>
+                        </PrivateAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="stop_trigger " delay="0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="1.2" rule="greaterThan"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <StartTrigger/>
+            <StopTrigger/>
+         </Act>
+      </Story>
    </Storyboard>
 </OpenSCENARIO>

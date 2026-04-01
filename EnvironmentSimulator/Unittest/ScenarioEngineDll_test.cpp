@@ -971,12 +971,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
 
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 86321);  // initial OSI size, including static content
+    EXPECT_EQ(fileStatus.st_size, 86352);  // initial OSI size, including static content
 
     SE_StepDT(0.001);
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 87558);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 87589);  // slight growth due to only dynamic updates
 
     int road_lane_size;
 
@@ -988,12 +988,12 @@ TEST(GetOSIRoadLaneTest, lane_no_obj)
     SE_StepDT(0.001);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 88958);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 88989);  // slight growth due to only dynamic updates
 
     SE_StepDT(0.001);  // Step for write another frame to osi file
     SE_FlushOSIFile();
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 90359);  // slight growth due to only dynamic updates
+    EXPECT_EQ(fileStatus.st_size, 90390);  // slight growth due to only dynamic updates
 
     SE_DisableOSIFile();
     SE_Close();
@@ -2059,7 +2059,7 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     const char* gt = SE_GetOSIGroundTruth(&sv_size);
     osi_gt.ParseFromArray(gt, sv_size);
 
-    ASSERT_EQ(osi_gt.mutable_stationary_object()->size(), 7);
+    ASSERT_EQ(osi_gt.mutable_stationary_object()->size(), 9);
 
     uint64_t miscobj_0_id = osi_gt.mutable_stationary_object(0)->mutable_id()->value();
     uint64_t miscobj_1_id = osi_gt.mutable_stationary_object(1)->mutable_id()->value();
@@ -2068,6 +2068,8 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     uint64_t miscobj_4_id = osi_gt.mutable_stationary_object(4)->mutable_id()->value();
     uint64_t miscobj_5_id = osi_gt.mutable_stationary_object(5)->mutable_id()->value();
     uint64_t miscobj_6_id = osi_gt.mutable_stationary_object(6)->mutable_id()->value();
+    uint64_t miscobj_7_id = osi_gt.mutable_stationary_object(7)->mutable_id()->value();
+    uint64_t miscobj_8_id = osi_gt.mutable_stationary_object(8)->mutable_id()->value();
 
     osi3::StationaryObject_Classification_Type miscobj_0_type = osi_gt.mutable_stationary_object(0)->mutable_classification()->type();
     osi3::StationaryObject_Classification_Type miscobj_1_type = osi_gt.mutable_stationary_object(1)->mutable_classification()->type();
@@ -2076,6 +2078,8 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     osi3::StationaryObject_Classification_Type miscobj_4_type = osi_gt.mutable_stationary_object(4)->mutable_classification()->type();
     osi3::StationaryObject_Classification_Type miscobj_5_type = osi_gt.mutable_stationary_object(5)->mutable_classification()->type();
     osi3::StationaryObject_Classification_Type miscobj_6_type = osi_gt.mutable_stationary_object(6)->mutable_classification()->type();
+    osi3::StationaryObject_Classification_Type miscobj_7_type = osi_gt.mutable_stationary_object(7)->mutable_classification()->type();
+    osi3::StationaryObject_Classification_Type miscobj_8_type = osi_gt.mutable_stationary_object(8)->mutable_classification()->type();
 
     EXPECT_EQ(miscobj_0_id, 16);
     EXPECT_EQ(miscobj_1_id, 17);
@@ -2084,6 +2088,8 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     EXPECT_EQ(miscobj_4_id, 25);
     EXPECT_EQ(miscobj_5_id, 26);
     EXPECT_EQ(miscobj_6_id, 27);
+    EXPECT_EQ(miscobj_7_id, 28);
+    EXPECT_EQ(miscobj_8_id, 29);
 
     EXPECT_EQ(miscobj_0_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
     EXPECT_EQ(miscobj_1_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_POLE);
@@ -2092,24 +2098,26 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
     EXPECT_EQ(miscobj_4_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
     EXPECT_EQ(miscobj_5_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
     EXPECT_EQ(miscobj_6_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
+    EXPECT_EQ(miscobj_7_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
+    EXPECT_EQ(miscobj_8_type, osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_OTHER);
 
     // for remaning tests, use raw pointer to avoid re-parsing
     const osi3::GroundTruth* osi_gt_raw = reinterpret_cast<const osi3::GroundTruth*>(SE_GetOSIGroundTruthRaw());
-    ASSERT_EQ(osi_gt_raw->stationary_object().size(), 7);  // should be same as above
+    ASSERT_EQ(osi_gt_raw->stationary_object().size(), 9);  // should be same as above
 
     // add another misc object and make sure it appears in OSI, and only once
     SE_AddObject("MiscObject_cone_100_A", 3, 1, 0, -1, "cone-100");
     SE_StepDT(0.1);
     ASSERT_EQ(osi_gt_raw->stationary_object().size(), 1);
-    EXPECT_EQ(osi_gt_raw->stationary_object(0).id().value(), 28);
+    EXPECT_EQ(osi_gt_raw->stationary_object(0).id().value(), 30);
 
     // change report mode to include all stationary objects, also add another misc object
     SE_SetOSIStaticReportMode(SE_OSIStaticReportMode::API);
     SE_AddObject("MiscObject_cone_100_B", 3, 1, 0, -1, "cone-100");
     SE_StepDT(0.1);
-    ASSERT_EQ(osi_gt_raw->stationary_object().size(), 9);
-    EXPECT_EQ(osi_gt_raw->stationary_object(7).id().value(), 28);  // this is MiscObject_cone_100_A (so id is same as above)
-    EXPECT_EQ(osi_gt_raw->stationary_object(8).id().value(), 29);
+    ASSERT_EQ(osi_gt_raw->stationary_object().size(), 11);
+    EXPECT_EQ(osi_gt_raw->stationary_object(9).id().value(), 30);  // this is MiscObject_cone_100_A (so id is same as above)
+    EXPECT_EQ(osi_gt_raw->stationary_object(10).id().value(), 31);
 
     SE_Close();
 }
@@ -2128,17 +2136,21 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_source_reference)
 
     int n_miscobjects = osi_gt.mutable_stationary_object()->size();
 
-    ASSERT_EQ(n_miscobjects, 7);
+    ASSERT_EQ(n_miscobjects, 9);
     ASSERT_EQ(osi_gt.stationary_object(0).source_reference_size(), 1);
     ASSERT_EQ(osi_gt.stationary_object(0).source_reference(0).identifier_size(), 2);
 
-    std::vector<std::vector<std::string>> src_data = {{"net.asam.opendrive", "object_type:object", "object_id:1"},
-                                                      {"net.asam.opendrive", "object_type:object", "object_id:2"},
-                                                      {"net.asam.opendrive", "object_type:object", "object_id:3"},
-                                                      {"net.asam.openscenario", "object_type:MiscObject", "object_name:Box"},
-                                                      {"net.asam.openscenario", "object_type:MiscObject", "object_name:Wall"},
-                                                      {"net.asam.openscenario", "object_type:MiscObject", "object_name:Cone-45"},
-                                                      {"net.asam.openscenario", "object_type:MiscObject", "object_name:Cone-100"}};
+    std::vector<std::vector<std::string>> src_data = {
+        {"net.asam.opendrive", "object_type:object", "object_id:1"},
+        {"net.asam.opendrive", "object_type:object", "object_id:2"},
+        {"net.asam.opendrive", "object_type:object", "object_id:3"},
+        {"net.asam.openscenario", "object_type:MiscObject", "object_name:Box"},
+        {"net.asam.openscenario", "object_type:MiscObject", "object_name:Wall"},
+        {"net.asam.openscenario", "object_type:MiscObject", "object_name:Cone-45"},
+        {"net.asam.openscenario", "object_type:MiscObject", "object_name:Cone-100"},
+        {"net.asam.openscenario", "object_type:MiscObject", "object_name:Box2"},
+        {"net.asam.openscenario", "object_type:MiscObject", "object_name:Box3"},
+    };
 
     for (int i = 0; i < n_miscobjects; i++)
     {

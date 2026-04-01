@@ -541,9 +541,15 @@ std::vector<int> GetGhostIdx()
 
 int main(int argc, char** argv)
 {
-    double      simTime      = 0;
-    double      last_simTime = LARGE_NUMBER;
-    std::string arg_str;
+    double                simTime      = 0;
+    double                last_simTime = LARGE_NUMBER;
+    std::string           arg_str;
+    roadmanager::Position entity_pos;  // reusable position object for entity updates
+
+    // configure for absolute positions only, as read from the dat file
+    entity_pos.SetMode(roadmanager::Position::PosModeType::SET,
+                       roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_ABS |
+                           roadmanager::Position::PosMode::R_ABS | roadmanager::Position::PosMode::SNAP_TO_ROUTE_DEFAULT);
 
     // Setup signal handler to catch Ctrl-C
     signal(SIGINT, signal_handler);
@@ -1435,8 +1441,9 @@ int main(int argc, char** argv)
                 ScenarioEntity* c = &scenarioEntity[j];
                 if (c->entityModel != nullptr)
                 {
-                    c->entityModel->SetPosition(c->pos.x, c->pos.y, c->pos.z);
-                    c->entityModel->SetRotation(c->pos.h, c->pos.p, c->pos.r);
+                    // update object, its shadow (projected on road surface) and its wheels
+                    entity_pos.SetInertiaPos(c->pos.x, c->pos.y, c->pos.z, c->pos.h, c->pos.p, c->pos.r);
+                    c->entityModel->UpdatePositionAndOrientation(&entity_pos);
 
                     if (c->entityModel->GetType() == viewer::EntityModel::EntityType::VEHICLE)
                     {

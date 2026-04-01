@@ -299,7 +299,7 @@ TEST(TestProbe, TestSimpleProbe)
 
 TEST(TestProbe, TestSimpleRoadTypes)
 {
-    const char* odr_file = "../../../EnvironmentSimulator/Unittest/xodr/straight_500m_signs.xodr";
+    const char* odr_file = "../../../EnvironmentSimulator/Unittest/xodr/straight_500m_signs_lht.xodr";
 
     ASSERT_EQ(RM_Init(odr_file), 0);
 

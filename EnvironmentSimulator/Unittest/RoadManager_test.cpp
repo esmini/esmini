@@ -2554,15 +2554,15 @@ TEST_F(MixedRoadsFixture, OSIPointTest)
     EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(0).x, 0.0, 1e-3);
     EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(0).y, -41.5, 1e-3);
     EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(0).z, 0.0, 1e-3);
-    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(4).x, 53.125, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(4).x, 53.5, 1e-3);
     EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(4).y, -41.5, 1e-3);
-    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(4).z, 0.1123, 1e-3);
-    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(9).x, 60.125, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(4).z, 0.1401, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(9).x, 62, 1e-3);
     EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(9).y, -41.5, 1e-3);
-    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(9).z, 1.0641, 1e-3);
-    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(21).x, 93.375, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(9).z, 1.4515, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(21).x, 96.375, 1e-3);
     EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(21).y, -41.5, 1e-3);
-    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(21).z, 9.5198, 1e-3);
+    EXPECT_NEAR(road->GetLaneSectionByIdx(0)->GetLaneByIdx(2)->GetOSIPoints()->GetPoint(21).z, 9.8499, 1e-3);
 
     road = odr->GetRoadByIdx(4);
     EXPECT_EQ(road->GetId(), 4);

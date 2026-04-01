@@ -31,6 +31,7 @@
 #include <osgDB/WriteFile>
 #include <osgUtil/SmoothingVisitor>
 #include <osg/Fog>
+#include <osg/PolygonOffset>
 #include "OSCEnvironment.hpp"
 
 #if __has_include(<filesystem>)
@@ -60,6 +61,7 @@ namespace fs = std::experimental::filesystem;
 #define TRAILDOT3D              1
 #define PERSP_FOV               30.0
 #define ORTHO_FOV               1.0
+#define POLYGON_OFFSET_SHADOW   1.1
 
 float color_green[3]      = {0.2f, 0.6f, 0.3f};
 float color_gray[3]       = {0.7f, 0.7f, 0.7f};
@@ -70,6 +72,21 @@ float color_blue[3]       = {0.25f, 0.38f, 0.7f};
 float color_yellow[3]     = {0.75f, 0.7f, 0.4f};
 float color_white[3]      = {1.0f, 1.0f, 0.9f};
 float color_background[3] = {0.5f, 0.75f, 1.0f};
+
+#define SHADOW_INTERACTION 0
+
+#if SHADOW_INTERACTION
+static struct
+{
+    double height_factor        = 0.35;
+    double roundness            = 0.3;
+    double collar_min_size      = 0.2;
+    double collar_max_size      = 1.0;
+    double collar_offset_factor = 0.0;
+    double vehicle_z_offset     = 0.5;
+    double offset_z_factor      = -0.15;
+} shadow_params;
+#endif
 
 // cppcheck-suppress unknownMacro
 // The following macros are defined by the framework or plugin system and are correctly expanded during compilation.
@@ -822,8 +839,8 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
     {
         if (object_->visibilityMask_ & scenarioengine::Object::Visibility::GRAPHICS)
         {
-            entity_->txNode_->getChild(0)->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB |
-                                                       NodeMask::NODE_MASK_ENTITY_BB_FILLED);
+            entity_->parent_of_model_and_shadows_->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB |
+                                                               NodeMask::NODE_MASK_ENTITY_BB_FILLED);
             if (object_->visibilityMask_ & scenarioengine::Object::Visibility::SENSORS)
             {
                 entity_->SetTransparency(0.0);
@@ -836,7 +853,7 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
         else
         {
             // Must set 0-mask on child node, otherwise it will not be traversed...
-            entity_->txNode_->getChild(0)->setNodeMask(NodeMask::NODE_MASK_NONE);
+            entity_->parent_of_model_and_shadows_->setNodeMask(NodeMask::NODE_MASK_NONE);
         }
     }
     object_->dirty_.ClearBits(scenarioengine::Object::DirtyBit::VISIBILITY);
@@ -1190,15 +1207,17 @@ EntityModel::EntityModel(Viewer*                  viewer,
 
     // Add LevelOfDetail node
     lod_ = new osg::LOD();
-    lod_->addChild(group_);
     lod_->setRange(0, 0, LOD_DIST);
     lod_->setName(name);
+    parent_of_model_and_shadows_ = new osg::Group();
+    lod_->addChild(parent_of_model_and_shadows_);
 
     // Add transform node
     txNode_ = new osg::PositionAttitudeTransform();
-    txNode_->addChild(lod_);
+    txNode_->addChild(group);
     txNode_->setName(name);
-    parent_->addChild(txNode_);
+    parent_of_model_and_shadows_->addChild(txNode_);
+    parent_->addChild(lod_);
 
     // Add trajectory placeholder
     trajectory_ = std::make_unique<Trajectory>(traj_parent, viewer_);
@@ -1219,6 +1238,18 @@ EntityModel::~EntityModel()
     if (parent_)
     {
         parent_->removeChild(txNode_);
+    }
+
+    if (shadow_model_ != nullptr)
+    {
+        delete shadow_model_;
+        shadow_model_ = nullptr;
+    }
+
+    if (shadow_bb_ != nullptr)
+    {
+        delete shadow_bb_;
+        shadow_bb_ = nullptr;
     }
 }
 
@@ -1323,46 +1354,24 @@ CarModel::~CarModel()
     }
 }
 
-void EntityModel::SetPosition(double x, double y, double z)
+void EntityModel::UpdatePositionAndOrientation(roadmanager::Position* pos)
 {
-    txNode_->setPosition(osg::Vec3(static_cast<float>(x - viewer_->origin_[0]), static_cast<float>(y - viewer_->origin_[1]), static_cast<float>(z)));
-}
+    txNode_->setPosition(osg::Vec3(static_cast<float>(pos->GetX() - viewer_->origin_[0]),
+                                   static_cast<float>(pos->GetY() - viewer_->origin_[1]),
+                                   static_cast<float>(pos->GetZ())));
 
-void EntityModel::SetRotation(double hRoad, double pRoad, double hRelative, double r)
-{
-    // First align to road orientation
-    osg::Quat quatTmp(0,
-                      osg::Vec3(osg::X_AXIS),  // Roll
-                      pRoad,
-                      osg::Vec3(osg::Y_AXIS),  // Pitch
-                      hRoad,
-                      osg::Vec3(osg::Z_AXIS)  // Heading
-    );
-
-    // Rotation relative road
-    quat_.makeRotate(r,
+    quat_.makeRotate(pos->GetR(),
                      osg::Vec3(osg::X_AXIS),  // Roll
-                     0,
+                     pos->GetP(),
                      osg::Vec3(osg::Y_AXIS),  // Pitch
-                     hRelative,
-                     osg::Vec3(osg::Z_AXIS)  // Heading
-    );
-
-    // Combine
-    txNode_->setAttitude(quat_ * quatTmp);
-}
-
-void EntityModel::SetRotation(double h, double p, double r)
-{
-    quat_.makeRotate(r,
-                     osg::Vec3(osg::X_AXIS),  // Roll
-                     p,
-                     osg::Vec3(osg::Y_AXIS),  // Pitch
-                     h,
+                     pos->GetH(),
                      osg::Vec3(osg::Z_AXIS)  // Heading
     );
 
     txNode_->setAttitude(quat_);
+
+    shadow_bb_->UpdatePositionAndOrientation(pos, viewer_->origin_[0], viewer_->origin_[1]);
+    shadow_model_->UpdatePositionAndOrientation(pos, viewer_->origin_[0], viewer_->origin_[1]);
 }
 
 const osg::Vec3d* viewer::EntityModel::GetPosition() const
@@ -2652,49 +2661,58 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
         }
     }
 
-    // Put transform node under modelgroup
     modeltx->addChild(modelgroup);
 
     // Create shadows for models and filled boundingboxes
-    osg::ref_ptr<osg::Node> shadow_node_model     = nullptr;
-    osg::ref_ptr<osg::Node> shadow_node_filled_bb = nullptr;
-
-    // By default we use z-offset 0.05, if not type moving, we set it to 0.01
-    double    zOffset         = 0.05;
-    const int MOVING_TYPE_BIT = 1 << 1;
-    if (!(static_cast<int>(type) & MOVING_TYPE_BIT))
-    {
-        zOffset = 0.01;
-    }
-
-    // We need to create the models shadow with the scaled dimensions
     osg::BoundingBox tempModelBB = modelBB;
     if (scaleMode == EntityScaleMode::MODEL_TO_BB)
     {
         tempModelBB = scaledBB;
     }
 
-    float  dx     = tempModelBB._max.x() - tempModelBB._min.x();
-    float  dy     = tempModelBB._max.y() - tempModelBB._min.y();
-    float  dz     = tempModelBB._max.z() - tempModelBB._min.z();
+    float  length = tempModelBB._max.x() - tempModelBB._min.x();
+    float  width  = tempModelBB._max.y() - tempModelBB._min.y();
+    float  height = tempModelBB._max.z() - tempModelBB._min.z();
     float  xc     = (modelBB._max.x() + modelBB._min.x()) / 2.0f;
-    float  yc     = (modelBB._max.y() + modelBB._min.y()) / 2.0f;
     double bbMinZ = bbCenter.z() - bbDimensions.z() / 2.0;
 
-    shadow_node_model                         = CreateShadow(dx, dy, dz);
-    osg::PositionAttitudeTransform* pat_model = static_cast<osg::PositionAttitudeTransform*>(shadow_node_model.get());
-    pat_model->setName("shadow_tx_model");
-    pat_model->setPosition(osg::Vec3d(xc, yc, zOffset + tempModelBB._min.z()));
-    pat_model->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
-    pat_model->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
+    if (shadow_texture_ == nullptr)
+    {
+        const int    tex_size  = 256;  // pixels
+        const double max_alpha = 0.6;  // Max alpha (min trasparency) for the shadow
 
-    shadow_node_filled_bb                         = CreateShadow(bbDimensions.x(), bbDimensions.y(), bbDimensions.z());
-    osg::PositionAttitudeTransform* pat_filled_bb = static_cast<osg::PositionAttitudeTransform*>(shadow_node_filled_bb.get());
-    pat_filled_bb->setName("shadow_tx_filled_bb");
-    pat_filled_bb->setPosition(osg::Vec3d(xc, yc, zOffset + bbMinZ));
-    pat_filled_bb->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
-    pat_filled_bb->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB_FILLED);
-    // Attaching to group later to perserve order
+#if SHADOW_INTERACTION
+        const double roundness = shadow_params.roundness;
+#else
+        const double roundness = 0.3;
+#endif
+
+        shadow_texture_ = new osg::Texture2D(CreateShadowTexture(tex_size, max_alpha, roundness, 2));
+        shadow_texture_->setFilter(osg::Texture::MIN_FILTER, osg::Texture::LINEAR);
+        shadow_texture_->setFilter(osg::Texture::MAG_FILTER, osg::Texture::LINEAR);
+        shadow_texture_->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
+        shadow_texture_->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
+    }
+
+    Shadow* shadow_model_ = new Shadow("shadow_tx_model",
+                                       xc - refpoint_x_offset,
+                                       tempModelBB._min.z(),
+                                       length,
+                                       width,
+                                       height,
+                                       NodeMask::NODE_MASK_ENTITY_MODEL,
+                                       type == EntityModel::EntityType::VEHICLE,
+                                       shadow_texture_);
+
+    Shadow* shadow_bb_ = new Shadow("shadow_tx_filled_bb",
+                                    xc - refpoint_x_offset,
+                                    bbMinZ,
+                                    bbDimensions.x(),
+                                    bbDimensions.y(),
+                                    bbDimensions.z(),
+                                    NodeMask::NODE_MASK_ENTITY_BB_FILLED,
+                                    type == EntityModel::EntityType::VEHICLE,
+                                    shadow_texture_);
 
     // Draw only wireframe
     osg::PolygonMode* polygonMode = new osg::PolygonMode;
@@ -2718,9 +2736,7 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     bbGroup->setName("BoundingBox");
 
     group->addChild(modeltx);
-    group->addChild(pat_model);
     group->addChild(bbGroup);
-    group->addChild(pat_filled_bb);
     group->setName(name);
 
     EntityModel* emodel;
@@ -2736,6 +2752,9 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     {
         emodel = new EntityModel(this, group, root_origin2odr_, trails_, trajectoryLines_, dot_node_, routewaypoints_, trail_color, name);
     }
+
+    emodel->SetShadowModel(shadow_model_);
+    emodel->SetShadowBB(shadow_bb_);
 
     // if file found, set full path, else use the requested filename
     emodel->filename_ = modelFilepath;
@@ -2803,118 +2822,210 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     return emodel;
 }
 
-osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb_z)
+osg::ref_ptr<osg::Image> Viewer::CreateShadowTexture(int tex_size, double max_alpha, double radius_offset, int mode)
 {
-    // Factor to subtract from the non-extruding shadow, max 0.15m
-    const double shadow_adjustment_dist = MIN(0.15, MIN(bb_x, bb_y) * 0.10);  // x% of shortest side
+    // First create the texture image, one quadrant of a circle with smooth alpha falloff to the edges
 
-    // Take away the calculated measurement from each side
-    const double LENGTH = bb_x * 0.5 - shadow_adjustment_dist;
-    const double WIDTH  = bb_y * 0.5 - shadow_adjustment_dist;
+    osg::ref_ptr<osg::Image> shadow_texture = new osg::Image;
+    shadow_texture->allocateImage(tex_size, tex_size, 1, GL_RGBA, GL_UNSIGNED_BYTE);
 
-    double shadow_extrusion_min = shadow_adjustment_dist;                         // Shadow extrude at least a bit more than the removed inner area
-    double shadow_extrusion_max = shadow_adjustment_dist + SHADOW_MAX_EXTRUSION;  // Shadow extrude at least a bit more than the removed inner area
+    unsigned char* data = shadow_texture->data();
 
-    // Final extrusion, which is the factor + a bit of height, if that exceeds max extrusion we take max extrusion, and
-    const double extrusion = MIN(shadow_extrusion_min + 0.01 * bb_z, shadow_extrusion_max);
+    // The "center" of the circle is now the bottom-left corner of the texture
+    double maxDist = tex_size - 1;
 
-    const int    num_rings = 3;
-    const int    ppc       = 3;                                     // points per corner
-    const size_t pp_ring   = (ppc + 1) * 4;                         // points per ring
-    const int    vert_size = pp_ring * num_rings;                   // total amount of vertices
-    const double desired_r = MIN(bb_x, bb_y) * 0.2;                 // radius of corner x% of shortest side
-    const double r         = std::min({WIDTH, LENGTH, desired_r});  // radius never smaller than half of shortest side
-
-    // corner x/y pos never negative after shifting radius
-    const double cx_pos = std::max(0.0, (LENGTH - r));
-    const double cy_pos = std::max(0.0, (WIDTH - r));
-
-    osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(vert_size);
-    osg::ref_ptr<osg::Vec4Array> colors   = new osg::Vec4Array(vert_size);
-
-    auto createRing = [&](size_t idx_offset, double radius, float alpha)
+    for (int y = 0; y < tex_size; ++y)
     {
-        size_t idx        = idx_offset;
-        auto   fillCorner = [&](double start_angle, double cx, double cy)
+        for (int x = 0; x < tex_size; ++x)
         {
-            for (size_t i = 0; i <= ppc; i++)
+            // Normalize coordinates to [0, 1] relative to the origin (0,0)
+            double dx    = x / maxDist;
+            double dy    = y / maxDist;
+            double alpha = 0.0;
+
+            if (mode == 0)  // gaussian falloff
             {
-                double delta = (i / static_cast<double>(ppc)) * (osg::PI / 2.0);
-                double angle = start_angle + delta;
-                (*vertices)[idx].set(osg::Vec3(cx + cos(angle) * radius, cy + sin(angle) * radius, 0.0));
-                (*colors)[idx].set(color_shadow[0], color_shadow[1], color_shadow[2], alpha);
-                idx++;
+                // Choose a sigma that controls the "width" of the glow.
+                // A smaller sigma makes a tighter spot; a larger one makes it spread out.
+                const float sigma = 0.35f;
+                const float k     = 1.0f / (2.0f * sigma * sigma);
+
+                double dSquared = dx * dx + dy * dy;  // No need for sqrt() for Gaussian!
+
+                // Gaussian: e^(-d^2 / 2sigma^2)
+                // This is 1.0 at d=0 and drops as d increases
+                alpha = exp(-dSquared * k);
+
+                // Clamp it (optional, as Gaussian naturally stays within [0,1])
+                alpha = std::max(0.0, std::min(1.0, alpha));
             }
-        };
+            else if (mode == 1)  // cubic falloff
+            {
+                // Calculate distance from the origin (0,0)
+                double d = sqrt(dx * dx + dy * dy);
 
-        fillCorner(3.0 * osg::PI / 2.0, cx_pos, -cy_pos);
-        fillCorner(0.0, cx_pos, cy_pos);
-        fillCorner(osg::PI / 2.0, -cx_pos, cy_pos);
-        fillCorner(osg::PI, -cx_pos, -cy_pos);
-    };
+                // Clamp distance to [0, 1]
+                double t = std::max(0.0, std::min(1.0, d));
 
-    const double total_extrusion = shadow_adjustment_dist + extrusion;
-    createRing(0, r, SHADOW_OPACITY);
-    createRing(pp_ring, r + total_extrusion * 0.4, SHADOW_OPACITY * 0.45);
-    createRing(pp_ring * 2, r + total_extrusion, 0.0f);
+                // Invert t: at dist 0, weight is 1. At dist 1, weight is 0.
+                double invT = 1.0f - t;
 
-    // Normals
-    osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array;
-    normals->push_back(osg::Vec3(0.0f, 0.0f, 1.0f));
+                // Cubic transition: 3x^2 - 2x^3
+                alpha = (3.0f * invT * invT) - (2.0f * invT * invT * invT);
+            }
+            else if (mode == 2)  // biased cubic falloff
+            {
+                // Calculate distance from the origin (0,0)
+                double d = sqrt(dx * dx + dy * dy);
 
-    // Base geometry
-    osg::ref_ptr<osg::Geometry> inner_geometry = new osg::Geometry;
-    inner_geometry->setVertexArray(vertices.get());
-    inner_geometry->setNormalArray(normals.get());
-    inner_geometry->setNormalBinding(osg::Geometry::BIND_OVERALL);
-    inner_geometry->setColorArray(colors.get());
-    inner_geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+                // transorm distance to [radius_offset, 1]
+                double t = std::max(0.0, std::min(1.0, d));
+                if (t < radius_offset)
+                {
+                    t = 0.0;
+                }
+                else
+                {
+                    t = (t - radius_offset) / (1.0 - radius_offset);  // remap [radius_offset,1] to [0,1]
+                }
 
-    // Create the shapes
-    osg::ref_ptr<osg::DrawElementsUInt> center = new osg::DrawElementsUInt(GL_POLYGON, pp_ring);
-    for (size_t i = 0; i < pp_ring; i++)
-    {
-        (*center)[i] = i;
-    }
-    inner_geometry->addPrimitiveSet(center.get());
+                // Invert t: at dist 0, weight is 1. At dist 1, weight is 0.
+                double invT = 1.0f - t;
 
-    osg::ref_ptr<osg::Geometry> outer_geometry = new osg::Geometry;
-    outer_geometry->setVertexArray(vertices.get());
-    outer_geometry->setNormalArray(normals.get());
-    outer_geometry->setNormalBinding(osg::Geometry::BIND_OVERALL);
-    outer_geometry->setColorArray(colors.get());
-    outer_geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+                // Cubic transition: 3x^2 - 2x^3
+                alpha = (3.0f * invT * invT) - (2.0f * invT * invT * invT);
+            }
 
-    osg::ref_ptr<osg::DrawElementsUInt> fade    = new osg::DrawElementsUInt(GL_QUAD_STRIP, (num_rings - 1) * (pp_ring * 2 + 2));
-    size_t                              idx_ptr = 0;
-    for (size_t ring = 0; ring < num_rings - 1; ring++)
-    {
-        size_t inner_off = ring * pp_ring;
-        size_t outer_off = (ring + 1) * pp_ring;
+            // Remap to [0, max_alpha]
+            float alphaFinal = max_alpha * alpha;
 
-        for (size_t i = 0; i < pp_ring; i++)
-        {
-            (*fade)[idx_ptr++] = (i + inner_off);
-            (*fade)[idx_ptr++] = (i + outer_off);
+            int offset       = (y * tex_size + x) * 4;
+            data[offset + 0] = 0;  // R
+            data[offset + 1] = 0;  // G
+            data[offset + 2] = 0;  // B
+            data[offset + 3] = static_cast<unsigned char>(alphaFinal * 255);
         }
-
-        (*fade)[idx_ptr++] = inner_off;
-        (*fade)[idx_ptr++] = outer_off;
     }
 
-    outer_geometry->addPrimitiveSet(fade.get());
+    return shadow_texture;
+}
 
-    osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-    geode->addDrawable(inner_geometry.get());
-    geode->addDrawable(outer_geometry.get());
+viewer::Shadow::Shadow(std::string                  name,
+                       double                       x,
+                       double                       z,
+                       double                       bb_length,
+                       double                       bb_width,
+                       double                       bb_height,
+                       NodeMask                     node_mask,
+                       bool                         is_vehicle,
+                       osg::ref_ptr<osg::Texture2D> texture)
+    : z_(z),
+      p_(0.0),
+      r_(0.0),
+      length_(bb_length),
+      width_(bb_width),
+      height_(bb_height),
+      max_z_(10.0),
+      min_alpha_(0.2),
+      is_vehicle_(is_vehicle),
+      x_offset_(x),
+#if SHADOW_INTERACTION
+      height_factor_(shadow_params.height_factor),
+      roundness_(shadow_params.roundness),
+      collar_min_size_(shadow_params.collar_min_size),
+      collar_max_size_(shadow_params.collar_max_size),
+      collar_offset_factor_(shadow_params.collar_offset_factor),
+      vehicle_z_offset_(shadow_params.vehicle_z_offset),
+      offset_z_factor_(shadow_params.offset_z_factor)
+#else
+      height_factor_(0.35),
+      roundness_(0.3),
+      collar_min_size_(0.2),
+      collar_max_size_(1.0),
+      collar_offset_factor_(0.0),
+      vehicle_z_offset_(0.5),
+      offset_z_factor_(-0.15)
+#endif
+{
+    // --- 1. Vertices (4x4 Grid) ---
+    osg::ref_ptr<osg::Geometry> geom = new osg::Geometry;
+    vertices_                        = new osg::Vec3Array(16);
+    geom->setVertexArray(vertices_);
 
-    osg::StateSet* shadowStateSet = geode->getOrCreateStateSet();
-    shadowStateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
-    shadowStateSet->setAttributeAndModes(new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-    shadowStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+    // --- 2. Texture Coordinates (First Quadrant Mapping) ---
+    osg::ref_ptr<osg::Vec2Array> texcoords = new osg::Vec2Array(16);
 
-    osg::ref_ptr<osg::Stencil> stencil = new osg::Stencil;
+    /* UV Layout Map (mapping to the 0-90 degree quadrant):
+        (1,1) (0,1) (0,1) (1,1)  <- Top row
+        (1,0) (0,0) (0,0) (1,0)
+        (1,0) (0,0) (0,0) (1,0)
+        (1,1) (0,1) (0,1) (1,1)  <- Bottom row
+    */
+
+    // Inner Rectangle: All map to the circle center (0,0)
+    (*texcoords)[5]  = osg::Vec2(0.0f, 0.0f);
+    (*texcoords)[6]  = osg::Vec2(0.0f, 0.0f);
+    (*texcoords)[9]  = osg::Vec2(0.0f, 0.0f);
+    (*texcoords)[10] = osg::Vec2(0.0f, 0.0f);
+
+    // Collar Sides: Fade along one axis to the edge of the radius (1.0)
+    // Vertical sides
+    (*texcoords)[4]  = osg::Vec2(1.0f, 0.0f);  // Left-Mid
+    (*texcoords)[8]  = osg::Vec2(1.0f, 0.0f);
+    (*texcoords)[7]  = osg::Vec2(1.0f, 0.0f);  // Right-Mid
+    (*texcoords)[11] = osg::Vec2(1.0f, 0.0f);
+
+    // Horizontal sides
+    (*texcoords)[1]  = osg::Vec2(0.0f, 1.0f);  // Bottom-Mid
+    (*texcoords)[2]  = osg::Vec2(0.0f, 1.0f);
+    (*texcoords)[13] = osg::Vec2(0.0f, 1.0f);  // Top-Mid
+    (*texcoords)[14] = osg::Vec2(0.0f, 1.0f);
+
+    // Collar Corners: Map to the outer corner of the quadrant (1.1)
+    (*texcoords)[0]  = osg::Vec2(1.0f, 1.0f);  // Bottom-Left
+    (*texcoords)[3]  = osg::Vec2(1.0f, 1.0f);  // Bottom-Right
+    (*texcoords)[12] = osg::Vec2(1.0f, 1.0f);  // Top-Left
+    (*texcoords)[15] = osg::Vec2(1.0f, 1.0f);  // Top-Right
+
+    geom->setTexCoordArray(0, texcoords);
+
+    // --- 3. Indexing (Same 9 Quads) ---
+    osg::ref_ptr<osg::DrawElementsUInt> indices = new osg::DrawElementsUInt(osg::PrimitiveSet::QUADS, 0);
+    for (int r = 0; r < 3; ++r)
+    {
+        for (int c = 0; c < 3; ++c)
+        {
+            unsigned int base = r * 4 + c;
+            indices->push_back(base);
+            indices->push_back(base + 1);
+            indices->push_back(base + 5);
+            indices->push_back(base + 4);
+        }
+    }
+    geom->addPrimitiveSet(indices);
+
+    // Set the Geometry Color to control additional alpha based on elevation of the object
+    color_       = new osg::Vec4Array(1);
+    (*color_)[0] = osg::Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    geom->setColorArray(color_);
+    geom->setColorBinding(osg::Geometry::BIND_OVERALL);
+    geom->setDataVariance(osg::Object::DYNAMIC);
+    color_->setDataVariance(osg::Object::DYNAMIC);
+    vertices_->setDataVariance(osg::Object::DYNAMIC);
+    geom->setUseDisplayList(false);
+    geom->getOrCreateStateSet()->setAttributeAndModes(new osg::PolygonOffset(-POLYGON_OFFSET_SHADOW, -POLYGON_OFFSET_SHADOW));
+
+    // 4: Apply texture
+    osg::StateSet* ss = geom->getOrCreateStateSet();
+    ss->setTextureAttributeAndModes(0, texture, osg::StateAttribute::ON);
+
+    // 5. Enable Blending (Crucial for Alpha)
+    ss->setMode(GL_BLEND, osg::StateAttribute::ON);
+    ss->setAttributeAndModes(new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    ss->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+
     // Only draw on pixels that doesn't have a 1 written on them in any of the bits in 0xFF
+    osg::ref_ptr<osg::Stencil> stencil = new osg::Stencil;
     stencil->setFunction(osg::Stencil::NOTEQUAL, 1, 0xFF);
     /*
         arg1: sFail (stencil fail), what to do with the pixel if setFunction test failed, we keep the value already written
@@ -2923,13 +3034,100 @@ osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb
     */
     stencil->setOperation(osg::Stencil::KEEP, osg::Stencil::KEEP, osg::Stencil::REPLACE);
     stencil->setWriteMask(0xFF);  // What to write into the stencil
-    shadowStateSet->setAttributeAndModes(stencil, osg::StateAttribute::ON);
-    shadowStateSet->setMode(GL_STENCIL_TEST, osg::StateAttribute::ON);
+    ss->setAttributeAndModes(stencil, osg::StateAttribute::ON);
+    ss->setMode(GL_STENCIL_TEST, osg::StateAttribute::ON);
 
-    osg::ref_ptr<osg::PositionAttitudeTransform> pat = new osg::PositionAttitudeTransform;
-    pat->addChild(geode.get());
+    osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+    geode->addChild(geom);
 
-    return pat.get();
+    pat_ = new osg::PositionAttitudeTransform;
+    pat_->addChild(geode.get());
+
+    pat_->setName(name);
+    pat_->setPosition(osg::Vec3d(0, 0, z));
+    pat_->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
+    pat_->setNodeMask(node_mask);
+
+    Recalculate();
+}
+
+void viewer::Shadow::UpdatePositionAndOrientation(roadmanager::Position* pos, double origin_x, double origin_y)
+{
+    bool recalculate = false;
+
+    if (abs(pos->GetZRelative() - z_) > 1e-2)
+    {
+        // object elevation above road changed, recalculate shadow intensity and edge fading
+        z_          = pos->GetZRelative();
+        recalculate = true;
+    }
+
+    pat_->setPosition(osg::Vec3(pos->GetX() - origin_x, pos->GetY() - origin_y, pos->GetZRoad()));
+
+    // for absolute position mode, the pitch offset is included, for relative mode the pitch consider reference line only
+    // we need to add an offset for the effect of roll change rate on local pitch
+    int    mode     = (pos->GetMode(roadmanager::Position::PosModeType::SET) & roadmanager::Position::PosMode::P_MASK);
+    double p_offset = (mode == roadmanager::Position::PosMode::P_ABS) ? pos->GetPOffset() : 0.0;
+
+    pat_->setAttitude(osg::Quat(pos->GetR() - pos->GetRRelative(),
+                                osg::Vec3(osg::X_AXIS),
+                                pos->GetP() - pos->GetPRelative() + p_offset,
+                                osg::Vec3(osg::Y_AXIS),
+                                pos->GetH(),
+                                osg::Vec3(osg::Z_AXIS)));
+
+    double p = pos->GetPRelative();
+    double r = pos->GetRRelative();
+
+    if (abs(p - p_) > 0.1 || abs(r - r_) > 0.1)
+    {
+        // rescale - projection of object changing wrt orientation
+        scale_x_    = abs(cos(p)) + abs((height_ / length_) * sin(p));
+        scale_y_    = abs(cos(r)) + abs((height_ / width_) * sin(r));
+        p_          = p;
+        r_          = r;
+        recalculate = true;
+    }
+
+    if (recalculate)
+    {
+        Recalculate();
+    }
+}
+
+void viewer::Shadow::Recalculate()
+{
+    double add_z = is_vehicle_ ? vehicle_z_offset_ : 0.0;  // For vehicles, consider some ground clearance for shadow softening
+
+    // Ensure collar size is within specified bounds
+    double collar_size = MAX(collar_min_size_, MIN((z_ + add_z + height_) * height_factor_, collar_max_size_));
+
+    // calculate collar offset, from center at object edge, + outwards, - inwards
+    double collar_offset = collar_offset_factor_ * collar_size / 2 + add_z * offset_z_factor_;
+
+    // limit offset to half collar size
+    collar_offset = ABS_LIMIT(collar_offset, collar_size / 2);
+
+    // the inner rectangle to the center of the circle quadrant and the collar to the edges of the circle
+    double inner_width  = MAX(0, scale_x_ * length_ - (collar_size / 2.0 - collar_offset) * 2);
+    double inner_height = MAX(0, scale_y_ * width_ - (collar_size / 2.0 - collar_offset) * 2);
+
+    double x_coords[4] = {-inner_width / 2.0 - collar_size, -inner_width / 2.0, inner_width / 2.0, inner_width / 2.0 + collar_size};
+    double y_coords[4] = {-inner_height / 2.0 - collar_size, -inner_height / 2.0, inner_height / 2.0, inner_height / 2.0 + collar_size};
+
+    // update vertices based on the new dimensions, keeping the same 4x4 grid structure
+    double z_coord = is_vehicle_ ? 0.05 : 0.01;
+    for (int r = 0; r < 4; ++r)
+    {
+        for (int c = 0; c < 4; ++c)
+        {
+            vertices_->at(r * 4 + c) = osg::Vec3(x_coords[c] + x_offset_, y_coords[r], z_coord);
+        }
+    }
+    vertices_->dirty();
+
+    color_->at(0).a() = MAX(min_alpha_, 1.0f - z_ / max_z_);  // weaker shadow with object elevation, but never fully transparent
+    color_->dirty();
 }
 
 int Viewer::AddEntityModel(EntityModel* model)
@@ -3973,6 +4171,71 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
             break;
     }
 
+#if SHADOW_INTERACTION  // keep code showing how interaction with visualization can be implemented
+    if (ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_RIGHT_SHIFT)
+    {
+        if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
+        {
+            double step    = 0.05 * ((ea.getModKeyMask() & osgGA::GUIEventAdapter::MODKEY_RIGHT_CTRL) ? -1 : 1);
+            bool   updated = true;
+
+            switch (ea.getKey())
+            {
+                case (0xff57):
+                    shadow_params.height_factor += step;
+                    break;
+                case (0xff54):
+                    shadow_params.roundness += step;
+                    break;
+                case (0xff56):
+                    shadow_params.collar_min_size += step;
+                    break;
+                case (0xff51):
+                    shadow_params.collar_max_size += step;
+                    break;
+                case (0xff0b):
+                    shadow_params.collar_offset_factor += step;
+                    break;
+                case (0xff53):
+                    shadow_params.offset_z_factor += step;
+                    break;
+                case (0xff50):
+                    shadow_params.vehicle_z_offset += step;
+                    break;
+                case (0xff52):
+                    break;
+                default:
+                    updated = false;
+            }
+
+            if (updated)
+            {
+                printf("key 0x%x step %.2f\n", ea.getKey(), step);
+                printf(
+                    "  height_factor: %.2f\n  roundness: %.2f\n  collar_min_size: %.2f\n  collar_max_size: %.2f\n  collar_offset_factor: %.2f\n  offset_z_factor %.2f\n  vehicle_z_offset: %.2f\n",
+                    shadow_params.height_factor,
+                    shadow_params.roundness,
+                    shadow_params.collar_min_size,
+                    shadow_params.collar_max_size,
+                    shadow_params.collar_offset_factor,
+                    shadow_params.offset_z_factor,
+                    shadow_params.vehicle_z_offset);
+
+                viewer_->renderSemaphore.Wait();  // Wait for current rendering to finish before updating parameters and recreating entities
+                viewer_->shadow_texture_ = nullptr;
+
+                for (auto& entity : viewer_->entities_)
+                {
+                    entity->parent_->removeChild(entity->group_);
+                    delete entity;
+                }
+                viewer_->entities_.clear();  // trig recreate entities with new parameters
+                viewer_->renderSemaphore.Release();
+            }
+            return true;
+        }
+    }
+#endif
     switch (ea.getKey())
     {
         case ('C'):
