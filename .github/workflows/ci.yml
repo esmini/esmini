@@ -243,7 +243,6 @@ jobs:
             externals/googletest
             externals/osg
             externals/sumo
-            externals/implot
             resources/models
           key: ${{ runner.os }}-external-resources-slim
       # run xml validation only here.

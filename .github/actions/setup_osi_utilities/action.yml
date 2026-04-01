@@ -13,9 +13,9 @@ inputs:
     required: false
     default: 'Release'
   vcpkg-commit:
-    description: 'vcpkg git commit to pin (must match asam-osi-utilities vcpkg-configuration.json baseline)'
+    description: 'vcpkg git commit to pin. If empty, derived from externals/asam-osi-utilities/vcpkg-configuration.json baseline'
     required: false
-    default: '4f8fe05871555c1798dbcb1957d0d595e94f7b57'
+    default: ''
   overlay-triplets:
     description: 'Path to overlay triplets directory (for custom triplets like universal-osx)'
     required: false
@@ -48,12 +48,21 @@ runs:
           ${{ github.workspace }}/build-osi-deps/vcpkg_installed
         key: osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-${{ hashFiles('externals/asam-osi-utilities/**', '!externals/asam-osi-utilities/build*', 'support/vcpkg-triplets/**') }}
 
+    - name: Derive vcpkg baseline from submodule
+      id: vcpkg-baseline
+      if: steps.cache-osi.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        BASELINE=$(jq -r '.["default-registry"]["baseline"]' externals/asam-osi-utilities/vcpkg-configuration.json)
+        echo "commit=${BASELINE}" >> "$GITHUB_OUTPUT"
+        echo "Using vcpkg baseline: $BASELINE"
+
     - name: Setup vcpkg
       if: steps.cache-osi.outputs.cache-hit != 'true'
       uses: lukka/run-vcpkg@v11
       with:
         vcpkgDirectory: ${{ runner.temp }}/vcpkg
-        vcpkgGitCommitId: ${{ inputs.vcpkg-commit }}
+        vcpkgGitCommitId: ${{ inputs.vcpkg-commit || steps.vcpkg-baseline.outputs.commit }}
 
     - name: Phase A - Configure
       if: steps.cache-osi.outputs.cache-hit != 'true'
