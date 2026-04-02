@@ -122,5 +122,11 @@ macro(set_osi_libs)
     set(OSI_LIBRARIES
         osi_with_warnings)
 
-    message(STATUS "OSI target: ${OSI_LIBRARIES}")
+    # Expose the discovered OSI version so downstream consumers (e.g. OSMP_FMU) can use it.
+    if(open_simulation_interface_VERSION)
+        set(OSI_VERSION
+            "${open_simulation_interface_VERSION}")
+    endif()
+
+    message(STATUS "OSI target: ${OSI_LIBRARIES} (version: ${OSI_VERSION})")
 endmacro()

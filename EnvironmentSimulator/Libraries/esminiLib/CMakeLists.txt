@@ -32,12 +32,6 @@ add_library(
 set(RPATH_DIRS
     "$ORIGIN")
 
-if(DYN_PROTOBUF)
-    # add OSI library folder to execution lib search paths
-    set(RPATH_DIRS
-        ${RPATH_DIRS}:${EXTERNALS_OSI_LIBRARY_PATH}/$<IF:$<CONFIG:Debug>,debug,release>)
-endif()
-
 set_target_properties(
     ${TARGET_SHARED}
     PROPERTIES BUILD_WITH_INSTALL_RPATH
