@@ -382,31 +382,24 @@ However, in the example code this parameter is controlled by the ``paramDeclCB()
 
 === OSI groundtruth
 
-To access OSI data we first need to complement the build script (CMakeLists.txt) with OSI include and library info. For example:
+To access OSI data we first need to complement the build script (CMakeLists.txt) with OSI include and library info. OSI is provided via asam-osi-utilities (two-phase build). After building and installing asam-osi-utilities, configure your project with the same `OSI_UTILITIES_PREFIX` and `CMAKE_PREFIX_PATH` used for esmini. For example:
 
-Windows:
 ----
-include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib ../externals/osi/v10/include)
+find_package(Protobuf CONFIG REQUIRED)
+find_package(open_simulation_interface REQUIRED PATHS "${OSI_UTILITIES_PREFIX}" "${OSI_UTILITIES_PREFIX}/CMake" NO_DEFAULT_PATH)
 
-link_directories(. ../bin ../externals/osi/v10/lib)
+include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib)
 
-target_link_libraries(${TARGET} esminiLib libprotobuf open_simulation_interface_pic)
-----
+link_directories(. ../bin)
 
-Linux:
-----
-include_directories(. ../include ../EnvironmentSimulator/Libraries/esminiLib ../externals/osi/linux/include)
-
-link_directories(. ../bin ../externals/osi/linux/lib)
-
-target_link_libraries(${TARGET} esminiLib protobuf open_simulation_interface_pic)
+target_link_libraries(${TARGET} esminiLib open_simulation_interface::open_simulation_interface_pic)
 ----
 
 
 *Note:*
 
-- Replace foldername "v10" with linux or mac depending on your platform.
-- If linking with custom applications or libraries: OSI and Google Protobuf versions needs to be consistent (at least major version nr), also with the versions used in esmini (see https://github.com/esmini/esmini#osi-support[here]).
+- See the esmini Build guide for the two-phase build process (asam-osi-utilities + esmini).
+- OSI and Google Protobuf versions need to be consistent (at least major version nr), also with the versions used in esmini (see https://github.com/esmini/esmini#osi-support[here]).
 
 Then run ``cmake ..`` from the build folder to apply the changes in CMakeFiles.cxx.
 

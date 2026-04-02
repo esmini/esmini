@@ -83,5 +83,13 @@ target_link_libraries(
     ${TARGET}
     PRIVATE CommonMini)
 
+# Propagate MSVC warning suppressions for protobuf/abseil headers
+if(TARGET
+   osi_external_warnings)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE osi_external_warnings)
+endif()
+
 disable_iwyu(${TARGET})
 enable_fpic(${TARGET})

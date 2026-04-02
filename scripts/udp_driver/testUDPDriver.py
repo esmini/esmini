@@ -9,7 +9,7 @@
 
    Python dependencies:
       protobuf
-         pip install protobuf==3.20.2
+         pip install osi-python (from externals/asam-osi-utilities/submodules/osi-python)
       tkinter (usually included with Python on Windows)
          test if installed: python -m tkinter (or python3 -m tkinter)
          sudo apt-get install python3-tk

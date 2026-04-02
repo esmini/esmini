@@ -55,17 +55,47 @@ See [User Guide](https://esmini.github.io) for more information.
 The easiest way of integrating esmini in your custom application is to link the all inclusive shared library ScenarioEngineDLL. In spite of the name it's available also on Linux and Mac. See further info in [User guide - esmini lib programming](https://esmini.github.io/#_esmini_lib_programming) and [User Guide "Hello World" tutorial](https://esmini.github.io/#_hello_world_programming_tutorial) on how to create a minimalistic application based on it.
 
 ### OSI support
-In addition to internal API ([example](https://esmini.github.io/#_fetch_state_of_scenario_objects)) for getting information about the ongoing simulation, e.g. road width and road user position, esmini collects everything into an [OSI](https://github.com/OpenSimulationInterface) :: [groundtruth structure](https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1GroundTruth.html). This structure can be 1. stored in an OSI trace-file, 2. retrieved via UDP and/or 3. retrieved directly via API (see [esminiLib.hpp](https://github.com/esmini/esmini/blob/3af727a3f95825bfcf8b1cbd7becf68ea26cf08e/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L473)).
+In addition to internal API ([example](https://esmini.github.io/#_fetch_state_of_scenario_objects)) for getting information about the ongoing simulation, e.g. road width and road user position, esmini collects everything into an [OSI](https://github.com/OpenSimulationInterface) :: [groundtruth structure](https://opensimulationinterface.github.io/osi-antora-generator/asamosi/latest/gen/structosi3_1_1GroundTruth.html). This structure can be 1. stored in an OSI trace-file, 2. retrieved via UDP and/or 3. retrieved directly via API (see [esminiLib.hpp](https://github.com/esmini/esmini/blob/3af727a3f95825bfcf8b1cbd7becf68ea26cf08e/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L473)).
 
   **Note**: Only parts of OSI groundtruth is populated.
 
   Hello World tutorial includes an [example of how to fetch OSI groundtruth](https://esmini.github.io/#_osi_groundtruth).
 
   Current versions used by esmini:
-   - OSI version: v3.5.0
-   - Google Protobuf version: v3.15.2
+   - OSI version: v3.8.0-rc1 (via [asam-osi-utilities](https://github.com/lichtblick-suite/asam-osi-utilities) submodule)
+   - Google Protobuf version: managed by vcpkg (currently v5.29.3)
 
-  Script that compiles OSI for Win/Linux/Mac available [here](https://github.com/esmini/esmini/blob/master/scripts/generate_osi_libs.sh). Run in bash, also on Windows, e.g. GIT bash.
+  OSI is built from source as part of a two-phase build. See the [Build guide](https://esmini.github.io/#_build_guide) for details.
+
+### Building from source
+
+Quick build without optional dependencies (OSI, OSG, SUMO):
+
+```bash
+git clone https://github.com/esmini/esmini
+cd esmini
+cmake --preset default
+cmake --build build --config Release --target install
+```
+
+Use `cmake --list-presets` to see all available presets. For a full build with OSI support, first build the dependencies, then esmini itself:
+
+```bash
+# Phase A: Build OSI dependencies (via vcpkg)
+cmake -S externals/asam-osi-utilities -B build-deps --preset vcpkg-windows-static-md  # Windows
+cmake -S externals/asam-osi-utilities -B build-deps --preset vcpkg                    # Linux/macOS
+cmake --build build-deps --config Release
+cmake --install build-deps --config Release --prefix osi-deps
+
+# Phase B: Build esmini (set env vars, then configure + build)
+export ESMINI_OSI_PREFIX=osi-deps                                                        # bash
+export ESMINI_CMAKE_PREFIX_PATH="osi-deps;build-deps/vcpkg_installed/<your-triplet>"     # bash
+export ESMINI_PROTOC=build-deps/vcpkg_installed/<your-triplet>/tools/protobuf/protoc     # bash
+cmake --preset full
+cmake --build build --config Release --target install
+```
+
+Replace `<your-triplet>` with e.g. `x64-windows-static-md` or `x64-linux`. See the [Build guide](https://esmini.github.io/#_build_guide) for full details and platform-specific instructions.
 
 ### Unity support
 esmini shared library works also as plugin in Unity (Win, Linux, Mac). Learn more and find example in [User guide - esmini in Unity](https://esmini.github.io/#_esmini_in_unity).

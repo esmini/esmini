@@ -1,0 +1,203 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}"
+      }
+    },
+    {
+      "name": "osi-base",
+      "hidden": true,
+      "inherits": "base",
+      "cacheVariables": {
+        "OSI_UTILITIES_PREFIX": "$env{ESMINI_OSI_PREFIX}",
+        "CMAKE_PREFIX_PATH": "$env{ESMINI_CMAKE_PREFIX_PATH}",
+        "Protobuf_PROTOC_EXECUTABLE": "$env{ESMINI_PROTOC}"
+      }
+    },
+    {
+      "name": "default",
+      "displayName": "Default (no OSI)",
+      "description": "Local development build without OSI, OSG, or SUMO",
+      "inherits": "base",
+      "cacheVariables": {
+        "USE_OSI": "OFF",
+        "USE_OSG": "OFF",
+        "USE_SUMO": "OFF"
+      }
+    },
+    {
+      "name": "full",
+      "displayName": "Full build with OSI",
+      "description": "Local development build with all features. Set ESMINI_OSI_PREFIX, ESMINI_CMAKE_PREFIX_PATH, and ESMINI_PROTOC first.",
+      "inherits": "osi-base"
+    },
+    {
+      "name": "ci-linux",
+      "displayName": "CI Linux",
+      "description": "Full CI build for Linux with Ninja",
+      "inherits": "osi-base",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "ENABLE_CCACHE": "ON",
+        "ENABLE_WARNINGS_AS_ERRORS": "ON",
+        "ENABLE_INCLUDE_WHAT_YOU_USE": "ON"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "ci-macos",
+      "displayName": "CI macOS",
+      "description": "Full CI build for macOS with universal binaries",
+      "inherits": "osi-base",
+      "cacheVariables": {
+        "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64",
+        "ENABLE_CCACHE": "ON",
+        "ENABLE_WARNINGS_AS_ERRORS": "ON",
+        "ENABLE_INCLUDE_WHAT_YOU_USE": "ON"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "ci-windows",
+      "displayName": "CI Windows",
+      "description": "Full CI build for Windows with VS 2022 and v142 toolset",
+      "inherits": "osi-base",
+      "generator": "Visual Studio 17 2022",
+      "toolset": "v142",
+      "architecture": "x64",
+      "cacheVariables": {
+        "ENABLE_WARNINGS_AS_ERRORS": "ON",
+        "ENABLE_INCLUDE_WHAT_YOU_USE": "ON"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "no-externals-base",
+      "hidden": true,
+      "inherits": "base",
+      "cacheVariables": {
+        "USE_OSG": "OFF",
+        "USE_SUMO": "OFF",
+        "USE_OSI": "OFF",
+        "USE_GTEST": "ON",
+        "USE_IMPLOT": "OFF"
+      }
+    },
+    {
+      "name": "ci-no-externals-linux",
+      "displayName": "CI Linux (no externals)",
+      "description": "Slim CI build for Linux without OSI/OSG/SUMO",
+      "inherits": "no-externals-base",
+      "generator": "Ninja",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "ci-no-externals-macos",
+      "displayName": "CI macOS (no externals)",
+      "description": "Slim CI build for macOS without OSI/OSG/SUMO",
+      "inherits": "no-externals-base",
+      "cacheVariables": {
+        "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      }
+    },
+    {
+      "name": "ci-no-externals-windows",
+      "displayName": "CI Windows (no externals)",
+      "description": "Slim CI build for Windows without OSI/OSG/SUMO",
+      "inherits": "no-externals-base",
+      "generator": "Visual Studio 17 2022",
+      "toolset": "v142",
+      "architecture": "x64",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "ci-sanitize",
+      "displayName": "CI Sanitize",
+      "description": "Address/undefined sanitizer build for Linux",
+      "inherits": "osi-base",
+      "generator": "Ninja",
+      "cacheVariables": {
+        "ENABLE_CCACHE": "ON",
+        "ENABLE_SANITIZERS": "ON",
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "USE_OSI": "ON",
+        "USE_GTEST": "ON",
+        "USE_OSG": "OFF",
+        "USE_SUMO": "OFF",
+        "USE_IMPLOT": "OFF"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "ci-memoryleak",
+      "displayName": "CI Memory Leak",
+      "description": "Valgrind memory leak check build for Linux",
+      "inherits": "osi-base",
+      "cacheVariables": {
+        "ENABLE_CCACHE": "ON"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    },
+    {
+      "name": "ci-linux",
+      "configurePreset": "ci-linux"
+    },
+    {
+      "name": "ci-macos",
+      "configurePreset": "ci-macos"
+    },
+    {
+      "name": "ci-windows",
+      "configurePreset": "ci-windows"
+    }
+  ]
+}

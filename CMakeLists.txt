@@ -70,10 +70,10 @@ set(USE_GTEST
     CACHE BOOL
           "If unit test suites based on googletest should be compiled.")
 
-set(DYN_PROTOBUF
-    OFF
-    CACHE BOOL
-          "Set for dynamic linking of protobuf library (.so/.dll)")
+set(OSI_UTILITIES_PREFIX
+    ""
+    CACHE PATH
+          "Install prefix of pre-built asam-osi-utilities (two-phase build). Required when USE_OSI=ON.")
 
 set(USE_IMPLOT
     ON
@@ -171,13 +171,6 @@ if(DOWNLOAD_EXTERNALS)
         ${EXTERNALS_OSG_OS_SPECIFIC_PATH}
         "*"
         "${OSG_PACKAGE_URL}")
-
-    download(
-        osi
-        ${EXTERNALS_OSI_PATH}
-        ${EXTERNALS_OSI_OS_SPECIFIC_PATH}
-        "*"
-        "${OSI_PACKAGE_URL}")
 
     download(
         sumo
