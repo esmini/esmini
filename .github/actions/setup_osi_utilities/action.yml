@@ -47,6 +47,9 @@ runs:
           ${{ github.workspace }}/osi-deps
           ${{ github.workspace }}/build-osi-deps/vcpkg_installed
         key: osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-${{ hashFiles('externals/asam-osi-utilities/**', '!externals/asam-osi-utilities/build*', 'support/vcpkg-triplets/**') }}
+        restore-keys: |
+          osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-
+          osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-
 
     - name: Derive vcpkg baseline from submodule
       id: vcpkg-baseline
