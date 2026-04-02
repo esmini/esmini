@@ -48,6 +48,7 @@
       "inherits": "osi-base",
       "generator": "Ninja",
       "cacheVariables": {
+        "ENABLE_CCACHE": "ON",
         "ENABLE_WARNINGS_AS_ERRORS": "ON",
         "ENABLE_INCLUDE_WHAT_YOU_USE": "ON"
       },
@@ -64,6 +65,7 @@
       "inherits": "osi-base",
       "cacheVariables": {
         "CMAKE_OSX_ARCHITECTURES": "arm64;x86_64",
+        "ENABLE_CCACHE": "ON",
         "ENABLE_WARNINGS_AS_ERRORS": "ON",
         "ENABLE_INCLUDE_WHAT_YOU_USE": "ON"
       },
@@ -150,6 +152,7 @@
       "inherits": "osi-base",
       "generator": "Ninja",
       "cacheVariables": {
+        "ENABLE_CCACHE": "ON",
         "ENABLE_SANITIZERS": "ON",
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "USE_OSI": "ON",
@@ -169,6 +172,9 @@
       "displayName": "CI Memory Leak",
       "description": "Valgrind memory leak check build for Linux",
       "inherits": "osi-base",
+      "cacheVariables": {
+        "ENABLE_CCACHE": "ON"
+      },
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",

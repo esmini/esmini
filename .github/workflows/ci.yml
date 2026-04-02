@@ -138,6 +138,28 @@ jobs:
           overlay-triplets: ${{ github.workspace }}/support/vcpkg-triplets
           cmake-generator: ${{ runner.os == 'Windows' && '-G "Visual Studio 17 2022" -T v142 -A x64' || '' }}
 
+      - name: Setup compiler cache
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            which ccache || sudo apt-get install -y -qq ccache
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            which ccache || brew install ccache
+          fi
+          ccache --zero-stats
+          ccache --max-size=500M
+
+      - name: Restore compiler cache
+        if: runner.os != 'Windows'
+        uses: actions/cache@v5
+        with:
+          path: ${{ runner.os == 'macOS' && '~/Library/Caches/ccache' || '~/.cache/ccache' }}
+          key: ccache-${{ runner.os }}-${{ matrix.configuration }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ matrix.configuration }}-
+            ccache-${{ runner.os }}-
+
       - name: CMake Configure
         run: >
           cmake --preset
@@ -147,6 +169,11 @@ jobs:
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
+
+      - name: Show compiler cache stats
+        if: runner.os != 'Windows'
+        shell: bash
+        run: ccache --show-stats 2>/dev/null || true
 
       - name: Compile minimal C example
         if: runner.os == 'Linux'
