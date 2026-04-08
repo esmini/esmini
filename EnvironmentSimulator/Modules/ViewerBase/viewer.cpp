@@ -2158,6 +2158,9 @@ Viewer::~Viewer()
             osgViewer_->stopThreading();
             SE_sleepMilliseconds(100);  // In case viewer still not closed
         }
+
+        osgViewer_->setCameraManipulator(nullptr);
+        osgViewer_->setSceneData(nullptr);
     }
 
     for (size_t i = 0; i < entities_.size(); i++)
@@ -2171,6 +2174,50 @@ Viewer::~Viewer()
     }
 
     entities_.clear();
+    polyLine_.clear();
+
+    if (rootnode_ != nullptr)
+    {
+        rootnode_->removeChildren(0, rootnode_->getNumChildren());
+        rootnode_->releaseGLObjects();
+    }
+
+    if (infoTextCamera.valid())
+    {
+        infoTextCamera->removeChildren(0, infoTextCamera->getNumChildren());
+        infoTextCamera->releaseGLObjects();
+        infoTextCamera = nullptr;
+    }
+
+    infoText           = nullptr;
+    onScreenTextCamera = nullptr;
+    roadGeom.reset();
+    environment_     = nullptr;
+    envGroup_        = nullptr;
+    env_origin2odr_  = nullptr;
+    root_origin2odr_ = nullptr;
+    roadSensors_     = nullptr;
+    trails_          = nullptr;
+    odrLines_        = nullptr;
+    osiFeatures_     = nullptr;
+    trajectoryLines_ = nullptr;
+    routewaypoints_  = nullptr;
+    line_node_       = nullptr;
+    dot_node_        = nullptr;
+
+    if (osgViewer_ != nullptr)
+    {
+        osgViewer_->releaseGLObjects();
+    }
+
+    osgDB::Registry* registry = osgDB::Registry::instance();
+    if (registry != nullptr)
+    {
+        registry->releaseGLObjects();
+        registry->clearObjectCache();
+    }
+
+    osgViewer_ = nullptr;
 }
 
 void Viewer::AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos)
