@@ -15,7 +15,6 @@ message("Version: " ${VERSION})
 string(SUBSTRING "${VERSION}" 1 -1 VERSION )
 string(STRIP "${VERSION}" VERSION)
 
-set(OSIVERSION "3.5.0")
 set(OSMPVERSION "1.4.0")
 
 set(STATIC_LINKING TRUE)
@@ -97,16 +96,13 @@ set(DEBUG_BREAKS
 
 string(TIMESTAMP FMUTIMESTAMP UTC)
 string(MD5 FMUGUID modelDescription.in.xml)
-configure_file(modelDescription.in.xml modelDescription.xml @ONLY)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/../EnvironmentSimulator/Libraries/esminiLib
-                    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/include
                     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/implot/${EXT_INCL_DIR}/include)
 
 link_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../bin
-    ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/lib/release
     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/sumo/${EXT_INCL_DIR}/lib
     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib
     ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib/osgPlugins-3.6.5
@@ -127,7 +123,6 @@ target_compile_definitions(${TARGET} PRIVATE "FMU_SHARED_OBJECT")
 
 if(STATIC_LINKING)
     message("Link esmini statically")
-    set(EXTERNALS_OSI_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osi/${EXT_INCL_DIR}/lib)
     set(EXTERNALS_OSG_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib)
     set(EXTERNALS_OSG_PLUGINS_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/osg/${EXT_INCL_DIR}/lib/osgPlugins-3.6.5)
     set(EXTERNALS_SUMO_LIBRARY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../externals/sumo/${EXT_INCL_DIR}/lib)
@@ -135,6 +130,9 @@ if(STATIC_LINKING)
 
     include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/external/osi.cmake)
     set_osi_libs()
+
+    set(OSIVERSION "${OSI_VERSION}")
+    include_directories(${EXTERNALS_OSI_INCLUDES})
 
     include(${CMAKE_CURRENT_SOURCE_DIR}/../support/cmake/external/sumo.cmake)
     set_sumo_libs()
@@ -176,6 +174,8 @@ else()
     message("Link esmini dynamically")
     target_link_libraries(${TARGET} esminiLib ${LIB_PREFIX}protobuf open_simulation_interface_pic)
 endif()
+
+configure_file(modelDescription.in.xml modelDescription.xml @ONLY)
 
 add_custom_command(
     TARGET ${TARGET}

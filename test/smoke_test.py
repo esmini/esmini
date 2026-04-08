@@ -2011,11 +2011,11 @@ class TestSuite(unittest.TestCase):
         if use_package("OSI"):
             # Check OSI data, that misc objects are added but appearing only once
             osi_csv = generate_csv_from_osi()
-            self.assertTrue(re.search('^1.600000, 15, obj15, MEDIUM_CAR, 2.77.*$\n^1.600000, 16, misc_obj16, 3, 100.0.*$\n^1.700000, 14, obj14, MEDIUM_CAR, 44.44',
+            self.assertTrue(re.search('^1.600000, 15, obj15, CAR, 2.77.*$\n^1.600000, 16, misc_obj16, 3, 100.0.*$\n^1.700000, 14, obj14, CAR, 44.44',
                                     osi_csv, re.MULTILINE))
-            self.assertTrue(re.search('^3.000000, 17, obj17, MEDIUM_CAR, 2.77.*$\n^3.000000, 18, misc_obj18, 3, 200.0.*$\n^3.100000, 14, obj14, MEDIUM_CAR, 83.33',
+            self.assertTrue(re.search('^3.000000, 17, obj17, CAR, 2.77.*$\n^3.000000, 18, misc_obj18, 3, 200.0.*$\n^3.100000, 14, obj14, CAR, 83.33',
                                     osi_csv, re.MULTILINE))
-            self.assertTrue(re.search('^3.100000, 15, obj15, MEDIUM_CAR, 44.44.*$\n^3.100000, 17, obj17, MEDIUM_CAR, 5.55',
+            self.assertTrue(re.search('^3.100000, 15, obj15, CAR, 44.44.*$\n^3.100000, 17, obj17, CAR, 5.55',
                                     osi_csv, re.MULTILINE))
 
     def test_rising_edge(self):

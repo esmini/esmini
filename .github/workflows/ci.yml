@@ -20,8 +20,6 @@ on:
   workflow_dispatch:
 
 env:
-  ESMINI_SLIM_TEST: -D USE_OSG=OFF -D USE_SUMO=OFF -D USE_OSI=OFF -D USE_GTEST=ON -D USE_IMPLOT=OFF
-  ESMINI_CHECKS: -D ENABLE_WARNINGS_AS_ERRORS=ON -D ENABLE_INCLUDE_WHAT_YOU_USE=ON
   USE_TMATE: false
 
 jobs:
@@ -90,16 +88,24 @@ jobs:
     needs: [lint]
 
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-22.04, macos-14, windows-2022]
         configuration: [Debug, Release]
+        include:
+          - os: ubuntu-22.04
+            triplet: x64-linux
+          - os: macos-14
+            triplet: universal-osx
+          - os: windows-2022
+            triplet: x64-windows-static-md-v142
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v6
         with:
-          submodules: true
+          submodules: recursive
           fetch-tags: true
           fetch-depth: 0
           ref: ${{ github.ref }}
@@ -115,29 +121,59 @@ jobs:
           path: |
             externals/googletest
             externals/osg
-            externals/osi
             externals/sumo
             externals/implot
             resources/models
           key: ${{ runner.os }}-external-resources
 
-      - name: CMake Configure - Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -G "Visual Studio 17 2022" -T v142 -A x64
+      # Phase A: Build and install asam-osi-utilities via vcpkg
+      # On Windows, match esmini's build configuration (MSVC CRT requires matching Debug/Release).
+      # On Linux/macOS, always build Release (static libs are config-agnostic).
+      - name: Setup OSI Utilities
+        id: osi
+        uses: ./.github/actions/setup_osi_utilities
+        with:
+          triplet: ${{ matrix.triplet }}
+          configuration: ${{ runner.os == 'Windows' && matrix.configuration || 'Release' }}
+          overlay-triplets: ${{ github.workspace }}/support/vcpkg-triplets
+          cmake-generator: ${{ runner.os == 'Windows' && '-G "Visual Studio 17 2022" -T v142 -A x64' || '' }}
 
-      - name: CMake Configure - Linux
-        if: runner.os == 'Linux'
-        shell: pwsh
-        run: cmake . -G Ninja -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
+      - name: Setup compiler cache
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            which ccache || sudo apt-get install -y -qq ccache
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            which ccache || brew install ccache
+          fi
+          ccache --zero-stats
+          ccache --max-size=500M
 
-      - name: CMake Configure - macOS
-        if: runner.os == 'macOS'
-        shell: pwsh
-        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+      - name: Restore compiler cache
+        if: runner.os != 'Windows'
+        uses: actions/cache@v5
+        with:
+          path: ${{ runner.os == 'macOS' && '~/Library/Caches/ccache' || '~/.cache/ccache' }}
+          key: ccache-${{ runner.os }}-${{ matrix.configuration }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-${{ matrix.configuration }}-
+            ccache-${{ runner.os }}-
+
+      - name: CMake Configure
+        run: >
+          cmake --preset
+          ${{ runner.os == 'Windows' && 'ci-windows' || runner.os == 'macOS' && 'ci-macos' || 'ci-linux' }}
+          -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }}
+          -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
+
+      - name: Show compiler cache stats
+        if: runner.os != 'Windows'
+        shell: bash
+        run: ccache --show-stats 2>/dev/null || true
 
       - name: Compile minimal C example
         if: runner.os == 'Linux'
@@ -157,9 +193,12 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           cd OSMP_FMU
-          mkdir build
+          mkdir -p build
           cd build
-          cmake ..
+          cmake .. \
+            -DOSI_UTILITIES_PREFIX=$ESMINI_OSI_PREFIX \
+            -DCMAKE_PREFIX_PATH="$ESMINI_CMAKE_PREFIX_PATH" \
+            -DProtobuf_PROTOC_EXECUTABLE=$ESMINI_PROTOC
           cmake --build . -j2
 
       - name: Validate OSMP FMU
@@ -230,12 +269,9 @@ jobs:
           path: |
             externals/googletest
             externals/osg
-            externals/osi
             externals/sumo
-            externals/implot
             resources/models
-          key: ${{ runner.os }}-external-resources
-
+          key: ${{ runner.os }}-external-resources-slim
       # run xml validation only here.
       # 1. Only needs to run once
       # 2. It's not dependent on configuration, so it can be run by any config
@@ -248,20 +284,12 @@ jobs:
         if: runner.os == 'Windows' && matrix.configuration == 'Release'
         uses: ./.github/actions/wrapper_check
 
-      - name: CMake Configure - Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -G "Visual Studio 17 2022" -T v142 -A x64 ${{ env.ESMINI_SLIM_TEST }}
-
-      - name: CMake Configure - Linux
-        if: runner.os == 'Linux'
-        shell: pwsh
-        run: cmake . -G Ninja -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} ${{ env.ESMINI_SLIM_TEST }}
-
-      - name: CMake Configure - macOS
-        if: runner.os == 'macOS'
-        shell: pwsh
-        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" ${{ env.ESMINI_SLIM_TEST }}
+      - name: CMake Configure
+        run: >
+          cmake --preset
+          ${{ runner.os == 'Windows' && 'ci-no-externals-windows' || runner.os == 'macOS' && 'ci-no-externals-macos' || 'ci-no-externals-linux' }}
+          -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }}
+          -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2

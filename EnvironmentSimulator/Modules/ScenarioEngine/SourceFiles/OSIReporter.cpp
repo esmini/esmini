@@ -682,7 +682,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
         obj_osi_internal.sobj->mutable_classification()->set_density(
             osi3::StationaryObject_Classification_Density::StationaryObject_Classification_Density_DENSITY_SOLID);
         obj_osi_internal.sobj->mutable_classification()->set_color(
-            osi3::StationaryObject_Classification_Color::StationaryObject_Classification_Color_COLOR_GREY);
+            osi3::StationaryObject_Classification_Color::StationaryObject_Classification_Color_COLOR_GRAY);
 
         source_reference->add_identifier()->assign(object->GetParkingSpace().GetRestrictions());
     }
@@ -906,7 +906,7 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
 
         if (obj.category_ == Vehicle::Category::CAR)
         {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MEDIUM_CAR);
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_CAR);
         }
         else if (obj.category_ == Vehicle::Category::BICYCLE)
         {
@@ -918,7 +918,7 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
         }
         else if (obj.category_ == Vehicle::Category::MOTORBIKE)
         {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MOTORBIKE);
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_MOTORCYCLE);
         }
         else if (obj.category_ == Vehicle::Category::SEMITRAILER)
         {
@@ -942,7 +942,7 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
         }
         else if (obj.category_ == Vehicle::Category::VAN)
         {
-            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_DELIVERY_VAN);
+            obj_osi_internal.mobj->mutable_vehicle_classification()->set_type(osi3::MovingObject_VehicleClassification::TYPE_VAN);
         }
         else
         {
@@ -2676,8 +2676,18 @@ int OSIReporter::UpdateStaticTrafficSignals()
                     trafficSign->mutable_id()->set_value(signal->GetGlobalId());
                     trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_value(signal->GetValue());
                     trafficSign->mutable_main_sign()->mutable_classification()->mutable_value()->set_text(signal->GetText());
-                    trafficSign->mutable_main_sign()->mutable_classification()->set_type(
-                        static_cast<osi3::TrafficSign_MainSign_Classification_Type>(signal->GetOSIType()));
+                    int osi_type = signal->GetOSIType();
+                    if (osi3::TrafficSign_MainSign_Classification_Type_IsValid(osi_type))
+                    {
+                        trafficSign->mutable_main_sign()->mutable_classification()->set_type(
+                            static_cast<osi3::TrafficSign_MainSign_Classification_Type>(osi_type));
+                    }
+                    else
+                    {
+                        trafficSign->mutable_main_sign()->mutable_classification()->set_type(
+                            osi3::TrafficSign_MainSign_Classification_Type::TrafficSign_MainSign_Classification_Type_TYPE_OTHER);
+                        LOG_WARN("OSIReporter: Unknown traffic sign type {} for signal {}, mapping to TYPE_OTHER", osi_type, signal->GetGlobalId());
+                    }
                     trafficSign->mutable_main_sign()->mutable_classification()->set_country(signal->GetCountry());
 
                     // Set Unit

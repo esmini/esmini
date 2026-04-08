@@ -63,14 +63,16 @@ macro(set_special_build_flags)
                         "${CMAKE_C_FLAGS}")
 
             # suppress warning 4127 (conditional expression is constant) to avoid harmless warning from Google protobuf header suppress warning 4100
-            # (unreferenced formal parameter) to allow function headers with unreferenced parameters for increased readability
+            # (unreferenced formal parameter) to allow function headers with unreferenced parameters Note: protobuf 5.x / abseil warnings (4141, 4267,
+            # 4244, 4189, 4296, 4459) are suppressed per-target via osi_external_warnings in support/cmake/external/osi.cmake
 
             add_compile_options(
                 /utf-8
                 /permissive-
                 /W4
                 /wd4127
-                /wd4100)
+                /wd4100
+                /external:W0)
         endif()
     elseif(MINGW)
         set(CXX_STD_FLAG

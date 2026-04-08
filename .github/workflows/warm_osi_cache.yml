@@ -1,0 +1,48 @@
+name: Warm OSI Utilities Cache
+
+# Pre-build and cache asam-osi-utilities Phase A artifacts nightly on dev.
+# This ensures the first PR of the day always gets a cache hit, avoiding
+# the 5-15 minute Phase A build during interactive CI feedback loops.
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # 03:00 UTC daily
+
+  workflow_dispatch: # allow manual trigger
+
+permissions:
+  contents: read
+
+jobs:
+  warm-cache:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            triplet: x64-linux
+            configuration: Release
+          - os: macos-14
+            triplet: universal-osx
+            configuration: Release
+          - os: windows-2022
+            triplet: x64-windows-static-md-v142
+            configuration: Release
+          - os: windows-2022
+            triplet: x64-windows-static-md-v142
+            configuration: Debug
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Setup OSI Utilities
+        uses: ./.github/actions/setup_osi_utilities
+        with:
+          triplet: ${{ matrix.triplet }}
+          configuration: ${{ matrix.configuration }}
+          overlay-triplets: ${{ github.workspace }}/support/vcpkg-triplets
+          cmake-generator: ${{ matrix.os == 'windows-2022' && '-G "Visual Studio 17 2022" -T v142 -A x64' || '' }}

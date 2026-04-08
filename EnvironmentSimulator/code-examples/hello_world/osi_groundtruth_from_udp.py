@@ -1,6 +1,6 @@
 '''
    Python dependencies:
-      pip install protobuf==3.20.2
+      pip install osi-python (from externals/asam-osi-utilities/submodules/osi-python)
 
    Note: No need to install OSI as long as
    esmini/scripts/osi3 folder is available
