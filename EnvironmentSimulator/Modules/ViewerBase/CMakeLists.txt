@@ -72,12 +72,17 @@ target_include_directories(
             ${COMMON_MINI_PATH}
             ${CONTROLLERS_PATH})
 
+if(USE_OSI)
+    target_link_libraries(
+        ${TARGET_VIEWER_BASE}
+        PRIVATE ${OSI_LIBRARIES})
+endif()
+
 target_include_directories(
     ${TARGET_VIEWER_BASE}
     SYSTEM
     PUBLIC ${ROAD_MANAGER_PATH}
            ${EXTERNALS_OSG_INCLUDES}
-           ${EXTERNALS_OSI_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_FMT_INCLUDES})
 

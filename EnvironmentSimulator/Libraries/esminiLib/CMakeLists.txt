@@ -74,7 +74,6 @@ foreach(
         ${TARGET}
         SYSTEM
         PUBLIC ${ROAD_MANAGER_PATH}
-               ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_OSG_INCLUDES}
                ${EXTERNALS_PUGIXML_PATH})
 
@@ -83,6 +82,12 @@ foreach(
             ${TARGET}
             SYSTEM
             PUBLIC ${EXTERNALS_IMPLOT_INCLUDES})
+    endif()
+
+    if(USE_OSI)
+        target_link_libraries(
+            ${TARGET}
+            PRIVATE ${OSI_LIBRARIES})
     endif()
 
     target_link_libraries(
@@ -113,12 +118,6 @@ foreach(
         target_link_libraries(
             ${TARGET}
             PRIVATE ${SUMO_LIBRARIES})
-    endif()
-
-    if(USE_OSI)
-        target_link_libraries(
-            ${TARGET}
-            PRIVATE ${OSI_LIBRARIES})
     endif()
 
     disable_iwyu(${TARGET})

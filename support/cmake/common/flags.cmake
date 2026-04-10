@@ -70,7 +70,8 @@ macro(set_special_build_flags)
                 /permissive-
                 /W4
                 /wd4127
-                /wd4100)
+                /wd4100
+                /external:W0)
         endif()
     elseif(MINGW)
         set(CXX_STD_FLAG

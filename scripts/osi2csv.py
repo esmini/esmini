@@ -36,7 +36,7 @@ class OSIFile():
                 elif o.type == 1:
                     type = 'OTHER'
                 elif o.type == 2:
-                    type = str(o.vehicle_classification)[11:-1]
+                    type = str(o.vehicle_classification).split("\n")[0][11:]
                 elif o.type == 3:
                     type = 'PEDESTRIAN'
                 elif o.type == 4:

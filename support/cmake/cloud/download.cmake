@@ -94,7 +94,7 @@ function(
         IN
         LISTS urls)
         set(package_name
-            "${entity_name}.7z")
+            "${entity_name}")
 
         message(STATUS "Downloading ${package_name} from ${url}")
 

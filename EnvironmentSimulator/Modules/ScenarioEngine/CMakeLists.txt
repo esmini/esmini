@@ -61,6 +61,12 @@ target_link_libraries(
     ${TARGET}
     PRIVATE project_options)
 
+if(USE_OSI)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE ${OSI_LIBRARIES})
+endif()
+
 target_include_directories(
     ${TARGET}
     PRIVATE ${SCENARIO_ENGINE_PATH}/SourceFiles
@@ -73,7 +79,6 @@ target_include_directories(
     ${TARGET}
     SYSTEM
     PUBLIC ${ROAD_MANAGER_PATH}
-           ${EXTERNALS_OSI_INCLUDES}
            ${EXTERNALS_SUMO_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_EXPR_PATH}

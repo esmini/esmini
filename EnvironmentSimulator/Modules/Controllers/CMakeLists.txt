@@ -52,6 +52,12 @@ target_link_libraries(
     PRIVATE project_options
             ${HDI_LIBS})
 
+if(USE_OSI)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE ${OSI_LIBRARIES})
+endif()
+
 target_include_directories(
     ${TARGET}
     PRIVATE ${COMMON_MINI_PATH}
@@ -65,7 +71,6 @@ target_include_directories(
     ${TARGET}
     SYSTEM
     PUBLIC ${ROAD_MANAGER_PATH}
-           ${EXTERNALS_OSI_INCLUDES}
            ${EXTERNALS_SUMO_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_OSG_INCLUDES}

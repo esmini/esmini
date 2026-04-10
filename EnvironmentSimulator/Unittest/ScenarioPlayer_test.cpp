@@ -887,7 +887,14 @@ TEST(OSI, TestLightStates)
 
 TEST(OSI, TestTrafficLights)
 {
-    const char*     args[] = {"esmini", "--osc", "../../../resources/xosc/traffic_lights.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    const char*     args[] = {"esmini",
+                              "--osc",
+                              "../../../resources/xosc/traffic_lights.xosc",
+                              "--headless",
+                              "--osi_file",
+                              "--disable_stdout",
+                              "--path",
+                              "../../../resources"};
     int             argc   = sizeof(args) / sizeof(char*);
     double          dt     = 0.1;
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));
@@ -1079,8 +1086,14 @@ TEST(OSI, TestTrafficLights)
 
 TEST(OSI, TestTrafficLightStates)
 {
-    const char* args[] =
-        {"esmini", "--osc", "../../../EnvironmentSimulator/Unittest/xosc/traffic_light_tests.xosc", "--headless", "--osi_file", "--disable_stdout"};
+    const char*     args[] = {"esmini",
+                              "--osc",
+                              "../../../EnvironmentSimulator/Unittest/xosc/traffic_light_tests.xosc",
+                              "--headless",
+                              "--osi_file",
+                              "--disable_stdout",
+                              "--path",
+                              "../../../resources"};
     int             argc   = sizeof(args) / sizeof(char*);
     double          dt     = 0.1;
     ScenarioPlayer* player = new ScenarioPlayer(argc, const_cast<char**>(args));

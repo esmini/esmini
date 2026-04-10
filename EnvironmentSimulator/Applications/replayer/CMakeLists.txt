@@ -169,7 +169,6 @@ if(USE_OSI)
         ${TARGET3}
         SYSTEM
         PUBLIC ${ROAD_MANAGER_PATH}
-               ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_DIRENT_INCLUDES})
 
     target_link_libraries(

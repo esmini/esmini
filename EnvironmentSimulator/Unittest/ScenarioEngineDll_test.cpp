@@ -1568,13 +1568,13 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
     SE_DisableOSIFile();
 
     ASSERT_EQ(stat("gt.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 10076);
+    EXPECT_EQ(fileStatus.st_size, 14466);
 
     // Read OSI file
     FILE* file = FileOpen("gt.osi", "rb");
     ASSERT_NE(file, nullptr);
 
-    const int max_msg_size = 10000;
+    const int max_msg_size = 12000;
     int       msg_size;
     char      msg_buf[max_msg_size];
 
@@ -1592,7 +1592,7 @@ TEST(GroundTruthTests, check_GroundTruth_including_init_state)
         if (i == 0)
         {
             EXPECT_EQ(osi_gt.version().version_major(), 3);
-            EXPECT_EQ(osi_gt.version().version_minor(), 5);
+            EXPECT_EQ(osi_gt.version().version_minor(), 8);
             EXPECT_EQ(osi_gt.version().version_patch(), 0);
             EXPECT_EQ(osi_gt.host_vehicle_id().value(), osi_gt.mutable_moving_object(0)->id().value());
         }
@@ -1646,13 +1646,13 @@ TEST(GroundTruthTests, check_frequency_implicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_implicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 10067);
+    EXPECT_EQ(fileStatus.st_size, 14466);
 
     // Read OSI file
     FILE* file = FileOpen("gt_implicit.osi", "rb");
     ASSERT_NE(file, nullptr);
 
-    const int max_msg_size = 10000;
+    const int max_msg_size = 12000;
     int       msg_size;
     char      msg_buf[max_msg_size];
 
@@ -1716,13 +1716,13 @@ TEST(GroundTruthTests, check_frequency_explicit)
     SE_Close();
 
     ASSERT_EQ(stat("gt_explicit.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 10067);
+    EXPECT_EQ(fileStatus.st_size, 14466);
 
     // Read OSI file
     FILE* file = FileOpen("gt_explicit.osi", "rb");
     ASSERT_NE(file, nullptr);
 
-    const int max_msg_size = 10000;
+    const int max_msg_size = 12000;
     int       msg_size;
     char      msg_buf[max_msg_size];
 
@@ -1856,7 +1856,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 11277);
+    EXPECT_EQ(fileStatus.st_size, 16055);
 }
 
 TEST(GroundTruthTests, check_update_osi_ground_truth_api_and_log)
@@ -1891,7 +1891,7 @@ TEST(GroundTruthTests, check_update_osi_ground_truth_api_and_log)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 17818);
+    EXPECT_EQ(fileStatus.st_size, 25757);
 }
 
 TEST(GroundTruthTests, check_update_gt_twice_same_frame)
@@ -1909,7 +1909,7 @@ TEST(GroundTruthTests, check_update_gt_twice_same_frame)
 
     SE_Close();
     ASSERT_EQ(stat("gt_static_dynamic.osi", &fileStatus), 0);
-    EXPECT_EQ(fileStatus.st_size, 7665);
+    EXPECT_EQ(fileStatus.st_size, 11288);
 }
 
 TEST(GroundTruthTests, check_update_osi_ground_truth_no_osi_file)
@@ -2051,6 +2051,8 @@ TEST(GetMiscObjsAndStationaryObjsFromGroundTruth, receive_objs_ids)
 {
     int               sv_size = 0;
     osi3::GroundTruth osi_gt;
+
+    SE_AddPath("../../../resources");
 
     SE_Init("../../../EnvironmentSimulator/Unittest/xosc/miscobj_mix.xosc", 0, 0, 0, 0);
 

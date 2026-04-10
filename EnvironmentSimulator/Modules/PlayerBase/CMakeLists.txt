@@ -58,11 +58,16 @@ target_include_directories(
     SYSTEM
     PUBLIC ${ROAD_MANAGER_PATH}
            ${EXTERNALS_OSG_INCLUDES}
-           ${EXTERNALS_OSI_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_IMPLOT_INCLUDES}
            ${EXTERNALS_YAML_INCLUDES}
            ${EXTERNALS_FMT_INCLUDES})
+
+if(USE_OSI)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE ${OSI_LIBRARIES})
+endif()
 
 target_link_libraries(
     ${TARGET}
