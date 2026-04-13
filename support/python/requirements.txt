@@ -2,7 +2,7 @@ black==26.3.1
 cmakelang==0.6.13
 GitPython==3.1.41
 pyyaml==6.0.1
-pytest==7.1.2
+pytest==9.0.3
 pytest-cov==3.0.0
 pytest-mock==3.10.0
 pylint==2.13.8
