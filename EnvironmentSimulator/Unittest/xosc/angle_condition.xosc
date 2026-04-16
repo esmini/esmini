@@ -117,12 +117,12 @@
                                           </Vertex>
                                           <Vertex>
                                              <Position>
-                                                <RelativeWorldPosition dx="10.0" dy="2.0" dz="1.0" entityRef="Ego"/>
+                                                <RelativeWorldPosition dx="6.0" dy="1.0" dz="1.0" entityRef="Ego"/>
                                              </Position>
                                           </Vertex>
                                           <Vertex>
                                              <Position>
-                                                <RelativeWorldPosition dx="20.0" dy="4.0" dz="5.0" entityRef="Ego"/>
+                                                <RelativeWorldPosition dx="12.0" dy="3.0" dz="5.0" entityRef="Ego"/>
                                              </Position>
                                           </Vertex>
                                        </Polyline>
@@ -204,7 +204,7 @@
                                     <EntityRef entityRef="Ego"/>
                                  </TriggeringEntities>
                                  <EntityCondition>
-                                    <AngleCondition angle="-0.28" angleTolerance="0.1" angleType="pitch" coordinateSystem="lane"/>
+                                    <AngleCondition angle="-0.6" angleTolerance="0.1" angleType="pitch" coordinateSystem="lane"/>
                                  </EntityCondition>
                               </ByEntityCondition>
                            </Condition>

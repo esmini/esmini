@@ -21,19 +21,10 @@ static void SetPositionModesGeneric(roadmanager::Position &position, double *z, 
     position.SetModeDefault(roadmanager::Position::PosModeType::UPDATE);
     int mask = 0;
 
-    if (z != nullptr)
+    // Any specified Z will, in the end after any resolved relation, be initialized as absolute wrt road
+    if ((z != nullptr && !std::isnan(*z)) || (dz != nullptr && !std::isnan(*dz)))
     {
-        if (!std::isnan(*z))
-        {
-            mask |= roadmanager::Position::PosMode::Z_ABS;
-        }
-    }
-    else if (dz != nullptr)
-    {
-        if (!std::isnan(*dz))
-        {
-            mask |= roadmanager::Position::PosMode::Z_REL;
-        }
+        mask |= roadmanager::Position::PosMode::Z_ABS;
     }
 
     position.SetModeBits(

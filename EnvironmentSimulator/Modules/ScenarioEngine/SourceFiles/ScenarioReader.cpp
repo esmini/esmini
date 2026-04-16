@@ -1917,11 +1917,16 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     }
     else if (positionChildName == "RelativeWorldPosition")
     {
-        double dx, dy, dz;
+        double dx, dy;
+        double dz = std::nan("");
 
         dx = strtod(parameters.ReadAttribute(positionChild, "dx"));
         dy = strtod(parameters.ReadAttribute(positionChild, "dy"));
-        dz = strtod(parameters.ReadAttribute(positionChild, "dz"));
+
+        if (positionChild.attribute("dz"))
+        {
+            dz = strtod(parameters.ReadAttribute(positionChild, "dz", true));
+        }
 
         Object *object = ResolveObjectReference(parameters.ReadAttribute(positionChild, "entityRef"));
 
@@ -1937,11 +1942,17 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     }
     else if (positionChildName == "RelativeObjectPosition")
     {
-        double dx, dy, dz;
+        double dx, dy;
+        double dz = std::nan("");
 
-        dx             = strtod(parameters.ReadAttribute(positionChild, "dx"));
-        dy             = strtod(parameters.ReadAttribute(positionChild, "dy"));
-        dz             = strtod(parameters.ReadAttribute(positionChild, "dz"));
+        dx = strtod(parameters.ReadAttribute(positionChild, "dx"));
+        dy = strtod(parameters.ReadAttribute(positionChild, "dy"));
+
+        if (positionChild.attribute("dz"))
+        {
+            dz = strtod(parameters.ReadAttribute(positionChild, "dz", true));
+        }
+
         Object *object = ResolveObjectReference(parameters.ReadAttribute(positionChild, "entityRef"));
 
         // Check for optional Orientation element

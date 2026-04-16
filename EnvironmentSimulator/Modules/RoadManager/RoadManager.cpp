@@ -12203,6 +12203,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(idx_t i, double local_s, TrajVertex& p
         pos.pos_mode    = vp0->pos_mode;
         pos.wheel_angle = (1 - a) * vp0->wheel_angle + a * vp1->wheel_angle;
 
+        // interpolate orientation
         for (int j = 0; j < 3; j++)
         {
             double  angle_current  = 0.0;
@@ -12233,6 +12234,13 @@ int PolyLineBase::EvaluateSegmentByLocalS(idx_t i, double local_s, TrajVertex& p
 
             if (angle != nullptr)
             {
+                if (j > 0 && vp0->pos_mode != vp1->pos_mode)
+                {
+                    *angle = GetAngleInInterval2PI(angle_current);
+                    LOG_WARN_ONCE("Skipping trajectory pitch and roll interpolation for corner between segments of different position modes");
+                    continue;
+                }
+
                 if (interpolation_mode_ == InterpolationMode::INTERPOLATE_SEGMENT)
                 {
                     // Interpolate angle over the whole segment
@@ -12775,13 +12783,24 @@ void PolyLineShape::CalculatePolyLine()
             return;
         }
 
-        pv->pos_mode = v->pos_->GetMode(Position::PosModeType::INIT);
-        pv->x        = v->pos_->GetX();
-        pv->y        = v->pos_->GetY();
-        pv->z        = v->pos_->GetZ();
-        pv->h        = v->pos_->GetH();
+        pv->x = v->pos_->GetX();
+        pv->y = v->pos_->GetY();
+        pv->z = v->pos_->GetZ();
+        pv->h = v->pos_->GetH();
 
-        if ((pv->pos_mode & Position::PosMode::Z_MASK) == 0 && (pv->pos_mode & Position::PosMode::P_MASK) == 0)
+        // if next vertex is fixed along z while current is not (relative road), fix current as well to interpolate z along the segment
+        if (i < vertex_.size() - 1 &&
+            ((vertex_[i + 1].pos_->GetMode(Position::PosModeType::INIT) & Position::PosMode::Z_MASK) == Position::PosMode::Z_ABS) &&
+            ((vertex_[i].pos_->GetMode(Position::PosModeType::INIT) & Position::PosMode::Z_MASK) != Position::PosMode::Z_ABS))
+        {
+            pv->pos_mode = vertex_[i + 1].pos_->GetMode(Position::PosModeType::INIT);
+        }
+        else
+        {
+            pv->pos_mode = v->pos_->GetMode(Position::PosModeType::INIT);
+        }
+
+        if ((pv->pos_mode & Position::PosMode::Z_MASK) != Position::PosMode::Z_ABS && (pv->pos_mode & Position::PosMode::P_MASK) == 0)
         {
             // if no z or pitch is specified, use calculated values relative the road surface
             pv->pos_mode = (pv->pos_mode & ~Position::PosMode::P_MASK) | Position::PosMode::P_REL;
@@ -12792,7 +12811,7 @@ void PolyLineShape::CalculatePolyLine()
             pv->pitch = v->pos_->GetP();
         }
 
-        if ((pv->pos_mode & Position::PosMode::Z_MASK) == 0 && (pv->pos_mode & Position::PosMode::R_MASK) == 0)
+        if ((pv->pos_mode & Position::PosMode::Z_MASK) != Position::PosMode::Z_ABS && (pv->pos_mode & Position::PosMode::R_MASK) == 0)
         {
             // if no z or roll is specified, use calculated values relative the road surface
             pv->pos_mode = (pv->pos_mode & ~Position::PosMode::R_MASK) | Position::PosMode::R_REL;
@@ -14145,13 +14164,15 @@ void Position::EvaluateRelation(bool release)
     }
     else if (GetType() == PositionType::RELATIVE_OBJECT)
     {
-        // No relation to road or lane, set both position and orientation
         // consider complete orientation, i.e. including heading, pitch and roll
         double v[3];
+        int    z_mode = ((GetMode(Position::PosModeType::INIT) & Position::PosMode::Z_MASK) == Position::PosMode::Z_ABS) ? Position::PosMode::Z_ABS
+                                                                                                                         : Position::PosMode::Z_REL;
+
         RotateVec3d(rel_pos_->GetH(), rel_pos_->GetP(), rel_pos_->GetR(), relative_.dx, relative_.dy, relative_.dz, v[0], v[1], v[2]);
         SetInertiaPosMode(rel_pos_->GetX() + v[0],
                           rel_pos_->GetY() + v[1],
-                          rel_pos_->GetZ() + v[2],
+                          (z_mode == Position::PosMode::Z_ABS) ? rel_pos_->GetZ() + v[2] : relative_.dz,
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::H_MASK) == Position::PosMode::H_ABS)
                               ? relative_.dh
                               : GetAngleSum(relative_.dh, rel_pos_->GetH()),
@@ -14161,15 +14182,17 @@ void Position::EvaluateRelation(bool release)
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::R_MASK) == Position::PosMode::R_ABS)
                               ? relative_.dr
                               : GetAngleSum(relative_.dr, rel_pos_->GetR()),
-                          Position::PosMode::Z_ABS | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS,
+                          z_mode | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS,
                           true);
     }
     else if (GetType() == PositionType::RELATIVE_WORLD)
     {
+        int z_mode = ((GetMode(Position::PosModeType::INIT) & Position::PosMode::Z_MASK) == Position::PosMode::Z_ABS) ? Position::PosMode::Z_ABS
+                                                                                                                      : Position::PosMode::Z_REL;
         // No relation to road or lane, set both position and orientation
         SetInertiaPosMode(rel_pos_->GetX() + relative_.dx,
                           rel_pos_->GetY() + relative_.dy,
-                          rel_pos_->GetZ() + relative_.dz,
+                          (z_mode == Position::PosMode::Z_ABS) ? rel_pos_->GetZ() + relative_.dz : relative_.dz,
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::H_MASK) == Position::PosMode::H_ABS)
                               ? relative_.dh
                               : GetAngleSum(relative_.dh, rel_pos_->GetH()),
@@ -14179,7 +14202,7 @@ void Position::EvaluateRelation(bool release)
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::R_MASK) == Position::PosMode::R_ABS)
                               ? relative_.dr
                               : GetAngleSum(relative_.dr, rel_pos_->GetR()),
-                          Position::PosMode::Z_ABS | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS,
+                          z_mode | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS,
                           true);
     }
 
