@@ -1,5 +1,22 @@
 ## esmini release notes
 
+### 2026-04-16 Version 3.0.2
+
+Improvements and fixes:
+
+- Fix wrong dz in relative positions with elevated roads
+- Fix viewer crash (in some environments) at end of scenario
+  - by expanding viewer destruction
+- Improve mixed position modes in trajectory vertices
+    - interpolate z between relative and absolute z vertices
+    - disable pitch and roll interpolation at mixed pos mode corners
+- Fix route lookahead through junctions and add snap-to-route position mode ([issue #759](https://github.com/esmini/esmini/issues/759))
+  - see updated info in [User guide - Position modes](https://esmini.github.io/#_position_modes) and [Use cases](https://esmini.github.io/#_use_cases_3)
+- Fix devcontainer - create missing ubuntu user in AlmaLinux image ([PR #785](https://github.com/esmini/esmini/issues/785))
+
+Build and CI updates:
+- Bump github release and download-artifact actions for Node.js 20 deprecation
+
 ### 2026-03-27 Version 3.0.1
 
 New features:
