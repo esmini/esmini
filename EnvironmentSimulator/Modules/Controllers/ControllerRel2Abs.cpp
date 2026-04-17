@@ -13,7 +13,6 @@
 #include "ControllerRel2Abs.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 #include <iostream>
 #include "OSCPrivateAction.hpp"
 #include <cmath>
@@ -222,15 +221,15 @@ void ControllerRel2Abs::Step(double timeStep)
                         steplen += steplen * curvature * offset;
                     }
 
-                    if (!object->CheckDirtyBits(Object::DirtyBit::LONGITUDINAL))
+                    if (!object->dirty_.Check(Object::DirtyBit::LONGITUDINAL))
                     {
                         object->pos_.MoveAlongS(steplen);
                     }
 
                     LOG_DEBUG("Object[{}] speed = {:.2f}, y: {:.2f}", object->id_, object->GetSpeed(), object->pos_.GetY());
 
-                    object->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED |
-                                           Object::DirtyBit::WHEEL_ANGLE | Object::DirtyBit::WHEEL_ROTATION);
+                    object->dirty_.ClearBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL | Object::DirtyBit::SPEED |
+                                             Object::DirtyBit::WHEEL_ANGLE | Object::DirtyBit::WHEEL_ROTATION);
 
                     if (object == object_)
                     {
@@ -249,7 +248,7 @@ void ControllerRel2Abs::Step(double timeStep)
                 position_copy* cpy  = positionsCopied[i];
                 cpy->object->pos_   = *cpy->pos;
                 cpy->object->speed_ = cpy->speed;
-                cpy->object->SetDirty(cpy->dirtyBits);
+                cpy->object->dirty_.Set(cpy->dirtyBits);
                 delete (positionsCopied[i]);
             }
 
@@ -584,30 +583,6 @@ void ControllerRel2Abs::Step(double timeStep)
     prev_ego_speed    = egoSpeed;
     prev_target_speed = object_->GetSpeed();
 
-    gateway_->reportObjectPos(object_->id_,
-                              object_->g_id_,
-                              object_->name_,
-                              static_cast<int>(object_->type_),
-                              object_->category_,
-                              object_->role_,
-                              object_->model_id_,
-                              object_->GetModel3DFullPath(),
-                              object_->GetControllerTypeActiveOnDomain(ControlDomains::DOMAIN_LONG),
-                              object_->boundingbox_,
-                              static_cast<int>(object_->scaleMode_),
-                              object_->visibilityMask_,
-                              0.0,
-                              object_->speed_,
-                              object_->wheel_angle_,
-                              object_->wheel_rot_,
-                              object_->rear_axle_.positionZ,
-                              object_->front_axle_.positionX,
-                              object_->front_axle_.positionZ,
-                              &object_->pos_,
-                              object_->GetSourceReference(),
-                              object_->model3d_x_offset_,
-                              object_->refpoint_x_offset_);
-
     Controller::Step(timeStep);
 }
 
@@ -650,5 +625,5 @@ void ControllerRel2Abs::CopyPosition(Object* object, position_copy* obj_copy)
     obj_copy->object    = object;
     obj_copy->pos       = saved_pos;
     obj_copy->speed     = saved_speed;
-    obj_copy->dirtyBits = object->GetDirtyBitMask();
+    obj_copy->dirtyBits = object->dirty_.Get();
 }

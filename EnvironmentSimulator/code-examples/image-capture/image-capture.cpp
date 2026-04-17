@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
     }
     SE_WriteTGAImage("snap0.tga", img.width, img.height, img.data, img.pixelSize, img.pixelFormat, true);
 
-    SE_StepDT(0.1f);
+    SE_StepDT(0.1);
     if (SE_FetchImage(&img) != 0)
     {
         printf("Error 1\n");
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
     // But still fetch the image via API
     SE_SaveImagesToRAM(true);  // activate transfer from frame buffer during rendering
 
-    SE_StepDT(0.1f);
+    SE_StepDT(0.1);
     if (SE_FetchImage(&img) != 0)
     {
         printf("Error 2\n");
@@ -57,8 +57,8 @@ int main(int argc, char* argv[])
     SE_WriteTGAImage("snap2.tga", img.width, img.height, img.data, img.pixelSize, img.pixelFormat, true);
 
     // Run forward a few seconds and then grab another snapshot
-    while (SE_GetSimulationTime() < 2.0f)
-        SE_StepDT(0.1f);
+    while (SE_GetSimulationTime() < 2.0)
+        SE_StepDT(0.1);
     if (SE_FetchImage(&img) != 0)
     {
         printf("Error 3\n");
@@ -79,8 +79,8 @@ int main(int argc, char* argv[])
     SE_Init("../resources/xosc/lane_change_crest.xosc", 0, 1, 0, 0);  // 1 = viewer
 
     // Run forward a small duration to grab some images
-    while (SE_GetSimulationTime() < 2.0f)
-        SE_StepDT(0.1f);
+    while (SE_GetSimulationTime() < 2.0)
+        SE_StepDT(0.1);
 
     SE_Close();
 

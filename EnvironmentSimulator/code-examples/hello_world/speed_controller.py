@@ -1,12 +1,21 @@
+'''
+   demonstrate how to manipulate object speed from a Python application
+
+   Instruction:
+     - make sure the esmini shared library (esminiLib.dll or esminiLib.so) is present in esmini/bin folder
+     - if not, either compile esmini (see User guide) or fetch bin package release
+     - from this folder (where this code module is), run: python ./speed_controller.py ../../../resources/xosc/cut-in.xosc
+'''
+
 import ctypes
 import sys
 
 if sys.platform == "linux" or sys.platform == "linux2":
-    se = ctypes.CDLL("../bin/libesminiLib.so")
+    se = ctypes.CDLL("../../../bin/libesminiLib.so")
 elif sys.platform == "darwin":
-    se = ctypes.CDLL("../bin/libesminiLib.dylib")
+    se = ctypes.CDLL("../../../bin/libesminiLib.dylib")
 elif sys.platform == "win32":
-    se = ctypes.CDLL("../bin/esminiLib.dll")
+    se = ctypes.CDLL("../../../bin/esminiLib.dll")
 else:
     print("Unsupported platform: {}".format(sys.platform))
     quit()
@@ -16,8 +25,8 @@ if (len(sys.argv) < 2):
     exit(-1)
 
 # specify some arguments of useful functions
-se.SE_ReportObjectSpeed.argtypes = [ctypes.c_int, ctypes.c_float]
-se.SE_StepDT.argtypes = [ctypes.c_float]
+se.SE_ReportObjectSpeed.argtypes = [ctypes.c_int, ctypes.c_double]
+se.SE_StepDT.argtypes = [ctypes.c_double]
 
 dt    = 0.05  # fixed timestep
 speed = 2.0   # initial speed

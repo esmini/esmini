@@ -23,7 +23,6 @@
 #include "OSCEnvironment.hpp"
 #include "Parameters.hpp"
 #include "Controller.hpp"
-#include "ScenarioGateway.hpp"
 
 #include <iostream>
 #include <string>
@@ -75,10 +74,6 @@ namespace scenarioengine
         ~ScenarioReader();
         int  loadOSCFile(const char* path);
         int  loadOSCMem(const pugi::xml_document& xml_doc);
-        void SetGateway(ScenarioGateway* gateway)
-        {
-            gateway_ = gateway;
-        }
         void SetScenarioEngine(ScenarioEngine* scenarioEngine)
         {
             scenarioEngine_ = scenarioEngine;
@@ -201,7 +196,6 @@ namespace scenarioengine
         std::string           oscFilename_;
         Entities*             entities_;
         Catalogs*             catalogs_;
-        ScenarioGateway*      gateway_;
         ScenarioEngine*       scenarioEngine_;
         OSCEnvironment*       environment_;
         bool                  disable_controllers_;

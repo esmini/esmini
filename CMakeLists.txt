@@ -40,12 +40,6 @@ set(ENABLE_SANITIZERS
     CACHE BOOL
           "Enable sanitizers (Only valid for Linux and Mac OS)")
 
-# static code analysis not in works yet, need prep e.g. excluding external modules
-set(ENABLE_STATIC_ANALYSIS
-    OFF
-    CACHE BOOL
-          "Enable CppCheck and clang-tidy")
-
 set(ENABLE_INCLUDE_WHAT_YOU_USE
     ON
     CACHE BOOL
@@ -84,7 +78,7 @@ set(DYN_PROTOBUF
 set(USE_IMPLOT
     ON
     CACHE BOOL
-          "If implot for real-time plotting should be compiled.")
+          "If implot for replayer gui or esmini real-time plotting should be compiled.")
 
 set(BUILD_ODRPLOT
     ON

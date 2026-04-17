@@ -8,7 +8,6 @@ set(TARGET_VIEWER_BASE
 
 # ############################### Loading desired rules ##############################################################
 
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/enable_fpic.cmake)
 
@@ -82,11 +81,17 @@ target_include_directories(
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_FMT_INCLUDES})
 
+if(USE_IMPLOT)
+    target_include_directories(
+        ${TARGET_VIEWER_BASE}
+        SYSTEM
+        PUBLIC ${EXTERNALS_IMPLOT_INCLUDES})
+endif()
+
 foreach(
     TARGET
     ${TARGET_VIEWER_BASE}
     ${TARGET_ROAD_GEOM})
-    disable_static_analysis(${TARGET})
     disable_iwyu(${TARGET})
     enable_fpic(${TARGET})
 endforeach()

@@ -27,6 +27,7 @@ import matplotlib.transforms as transforms
 import numpy as np
 import os
 import sys
+import math
 import struct
 import time
 
@@ -250,6 +251,8 @@ class View:
         self.time_slider.valtext.set_fontsize(1.6*self.font_size)
         self.time_slider.valtext.set_horizontalalignment('right')
         self.time_slider.on_changed(self.set_time)
+        # ensure time slider shows floor time value, rounded down to closest 2:nd decimal
+        self.time_slider._format = lambda x: f"{math.floor(x * 100) / 100:.2f}"
 
         self.last_system_time = time.time()
         self.current_time = 0.0

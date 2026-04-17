@@ -20,41 +20,39 @@ int main(int argc, char* argv[])
     int state = 0;
     while (SE_GetQuitFlag() == 0)
     {
-        if (state == 0 && SE_GetSimulationTime() > 5.0f)
+        if (state == 0 && SE_GetSimulationTime() > 5.0)
         {
             SE_ReportObjectPosMode(
                 0,
-                0.0f,
                 std::nanf(""),
                 std::nanf(""),
-                0.0f,
-                1.57f,
-                0.0f,
-                0.0f,
+                0.0,
+                1.57,
+                0.0,
+                0.0,
                 SE_PositionMode::SE_H_REL | SE_PositionMode::SE_P_ABS | SE_PositionMode::SE_R_ABS);  // report only (relative) heading
             SE_SetObjectPositionMode(0,
                                      SE_PositionModeType::SE_UPDATE,
                                      SE_PositionMode::SE_H_REL | SE_PositionMode::SE_P_ABS | SE_PositionMode::SE_R_ABS);
-            SE_ReportObjectSpeed(0, 20.0f);
+            SE_ReportObjectSpeed(0, 20.0);
 
             state++;
         }
-        else if (state == 1 && SE_GetSimulationTime() > 7.0f)
+        else if (state == 1 && SE_GetSimulationTime() > 7.0)
         {
             SE_SetCameraObjectFocus(0);
             SE_AddCustomAimingCamera(-23.0, 14.0, 6.0);
             state++;
         }
-        else if (state == 2 && SE_GetSimulationTime() > 15.0f)
+        else if (state == 2 && SE_GetSimulationTime() > 15.0)
         {
             SE_ReportObjectPosMode(0,
-                                   0.0f,
                                    std::nanf(""),
                                    std::nanf(""),
-                                   1.0f,
-                                   0.0f,
-                                   0.0f,
-                                   0.0f,
+                                   1.0,
+                                   0.0,
+                                   0.0,
+                                   0.0,
                                    SE_PositionMode::SE_Z_REL | SE_PositionMode::SE_H_REL | SE_PositionMode::SE_P_ABS |
                                        SE_PositionMode::SE_R_ABS);  // report only (relative) heading
 
@@ -62,11 +60,11 @@ int main(int argc, char* argv[])
                                      SE_PositionModeType::SE_UPDATE,
                                      SE_PositionMode::SE_Z_REL | SE_PositionMode::SE_H_REL | SE_PositionMode::SE_P_ABS | SE_PositionMode::SE_R_ABS);
 
-            SE_ReportObjectSpeed(0, 30.0f);
+            SE_ReportObjectSpeed(0, 30.0);
 
             state++;
         }
-        else if (state == 3 && SE_GetSimulationTime() > 23.0f)
+        else if (state == 3 && SE_GetSimulationTime() > 23.0)
         {
             SE_SetCameraObjectFocus(2);
             SE_AddCustomAimingCamera(-35.3, -59.0, 26.5);

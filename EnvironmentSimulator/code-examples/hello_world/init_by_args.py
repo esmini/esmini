@@ -1,15 +1,22 @@
-# initialize esmini with arguments instead of a few limited arguments
-# using ideas from: https://comp.lang.python.narkive.com/RUdYlz64/trying-to-pass-sys-argv-as-int-argc-char-argv-using-ctypes
+'''
+   demonstrate how to initialize esmini with arguments instead of a few limited arguments
+   using ideas from: https://comp.lang.python.narkive.com/RUdYlz64/trying-to-pass-sys-argv-as-int-argc-char-argv-using-ctypes
+
+   Instruction:
+     - make sure the esmini shared library (esminiLib.dll or esminiLib.so) is present in esmini/bin folder
+     - if not, either compile esmini (see User guide) or fetch bin package release
+     - from this folder (where this code module is), run: python ./init_by_args.py
+'''
 
 import ctypes as ct
 import sys
 
 if sys.platform == "linux" or sys.platform == "linux2":
-    se = ct.CDLL("../bin/libesminiLib.so")
+    se = ct.CDLL("../../../bin/libesminiLib.so")
 elif sys.platform == "darwin":
-    se = ct.CDLL("../bin/libesminiLib.dylib")
+    se = ct.CDLL("../../../bin/libesminiLib.dylib")
 elif sys.platform == "win32":
-    se = ct.CDLL("../bin/esminiLib.dll")
+    se = ct.CDLL("../../../bin/esminiLib.dll")
 else:
     print("Unsupported platform: {}".format(platform))
     quit()

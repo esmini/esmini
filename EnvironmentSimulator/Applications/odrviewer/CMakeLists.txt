@@ -5,7 +5,6 @@ set(TARGET
 
 # ############################### Loading desired rules ##############################################################
 
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 
 # ############################### Setting target files ###############################################################
@@ -34,7 +33,15 @@ target_include_directories(
     PUBLIC ${ROAD_MANAGER_PATH}
            ${EXTERNALS_OSI_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
-           ${EXTERNALS_OSG_INCLUDES})
+           ${EXTERNALS_OSG_INCLUDES}
+           ${EXTERNALS_IMPLOT_INCLUDES})
+
+if(USE_IMPLOT)
+    target_include_directories(
+        ${TARGET}
+        SYSTEM
+        PUBLIC ${EXTERNALS_IMPLOT_INCLUDES})
+endif()
 
 target_link_libraries(
     ${TARGET}
@@ -53,13 +60,18 @@ if(USE_OSG)
                 ${OSG_LIBRARIES})
 endif()
 
+if(USE_IMPLOT)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE ${IMPLOT_LIBRARIES})
+endif()
+
 if(USE_OSI)
     target_link_libraries(
         ${TARGET}
         PRIVATE ${OSI_LIBRARIES})
 endif()
 
-disable_static_analysis(${TARGET})
 disable_iwyu(${TARGET})
 
 # ############################### Install ############################################################################

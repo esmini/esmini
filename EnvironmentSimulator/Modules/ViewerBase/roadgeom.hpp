@@ -45,6 +45,7 @@ namespace roadgeom
         NODE_MASK_WEATHER          = (1 << 15),
         NODE_MASK_OBJ_OUTLINE      = (1 << 16),
         NODE_MASK_AXIS_INDICATOR   = (1 << 17),
+        NODE_MASK_ENTITY_BB_FILLED = (1 << 18),
     } NodeMask;
 
     uint64_t  GenerateMaterialKey(double r, double g, double b, double a, uint8_t t, uint8_t f);
@@ -74,7 +75,6 @@ namespace roadgeom
             @param origin Origin offset to apply to all coordinates
             @param generate_road_surface If true, generate road surface geometry
             @param generate_road_objects If true, generate road objects (signs, barriers, etc.)
-            @param add_ground_plane If true, add a ground plane below the road surface
             @param exe_path Path to executable, used to find resources
             @param optimize Set to false if model will be saved to file, true if used for immediate visualization
         */
@@ -83,7 +83,6 @@ namespace roadgeom
                  osg::Vec3d              origin,
                  bool                    generate_road_surface,
                  bool                    generate_road_objects,
-                 bool                    add_ground_plane,
                  std::string             exe_path,
                  bool                    optimize);
 

@@ -34,9 +34,9 @@ namespace scenarioengine
     */
     typedef struct
     {
-        float x_;
-        float y_;
-        float z_;
+        double x_;
+        double y_;
+        double z_;
     } Center;
 
     /*
@@ -50,9 +50,9 @@ namespace scenarioengine
     */
     typedef struct
     {
-        float width_;
-        float length_;
-        float height_;
+        double width_;
+        double length_;
+        double height_;
     } Dimensions;
 
     /*

@@ -8,7 +8,6 @@ set(TARGET_STATIC
 
 # ############################### Loading desired rules ##############################################################################################
 
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 
 # ############################### Setting target files ###############################################################################################
@@ -78,7 +77,13 @@ foreach(
                ${EXTERNALS_OSI_INCLUDES}
                ${EXTERNALS_OSG_INCLUDES}
                ${EXTERNALS_PUGIXML_PATH})
-    # ${EXTERNALS_FMT_INCLUDES})
+
+    if(USE_IMPLOT)
+        target_include_directories(
+            ${TARGET}
+            SYSTEM
+            PUBLIC ${EXTERNALS_IMPLOT_INCLUDES})
+    endif()
 
     target_link_libraries(
         ${TARGET}
@@ -87,7 +92,6 @@ foreach(
                 CommonMini
                 Controllers
                 RoadManager
-                # ${FMT_LIBRARIES}
                 ${TIME_LIB}
                 ${SOCK_LIB})
 
@@ -97,6 +101,12 @@ foreach(
             PRIVATE ViewerBase
                     RoadGeom
                     ${OSG_LIBRARIES})
+    endif()
+
+    if(USE_IMPLOT)
+        target_link_libraries(
+            ${TARGET}
+            PRIVATE ${IMPLOT_LIBRARIES})
     endif()
 
     if(USE_SUMO)
@@ -111,7 +121,6 @@ foreach(
             PRIVATE ${OSI_LIBRARIES})
     endif()
 
-    disable_static_analysis(${TARGET})
     disable_iwyu(${TARGET})
 
 endforeach()

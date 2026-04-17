@@ -16,6 +16,7 @@
 #include <osg/ComputeBoundsVisitor>
 #include <osg/LineWidth>
 #include <osg/BlendColor>
+#include <osg/Stencil>
 #include <osg/Geode>
 #include <osg/Group>
 #include <osg/CullFace>
@@ -42,14 +43,15 @@ namespace fs = std::experimental::filesystem;
 #error "Missing <filesystem> header"
 #endif
 
-#define SHADOW_SCALE            1.20
-#define SHADOW_MODEL_FILEPATH   "shadow_face.osgb"
+#define SHADOW_MAX_EXTRUSION    0.4
+#define SHADOW_MIN_EXTRUSION    0.05
+#define SHADOW_OPACITY          0.6f
 #define ARROW_MODEL_FILEPATH    "arrow.osgb"
 #define LOD_DIST                3000
 #define LOD_SCALE_DEFAULT       1.0
 #define DEFAULT_AA_MULTISAMPLES 4
-#define OSI_LINE_WIDTH          2.0f
-#define OSI_LINE_WIDTH_BOLD     4.0f
+#define OSI_LINE_WIDTH          2.0
+#define OSI_LINE_WIDTH_BOLD     4.0
 #define OSI_DOT_SIZE            6.0
 #define TRAIL_WIDTH             2
 #define TRAIL_DOT_SIZE          10
@@ -63,6 +65,7 @@ float color_green[3]      = {0.2f, 0.6f, 0.3f};
 float color_gray[3]       = {0.7f, 0.7f, 0.7f};
 float color_red[3]        = {0.8f, 0.3f, 0.3f};
 float color_black[3]      = {0.2f, 0.2f, 0.2f};
+float color_shadow[3]     = {0.05f, 0.05f, 0.05f};
 float color_blue[3]       = {0.25f, 0.38f, 0.7f};
 float color_yellow[3]     = {0.75f, 0.7f, 0.4f};
 float color_white[3]      = {1.0f, 1.0f, 0.9f};
@@ -80,6 +83,198 @@ USE_COMPRESSOR_WRAPPER(ZLibCompressor)
 USE_GRAPHICSWINDOW()
 
 using namespace viewer;
+
+#ifdef _USE_IMPLOT
+struct OsgImGuiHandler::ImGuiNewFrameCallback : public osg::Camera::DrawCallback
+{
+    ImGuiNewFrameCallback(OsgImGuiHandler& handler) : handler_(handler)
+    {
+    }
+
+    void operator()(osg::RenderInfo& renderInfo) const override
+    {
+        handler_.newFrame(renderInfo);
+    }
+
+private:
+    OsgImGuiHandler& handler_;
+};
+
+struct OsgImGuiHandler::ImGuiRenderCallback : public osg::Camera::DrawCallback
+{
+    ImGuiRenderCallback(OsgImGuiHandler& handler) : handler_(handler)
+    {
+    }
+
+    void operator()(osg::RenderInfo& renderInfo) const override
+    {
+        handler_.render(renderInfo);
+    }
+
+private:
+    OsgImGuiHandler& handler_;
+};
+
+OsgImGuiHandler::OsgImGuiHandler() : initialized_(false)
+{
+    // Compare library linked to with header versions
+    IMGUI_CHECKVERSION();
+
+    ImGui::CreateContext();
+}
+
+void OsgImGuiHandler::setCameraCallbacks(osg::Camera* camera)
+{
+    camera->setPreDrawCallback(new ImGuiNewFrameCallback(*this));
+    camera->setPostDrawCallback(new ImGuiRenderCallback(*this));
+}
+
+void OsgImGuiHandler::newFrame(osg::RenderInfo& renderInfo)
+{
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGuiIO&       io       = ImGui::GetIO();
+    osg::Viewport* viewport = renderInfo.getCurrentCamera()->getViewport();
+    io.DisplaySize          = ImVec2(viewport->width(), viewport->height());
+    ImGui::NewFrame();
+}
+void OsgImGuiHandler::render(osg::RenderInfo& renderInfo)
+{
+    drawUi();
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+bool OsgImGuiHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Object* obj, osg::NodeVisitor* nv)
+{
+    (void)obj;
+    (void)nv;
+
+    if (!initialized_)
+    {
+        auto view = aa.asView();
+        if (view)
+        {
+            setCameraCallbacks(view->getCamera());
+            initialized_ = true;
+        }
+    }
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    switch (ea.getEventType())
+    {
+        case osgGA::GUIEventAdapter::PUSH:
+        case osgGA::GUIEventAdapter::RELEASE:
+        case osgGA::GUIEventAdapter::MOVE:
+        case osgGA::GUIEventAdapter::DRAG:
+        {
+            io.MousePos = ImVec2(ea.getX(), ea.getWindowHeight() - ea.getY());
+
+            io.MouseDown[0] = (ea.getButtonMask() & osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) != 0;
+            io.MouseDown[1] = (ea.getButtonMask() & osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON) != 0;
+
+            break;
+        }
+        default:
+            break;
+    }
+
+    if (io.WantCaptureMouse)
+    {
+        const_cast<osgGA::GUIEventAdapter&>(ea).setButtonMask(0);
+        return true;
+    }
+
+    return false;
+}
+
+void ImGuiOverlay::Init(const double& time, const double& min_time, const double& max_time)
+{
+    time_     = static_cast<float>(time);
+    min_time_ = static_cast<float>(min_time);
+    max_time_ = static_cast<float>(max_time);
+}
+
+uint32_t ImGuiOverlay::ConsumeCmdMask()
+{
+    uint32_t tmp = cmdMask_;
+    cmdMask_     = CMD_NONE;
+    return tmp;
+}
+
+void ImGuiOverlay::drawUi()
+{
+    if (!draw_ui_)
+    {
+        return;
+    }
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    float height = 80.0f;
+    ImGui::SetNextWindowPos(ImVec2(0, io.DisplaySize.y - height));
+    ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, height));
+
+    ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+
+    ImGui::Begin("PlaybackControls", nullptr, ImGuiWindowFlags_NoDecoration);
+
+    ImGui::PushItemWidth(-1.0f);  // -1.0f means "use all avail. space"
+    slider_changed_ = ImGui::SliderFloat("##Time", &time_, min_time_, max_time_);
+    ImGui::PopItemWidth();
+
+    float styleSpacing    = ImGui::GetStyle().ItemSpacing.x;
+    float totalAvailWidth = ImGui::GetContentRegionAvail().x;
+    float btnWidth        = (totalAvailWidth - (styleSpacing * 8.0f)) / 9.0f;
+
+    if (ImGui::Button("|<", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_GOTO_START;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("<<<", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_STEP_BACK_B;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("<<", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_STEP_BACK_S;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("<", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_FRAME_BACK;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("pause/play", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_TOGGLE_PLAY;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(">", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_FRAME_FWD;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(">>", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_STEP_FWD_S;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(">>>", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_STEP_FWD_B;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(">|", ImVec2(btnWidth, 0)))
+    {
+        cmdMask_ |= CMD_GOTO_END;
+    }
+    ImGui::End();
+    ImGui::PopStyleColor();
+}
+#endif  // _USE_IMPLOT
 
 // Derive a class from NodeVisitor to find a node with a  specific name.
 class FindNamedNode : public osg::NodeVisitor
@@ -623,11 +818,12 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
 {
     (void)sa;
     (void)nv;
-    if (object_->CheckDirtyBits(scenarioengine::Object::DirtyBit::VISIBILITY))
+    if (object_->dirty_.Check(scenarioengine::Object::DirtyBit::VISIBILITY))
     {
         if (object_->visibilityMask_ & scenarioengine::Object::Visibility::GRAPHICS)
         {
-            entity_->txNode_->getChild(0)->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB);
+            entity_->txNode_->getChild(0)->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB |
+                                                       NodeMask::NODE_MASK_ENTITY_BB_FILLED);
             if (object_->visibilityMask_ & scenarioengine::Object::Visibility::SENSORS)
             {
                 entity_->SetTransparency(0.0);
@@ -643,7 +839,7 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
             entity_->txNode_->getChild(0)->setNodeMask(NodeMask::NODE_MASK_NONE);
         }
     }
-    object_->ClearDirtyBits(scenarioengine::Object::DirtyBit::VISIBILITY);
+    object_->dirty_.ClearBits(scenarioengine::Object::DirtyBit::VISIBILITY);
 }
 
 Trajectory::Trajectory(osg::Group* parent, Viewer* viewer) : parent_(parent), activeRMTrajectory_(0), viewer_(viewer)
@@ -1366,6 +1562,7 @@ int Viewer::InitTraits(osg::ref_ptr<osg::GraphicsContext::Traits> traits,
     traits->y             = y;
     traits->width         = w;
     traits->height        = h;
+    traits->stencil       = 8;
     traits->samples       = static_cast<unsigned int>(samples);
     traits->sampleBuffers = (traits->samples > 0) ? 1 : 0;
     traits->sharedContext = 0;
@@ -1402,7 +1599,8 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
                const char*             scenarioFilename,
                const char*             exe_path,
                osg::ArgumentParser     arguments,
-               SE_Options*             opt)
+               SE_Options*             opt,
+               bool                    overlay)
 {
     (void)scenarioFilename;
     odrManager_             = odrManager;
@@ -1420,7 +1618,6 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     keyRight_                     = false;
     quit_request_                 = false;
     camMode_                      = osgGA::RubberbandManipulator::RB_MODE_ORBIT;
-    shadow_node_                  = NULL;
     environment_                  = NULL;
     roadGeom                      = NULL;
     captureCounter_               = 0;
@@ -1434,6 +1631,9 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     frictionScaleFactor_          = 1.0;  // default friction scale factor
     defaultClearColorUsed_        = false;
     fogColor_                     = {0.75f, 0.75f, 0.75f};  // Default fog color, average of color_background
+#ifdef _USE_IMPLOT
+    imguiOverlay_ = nullptr;
+#endif  // _USE_IMPLOT
 
     bool decoration = true;
     int  screenNum  = -1;
@@ -1515,7 +1715,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     osg::ref_ptr<osg::Camera> camera = osgViewer_->getCamera();
 
     camera->setGraphicsContext(gc);
-    camera->setClearMask(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    camera->setClearMask(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     if (!clear_color)
     {
         // Default background color
@@ -1549,6 +1749,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     ClearNodeMaskBits(NodeMask::NODE_MASK_OBJECT_SENSORS);
     ClearNodeMaskBits(NodeMask::NODE_MASK_ODR_FEATURES);
     ClearNodeMaskBits(NodeMask::NODE_MASK_ENTITY_BB);
+    ClearNodeMaskBits(NodeMask::NODE_MASK_ENTITY_BB_FILLED);
     ClearNodeMaskBits(NodeMask::NODE_MASK_INFO_PER_OBJ);
     SetNodeMaskBits(NodeMask::NODE_MASK_ENTITY_MODEL);
     SetNodeMaskBits(NodeMask::NODE_MASK_INFO);
@@ -1612,14 +1813,7 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
     bool gen_road_surface = (environment_ == nullptr || opt->GetOptionSet("enforce_generate_model")) && odrManager->GetNumOfRoads() > 0;
     bool gen_road_objects = !(opt && opt->GetOptionSet("generate_no_road_objects"));
     bool optimize         = !SE_Env::Inst().GetOptions().GetOptionSet("save_generated_model");
-    roadGeom              = std::make_unique<RoadGeom>(odrManager,
-                                          environment_,
-                                          origin_,
-                                          gen_road_surface,
-                                          gen_road_objects,
-                                          opt->GetOptionSet("ground_plane"),
-                                          exe_path_,
-                                          optimize);
+    roadGeom              = std::make_unique<RoadGeom>(odrManager, environment_, origin_, gen_road_surface, gen_road_objects, exe_path_, optimize);
 
     if (roadGeom->root_ != nullptr)
     {
@@ -1838,6 +2032,16 @@ Viewer::Viewer(roadmanager::OpenDrive* odrManager,
 
     initialThreadingModel_ = osgViewer_->getThreadingModel();
 
+#ifdef _USE_IMPLOT
+    // Imgui initialization
+    if (overlay)
+    {
+        osgViewer_->setRealizeOperation(new ImGuiInitOperation);
+        imguiOverlay_ = new ImGuiOverlay;
+        osgViewer_->addEventHandler(imguiOverlay_.get());
+    }
+#endif  // _USE_IMPLOT
+
     osgViewer_->realize();
 }
 
@@ -1895,7 +2099,6 @@ void viewer::Viewer::SetSkyColor(const double sunIntensityFactor, const double f
 
 void Viewer::CreateWeatherGroup(const scenarioengine::OSCEnvironment& environment)
 {
-    weatherGroup_ = new osg::PositionAttitudeTransform;
     if (environment.IsFogSet())
     {
         CreateFog(environment.GetFog().visibility_range, environment.GetSunIntensityFactor(), environment.GetFractionalCloudStateFactor());
@@ -1909,8 +2112,6 @@ void Viewer::CreateWeatherGroup(const scenarioengine::OSCEnvironment& environmen
     {
         UpdateFrictonScaleFactorInMaterial(environment.GetRoadCondition().friction_scale_factor);
     }
-
-    rootnode_->addChild(weatherGroup_);
 }
 
 void viewer::Viewer::UpdateFrictonScaleFactorInMaterial(const double factor)
@@ -1936,6 +2137,20 @@ Viewer::~Viewer()
 
     if (osgViewer_ != nullptr)
     {
+#ifdef _USE_IMPLOT
+        if (imguiOverlay_ != nullptr)
+        {
+            osgViewer::Viewer::Contexts contexts;
+            osgViewer_->getContexts(contexts);
+            for (auto* context : contexts)
+            {
+                context->add(new ImGuiShutdownOperation());
+            }
+            osgViewer_->removeEventHandler(imguiOverlay_.get());
+            imguiOverlay_ = nullptr;
+        }
+#endif
+
         osgViewer_->setDone(true);  // flag OSG to tear down
 
         while (!osgViewer_->done() || osgViewer_->areThreadsRunning())
@@ -1943,6 +2158,9 @@ Viewer::~Viewer()
             osgViewer_->stopThreading();
             SE_sleepMilliseconds(100);  // In case viewer still not closed
         }
+
+        osgViewer_->setCameraManipulator(nullptr);
+        osgViewer_->setSceneData(nullptr);
     }
 
     for (size_t i = 0; i < entities_.size(); i++)
@@ -1956,6 +2174,50 @@ Viewer::~Viewer()
     }
 
     entities_.clear();
+    polyLine_.clear();
+
+    if (rootnode_ != nullptr)
+    {
+        rootnode_->removeChildren(0, rootnode_->getNumChildren());
+        rootnode_->releaseGLObjects();
+    }
+
+    if (infoTextCamera.valid())
+    {
+        infoTextCamera->removeChildren(0, infoTextCamera->getNumChildren());
+        infoTextCamera->releaseGLObjects();
+        infoTextCamera = nullptr;
+    }
+
+    infoText           = nullptr;
+    onScreenTextCamera = nullptr;
+    roadGeom.reset();
+    environment_     = nullptr;
+    envGroup_        = nullptr;
+    env_origin2odr_  = nullptr;
+    root_origin2odr_ = nullptr;
+    roadSensors_     = nullptr;
+    trails_          = nullptr;
+    odrLines_        = nullptr;
+    osiFeatures_     = nullptr;
+    trajectoryLines_ = nullptr;
+    routewaypoints_  = nullptr;
+    line_node_       = nullptr;
+    dot_node_        = nullptr;
+
+    if (osgViewer_ != nullptr)
+    {
+        osgViewer_->releaseGLObjects();
+    }
+
+    osgDB::Registry* registry = osgDB::Registry::instance();
+    if (registry != nullptr)
+    {
+        registry->releaseGLObjects();
+        registry->clearObjectCache();
+    }
+
+    osgViewer_ = nullptr;
 }
 
 void Viewer::AddCustomCamera(double x, double y, double z, double h, double p, bool fixed_pos)
@@ -1978,7 +2240,8 @@ void Viewer::AddCustomCamera(double x, double y, double z, bool fixed_pos)
 
 void Viewer::AddCustomFixedTopCamera(double x, double y, double z, double rot)
 {
-    osgGA::RubberbandManipulator::CustomCamera cam(osg::Vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)), rot);
+    osgGA::RubberbandManipulator::CustomCamera cam(osg::Vec3(static_cast<float>(x), static_cast<float>(y), static_cast<float>(z)),
+                                                   static_cast<float>(rot));
     rubberbandManipulator_->AddCustomCamera(cam);
 
     UpdateCameraFOV();
@@ -2145,19 +2408,20 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
                                        double                         refpoint_x_offset,
                                        double                         model_x_offset,
                                        const std::vector<SE_Point2D>* outline,
-                                       EntityScaleMode                scaleMode)
+                                       EntityScaleMode                scaleMode,
+                                       std::string                    bb_color)
 {
     // Load 3D model
     osg::ref_ptr<osg::Group>                     group             = new osg::Group;
     osg::ref_ptr<osg::Group>                     modelgroup        = nullptr;
     osg::ref_ptr<osg::Group>                     bbGroup           = nullptr;
-    osg::ref_ptr<osg::Node>                      shadow_node       = nullptr;
     osg::ref_ptr<osg::PositionAttitudeTransform> txVehicleDynamics = new osg::PositionAttitudeTransform;
     osg::BoundingBox                             modelBB;
-    std::vector<std::string>                     file_name_candidates;
+    osg::BoundingBox                             scaledBB;
     double                                       carStdDim[]  = {4.5, 1.8, 1.5};
     double                                       carStdOrig[] = {1.5, 0.0, 0.75};
-    std::string                                  filepath;
+    osg::Vec3d                                   bbCenter(carStdOrig[0], carStdOrig[1], carStdOrig[2]);
+    osg::Vec3d                                   bbDimensions(carStdDim[0], carStdDim[1], carStdDim[2]);
 
     // Check if model already loaded
     for (size_t i = 0; i < entities_.size(); i++)
@@ -2193,24 +2457,36 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     // Make sure we have a 3D model
     // Set color of vehicle based on its index
     const float(*color)[3] = nullptr;
+    float custom_color[3]  = {0.0f, 0.0f, 0.0f};
     float b                = 1.0;  // brighness
     int   index            = entities_.size() % 4;
 
-    if (index == 0)
+    if (bb_color.empty())
     {
-        color = &SE_Color::Color2RBG(SE_Color::Color::LIGHT_GRAY);
-    }
-    else if (index == 1)
-    {
-        color = &SE_Color::Color2RBG(SE_Color::Color::RED);
-    }
-    else if (index == 2)
-    {
-        color = &SE_Color::Color2RBG(SE_Color::Color::BLUE);
+        if (index == 0)
+        {
+            color = &SE_Color::Color2RBG(SE_Color::Color::LIGHT_GRAY);
+        }
+        else if (index == 1)
+        {
+            color = &SE_Color::Color2RBG(SE_Color::Color::RED);
+        }
+        else if (index == 2)
+        {
+            color = &SE_Color::Color2RBG(SE_Color::Color::BLUE);
+        }
+        else
+        {
+            color = &SE_Color::Color2RBG(SE_Color::Color::YELLOW);
+        }
     }
     else
     {
-        color = &SE_Color::Color2RBG(SE_Color::Color::YELLOW);
+        auto rgb        = HexToDouble(bb_color, true);
+        custom_color[0] = static_cast<float>(rgb.r);
+        custom_color[1] = static_cast<float>(rgb.g);
+        custom_color[2] = static_cast<float>(rgb.b);
+        color           = &custom_color;
     }
 
     osg::Material* material = new osg::Material();
@@ -2230,24 +2506,19 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
 
         // Create a dummy cuboid
         osg::ref_ptr<osg::Geode> geode = new osg::Geode;
-        if (boundingBox != nullptr && !(boundingBox->dimensions_.length_ < static_cast<float>(SMALL_NUMBER) &&
-                                        boundingBox->dimensions_.width_ < static_cast<float>(SMALL_NUMBER) &&
-                                        boundingBox->dimensions_.height_ < static_cast<float>(SMALL_NUMBER)))
+        if (boundingBox != nullptr && !(boundingBox->dimensions_.length_ < SMALL_NUMBER && boundingBox->dimensions_.width_ < SMALL_NUMBER &&
+                                        boundingBox->dimensions_.height_ < SMALL_NUMBER))
         {
             geode->addDrawable(
-                new osg::ShapeDrawable(new osg::Box(osg::Vec3(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_),
+                new osg::ShapeDrawable(new osg::Box(osg::Vec3d(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_),
                                                     boundingBox->dimensions_.length_,
                                                     boundingBox->dimensions_.width_,
                                                     boundingBox->dimensions_.height_)));
         }
         else
         {
-            geode->addDrawable(new osg::ShapeDrawable(new osg::Box(osg::Vec3(static_cast<float>(carStdOrig[0]) - refpoint_x_offset,
-                                                                             static_cast<float>(carStdOrig[1]),
-                                                                             static_cast<float>(carStdOrig[2])),
-                                                                   static_cast<float>(carStdDim[0]),
-                                                                   static_cast<float>(carStdDim[1]),
-                                                                   static_cast<float>(carStdDim[2]))));
+            geode->addDrawable(new osg::ShapeDrawable(
+                new osg::Box(osg::Vec3d(carStdOrig[0] - refpoint_x_offset, carStdOrig[1], carStdOrig[2]), carStdDim[0], carStdDim[1], carStdDim[2])));
         }
         geode->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
         geode->getOrCreateStateSet()->setAttribute(material);
@@ -2260,8 +2531,9 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     }
 
     // Then create a bounding box visual representation and any specified outline
-    bbGroup                          = new osg::Group;
-    osg::ref_ptr<osg::Geode> bbGeode = new osg::Geode;
+    bbGroup                                = new osg::Group;
+    osg::ref_ptr<osg::Geode> bbGeode       = new osg::Geode;
+    osg::ref_ptr<osg::Geode> bbFilledGeode = new osg::Geode;
 
     // Create 2D shape outline, if specified
     if (outline != nullptr)
@@ -2272,15 +2544,19 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     if (scaleMode == EntityScaleMode::NONE || scaleMode == EntityScaleMode::MODEL_TO_BB)
     {
         // Bounding box should not scale, create one from OSC description if available
-        if (boundingBox != nullptr && !(boundingBox->dimensions_.length_ < static_cast<float>(SMALL_NUMBER) &&
-                                        boundingBox->dimensions_.width_ < static_cast<float>(SMALL_NUMBER) &&
-                                        boundingBox->dimensions_.height_ < static_cast<float>(SMALL_NUMBER)))
+        if (boundingBox != nullptr && !(boundingBox->dimensions_.length_ < SMALL_NUMBER && boundingBox->dimensions_.width_ < SMALL_NUMBER &&
+                                        boundingBox->dimensions_.height_ < SMALL_NUMBER))
         {
-            bbGeode->addDrawable(
-                new osg::ShapeDrawable(new osg::Box(osg::Vec3(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_),
-                                                    boundingBox->dimensions_.length_,
-                                                    boundingBox->dimensions_.width_,
-                                                    boundingBox->dimensions_.height_)));
+            bbCenter.set(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_);
+            bbDimensions.set(boundingBox->dimensions_.length_, boundingBox->dimensions_.width_, boundingBox->dimensions_.height_);
+
+            osg::ref_ptr<osg::Box> sharedBox = new osg::Box(osg::Vec3d(boundingBox->center_.x_, boundingBox->center_.y_, boundingBox->center_.z_),
+                                                            boundingBox->dimensions_.length_,
+                                                            boundingBox->dimensions_.width_,
+                                                            boundingBox->dimensions_.height_);
+
+            bbGeode->addDrawable(new osg::ShapeDrawable(sharedBox.get()));
+            bbFilledGeode->addDrawable(new osg::ShapeDrawable(sharedBox.get()));
         }
         else
         {
@@ -2296,59 +2572,62 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
             }
 
             // No bounding box specified. Create a bounding box of typical car dimension.
-            bbGeode->addDrawable(new osg::ShapeDrawable(
-                new osg::Box(osg::Vec3(static_cast<float>(carStdOrig[0]), static_cast<float>(carStdOrig[1]), static_cast<float>(carStdOrig[2])),
-                             static_cast<float>(carStdDim[0]),
-                             static_cast<float>(carStdDim[1]),
-                             static_cast<float>(carStdDim[2]))));
+            osg::ref_ptr<osg::Box> sharedBox =
+                new osg::Box(osg::Vec3d(carStdOrig[0], carStdOrig[1], carStdOrig[2]), carStdDim[0], carStdDim[1], carStdDim[2]);
+
+            bbGeode->addDrawable(new osg::ShapeDrawable(sharedBox.get()));
+            bbFilledGeode->addDrawable(new osg::ShapeDrawable(sharedBox.get()));
 
             if (boundingBox != nullptr)
             {
                 // Update OSC boundingbox
-                boundingBox->center_.x_          = static_cast<float>(carStdOrig[0]);
-                boundingBox->center_.y_          = static_cast<float>(carStdOrig[1]);
-                boundingBox->center_.z_          = static_cast<float>(carStdOrig[2]);
-                boundingBox->dimensions_.length_ = static_cast<float>(carStdDim[0]);
-                boundingBox->dimensions_.width_  = static_cast<float>(carStdDim[1]);
-                boundingBox->dimensions_.height_ = static_cast<float>(carStdDim[2]);
+                boundingBox->center_.x_          = carStdOrig[0];
+                boundingBox->center_.y_          = carStdOrig[1];
+                boundingBox->center_.z_          = carStdOrig[2];
+                boundingBox->dimensions_.length_ = carStdDim[0];
+                boundingBox->dimensions_.width_  = carStdDim[1];
+                boundingBox->dimensions_.height_ = carStdDim[2];
             }
         }
     }
 
     if (scaleMode == EntityScaleMode::NONE)
     {
-        modeltx->setPosition(osg::Vec3(model_x_offset - refpoint_x_offset, 0.0, 0.0));
+        modeltx->setPosition(osg::Vec3d(model_x_offset - refpoint_x_offset, 0.0, 0.0));
     }
     else if (scaleMode == EntityScaleMode::BB_TO_MODEL)
     {
-        modeltx->setPosition(osg::Vec3(model_x_offset - refpoint_x_offset, 0.0, 0.0));
+        modeltx->setPosition(osg::Vec3d(model_x_offset - refpoint_x_offset, 0.0, 0.0));
 
         // Create visual model of object bounding box, copy values from model bounding box
-        bbGeode->addDrawable(
-            new osg::ShapeDrawable(new osg::Box(osg::Vec3(modelBB.center().x() - model_x_offset, modelBB.center().y(), modelBB.center().z()),
-                                                modelBB._max.x() - modelBB._min.x(),
-                                                modelBB._max.y() - modelBB._min.y(),
-                                                modelBB._max.z() - modelBB._min.z())));
+        bbCenter.set(modelBB.center().x() - model_x_offset, modelBB.center().y(), modelBB.center().z());
+        bbDimensions.set(modelBB._max.x() - modelBB._min.x(), modelBB._max.y() - modelBB._min.y(), modelBB._max.z() - modelBB._min.z());
+
+        osg::ref_ptr<osg::Box> sharedBox =
+            new osg::Box(osg::Vec3d(bbCenter.x(), bbCenter.y(), bbCenter.z()), bbDimensions.x(), bbDimensions.y(), bbDimensions.z());
+
+        bbGeode->addDrawable(new osg::ShapeDrawable(sharedBox.get()));
+        bbFilledGeode->addDrawable(new osg::ShapeDrawable(sharedBox.get()));
 
         // Also update OSC boundingbox
         if (boundingBox != nullptr)
         {
-            boundingBox->center_.x_          = modelBB.center().x();
-            boundingBox->center_.y_          = modelBB.center().y();
-            boundingBox->center_.z_          = modelBB.center().z();
-            boundingBox->dimensions_.length_ = modelBB._max.x() - modelBB._min.x();
-            boundingBox->dimensions_.width_  = modelBB._max.y() - modelBB._min.y();
-            boundingBox->dimensions_.height_ = modelBB._max.z() - modelBB._min.z();
+            boundingBox->center_.x_          = static_cast<double>(modelBB.center().x());
+            boundingBox->center_.y_          = static_cast<double>(modelBB.center().y());
+            boundingBox->center_.z_          = static_cast<double>(modelBB.center().z());
+            boundingBox->dimensions_.length_ = static_cast<double>(modelBB._max.x() - modelBB._min.x());
+            boundingBox->dimensions_.width_  = static_cast<double>(modelBB._max.y() - modelBB._min.y());
+            boundingBox->dimensions_.height_ = static_cast<double>(modelBB._max.z() - modelBB._min.z());
 
             LOG_INFO("Adjusted {} bounding box to model {} - xyz: {:.2f}, {:.2f}, {:.2f} lwh: {:.2f}, {:.2f}, {:.2f}",
                      name,
                      FileNameOf(modelFilepath),
-                     static_cast<double>(boundingBox->center_.x_),
-                     static_cast<double>(boundingBox->center_.y_),
-                     static_cast<double>(boundingBox->center_.z_),
-                     static_cast<double>(boundingBox->dimensions_.length_),
-                     static_cast<double>(boundingBox->dimensions_.width_),
-                     static_cast<double>(boundingBox->dimensions_.height_));
+                     boundingBox->center_.x_,
+                     boundingBox->center_.y_,
+                     boundingBox->center_.z_,
+                     boundingBox->dimensions_.length_,
+                     boundingBox->dimensions_.width_,
+                     boundingBox->dimensions_.height_);
         }
     }
     else if (scaleMode == EntityScaleMode::MODEL_TO_BB)
@@ -2356,18 +2635,65 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
         // Scale loaded 3d model
         modeltx->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
 
-        double sx = boundingBox->dimensions_.length_ / (modelBB._max.x() - modelBB._min.x());
-        double sy = boundingBox->dimensions_.width_ / (modelBB._max.y() - modelBB._min.y());
-        double sz = boundingBox->dimensions_.height_ / (modelBB._max.z() - modelBB._min.z());
+        double sx = boundingBox->dimensions_.length_ / (static_cast<double>(modelBB._max.x() - modelBB._min.x()));
+        double sy = boundingBox->dimensions_.width_ / (static_cast<double>(modelBB._max.y() - modelBB._min.y()));
+        double sz = boundingBox->dimensions_.height_ / (static_cast<double>(modelBB._max.z() - modelBB._min.z()));
 
-        modeltx->setPosition(osg::Vec3(boundingBox->center_.x_ - static_cast<float>(sx) * modelBB.center().x(),
-                                       boundingBox->center_.y_ - static_cast<float>(sy) * modelBB.center().y(),
-                                       boundingBox->center_.z_ - static_cast<float>(sz) * modelBB.center().z()));
-        modeltx->setScale(osg::Vec3(static_cast<float>(sx), static_cast<float>(sy), static_cast<float>(sz)));
+        modeltx->setPosition(osg::Vec3d(boundingBox->center_.x_ - sx * static_cast<double>(modelBB.center().x()),
+                                        boundingBox->center_.y_ - sy * static_cast<double>(modelBB.center().y()),
+                                        boundingBox->center_.z_ - sz * static_cast<double>(modelBB.center().z())));
+        modeltx->setScale(osg::Vec3d(sx, sy, sz));
+
+        osg::Matrix scaleMatrix = osg::Matrix::scale(sx, sy, sz);
+        for (unsigned int i = 0; i < 8; ++i)
+        {
+            scaledBB.expandBy(modelBB.corner(i) * scaleMatrix);
+        }
     }
 
     // Put transform node under modelgroup
     modeltx->addChild(modelgroup);
+
+    // Create shadows for models and filled boundingboxes
+    osg::ref_ptr<osg::Node> shadow_node_model     = nullptr;
+    osg::ref_ptr<osg::Node> shadow_node_filled_bb = nullptr;
+
+    // By default we use z-offset 0.05, if not type moving, we set it to 0.01
+    double    zOffset         = 0.05;
+    const int MOVING_TYPE_BIT = 1 << 1;
+    if (!(static_cast<int>(type) & MOVING_TYPE_BIT))
+    {
+        zOffset = 0.01;
+    }
+
+    // We need to create the models shadow with the scaled dimensions
+    osg::BoundingBox tempModelBB = modelBB;
+    if (scaleMode == EntityScaleMode::MODEL_TO_BB)
+    {
+        tempModelBB = scaledBB;
+    }
+
+    float  dx     = tempModelBB._max.x() - tempModelBB._min.x();
+    float  dy     = tempModelBB._max.y() - tempModelBB._min.y();
+    float  dz     = tempModelBB._max.z() - tempModelBB._min.z();
+    float  xc     = (modelBB._max.x() + modelBB._min.x()) / 2.0f;
+    float  yc     = (modelBB._max.y() + modelBB._min.y()) / 2.0f;
+    double bbMinZ = bbCenter.z() - bbDimensions.z() / 2.0;
+
+    shadow_node_model                         = CreateShadow(dx, dy, dz);
+    osg::PositionAttitudeTransform* pat_model = static_cast<osg::PositionAttitudeTransform*>(shadow_node_model.get());
+    pat_model->setName("shadow_tx_model");
+    pat_model->setPosition(osg::Vec3d(xc, yc, zOffset + tempModelBB._min.z()));
+    pat_model->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
+    pat_model->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
+
+    shadow_node_filled_bb                         = CreateShadow(bbDimensions.x(), bbDimensions.y(), bbDimensions.z());
+    osg::PositionAttitudeTransform* pat_filled_bb = static_cast<osg::PositionAttitudeTransform*>(shadow_node_filled_bb.get());
+    pat_filled_bb->setName("shadow_tx_filled_bb");
+    pat_filled_bb->setPosition(osg::Vec3d(xc, yc, zOffset + bbMinZ));
+    pat_filled_bb->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
+    pat_filled_bb->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB_FILLED);
+    // Attaching to group later to perserve order
 
     // Draw only wireframe
     osg::PolygonMode* polygonMode = new osg::PolygonMode;
@@ -2375,19 +2701,25 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     osg::ref_ptr<osg::StateSet> stateset = bbGeode->getOrCreateStateSet();  // Get the StateSet of the group
     stateset->setAttributeAndModes(polygonMode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
     stateset->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
     bbGeode->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
+    bbFilledGeode->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB_FILLED);
+    bbFilledGeode->getOrCreateStateSet()->setAttribute(material);
 
     osg::ref_ptr<osg::Geode> center = new osg::Geode;
     center->addDrawable(new osg::ShapeDrawable(new osg::Sphere(osg::Vec3(0.0f, 0.0f, 0.0f), 0.2f)));
     center->setNodeMask(NodeMask::NODE_MASK_ENTITY_BB);
 
+    bbGroup->addChild(bbFilledGeode);
     bbGroup->addChild(bbGeode);
     bbGroup->addChild(center);
     bbGroup->getOrCreateStateSet()->setAttribute(material);
     bbGroup->setName("BoundingBox");
 
     group->addChild(modeltx);
+    group->addChild(pat_model);
     group->addChild(bbGroup);
+    group->addChild(pat_filled_bb);
     group->setName(name);
 
     EntityModel* emodel;
@@ -2468,6 +2800,162 @@ EntityModel* Viewer::CreateEntityModel(std::string                    modelFilep
     group->addChild(emodel->on_screen_info_.geode_.get());
 
     return emodel;
+}
+
+osg::ref_ptr<osg::Node> Viewer::CreateShadow(double bb_x, double bb_y, double bb_z)
+{
+    const double shadow_adjustment_factor = MIN(bb_x, bb_y) * 0.08;  // x% of volume
+
+    const unsigned int FAN_SURFACES         = 3;
+    const double       LENGTH               = bb_x * 0.5 - shadow_adjustment_factor;
+    const double       WIDTH                = bb_y * 0.5 - shadow_adjustment_factor;
+    const double       shadow_min_extrusion = SHADOW_MIN_EXTRUSION + 2 * shadow_adjustment_factor;
+
+    const double extrusion = MAX(shadow_min_extrusion, MIN(0.1 * bb_z, SHADOW_MAX_EXTRUSION));
+
+    const int vert_size =
+        4 + 4 * 2 + 4 * (FAN_SURFACES + 1);  // Rect + 4 extrusions with 2 unique vertices + 4 fan surfaces (2 surface is 3 unique points etc.)
+    osg::ref_ptr<osg::Vec3Array> vertices = new osg::Vec3Array(vert_size);
+
+    // Back (B) Front (T) Left (L) Right (R)
+    // Inner rectangle
+    (*vertices)[0].set(-LENGTH, -WIDTH, 0.0);  // BL
+    (*vertices)[1].set(LENGTH, -WIDTH, 0.0);   // FR
+    (*vertices)[2].set(LENGTH, WIDTH, 0.0);    // FR
+    (*vertices)[3].set(-LENGTH, WIDTH, 0.0);   // FL
+
+    // Extrusion bottom
+    (*vertices)[4].set(-LENGTH, -WIDTH - extrusion, 0.0);  // L
+    (*vertices)[5].set(LENGTH, -WIDTH - extrusion, 0.0);   // R
+
+    // Extrusion right
+    (*vertices)[6].set(LENGTH + extrusion, -WIDTH, 0.0);  // B
+    (*vertices)[7].set(LENGTH + extrusion, WIDTH, 0.0);   // T
+
+    // Extrusion top
+    (*vertices)[8].set(-LENGTH, WIDTH + extrusion, 0.0);  // L
+    (*vertices)[9].set(LENGTH, WIDTH + extrusion, 0.0);   // R
+
+    // Extrusion left
+    (*vertices)[10].set(-LENGTH - extrusion, -WIDTH, 0.0);  // B
+    (*vertices)[11].set(-LENGTH - extrusion, WIDTH, 0.0);   // T
+
+    int  fans_start_idx   = 12;
+    auto makeExtrusionFan = [&](double start_angle, double corner_x, double corner_y, int fan_offset)
+    {
+        for (unsigned int i = 0; i <= FAN_SURFACES; i++)
+        {
+            double angle = start_angle + (i / static_cast<double>(FAN_SURFACES)) * M_PI_2;
+            (*vertices)[fans_start_idx + fan_offset + i].set(corner_x + cos(angle) * extrusion, corner_y + sin(angle) * extrusion, 0.0);
+        }
+    };
+
+    makeExtrusionFan(osg::PI, -LENGTH, -WIDTH, 0);                            // BL
+    makeExtrusionFan(3.0 * osg::PI / 2.0, LENGTH, -WIDTH, FAN_SURFACES + 1);  // BR
+    makeExtrusionFan(0.0, LENGTH, WIDTH, 2 * (FAN_SURFACES + 1));             // TR
+    makeExtrusionFan(osg::PI / 2.0, -LENGTH, WIDTH, 3 * (FAN_SURFACES + 1));  // TL
+
+    // Normals
+    osg::ref_ptr<osg::Vec3Array> normals = new osg::Vec3Array;
+    normals->push_back(osg::Vec3(0.0f, 0.0f, 1.0f));
+
+    // Colors
+    osg::ref_ptr<osg::Vec4Array> colors = new osg::Vec4Array(vert_size);
+    for (int i = 0; i < 4; i++)
+    {
+        (*colors)[i].set(color_shadow[0], color_shadow[1], color_shadow[2], SHADOW_OPACITY);
+    }
+
+    for (int i = 4; i < vertices->size(); i++)
+    {
+        (*colors)[i].set(color_shadow[0], color_shadow[1], color_shadow[2], 0.0f);
+    }
+
+    // Base geometry
+    osg::ref_ptr<osg::Geometry> geometry = new osg::Geometry;
+    geometry->setVertexArray(vertices.get());
+    geometry->setNormalArray(normals.get());
+    geometry->setNormalBinding(osg::Geometry::BIND_OVERALL);
+    geometry->setColorArray(colors.get());
+    geometry->setColorBinding(osg::Geometry::BIND_PER_VERTEX);
+
+    // Create the shapes
+    osg::ref_ptr<osg::DrawElementsUInt> center = new osg::DrawElementsUInt(GL_QUADS, 4);
+    (*center)[0]                               = 0;
+    (*center)[1]                               = 1;
+    (*center)[2]                               = 2;
+    (*center)[3]                               = 3;
+    geometry->addPrimitiveSet(center.get());
+
+    osg::ref_ptr<osg::DrawElementsUInt> bottom = new osg::DrawElementsUInt(GL_QUADS, 4);
+    (*bottom)[0]                               = 0;
+    (*bottom)[1]                               = 1;
+    (*bottom)[2]                               = 5;
+    (*bottom)[3]                               = 4;
+    geometry->addPrimitiveSet(bottom.get());
+
+    osg::ref_ptr<osg::DrawElementsUInt> right = new osg::DrawElementsUInt(GL_QUADS, 4);
+    (*right)[0]                               = 1;
+    (*right)[1]                               = 2;
+    (*right)[2]                               = 7;
+    (*right)[3]                               = 6;
+    geometry->addPrimitiveSet(right.get());
+
+    osg::ref_ptr<osg::DrawElementsUInt> top = new osg::DrawElementsUInt(GL_QUADS, 4);
+    (*top)[0]                               = 2;
+    (*top)[1]                               = 3;
+    (*top)[2]                               = 8;
+    (*top)[3]                               = 9;
+    geometry->addPrimitiveSet(top.get());
+
+    osg::ref_ptr<osg::DrawElementsUInt> left = new osg::DrawElementsUInt(GL_QUADS, 4);
+    (*left)[0]                               = 3;
+    (*left)[1]                               = 0;
+    (*left)[2]                               = 10;
+    (*left)[3]                               = 11;
+    geometry->addPrimitiveSet(left.get());
+
+    auto makeFan = [&](int base_corner_idx, int start_offset)
+    {
+        osg::ref_ptr<osg::DrawElementsUInt> fan = new osg::DrawElementsUInt(GL_TRIANGLE_FAN, FAN_SURFACES + 2);  // anchor corner + surfaces + 1
+        (*fan)[0]                               = base_corner_idx;                                               // The anchor
+        for (unsigned int i = 0; i <= FAN_SURFACES; i++)
+        {
+            (*fan)[i + 1] = start_offset + i;
+        }
+        geometry->addPrimitiveSet(fan.get());
+    };
+
+    makeFan(0, fans_start_idx);
+    makeFan(1, fans_start_idx + FAN_SURFACES + 1);
+    makeFan(2, fans_start_idx + 2 * (FAN_SURFACES + 1));
+    makeFan(3, fans_start_idx + 3 * (FAN_SURFACES + 1));
+
+    osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+    geode->addDrawable(geometry.get());
+
+    osg::StateSet* shadowStateSet = geode->getOrCreateStateSet();
+    shadowStateSet->setMode(GL_BLEND, osg::StateAttribute::ON);
+    shadowStateSet->setAttributeAndModes(new osg::BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    shadowStateSet->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+
+    osg::ref_ptr<osg::Stencil> stencil = new osg::Stencil;
+    // Only draw on pixels that doesn't have a 1 written on them in any of the bits in 0xFF
+    stencil->setFunction(osg::Stencil::NOTEQUAL, 1, 0xFF);
+    /*
+        arg1: sFail (stencil fail), what to do with the pixel if setFunction test failed, we keep the value already written
+        arg2: zFail (depth fail), pixel passed sFail, but there's something else in the way, we keep whats "in the way"
+        arg3: zPass (all tests passed), the pixel is clear, we can write
+    */
+    stencil->setOperation(osg::Stencil::KEEP, osg::Stencil::KEEP, osg::Stencil::REPLACE);
+    stencil->setWriteMask(0xFF);  // What to write into the stencil
+    shadowStateSet->setAttributeAndModes(stencil, osg::StateAttribute::ON);
+    shadowStateSet->setMode(GL_STENCIL_TEST, osg::StateAttribute::ON);
+
+    osg::ref_ptr<osg::PositionAttitudeTransform> pat = new osg::PositionAttitudeTransform;
+    pat->addChild(geode.get());
+
+    return pat.get();
 }
 
 int Viewer::AddEntityModel(EntityModel* model)
@@ -2557,10 +3045,8 @@ void Viewer::RemoveCar(std::string name)
 
 osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char* filename, osg::BoundingBox& bb)
 {
-    static int                                   elev      = 0;  // Avoid shadow node to flicker, put every second on slightly different Z
-    osg::ref_ptr<osg::PositionAttitudeTransform> shadow_tx = 0;
-    osg::ref_ptr<osg::Node>                      node;
-    osg::ref_ptr<osg::Group>                     group = new osg::Group;
+    osg::ref_ptr<osg::Node>  node;
+    osg::ref_ptr<osg::Group> group = new osg::Group;
 
     node = osgDB::readNodeFile(filename);
     if (!node)
@@ -2572,34 +3058,9 @@ osg::ref_ptr<osg::Group> Viewer::LoadEntityModel(const char* filename, osg::Boun
     node->accept(cbv);
     bb = cbv.getBoundingBox();
 
-    double xc, yc, dx, dy;
-    dx = bb._max.x() - bb._min.x();
-    dy = bb._max.y() - bb._min.y();
-    xc = (bb._max.x() + bb._min.x()) / 2;
-    yc = (bb._max.y() + bb._min.y()) / 2;
-
-    if (!shadow_node_)
-    {
-        LoadShadowfile(filename);
-    }
-
     node->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
     group->addChild(node);
 
-    if (shadow_node_)
-    {
-        shadow_tx = new osg::PositionAttitudeTransform;
-        shadow_tx->setName("shadow_tx");
-        shadow_tx->setPosition(osg::Vec3d(xc, yc, 0.05 * elev + bb._min.z()));
-        shadow_tx->getOrCreateStateSet()->setMode(GL_NORMALIZE, osg::StateAttribute::ON);
-        shadow_tx->setScale(osg::Vec3d(SHADOW_SCALE * (dx / 2), SHADOW_SCALE * (dy / 2), 1.0));
-        shadow_tx->addChild(shadow_node_);
-
-        shadow_tx->setNodeMask(NodeMask::NODE_MASK_ENTITY_MODEL);
-        group->addChild(shadow_tx);
-    }
-
-    elev = (elev + 1) % 3;
     return group;
 }
 
@@ -3054,35 +3515,6 @@ void Viewer::UpdateSensor(PointSensor* sensor)
     {
         sensor->ball_->setPosition(sensor->target_pos);
     }
-}
-
-int Viewer::LoadShadowfile(std::string vehicleModelFilename)
-{
-    bool        found     = false;
-    std::string file_path = LocateFile(SHADOW_MODEL_FILEPATH,
-                                       {DirNameOf(SE_Env::Inst().GetEXEFilePath()) + "/../resources/models", DirNameOf(vehicleModelFilename)},
-                                       "Shadow face model ",
-                                       found);
-
-    if (found)
-    {
-        // Load shadow geometry
-        shadow_node_ = osgDB::readNodeFile(file_path);
-        if (shadow_node_ != nullptr)
-        {
-            return 0;
-        }
-        else
-        {
-            LOG_ERROR("Shadow face model file {} found, but failed to load", file_path);
-        }
-    }
-    else
-    {
-        LOG_WARN("Shadow face model file {} not located", file_path);
-    }
-
-    return -1;
 }
 
 int Viewer::LoadEnvironment(const char* filename)
@@ -3748,13 +4180,30 @@ bool ViewerEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActi
         {
             if (ea.getEventType() & osgGA::GUIEventAdapter::KEYDOWN)
             {
-                int mask =
-                    viewer_->GetNodeMaskBit(NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB) / NodeMask::NODE_MASK_ENTITY_MODEL;
+                const int entity_mask = NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB | NodeMask::NODE_MASK_ENTITY_BB_FILLED;
+                int       mask        = viewer_->GetNodeMaskBit(entity_mask);
 
-                // Toggle between modes: 0: none, 1: model only, 2: bounding box, 3. model + Bounding box
-                mask = ((mask + 1) % 4) * NodeMask::NODE_MASK_ENTITY_MODEL;
+                // Toggle order: 0: none, 1: model only, 2: bounding box, 3: model + bounding box, 4: filled bounding box
+                switch (mask)
+                {
+                    case NodeMask::NODE_MASK_NONE:
+                        mask = NodeMask::NODE_MASK_ENTITY_MODEL;
+                        break;
+                    case NodeMask::NODE_MASK_ENTITY_MODEL:
+                        mask = NodeMask::NODE_MASK_ENTITY_BB;
+                        break;
+                    case NodeMask::NODE_MASK_ENTITY_BB:
+                        mask = NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB;
+                        break;
+                    case (NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB):
+                        mask = NodeMask::NODE_MASK_ENTITY_BB_FILLED;
+                        break;
+                    default:
+                        mask = NodeMask::NODE_MASK_NONE;
+                        break;
+                }
 
-                viewer_->SetNodeMaskBits(NodeMask::NODE_MASK_ENTITY_MODEL | NodeMask::NODE_MASK_ENTITY_BB, mask);
+                viewer_->SetNodeMaskBits(entity_mask, mask);
             }
         }
         break;

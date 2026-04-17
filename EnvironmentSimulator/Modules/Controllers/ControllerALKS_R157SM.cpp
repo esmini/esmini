@@ -14,7 +14,6 @@
 #include "CommonMini.hpp"
 #include "Entities.hpp"
 #include "ScenarioEngine.hpp"
-#include "ScenarioGateway.hpp"
 #include "logger.hpp"
 
 using namespace scenarioengine;
@@ -237,10 +236,9 @@ void ControllerALKS_R157SM::Step(double timeStep)
     if (mode_ == ControlOperationMode::MODE_OVERRIDE)
     {
         object_->MoveAlongS(speed * timeStep);
-        gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
     }
 
-    gateway_->updateObjectSpeed(object_->GetId(), 0.0, speed);
+    object_->SetSpeed(speed);
 
     Controller::Step(timeStep);
 }
@@ -649,11 +647,11 @@ bool ControllerALKS_R157SM::Regulation::CheckSafety(ObjectInfo* info)
         else
         {
             // Use front side of bounding box
-            x = static_cast<double>(info->obj->boundingbox_.dimensions_.length_) / 2.0;
+            x = info->obj->boundingbox_.dimensions_.length_ / 2.0;
         }
 
         // Look at side towards Ego vehicle lane
-        double y  = -1 * SIGN(info->dLaneId) * static_cast<double>(info->obj->boundingbox_.dimensions_.width_) / 2.0;
+        double y  = -1 * SIGN(info->dLaneId) * info->obj->boundingbox_.dimensions_.width_ / 2.0;
         double xr = 0.0, yr = 0.0;
         RotateVec2D(x, y, info->obj->pos_.GetHRelative(), xr, yr);
         double offset = info->obj->pos_.GetOffset() + yr;

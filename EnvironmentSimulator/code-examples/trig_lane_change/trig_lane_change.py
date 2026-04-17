@@ -12,7 +12,6 @@
      - from this folder (where this code module is), run: ./trig_lane_change.py
 '''
 
-
 import sys
 import ctypes
 from tkinter import *

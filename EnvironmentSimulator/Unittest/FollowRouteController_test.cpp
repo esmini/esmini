@@ -18,9 +18,13 @@ using namespace scenarioengine;
 
 static void scenario_step(ScenarioEngine *scenario_engine, double dt)
 {
+    DirtyBits::SetReadFront();
+
     scenario_engine->step(dt);
     scenario_engine->prepareGroundTruth(dt);
-    scenario_engine->getScenarioGateway()->clearDirtyBits();
+
+    scenario_engine->SwapAndClearDirtyBits();
+    DirtyBits::SetReadBack();
 }
 
 class FollowRouteControllerTest : public ::testing::Test

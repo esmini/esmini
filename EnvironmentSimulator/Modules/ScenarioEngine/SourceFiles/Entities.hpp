@@ -202,7 +202,6 @@ namespace scenarioengine
         double end_of_road_timestamp_;
         double off_road_timestamp_;
         double stand_still_timestamp_;
-        bool   reset_;  // indicate discreet movement, teleporting, no odometer update
 
         std::vector<Controller*>                    controllers_;  // reference to all assigned controller objects
         double                                      headstart_time_;
@@ -215,7 +214,7 @@ namespace scenarioengine
         EntityScaleMode scaleMode_;
 
         int         category_;  // specific object category in vehicle, pedestrian or misobject
-        int         role_;      // Specific roles for entity objects of type Vehicle or Pedestrian
+        Role        role_;      // Specific roles for entity objects of type Vehicle or Pedestrian
         std::string typeName_;  // Name of the vehicle-, pedestrian- or misc object type
         std::string name_;
 
@@ -417,7 +416,7 @@ namespace scenarioengine
         void SetSpeed(double speed)
         {
             speed_ = speed;
-            SetDirtyBits(Object::DirtyBit::SPEED);
+            dirty_.SetBits(Object::DirtyBit::SPEED);
         }
         double GetSpeed() const
         {
@@ -437,18 +436,18 @@ namespace scenarioengine
                                             unsigned int         domainMask,
                                             Controller::Type     type = Controller::Type::CONTROLLER_TYPE_UNDEFINED);
 
-        Controller*      GetAssignedControllerOftype(Controller::Type type);
-        bool             IsAnyAssignedControllerOfType(Controller::Type type);
-        bool             IsAnyActiveControllerOfType(Controller::Type type);
-        Controller*      GetControllerActiveOnDomainMask(ControlDomainMasks domain_mask);
-        Controller*      GetControllerActiveOnDomain(ControlDomains domain);
-        Controller::Type GetControllerTypeActiveOnDomain(ControlDomains domain);
+        Controller*      GetAssignedControllerOftype(Controller::Type type) const;
+        bool             IsAnyAssignedControllerOfType(Controller::Type type) const;
+        bool             IsAnyActiveControllerOfType(Controller::Type type) const;
+        Controller*      GetControllerActiveOnDomainMask(ControlDomainMasks domain_mask) const;
+        Controller*      GetControllerActiveOnDomain(ControlDomains domain) const;
+        Controller::Type GetControllerTypeActiveOnDomain(ControlDomains domain) const;
         unsigned int     GetNrOfAssignedControllers() const
         {
             return static_cast<unsigned int>(controllers_.size());
         }
 
-        Controller* GetController(std::string name);
+        Controller* GetController(std::string name) const;
 
         int GetId() const
         {
@@ -480,6 +479,12 @@ namespace scenarioengine
         {
             return wheel_angle_;
         }
+
+        double GetWheelRotation() const
+        {
+            return wheel_rot_;
+        }
+
         void SetVel(double x_vel, double y_vel, double z_vel);
         void SetAcc(double x_acc, double y_acc, double z_acc);
         void SetAngularVel(double h_vel, double p_vel, double r_vel);
@@ -584,69 +589,41 @@ namespace scenarioengine
             return objectEvents_;
         }
 
-        bool CheckDirtyBits(int bits) const
-        {
-            return bool(dirty_ & bits);
-        }
-
-        void SetDirtyBits(int bits)
-        {
-            dirty_ |= bits;
-        }
-
-        void SetDirty(int bitmask)
-        {
-            dirty_ = bitmask;
-        }
-
-        int GetDirtyBitMask() const
-        {
-            return dirty_;
-        }
-
-        void ClearDirtyBits(int bits)
-        {
-            dirty_ &= ~bits;
-        }
-
-        void ClearDirtyBits()
-        {
-            dirty_ = 0;
-        }
+        DirtyBits dirty_;
 
         void SetRole(std::string role)
         {
             if (role == "ambulance")
             {
-                role_ = static_cast<int>(Object::Role::AMBULANCE);
+                role_ = Object::Role::AMBULANCE;
             }
             else if (role == "civil")
             {
-                role_ = static_cast<int>(Object::Role::CIVIL);
+                role_ = Object::Role::CIVIL;
             }
             else if (role == "fire")
             {
-                role_ = static_cast<int>(Object::Role::FIRE);
+                role_ = Object::Role::FIRE;
             }
             else if (role == "military")
             {
-                role_ = static_cast<int>(Object::Role::MILITARY);
+                role_ = Object::Role::MILITARY;
             }
             else if (role == "police")
             {
-                role_ = static_cast<int>(Object::Role::POLICE);
+                role_ = Object::Role::POLICE;
             }
             else if (role == "public_transport")
             {
-                role_ = static_cast<int>(Object::Role::PUBLIC_TRANSPORT);
+                role_ = Object::Role::PUBLIC_TRANSPORT;
             }
             else if (role == "road_assistance")
             {
-                role_ = static_cast<int>(Object::Role::ROAD_ASSISTANCE);
+                role_ = Object::Role::ROAD_ASSISTANCE;
             }
             else
             {
-                role_ = static_cast<int>(Object::Role::NONE);
+                role_ = Object::Role::NONE;
             }
         }
 
@@ -657,8 +634,8 @@ namespace scenarioengine
 
         Object*            TowVehicle();
         Object*            TrailerVehicle();
-        static std::string Type2String(int type);
-        static std::string Role2String(int role);
+        static std::string Type2String(Type type);
+        static std::string Role2String(Role role);
 
         // Resolve and set path to 3D model file
         // Return 0 if file exists, else -1
@@ -698,11 +675,39 @@ namespace scenarioengine
             return refpoint_x_offset_;
         }
 
+        void SetOSIIndex(id_t osi_index)
+        {
+            osi_index_ = osi_index;
+        }
+
+        id_t GetOSIIndex() const
+        {
+            return osi_index_;
+        }
+
+        void SetColor(std::string color)
+        {
+            color_     = color;
+            color_rgb_ = HexToDouble(color, true);
+        }
+
+        std::string GetColorStr() const
+        {
+            return color_;
+        }
+
+        Rgb GetColorRgb() const
+        {
+            return color_rgb_;
+        }
+
     private:
-        int                      dirty_;
         bool                     is_active_;
         std::string              model3d_full_path_;
+        std::string              color_;
+        Rgb                      color_rgb_;
         std::vector<std::string> source_reference_;
+        id_t                     osi_index_ = ID_UNDEFINED;  // global OSI index
     };
 
     class Vehicle : public Object
@@ -785,6 +790,14 @@ namespace scenarioengine
             {
                 category_ = static_cast<int>(Vehicle::Category::TRAILER);
             }
+            else if (category == "tram")
+            {
+                category_ = static_cast<int>(Vehicle::Category::TRAM);
+            }
+            else if (category == "train")
+            {
+                category_ = static_cast<int>(Vehicle::Category::TRAIN);
+            }
             else if (category == "van")
             {
                 category_ = static_cast<int>(Vehicle::Category::VAN);
@@ -827,6 +840,11 @@ namespace scenarioengine
         }
 
         std::vector<WheelData>& GetWheelData()
+        {
+            return wheel_data;
+        }
+
+        const std::vector<WheelData>& GetWheelData() const
         {
             return wheel_data;
         }

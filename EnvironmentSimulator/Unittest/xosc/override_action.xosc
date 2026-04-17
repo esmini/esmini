@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSCENARIO>
    <FileHeader revMajor="1"
-               revMinor="1"
-               date="2021-04-13T10:00:00"
+               revMinor="2"
+               date="2026-03-25T10:00:00"
                description="For OverrideAction unit test"
                author="esmini-team"/>
    <ParameterDeclarations>
@@ -59,7 +59,7 @@
                         <PrivateAction>
                            <ControllerAction>
                               <OverrideControllerValueAction>
-                                  <Throttle value="0.5" active="true"/>
+                                  <Throttle value="0.5" active="true" maxRate="0.4"/>
                                   <Brake value="0.7" active="false"/>
                                   <Clutch value="2.0" active="false"/>
                               </OverrideControllerValueAction>
@@ -81,7 +81,7 @@
                         <PrivateAction>
                            <ControllerAction>
                               <OverrideControllerValueAction>
-                                  <Clutch value="0.7" active="true"/>
+                                  <Clutch value="0.7" active="true" maxRate="0.8"/>
                                   <ParkingBrake value="0.0" active="true"/>
                                   <SteeringWheel value="15.0" active="false"/>
                                   <Gear number="7.8" active="true"/>
@@ -143,6 +143,6 @@
                </ByValueCondition>
             </Condition>
          </ConditionGroup>
-      </StopTrigger>    
+      </StopTrigger>
     </Storyboard>
 </OpenSCENARIO>

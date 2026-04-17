@@ -518,6 +518,13 @@ void Signal::SetAllValidLanes(Signal* sig, Road* r)
 {
     std::vector<std::pair<int, Lane*>> drivable_lanes;
     auto                               ls = r->GetLaneSectionByS(sig->GetS());
+
+    if (ls == nullptr)
+    {
+        LOG_ERROR_AND_QUIT("Signal::SetAllValidLanes: No lane section found at s={} for signal id {}", sig->GetS(), sig->GetId());
+        return;  // for cppcheck
+    }
+
     drivable_lanes.reserve(ls->GetNumberOfLanes());
 
     for (unsigned int i = 0; i < ls->GetNumberOfLanes(); i++)
@@ -2918,31 +2925,31 @@ roadmanager::RMObject::RMObject(double      s,
     // Set color based on object type
     if (type_ == ObjectType::BUILDING || type_ == ObjectType::BARRIER)
     {
-        color_[0] = 0.6f;
-        color_[1] = 0.6f;
-        color_[2] = 0.6f;
-        color_[3] = 1.0f;
+        color_[0] = 0.6;
+        color_[1] = 0.6;
+        color_[2] = 0.6;
+        color_[3] = 1.0;
     }
     else if (type_ == ObjectType::OBSTACLE)
     {
-        color_[0] = 0.5f;
-        color_[1] = 0.3f;
-        color_[2] = 0.3f;
-        color_[3] = 1.0f;
+        color_[0] = 0.5;
+        color_[1] = 0.3;
+        color_[2] = 0.3;
+        color_[3] = 1.0;
     }
     else if (type_ == ObjectType::TREE || type_ == ObjectType::VEGETATION)
     {
-        color_[0] = 0.22f;
-        color_[1] = 0.32f;
-        color_[2] = 0.22f;
-        color_[3] = 1.0f;
+        color_[0] = 0.22;
+        color_[1] = 0.32;
+        color_[2] = 0.22;
+        color_[3] = 1.0;
     }
     else
     {
-        color_[0] = 0.4f;
-        color_[1] = 0.4f;
-        color_[2] = 0.4f;
-        color_[3] = 1.0f;
+        color_[0] = 0.4;
+        color_[1] = 0.4;
+        color_[2] = 0.4;
+        color_[3] = 1.0;
     }
 }
 
@@ -4187,6 +4194,10 @@ bool OpenDrive::ParseOpenDriveXML(const pugi::xml_document& doc)
                             else if (lane_type_str == "onRamp")
                             {
                                 lane_type = Lane::LANE_TYPE_ON_RAMP;
+                            }
+                            else if (lane_type_str == "connectingRamp")
+                            {
+                                lane_type = Lane::LANE_TYPE_CONNECTING_RAMP;
                             }
                             else
                             {
@@ -8376,7 +8387,7 @@ void OpenDrive::CreateTunnelOSIPointsAndObjects()
 
                     for (auto o : rm_obj)
                     {
-                        o->GetColor()[3] = static_cast<float>(1.0 - tunnel->transparency_);  // set semitransparent
+                        o->GetColor()[3] = 1.0 - tunnel->transparency_;  // set semitransparent
                     }
                 }
             }
@@ -10522,7 +10533,7 @@ int Position::SetInertiaPos(double x, double y, double z, double h, double p, do
     return SetInertiaPosMode(x, y, z, h, p, r, GetMode(PosModeType::SET), updateTrackPos);
 }
 
-int Position::SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos, bool alongRoute)
+int Position::SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos)
 {
     x = std::isnan(x) ? x_ : x;
     y = std::isnan(y) ? y_ : y;
@@ -10541,7 +10552,7 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
 
     if (updateTrackPos)
     {
-        XYZ2TrackPos(x, y, z, mode, false, ID_UNDEFINED, false, alongRoute);
+        XYZ2TrackPos(x, y, z, mode, false, ID_UNDEFINED, false, CheckBitsEqual(mode, PosMode::SNAP_TO_ROUTE_MASK, PosMode::SNAP_TO_ROUTE_ON));
     }
     else
     {
@@ -10627,22 +10638,21 @@ int Position::SetInertiaPosMode(double x, double y, double z, double h, double p
     return 0;
 }
 
-int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos, bool alongRoute)
+int Position::SetInertiaPos(double x, double y, double h, bool updateTrackPos)
 {
-    // apply current position align mode - using current SET mode for heading and UPDATE mode for pitch and roll
-    return SetInertiaPosMode(
-        x,
-        y,
-        h,
-        (GetMode(PosModeType::SET) & PosMode::H_MASK) | (GetMode(PosModeType::UPDATE) & (PosMode::Z_MASK | PosMode::P_MASK | PosMode::R_MASK)),
-        updateTrackPos,
-        alongRoute);
+    // apply current position align mode - using current SET mode for heading and UPDATE mode for z, pitch, roll and snap
+    return SetInertiaPosMode(x,
+                             y,
+                             h,
+                             (GetMode(PosModeType::SET) & (PosMode::H_MASK | PosMode::SNAP_TO_ROUTE_MASK)) |
+                                 (GetMode(PosModeType::UPDATE) & (PosMode::Z_MASK | PosMode::P_MASK | PosMode::R_MASK)),
+                             updateTrackPos);
 }
 
-int Position::SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos, bool alongRoute)
+int Position::SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos)
 {
     // Apply zero z, p, r to be aligned according to specified mode
-    return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode, updateTrackPos, alongRoute);
+    return SetInertiaPosMode(x, y, 0.0, h, 0.0, 0.0, mode, updateTrackPos);
 }
 
 void Position::SetHeading(double heading, bool evaluate)
@@ -10880,6 +10890,11 @@ double Position::GetPRoadInDrivingDirection() const
     return GetPRoad() * GetDrivingDirectionRelativeRoad();
 }
 
+double Position::GetRRoadInDrivingDirection() const
+{
+    return GetRRoad() * GetDrivingDirectionRelativeRoad();
+}
+
 double Position::GetHRelativeDrivingDirection() const
 {
     return GetAngleDifference(h_, GetDrivingDirection());
@@ -11061,11 +11076,11 @@ int Position::GetModeDefault(PosModeType type)
 {
     if (type == PosModeType::SET)
     {
-        return PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL;
+        return PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL | PosMode::SNAP_TO_ROUTE_OFF;
     }
     else if (type == PosModeType::UPDATE)
     {
-        return PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL;
+        return PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL | PosMode::SNAP_TO_ROUTE_OFF;
     }
     else if (type == PosModeType::INIT)
     {
@@ -11108,7 +11123,7 @@ void Position::SetMode(PosModeType type, int mode)
         return;
     }
 
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < 5; i++)
     {
         int mask     = PosMode::Z_MASK << i * 4;
         int set_mask = PosMode::Z_SET << i * 4;
@@ -11116,7 +11131,7 @@ void Position::SetMode(PosModeType type, int mode)
 
         if (mode & set_mask)
         {
-            if (mode == def_mask)
+            if ((mode & mask) == def_mask)
             {
                 *mode_ref = (*mode_ref & ~mask) | (GetModeDefault(type) & mask);
             }
@@ -11851,11 +11866,17 @@ Position::ReturnCode Position::GetProbeInfo(double lookahead_distance, RoadProbe
 
     target.Duplicate(*this);
 
-    if (along_route && GetRoute() != nullptr && GetRoute()->IsValid() && GetRoute()->OnRoute())
+    if (along_route && GetRoute() != nullptr && GetRoute()->IsValid())
     {
         // If route is valid, use current point snapped to route as pivot to find the target position
         target.CopyLocation(GetRoute()->currentPos_);
         target.CopyRoute(*this);
+
+        // align heading with route direction
+        if (GetRoute()->waypoint_idx_ != IDX_UNDEFINED)
+        {
+            target.SetHeadingRelative(GetRoute()->GetWaypoint()->GetRouteWaypointDir() < 0 ? M_PI : 0.0);
+        }
     }
 
     if (lookAheadMode == LookAheadMode::LOOKAHEADMODE_AT_LANE_CENTER)
@@ -12182,6 +12203,7 @@ int PolyLineBase::EvaluateSegmentByLocalS(idx_t i, double local_s, TrajVertex& p
         pos.pos_mode    = vp0->pos_mode;
         pos.wheel_angle = (1 - a) * vp0->wheel_angle + a * vp1->wheel_angle;
 
+        // interpolate orientation
         for (int j = 0; j < 3; j++)
         {
             double  angle_current  = 0.0;
@@ -12212,6 +12234,13 @@ int PolyLineBase::EvaluateSegmentByLocalS(idx_t i, double local_s, TrajVertex& p
 
             if (angle != nullptr)
             {
+                if (j > 0 && vp0->pos_mode != vp1->pos_mode)
+                {
+                    *angle = GetAngleInInterval2PI(angle_current);
+                    LOG_WARN_ONCE("Skipping trajectory pitch and roll interpolation for corner between segments of different position modes");
+                    continue;
+                }
+
                 if (interpolation_mode_ == InterpolationMode::INTERPOLATE_SEGMENT)
                 {
                     // Interpolate angle over the whole segment
@@ -12754,13 +12783,24 @@ void PolyLineShape::CalculatePolyLine()
             return;
         }
 
-        pv->pos_mode = v->pos_->GetMode(Position::PosModeType::INIT);
-        pv->x        = v->pos_->GetX();
-        pv->y        = v->pos_->GetY();
-        pv->z        = v->pos_->GetZ();
-        pv->h        = v->pos_->GetH();
+        pv->x = v->pos_->GetX();
+        pv->y = v->pos_->GetY();
+        pv->z = v->pos_->GetZ();
+        pv->h = v->pos_->GetH();
 
-        if ((pv->pos_mode & Position::PosMode::Z_MASK) == 0 && (pv->pos_mode & Position::PosMode::P_MASK) == 0)
+        // if next vertex is fixed along z while current is not (relative road), fix current as well to interpolate z along the segment
+        if (i < vertex_.size() - 1 &&
+            ((vertex_[i + 1].pos_->GetMode(Position::PosModeType::INIT) & Position::PosMode::Z_MASK) == Position::PosMode::Z_ABS) &&
+            ((vertex_[i].pos_->GetMode(Position::PosModeType::INIT) & Position::PosMode::Z_MASK) != Position::PosMode::Z_ABS))
+        {
+            pv->pos_mode = vertex_[i + 1].pos_->GetMode(Position::PosModeType::INIT);
+        }
+        else
+        {
+            pv->pos_mode = v->pos_->GetMode(Position::PosModeType::INIT);
+        }
+
+        if ((pv->pos_mode & Position::PosMode::Z_MASK) != Position::PosMode::Z_ABS && (pv->pos_mode & Position::PosMode::P_MASK) == 0)
         {
             // if no z or pitch is specified, use calculated values relative the road surface
             pv->pos_mode = (pv->pos_mode & ~Position::PosMode::P_MASK) | Position::PosMode::P_REL;
@@ -12771,7 +12811,7 @@ void PolyLineShape::CalculatePolyLine()
             pv->pitch = v->pos_->GetP();
         }
 
-        if ((pv->pos_mode & Position::PosMode::Z_MASK) == 0 && (pv->pos_mode & Position::PosMode::R_MASK) == 0)
+        if ((pv->pos_mode & Position::PosMode::Z_MASK) != Position::PosMode::Z_ABS && (pv->pos_mode & Position::PosMode::R_MASK) == 0)
         {
             // if no z or roll is specified, use calculated values relative the road surface
             pv->pos_mode = (pv->pos_mode & ~Position::PosMode::R_MASK) | Position::PosMode::R_REL;
@@ -13921,6 +13961,7 @@ int Position::UpdateTrajectoryPos()
 
     double x = trajectory_->shape_->current_val_.x;
     double y = trajectory_->shape_->current_val_.y;
+    double z = trajectory_->shape_->current_val_.z;
 
     // First adjust lateral offset
     if (!NEAR_ZERO(t_trajectory_))
@@ -13938,7 +13979,7 @@ int Position::UpdateTrajectoryPos()
     if ((pos_mode & PosMode::Z_MASK) == PosMode::Z_ABS)
     {
         // absolute z means that z value has been specified and trajectory is detached from the road surface
-        // adjust unset z, pitch and roll to calculated absolute values (while heading is already calculated)
+        // adjust unset pitch and roll to calculated absolute values (while heading is already calculated)
         if ((pos_mode & PosMode::P_MASK) == 0)
         {
             pos_mode = (pos_mode & ~PosMode::P_MASK) | PosMode::P_ABS;
@@ -13956,6 +13997,7 @@ int Position::UpdateTrajectoryPos()
         if ((pos_mode & PosMode::Z_MASK) == 0)
         {
             pos_mode = (pos_mode & ~PosMode::Z_MASK) | PosMode::Z_REL;
+            z        = 0.0;
         }
 
         if ((pos_mode & PosMode::P_MASK) == 0)
@@ -13973,7 +14015,7 @@ int Position::UpdateTrajectoryPos()
 
     SetInertiaPosMode(x,
                       y,
-                      (pos_mode & PosMode::Z_MASK) == PosMode::Z_ABS ? trajectory_->shape_->current_val_.z : 0.0,
+                      z,
                       trajectory_->shape_->current_val_.h,
                       trajectory_->shape_->current_val_.pitch,
                       trajectory_->shape_->current_val_.r,
@@ -14122,13 +14164,15 @@ void Position::EvaluateRelation(bool release)
     }
     else if (GetType() == PositionType::RELATIVE_OBJECT)
     {
-        // No relation to road or lane, set both position and orientation
         // consider complete orientation, i.e. including heading, pitch and roll
         double v[3];
+        int    z_mode = ((GetMode(Position::PosModeType::INIT) & Position::PosMode::Z_MASK) == Position::PosMode::Z_ABS) ? Position::PosMode::Z_ABS
+                                                                                                                         : Position::PosMode::Z_REL;
+
         RotateVec3d(rel_pos_->GetH(), rel_pos_->GetP(), rel_pos_->GetR(), relative_.dx, relative_.dy, relative_.dz, v[0], v[1], v[2]);
         SetInertiaPosMode(rel_pos_->GetX() + v[0],
                           rel_pos_->GetY() + v[1],
-                          rel_pos_->GetZ() + v[2],
+                          (z_mode == Position::PosMode::Z_ABS) ? rel_pos_->GetZ() + v[2] : relative_.dz,
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::H_MASK) == Position::PosMode::H_ABS)
                               ? relative_.dh
                               : GetAngleSum(relative_.dh, rel_pos_->GetH()),
@@ -14138,15 +14182,17 @@ void Position::EvaluateRelation(bool release)
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::R_MASK) == Position::PosMode::R_ABS)
                               ? relative_.dr
                               : GetAngleSum(relative_.dr, rel_pos_->GetR()),
-                          Position::PosMode::Z_ABS | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS,
+                          z_mode | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS,
                           true);
     }
     else if (GetType() == PositionType::RELATIVE_WORLD)
     {
+        int z_mode = ((GetMode(Position::PosModeType::INIT) & Position::PosMode::Z_MASK) == Position::PosMode::Z_ABS) ? Position::PosMode::Z_ABS
+                                                                                                                      : Position::PosMode::Z_REL;
         // No relation to road or lane, set both position and orientation
-        SetInertiaPosMode(rel_pos_->GetX() + relative_.dx * cos(rel_pos_->GetH()) - relative_.dy * sin(rel_pos_->GetH()),
-                          rel_pos_->GetY() + relative_.dy * cos(rel_pos_->GetH()) + relative_.dx * sin(rel_pos_->GetH()),
-                          rel_pos_->GetZ() + relative_.dz,
+        SetInertiaPosMode(rel_pos_->GetX() + relative_.dx,
+                          rel_pos_->GetY() + relative_.dy,
+                          (z_mode == Position::PosMode::Z_ABS) ? rel_pos_->GetZ() + relative_.dz : relative_.dz,
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::H_MASK) == Position::PosMode::H_ABS)
                               ? relative_.dh
                               : GetAngleSum(relative_.dh, rel_pos_->GetH()),
@@ -14156,7 +14202,7 @@ void Position::EvaluateRelation(bool release)
                           ((GetMode(Position::PosModeType::INIT) & Position::PosMode::R_MASK) == Position::PosMode::R_ABS)
                               ? relative_.dr
                               : GetAngleSum(relative_.dr, rel_pos_->GetR()),
-                          Position::PosMode::Z_ABS | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS,
+                          z_mode | Position::PosMode::H_ABS | Position::PosMode::P_ABS | Position::PosMode::R_ABS,
                           true);
     }
 
@@ -14676,6 +14722,8 @@ Position::ReturnCode Route::MovePathDS(double ds, double* remaining_dist, bool u
 
     // Consider route direction
     ds *= GetWaypoint()->GetRouteWaypointDir();
+    // printf("moving along path by ds = %.2f (route dir %d), from road %d s %.2f\n", ds, GetWaypoint()->GetRouteWaypointDir(),
+    // currentPos_.GetTrackId(), currentPos_.GetS());
 
     return SetPathS(GetPathS() + ds, remaining_dist, update_state);
 }
@@ -14802,7 +14850,7 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
     return Position::ReturnCode::ERROR_GENERIC;  // not expected
 }
 
-Position* Route::GetWaypoint(idx_t index)
+const Position* Route::GetWaypoint(idx_t index) const
 {
     if (index == IDX_UNDEFINED)  // Get current
     {

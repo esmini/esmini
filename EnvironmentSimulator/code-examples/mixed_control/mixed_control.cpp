@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
     SE_ScenarioObjectState objectState;
     SE_RoadInfo            roadInfo;
 
-    float dt = 0.0f;
+    double dt = 0.0;
 
     // look for specified timestep, else run in realtime mode
     bool fixed_timestep = false;
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
         if (i < argc - 1 && strcmp(argv[i], "--fixed_timestep") == 0)
         {
             fixed_timestep = true;
-            dt             = static_cast<float>(atof(argv[i + 1]));  // use any provided fixed timestep
+            dt             = atof(argv[i + 1]);  // use any provided fixed timestep
         }
         else if (strcmp(argv[i], "--headless") == 0)
         {
@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
     // Initialize the vehicle model, fetch initial state from the scenario
     SE_GetObjectState(0, &objectState);
     vehicleHandle = SE_SimpleVehicleCreate(objectState.x, objectState.y, objectState.h, 4.0, 0.0);
-    SE_SimpleVehicleSteeringRate(vehicleHandle, 6.0f);
+    SE_SimpleVehicleSteeringRate(vehicleHandle, 6.0);
 
     // show some road features, including road sensor
     SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),
@@ -81,10 +81,10 @@ int main(int argc, char* argv[])
             // Get road information at a point some speed dependent distance ahead
             double targetSpeed;
             // Look ahead along the road, to establish target info for the driver model
-            SE_GetRoadInfoAtDistance(0, 5 + 0.75f * vehicleState.speed, &roadInfo, 0, true);
+            SE_GetRoadInfoAtDistance(0, 5 + 0.75 * vehicleState.speed, &roadInfo, 0, true);
 
             // Slow down when curve ahead - CURVE_WEIGHT is the tuning parameter
-            targetSpeed = defaultTargetSpeed / (1 + curveWeight * static_cast<double>(fabs(roadInfo.angle)));
+            targetSpeed = defaultTargetSpeed / (1 + curveWeight * fabs(roadInfo.angle));
 
             // Get simulation delta time since last call (first will be minimum timestep)
             if (!fixed_timestep)
@@ -96,12 +96,12 @@ int main(int argc, char* argv[])
 
             if (objectState.ctrl_type == 8)  // ACCController
             {
-                throttle = throttleWeight * static_cast<double>(SE_GetObjectAcceleration(SE_GetId(0)));
+                throttle = throttleWeight * SE_GetObjectAcceleration(SE_GetId(0));
             }
             else
             {
                 // Accelerate or decelerate towards target speed - THROTTLE_WEIGHT tunes magnitude
-                throttle = throttleWeight * (targetSpeed - static_cast<double>(vehicleState.speed));
+                throttle = throttleWeight * (targetSpeed - vehicleState.speed);
             }
 
             // Step vehicle model with driver input, but wait until time > 0
@@ -116,7 +116,7 @@ int main(int argc, char* argv[])
             SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
 
             // Report updated vehicle position and heading. z, pitch and roll will be aligned to the road
-            SE_ReportObjectPosXYH(0, 0, vehicleState.x, vehicleState.y, vehicleState.h);
+            SE_ReportObjectPosXYH(0, vehicleState.x, vehicleState.y, vehicleState.h);
 
             // The following values are not necessary to report.
             // If not reported, esmini will calculate based on motion over time

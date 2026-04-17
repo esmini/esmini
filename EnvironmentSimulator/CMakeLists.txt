@@ -58,12 +58,6 @@ set_folder(
 set_folder(
     ScenarioEngine
     ${ModulesFolder})
-set_folder(
-    RoadManager
-    ${ModulesFolder})
-set_folder(
-    ScenarioEngine
-    ${ModulesFolder})
 
 if(USE_OSI)
     set_folder(

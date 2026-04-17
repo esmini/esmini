@@ -454,7 +454,7 @@ int main(int argc, char **argv)
     opt.AddOption("fixed_timestep", "Run simulation decoupled from realtime, with specified timesteps", "timestep");
     opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
-    opt.AddOption("ground_plane", "Add a large flat ground surface");
+    opt.AddOption("ground_plane", "Add a large flat ground surface. Modes: on, off, auto", "mode", "auto", true);
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("log_append", "Log all scenarios in the same txt file");
     opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", ODRVIEWER_LOG_FILENAME, false);

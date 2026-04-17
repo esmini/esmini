@@ -153,27 +153,27 @@
                                           <Nurbs order="3">
                                              <ControlPoint>
                                                 <Position>
-                                                   <RelativeWorldPosition entityRef="Ego" dx="0.0" dy="0.0"/>
+                                                   <RelativeObjectPosition entityRef="Ego" dx="0.0" dy="0.0"/>
                                                 </Position>
                                              </ControlPoint>
                                              <ControlPoint>
                                                 <Position>
-                                                   <RelativeWorldPosition entityRef="Ego" dx="20.0" dy="0.0"/>
+                                                   <RelativeObjectPosition entityRef="Ego" dx="20.0" dy="0.0"/>
                                                 </Position>
                                              </ControlPoint>
                                              <ControlPoint>
                                                 <Position>
-                                                   <RelativeWorldPosition entityRef="Ego" dx="20.0" dy="20.0"/>
+                                                   <RelativeObjectPosition entityRef="Ego" dx="20.0" dy="20.0"/>
                                                 </Position>
                                              </ControlPoint>
                                              <ControlPoint>
                                                 <Position>
-                                                   <RelativeWorldPosition entityRef="Ego" dx="-10.0" dy="-10.0"/>
+                                                   <RelativeObjectPosition entityRef="Ego" dx="-10.0" dy="-10.0"/>
                                                 </Position>
                                              </ControlPoint>
                                              <ControlPoint>
                                                 <Position>
-                                                   <RelativeWorldPosition entityRef="Ego" dx="-20.0" dy="0.0"/>
+                                                   <RelativeObjectPosition entityRef="Ego" dx="-20.0" dy="0.0"/>
                                                 </Position>
                                              </ControlPoint>
                                              <Knot value="0.0"/>

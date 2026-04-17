@@ -5,7 +5,6 @@ set(TARGET
 
 # ############################### Loading desired rules ##############################################################
 
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/enable_fpic.cmake)
 
@@ -70,8 +69,15 @@ target_include_directories(
            ${EXTERNALS_SUMO_INCLUDES}
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_OSG_INCLUDES}
-           ${EXTERNALS_FMT_INCLUDES})
+           ${EXTERNALS_FMT_INCLUDES}
+           ${EXTERNALS_IMPLOT_INCLUDES})
 
-disable_static_analysis(${TARGET})
+if(USE_IMPLOT)
+    target_include_directories(
+        ${TARGET}
+        SYSTEM
+        PUBLIC ${EXTERNALS_IMPLOT_INCLUDES})
+endif()
+
 disable_iwyu(${TARGET})
 enable_fpic(${TARGET})

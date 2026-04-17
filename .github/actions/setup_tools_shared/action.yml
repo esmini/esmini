@@ -12,46 +12,18 @@ runs:
         && sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 200
         && sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 200
 
-    - uses: actions/setup-python@v5.6.0
+    - uses: actions/setup-python@v6
       with:
-        python-version: '3.8'
+        python-version: '3.12'
         cache: 'pip'
     - run: pip install -r support/python/requirements.txt
       shell: bash
-
-    - uses: seanmiddleditch/gha-setup-ninja@v5
-
-    - uses: jwlawson/actions-setup-cmake@v2.0.2
-      if: runner.os != 'macOS'
 
     - name: Install OSG dependencies - Ubuntu
       if: runner.os == 'Linux'
       shell: bash
       run: sudo apt-get install -y -q libx11-dev libxrandr-dev libxinerama-dev libgl1-mesa-dev libegl1-mesa-dev
         && sudo apt-get install -y -q libglu1-mesa-dev xorg-dev mesa-utils
-
-    - name: Install Mesa3D - Windows
-      if: runner.os == 'Windows'
-      uses: ssciwr/setup-mesa-dist-win@v1
-      with:
-        version: '22.3.5'
-
-    - name: Install wglinfo - Windows
-      if: runner.os == 'Windows'
-      shell: cmd
-      run: curl.exe -L --output wglinfo64.exe --url https://github.com/gkv311/wglinfo/releases/download/22_03/wglinfo64.exe
-
-    - name: Output glxinfo - Ubuntu
-      if: runner.os == 'Linux'
-      shell: bash
-      run: xvfb-run glxinfo
-
-    - name: Output wglinfo - Windows
-      if: runner.os == 'Windows'
-      shell: cmd
-      env:
-        GALLIUM_DRIVER: llvmpipe
-      run: wglinfo64
 
     - name: Install cppcheck
       if: runner.os == 'Linux'

@@ -18,7 +18,6 @@
 #include "ControllerFollowRoute.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 #include "Storyboard.hpp"
 #include "ScenarioEngine.hpp"
 #include "LaneIndependentRouter.hpp"
@@ -181,7 +180,7 @@ void ControllerFollowRoute::UpdateWaypoints(roadmanager::Position vehiclePos, ro
             }
 
             object_->pos_.GetRoute()->ReplaceMinimalWaypoints({vehiclePos, waypoints_[static_cast<unsigned int>(currentWaypointIndex_)]});
-            object_->SetDirtyBits(Object::DirtyBit::ROUTE);  // Set dirty bit to notify that route has changed
+            object_->dirty_.SetBits(Object::DirtyBit::ROUTE);  // Set dirty bit to notify that route has changed
 
             return;
         }
@@ -246,7 +245,7 @@ void ControllerFollowRoute::CalculateWaypoints()
         waypoints_ = router.GetWaypoints(pathToGoal, startPos, targetPos);
 
         object_->pos_.GetRoute()->ReplaceMinimalWaypoints({waypoints_[0], waypoints_[1]});
-        object_->SetDirtyBits(Object::DirtyBit::ROUTE);  // Set dirty bit to notify that route has changed
+        object_->dirty_.SetBits(Object::DirtyBit::ROUTE);  // Set dirty bit to notify that route has changed
         pathCalculated_ = true;
     }
 }
@@ -389,7 +388,7 @@ void ControllerFollowRoute::Deactivate()
 {
     if (testMode_)
     {
-        gateway_->updateObjectSpeed(object_->GetId(), 0.0, 0.0);
+        object_->SetSpeed(0.0);
     }
     LOG_INFO("ControllerFollowRoute - Deactivated");
     object_->pos_.SetRoute(nullptr);

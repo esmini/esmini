@@ -1,12 +1,21 @@
+'''
+   demonstrate how to get scenario object states
+
+   Instruction:
+     - make sure the esmini shared library (esminiLib.dll or esminiLib.so) is present in esmini/bin folder
+     - if not, either compile esmini (see User guide) or fetch bin package release
+     - from this folder (where this code module is), run: python ./get_states.py
+'''
+
 import ctypes
 from sys import platform
 
 if platform == "linux" or platform == "linux2":
-    se = ctypes.CDLL("../bin/libesminiLib.so")
+    se = ctypes.CDLL("../../../bin/libesminiLib.so")
 elif platform == "darwin":
-    se = ctypes.CDLL("../bin/libesminiLib.dylib")
+    se = ctypes.CDLL("../../../bin/libesminiLib.dylib")
 elif platform == "win32":
-    se = ctypes.CDLL("../bin/esminiLib.dll")
+    se = ctypes.CDLL("../../../bin/esminiLib.dll")
 else:
     print("Unsupported platform: {}".format(platform))
     quit()
@@ -17,30 +26,31 @@ class SEScenarioObjectState(ctypes.Structure):
         ("id", ctypes.c_int),
         ("model_id", ctypes.c_int),
         ("control", ctypes.c_int),
-        ("timestamp", ctypes.c_float),
-        ("x", ctypes.c_float),
-        ("y", ctypes.c_float),
-        ("z", ctypes.c_float),
-        ("h", ctypes.c_float),
-        ("p", ctypes.c_float),
-        ("r", ctypes.c_float),
+        ("timestamp", ctypes.c_double),
+        ("x", ctypes.c_double),
+        ("y", ctypes.c_double),
+        ("z", ctypes.c_double),
+        ("h", ctypes.c_double),
+        ("p", ctypes.c_double),
+        ("r", ctypes.c_double),
         ("roadId", ctypes.c_int),
         ("junctionId", ctypes.c_int),
-        ("t", ctypes.c_float),
+        ("t", ctypes.c_double),
         ("laneId", ctypes.c_int),
-        ("laneOffset", ctypes.c_float),
-        ("s", ctypes.c_float),
-        ("speed", ctypes.c_float),
-        ("centerOffsetX", ctypes.c_float),
-        ("centerOffsetY", ctypes.c_float),
-        ("centerOffsetZ", ctypes.c_float),
-        ("width", ctypes.c_float),
-        ("length", ctypes.c_float),
-        ("height", ctypes.c_float),
+        ("laneOffset", ctypes.c_double),
+        ("s", ctypes.c_double),
+        ("speed", ctypes.c_double),
+        ("centerOffsetX", ctypes.c_double),
+        ("centerOffsetY", ctypes.c_double),
+        ("centerOffsetZ", ctypes.c_double),
+        ("width", ctypes.c_double),
+        ("length", ctypes.c_double),
+        ("height", ctypes.c_double),
         ("objectType", ctypes.c_int),
         ("objectCategory", ctypes.c_int),
-        ("wheelAngle", ctypes.c_float),
-        ("wheelRot", ctypes.c_float),
+        ("wheelAngle", ctypes.c_double),
+        ("wheelRot", ctypes.c_double),
+        ("visibilityMask", ctypes.c_int)
     ]
 
 se.SE_Init(b"../resources/xosc/cut-in.xosc", 0, 1, 0, 0)

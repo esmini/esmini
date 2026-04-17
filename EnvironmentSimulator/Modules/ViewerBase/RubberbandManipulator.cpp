@@ -32,11 +32,11 @@ using namespace osgGA;
 #define DRIVER_CENTER_OFFSET_Y 0.0
 #define DRIVER_CENTER_OFFSET_Z 1.42
 
-const float springFC            = 16.0f;
-const float orbitCameraDistance = 25.0f;
-const float topCameraDistance   = 2300;
-const float orbitCameraAngle    = 13.0f;
-const float orbitCameraRotation = -14.0f;
+const double springFC            = 16.0;
+const double orbitCameraDistance = 25.0;
+const double topCameraDistance   = 2300;
+const double orbitCameraAngle    = 13.0;
+const double orbitCameraRotation = -14.0;
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -181,23 +181,20 @@ void RubberbandManipulator::getUsage(osg::ApplicationUsage& usage) const
 
 bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& us)
 {
-    static float lx0        = 0;
-    static float ly0        = 0;
-    static float ry0        = 0;
-    float        angleScale = 30.0;
+    static double lx0        = 0;
+    static double ly0        = 0;
+    static double ry0        = 0;
+    double        angleScale = 30.0;
 
     if (ea.getEventType() & GUIEventAdapter::PUSH)
     {
         if (ea.getButtonMask() & GUIEventAdapter::LEFT_MOUSE_BUTTON)
         {
-            // int lpush = true;
             lx0 = ea.getXnormalized();
             ly0 = ea.getYnormalized();
         }
         else if (ea.getButtonMask() & GUIEventAdapter::RIGHT_MOUSE_BUTTON)
         {
-            // int rpush = true;
-            // float rx0 = ea.getXnormalized();
             ry0 = ea.getYnormalized();
         }
     }
@@ -235,7 +232,7 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& 
             }
             if (ea.getButtonMask() == GUIEventAdapter::RIGHT_MOUSE_BUTTON)
             {
-                float zoomScale = 1.0;
+                double zoomScale = 1.0;
                 zoom_distance_ -= zoomScale * GetCameraDistance() * (ry0 - ea.getYnormalized());
                 if (GetCameraDistance() < 1)
                 {
@@ -265,7 +262,7 @@ bool RubberbandManipulator::handle(const GUIEventAdapter& ea, GUIActionAdapter& 
                     scroll = 1;
                     break;
             }
-            float scrollScale = 0.2f;
+            double scrollScale = 0.2;
             zoom_distance_ -= scrollScale * cameraBaseDistance_ * scroll;
             return false;
         }
@@ -360,7 +357,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
     osg::Vec3d    nodeCenter;
     osg::Quat     nodeRotation;
     osg::Matrix   cameraTargetRotation;
-    float         springDC;
+    double        springDC;
     osg::Vec3d    cameraTargetPosition(0, 0, 0);
     osg::Vec3d    cameraToTarget(0, 0, 0);
     double        x, y, z;
@@ -377,13 +374,13 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
     {
         cameraRotation_ = -90;
         cameraAngle_    = 90;
-        x               = -GetCameraDistance() * (cosf(cameraRotation_ * 0.0174533f) * cosf(cameraAngle_ * 0.0174533f));
-        y               = -GetCameraDistance() * (sinf(cameraRotation_ * 0.0174533f) * cosf(cameraAngle_ * 0.0174533f));
+        x               = -GetCameraDistance() * (cosf(cameraRotation_ * 0.0174533) * cosf(cameraAngle_ * 0.0174533));
+        y               = -GetCameraDistance() * (sinf(cameraRotation_ * 0.0174533) * cosf(cameraAngle_ * 0.0174533));
         relative_pos_.set(x, y, GetCameraDistance());  // Put a small number to prevent undefined camera angle
     }
     else if (mode_ == RB_MODE_RUBBER_BAND)
     {
-        relative_pos_.set(-GetCameraDistance(), 0.0, GetCameraDistance() * atan(cameraAngle_ * 0.0174533f));
+        relative_pos_.set(-GetCameraDistance(), 0.0, GetCameraDistance() * atan(cameraAngle_ * 0.0174533));
     }
     else if (mode_ == RB_MODE_DRIVER)
     {
@@ -409,9 +406,9 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
         {
             cameraRotation_ = 0;
         }
-        x = -GetCameraDistance() * (cosf(cameraRotation_ * 0.0174533f) * cosf(cameraAngle_ * 0.0174533f));
-        y = -GetCameraDistance() * (sinf(cameraRotation_ * 0.0174533f) * cosf(cameraAngle_ * 0.0174533f));
-        z = GetCameraDistance() * sinf(cameraAngle_ * 0.0174533f);
+        x = -GetCameraDistance() * (cosf(cameraRotation_ * 0.0174533) * cosf(cameraAngle_ * 0.0174533));
+        y = -GetCameraDistance() * (sinf(cameraRotation_ * 0.0174533) * cosf(cameraAngle_ * 0.0174533));
+        z = GetCameraDistance() * sinf(cameraAngle_ * 0.0174533);
 
         relative_pos_.set(x, y, z);
     }
@@ -436,11 +433,11 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
     {
         if (dt < 0)
         {
-            dt = 0.0f;
+            dt = 0.0;
         }
         if (dt > 0.1)
         {
-            dt = 0.1f;
+            dt = 0.1;
         }
 
         // Find the vector between target position and actual camera position
@@ -449,7 +446,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
         // Update camera state
         springDC   = 2 * sqrt(springFC);
         cameraAcc_ = cameraToTarget * springFC - cameraVel_ * springDC;
-        cameraVel_ += cameraAcc_ * static_cast<float>(dt);
+        cameraVel_ += cameraAcc_ * dt;
 
         if (mode_ == RB_MODE_FIXED || mode_ == RB_MODE_ORBIT || mode_ == RB_MODE_TOP || mode_ == RB_MODE_DRIVER || mode_ >= RB_MODE_CUSTOM)
         {
@@ -457,7 +454,7 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
         }
         else
         {
-            eye_ += cameraVel_ * static_cast<float>(dt);
+            eye_ += cameraVel_ * dt;
         }
     }
 
@@ -473,9 +470,9 @@ bool RubberbandManipulator::calcMovement(double dt, bool reset)
         {
             osg::Matrix translate = osg::Matrix::translate(-cam_pos);
 
-            osg::Quat   rot(static_cast<float>(-M_PI_2),
+            osg::Quat   rot(-M_PI_2,
                           osg::Vec3(osg::X_AXIS),  // rotate so that Z axis points up
-                          static_cast<float>(M_PI_2) - cam_rot[0],
+                          M_PI_2 - cam_rot[0],
                           osg::Vec3(osg::Y_AXIS),  // rotate so that X is forward and apply heading
                           cam_rot[1],
                           osg::Vec3(osg::X_AXIS)  // apply pitch

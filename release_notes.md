@@ -1,5 +1,120 @@
 ## esmini release notes
 
+### 2026-04-16 Version 3.0.2
+
+Improvements and fixes:
+
+- Fix wrong dz in relative positions with elevated roads
+- Fix viewer crash (in some environments) at end of scenario
+  - by expanding viewer destruction
+- Improve mixed position modes in trajectory vertices
+    - interpolate z between relative and absolute z vertices
+    - disable pitch and roll interpolation at mixed pos mode corners
+- Fix route lookahead through junctions and add snap-to-route position mode ([issue #759](https://github.com/esmini/esmini/issues/759))
+  - see updated info in [User guide - Position modes](https://esmini.github.io/#_position_modes) and [Use cases](https://esmini.github.io/#_use_cases_3)
+- Fix devcontainer - create missing ubuntu user in AlmaLinux image ([PR #785](https://github.com/esmini/esmini/issues/785))
+
+Build and CI updates:
+- Bump github release and download-artifact actions for Node.js 20 deprecation
+
+### 2026-03-27 Version 3.0.1
+
+New features:
+- Add `color` property and filled bounding-box view mode for scenario objects
+  - color populated on OSI
+  - see [User guide - Boundingbox Colors](https://esmini.github.io/#_boundingbox_colors)
+
+Improvements and fixes:
+- Fix sometimes friction visualized for the wrong lane
+- Recognize `connectingRamp` lane type as part of driving and road groups
+- Fix `OverrideControllerAction` possible value bleeding between devices in same action
+- Improve simple shadows for scenario objects
+  - generate procedurally instead of reading textured geometry from file
+  - add also to misc objects, not only vehicles and pedestrians
+- Fix some issues in OSG apps [build script](https://github.com/esmini/esmini/blob/dev/scripts/compile_osg_apps.sh)
+- Ensure `osiviewer` time slider shown value is rounded down
+- Update Unity esmini example for v3.0.0, see [User guide - esmini in Unity](https://esmini.github.io/#_esmini_in_unity)
+- Minor documentation updates, e.g. fix broken link
+
+### 2026-03-23 Version 3.0.0
+
+Breaking changes:
+- In esminiLib and esminiRMLib, replace all 32 bit `float` types with 64 bit `double`
+  - only affecting external interface, esmini always used 64 bit precision internally
+- Removed unused timestamp argument from some esminiLib `Report*` functions
+- Fix irregularity in ghost trail sampling
+  - might affect driver models slightly
+- New GUI feature (see below) depends on updated implot lib.
+  - On any existing local repo:
+    - remove `./externals/implot`, and
+    - run `cmake ..` command again
+
+New features:
+- Add GUI for replayer interactive playback navigation
+  - option `--gui <on|off>` default: `on`
+  - toggle on/off with "I" (shift-"i")
+- Add mobile radar reflector, as simple pole, to VehicleCatalog
+- Visualize EnvironmentAction also in replayer
+
+Improvements and fixes:
+- Major code refactorization
+  - completely remove gateway module
+  - rework dirty bit handling
+  - decreased code complexity, increased maintainability
+  - brief system documentation updated, see [User guide - Inner workings](https://esmini.github.io/#_inner_workings)
+- esminiLib C# wrapper coverage now 100%
+  - add Python script generating the wrapper
+  - CI check ensuring wrapper in synch with lib
+- Option to modify or even ignore tolerance in performance tests
+- Fix OSI reporter bug causing segfault for some junctions ([issue #780](https://github.com/esmini/esmini/issues/780))
+- Fix wrong log message on changed parameter value
+- Add OSI traffic command testcase
+- Update implot build script for vs 2017
+- Update Python and C# code examples wrt API updates
+- Fix issues in a few code examples
+- A few additional minor fixes
+- Clarify some return codes in RMLib and its C# wrapper
+  - in general: <0 on error, >=0 on success
+
+Build and CI updates:
+- Remove cmake presets
+  - simplifying the message on how to build
+  - update User guide accordingly, e.g. [Debug with Linux and VSCode](https://esmini.github.io/#_debug_with_linux_and_vscode)
+- Bump some github action dependencies
+- Cleanup and update some custom actions
+- Apply dependabot updates to dev branch (instead of master)
+- Make esminiLib C# wrapper tests optional
+
+### 2026-02-19 Version 2.60.0
+
+New features:
+- Support [AngleCondition](https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/AngleCondition.html)
+  - limitation: only `heading` supported for `trajectory` coordinate system
+  - for `lane` coordinate system type, the reference heading aligns with driving direction
+
+Improvements and fixes:
+- Align trailer to any given Z value (issue [#769](https://github.com/esmini/esmini/issues/769))
+  - useful for airborne trajectories not bound to road or ground
+- Make `ground_plane` option value explicit
+  - three modes: `auto`, `on`, `off`
+  - `auto` depends on road model existence (generated or loaded)
+- Fix trajectory time offset issue (issue [#773](https://github.com/esmini/esmini/issues/773))
+  - take time offset into account for end of action
+- Update trajectory end condition accounting for floating point precision tolerance
+  - might cause slight deviation in scenario output
+- Align any trailer on AddEntity action
+- Fix esminiRMLib segfault on missing road ID (issue [#774](https://github.com/esmini/esmini/issues/774))
+- Accept repeated SE_Init without closing scenario (SE_Close) in between
+- Bump protobuf from 5.29.5 to 5.29.6 (issue [#771](https://github.com/esmini/esmini/issues/771))
+- Sync struct member names in esminiRMUnityUtil.cs with recent C# wrapper updates
+- Fix heading wrongly affecting RelativeWorldPosition
+- Accept relative Z values in trajectories
+  - like absolute Z values affecting the elevation of the trajectory
+  - still, omitted Z values will align entity on the road surface
+- Update User guide wrt deprecated model_id concept
+  - use Vehicle `model3d` attribute instead
+- A few additional minor fixes
+
 ### 2026-02-05 Version 2.59.0
 
 Breaking changes:
@@ -3652,25 +3767,25 @@ Note:
 - Add OpenDriveViewer to demo package
 - Some additional minor bug fixes
 
-#### 2020-10-01 Version 1.7.9
+### 2020-10-01 Version 1.7.9
 - Improved OSI performance
 - Added pedestrian example scenario
 
-#### 2020-09-30 Version 1.7.8
+### 2020-09-30 Version 1.7.8
 - Support correct parameter names excluding the "$" prefix (old way still supported as well)
 - TimeToCollision condition
 - Collision condition
 - Improved road and lane connectivity w.r.t. preserve direction
 - Additional bugfixes and improvements
 
-#### 2020-09-23 Version 1.7.7
+### 2020-09-23 Version 1.7.7
 - OSI raw struct output option
 - OSI sensor view in local coordinates
 - Callback mechanism to override (part of) entity states
 - Improved WorldCoordinate(x, y, z) to RoadCoordinate(road, lane, offset) mapping
 - Many minor bugfixes and improvements (and probably a few new bugs)
 
-#### 2020-09-04 Version 1.7.6
+### 2020-09-04 Version 1.7.6
 - Added trajectory clothoid support
 
 2020-08-31 Version 1.7.5
@@ -3678,13 +3793,13 @@ Note:
 - Fixed a bug preventing shared library (ScenarioEngineDLL) to run with viewer on Mac
 - Fixed crash when running with only OpenDRIVE road description (i.e. without scenegraph 3D model).
 
-#### 2020-08-26 Version 1.7.2
+### 2020-08-26 Version 1.7.2
 - CSV logging feature
 - EndOfRoad trigger
 - Unit test framework based on Google Test
 - Cleaned irrelevant error messages
 
-#### 2020-08-21 Version 1.7.0
+### 2020-08-21 Version 1.7.0
 - SUMO support integrated (via libsumostatic), first limited shot.
   - SUMO vehicles created by means of object controller. See example cut-in_sumo.xosc.
   - NOTE that you need to re-run cmake script in order to fetch SUMO dependency package (including headers and pre-built libraries).
@@ -3692,11 +3807,11 @@ Note:
 - OSI trace file not created by default, activated with argument "--osi_file on"
 - Condition/trigger timer now based on simulation time instead of system time
 
-#### 2020-07-24 Version 1.6.3
+### 2020-07-24 Version 1.6.3
 - OSI support extended with road information (lane and road marks)
 - Bugfix: RelativeTargetLane (used in LaneChangeAction) is now calculated correctly, skipping reference lane and considering vehicle orientation so that positive lane changes will go left and negative to the right. Scenarios making use of RelativeTargetLane might need to be updated accordingly.
 
-#### 2020-06-18 Version 1.6.0
+### 2020-06-18 Version 1.6.0
 - OSI support, initial framework established.
 - So far population of OSI global groundtruth moving objects.
 - OSI data is populated and provided to user in three ways:
@@ -3705,7 +3820,7 @@ Note:
 	3. API to fetch OSI data via function call (in ScenarioEngineDLL)
 - osi_receiver is a minimalistic demo-application showing how to receive OSI over UDP
 
-#### 2020-05-19 Version 1.5.0
+### 2020-05-19 Version 1.5.0
 - Updated to support OpenSCENARIO 1.0. Note: no legacy support for 0.9.1
 - Updated demo scenarios to v1.0
 - Improved condition handling, fully supporting AND (within ConditionGroup) and OR (Multiple ConditionGroups) combinations
@@ -3713,14 +3828,14 @@ Note:
 - Initial Trajectory support. PolyLine only, so far and limited testing performed.
 - Added support for TraveledDistance condition
 
-#### 2020-05-05 Version 1.4.6
+### 2020-05-05 Version 1.4.6
 - Added heading to sensors so that one entity can have multiple sensors in different directions
 - Improved position Delta functionality. It will calculate shortest path and distance between two positions more generically and correctly.
 - Added road model (multi_intersections.xodr/osgb) with multiple junctions. Useful for testing the shortest path functionality.
 - Added new camera mode: top view (press 'k' multiple times to toggle or specify "--camera_mode top" as command line argument).
 - Some bugfixes. E.g. ParamPoly3 with Normalized parameter range.
 
-#### 2020-03-25 Version 1.4
+### 2020-03-25 Version 1.4
 - Demos (and binaries) supplied for Mac (Catalina) and Linux (Ubuntu 18.04 and Kubuntu 18.04) in addition to Windows.
 - jpeg screenshot. User can save a screen shot at any time by pressing key 'c'.
 - QuitAction. User can specify when to quit the scenario (and application) by means of OSC conditions, just as any OSC action.
@@ -3728,7 +3843,7 @@ Note:
 - Threads (--threads). Put scenario execution into a separate thread, decoupled from the viewer. Example of potential use case: Make it possible to pause scenario while moving camera.
 - New keyboard shortcut commands, and some moved to new key. Please see run/readme.txt for complete set.
 
-#### 2020-03-08 Version 1.3
+### 2020-03-08 Version 1.3
 - Anti-Alias filter control
   - EgoSimulator now takes argument aa_mode <number of sub samplings>
       0 means no Anti-Alias. 4 is default.
@@ -3737,7 +3852,7 @@ Note:
 - Linux binaries now includes graphics (OSG) support.
 - Demo package for Linux added. Now CI builds and deploy demo for both Windows and Linux (Ubuntu 18.04).
 
-#### 2019-12-06 Version 1.2
+### 2019-12-06 Version 1.2
 - Catalog handling updates
   - Parameter assignment implemented (enabling variants or configuration of re-used catalog items)
   - Name and structure updates:
@@ -3745,7 +3860,7 @@ Note:
       See synchronize.xosc for an example on how to (re-)use manuever catalog entries.
 - Trail visualization can be switched off by application argument (--trail <on/off>) and toggled by pressing key "t" in viewer window.
 
-#### 2019-11-20 Version 1.1
+### 2019-11-20 Version 1.1
 - External control flag replaced by enumeration
     Available modes: internal, external, hybrid
     EgoSimulator and EnvironmentSimulator argument syntax changed from --ext_control <on|off> to --control <internal|external|hybrid>

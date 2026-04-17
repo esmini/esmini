@@ -10,21 +10,31 @@ int main(int argc, char* argv[])
 {
     (void)argc;
     (void)argv;
+    int retval = 0;
 
     SE_EnableOSIFile(0);  // 0 or "" will result in default filename, ground_truth.osi
 
-    if (SE_Init("../resources/xosc/lane_change_simple.xosc", 0, 1, 0, 0) != 0)
+    if (argc > 1)
     {
-        printf("SE_Init failed\n");
+        // use specific scenario file, but allow for custom command line arguments
+        SE_SetOptionValue("osc", "../resources/xosc/lane_change_simple.xosc");
+        retval = SE_InitWithArgs(argc, const_cast<const char**>(argv));
+    }
+    else
+    {
+        retval = SE_Init("../resources/xosc/lane_change_simple.xosc", 0, 1, 0, 0);
+    }
+
+    if (retval != 0)
+    {
+        printf("Failed to initialize the scenario\n");
         return -1;
     }
 
     // for (int i = 0; i < 100; i++)
     while (SE_GetQuitFlag() == 0)
     {
-        SE_StepDT(0.1f);
-
-        SE_UpdateOSITrafficCommand();
+        SE_StepDT(0.1);
 
         // Fetch OSI struct (via pointer, no copying of data)
         const osi3::TrafficCommand* tc = reinterpret_cast<const osi3::TrafficCommand*>(SE_GetOSITrafficCommandRaw());

@@ -182,9 +182,8 @@ void ScenarioPlayer::Draw()
 
 int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
 {
-    static bool messageShown  = false;
-    int         retval        = 0;
-    double      ghost_solo_dt = (GetFixedTimestep() < 0.0) ? 0.05 : GetFixedTimestep();
+    int    retval        = 0;
+    double ghost_solo_dt = (GetFixedTimestep() < 0.0) ? 0.05 : GetFixedTimestep();
 
     if (!IsPaused() || server_mode)
     {
@@ -195,6 +194,8 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
         }
 #endif
         scenarioEngine->mutex_.Lock();
+
+        DirtyBits::SetReadFront();
         retval = ScenarioFrame(timestep_s, true);
 
         if (SE_Env::Inst().GetGhostMode() != GhostMode::NORMAL)
@@ -204,8 +205,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
                 Draw();
                 if (!IsPaused() && !IsQuitRequested())
                 {
-                    // clear bits from previous frame
-                    scenarioGateway->clearDirtyBits();
+                    scenarioEngine->ClearDirtyBits();
                     retval = ScenarioFrame(ghost_solo_dt, false);
                 }
             }
@@ -220,6 +220,7 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
 
     if (!server_mode)
     {
+        static bool messageShown = false;
         Draw();
 
         if (scenarioEngine->getSimulationTime() > 3600 && !messageShown)
@@ -240,7 +241,8 @@ int ScenarioPlayer::Frame(double timestep_s, bool server_mode)
         {
             scenarioEngine->mutex_.Lock();
             ScenarioPostFrame();
-            scenarioGateway->clearDirtyBits();  // clear bits enabling identifying external updates
+            scenarioEngine->SwapAndClearDirtyBits();
+            DirtyBits::SetReadBack();
             scenarioEngine->mutex_.Unlock();
         }
     }
@@ -275,21 +277,19 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
             // Check for any callbacks to be made
             for (size_t i = 0; i < objCallback.size(); i++)
             {
-                ObjectState* os = scenarioGateway->getObjectStatePtrById(objCallback[i].id);
-                if (os)
+                Object* obj = scenarioEngine->entities_.GetObjectById(objCallback[i].id);
+                if (obj != nullptr)
                 {
-                    ObjectStateStruct state;
-                    state = os->getStruct();
-                    objCallback[i].func(&state, objCallback[i].data);
+                    objCallback[i].func(obj, objCallback[i].data);
                 }
             }
         }
 
         scenarioEngine->prepareGroundTruth(timestep_s);
 
-        scenarioGateway->SetDynamicSignals(roadmanager::Position::GetOpenDrive()->GetDynamicSignals());
-        scenarioGateway->UpdateStoryBoardStateChanges(scenarioEngine->storyBoard.GetChanges());
-        scenarioGateway->WriteStatesToFile(scenarioEngine->getSimulationTime(), timestep_s);
+        // Write to dat
+        WriteStatesToFile(scenarioEngine->getSimulationTime(), timestep_s);
+
         scenarioEngine->storyBoard.ClearStateChanges();
 
         if (CSV_Log)
@@ -312,6 +312,31 @@ int ScenarioPlayer::ScenarioFrame(double timestep_s, bool keyframe)
     return retval;
 }
 
+void ScenarioPlayer::WriteStatesToFile(const double simulation_time, const double dt)
+{
+    if (dat_writer_.IsWriteFileOpen())
+    {
+        dat_writer_.SetSimulationTime(simulation_time, dt);
+        dat_writer_.WriteDtToDat();
+        dat_writer_.WriteEnvironmentToDat(scenarioEngine->environment);
+        dat_writer_.WriteTrafficLightsToDat(roadmanager::Position::GetOpenDrive()->GetDynamicSignals());
+        dat_writer_.WriteStoryBoardStateChangesToDat(scenarioEngine->storyBoard.GetChanges());
+        dat_writer_.WriteObjectStatesToDat(scenarioEngine->entities_.object_);
+        dat_writer_.SetTimestampWritten(false);
+    }
+}
+
+int ScenarioPlayer::RecordToFile(std::string filename, std::string odr_filename, std::string model_filename, std::string git_rev)
+{
+    if (filename.empty())
+    {
+        LOG_ERROR("Filename is empty");
+        return -1;
+    }
+
+    return dat_writer_.Init(filename, odr_filename, model_filename, git_rev);
+}
+
 void ScenarioPlayer::ScenarioPostFrame()
 {
     mutex.Lock();
@@ -327,9 +352,7 @@ void ScenarioPlayer::ScenarioPostFrame()
         if (osiReporter->GetOSIFrequency() > 0)
         {
             osiReporter->ReportSensors(sensor);
-
-            osiReporter->UpdateOSIGroundTruth(scenarioGateway->objectState_);
-
+            osiReporter->UpdateOSIGroundTruth(scenarioEngine->entities_.object_);
             osiReporter->UpdateOSITrafficCommand();
         }
     }
@@ -386,13 +409,8 @@ void ScenarioPlayer::ViewerFrame()
                                                            obj->refpoint_x_offset_,
                                                            obj->model3d_x_offset_,
                                                            &obj->outline_2d_,
-                                                           obj->scaleMode_));
-
-        if (obj->scaleMode_ == EntityScaleMode::BB_TO_MODEL)
-        {
-            // report updated bounding box
-            scenarioGateway->updateObjectBoundingBox(obj->GetId(), obj->boundingbox_);
-        }
+                                                           obj->scaleMode_,
+                                                           obj->GetColorStr()));
 
         // Connect callback for setting transparency
         viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(obj, viewer_->entities_.back());
@@ -453,10 +471,10 @@ void ScenarioPlayer::ViewerFrame()
             entity->trajectory_->Disable();
         }
 
-        if (obj->CheckDirtyBits(Object::DirtyBit::ROUTE))
+        if (obj->dirty_.Check(Object::DirtyBit::ROUTE))
         {
             entity->routewaypoints_->SetWayPoints(obj->pos_.GetRoute());
-            obj->ClearDirtyBits(Object::DirtyBit::ROUTE);
+            obj->dirty_.ClearBits(Object::DirtyBit::ROUTE);
         }
         else if (entity->routewaypoints_->group_all_wp_->getNumChildren() && obj->pos_.GetRoute() == nullptr)
         {
@@ -541,8 +559,8 @@ void ScenarioPlayer::ViewerFrame()
                  obj->pos_.GetX(),
                  obj->pos_.GetY(),
                  obj->pos_.GetH(),
-                 obj->pos_.GetX() + static_cast<double>(obj->boundingbox_.center_.x_) * cos(obj->pos_.GetH()),
-                 obj->pos_.GetY() + static_cast<double>(obj->boundingbox_.center_.x_) * sin(obj->pos_.GetH()));
+                 obj->pos_.GetX() + obj->boundingbox_.center_.x_ * cos(obj->pos_.GetH()),
+                 obj->pos_.GetY() + obj->boundingbox_.center_.x_ * sin(obj->pos_.GetH()));
         entity->on_screen_info_.osg_text_->setText(entity->on_screen_info_.string_);
     }
 
@@ -1038,7 +1056,12 @@ int ScenarioPlayer::InitViewer()
         {
             view_mode = roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL | roadgeom::NodeMask::NODE_MASK_ENTITY_BB;
         }
-        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL | roadgeom::NodeMask::NODE_MASK_ENTITY_BB, view_mode);
+        else if (view_mode_string == "filled_boundingbox")
+        {
+            view_mode = roadgeom::NodeMask::NODE_MASK_ENTITY_BB_FILLED;
+        }
+        viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_ENTITY_MODEL | roadgeom::NodeMask::NODE_MASK_ENTITY_BB | NODE_MASK_ENTITY_BB_FILLED,
+                                 view_mode);
     }
     else if (opt.GetOptionSet("bounding_boxes"))
     {
@@ -1100,7 +1123,8 @@ int ScenarioPlayer::InitViewer()
                                                                obj->refpoint_x_offset_,
                                                                obj->model3d_x_offset_,
                                                                &obj->outline_2d_,
-                                                               obj->scaleMode_)) != 0)
+                                                               obj->scaleMode_,
+                                                               obj->GetColorStr())) != 0)
         {
             CloseViewer();
             return -1;
@@ -1443,7 +1467,7 @@ int ScenarioPlayer::Init()
     opt.AddOption("generate_no_road_objects", "Do not generate any OpenDRIVE road objects (e.g. when part of referred 3D model)");
     opt.AddOption("generate_without_textures", "Do not apply textures on any generated road model (set colors instead as for missing textures)");
     opt.AddOption("ghost_trail_dt", "Ghost trail sample delta time", "dt", std::to_string(GHOST_TRAIL_SAMPLE_TIME));
-    opt.AddOption("ground_plane", "Add a large flat ground surface");
+    opt.AddOption("ground_plane", "Add a large flat ground surface. Modes: on, off, auto", "mode", "auto", true);
     opt.AddOption("headless", "Run without viewer window");
     opt.AddOption("help", "Show this help message (-h works as well)");
     opt.AddOption("hide_route_waypoints", "Disable route waypoint visualization. Toggle key 'R'");
@@ -1508,7 +1532,9 @@ int ScenarioPlayer::Init()
     opt.AddOption("use_signs_in_external_model", "When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE");
     opt.AddOption("vehicle_dynamics", "Visualize simple vehicle dynamics", "<pitch,roll,tension>[,damping]", "2,5,25", false, false);
     opt.AddOption("version", "Show version and quit");
-    opt.AddOption("view_mode", "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\" toggle key ','", "view_mode");
+    opt.AddOption("view_mode",
+                  "Entity visualization: \"model\"(default)/\"boundingbox\"/\"both\"/\"filled_boundingbox\" toggle key ','",
+                  "view_mode");
     opt.AddOption("wireframe", "Global wireframe mode, toggle key 'w'");
 
     if (int ret = OnRequestShowHelpOrVersion(argc_, argv_, opt); ret > 0)
@@ -1829,9 +1855,8 @@ int ScenarioPlayer::Init()
         }
     }
 
-    // Fetch scenario gateway and OpenDRIVE manager objects
-    scenarioGateway = scenarioEngine->getScenarioGateway();
-    odr_manager     = scenarioEngine->getRoadManager();
+    // Fetch OpenDRIVE manager objects
+    odr_manager = scenarioEngine->getRoadManager();
 
 #ifdef _USE_OSI
     osiReporter = new OSIReporter(scenarioEngine);
@@ -1950,9 +1975,9 @@ int ScenarioPlayer::Init()
         }
     }
 
-    // Create a data file for later replay?
     if ((arg_str = opt.GetOptionValue("record")) != "")
     {
+        // Create a data file for later replay
         std::string filename;
 
         if (!arg_str.empty())
@@ -1977,10 +2002,7 @@ int ScenarioPlayer::Init()
         }
 
         LOG_INFO("Recording data to file {}", filename);
-        scenarioGateway->RecordToFile(filename,
-                                      scenarioEngine->getOdrFilename(),
-                                      scenarioEngine->getSceneGraphFilename(),
-                                      std::string(esmini_git_rev()));
+        RecordToFile(filename, scenarioEngine->getOdrFilename(), scenarioEngine->getSceneGraphFilename(), std::string(esmini_git_rev()));
     }
 
     if (launch_server)
@@ -2284,24 +2306,44 @@ int ScenarioPlayer::SetVariableValue(const char* name, bool value)
     return scenarioEngine->scenarioReader->variables.setParameterValue(name, value);
 }
 
-// todo
 int ScenarioPlayer::GetNumberOfProperties(int index)
 {
-    return static_cast<int>(scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]->properties_.property_.size());
+    if (index >= 0 && index < static_cast<int>(scenarioEngine->entities_.object_.size()))
+    {
+        return static_cast<int>(scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]->properties_.property_.size());
+    }
+
+    return -1;
 }
 
 const char* ScenarioPlayer::GetPropertyName(int index, int propertyIndex)
 {
-    return scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]
-        ->properties_.property_[static_cast<unsigned int>(propertyIndex)]
-        .name_.c_str();
+    if (index >= 0 && index < static_cast<int>(scenarioEngine->entities_.object_.size()))
+    {
+        Object* obj = scenarioEngine->entities_.object_[static_cast<unsigned int>(index)];
+
+        if (propertyIndex >= 0 && propertyIndex < static_cast<int>(obj->properties_.property_.size()))
+        {
+            return obj->properties_.property_[static_cast<unsigned int>(propertyIndex)].name_.c_str();
+        }
+    }
+
+    return "";
 }
 
 const char* ScenarioPlayer::GetPropertyValue(int index, int propertyIndex)
 {
-    return scenarioEngine->entities_.object_[static_cast<unsigned int>(index)]
-        ->properties_.property_[static_cast<unsigned int>(propertyIndex)]
-        .value_.c_str();
+    if (index >= 0 && index < static_cast<int>(scenarioEngine->entities_.object_.size()))
+    {
+        Object* obj = scenarioEngine->entities_.object_[static_cast<unsigned int>(index)];
+
+        if (propertyIndex >= 0 && propertyIndex < static_cast<int>(obj->properties_.property_.size()))
+        {
+            return obj->properties_.property_[static_cast<unsigned int>(propertyIndex)].value_.c_str();
+        }
+    }
+
+    return "";
 }
 
 #ifdef _USE_OSG

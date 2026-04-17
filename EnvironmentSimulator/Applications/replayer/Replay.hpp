@@ -18,9 +18,11 @@
 #include <set>
 #include <optional>
 #include "CommonMini.hpp"
-#include "ScenarioGateway.hpp"
+#include "PacketHandler.hpp"
+
 #ifdef _USE_OSG
 #include "trafficlightmodel.hpp"
+#include "OSCBoundingBox.hpp"
 #endif  // _USE_OSG
 
 namespace scenarioengine
@@ -299,24 +301,25 @@ namespace scenarioengine
         Timeline<int>                     obj_category_;
         Timeline<int>                     ctrl_type_;
         Timeline<std::string>             name_;
-        Timeline<float>                   speed_;
-        Timeline<float>                   wheel_angle_;
-        Timeline<float>                   wheel_rot_;
+        Timeline<double>                  speed_;
+        Timeline<double>                  wheel_angle_;
+        Timeline<double>                  wheel_rot_;
         Timeline<OSCBoundingBox>          bounding_box_;
         Timeline<int>                     scale_mode_;
         Timeline<int>                     visibility_mask_;
         Timeline<Dat::Pose>               pose_;
         Timeline<id_t>                    road_id_;
         Timeline<int>                     lane_id_;
-        Timeline<float>                   pos_offset_;
-        Timeline<float>                   pos_t_;
-        Timeline<float>                   pos_s_;
+        Timeline<double>                  pos_offset_;
+        Timeline<double>                  pos_t_;
+        Timeline<double>                  pos_s_;
         Timeline<bool>                    active_;
-        Timeline<float>                   odometer_;
-        Timeline<float>                   refpoint_x_offset_;
-        Timeline<float>                   model_x_offset_;
+        Timeline<double>                  odometer_;
+        Timeline<double>                  refpoint_x_offset_;
+        Timeline<double>                  model_x_offset_;
         Timeline<std::string>             model3d_;
         Timeline<std::vector<SE_Point2D>> outline_;
+        Timeline<std::string>             bb_color_;
     };
 
     // Custom comparator ensuring map has ids ordered as:
@@ -333,6 +336,30 @@ namespace scenarioengine
                 return lhs < rhs;
             return lhs > rhs;
         }
+    };
+
+    struct ObjectInfoStructDat
+    {
+        int            id;
+        int            model_id;
+        int            obj_type;      // 0=None, 1=Vehicle, 2=Pedestrian, 3=MiscObj (see Object::Type enum)
+        int            obj_category;  // sub type for vehicle, pedestrian and miscobj
+        int            ctrl_type;     // See Controller::Type enum
+        double         timeStamp;
+        std::string    name;
+        double         speed;
+        double         wheel_angle;  // Only used for vehicle
+        double         wheel_rot;    // Only used for vehicle
+        OSCBoundingBox boundingbox;
+        int            scaleMode;       // 0=None, 1=BoundingBoxToModel, 2=ModelToBoundingBox (see enum EntityScaleMode)
+        int            visibilityMask;  // bitmask according to Object::Visibility (1 = Graphics, 2 = Traffic, 4 = Sensors)
+        bool           active;
+    };
+
+    struct ObjectStateStructDat
+    {
+        struct ObjectInfoStructDat     info;
+        struct ObjectPositionStructDat pos;
     };
 
     struct ReplayEntry
@@ -364,6 +391,7 @@ namespace scenarioengine
         Timeline<std::string>                                             element_state_changes_;
         std::map<int, PropertyTimeline, MapComparator>                    objects_timeline_;
         std::unordered_map<unsigned int, Timeline<Dat::TrafficLightLamp>> traffic_lights_timeline_;
+        Timeline<Dat::Environment>                                        environment_timeline_;
 
         std::vector<ReplayEntry>             data_;
         Dat::DatHeader                       dat_header_;
@@ -436,8 +464,8 @@ namespace scenarioengine
 
     private:
         std::vector<std::string> scenarios_;
-        double                   time_;
-        bool                     quiet_;
+        double                   time_       = 0.0;
+        bool                     quiet_      = false;
         double                   startTime_  = 0.0;
         double                   stopTime_   = 0.0;
         unsigned int             startIndex_ = 0;

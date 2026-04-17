@@ -18,12 +18,12 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v6
         with:
           ref: ${{ github.event.ref }}
           submodules: true
           fetch-depth: 0  # Fetch all history for proper branch switching
-      
+
       - name: Install valgrind
         run: |
           sudo apt update
@@ -38,7 +38,7 @@ jobs:
       - uses: ./.github/actions/setup_tools_shared
 
       - name: Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             externals/googletest

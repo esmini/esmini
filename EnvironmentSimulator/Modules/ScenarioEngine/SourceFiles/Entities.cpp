@@ -33,7 +33,6 @@ Object::Object(Type type)
       end_of_road_timestamp_(0.0),
       off_road_timestamp_(0.0),
       stand_still_timestamp_(0),
-      reset_(0),
       headstart_time_(0),
       ghost_(0),
       ghost_Ego_(0),
@@ -42,9 +41,9 @@ Object::Object(Type type)
       junctionSelectorStrategy_(Junction::JunctionStrategyType::RANDOM),
       nextJunctionSelectorAngle_(0.0),
       scaleMode_(EntityScaleMode::NONE),
-      dirty_(0),
       is_active_(false),
       model3d_full_path_(""),
+      color_(""),
       source_reference_({})
 {
     sensor_pos_[0] = 0;
@@ -79,7 +78,6 @@ Object::Object(Type type)
     front_axle_       = {0.0, 0.0, 0.0, 0.0, 0.0};
     rear_axle_        = {0.0, 0.0, 0.0, 0.0, 0.0};
     model3d_x_offset_ = 0.0;
-
     outline_2d_.reserve(24);  // default for cars in NCAP programs
 }
 
@@ -226,10 +224,9 @@ bool Object::IsControllerModeOnAnyOfDomains(ControlOperationMode mode, unsigned 
     return false;
 }
 
-scenarioengine::Controller* scenarioengine::Object::GetAssignedControllerOftype(Controller::Type type)
+scenarioengine::Controller* scenarioengine::Object::GetAssignedControllerOftype(Controller::Type type) const
 {
-    std::vector<Controller*>::iterator itr =
-        std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->GetType() == type; });
+    auto itr = std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->GetType() == type; });
     if (itr != controllers_.end())
     {
         return *itr;
@@ -237,10 +234,9 @@ scenarioengine::Controller* scenarioengine::Object::GetAssignedControllerOftype(
     return nullptr;
 }
 
-bool scenarioengine::Object::IsAnyAssignedControllerOfType(Controller::Type type)
+bool scenarioengine::Object::IsAnyAssignedControllerOfType(Controller::Type type) const
 {
-    std::vector<Controller*>::iterator itr =
-        std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->GetType() == type; });
+    auto itr = std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->GetType() == type; });
     if (itr != controllers_.end())
     {
         return true;
@@ -248,9 +244,9 @@ bool scenarioengine::Object::IsAnyAssignedControllerOfType(Controller::Type type
     return false;
 }
 
-bool Object::IsAnyActiveControllerOfType(Controller::Type type)
+bool Object::IsAnyActiveControllerOfType(Controller::Type type) const
 {
-    std::vector<Controller*>::iterator itr =
+    auto itr =
         std::find_if(controllers_.begin(), controllers_.end(), [&type](Controller* ctrl) { return ctrl->IsActive() && ctrl->GetType() == type; });
     if (itr != controllers_.end())
     {
@@ -259,12 +255,11 @@ bool Object::IsAnyActiveControllerOfType(Controller::Type type)
     return false;
 }
 
-scenarioengine::Controller* Object::GetControllerActiveOnDomainMask(ControlDomainMasks domain_mask)
+scenarioengine::Controller* Object::GetControllerActiveOnDomainMask(ControlDomainMasks domain_mask) const
 {
-    std::vector<Controller*>::iterator itr =
-        std::find_if(controllers_.begin(),
-                     controllers_.end(),
-                     [&domain_mask](Controller* ctrl) { return ctrl->IsActiveOnDomains(static_cast<unsigned int>(domain_mask)); });
+    auto itr = std::find_if(controllers_.begin(),
+                            controllers_.end(),
+                            [&domain_mask](Controller* ctrl) { return ctrl->IsActiveOnDomains(static_cast<unsigned int>(domain_mask)); });
     if (itr != controllers_.end())
     {
         return *itr;
@@ -272,18 +267,18 @@ scenarioengine::Controller* Object::GetControllerActiveOnDomainMask(ControlDomai
     return nullptr;
 }
 
-scenarioengine::Controller* Object::GetControllerActiveOnDomain(ControlDomains domain)
+scenarioengine::Controller* Object::GetControllerActiveOnDomain(ControlDomains domain) const
 {
     return GetControllerActiveOnDomainMask(ControlDomain2DomainMask(domain));
 }
 
-scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(ControlDomains domain)
+scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(ControlDomains domain) const
 {
-    scenarioengine::Controller* ctrl = GetControllerActiveOnDomain(domain);
+    const scenarioengine::Controller* ctrl = GetControllerActiveOnDomain(domain);
 
     if (ctrl != nullptr)
     {
-        return static_cast<Controller::Type>(ctrl->GetType());
+        return ctrl->GetType();
     }
     else if (IsGhost())
     {
@@ -293,10 +288,9 @@ scenarioengine::Controller::Type Object::GetControllerTypeActiveOnDomain(Control
     return Controller::Type::CONTROLLER_TYPE_DEFAULT;
 }
 
-scenarioengine::Controller* Object::GetController(std::string name)
+scenarioengine::Controller* Object::GetController(std::string name) const
 {
-    std::vector<Controller*>::iterator itr =
-        std::find_if(controllers_.begin(), controllers_.end(), [&name](Controller* ctrl) { return ctrl->GetName() == name; });
+    auto itr = std::find_if(controllers_.begin(), controllers_.end(), [&name](Controller* ctrl) { return ctrl->GetName() == name; });
     if (itr != controllers_.end())
     {
         return *itr;
@@ -307,31 +301,31 @@ scenarioengine::Controller* Object::GetController(std::string name)
 void Object::SetVisibilityMask(int mask)
 {
     visibilityMask_ = mask;
-    SetDirtyBits(dirty_ | DirtyBit::VISIBILITY);
+    dirty_.SetBits(DirtyBit::VISIBILITY);
 }
 
 void Object::SetVel(double x_vel, double y_vel, double z_vel)
 {
     pos_.SetVel(x_vel, y_vel, z_vel);
-    SetDirtyBits(dirty_ | DirtyBit::VELOCITY);
+    dirty_.SetBits(DirtyBit::VELOCITY);
 }
 
 void Object::SetAcc(double x_acc, double y_acc, double z_acc)
 {
     pos_.SetAcc(x_acc, y_acc, z_acc);
-    SetDirtyBits(dirty_ | DirtyBit::ACCELERATION);
+    dirty_.SetBits(DirtyBit::ACCELERATION);
 }
 
 void Object::SetAngularVel(double h_vel, double p_vel, double r_vel)
 {
     pos_.SetAngularVel(h_vel, p_vel, r_vel);
-    SetDirtyBits(dirty_ | DirtyBit::ANGULAR_RATE);
+    dirty_.SetBits(DirtyBit::ANGULAR_RATE);
 }
 
 void Object::SetAngularAcc(double h_acc, double p_acc, double r_acc)
 {
     pos_.SetAngularAcc(h_acc, p_acc, r_acc);
-    SetDirtyBits(dirty_ | DirtyBit::ANGULAR_ACC);
+    dirty_.SetBits(DirtyBit::ANGULAR_ACC);
 }
 
 void Object::SetJunctionSelectorAngle(double angle)
@@ -440,15 +434,14 @@ bool Object::CollisionAndRelativeDistLatLong(Object* target, double* distLat, do
                 Object* obj = (k == 0 ? obj0 : obj1);
 
                 // Specify bounding box corner vertices, starting at first quadrant
-                double vertices[4][2] = {
-                    {static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                     static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                    {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                     static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                    {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                     static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                    {static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                     static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0}};
+                double vertices[4][2] = {{obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                                          obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                                         {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                                          obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                                         {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                                          obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0},
+                                         {obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                                          obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0}};
 
                 for (int l = 0; l < 4; l++)
                 {
@@ -563,15 +556,14 @@ double Object::PointCollision(double x, double y)
         double min[2] = {0.0, 0.0}, max[2] = {0.0, 0.0};
 
         // Specify bounding box corner vertices, starting at first quadrant
-        double vertices[4][2] = {
-            {static_cast<double>(obj0->boundingbox_.center_.x_) + static_cast<double>(obj0->boundingbox_.dimensions_.length_) / 2.0,
-             static_cast<double>(obj0->boundingbox_.center_.y_) + static_cast<double>(obj0->boundingbox_.dimensions_.width_) / 2.0},
-            {static_cast<double>(obj0->boundingbox_.center_.x_) - static_cast<double>(obj0->boundingbox_.dimensions_.length_) / 2.0,
-             static_cast<double>(obj0->boundingbox_.center_.y_) + static_cast<double>(obj0->boundingbox_.dimensions_.width_) / 2.0},
-            {static_cast<double>(obj0->boundingbox_.center_.x_) - static_cast<double>(obj0->boundingbox_.dimensions_.length_) / 2.0,
-             static_cast<double>(obj0->boundingbox_.center_.y_) - static_cast<double>(obj0->boundingbox_.dimensions_.width_) / 2.0},
-            {static_cast<double>(obj0->boundingbox_.center_.x_) + static_cast<double>(obj0->boundingbox_.dimensions_.length_) / 2.0,
-             static_cast<double>(obj0->boundingbox_.center_.y_) - static_cast<double>(obj0->boundingbox_.dimensions_.width_) / 2.0}};
+        double vertices[4][2] = {{obj0->boundingbox_.center_.x_ + obj0->boundingbox_.dimensions_.length_ / 2.0,
+                                  obj0->boundingbox_.center_.y_ + obj0->boundingbox_.dimensions_.width_ / 2.0},
+                                 {obj0->boundingbox_.center_.x_ - obj0->boundingbox_.dimensions_.length_ / 2.0,
+                                  obj0->boundingbox_.center_.y_ + obj0->boundingbox_.dimensions_.width_ / 2.0},
+                                 {obj0->boundingbox_.center_.x_ - obj0->boundingbox_.dimensions_.length_ / 2.0,
+                                  obj0->boundingbox_.center_.y_ - obj0->boundingbox_.dimensions_.width_ / 2.0},
+                                 {obj0->boundingbox_.center_.x_ + obj0->boundingbox_.dimensions_.length_ / 2.0,
+                                  obj0->boundingbox_.center_.y_ - obj0->boundingbox_.dimensions_.width_ / 2.0}};
 
         for (int l = 0; l < 4; l++)
         {
@@ -642,14 +634,14 @@ double Object::FreeSpaceDistance(Object* target, double* latDist, double* longDi
         Object* obj = (i == 0 ? this : target);
 
         // Specify bounding box corner vertices, starting at first quadrant
-        double vtmp[4][2] = {{static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                             {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                             {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                             {static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0}};
+        double vtmp[4][2] = {{obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                             {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                             {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0},
+                             {obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0}};
 
         for (int j = 0; j < 4; j++)  // for all vertices
         {
@@ -713,14 +705,14 @@ double Object::FreeSpaceDistancePoint(double x, double y, double* latDist, doubl
     double vertices[4][2];
 
     // Specify bounding box corner vertices, starting at first quadrant
-    double vtmp[4][2] = {{static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                         {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                         {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                         {static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0}};
+    double vtmp[4][2] = {{obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                          obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                         {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                          obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                         {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                          obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0},
+                         {obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                          obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0}};
 
     for (int j = 0; j < 4; j++)  // for all vertices
     {
@@ -774,18 +766,14 @@ int Object::FreeSpaceDistancePointRoadLane(double x, double y, double* latDist, 
     if (cs == CoordinateSystem::CS_LANE)
     {
         LOG_WARN("freespace LANE coordinateSystem not supported yet, falling back to freespace ROAD");
-        cs = CoordinateSystem::CS_ROAD;
     }
 
     // Specify bounding box corner vertices, starting at first quadrant
-    double vtmp[4][2] = {{static_cast<double>(boundingbox_.center_.x_) + static_cast<double>(boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(boundingbox_.center_.y_) + static_cast<double>(boundingbox_.dimensions_.width_) / 2.0},
-                         {static_cast<double>(boundingbox_.center_.x_) - static_cast<double>(boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(boundingbox_.center_.y_) + static_cast<double>(boundingbox_.dimensions_.width_) / 2.0},
-                         {static_cast<double>(boundingbox_.center_.x_) - static_cast<double>(boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(boundingbox_.center_.y_) - static_cast<double>(boundingbox_.dimensions_.width_) / 2.0},
-                         {static_cast<double>(boundingbox_.center_.x_) + static_cast<double>(boundingbox_.dimensions_.length_) / 2.0,
-                          static_cast<double>(boundingbox_.center_.y_) - static_cast<double>(boundingbox_.dimensions_.width_) / 2.0}};
+    double vtmp[4][2] = {
+        {boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ + boundingbox_.dimensions_.width_ / 2.0},
+        {boundingbox_.center_.x_ - boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ + boundingbox_.dimensions_.width_ / 2.0},
+        {boundingbox_.center_.x_ - boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ - boundingbox_.dimensions_.width_ / 2.0},
+        {boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.center_.y_ - boundingbox_.dimensions_.width_ / 2.0}};
 
     // Align points to object heading and position
     double vertices[4][3];
@@ -923,14 +911,14 @@ int Object::FreeSpaceDistanceObjectRoadLane(Object* target, PositionDiff* posDif
         Object* obj = (i == 0 ? this : target);
 
         // Specify bounding box corner vertices, starting at first quadrant
-        double vtmp[4][2] = {{static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                             {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) + static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                             {static_cast<double>(obj->boundingbox_.center_.x_) - static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0},
-                             {static_cast<double>(obj->boundingbox_.center_.x_) + static_cast<double>(obj->boundingbox_.dimensions_.length_) / 2.0,
-                              static_cast<double>(obj->boundingbox_.center_.y_) - static_cast<double>(obj->boundingbox_.dimensions_.width_) / 2.0}};
+        double vtmp[4][2] = {{obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                             {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ + obj->boundingbox_.dimensions_.width_ / 2.0},
+                             {obj->boundingbox_.center_.x_ - obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0},
+                             {obj->boundingbox_.center_.x_ + obj->boundingbox_.dimensions_.length_ / 2.0,
+                              obj->boundingbox_.center_.y_ - obj->boundingbox_.dimensions_.width_ / 2.0}};
 
         for (int j = 0; j < 4; j++)  // for all vertices
         {
@@ -1331,8 +1319,8 @@ Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
     // At least one vertex on each side of front line: OVERLAP_FULL
 
     // Own object front side of bounding box
-    SE_Vector front_left(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0f, boundingbox_.dimensions_.width_ / 2.0f);
-    SE_Vector front_right(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0f, -boundingbox_.dimensions_.width_ / 2.0f);
+    SE_Vector front_left(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, boundingbox_.dimensions_.width_ / 2.0);
+    SE_Vector front_right(boundingbox_.center_.x_ + boundingbox_.dimensions_.length_ / 2.0, -boundingbox_.dimensions_.width_ / 2.0);
 
     // Rotate and translate front line
     front_left  = front_left.Rotate(pos_.GetH());
@@ -1341,14 +1329,14 @@ Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
     front_right += SE_Vector(pos_.GetX(), pos_.GetY());
 
     // Specify target object bounding box corner vertices, starting at first quadrant going clock wise
-    SE_Vector vertex[4] = {{target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0f,
-                            target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0f},
-                           {target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0f,
-                            target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0f},
-                           {target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0f,
-                            target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0f},
-                           {target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0f,
-                            target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0f}};
+    SE_Vector vertex[4] = {{target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0,
+                            target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0},
+                           {target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0,
+                            target->boundingbox_.center_.y_ + target->boundingbox_.dimensions_.width_ / 2.0},
+                           {target->boundingbox_.center_.x_ - target->boundingbox_.dimensions_.length_ / 2.0,
+                            target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0},
+                           {target->boundingbox_.center_.x_ + target->boundingbox_.dimensions_.length_ / 2.0,
+                            target->boundingbox_.center_.y_ - target->boundingbox_.dimensions_.width_ / 2.0}};
 
     for (int i = 0; i < 4; i++)  // for all vertices
     {
@@ -1386,11 +1374,11 @@ Object::OverlapType Object::OverlappingFront(Object* target, double tolerance)
         {
             inside_count++;
 
-            if (s_norm * static_cast<double>(boundingbox_.dimensions_.width_) < tolerance)  // s_norm is factor (0..1) along front line
+            if (s_norm * boundingbox_.dimensions_.width_ < tolerance)  // s_norm is factor (0..1) along front line
             {
                 outside_left_count++;
             }
-            else if ((1 - s_norm) * static_cast<double>(boundingbox_.dimensions_.width_) < tolerance)
+            else if ((1 - s_norm) * boundingbox_.dimensions_.width_ < tolerance)
             {
                 outside_right_count++;
             }
@@ -1454,6 +1442,9 @@ int Entities::addObject(Object* obj, bool activate, int call_index)
     }
 
     obj->SetActive(activate);
+    obj->dirty_.SetBits(Object::DirtyBit::TELEPORT);  // indicate object is new and has a virgin location
+
+    LOG_INFO("Add and {}activate new object \"{}\" (id {})", activate ? "" : "de", obj->GetName(), obj->GetId());
 
     Vehicle* trailer_vehicle = static_cast<Vehicle*>(obj->TrailerVehicle());
     if (trailer_vehicle && trailer_vehicle != obj)
@@ -1806,9 +1797,9 @@ std::string Vehicle::Category2String(int category)
     }
 }
 
-std::string Object::Role2String(int role)
+std::string Object::Role2String(Role role)
 {
-    switch (static_cast<Object::Role>(role))
+    switch (role)
     {
         case Role::AMBULANCE:
             return "ambulance";
@@ -1990,7 +1981,7 @@ Object* Object::TrailerVehicle()
     return trailer_vehicle;
 }
 
-std::string Object::Type2String(int type)
+std::string Object::Type2String(Type type)
 {
     switch (type)
     {

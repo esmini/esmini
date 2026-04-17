@@ -570,7 +570,7 @@ void Parameters::parseParameterDeclarations(pugi::xml_node declarationsNode, OSC
         {
             if (pos->dirty)
             {
-                LOG_WARN("Parameter value {} updated from {} to {}", pos->name, pos->value._string, param.value._string);
+                LOG_WARN("Parameter value {} updated from {} to {}", pos->name, param.value._string, pos->value._string);
                 continue;
             }
             else

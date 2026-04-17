@@ -334,7 +334,7 @@ TEST_F(OSIPointsTestFixture, TestGetNumOfOSIPoints)
     ASSERT_EQ(osi_points_second.GetNumOfOSIPoints(), 3);
 }
 
-class OSIPointsCloseCheck : public ::testing::TestWithParam<std::tuple<float, float, float, float, float, float, float, float, int>>
+class OSIPointsCloseCheck : public ::testing::TestWithParam<std::tuple<double, double, double, double, double, double, double, double, int>>
 {
 };
 // eight points (start and end for two lines)
@@ -376,11 +376,11 @@ TEST_P(OSIPointsCloseCheck, ClosenessChecker)
 
 INSTANTIATE_TEST_SUITE_P(OSI_Points_check_test,
                          OSIPointsCloseCheck,
-                         ::testing::Values(std::make_tuple(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1),
-                                           std::make_tuple(0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 2),
-                                           std::make_tuple(0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 1.0f, 1.0f, 0),
-                                           std::make_tuple(0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f, 0.0f, 1),
-                                           std::make_tuple(0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 2)));
+                         ::testing::Values(std::make_tuple(0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1),
+                                           std::make_tuple(0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 2),
+                                           std::make_tuple(0.0, 0.0, 0.0, 1.0, 0.0, 2.0, 1.0, 1.0, 0),
+                                           std::make_tuple(0.0, 0.0, 0.0, 1.0, 0.0, 2.0, 0.0, 0.0, 1),
+                                           std::make_tuple(0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 2)));
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -3897,10 +3897,10 @@ TEST(PositionModeTest, TestModeBitmasks)
     // Verify default modes
     EXPECT_EQ(Position::GetModeDefault(Position::PosModeType::SET),
               roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
-                  roadmanager::Position::PosMode::R_REL);
+                  roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
     EXPECT_EQ(Position::GetModeDefault(Position::PosModeType::UPDATE),
               roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
-                  roadmanager::Position::PosMode::R_REL);
+                  roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
 
     Position pos;
     EXPECT_EQ(pos.GetMode(Position::PosModeType::SET), Position::GetModeDefault(Position::PosModeType::SET));
@@ -3915,10 +3915,10 @@ TEST(PositionModeTest, TestModeBitmasks)
     pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_REL);
     EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
               roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
-                  roadmanager::Position::PosMode::R_REL);
+                  roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
     EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE),
               roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
-                  roadmanager::Position::PosMode::R_REL);
+                  roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
     pos.SetRollRelative(0.1);
     pos.SetLanePos(road->GetId(), -1, 150.0, 0.0);
     EXPECT_NEAR(pos.GetH(), 1.5, 1e-3);
@@ -3933,10 +3933,10 @@ TEST(PositionModeTest, TestModeBitmasks)
     pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_ABS);
     EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
               roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
-                  roadmanager::Position::PosMode::R_REL);
+                  roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
     EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE),
               roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
-                  roadmanager::Position::PosMode::R_ABS);
+                  roadmanager::Position::PosMode::R_ABS | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
     pos.SetRoll(0.1);
     pos.SetLanePos(road->GetId(), -1, 150.0, 0.0);
     EXPECT_NEAR(pos.GetH(), 1.5, 1e-3);
@@ -3956,10 +3956,10 @@ TEST(PositionModeTest, TestModeBitmasks)
     pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::R_REL);
     EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
               roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
-                  roadmanager::Position::PosMode::R_REL);
+                  roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
     EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE),
               roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
-                  roadmanager::Position::PosMode::R_REL);
+                  roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
     pos.SetRollRelative(0.0);
     pos.SetLanePos(road->GetId(), -1, 300.0, 0.0);
     EXPECT_NEAR(pos.GetH(), 3.0, 1e-3);
@@ -3985,7 +3985,7 @@ TEST(PositionModeTest, TestModeBitmasks)
     pos.SetMode(Position::PosModeType::SET, Position::PosMode::R_ABS);
     EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
               roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_ABS | roadmanager::Position::PosMode::P_REL |
-                  roadmanager::Position::PosMode::R_ABS);
+                  roadmanager::Position::PosMode::R_ABS | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
     pos.SetInertiaPos(100.0, 85.0, -10.0, 0.5, 0.0, 0.3);
     EXPECT_NEAR(pos.GetH(), 0.5, 1e-3);
     EXPECT_NEAR(GetAngleDifference(pos.GetP(), 0.0016), 0.0, 1e-3);
@@ -3995,19 +3995,27 @@ TEST(PositionModeTest, TestModeBitmasks)
     pos.SetMode(Position::PosModeType::UPDATE, Position::PosMode::H_REL | Position::PosMode::Z_ABS);
     EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE),
               roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
-                  roadmanager::Position::PosMode::R_REL);
+                  roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
 
     pos.SetMode(Position::PosModeType::SET, Position::PosMode::H_REL | Position::PosMode::Z_ABS | Position::PosMode::P_ABS);
     EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
               roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_ABS |
-                  roadmanager::Position::PosMode::R_ABS);
+                  roadmanager::Position::PosMode::R_ABS | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
     pos.SetMode(Position::PosModeType::SET, Position::PosMode::Z_MASK & Position::PosMode::Z_DEFAULT);
     EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
               roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_ABS |
-                  roadmanager::Position::PosMode::R_ABS);
+                  roadmanager::Position::PosMode::R_ABS | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
+
+    pos.SetMode(Position::PosModeType::SET,
+                (Position::PosMode::Z_MASK | Position::PosMode::SNAP_TO_ROUTE_MASK) &
+                    (Position::PosMode::Z_DEFAULT | roadmanager::Position::PosMode::SNAP_TO_ROUTE_ON));
+    EXPECT_EQ(pos.GetMode(Position::PosModeType::SET),
+              roadmanager::Position::PosMode::Z_REL | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_ABS |
+                  roadmanager::Position::PosMode::R_ABS | roadmanager::Position::PosMode::SNAP_TO_ROUTE_ON);
+
     EXPECT_EQ(pos.GetMode(Position::PosModeType::UPDATE),
               roadmanager::Position::PosMode::Z_ABS | roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::P_REL |
-                  roadmanager::Position::PosMode::R_REL);
+                  roadmanager::Position::PosMode::R_REL | roadmanager::Position::PosMode::SNAP_TO_ROUTE_OFF);
 
     odr->Clear();
 }
@@ -4383,8 +4391,8 @@ TEST(LaneType, TestLaneTypeMasks)
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_CURB, 1 << 21);
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_CONNECTING_RAMP, 1 << 22);
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_REFERENCE_LINE, 1 << 0);
-    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_DRIVING, 1966594);
-    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD, 1966990);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_DRIVING, 6160898);
+    EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY_ROAD, 6161294);
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_ANY, -1);
     EXPECT_EQ(roadmanager::Lane::LaneType::LANE_TYPE_TUNNEL, -2);
 }

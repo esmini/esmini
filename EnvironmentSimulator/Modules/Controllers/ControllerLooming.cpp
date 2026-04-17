@@ -14,7 +14,6 @@
 #include "CommonMini.hpp"
 #include "Entities.hpp"
 #include "ScenarioEngine.hpp"
-#include "ScenarioGateway.hpp"
 #include "playerbase.hpp"
 #include "logger.hpp"
 
@@ -313,17 +312,13 @@ void ControllerLooming::Step(double timeStep)
             double dHeading          = GetAbsAngleDifference(object_->pos_.GetH(), pivot_obj->pos_.GetH());
             if (dHeading < M_PI_2)  // objects are pointing roughly in the same direction
             {
-                adjustedGapLength -=
-                    (static_cast<double>(object_->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(object_->boundingbox_.center_.x_)) +
-                    (static_cast<double>(pivot_obj->boundingbox_.dimensions_.length_) / 2.0 -
-                     static_cast<double>(pivot_obj->boundingbox_.center_.x_));
+                adjustedGapLength -= (object_->boundingbox_.dimensions_.length_ / 2.0 + object_->boundingbox_.center_.x_) +
+                                     (pivot_obj->boundingbox_.dimensions_.length_ / 2.0 - pivot_obj->boundingbox_.center_.x_);
             }
             else  // objects are pointing roughly in the opposite direction
             {
-                adjustedGapLength -=
-                    (static_cast<double>(object_->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(object_->boundingbox_.center_.x_)) +
-                    (static_cast<double>(pivot_obj->boundingbox_.dimensions_.length_) / 2.0 +
-                     static_cast<double>(pivot_obj->boundingbox_.center_.x_));
+                adjustedGapLength -= (object_->boundingbox_.dimensions_.length_ / 2.0 + object_->boundingbox_.center_.x_) +
+                                     (pivot_obj->boundingbox_.dimensions_.length_ / 2.0 + pivot_obj->boundingbox_.center_.x_);
             }
 
             // dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
@@ -405,13 +400,13 @@ void ControllerLooming::Step(double timeStep)
     prevNearAngle = nearAngle;
     prevFarAngle  = far_angle;
 
-    gateway_->getObjectStatePtrByIdx(object_->GetId())->state_.pos.SetLockOnLane(true);
+    object_->pos_.SetLockOnLane(true);
     vehicle_.DrivingControlAnalog(timeStep, CLAMP(acc, -1, 1), steering);
 
-    gateway_->updateObjectWorldPosXYH(object_->GetId(), 0.0, vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
-    gateway_->updateObjectWheelAngle(object_->GetId(), 0.0, vehicle_.wheelAngle_);
+    object_->pos_.SetInertiaPos(vehicle_.posX_, vehicle_.posY_, vehicle_.heading_);
 
-    gateway_->updateObjectSpeed(object_->GetId(), 0.0, vehicle_.speed_);
+    object_->wheel_angle_ = vehicle_.wheelAngle_;
+    object_->SetSpeed(vehicle_.speed_);
     object_->sensor_pos_[0] = far_x;
     object_->sensor_pos_[1] = far_y;
 

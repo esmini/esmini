@@ -901,9 +901,9 @@ namespace roadmanager
             LANE_TYPE_CURB            = (1 << 21),  // 2097152
             LANE_TYPE_CONNECTING_RAMP = (1 << 22),  // 4194304
             LANE_TYPE_REFERENCE_LINE  = (1 << 0),   // 1
-            LANE_TYPE_ANY_DRIVING =
-                LANE_TYPE_DRIVING | LANE_TYPE_ENTRY | LANE_TYPE_EXIT | LANE_TYPE_OFF_RAMP | LANE_TYPE_ON_RAMP | LANE_TYPE_BIDIRECTIONAL,  // 1966594
-            LANE_TYPE_ANY_ROAD = LANE_TYPE_ANY_DRIVING | LANE_TYPE_RESTRICTED | LANE_TYPE_STOP | LANE_TYPE_SHOULDER | LANE_TYPE_PARKING,  // 1966990
+            LANE_TYPE_ANY_DRIVING     = LANE_TYPE_DRIVING | LANE_TYPE_ENTRY | LANE_TYPE_EXIT | LANE_TYPE_OFF_RAMP | LANE_TYPE_ON_RAMP |
+                                    LANE_TYPE_CONNECTING_RAMP | LANE_TYPE_BIDIRECTIONAL,                                                  // 6160898
+            LANE_TYPE_ANY_ROAD = LANE_TYPE_ANY_DRIVING | LANE_TYPE_RESTRICTED | LANE_TYPE_STOP | LANE_TYPE_SHOULDER | LANE_TYPE_PARKING,  // 6161294
             LANE_TYPE_ANY      = -1,
             LANE_TYPE_TUNNEL   = -2
         } LaneType;
@@ -2641,7 +2641,7 @@ namespace roadmanager
         {
             return parking_space_;
         }
-        float *GetColor()
+        double *GetColor()
         {
             return color_;
         }
@@ -2681,7 +2681,7 @@ namespace roadmanager
         Repeat                *repeat_ = nullptr;
         std::vector<Repeat *>  repeats_;
         ParkingSpace           parking_space_;
-        float                  color_[4]              = {0.0, 0.0, 0.0, 0.0};
+        double                 color_[4]              = {0.0, 0.0, 0.0, 0.0};
         TunnelComponentType    tunnel_component_type_ = TunnelComponentType::NO_TUNNEL;
         std::string            model3d_full_path_;
     };
@@ -3602,7 +3602,8 @@ namespace roadmanager
         CS_ENTITY,
         CS_LANE,
         CS_ROAD,
-        CS_TRAJECTORY
+        CS_TRAJECTORY,
+        CS_WORLD
     };
 
     enum class RelativeDistanceType
@@ -3710,27 +3711,32 @@ namespace roadmanager
         // example: Relative Z, Absolute H, Default R, Current P = Z_REL | H_ABS | R_DEF = 4151 = 0001 0000 0011 0111
         typedef enum
         {
-            UNDEFINED = 0,
-            Z_SET     = 1,  // 0001
-            Z_DEFAULT = 1,  // 0001
-            Z_ABS     = 3,  // 0011
-            Z_REL     = 7,  // 0111
-            Z_MASK    = 7,  // 0111
-            H_SET     = Z_SET << 4,
-            H_DEFAULT = Z_DEFAULT << 4,
-            H_ABS     = Z_ABS << 4,
-            H_REL     = Z_REL << 4,
-            H_MASK    = Z_MASK << 4,
-            P_SET     = Z_SET << 8,
-            P_DEFAULT = Z_DEFAULT << 8,
-            P_ABS     = Z_ABS << 8,
-            P_REL     = Z_REL << 8,
-            P_MASK    = Z_MASK << 8,
-            R_SET     = Z_SET << 12,
-            R_DEFAULT = Z_DEFAULT << 12,
-            R_ABS     = Z_ABS << 12,
-            R_REL     = Z_REL << 12,
-            R_MASK    = Z_MASK << 12,
+            UNDEFINED             = 0,
+            Z_SET                 = 1,  // 0001
+            Z_DEFAULT             = 1,  // 0001
+            Z_ABS                 = 3,  // 0011
+            Z_REL                 = 7,  // 0111
+            Z_MASK                = 7,  // 0111
+            H_SET                 = Z_SET << 4,
+            H_DEFAULT             = Z_DEFAULT << 4,
+            H_ABS                 = Z_ABS << 4,
+            H_REL                 = Z_REL << 4,
+            H_MASK                = Z_MASK << 4,
+            P_SET                 = Z_SET << 8,
+            P_DEFAULT             = Z_DEFAULT << 8,
+            P_ABS                 = Z_ABS << 8,
+            P_REL                 = Z_REL << 8,
+            P_MASK                = Z_MASK << 8,
+            R_SET                 = Z_SET << 12,
+            R_DEFAULT             = Z_DEFAULT << 12,
+            R_ABS                 = Z_ABS << 12,
+            R_REL                 = Z_REL << 12,
+            R_MASK                = Z_MASK << 12,
+            SNAP_TO_ROUTE_SET     = Z_SET << 16,  // Map position to closest lane along route (if 1) or any lane (if 0)
+            SNAP_TO_ROUTE_DEFAULT = Z_DEFAULT << 16,
+            SNAP_TO_ROUTE_OFF     = Z_ABS << 16,
+            SNAP_TO_ROUTE_ON      = Z_REL << 16,
+            SNAP_TO_ROUTE_MASK    = Z_MASK << 16,
         } PosMode;
 
         // Types of position modes
@@ -3747,7 +3753,7 @@ namespace roadmanager
         {
             HEADING_DIRECTION = 0,  // based on entity heading
             ROAD_DIRECTION    = 1,  // reference line s axis
-            LANE_DIRECTION    = 2,  // driving direction
+            LANE_DIRECTION    = 2   // driving direction
         };
 
         bool CheckBitsEqual(int input, int mask, int bits) const
@@ -3875,8 +3881,7 @@ namespace roadmanager
         @param updateTrackPos True: road position will be calculated False: don't update road position
         @return Non zero return value indicates error of some kind
         */
-        int
-        SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos = true, bool alongRoute = false);
+        int SetInertiaPosMode(double x, double y, double z, double h, double p, double r, int mode, bool updateTrackPos = true);
 
         /**
         Specify position by cartesian x, y and heading using current SET mode for heading and UPDATE mode for pitch and roll
@@ -3884,10 +3889,9 @@ namespace roadmanager
         @param y y
         @param h heading
         @param updateTrackPos True: road position will be calculated False: don't update road position
-        @param alongRoute True: road position will snap to closest position along route, of defined False: ignore any route
         @return Non zero return value indicates error of some kind
         */
-        int SetInertiaPos(double x, double y, double h, bool updateTrackPos = true, bool alongRoute = false);
+        int SetInertiaPos(double x, double y, double h, bool updateTrackPos = true);
 
         /**
         Specify position by cartesian x, y and heading. Z, pitch and roll will be set to zero.
@@ -3900,7 +3904,7 @@ namespace roadmanager
         @param updateTrackPos True: road position will be calculated False: don't update road position
         @return Non zero return value indicates error of some kind
         */
-        int  SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos = true, bool alongRoute = false);
+        int  SetInertiaPosMode(double x, double y, double h, int mode, bool updateTrackPos = true);
         void SetHeading(double heading, bool evaluate = true);
         void SetHeadingRelative(double heading, bool evaluate = true);
         void SetHeadingRelativeRoadDirection(double heading, bool evaluate = true);
@@ -4375,6 +4379,11 @@ namespace roadmanager
         Retrieve the relative roll angle (radians)
         */
         double GetRRelative() const;
+
+        /**
+        Retrieve the road road value, driving direction considered
+        */
+        double GetRRoadInDrivingDirection() const;
 
         /**
         Retrieve the road pitch value, driving direction considered
@@ -4934,10 +4943,10 @@ namespace roadmanager
         @param index Index of the waypoint, omit or set IDX_UNDEFINED for current
         @return Waypoint position object
          */
-        Position *GetWaypoint(idx_t index = IDX_UNDEFINED);  // -1 means current
-        Road     *GetRoadAtOtherEndOfIncomingRoad(Junction *junction, Road *incoming_road) const;
-        Road     *GetRoadAtOtherEndOfConnectingRoad(Road *incoming_road) const;
-        Position *GetCurrentPosition()
+        const Position *GetWaypoint(idx_t index = IDX_UNDEFINED) const;  // -1 means current
+        Road           *GetRoadAtOtherEndOfIncomingRoad(Junction *junction, Road *incoming_road) const;
+        Road           *GetRoadAtOtherEndOfConnectingRoad(Road *incoming_road) const;
+        Position       *GetCurrentPosition()
         {
             return &currentPos_;
         }

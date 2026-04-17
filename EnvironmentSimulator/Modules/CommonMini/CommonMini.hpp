@@ -50,9 +50,7 @@ using idx_t = uint32_t;
 #define IDX_UNDEFINED                 0xffffffff
 #define IDX_MAX                       0xfffffffe
 #define SMALL_NUMBER                  (1E-6)
-#define SMALL_NUMBERF                 (1E-6f)
 #define LARGE_NUMBER                  (1E+10)
-#define LARGE_NUMBERF                 (1E+10f)
 #define LARGE_NUMBER_INT              (0x7fffffff)  // largest signed 32 bit integer number
 #define SIGN(X)                       ((X < 0) ? -1 : 1)
 #define MAX(x, y)                     ((y) > (x) ? (y) : (x))
@@ -63,7 +61,6 @@ using idx_t = uint32_t;
 #define AVOID_ZERO(x)                 (SIGN(x) * MAX(SMALL_NUMBER, fabs(x)))
 #define NEAR_ZERO(x)                  (abs(x) < SMALL_NUMBER)
 #define NEAR_NUMBERS(x, y)            (abs((x) - (y)) < SMALL_NUMBER)
-#define NEAR_NUMBERSF(x, y)           (abs((x) - (y)) < SMALL_NUMBERF)
 #define IS_IN_SPAN(x, y, z)           ((x) >= (y) && (x) <= (z))
 #define OSI_MAX_LONGITUDINAL_DISTANCE 50
 #define OSI_MAX_LATERAL_DEVIATION     0.05
@@ -222,10 +219,32 @@ public:
     static const float (&Color2RBG(Color color_enum))[3];
 };
 
+struct ObjectPositionStructDat
+{
+    double x;
+    double y;
+    double z;
+    double h;
+    double p;
+    double r;
+    id_t   roadId;
+    int    laneId;
+    double offset;
+    double t;
+    double s;
+};
+
 struct SE_Point2D
 {
     double x;
     double y;
+};
+
+struct Rgb
+{
+    double r;
+    double g;
+    double b;
 };
 
 class SE_Vector
@@ -376,6 +395,11 @@ int OnRequestShowHelpOrVersion(int argc, char** argv, SE_Options& opt);
     Get the rev of the currently compiled esmini
 */
 const char* esmini_git_rev(void);
+
+/**
+    Convert hex to rgb color. If normalize is true returns each channel in [0, 1], otherwise in [0, 255].
+ */
+Rgb HexToDouble(const std::string& hex, bool normalize);
 
 /**
     Increments a counter to keep ID's unique and global.
@@ -1139,7 +1163,7 @@ public:
     }
     double GetS() const
     {
-        return 1E-3 * static_cast<double>((SE_getSystemTimeMilliseconds() - start_time_));
+        return 1E-3 * static_cast<double>(SE_getSystemTimeMilliseconds() - start_time_);
     }
 };
 
@@ -1176,7 +1200,7 @@ public:
     }
     double Elapsed() const
     {
-        return 1E-3 * static_cast<double>((SE_getSystemTimeMilliseconds() - start_time_));
+        return 1E-3 * static_cast<double>(SE_getSystemTimeMilliseconds() - start_time_);
     }
     double Remaining() const
     {
@@ -1399,6 +1423,60 @@ public:
 private:
     unsigned int seed_;
     std::mt19937 gen_;
+};
+
+class DirtyBits
+{
+public:
+    bool Check(uint64_t bits) const
+    {
+        return bool(bits_[readLayer] & bits);
+    }
+
+    void Set(uint64_t bitmask)
+    {
+        bits_[0] = bitmask;
+    }
+
+    void SetBits(uint64_t bits)
+    {
+        bits_[0] |= bits;
+    }
+
+    uint64_t Get() const
+    {
+        return bits_[readLayer];
+    }
+
+    void ClearBits(uint64_t bits)
+    {
+        bits_[0] &= ~bits;
+    }
+
+    void Clear()
+    {
+        bits_[0] = 0;
+    }
+
+    void SwapAndClear()
+    {
+        bits_[1] = bits_[0];
+        bits_[0] = 0;
+    }
+
+    static void SetReadFront()
+    {
+        readLayer = 0;
+    }
+
+    static void SetReadBack()
+    {
+        readLayer = 1;
+    }
+
+private:
+    uint64_t              bits_[2]  = {0, 0};  // two layers; 0/FRONT (current step) and BACK/0 (previous step)
+    static inline uint8_t readLayer = 0;       // 0 = FRONT, 1 = BACK (write index is always FRONT)
 };
 
 class SE_Env

@@ -11,7 +11,6 @@ set(TARGET3
 
 # ############################### Loading desired rules ##############################################################
 
-include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_static_analysis.cmake)
 include(${CMAKE_SOURCE_DIR}/support/cmake/rule/disable_iwyu.cmake)
 
 # ############################### Setting target files ###############################################################
@@ -28,7 +27,6 @@ set(TARGET1_INCLUDES
 set(TARGET2_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/dat2csv.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Replay.cpp
-    ${SCENARIO_ENGINE_PATH}/SourceFiles/ScenarioGateway.cpp
     ${SCENARIO_ENGINE_PATH}/SourceFiles/PacketHandler.cpp)
 
 set(TARGET3_SOURCES
@@ -66,13 +64,22 @@ if(BUILD_REPLAYER)
             PUBLIC ${EXTERNALS_OSG_INCLUDES})
     endif()
 
+    if(USE_IMPLOT)
+        target_include_directories(
+            ${TARGET1}
+            SYSTEM
+            PUBLIC ${EXTERNALS_IMPLOT_INCLUDES})
+    endif()
+
     target_link_libraries(
         ${TARGET1}
         PRIVATE project_options
                 ScenarioEngine
-                RoadManager
-                CommonMini
                 Controllers
+                CommonMini
+                PlayerBase
+                ScenarioEngine
+                RoadManager
                 ${TIME_LIB})
 
     if(USE_OSG)
@@ -84,13 +91,18 @@ if(BUILD_REPLAYER)
                     ${OSG_LIBRARIES})
     endif()
 
+    if(USE_IMPLOT)
+        target_link_libraries(
+            ${TARGET1}
+            PRIVATE ${IMPLOT_LIBRARIES})
+    endif()
+
     if(USE_OSI)
         target_link_libraries(
             ${TARGET1}
             PRIVATE ${OSI_LIBRARIES})
     endif()
 
-    disable_static_analysis(${TARGET1})
     disable_iwyu(${TARGET1})
 
     install(
@@ -108,8 +120,12 @@ add_executable(
 target_link_libraries(
     ${TARGET2}
     PRIVATE project_options
-            RoadManager
+            ScenarioEngine
+            Controllers
             CommonMini
+            PlayerBase
+            ScenarioEngine
+            RoadManager
             ${TIME_LIB})
 
 target_include_directories(
@@ -135,7 +151,6 @@ if(USE_OSI)
         PRIVATE ${OSI_LIBRARIES})
 endif()
 
-disable_static_analysis(${TARGET2})
 disable_iwyu(${TARGET2})
 
 install(
@@ -164,7 +179,6 @@ if(USE_OSI)
                 ${SOCK_LIB}
                 ${OSI_LIBRARIES})
 
-    disable_static_analysis(${TARGET3})
     disable_iwyu(${TARGET3})
 
     install(

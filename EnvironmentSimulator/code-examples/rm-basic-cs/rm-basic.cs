@@ -1,6 +1,9 @@
 using System;
 using OpenDRIVE;
 
+// demonstrates how to use the basic road manager API to get road network information
+// add it together with esminiRMWrapper.cs to your project
+// also add esminiRMLib (.dll, .so, .dylib) to the folder from where to execute
 
 namespace esmini_csharp
 {

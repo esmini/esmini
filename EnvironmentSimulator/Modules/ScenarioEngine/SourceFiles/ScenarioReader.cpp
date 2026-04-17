@@ -70,7 +70,6 @@ static std::vector<StoryBoardElementTriggerInfo> storyboard_element_triggers;
 ScenarioReader::ScenarioReader(Entities *entities, Catalogs *catalogs, OSCEnvironment *environment, bool disable_controllers)
     : entities_(entities),
       catalogs_(catalogs),
-      gateway_(nullptr),
       scenarioEngine_(nullptr),
       environment_(environment),
       disable_controllers_(disable_controllers),
@@ -412,9 +411,9 @@ Vehicle *ScenarioReader::createRandomOSCVehicle(std::string name)
 
     // Set some default bounding box just to avoid division-by-zero-problems
     vehicle->boundingbox_                     = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-    vehicle->boundingbox_.dimensions_.length_ = 4.0f;
-    vehicle->boundingbox_.dimensions_.width_  = 2.0f;
-    vehicle->boundingbox_.dimensions_.height_ = 1.2f;
+    vehicle->boundingbox_.dimensions_.length_ = 4.0;
+    vehicle->boundingbox_.dimensions_.width_  = 2.0;
+    vehicle->boundingbox_.dimensions_.height_ = 1.2;
 
     return vehicle;
 }
@@ -423,10 +422,12 @@ roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_no
 {
     roadmanager::CoordinateSystem cs = defaultValue;
 
-    std::string str = parameters.ReadAttribute(node, "coordinateSystem");
+    std::string str   = parameters.ReadAttribute(node, "coordinateSystem");
+    int         major = GetVersionMajor();
+    int         minor = GetVersionMinor();
     if (!str.empty())
     {
-        if (GetVersionMajor() == 1 && GetVersionMinor() == 0)
+        if (major == 1 && minor == 0)
         {
             LOG_INFO("coordinateSystem introduced in v1.1. Reading it anyway.");
         }
@@ -445,7 +446,15 @@ roadmanager::CoordinateSystem ScenarioReader::ParseCoordinateSystem(pugi::xml_no
         }
         else if (str == "trajectory")
         {
-            cs = roadmanager::CoordinateSystem::CS_ROAD;
+            cs = roadmanager::CoordinateSystem::CS_TRAJECTORY;
+        }
+        else if (str == "world")
+        {
+            if (major == 1 && minor < 3)
+            {
+                LOG_INFO("coordinateSystem 'world' introduced in v1.3. Reading it anyway");
+            }
+            cs = roadmanager::CoordinateSystem::CS_WORLD;
         }
         else
         {
@@ -662,7 +671,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
                      -vehicle->rear_axle_.positionX,
                      vehicle->GetTypeName());
             vehicle->model3d_x_offset_ = -vehicle->rear_axle_.positionX;
-            vehicle->boundingbox_.center_.x_ -= static_cast<float>(vehicle->rear_axle_.positionX);
+            vehicle->boundingbox_.center_.x_ -= vehicle->rear_axle_.positionX;
             vehicle->front_axle_.positionX -= vehicle->rear_axle_.positionX;
             vehicle->rear_axle_.positionX = 0.0;
         }
@@ -696,7 +705,7 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
     }
     else
     {
-        // No 3D model attribute present. Apply model file based on Category, and set default 3D model id
+        // No 3D model attribute present. Apply model file based on Category
         if (vehicle->category_ == Vehicle::Category::BICYCLE)
         {
             vehicle->SetModel3DFullPath("cyclist.osgb", DirNameOf(SE_Env::Inst().GetOSCFilePath()) + "/../models");
@@ -734,11 +743,24 @@ Vehicle *ScenarioReader::parseOSCVehicle(pugi::xml_node vehicleNode)
         vehicle->SetSourceReference(source_references);
     }
 
+    std::string color = vehicle->properties_.GetValueStr("color");
+    if (!color.empty())
+    {
+        if (color[0] != '#' || color.size() != 7)
+        {
+            LOG_ERROR("Property: color format invalid, shall be #RRGGBB, skipping");
+        }
+        else
+        {
+            vehicle->SetColor(color.substr(1));
+        }
+    }
+
     std::string refpoint_x_offset = vehicle->properties_.GetValueStr("refpoint_x_offset");
     if (!refpoint_x_offset.empty())
     {
         vehicle->SetRefpointXOffset(strtod(refpoint_x_offset));
-        vehicle->boundingbox_.center_.x_ -= static_cast<float>(vehicle->GetRefpointXOffset());
+        vehicle->boundingbox_.center_.x_ -= vehicle->GetRefpointXOffset();
     }
 
     // Trailer related elements
@@ -976,6 +998,19 @@ Pedestrian *ScenarioReader::parseOSCPedestrian(pugi::xml_node pedestrianNode)
         pedestrian->SetSourceReference(source_references);
     }
 
+    std::string color = pedestrian->properties_.GetValueStr("color");
+    if (!color.empty())
+    {
+        if (color[0] != '#' || color.size() != 7)
+        {
+            LOG_ERROR("Property: color format invalid, shall be #RRGGBB, skipping");
+        }
+        else
+        {
+            pedestrian->SetColor(color.substr(1));
+        }
+    }
+
     parameters.RestoreParameterDeclarations();
 
     return pedestrian;
@@ -1057,6 +1092,19 @@ MiscObject *ScenarioReader::parseOSCMiscObject(pugi::xml_node miscObjectNode)
         miscObject->SetSourceReference(source_references);
     }
 
+    std::string color = miscObject->properties_.GetValueStr("color");
+    if (!color.empty())
+    {
+        if (color[0] != '#' || color.size() != 7)
+        {
+            LOG_ERROR("Property: color format invalid, shall be #RRGGBB, skipping");
+        }
+        else
+        {
+            miscObject->SetColor(color.substr(1));
+        }
+    }
+
     parameters.RestoreParameterDeclarations();
 
     return miscObject;
@@ -1118,7 +1166,6 @@ Controller *ScenarioReader::parseOSCObjectController(pugi::xml_node controllerNo
         Controller::InitArgs args;
         args.name            = name;
         args.type            = ctrlType;
-        args.gateway         = gateway_;
         args.scenario_engine = scenarioEngine_;
         args.parameters      = &parameters;
         args.properties      = &properties;
@@ -1870,11 +1917,16 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     }
     else if (positionChildName == "RelativeWorldPosition")
     {
-        double dx, dy, dz;
+        double dx, dy;
+        double dz = std::nan("");
 
         dx = strtod(parameters.ReadAttribute(positionChild, "dx"));
         dy = strtod(parameters.ReadAttribute(positionChild, "dy"));
-        dz = strtod(parameters.ReadAttribute(positionChild, "dz"));
+
+        if (positionChild.attribute("dz"))
+        {
+            dz = strtod(parameters.ReadAttribute(positionChild, "dz", true));
+        }
 
         Object *object = ResolveObjectReference(parameters.ReadAttribute(positionChild, "entityRef"));
 
@@ -1890,11 +1942,17 @@ OSCPosition *ScenarioReader::parseOSCPosition(pugi::xml_node positionNode, OSCPo
     }
     else if (positionChildName == "RelativeObjectPosition")
     {
-        double dx, dy, dz;
+        double dx, dy;
+        double dz = std::nan("");
 
-        dx             = strtod(parameters.ReadAttribute(positionChild, "dx"));
-        dy             = strtod(parameters.ReadAttribute(positionChild, "dy"));
-        dz             = strtod(parameters.ReadAttribute(positionChild, "dz"));
+        dx = strtod(parameters.ReadAttribute(positionChild, "dx"));
+        dy = strtod(parameters.ReadAttribute(positionChild, "dy"));
+
+        if (positionChild.attribute("dz"))
+        {
+            dz = strtod(parameters.ReadAttribute(positionChild, "dz", true));
+        }
+
         Object *object = ResolveObjectReference(parameters.ReadAttribute(positionChild, "entityRef"));
 
         // Check for optional Orientation element
@@ -2392,7 +2450,6 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 trafficSwarmAction->SetSemiMinorAxes(std::stod(radius));
 
                 trafficSwarmAction->SetScenarioEngine(scenarioEngine_);
-                trafficSwarmAction->SetGateway(gateway_);
                 trafficSwarmAction->SetReader(this);
 
                 // Number of vehicles
@@ -2431,7 +2488,6 @@ OSCGlobalAction *ScenarioReader::parseOSCGlobalAction(pugi::xml_node actionNode,
                 {
                     DeleteEntityAction *deleteEntityAction = new DeleteEntityAction(entity, parent);
                     deleteEntityAction->SetEntities(entities_);
-                    deleteEntityAction->SetGateway(gateway_);
 
                     action = deleteEntityAction;
                 }
@@ -3626,13 +3682,14 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 }
                 else if (controllerChild.name() == std::string("OverrideControllerValueAction"))
                 {
-                    OverrideControlAction       *override_action = new OverrideControlAction(parent);
-                    Object::OverrideActionStatus overrideStatus;
-                    bool                         verFromMinor2 = (GetVersionMajor() == 1 && GetVersionMinor() >= 2);
+                    OverrideControlAction *override_action = new OverrideControlAction(parent);
+                    bool                   verFromMinor2   = (GetVersionMajor() == 1 && GetVersionMinor() >= 2);
 
                     for (pugi::xml_node controllerDefNode = controllerChild.first_child(); controllerDefNode;
                          controllerDefNode                = controllerDefNode.next_sibling())
                     {
+                        Object::OverrideActionStatus overrideStatus;
+
                         // read active flag
                         overrideStatus.active = parameters.ReadAttribute(controllerDefNode, "active") == "true" ? true : false;
 
@@ -4201,6 +4258,27 @@ static Direction ParseDirection(std::string direction)
     return Direction::UNDEFINED_DIRECTION;
 }
 
+static AngleType ParseAngleType(std::string angleType)
+{
+    if (angleType == "heading")
+    {
+        return AngleType::HEADING;
+    }
+    else if (angleType == "pitch")
+    {
+        return AngleType::PITCH;
+    }
+    else if (angleType == "roll")
+    {
+        return AngleType::ROLL;
+    }
+    else
+    {
+        LOG_ERROR("Invalid or missing AngleType");
+        return AngleType::UNDEFINED_ANGLE;
+    }
+}
+
 static TrigByState::CondElementState ParseState(std::string state)
 {
     if (state == "startTransition")
@@ -4587,6 +4665,33 @@ OSCCondition *ScenarioReader::parseOSCCondition(pugi::xml_node conditionNode)
                         if (!condition_node.attribute("direction").empty())
                         {
                             trigger->direction_ = ParseDirection(parameters.ReadAttribute(condition_node, "direction"));
+                        }
+
+                        condition = trigger;
+                    }
+                    else if (condition_type == "AngleCondition")
+                    {
+                        if (GetVersionMajor() == 1 && GetVersionMinor() < 3)
+                        {
+                            LOG_WARN("AngleCondition introduced in version 1.3. Reading it anyway");
+                        }
+
+                        TrigByAngle *trigger = new TrigByAngle;
+                        trigger->value_      = strtod(parameters.ReadAttribute(condition_node, "angle"));
+                        trigger->tolerance_  = strtod(parameters.ReadAttribute(condition_node, "angleTolerance"));
+                        if (!condition_node.attribute("angleType").empty())
+                        {
+                            trigger->angle_type_ = ParseAngleType(parameters.ReadAttribute(condition_node, "angleType"));
+                        }
+                        else
+                        {
+                            LOG_ERROR_AND_QUIT("AngleCondition: Missing mandatory attribute AngleType, quitting");
+                        }
+                        trigger->cs_ = ParseCoordinateSystem(condition_node, roadmanager::CoordinateSystem::CS_WORLD);
+
+                        if (trigger->cs_ == roadmanager::CoordinateSystem::CS_TRAJECTORY && trigger->angle_type_ != AngleType::HEADING)
+                        {
+                            LOG_ERROR("AngleCondition: Only angleType heading supported for coordinateSystem trajectory");
                         }
 
                         condition = trigger;

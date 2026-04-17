@@ -17,7 +17,6 @@
 #include "ControllerACC.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 #include "playerbase.hpp"
 #include "logger.hpp"
 
@@ -124,17 +123,13 @@ void ControllerACC::Step(double timeStep)
             double dHeading          = GetAbsAngleDifference(object_->pos_.GetH(), pivot_obj->pos_.GetH());
             if (dHeading < M_PI_2)  // objects are pointing roughly in the same direction
             {
-                adjustedGapLength -=
-                    (static_cast<double>(object_->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(object_->boundingbox_.center_.x_)) +
-                    (static_cast<double>(pivot_obj->boundingbox_.dimensions_.length_) / 2.0 -
-                     static_cast<double>(pivot_obj->boundingbox_.center_.x_));
+                adjustedGapLength -= (object_->boundingbox_.dimensions_.length_ / 2.0 + object_->boundingbox_.center_.x_) +
+                                     (pivot_obj->boundingbox_.dimensions_.length_ / 2.0 - pivot_obj->boundingbox_.center_.x_);
             }
             else  // objects are pointing roughly in the opposite direction
             {
-                adjustedGapLength -=
-                    (static_cast<double>(object_->boundingbox_.dimensions_.length_) / 2.0 + static_cast<double>(object_->boundingbox_.center_.x_)) +
-                    (static_cast<double>(pivot_obj->boundingbox_.dimensions_.length_) / 2.0 +
-                     static_cast<double>(pivot_obj->boundingbox_.center_.x_));
+                adjustedGapLength -= (object_->boundingbox_.dimensions_.length_ / 2.0 + object_->boundingbox_.center_.x_) +
+                                     (pivot_obj->boundingbox_.dimensions_.length_ / 2.0 + pivot_obj->boundingbox_.center_.x_);
             }
 
             // dLaneId == 0 indicates there is linked path between object lanes, i.e. no lane changes needed
@@ -152,9 +147,7 @@ void ControllerACC::Step(double timeStep)
             double x_local, y_local;
             object_->FreeSpaceDistance(pivot_obj, &y_local, &x_local);
 
-            if (x_local > 0 &&
-                x_local <
-                    1.0 + static_cast<double>(pivot_obj->boundingbox_.dimensions_.length_) + 0.5 * MAX(0.0, currentSpeed_ - pivot_obj->GetSpeed()) &&
+            if (x_local > 0 && x_local < 1.0 + pivot_obj->boundingbox_.dimensions_.length_ + 0.5 * MAX(0.0, currentSpeed_ - pivot_obj->GetSpeed()) &&
                 y_local < 0.2 && y_local > -0.5)  // yield some more for right hand traffic
             {
                 minGapLength = x_local;
@@ -218,18 +211,17 @@ void ControllerACC::Step(double timeStep)
     if (mode_ == ControlOperationMode::MODE_OVERRIDE && !virtual_)
     {
         object_->MoveAlongS(currentSpeed_ * timeStep);
-        gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
     }
 
     if (virtual_)
     {
         double acc_v[2] = {0.0, 0.0};
         RotateVec2D(acc, 0.0, object_->pos_.GetH(), acc_v[0], acc_v[1]);
-        gateway_->updateObjectAcc(object_->GetId(), 0.0, acc_v[0], acc_v[1], 0.0);
+        object_->SetAcc(acc_v[0], acc_v[1], 0.0);
     }
     else
     {
-        gateway_->updateObjectSpeed(object_->GetId(), 0.0, currentSpeed_);
+        object_->SetSpeed(currentSpeed_);
     }
 
     Controller::Step(timeStep);

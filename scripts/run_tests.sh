@@ -2,6 +2,7 @@
 
 build_type=Release
 add_performance_test=false
+add_wrapper_test=false
 timeout=40
 
 help_and_exit () {
@@ -10,6 +11,7 @@ help_and_exit () {
     echo "   -h, --help  this help"
     echo "   -b, --build_type <Release|Debug> (default: "$build_type")"
     echo "   -p, --add_performance_test (requires Release build type)"
+    echo "   -w, --add_wrapper_test"
     echo "   -t, --timeout <SECONDS> (default: "$timeout")"
     exit -1
 }
@@ -19,13 +21,14 @@ while [[ "$#" -gt 0 ]]; do
         -h|--help) help_and_exit ;;
         -b|--build_type) build_type="$2"; shift ;;
         -p|--add_performance_test) add_performance_test=true ;;
+        -w|--add_wrapper_test) add_wrapper_test=true ;;
         -t|--timeout) timeout="$2"; shift ;;
         *) echo "Unknown parameter passed: $1"; exit -1 ;;
     esac
     shift
 done
 
-echo "build_type: $build_type, timeout: $timeout, add_performance_test: $add_performance_test"
+echo "build_type: $build_type, timeout: $timeout, add_performance_test: $add_performance_test", "add_wrapper_test: $add_wrapper_test"
 
 # Run from esmini root ddirectory: ./scripts/run_unittests.sh
 
@@ -41,19 +44,21 @@ export ASAN_OPTIONS="detect_invalid_pointer_pairs=1:strict_string_checks=1:detec
 
 export UNIT_TEST_FOLDER=${workingDir}/build/EnvironmentSimulator/Unittest
 export SMOKE_TEST_FOLDER=${workingDir}/test
+export ESMINI_CS_WRAPPER_FOLDER=${workingDir}/test/CSharpWrappers/build/${build_type}
+export ESMINI_CS_WRAPPER_BINARY=libesmini_cs_wrapper_test
 
 if [[ "$OSTYPE" == "msys" ]]; then
-    export PATH=${PATH}";../Libraries/esminiLib/$build_type;../Libraries/esminiRMLib/$build_type"
+    export PATH=${PATH}":${workingDir}/build/EnvironmentSimulator/Libraries/esminiLib/${build_type}:${workingDir}/build/EnvironmentSimulator/Libraries/esminiRMLib/${build_type}"
     export EXE_FOLDER="./$build_type"
     export PYTHON="python"
 elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    export LD_LIBRARY_PATH=${workingDir}"/externals/OSI/linux/lib-dyn"
+    export LD_LIBRARY_PATH=${workingDir}/build/EnvironmentSimulator"/externals/OSI/linux/lib-dyn"
     export path="../../../bin"
     export EXE_FOLDER="."
     export PYTHON="python3"
     export ASAN_OPTIONS="$ASAN_OPTIONS:detect_leaks=1"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    export LD_LIBRARY_PATH=${workingDir}"/externals/OSI/mac/lib-dyn"
+    export LD_LIBRARY_PATH=${workingDir}/build/EnvironmentSimulator"/externals/OSI/mac/lib-dyn"
     export path="../../../bin"
     export EXE_FOLDER="."
     export PYTHON="python3"
@@ -87,7 +92,7 @@ if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
         exit_with_msg "ScenarioPlayer_test failed"
     fi
 
-    echo $'\n'ScenarioEngineDll_test:
+    echo ${EXE_FOLDER}/ScenarioEngineDll_test
     if ! ${EXE_FOLDER}/ScenarioEngineDll_test --disable_stdout; then
         exit_with_msg "ScenarioEngineDll_test failed"
     fi
@@ -115,10 +120,17 @@ if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
     fi
 fi
 
-cd $SMOKE_TEST_FOLDER
+if [[ "$OSTYPE" == "msys" ]] && [[ "$add_wrapper_test" == true ]]; then
+    echo $'\n'Run C# esminiLib wrapper test:
+    cd ${workingDir}/bin
+    if ! ${ESMINI_CS_WRAPPER_FOLDER}/${ESMINI_CS_WRAPPER_BINARY}; then
+        exit_with_msg "C# esminiLib wrapper test failed"
+    fi
+fi
 
 echo $'\n'Run smoke tests:
 
+cd $SMOKE_TEST_FOLDER
 if ! ${PYTHON} smoke_test.py "-t $timeout"; then
     exit_with_msg "smoke test failed"
 fi

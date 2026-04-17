@@ -121,7 +121,7 @@ namespace roadgeom
     osg::Vec4 ODR2OSGColor(roadmanager::RoadMarkColor color)
     {
         const float(&rgb)[3] = SE_Color::Color2RBG(roadmanager::ODRColor2SEColor(color));
-        return osg::Vec4(rgb[0], rgb[1], rgb[2], 1.0f);
+        return osg::Vec4(rgb[0], rgb[1], rgb[2], 1.0);
     }
 
     osg::ref_ptr<osg::Material> RoadGeom::GetOrCreateMaterial(const std::string& basename,
@@ -325,10 +325,7 @@ namespace roadgeom
                                 osg::ref_ptr<osg::TessellationHints> th = new osg::TessellationHints();
                                 th->setDetailRatio(0.3f);
                                 osg::ref_ptr<osg::ShapeDrawable> shape =
-                                    new osg::ShapeDrawable(new osg::Cylinder(osg::Vec3(0.0, 0.0, 0.0),
-                                                                             static_cast<float>(botts_dot_size),
-                                                                             0.3f * static_cast<float>(botts_dot_size)),
-                                                           th);
+                                    new osg::ShapeDrawable(new osg::Cylinder(osg::Vec3(0.0, 0.0, 0.0), botts_dot_size, 0.3 * botts_dot_size), th);
                                 shape->setColor(ODR2OSGColor(lane_roadmark->GetColor()));
                                 dot = new osg::Geode;
                                 dot->addDrawable(shape);
@@ -517,7 +514,6 @@ namespace roadgeom
                        osg::Vec3d              origin,
                        bool                    generate_road_surface,
                        bool                    generate_road_objects,
-                       bool                    add_ground_plane,
                        std::string             exe_path,
                        bool                    optimize)
         : environment_(environment),
@@ -528,21 +524,21 @@ namespace roadgeom
             return;
         }
 
-        exe_dir_                          = DirNameOf(exe_path);
-        root_                             = new osg::Group;
-        osg::ref_ptr<osg::Group> r_group_ = new osg::Group;
-        r_group_->setName("roads");
-        osg::ref_ptr<osg::Group> rm_group_ = new osg::Group;
-        rm_group_->setName("roadmarks");
-        root_->setName("esmini_generated_road_model");
-        root_->addChild(rm_group_);
-        root_->addChild(r_group_);
-
+        exe_dir_    = DirNameOf(exe_path);
         odrManager_ = odr;
+        root_       = new osg::Group;
+        root_->setName("esmini_generated_road_model");
 
         if (generate_road_surface)
         {
             LOG_INFO("Generating a simplistic 3D model of the road network");
+
+            osg::ref_ptr<osg::Group> r_group_ = new osg::Group;
+            r_group_->setName("roads");
+            osg::ref_ptr<osg::Group> rm_group_ = new osg::Group;
+            rm_group_->setName("roadmarks");
+            root_->addChild(rm_group_);
+            root_->addChild(r_group_);
 
             if (!SE_Env::Inst().GetOptions().GetOptionSet("generate_without_textures"))
             {
@@ -613,6 +609,7 @@ namespace roadgeom
 
                     std::vector<int> lane_ids;  // all physical lane ids, except center lane which has no area
                     lane_ids.reserve(lsec->GetNumberOfLanes() - 1);
+                    std::unordered_map<int, int> lane_idxs;  // store indexes for all lanes, except center lane (id 0)
 
                     // First make sure there are OSI points of the center lane
                     roadmanager::Lane* lane = lsec->GetLaneById(0);
@@ -678,6 +675,7 @@ namespace roadgeom
                             continue;
                         }
 
+                        lane_idxs[lane->GetId()] = lane_idxs.size();
                         lane_ids.push_back(lane->GetId());
 
                         for (size_t l = 0; l < lane->GetNumberOfMaterials(); l++)
@@ -825,7 +823,8 @@ namespace roadgeom
                         unsigned int geom_idx = 0;
                         for (size_t k = 0; k < all_lane_ids.size(); k++)
                         {
-                            int lane_id = all_lane_ids[k];
+                            int lane_id  = all_lane_ids[k];
+                            int lane_idx = lane_idxs[lane_id];
 
                             if (counter == 0 && lane_id != 0)
                             {
@@ -842,7 +841,7 @@ namespace roadgeom
                             if (lane_id != 0 && counter == 0 || !NEAR_NUMBERS(friction, geom_cache[k].friction))
                             {
                                 // create initial strip or strip with new friction value
-                                geom_strips_list.back().push_back({static_cast<int>(geom_points_list.back()[0].size()), friction});
+                                geom_strips_list[lane_idx].push_back({static_cast<int>(geom_points_list[lane_idx][0].size()), friction});
                             }
 
                             for (auto side : {0, 1})  // left, right
@@ -1132,7 +1131,8 @@ namespace roadgeom
             }
         }
 
-        if (add_ground_plane)
+        std::string opt_groundplane = SE_Env::Inst().GetOptions().GetOptionValueByEnum(esmini_options::GROUND_PLANE);
+        if ((opt_groundplane == "auto" && (!generate_road_surface && environment == nullptr)) || opt_groundplane == "on")
         {
             AddGroundSurface();
         }
@@ -1919,7 +1919,7 @@ namespace roadgeom
         osg::ComputeBoundsVisitor cbv;
         osg::BoundingBox          bb;
 
-        osg::Node* bb_node = environment_ != nullptr ? environment_ : root_->asNode();
+        osg::Node* bb_node = environment_ != nullptr ? environment_ : root_->getNumChildren() > 0 ? root_->asNode() : nullptr;
         if (bb_node != nullptr)
         {
             bb_node->accept(cbv);

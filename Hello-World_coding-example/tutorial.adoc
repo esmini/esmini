@@ -425,10 +425,9 @@ include::{src-local-root}/{file}[]
 
 A Python wrapper for esmini can easily be created using "ctypes" (thanks David Kaplan for the tip!). This section presents a few examples to get you started.
 
-* Make sure the esminiLib is present in `esmini/bin` folder
-* Run the script examples from the `esmini/Hello-World_coding-example` folder
-
 === Minimalistic esmini Python player
+
+The script below works on Windows.
 
 ```Python
 import ctypes
@@ -439,6 +438,10 @@ se.SE_Init(b"../resources/xosc/cut-in.xosc", 1, 1, 0, 0, 2)
 for i in range (500):
     se.SE_Step()
 ```
+
+- Create the file `esmini-win-player.py` in `esmini/Hello-World_coding-example` folder, copy the code into it.
+- Make sure the esminiLib is present in `esmini/bin` folder.
+- Run the script from its folder as: `python esmini-win-player.py`
 
 *Note:* Library name varies with the platform as mentioned above (see <<preparations>>)
 
@@ -454,6 +457,8 @@ Below is a bit more flexible variant:
 ----
 include::{src-local-root}/{file}[]
 ----
+
+That was a minimalistic introduction. Following examples are located under the `EnvironmentSimulator/code-examples` folder. To run them, again make sure the esminiLib is present in `esmini/bin` folder. Run each script from its folder.
 
 === Initialize esmini by flexible argument list
 

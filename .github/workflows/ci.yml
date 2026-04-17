@@ -19,16 +19,21 @@ on:
 
   workflow_dispatch:
 
+env:
+  ESMINI_SLIM_TEST: -D USE_OSG=OFF -D USE_SUMO=OFF -D USE_OSI=OFF -D USE_GTEST=ON -D USE_IMPLOT=OFF
+  ESMINI_CHECKS: -D ENABLE_WARNINGS_AS_ERRORS=ON -D ENABLE_INCLUDE_WHAT_YOU_USE=ON
+  USE_TMATE: false
+
 jobs:
   lint:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - name: Install Python3.8 and dependencies
-        uses: actions/setup-python@v5.6.0
+      - name: Install Python and dependencies
+        uses: actions/setup-python@v6
         with:
-          python-version: '3.8'
+          python-version: '3.12'
           cache: 'pip'
       - run: pip install -r support/python/requirements.txt
 
@@ -41,8 +46,8 @@ jobs:
       - name: Run cmake-format lint
         run: pre-commit run cmake-format --all-files
 
-      - name: Cache Cppcheck 2.17.1
-        uses: actions/cache@v4
+      - name: Cache Cppcheck
+        uses: actions/cache@v5
         id: cache-cppcheck
         with:
           path: ~/.local/cppcheck-2.17.1
@@ -54,7 +59,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libpcre3-dev
 
-      - name: Build and install Cppcheck 2.17.1
+      - name: Build and install Cppcheck
         if: steps.cache-cppcheck.outputs.cache-hit != 'true'
         run: |
           cd /tmp
@@ -81,10 +86,6 @@ jobs:
       - name: Run black-format lint
         run: pre-commit run black-format --all-files
 
-      # TODO: OpenDrive generation currently has too many pylint issues
-      #- name: Run pylint lint
-      #  run: python3 support/python/src/main.py run pylint
-
   test:
     needs: [lint]
 
@@ -96,7 +97,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
           fetch-tags: true
@@ -109,7 +110,7 @@ jobs:
       - uses: ./.github/actions/generate_offset_run_number
 
       - name: Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             externals/googletest
@@ -120,15 +121,20 @@ jobs:
             resources/models
           key: ${{ runner.os }}-external-resources
 
-      - name: CMake Configure - Default
-        if: runner.os != 'macOS'
+      - name: CMake Configure - Windows
+        if: runner.os == 'Windows'
         shell: pwsh
-        run: cmake "--preset=ci-$("${{ matrix.os }}".split("-")[0])-test" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }}
+        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -G "Visual Studio 17 2022" -T v142 -A x64
+
+      - name: CMake Configure - Linux
+        if: runner.os == 'Linux'
+        shell: pwsh
+        run: cmake . -G Ninja -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
 
       - name: CMake Configure - macOS
         if: runner.os == 'macOS'
         shell: pwsh
-        run: cmake "--preset=ci-$("${{ matrix.os }}".split("-")[0])-test" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build ${{ env.ESMINI_CHECKS }} -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
 
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
@@ -139,6 +145,13 @@ jobs:
           echo -e '#include "esminiLib.hpp"\n\nint main()\n{\n    return 0;\n}' > pure-c.c
           gcc pure-c.c -I EnvironmentSimulator/Libraries/esminiLib/ ./bin/libesminiLib.so -o pure-c
           ./pure-c
+
+      - name: Compile C# wrapper tests
+        if: runner.os == 'Windows'
+        run: |
+          cd test/CSharpWrappers
+          cmake . -B build -G "Visual Studio 17 2022" -T v142 -A x64 -DUSE_OSI=ON
+          cmake --build build --config ${{ matrix.configuration }}
 
       - name: CMake Build OSMP FMU
         if: runner.os == 'Linux'
@@ -172,20 +185,24 @@ jobs:
         # Use xvfb on Linux only
         run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
 
+      - uses: ./.github/actions/setup_mesa
+        with:
+          configuration: ${{ matrix.configuration }}
+
       - name: Run Tests - Windows
         if: runner.os == 'Windows'
         env:
-          GALLIUM_DRIVER: softpipe
+          GALLIUM_DRIVER: llvmpipe
           MESA_GL_VERSION_OVERRIDE: 4.5
         shell: bash
-        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
+        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -w
 
       - uses: ./.github/actions/upload_esmini_artifacts
         if: matrix.configuration == 'Release'
 
-      # - name: Debugging with tmate
-      #   if: ${{ failure() }}
-      #   uses: mxschmitt/action-tmate@v3
+      - name: Debugging with tmate
+        if: ${{ failure() && env.USE_TMATE == 'true' }}
+        uses: mxschmitt/action-tmate@v3
 
   test-no-external-modules:
     needs: [lint]
@@ -198,14 +215,17 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: true
 
       - uses: ./.github/actions/setup_tools_shared
 
+      # Generate build number based on offset from former AppVeyor CI machine
+      - uses: ./.github/actions/generate_offset_run_number
+
       - name: Cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             externals/googletest
@@ -215,16 +235,6 @@ jobs:
             externals/implot
             resources/models
           key: ${{ runner.os }}-external-resources
-
-      - name: CMake Configure - Default
-        if: runner.os != 'macOS'
-        shell: pwsh
-        run: cmake "--preset=ci-$("${{ matrix.os }}".split("-")[0])-test-no-external-modules" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }}
-
-      - name: CMake Configure - macOS
-        if: runner.os == 'macOS'
-        shell: pwsh
-        run: cmake "--preset=ci-$("${{ matrix.os }}".split("-")[0])-test-no-external-modules" -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
 
       # run xml validation only here.
       # 1. Only needs to run once
@@ -238,8 +248,30 @@ jobs:
         if: runner.os == 'Windows' && matrix.configuration == 'Release'
         uses: ./.github/actions/wrapper_check
 
+      - name: CMake Configure - Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -G "Visual Studio 17 2022" -T v142 -A x64 ${{ env.ESMINI_SLIM_TEST }}
+
+      - name: CMake Configure - Linux
+        if: runner.os == 'Linux'
+        shell: pwsh
+        run: cmake . -G Ninja -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} ${{ env.ESMINI_SLIM_TEST }}
+
+      - name: CMake Configure - macOS
+        if: runner.os == 'macOS'
+        shell: pwsh
+        run: cmake . -DESMINI_BUILD_VERSION=${{ env.BUILD_NUMBER }} -B build -DCMAKE_BUILD_TYPE:STRING=${{ matrix.configuration }} -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" ${{ env.ESMINI_SLIM_TEST }}
+
       - name: CMake Build
         run: cmake --build build --config ${{ matrix.configuration }} --target install -j 2
+
+      - name: Compile C# wrapper tests
+        if: runner.os == 'Windows'
+        run: |
+          cd test/CSharpWrappers
+          cmake . -B build -G "Visual Studio 17 2022" -T v142 -A x64 -DUSE_OSI=OFF
+          cmake --build build --config ${{ matrix.configuration }}
 
       - name: Run Tests - Unix
         if: runner.os != 'Windows'
@@ -252,7 +284,11 @@ jobs:
           GALLIUM_DRIVER: softpipe
           MESA_GL_VERSION_OVERRIDE: 4.5
         shell: bash
-        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
+        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -w
+
+      - name: Debugging with tmate
+        if: ${{ failure() && env.USE_TMATE == 'true' }}
+        uses: mxschmitt/action-tmate@v3
 
   release:
     needs: [test, test-no-external-modules]
@@ -265,7 +301,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
           ref: ${{ github.ref }}
@@ -273,11 +309,11 @@ jobs:
       # Generate build number based on offset from former AppVeyor CI machine
       - uses: ./.github/actions/generate_offset_run_number
 
-      - uses: actions/download-artifact@v4.1.7
+      - uses: actions/download-artifact@v8
         with:
           name: esmini-bin_${{ runner.os }}
 
-      - uses: actions/download-artifact@v4.1.7
+      - uses: actions/download-artifact@v8
         with:
           name: esmini-demo_${{ runner.os }}
 
@@ -286,7 +322,7 @@ jobs:
         run: echo "ESMINI_VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: 'esmini ${{ env.ESMINI_VERSION }} (build ${{ env.BUILD_NUMBER }})'
           body: 'Demo and binaries. For information about changes and new features see [release notes](https://github.com/esmini/esmini/blob/master/release_notes.md).'

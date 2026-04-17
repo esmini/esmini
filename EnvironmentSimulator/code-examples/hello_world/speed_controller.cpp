@@ -4,8 +4,8 @@
 
 int main(int argc, char **argv)
 {
-    float acc   = 10;    // initial acceleration
-    float speed = 2.0f;  // initial speed
+    double acc   = 10;   // initial acceleration
+    double speed = 2.0;  // initial speed
 
     if (argc > 1)
     {
@@ -22,11 +22,11 @@ int main(int argc, char **argv)
         speed += acc * SE_GetSimTimeStep();  // get latest time step from simulation
 
         // modulate speed by changing sign of acceleration now and then
-        if (speed < 2.0f)
+        if (speed < 2.0)
         {
             acc = 10;
         }
-        else if (speed > 20.0f)
+        else if (speed > 20.0)
         {
             acc = -10;
         }

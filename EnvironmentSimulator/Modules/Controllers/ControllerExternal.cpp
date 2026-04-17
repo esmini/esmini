@@ -12,7 +12,6 @@
 
 #include "ControllerExternal.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 #include "logger.hpp"
 
 using namespace scenarioengine;

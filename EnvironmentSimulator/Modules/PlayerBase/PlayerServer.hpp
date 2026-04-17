@@ -38,34 +38,34 @@ namespace scenarioengine
 
     struct SpeedActionStruct
     {
-        int   id;  // id of object to perform action
-        float speed;
-        int   transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
-        int   transition_dim;    // 0 = distance, 1 = rate, 2 = time
-        float transition_value;
+        int    id;  // id of object to perform action
+        double speed;
+        int    transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
+        int    transition_dim;    // 0 = distance, 1 = rate, 2 = time
+        double transition_value;
     };
 
     struct LaneChangeActionStruct
     {
-        int   id;                // id of object to perform action
-        int   mode;              // 0 = absolute, 1 = relative (own vehicle)
-        int   target;            // target lane id (absolute or relative)
-        int   transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
-        int   transition_dim;    // 0 = distance, 1 = rate, 2 = time
-        float transition_value;
+        int    id;                // id of object to perform action
+        int    mode;              // 0 = absolute, 1 = relative (own vehicle)
+        int    target;            // target lane id (absolute or relative)
+        int    transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
+        int    transition_dim;    // 0 = distance, 1 = rate, 2 = time
+        double transition_value;
     };
 
     struct LaneOffsetActionStruct
     {
-        int   id;  // id of object to perform action
-        float offset;
-        float maxLateralAcc;
-        int   transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
+        int    id;  // id of object to perform action
+        double offset;
+        double maxLateralAcc;
+        int    transition_shape;  // 0 = cubic, 1 = linear, 2 = sinusoidal, 3 = step
     };
 
     struct StepDTStruct
     {
-        float dt;  // timestep in seconds
+        double dt;  // timestep in seconds
     };
 
     struct ActionStruct

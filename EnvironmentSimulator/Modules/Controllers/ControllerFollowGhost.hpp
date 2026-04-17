@@ -39,11 +39,12 @@ namespace scenarioengine
 
         ControllerFollowGhost(InitArgs* args);
 
-        virtual const char* GetTypeName()
+        virtual const char* GetTypeName() const
         {
             return CONTROLLER_FOLLOW_GHOST_TYPE_NAME;
         }
-        virtual int GetType()
+
+        virtual Type GetType() const
         {
             return CONTROLLER_TYPE_FOLLOW_GHOST;
         }

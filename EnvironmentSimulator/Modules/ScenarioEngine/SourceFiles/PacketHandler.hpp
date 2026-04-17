@@ -3,9 +3,10 @@
 #include <fstream>
 #include "CommonMini.hpp"
 #include "RoadManager.hpp"
+#include "ScenarioEngine.hpp"
 
-#define DAT_FILE_FORMAT_VERSION_MAJOR 4
-#define DAT_FILE_FORMAT_VERSION_MINOR 3
+#define DAT_FILE_FORMAT_VERSION_MAJOR 5
+#define DAT_FILE_FORMAT_VERSION_MINOR 1
 
 namespace scenarioengine
 {
@@ -45,7 +46,9 @@ namespace Dat
         OBJ_MODEL3D       = 26,
         ELEM_STATE_CHANGE = 27,
         SHAPE_2D_OUTLINE  = 28,
-        PACKET_ID_SIZE    = 29  // Keep this last
+        ENVIRONMENT       = 29,
+        BB_COLOR          = 30,
+        PACKET_ID_SIZE    = 31  // Keep this last
     };
 
     struct PacketString
@@ -71,22 +74,22 @@ namespace Dat
 
     struct Pose
     {
-        float x = std::nanf("");
-        float y = std::nanf("");
-        float z = std::nanf("");
-        float h = std::nanf("");
-        float p = std::nanf("");
-        float r = std::nanf("");
+        double x = std::nan("");
+        double y = std::nan("");
+        double z = std::nan("");
+        double h = std::nan("");
+        double p = std::nan("");
+        double r = std::nan("");
     };
 
     struct BoundingBox
     {
-        float x      = std::nanf("");
-        float y      = std::nanf("");
-        float z      = std::nanf("");
-        float length = std::nanf("");
-        float width  = std::nanf("");
-        float height = std::nanf("");
+        double x      = std::nan("");
+        double y      = std::nan("");
+        double z      = std::nan("");
+        double length = std::nan("");
+        double width  = std::nan("");
+        double height = std::nan("");
     };
 
     struct TrafficLightLamp
@@ -95,6 +98,15 @@ namespace Dat
         unsigned int lamp_id          = ID_UNDEFINED;
         unsigned int lamp_idx         = IDX_UNDEFINED;
         int          lamp_mode        = static_cast<int>(roadmanager::Signal::LampMode::MODE_UNDEFINED);
+    };
+
+    struct Environment
+    {
+        double visibility_range             = LARGE_NUMBER;
+        double fractional_cloudstate_factor = 0.0;
+        double sun_intensity_factor         = 1.0;
+        double fog_visibilityrange_factor   = 0.0;
+        double friction_scale_factor        = 1.0;
     };
 
     struct PacketGeneric
@@ -112,33 +124,36 @@ namespace Dat
     {
         int                     obj_id_            = -1;
         bool                    active_            = false;
-        float                   speed_             = std::nanf("");
+        double                  speed_             = std::nan("");
         Pose                    pose_              = {};
         int                     model_id_          = -1;
         int                     obj_type_          = -1;
         int                     obj_category_      = -1;
         int                     ctrl_type_         = -1;
-        float                   wheel_angle_       = std::nanf("");
-        float                   wheel_rot_         = std::nanf("");
+        double                  wheel_angle_       = std::nan("");
+        double                  wheel_rot_         = std::nan("");
         BoundingBox             bounding_box_      = {};
         int                     scale_mode_        = -1;
         int                     visibility_mask_   = -1;
         std::string             name_              = {};
         id_t                    road_id_           = ID_UNDEFINED;
         int                     lane_id_           = -LARGE_NUMBER_INT;
-        float                   pos_offset_        = std::nanf("");
-        float                   pos_t_             = std::nanf("");
-        float                   pos_s_             = std::nanf("");
-        float                   refpoint_x_offset_ = std::nanf("");
-        float                   model_x_offset_    = std::nanf("");
+        double                  pos_offset_        = std::nan("");
+        double                  pos_t_             = std::nan("");
+        double                  pos_s_             = std::nan("");
+        double                  refpoint_x_offset_ = std::nan("");
+        double                  model_x_offset_    = std::nan("");
         std::string             model3d_           = {};
-        std::vector<SE_Point2D> outline_2d         = {};
+        std::vector<SE_Point2D> outline_2d_        = {};
+        std::string             bb_color_          = {};
+        bool                    is_trailer_        = false;
     };
 
     struct ObjectStateCache  // Maybe rename to e.g. SimulationStateCache?
     {
         double                                     dt_ = LARGE_NUMBER;
         double                                     timestamp_;
+        Environment                                environment_;
         std::unordered_map<id_t, TrafficLightLamp> traffic_lights_lamps_;
         std::unordered_map<int, ObjState>          state_;
     };
@@ -147,10 +162,11 @@ namespace Dat
     {
     public:
         void           WritePacket(PacketGeneric& packet);
+        int            WriteEnvironmentToDat(const scenarioengine::OSCEnvironment& environment);
         int            WriteDtToDat();
         int            WriteTrafficLightsToDat(const std::vector<roadmanager::Signal*>& dynamic_signals);
         int            WriteStoryBoardStateChangesToDat(const std::vector<std::string>& state_changes);
-        int            WriteObjectStatesToDat(const std::vector<std::unique_ptr<scenarioengine::ObjectState>>& object_states);
+        int            WriteObjectStatesToDat(const std::vector<scenarioengine::Object*>& objects);
         constexpr bool ShouldWriteObjId(PacketId p_id) const noexcept;
 
         size_t SerializedSize(const std::string& str);
@@ -168,6 +184,8 @@ namespace Dat
         void SetSimulationTime(const double simulation_time, const double dt);
         bool IsPoseEqual(const Pose& pose, const roadmanager::Position& pos) const;
         bool IsBoundingBoxEqual(const BoundingBox& bb, const scenarioengine::OSCBoundingBox& osc_bb) const;
+        bool IsEnvironmentEqual(const Environment& env, const scenarioengine::OSCEnvironment& environment) const;
+        void UpdateEnvironmentCache(const scenarioengine::OSCEnvironment& environment);
         void ResetCurrentIds();
         void CheckDeletedObjects();
 

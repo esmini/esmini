@@ -289,11 +289,11 @@ fmi2Status EsminiOsiSource::doCalc(fmi2Real currentCommunicationPoint, fmi2Real 
                     obj.base().position().y() - vehicleState.centerOffsetX * sin(vehicleState.h) - vehicleState.centerOffsetY * cos(vehicleState.h);
             }
 
-            SE_ReportObjectPosXYH(obj_id, 0, vehicleState.x, vehicleState.y, vehicleState.h);
+            SE_ReportObjectPosXYH(obj_id, vehicleState.x, vehicleState.y, vehicleState.h);
 
             if (obj.base().has_velocity())
             {
-                SE_ReportObjectVel(obj_id, 0, obj.base().velocity().x(), obj.base().velocity().y(), obj.base().velocity().z());
+                SE_ReportObjectVel(obj_id, obj.base().velocity().x(), obj.base().velocity().y(), obj.base().velocity().z());
             }
         }
     }

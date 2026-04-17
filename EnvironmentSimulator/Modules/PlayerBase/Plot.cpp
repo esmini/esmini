@@ -143,7 +143,7 @@ void Plot::adjustSelectedObjectsPlotDataAxis(const PlotCategories& y_category)
     }
 }
 
-void Plot::adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<float>>& d, const size_t item)
+void Plot::adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<double>>& d, const size_t item)
 {
     switch (d.first)
     {
@@ -157,18 +157,18 @@ void Plot::adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<
         }
         case (PlotCategories::LatVel):
         {
-            ImPlot::SetNextAxesLimits(time_axis_min_, plot_objects_[item]->getTimeMax(), -1.0f, 1.0f);
+            ImPlot::SetNextAxesLimits(time_axis_min_, plot_objects_[item]->getTimeMax(), -1.0, 1.0);
             break;
         }
         case (PlotCategories::LongVel):
         {
-            float min_y_axis = 0.0f;
+            double min_y_axis = 0.0;
             if (d.second.back() < min_y_axis)
             {
                 min_y_axis = d.second.back();
                 y_scaling  = ImPlotAxisFlags_AutoFit;
             }
-            ImPlot::SetNextAxesLimits(time_axis_min_, plot_objects_[item]->getTimeMax(), min_y_axis, plot_objects_[item]->getMaxSpeed() + 5.0f);
+            ImPlot::SetNextAxesLimits(time_axis_min_, plot_objects_[item]->getTimeMax(), min_y_axis, plot_objects_[item]->getMaxSpeed() + 5.0);
             break;
         }
         case (PlotCategories::LatA):
@@ -194,7 +194,7 @@ void Plot::adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<
         }
         case (PlotCategories::LaneID):
         {
-            if (d.second.back() < -5.0f || d.second.back() > 5.0f)
+            if (d.second.back() < -5.0 || d.second.back() > 5.0)
             {
                 y_scaling = ImPlotAxisFlags_AutoFit;
             }
@@ -204,7 +204,7 @@ void Plot::adjustPlotDataAxis(const std::pair<const PlotCategories, std::vector<
     }
 }
 
-void Plot::renderPlot(const char* name)  //, float window_w, float window_h)
+void Plot::renderPlot(const char* name)
 {
     // See how many boxes that has been checked (excl. time), used to scale lineplots
     size_t lineplot_objects =
@@ -230,15 +230,15 @@ void Plot::renderPlot(const char* name)  //, float window_w, float window_h)
 
     // Wrap in scope to avoid variable conflict names later
     {
-        float y_pos = 10;
+        double y_pos = 10;
         for (const auto& n : get_category_name_)
         {
             if (n.second != "Time")
             {
-                ImGui::SetCursorPos(ImVec2(820, y_pos));
+                ImGui::SetCursorPos(ImVec2(820, static_cast<float>(y_pos)));
                 ImGui::Checkbox(n.second.c_str(), &lineplot_selection_[n.first]);
                 auto box_size = ImGui::CalcTextSize("Signal 0");
-                y_pos += box_size[1] + 10;
+                y_pos += static_cast<double>(box_size[1]) + 10;
             }
         }
     }
@@ -259,8 +259,7 @@ void Plot::renderPlot(const char* name)  //, float window_w, float window_h)
         std::string unit      = get_category_unit_[y_category];
 
         if (ImPlot::BeginPlot(plot_name.c_str(),
-                              ImVec2(static_cast<float>(window_w) - 200.0f,
-                                     (static_cast<float>(window_h) - checkbox_padding) / static_cast<float>(lineplot_objects)),
+                              ImVec2(static_cast<float>(window_w - 200.0), static_cast<float>((window_h - checkbox_padding) / lineplot_objects)),
                               ImPlotFlags_NoLegend))
         {
             ImPlot::SetupAxes(get_category_name_[PlotCategories::Time].c_str(), unit.c_str(), x_scaling, y_scaling);
@@ -404,10 +403,10 @@ void Plot::glfw_error_callback(int error, const char* description)
 
 // PlotObject
 Plot::PlotObject::PlotObject(Object* object)
-    : time_max_(30.0f),
-      max_acc_(static_cast<float>(object->GetMaxAcceleration())),
-      max_decel_(static_cast<float>(-object->GetMaxDeceleration())),
-      max_speed_(static_cast<float>(object->GetMaxSpeed())),
+    : time_max_(30.0),
+      max_acc_(object->GetMaxAcceleration()),
+      max_decel_(-object->GetMaxDeceleration()),
+      max_speed_(object->GetMaxSpeed()),
       name_(object->GetName())
 {
 }
@@ -415,40 +414,40 @@ Plot::PlotObject::PlotObject(Object* object)
 void Plot::PlotObject::updateData(Object* object, double time)
 {
     // Update Time
-    plotData[PlotCategories::Time].push_back(static_cast<float>(time));
+    plotData[PlotCategories::Time].push_back(time);
 
     // Update Velocity Lat./Long
     double lat_vel, long_vel;
     object->pos_.GetVelLatLong(lat_vel, long_vel);
-    plotData[PlotCategories::LatVel].push_back(static_cast<float>(lat_vel));
-    plotData[PlotCategories::LongVel].push_back(static_cast<float>(long_vel));
+    plotData[PlotCategories::LatVel].push_back(lat_vel);
+    plotData[PlotCategories::LongVel].push_back(long_vel);
 
     // Update Lat./Long. Acceleration
     double lat_acc, long_acc;
     object->pos_.GetAccLatLong(lat_acc, long_acc);
-    plotData[PlotCategories::LongA].push_back(static_cast<float>(long_acc));
-    plotData[PlotCategories::LatA].push_back(static_cast<float>(lat_acc));
+    plotData[PlotCategories::LongA].push_back(long_acc);
+    plotData[PlotCategories::LatA].push_back(lat_acc);
 
     // Update Lane offset
-    plotData[PlotCategories::LaneOffset].push_back(static_cast<float>(object->pos_.GetOffset()));
+    plotData[PlotCategories::LaneOffset].push_back(object->pos_.GetOffset());
 
     // Update Lane ID
-    plotData[PlotCategories::LaneID].push_back(static_cast<float>(object->pos_.GetLaneId()));
+    plotData[PlotCategories::LaneID].push_back(object->pos_.GetLaneId());
 }
 
-float Plot::PlotObject::getTimeMax() const
+double Plot::PlotObject::getTimeMax() const
 {
     return time_max_;
 }
-float Plot::PlotObject::getMaxAcc() const
+double Plot::PlotObject::getMaxAcc() const
 {
     return max_acc_;
 }
-float Plot::PlotObject::getMaxDecel() const
+double Plot::PlotObject::getMaxDecel() const
 {
     return max_decel_;
 }
-float Plot::PlotObject::getMaxSpeed() const
+double Plot::PlotObject::getMaxSpeed() const
 {
     return max_speed_;
 }

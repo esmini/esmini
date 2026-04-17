@@ -13,8 +13,6 @@
 #include <numeric>
 
 #include "Replay.hpp"
-#include "ScenarioGateway.hpp"
-#include "CommonMini.hpp"
 #include "dirent.h"
 #include "PacketHandler.hpp"
 
@@ -357,7 +355,8 @@ bool Replay::ExtractPacketsAsSlices(bool dt_in_slice, size_t scenario_idx)
 
         // Skip some packages here if its not the first scenario we are parsing (doesn't make sense to merge)
         if (scenario_idx == 0 || (packet.header.id != static_cast<id_t>(Dat::PacketId::TRAFFIC_LIGHT) &&
-                                  packet.header.id != static_cast<id_t>(Dat::PacketId::ELEM_STATE_CHANGE)))
+                                  packet.header.id != static_cast<id_t>(Dat::PacketId::ELEM_STATE_CHANGE) &&
+                                  packet.header.id != static_cast<id_t>(Dat::PacketId::ENVIRONMENT)))
         {
             current_slice->packets.push_back(packet);
         }
@@ -408,10 +407,10 @@ int Replay::ParsePackets()
                         // Initialize timelines for this object
                         objects_timeline_[current_object_id_] = {};
                         current_object_timeline_              = &objects_timeline_[current_object_id_];
-                        current_object_timeline_->odometer_.values.emplace_back(timestamp_, 0.0f);
+                        current_object_timeline_->odometer_.values.emplace_back(timestamp_, 0.0);
                         if (timestamp_ > 0.0)
                         {
-                            current_object_timeline_->active_.values.emplace_back(0.0f, false);  // Object was inactive from start of simulation
+                            current_object_timeline_->active_.values.emplace_back(0.0, false);  // Object was inactive from start of simulation
                             current_object_timeline_->active_.values.emplace_back(timestamp_, true);
                         }
                         else
@@ -431,7 +430,7 @@ int Replay::ParsePackets()
                 }
                 case static_cast<id_t>(Dat::PacketId::SPEED):
                 {
-                    float speed;
+                    double speed;
                     if (dat_reader_->ReadPacket(gp, speed) != 0)
                     {
                         LOG_ERROR("Failed reading speed data.");
@@ -502,7 +501,7 @@ int Replay::ParsePackets()
                 }
                 case static_cast<id_t>(Dat::PacketId::WHEEL_ANGLE):
                 {
-                    float wheel_angle;
+                    double wheel_angle;
                     if (dat_reader_->ReadPacket(gp, wheel_angle) != 0)
                     {
                         LOG_ERROR("Failed reading wheel angle.");
@@ -513,7 +512,7 @@ int Replay::ParsePackets()
                 }
                 case static_cast<id_t>(Dat::PacketId::WHEEL_ROT):
                 {
-                    float wheel_rot;
+                    double wheel_rot;
                     if (dat_reader_->ReadPacket(gp, wheel_rot) != 0)
                     {
                         LOG_ERROR("Failed reading wheel rotation.");
@@ -596,7 +595,7 @@ int Replay::ParsePackets()
                 }
                 case static_cast<id_t>(Dat::PacketId::POS_OFFSET):
                 {
-                    float offset;
+                    double offset;
                     if (dat_reader_->ReadPacket(gp, offset) != 0)
                     {
                         LOG_ERROR("Failed reading position offset.");
@@ -607,7 +606,7 @@ int Replay::ParsePackets()
                 }
                 case static_cast<id_t>(Dat::PacketId::POS_T):
                 {
-                    float t;
+                    double t;
                     if (dat_reader_->ReadPacket(gp, t) != 0)
                     {
                         LOG_ERROR("Failed reading position T.");
@@ -618,7 +617,7 @@ int Replay::ParsePackets()
                 }
                 case static_cast<id_t>(Dat::PacketId::POS_S):
                 {
-                    float s;
+                    double s;
                     if (dat_reader_->ReadPacket(gp, s) != 0)
                     {
                         LOG_ERROR("Failed reading position S.");
@@ -645,7 +644,7 @@ int Replay::ParsePackets()
                 }
                 case static_cast<id_t>(Dat::PacketId::REFPOINT_X_OFFSET):
                 {
-                    float refpoint_x_offset;
+                    double refpoint_x_offset;
                     if (dat_reader_->ReadPacket(gp, refpoint_x_offset) != 0)
                     {
                         LOG_ERROR("Failed reading refpoint_x_offset");
@@ -656,7 +655,7 @@ int Replay::ParsePackets()
                 }
                 case static_cast<id_t>(Dat::PacketId::MODEL_X_OFFSET):
                 {
-                    float model_x_offset;
+                    double model_x_offset;
                     if (dat_reader_->ReadPacket(gp, model_x_offset) != 0)
                     {
                         LOG_ERROR("Failed reading model_x_offset");
@@ -693,6 +692,34 @@ int Replay::ParsePackets()
                 {
                     std::vector<SE_Point2D> outline = dat_reader_->ReadOutlinePacket(gp);
                     current_object_timeline_->outline_.values.emplace_back(timestamp_, outline);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::ENVIRONMENT):
+                {
+                    Dat::Environment env;
+                    // Make sure we have valid values from the start if env. is triggered after some time in scenario.
+                    if (environment_timeline_.values.empty() && !NEAR_NUMBERS(timestamp_, timestamps_.front()))
+                    {
+                        environment_timeline_.values.emplace_back(timestamps_.front(), env);
+                    }
+
+                    if (dat_reader_->ReadPacket(gp, env) != 0)
+                    {
+                        LOG_ERROR("Failed to read environment");
+                        return -1;
+                    }
+                    environment_timeline_.values.emplace_back(timestamp_, env);
+                    break;
+                }
+                case static_cast<id_t>(Dat::PacketId::BB_COLOR):
+                {
+                    std::string color = dat_reader_->ReadStringPacket(gp);
+                    if (color.empty())
+                    {
+                        LOG_ERROR("Failed to read boundingbox color packet");
+                        return -1;
+                    }
+                    current_object_timeline_->bb_color_.values.emplace_back(timestamp_, color);
                     break;
                 }
                 case static_cast<id_t>(Dat::PacketId::DT):
@@ -1279,7 +1306,7 @@ void Replay::SetTimeToNearestTimestamp()
         return;
     }
 
-    auto it = std::lower_bound(timestamps_.begin(), timestamps_.end(), time_);
+    auto it = std::lower_bound(timestamps_.begin(), timestamps_.end(), time_ - SMALL_NUMBER);
 
     if (it == timestamps_.begin())
     {
@@ -1302,7 +1329,7 @@ ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, double t) const
     const auto& timeline = objects_timeline_.at(id);
 
     entry.state.info.id             = id;
-    entry.state.info.timeStamp      = static_cast<float>(t);
+    entry.state.info.timeStamp      = t;
     entry.state.info.model_id       = timeline.model_id_.get_value_incremental(t).value_or(-1);
     entry.state.info.obj_type       = timeline.obj_type_.get_value_incremental(t).value();
     entry.state.info.obj_category   = timeline.obj_category_.get_value_incremental(t).value();
@@ -1338,7 +1365,7 @@ ReplayEntry Replay::GetReplayEntryAtTimeBinary(int id, double t) const
     const auto& timeline = objects_timeline_.at(id);
 
     entry.state.info.id             = id;
-    entry.state.info.timeStamp      = static_cast<float>(t);
+    entry.state.info.timeStamp      = t;
     entry.state.info.model_id       = timeline.model_id_.get_value_binary(t).value_or(-1);
     entry.state.info.obj_type       = timeline.obj_type_.get_value_binary(t).value();
     entry.state.info.obj_category   = timeline.obj_category_.get_value_binary(t).value();

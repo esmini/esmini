@@ -53,10 +53,9 @@ parallel_make_flag="-j4"
 # actions
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 
-    # [ ! -d fbxsdk ] && mkdir fbxsdk
     if [ ! -d fbxsdk ]; then
         if [ ! -f fbx202001_fbxsdk_linux.tar.gz ];then
-            curl -k --user-agent  "Mozilla/5.0" -L "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-0-1/fbx202001_fbxsdk_linux.tar.gz" -o fbx202001_fbxsdk_linux.tar.gz
+            curl -L -A "Mozilla/5.0 (X11; Linux x86_64)" -e "https://aps.autodesk.com/developer/overview/fbx-sdk" "https://www.autodesk.com/content/dam/autodesk/www/adn/fbx/2020-0-1/fbx202001_fbxsdk_linux.tar.gz" -o fbx202001_fbxsdk_linux.tar.gz
         fi
         mkdir fbxsdk
         tar xzvf fbx202001_fbxsdk_linux.tar.gz --directory fbxsdk
@@ -127,7 +126,7 @@ else
 fi
 
 # Compile OSG with standard settings; dynamic linking and without examples
-cmake -B build-dyn "${GENERATOR_ARGUMENTS[@]}" -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_INSTALL_PREFIX="$install_folder" -DFBX_XML2_LIBRARY="$fbx_xml_lib" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib" -DACTUAL_3RDPARTY_DIR=$thirdparty -DBUILD_OSG_EXAMPLES="$build_examples" .
+cmake -B build-dyn "${GENERATOR_ARGUMENTS[@]}" -DFBX_INCLUDE_DIR="$fbx_include" -DFBX_LIBRARY="$fbx_lib_release" -DFBX_LIBRARY_DEBUG="$fbx_lib_debug" -DCMAKE_INSTALL_PREFIX="$install_folder" -DFBX_XML2_LIBRARY="$fbx_xml_lib" -DFBX_ZLIB_LIBRARY="$fbx_zlib_lib" -DACTUAL_3RDPARTY_DIR=$thirdparty -DBUILD_OSG_EXAMPLES="$build_examples" -DCMAKE_POLICY_VERSION_MINIMUM=3.5 .
 
 cmake --build build-dyn --config Release --target install $parallel_make_flag
 

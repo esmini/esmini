@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 
     SE_Init("../resources/xosc/override_bb.xosc", 0, 1, 0, 0);
 
-    while (SE_GetSimulationTime() < 20.0f && SE_GetQuitFlag() == 0)
+    while (SE_GetSimulationTime() < 20.0 && SE_GetQuitFlag() == 0)
     {
         SE_Step();
     }

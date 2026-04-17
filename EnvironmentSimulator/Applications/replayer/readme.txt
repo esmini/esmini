@@ -28,10 +28,12 @@ Options:
       Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
   --fixed_timestep <s>
       Use fixed timestep for the replay
-  --ground_plane
-      Add a large flat ground surface
+  --ground_plane [mode]  (default if option or value omitted: auto)
+      Add a large flat ground surface. Modes: on, off, auto
   --generate_without_textures
       Do not apply textures on any generated road model (set colors instead as for missing textures)
+  --gui [mode]  (default if option or value omitted: on)
+      Show gui overlay on graphics window. Modes: on, off
   --headless
       Run without viewer window
   --help
@@ -76,14 +78,14 @@ Options:
       Playback speed scale factor (1.0 == normal)
   --tunnel_transparency [transparency]  (default if value omitted: 0.0)
       Set level of transparency for generated tunnels [0:1]
-  --view_mode <view_mode>
-      Entity visualization: "model"(default)/"boundingbox"/"both"
   --use_signs_in_external_model
       When external scenegraph 3D model is loaded, skip creating signs from OpenDRIVE
   --version
       Show version and quit
   --view_ghost_restart
       Ghost restarts will be shown with separate ghosts
+  --view_mode <view_mode>
+      Entity visualization: "model"(default)/"boundingbox"/"both"/"filled_boundingbox" toggle key ','
   --wireframe
       Global wireframe mode, toggle key 'w'
 
@@ -108,8 +110,10 @@ Key shortcuts
     y:             Toggle show / hide OSI road points
     p:             Toggle show / hide environment 3D model
     i:             Toggle on-screen info text modes
+    Shift + i:     Toggle show / hide on-screen GUI
     n:             Toggle show active trajectories
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None
+    ; (shift + ,): Toggle show/hide object outlines
     K:             Print current camera position and orientation to console
     x:             Cycle axis indicator view mode (off, on, xray)
     ESC:           quit

@@ -48,7 +48,7 @@ TEST(TestSetMethods, SetWorldPosition)
 
     EXPECT_EQ(pos_handle, 0);
 
-    RM_SetWorldXYHPosition(pos_handle, 6.6f, -7.23f, 5.0f);
+    RM_SetWorldXYHPosition(pos_handle, 6.6, -7.23, 5.0);
     RM_PositionData pos_data;
     RM_GetPositionData(pos_handle, &pos_data);
     EXPECT_NEAR(pos_data.x, 6.6, 1E-5);
@@ -62,7 +62,7 @@ TEST(TestSetMethods, SetWorldPosition)
     EXPECT_NEAR(pos_data.laneOffset, 0.04858, 1E-5);
     EXPECT_NEAR(pos_data.s, 102.54887, 1E-5);
 
-    RM_SetWorldXYZHPosition(pos_handle, 9.36f, -3.05f, 0.55f, 3.4f);
+    RM_SetWorldXYZHPosition(pos_handle, 9.36, -3.05, 0.55, 3.4);
     RM_GetPositionData(pos_handle, &pos_data);
     EXPECT_NEAR(pos_data.x, 9.36, 1E-5);
     EXPECT_NEAR(pos_data.y, -3.05, 1E-5);
@@ -75,7 +75,7 @@ TEST(TestSetMethods, SetWorldPosition)
     EXPECT_NEAR(pos_data.laneOffset, 0.28348, 1E-5);
     EXPECT_NEAR(pos_data.s, 105.88660, 1E-5);
 
-    RM_SetWorldPosition(pos_handle, 40.0f, -1.80f, -0.3f, 0.25f, 2.0f, 3.0f);
+    RM_SetWorldPosition(pos_handle, 40.0, -1.80, -0.3, 0.25, 2.0, 3.0);
     RM_GetPositionData(pos_handle, &pos_data);
     EXPECT_NEAR(pos_data.x, 40.0, 1E-5);
     EXPECT_NEAR(pos_data.y, -1.8, 1E-5);
@@ -88,7 +88,7 @@ TEST(TestSetMethods, SetWorldPosition)
     EXPECT_NEAR(pos_data.laneOffset, -0.10529, 1E-5);
     EXPECT_NEAR(pos_data.s, 6.62796, 1E-5);
 
-    RM_SetWorldPositionMode(pos_handle, 24.0f, 16.0f, 0.8f, 4.8f, std::nanf(""), 0.0f, RM_PositionMode::RM_Z_ABS | RM_PositionMode::RM_H_ABS);
+    RM_SetWorldPositionMode(pos_handle, 24.0, 16.0, 0.8, 4.8, std::nan(""), 0.0, RM_PositionMode::RM_Z_ABS | RM_PositionMode::RM_H_ABS);
     RM_GetPositionData(pos_handle, &pos_data);
     EXPECT_NEAR(pos_data.x, 24.0, 1E-5);
     EXPECT_NEAR(pos_data.y, 16.0, 1E-5);
@@ -101,7 +101,7 @@ TEST(TestSetMethods, SetWorldPosition)
     EXPECT_NEAR(pos_data.laneOffset, 0.0311, 1E-3);
     EXPECT_NEAR(pos_data.s, 293.2713, 1E-3);
 
-    RM_SetWorldPositionMode(pos_handle, 24.0f, 16.0f, 0.8f, 0.0f, 0.0f, 0.0f, RM_PositionMode::RM_Z_ABS | RM_PositionMode::RM_H_REL);
+    RM_SetWorldPositionMode(pos_handle, 24.0, 16.0, 0.8, 0.0, 0.0, 0.0, RM_PositionMode::RM_Z_ABS | RM_PositionMode::RM_H_REL);
     RM_GetPositionData(pos_handle, &pos_data);
     EXPECT_NEAR(pos_data.x, 24.0, 1E-5);
     EXPECT_NEAR(pos_data.y, 16.0, 1E-5);
@@ -130,12 +130,12 @@ TEST(TestRelativeChecks, SubtractPositionsIntersection)
     EXPECT_EQ(pA, 0);
     EXPECT_EQ(pB, 1);
 
-    RM_SetWorldXYHPosition(pA, 33.0f, -27.0f, 1.57f);
+    RM_SetWorldXYHPosition(pA, 33.0, -27.0, 1.57);
     RM_GetPositionData(pA, &pos_data);
     EXPECT_NEAR(pos_data.roadId, 0, 1E-5);
     EXPECT_EQ(pos_data.laneId, 1);
 
-    RM_SetWorldXYHPosition(pB, 22.0f, 27.0f, 1.57f);
+    RM_SetWorldXYHPosition(pB, 22.0, 27.0, 1.57);
     RM_GetPositionData(pB, &pos_data);
     EXPECT_NEAR(pos_data.roadId, 2, 1E-5);
     EXPECT_EQ(pos_data.laneId, 1);
@@ -154,7 +154,7 @@ TEST(TestRelativeChecks, SubtractPositionsIntersection)
     EXPECT_EQ(pos_diff.dLaneId, 0);
 
     // Place A in opposite lane
-    RM_SetWorldXYHPosition(pA, 29.0f, -26.0f, 4.71f);
+    RM_SetWorldXYHPosition(pA, 29.0, -26.0, 4.71);
     RM_GetPositionData(pA, &pos_data);
     EXPECT_NEAR(pos_data.roadId, 0, 1E-5);
     EXPECT_EQ(pos_data.laneId, -1);
@@ -309,12 +309,12 @@ TEST(TestProbe, TestSimpleRoadTypes)
 
     RM_SetLanePosition(pos_handle, 1, -1, 0.0, 0.0, false);
     RM_RoadProbeInfo info;
-    const float      tolerance = 1e-3f;
-    float            distance  = 200.0f;
+    const double     tolerance = 1e-3;
+    double           distance  = 200.0;
 
-    RM_GetProbeInfo(pos_handle, 100.0f, &info, 0, true);
+    RM_GetProbeInfo(pos_handle, 100.0, &info, 0, true);
     EXPECT_EQ(info.road_lane_info.road_rule, 1);
-    EXPECT_NEAR(info.road_lane_info.speed_limit, 10.0f, 1e-3f);
+    EXPECT_NEAR(info.road_lane_info.speed_limit, 10.0, 1e-3f);
 
     for (int i = 0; i < 14; i++)
     {
@@ -323,24 +323,24 @@ TEST(TestProbe, TestSimpleRoadTypes)
         if (i == 0)  // m/s entry
         {
             EXPECT_EQ(info.road_lane_info.road_type, i);
-            EXPECT_NEAR(info.road_lane_info.speed_limit, 10.0f, tolerance);
+            EXPECT_NEAR(info.road_lane_info.speed_limit, 10.0, tolerance);
         }
         else if (i == 1)  // mph entry
         {
             EXPECT_EQ(info.road_lane_info.road_type, i);
-            EXPECT_NEAR(info.road_lane_info.speed_limit, 20.0f * 0.44704f, tolerance);
+            EXPECT_NEAR(info.road_lane_info.speed_limit, 20.0 * 0.44704, tolerance);
         }
         else if (i == 13)
         {
             EXPECT_EQ(info.road_lane_info.road_type, 12);
-            EXPECT_NEAR(info.road_lane_info.speed_limit, 130.0f / 3.6f, tolerance);
+            EXPECT_NEAR(info.road_lane_info.speed_limit, 130.0 / 3.6, tolerance);
         }
         else
         {
             EXPECT_EQ(info.road_lane_info.road_type, i);
-            EXPECT_NEAR(info.road_lane_info.speed_limit, static_cast<float>((i + 1) * 10) / 3.6f, tolerance);
+            EXPECT_NEAR(info.road_lane_info.speed_limit, (i + 1) * 10 / 3.6, tolerance);
         }
-        distance += 25.0f;
+        distance += 25.0;
     }
 
     RM_Close();
@@ -438,31 +438,31 @@ TEST(TestLaneType, TestDetailedLaneType)
     RM_SetLanePosition(pos_handle, 1, -3, 0.0, 100.0, false);
     EXPECT_EQ(RM_GetInLaneType(pos_handle), 2);
 
-    RM_SetWorldXYHPosition(pos_handle, 34.35f, -13.40f, 0.0f);
+    RM_SetWorldXYHPosition(pos_handle, 34.35, -13.40, 0.0);
     int lane_type = RM_GetInLaneType(pos_handle);
     EXPECT_EQ(lane_type, 128);
     EXPECT_EQ(lane_type & 1966594, 0);
     EXPECT_NE(lane_type & 1966726, 0);
 
-    RM_SetWorldXYHPosition(pos_handle, 43.17f, -14.81f, 0.0f);
+    RM_SetWorldXYHPosition(pos_handle, 43.17, -14.81, 0.0);
     lane_type = RM_GetInLaneType(pos_handle);
     EXPECT_EQ(lane_type, 4);
     EXPECT_EQ(lane_type & 1966594, 0);
     EXPECT_NE(lane_type & 1966726, 0);
 
-    RM_SetWorldXYHPosition(pos_handle, 49.65f, -16.95f, 0.0f);
+    RM_SetWorldXYHPosition(pos_handle, 49.65, -16.95, 0.0);
     lane_type = RM_GetInLaneType(pos_handle);
     EXPECT_EQ(lane_type, 64);
     EXPECT_EQ(lane_type & 1966594, 0);
     EXPECT_EQ(lane_type & 1966726, 0);
 
-    RM_SetWorldXYHPosition(pos_handle, 60.24f, -20.29f, 0.0f);
+    RM_SetWorldXYHPosition(pos_handle, 60.24, -20.29, 0.0);
     lane_type = RM_GetInLaneType(pos_handle);
     EXPECT_EQ(lane_type, 64);
     EXPECT_EQ(lane_type & 1966594, 0);
     EXPECT_EQ(lane_type & 1966726, 0);
 
-    RM_SetWorldXYHPosition(pos_handle, 74.24f, -24.69f, 0.0f);
+    RM_SetWorldXYHPosition(pos_handle, 74.24, -24.69, 0.0);
     lane_type = RM_GetInLaneType(pos_handle);
     EXPECT_EQ(lane_type, 1);
     EXPECT_EQ(lane_type & 1966594, 0);
@@ -568,7 +568,7 @@ TEST(TestSetMethods, TestSetH)
 
     int pos_handle = RM_CreatePosition();
 
-    RM_SetLanePosition(pos_handle, 1, -1, 0.0f, 25.0f, true);
+    RM_SetLanePosition(pos_handle, 1, -1, 0.0, 25.0, true);
     RM_GetPositionData(pos_handle, &pos_data);
     EXPECT_NEAR(pos_data.roadId, 1, 1e-3);
     EXPECT_NEAR(pos_data.x, 18.9151, 1e-3);
@@ -758,8 +758,8 @@ TEST(TestGetMethods, TestGetPosMethodsWithLaneOffset)
     id_t  road_id = 1;
     int   lane_id;
     int   lookahead_mode;
-    float s      = 9.0f;
-    float offset = 0.0f;
+    float s      = 9.0;
+    float offset = 0.0;
 
     // reference line (lane 0) at far left, look along center of current lane
     lane_id        = 0;
@@ -892,13 +892,13 @@ TEST(TestGetMethods, TestGetPosMethodsWithLaneOffsetOutsideRoad)
     RM_RoadLaneInfo laneInfo;
     RM_PositionData posData;
 
-    id_t  road_id = 1;
-    int   lookahead_mode;
-    float s = 9.0f;
-    float t;
+    id_t   road_id = 1;
+    int    lookahead_mode;
+    double s = 9.0;
+    double t;
 
     // to the left of road boundary
-    t              = 6.0f;
+    t              = 6.0;
     lookahead_mode = 0;  // lookahead center current lane
     RM_SetRoadPosition(p0, road_id, s, t, true);
     RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
@@ -935,7 +935,7 @@ TEST(TestGetMethods, TestGetPosMethodsWithLaneOffsetOutsideRoad)
     EXPECT_EQ(posData.laneId, -2);
     EXPECT_NEAR(posData.laneOffset, 4.5, 1e-3);
 
-    t              = -6.0f;
+    t              = -6.0;
     lookahead_mode = 0;  // lookahead center current lane
     RM_SetRoadPosition(p0, road_id, s, t, true);
     RM_GetLaneInfo(p0, 0.0, &laneInfo, lookahead_mode, false);
@@ -962,11 +962,11 @@ TEST(TestGetMethods, TestGetPosMethodsVariousLookaheadModes)
     RM_RoadLaneInfo laneInfo;
     RM_PositionData posData;
 
-    id_t  road_id = 1;
-    int   lane_id = -2;
-    int   lookahead_mode;
-    float s           = 5.0f;
-    float lane_offset = 0.4f;
+    id_t   road_id = 1;
+    int    lane_id = -2;
+    int    lookahead_mode;
+    double s           = 5.0;
+    double lane_offset = 0.4;
 
     // set a position 0.4 to the right of lane center (3.0/2 + 0.5 = 1.9 from road center)
     RM_SetLanePosition(p0, road_id, lane_id, lane_offset, s, true);
@@ -979,7 +979,7 @@ TEST(TestGetMethods, TestGetPosMethodsVariousLookaheadModes)
     lookahead_mode = 0;  // lookahead center current lane
     RM_GetLaneInfo(p0, 3.0, &laneInfo, lookahead_mode, false);
     EXPECT_EQ(laneInfo.laneId, -2);
-    EXPECT_EQ(laneInfo.s, s + 3.0f);
+    EXPECT_EQ(laneInfo.s, s + 3.0);
     EXPECT_NEAR(laneInfo.laneOffset, 0.0, 1e-3);
 
     lookahead_mode = 1;  // lookahead center road
@@ -996,7 +996,7 @@ TEST(TestGetMethods, TestGetPosMethodsVariousLookaheadModes)
 }
 
 static std::string
-GetRoadLaneInfo_PrintLaneInfo(int pos_id, id_t road_id, int lane_id, float offset, float s, int lookahead_mode, float t = std::nan(""))
+GetRoadLaneInfo_PrintLaneInfo(int pos_id, id_t road_id, int lane_id, double offset, double s, int lookahead_mode, double t = std::nan(""))
 {
     RM_RoadLaneInfo laneInfo;
     RM_PositionData posData;
@@ -1024,19 +1024,19 @@ GetRoadLaneInfo_PrintLaneInfo(int pos_id, id_t road_id, int lane_id, float offse
         sprintf(
             buffer,
             "s %3.1f lid % d offset % 2.1f -> pos: lid % 2d offset % 2.1f x % 3.1f y % 3.1f | lookhead_mode %d -> laneInfo: t % 3.1f x % 3.1f y % 3.1f lid % 2d offset % 4.1f RM_GetInLaneType %d RM_GetLaneType %d RM_GetLaneTypeByRoadId %d\n",
-            static_cast<double>(posData.s),
+            posData.s,
             posData.laneId,
-            static_cast<double>(offset),
+            offset,
             posData.laneId,
-            static_cast<double>(posData.laneOffset),
-            static_cast<double>(posData.x),
-            static_cast<double>(posData.y),
+            posData.laneOffset,
+            posData.x,
+            posData.y,
             lookahead_mode,
-            static_cast<double>(laneInfo.t),
-            static_cast<double>(laneInfo.pos.x),
-            static_cast<double>(laneInfo.pos.y),
+            laneInfo.t,
+            laneInfo.pos.x,
+            laneInfo.pos.y,
             laneInfo.laneId,
-            static_cast<double>(laneInfo.laneOffset),
+            laneInfo.laneOffset,
             l3,
             l4,
             l5);
@@ -1047,17 +1047,17 @@ GetRoadLaneInfo_PrintLaneInfo(int pos_id, id_t road_id, int lane_id, float offse
         sprintf(
             buffer,
             "s %3.1f t % 3.1f -> pos: lid % 2d offset % 2.1f x % 3.1f y % 3.1f | lookhead_mode %d -> laneInfo: lid % 2d offset % 2.1f x % 3.1f y % 3.1f RM_GetInLaneType %d RM_GetLaneType %d RM_GetLaneTypeByRoadId %d\n",
-            static_cast<double>(posData.s),
-            static_cast<double>(t),
+            posData.s,
+            t,
             posData.laneId,
-            static_cast<double>(posData.laneOffset),
-            static_cast<double>(posData.x),
-            static_cast<double>(posData.y),
+            posData.laneOffset,
+            posData.x,
+            posData.y,
             lookahead_mode,
             laneInfo.laneId,
-            static_cast<double>(laneInfo.laneOffset),
-            static_cast<double>(laneInfo.pos.x),
-            static_cast<double>(laneInfo.pos.y),
+            laneInfo.laneOffset,
+            laneInfo.pos.x,
+            laneInfo.pos.y,
             l3,
             l4,
             l5);
@@ -1187,7 +1187,7 @@ s 9.0 t -6.3 -> pos: lid -3 offset -4.8 x  9.0 y -6.3 | lookhead_mode 2 -> laneI
 
     int p0 = RM_CreatePosition();
 
-    std::vector<float> offset = {0.0f, -0.3f};
+    std::vector<double> offset = {0.0, -0.3};
     for (auto& o : offset)
     {
         for (int lookahead_mode = 0; lookahead_mode < 3; lookahead_mode++)
@@ -1203,9 +1203,9 @@ s 9.0 t -6.3 -> pos: lid -3 offset -4.8 x  9.0 y -6.3 | lookhead_mode 2 -> laneI
     {
         for (int lookahead_mode = 0; lookahead_mode < 3; lookahead_mode++)
         {
-            for (float t = 6.0f; t > -6.1f; t -= 1.0f)
+            for (double t = 6.0; t > -6.1; t -= 1.0)
             {
-                log.append(GetRoadLaneInfo_PrintLaneInfo(p0, 1, 0, std::nanf(""), 9, lookahead_mode, t + o));
+                log.append(GetRoadLaneInfo_PrintLaneInfo(p0, 1, 0, std::nan(""), 9, lookahead_mode, t + o));
             }
         }
     }

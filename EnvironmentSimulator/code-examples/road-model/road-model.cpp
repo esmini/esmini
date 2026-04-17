@@ -40,7 +40,7 @@ void PrintNodeRecursive(const osg::Node* node)
 
 int main(int argc, char* argv[])
 {
-    std::string filename = "../../../../resources/xodr/crest-curve.xodr";  // default file
+    std::string filename = "../resources/xodr/crest-curve.xodr";  // default file
 
     if (argc > 1)
     {
@@ -56,8 +56,7 @@ int main(int argc, char* argv[])
     }
 
     // Create road geometry from OpenDRIVE file
-    roadgeom::RoadGeom road_geom =
-        roadgeom::RoadGeom(roadmanager::Position::GetOpenDrive(), nullptr, osg::Vec3(0, 0, 0), true, true, false, argv[0], false);
+    roadgeom::RoadGeom road_geom = roadgeom::RoadGeom(roadmanager::Position::GetOpenDrive(), nullptr, osg::Vec3(0, 0, 0), true, true, argv[0], false);
 
     // Inspect slightly and print structure
     PrintNodeRecursive(road_geom.root_);

@@ -190,7 +190,8 @@ namespace scenarioengine
             STAND_STILL,
             SPEED,
             RELATIVE_SPEED,
-            RELATIVE_CLEARANCE
+            RELATIVE_CLEARANCE,
+            ANGLE
         } EntityConditionType;
 
         TriggeringEntitiesRule triggering_entity_rule_;
@@ -402,6 +403,28 @@ namespace scenarioengine
               value_(0),
               direction_(Direction::UNDEFINED_DIRECTION),
               current_acceleration_(0)
+        {
+        }
+        std::string GetAdditionalLogInfo() override;
+    };
+
+    class TrigByAngle : public TrigByEntity
+    {
+    public:
+        double                        value_;
+        double                        tolerance_;
+        roadmanager::CoordinateSystem cs_;
+        AngleType                     angle_type_;
+        double                        current_angle_;
+
+        bool CheckCondition(double sim_time);
+        TrigByAngle()
+            : TrigByEntity(TrigByEntity::EntityConditionType::ANGLE),
+              value_(0.0),
+              tolerance_(0.0),
+              cs_(roadmanager::CoordinateSystem::CS_UNDEFINED),
+              angle_type_(AngleType::UNDEFINED_ANGLE),
+              current_angle_(0.0)
         {
         }
         std::string GetAdditionalLogInfo() override;

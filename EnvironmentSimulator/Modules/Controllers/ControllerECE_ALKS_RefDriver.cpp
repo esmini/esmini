@@ -20,7 +20,6 @@
 #include "ControllerECE_ALKS_RefDriver.hpp"
 #include "CommonMini.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 #include "logger.hpp"
 
 using namespace scenarioengine;
@@ -405,7 +404,7 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
         }
     }
 
-    if (object_->CheckDirtyBits(Object::DirtyBit::SPEED))
+    if (object_->dirty_.Check(Object::DirtyBit::SPEED))
     {
         // Speed has been set from somewhere else (another action or controller), respect it
         setSpeed_ = object_->GetSpeed();
@@ -466,7 +465,6 @@ void ControllerECE_ALKS_REF_DRIVER::Step(double timeStep)
     }
 
     object_->SetSpeed(currentSpeed_);
-    gateway_->updateObjectSpeed(object_->GetId(), 0.0, object_->GetSpeed());
 
     if (currentSpeed_ == 0.0)
     {

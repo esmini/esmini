@@ -21,7 +21,6 @@
 #include "Catalogs.hpp"
 #include "Entities.hpp"
 #include "Storyboard.hpp"
-#include "ScenarioGateway.hpp"
 #include "ScenarioReader.hpp"
 #include "RoadNetwork.hpp"
 #include "OSCEnvironment.hpp"
@@ -115,8 +114,7 @@ namespace scenarioengine
             return odrManager;
         }
 
-        ScenarioGateway *getScenarioGateway();
-        double           getSimulationTime() const
+        double getSimulationTime() const
         {
             return simulationTime_;
         }
@@ -159,6 +157,10 @@ namespace scenarioengine
             return init_status_;
         }
 
+        void SwapAndClearDirtyBits();
+
+        void ClearDirtyBits();
+
 #ifdef _USE_OSI
         void SetOSIReporter(OSIReporter *osi_reporter)
         {
@@ -180,11 +182,10 @@ namespace scenarioengine
         bool                    disable_controllers_;
 
         // Simulation parameters
-        double          simulationTime_;
-        Vehicle         sumotemplate;
-        ScenarioGateway scenarioGateway;
-        Object         *ghost_;
-        double          ghost_trail_dt_;
+        double  simulationTime_;
+        Vehicle sumotemplate;
+        Object *ghost_;
+        double  ghost_trail_dt_;
 
         // Distance map
         struct DistanceMeasurement

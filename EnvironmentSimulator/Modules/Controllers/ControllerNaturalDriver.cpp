@@ -65,7 +65,7 @@ ControllerNaturalDriver::ControllerNaturalDriver(InitArgs* args)
         }
         if (args->properties->ValueExists("laneChangeDuration"))
         {
-            lane_change_duration_ = static_cast<float>(strtod(args->properties->GetValueStr("laneChangeDuration")));
+            lane_change_duration_ = strtod(args->properties->GetValueStr("laneChangeDuration"));
         }
         if (args->properties->ValueExists("lookAheadDistance"))
         {
@@ -170,7 +170,7 @@ void ControllerNaturalDriver::Step(double dt)
         }
         else
         {
-            auto lane_change = LaneChangeActionStruct{object_->GetId(), 0, target_lane_, 2, 2, static_cast<float>(lane_change_duration_)};
+            auto lane_change = LaneChangeActionStruct{object_->GetId(), 0, target_lane_, 2, 2, lane_change_duration_};
             player_->player_server_->InjectLaneChangeAction(lane_change);
             lane_change_injected = true;
         }
@@ -211,8 +211,7 @@ void ControllerNaturalDriver::Step(double dt)
     }
 
     object_->MoveAlongS(current_speed_ * dt);
-    gateway_->updateObjectPos(object_->GetId(), 0.0, &object_->pos_);
-    gateway_->updateObjectSpeed(object_->GetId(), 0.0, current_speed_);
+    object_->SetSpeed(current_speed_);
 
     Controller::Step(dt);
 }

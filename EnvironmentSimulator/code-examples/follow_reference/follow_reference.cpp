@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
     (void)argv;
 
     const double x_offset     = 2.8;  // Distance from the reference point at the rear axle to the front axle which is used for steering control
-    const float  fixed_dt     = 1.0f / 60.0f;
+    const double fixed_dt     = 1.0 / 60.0;
     const bool   use_fixed_dt = false;
     const bool   visualize    = true;
 
@@ -104,7 +104,7 @@ int main(int argc, char* argv[])
     int ref_id = 1;
 
     // initialize esmini, establish initial states for given scenario
-    if (SE_Init("../../../../EnvironmentSimulator/code-examples/follow_reference/follow_reference.xosc", 0, visualize ? 1 : 0, 0, 1) != 0)
+    if (SE_Init("../EnvironmentSimulator/code-examples/follow_reference/follow_reference_code_ex.xosc", 0, visualize ? 1 : 0, 0, 1) != 0)
     {
         printf("Failed to initialize the scenario, quit\n");
         SE_LogMessage("Failed to initialize the scenario, quit\n");
@@ -124,26 +124,23 @@ int main(int argc, char* argv[])
     // Run for specified duration or until 'Esc' button is pressed
     while (SE_GetQuitFlag() == 0)
     {
-        float dt = use_fixed_dt ? fixed_dt : SE_GetSimTimeStep();
+        double dt = use_fixed_dt ? fixed_dt : SE_GetSimTimeStep();
         if (!SE_GetPauseFlag())
         {
             // find lateral distance between Ego and reference vehicle x-axis
             double front_axle[2] = {0.0, 0.0};
-            if (ego_state.speed >= 0.0f)
+            if (ego_state.speed >= 0.0)
             {
                 // measure from Ego front axle when driving forward
                 rotate_vec(x_offset, 0.0, ego_state.h, front_axle[0], front_axle[1]);
             }
-            double dy = distance_point_to_line(static_cast<double>(ego_state.x) + front_axle[0],
-                                               static_cast<double>(ego_state.y) + front_axle[1],
-                                               ref_state.x,
-                                               ref_state.y,
-                                               ref_state.h);
+            double dy = distance_point_to_line(ego_state.x + front_axle[0], ego_state.y + front_axle[1], ref_state.x, ref_state.y, ref_state.h);
 
             // find longitudinal distance and heading difference between Ego and reference vehicle
-            double dx = distance_point_to_line(ego_state.x, ego_state.y, ref_state.x, ref_state.y, static_cast<double>(ref_state.h) + M_PI_2);
+            double dx = distance_point_to_line(ego_state.x, ego_state.y, ref_state.x, ref_state.y, ref_state.h + M_PI_2);
             double dh = normalize_angle(ref_state.h - ego_state.h);
 
+            printf("time %.2f dx %.2f speed %.2f\n", SE_GetSimulationTime(), dx, ego_state.speed - ref_state.speed);
             SE_SimpleVehicleControlAccAndSteer(ego_handle,
                                                dt,
                                                speed_ctrl.computeAcceleration(dx, ego_state.speed - ref_state.speed),
@@ -152,7 +149,7 @@ int main(int argc, char* argv[])
             // Fetch updated Ego state and report to scenario engine
             SE_SimpleVehicleGetState(ego_handle, &ego_state);
 
-            SE_ReportObjectPosXYH(ego_id, 0.0f, ego_state.x, ego_state.y, ego_state.h);
+            SE_ReportObjectPosXYH(ego_id, ego_state.x, ego_state.y, ego_state.h);
             SE_ReportObjectWheelStatus(ego_id, ego_state.wheel_rotation, ego_state.wheel_angle);
             SE_ReportObjectSpeed(ego_id, ego_state.speed);
         }

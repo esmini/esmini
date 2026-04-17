@@ -12,7 +12,6 @@
 
 #include "Controller.hpp"
 #include "Entities.hpp"
-#include "ScenarioGateway.hpp"
 #include "ScenarioEngine.hpp"
 #include "logger.hpp"
 
@@ -31,7 +30,6 @@ Controller::Controller(InitArgs* args)  // init operatingdomains
       mode_(ControlOperationMode::MODE_OVERRIDE),
       object_(nullptr),
       entities_(nullptr),
-      gateway_(nullptr),
       scenario_engine_(nullptr),
       player_(nullptr)
 {
@@ -39,7 +37,6 @@ Controller::Controller(InitArgs* args)  // init operatingdomains
     {
         name_            = args->name;
         type_name_       = args->type;
-        gateway_         = args->gateway;
         scenario_engine_ = args->scenario_engine;
         entities_        = scenario_engine_ != nullptr ? &scenario_engine_->entities_ : nullptr;
     }
@@ -76,21 +73,14 @@ void Controller::Step(double timeStep)
     (void)timeStep;
     if (object_)
     {
-        if (mode_ == ControlOperationMode::MODE_OVERRIDE)
+        if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
         {
-            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LAT)))
-            {
-                object_->SetDirtyBits(Object::DirtyBit::LATERAL);
-            }
-
-            if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
-            {
-                object_->SetDirtyBits(Object::DirtyBit::LONGITUDINAL);
-            }
+            object_->dirty_.SetBits(Object::DirtyBit::LATERAL);
         }
-        else
+
+        if (IsActiveOnDomains(static_cast<unsigned int>(ControlDomainMasks::DOMAIN_MASK_LONG)))
         {
-            object_->ClearDirtyBits(Object::DirtyBit::LATERAL | Object::DirtyBit::LONGITUDINAL);
+            object_->dirty_.SetBits(Object::DirtyBit::LONGITUDINAL);
         }
     }
 }
