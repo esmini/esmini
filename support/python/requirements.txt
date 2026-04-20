@@ -4,4 +4,9 @@ xmlschema==4.3.1
 lxml==6.1.0
 psutil==7.2.2
 pre-commit==4.6.0
+
+# OSI
 protobuf==7.34.1
+matplotlib==3.10.9
+git+https://github.com/OpenSimulationInterface/osi-python.git@v3.8.0#egg=osi-python
+

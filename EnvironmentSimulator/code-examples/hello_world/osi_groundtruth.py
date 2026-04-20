@@ -2,9 +2,7 @@
    demonstrate how to fetch OSI data from esmini in Python context
 
    Python dependencies:
-      pip install protobuf==3.20.2
-
-   Note: No need to install OSI as long as esmini/scripts/osi3 folder is available
+      see support/python/requirements.txt for latest information
 
    Instruction:
      - make sure the esmini shared library (esminiLib.dll or esminiLib.so) is present in esmini/bin folder

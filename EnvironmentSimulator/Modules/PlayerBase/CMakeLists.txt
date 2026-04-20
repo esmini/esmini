@@ -45,6 +45,16 @@ add_library(
     ${SOURCES}
     ${INCLUDES})
 
+target_link_libraries(
+    ${TARGET}
+    PRIVATE project_options)
+
+if(USE_OSI)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE ${OSI_LIBRARIES})
+endif()
+
 target_include_directories(
     ${TARGET}
     PRIVATE ${SCENARIO_ENGINE_PATH}/SourceFiles
@@ -62,16 +72,6 @@ target_include_directories(
            ${EXTERNALS_IMPLOT_INCLUDES}
            ${EXTERNALS_YAML_INCLUDES}
            ${EXTERNALS_FMT_INCLUDES})
-
-if(USE_OSI)
-    target_link_libraries(
-        ${TARGET}
-        PRIVATE ${OSI_LIBRARIES})
-endif()
-
-target_link_libraries(
-    ${TARGET}
-    PRIVATE project_options)
 
 target_link_libraries(${TARGET})
 

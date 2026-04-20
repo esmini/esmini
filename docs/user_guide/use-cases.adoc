@@ -580,6 +580,12 @@ Only trace file way is described here. To save OSI data, add argument `--osi_fil
 
 will create `ground_truth.osi` in the current folder. The format is according to the OSI standard "Binary trace file", see OSI documentation https://opensimulationinterface.github.io/osi-documentation/index.html#_osi_trace_files[2.2.6 OSI trace files].
 
+==== Extract `.osi` as CSV or text
+
+Start by installing the required Python dependencies, from esmini root:
+
+`pip install -r support/python/requirements.txt`
+
 esmini provides a script, osi2csv.py, that converts an OSI trace file into .csv format. The script can also serve as example how to parse and extract data from an OSI trace file:
 
 ``./scripts/osi2csv.py ground_truth.osi``
@@ -587,11 +593,13 @@ esmini provides a script, osi2csv.py, that converts an OSI trace file into .csv 
 will create ground_truth.csv. +
 (if file type association is not setup, try: ``python ./scripts/osi2csv.py ground_truth.osi``)
 
-However the .csv file created with osi2csv will not contain all OSI information. To get a readable text file including the complete content of a OSI trace file you can make use of the Python script https://github.com/OpenSimulationInterface/open-simulation-interface/blob/v3.5.0/format/osi2read.py[format/osi2read.py] in the OSI project.
+However the .csv file created with osi2csv will not contain all OSI information. To get a readable text file including the complete content of a OSI trace file you can make use of the Python script https://github.com/OpenSimulationInterface/osi-python/blob/v3.8.0/osi3trace/osi2read.py[format/osi2read.py] in the OSI project.
 
-Use as following example:
+If you have installed the Python dependencies it should already be available in your environment.
 
-`../open-simulation-interface/format/osi2read.py --data ./ground_truth.osi --output ground_truth --type GroundTruth`
+Use as following command:
+
+`python -m osi3trace.osi2read --data ./ground_truth.osi --output ground_truth --type GroundTruth`
 
 it should create `ground_truth.txth` which is readable in a text editor.
 
@@ -601,8 +609,34 @@ it should create `ground_truth.txth` which is readable in a text editor.
 
 See link:support-qa.html#_osi_for_python_on_windows[OSI for Python on Windows] for hints how to install dependencies (OSI and Protobuf).
 
-The above script link points to OSI tag v3.5.0. In more recent OSI versions the script has moved to another folder: https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/osi3trace/osi2read.py[osi3trace/osi2read.py].
+The above script link points to OSI tag v3.8.0. In older OSI versions the script has moved to another folder: https://github.com/OpenSimulationInterface/open-simulation-interface/blob/v3.5.0/format/osi2read.py[osi3trace/osi2read.py].
 ====
+
+==== Visualize `.osi` in Lichtblick (`.mcap`)
+
+`.osi` trace files can be converted to `.mcap` and viewed in https://lichtblick-suite.github.io/lichtblick/[Lichtblick]. Google Chrome is required for the viewer.
+
+*Prepare an `.osi` file compatible with the converter*
+
+. Open a terminal
+. Navigate to /path/to/esmini/root
+. `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --osi_file --osi_static_reporting 2` (`--osi_static_reporting 2` is required)
+
+*Install the Lichtblick converter plug-in*
+
+. Download the latest release of https://github.com/lichtblick-suite/asam-osi-converter/releases/[asam-osi-converter]
+. Open https://lichtblick-suite.github.io/lichtblick/[Lichtblick]
+. Drag and drop the `.foxe` file from the downloaded `asam-osi-converter` release into the UI
+. Wait for plug-in to be installed
+
+*Convert `.osi` to `.mcap`*
+
+. `pip install asam-osi-utilities`
+. Clone https://github.com/lichtblick-suite/asam-osi-utilities[asam-osi-utilities]
+. Navigate to `asam-osi-utilities/python/examples`
+. Run `python convert_osi2mcap.py --input-type GroundTruth ~/path/to/my_gt.osi my_gt.mcap`
+. Load `my_gt.mcap` in Lichtblick
+
 
 === esmini in Unity
 

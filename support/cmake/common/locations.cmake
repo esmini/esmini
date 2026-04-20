@@ -64,7 +64,7 @@ macro(set_project_external_paths)
     set(EXTERNALS_OSG_PATH
         ${EXTERNALS_PATH}/osg)
     set(EXTERNALS_OSI_PATH
-        ${EXTERNALS_PATH}/osi)
+        ${EXTERNALS_PATH}/osi/${OSI_RELEASE_TAG})
     set(EXTERNALS_PUGIXML_PATH
         ${EXTERNALS_PATH}/pugixml)
     set(EXTERNALS_SUMO_PATH
@@ -137,7 +137,6 @@ macro(set_project_os_specific_paths)
                 "")
         endif()
     endif()
-
     if(MSVC)
         set(EXTERNALS_DIRENT_INCLUDES
             "${EXTERNALS_DIRENT_PATH}/win")
@@ -159,8 +158,12 @@ macro(set_project_includes)
     # Split CI output layout for OSI 3.8 artifacts.
     set(EXTERNALS_OSI_INCLUDES
         ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/include)
-    set(EXTERNALS_OSI_DEPS
-        ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/deps)
+
+    if(DEFINED OSI_VERSION
+       AND NOT OSI_VERSION STREQUAL "3.5.0")
+        set(EXTERNALS_OSI_DEPS
+            ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/deps)
+    endif()
 
     set(EXTERNALS_SUMO_INCLUDES
         ${EXTERNALS_SUMO_OS_SPECIFIC_PATH}/include)
@@ -189,7 +192,7 @@ macro(set_project_library_paths)
     set(EXTERNALS_OSG_PLUGINS_LIBRARY_PATH
         ${EXTERNALS_OSG_LIBRARY_PATH}/osgPlugins-3.6.5)
 
-    if(DYN_PROTOBUF) # TODO
+    if(DYN_PROTOBUF)
         set(EXTERNALS_OSI_LIBRARY_PATH
             ${EXTERNALS_OSI_OS_SPECIFIC_PATH}/lib-dyn)
     else()

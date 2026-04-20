@@ -159,17 +159,13 @@ Then build as usual. It will link with protobuf shared library instead of linkin
 When running esmini, the protobuf shared library needs to be found. Set dynamic library path environment variable to the folder where the library is. Example:
 
 Linux: +
-``export LD_LIBRARY_PATH=./externals/OSI/linux/lib-dyn``
+``export LD_LIBRARY_PATH=./externals/osi/v3.8.0_1/linux/lib-dyn``
 
 macOS: +
-``export DYLD_LIBRARY_PATH=./externals/OSI/linux/lib-dyn``
+``export DYLD_LIBRARY_PATH=./externals/osi/v3.8.0_1/linux/lib-dyn``
 
 *Note:* +
-The dynamic versions of protobuf were added Aug 31 2021. So you might need to update the OSI library package. Get the latest from following links:
-
-- https://dl.dropboxusercontent.com/s/an58ckp2qfx5069/osi_v10.7z?dl=0[OSI Windows]
-- https://dl.dropboxusercontent.com/s/kwtdg0c1c8pawa1/osi_linux.7z?dl=0[OSI Linux]
-- https://dl.dropboxusercontent.com/s/m62v19gp0m73dte/osi_mac.7z?dl=0[OSI Mac]
+The dynamic versions of protobuf and OSI are built on need basis, `v3.8.0_1` corresponds to a specific osi version + build number, the tags available can be found at <github_build_link>.
 
 === Slim esmini - customize configration
 
