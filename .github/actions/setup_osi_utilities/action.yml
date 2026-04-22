@@ -1,0 +1,144 @@
+name: Setup OSI Utilities
+description: >
+  Two-phase build of asam-osi-utilities via vcpkg.
+  Phase A: configure, build, and install asam-osi-utilities into a prefix directory.
+  Sets output variables for Phase B (esmini configure).
+
+inputs:
+  triplet:
+    description: 'vcpkg triplet (e.g. x64-linux, x64-windows-static-md, universal-osx)'
+    required: true
+  configuration:
+    description: 'Build configuration for Phase A'
+    required: false
+    default: 'Release'
+  vcpkg-commit:
+    description: 'vcpkg git commit to pin. If empty, derived from externals/asam-osi-utilities/vcpkg-configuration.json baseline'
+    required: false
+    default: ''
+  overlay-triplets:
+    description: 'Path to overlay triplets directory (for custom triplets like universal-osx)'
+    required: false
+    default: ''
+  cmake-generator:
+    description: 'CMake generator args (e.g. -G "Visual Studio 17 2022" -T v142 -A x64)'
+    required: false
+    default: ''
+
+outputs:
+  osi-prefix:
+    description: 'Install prefix for OSI_UTILITIES_PREFIX'
+    value: ${{ steps.paths.outputs.osi-prefix }}
+  cmake-prefix-path:
+    description: 'CMAKE_PREFIX_PATH for Phase B'
+    value: ${{ steps.paths.outputs.cmake-prefix-path }}
+  protoc-executable:
+    description: 'Path to protoc executable'
+    value: ${{ steps.paths.outputs.protoc-executable }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Restore Phase A cache
+      id: cache-osi
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ${{ github.workspace }}/osi-deps
+          ${{ github.workspace }}/build-osi-deps/vcpkg_installed
+        key: osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-${{ hashFiles('externals/asam-osi-utilities/**', '!externals/asam-osi-utilities/build*', 'support/vcpkg-triplets/**') }}
+        restore-keys: |
+          osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-
+          osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-
+
+    - name: Derive vcpkg baseline from submodule
+      id: vcpkg-baseline
+      if: steps.cache-osi.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        BASELINE=$(jq -r '.["default-registry"]["baseline"]' externals/asam-osi-utilities/vcpkg-configuration.json)
+        echo "commit=${BASELINE}" >> "$GITHUB_OUTPUT"
+        echo "Using vcpkg baseline: $BASELINE"
+
+    - name: Export GitHub Actions cache environment
+      if: steps.cache-osi.outputs.cache-hit != 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env['ACTIONS_CACHE_URL'] || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env['ACTIONS_RUNTIME_TOKEN'] || '');
+          core.exportVariable('VCPKG_BINARY_SOURCES', 'clear;x-gha,readwrite');
+
+    - name: Setup vcpkg
+      if: steps.cache-osi.outputs.cache-hit != 'true'
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgDirectory: ${{ runner.temp }}/vcpkg
+        vcpkgGitCommitId: ${{ inputs.vcpkg-commit || steps.vcpkg-baseline.outputs.commit }}
+
+    - name: Phase A - Configure
+      if: steps.cache-osi.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        VCPKG_TC="${{ runner.temp }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        VCPKG_TC="${VCPKG_TC//\\//}"
+        OVERLAY_ARG=""
+        if [ -n "${{ inputs.overlay-triplets }}" ]; then
+          OVERLAY_ARG="-DVCPKG_OVERLAY_TRIPLETS=${{ inputs.overlay-triplets }}"
+        fi
+        OSX_ARCH_ARGS=()
+        if [ "$RUNNER_OS" = "macOS" ]; then
+          OSX_ARCH_ARGS=("-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64")
+        fi
+        cmake \
+          -S externals/asam-osi-utilities \
+          -B build-osi-deps \
+          -DCMAKE_TOOLCHAIN_FILE="$VCPKG_TC" \
+          -DVCPKG_TARGET_TRIPLET=${{ inputs.triplet }} \
+          $OVERLAY_ARG \
+          "${OSX_ARCH_ARGS[@]}" \
+          ${{ inputs.cmake-generator }} \
+          -DCMAKE_BUILD_TYPE=${{ inputs.configuration }} \
+          -DBUILD_TESTING=OFF \
+          -DBUILD_EXAMPLES=OFF
+
+    - name: Phase A - Build
+      if: steps.cache-osi.outputs.cache-hit != 'true'
+      shell: bash
+      run: cmake --build build-osi-deps --config ${{ inputs.configuration }} -j 2
+
+    - name: Phase A - Install
+      if: steps.cache-osi.outputs.cache-hit != 'true'
+      shell: bash
+      run: cmake --install build-osi-deps --config ${{ inputs.configuration }} --prefix osi-deps
+
+    - name: Save Phase A cache
+      if: steps.cache-osi.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ${{ github.workspace }}/osi-deps
+          ${{ github.workspace }}/build-osi-deps/vcpkg_installed
+        key: osi-utilities-${{ runner.os }}-${{ inputs.triplet }}-${{ inputs.configuration }}-${{ hashFiles('externals/asam-osi-utilities/**', '!externals/asam-osi-utilities/build*', 'support/vcpkg-triplets/**') }}
+
+    - name: Set output paths
+      id: paths
+      shell: bash
+      run: |
+        PROTOC_EXT=""
+        if [ "$RUNNER_OS" = "Windows" ]; then
+          PROTOC_EXT=".exe"
+        fi
+        OSI_PREFIX="${{ github.workspace }}/osi-deps"
+        CMAKE_PFX="${{ github.workspace }}/osi-deps;${{ github.workspace }}/build-osi-deps/vcpkg_installed/${{ inputs.triplet }}"
+        PROTOC="${{ github.workspace }}/build-osi-deps/vcpkg_installed/${{ inputs.triplet }}/tools/protobuf/protoc${PROTOC_EXT}"
+
+        # Step outputs (for workflows that reference steps.osi.outputs.*)
+        echo "osi-prefix=${OSI_PREFIX}" >> "$GITHUB_OUTPUT"
+        echo "cmake-prefix-path=${CMAKE_PFX}" >> "$GITHUB_OUTPUT"
+        echo "protoc-executable=${PROTOC}" >> "$GITHUB_OUTPUT"
+
+        # Environment variables (for CMake presets using $env{})
+        echo "ESMINI_OSI_PREFIX=${OSI_PREFIX}" >> "$GITHUB_ENV"
+        echo "ESMINI_CMAKE_PREFIX_PATH=${CMAKE_PFX}" >> "$GITHUB_ENV"
+        echo "ESMINI_PROTOC=${PROTOC}" >> "$GITHUB_ENV"

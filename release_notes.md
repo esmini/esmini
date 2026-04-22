@@ -23,6 +23,14 @@ New features:
 - Add `color` property and filled bounding-box view mode for scenario objects
   - color populated on OSI
   - see [User guide - Boundingbox Colors](https://esmini.github.io/#_boundingbox_colors)
+- **Replace pre-built OSI 3.5.0 with source-built OSI 3.8.0-rc1 via [asam-osi-utilities](https://github.com/lichtblick-suite/asam-osi-utilities)**
+  - OSI is now built from source as a git submodule (`externals/asam-osi-utilities`)
+  - Dependencies (protobuf v5.29.3, abseil, lz4, zstd) managed via vcpkg
+  - Requires two-phase build — see [Build guide](https://esmini.github.io/#_build_guide)
+  - Removed legacy pre-built OSI binaries and `DYN_PROTOBUF` option
+  - Replaced stale Python `osi3` bindings with `osi-python` package
+  - New cmake option: `OSI_UTILITIES_PREFIX` (replaces the old auto-download mechanism)
+  - Build without OSI unchanged: `cmake .. -DUSE_OSI=OFF`
 
 Improvements and fixes:
 - Fix sometimes friction visualized for the wrong lane

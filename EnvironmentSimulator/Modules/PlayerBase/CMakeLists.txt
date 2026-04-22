@@ -68,6 +68,14 @@ target_link_libraries(
     ${TARGET}
     PRIVATE project_options)
 
+# Propagate MSVC warning suppressions for protobuf/abseil headers
+if(TARGET
+   osi_external_warnings)
+    target_link_libraries(
+        ${TARGET}
+        PRIVATE osi_external_warnings)
+endif()
+
 target_link_libraries(${TARGET})
 
 disable_iwyu(${TARGET})

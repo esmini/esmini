@@ -81,6 +81,14 @@ target_include_directories(
            ${EXTERNALS_PUGIXML_PATH}
            ${EXTERNALS_FMT_INCLUDES})
 
+# Propagate MSVC warning suppressions for protobuf/abseil headers
+if(TARGET
+   osi_external_warnings)
+    target_link_libraries(
+        ${TARGET_VIEWER_BASE}
+        PRIVATE osi_external_warnings)
+endif()
+
 if(USE_IMPLOT)
     target_include_directories(
         ${TARGET_VIEWER_BASE}

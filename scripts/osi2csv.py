@@ -4,6 +4,7 @@ import argparse
 import math
 
 from osi3.osi_groundtruth_pb2 import *
+from osi3.osi_object_pb2 import MovingObject
 
 class OSIFile():
     def __init__(self, filename):
@@ -36,7 +37,10 @@ class OSIFile():
                 elif o.type == 1:
                     type = 'OTHER'
                 elif o.type == 2:
-                    type = str(o.vehicle_classification)[11:-1]
+                    type_enum = o.vehicle_classification.type
+                    type = MovingObject.VehicleClassification.Type.Name(type_enum)
+                    if type.startswith('TYPE_'):
+                        type = type[5:]
                 elif o.type == 3:
                     type = 'PEDESTRIAN'
                 elif o.type == 4:

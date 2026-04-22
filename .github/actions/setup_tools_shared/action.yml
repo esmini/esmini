@@ -19,6 +19,13 @@ runs:
     - run: pip install -r support/python/requirements.txt
       shell: bash
 
+    - name: Install OSI Python bindings (osi3) and utilities
+      if: hashFiles('externals/asam-osi-utilities/submodules/osi-python/pyproject.toml') != ''
+      shell: bash
+      run: |
+        pip install externals/asam-osi-utilities/submodules/osi-python
+        pip install externals/asam-osi-utilities/python
+
     - name: Install OSG dependencies - Ubuntu
       if: runner.os == 'Linux'
       shell: bash
