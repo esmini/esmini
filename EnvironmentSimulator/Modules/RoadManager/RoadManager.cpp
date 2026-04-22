@@ -12305,6 +12305,8 @@ void PolyLineBase::AddVertex(TrajVertex v)
         }
     }
 
+    length_ = v.s;
+
     vertex_.push_back(v);
 }
 
@@ -12492,10 +12494,21 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, idx_
 
     while (i + 1 < GetNumberOfVertices())
     {
-        ProjectPointOnLine2D(xin, yin, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, tmpPos.x, tmpPos.y);
+        bool inside = false;
+
+        if (ProjectPointOnLine2D(xin, yin, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, tmpPos.x, tmpPos.y) != 0)
+        {
+            // failed to project point, probably input points identical and no line could be formed
+            inside = false;
+            sLocal = 0.0;
+        }
+        else
+        {
+            inside = PointInBetweenVectorEndpoints(tmpPos.x, tmpPos.y, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, sLocal);
+        }
+
         double distTmp = PointDistance2D(xin, yin, tmpPos.x, tmpPos.y);
 
-        bool inside = PointInBetweenVectorEndpoints(tmpPos.x, tmpPos.y, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, sLocal);
         if (!inside)
         {
             // Find combined longitudinal and lateral distance to line endpoint
@@ -12516,7 +12529,7 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, idx_
             sLocal *= (vertex_[i + 1].s - vertex_[i].s);
         }
 
-        if (distTmp < distMin)
+        if (distTmp < distMin + SMALL_NUMBER)  // accept moving forward to very close points
         {
             iMin      = i;
             sLocalMin = sLocal;
@@ -12578,7 +12591,8 @@ int PolyLineBase::FindPointAhead(double s_start, double distance, TrajVertex& po
 {
     index = Evaluate(s_start + distance, pos, startAtIndex);
 
-    return 0;
+    return s_start + distance > length_ + SMALL_NUMBER ? static_cast<int>(GhostTrailReturnCode::GHOST_TRAIL_DIST_PAST)
+                                                       : static_cast<int>(GhostTrailReturnCode::GHOST_TRAIL_OK);
 }
 
 int PolyLineBase::FindPointAtTime(double time, TrajVertex& pos, idx_t& index)

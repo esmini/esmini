@@ -4520,6 +4520,97 @@ TEST(ExternalController, TestExternalDriver)
     SE_RegisterParameterDeclarationCallback(0, 0);
 }
 
+TEST(ExternalController, TestGhostStandstillPhase)
+{
+    SE_SimpleVehicleState  vehicleState = {};
+    SE_RoadInfo            roadInfo_dist;
+    SE_ScenarioObjectState egoState, ghostState;
+    SE_SetOption("bounding_boxes");              // see through bounding box view mode
+    SE_SetOptionValue("ghost_trail_dt", "0.1");  // control ghost trail trajectory sampling
+    const double dt = 0.1;
+
+    ASSERT_EQ(SE_Init("../../../EnvironmentSimulator/Unittest/xosc/restart_ghost_from_zero_scenario.xosc", 0, 0, 0, 0), 0);
+
+    // Fetch initial state from the scenario and initialize the simple vehicle model
+    SE_GetObjectState(0, &egoState);
+    void* vehicleHandle = SE_SimpleVehicleCreate(egoState.x, egoState.y, egoState.h, 4.0, egoState.speed);
+    SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+
+    // show some road features, including road sensor in case viewer is enabled
+    SE_ViewerShowFeature(4 + 8, true);  // NODE_MASK_TRAIL_DOTS (1 << 2) & NODE_MASK_ODR_FEATURES (1 << 3),
+
+    double ghost_speed_dist = 0.0;
+    double timestamp        = 0.0;
+    int    test_step        = 0;
+    double time             = 0.0;
+
+    while (SE_GetQuitFlag() == 0)  // Run until end of scenario
+    {
+        // Fetch two positions along ghost trail, first closest then 0.1m ahead
+        int returnval_0 = SE_GetRoadInfoAlongGhostTrail(0, 0.0, &roadInfo_dist, &ghost_speed_dist, &timestamp);
+        int returnval_1 = SE_GetRoadInfoAlongGhostTrail(0, 0.1, &roadInfo_dist, &ghost_speed_dist, &timestamp);
+
+        ASSERT_EQ(returnval_0, 0);  // first call should always succeed, as we are exactly on the ghost trail
+
+        if (time > 5.5 - SMALL_NUMBER && time < 8.6 - SMALL_NUMBER)
+        {
+            // when reaching the standstill ghost, we can't look ahead
+            ASSERT_EQ(returnval_1, -5);
+        }
+        else
+        {
+            ASSERT_EQ(returnval_1, 0);
+        }
+
+        // Accelerate or decelerate towards target speed
+        SE_SimpleVehicleControlAnalog(vehicleHandle, dt, 0.2 * (ghost_speed_dist - vehicleState.speed), 0.0);
+
+        // Fetch updated state and report to scenario engine
+        SE_SimpleVehicleGetState(vehicleHandle, &vehicleState);
+
+        // Report updated vehicle position and heading. z, pitch and roll will be aligned to the road
+        SE_ReportObjectPosXYH(0, vehicleState.x, vehicleState.y, vehicleState.h);
+
+        // Finally, update scenario using same time step as for vehicle model
+        SE_StepDT(dt);
+        time = SE_GetSimulationTime();
+
+        SE_GetObjectState(0, &egoState);
+        SE_GetObjectState(1, &ghostState);  // Ego ghost
+
+        switch (test_step)
+        {
+            case 0:
+                if (time > 6.0 - SMALL_NUMBER)
+                {
+                    EXPECT_NEAR(egoState.x, 75.9186, 1e-3);
+                    EXPECT_NEAR(ghostState.x, 75.5, 1e-3);
+                    test_step++;
+                }
+                break;
+            case 1:
+                if (time > 7.5 - SMALL_NUMBER)
+                {
+                    EXPECT_NEAR(egoState.x, 75.9488, 1e-3);
+                    EXPECT_NEAR(ghostState.x, 75.5, 1e-3);
+                    test_step++;
+                }
+                break;
+            case 2:
+                if (time > 9 - SMALL_NUMBER)
+                {
+                    EXPECT_NEAR(egoState.x, 77.5748, 1e-3);
+                    EXPECT_NEAR(ghostState.x, 78.25, 1e-3);
+                    test_step++;
+                }
+                break;
+        }
+    }
+
+    SE_SimpleVehicleDelete(vehicleHandle);
+    SE_Close();
+}
+
 TEST(ExternalController, TestPositionAlignment)
 {
     void* vehicleHandle = 0;

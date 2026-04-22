@@ -675,7 +675,7 @@ double PointHeadingDistance2D(double x0, double y0, double h, double x1, double 
     return (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
 }
 
-void ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double& px, double& py)
+int ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double& px, double& py)
 {
     // Project the given point on the straight line between geometry end points
     // https://stackoverflow.com/questions/1811549/perpendicular-on-a-line-from-a-given-point
@@ -688,6 +688,7 @@ void ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2
         // Line too small - projection not possible, copy first point position
         px = vx1;
         py = vy1;
+        return -1;
     }
     else
     {
@@ -695,6 +696,8 @@ void ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2
         px       = x - k * dy;
         py       = y + k * dx;
     }
+
+    return 0;
 }
 
 void ProjectPointOnVector2D(double x0, double y0, double x1, double y1, double& px, double& py)

@@ -5070,6 +5070,7 @@ namespace roadmanager
             GHOST_TRAIL_NO_VERTICES = -2,  // ghost trail trajectory has no vertices
             GHOST_TRAIL_TIME_PRIOR  = -3,  // given time < first timestamp in trajectory, snapped to start of trajectory
             GHOST_TRAIL_TIME_PAST   = -4,  // given time > last timestamp in trajectory, snapped to end of trajectory
+            GHOST_TRAIL_DIST_PAST   = -5,  // given distance > last vertex in trajectory, snapped to end of trajectory
         };
 
         PolyLineBase()
@@ -5111,8 +5112,26 @@ namespace roadmanager
          */
         idx_t Evaluate(double s);
 
+        /**
+         * Find closest point on the polyline to given XY position
+         * @param xin X coordinate of the point
+         * @param yin Y coordinate of the point
+         * @param pos Out: trajectory position info including position, heading, speed. See TrajVertex type.
+         * @param index Out: Returns the index matched trajectory segment
+         * @param startAtIndex Start searching from this vertex, typically cached value for incremental search, or 0 for global search
+         * @return 0 if successful, < 0 see GhostTrailReturnCode enum for error/information codes
+         */
         int FindClosestPoint(double xin, double yin, TrajVertex &pos, idx_t &index, idx_t startAtIndex = 0);
 
+        /**
+         * Get ghost state at a distance ahead
+         * @param s_start Start looking along trail from this s value
+         * @param distance Distance ahead from start s to look for the ghost state
+         * @param pos Out: trajectory position info including position, heading, speed. See TrajVertex type.
+         * @param index Out: Returns the index matched trajectory segment
+         * @param startAtIndex Start searching from this vertex, typically cached value for incremental search, or 0 for global search         *
+         * @return 0 if successful, < 0 see GhostTrailReturnCode enum for error/information codes
+         */
         int FindPointAhead(double s_start, double distance, TrajVertex &pos, idx_t &index, idx_t startAtIndex = 0);
 
         /**

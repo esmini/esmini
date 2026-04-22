@@ -93,6 +93,8 @@ namespace ESMini
         SE_GHOST_TRAIL_TIME_PRIOR = -3,
         /// <summary>given time > last timestamp in trajectory, snapped to end of trajectory</summary>
         SE_GHOST_TRAIL_TIME_PAST = -4,
+        /// <summary>given distance > last vertex in trajectory, snapped to end of trajectory</summary>
+        SE_GHOST_TRAIL_DIST_PAST = -5,
     }
 
     public enum SE_RelativeDistanceType
