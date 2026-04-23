@@ -17,9 +17,8 @@ runs:
         Invoke-WebRequest -Uri "https://github.com/pal1000/mesa-dist-win/releases/download/$version/mesa3d-$version-release-msvc.7z" -OutFile "mesa.7z"
         # Note: 7z is pre-installed on GHA Windows runners
         7z x mesa.7z -o"mesa_bin"
-        # Copy the specific opengl32.dll to your executable directories
-        cp "mesa_bin/x64/*" ${{github.workspace}}/bin
-        cp "mesa_bin/x64/*" ${{github.workspace}}/build/EnvironmentSimulator/Unittest/${{inputs.configuration}}
+        # do system wide installation
+        ./mesa_bin/systemwidedeploy.cmd 1
 
     - name: Install wglinfo - Windows
       if: runner.os == 'Windows'
