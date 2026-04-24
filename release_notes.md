@@ -1,5 +1,20 @@
 ## esmini release notes
 
+### 2026-04-24 Version 3.0.3
+
+Improvements and fixes:
+
+- Improve road vertical tesselation based on road pitch change rate
+  - slightly increase OSI points and polygons when needed
+- Lower roadmarks z offset (4cm -> 1cm)
+- Further shadow improvements, e.g:
+  - edge fade, using generated texture instead of vertex alpha
+  - elevation dependent fade and shadow intensity
+  - video clip: https://youtu.be/2ty_cluDXPs
+- Fix a ghost standstill issue, preventing driver model from moving on
+- Add return code -5 to SE_GetRoadInfoAlongGhostTrail() indicating end of trail
+- Remove unintended MESA GL files from Windows bin package
+
 ### 2026-04-16 Version 3.0.2
 
 Improvements and fixes:

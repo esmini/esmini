@@ -166,22 +166,8 @@
                   </RoutingAction>
                </PrivateAction>
             </Private>
-            <!--
--->
-
-            <!--
--->
          </Actions>
       </Init>
-      <!-- <StopTrigger>
-          <ConditionGroup>
-                <Condition name="stop_trigger " delay="0" conditionEdge="none">
-                    <ByValueCondition>
-                        <SimulationTimeCondition value="55" rule="greaterThan"/>
-                    </ByValueCondition>
-                </Condition>
-          </ConditionGroup>
-      </StopTrigger> -->
       <Story name="MyStory">
          <ParameterDeclarations/>
          <Act name="MyAct">
@@ -215,9 +201,16 @@
                   </Event>
                </Maneuver>
             </ManeuverGroup>
-            <StartTrigger/>
-            <StopTrigger/>
          </Act>
       </Story>
+      <StopTrigger>
+         <ConditionGroup>
+            <Condition name="stop_trigger " delay="0" conditionEdge="none">
+               <ByValueCondition>
+                  <SimulationTimeCondition value="20" rule="greaterThan"/>
+               </ByValueCondition>
+            </Condition>
+         </ConditionGroup>
+      </StopTrigger>
    </Storyboard>
 </OpenSCENARIO>
