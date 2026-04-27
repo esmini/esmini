@@ -1,7 +1,7 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directory: "/"
+    directory: "support/python"
     schedule:
       interval: "daily"
     target-branch: "dev"
