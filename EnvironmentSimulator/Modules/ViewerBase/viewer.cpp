@@ -1310,7 +1310,7 @@ void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool show_lights)
             light_material_.push_back(nullptr);
             if (show_lights)
             {
-                LOG_WARN("Missing light materials node itself in vehicle model {} - ignoring visualization", group->getName());
+                LOG_WARN("Missing light material node {} itself in vehicle model {} - ignoring visualization", lightName, group->getName());
             }
             continue;
         }
@@ -1319,15 +1319,18 @@ void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool show_lights)
         bool materialFound = false;
         for (size_t i = 0; i < nodes.size(); i++)
         {
-            osg::ref_ptr<osg::Geode> geode = static_cast<osg::Geode*>(nodes[i]);
-            if (geode->getName() == lightName && geode->getChild(0) != nullptr)
+            if (nodes[i]->asGeode() == nullptr || nodes[i]->getNumChildren() == 0 || nodes[i]->getChild(0)->asGeometry() == nullptr)
             {
-                osg::Geometry* geom = static_cast<osg::Geometry*>(geode->getChild(0));
-                light_material_.push_back(static_cast<osg::Material*>(geom->getOrCreateStateSet()->getAttribute(osg::StateAttribute::MATERIAL)));
-                geode->setNodeMask(roadgeom::NodeMask::NODE_MASK_LIGHT_STATE);
-                materialFound = true;
-                break;  // Stop searching once the correct material is found
+                continue;
             }
+
+            osg::Geode*    geode = static_cast<osg::Geode*>(nodes[i]);
+            osg::Geometry* geom  = static_cast<osg::Geometry*>(nodes[i]->getChild(0));
+            light_material_.push_back(static_cast<osg::Material*>(geom->getOrCreateStateSet()->getAttribute(osg::StateAttribute::MATERIAL)));
+            LOG_DEBUG("Found {} material in {}", lightName, group->getName());
+            geode->setNodeMask(roadgeom::NodeMask::NODE_MASK_LIGHT_STATE);
+            materialFound = true;
+            break;  // Stop searching once the correct material is found
         }
 
         if (!materialFound)
