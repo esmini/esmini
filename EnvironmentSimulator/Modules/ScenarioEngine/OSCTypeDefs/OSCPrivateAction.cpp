@@ -3444,6 +3444,7 @@ void LightStateAction::SetRgbFromTypeEnum(const Object::VehicleLightType& type, 
         case Object::VehicleLightType::LOW_BEAM:
         case Object::VehicleLightType::HIGH_BEAM:
         case Object::VehicleLightType::REVERSING_LIGHTS:
+        case Object::VehicleLightType::TAIL_LIGHTS:
         case Object::VehicleLightType::LICENSE_PLATE_ILLUMINATION:
             arr[0] = 0.5;
             arr[1] = 0.5;

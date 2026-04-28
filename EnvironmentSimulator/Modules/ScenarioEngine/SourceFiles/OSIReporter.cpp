@@ -1073,6 +1073,9 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
                 case Object::VehicleLightType::REVERSING_LIGHTS:
                     light_state->set_reversing_light(GetGenericLightMode(light_mode));
                     break;
+                case Object::VehicleLightType::TAIL_LIGHTS:
+                    // supported in OSI 3.8
+                    break;
                 case Object::VehicleLightType::LICENSE_PLATE_ILLUMINATION:
                     light_state->set_license_plate_illumination_rear(GetGenericLightMode(light_mode));
                     break;

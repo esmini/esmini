@@ -1580,6 +1580,7 @@ namespace scenarioengine
             {"indicatorLeft", Object::VehicleLightType::INDICATOR_LEFT},
             {"indicatorRight", Object::VehicleLightType::INDICATOR_RIGHT},
             {"reversingLights", Object::VehicleLightType::REVERSING_LIGHTS},
+            {"tailLights", Object::VehicleLightType::TAIL_LIGHTS},
             {"licensePlateIllumination", Object::VehicleLightType::LICENSE_PLATE_ILLUMINATION},
             {"specialPurposeLights", Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS}};
 

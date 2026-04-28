@@ -1251,6 +1251,8 @@ std::string LightTypeInd2Str(Object::VehicleLightType type)
             return "light_indicator_right";
         case Object::VehicleLightType::REVERSING_LIGHTS:
             return "light_reversing";
+        case Object::VehicleLightType::TAIL_LIGHTS:
+            return "light_tail";
         case Object::VehicleLightType::LICENSE_PLATE_ILLUMINATION:
             return "light_license_plate";
         case Object::VehicleLightType::SPECIAL_PURPOSE_LIGHTS:
