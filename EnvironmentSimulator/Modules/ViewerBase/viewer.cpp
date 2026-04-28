@@ -374,11 +374,12 @@ protected:
 class FindNamedGeode : public osg::NodeVisitor
 {
 public:
-    FindNamedGeode(const std::string& name, std::vector<osg::Group*>& nodes)
+    FindNamedGeode(const std::string& name, std::vector<osg::Group*>& nodes, bool exact = false)
         : osg::NodeVisitor(  // Traverse all children.
               osg::NodeVisitor::TRAVERSE_ALL_CHILDREN),
           _name(name),
-          _nodes(nodes)
+          _nodes(nodes),
+          _exact(exact)
     {
     }
     // This method gets called for every node in the scene graph. Check each node
@@ -386,9 +387,19 @@ public:
     using osg::NodeVisitor::apply;
     void apply(osg::Group& node) override
     {
-        if (node.getName().find(_name) != std::string::npos)
+        if (_exact)
         {
-            _nodes.push_back(&node);
+            if (node.getName() == _name)
+            {
+                _nodes.push_back(&node);
+            }
+        }
+        else
+        {
+            if (node.getName().find(_name) != std::string::npos)
+            {
+                _nodes.push_back(&node);
+            }
         }
 
         // Keep traversing the rest of the scene graph.
@@ -404,6 +415,7 @@ protected:
     std::string               _name;
     std::vector<osg::Group*>& _nodes;
     osg::ref_ptr<osg::Group>  _node;
+    bool                      _exact;
 };
 
 osg::ref_ptr<osg::Geode> CreateDotGeometry(double size, osg::Vec4 color, int nrPoints)
@@ -1290,7 +1302,7 @@ void CarModel::AddLights(osg::ref_ptr<osg::Group> group, bool show_lights)
 
         // Find light node
         std::vector<osg::Group*> nodes;
-        FindNamedGeode           fnn(lightName, nodes);
+        FindNamedGeode           fnn(lightName, nodes, true);
         group->accept(fnn);
 
         if (nodes.empty())
