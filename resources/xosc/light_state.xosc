@@ -21,11 +21,11 @@
    <Entities>
       <ScenarioObject name="Car1">
          <!-- <CatalogReference catalogName="VehicleCatalog" entryName="car_white" /> -->
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_with_lights" />
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
       </ScenarioObject>
       <ScenarioObject name="Car2">
          <!-- <CatalogReference catalogName="VehicleCatalog" entryName="car_white" /> -->
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white_with_lights" />
+         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
       </ScenarioObject>
       <ScenarioObject name="Cone1">
          <CatalogReference catalogName="MiscObjectCatalog" entryName="cone-100" />
