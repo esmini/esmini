@@ -151,6 +151,7 @@ namespace scenarioengine
             INDICATOR_LEFT,
             INDICATOR_RIGHT,
             REVERSING_LIGHTS,
+            TAIL_LIGHTS,
             LICENSE_PLATE_ILLUMINATION,
             SPECIAL_PURPOSE_LIGHTS,
             VEHICLE_LIGHT_SIZE
