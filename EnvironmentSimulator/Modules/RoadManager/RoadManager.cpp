@@ -66,7 +66,7 @@ using namespace roadmanager;
 #define MAX_TRACK_DIST             10
 #define OSI_POINT_CALC_STEPSIZE    1     // [m]
 #define OSI_TANGENT_LINE_TOLERANCE 0.01  // [m]
-#define OSI_POINT_DIST_SCALE       0.025
+#define OSI_POINT_DIST_SCALE       1.0
 #define ROADMARK_WIDTH_STANDARD    0.15
 #define ROADMARK_WIDTH_BOLD        0.20
 #define NURBS_STEPLENGTH           1.0
@@ -7315,25 +7315,21 @@ OpenDrive* Position::GetOpenDrive()
     return &od;
 }
 
-static double
-GetMaxSegmentLen(const Position* pivot, const Position* pos, double min, double max, double pitchResScale, double rollResScale, bool& osi_requirement)
+static double GetMaxSegmentLen(const Position* pivot, const Position* pos, double min, double max, double resScale, bool& osi_requirement)
 {
     double max_segment_length;
 
-    // Consider rate of change of pitch and roll for segment length to influence
+    // Consider local vertical change rate, including pitch and roll change rates and influence of banked curvature
     // the tesselation (triangulation) of road surface model
 
-    double zRoadPrimPrim                 = pos->GetZRoadPrimPrim();
-    double roadSuperElevationPrim        = pos->GetRoadSuperElevationPrim();
-    double max_segment_length_candidate1 = pitchResScale / MAX(SMALL_NUMBER, abs(zRoadPrimPrim));
-    double max_segment_length_candidate2 = rollResScale / MAX(SMALL_NUMBER, abs(roadSuperElevationPrim));
+    double zRoadPrimPrim          = pos->GetZRoadPrimPrim();
+    double roadSuperElevationPrim = pos->GetRoadSuperElevationPrim();
+    double roadXYCurvature        = pos->GetCurvature();
+    double rollAngle              = pos->GetR();
 
-    max_segment_length = MIN(max_segment_length_candidate1, max_segment_length_candidate2);
-
-    // Adjust for slope
-    max_segment_length = max_segment_length / sqrt(pow(pos->GetZRoadPrim(), 2) + 1);
-
-    max_segment_length = MAX(min, MIN(max, max_segment_length));
+    // calculate a combined factor 1. pitch change rate, 2. roll change rate, and 3. combo curvature and roll angle (local pitch change rate)
+    double polygonDensityFactor = sqrt(pow(zRoadPrimPrim, 2) + pow(roadSuperElevationPrim, 2) + pow(roadXYCurvature * sin(rollAngle), 2));
+    max_segment_length          = MAX(min, MIN(max, max * resScale / (1 + 1.75e3 * polygonDensityFactor)));
 
     if (pivot)
     {
@@ -7388,7 +7384,6 @@ int OpenDrive::CheckAndAddOSIPoint(Position&                 pos_pivot,
                                               &pos_candidate,
                                               min_segment_length,
                                               SE_Env::Inst().GetOSIMaxLongitudinalDistance(),
-                                              OSI_POINT_DIST_SCALE,
                                               OSI_POINT_DIST_SCALE,
                                               osi_requirement);
 
@@ -12310,6 +12305,8 @@ void PolyLineBase::AddVertex(TrajVertex v)
         }
     }
 
+    length_ = v.s;
+
     vertex_.push_back(v);
 }
 
@@ -12497,10 +12494,21 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, idx_
 
     while (i + 1 < GetNumberOfVertices())
     {
-        ProjectPointOnLine2D(xin, yin, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, tmpPos.x, tmpPos.y);
+        bool inside = false;
+
+        if (ProjectPointOnLine2D(xin, yin, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, tmpPos.x, tmpPos.y) != 0)
+        {
+            // failed to project point, probably input points identical and no line could be formed
+            inside = false;
+            sLocal = 0.0;
+        }
+        else
+        {
+            inside = PointInBetweenVectorEndpoints(tmpPos.x, tmpPos.y, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, sLocal);
+        }
+
         double distTmp = PointDistance2D(xin, yin, tmpPos.x, tmpPos.y);
 
-        bool inside = PointInBetweenVectorEndpoints(tmpPos.x, tmpPos.y, vertex_[i].x, vertex_[i].y, vertex_[i + 1].x, vertex_[i + 1].y, sLocal);
         if (!inside)
         {
             // Find combined longitudinal and lateral distance to line endpoint
@@ -12521,7 +12529,7 @@ int PolyLineBase::FindClosestPoint(double xin, double yin, TrajVertex& pos, idx_
             sLocal *= (vertex_[i + 1].s - vertex_[i].s);
         }
 
-        if (distTmp < distMin)
+        if (distTmp < distMin + SMALL_NUMBER)  // accept moving forward to very close points
         {
             iMin      = i;
             sLocalMin = sLocal;
@@ -12583,7 +12591,8 @@ int PolyLineBase::FindPointAhead(double s_start, double distance, TrajVertex& po
 {
     index = Evaluate(s_start + distance, pos, startAtIndex);
 
-    return 0;
+    return s_start + distance > length_ + SMALL_NUMBER ? static_cast<int>(GhostTrailReturnCode::GHOST_TRAIL_DIST_PAST)
+                                                       : static_cast<int>(GhostTrailReturnCode::GHOST_TRAIL_OK);
 }
 
 int PolyLineBase::FindPointAtTime(double time, TrajVertex& pos, idx_t& index)

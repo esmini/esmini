@@ -55,6 +55,8 @@ using idx_t = uint32_t;
 #define SIGN(X)                       ((X < 0) ? -1 : 1)
 #define MAX(x, y)                     ((y) > (x) ? (y) : (x))
 #define MIN(x, y)                     ((y) < (x) ? (y) : (x))
+#define MAX_MAG(x, y)                 (fabs(y) > fabs(x) ? (y) : (x))
+#define MIN_MAG(x, y)                 (fabs(y) < fabs(x) ? (y) : (x))
 #define ABS_LIMIT(x, y)               (abs(x) > abs(y) ? (SIGN(x) * abs(y)) : x)  // limit abs value but keep sign
 #define ABS_FLOOR(x, y)               (abs(x) < abs(y) ? (SIGN(x) * abs(y)) : x)  // limit abs value but keep sign
 #define CLAMP(x, lo, hi)              MIN(hi, MAX(lo, x))
@@ -587,8 +589,9 @@ double PointSquareDistance2D(double x0, double y0, double x1, double y1);
         @param vy2 Y coordinate of line end point
         @param px X coordinate of projected point (reference parameter)
         @param py Y coordinate of projected point (reference parameter)
+        @return 0 if point could be projected on infinite line, else -1 (no line, input points identical)
 */
-void ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double& px, double& py);
+int ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double& px, double& py);
 
 /**
         Project a 2D point on a 2D vector (from origin to specified point)
@@ -789,6 +792,8 @@ void RotateVec3d(const double h0,
                  double&      x1,
                  double&      y1,
                  double&      z1);
+
+void InverseRotateVec3d(double h, double p, double r, double x, double y, double z, double& x_out, double& y_out, double& z_out);
 
 /**
         Change byte order - can be useful for IP communication with non Intel platforms

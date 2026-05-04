@@ -675,7 +675,7 @@ double PointHeadingDistance2D(double x0, double y0, double h, double x1, double 
     return (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
 }
 
-void ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double& px, double& py)
+int ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2, double vy2, double& px, double& py)
 {
     // Project the given point on the straight line between geometry end points
     // https://stackoverflow.com/questions/1811549/perpendicular-on-a-line-from-a-given-point
@@ -688,6 +688,7 @@ void ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2
         // Line too small - projection not possible, copy first point position
         px = vx1;
         py = vy1;
+        return -1;
     }
     else
     {
@@ -695,6 +696,8 @@ void ProjectPointOnLine2D(double x, double y, double vx1, double vy1, double vx2
         px       = x - k * dy;
         py       = y + k * dx;
     }
+
+    return 0;
 }
 
 void ProjectPointOnVector2D(double x0, double y0, double x1, double y1, double& px, double& py)
@@ -1833,6 +1836,23 @@ void RotateVec3d(const double h0,
     x1 = v1[0];
     y1 = v1[1];
     z1 = v1[2];
+}
+
+void InverseRotateVec3d(double h, double p, double r, double x, double y, double z, double& x_out, double& y_out, double& z_out)
+{
+    // Inverse rotation is rotation by -h, -p, -r.
+    // This corresponds to using the transpose of the rotation matrix.
+    double ch = cos(h);
+    double sh = sin(h);
+    double cp = cos(p);
+    double sp = sin(p);
+    double cr = cos(r);
+    double sr = sin(r);
+
+    // Transposed matrix multiplication
+    x_out = x * (ch * cp) + y * (sh * cp) + z * (-sp);
+    y_out = x * (ch * sp * sr - sh * cr) + y * (sh * sp * sr + ch * cr) + z * (cp * sr);
+    z_out = x * (ch * sp * cr + sh * sr) + y * (sh * sp * cr - ch * sr) + z * (cp * cr);
 }
 
 int SE_Env::AddPath(std::string path)

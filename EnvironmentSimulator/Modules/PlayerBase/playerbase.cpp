@@ -451,15 +451,13 @@ void ScenarioPlayer::ViewerFrame()
         viewer::EntityModel* entity = viewer_->entities_[i];
         Object*              obj    = scenarioEngine->entities_.object_[i];
 
-        entity->SetPosition(obj->pos_.GetX(), obj->pos_.GetY(), obj->pos_.GetZ());
+        entity->UpdatePositionAndOrientation(&obj->pos_);
 
         if (vehicle_dynamics_enabled_)
         {
             DynamicPitchUpdate(obj, dt);
             DynamicRollUpdate(obj, dt);
         }
-
-        entity->SetRotation(obj->pos_.GetH(), obj->pos_.GetP(), obj->pos_.GetR());
 
         if (obj->pos_.GetTrajectory() && obj->pos_.GetTrajectory() != entity->trajectory_->activeRMTrajectory_)
         {

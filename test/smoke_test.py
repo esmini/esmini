@@ -145,7 +145,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n2.500, 1, OverTaker, -3.971, 115.014, -0.170, 1.566, 0.002, 0.000, 42.000, -0.000, 4.690', csv))
         self.assertTrue(re.search('\\n4.380, 0, Ego, -7.198, 171.427, -0.293, 1.563, 0.002, 6.283, 30.000, -0.000, 4.721', csv))
         self.assertTrue(re.search('\\n4.380, 1, OverTaker, -4.253, 193.963, -0.336, 1.618, 0.002, 0.000, 42.000, 0.004, 4.096', csv))
-        self.assertTrue(re.search('\\n9.000, 1, OverTaker, -4.021, 387.927, -0.697, 1.544, 0.002, 0.000, 42.000, -0.001, 5.575', csv))
+        self.assertTrue(re.search('\\n9.000, 1, OverTaker, -4.021, 387.926, -0.697, 1.544, 0.002, 0.000, 42.000, -0.001, 5.575', csv))
         self.assertTrue(re.search('\\n9.010, 0, Ego, -5.639, 310.318, -0.547, 1.555, 0.002, 6.283, 30.000, -0.000, 5.737', csv))
 
     def test_left_hand_using_road_rule(self):
@@ -168,7 +168,7 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n2.500, 1, OverTaker, -3.971, 115.014, -0.170, 1.566, 0.002, 0.000, 42.000, -0.000, 4.690', csv))
         self.assertTrue(re.search('\\n4.380, 0, Ego, -7.198, 171.427, -0.293, 1.563, 0.002, 0.000, 30.000, -0.000, 4.721', csv))
         self.assertTrue(re.search('\\n4.380, 1, OverTaker, -4.253, 193.963, -0.336, 1.618, 0.002, 0.000, 42.000, 0.004, 4.096', csv))
-        self.assertTrue(re.search('\\n9.000, 1, OverTaker, -4.021, 387.927, -0.697, 1.544, 0.002, 0.000, 42.000, -0.001, 5.575', csv))
+        self.assertTrue(re.search('\\n9.000, 1, OverTaker, -4.021, 387.926, -0.697, 1.544, 0.002, 0.000, 42.000, -0.001, 5.575', csv))
         self.assertTrue(re.search('\\n9.010, 0, Ego, -5.639, 310.318, -0.547, 1.555, 0.002, 0.000, 30.000, -0.000, 5.737', csv))
 
     def test_routing(self):
@@ -276,18 +276,18 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('\\n9.400, 0, Ego, 6.021, 255.176, -0.445, 1.559, 0.002, 0.000, 9.219, -0.000, 4.057', csv))
         self.assertTrue(re.search('\\n9.400, 2, Target2, 6.314, 278.287, -0.487, 1.557, 0.002, 0.000, 8.333, -0.000, 3.898', csv))
         self.assertTrue(re.search('\\n11.400, 0, Ego, 9.800, 273.178, -0.477, 1.463, 0.002, 6.283, 9.649, 0.136, 0.312', csv))
-        self.assertTrue(re.search('\\n12.400, 0, Ego, 9.977, 284.669, -0.499, 1.557, 0.002, 0.000, 12.608, -0.000, 1.733', csv))
+        self.assertTrue(re.search('\\n12.400, 0, Ego, 9.977, 284.669, -0.499, 1.557, 0.002, 0.000, 12.608, -0.000, 1.732', csv))
         self.assertTrue(re.search('\\n12.400, 4, Target4, 10.581, 323.242, -0.573, 1.553, 0.002, 0.000, 8.333, -0.000, 6.212', csv))
         self.assertTrue(re.search('\\n14.400, 0, Ego, 14.028, 309.537, -0.546, 1.483, 0.002, 6.283, 13.059, 0.076, 4.793', csv))
-        self.assertTrue(re.search('\\n22.700, 0, Ego, 16.819, 425.647, -0.762, 1.537, 0.002, 0.000, 9.547, -0.001, 3.629', csv))
+        self.assertTrue(re.search('\\n22.700, 0, Ego, 16.819, 425.647, -0.762, 1.537, 0.002, 0.000, 9.547, -0.001, 3.628', csv))
         self.assertTrue(re.search('\\n22.700, 5, Target5, 17.673, 448.963, -0.795, 1.531, 0.001, 0.000, 8.333, -0.001, 0.122', csv))
-        self.assertTrue(re.search('\\n24.700, 0, Ego, 13.818, 444.452, -0.788, 1.627, 0.001, 0.000, 9.955, -0.133, 1.751', csv))
-        self.assertTrue(re.search('\\n25.700, 0, Ego, 14.258, 456.098, -0.803, 1.530, 0.001, 0.000, 12.646, -0.001, 3.636', csv))
+        self.assertTrue(re.search('\\n24.700, 0, Ego, 13.818, 444.453, -0.788, 1.627, 0.001, 0.000, 9.955, -0.133, 1.750', csv))
+        self.assertTrue(re.search('\\n25.700, 0, Ego, 14.258, 456.099, -0.803, 1.530, 0.001, 0.000, 12.646, -0.001, 3.635', csv))
         self.assertTrue(re.search('\\n25.700, 6, Target6, 16.021, 493.951, -0.837, 1.519, 0.001, 0.000, 8.333, -0.001, 2.436', csv))
-        self.assertTrue(re.search('\\n27.700, 0, Ego, 11.827, 481.266, -0.828, 1.591, 0.001, 0.000, 13.206, -0.074, 0.659', csv))
-        self.assertTrue(re.search('\\n31.200, 0, Ego, 16.059, 552.456, -0.843, 1.499, 6.283, 0.000, 24.157, -0.001, 3.362', csv))
-        self.assertTrue(re.search('\\n33.200, 0, Ego, 23.401, 600.127, -0.826, 1.448, 6.283, 0.000, 23.659, 0.020, 3.031', csv))
-        self.assertTrue(re.search('\\n45.000, 0, Ego, 32.161, 688.644, -0.922, 1.461, 0.003, 0.000, 0.053, -0.001, 5.846', csv))
+        self.assertTrue(re.search('\\n27.700, 0, Ego, 11.827, 481.266, -0.828, 1.591, 0.001, 0.000, 13.206, -0.074, 0.658', csv))
+        self.assertTrue(re.search('\\n31.200, 0, Ego, 16.059, 552.456, -0.843, 1.499, 6.283, 0.000, 24.157, -0.001, 3.360', csv))
+        self.assertTrue(re.search('\\n33.200, 0, Ego, 23.401, 600.127, -0.826, 1.448, 6.283, 0.000, 23.659, 0.020, 3.029', csv))
+        self.assertTrue(re.search('\\n45.000, 0, Ego, 32.161, 688.644, -0.922, 1.461, 0.003, 0.000, 0.053, -0.001, 5.844', csv))
 
     def test_swarm(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'resources/xosc/swarm.xosc'), COMMON_ESMINI_ARGS + ' --seed 2' + ' --fixed_timestep 0.1')
@@ -419,8 +419,8 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(re.search('^2.060, 1, Ego_ghost, 8.390, 102.068, -0.141, 1.566, 0.002, 0.000, 22.800, -0.000, 4.338', csv, re.MULTILINE))
         self.assertTrue(re.search('^2.550, 0, Ego, 8.280, 77.215, -0.089, 1.567, 0.002, 0.000, 18.516, -0.000, 2.975', csv, re.MULTILINE))
         self.assertTrue(re.search('^6.500, 0, Ego, 6.108, 179.087, -0.309, 1.635, 0.002, 0.000, 27.778, -0.009, 5.510', csv, re.MULTILINE))
-        self.assertTrue(re.search('^13.000, 1, Ego_ghost, 11.255, 357.606, -0.640, 1.549, 0.002, 0.000, 5.100, -0.000, 0.221', csv, re.MULTILINE))
-        self.assertTrue(re.search('^13.500, 0, Ego, 10.961, 343.583, -0.613, 1.551, 0.002, 0.000, 10.001, -0.000, 4.278', csv, re.MULTILINE))
+        self.assertTrue(re.search('^13.000, 1, Ego_ghost, 11.255, 357.605, -0.640, 1.549, 0.002, 0.000, 5.100, -0.000, 0.221', csv, re.MULTILINE))
+        self.assertTrue(re.search('^13.500, 0, Ego, 10.961, 343.582, -0.613, 1.551, 0.002, 0.000, 10.001, -0.000, 4.277', csv, re.MULTILINE))
 
     def test_heading_trig(self):
         log, duration, cpu_time, _ = run_scenario(os.path.join(ESMINI_PATH, 'EnvironmentSimulator/Unittest/xosc/traj-heading-trig.xosc'), COMMON_ESMINI_ARGS)
