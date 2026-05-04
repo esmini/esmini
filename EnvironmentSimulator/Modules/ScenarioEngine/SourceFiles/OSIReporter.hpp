@@ -99,6 +99,10 @@ public:
     */
     int UpdateOSIStationaryObjectODR(roadmanager::RMObject* object);
     /**
+    Fills up the osi message with repeated Stationary Objects derived from an OpenDRIVE repeat element
+    */
+    int UpdateOSIStationaryObjectODRRepeatedObjects(roadmanager::Road* road, roadmanager::RMObject* object);
+    /**
     Fills up the osi message with Stationary Object
     @return -1 on error, 0 on no updates performed, else 1
     */
