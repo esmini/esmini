@@ -1210,6 +1210,7 @@ EntityModel::EntityModel(Viewer*                  viewer,
     lod_->setRange(0, 0, LOD_DIST);
     lod_->setName(name);
     parent_of_model_and_shadows_ = new osg::Group();
+    parent_of_model_and_shadows_->setName(name + "_parent_of_model_and_shadows");
     lod_->addChild(parent_of_model_and_shadows_);
 
     // Add transform node
@@ -3148,7 +3149,7 @@ void Viewer::RemoveCar(int index)
 {
     if (entities_[static_cast<unsigned int>(index)] != nullptr)
     {
-        entities_[static_cast<unsigned int>(index)]->parent_->removeChild(entities_[static_cast<unsigned int>(index)]->group_);
+        entities_[static_cast<unsigned int>(index)]->parent_->removeChild(entities_[static_cast<unsigned int>(index)]->lod_);
         delete (entities_[static_cast<unsigned int>(index)]);
     }
     entities_.erase(entities_.begin() + index);
