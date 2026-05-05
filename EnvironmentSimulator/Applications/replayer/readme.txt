@@ -44,6 +44,8 @@ Options:
       Hide any object 2D shape outlines (toggle key ';')
   --info_text [mode]  (default if option or value omitted: 1)
       Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'
+  --light_mode [mode]  (default if option or value omitted: auto)
+      Show lights for light state actions. Modes: on, off, auto. Toggle key 'L'
   --logfile_path [path]  (default if option or value omitted: replayer_log.txt)
       Logfile path/filename, e.g. "../my_log.txt"
   --log_level [mode]  (default if option or value omitted: info)

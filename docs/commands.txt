@@ -72,6 +72,8 @@ Options:
       Ignore provided roll values from OSC file and place vehicle relative to road
   --info_text [mode]  (default if option or value omitted: 1)
       Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'
+  --light_mode [mode]  (default if option or value omitted: auto)
+      Show lights for light state actions. Modes: on, off, auto. Toggle key 'L'
   --log_append
       Log all scenarios in the same txt file
   --logfile_path [path]  (default if option or value omitted: log.txt)

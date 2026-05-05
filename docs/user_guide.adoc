@@ -1669,6 +1669,51 @@ Where `background` is calculated as
 .Fog in example scenario https://github.com/esmini/esmini/blob/dev/resources/xosc/cut-in_environment.xosc[cut-in_environment.xosc]
 image::fog.jpg[]
 
+=== Vehicle light states
+
+Since v3.1.0, esmini supports https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/LightStateAction.html[LightStateAction] for controlling vehicle lighting. While all standard https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/VehicleLightType.html[VehicleLightType] entries are supported, https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/UserDefinedLight.html[UserDefinedLight] is currently excluded.
+
+.Example: Activating brake lights
+
+```xml
+<AppearanceAction>
+    <LightStateAction transitionTime="0">
+        <LightType>
+            <VehicleLight vehicleLightType="brakeLights" />
+        </LightType>
+        <LightState mode="on" luminousIntensity="6000" />
+    </LightStateAction>
+</AppearanceAction>
+```
+
+For scenario preview purposes esmini offers a simplified visualization of the light states. The light colors are deduced from the 3D model or falls back to internal defaults. For custom colors, esmini generates a dark base shade and a bright shade for full intensity; note that the visualized color may look different than anticipated due to this shade generation.
+
+Most vehicle 3D models have been updated with simple polygon faces representing each possible light source. Note that only the light faces themselves are illuminated, no light are casted on the surrounding environment.
+
+The image below is a screenshot from example scenario https://github.com/esmini/esmini/blob/dev/resources/xosc/light_state.xosc
+
+image::light_state.jpg[]
+
+Video clip: https://youtu.be/d_LHeVhQtsw
+
+By default no light faces are shown, only if the vehicle is involved in a LightStateAction. This is to avoid irrelevant visual clutter. Default behavior can be overriden with `light_mode` option, see <<_esmini, esmini command reference>>.
+
+Links to Blender resources for the vehicle 3D models are found in <<esmini 3D assets>>
+
+==== OSI Mapping
+
+esmini maps LightStateAction → OSI https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1MovingObject_1_1VehicleClassification_1_1LightState.html[LightState], with some special assumptions made on the following combinations:
+
+    * lowBeam, daytimeRunningLights → head_light
+    * brakeLights intensity > 6000 → brake_light_state::BRAKE_LIGHT_STATE_STRONG
+    * specialPurposeLights flashing, Role: Ambulance/Police → emergency_vehicle_illumination::FLASHING_BLUE
+    * specialPurposeLights flashing, Role: Fire → emergency_vehicle_illumination::FLASHING_BLUE_AND_RED
+    * specialPurposeLights flashing, Other roles → service_vehicle_illumination::FLASHING_AMBER
+
+==== Visualization
+
+esmini supports limited previeweing of light state actions. Most vehicle models
+
 === Tunnels
 
 From v2.49.0, esmini supports OpenDRIVE tunnels.
@@ -3486,6 +3531,49 @@ esmini_generated_road_model
 ----
 
 `no-name` are structural nodes, e.g. transformation or just group.
+
+=== esmini 3D assets
+
+Here are links to a few Vehicles, including asset structure and scripts, created in Blender:
+
+- https://drive.google.com/file/d/1ZNukIo5FeR0I0LgBVM5BRI1y_HnP2rTV/view?usp=drive_link[esmini_vehicles.7z]
+- https://drive.google.com/file/d/1TCqp2FxNv2FscCsaCNmbIomS24dHM97e/view?usp=drive_link[esmini_assets.7z]
+
+The scripts are collected in `esmini_tools.py` which can be installed as a legacy add-on, see https://docs.blender.org/manual/en/latest/editors/preferences/addons.html#add-ons[Blender - Add-ons]. It will appear in side panel object properties.
+
+.esmini blender add-on
+image::esmini_blender_menu.png[]
+
+It includes a few convenience functions:
+
+. *FBX export* +
+ Export selected node, including all children, with some settings tuned for esmini. Save in same folder as .blender file.
+
+. *Reuse Base Color* +
+For all materials, copy base color to object viewport color - which is the color ending up in FBX export.
+
+==== Convert exported `.fbx` models into `.osgb` for use in esmini:
+
+Step 1: Establish environment variable for OSG optimization
+
+This is only needed and recommended in case the model have light faces for use with OpenSCENARIO `LightStateAction` (see <<Vehicle light states>>):
+
+`export OSG_OPTIMIZER="FLATTEN_STATIC_TRANSFORMS | REMOVE_REDUNDANT_NODES | REMOVE_LOADED_PROXY_NODES | COMBINE_ADJACENT_LODS | MERGE_GEOMETRY | MAKE_FAST_GEOMETRY | CHECK_GEOMETRY | OPTIMIZE_TEXTURE_SETTINGS | STATIC_OBJECT_DETECTION"`
+
+It will prevent optimization of merging and sharing identical materials cross nodes. For light state action esmini needs to control material of each face individually, as defined in the original model.
+
+Step 2: Actual conversion of all exported `.fbx` files to `.osgb` format
+
+`for file in *.fbx; do osgconv "$file" "${file%.fbx}.osgb" -s 0.01,0.01,0.01 -o 90-1,0,0 --use-world-frame -O CopyDiffuseToAmbient; done`
+
+The plugin option `CopyDiffuseToAmbient` is needed for the object to receive ambient light from the environment. Without it, polygons facing away from sun light source will be very dark. The option is an extension implemented in esmini OSG fork and branch:
+https://github.com/esmini/OpenSceneGraph_for_esmini/tree/OpenSceneGraph_for_esmini
+
+You can utilize the provided https://github.com/esmini/esmini/blob/master/scripts/compile_osg_apps.sh[compile_osg_apps.sh] script to compile the OSG tools, including `osgconv` with the esmini extensions.
+
+Step 3: Copy .osgb files to esmini default model resources folder
+
+`cp *.osgb <esmini root folder>/resources/models`
 
 == Support / Q&A
 

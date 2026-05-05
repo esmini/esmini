@@ -62,3 +62,8 @@ https://github.com/fmtlib/fmt
 
 Tiny_Yaml
 https://github.com/Mohido/Tiny_Yaml
+
+Wheel texture
+https://www.svgrepo.com/svg/321987/car-wheel
+LICENSE: CC Attribution License
+AUTHOR: game-icons.net

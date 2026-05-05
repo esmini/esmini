@@ -621,6 +621,7 @@ int main(int argc, char** argv)
     // opt.AddOption("include_ghost_reset", "Include ghost reset in the replay or not");
 #ifdef _USE_OSG
     opt.AddOption("info_text", "Show on-screen info text. Modes: 0=None 1=current 2=per_object 3=both. Toggle key 'i'", "mode", "1", true);
+    opt.AddOption("light_mode", "Show lights for light state actions. Modes: on, off, auto. Toggle key 'L'", "mode", "auto", true);
 #endif  // _USE_OSG
     opt.AddOption("logfile_path", "Logfile path/filename, e.g. \"../my_log.txt\"", "path", REPLAYER_LOG_FILENAME, true);
     opt.AddOption("log_level", "Log level debug, info, warn, error", "mode", "info", true);
@@ -640,9 +641,6 @@ int main(int argc, char** argv)
     opt.AddOption("road_features", "Show OpenDRIVE road features. Modes: on, off. Toggle key 'o'", "mode", "on");
 #endif  // _USEOSG
     opt.AddOption("save_merged", "Save merged data into one dat file, instead of viewing", "filename");
-#ifdef _USE_OSG
-    opt.AddOption("show_lights", "Show lights for light state actions. Modes: on, off, auto", "mode", "auto", true);
-#endif  // _USEOSG
     opt.AddOption("start_time", "Start playing at timestamp", "ms");
     opt.AddOption("stop_time", "Stop playing at timestamp (set equal to time_start for single frame)", "ms");
 #ifdef _USE_OSG
@@ -982,8 +980,8 @@ int main(int argc, char** argv)
         }
 
 #ifdef _USE_OSG
-        std::string show_lights = opt.GetOptionValue("show_lights");
-        if (show_lights == "on" || (show_lights == "auto" && player_->HasLightStates()))
+        std::string light_mode = opt.GetOptionValueByEnum(esmini_options::CONFIG_ENUM::LIGHT_MODE);
+        if (light_mode == "on" || (light_mode == "auto" && player_->HasLightStates()))
         {
             viewer_->SetNodeMaskBits(roadgeom::NodeMask::NODE_MASK_LIGHT_STATE);
         }

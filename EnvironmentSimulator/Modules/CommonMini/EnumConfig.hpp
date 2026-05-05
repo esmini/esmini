@@ -111,8 +111,7 @@ namespace esmini_options
         HIDE_OBJ_OUTLINE,                // 100
         AXIS_INDICATOR,                  // 101
         GUI,                             // 102
-        LIGHTS,                          // 103
-        SHOW_LIGHTS,                     // 104
+        LIGHT_MODE,                      // 103
         CONFIGS_COUNT                    // this must be the last enum value
     };
 
@@ -152,7 +151,7 @@ namespace esmini_options
         {"ignore_p", IGNORE_P},
         {"ignore_r", IGNORE_R},
         {"info_text", INFO_TEXT},
-        {"show_lights", SHOW_LIGHTS},
+        {"light_mode", LIGHT_MODE},
         {"log_append", LOG_APPEND},
         {"logfile_path", LOGFILE_PATH},
         {"log_meta_data", LOG_META_DATA},

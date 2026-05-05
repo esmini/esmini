@@ -1,11 +1,7 @@
 <?xml version="1.3" encoding="UTF-8"?>
 <!-- scenario with different lights on, off and flash mode -->
 <OpenSCENARIO>
-   <FileHeader revMajor="1"
-               revMinor="3"
-               date="2023-10-24T10:00:00"
-               description="Scenario with different lights on, off and flash mode"
-               author="esmini-team"/>
+   <FileHeader revMajor="1" revMinor="3" date="2023-10-24T10:00:00" description="Scenario with different lights on, off and flash mode" author="esmini-team"/>
    <ParameterDeclarations />
    <CatalogLocations>
       <VehicleCatalog>
@@ -25,7 +21,7 @@
       </ScenarioObject>
       <ScenarioObject name="Car2">
          <!-- <CatalogReference catalogName="VehicleCatalog" entryName="car_white" /> -->
-         <CatalogReference catalogName="VehicleCatalog" entryName="car_white" />
+         <CatalogReference catalogName="VehicleCatalog" entryName="van_red" />
       </ScenarioObject>
       <ScenarioObject name="Cone1">
          <CatalogReference catalogName="MiscObjectCatalog" entryName="cone-100" />
@@ -39,17 +35,16 @@
          <Actions>
             <GlobalAction>
                <EnvironmentAction>
-                     <Environment name="weather">
-                        <TimeOfDay animation="true" dateTime="2025-06-13T00:00:00.000+00:00"/>
-                     </Environment>
+                  <Environment name="weather">
+                     <TimeOfDay animation="true" dateTime="2025-06-13T12:00:00.000+00:00"/>
+                  </Environment>
                </EnvironmentAction>
             </GlobalAction>
             <Private entityRef="Car1">
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" value="1.0"
-                           dynamicsDimension="time" />
+                        <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time" />
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="0.0" />
                         </SpeedActionTarget>
@@ -69,7 +64,7 @@
                         <LightType>
                            <VehicleLight vehicleLightType="fogLights" />
                         </LightType>
-                           <LightState mode="off" luminousIntensity="0">
+                        <LightState mode="off" luminousIntensity="0">
                         </LightState>
                      </LightStateAction>
                   </AppearanceAction>
@@ -79,8 +74,7 @@
                <PrivateAction>
                   <LongitudinalAction>
                      <SpeedAction>
-                        <SpeedActionDynamics dynamicsShape="step" value="1.0"
-                           dynamicsDimension="time" />
+                        <SpeedActionDynamics dynamicsShape="step" value="1.0" dynamicsDimension="time" />
                         <SpeedActionTarget>
                            <AbsoluteTargetSpeed value="0.0" />
                         </SpeedActionTarget>
@@ -100,7 +94,7 @@
                         <LightType>
                            <VehicleLight vehicleLightType="lowBeam" />
                         </LightType>
-                           <LightState mode="off" luminousIntensity="0">
+                        <LightState mode="off" luminousIntensity="0">
                         </LightState>
                      </LightStateAction>
                   </AppearanceAction>
@@ -142,7 +136,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="licensePlateIllumination" />
                                  </LightType>
-                                    <LightState mode="on" luminousIntensity="8000">
+                                 <LightState mode="on" luminousIntensity="8000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -155,7 +149,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="fogLights" />
                                  </LightType>
-                                    <LightState mode="on" luminousIntensity="8000">
+                                 <LightState mode="on" luminousIntensity="8000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -163,8 +157,7 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="startCarCondition" delay="0"
-                              conditionEdge="none">
+                           <Condition name="startCarCondition" delay="0" conditionEdge="none">
                               <ByValueCondition>
                                  <SimulationTimeCondition value="2" rule="greaterThan" />
                               </ByValueCondition>
@@ -179,8 +172,7 @@
                         <PrivateAction>
                            <LongitudinalAction>
                               <SpeedAction>
-                                 <SpeedActionDynamics dynamicsShape="sinusoidal" value="3.0"
-                                    dynamicsDimension="time" />
+                                 <SpeedActionDynamics dynamicsShape="sinusoidal" value="3.0" dynamicsDimension="time" />
                                  <SpeedActionTarget>
                                     <AbsoluteTargetSpeed value="15.0" />
                                  </SpeedActionTarget>
@@ -190,13 +182,9 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="driveCondition"
-                                      delay="2"
-                                      conditionEdge="none">
+                           <Condition name="driveCondition" delay="2" conditionEdge="none">
                               <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
-                                                                  storyboardElementRef="manStartCar"
-                                                                  state="completeState"/>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="manStartCar" state="completeState"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
@@ -212,7 +200,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="indicatorLeft" />
                                  </LightType>
-                                    <LightState mode="flashing" luminousIntensity="8000">
+                                 <LightState mode="flashing" luminousIntensity="8000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -232,13 +220,9 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="laneChangeCondition"
-                                      delay="1"
-                                      conditionEdge="none">
+                           <Condition name="laneChangeCondition" delay="1" conditionEdge="none">
                               <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
-                                                                  storyboardElementRef="manDrive"
-                                                                  state="completeState"/>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="manDrive" state="completeState"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
@@ -247,15 +231,6 @@
                </Maneuver>
                <Maneuver name="manLaneChangeLeftComplete">
                   <Event name="eventLaneChangeLeftComplete" priority="override" maximumExecutionCount="1">
-                     <Action name="daylightAction">
-                        <GlobalAction>
-                           <EnvironmentAction>
-                                 <Environment name="weather">
-                                    <TimeOfDay animation="true" dateTime="2025-06-13T12:00:00.000+00:00"/>
-                                 </Environment>
-                           </EnvironmentAction>
-                        </GlobalAction>
-                     </Action>
                      <Action name="actionStopBlinkingLeft">
                         <PrivateAction>
                            <AppearanceAction>
@@ -263,7 +238,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="indicatorLeft" />
                                  </LightType>
-                                    <LightState mode="off" luminousIntensity="0">
+                                 <LightState mode="off" luminousIntensity="0">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -271,13 +246,9 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="stopBlinkingCondition"
-                                      delay="1"
-                                      conditionEdge="none">
+                           <Condition name="stopBlinkingCondition" delay="1" conditionEdge="none">
                               <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="action"
-                                                                  storyboardElementRef="actionLaneChangeLeft"
-                                                                  state="completeState"/>
+                                 <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="actionLaneChangeLeft" state="completeState"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
@@ -293,7 +264,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="indicatorRight" />
                                  </LightType>
-                                    <LightState mode="flashing" luminousIntensity="8000">
+                                 <LightState mode="flashing" luminousIntensity="8000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -313,19 +284,13 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="laneChangeRightCondition"
-                                      delay="1"
-                                      conditionEdge="none">
+                           <Condition name="laneChangeRightCondition" delay="1" conditionEdge="none">
                               <ByEntityCondition>
                                  <TriggeringEntities triggeringEntitiesRule="any">
                                     <EntityRef entityRef="Car1"/>
                                  </TriggeringEntities>
                                  <EntityCondition>
-                                    <TimeHeadwayCondition entityRef="Car2"
-                                                          value="4.0"
-                                                          freespace="false"
-                                                          alongRoute="false"
-                                                          rule="lessThan"/>
+                                    <TimeHeadwayCondition entityRef="Car2" value="4.0" freespace="false" alongRoute="false" rule="lessThan"/>
                                  </EntityCondition>
                               </ByEntityCondition>
                            </Condition>
@@ -342,7 +307,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="indicatorRight" />
                                  </LightType>
-                                    <LightState mode="off" luminousIntensity="0">
+                                 <LightState mode="off" luminousIntensity="0">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -350,13 +315,9 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="turnOffIndicatorRightCondition"
-                                      delay="2"
-                                      conditionEdge="none">
+                           <Condition name="turnOffIndicatorRightCondition" delay="2" conditionEdge="none">
                               <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="action"
-                                                                  storyboardElementRef="actionLaneChangeRight"
-                                                                  state="completeState"/>
+                                 <StoryboardElementStateCondition storyboardElementType="action" storyboardElementRef="actionLaneChangeRight" state="completeState"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
@@ -372,7 +333,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="brakeLights" />
                                  </LightType>
-                                    <LightState mode="on" luminousIntensity="8000">
+                                 <LightState mode="on" luminousIntensity="8000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -382,8 +343,7 @@
                         <PrivateAction>
                            <LongitudinalAction>
                               <SpeedAction>
-                                 <SpeedActionDynamics dynamicsShape="sinusoidal" value="5.0"
-                                    dynamicsDimension="time" />
+                                 <SpeedActionDynamics dynamicsShape="sinusoidal" value="5.0" dynamicsDimension="time" />
                                  <SpeedActionTarget>
                                     <AbsoluteTargetSpeed value="0.0" />
                                  </SpeedActionTarget>
@@ -399,11 +359,7 @@
                                     <EntityRef entityRef="Car1"/>
                                  </TriggeringEntities>
                                  <EntityCondition>
-                                    <TimeHeadwayCondition entityRef="Car2"
-                                                          value="2.0"
-                                                          freespace="false"
-                                                          alongRoute="false"
-                                                          rule="lessThan"/>
+                                    <TimeHeadwayCondition entityRef="Car2" value="2.0" freespace="false" alongRoute="false" rule="lessThan"/>
                                  </EntityCondition>
                               </ByEntityCondition>
                            </Condition>
@@ -420,7 +376,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="brakeLights" />
                                  </LightType>
-                                    <LightState mode="off" luminousIntensity="0">
+                                 <LightState mode="off" luminousIntensity="0">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -428,13 +384,9 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="turnOffLightsCondition"
-                                      delay="0"
-                                      conditionEdge="none">
+                           <Condition name="turnOffLightsCondition" delay="0" conditionEdge="none">
                               <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
-                                                                  storyboardElementRef="manBraking"
-                                                                  state="completeState"/>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="manBraking" state="completeState"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
@@ -447,8 +399,7 @@
                         <PrivateAction>
                            <LongitudinalAction>
                               <SpeedAction>
-                                 <SpeedActionDynamics dynamicsShape="sinusoidal" value="1.0"
-                                    dynamicsDimension="time" />
+                                 <SpeedActionDynamics dynamicsShape="sinusoidal" value="1.0" dynamicsDimension="time" />
                                  <SpeedActionTarget>
                                     <AbsoluteTargetSpeed value="-3.0" />
                                  </SpeedActionTarget>
@@ -463,7 +414,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="reversingLights" />
                                  </LightType>
-                                    <LightState mode="on" luminousIntensity="8000">
+                                 <LightState mode="on" luminousIntensity="8000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -471,13 +422,9 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="carStartCondition"
-                                      delay="3"
-                                      conditionEdge="none">
+                           <Condition name="carStartCondition" delay="3" conditionEdge="none">
                               <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
-                                                                  storyboardElementRef="manStopped"
-                                                                  state="completeState"/>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="manStopped" state="completeState"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
@@ -493,7 +440,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="brakeLights" />
                                  </LightType>
-                                    <LightState mode="on" luminousIntensity="8000">
+                                 <LightState mode="on" luminousIntensity="8000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -503,8 +450,7 @@
                         <PrivateAction>
                            <LongitudinalAction>
                               <SpeedAction>
-                                 <SpeedActionDynamics dynamicsShape="sinusoidal" value="2.0"
-                                    dynamicsDimension="time" />
+                                 <SpeedActionDynamics dynamicsShape="sinusoidal" value="2.0" dynamicsDimension="time" />
                                  <SpeedActionTarget>
                                     <AbsoluteTargetSpeed value="0.0" />
                                  </SpeedActionTarget>
@@ -516,9 +462,7 @@
                         <ConditionGroup>
                            <Condition name="brakeStartCondition" delay="3" conditionEdge="none">
                               <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
-                                                                  storyboardElementRef="manReversing"
-                                                                  state="completeState"/>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="manReversing" state="completeState"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
@@ -534,7 +478,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="reversingLights" />
                                  </LightType>
-                                    <LightState mode="off" luminousIntensity="0">
+                                 <LightState mode="off" luminousIntensity="0">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -547,7 +491,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="brakeLights" />
                                  </LightType>
-                                    <LightState mode="off" luminousIntensity="0">
+                                 <LightState mode="off" luminousIntensity="0">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -555,13 +499,9 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="turnOffLightsCondition"
-                                      delay="0"
-                                      conditionEdge="none">
+                           <Condition name="turnOffLightsCondition" delay="0" conditionEdge="none">
                               <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
-                                                                  storyboardElementRef="manBraking2"
-                                                                  state="completeState"/>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="manBraking2" state="completeState"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
@@ -582,7 +522,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="lowBeam" />
                                  </LightType>
-                                    <LightState mode="on" luminousIntensity="8000">
+                                 <LightState mode="on" luminousIntensity="8000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -590,13 +530,9 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="turnOnDRLCondition"
-                                      delay="2"
-                                      conditionEdge="none">
+                           <Condition name="turnOnDRLCondition" delay="2" conditionEdge="none">
                               <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
-                                                                  storyboardElementRef="manStopped2"
-                                                                  state="completeState"/>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="manStopped2" state="completeState"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
@@ -610,7 +546,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="daytimeRunningLights" />
                                  </LightType>
-                                    <LightState mode="on" luminousIntensity="10000">
+                                 <LightState mode="on" luminousIntensity="10000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -618,13 +554,9 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="turnOnLowBeamCondition"
-                                      delay="3"
-                                      conditionEdge="none">
+                           <Condition name="turnOnLowBeamCondition" delay="3" conditionEdge="none">
                               <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
-                                                                  storyboardElementRef="manStopped2"
-                                                                  state="completeState"/>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="manStopped2" state="completeState"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
@@ -638,7 +570,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="highBeam" />
                                  </LightType>
-                                    <LightState mode="on" luminousIntensity="12000">
+                                 <LightState mode="on" luminousIntensity="12000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -646,13 +578,9 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="turnOnHighBeamCondition"
-                                      delay="4"
-                                      conditionEdge="none">
+                           <Condition name="turnOnHighBeamCondition" delay="4" conditionEdge="none">
                               <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="maneuver"
-                                                                  storyboardElementRef="manStopped2"
-                                                                  state="completeState"/>
+                                 <StoryboardElementStateCondition storyboardElementType="maneuver" storyboardElementRef="manStopped2" state="completeState"/>
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>
@@ -666,7 +594,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="warningLights" />
                                  </LightType>
-                                    <LightState mode="flashing" luminousIntensity="8000">
+                                 <LightState mode="flashing" luminousIntensity="8000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -679,7 +607,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="specialPurposeLights" />
                                  </LightType>
-                                    <LightState mode="flashing" luminousIntensity="8000">
+                                 <LightState mode="flashing" luminousIntensity="8000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -692,7 +620,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="fogLights" />
                                  </LightType>
-                                    <LightState mode="flashing" flashingOnDuration="0.3" flashingOffDuration="0.3" luminousIntensity="8000">
+                                 <LightState mode="flashing" flashingOnDuration="0.3" flashingOffDuration="0.3" luminousIntensity="8000">
                                     <Color colorType="blue">
                                        <ColorRgb red="0.0" green="0.0" blue="0.8"/>
                                     </Color>
@@ -703,13 +631,74 @@
                      </Action>
                      <StartTrigger>
                         <ConditionGroup>
-                           <Condition name="turnOnWarningLightsCondition"
-                                      delay="1"
-                                      conditionEdge="none">
+                           <Condition name="turnOnWarningLightsCondition" delay="1" conditionEdge="none">
                               <ByValueCondition>
-                                 <StoryboardElementStateCondition storyboardElementType="event"
-                                                                  storyboardElementRef="eventHighBeamOn"
-                                                                  state="completeState"/>
+                                 <StoryboardElementStateCondition storyboardElementType="event" storyboardElementRef="eventHighBeamOn" state="completeState"/>
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+               </Maneuver>
+            </ManeuverGroup>
+            <ManeuverGroup maximumExecutionCount="1" name="TimeOfDayManeuverGroup">
+               <Actors selectTriggeringEntities="false"/>
+               <Maneuver name="manTimeOfDay">
+                  <Event name="duskEvent" priority="override" maximumExecutionCount="1">
+                     <Action name="duskAction">
+                        <GlobalAction>
+                           <EnvironmentAction>
+                              <Environment name="weather">
+                                 <TimeOfDay animation="true" dateTime="2025-06-13T20:00:00.000+00:00"/>
+                              </Environment>
+                           </EnvironmentAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="duskTrigger" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="7.0" rule="greaterOrEqual" />
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="nightEvent" priority="override" maximumExecutionCount="1">
+                     <Action name="nightAction">
+                        <GlobalAction>
+                           <EnvironmentAction>
+                              <Environment name="weather">
+                                 <TimeOfDay animation="true" dateTime="2025-06-13T00:00:00.000+00:00"/>
+                              </Environment>
+                           </EnvironmentAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="nightTrigger" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="12.0" rule="greaterOrEqual" />
+                              </ByValueCondition>
+                           </Condition>
+                        </ConditionGroup>
+                     </StartTrigger>
+                  </Event>
+                  <Event name="dawnEvent" priority="override" maximumExecutionCount="1">
+                     <Action name="dawnAction">
+                        <GlobalAction>
+                           <EnvironmentAction>
+                              <Environment name="weather">
+                                 <TimeOfDay animation="true" dateTime="2025-06-13T06:00:00.000+00:00"/>
+                              </Environment>
+                           </EnvironmentAction>
+                        </GlobalAction>
+                     </Action>
+                     <StartTrigger>
+                        <ConditionGroup>
+                           <Condition name="dawnTrigger" delay="0.0" conditionEdge="none">
+                              <ByValueCondition>
+                                 <SimulationTimeCondition value="16.0" rule="greaterOrEqual" />
                               </ByValueCondition>
                            </Condition>
                         </ConditionGroup>

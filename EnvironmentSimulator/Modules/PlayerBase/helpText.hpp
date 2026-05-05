@@ -28,6 +28,7 @@ Key shortcuts \n\
     R:             Toggle route waypoint visualization \n\
     i:             Toggle on-screen info text modes \n\
     j:             Toggle show trails after vehicles(4 modes: none / dots / lines / both) \n\
+    L (shift + l): Toggle show vehicle lights \n\
     n:             Toggle show active trajectories \n\
     , (comma):     Switch entity view : Model only / Bounding box / Model + Bounding box / None \n\
     ; (shift + ,): Toggle show/hide object outlines \n\
