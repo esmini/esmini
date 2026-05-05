@@ -47,7 +47,7 @@ export SMOKE_TEST_FOLDER=${workingDir}/test
 export ESMINI_CS_WRAPPER_FOLDER=${workingDir}/test/CSharpWrappers/build/${build_type}
 export ESMINI_CS_WRAPPER_BINARY=libesmini_cs_wrapper_test
 
-if [[ "$OSTYPE" == "msys" ]]; then
+if [[ "$OSTYPE" =~ ^(msys|cygwin)$ ]]; then
     export PATH=${PATH}":${workingDir}/build/EnvironmentSimulator/Libraries/esminiLib/${build_type}:${workingDir}/build/EnvironmentSimulator/Libraries/esminiRMLib/${build_type}"
     export EXE_FOLDER="./$build_type"
     export PYTHON="python"
@@ -66,11 +66,11 @@ else
     echo "Unsupported OS: " $OSTYPE
 fi
 
-if [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "linux-gnu"* ]]; then
+if [[ "$OSTYPE" =~ ^(msys|cygwin|linux-gnu) ]]; then
 
     cd $UNIT_TEST_FOLDER
 
-    echo $'\n'Run unit tests:
+    echo $'\n'Run unit tests on $OSTYPE:
 
     echo $'\n'OperatingSystem_test:
     if ! ${EXE_FOLDER}/OperatingSystem_test --disable_stdout; then
