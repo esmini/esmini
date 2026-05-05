@@ -3,9 +3,9 @@ include_guard()
 macro(set_cloud_links)
 
     set(MODELS_PACKAGE_URL
-        https://drive.usercontent.google.com/download?id=1c3cqRzwY41gWXbg0rmugQkL5I_5L6DH_&export=download&authuser=0&confirm=t;
-        https://esmini.asuscomm.com/AICLOUD779364751/models/models.7z;
-        https://www.dropbox.com/scl/fi/01v4863tgt3fdtx218226/models.7z?rlkey=07ioakfufoxp1q1beojntmsjp&st=hckmbfbd&dl=1)
+        https://drive.usercontent.google.com/download?id=1z_NdozxK7P7q2CiI6hIJdgOzSNEjF5Nb&export=download&authuser=0&confirm=t;
+        https://www.dropbox.com/scl/fi/3jwz3ie6xkgpga33cbyju/models_with_lights.7z?rlkey=9obptnofidldoagn4154iyntl&st=zxoupatb&dl=1;
+        https://esmini.asuscomm.com/AICLOUD779364751/models/models.7z)
 
     if(APPLE)
         set(OSG_PACKAGE_URL
