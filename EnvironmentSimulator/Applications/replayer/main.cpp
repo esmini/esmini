@@ -75,7 +75,7 @@ void setEntityVisibility(int index, bool visible)
     {
         if (visible != scenarioEntity[static_cast<unsigned int>(index)].visible)
         {
-            scenarioEntity[static_cast<unsigned int>(index)].entityModel->txNode_->setNodeMask(visible ? 0xffffffff : 0x0);
+            scenarioEntity[static_cast<unsigned int>(index)].entityModel->lod_->setNodeMask(visible ? 0xffffffff : 0x0);
             scenarioEntity[static_cast<unsigned int>(index)].visible = visible;
             if (scenarioEntity[static_cast<unsigned int>(index)].trajectory)
             {
