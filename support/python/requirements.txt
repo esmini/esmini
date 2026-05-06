@@ -8,7 +8,7 @@ pytest-mock==3.10.0
 pylint==2.13.8
 spython==0.2.1
 jinja2==3.1.6
-pygccxml==2.2.1
+pygccxml==3.0.2
 gdown==5.2.2
 xmlschema==3.4.2
 lxml==6.1.0
