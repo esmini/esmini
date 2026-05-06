@@ -1,0 +1,65 @@
+name: "Run osc-validation"
+description: "Install osc-validation, run pytest suite with HTML report, and collect artifacts"
+runs:
+  using: "composite"
+  steps:
+
+    - name: Checkout osc-validation
+      uses: actions/checkout@v4
+      with:
+        repository: PMSFIT/osc-validation
+        ref: b015e68b74f1d9c529f9dbf9964e3116a85a0f1b
+        fetch-depth: 1
+        path: osc-validation
+
+    - name: Set up Python venv
+      shell: bash
+      run: |
+        pushd osc-validation
+        python3 -m venv .venv
+        source .venv/bin/activate
+        pip install -e .
+        popd
+
+    - name: Run osc-validation pytest suite
+      id: run_tests
+      shell: bash
+      run: |
+        pushd osc-validation
+        source .venv/bin/activate
+
+        SIM_BIN="$(pwd)/../bin/esmini"
+        echo "Using esmini binary: $SIM_BIN"
+
+        mkdir -p osc_validation_results
+
+        set +e
+        pytest \
+          validation/scenario/trajectories \
+          validation/scenario/triggers \
+          --tool ESMini \
+          --toolpath "$SIM_BIN" \
+          --basetemp osc_validation_results \
+          --html osc_validation_results/report.html \
+          --self-contained-html
+        code=$?
+        echo "exitcode=$code" >> $GITHUB_OUTPUT
+        echo "osc-validation finished with exit code $code"
+
+        popd
+
+    - name: Upload osc-validation artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: osc-validation
+        path: osc-validation/osc_validation_results
+
+    - name: Fail if tests failed
+      if: always()
+      shell: bash
+      run: |
+        if [ "${{ steps.run_tests.outputs.exitcode }}" != "0" ]; then
+          echo "osc-vali idation failed"
+          exit 1
+        fi
