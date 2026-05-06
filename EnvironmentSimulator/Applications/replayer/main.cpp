@@ -411,7 +411,7 @@ int ParseEntities(Replay* player)
                 if ((new_sc.entityModel = viewer_->CreateEntityModel(
                          LocateFile(filename, {CombineDirectoryPathAndFilepath(res_path, "models")}, "Entity 3D model", found),
                          osg::Vec4(0.5, 0.5, 0.5, 1.0),
-                         viewer::EntityModel::EntityType::VEHICLE,
+                         static_cast<viewer::EntityModel::EntityType>(timelines.obj_type_.values.front().second),
                          false,
                          timelines.name_.values.front().second,
                          &timelines.bounding_box_.values.front().second,
