@@ -6,7 +6,7 @@ pytest==9.0.3
 pytest-cov==3.0.0
 pytest-mock==3.10.0
 pylint==2.13.8
-spython==0.2.1
+spython==0.3.14
 jinja2==3.1.6
 pygccxml==2.2.1
 gdown==5.2.2
