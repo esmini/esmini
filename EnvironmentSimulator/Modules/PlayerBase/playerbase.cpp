@@ -414,7 +414,7 @@ void ScenarioPlayer::ViewerFrame()
 
         // Connect callback for setting transparency
         viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(obj, viewer_->entities_.back());
-        viewer_->entities_.back()->txNode_->setUpdateCallback(cb);
+        viewer_->entities_.back()->lod_->setUpdateCallback(cb);
 
         // initialize vehicle dynamics from templates
         obj->pitch_spring_ = pitch_spring_template_;
@@ -1130,7 +1130,7 @@ int ScenarioPlayer::InitViewer()
 
         // Connect callback for setting transparency
         viewer::VisibilityCallback* cb = new viewer::VisibilityCallback(obj, viewer_->entities_.back());
-        viewer_->entities_.back()->txNode_->setUpdateCallback(cb);
+        viewer_->entities_.back()->lod_->setUpdateCallback(cb);
 
         if (viewer_->entities_.back()->IsVehicle())
         {

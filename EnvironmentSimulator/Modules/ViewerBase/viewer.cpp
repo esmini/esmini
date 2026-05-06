@@ -852,11 +852,11 @@ void VisibilityCallback::operator()(osg::Node* sa, osg::NodeVisitor* nv)
         }
         else
         {
-            // Must set 0-mask on child node, otherwise it will not be traversed...
+            // Must set 0-mask on lod child node, otherwise it will not be traversed...
             entity_->parent_of_model_and_shadows_->setNodeMask(NodeMask::NODE_MASK_NONE);
         }
+        object_->dirty_.ClearBits(scenarioengine::Object::DirtyBit::VISIBILITY);
     }
-    object_->dirty_.ClearBits(scenarioengine::Object::DirtyBit::VISIBILITY);
 }
 
 Trajectory::Trajectory(osg::Group* parent, Viewer* viewer) : parent_(parent), activeRMTrajectory_(0), viewer_(viewer)

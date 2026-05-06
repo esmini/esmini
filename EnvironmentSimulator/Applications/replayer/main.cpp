@@ -69,17 +69,32 @@ void UpdateEnvironment(const Dat::Environment& env)
         viewer_->UpdateFrictonScaleFactorInMaterial(env.friction_scale_factor);
     }
 }
-void setEntityVisibility(int index, bool visible)
+
+void setEntityVisibility(int index, int visibility_mask)
 {
     if (index >= 0 && index < static_cast<int>(scenarioEntity.size()))
     {
-        if (visible != scenarioEntity[static_cast<unsigned int>(index)].visible)
+        if (visibility_mask != scenarioEntity[static_cast<unsigned int>(index)].visibility_mask)
         {
-            scenarioEntity[static_cast<unsigned int>(index)].entityModel->lod_->setNodeMask(visible ? 0xffffffff : 0x0);
-            scenarioEntity[static_cast<unsigned int>(index)].visible = visible;
+            scenarioEntity[static_cast<unsigned int>(index)].entityModel->lod_->setNodeMask((visibility_mask & 1) ? 0xffffffff : 0x0);
+            scenarioEntity[static_cast<unsigned int>(index)].visibility_mask = visibility_mask;
             if (scenarioEntity[static_cast<unsigned int>(index)].trajectory)
             {
-                scenarioEntity[static_cast<unsigned int>(index)].trajectory->SetNodeMaskLines(visible ? 0xffffffff : 0x0);
+                scenarioEntity[static_cast<unsigned int>(index)].trajectory->SetNodeMaskLines((visibility_mask & 1) ? 0xffffffff : 0x0);
+            }
+
+            if (visibility_mask & 1)
+            {
+                if (visibility_mask & 4)
+                {
+                    // visible for both graphics viewer and sensors, indicate by full opacity
+                    scenarioEntity[static_cast<unsigned int>(index)].entityModel->SetTransparency(0.0);
+                }
+                else
+                {
+                    // visible for graphics viewer but not for sensors, indicate by semi transparency
+                    scenarioEntity[static_cast<unsigned int>(index)].entityModel->SetTransparency(0.6);
+                }
             }
         }
     }
@@ -105,7 +120,7 @@ int ShowGhosts(Replay* player, bool show)
 
         if (entity->entityModel != nullptr && state->info.ctrl_type == GHOST_CTRL_TYPE)
         {
-            entity->entityModel->txNode_->setNodeMask(show ? 0xffffffff : 0x0);
+            entity->entityModel->lod_->setNodeMask(show ? 0xffffffff : 0x0);
             entity->entityModel->SetTransparency(0.6);
         }
     }
@@ -346,13 +361,13 @@ int ParseEntities(Replay* player)
             {
                 auto& new_sc = scenarioEntity.emplace_back();
 
-                new_sc.id             = id;
-                new_sc.pos            = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0.0, 0.0, 0.0};
-                new_sc.wheel_angle    = 0.0;
-                new_sc.wheel_rotation = 0.0;
-                new_sc.name           = timelines.name_.values.front().second;
-                new_sc.visible        = true;
-                new_sc.bounding_box   = timelines.bounding_box_.values.front().second;
+                new_sc.id              = id;
+                new_sc.pos             = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0, 0.0, 0.0, 0.0};
+                new_sc.wheel_angle     = 0.0;
+                new_sc.wheel_rotation  = 0.0;
+                new_sc.name            = timelines.name_.values.front().second;
+                new_sc.visibility_mask = timelines.visibility_mask_.values.front().second;
+                new_sc.bounding_box    = timelines.bounding_box_.values.front().second;
 
                 odo_entry.x        = timelines.pose_.values.front().second.x;
                 odo_entry.y        = timelines.pose_.values.front().second.y;
@@ -435,7 +450,7 @@ int ParseEntities(Replay* player)
                 {
                     if (no_ghost_model)
                     {
-                        new_sc.entityModel->txNode_->setNodeMask(0x0);
+                        new_sc.entityModel->lod_->setNodeMask(0x0);
                     }
                     else
                     {
@@ -1246,10 +1261,9 @@ int main(int argc, char** argv)
                     }
 
 #ifdef _USE_OSG
-                    if (state == nullptr || (state->info.visibilityMask & 0x01) == 0)  // no state for given object (index) at this timeframe
+                    if (state == nullptr)  // no state for given object (index) at this timeframe
                     {
-                        setEntityVisibility(index, false);
-
+                        setEntityVisibility(index, 0);
                         if (index == viewer_->currentCarInFocus_)
                         {
                             // Update overlay info text
@@ -1264,7 +1278,7 @@ int main(int argc, char** argv)
                         }
                         continue;
                     }
-                    setEntityVisibility(index, true);
+                    setEntityVisibility(index, state->info.visibilityMask);
 
                     // on screen text following each entity
                     snprintf(sc->entityModel->on_screen_info_.string_,
@@ -1373,14 +1387,14 @@ int main(int argc, char** argv)
                         for (size_t i = 0; i < scenarioEntity.size(); i++)
                         {
                             bool is_ghost = std::find(ghost_indices.begin(), ghost_indices.end(), static_cast<int>(i)) != ghost_indices.end();
-                            if (is_ghost || !scenarioEntity[i].visible)
+                            if (is_ghost || (scenarioEntity[i].visibility_mask & 1) == 0)
                             {
                                 continue;
                             }
                             for (size_t j = i + 1; j < scenarioEntity.size(); j++)
                             {
                                 is_ghost = std::find(ghost_indices.begin(), ghost_indices.end(), static_cast<int>(j)) != ghost_indices.end();
-                                if (is_ghost || !scenarioEntity[j].visible)
+                                if (is_ghost || (scenarioEntity[j].visibility_mask & 1) == 0)
                                 {
                                     continue;
                                 }
