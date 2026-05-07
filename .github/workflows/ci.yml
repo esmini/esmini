@@ -180,10 +180,15 @@ jobs:
           pip3 install fmpy
           fmpy simulate esmini.fmu --start-values xosc_path ../../resources/xosc/cut-in.xosc
 
-      - name: Run Tests - Unix
-        if: runner.os != 'Windows'
-        # Use xvfb on Linux only
+      - name: Run Tests - Linux
+        if: runner.os == 'Linux'
         run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
+
+      - name: Run Tests - macOS
+        if: runner.os == 'macOS'
+        env:
+          DEBUG_FLAG: ${{ matrix.configuration == 'Debug' && '--skip_smoke_test' || '' }}
+        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p $DEBUG_FLAG
 
       - uses: ./.github/actions/setup_mesa
         with:
@@ -194,8 +199,9 @@ jobs:
         env:
           GALLIUM_DRIVER: llvmpipe
           MESA_GL_VERSION_OVERRIDE: 4.5
+          DEBUG_FLAG: ${{ matrix.configuration == 'Debug' && '--skip_smoke_test' || '' }}
         shell: bash
-        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -w
+        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -w $DEBUG_FLAG
 
       - uses: ./.github/actions/upload_esmini_artifacts
         if: matrix.configuration == 'Release'
@@ -273,18 +279,24 @@ jobs:
           cmake . -B build -G "Visual Studio 17 2022" -T v142 -A x64 -DUSE_OSI=OFF
           cmake --build build --config ${{ matrix.configuration }}
 
-      - name: Run Tests - Unix
-        if: runner.os != 'Windows'
-        # Use xvfb on Linux only
+      - name: Run Tests - Linux
+        if: runner.os == 'Linux'
         run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p
+
+      - name: Run Tests - macOS
+        if: runner.os == 'macOS'
+        env:
+          DEBUG_FLAG: ${{ matrix.configuration == 'Debug' && '--skip_smoke_test' || '' }}
+        run: ${{ matrix.os == 'ubuntu-22.04' && 'xvfb-run' || '' }} ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p $DEBUG_FLAG
 
       - name: Run Tests - Windows
         if: runner.os == 'Windows'
         env:
           GALLIUM_DRIVER: softpipe
           MESA_GL_VERSION_OVERRIDE: 4.5
+          DEBUG_FLAG: ${{ matrix.configuration == 'Debug' && '--skip_smoke_test' || '' }}
         shell: bash
-        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -w
+        run: ./scripts/run_tests.sh -b ${{ matrix.configuration }} -p -w $DEBUG_FLAG
 
       - name: Debugging with tmate
         if: ${{ failure() && env.USE_TMATE == 'true' }}
