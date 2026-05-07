@@ -423,10 +423,13 @@ int ParseEntities(Replay* player)
                 }
 
                 bool found = false;
+                int  type  = timelines.obj_type_.values.front().second;
                 if ((new_sc.entityModel = viewer_->CreateEntityModel(
                          LocateFile(filename, {CombineDirectoryPathAndFilepath(res_path, "models")}, "Entity 3D model", found),
                          osg::Vec4(0.5, 0.5, 0.5, 1.0),
-                         static_cast<viewer::EntityModel::EntityType>(timelines.obj_type_.values.front().second),
+                         type == Object::Type::VEHICLE      ? viewer::EntityModel::EntityType::VEHICLE
+                         : type == Object::Type::PEDESTRIAN ? viewer::EntityModel::EntityType::MOVING
+                                                            : viewer::EntityModel::EntityType::ENTITY,
                          false,
                          timelines.name_.values.front().second,
                          &timelines.bounding_box_.values.front().second,

@@ -182,9 +182,9 @@ int Dat::DatWriter::WriteObjectStatesToDat(const std::vector<scenarioengine::Obj
         }
 
         // PacketId::OBJ_TYPE
-        if (cache_it->second.obj_type_ != obj->GetType())
+        if (cache_it->second.obj_type_ != obj->type_)
         {
-            cache_it->second.obj_type_ = obj->model_id_;
+            cache_it->second.obj_type_ = obj->type_;
             Write(PacketId::OBJ_TYPE, cache_it->second.obj_type_);
         }
 
