@@ -14,7 +14,6 @@
 
 #include "Replay.hpp"
 #include "dirent.h"
-#include "PacketHandler.hpp"
 
 using namespace scenarioengine;
 
@@ -738,9 +737,9 @@ int Replay::ParsePackets()
 
                     current_object_timeline_->light_state_[light_state.light_type].values.emplace_back(timestamp_, light_state);
 
-                    if (static_cast<size_t>(current_object_id_) >= lightstate_entities.size())
+                    if (static_cast<size_t>(current_object_id_) >= lightstate_entities_.size())
                     {
-                        lightstate_entities.resize(static_cast<size_t>(current_object_id_) + 1, 1);
+                        lightstate_entities_.resize(static_cast<size_t>(current_object_id_) + 1, 1);
                     }
 
                     has_lightstates_ = true;
@@ -751,10 +750,10 @@ int Replay::ParsePackets()
                 default:  // Intentially ignored packets
                 {
                     dat_reader_->SkipPacket(gp.header);
-                    if (std::find(unknown_pids.begin(), unknown_pids.end(), gp.header.id) == unknown_pids.end())
+                    if (std::find(skipped_pids_.begin(), skipped_pids_.end(), gp.header.id) == skipped_pids_.end())
                     {
-                        LOG_DEBUG("Unknown packet with id: {}", gp.header.id);
-                        unknown_pids.push_back(gp.header.id);
+                        LOG_DEBUG("Skipped packet with id: {}", gp.header.id);
+                        skipped_pids_.push_back(gp.header.id);
                     }
                     break;
                 }
@@ -1379,7 +1378,7 @@ ReplayEntry Replay::GetReplayEntryAtTimeIncremental(int id, double t) const
     entry.state.pos.s               = timeline.pos_s_.get_value_incremental(t).value();
     entry.odometer                  = timeline.odometer_.get_value_incremental(t).value();
 
-    if (id >= 0 && static_cast<size_t>(id) < lightstate_entities.size() && lightstate_entities[static_cast<size_t>(id)] == 1)
+    if (id >= 0 && EntityHasLightState(id))
     {
         entry.has_lightstate = true;
         for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)

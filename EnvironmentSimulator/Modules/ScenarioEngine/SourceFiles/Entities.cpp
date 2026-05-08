@@ -298,7 +298,7 @@ scenarioengine::Controller* Object::GetController(std::string name) const
     return nullptr;
 }
 
-std::string Object::LightType2Str(VehicleLightType lightType)
+std::string Object::VehicleLightStatus::LightType2Str(VehicleLightType lightType)
 {
     switch (lightType)
     {

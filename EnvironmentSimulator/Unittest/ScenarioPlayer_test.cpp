@@ -552,7 +552,14 @@ TEST(LightState, TestLightStateColors)
         // Car 1
         EXPECT_EQ(c1_light.type, static_cast<Type>(i));
         bool is_black = std::equal(std::begin(c1_light.rgb), std::end(c1_light.rgb), std::begin(black));
-        EXPECT_FALSE(is_black);
+        if (static_cast<Type>(i) == Type::FOG_LIGHTS || static_cast<Type>(i) == Type::WARNING_LIGHTS)
+        {
+            EXPECT_TRUE(is_black);
+        }
+        else
+        {
+            EXPECT_FALSE(is_black);
+        }
         bool is_uninitialized = std::equal(std::begin(c1_light.emission), std::end(c1_light.emission), std::begin(uninitialized));
         EXPECT_FALSE(is_uninitialized);
 
@@ -584,7 +591,14 @@ TEST(LightState, TestLightStateColors)
         // Car 2
         EXPECT_EQ(c2_light.type, static_cast<Type>(i));
         is_black = std::equal(std::begin(c2_light.rgb), std::end(c2_light.rgb), std::begin(black));
-        EXPECT_FALSE(is_black);
+        if (static_cast<Type>(i) == Type::FOG_LIGHTS || static_cast<Type>(i) == Type::WARNING_LIGHTS)
+        {
+            EXPECT_TRUE(is_black);
+        }
+        else
+        {
+            EXPECT_FALSE(is_black);
+        }
         is_uninitialized = std::equal(std::begin(c2_light.emission), std::end(c2_light.emission), std::begin(uninitialized));
         EXPECT_FALSE(is_uninitialized);
     }
@@ -602,6 +616,16 @@ TEST(LightState, TestLightStateColors)
         if (c1_light.type == Type::WARNING_LIGHTS)
         {
             EXPECT_EQ(c1_light.mode, Mode::FLASHING);
+        }
+        else if (c1_light.type == Type::INDICATOR_LEFT)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
+            EXPECT_EQ(c1_light.color, Color::BLUE);
+            EXPECT_EQ(c1_light.luminousIntensity, 12000.0);
+        }
+        else if (c1_light.type == Type::INDICATOR_RIGHT)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
             EXPECT_EQ(c1_light.color, Color::BLUE);
             EXPECT_EQ(c1_light.luminousIntensity, 0.0);
         }
@@ -614,14 +638,18 @@ TEST(LightState, TestLightStateColors)
         else if (c1_light.type == Type::FOG_LIGHTS)
         {
             EXPECT_EQ(c1_light.mode, Mode::ON);
+        }
+        else if (c1_light.type == Type::FOG_LIGHTS_FRONT)
+        {
             EXPECT_EQ(c1_light.color, Color::GREEN);
             EXPECT_EQ(c1_light.luminousIntensity, 10000.0);
+            EXPECT_EQ(c1_light.mode, Mode::ON);
         }
         else if (c1_light.type == Type::FOG_LIGHTS_REAR)
         {
-            EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
-            EXPECT_EQ(c1_light.color, Color::RED);
-            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+            EXPECT_EQ(c1_light.color, Color::GREEN);
+            EXPECT_EQ(c1_light.luminousIntensity, 10000.0);
+            EXPECT_EQ(c1_light.mode, Mode::ON);
         }
         else if (c1_light.type == Type::HIGH_BEAM)
         {
@@ -647,6 +675,16 @@ TEST(LightState, TestLightStateColors)
         auto& c1_light = car_1->vehLghtStsList[i];
 
         if (c1_light.type == Type::WARNING_LIGHTS)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
+        }
+        else if (c1_light.type == Type::INDICATOR_LEFT)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
+            EXPECT_EQ(c1_light.color, Color::BLUE);
+            EXPECT_EQ(c1_light.luminousIntensity, 12000.0);
+        }
+        else if (c1_light.type == Type::INDICATOR_RIGHT)
         {
             EXPECT_EQ(c1_light.mode, Mode::FLASHING);
             EXPECT_EQ(c1_light.color, Color::BLUE);
@@ -684,14 +722,18 @@ TEST(LightState, TestLightStateColors)
         if (c1_light.type == Type::WARNING_LIGHTS)
         {
             EXPECT_EQ(c1_light.mode, Mode::FLASHING);
-            EXPECT_EQ(c1_light.color, Color::BLUE);
-            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
         }
         else if (c1_light.type == Type::INDICATOR_LEFT)
         {
-            EXPECT_EQ(c1_light.mode, Mode::UNKNOWN);
-            EXPECT_EQ(c1_light.color, Color::UNKNOWN);
-            EXPECT_EQ(c1_light.luminousIntensity, 12000.0);
+            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
+            EXPECT_EQ(c1_light.color, Color::BLUE);
+            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
+        }
+        else if (c1_light.type == Type::INDICATOR_RIGHT)
+        {
+            EXPECT_EQ(c1_light.mode, Mode::FLASHING);
+            EXPECT_EQ(c1_light.color, Color::BLUE);
+            EXPECT_EQ(c1_light.luminousIntensity, 0.0);
         }
         else if (c1_light.type == Type::BRAKE_LIGHTS)
         {

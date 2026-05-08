@@ -1034,6 +1034,13 @@ int OSIReporter::UpdateOSIMovingObject(const Object &obj)
             const Object::VehicleLightType &light_type  = obj.vehLghtStsList[i].type;
             auto                            light_state = obj_osi_internal.mobj->mutable_vehicle_classification()->mutable_light_state();
 
+            if ((light_type == Object::VehicleLightType::INDICATOR_LEFT || light_type == Object::VehicleLightType::INDICATOR_RIGHT) &&
+                light_state->indicator_state() == osi3::MovingObject_VehicleClassification_LightState_IndicatorState::
+                                                      MovingObject_VehicleClassification_LightState_IndicatorState_INDICATOR_STATE_WARNING)
+            {
+                continue;  // We skip check of left/right blinkers as they can't be on at the same time as warning lights
+            }
+
             switch (light_type)
             {
                 case Object::VehicleLightType::DAYTIME_RUNNING_LIGHTS:

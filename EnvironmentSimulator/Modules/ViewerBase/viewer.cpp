@@ -1550,42 +1550,18 @@ void CarModel::UpdateLight(Object::VehicleLightStatus* vehicle_lights_status)
 {
     for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
     {
-        const auto& light = vehicle_lights_status[i];
+        auto& light = vehicle_lights_status[i];
 
-        if (light.type == Object::VehicleLightType::UNDEFINED)
+        if (light.type == Object::VehicleLightType::UNDEFINED || light.type == Object::VehicleLightType::WARNING_LIGHTS ||
+            light.type == Object::VehicleLightType::FOG_LIGHTS)
         {
             continue;
         }
 
-        // Create OSG color vectors from the light status
         osg::Vec4d diffuseRgb(light.rgb[0], light.rgb[1], light.rgb[2], 1.0);
         osg::Vec4d emissionRgb(light.emission[0], light.emission[1], light.emission[2], 1.0);
 
-        // Handle special light types (e.g., warning lights and fog lights)
-        if (light.type == Object::VehicleLightType::WARNING_LIGHTS)
-        {
-            UpdateLightMaterial(Object::VehicleLightType::INDICATOR_LEFT, diffuseRgb, emissionRgb);
-            UpdateLightMaterial(Object::VehicleLightType::INDICATOR_RIGHT, diffuseRgb, emissionRgb);
-        }
-        else if ((light.type == Object::VehicleLightType::INDICATOR_LEFT || light.type == Object::VehicleLightType::INDICATOR_RIGHT) &&
-                 light.mode == Object::VehicleLightMode::UNKNOWN)
-        {
-            continue;  // We dont update the lights to avoid setting warning lights to OFF
-        }
-        else if (light.type == Object::VehicleLightType::FOG_LIGHTS)
-        {
-            UpdateLightMaterial(Object::VehicleLightType::FOG_LIGHTS_FRONT, diffuseRgb, emissionRgb);
-            UpdateLightMaterial(Object::VehicleLightType::FOG_LIGHTS_REAR, diffuseRgb, emissionRgb);
-        }
-        else if ((light.type == Object::VehicleLightType::FOG_LIGHTS_FRONT || light.type == Object::VehicleLightType::FOG_LIGHTS_REAR) &&
-                 light.mode == Object::VehicleLightMode::UNKNOWN)
-        {
-            continue;  // We dont update the lights to avoid setting fog lights to OFF
-        }
-        else
-        {
-            UpdateLightMaterial(light.type, diffuseRgb, emissionRgb);
-        }
+        UpdateLightMaterial(light.type, diffuseRgb, emissionRgb);
     }
 }
 
@@ -3856,6 +3832,60 @@ PointSensor* Viewer::CreateSensor(const float (&color)[3], bool create_ball, boo
     sensor->Show();
 
     return sensor;
+}
+
+void Viewer::SetLightMaterialAndColor(Object::VehicleLightStatus* light, CarModel* model)
+{
+    // Copy the light type and then use the base type to find material later
+    Object::VehicleLightType light_type = light->type;
+
+    light->mode  = Object::VehicleLightMode::UNKNOWN;
+    light->color = Object::VehicleLightColor::UNKNOWN;
+
+    for (const auto& material : model->light_material_)
+    {
+        if (material == nullptr || light->LightType2Str(light->type) != material->getName())
+        {
+            continue;
+        }
+
+        // Get diffuse and emission colors
+        const osg::Vec4& diffuseColor =
+            material->getDiffuseFrontAndBack() ? material->getDiffuse(osg::Material::FRONT_AND_BACK) : material->getDiffuse(osg::Material::FRONT);
+
+        const osg::Vec4& emissionColor =
+            material->getEmissionFrontAndBack() ? material->getEmission(osg::Material::FRONT_AND_BACK) : material->getEmission(osg::Material::FRONT);
+
+        // Update light status with material colors
+        light->rgb[0] = diffuseColor.r();
+        light->rgb[1] = diffuseColor.g();
+        light->rgb[2] = diffuseColor.b();
+
+        // Save the material color
+        light->baseRgb[0] = diffuseColor.r();
+        light->baseRgb[1] = diffuseColor.g();
+        light->baseRgb[2] = diffuseColor.b();
+
+        light->emission[0] = emissionColor.r();
+        light->emission[1] = emissionColor.g();
+        light->emission[2] = emissionColor.b();
+
+        GetRgbMinMaxColor(light->baseRgb, light->rgb, light->maxRgb);
+        LOG_DEBUG(
+            "Init LightState: Setting light {} with rgb {:.2f}, {:.2f}, {:.2f} to min rgb {:.2f}, {:.2f}, {:.2f} and max rgb {:.2f}, {:.2f}, {:.2f}",
+            light->LightType2Str(light->type),
+            light->baseRgb[0],
+            light->baseRgb[1],
+            light->baseRgb[2],
+            light->rgb[0],
+            light->rgb[1],
+            light->rgb[2],
+            light->maxRgb[0],
+            light->maxRgb[1],
+            light->maxRgb[2]);
+
+        break;
+    }
 }
 
 void Viewer::UpdateRoadSensors(PointSensor* road_sensor, PointSensor* route_sensor, PointSensor* lane_sensor, roadmanager::Position* pos)

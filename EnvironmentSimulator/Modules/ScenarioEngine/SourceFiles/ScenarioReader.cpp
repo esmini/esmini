@@ -4084,7 +4084,7 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                         lightStateAction->SetVehicleLightMode(mode);
                     }
                     else
-                    {  // shall be stoped
+                    {  // shall be stopped
                         LOG_WARN("LightStateAction: Missing mandatory attriute 'mode' in LightState");
                         ok = false;
                     }
@@ -4187,13 +4187,12 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 ok = false;
             }
 
-            if (!ok)  // TODO: Test correct cleanup?
+            if (!ok)
             {
                 delete lightStateAction;
                 return 0;
             }
 
-            // No Color values set, check semantic color
             if (colorCmykSet)
             {
                 lightStateAction->CmykToRgb(lightStateAction->GetCmyk(), lightStateAction->GetRgb());
@@ -4232,7 +4231,6 @@ OSCPrivateAction *ScenarioReader::parseOSCPrivateAction(pugi::xml_node actionNod
                 lightStateAction->SetRgbFromColorEnum(lightStateAction->GetVehicleLightColor());  // Forcing ORANGE or BLUE
             }
 
-            lightStateAction->SetVehicleLightInitStatus();  // Register initial values in the action
             action                 = lightStateAction;
             has_lightstate_action_ = true;
         }

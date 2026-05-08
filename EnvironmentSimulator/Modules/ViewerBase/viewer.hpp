@@ -703,6 +703,7 @@ namespace viewer
         void                     UpdateSensor(PointSensor* sensor);
         void                     SensorSetPivotPos(PointSensor* sensor, double x, double y, double z);
         void                     SensorSetTargetPos(PointSensor* sensor, double x, double y, double z);
+        void                     SetLightMaterialAndColor(Object::VehicleLightStatus* light, CarModel* model);
         void UpdateRoadSensors(PointSensor* road_sensor, PointSensor* route_sensor, PointSensor* lane_sensor, roadmanager::Position* pos);
         void setKeyUp(bool pressed)
         {

@@ -143,11 +143,11 @@ namespace scenarioengine
             DAYTIME_RUNNING_LIGHTS,
             LOW_BEAM,
             HIGH_BEAM,
-            FOG_LIGHTS,
+            FOG_LIGHTS,  // Activates front/rear fog lights, maintain fog_lights order
             FOG_LIGHTS_FRONT,
             FOG_LIGHTS_REAR,
             BRAKE_LIGHTS,
-            WARNING_LIGHTS,
+            WARNING_LIGHTS,  // Activates left/right indicators, maintain warning_lights / indicator order
             INDICATOR_LEFT,
             INDICATOR_RIGHT,
             REVERSING_LIGHTS,
@@ -191,10 +191,11 @@ namespace scenarioengine
             double            rgb[3]            = {0.0, 0.0, 0.0};     // current emissionRbg
             double            baseRgb[3]        = {0.0, 0.0, 0.0};
             double            maxRgb[3]         = {0.0, 0.0, 0.0};  // Init as the base materials max
+
+            std::string LightType2Str(VehicleLightType lightType);
         };
 
         VehicleLightStatus vehLghtStsList[static_cast<size_t>(VehicleLightType::VEHICLE_LIGHT_SIZE)];
-        std::string        LightType2Str(VehicleLightType lightType);
 
         struct OverrideActionStatus
         {

@@ -460,6 +460,31 @@ int ParseEntities(Replay* player)
                         new_sc.entityModel->SetTransparency(0.6);
                     }
                 }
+
+                if (i == 0 && id >= 0 && player->EntityHasLightState(id))
+                {
+                    auto carmodel = static_cast<viewer::CarModel*>(new_sc.entityModel);
+                    for (size_t j = 0; j < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); j++)
+                    {
+                        auto  light          = &entry.state.info.light_state[j];
+                        auto& timeline_light = timelines.light_state_[j].values;
+                        viewer_->SetLightMaterialAndColor(light, carmodel);
+
+                        if (!NEAR_NUMBERS(timeline_light.front().first, player->timestamps_.front()))
+                        {
+                            Dat::LightState init_state = {static_cast<int>(light->type),
+                                                          static_cast<int>(light->mode),
+                                                          light->rgb[0],
+                                                          light->rgb[1],
+                                                          light->rgb[2],
+                                                          light->emission[0],
+                                                          light->emission[1],
+                                                          light->emission[2]};
+
+                            timeline_light.insert(timeline_light.begin(), {player->timestamps_.front(), init_state});
+                        }
+                    }
+                }
 #endif  // _USE_OSG
 
                 // This variable is used if we compile with OSG

@@ -468,6 +468,10 @@ namespace scenarioengine
         {
             return has_lightstates_;
         }
+        bool EntityHasLightState(int id) const
+        {
+            return static_cast<size_t>(id) < lightstate_entities_.size() && lightstate_entities_[static_cast<size_t>(id)] == 1;
+        }
 
     private:
         std::vector<std::string> scenarios_;
@@ -480,10 +484,10 @@ namespace scenarioengine
         unsigned int             index_      = 0;
         bool                     repeat_     = false;
         std::string              create_datfile_;
-        std::vector<id_t>        unknown_pids;
-        bool                     eos_received_       = false;  // end of scenario packet
-        bool                     has_lightstates_    = false;
-        std::vector<uint8_t>     lightstate_entities = {};
+        std::vector<id_t>        skipped_pids_;
+        bool                     eos_received_        = false;  // end of scenario packet
+        bool                     has_lightstates_     = false;
+        std::vector<uint8_t>     lightstate_entities_ = {};
 
         /* PacketHandler stuff */
         std::unique_ptr<Dat::DatReader>              dat_reader_;

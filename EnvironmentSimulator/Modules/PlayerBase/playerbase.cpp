@@ -1361,73 +1361,14 @@ void ScenarioPlayer::InitVehicleModel(Object* obj, viewer::CarModel* model)
     {
         for (size_t i = 0; i < static_cast<size_t>(Object::VehicleLightType::VEHICLE_LIGHT_SIZE); i++)
         {
-            auto& light = obj->vehLghtStsList[i];
-
-            if (light.type != Object::VehicleLightType::UNDEFINED)
+            auto light = &obj->vehLghtStsList[i];
+            if (light->type != Object::VehicleLightType::UNDEFINED)
             {
                 continue;
             }
-
-            // This light hasn't been set in the scenario, so we process it now?
-            Object::VehicleLightType light_type = static_cast<Object::VehicleLightType>(i);
-
-            if (light_type == Object::VehicleLightType::FOG_LIGHTS)
-            {
-                light_type = Object::VehicleLightType::FOG_LIGHTS_REAR;  // Use rear fog light as the base
-            }
-            else if (light_type == Object::VehicleLightType::WARNING_LIGHTS)
-            {
-                light_type = Object::VehicleLightType::INDICATOR_LEFT;  // Use left indicator as the base
-            }
-
-            light.type  = static_cast<Object::VehicleLightType>(i);
-            light.mode  = Object::VehicleLightMode::UNKNOWN;
-            light.color = Object::VehicleLightColor::UNKNOWN;
-
-            for (const auto& material : model->light_material_)
-            {
-                if (material == nullptr || obj->LightType2Str(light_type) != material->getName())
-                {
-                    continue;
-                }
-
-                // Get diffuse and emission colors
-                const osg::Vec4& diffuseColor = material->getDiffuseFrontAndBack() ? material->getDiffuse(osg::Material::FRONT_AND_BACK)
-                                                                                   : material->getDiffuse(osg::Material::FRONT);
-
-                const osg::Vec4& emissionColor = material->getEmissionFrontAndBack() ? material->getEmission(osg::Material::FRONT_AND_BACK)
-                                                                                     : material->getEmission(osg::Material::FRONT);
-
-                // Update light status with material colors
-                light.rgb[0] = diffuseColor.r();
-                light.rgb[1] = diffuseColor.g();
-                light.rgb[2] = diffuseColor.b();
-
-                // Save the material color
-                light.baseRgb[0] = diffuseColor.r();
-                light.baseRgb[1] = diffuseColor.g();
-                light.baseRgb[2] = diffuseColor.b();
-
-                light.emission[0] = emissionColor.r();
-                light.emission[1] = emissionColor.g();
-                light.emission[2] = emissionColor.b();
-
-                GetRgbMinMaxColor(light.baseRgb, light.rgb, light.maxRgb);
-                LOG_DEBUG(
-                    "Init LightState: Setting light {} with rgb {:.2f}, {:.2f}, {:.2f} to min rgb {:.2f}, {:.2f}, {:.2f} and max rgb {:.2f}, {:.2f}, {:.2f}",
-                    obj->LightType2Str(static_cast<Object::VehicleLightType>(i)),
-                    light.baseRgb[0],
-                    light.baseRgb[1],
-                    light.baseRgb[2],
-                    light.rgb[0],
-                    light.rgb[1],
-                    light.rgb[2],
-                    light.maxRgb[0],
-                    light.maxRgb[1],
-                    light.maxRgb[2]);
-
-                break;
-            }
+            // Set the type of the light, as its been UNDEFINED until now
+            light->type = static_cast<Object::VehicleLightType>(i);
+            viewer_->SetLightMaterialAndColor(light, model);
         }
     }
 

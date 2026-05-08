@@ -229,10 +229,14 @@ void Event::Start(double simTime)
                                 if (action1->action_type_ == action2->action_type_ && action1->CheckConflictingLights(action2->GetVehicleLightType()))
                                 {
                                     // LightType overlap, at least one light type in common. Terminate old action.
-                                    LOG_WARN("Stopping object {} {} on conflicting {} light(s)",
-                                             obj->GetName(),
-                                             action2->GetName(),
-                                             obj->LightType2Str(action2->GetVehicleLightType()));
+                                    auto light_type = action2->GetVehicleLightType();
+                                    if (light_type != Object::VehicleLightType::UNDEFINED)
+                                    {
+                                        LOG_WARN("Stopping object {} {} on conflicting {} light(s)",
+                                                 obj->GetName(),
+                                                 action2->GetName(),
+                                                 obj->vehLghtStsList[static_cast<int>(light_type)].LightType2Str(action2->GetVehicleLightType()));
+                                    }
                                     action2->End();
                                 }
                             }
@@ -272,10 +276,14 @@ void Event::Start(double simTime)
                                 if (action1->action_type_ == action2->action_type_ && action1->CheckConflictingLights(action2->GetVehicleLightType()))
                                 {
                                     // LightType overlap, at least one light type in common. Terminate old action.
-                                    LOG_WARN("Stopping object {} {} on conflicting {} light(s)",
-                                             obj->GetName(),
-                                             action2->GetName(),
-                                             obj->LightType2Str(action2->GetVehicleLightType()));
+                                    auto light_type = action2->GetVehicleLightType();
+                                    if (light_type != Object::VehicleLightType::UNDEFINED)
+                                    {
+                                        LOG_WARN("Stopping object {} {} on conflicting {} light(s)",
+                                                 obj->GetName(),
+                                                 action2->GetName(),
+                                                 obj->vehLghtStsList[static_cast<int>(light_type)].LightType2Str(action2->GetVehicleLightType()));
+                                    }
                                     action2->End();
                                 }
                             }

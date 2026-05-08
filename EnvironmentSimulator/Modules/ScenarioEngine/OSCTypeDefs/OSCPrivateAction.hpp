@@ -1437,27 +1437,16 @@ namespace scenarioengine
               transitionTimer_(0.0),
               flashingTimer_(0.0),
               cmyk_{-1.0, -1.0, -1.0, -1.0},
-              rgb_{-1.0, -1.0, -1.0},
-              minRgb_{-1.0, -1.0, -1.0},
-              maxRgb_{-1.0, -1.0, -1.0},
-              previousMinRgb_{-1.0, -1.0, -1.0},
-              previousMaxRgb_{-1.0, -1.0, -1.0},
               RGB_ARRAY_SIZE_(3),
               CMYK_ARRAY_SIZE_(4),
               rgbDeducedFromLightType_(false),
               DEFAULT_LUMINOUS_INTENSITY_(6000.0),
               vehicleLightMode_(Object::VehicleLightMode::UNKNOWN),
-              previousMode_(vehicleLightMode_),
-              luminousIntensity_(0.0),
-              previousIntensity_(luminousIntensity_),
-              transitionLuminousity_(0.0),
               luminousitySet_(false),
-              vehicleLightType_(Object::VehicleLightType::UNDEFINED),
-              vehicleLightColor_(Object::VehicleLightColor::UNKNOWN),
-              actionVehicleLightStatus_({}),
+              actionVehicleLightStatus_(),
               flashStatus_(FlashingStatus::UNDEFINED),
               colorSet_(false),
-              vehicleLight_(nullptr),
+              vehicleLights_(),
               transitioned_(false)
         {
         }
@@ -1482,7 +1471,7 @@ namespace scenarioengine
         void                      SetRgbFromColorEnum(const Object::VehicleLightColor& color);
         void                      SetRgbFromTypeEnum(const Object::VehicleLightType& type, double* arr);
         void                      UpdateArray(double* arr, size_t size, const std::vector<double>& vals);
-        void                      SetVehicleLightState(double* maxRgb, double luminousity);
+        void                      SetVehicleLightState(Object::VehicleLightStatus* vehicleLight, double luminousity);
         void                      InitializeLights();
         bool                      CheckConflictingLights(const Object::VehicleLightType& type);
         void                      HandleConflictingLights(const Object::VehicleLightType& type);
@@ -1495,15 +1484,15 @@ namespace scenarioengine
         }
         double* GetRgb()
         {
-            return rgb_;
+            return actionVehicleLightStatus_.rgb;
         }
         Object::VehicleLightColor GetVehicleLightColor() const
         {
-            return vehicleLightColor_;
+            return actionVehicleLightStatus_.color;
         }
         Object::VehicleLightType GetVehicleLightType() const
         {
-            return vehicleLightType_;
+            return actionVehicleLightStatus_.type;
         }
         bool GetColorSet() const
         {
@@ -1511,6 +1500,8 @@ namespace scenarioengine
         }
 
         // Setters
+        void SetVehicleLights(const Object::VehicleLightType& type);
+
         void SetTransitionTime(const double& time)
         {
             transitionTime_ = time;
@@ -1529,35 +1520,27 @@ namespace scenarioengine
         }
         void SetRGB(const double& r, const double& g, const double& b)
         {
-            UpdateArray(rgb_, RGB_ARRAY_SIZE_, {r, g, b});
+            UpdateArray(actionVehicleLightStatus_.rgb, RGB_ARRAY_SIZE_, {r, g, b});
         }
         void SetVehicleLightType(const Object::VehicleLightType& type)
         {
-            vehicleLightType_ = type;
+            actionVehicleLightStatus_.type = type;
         }
         void SetLuminousIntensity(const double& intensity)
         {
-            luminousIntensity_ = intensity;
+            actionVehicleLightStatus_.luminousIntensity = intensity;
         }
         void SetVehicleLightMode(const Object::VehicleLightMode& mode)
         {
-            vehicleLightMode_ = mode;
+            actionVehicleLightStatus_.mode = mode;
         }
         void SetVehicleLightColor(const Object::VehicleLightColor& color)
         {
-            vehicleLightColor_ = color;
+            actionVehicleLightStatus_.color = color;
         }
         void SetDeducedRgbFromLightType(bool val)
         {
             rgbDeducedFromLightType_ = val;
-        }
-        void SetVehicleLightInitStatus()
-        {
-            actionVehicleLightStatus_.type              = this->vehicleLightType_;
-            actionVehicleLightStatus_.luminousIntensity = this->luminousIntensity_;
-            actionVehicleLightStatus_.mode              = this->vehicleLightMode_;
-            actionVehicleLightStatus_.color             = this->vehicleLightColor_;
-            std::copy_n(rgb_, RGB_ARRAY_SIZE_, actionVehicleLightStatus_.rgb);
         }
         void SetColorSet(bool val)
         {
@@ -1614,34 +1597,38 @@ namespace scenarioengine
         };
 
     private:
-        double                      transitionTime_;
-        double                      flashingOffDuration_;
-        double                      flashingOnDuration_;
-        double                      transitionTimer_;
-        double                      flashingTimer_;
-        double                      cmyk_[4];
-        double                      rgb_[3];
-        double                      minRgb_[3];
-        double                      maxRgb_[3];
-        double                      previousMinRgb_[3];
-        double                      previousMaxRgb_[3];
-        const size_t                RGB_ARRAY_SIZE_;
-        const size_t                CMYK_ARRAY_SIZE_;
-        bool                        rgbDeducedFromLightType_;
-        const double                DEFAULT_LUMINOUS_INTENSITY_;
-        Object::VehicleLightMode    vehicleLightMode_;
-        Object::VehicleLightMode    previousMode_;
-        double                      luminousIntensity_;
-        double                      previousIntensity_;
-        double                      transitionLuminousity_;
-        bool                        luminousitySet_;
-        Object::VehicleLightType    vehicleLightType_;
-        Object::VehicleLightColor   vehicleLightColor_;
-        Object::VehicleLightStatus  actionVehicleLightStatus_;
-        FlashingStatus              flashStatus_;
-        bool                        colorSet_;
-        Object::VehicleLightStatus* vehicleLight_;
-        bool                        transitioned_;
+        // Struct to keep track of relevant variables of a light during action execution.
+        // Necessary since one action can control different lights individually
+        struct VehicleLightState
+        {
+            Object::VehicleLightStatus* vehicleLight_          = nullptr;
+            Object::VehicleLightMode    previousMode_          = Object::VehicleLightMode::UNKNOWN;
+            double                      minRgb_[3]             = {-1.0, -1.0, -1.0};
+            double                      maxRgb_[3]             = {-1.0, -1.0, -1.0};
+            double                      previousMinRgb_[3]     = {-1.0, -1.0, -1.0};
+            double                      previousMaxRgb_[3]     = {-1.0, -1.0, -1.0};
+            double                      luminousIntensity_     = 0.0;
+            double                      previousIntensity_     = 0.0;
+            double                      transitionLuminousity_ = 0.0;
+        };
+
+        double                         transitionTime_;
+        double                         flashingOffDuration_;
+        double                         flashingOnDuration_;
+        double                         transitionTimer_;
+        double                         flashingTimer_;
+        double                         cmyk_[4];
+        const size_t                   RGB_ARRAY_SIZE_;
+        const size_t                   CMYK_ARRAY_SIZE_;
+        bool                           rgbDeducedFromLightType_;
+        const double                   DEFAULT_LUMINOUS_INTENSITY_;
+        Object::VehicleLightMode       vehicleLightMode_;
+        bool                           luminousitySet_;
+        Object::VehicleLightStatus     actionVehicleLightStatus_;
+        FlashingStatus                 flashStatus_;
+        bool                           colorSet_;
+        std::vector<VehicleLightState> vehicleLights_;
+        bool                           transitioned_;
     };
 
     class OverrideControlAction : public OSCPrivateAction
