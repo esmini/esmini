@@ -1694,7 +1694,7 @@ The image below is a screenshot from example scenario https://github.com/esmini/
 
 image::light_state.jpg[]
 
-Video clip: https://youtu.be/d_LHeVhQtsw
+Video clip: https://youtu.be/MElGBJ5X7go
 
 By default no light faces are shown, only if the vehicle is involved in a LightStateAction. This is to avoid irrelevant visual clutter. Default behavior can be overriden with `light_mode` option, see <<_esmini, esmini command reference>>.
 

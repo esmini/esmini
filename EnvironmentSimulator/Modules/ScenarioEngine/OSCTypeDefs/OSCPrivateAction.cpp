@@ -3111,7 +3111,11 @@ void LightStateAction::SetVehicleLightState(double* maxRgb, double luminousity)
 
     for (size_t i = 0; i < RGB_ARRAY_SIZE_; i++)
     {
-        vehicleLight_->emission[i] = maxRgb[i] * (luminousity / MAX_INTENSITY_LUM);
+        // scale luminosity non linear to achieve visible and somewhat natural distribution in the candela span [0,12000]
+        // some non linear function candidates: https://www.desmos.com/calculator/zfeesbxgu6
+        double x                   = luminousity / MAX_INTENSITY_LUM;
+        double k                   = 0.25;  // Adjust this value to change the curvature of the intensity function
+        vehicleLight_->emission[i] = maxRgb[i] * pow(x, k);
     }
 
     vehicleLight_->luminousIntensity = luminousity;

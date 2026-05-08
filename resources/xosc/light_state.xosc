@@ -136,20 +136,33 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="licensePlateIllumination" />
                                  </LightType>
-                                 <LightState mode="on" luminousIntensity="8000">
+                                 <LightState mode="on" luminousIntensity="400">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
                         </PrivateAction>
                      </Action>
-                     <Action name="actionStartFogLights">
+                     <Action name="actionStartFogLightsRear">
                         <PrivateAction>
                            <AppearanceAction>
                               <LightStateAction transitionTime="0">
                                  <LightType>
-                                    <VehicleLight vehicleLightType="fogLights" />
+                                    <VehicleLight vehicleLightType="fogLightsRear" />
                                  </LightType>
-                                 <LightState mode="on" luminousIntensity="8000">
+                                 <LightState mode="on" luminousIntensity="300">
+                                 </LightState>
+                              </LightStateAction>
+                           </AppearanceAction>
+                        </PrivateAction>
+                     </Action>
+                     <Action name="actionStartFogLightsFront">
+                        <PrivateAction>
+                           <AppearanceAction>
+                              <LightStateAction transitionTime="0">
+                                 <LightType>
+                                    <VehicleLight vehicleLightType="fogLightsFront" />
+                                 </LightType>
+                                 <LightState mode="on" luminousIntensity="1500">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -200,7 +213,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="indicatorLeft" />
                                  </LightType>
-                                 <LightState mode="flashing" luminousIntensity="8000">
+                                 <LightState mode="flashing" luminousIntensity="500">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -264,7 +277,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="indicatorRight" />
                                  </LightType>
-                                 <LightState mode="flashing" luminousIntensity="8000">
+                                 <LightState mode="flashing" luminousIntensity="500">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -333,7 +346,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="brakeLights" />
                                  </LightType>
-                                 <LightState mode="on" luminousIntensity="8000">
+                                 <LightState mode="on" luminousIntensity="300">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -414,7 +427,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="reversingLights" />
                                  </LightType>
-                                 <LightState mode="on" luminousIntensity="8000">
+                                 <LightState mode="on" luminousIntensity="600">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -440,7 +453,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="brakeLights" />
                                  </LightType>
-                                 <LightState mode="on" luminousIntensity="8000">
+                                 <LightState mode="on" luminousIntensity="300">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -522,7 +535,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="lowBeam" />
                                  </LightType>
-                                 <LightState mode="on" luminousIntensity="8000">
+                                 <LightState mode="on" luminousIntensity="4000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -546,7 +559,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="daytimeRunningLights" />
                                  </LightType>
-                                 <LightState mode="on" luminousIntensity="10000">
+                                 <LightState mode="on" luminousIntensity="800">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -570,7 +583,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="highBeam" />
                                  </LightType>
-                                 <LightState mode="on" luminousIntensity="12000">
+                                 <LightState mode="on" luminousIntensity="30000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -594,7 +607,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="warningLights" />
                                  </LightType>
-                                 <LightState mode="flashing" luminousIntensity="8000">
+                                 <LightState mode="flashing" luminousIntensity="500">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -607,7 +620,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="specialPurposeLights" />
                                  </LightType>
-                                 <LightState mode="flashing" luminousIntensity="8000">
+                                 <LightState mode="flashing" luminousIntensity="2000">
                                  </LightState>
                               </LightStateAction>
                            </AppearanceAction>
@@ -620,7 +633,7 @@
                                  <LightType>
                                     <VehicleLight vehicleLightType="fogLights" />
                                  </LightType>
-                                 <LightState mode="flashing" flashingOnDuration="0.3" flashingOffDuration="0.3" luminousIntensity="8000">
+                                 <LightState mode="flashing" flashingOnDuration="0.3" flashingOffDuration="0.3" luminousIntensity="1000">
                                     <Color colorType="blue">
                                        <ColorRgb red="0.0" green="0.0" blue="0.8"/>
                                     </Color>
