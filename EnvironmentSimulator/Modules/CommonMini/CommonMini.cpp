@@ -2892,6 +2892,7 @@ void SE_Options::Reset()
         }
     }
     originalArgs_.clear();
+    unknown_args_.clear();
 }
 
 int SE_WritePPM(const char* filename, int width, int height, const unsigned char* data, int pixelSize, int pixelFormat, bool upsidedown)
