@@ -12127,7 +12127,15 @@ int Position::SetRouteLanePosition(Route* route, double path_s, int lane_id, dou
     int dir = 1;
     if (SE_Env::Inst().GetOptions().GetOptionSet("align_routepositions"))
     {
-        dir = route->GetWaypoint()->GetRouteWaypointDir();
+        const Position* wp = route->GetWaypoint();
+        if (wp != nullptr)
+        {
+            dir = wp->GetRouteWaypointDir();
+        }
+        else
+        {
+            LOG_ERROR("SetRouteLanePosition: failed to get current waypoint, using default direction");
+        }
     }
 
     SetLanePos(route->GetTrackId(), SIGN(dir) * lane_id, route->GetTrackS(), SIGN(dir) * lane_offset);
@@ -12143,7 +12151,15 @@ int Position::SetRouteRoadPosition(Route* route, double path_s, double t)
     int dir = 1;
     if (SE_Env::Inst().GetOptions().GetOptionSet("align_routepositions"))
     {
-        dir = route->GetWaypoint()->GetRouteWaypointDir();
+        const Position* wp = route->GetWaypoint();
+        if (wp != nullptr)
+        {
+            dir = wp->GetRouteWaypointDir();
+        }
+        else
+        {
+            LOG_ERROR("SetRouteRoadPosition: failed to get current waypoint, using default direction");
+        }
     }
 
     SetTrackPos(route->GetTrackId(), route->GetTrackS(), SIGN(dir) * t);
@@ -14730,7 +14746,13 @@ Position::ReturnCode Route::MovePathDS(double ds, double* remaining_dist, bool u
     }
 
     // Consider route direction
-    ds *= GetWaypoint()->GetRouteWaypointDir();
+    const Position* wp = GetWaypoint();
+    if (wp == nullptr)
+    {
+        LOG_ERROR("MovePathDS: failed to get current waypoint");
+        return Position::ReturnCode::ERROR_GENERIC;
+    }
+    ds *= wp->GetRouteWaypointDir();
     // printf("moving along path by ds = %.2f (route dir %d), from road %d s %.2f\n", ds, GetWaypoint()->GetRouteWaypointDir(),
     // currentPos_.GetTrackId(), currentPos_.GetS());
 
@@ -14754,11 +14776,21 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
 
         if (update_state)
         {
-            LOG_INFO("{}{} moved out of route at roadId={}, s={:.2f} (SetPathS())",
-                     getObjName().empty() ? "Position " : "Entity ",
-                     getObjName().empty() ? "" : getObjName(),
-                     GetWaypoint(waypoint_idx_)->GetTrackId(),
-                     local_s);
+            const Position* wp = GetWaypoint(waypoint_idx_);
+            if (wp != nullptr)
+            {
+                LOG_INFO("{}{} moved out of route at roadId={}, s={:.2f} (SetPathS())",
+                         getObjName().empty() ? "Position " : "Entity ",
+                         getObjName().empty() ? "" : getObjName(),
+                         wp->GetTrackId(),
+                         local_s);
+            }
+            else
+            {
+                LOG_INFO("{}{} moved out of route (no valid waypoint) (SetPathS())",
+                         getObjName().empty() ? "Position " : "Entity ",
+                         getObjName().empty() ? "" : getObjName());
+            }
             on_route_ = false;
         }
 
@@ -14771,9 +14803,9 @@ Position::ReturnCode Route::SetPathS(double s, double* remaining_dist, bool upda
     if (minimal_waypoints_.size() == 0)
     {
         path_s_       = 0.0;
-        waypoint_idx_ = 0;
-        currentPos_.SetTrackPos(GetWaypoint(waypoint_idx_)->GetTrackId(), 0.0, 0.0);
-        return Position::ReturnCode::OK;
+        waypoint_idx_ = IDX_UNDEFINED;
+        LOG_ERROR("SetPathS called on route with no waypoints");
+        return Position::ReturnCode::ERROR_GENERIC;
     }
 
     const Position* wp = nullptr;
