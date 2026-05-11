@@ -54,11 +54,15 @@ This produces a collection of `.html` files (`index.html` being the landing page
 === How to view previous versions
 Full commit history is found https://github.com/esmini/esmini.github.io/commits/main[here]
 
-To view a previous version, utilizing https://htmlpreview.github.io/[htmlpreview.github.io], either refer to a https://github.com/esmini/esmini.github.io/tags[tag], like this:
+To view a previous version, there are two ways:
 
-`https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/refs/tags/v2.42.0/index.html`
+1. AsciiDoc preview +
+checkout corresponding tag, e.g: `git checkout v2.42.0` and then preview the adoc files (in docs/user_guide) in VSCode utilizing the AsciiDoc extension.
 
-or refer to any commit, like this:
-
-`https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/47a9267a5935d0bd2648950e4d9d3e23f1e8ff3a/index.html`
+2. utilizing https://htmlpreview.github.io/[htmlpreview.github.io] +
+either refer to a https://github.com/esmini/esmini.github.io/tags[tag], like this: +
+`https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/refs/tags/v2.42.0/index.html` +
+or refer to any commit, like this: +
+`https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/47a9267a5935d0bd2648950e4d9d3e23f1e8ff3a/index.html` +
+Note: This method may be blocked in web browser (generically avoiding proxy phishing threats)
 

@@ -1673,7 +1673,7 @@ image::fog.jpg[]
 
 === Vehicle light states
 
-Since v3.1.0, esmini supports https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/LightStateAction.html[LightStateAction] for controlling vehicle lighting. While all standard https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/VehicleLightType.html[VehicleLightType] entries are supported, https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/UserDefinedLight.html[UserDefinedLight] is currently excluded.
+From v3.1.0, esmini supports https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/LightStateAction.html[LightStateAction] for controlling vehicle lighting. While all standard https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/VehicleLightType.html[VehicleLightType] entries are supported, https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/UserDefinedLight.html[UserDefinedLight] is currently excluded.
 
 .Example: Activating brake lights
 
@@ -3536,10 +3536,9 @@ esmini_generated_road_model
 
 === esmini 3D assets
 
-Here are links to a few Vehicles, including asset structure and scripts, created in Blender:
+Package includes a few vehicles, library assets and scripts, created in Blender:
 
-- https://drive.google.com/file/d/1ZNukIo5FeR0I0LgBVM5BRI1y_HnP2rTV/view?usp=drive_link[esmini_vehicles.7z]
-- https://drive.google.com/file/d/1TCqp2FxNv2FscCsaCNmbIomS24dHM97e/view?usp=drive_link[esmini_assets.7z]
+- https://drive.google.com/file/d/1z2e2-LABQ00beAtrS4VY0A5CiGZix__Q/view?usp=drive_link[esmini_blender_assets.7z]
 
 The scripts are collected in `esmini_tools.py` which can be installed as a legacy add-on, see https://docs.blender.org/manual/en/latest/editors/preferences/addons.html#add-ons[Blender - Add-ons]. It will appear in side panel object properties.
 
