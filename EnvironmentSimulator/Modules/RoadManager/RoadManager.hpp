@@ -4947,7 +4947,6 @@ namespace roadmanager
         @param addLastNode If set to true, the last node will be added to the visited list
         @return 0 on success, -1 on failure e.g. path not found
         */
-
         // [TODO]: hlindst9 - update tests and investigate if addLastNode can be removed and handled nicer
         int Calculate(double &dist, bool bothDirections = true, double maxDist = LARGE_NUMBER, bool addLastNode = false);
 

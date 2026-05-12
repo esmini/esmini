@@ -5984,7 +5984,6 @@ int RoadPath::Calculate(double& dist, bool bothDirections, double maxDist, bool 
         // Mark pivot link as visited (move it from unvisited to visited)
         visited_.push_back(unvisited_[minIndex]);
         unvisited_.erase(unvisited_.begin() + minIndex);
-
         if (found && targetNode && addLastNode)
         {
             visited_.push_back(targetNode);
