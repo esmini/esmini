@@ -887,6 +887,8 @@ From v3.1.0, esmini supports https://publications.pages.asam.net/standards/ASAM_
 </AppearanceAction>
 ```
 
+==== Visualization
+
 For scenario preview purposes esmini offers a simplified visualization of the light states. The light colors are deduced from the 3D model or falls back to internal defaults. For custom colors, esmini generates a dark base shade and a bright shade for full intensity; note that the visualized color may look different than anticipated due to this shade generation.
 
 Most vehicle 3D models have been updated with simple polygon faces representing each possible light source. Note that only the light faces themselves are illuminated, no light are casted on the surrounding environment.
@@ -901,6 +903,16 @@ By default no light faces are shown, only if the vehicle is involved in a LightS
 
 Links to Blender resources for the vehicle 3D models are found in link:openscenegraph-3d-models.html#_esmini_3d_assets[esmini 3D assets]
 
+[Note]
+====
+*Note*: Vehicle 3D models prior to v3.1.0 lack lights. To update the model package:
+
+. Remove folder `resources/models`
+. Re-run `cmake ..` command from `build` folder
+
+Or manually replace models from updated https://www.dropbox.com/scl/fi/01v4863tgt3fdtx218226/models.7z?rlkey=07ioakfufoxp1q1beojntmsjp&st=hckmbfbd&dl=1[model package].
+====
+
 ==== OSI Mapping
 
 esmini maps LightStateAction → OSI https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1MovingObject_1_1VehicleClassification_1_1LightState.html[LightState], with some special assumptions made on the following combinations:
@@ -910,10 +922,6 @@ esmini maps LightStateAction → OSI https://opensimulationinterface.github.io/o
     * specialPurposeLights flashing, Role: Ambulance/Police → emergency_vehicle_illumination::FLASHING_BLUE
     * specialPurposeLights flashing, Role: Fire → emergency_vehicle_illumination::FLASHING_BLUE_AND_RED
     * specialPurposeLights flashing, Other roles → service_vehicle_illumination::FLASHING_AMBER
-
-==== Visualization
-
-esmini supports limited previeweing of light state actions. Most vehicle models
 
 === Tunnels
 

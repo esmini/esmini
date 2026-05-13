@@ -168,7 +168,7 @@ Do either:
 
 or
 
-- get the package from https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1[here] and unpack files into `./resources/models`
+- get the package from https://www.dropbox.com/scl/fi/3jwz3ie6xkgpga33cbyju/models_with_lights.7z?rlkey=9obptnofidldoagn4154iyntl&st=zxoupatb&dl=1[here] and unpack files into `./resources/models`
 
 ==== Update 3rd party prebuilt libraries
 

@@ -6,6 +6,7 @@ New features:
 
 - Add support for [LightStateAction](https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/v1.3.1/generated/content/LightStateAction.html)
   - switching on, off and flashing of various vehicle lights
+  - simple visualization with updated 3D vehicle models
   - see [User guide - Vehicle light states](https://esmini.github.io/scenario-features.html#_vehicle_light_states) for more info
 
 Improvements and fixes:
@@ -17,6 +18,10 @@ Improvements and fixes:
 - Adjust lower boundary for ambient scene lighting
   - in effect making dark night darker
 - Fix replayer bug setting wrong object type affecting visibility
+- Fix bug in ControllerUDPDriver causing null ptr crash
+- Skip costly smoke tests on selected CI configurations (win and mac debug)
+- Remove unused Python dependencies
+- Bump a few dependencies according to GitHub recommendations
 
 ### 2026-05-06 Version 3.0.4
 
