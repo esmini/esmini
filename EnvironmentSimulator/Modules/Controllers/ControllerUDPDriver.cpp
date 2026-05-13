@@ -350,8 +350,8 @@ void ControllerUDPDriver::Step(double timeStep)
             object_->wheel_angle_ = vehicle_.wheelAngle_;
 
             // Fetch Z and Pitch from OpenDRIVE position
-            vehicle_.SetZ(pos->GetZ());
-            vehicle_.SetPitch(pos->GetP());
+            vehicle_.SetZ(object_->pos_.GetZ());
+            vehicle_.SetPitch(object_->pos_.GetP());
         }
     }
 

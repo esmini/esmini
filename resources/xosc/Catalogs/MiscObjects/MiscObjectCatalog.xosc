@@ -22,9 +22,7 @@
                 <Center x="0.0" y="0.0" z="2.0"/>
                 <Dimensions height="4" length="200" width="1"/>
             </BoundingBox>
-            <Properties>
-                <Property name="model_id" value="101" />
-            </Properties>
+            <Properties/>
         </MiscObject>
         <MiscObject name="cone-45" mass="1" miscObjectCategory="obstacle" model3d="../models/cone-45.osgb">
             <BoundingBox>
@@ -33,7 +31,6 @@
             </BoundingBox>
             <Properties>
                 <Property name="scaleMode" value="ModelToBB" />
-                <Property name="model_id" value="102" />
             </Properties>
         </MiscObject>
         <MiscObject name="cone-100" mass="1" miscObjectCategory="obstacle" model3d="../models/cone-100.osgb">
@@ -43,7 +40,6 @@
             </BoundingBox>
             <Properties>
                 <Property name="scaleMode" value="ModelToBB" />
-                <Property name="model_id" value="103" />
             </Properties>
         </MiscObject>
     </Catalog>
