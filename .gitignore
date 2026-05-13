@@ -36,7 +36,6 @@ compile_commands.json
 out/build/**
 EnvironmentSimulator/Libraries/esminiJS/build*/*
 support/generated
-pylint_report.txt
 CMakeUserPresets.json
 .DS_Store
 EnvironmentSimulator/Libraries/esminiJS/example/esmini.js

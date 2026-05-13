@@ -1,5 +1,17 @@
 ## esmini release notes
 
+### 2026-05-06 Version 3.0.4
+
+Improvements and fixes:
+
+- Fix 3D object not removed on entity deletion (bug introduced in v3.0.3)
+- Fix misc object 3D model not showing up in replayer
+  - by removing deprecated model_ids, using model filename instead
+- Fix entity visibility issues
+  - fix bug (introduced in v3.0.3) preventing object from reappearing after hidden
+  - fully mirror scenario visibility behavior in replayer
+- Some additional minor fixes
+
 ### 2026-04-24 Version 3.0.3
 
 Improvements and fixes:

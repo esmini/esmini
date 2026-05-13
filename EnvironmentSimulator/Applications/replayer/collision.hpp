@@ -12,7 +12,7 @@ typedef struct
     struct ObjectPositionStructDat pos;
     double                         wheel_angle;
     double                         wheel_rotation;
-    bool                           visible;
+    int                            visibility_mask;
     scenarioengine::OSCBoundingBox bounding_box;
     std::vector<SE_Vector>         corners;
     std::vector<int>               overlap_entity_ids;
