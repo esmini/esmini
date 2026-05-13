@@ -1,0 +1,448 @@
+= esmini user guide – OpenSceneGraph and 3D models
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== OpenSceneGraph and 3D models
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+esmini make use of OpenSceneGraph (OSG) for visualization of the scenario. The OpenSCENARIO files can optionally refer to existing 3D models of the static environment (scene graph) and dynamic objects (entities). If the scene graph reference is missing, esmini will try to generate a basic model based on the OpenDRIVE road network description. Currently esmini only supports OSG native .osgb 3D file format. However, there are ways to convert 3D models as described next.
+
+http://www.openscenegraph.org/[OpenSceneGraph] (osg) includes readers and writers for quite a few 3D file formats. It comes with a demo application, http://www.openscenegraph.org/index.php/documentation/user-guides/55-osgconv[osgconv], a command line tool that simply takes one file as input and outputs the same content in a different format.
+
+Examples:
+
+Convert from fbx to osgb format: +
+`osgconv car.fbx car.osgb`
+
+Convert from osgb to https://www.autodesk.com/products/fbx/overview[fbx] format: +
+`osgconv car.osgb car.fbx`
+
+osgconv has a lot of useful options. Run `osgconv -h` for more info. Here's a few examples:
+
+``osgconv in.fbx out.osgb --compressed`` will compress and embed textures +
+``osgconv in.fbx out.osgb -t 1,5,7`` will translate the model (x=1, y=5, z=7) +
+``osgconv in.fbx out.osgb -o -90-1,0,0`` will rotate the model (rotate -90 deg around X-axis) +
+``osgconv in.fbx out.osgb -o -90-1,0,0 --use-world-frame`` as above but pivot point world origin +
+
+A useful environment variable is `OSG_OPTIMIZER` which affects the structure and content of the scene graph. For example, if the osgb file includes cloned sub trees, like motorway railings, these might not be populated in the fbx file. To solve that set:
+
+`OSG_OPTIMIZER = FLATTEN_STATIC_TRANSFORMS_DUPLICATING_SHARED_SUBGRAPHS`
+
+Exact syntax depends on your environment. Examples:
+[horizontal]
+*bash*:: ``export OSG_OPTIMIZER=FLATTEN_STATIC_TRANSFORMS_DUPLICATING_SHARED_SUBGRAPHS``
+*powershell*:: ``$env:OSG_OPTIMIZER = "FLATTEN_STATIC_TRANSFORMS_DUPLICATING_SHARED_SUBGRAPHS"``
+
+Then run the ``osgconv`` command (in the same terminal where you defined the environment variable).
+
+osg native format is `osgb` which stands for OpenSceneGraph binary format. It's a stable and compact (quick to load) format, which also can embed textures and animations. Thanks to the osgconv tool, esmini can get away with only supporting the .osgb format and still indirectly support many other 3D formats.
+
+=== Get osgconv
+
+There are pre-built binaries available, see below. But for full capabilities, including support for converting from 3D file formats .dae (collada) and .fbx (Autodesk Filmbox) you have to build OpenSceneGraph (osg) yourself.
+
+==== Build yourself
+
+===== Prerequisites
+The only prerequisite step is for Linux to install some dependecies:
+
+1. Run `software-properties-gtk` +
+or open the "Software & Updates" application
+
+2. then under the "Ubuntu Software" tab click "Source code" and add a server of your choice, e.g. within your country
+
+3. Run `sudo apt-get build-dep openscenegraph`
+
+Reference Step 1 & 2: https://unix.stackexchange.com/a/614082
+
+===== Build
+
+You can then try this script: https://github.com/esmini/esmini/blob/master/scripts/compile_osg_apps.sh[compile_osg_apps.sh]. It will first fetch and install https://www.autodesk.com/developer-network/platform-technologies/fbx-sdk-2020-0[FBX SDK] and then build OSG with FBX and DAE support. Find more details and instructions in the header of the script.
+
+For more info regarding building OSG for Linux, here's a great guide: +
+https://vicrucann.github.io/tutorials/osg-linux-quick-install/  +
+But note that it does not consider FBX support.
+
+Find more info on COLLADA via this old http://www.openscenegraph.com/index.php/documentation/guides/user-guides/111-collada[link].
+
+==== Pre-build binaries
+
+*Windows* +
+Binaries including FBX but not DAE support, see here: +
+https://objexx.com/OpenSceneGraph.html
+
+*Linux* +
+
+`sudo apt-get update` +
+`sudo apt-get -y install openscenegraph`
+
+Reference: https://installati.one/install-openscenegraph-ubuntu-20-04/?expand_article=1
+
+=== Convert osgb models for use in Unity
+Here follows an example of how to convert .osgb models into .fbx format for use in the Unity3D framework.
+
+. Open a command prompt in the folder where your model.osgb is
+. Run command: +
+   `osgconv model.osgb out/model.fbx -s 100,100,100` +
+   "-s ..." is for scaling which typically is needed for fbx files.
+   Potentially it also needs to be oriented according to Unity coordinate system. In that case try: +
+   `osgconv model.osgb out/model.fbx -s 100,100,100 --use-world-frame -o 120pass:[--]0.5773503,-0.5773503,-0.5773503`
+
+A folder named "out" should have been created and including the model.fbx plus any texture files
+
+=== Import into Unity
+. Drag the resulting fbx file, and all textures, into a Unity project, preferably an empty folder
+. Add the model to the Scene hierarchy
+. Select the model and int the "Inspector", select the "Materials" tab
+. Change the "Location" to "Use External Materials (Legacy)" and click "Apply"
+. Open the automatically created "Materials" folder (next to the model file)
+. Select all materials and change +
+   for standard template: "Rendering Mode" to "Cutout" (good default option)  +
+   for HDRP template: "Surface type" to "Transparent" and check "alpha clipping"
+
+That should basically be it.
+
+Sometimes the fbx conversion is not perfect. https://en.wikipedia.org/wiki/Wavefront_.obj_file[Wavefront obj] is another format, somewhat limited but stable.
+
+. Run command: +
+   `osgconv model.osgb model.obj --use-world-frame -o 120pass:[--]0.5773503,-0.5773503,-0.5773503`
+. Drag the resulting `.obj` file and accompaniing material (`.mtl`) file, into the Unity project
+
+There should be no need for the additional material processing as described in the `.fbx` case.
+
+`.obj` is an ascii (text) format, which comes with cons and pros. Size is typically much larger tha binary alternatives. As text file it can be inspected in any text editor, and easily manipulated by scripting, e.g. in Python.
+
+=== Colors, textures and wheel rotations
+
+See https://github.com/esmini/esmini/issues/63#issuecomment-742273326[issue 63] for brief information on how to create vehicle 3D models with moving wheels.
+
+And these two scripts operating on textures and material respectively, can potentially provide some inspiration: +
+- https://github.com/esmini/esmini/blob/master/scripts/bake_signs.sh[bake_signs.sh] +
+- https://github.com/esmini/esmini/blob/master/scripts/fix_dae_materials.py[fix_dae_materials.py]
+
+=== Lighting
+
+esmini use a very simple lighting model. Adding a global low ambient plus a stronger directed "sun" light. This is a simplistic model of a bright day where everything is visible but sides facing towards the sun gets brighter than those facing away.
+
+The ambient intensity is 0.4. The "sun" x,y,z position is (-7500, 5000, 10000) and intensity 0.8.
+
+Now, it has been reported that some custom models looks very dark on sides facing away from the sun. The main reason is often that the material definition do not have any ambient contribution.
+
+.Example of material lacking ambient component
+image::light_original.jpg[]
+
+There are two solutions:
+
+*Solution 1: Fix the material*
+
+Convert the model to Collada .dae format, example:
+
+`osgconv my_model.fbx my_model.dae`
+
+Then open the .dae file in a text editor. Look for `<library_materials>` and the material references inside that element. The actual material definitions are (typically?) found under `<library_effects>`. There might be many types, but two that we encountered are `<phong>` and `<lambert>`. They should have a diffuse element, something like:
+
+[source, xml]
+----
+<diffuse>
+  <color sid="diffuse">0.8 0.8 0.8 1.0</color>
+</diffuse>`
+----
+
+There might be a similar one for ambient. Check color values, if they are low, e.g. 0.2, try increase to max 1.0. If element is missing, just add it. In the end, it should look something like:
+
+[source, xml]
+----
+<ambient>
+  <color sid="ambient">1.0 1.0 1.0 1.0</color>
+</ambient>`
+----
+
+Save the file as my_model_fixed.dae.
+
+There is a script that automates this process, but it will only recognize phong and lambert material types: https://github.com/esmini/esmini/blob/master/scripts/fix_dae_materials.py[fix_dae_materials.py].
+
+Finally, convert the patched dae file to osgb: +
+`osgconv my_model.dae my_model.osgb`
+
+.Same model with patched material
+image::light_patched_material.jpg[]
+
+Different formats have different orientation frames. Hence it may be necessary to fix rotation. In that case, try something like: +
+`osgconv my_model.dae -o 90-1,0,0 --use-world-frame my_model.osgb`
+
+*Solution 2: Add light source*
+
+Users can add up to two custom light sources, specifying position (x, y, z) and intensity. Examples:
+
+Add one custom light source: +
+`./bin/esmini --window 60 60 800 400 --osc .\resources\xosc\lane_change_crest.xosc --custom_light 4000,-6000,500,1.0`
+
+Add two custom light sources: +
+`./bin/esmini --window 60 60 800 400 --osc .\resources\xosc\lane_change_crest.xosc --custom_light 4000,-6000,500,0.4  --custom_light 5000,5000,200,0.2`
+
+.Original model with one light added
+image::light_second_light.jpg[]
+
+=== Convert osgb models for use in Blender
+Here follows an example of how to convert .osgb models into .obj format for use in Blender. obj is easy to use as it has a human readable text format, easy mapping between its material parameters and Blender's and minimal settings when converting back to .osgb.
+
+. Open a command prompt in the folder where your model.osgb is
+. Run command: +
+   `osgconv model.osgb model.obj -s 100,100,100 --use-world-frame -o -90-1,0,0` +
+   "-s ..." is for scaling which typically is needed for .obj files. +
+   "--use-world-frame" is to use the world coordinate system, which is typically needed for obj files. +
+   "-o -90-1,0,0" is to rotate the model so that it faces the positive x-axis in Blender. This is a common requirement for .obj files as they typically face the negative y-axis by default.
+
+A file should have been created called "model.obj". It's important to note that the textures in the .osgb file are not automatically copied to the .obj file location, so you will need to copy them manually to the same location as the generated .obj.
+
+=== Import into Blender
+. Drag the resulting obj file, and all textures, into a suitable folder, preferably an empty folder
+. Open Blender and delete the default cube
+. Go to "File" -> "Import" -> "Wavefront (.obj)"
+. Navigate to the folder where you placed the .obj file and select it, and click "Import Wavefront OBJ"
+
+=== Material settings in Blender
+Highlight the object in Blender and go to the "Material Properties" tab. You will see the material settings for the imported model.
+
+Make sure that the "surface" type is set to "Principled BSDF" which is the default in Blender. This shader supports a wide range of material properties and is suitable for most models.
+
+Under the "Base Color" section, you can set the color of the material. The following parameters in Blender match the obj material parameters: +
+- `Ka` (Ambient Color) corresponds to the "Metallic" in Blender, how much the material reflects ambient light. +
+- `Kd` (Diffuse Color) corresponds to the "Base Color" HSV values combined (if no texture png) in Blender, which is the color of the material when light is directly hitting it. +
+- `Ks` (Specular Color) corresponds to the "Specular" colors "IOR level" in Blender, which is the color highlights from shiny surfaces. +
+- `Ns` (Specular Exponent) corresponds to the "Roughness" in Blender, where a lower value means a shinier surface. +
+- `d` (Transparency) corresponds to the "Alpha" value in Blender, where a value of 1.0 means fully opaque and 0.0 means fully transparent. +
+- `Ke` (Emissive Color) corresponds to the "Emission" colors HSV values in Blender, which is the color of light emitted by the material.
+
+=== Export Blender obj
+When you are done editing the model in Blender, you can export it to obj format with suitable settings for osgconv.
+. Go to "File" -> "Export" -> "Wavefront (.obj)"
+. In the export dialog, leave most default, but make sure to set the following options on the right side: +
+- `Scale` to 1.0 +
+- `Forward Axis` to -Z +
+- `Up Axis` to Y +
+- `Materials` is checked +
+- `Path Mode` to "Copy" +
+
+Then select the folder where you want to save the exported obj file (preferably same folder as your textures if you have any) and click "Export OBJ".
+
+=== Convert back to osgb
+Now you can convert the exported .obj file back to .osgb format using osgconv.
+
+. Open a command prompt in the folder where your newly exported_model.obj is and run the command: +
+. `osgconv exported_model.obj exported_model.osgb`
+
+This will create a new .osgb file that you can use in your application.
+
+=== Using OpenX assets library
+
+https://github.com/bounverif/openx-assets is a collection of low- and medium-polygon 3D vehicle assets.
+
+video::UWjQ8Ai83Cc[youtube,width=800,height=450,opts="autoplay,nocontrols,loop"]
+
+==== How to use with esmini
+
+. Download and extract openx-assets release, for example: +
+https://github.com/bounverif/openx-assets/releases/tag/20250821 +
+the following examples assumes extracted to folder `/tmp` but it can be placed anywhere.
+. In the scenario, add catalog location. Example:
+```xml
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="/tmp/openx-assets/catalogs"/>
+        </VehicleCatalog>
+    </CatalogLocations>
+```
+[start=3]
+. and for scenario objects, refer to catalog entries. Example:
+```xml
+        <ScenarioObject name="car1">
+            <CatalogReference catalogName="openx_assets_3d.catalog" entryName="m1_audi_q7_2015"/>
+        </ScenarioObject>
+```
+[start=4]
+. Full demo/example scenario (shown in video clip above) found here: +
+https://github.com/esmini/esmini/blob/dev/resources/xosc/car_walk.xosc[resources/xosc/car_walk.xosc] +
+Run from esmini root as: +
+   `./bin/esmini --osc ./resources/xosc/car_walk.xosc --aa_mode 9 --path /tmp/openx-assets/model3d --custom_fixed_camera 235,4,2,5.9,0.1 --window 60 60 1024 512`
+
+[Note]
+====
+*Note:*
+These 3D models currently only works in esmini. Support for generic 3D models with shifted origin will come with a reworked replayer during 2025 Q4.
+====
+
+==== Comment on rear axle non zero position
+
+In the OpenSCENARIO XML standard the vehicle reference point is defined as the center of the rear axle projected on ground (see https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/06_general_concepts/06_03_coordinate_systems.html#_vehicle_coordinate_system_xv_yv_zv[here]). Hence, the x coordinate of the https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/Axles.html[rear axle], defined in terms of vehicle coordinate system, normally should be zero.
+
+Now, for 3D models there is no universal standard how to place origin/reference point. This is especially true for vehicle models. Some models have origin at geometric center, some projected on ground. Ideally, for use with OpenSCENARIO the x coordinate of the center should be aligned with the rear axle.
+
+The authors of the OpenX assets library decided to not prepare multiple variants with different origins. Instead, only one variant with origin at geometric center projected on ground is provided.
+
+In order to still enable use with OpenSCENARIO the offset, the reference point can be moved along the x-axis. The affected vehicle attributes are:
+
+- rearAxle.positionX (becoming non zero)
+- frontAxle.positionX
+- https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/BoundingBox.html[BoundingBox].center.x (becoming zero)
+
+The offset is coded directly in rearAxle positionX (difference from zero). So, in esmini, from version 2.50.3, any non zero rearAxle positionX is interpreted as a request to offset the 3D model accordingly. The axles and bounding box center are adjusted according to comply with the OpenSCENARIO XML standard.
+
+Example:
+
+```xml
+<Vehicle name="m1_bmw_x1_2016" vehicleCategory="car" mass="1800" model3d="../model3d/m1_bmw_x1_2016/m1_bmw_x1_2016.osgb">
+   <BoundingBox>
+      <Center x="0.000" y="0.000" z="0.832"/>
+      <Dimensions length="4.747" width="2.091" height="1.645"/>
+   </BoundingBox>
+   <Performance maxSpeed="56.0" maxDeceleration="8.0" maxAcceleration="4.0"/>
+   <Axles>
+      <FrontAxle maxSteering="0.6" wheelDiameter="0.7585" trackWidth="1.5426" positionX="1.4851" positionZ="0.3792"/>
+      <RearAxle maxSteering="0.0" wheelDiameter="0.7585" trackWidth="1.5426" positionX="-1.3749" positionZ="0.3792"/>
+   </Axles>
+</Vehicle>
+```
+
+3D model should be translated -1.3749 along the x-axis, while the axles and bounding box are translated +1.3749 so that rear axle ends up at x = 0.
+
+In summary: This small feature enables not only use of openx-asset vehicle models, but enables use of other models where origin does not align with rear axle - without need for editing or processing.
+
+*Note:* This feature is NOT supported by the OpenSCENARIO XML standard, which requires axles to be at non-negative X coordinate (pass:[>=0]).
+
+=== Export generated 3D model
+
+The 3D model created by esmini, based on the input OpenDRIVE file, can be saved in the `.osgb` (OpenSceneGraph binary) format.
+
+==== Command line
+By command line argument `--save_generated_model`, example:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/lane_change_crest.xosc --save_generated_model`
+
+The model will be saved as `generated_road.osgb`. It can be viewed using any OpenSceneGraph compatible viewer, e.g:
+
+`osgviewer --window 60 60 1200 600 generated_road.osgb`
+
+==== API
+Using esmini internal API, the 3D model can be saved programmatically. Here is a simplified example in C++:
+
+[source,c++]
+----
+#include "roadgeom.hpp"
+
+if (!roadmanager::Position::LoadOpenDrive("my_road.xodr"))
+{
+    return -1;
+}
+
+// Create road geometry from OpenDRIVE file
+roadgeom::RoadGeom road_geom = roadgeom::RoadGeom(roadmanager::Position::GetOpenDrive(), osg::Vec3(0, 0, 0), true, true, false, argv[0], false);
+
+// the osg tree can be accessed in road_geom.root_
+
+// Save as OpenSceneGraph binary file
+road_geom.SaveToFile("my_road.osgb");
+----
+
+For explanation of the `RoadGeom`  constructor parameters, see the API documentation or the source code in https://github.com/esmini/esmini/blob/6810e35a71d80aa708aa6092fccc7da1a5a6db0f/EnvironmentSimulator/Modules/ViewerBase/roadgeom.hpp#L66-L82[`roadgeom.hpp`].
+
+The code needs to link the following esmini modules/libraries:
+
+* RoadManager
+* CommonMini
+* RoadGeom
+
+Full code example here: https://github.com/esmini/esmini/tree/refs/heads/dev/EnvironmentSimulator/code-examples/road-model[code-examples/road-model]
+
+==== Node naming
+
+For post processing the esmini generated nodes are named.
+
+Name structure: `<object type>_<id>_<context dependent info>`
+
+Context dependent info:
+
+[horizontal]
+roadmark :: `<type>`
+road :: `<lane>_<segment>` (segment per friction value)
+road_object :: `<name>[_index]` (index corresponding to outline)
+tunnel :: `<type: wall|roof>_<name>_<index>`
+road_signal :: `<name>`
+
+Note:
+
+Example: Tunnels have three sub objects, two walls and one roof)
+
+[souce]
+----
+esmini_generated_road_model
+  roadmarks
+    roadmark_0_solid
+    roadmark_1_broken
+    roadmark_2_broken
+  roads
+    road_0_0_0
+    road_0_1_0
+    road_1_0_0
+    road_1_1_0
+    road_1_2_0
+    road_1_2_1
+    road_1_2_2
+  road_objects
+    road_object_0_railing
+    road_object_1_railing
+    no-name
+      road_object_2_   (object in OpenDRIVE has empty name)
+    road_object_3_0
+    road_object_3_1
+    tunnel_wall_4_0
+    tunnel_wall_4_0
+    tunnel_roof_4_0
+----
+
+`no-name` are structural nodes, e.g. transformation or just group.
+
+=== esmini 3D assets
+
+Package includes a few vehicles, library assets and scripts, created in Blender:
+
+- https://drive.google.com/file/d/1z2e2-LABQ00beAtrS4VY0A5CiGZix__Q/view?usp=drive_link[esmini_blender_assets.7z]
+
+The scripts are collected in `esmini_tools.py` which can be installed as a legacy add-on, see https://docs.blender.org/manual/en/latest/editors/preferences/addons.html#add-ons[Blender - Add-ons]. It will appear in side panel object properties.
+
+.esmini blender add-on
+image::esmini_blender_menu.png[]
+
+It includes a few convenience functions:
+
+. *FBX export* +
+ Export selected node, including all children, with some settings tuned for esmini. Save in same folder as .blender file.
+
+. *Reuse Base Color* +
+For all materials, copy base color to object viewport color - which is the color ending up in FBX export.
+
+==== Convert exported `.fbx` models into `.osgb` for use in esmini:
+
+Step 1: Establish environment variable for OSG optimization
+
+This is only needed and recommended in case the model have light faces for use with OpenSCENARIO `LightStateAction` (see link:scenario-features.html#_vehicle_light_states[Vehicle light states]):
+
+`export OSG_OPTIMIZER="FLATTEN_STATIC_TRANSFORMS | REMOVE_REDUNDANT_NODES | REMOVE_LOADED_PROXY_NODES | COMBINE_ADJACENT_LODS | MERGE_GEOMETRY | MAKE_FAST_GEOMETRY | CHECK_GEOMETRY | OPTIMIZE_TEXTURE_SETTINGS | STATIC_OBJECT_DETECTION"`
+
+It will prevent optimization of merging and sharing identical materials cross nodes. For light state action esmini needs to control material of each face individually, as defined in the original model.
+
+Step 2: Actual conversion of all exported `.fbx` files to `.osgb` format
+
+`for file in *.fbx; do osgconv "$file" "${file%.fbx}.osgb" -s 0.01,0.01,0.01 -o 90-1,0,0 --use-world-frame -O CopyDiffuseToAmbient; done`
+
+The plugin option `CopyDiffuseToAmbient` is needed for the object to receive ambient light from the environment. Without it, polygons facing away from sun light source will be very dark. The option is an extension implemented in esmini OSG fork and branch:
+https://github.com/esmini/OpenSceneGraph_for_esmini/tree/OpenSceneGraph_for_esmini
+
+You can utilize the provided https://github.com/esmini/esmini/blob/master/scripts/compile_osg_apps.sh[compile_osg_apps.sh] script to compile the OSG tools, including `osgconv` with the esmini extensions.
+
+Step 3: Copy .osgb files to esmini default model resources folder
+
+`cp *.osgb <esmini root folder>/resources/models`
+

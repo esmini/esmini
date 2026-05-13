@@ -1,0 +1,490 @@
+= esmini user guide – Positioning
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== Positioning
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+esmini supports all OpenSCENARIO position types. To support various use cases esmini add some mechanisms and interpretations:
+
+- *Align by omit*: Lacking position component values (x, y, z, heading, pitch, roll) in the scenario file is interpreted as "please align this component to the road surface". E.g. missing z value will project the position on the road surface, missing pitch value will ensure object is aligned with road pitch (e.g. up- and downhill).
+
+- *PositionMode*: Any position/object can be set and configured with respect to alignment via API calls. For example: x, y and heading can be set as absolute values while pitch and roll can be set as relative to the road surface.
+
+See more details below in <<Position modes>>
+
+- *Trajectory interpolation*: Based omitted position components and followingMode setting esmini will apply different mechanisms to follow and interpolate trajectory vertices/control points.
+
+See details below in <<Trajectory interpolation and alignment>>
+
+=== Position modes
+
+The purpose of position modes is to allow flexible and detailed control whether to interpret Z (elevation), heading, pitch and roll as absolute values or relative to the road. X and Y will always be interpreted as absolute values. There is also a position mode for snapping position reference to closest lane (default) or along any assigned route.
+
+For some use cases orientation should be aligned to road surface, e.g. a vehicle simply driving along a hilly road. In some cases pitch and roll should be zero, e.g. signs and buildings along the road. External vehicle models can choose whether to report relative or absolute values. It can also be combination, e.g. explicit/absolute heading while z, roll and pitch are realative (to the road) - or any other combination.
+
+The mode can be specified explicitly when calling a set position function. Example:
+
+`pos.SetInertiaPosMode(x, y, z, h, p, r, PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL);`
+
+In above example x, y, and h will be interpretated as absolute values while z, p, and r as relative to the road.
+
+==== Persistent mode setting
+
+In most cases the same mode setting will be used throughout the simulation for each object. For this reason, as conveience, the mode can be set once per object. Example:
+
+`pos.SetMode(Position::PosModeType::SET, PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL);`
+
+Then, when calling set functions, mode can be set to zero. Example:
+
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 0);`
+
+or use the simple variants skipping the mode argument. Example:
+
+`pos.SetInertiaPos(x, y, z, h, p, r);`
+
+These cases will utilize the current setting.
+
+==== Two types of settings
+
+Note the type=SET argument of the SetMode() example above. It specifies as to which type of operations the settings applies to. There are two types of modes: SET and UPDATE. SET applies to API calls setting Cartesian coordinates. UPDATE applies to position updates by default controller and API calls setting Lane and Road coordinates.
+
+This way a position object can, for example, maintain relative heading follow the curvature of the road when updated by the default controller, while heading can be set explicitly in terms of absolute value by API calls.
+
+`pos.SetMode(Position::PosModeType::UPDATE, PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL);`
+
+`pos.SetMode(Position::PosModeType::SET, PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL);`
+
+==== Default values
+
+There will be a default setting for both SET and UPDATE which will be applied until changed by SetMode() function:
+
+[horizontal]
+*SET*:: PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL | PosMode::SNAP_TO_ROUTE_OFF
+*UPDATE*:: PosMode::Z_REL | PosMode::H_REL | PosMode::P_REL | PosMode::R_REL | PosMode::SNAP_TO_ROUTE_OFF
+
+*Further examples*
+
+Specify only mode for Z, reuse whatever setting for the remaining components:
+
+`pos.SetInertiaPosMode(x, y, z, h, p, r, PosMode::Z_ABS);`
+
+Set/reset default value for pitch, reuse whatever setting for the other components:
+
+`pos.SetInertiaPosMode(x, y, z, h, p, r, PosMode::Z_MASK & PosMode::Z_DEF);`
+
+=== Mode specification
+
+Mode is coded in four chunks of three bits. One chunk for each of the position components Z, Heading, Pitch and Roll. Chunks are padded and aligned to segments of four bytes.
+
+[cols="1,2,3,1,1"]
+|===
+||Z|Comment|Hex|Int
+
+|SKIP
+|XXXX XXXX XXXX XXXX XXX0
+|first bit is zero
+|0x00000
+|0
+
+|Z_DEF
+|XXXX XXXX XXXX XXXX XX01
+|first bit is one, second is zero
+|0x00001
+|1
+
+|Z_ABS
+|XXXX XXXX XXXX XXXX X011
+|first and second bit is one, third zero
+|0x00003
+|3
+
+|Z_REL
+|XXXX XXXX XXXX XXXX X111
+|first, second and third bits are all one
+|0x00007
+|7
+
+|===
+
+[cols="1,2,3,1,1"]
+|===
+||H|Comment|Hex|Int
+
+|SKIP
+|XXXX XXXX XXXX XXX0 XXXX
+|first bit is zero
+|0x0000
+|0
+
+|H_DEF
+|XXXX XXXX XXXX XX01 XXXX
+|first bit is one, second is zero
+|0x00010
+|16
+
+|H_ABS
+|XXXX XXXX XXXX X011 XXXX
+|first and second bit is one, third zero
+|0x0030
+|48
+
+|H_REL
+|XXXX XXXX XXXX X111 XXXX
+|first, second and third bits are all one
+|0x00070
+|112
+
+|===
+
+[cols="1,2,3,1,1"]
+|===
+||P|Comment|Hex|Int
+
+|SKIP
+|XXXX XXXX XXX0 XXXX XXXX
+|first bit is zero
+|0x00000
+|0
+
+|P_DEF
+|XXXX XXXX XX01 XXXX XXXX
+|first bit is one, second is zero
+|0x00100
+|256
+
+|P_ABS
+|XXXX XXXX X011 XXXX XXXX
+|first and second bit is one, third zero
+|0x00300
+|768
+
+|P_REL
+|XXXX XXXX X111 XXXX XXXX
+|first, second and third bits are all one
+|0x00700
+|1,792
+
+|===
+
+[cols="1,2,3,1,1"]
+|===
+||R|Comment|Hex|Int
+
+|SKIP
+|XXXX XXX0 XXXX XXXX XXXX
+|first bit is zero
+|0x00000
+|0
+
+|R_DEF
+|XXXX XX01 XXXX XXXX XXXX
+|first bit is one, second is zero
+|0x01000
+|4,096
+
+|R_ABS
+|XXXX X011 XXXX XXXX XXXX
+|first and second bit is one, third zero
+|0x03000
+|12,288
+
+|R_REL
+|XXXX X111 XXXX XXXX XXXX
+|first, second and third bits are all one
+|0x07000
+|28,672
+
+|===
+
+[cols="1,2,3,1,1"]
+|===
+||SNAP_TO_ROUTE|Comment|Hex|Int
+
+|SKIP
+|XXX0 XXXX XXXX XXXX XXXX
+|first bit is zero
+|0x00000
+|0
+
+|SNAP_TO_ROUTE_DEF
+|XXXX XX01 XXXX XXXX XXXX
+|first bit is one, second is zero
+|0x10000
+|65,536
+
+|SNAP_TO_ROUTE_OFF
+|XXXX X011 XXXX XXXX XXXX
+|first and second bit is one, third zero
+|0x30000
+|196,608
+
+|SNAP_TO_ROUTE_ON
+|XXXX X111 XXXX XXXX XXXX
+|first, second and third bits are all one
+|0x70000
+|458,752
+
+|===
+
+Looking up values in the table above, modes can be specified in numerous ways.
+
+For example: To set world position with relative Z and absolute Pitch, reusing setting for the other components, any of the following identical examples will work:
+
+`pos.SetInertiaPosMode(x, y, z, h, p, r, PosMode::Z_REL | PosMode::P_ABS);` +
+= +
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 0x7 | 0x300);` +
+= +
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 0x307);` +
+= +
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 0x0307);` +
+= +
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 7 | 768);` +
+= +
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 7 + 768);` +
+= +
+`pos.SetInertiaPosMode(x, y, z, h, p, r, 775);`
+
+==== Use cases
+
+1. Simple 2D vehicle model. Report only X, Y and Heading. Align Z, pitch and roll to the road surface:
+`pos.SetMode(Position::PosModeType::SET, PosMode::H_ABS);` +
+`pos.SetInertiaPos(x, y, 0.0, h, 0.0, 0.0);` +
+or use short version of the same function, applying zero to z, p, r: +
+`pos.SetInertiaPos(x, y, h);` +
+
+2. Advanced 3D vehicle model. Report all 6 DOF: X, Y, Z, Heading, Pitch and Roll. I.e. no explicit alignment to road surface:
+`pos.SetMode(Position::PosModeType::SET, PosMode::Z_ABS | PosMode::H_ABS | PosMode::P_ABS | PosMode::R_ABS);` +
+`pos.SetInertiaPos(x, y, 0.0, h, 0.0, 0.0);` +
+or use short version of the same function, applying zero to z, p, r: +
+`pos.SetInertiaPos(x, y, h);` +
+
+3. Rotate a pedestrian 90 degree left to move forward facing the road driving direction, as on a hoverboard: +
+`pos.SetHeadingRelative(1.5708);` +
+`pos.SetMode(Position::PosModeType::UPDATE, PosMode::H_REL);` +
+Default controller will now move the pedestrian along the road but rotated 90 degree.
+
+4. Put pedestrian on a hoverboard moving sideways forward (heading=90 degrees) along the road, 1 meter above ground: +
+`pos.SetHeadingRelative(1.57);` +
+`pos.SetZRelative(1.0);` +
+`pos.SetMode(Position::PosModeType::UPDATE, PosMode::Z_REL | PosMode::H_REL);` +
+Default controller will now move the pedestrian along the road 1 meter above ground, with maintained heading relative to the road.
+
+5. Set X,Y position, snap lane association to closest point on any assigned route instead of the closest lane, which is the default: +
+`pos.SetInertiaPosMode(x, y, 0, h, 0, 0, PosMode::Z_REL | PosMode::H_ABS | PosMode::P_REL | PosMode::R_REL | PosMode::SNAP_TO_ROUTE_ON);` +
+
+6. Set persistent snap to route, affecting any succeeding XY position setting: +
+`pos.SetMode(Position::PosModeType::SET, PosMode::SNAP_TO_ROUTE);` +
+`pos.SetInertiaPos(x, y, h);` +
+Entity road and lane position will be associated with closest point on any assigned route instead of any closest lane. +
+Note: Use SET type for route snap setting +
+
+=== Trajectory interpolation and alignment
+
+For convenience, esmini can calculate heading and align to the tangent of each segment (polyline and NURBS). Further, to smoothen motion esmini can interpolate corners of polyline trajectories. The behavior is based on omitted position components and `followingMode` settings.
+
+In general specified angles (heading, pitch and roll) will be interpolated over the segment between two vertices/control points. However, in many cases it's prefered to just align heading with the tangent of the curve. For these cases it should not be necessary to specify the angles, but rather have esmini calculate them.
+
+First, when z value is missing, i.e. elevation is not specified, esmini will project the points to the road surface. Availability of z will also affect alignment of orientation. General rule is that ground trajectories (elevation not specified) will align pitch and roll to the road surface, while these components will be set to zero for floating (specified z values) trajectories.
+
+Missing angles will be handled according to the table below:
+
+[%autowidth, cols="1,1,1"]
+|===
+||Input|Result
+|*missing angle component*|*z specified?*|*align orientation to*
+|heading|Yes|trajectory
+|heading|No|trajectory
+|pitch|Yes|trajectory
+|pitch|No|road surface
+|roll|Yes|0.0
+|roll|No|road surface
+|===
+
+While moving along polylines, which tangent is not continuous, it's usually preferred to interpolate/smoothen orientation along whole linear segments or at least when passing vertex corners.
+
+The table below shows what interpolation method will be applied, as default, based on FollowingMode setting for the trajectory:
+
+[%autowidth, cols="2,2"]
+|===
+|*FollowingMode*|*Interpolate mode*
+|position|corner
+|follow|segment
+|===
+
+The interpolation mode can be explicitly set, or even disabled altogether:
+
+* option: `pline_interpolation <mode>` (see also esmini link:command-reference.html#_launch_commands[Launch commands])
+* vehicle property: `plineInterpolation <mode>`
+
+Valid modes: `segment`, `corner`, `off`
+
+*Note:* The option is global, i.e. affects all trajectories, while vehicle property is per entity. Option has precedence, so any vehicle property will be ignored if the option is set.
+
+=== Example
+There is a code and scenario example illustrating the various interpolation and position modes:
+
+https://github.com/esmini/esmini/tree/dev/EnvironmentSimulator/code-examples/position-mode
+
+Video clip:
+
+video::87TbahvpLBM[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+This specific example includes four objects:
+
+1. Pedestrian/skater on the road +
+Initially it's standing still, aligned along the road x-axis (relative heading = 0).
+
+2. Box2 moving along a NURBS trajectory +
+Specified z will make it "floating" (not projected on ground). Omitted heading will have esmini calculate heading along the tangent.
+
+3. Box3 moving along another NURBS trajectory +
+Also floating. Demonstrating specified roll will be interpolated between control points.
+
+4. Box1 moving along a polyline trajectory +
+followingMode = position will make smoothly transitions at vertex corners.
+
+The application will control and report the motion for the skater. At 5 seconds it will rotate 90 degree and move this way along the road, like riding a hoverboard. Then at 15 seconds it will move one meter up from road surface (z=1 relative road) and also rotate back 90 degrees (heading=0 relative road) and move this way along the road, like on a flyboard. During the complete scenario pitch and roll is set to 0 (absolute value - not aligned to road).
+
+=== Relative positions and routes
+
+For the OpenSCENARIO `RelativeRoadPosition` and `RelativeLanePosition` the `ds` and `dsLane` attributes specifies an offset along the s-axis of the road and lane respectively. In case the offset results in a s-value outside the boundary of the current road, the target location will be searched via connected roads and lanes, even through junctions.
+
+In case the action object (the one being positioned) has been assigned a route, the route will be respected, i.e. the target location will be along the route. If the action object lacks a route, any route of the referenced entity will be respected instead. If neither objects has a route assigned the default routing rules will apply.
+
+In the image below two cars, red and blue, are being positioned by means of `RelativeRoadPosition` or `RelativeLanePosition` with the white car as the reference entity. They have both the same `ds` value, i.e. same longitudinal distance (along s-axis) from the white car. Since the red car has an assigned route, it ends up along that route. The blue car, lacking a route, will end up along the route of the referenced white car.
+
+.Relative positioning with and without own route
+image::relative_position_routing.jpg[]
+
+=== Reference line and center lane
+
+In https://www.asam.net/index.php?eID=dumpFile&t=f&f=4422&token=e590561f3c39aa2260e5442e29e93f6693d1cccd#top-05e95dfd-ce05-40c8-af93-d065229e6968[`OpenDRIVE definition of laneOffset`]: A lane offset may be used to shift the center lane away from the road reference line.
+
+image::lane_offset_standard_way.png[]
+
+https://en.wikipedia.org/wiki/2%2B1_road[2+1 roads] can be defined utilizing lane offset:
+
+image::lane_offset_two_plus_one.jpg[]
+
+`lane id` relates to reference lane. `lane offset` relates to the current lane. `t` relates to reference line.
+[%autowidth, options=header]
+|===
+||white car|red car
+|*lane id*|-2|-1
+|*lane offset*|0.0|0.0
+|*t*|-1.75|1.75
+|===
+
+A 2+1 example example scenario is found here: https://github.com/esmini/esmini/blob/master/resources/xosc/two_plus_one_road.xosc[resources/xosc/two_plus_one_road.xosc]
+
+*Note*: In esmini versions prior to 2.43 the reference line was incorrectly affected by lane offset as well. The `t`-values in the table then became -5.25 for the white car and -1.75 for the red car.
+
+==== Visualization
+esmini can indicate various road features; toggle key 'o' or launch option `--road_features`.
+The center lane is indicated by thick red line and reference line is indicated by semi-thick yellow line.
+
+image::two_plus_one_road_features.jpg[]
+
+=== Lateral distance action logics
+The https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/LateralDistanceAction.html[LateralDistanceAction] can be used to enforce an entity to reach and optionally stay at a lateral distance from a given reference entity.
+esmini supports two coordinate systems for the lateral distance action:
+
+==== Road coordinate system
+The lateral distance is defined as a distance to the left or right of the given reference entities current lateral offset in the road coordinate system (i.e. the t-value).
+
+If desired, dynamic constraints can be applied to control how the actor reaches the specified lateral distance. These constraints are interpreted in the context of the road coordinate system, specifically the t-axis, which represents lateral movement. This includes how quickly the actor can move or accelerate laterally.
+
+The following logic applies for the actor to reach the desired lateral distance to the referenced entity:
+
+* No dynamic constraints: Lateral distance reached in one single simulation step.
+
+* maxSpeed constraint only: The actor will reach the maxSpeed with infinite acceleration and then continue at that speed until the lateral distance is reached.
+
+* maxAcceleration constraint: The actor follows a https://en.wikipedia.org/wiki/Mass-spring-damper_model[damped spring model], accelerating up to the specified maxAcceleration. If maxSpeed is also defined, the actor will not exceed it. If maxSpeed is not defined, the actor accelerates until reaching its current forward speed projected onto the road's t-axis. As the actor approaches the desired lateral distance, it will decelerate with the given maxAcceleration until it reaches the target distance.
+
+* maxDeceleration constraint: Not supported. Use maxAcceleration instead.
+
+Freespace calculations assume all vehicles share the same heading and only consider their widths for determining lateral relationships.
+
+A video clip showing a the LateralDistanceAction in a highway driving context. A typical use case would be a target vehicle swerving in neighbor lane, challenging the AD/ADS functions of an Ego vehicle. From demo scenario https://github.com/esmini/esmini/blob/dev/resources/xosc/keep_lateral_distance.xosc[keep_lateral_distance.xosc].
+
+video::lATeP5cz_HE[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+==== Entity coordinate system
+
+The lateral distance is defined as a distance to the left or right of the given reference entity in its local coordinate system, i.e. along the reference entity y-axis.
+
+Imagine a line parallel, and at given distance, to the reference entity's x-axis. This is the line where the action entity should strive to drive along. Note that for each simulation step this line will be updated to reflect the current position and orientation of the reference entity.
+
+The following logic applies for the actor to reach the desired lateral distance to the referenced entity:
+
+* No dynamic constraints: Lateral distance reached in one single simulation step.
+
+* maxAcceleration constraint: The entity will drive towards and align to the "distance line" explained above, as fast as possible given the lateral acceleration constraint and current longitudinal speed. The larger lasteral acceleration the smaller turning radius. Smoothing will be applied to the beginning and end of the turning manuever for C1 continuiuty (no rapid steering changes). Longitudinal speed will be maintained.
+
+Image below illustrates the lateral distance action in entity coordinate system, with a reference entity (white car) and a few action entities (red cars). The red cars have various starting states but will all strive to reach a lateral distance of 1.0m to the left of the reference entity. From test scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/lat_dist_entity_basic.xosc[lat_dist_entity_basic.xosc].
+
+image::lat_dist_explained.jpg[]
+
+A video clip from another test scenario, https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/lat_dist_entity.xosc[lat_dist_entity.xosc], demonstrating the lateral distance action in entity coordinate system:
+
+video::JPwLDv1SgR0[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+There are various modes of this scenario:
+
+* Mode 0 is a simpler variant keeping same distance throughout the scenario (shown in video clip above)
+* Mode 1 is used for test case and includes further challenges e.g. switching into freespace mode and swapping side, from left to right.
+* Mode 2 is interactive, you drive Ego with keyboard arrow keys.
+
+Mode is a scenario parameter and can easily be changed in the ParameterDeclaration in the top section of the file.
+
+Regarding use cases of the LateralDistanceAction in entity coordinate system, we have no clue. But we're interested to learn how, if ever, its' being used. Please let us know.
+
+=== Shift reference point
+
+Although OpenSCENARIO XML https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/06_general_concepts/06_03_coordinate_systems.html#_vehicle_coordinate_system_xv_yv_zv[specifies] the reference point of vehicles to be at rear axle, esmini, from v2.56.0, supports offsetting the reference point along vehicle x-axis.
+
+The video clip below demonstrates moving the reference point to the front axle, in effect following trajectory by front axle.
+
+video::gvfFI4hgw1M[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+The reference point can be placed anywhere along the vehicle x-axis, relative mid rear axle, by specifying the Vehicle property `refpoint_x_offset`.
+
+.Original reference point (red) can be moved along vehicle x-axis, for example at midpoint or front axle.
+image::x_offset.png[]
+
+Example:
+
+[source, xml]
+----
+<Vehicle>
+   ...
+   <Properties>
+      <Property name="refpoint_x_offset" value="2.98"/>
+   </Properties>
+</Vehicle>
+----
+
+Full example scenario here: https://github.com/esmini/esmini/blob/dev/resources/xosc/follow_trajectory_by_front_axle.xosc[follow_trajectory_by_front_axle.xosc]
+
+Command: `./bin/esmini --osc ./resources/xosc/follow_trajectory_by_front_axle.xosc`
+
+The car 3D model in the last part of the clip comes from the OpenX Assets project:
+https://github.com/bounverif/openx-assets
+
+Settings for `m1_audi_q7_2015` (in openx_assets_3d.catalog.xosc):
+
+[source, xml]
+----
+<Properties>
+   <Property name="model_x_offset" value="1.5542"/>
+   <Property name="refpoint_x_offset" value="2.98"/>
+</Properties>
+----
+
+* `model_x_offset`: Align the 3D model to the OpenSCENARIO reference point (it's at center in this model)
+* `refpoint_x_offset`: Move the reference point along the vehicle x-axis
+

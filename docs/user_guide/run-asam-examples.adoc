@@ -1,0 +1,19 @@
+= esmini user guide – Run ASAM OpenSCENARIO examples
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== Run ASAM OpenSCENARIO examples
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+With some limitations (see details https://github.com/esmini/esmini/blob/master/osc_coverage.txt[here]) esmini can play the example scenarios provided with the ASAM OpenSCENARIO v1.1 release bundle.
+
+* If you don't have esmini already, download latest demo package for your platform from https://github.com/esmini/esmini/releases/latest[here].
+* Download the standard from ASAM https://www.asam.net/standards/detail/openscenario[here] (register and download is free of charge).
+* Extract to any folder.
+* Run the examples from command line in esmini root folder, for example:  +
+``./bin/esmini --window 60 60 800 400 --osc ../../openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc`` +
+  or with absolute path:  +
+``./bin/esmini --window 60 60 800 400 --osc c:/stuff/openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc``
+

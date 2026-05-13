@@ -1,0 +1,35 @@
+﻿= esmini user guide
+
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+image:https://avatars.githubusercontent.com/u/49203938[160, 160]
+
+esmini is a software tool to play OpenSCENARIO XML files. It's provided both as a stand alone application and as a shared library for linking with custom applications. In addition some tools have been developed to support design and analysis of traffic scenarios.
+
+The scope of this user guide is to provide examples on how to use the tools. It also includes a programming tutorial on how to use esmini in custom applications.
+
+Main sections:
+
+[start=0]
+. xref:toc.adoc[Table of contents]
+. xref:getting-started.adoc[Getting started]
+. xref:tools-overview.adoc[Tools overview]
+. xref:use-cases.adoc[Use cases]
+. xref:scenario-features.adoc[Scenario features]
+. xref:positioning.adoc[Positioning]
+. xref:controllers.adoc[Controllers]
+. xref:openscenegraph-3d-models.adoc[OpenSceneGraph and 3D models]
+. xref:support-qa.adoc[Support / Q&A]
+. xref:command-reference.adoc[Command reference]
+. xref:build-guide.adoc[Build guide]
+. xref:developers-contributors.adoc[For esmini developers and contributors]
+. xref:inner-workings.adoc[Inner workings]
+. xref:esmini-lib-programming.adoc[esmini lib programming]
+. xref:hello-world-tutorial.adoc[Hello World programming tutorial]
+. xref:scenario-construction-tips.adoc[Scenario construction tips]
+. xref:run-asam-examples.adoc[Run ASAM OpenSCENARIO examples]
+. xref:about-this-document.adoc[About this document]
+. xref:version.adoc[Version]
+. xref:monolith.adoc[Single page document]

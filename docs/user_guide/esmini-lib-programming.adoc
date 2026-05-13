@@ -1,0 +1,345 @@
+= esmini user guide – esmini lib programming
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== esmini lib programming
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+=== About the lib itself
+
+The main idea with esmini lib is to provide a limited, simplifed but useful API to the complex world of esmini, OpenSCENARIO and traffic simulation. By making use of only standard C types it has been possible to wrap and use the library in numerous environments, like for example MATLAB, Simulink and Unity (C#).
+
+esmini lib is a, so called, shared library which is linked dynamically with a custom application. This means that it's not linked statically with the application, instead it's loaded whenever the application is launched. An obvious advantage with shared libraries is that they can be shared between multiple applications, reducing size and potentially simplify maintenance.
+
+An additional important advantage with dynamic linking is that the library can be updated without need to recompile the custom application making use of the library (however it can't be updated during runtime, only in between launches). An obvious requirement is that the API is compatible when replacing a library with a different version, since the API is established at link-time. On the other side of the "same coin", a disadvantage with dynamic linking is that you need to have the shared library present at run-time.
+
+Although esmini lib is a shared library itself, it includes everything needed in terms of 3rd party functionality. It's actally linking all dependencies statically. Think about it as a single container including everything needed, e.g. support for 3D graphics, XML, expressions, and SUMO traffic simulation. There are two advantages with this approach: 1. Getting rid of dependency to hundreds of 3rd party shared libraries and 2. The linker makes sure to only include relevant functions which reduce the size by extreme (compared to bundle individual and complete shared libraries).
+
+[Note]
+====
+**Note:** esmini utilizes, in accordance with pass:[C++] standard, default values on some function parameters in the API. Those default values will work at least in any pass:[C++] context. For other environments like pure C, C# or Python it might be required to explicitly supply argument values.
+====
+
+=== How to interact with esmini lib API
+
+Below is a typical interaction between a custom application (e.g. vehicle simulator) and esmini (providing simulation of the environment, like road and traffic).
+
+[%header, cols="2,1,5,1,5"]
+|===
+|Frame|app time|app events|esmini time|esmini events
+|0 (t=0.0)|0.0|Init esmini("scenario.xosc") =>|0.0|
+||0.0||0.0|Step(dt=0.0)
+||0.0||0.0 a|- check conditions
+||0.0||0.0 a|- update actions
+||0.0||0.0 a|- step default controller (establish initial positions and speed)
+||0.0||0.0 a|- save to dat, send OSI
+||0.0||0.0 a|- Draw()
+||0.0|Get Ego state (initial position, speed...) =>|0.0|
+||0.0||0.0|<= Return Ego initial state
+|1 (t=0.0->0.1)|0.1|Update Ego(dt=0.1)|0.0|
+||0.1 a|- Do internal stuff, like vehicle dynamics|0.0|
+||0.1|Report Ego state(state) =>|0.0|
+||0.1||0.0|Update state of Ego, protect it from default controller
+||0.1|Step esmini(dt=0.1) =>|0.0|
+||0.1||0.0|Step(dt=0.1)
+||0.1||0.0 a|- check conditions
+||0.1||0.0 a|- update actions
+||0.1||0.0 a|- step default controller (move entities, except Ego)
+||0.1||0.1 a|- update simulation time
+||0.1||0.1 a|- save to dat, send OSI
+||0.1||0.1 a|- Draw()
+|2 (t=0.1->0.2)|0.2|Update Ego(dt=0.1)|0.1|
+||0.2 a|- Do internal stuff, like vehicle dynamics|0.1|
+||0.2|Report Ego state(state) =>|0.1|
+||0.2||0.1|Update state of Ego, protect it from default controller
+||0.2|Step esmini(dt=0.1) =>|0.1|
+||0.2||0.1|Step(dt=0.1)
+||0.2||0.1 a|- check conditions
+||0.2||0.1 a|- update actions
+||0.2||0.1 a|- step default controller (move entities, except Ego)
+||0.2||0.2 a|- update simulation time
+||0.2||0.2 a|- save to dat, send OSI
+||0.2||0.2 a|- Draw()
+|and so on...||||
+
+|===
+
+=== Functionality
+No systematic documentation available. See header files https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[esminiLib.hpp] and https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiRMLib/esminiRMLib.hpp[esminiRMLib.hpp] for API details.
+
+The following section covers some specific use cases of the library.
+
+==== Save or grab images
+
+Screenshots can be controlled via the API:
+
+[source, c++]
+----
+int SE_SaveImagesToFile(int nrOfFrames);
+----
+nrOfFrames: -1 => continuously, 0 => stop, > 0 => number of frames, e.g. 1=next frame only, 2=next two frames
+
+Images will be stored in current folder with name `screen_shot_*.tga` (* = counter) for post processing.
+
+Images can also be saved to memory for instant processing. Control the feature with:
+
+[source, c++]
+----
+int SE_SaveImagesToRAM(bool state);
+----
+state: true => capture images, false => don't capture (default, might improve performance on some systems)
+
+Grab image with:
+
+[source, c++]
+----
+int SE_FetchImage(SE_Image *image);
+----
+image is a reference to a SE_Image struct which will contain the image meta and image data
+
+See https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/image-capture[image-capture] code example.
+
+[Note]
+====
+**Note:** In order to grab a rendered frame image, it must have been saved to RAM during the post rendering phase. First frame will be saved to RAM by default. The SE_SaveImagesToRAM() function must be used to enable the feature for frames > 0.
+
+The reason for not enable always by default is performance savings. On some system the operation to read back rendered pixels from graphics frame buffer to application RAM memory is not neglectable (depending on whether color coding or byte order transformation is needed). So a compromize is to have the feature enabled for the first init frame, and then activate by user when needed.
+====
+
+Finally, to disable esmini image handling altogether and revert to OSG default handling, make the following call before SE_Init():
+
+``SE_SetOffScreenRendering(false);``
+
+Note that disabling the this will permanently disable the callback mechanism for the complete esmini session (overriding any SE_SaveImagesToRAM() call).
+
+==== Custom camera positions
+Similarly as with camera related launch arguments, link:use-cases.html#_camera_control[camera positioning] can be controlled via esmini lib API.
+
+- `SE_AddCustomCamera()` +
+  Add a camera with relative position and orientation (heading and pitch)
+- `SE_AddCustomFixedCamera()` +
+  Add a fixed camera at custom global position and orientation (heading and pitch)
+- `SE_AddCustomAimingCamera()` +
+  Add a camera with relative position looking at current entity
+- `SE_AddCustomFixedAimingCamera()` +
+  Add a camera at fixed location but always looking at current entity
+- `SE_AddCustomFixedTopCamera()` +
+  Add a top view camera with fixed position and rotation
+- `SE_SetCameraObjectFocus` +
+  Set/change object to focus on
+
+More info, see https://github.com/esmini/esmini/blob/91c82fb78deb4355f736f87510069f52cc0e6be5/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1519C1-L1582C59[headerfile].
+
+Any number of cameras can be defined. These cameras can then be activated via function: `SE_SetCameraMode()`.
+
+Applications can even loop through the camera modes to produce images from several cameras. See code example https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/code-examples/image-capture/multiple-cameras.cpp[multiple-cameras.cpp].
+
+==== OSI data
+
+OSI data can be retrieved in three ways:
+
+. Storing OSI tracefile
+. Receive in UDP packages
+. Receive via API call
+
+===== OSI tracefile
+
+Call `SE_EnableOSIFile(filename)` in order to create a OSI tracefile. Specify custom filename or set 0 or "" to use default filename (currently "ground_truth.osi").
+
+===== OSI timestamps
+
+By default, the OSI timestamps are set to the same value as the simulation time. The timestamps can be explicity set for each frame via `SE_SetOSITimeStamp(unsigned long long int nanoseconds)`. This will set the time for the upcoming frame, and should thus be set prior to each call to `SE_Step*`.
+
+**Note:** If any OSI related function call has been made prior to `SE_Init*` esmini will activate OSI and the OSI data, including timestamps, will be populated during the `SE_Init*` call.
+
+===== OSI settings
+
+The following settings are available for OSI via API:
+
+* `SE_SetOSIFrequency(int frequency)` +
+  how frequent the OSI data shall be updated (*default* 1, i.e. every frame)
+* `SE_SetOSIStaticReportMode(SE_OSIStaticReportMode mode)` +
+  how to report and log static objects in OSI (*default* is to report and log only once)
+* `SE_ExcludeGhostFromGroundTruth()` +
+  exclude ghost object from OSI groundtruth (*default* is to include ghost)
+* `SE_CropOSIDynamicGroundTruth(int id, double radius)` +
+  crop dynamic OSI groundtruth around an entity (*default* is to include all)
+
+See https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[esminiLib.hpp] for more API details.
+
+Corresponding functions are available via command line arguments:
+
+- `--osi_freq <frequency>`
+- `--osi_static_reporting_mode <mode>`
+- `--osi_exclude_ghost`
+
+See link:command-reference.html#_esmini[_esmini], or run: `esmini --help`, for full option description.
+
+===== OSI via UDP
+
+By launch argument `--osi_receiver_ip <ip addr>` you can have esmini sending OSI packeges in UDP frames. The socket port is hardcoded but can of course be changed in the code (OSI_OUT_PORT in https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/OSIReporter.cpp)[OSIReporter.cpp]).
+
+See receiver side code example https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Applications/replayer/osi_receiver.cpp[osi_receiver.cpp].
+
+===== OSI data via API call
+
+Fetch OSI data by either one of the API calls:
+
+- `SE_GetOSIGroundTruthRaw()`
+- `SE_GetOSIGroundTruth(int* size)`
+
+The "raw" version will simply return a pointer to the already existing OSI data structure, no additional data copying will be performed. The "raw" option is the preferered option if the application is coded in C++, making the Protobuf data structures fully compatible.
+
+See code example: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/osi-groundtruth[osi-groundtruth], also covered in User guide - Hello world tutorial https://esmini.github.io/#_osi_groundtruth[OSI groundtruth].
+
+The second function will fetch the OSI data serialized into a string. This will be a true copy and also generic format which can be parsed in any environment, independent of OS and programming language. The backside is additional resources needed for the copying and serialization.
+
+See code examples in ScenarioEngineDLL test cases, e.g: https://github.com/esmini/esmini/blob/97d5f6216c53655545b5466400d00e98d99d25c2/EnvironmentSimulator/Unittest/ScenarioEngineDll_test.cpp#L933-L975[receive_GroundTruth].
+
+[Note]
+====
+**Note:**
+
+OSI groundtruth always contains all dynamics objects. Static objects, by default, will be reported only the very frame they are created. OpenDRIVE objects are always created during initialization. OpenSCENARIO MiscObjects are also normally created during initialization. However, they can be added by AddEntityAction or AddObject() API function, hence, from esmini v2.57.0, MiscObjects can be added at any time to groundtruth.
+
+To summarize the default behavior, first frame will include all dynamic and static objects created during the initialization of the scenario. Subsequent frames will include all dynamics objects available at that time plus any static MiscObjects created that very frame.
+
+The same data is also stored in the OSI log file, given that the log file is enabled.
+
+The behavior regarding static content, described above, can be configured by `SE_SetOSIStaticReportMode` function. The available options are according to the enum `SE_OSIStaticReportMode`:
+
+- `SE_OSIStaticReportMode::DEFAULT` - Report and log static objects only once
+- `SE_OSIStaticReportMode::API` - Report static objects in every frame, but only once in the log file
+- `SE_OSIStaticReportMode::API_AND_LOG` - Report and log static objects every frame
+
+OSI groundtruth will be up to date automatically after each `SE_Step*` depending on the OSI frequency, which can be changed to facilitate use-cases where esmini is running at much higher frequency than needed for OSI data (e.g. for vehicle dynamics purposes). To optimize performance, OSI update can then be skipped most frames and only run when needed. For example: `SE_SetOSIFrequency(20);` will update OSI data only every 20th frame.
+====
+
+==== Program Options
+
+On top of setting options from command line, esmini (from v2.41.0) supports setting options from esminiLib and esminiRMLib as well. This new functionality is added to set and unset options during runtime. This is useful, for example, to enable or disable logging to console, or to change log level etc between scenario runs via API. In addition, it is now possible to make option settings persistent over multiple runs of scenarios. There are two variants of the API functions i.e. one to set option value with persistence and one without. The API functions are:
+
+`SE_DLL_API int SE_SetOption(const char *name);`
+
+`SE_DLL_API int SE_SetOptionPersistent(const char *name);`
+
+`SE_DLL_API int SE_SetOptionValue(const char *name, const char *value);`
+
+`SE_DLL_API int SE_SetOptionValuePersistent(const char *name, const char *value);`
+
+`SE_DLL_API int SE_UnsetOption(const char *name);`
+
+`SE_DLL_API const char *SE_GetOptionValue(const char *name);`
+
+`SE_DLL_API const char *SE_GetOptionValueByEnum(unsigned int);` (see link:developers-contributors.html#_using_options_in_code[Using options (in code)])
+
+Any setting done in between runs, i.e. after any SE_Close() and before SE_Init(), will apply to the next run, at least. The persistent variant will apply for all future runs until unset or other setting overrides it. The effect of settings done during a scenario run will depend on the option itself. For example, anti-aliasing mode for the rendering will not change during a scenario, while logfile path can change during a scenario run (which will close current and open a new file with specified path and name). So, to be sure, set options before SE_Init() and after any SE_Close().
+
+==== Simple ideal sensors
+
+OSI provides information needed for sensor models at bounding box level for both moving and stationary objects, including ones defined in OpenDRIVE. Sensor models can then detect overlap, occlusion and collisions between those bounding boxes. Although sensor models are not within scope of esmini, there is a code example on how to retrieve and extract OSI data. It can perhaps be a starting point: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/code-examples/osi-groundtruth/osi-groundtruth.cpp[osi-groundtruth.cpp]
+
+For even simpler use cases esmini provides a sensor mechanism, basically collecting scenario objects which reference point is within a sensor view frustum. This is too rough for collision detection, but can be useful for low-pass features like adaptive cruse control (ACC) or just optimizing CPU load by filtering objects for some processing.
+
+The view frustum is defined by a horizontal `field of view` combined with `near` and `far` limits. Basically an object is detected by a ideal sensor if the object reference point is within the view frustum, i.e:
+
+- angle from sensor mounting point is within the `field of view`
+- distance from sensor mounting point is larger than `near` and less than `far`
+
+.A few ideal sensors mounted at various positions and orientations
+image::ideal_sensors.jpg[]
+
+The sensors are added from the code, see the https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Applications/esmini-dyn[esmini-dyn] code example. API is found https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L1082-L1095[here].
+
+Limitations:
+
+- OpenDRIVE stationary objects not considered
+- Only reference point checking (part of the object can be inside frustum and still not detected)
+
+==== Logging
+
+By default, both file and console logging are enabled. Default log filename is `log.txt`. Default location is current folder, normally the folder from which the application was started.
+
+All this can be controlled and modified through the API. Full details see log related functions in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[esminiLib.hpp]. Following is a brief overview:
+
+===== Enable or disable logging to console
+
+[source,c++]
+----
+void SE_LogToConsole(bool mode);
+----
+
+An additional way to control console logging is to set or unset the launch option `--disable_stdout` using the API functions:
+
+[source,c++]
+----
+int SE_SetOption(const char *name);
+int SE_UnsetOption(const char *name);
+----
+
+with `--disable_stdout` as argument.
+
+===== Change log filename and/or location
+
+[source,c++]
+----
+void SE_SetLogFilePath(const char *logFilePath);
+----
+
+- Full path (relative or absolute) can be provided, e.g. `"../myresult/scenario_2.txt"`.
+- If only directory provided, default filename will be used.
+- If only filename provided, default location will be used.
+- if empty string `""` is provided, log file will not be created.
+
+It should be called before SE_Init(). If called during the run of a scenario, the current log file will be closed and a new with the specified name and/or location will be created, unless `--log_append` option has been set.
+
+===== Log single message
+
+[source,c++]
+----
+void SE_LogMessage(const char *message);
+----
+
+the provided string will be posted to console and file according to settings.
+
+=== Simplest example
+
+Below example is just to show the simplicity of using esmini library. For more information and realistic examples, e.g. involving cmake, please go ahead to link:hello-world-tutorial.html#_hello_world_programming_tutorial[Hello World programming tutorial].
+
+If not already done, download and unpack https://github.com/esmini/esmini/releases/latest[latest esmini demo]. Make sure to pick demo, not bin, for your platform.
+
+In esmini root folder, create a file named `main.cpp` and add the following lines:
+
+*Code:*
+
+[source, c++]
+----
+#include "./EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp"
+
+int main()
+{
+    SE_Init("./resources/xosc/cut-in.xosc", 0, 1, 0, 0);
+
+    while (SE_GetQuitFlag() == 0)
+        SE_Step();
+
+    SE_Close();
+    return 0;
+}
+----
+
+*Compile:*
+
+- Linux: +
+`gcc main.cpp ./bin/libesminiLib.so -Wl,-rpath,\$ORIGIN -o bin/my_player`
+
+- Windows (x64 Native Tools Command Prompt for Visual Studio): +
+`cl main.cpp ./bin/esminiLib.lib /Fe:bin/my_player`
+
+*Run:*
+
+from Linux terminal or Windows PowerShell: +
+`./bin/my_player`
+

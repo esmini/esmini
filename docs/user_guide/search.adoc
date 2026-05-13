@@ -1,0 +1,143 @@
+= esmini user guide - Search
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== Search
+
+The search box in the shared navigation bar can be used from any page in this guide.
+
+++++
+<div id="doc-search-status">Enter a search term to search across the user guide.</div>
+<div id="doc-search-results"></div>
+<script>
+(function () {
+  const form = document.getElementById('doc-search-form');
+  const input = document.getElementById('doc-search-input');
+  const statusEl = document.getElementById('doc-search-status');
+  const resultsEl = document.getElementById('doc-search-results');
+  const params = new URLSearchParams(window.location.search);
+  let docs = null;
+
+  function escapeHtml(text) {
+    return text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function buildSnippet(text, terms) {
+    const lower = text.toLowerCase();
+    let pos = -1;
+    for (const term of terms) {
+      pos = lower.indexOf(term);
+      if (pos !== -1) {
+        break;
+      }
+    }
+    if (pos === -1) {
+      return escapeHtml(text.slice(0, 220)) + '...';
+    }
+    const start = Math.max(0, pos - 80);
+    const end = Math.min(text.length, pos + 180);
+    let snippet = text.slice(start, end).trim();
+    if (start > 0) {
+      snippet = '...' + snippet;
+    }
+    if (end < text.length) {
+      snippet += '...';
+    }
+    let html = escapeHtml(snippet);
+    for (const term of terms) {
+      const pattern = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
+      html = html.replace(pattern, function (match) {
+        return '<mark>' + match + '</mark>';
+      });
+    }
+    return html;
+  }
+
+  async function ensureIndex() {
+    if (docs) {
+      return docs;
+    }
+    statusEl.textContent = 'Loading search index...';
+    const response = await fetch('search-index.json');
+    if (!response.ok) {
+      throw new Error('Failed to load search index');
+    }
+    docs = await response.json();
+    return docs;
+  }
+
+  async function runSearch(query) {
+    const trimmed = query.trim();
+    input.value = trimmed;
+
+    if (!trimmed) {
+      statusEl.textContent = 'Enter a search term to search across the user guide.';
+      resultsEl.innerHTML = '';
+      return;
+    }
+
+    statusEl.textContent = 'Searching...';
+    resultsEl.innerHTML = '';
+
+    const terms = trimmed.toLowerCase().split(/\s+/).filter(Boolean);
+    const pages = await ensureIndex();
+    const hits = pages.map(function (doc) {
+      const haystack = (doc.title + ' ' + doc.text).toLowerCase();
+      let score = 0;
+      for (const term of terms) {
+        const matches = haystack.match(new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'));
+        if (!matches) {
+          return null;
+        }
+        score += matches.length;
+        if (doc.title.toLowerCase().includes(term)) {
+          score += 5;
+        }
+      }
+      return {
+        title: doc.title,
+        href: doc.href,
+        text: doc.text,
+        score: score
+      };
+    }).filter(Boolean).sort(function (left, right) {
+      return right.score - left.score;
+    });
+
+    statusEl.textContent = hits.length + ' result' + (hits.length === 1 ? '' : 's') + ' for "' + trimmed + '"';
+
+    if (!hits.length) {
+      resultsEl.innerHTML = '<p>No matches found.</p>';
+      return;
+    }
+
+    resultsEl.innerHTML = hits.map(function (hit) {
+      return '<div class="search-result" style="margin:0 0 1rem 0;">'
+        + '<div><a href="' + hit.href + '"><strong>' + escapeHtml(hit.title) + '</strong></a></div>'
+        + '<div style="margin-top:0.25rem;">' + buildSnippet(hit.text, terms) + '</div>'
+        + '</div>';
+    }).join('');
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const query = input.value.trim();
+    const target = query ? ('?q=' + encodeURIComponent(query)) : window.location.pathname;
+    window.history.replaceState(null, '', target);
+    runSearch(query).catch(function (error) {
+      statusEl.textContent = error.message;
+    });
+  });
+
+  runSearch(params.get('q') || '').catch(function (error) {
+    statusEl.textContent = error.message + '. Serve the generated docs over HTTP(S) so the browser can load search-index.json.';
+  });
+})();
+</script>
+++++

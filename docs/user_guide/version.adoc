@@ -1,0 +1,12 @@
+= esmini user guide – Version
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== Version
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+[%hardbreaks]
+include::../../version.txt[lines=2..2]
+include::../../version.txt[lines=1..1]

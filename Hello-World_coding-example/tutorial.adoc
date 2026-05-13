@@ -18,7 +18,6 @@ Just make sure that the shared library is available in the `bin` or `lib` folder
 :listing-caption: Example
 
 == How to build, run and debug "Hello World"
-
 === Windows/Visual Studio
 
 ==== First step: Create the solution file

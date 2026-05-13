@@ -1,0 +1,362 @@
+= esmini user guide – Support / Q&A
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== Support / Q&A
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+=== File search paths
+
+The starting point for esmini is usually a specified scenario file. In addition to assets referred to by the scenario and road network, e.g. vehicle and traffic sign 3D models, several config files also needs to be located and processed. This section briefly describes how esmini searches for key files.
+
+The default file structure for binaries (applications and libs) and scenario assets is:
+
+[source]
+----
+esmini/
+|_ bin/
+|  |_ esmini
+|  |_ odrviewer
+|  |_ replayer
+|  |_ esminiLib
+|  |_ esminiRMLib
+|_ resources/
+   |_ traffic_signals/
+   |_ models/
+   |_ xodr/
+   |_ xosc/
+   |_ xosc/Catalogs/
+----
+
+* `bin` all executables and shared libraries (esminiLib.so/dll and esminiRMLib.so/dll)
+* `model_ids.txt` a simple mapping of model Id and 3D model file. This is used when replaying `.dat` files which contains only model ID number instead of full 3D model file path (for bandwidth reasons). NOTE: Deprecated, will be removed. Use `model3d` attribute instead.
+* `traffic_signals` files mapping road sign ID to OSI type, per country
+* `models` 3D model files and textures
+* `xodr` OpenDRIVE files
+* `xosc` OpenSCENARIO files
+* `Catalogs` OpenSCENARIO catalogs
+
+Although esmini supports other folder structures and file locations as well, the above structure is default.
+
+esmini supports the following file reference types in OpenSCENARIO and OpenDRIVE files:
+
+* Relative path
+ ** example: `../xodr/road.xodr`
+* Absolute path
+ ** example: `/tmp/road.xodr`
+* Filename
+ ** example: `road.xodr`
+
+==== Search locations
+
+For each file type esmini will search in a set of locations in a specific order. User can add any number of additional search paths with `--path <folder path>` launch argument, or via API `SE_AddPath()` function.
+
+Specified file path will be added (concatenated) to each search location to form the full file path. If the specified file path includes a path (relative or absolute) two paths will be formed; one including the path and one adding just the filename.
+
+Order of search locations:
+
+. Full path as specified (from current directory if path is relative)
+. Only filename (extracted from specified path), in current directory
+. Location relative to user specified paths
+. Additional special purpose locations depending on file type, see below
+
+*OpenDRIVE (.xodr)*
+
+* Relative scenario file: `<path_to_xosc>/<specified_path>`
+* Default folder relative executable (or library): `<path_to_exe>/resources/xodr/<specified_filename>`
+
+*3D models (.osgb) in OpenSCENARIO file*
+
+* Relative scenario file: `<path_to_xosc>/<specified_path>`
+* Default folder relative executable (or library): `<path_to_exe>/resources/models/<specified_filename>`
+
+*3D models (.osgb) in OpenDRIVE file*
+
+* Relative opendrive file: `<path_to_xodr>/<specified_path>`
+* Default folder relative executable (or library): `<path_to_exe>/resources/models/<specified_filename>`
+
+*model_ids.txt*
+
+* Default location relative executable (or library): `<path_to_exe>/resources/model_ids.txt`
+* Relative current directory: `./resources/model_ids.txt`
+
+NOTE: model_id concept is deprecated and will be removed. `model3d` attribute being used instead.
+
+*traffic_signals*
+
+* Default location relative executable (or library): `<path_to_exe>/resources/traffic_signals/<country code>_traffic_signals.txt`
+* Relative current directory: `./resources/traffic_signals/<country code>_traffic_signals.txt`
+
+*Catalogs*
+
+* Relative scenario file: `<path_to_xosc>/<specified_path>`
+* Default location relative executable (or library): `<path_to_exe>/resources/xosc/Catalogs/<trailing_folder_in_specified_path>`
+
+=== Various issues
+
+==== Resources not found
+Although esmini comes with a default file structure where scenario resources, e.g. vehicle 3D model or controller catalog, needs to be stored, it's not fixed. Instead, additional search paths can be added by launch argument `--path <path>`. For example: +
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --path ../../ --path c:/tmp/my_models``
+
+will add the relative path `../../` and absolute path `c:/tmp/my_models` to the list of places where to look for resources referred to by the scenario.
+
+==== Blocked by Windows Defender SmartScreen
+
+When esmini is downloaded as a zip file from Internet it might be blocked, i.e. prevented from being started, by Windows to protect your system. This is indicated by the following, or similar, message popping up when attempt to start:
+
+"Microsoft Defender SmartScreen prevented an unrecognized app from starting. Running this app might put your PC at risk."
+
+As long as the zip was downloaded from esmini official GitHub repository (https://github.com/esmini/esmini) it is perfectly safe to use.
+
+The simplest solution is to unblock the zip file before unpacking it:
+
+1. Right click
+2. Click Properties
+3. At bottom right, check "Unblock"
+
+image::win-unblock.png[]
+
+Note: This method also works for individual files after unzipping. But it can only be applied for one file at a time, why it's simpler to unblock the complete zip before unpacking.
+
+It is also possible to unblock from Powershell command line:
+
+* Single file: +
+  `Unblock-File esmini-demo_Windows.zip`
+
+* Multiple files recursively: +
+  `Get-ChildItem -Path esmini-demo_Windows -Recurse | Unblock-File`
+
+==== Mac issues and limitations
+
+From esmini version 2.26.6 mac executables are universal binaries which means they work on both Intel and Apple Silicon based Macs. Following are some known issues and work arounds:
+
+* Window can't be located in the upper part of the screen (some systems). If window won't open, try to adjust the y value (second entry) of the window argument. 60 pixels usually works fine, e.g: `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc`
+
+* Issue has been reported that when multiple screens are connected esmini just shows a bland window. Currently only solution is to unplug the additional montitors or unplug Mac from dock station.
+
+* Graphics can not run in separate thread. Hence the `--thread` launch flag will have no effect.
+
+* On Mac the zip-package might be put in quarantine, to release it: `xattr -d com.apple.quarantine file.zip` or even better: `xattr -c file.zip`
+
+* esmini executables are not signed with a https://developer.apple.com/developer-id[developer ID] - since we simply don't have one. If you got the package directly from https://github.com/esmini/esmini/releases[esmini release page on GitHub] it is safe to unpack and run.
+In order to execute the files you need to do one of following from a terminal in the folder the demo package was extracted:
+** Remove quarantine flags: `xattr -c -r esmini-demo/bin`, or
+** Sign executables for use on local machine: `codesign -f -s - esmini-demo/bin/*`
+
+==== OpenStreetMap (OSM) roads in esmini
+SUMO comes with a great tool, https://sumo.dlr.de/docs/netconvert.html[netconvert], that can convert road networks from and to various formats.
+
+Prerequisite: Download and install SUMO from https://sumo.dlr.de/docs/Downloads.php[here].
+
+Example: Convert an OSM map to OpenDRIVE for use in esmini:
+
+`netconvert --osm-files city.osm --opendrive-output city.xodr --no-turnarounds`
+
+Preview in odrviewer:
+
+`./bin/odrviewer --window 60 60 800 400 --odr city.xodr`
+
+==== Update 3D model pack
+
+Do either:
+
+- remove any `resources/models` folder
+- from `./build` folder, run `cmake ..`
+
+or
+
+- get the package from https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1[here] and unpack files into `./resources/models`
+
+==== Update 3rd party prebuilt libraries
+
+There are a few external dependencies that takes long time to build from scratch. Instead they are provided in compressed packages including needed headerfiles and prebuilt libraries. The packages are available for Win, Mac and Linux. For Windows and Linux they include Debug mode binaries, in addition to the Release variant.
+
+The cmake script will check for the availability of these libraries, by simply checking for existence of corresponding folders, e.g. osg, osi, sumo, under esmini/externals. If missing, compressed packages will be downloaded and extracted.
+
+Not often, but at some points the prebuilt libraries needs to be updated. In most cases it affects the esmini build configuration and/or code. Hence, sometimes an update of esmini comes with a need to update the external libraries as well. Lack of automatic handling, such update needs to be done manually. One way is to delete the specific folder(s) and run ordinary cmake command again. But the simplest way is to enforce redownload of all packages:
+
+`cmake .. -D  FORCE_DOWNLOAD_BINARIES=TRUE`
+
+The FORCE_DOWNLOAD_BINARIES flag will be checked by the cmake script for enforced download of all packages. Upon successful download, the libraries will be replaced, one by one.
+
+Library updates are not detected by the esmini build dependencies, why a clean rebuild of esmini should be performed manually afterwards.
+
+==== Entity does not appear
+In order to appear in the scenario, without need for AddEntity action, an entity must be represented in the Init section of the Storyboard. Common is to add actions to establish inital position and speed.
+
+Example:
+
+[source, xml]
+----
+<PrivateAction>
+   <TeleportAction>
+      <Position>
+         <LanePosition roadId="1" laneId="-1" offset="0" s="50"/>
+      </Position>
+   </TeleportAction>
+</PrivateAction>
+<PrivateAction>
+   <LongitudinalAction>
+      <SpeedAction>
+         <SpeedActionDynamics dynamicsShape="step" dynamicsDimension="time" value="0.0"/>
+         <SpeedActionTarget>
+            <AbsoluteTargetSpeed value="30.0"/>
+         </SpeedActionTarget>
+      </SpeedAction>
+   </LongitudinalAction>
+</PrivateAction>
+----
+
+==== Heading behavior in Road vs Lane Position
+
+In esmini, the behavior of the two position types https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/RoadPosition.html[`RoadPosition`] and https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/LanePosition.html[`LanePosition`] differ in terms of heading.
+
+- `RoadPosition`: When not specified, the heading will align to the direction of the road (s-axis)
+- `LanePosition`: When not specified, the heading will align to the driving direction of the lane
+
+In the image below, the white cars are positioned by `LanePosition` with `laneId=-1` and `laneId=1` respectively while the red cars are positioned by `RoadPosition` with `t=-1.5` and `t=1.5` respectively.
+
+.Positioning with LanePosition (white) and RoadPosition (red) - heading omitted
+image::no-heading.jpg[]
+
+Explicitly specified heading (in `Orientation` sub-element):
+
+- Absolute heading will be respected and treated in the same way for both position cases
+- Relative heading will be based on the default heading, i.e. road or driving direction respectively.
+
+In next image, an `Orientation` element was added with *absolute* heading = 0.4 for all four cars.
+
+.Positioning with LanePosition (white) and RoadPosition (red) - absolute heading=0.4
+image::absolute-heading.jpg[]
+
+In next image, an `Orientation` element was added with *relative* heading = 0.4 for all four cars.
+
+.Positioning with LanePosition (white) and RoadPosition (red) - relative heading=0.4
+image::relative-heading.jpg[]
+
+Corresponding behavior applies also to `RelativeRoadPosition` and `RelativeLanePosition`.
+
+===== Motivation
+
+In some (maybe most) use cases it's preferred that vehicles align to the driving direction of the lane. But in other cases not, example: In an overtake maneuver, the overtaking car may start in the neighbor lane. The driving direction of the lane should not affect the heading of the car.
+
+So the different strategies for `RoadPosition` and `LanePosition` was decided upon to support as many use cases as possible. For more background, see issues https://github.com/esmini/esmini/issues/385[#385] and https://github.com/esmini/esmini/issues/228[#228].
+
+==== OSI for Python on Windows
+
+Follow the following steps to install OSI (and dependent Google Protobuf) for use by some esmini scripts, e.g. https://github.com/esmini/esmini/blob/master/scripts/osi2csv.py[osi2csv.py].
+
+*Protobuf for Python* (skip if already installed)
+
+. Open a Powershell
+. `pip install protobuf==3.20.2`
+
+*protoc* (Protobuf compiler)
+[start=3]
+. Download https://github.com/protocolbuffers/protobuf/releases/download/v3.20.2/protoc-3.20.2-win64.zip[protoc-3.20.2-win64.zip] +
+  (release page: https://github.com/protocolbuffers/protobuf/releases/tag/v3.20.2)
+. Unzip (at least protoc.exe) to some location
+
+*OSI for Python*
+[start=5]
+. Open a Powershell in the to-be-parent folder of OSI
+. `git clone https://github.com/OpenSimulationInterface/open-simulation-interface`
+. `cd open-simulation-interface`
+. `git checkout v3.5.0`
+. `./convert-to-proto3.sh`
+. `$env:PROTOC=<location of protoc.exe>` +
+  for example: `$env:PROTOC="C:/tmp/protoc-3.20.2-win64/bin/protoc.exe"`
+. `pip install .`
+
+This should be it.
+
+*How to remove old versions* (if needed)
+
+. `pip uninstall protobuf`
+. `pip uninstall open-simulation-interface`
+
+==== The scenario runs too fast or too slow
+
+esmini can run in two different time modes: 1. Real-time and 2. Fixed-time. Default is real-time.
+
+The following command, from esmini root, will run real-time: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc` +
+
+This one fixed-time: +
+`./bin/esmini --window 60 60 800 400 --fixed_timestep 0.05 --osc ./resources/xosc/cut-in.xosc`
+
+The difference is basically that real-time will run with as small time-steps as possible (actually limit at 1 ms to avoid unnecessary CPU load), maxim
+zing precision but constrained by system clock. In other words, the scenario will play out in "natural" speed, good for previewing or demonstrating sc
+narios. Each timestep is calculated by esmini based on passed system-time since last frame.
+
+The fixed-time is simpler, esmini will simply execute the scenario as fast as possible applying the specified delta-time for each step. Good for runni
+g tests for later post processing of resulting logs, data or OSI files.
+
+A common use-case is to run esmini quick/headless and then utilize the replayer for viewing the result. See more info here: link:use-cases.html#_replay_scenario[Replay scenario]
+
+==== Road and junction string IDs
+
+OpenDRIVE allows for non integer string IDs. Although commonly unsigned integer is used. The standard https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/16_annexes/classes/road/top_cla_t_road.html[OpenDRIVE 1.8] states that IF the ID represents an integer number, it should comply to uint32_t and stay within the given range.
+
+esmini partly supports* string IDs, by mapping to internal integer IDs. The way it works:
+
+If the ID is a number in the range of 0..0xfffffffe (4 294 967 294), then: +
+map it to the same internal ID +
+Else, if the number is a string or a number out of range: +
+map it to a unique internal ID
+
+*Note*: 0xffffffff (4 294 967 295) is reserved for ID_UNDEFINED which is the default value and also used for error indication +
+
+Example: Assume an OpenDRIVE includes the following road (or junction) IDs:
+
+[source,console]
+----
+"0"
+"1"
+"124"
+"Kalle"
+"12k4"
+"4294967296"
+"4294967295"
+"4294967294"
+----
+
+The IDs will be mapped as follows:
+
+[source,console]
+----
+"0" -> 0
+"1" -> 1
+"124" -> 124
+"Kalle" -> 125
+"4294967296" -> 126 (too large)
+"4294967295" -> 127 (conflict with ID_UNDEFINED)
+"4294967294" -> 4294967294 (Ok, largest acceptable number)
+----
+
+Now, why not make use of available numbers between 1 and 124? It's because esmini is lazy, not spending effort (performance) to book-keep sorted list of IDs. Instead, only the largest number in use will be monitored.
+
+In addition, there are esmini lib API functions to lookup string and internal IDs:
+
+[source,c++]
+----
+const char *SE_GetRoadIdString(id_t road_id);
+id_t SE_GetRoadIdFromString(const char *road_id_str);
+
+const char *SE_GetJunctionIdString(id_t junction_id);
+id_t SE_GetJunctionIdFromString(const char *junction_id_str);
+----
+
+That way, a custom application can find out what internal IDs esmini has assigned to any non-number string IDs.
+
+Corresponding functions exist in esmini roadmanager lib.
+
+pass:[*] String ID support was introduced in v2.37.15. By v2.39.0 internal representation changed from 32 bit signed int to unsigned int. At that point also undefined ID changed from -1 to 0xffffffff.
+
+
+=== Further issues at esmini GitHub page
+The https://github.com/esmini/esmini/issues[Issues tab at esmini GitHub page] is a valuable source of questions and answers. To search in all issues, make sure to set filter: `is:issue`.
+

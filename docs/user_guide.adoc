@@ -1,19 +1,21 @@
 = esmini user guide
-:numbered:
-:sectnum:
-:sectnumlevels: 3
 :toc: left
 :toclevels: 2
-:source-highlighter: coderay
 :src-local-root: ../
-// :src-remote-root: {src-local-root}
 :src-remote-root: https://github.com/esmini/esmini/tree/master
 :imagesdir: https://github.com/esmini/esmini.github.io/raw/main/images
-// :imagesdir: c://eknabe1/GIT/esmini.github.io/images
 :figure-caption!:
-// :imagesdir: https://media.githubusercontent.com/media/esmini/esmini.github.io/main/images/
 
-
+// NOTE: The source has been split into individual section files under
+// docs/user_guide/. The canonical entry point for the multi-page version is:
+//   docs/user_guide/index.adoc
+//
+// To build the multi-page output (one HTML per section), from docs/user_guide/:
+//   Linux/macOS: for f in *.adoc; do asciidoctor -r asciidoctor-kroki "$f"; done
+//   Windows:     Get-ChildItem *.adoc | ForEach-Object { asciidoctor -r asciidoctor-kroki $_.FullName }
+//
+// This file is kept for single-page backward-compatible builds only.
+// Build single page from docs/: asciidoctor -r asciidoctor-kroki index.adoc -o index.html
 
 image:https://avatars.githubusercontent.com/u/49203938[160, 160]
 
@@ -5659,7 +5661,7 @@ With some limitations (see details https://github.com/esmini/esmini/blob/master/
 ``./bin/esmini --window 60 60 800 400 --osc c:/stuff/openscenario-v1.1.0/Examples/DoubleLaneChanger.xosc``
 
 == About this document
-The https://github.com/esmini/esmini/blob/master/docs/user_guide.adoc[source] of this document is written in the https://asciidoc-py.github.io/index.html[asciidoc] format.
+The https://github.com/esmini/esmini/blob/master/docs/index.adoc[source] of this document is written in the https://asciidoc-py.github.io/index.html[asciidoc] format.
 
 === How to generate HTML from AsciiDoc
 The html is generated with https://asciidoctor.org/[asciidoctor]. Code snippets, images and other resources are included in the process. Also the version numbers are automatically inserted to avoid "human errors".
@@ -5688,7 +5690,7 @@ Troubleshooting: If you get an error like +
 try update RubyGems as follows: +
 ``gem update --system``
 
-Generate html: ``asciidoctor -r asciidoctor-kroki user_guide.adoc -o index.html``
+Generate html: ``asciidoctor -r asciidoctor-kroki index.adoc -o index.html``
 
 === How to view previous versions
 Full commit history is found https://github.com/esmini/esmini.github.io/commits/main[here]

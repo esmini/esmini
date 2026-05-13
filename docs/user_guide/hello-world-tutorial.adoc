@@ -1,0 +1,12 @@
+= esmini user guide – Hello World programming tutorial
+include::attributes.adoc_[]
+:src-local-root: ../
+
+include::nav.adoc_[]
+
+== Hello World programming tutorial
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+include::../../Hello-World_coding-example/tutorial.adoc[leveloffset=+1, lines=3..-1]
+

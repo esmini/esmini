@@ -1,0 +1,1157 @@
+= esmini user guide – Scenario features
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== Scenario features
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+=== Speed profile
+(introduced in esmini v2.23.0)
+
+The OpenSCENARIO https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.1.1_Model_Documentation/modelDocumentation/content/SpeedAction.html[SpeedAction] will reach a specified speed in a way described by additional attributes, e.g. shape and duration. To achieve multiple speed target over time you would need to add multiple SpeedAction events to the scenario. Moreover, there is no way to explicitly control the jerk (acceleration/deceleration rates).
+
+However with the SpeedProfileAction (introduced in OpenSCENARIO v1.2) you can specify a series of speed targets over time, in one action. Optionally you can also specify dynamic constraints for jerk (gradually changing acceleration and deceleration), acceleration and speed.
+
+If you run the example scenario https://github.com/esmini/esmini/blob/master/resources/xosc/speed-profile.xosc[speed-profile.xosc] as follows:
+
+[source]
+----
+./bin/esmini.exe --window 60 60 800 400 --osc ./resources/xosc/speed-profile.xosc --fixed_timestep 0.01 --record sim.dat
+./scripts/plot_dat.py sim.dat --param speed
+----
+you should get the following plotted speed curves:
+
+image::speed-profile1.png[]
+
+*Note:* You might need to add ``python`` or ``python2`` in front of the python command. And matplotlib is needed, see odrplot in link:tools-overview.html#_tools_overview[Tools overview].
+
+*Tip:* For quick experiments, skip the visualization and bring the plot asap by replacing the two commands with:
+[source]
+----
+./bin/esmini.exe --headless --osc ./resources/xosc/speed-profile.xosc --fixed_timestep 0.01 --record sim.dat;./scripts/plot_dat.py sim.dat --param speed
+----
+
+The scenario includes two cars with identical speed profiles with one exception: The white Car1 use activate dynamic constraints by setting FollowingMode="follow" while the red Car2 will apply constant acceleration (linear interpolation) between speed targets by setting FollowingMode="position".
+
+The action for white car:
+
+[source,xml]
+----
+<SpeedProfileAction followingMode="follow">
+    <DynamicConstraints
+        maxAcceleration = "5.0"
+        maxDeceleration = "10.0"
+        maxAccelerationRate = "4.0"
+        maxDecelerationRate = "3.0"
+        maxSpeed = "50"
+    />
+    <SpeedProfileEntry time="0.0" speed="0.0"/>
+    <SpeedProfileEntry time="4.0" speed="10.0"/>
+    <SpeedProfileEntry time="4.0" speed="4.0"/>
+    <SpeedProfileEntry time="2.0" speed="8.0"/>
+</SpeedProfileAction>
+----
+
+The time values are relative each other and start of the action. In this case the action is triggered at simulation time = 2 seconds. Initial speed for both cars is 0. First entry has therefor no effect since it applies speed = 0 at time = 2 (2 + 0). After additional 4 seconds (sim time = 6s) the speed target is 10 m/s. At sim time 10s the speed target is 4 m/s and finally after 2 more seconds the final speed target value is 8.0 m/s.
+
+The "follow" mode deserves some additional explanation. As shown in the figure, it start and ends with zero acceleration. Then is basically will try to match the acceleration "lines" but cutting the corners according to acceleration and deceleration rate constraints. This way the intermediate speed values will not always be reached. However, the final speed value will be reached.
+
+If the target speed or accelerations can't be reached with given constraints the action will revert to linear mode (FollowingMode="position") for the remainder of the profile. This "failure" is logged.
+
+Another approach would be to try to perform a best effort, but that would require additional input to decide whether to prioritize reaching specified speed targets or respect time stamps...
+
+
+[Note]
+====
+**Note**: The implementation of this feature is preliminary and experimental. Behavior and details might change.
+====
+
+Let's manipulate the scenario in different ways to illustrate some special cases of the speed-profile feature.
+
+==== Special case: Single entry
+(Special case implementation introduced in esmini v2.23.1)
+
+Compared to SpeedAction, the SpeedProfileAction offers more tools in terms of dynamic constraints. Hence it can be actually be useful also for single entry, i.e. reach a single target speed.
+
+The implementation differs for the single entry case. Target speed will be reached if constraints allows for it. If not, the speed will still be reached, but later than specified.
+
+There are three sub cases:
+
+*1. Speed can be reached within time*
+
+The speed profile will contain three phases: Jerk, constant acceleration, jerk.
+
+Example: +
+Replace the four entries in speed-profile.xosc with the following ones:
+
+[source,xml]
+----
+    <SpeedProfileEntry time="0.0" speed="0.0"/>
+    <SpeedProfileEntry time="4.0" speed="10.0"/>
+----
+
+image::speed-profile5.png[]
+
+Initial positive jerk will be applied until necessary acceleration is reached. Keep constant acceleration (linear segment in the speed profile) until negative jerk needs to be applied in order to reach target speed on time and at zero acceleration.
+
+*2. Speed can't be reached in time due to acceleration constraints*
+
+This speed profile will also contain three phases: Jerk, constant acceleration, jerk.
+
+Example: +
+Replace the four entries in speed-profile.xosc with the following ones:
+
+[source,xml]
+----
+    <SpeedProfileEntry time="0.0" speed="0.0"/>
+    <SpeedProfileEntry time="3.0" speed="10.0"/>
+----
+
+image::speed-profile6.png[]
+
+Initial positive jerk will be applied until maximum acceleration is reached (or maximum deceleration). Keep constant acceleration (linear segment in the speed profile) until negative jerk needs to be applied in order to reach target speed at zero acceleration. Due to the acceleration limitation there will be a delay as well. The log file will include something like:
+
+[source]
+----
+SpeedProfile: Constraining acceleration from 5.86 to 5.00
+SpeedProfile: Extend 0.46 s
+----
+
+*3. Speed can't be reached in time due to jerk constraints*
+
+This speed profile will contain only two jerk phases.
+
+Example: +
+Keep entries from last case, but change jerk settings as follows:
+
+[source,xml]
+----
+  maxAccelerationRate="3.0"
+  maxDecelerationRate="2.0"
+----
+
+image::speed-profile7.png[]
+
+In this case the jerk settings are too weak to reach target speed in time. Not enough acceleration can be achieved in the given time window.
+
+Positive jerk will be applied until negative jerk has to be applied in order to reach target speed at zero acceleration. Hence there is no room for a phase of constant acceleration. Due to the jerk limitation there will be a delay. The log file will include something like:
+
+[source]
+----
+SpeedProfile: Can't reach target speed 10.00 on target time 3.00s with given jerk constraints, extend to 4.08s
+----
+
+==== What if current speed differ from the first entry?
+Replace the four entries with the following ones:
+
+[source,xml]
+----
+    <SpeedProfileEntry time="0.0" speed="3.0"/>
+    <SpeedProfileEntry time="4.0" speed="10.0"/>
+----
+
+image::speed-profile2.png[]
+
+What we see here is that for linear mode (FollowingMode="position") the speed of the first entry will apply immediately regardless of the current speed at the time of the action being triggered. For constrained mode (FollowingMode="follow") we see that the initial speed value (3.0) is overridden by the current speed (0.0). From there it will strive for the second entry, obeying the constraints.
+
+The overall idea with the "follow" mode is to maintain continuity in the speed profile, up to jerk degree.
+
+==== What if time is missing in entry?
+
+Replace any entries with the following ones:
+
+[source,xml]
+----
+    <SpeedProfileEntry speed="10.0"/>
+----
+
+image::speed-profile3.png[]
+
+Specified max acceleration will be applied until target speed is reached. Note: In the non-linear case and with multiple entries, the function will fail if the specified acceleration can't be reached with given jerk constraints (maxAcceleration and maxDeceleration). Try to lower the maxAcceleration/deceleration in this case.
+
+You can also combine entries with and without time constraint, like in following example:
+
+[source,xml]
+----
+    <SpeedProfileEntry speed="10.0"/>
+    <SpeedProfileEntry time="3.0" speed="15.0"/>
+----
+
+image::speed-profile4.png[]
+
+Car will accelerate until speed 10 m/s is reached, then spend 3 seconds to reach 15 m/s.
+
+==== Initial acceleration taken into account
+(from release v2.23.2)
+
+What if the acceleration is not zero when the SpeedProfileAction is started, for example interrupting an ongoing SpeedAction in Follow mode?
+
+To maintain a continuous acceleration profile the action will use current acceleration as initial value. The standard states that the acceleration is expected to be zero at start and end of the action. The esmini interpretation is that the CHANGE is zero at start while the ACTUAL value is zero at end (since the action can only control acceleration while being active, not before).
+
+Example:
+Once again starting from https://github.com/esmini/esmini/blob/master/resources/xosc/speed-profile.xosc[speed-profile.xosc], instead of setting an instant initial speed make it ramp up from 0 to 5 m/s over a duration of 4 seconds by tweaking the initial speed actions, for both entities, as below:
+
+[source,xml]
+----
+    <SpeedActionDynamics dynamicsShape="linear" value="5.0" dynamicsDimension="time"/>
+    <SpeedActionTarget>
+        <AbsoluteTargetSpeed value="4.0"/>
+    </SpeedActionTarget>
+----
+
+image::speed-profile8.png[]
+
+The initial speed action will apply constant acceleration until time = 2.0 seconds, when the SpeedProfileAction is triggered. While the linear profile will jump to 0 m/s (as specified in first entry) the follow mode profile will just apply necessary jerk to reach target acceleration with respect to following entries.
+
+Initial acceleration is also respected for the special case of a single entry, for example:
+
+[source,xml]
+----
+    <SpeedProfileEntry time="3.0" speed="10.0"/>
+----
+
+the result becomes:
+
+image::speed-profile9.png[]
+
+==== Sharp brake-to-stop profile
+
+To skip jerk phase, e.g. as in emergency brake with an abrupt stop, just set AccelerationRate to a large number.
+
+Example:
+Once again starting from https://github.com/esmini/esmini/blob/master/resources/xosc/speed-profile.xosc[speed-profile.xosc], change speed in the Init speed actions to 10.0 and replace the speed profile actions as below:
+
+[source,xml]
+----
+    <SpeedProfileAction followingMode="follow">
+        <DynamicConstraints
+            maxAcceleration = "5.0"
+            maxDeceleration = "10.0"
+            maxAccelerationRate = "1E10"
+            maxDecelerationRate = "3.0"
+            maxSpeed = "50"
+        />
+        <SpeedProfileEntry time="0.0" speed="10.0"/>
+        <SpeedProfileEntry time="4.0" speed="0.0"/>
+    </SpeedProfileAction>
+----
+
+image::speed-profile10.png[]
+
+*Note*: A drawback is that the setting will affect any acceleration phase in the complete profile. In other words, a limitation is that entries can't have individual settings. In the example above it's not problem since the first jerk phase is a deceleration while the second is an acceleration. If different rate values of same type are needed, it can be achieved by defining multiple SpeedProfile actions in a sequence, with individual performance settings.
+
+==== More info
+To get more understanding of the implementation, see a few slides https://drive.google.com/file/d/1DmjVHftcsbU71Ce_GASZ6IArcPA6teNF/view?usp=sharing[here].
+
+=== Condition delay
+
+Conditions can be delayed individually. A simple use case is to delay the closure of a scenario run, for example three seconds after any collision.
+
+It gets more flexible, and complex, when combining delay with grouping, which is a way to represent AND and OR logical operations, see https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/07_components_scenario/07_06_conditions_triggers.html#_triggers_and_condition_groups[OpenSCENARIO XML v1.3 User guide - Triggers and condition groups].
+
+Consider the following example, based on the test scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/condition_delay.xosc[condition_delay.xosc] (used by test case TestConditionDelay in https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/ScenarioEngine_test.cpp[ScenarioEngine_test]).
+
+The scenario is basically one car accelerating linearly from 50 to 100 km/h (13.9 - 27.8 m/s) during two seconds, and then decelerating back to 50 km/h, again over two seconds. The speed is greater than 25 m/s in the time window 3.2 - 4.8 seconds. By 6.0 seconds the speed has decreased to 20.8 m/s.
+
+There is one event including a LaneChange action and a StartTrigger containing three condition groups:
+
+[%autowidth, cols="1,1,1,1"]
+|===
+||*condition*|*delay*|*edge*
+|*Group1*|C1: SimulationTime ≥ 6.0|0.0|none
+||C2: Speed ≥ 25.0|0.0|none
+|*Group2*|C3: SimulationTime ≥ 6.0|0.0|none
+||C4: Speed ≥ 25.0|2.0|rising
+|*Group3*|C5: SimulationTime ≥ 6.0|0.0|none
+||C6: Speed ≥ 25.0|4.0|none
+|===
+
+Briefly, the action will happen whenever all (two) conditions within any of the three groups becomes true. It can be illustrated as below.
+
+image::condition_delay.png[]
+
+The solid blue curve represents the speed profile. The two dashed curves represents the speed profile as interpreted by the two delayed speed conditions. The yellow area above the horizontal thick line represents speed ≥ 25 m/s. The blue area to the right of the vertical thick line represents time ≥ 6.0 s.
+
+The first gray pyramid illustrates when condition C2 evaluates true. The gray dot represents when C4 evaluates true. The red pyramid represents C6 = true. Only the red pyramid is in the blue area (time ≥ 6s). In summary, only group 3 will evaluate to true. More specifically, it will become true as soon as speed becomes greater than 25 m/s, which happens at 7.2 seconds, which is passed 6 seconds.
+
+Hopefully the above example gives some idea how condition delay works and how it can be utilized.
+
+=== Road signs
+(framework updated in esmini v2.25.0)
+
+==== The system
+
+Road signs are specified in the https://www.asam.net/index.php?eID=dumpFile&t=f&f=4422&token=e590561f3c39aa2260e5442e29e93f6693d1cccd#top-016f925e-bfe2-481d-b603-da4524d7491f[OpenDRIVE] road network description file. A road sign is identified by up to four parameters:
+
+. country code
+. type
+. subtype
+. value
+
+Country code is a two letter word according to the https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2[ISO 3166-1 alpha-2 system]. Examples: Sweden = se, Germany = de.
+
+Type and subtype defines the semantic meaning of the sign. The value is used when applicable to further specify information, e.g. speed or weight. Data type and meaning of the parameters may differ between countries. However a mapping to each country's system is often feasible.
+
+Examples:
+In https://www.transportstyrelsen.se/sv/vagtrafik/Vagmarken/[Sweden a speed sign] belongs to the category prohibition signs named "c". Within that category speed signs is a sub group with index 31. Within that group each sign has a value of speed/10, e.g. 5=50km/h, 10=100km/h. So the parameters for a Swedish speed limit 90 km/h sign becomes: se, c, 31, 9.
+
+In https://en.wikipedia.org/wiki/Road_signs_in_Germany[Germany] there are no similar categories. Instead all signs have a unique group or type number, e.g. speed signs make up group 274. Then the value defines the speed. No need for subtype. So the parameters for a German  speed limit 90 km/h sign becomes: de, 274, -, 90.
+
+==== esmini sign catalogs
+Instead of hard-coding road sign support esmini will lookup the https://opensimulationinterface.github.io/open-simulation-interface/structosi3_1_1TrafficSign_1_1MainSign_1_1Classification.html[OSI code] from a separate sign definition file, which is unique for each country. Name convention for the file is: `country code` + "_traffic_signals.txt". Example: Swedish catalog is named "se_traffic_signals.txt".
+
+The file is a simple text format each line defining a sign ID and corresponding OSI type.
+
+Swedish example: `c.31-7=TYPE_SPEED_LIMIT_BEGIN` +
+German example: `274=TYPE_SPEED_LIMIT_BEGIN`
+
+Type is mandatory. For esmini to distinguish between subtype and value different separators are used: "." before subtype and "-" before value. For some signs the value is optional, e.g. for speed signs it simply specify the speed limit. But for some signs it is used as a subtype to identify a variant of a sign, as in the German 101 type category.
+
+Example files can be found in https://github.com/esmini/esmini/tree/master/resources/traffic_signals[esmini/resources/traffic_signals].
+
+Currently (v2.25.0) the esmini sign support is very limited. However, it should be fairly straight forward to add signs into existing catalogs and even catalogs (for more countries).
+
+==== Sign 3D models
+esmini road signs are created as follows:
+
+- A basic 3D geometry is modeled in Blender, e.g. round face for speed signs
+- Assign a material with any texture image mapped on the sign face
+- The 3D model is exported in `.dae` format (example https://drive.google.com/uc?export=download&id=11v7xz9Mqw_Vx4An_FoLfKVlwcWJc-mnE[here])
+
+- Find textures of the needed sign(s) and convert them into some common format, e.g. `.png`. Recommended size is 256, but larger is OK. If possible make it size 2^n x 2^m to avoid performance penalty on low spec/old systems.
+- Rename image to the same name as the texture image in the dae file (sign_image.png in the example dae)
+- Convert the .dae file into .osgb using osgconv. The texture will be embedded in the.osgb file by default.
+
+.Speed sign in Blender
+image::speed_sign_blender.png[]
+
+A https://github.com/esmini/esmini/blob/master/scripts/bake_signs.sh[script] is available as a starting point for automating the two last steps in the process above.
+
+==== Example
+
+The OpenDRIVE file https://github.com/esmini/esmini/blob/master/resources/xodr/straight_500m_signs.xodr[straight_500m_signs.xodr] includes a bunch of speed signs, some Swedish and some German ones. It shows how the signs are specified in terms of the country code, type, subtype and value attributes.
+
+It also shows how to specify the 3D model using the `name` attribute: If filename composed by country, type, subtype and value is not found, the `name` attribute + ".osgb" will be used for a second and final attempt.
+
+.Swedish speed sign
+image::speed_sign1.png[]
+
+.German speed sign
+image::speed_sign2.png[]
+
+=== Traffic Lights
+Supported from v.2.56.0.
+
+==== The system
+
+Traffic lights are specified in the https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/v1.8.1/specification/14_signals/14_01_introduction.html[OpenDRIVE] road network description file. A traffic light is identified by four parameters:
+
+. dynamic
+. country
+. type
+. subtype
+
+Dynamic should be set to `yes`, as it indicates that the signal is potentially changing state during the simulation.
+
+Only the country `OpenDRIVE` is supported, with its associated types and subtypes. More information available in https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Signal_reference/1.0.0/signal-catalog/01_road_signals/road_signals.html[ASAM OpenDRIVE signal references].
+
+
+==== Traffic lights in OpenSCENARIO
+
+esmini supports `TrafficSignalStateAction` and `TrafficSignalStateCondition`. The semantic state can be set in the `TrafficSignalStateAction`, and the same semantic state can be monitored in `TrafficSignalStateCondition`. A semantic state is described as a `string`, with one state per lamp in the traffic light separated by a `;`. The lamps are mapped from top -> bottom, meaning the leftmost semantic state is the top lamp etc.
+
+Example of a semantic state of a lamp of type `1000001` (https://github.com/esmini/esmini/blob/dev/resources/xosc/traffic_lights.xosc[full example]):
+
+[source,xml]
+----
+<GlobalAction>
+    <InfrastructureAction>
+      <TrafficSignalAction>
+          <TrafficSignalStateAction name="1" state="on;off;off"/>
+      </TrafficSignalAction>
+    </InfrastructureAction>
+</GlobalAction>
+----
+
+In above example, `name=1` maps to `signal` in the `OpenDRIVE` with `id=1`, and `state` is the semantic state of each of the 3 lamps.
+
+Supported semantic states are:
+
+. unknown
+. other
+. off
+. on
+. flashing
+. counting (no graphics support)
+. broken
+
+For their intended usage and definition see https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1TrafficLight_1_1Classification.html#ae107846d88eaa3dab95d3d931d73fa09[ASAM OSI documentation].
+
+==== Traffic lights visualization
+
+The traffic light 3D model is generated by esmini. The model is basically created as a number of stacked lamp housings, based on the `type`. The actual color and design of the lamp face itself is applied as a `.png` image texture. The image is picked based on the `type` and `subtype` attributes.
+
+.Traffic light construction for types 1000001 and 1000002
+image::traffic_light_construct.png[]
+
+The texture will illustrate the lamp face in lit state. When lamp is off it will be just black.
+
+Example from https://github.com/esmini/esmini/blob/dev/resources/xosc/traffic_lights.xosc[traffic_lights.xosc] (videoclip https://youtu.be/26BSMblzyO4[here]):
+
+.Screenshot from traffic_lights.xosc
+image::traffic_light_screenshot.jpg[]
+
+esmini model package (see link:support-qa.html#_update_3d_model_pack[here] how to get or update it) includes a set of predefined textures for traffic lights. As of v2.56.0 esmini supports 19 of the types defined in https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Signal_reference/1.0.0/signal-catalog/01_road_signals/road_signals.html[OpenDRIVE 1.8 - Signal reference]. The corresponding texture images are located in model package folder `models/roads_signal_textures/`.
+
+It's easy to replace a lamp face image or even add new ones. Just prepare a `.png` file named as follows:
+
+`opendrive_<type>[.subtype].png`
+
+where: +
+`<>` = mandatory fields +
+`[]` = optional fields
+
+For example, a traffic light of type `1000002` and subtype `30`: +
+`opendrive_1000002.30.png`
+
+The dimensions should preferably be a square power of 2 (POT) for each lamp face, e.g. 128x128 pixels. For traffic light types with three lamps the faces are stacked on top of each other so the size becomes 128x384 pixels. Images not fitting the POT dimensions will be downscaled.
+
+Put the .png image in the `resources/models/roads_signal_textures/` folder.
+
+==== Traffic Lights in OSI
+
+Traffic lights are decomposed into individual lamps before being transmitted via OSI. All traffic lights are currently assumed to be aligned along the positive z-axis, with no pitch or roll applied.
+
+Each lamp’s vertical position is calculated from top to bottom using the formula:
+
+`zOffset + lampHeight/2 + lampHeight * (nrOfLamps - 1 - lampIdx)`
+
+Where:
+
+. `zOffset` – the base vertical offset taken from the zOffset attribute in the OpenDRIVE (xodr) definition
+. `lampHeight` – computed as `height / nrOfLamps`, where `height` comes from the corresponding xodr element
+. `nrOfLamps` – the total number of lamps, automatically derived from the `type` field in the xodr element
+. `lampIdx` – zero-based index of the lamp (0 = top lamp)
+
+This computation ensures consistent vertical placement of all lamps within a multi-lamp traffic signal when exported to OSI.
+
+===== OpenSCENARIO to OSI state mapping
+
+This is how esmini maps the semantic states from OpenSCENARIO to OSI:
+
+. unknown -> `MODE_UNKNOWN`
+. other -> `MODE_OTHER`
+. off -> `MODE_OFF`
+. on -> `MODE_CONSTANT`
+. flashing -> `MODE_FLASHING`
+. counting -> `MODE_COUNTING`
+. broken -> `MODE_OTHER` and `is_out_of_service`
+
+[Note]
+====
+**Note**: The following OSI data is **not** supported for TrafficLight:
+
+. counter
+. logical_lane_assignment
+====
+
+=== Expressions
+From OpenSCENARIO v1.1 https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_expressions[expressions] including mathematical operations are supported in assignment of value to OpenSCENARIO https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_parameters[parameters] and XML element attributes. Examples:
+
+[source,xml]
+----
+<ParameterDeclaration name="PI" parameterType="double" value="3.14159"/>
+<ParameterDeclaration name="KPH2MPS" parameterType="double" value="1/3.6"/>
+
+...
+
+<Position>
+    <LanePosition roadId="1" laneId="-1" s="40" offset="0">
+        <Orientation type="absolute" h="${sin(0.25*$PI)}"/>
+    </LanePosition>
+</Position>
+
+...
+
+<SpeedActionTarget>
+    <AbsoluteTargetSpeed value="${110 * $KPH2MPS}"/>
+</SpeedActionTarget>
+----
+
+h and (speed value) evaluates to 0.707106 and 30.55558 respectively
+
+[discrete]
+==== Supported expression operators and functions
+
+[discrete]
+===== Operators
+
+[%autowidth,frame=none,grid=none,cols="1a,1"]
+|===
+|`+`|
+|`-`|
+|`*`| multiply
+|`/`|
+|`%`| IEEE 754 remainder, see https://en.cppreference.com/w/cpp/numeric/math/remainder[C++ std::remainder]
+|`**`| power
+|`<`|
+|`\<=`|
+|`>`|
+|`>=`|
+|`==`| equal
+|`!=`| not equal
+|`&&`| logical AND
+|`\|\|`| logical OR
+|===
+
+See https://github.com/esmini/esmini/blob/a53f09d85194509aa9d0c12971b1c73963c21d34/externals/expr/expr.h#L169[expr.h] for complete and updated list.
+
+[discrete]
+===== Functions
+
+[%autowidth,frame=none,grid=none,cols="1a,1"]
+|===
+|`round`| see https://en.cppreference.com/w/c/numeric/math/rint[C++ rint] (Round to nearest, halfway cases to even. Aligned with IEEE 754 default)
+|`floor`| see https://en.cppreference.com/w/c/numeric/math/floor[C++ floor]
+|`ceil`| see  https://en.cppreference.com/w/c/numeric/math/ceil[C++ ceil]
+|`sqrt`| square root
+|`pow`| see https://en.cppreference.com/w/c/numeric/math/pow[C++ pow]
+|===
+
+Following functions are supported by esmini, but not specified in OpenSCENARIO \<= 1.2, hence use with care since they may not work in other tools
+
+[%autowidth,frame=none,grid=none,cols="1a,1"]
+|===
+|`sin`|
+|`cos`|
+|`tan`|
+|`asin`|
+|`acos`|
+|`atan`|
+|`sign`|
+|`abs`|
+|`max`|
+|`min`|
+|===
+
+See https://github.com/esmini/esmini/blob/c9dc63c45be0dc479c22b78be74d047fc4449e7c/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/simple_expr.c#L101[simple_expr.c] for complete and updated list.
+
+[discrete]
+===== Strings
+
+From v2.35.0 string concatenation is supported. Whenever a string is detected that is netiher an opeator nor a function, the complete expression is treated as a string and '+' (plus) operator will merge surrounding evaluated strings which also can be evaluated parameters.
+
+This can be useful when running permutations of scenarios, where names of actors or storyboard elements can be made unique by including parameters values.
+
+Examples:
+
+`${Event_overtake_ + $ActorName}` -> `Event_overtake_Target4`
+
+`${Event_change_speed_to_ + $Speed}` -> `Event_change_speed_to_110`
+
+=== Parameter distributions
+
+Parameter values and distributions can be specified in a separate https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/09_reuse_mechanisms/09_03_parameter_distribution.html[Parameter value distribution file]. This is a convenient way of running multiple variations, or parameter value permutations, of a single scenario.
+
+Here's an example: https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_parameter_set.xosc[cut-in_parameter_set.xosc].
+
+To run all permutations with esmini, the following variants works:
+
+. `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc`
+. `./bin/esmini --window 60 60 800 400 --param_dist ./resources/xosc/cut-in_parameter_set.xosc`
+. `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --param_dist ./resources/xosc/cut-in_parameter_set.xosc`
+
+The first two will use the scenario file referred to by the https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/ParameterValueDistribution.html[ParameterValueDistriution element] inside the parameter value distribution file (`cut-in_parameter_set.xosc`). The third example will apply the parameter settings on the scenario defined by the `osc` launch argument, overriding any scenario reference in the specified `param_dist` file. This can be useful when a single parameter distribution applies to multiple scenarios (instead of having one parameter file for each scenario).
+
+How to abort:
+
+`"ESC"` (in window) will terminate current run +
+`"Ctrl-C"` (in terminal) will terminate all runs
+
+The log files are now named according to:
+`log_<permutation>_of_<total#permutations>.txt`
+
+For example:
+
+`log_1_of_12.txt` relates to the 1:th run of 12, permutation index 0 +
+`log_4_of_12.txt` relates to the 4:th run of 12, permutation index 3
+
+Of course this will apply also to custom log filenames. Example:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc --logfile_path my_scenario.txt`
+
+will output `my_scenario_1_of_12.txt`, `my_scenario_2_of_12.txt` ...
+
+Also any recording (.dat), osi and csv files will be named in similar way. Example:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc --record sim.dat --osi_file gt.osi --csv_logger data_log.csv`
+
+will output complete sets of files: +
+`log_1_of_12.txt` ... +
+`sim_1_of_12.dat` ... +
+`gt_1_of_12.osi` ... +
+`data_log_1_of_12.csv` ...
+
+To run a specific permutation only, specify index like this:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc --param_permutation 2`
+
+will run 3:rd permutation (of 12 available in this case)
+
+Save the resulting OpenSCENARIO file with populated parameter values:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc --save_xosc`
+
+will output all twelve scenarios `cut-in_1_of_12.xosc` ...
+
+To just save the scenario files quickly without executing them, add optional `quit` argument to the `save_osc` option, like this:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in_parameter_set.xosc --save_xosc quit`
+
+To view all results in parallel, make use of replayer like this:
+
+`./bin/esmini --headless --fixed_timestep 0.05 --osc ./resources/xosc/cut-in_parameter_set.xosc --record sim.dat ; ./bin/replayer --window 60 60 800 400 --res_path ./resources/ --file sim_ --dir .`
+
+.View all permutations in parallel
+image::param_dist0.jpg[]
+
+==== Parallel execution
+
+Making use of Python threading pool framework we can utilize any multiple CPU kernels and run scenario variants in parallel. This is handled by the script https://github.com/esmini/esmini/blob/master/scripts/run_distribution.py[scripts/run_distribution.py].
+
+Usage: `run_distribution.py <esmini args>`
+
+Make sure to add at least the following esmini arguments: +
+`--osc <parameter distribution file>` +
+`--fixed_timestep <timestep>` +
+`--headless`
+
+Example:
+
+`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in_parameter_set.xosc --fixed_timestep 0.05 --headless --record sim.dat`
+
+Of course, the --headless (and --fixed_timestep) is not required. It is possible to run with viewer as well:
+
+`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in_parameter_set.xosc --window 60 60 800 400`
+
+but the windows will open on top of each other at the same location on the screen, so you need to manually move them apart to see the parallel runs. Anyway, this use case is probably not relevant so the recommendation is to run headless with fixed time step.
+
+Putting it all together, execute the scenario permutations in parallel and then view the result in replayer:
+
+`python ./scripts/run_distribution.py --osc ./resources/xosc/cut-in_parameter_set.xosc --fixed_timestep 0.05 --headless --record sim.dat ; ./bin/replayer --window 60 60 800 400 --res_path ./resources/ --file sim_ --dir .`
+
+==== Finding out number of permutations
+
+To find out the number of permutations of a specific scenario and parameter distribution, use the `--return_nr_permutations` launch argument. Example:
+
+`./bin/esmini --osc ./resources/xosc/cut-in_parameter_set.xosc --return_nr_permutations`
+
+Output:
+`Nr permutations: 12`
+
+For scripters: esmini will also return the number of permutations as exit code, for simple use in scripts.
+After executing the above the exit code can be inspected/verified from shell as well:
+
+PowerShell: +
+`echo $LastExitCode`  +
+`6`
+
+bash: +
+`echo $?` +
+`6`
+
+=== Trajectories
+
+Using OpenSCENARIO https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/FollowTrajectoryAction.html[FollowTrajectoryAction] you can define various types of trajectories for entities to follow.
+
+esmini supports all three (as of OpenSCENARIO 1.2) https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/Shape.html[shapes]:
+
+- polyline
+- clothoid
+- nurbs
+
+Here follows a few design choices for the polyline type that affect the behavior.
+
+When FollowMode is `follow` esmini will:
+
+. Calculate heading based on direction of the line segments. However corners are interpolated in order to look better and avoid discontinuities.
+. Calculate speed based on current speed (when action is triggered) and then with constant acceleration per segment reach destination vertex on time (or earlier if distance is too short vs time). This approach results in a continuous speed profile.
+
+When FollowMode is `position` esmini will:
+
+. For world coordinates, apply whatever heading is specified in the vertices (note that 0.0 is default). Lane and road coordinates will align to road direction as default.
+. For each segment, calculate constant speed needed to reach next vertex on time. This approach results in a discontinuous speed profile.
+
+==== Trajectory moving and driving direction
+
+The driving direction and entity direction can be controlled by trajectory configuration combined with entity speed and heading. It's possible to follow trajectory in opposite direction and also to drive forward or reverse along the trajectory. The table below lists some combinations and possibilities.
+
+.FollowTrajectory action motion direction based on input
+[cols="1,2,2,2,2,1,2,2,2,2", stripes=even]
+|===
+|
+4+|input|⇒
+4+|output
+||trajectory type|heading rel. traj|timestamps|speed||heading rel. traj|speed|moving dir. rel. traj|entity (in tc)
+|1|clothoid|n/a|n/a|&gt; 0||forward|no change|forward|bicycle1
+|2|clothoid|n/a|n/a|&lt; 0||backward|no change|forward|scooter1
+|3|polyline/nurbs|-|-|&gt; 0||forward|no change|forward|car_white
+|4|polyline/nurbs|-|-|&lt; 0||backward|no change|forward|car_red
+|5|polyline/nurbs|-|yes|ignored||forward|&gt; 0|forward|car_blue
+|6|polyline/nurbs|forward|-|&gt; 0||no change|no change|forward|car_yellow
+|7|polyline/nurbs|forward|-|&lt; 0||no change|no change|backward|van_red
+|8|polyline/nurbs|forward|yes|ignored||no change|&gt; 0|forward|motorbike
+|9|polyline/nurbs|backward|-|&gt; 0||no change|no change|backward|car_trailer
+|10|polyline/nurbs|backward|-|&lt; 0||no change|no change|forward|semi_tractor
+|11|polyline/nurbs|backward|yes|ignored||no change|&lt; 0|forward|truck_yellow
+|===
+
+[horizontal]
+*input heading*:: explicit heading (optionally supported by some shape types) in trajectory control points pointing forward (-90 < heading < 90 deg along trajectory s axis) or backwards. `n/a`: not supported, `-`: not specified.
+*timestamps*:: `n/a`: not supported, `-` not specified or timeReference is None, `yes`: specified timestamp and timeReference != None
+*speed*:: `>0`: speed >= 0, `<0`: speed < 0. For timestamp mode, the magnitude of speed and overall motion direction is given by trajectory control point's timestamps and heading. Allowing for reversing, the initial heading of the entity, if specified, affects whether speed is positive (driving forward) or negative (reversing), see line 8 and 11.
+*output heading*:: Entity heading relative trajectory s-axis direction (heading/tangent). `no change`: not affected by the action, `forward`: facing along s, `backward`: facing away from s. When not specified, entity heading will be aligned forward or backward according to the speed direction. Interpolation will be applied based on specified followingMode, see previous section.
+*moving direction*:: entity motion along trajectory s-axis or opposite direction, given by: `sign(speed) * sign(entity heading rel. traj)`
+*entity (in tc)*:: Corresponding entity in the smoke test scenario https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/trajectory_speed.xosc[trajectory_speed.xosc], which checks the various trajectory configurations. See also videoclip below.
+
+===== Trajectory motion direction control option
+The influence from entity heading on the moving direction can be disabled by setting the global `ignore_heading_for_traj_motion` option, or setting the per Vehicle property    `ignoreHeadingForTrajMotion`="true". That will allow for entities facing away from and still move along the trajectory s-direction forward or backward according to specified speed alone. Line 9 and 10 above would result in:
+
+.Motion direction affected by `ignore_heading_for_traj_motion` option
+[cols="1,2,2,2,2,1,2,2,2,2", stripes=even]
+|===
+|
+4+|input|⇒
+4+|output
+||trajectory type|heading rel. traj|timestamps|speed||heading rel. traj|speed|moving dir. rel. traj|entity (in tc)
+|9|polyline/nurbs|backward|-|&gt; 0||no change|&lt; 0 *|forward *|car_trailer
+|10|polyline/nurbs|backward|-|&lt; 0||no change|&gt; 0 *|backward *|semi_tractor
+|===
+
+pass:[*] indicating changed output
+
+===== Example scenarios
+
+The following test cases cover the various cases and beyond.
+
+.test case scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/trajectory_speed.xosc[trajectory_speed.xosc]
+video::mSekcv5Mqeo[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+.scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/trajectory_special_cases.xosc[trajectory_special_cases.xosc] including example how to transition between reverse and forward driving
+video::sjOgdx8qfEM[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+===== Use cases
+
+.Trajectory configurations for some specific use cases
+[cols="1,3,2,2,2,2,1,2,2,2", stripes=even]
+|===
+||
+4+|input|⇒
+3+|output
+||Use case|heading rel. traj|timestamps|speed|ignore heading *||heading rel. traj|speed|moving dir. rel. traj
+|1|Reversing with set speed|-|no|&lt; 0|no||backward|no change|forward
+|2|"|forward|no|&lt; 0|no||no change|no change|backward
+|3|"|backward|no|&lt; 0|no||no change|no change|forward
+|4|Reversing with timestamps|backward|yes|ignored|no||no change|&lt; 0|forward
+|5|Moving along traj with any heading|any|no|&gt; 0|yes||no change|no change|forward
+|6|"|any|yes|ignored|no||no change|sign depends on heading|forward
+|===
+
+pass:[*] `ignore_heading_for_traj_motion` option or `ignoreHeadingForTrajMotion` property described avove
+
+See scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/traj_use_cases.xosc[traj_use_cases.xosc]. Run from esmini root as:
+
+`./bin/esmini --path ./resources/models --osc ./EnvironmentSimulator/Unittest/xosc/traj_use_cases.xosc --custom_fixed_camera 24,27,28,5.5,0.57`
+
+=== Friction
+
+From v2.37.0 esmini supports road friction defined in https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/11_lanes/11_07_lane_properties.html#sec-8345bf25-d584-4a5b-8fa7-e15c920ab219[OpenDRIVE lane material].
+
+Each lane within a lane section can have one or multiple segments of individual friction values, specified by s-value and friction coefficient.
+
+Default friction coefficient is 1.0 as of v2.37.0, but might change in later versions. Lower friction (<1.0, slippery) will be visualized as bluish color. The lower friction, the more blue color. High friction values (>1.0,  "grippy") is indicated by redish color.
+
+The friction is calculated per wheel. The values are reported in OSI ground-truth.
+
+Example road: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xodr/straight_highway_500m.xodr[straight_highway_500m.xodr] (used by test scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/friction_and_lane_change_edge_case.xosc[friction_and_lane_change_edge_case.xosc])
+
+.Road with various friction segments, coefficient evaluated per wheel
+image::friction.jpg[]
+
+=== Environment conditions
+From v2.49.0 esmini supports the https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/EnvironmentAction.html[`EnvironmentAction`], which allows you to set weather state, road conditions, and time of the day.
+
+There are two ways to define `EnvironmentAction`:
+
+*1. Directly in the OpenSCENARIO file* +
+You can define the `EnvironmentAction`, which is a `GlobalAction` directly within your OpenSCENARIO file, example:
+
+[source,xml]
+----
+<GlobalAction>
+    <EnvironmentAction>
+        <Environment name="weather">
+            <TimeOfDay animation="true" dateTime="2023-11-15T10:30:00.123+00:00"/>
+            <Weather fractionalCloudCover="zeroOktas" temperature="300" atmosphericPressure="10000">
+                <Sun azimuth="0.4" illuminance="100000" elevation="0.3"/>
+                <Fog visualRange="6000"/>
+                <Precipitation precipitationType="snow" precipitationIntensity="10.0"/>
+                <Wind direction="3.1415" speed="10"/>
+            </Weather>
+            <RoadCondition frictionScaleFactor="0.9"/>
+        </Environment>
+    </EnvironmentAction>
+</GlobalAction>
+----
+
+*2. Using a Catalog* +
+You can create a catalog of environments and reference them in your OpenSCENARIO file. This allows you to re-use the same environment across multiple scenarios, ensuring consistency and reducing redundancy, example:
+
+[source,xml]
+----
+<GlobalAction>
+    <EnvironmentAction>
+        <CatalogReference catalogName="EnvironmentCatalog" entryName="summer"/>
+    </EnvironmentAction>
+</GlobalAction>
+----
+The catalog reference points to a specific environment defined in the https://github.com/esmini/esmini/tree/master/resources/xosc/Catalogs/Environments/EnvironmentCatalog[`EnvironmentCatalog`]. The catalog can contain multiple environments, each with its own set of parameters.
+
+Example scenario using both methods: https://github.com/esmini/esmini/blob/dev/resources/xosc/cut-in_environment.xosc[cut-in_environment.xosc]
+
+video::-mQUJU1rR2M[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+Note that vehicle headlights are currently not considered in the viewer.
+
+==== Visual elements affecting the viewer
+
+Although all the environment conditions are reported in the OSI data, only some are visualized. Currently, as of v2.49.0, all but `precipitation`, `wind` and `domeImage` are visualized in some way, described below.
+
+===== Sun element
+
+The `Sun` element's `illuminance` directly controls the sky color, where the value 100000 represents the brightest blue sky.
+
+* `illuminance`: A linear shift from **black** (illuminance 0) to **bright blue** (illuminance 100000).
+* `azimuth` and `elevation`: These attributes have no visual effect on the scenario's representation.
+
+===== TimeOfDay animation
+
+The `TimeOfDay` element controls sky color based on the set time. Its `animation` attribute determines whether the OSI data's time of day and unix timestamp in the environmental conditions advance with simulation time or not.
+
+* **Logic**: `TimeOfDay` utilizes the `Sun illuminance` property to adjust the color.
+    * `00:00:00` corresponds to an `illuminance` of 0.
+    * `12:00:00` corresponds to an `illuminance` of 100000.
+* **Precedence**: The `Sun` element's `illuminance` value will always override the `TimeOfDay` animation if both has been set in the scenario.
+
+===== Weather element
+
+The `Weather` element influences the sky color based on cloud cover.
+
+* `fractionalCloudCover`: Linearly shifts the sky color from **bright blue** to **gray** in increment of eights (`1/8`).
+
+* `zeroOktas`: Represents a clear sky.
+* `NineOktas`: Represents a completely overcast sky.
+
+===== Fog element
+
+The `Fog` element creates a fog effect, with its density determined by `visualRange`.
+
+* `visualRange`: Lower values result in denser fog.
+* **Fog Color Logic**:
+    `fogColor = color_dark_gray * cloudiness + color_background_gray * (1 - cloudiness)`
+* **Sky Color Logic (affected by fog)**:
+    `sunIlluminance * ((1 - cloudiness) * background_color + cloudiness * fogcolor)`
+
+Where `background` is calculated as
+`visual_range * fogcolor + (1 - visual_range) * color_background`
+
+.Fog in example scenario https://github.com/esmini/esmini/blob/dev/resources/xosc/cut-in_environment.xosc[cut-in_environment.xosc]
+image::fog.jpg[]
+
+=== Vehicle light states
+
+From v3.1.0, esmini supports https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/LightStateAction.html[LightStateAction] for controlling vehicle lighting. While all standard https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/VehicleLightType.html[VehicleLightType] entries are supported, https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/UserDefinedLight.html[UserDefinedLight] is currently excluded.
+
+.Example: Activating brake lights
+
+```xml
+<AppearanceAction>
+    <LightStateAction transitionTime="0">
+        <LightType>
+            <VehicleLight vehicleLightType="brakeLights" />
+        </LightType>
+        <LightState mode="on" luminousIntensity="6000" />
+    </LightStateAction>
+</AppearanceAction>
+```
+
+For scenario preview purposes esmini offers a simplified visualization of the light states. The light colors are deduced from the 3D model or falls back to internal defaults. For custom colors, esmini generates a dark base shade and a bright shade for full intensity; note that the visualized color may look different than anticipated due to this shade generation.
+
+Most vehicle 3D models have been updated with simple polygon faces representing each possible light source. Note that only the light faces themselves are illuminated, no light are casted on the surrounding environment.
+
+The image below is a screenshot from example scenario https://github.com/esmini/esmini/blob/dev/resources/xosc/light_state.xosc
+
+image::light_state.jpg[]
+
+Video clip: https://youtu.be/MElGBJ5X7go
+
+By default no light faces are shown, only if the vehicle is involved in a LightStateAction. This is to avoid irrelevant visual clutter. Default behavior can be overriden with `light_mode` option, see link:command-reference.html#_esmini[esmini command reference].
+
+Links to Blender resources for the vehicle 3D models are found in link:openscenegraph-3d-models.html#_esmini_3d_assets[esmini 3D assets]
+
+==== OSI Mapping
+
+esmini maps LightStateAction → OSI https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1MovingObject_1_1VehicleClassification_1_1LightState.html[LightState], with some special assumptions made on the following combinations:
+
+    * lowBeam, daytimeRunningLights → head_light
+    * brakeLights intensity > 6000 → brake_light_state::BRAKE_LIGHT_STATE_STRONG
+    * specialPurposeLights flashing, Role: Ambulance/Police → emergency_vehicle_illumination::FLASHING_BLUE
+    * specialPurposeLights flashing, Role: Fire → emergency_vehicle_illumination::FLASHING_BLUE_AND_RED
+    * specialPurposeLights flashing, Other roles → service_vehicle_illumination::FLASHING_AMBER
+
+==== Visualization
+
+esmini supports limited previeweing of light state actions. Most vehicle models
+
+=== Tunnels
+
+From v2.49.0, esmini supports OpenDRIVE tunnels.
+
+A tunnel is defined as a road object, according to https://publications.pages.asam.net/standards/ASAM_OpenDRIVE/ASAM_OpenDRIVE_Specification/latest/specification/13_objects/13_11_tunnels.html[OpenDRIVE Tunnel element specification].
+
+Example:
+
+[source,xml]
+----
+<tunnel s="30.0" length="250.0" name="MyTunnel" id="1" type="standard"/>
+----
+
+This will define a tunnel named "MyTunnel" starting at 30m along the road, with a length of 250m.
+
+==== Tunnel 3D model and transparency
+
+By default, esmini will generate a simple 3D model of the tunnel. The width will cover all road lanes except any out lanes of type `none`. The height will be fixed to 4.5m. Walls and roof constructions 2m thick.
+
+.Automatically created tunnel 3D model
+image::tunnel_opaque.jpg[]
+
+To disable auto-generation of the tunnel model, set the userData attribute `generate3DModel` to `false`. Example:
+
+[source,xml]
+----
+<tunnel s="30.0" length="250.0" name="MyTunnel" id="1" type="standard">
+    <userData code="generate3DModel" value="false"/>
+</tunnel>
+----
+
+To see whats going on inside a tunnel, esmini provides a `tunnel_transparency` option. Example:
+
+`./bin/esmini --osc ./resources/xosc/tunnels.xosc --tunnel_transparency 0.6`
+
+.60% tunnel transparency
+image::tunnel_transparent.jpg[]
+
+The generated tunnel model will adapt to any changes in road width, as can be seen in below image:
+
+.Tunnel adapting to changing road width
+image::tunnel_width.jpg[]
+
+If the automatically created tunnel model does not fit your needs, you can define it in terms of ordinary OpenDRIVE road objects. Then, for example, the tunnel width can be customized as well as the thickness of walls and/or roof construction. In the example scenario below the tunnel named "ManualTunnel" is such.
+
+==== Tunnel example scenario
+
+Here's a demo scenario including a few tunnels: +
+https://github.com/esmini/esmini/blob/dev/resources/xosc/tunnels.xosc
+
+and the associated OpenDRIVE file: +
+https://github.com/esmini/esmini/blob/dev/resources/xodr/tunnels.xodr
+
+Video clip showing some usage of tunnels in esmini, including OSI inspection:
+
+video::pTYcu1yFe5k[youtube,width=800,height=450,opts="autoplay,nocontrols,loop"]
+
+=== 2D shape outline
+
+In addition to bounding box, OSI supports defining a more precise 2D shape outline (https://opensimulationinterface.github.io/osi-antora-generator/asamosi/latest/gen/structosi3_1_1BaseMoving.html#a584e39108fe12db4933390975a172c63[base_polygon]) for entities, by specifying a set 2D (x,y) points in the entity's local coordinate system.
+
+.Outline example
+image::outlines_car.jpg[]
+
+This is, for example, useful for NCAP scenarios where a more precise collision detection is required, see https://www.euroncap.com/media/95012/ca-004-data-acquisition-and-assessment-criteria-calculation-v11.pdf#page=9[Euro NCAP Data Acquisition
+And Assessment Criteria Calculation]
+
+Currently OpenSCENARIO XML does not support defining 2D shape outlines in a standardized way. However, the Property elements of https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/EntityObject.html[EntityObject] (Vehicle, Pedestrian, MiscObject) can be utilized for this purpose. From version 2.58.0 esmini supports reading 2D shape outlines defined as property with name `outline` and value on the format: `x0,y0;x1,y1;x2,y2,...`. Example of four points:
+
+[source,xml]
+----
+<Property name="outline" value="-1.5,-2.0;1.5,-2.0;1.5,2.0;-1.5,2.0"/>
+----
+
+resulting in a rectangular shape outline 3x4 meters, centered at the reference point of the entity.
+
+A full example, shown in image above, can be found in the esmini demo vehicle catalog https://github.com/esmini/esmini/blob/cf7387b5071870128959712739002fa1c685c0e1/resources/xosc/Catalogs/Vehicles/VehicleCatalog.xosc#L53-L87[VehicleCatalog.xosc/car_white_with_outline]. Points calculated using this https://docs.google.com/spreadsheets/d/1Bc6T6FH1yP6PzW9zeZdmwzWGdaDU6vs17frhorkltHI/edit?usp=sharing[Google sheet] (`File -> Make a copy` to edit your own values).
+
+The test scenario https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/shape_outlines.xosc[shape_outlines.xosc] includes a few more examples for various entity types. Video clip https://youtu.be/YZX2P4F5Rj8[here].
+
+.Further outline examples
+image::outlines.jpg[]
+
+Note that the outline is independent and does not have to exactly match the 3D model of the entity.
+
+The visualization of the 2D shape outlines is activated by default. It can be disabled by option `--hide_obj_outline` and toggled on/off in `esmini` and `replayer` with `;` (shift + comma).
+
+=== Boundingbox Colors
+
+On any EntityObject (Vehicle, Pedestrian, MiscObject) in OpenSCENARIO XML, esmini will, in addition to visualizing 3D models and boundingbox wireframe, generate a filled boundingbox with specified boundingbox dimensions and optional color.
+
+*How to enable*
+
+- In simulation: Toggling the view mode with `,`
+- Launch option `--view_mode filled_boundingbox`.
+
+Currently, OpenSCENARIO XML doesn't support setting the color of an object in a standardized way.  However, the Property elements of https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/EntityObject.html[EntityObject] can be utilized for this purpose. From version 3.0.1 esmini supports reading color defined as property with name `color` and value as a hex code with format: `#RRGGBB`. Example of white color:
+
+[source,xml]
+----
+<Property name="color" value="#FFFFFF"/>
+----
+
+For further details refer to the https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Vehicles/VehicleCatalog.xosc[VehicleCatalog].
+
+The hex code for the color will be converted to a value between 0 and 1 and transmitted on its respective channel on OSI https://opensimulationinterface.github.io/osi-antora-generator/asamosi/V3.5.0/gen/structosi3_1_1ColorRGB.html[ColorRGB] in OSI MovingObject (Vehicle, Pedestrian) and StationaryObject (MiscObject).
+
+
+=== SUMO integration
+
+https://eclipse.dev/sumo/[SUMO] is a great open source traffic simulation tool. It has been integrated with esmini, making it possible to run SUMO simulations in esmini, and even mix or co-simulate SUMO vehicles with OpenSCENARIO vehicles.
+
+*NOTE:* Even though SUMO has been linked with esmini for quite long, it's on a experimental level and has not been used a lot. Hence, expect shortcomings and issues. The currently integrated SUMO version, as of esmini v2.37.1, is 1.6.0 while the current SUMO version is 1.19.0. There is plans to update SUMO version in esmini in a soon future.
+
+This chapter explains how to create a SUMO simulation and then how to use it in esmini. For just using SUMO simulations there is no need to install SUMO, it is already embedded with esmini (as long as it has not been explicitly excluded, see link:build-guide.html#_slim_esmini_customize_configration[Slim esmini - customize configration]). Only to create SUMO content it has to be installed.
+
+==== Install SUMO
+
+1. Get SUMO from here: https://eclipse.dev/sumo/
+2. Install normally, check any option to add sumo to environment path variable
+
+==== Try example from esmini
+
+. Launch `sumo-gui` application
+. File -> Open Simulation
+. Navigate to `esmini/resources/sumo_inputs` and select `multi_intersections.sumocfg`
+. Set Delay (ms) to 100, otherwise simulation will run super-quick
+. Run (Play button or Simulation -> Run)
+
+==== Running the same scenario in esmini
+
+. In a terminal, from esmini root folder, run:
+. `./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/sumo-test.xosc`
+
+==== Create a SUMO simulation
+
+First, there is a great complete guide at https://sumo.dlr.de/docs/
+
+The main flow of our example is:
+
+. Convert an OpenDRIVE file into a SUMO road network
+. Identify some trips (start and end points) within the road network
+. From the trips, resolve complete routes wthich are assigned to vehicles and distribute over time
+. Create a configuration referring to the road network and route definition
+
+Step-by-step:
+
+. Create a new folder, e.g. "my_sumo", for this example
+. Copy esmini/resources/xodr/fabriksgatan.xodr into the new folder
+. Open a terminal in the new folder
+. Convert the xodr into a SUMO https://sumo.dlr.de/docs/Networks/SUMO_Road_Networks.html[road network]: +
+   `netconvert --opendrive fabriksgatan.xodr -o my_sumo.net.xml`
+. Create some traffic using https://sumo.dlr.de/docs/Tools/Trip.html#randomtripspy[randomTrips.py] (and https://sumo.dlr.de/docs/duarouter.html[duarouter]): +
+    `randomTrips.py -n my_sumo.net.xml -e 60 -o my_sumo.trips.xml --route-file my_sumo.rou.xml`
++
+If this fails, it may be because of lacking .py file association. Try:
++
+```
+python3 randomTrips.py ...
+python randomTrips.py ...
+python3 tools/randomTrips.py ...
+python tools/randomTrips.py ...
+```
+
+[start=6]
+. Create the configuration file
++
+Save the following lines into a new file named "my_sumo.sumocfg":
++
+[source,xml]
+----
+<?xml version="1.0" encoding="iso-8859-1"?>
+<configuration>
+    <input>
+        <net-file value="my_sumo.net.xml"/>
+        <route-files value="my_sumo.rou.xml"/>
+    </input>
+    <time>
+        <begin value="0"/>
+        <end value="60"/>
+        <step-length value="0.01"/>
+    </time>
+</configuration>
+----
+
+. Open Sumo, load the created config file "my_sumo.sumocfg" and run as in first example, <<Try example from esmini>>.
+
+==== Connect a SUMO simulation to a scenario in esmini
+
+Currently, as of esmini v2.37.1, SUMO is integrated in terms of a controller. To add a SUMO simulation, define an entity as usual, assign the SumoController and set its "filepath" property to the sumocfg file.
+
+Now when we have a complete SUMO configuration, do the following steps in order to use it in esmini:
+
+. Copy the three files: my_sumo.net.xml, my_sumo.rou.xml and my_sumo.sumocfg (roadnetwork, routes, config) to `esmini/resources/sumo_inputs`
+
+. Create a file named "my_sumo.xosc", in `esmini/resources/xosc` with the following content:
++
+[source,xml]
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSCENARIO>
+    <FileHeader author="esmini team" date="2024-03-06T10:00:00" description="sumo integration example" revMajor="1" revMinor="2"/>
+    <ParameterDeclarations/>
+    <CatalogLocations>
+        <VehicleCatalog>
+            <Directory path="../xosc/Catalogs/Vehicles"/>
+        </VehicleCatalog>
+        <ControllerCatalog>
+            <Directory path="../xosc/Catalogs/Controllers"/>
+        </ControllerCatalog>
+    </CatalogLocations>
+    <RoadNetwork>
+        <LogicFile filepath="../xodr/fabriksgatan.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="SumoVehicles">
+            <CatalogReference catalogName="VehicleCatalog" entryName="car_red"/>
+            <ObjectController>
+                <Controller name="SumoController">
+                    <Properties>
+                        <File filepath="../sumo_inputs/my_sumo.sumocfg"/>
+                    </Properties>
+                </Controller>
+            </ObjectController>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions/>
+        </Init>
+        <StopTrigger/>
+    </Storyboard>
+</OpenSCENARIO>
+----
+
+[start=3]
+. Run from esmini root folder:
++
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/my_sumo.xosc`
+

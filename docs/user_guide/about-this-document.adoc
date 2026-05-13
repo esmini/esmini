@@ -1,0 +1,64 @@
+= esmini user guide – About this document
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== About this document
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+The source of this document is written in the https://asciidoc-py.github.io/index.html[asciidoc] format.
+The source is split into one file per top-level section, located in the
+https://github.com/esmini/esmini/blob/master/docs/user_guide/[docs/user_guide/] folder.
+The entry point is https://github.com/esmini/esmini/blob/master/docs/user_guide/index.adoc[user_guide/index.adoc].
+
+=== How to generate HTML from AsciiDoc
+The html is generated with https://asciidoctor.org/[asciidoctor]. Code snippets, images and other resources are included in the process. Also the version numbers are automatically inserted to avoid "human errors".
+
+The final HTML document is published in this repo: https://github.com/esmini/esmini.github.io
+
+Access URL: https://esmini.github.io/
+
+Install tools:
+[horizontal]
+*Linux*::
+``sudo apt install asciidoctor`` +
+``sudo apt install ruby-coderay``
+
+*Windows*::
+* First, if not already done, install ruby: +
+  ** Pick latest Ruby x64 package, without devkit, here: https://rubyinstaller.org/downloads/ +
+  ** Install it. In the end you can leave "Run 'rid install' to setup MSYS2 and development toolchain" un-checked +
+* Then run: +
+``gem install asciidoctor`` +
+``gem install coderay`` +
+``gem install asciidoctor-kroki``
++
+Troubleshooting: If you get an error like +
+`Unable to download data from https://rubygems.org/ - SSL_connect ...` +
+try update RubyGems as follows: +
+``gem update --system``
+
+==== Generate HTML document
+
+From the `docs/user_guide/` folder, render each page individually (bash):
+
+[source,bash]
+----
+for f in *.adoc; do asciidoctor -r asciidoctor-kroki "$f"; done
+./generate-search-index.sh
+----
+
+This produces a collection of `.html` files (`index.html` being the landing page) and the `search_index.json` file that is used for the search functionality in the published document.
+
+=== How to view previous versions
+Full commit history is found https://github.com/esmini/esmini.github.io/commits/main[here]
+
+To view a previous version, utilizing https://htmlpreview.github.io/[htmlpreview.github.io], either refer to a https://github.com/esmini/esmini.github.io/tags[tag], like this:
+
+`https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/refs/tags/v2.42.0/index.html`
+
+or refer to any commit, like this:
+
+`https://htmlpreview.github.io/?https://raw.githubusercontent.com/esmini/esmini.github.io/47a9267a5935d0bd2648950e4d9d3e23f1e8ff3a/index.html`
+

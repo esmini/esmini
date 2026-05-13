@@ -1,0 +1,78 @@
+= esmini user guide – Getting started
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== Getting started
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+
+Download latest release from here: https://github.com/esmini/esmini/releases/latest
+
+First time make sure to pick the demo package for your platform (Windows, Linux or Mac). In addition to application binaries it also includes some content like example scenarios and basic 3D models. The binary (bin) packages includes only executables and libraries.
+
+On Windows, make sure the zip file is not blocked: Right click, click Properties, at bottom right check Unblock. For more info, see link:support-qa.html#_blocked_by_windows_defender_smartscreen[Blocked by Windows Defender SmartScreen].
+
+To install the package, just unzip it anywhere. A single subfolder named `esmini` is created. This is the root folder for esmini. No files are stored outside this folder structure and no system files or registry is modified in any way.
+
+=== Run esmini
+
+Try to run one of the examples:
+
+* go to folder esmini/run/esmini
+* double click on a .bat file, e.g. `run_cut-in.bat` or run it from a command line.
+
+These scripts should work on all platforms (in spite extension ".bat").
+
+You can also run the examples explicitly from a command line:
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc``
+
+For common Mac issues, please see link:support-qa.html#_mac_issues_and_limitations[Mac issues and limitations].
+
+=== Get complete esmini
+The demo package contains only a subset of esmini tools and content (e.g. scenario examples, scripts and models).
+
+To get the complete content, first download or clone the project from GitHub: https://github.com/esmini/esmini. E.g: +
+`git clone \https://github.com/esmini/esmini.git`
+
+Then either build yourself, see step 2 in next chapter <<Build esmini - quick guide>>, or:
+
+. Download pre-built binary package for your system (e.g. esmini-bin_win_x64.zip) from latest release:
+https://github.com/esmini/esmini/releases. Copy the content into the esmini-demo folder.
+. Download the complete 3D model package from https://dl.dropboxusercontent.com/s/5gk8bvgzqiaaoco/models.7z?dl=1[here]. Unpack into esmini/resources (it should end up in a `models` subfolder). These assets work on all platforms. The environment models (roads, landscape, buildings...) have been created using https://vires.mscsoftware.com/solutions/3d-environment-road-network[VIRES Road Network Editor].
+
+=== Build esmini - quick guide
+
+Supported systems: Windows, Linux and Mac.
+
+Make sure you have a C++ compiler and https://cmake.org/[CMake] installed.
+
+On Windows https://visualstudio.microsoft.com/[Visual Studio] is recommended (Community/free version is good enough for building esmini). Make sure to check the "Desktop development with C++" package for installation, no more is needed.
+
+On Linux, e.g. Ubuntu, some additional system tools and libraries are needed. Run the following command:
+
+[source]
+----
+sudo apt install build-essential gdb ninja-build git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake black
+----
+
+Now we're ready to build esmini. From esmini root folder:
+
+[source]
+----
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release --target install
+----
+
+The build process automatically downloads 3rd party library binaries and the complete 3D model package.
+
+After successful build, the binaries will be copied into `esmini/bin` folder. Try from command line:
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc``
+
+That's all. Details and variants, see link:build-guide.html#_build_guide[Build guide].
+

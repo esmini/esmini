@@ -1,0 +1,9 @@
+:notitle:
+:toc: left
+:toclevels: 2
+:source-highlighter: coderay
+:src-remote-root: https://github.com/esmini/esmini/tree/master
+:imagesdir: https://github.com/esmini/esmini.github.io/raw/main/images
+//:imagesdir: c://eknabe1/GIT/esmini.github.io/images
+:figure-caption!:
+//:relfilesuffix: .html

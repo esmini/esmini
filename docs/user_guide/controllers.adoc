@@ -1,0 +1,704 @@
+= esmini user guide – Controllers
+include::attributes.adoc_[]
+:src-local-root: ../../
+
+include::nav.adoc_[]
+
+== Controllers
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+=== Controller concept
+OpenSCENARIO provides the controller concept as a way to outsource control the motion and appearance of scenario entities. For the OpenSCENARIO description of the controller concept, see https://www.asam.net/index.php?eID=dumpFile&t=f&f=4908&token=ae9d9b44ab9257e817072a653b5d5e98ee0babf8#_controllers[OpenSCENARIO User Guide].
+
+Controllers can be assigned to object of type Vehicle or Pedestrian. Once assigned, controllers are activated for a given domain (e.g longitudinal, lateral, Lighting, Animation) using the ActivateControllerAction. It's also possible to activate immediately as part of the AssignControllerAction.
+
+While the ActivateControllerAction is executing, the Controller assigned to that object will manage specified domain(s). Controllers may be internal (part of the simulator) or external (defined in another file).
+
+Intended use cases for Controllers include: +
+- Specifying that a vehicle is controlled by the system under test.
+- Defining smart actor behavior, where a controller takes intelligent decisions in response to the road network or other actors. Hence, controllers can be used, for example, to make agents in a scenario behave in a human-like way.
+- Assigning a vehicle to direct human control.
+
+The Controller element contains Properties, which can be used to specify controller behavior either directly or by a file reference.
+
+Although OpenSCENARIO from v1.2 supports assignment of multiple controllers to an object, esmini is currently only supporting one controller to be assigned (and hence activated) to an object at the time.
+
+=== Background and motivation
+esmini version < 2.0 totally lacked support for controllers. Instead some similar functionality were implemented as part of different example-applications. For example, EgoSimulator provided interactive control of one vehicle. There was also an "external" mode which allowed for an external vehicle simulator to report current position for the typical Ego (VUT/SUT...) vehicle.
+
+First, this approach made the example code of simple applications complex. Secondly, it limited the use cases of esmini since functionality was tightly embedded in the applications.
+
+Controllers provides a much more flexible way of adding functionality to esmini, in a way harmonizing with the standard (OpenSCENARIO 1.X). A side effect of this "outsourcing" of functionality is that the former demo applications could be reduced to a minimum both in number and size.
+
+=== Brief on implementation
+
+Controllers was introduced in esmini v2.0. Briefly it works as follows:
+
+There is a collection of embedded controllers coming with esmini. Each controller inherit from the base class Controller (Controller.h/cpp). In order for esmini to be aware of the existence of a controller it has to be registered. This is done through the ScenarioReader method https://github.com/esmini/esmini/blob/3d1abcd6b3e3855707dc424f7c25477bbf136078/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioReader.hpp#L132[`RegisterController`]. It will put the controller into a collection to have available when the scenario is being parsed. So all controllers need to be registered prior to loading the scenario.
+
+A controller is registered with the following information:
+
+. Its static name which is used as identifier.
+. A pointer to a function instantiating the controller.
+
+This architecture makes it possible for an external module to create a controller and registering it without modifying any of esmini modules. In that way it is a semi-plugin concept, you can say.
+
+*Note*: Even though ScenarioReader have a helper function for registering all the embedded controllers the RegisterController can be called from any module directly, at any time prior to scenario initialization.
+
+esmini catalog framework supports controllers as well, so controllers can be defined in catalogs as presets, just like vehicles and routes for example.
+
+=== How it works for the user
+
+Controllers are completely handled in the OpenSCENARIO file. With one exception: esmini provides the --disable-controllers option which totally ignore any controllers, just performing the scenario with DefaultControllers, which can be handy when previewing and debugging scenarios.
+
+In terms of OpenSCENARIO a controller is assigned to an entity (object) in any of two ways:
+
+. As part of the Entities section and ScenarioObject definition, using the ObjectController element.
+. The AssignControllerAction which can be triggered as any action at any time during the simulation.
+
+Once assigned the controller must finally be activated using the ActivateControllerAction which can be triggered at any time. It provides an attribute to specify which domain(s) to control: Lateral, Longitudinal or both.
+
+Example 1: Implicit assignment of controller using the `ObjectController` element:
+
+[source,xml]
+----
+<Entities>
+   <ScenarioObject name="Ego">
+     <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+      <ObjectController>
+          <Controller name="MyController" >
+             <Properties>
+                 <Property name="esminiController" value="InteractiveController" />
+                 <Property name="speedFactor" value="1.5" />
+             </Properties>
+          </Controller>
+      </ObjectController>
+   </ScenarioObject>
+</Entities>
+----
+
+Example 2: As above, but using catalog reference:
+
+[source,xml]
+----
+<Entities>
+   <ScenarioObject name="Ego">
+     <CatalogReference catalogName="VehicleCatalog" entryName="$HostVehicle"/>
+        <ObjectController>
+            <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
+        </ObjectController>
+   </ScenarioObject>
+</Entities>
+----
+
+
+Example 3: Activate controller in the `Init` section:
+
+[source,xml]
+----
+<Init>
+   <Actions>
+      <Private entityRef="Ego">
+         <PrivateAction>
+            <TeleportAction>
+               <Position>
+                  <LanePosition roadId="0" laneId="-3" offset="0" s="$EgoStartS"/>
+               </Position>
+            </TeleportAction>
+         </PrivateAction>
+         <PrivateAction>
+              <ActivateControllerAction longitudinal="true" lateral="true" />
+         </PrivateAction>
+      </Private>
+   </Actions>
+</Init>
+----
+
+Example 4: Assign and activate the controller in the `Storyboard` section:
+
+[source,xml]
+----
+<Event name="InteractiveEvent" maximumExecutionCount="1" priority="overwrite">
+   <Action name="AssignControllerAction">
+     <PrivateAction>
+          <ControllerAction>
+              <AssignControllerAction>
+                  <CatalogReference catalogName="ControllerCatalog" entryName="interactiveDriver" />
+              </AssignControllerAction>
+          </ControllerAction>
+      </PrivateAction>
+   </Action>
+   <Action name="ActivateControllerAction">
+      <PrivateAction>
+          <ControllerAction>
+              <ActivateControllerAction longitudinal="true" lateral="true" />
+          </ControllerAction>
+      </PrivateAction>
+   </Action>
+   <StartTrigger>
+      <ConditionGroup>
+         <Condition name="" delay="0" conditionEdge="none">
+            <ByValueCondition>
+               <SimulationTimeCondition value="20" rule="greaterThan"/>
+            </ByValueCondition>
+         </Condition>
+      </ConditionGroup>
+   </StartTrigger>
+</Event>
+----
+
+To disable any controller simply apply ActivateControllerAction on no domain, like:
+
+[source,xml]
+----
+<ActivateControllerAction longitudinal="false" lateral="false" />
+----
+That should work in all OpenSCENARIO supporting tools. In esmini you can also assign `DefaultController` which will disconnect any assigned controller.
+
+=== The ghost concept
+
+The purpose of the ghost concept is to support external driver models. The idea is to launch a forerunner, which performs the maneuvers in the OSC file. The resulting trajectory (also called trail), including speed and heading info, is registered. The driver model can then use the ghost trail as guidance. More specifically, the driver model can probe the trail at any timestamp or distance from its current pos and use the result for both steering and speed target.
+
+image::ghost_concept1.png[]
+
+A typical use case is having an external Ego vehicle simulator, including System Under test (SUT) and a driver model. Instead of the driver model (in the external simulator) being aware of and execute scenario maneuvers it can hand over to esmini to play the maneuvers and then simply try to mimic it, following in ghost's trail. This way the external simulator can benefit from esmini scenario engine and just concentrate on following the ghost.
+
+The ghost feature is available in the following esmini embedded controllers:
+
+* <<FollowGhost>>
+* <<ExternalController>>
+
+There are two different methods to probe the ghost trail:
+
+. By time: Ask for ghost state (pos, heading, speed...) at specific timestamp
+. By distance: Ask for ghost state at a specific distance, from a position (typically current Ego position)
+
+Both methods will return a RoadInfo structure including position details e.g. world position (absolute and relative Ego), road coordinates, road pitch, trail heading, heading angle to the target point and ghost speed at that point.
+
+[source,xml]
+----
+include::{src-local-root}/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp[tag=SE_RoadInfo_struct]
+----
+
+[discrete]
+==== Time method
+This approach is trivial, it will give the state of ghost at the specified timestamp using the API call:
+
+https://github.com/esmini/esmini/blob/362bcae28253f4eef2778e6f11b7a8393e6a3cd4/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L815[int SE_GetRoadInfoGhostTrailTime(int object_id, float time, SE_RoadInfo* data, float* speed_ghost);]
+
+[discrete]
+==== Distance method
+
+The API call is:
+
+https://github.com/esmini/esmini/blob/362bcae28253f4eef2778e6f11b7a8393e6a3cd4/EnvironmentSimulator/Libraries/esminiLib/esminiLib.hpp#L805[int SE_GetRoadInfoAlongGhostTrail(int object_id, float lookahead_distance, SE_RoadInfo *data, float *speed_ghost);]
+
+
+The method needs some further explanation. The basic idea is to look specified distance along the ghost trail and receive information at that target point. The tricky part is where to start measuring the distance from. This is how it works:
+
+image::ghost_concept2.png[]
+
+. From Ego, find closest point on trail (blue point)
+. From that point, look forward x meters along trail (red dot)
+. Get info from that ”target” point
+
+Ideally, two points are used: One closer for target speed and one more distant for steering target.
+
+.Different lookahead for speed and steering control
+image::ghost_targets.jpg[]
+
+Tuning parameters:
+
+. Lookahead distance along trail
+  * Typically speed dependent (look further at higher speeds)
+  * Potentially decrease distance with increased curvature (to stay on road)
+. Headstart time
+ * As small as possible, but enough for required lookahead distance
+
+[Note]
+====
+*Note:*
+If lookahead distance is too large, the steering target angle becomes irrelevant, leading to driving off road
+====
+
+.Too large lookahead distance
+image::ghost_concept3.png[]
+[discrete]
+==== Actions and triggers
+
+Most actions that affects motion will be transferred from the original entity (Ego) to its ghost, for example: `SpeedAction`, `LaneChangeAction` and `TeleportAction`. In addition, triggers will be affected in the following ways:
+
+* Entity triggers: Replace any occurrence of original entity with ghost in the list of `TriggeringEntities`. For example, if the vehicle should brake when reaching a specified position, then it's the ghost that should trigger the action - not the original entity.
+* Other triggers: Restart ghost from where the Ego is now, in effect rewind ghost `headStartTime` seconds and recreate trajectory from there. The purpose is to enable ghost to react on triggers that happens in the "real" scenario (which plays out `headStartTime` seconds behind the ghost)
+* `SimulationTime` trigger conditions for events where Ego is the actor will be adjusted wrt ghost `headStartTime` time. For example, if vehicle should brake after 20 seconds of driving (simulationTime = 20), then it will be changed to simulationTime = 17 (for headstart 3s), since the ghost has been driving for 20 seconds at that point.
+
+[discrete]
+===== Examples
+
+The following examples shows two different triggers for a lane change action. First example uses TraveledDistanceCondition. Ghost will be the triggering entity and since this is independent of other road users, there is no need to restart ghost.
+
+The second example, on the other hand, uses TimeHeadwayCondition which calculates the time gap between the white Ego car and the red Target car, hence depending on other road users. Since ghost is running ahead of time it does not make sense to involve ghost in such conditions, hence Ego will be the triggering entity.
+
+Example 1: Trigger based on traveled distance - no restart
+
+[source, xml]
+----
+<ByEntityCondition>
+    <TriggeringEntities triggeringEntitiesRule="any">
+        <EntityRef entityRef="Ego"/>
+    </TriggeringEntities>
+    <EntityCondition>
+        <TraveledDistanceCondition value="20"/>
+    </EntityCondition>
+</ByEntityCondition>
+----
+
+video::traveled_distance.mp4?raw=true[opts="loop,autoplay"]
+
+Example 2: Trigger based on time headway - restart ghost
+
+[source, xml]
+----
+<ByEntityCondition>
+    <TriggeringEntities triggeringEntitiesRule="any">
+        <EntityRef entityRef="Ego"/>
+    </TriggeringEntities>
+    <EntityCondition>
+        <TimeHeadwayCondition
+            entityRef="Target"
+            value="4.0"
+            freespace="false"
+            coordinateSystem="road"
+            relativeDistanceType="longitudinal"
+            rule="lessThan"/>
+    </EntityCondition>
+</ByEntityCondition>
+----
+
+video::time_headway.mp4?raw=true[opts="loop,autoplay"]
+
+Note that the strategy results in desired behavior in probably the majority of cases, but not all. There might be exceptions where another behavior is expected or required. The manipulation described above is handled by the methods `SetupGhost()` and `ReplaceObjectInTrigger()` in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioEngine.cpp[ScenarioEngine.cpp] which can be modified to fit custom needs.
+
+[discrete]
+==== Controllers and ghost
+
+OpenSCENARIO 1.2 onwards supports multiple assigned controllers. All except the first controller will be handed over to the ghost. Hence make sure to put the ghost controller first, since it will stick to the "Ego".
+
+Example scenario, where ghost is utilizing the followRoute controller: https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/follow_route_ghost_starting_on_route.xosc[follow_route_ghost_starting_on_route.xosc].
+
+[discrete]
+==== Additional notes on using the ghost feature
+
+Timestamps in log are always of same reference. Whenever a ghost is involved the time will start at -`headStartTime`, in order for the actual scenario to start at simulationTime = 0. Example: Assuming `headStartTime = 3s`, a log message for an Ego action like:
+
+`-2.100: SpeedChange standbyState -> startTransition -> runningState`
+
+means that action SpeedChange (Ego action that has been moved to ghost) is performed 0.9 (-2.1 + 3) seconds after ghost was launched. This would, for example, be the case for a `simulationTime = 0.9` condition.
+
+=== esmini embedded controllers
+
+Below is a listing of some of the available controllers in esmini. Note that only DefaultController is related to the OpenSCENARIO standard. The other ones are esmini-specific and will not work in other tools (so far there is no standard plugin-architecture for controllers to enable moving between tools). For updated and complete definition of controllers and their parameters, see https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc[ControllerCatalog.xosc].
+
+==== DefaultController
+Performs actions exactly as specified in the OpenSCENARIO file. Assigned to entities by default. Can be assigned at any point to "unassign" any currently assigned controller. +
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:|n/a (will always take over both Lateral and Longitudinal domains)
+|*Properties*:| None
+|*Example*:| n/a (any scenario not explicitly assigning and activating another controller)
+|===
+
+==== InteractiveController
+A simple vehicle model controlled by the user via keyboard (arrow keys). +
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:| longitudinal and/or lateral (independent)
+|*Properties*:
+a| [horizontal]
+`steeringRate`:: steering sensitivity
+`speedFactor`:: scale speed performance (1.0 is default)
+|*Example*:| https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_interactive.xosc[cut-in_interactive.xosc]
+|===
+
+==== FollowGhost
+A simple driver model. A ghost-twin performing the events a few seconds ahead. The entity will then do its best to mimic the motion and speed of the ghost by follow the trajectory. The primary purpose of this controller is to provide an example, but it can be useful to smoothen out the sometimes synthetic feel of pure default controller. +
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:|longitudinal and lateral (in combination only).
+|*Properties*:
+a| [horizontal]
+`headstartTime`:: seconds
+`followMode`:: `time` (time offset), `position` (distance offset)
+`lookaheadSpeed`:: Pick target speed from position at this look-ahead time (`time` mode) or distance (`position` mode)
+`minLookaheadSpeed`:: Minimum speed target look-ahead time (`time` mode) or distance (`position` mode)
+`lookaheadSteering`:: Pick target steering point from position at this look-ahead time (`time` mode) or distance (`position` mode)
+`minLookaheadSteering`:: Minimum steering target look-ahead time (`time` mode) or distance (`position` mode)
+|*Example*:| https://github.com/esmini/esmini/blob/master/resources/xosc/follow_ghost.xosc[follow_ghost.xosc]
+|===
+
+.Illustration of separate look-ahead for speed and steering control
+image::ghost_targets.jpg[]
+
+==== ExternalController
+The entity will not be moved by the scenario. Instead its state (position, rotation ...) is expected to be reported from external simulator via API, e.g. SE_ReportObjectPos. Ghost trajectory can optionally be created for an external driver model to use as reference. +
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:| longitudinal and/or lateral (independent). +
+|*Properties*:
+a| [horizontal]
+`useGhost`:: launch a ghost fore-runner, e.g. to provide input for any driver model (`true`/`false`)
+`headstartTime`:: (for the ghost)
+`mode`:: `override` disable default controller (default), `additive`: apply default controller before handing over to this controller
+|*Example*:| https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/test-driver[test-driver code example]
+|===
+
+==== SumoController
+A way of integrating SUMO controlled vehicles in a scenario. OpenSCENARIO vehicles are reported to SUMO, and SUMO vehicles are reported back to esmini. A reference to a SUMO config file is provided as input to the controller. See cut-in_sumo.xosc for an example.
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:| longitudinal and lateral (in combination only).
+|*Properties*:
+a| [horizontal]
+`file`:: Path to the SUMO configuration file +
+|*Example*:| https://github.com/esmini/esmini/blob/master/resources/xosc/cut-in_sumo.xosc[cut-in_sumo.xosc]
+|===
+
+==== ALKS_R157SM
+Based and inspired by https://github.com/ec-jrc/JRC-FSM[Regulation 157 Safety Models]. Includes four safety models relating to the (https://unece.org/transport/documents/2021/03/standards/un-regulation-no-157-automated-lane-keeping-systems-alks[UNECE ALKS regulation #157]). The controller includes preliminary and experimental implementation of four models: +
+
+* `Regulation` Characteristics of expected system performance as stated in the https://unece.org/sites/default/files/2021-03/R157e.pdf[UNECE Reg 157 Paragraph 5.2.5.2]. +
+* `ReferenceDriver` Reference model of a "typical" human driver as specified in https://unece.org/sites/default/files/2021-03/R157e.pdf[UNECE Reg 157 Annex 4 - Appendix 3]. +
+* `RSS` __Responsibility-Sensitive Safety__ performance model proposed and described in https://arxiv.org/pdf/1708.06374.pdf[Shalev-Shwartz, Shai, Shaked Shammah, and Amnon Shashua. "On a formal model of safe and scalable self-driving cars." arXiv preprint arXiv:1708.06374 (2017)]. +
+* `FSM` __Fuzzy Safety Model__ proposed and described in https://www.sciencedirect.com/science/article/pii/S0001457520316146[Mattas, Konstantinos, et al. "Fuzzy Surrogate Safety Metrics for real-time assessment of rear-end collision risk. A study based on empirical observations." Accident Analysis & Prevention 148 (2020): 105794]. +
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:| longitudinal and lateral (in combination only). *Note*: No advanced steering, just maintaining current lane offset.
+|*Properties*:
+a| [horizontal]
+`logLevel`:: 0: No logging, 1: Brief logging of state changes (default), 2: Verbose logging of some internal variables
+`model`:: `Regulation`, `ReferenceDriver`, `RSS`, `FSM` as described above.
+`cruise`:: Activate longitudinal ACC (comfort adaptive speed control) (`true`/`false`)
+
+Further properties see `ALKS_R157SM_Controller` in https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc[Controllers/ControllerCatalog.xosc].
+
+|*Examples*:|
+https://github.com/esmini/esmini/blob/master/resources/xosc/alks_r157_cut_in_quick_brake.xosc[alks_r157_cut_in_quick_brake.xosc] +
+https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/alks_r157_quick_stop_test.xosc[alks_r157_quick_stop_test.xosc] +
+https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/alks_r157_test.xosc[alks_r157_test.xosc] +
+|===
+
+===== Example usage
+
+Run example alks_r157_cut_in_quick_brake.xosc: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/alks_r157_cut_in_quick_brake.xosc`
+
+Change model:
+
+* Open `resources/xosc/alks_r157_cut_in_quick_brake.xosc` in a text editor
+* In the ALKS_R157SM_Controller, change +
+`<Property name="model" value="Regulation"/>` to +
+`<Property name="model" value="ReferenceDriver"/>`
+* Save and run again: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/alks_r157_cut_in_quick_brake.xosc`
+
+You can hardly see any difference. Let's run the two variants again and record for post analysis.
+
+* Set model to "ReferenceDriver" (by edit the file as described above)
+* Run: +
+`./bin/esmini --headless --fixed_timestep 0.02 --osc ./resources/xosc/alks_r157_cut_in_quick_brake.xosc --record sim-ref.dat`
+* Set model to "Regulation"
+* Run: +
+`./bin/esmini --headless --fixed_timestep 0.02 --osc ./resources/xosc/alks_r157_cut_in_quick_brake.xosc --record sim-reg.dat`
+* View scenarios in parallel: +
+`./bin/replayer --window 60 60 800 400 --res_path ./resources --dir . --file sim- --view_mode boundingbox`
+* Create a merged .dat file and plot it: +
+`./bin/replayer --file sim- --dir . --save_merged sim_merged.dat` +
+`./scripts/plot_dat.py --param speed sim_merged.dat`
+
+Something like this should show:
+
+image::plot_merged_alks_ex.png[]
+
+Of course you can run also FSM and RSS models in similar way and merge all four .dat files. For more information about `replayer`, see "Plot merged .dat files" example in link:use-cases.html#_plot_scenario_data[Plot scenario data] section.
+
+==== FollowRoute
+
+Implementation of the Lane Independent Routing Model (LIRM) developed as part of the master thesis project https://hdl.handle.net/20.500.12380/305133[Olsson, Daniel; Rylander, Eric: "A Framework for Verification and
+Validation of Simulation Models in esmini"].
+
+From the https://odr.chalmers.se/bitstream/20.500.12380/305133/1/CSE%2022-59%20Olsson%20Rylander.pdf[report]: "LIRM has solved the issue with lane dependent routing that esmini had, by implementing a new controller that extends the behavior of the pathfinding and route following to incorporate lane changes."
+
+This controller enhance the capabilities for an entity to find a path through the road network according to a specified https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.2.0_Model_Documentation/modelDocumentation/content/Route.html[route] (basically a set of waypoints). The main advantage, compared to the route handler of the default controller, is that lane changes will be injected by the path finding algorithm in search for optimal path. The model will also take route strategy (Shortest, Fastest or Least Intersections) into consideration, which the default controller does not yet support.
+
+A good example is found in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/follow_route_with_lane_change.xosc[follow_route_with_lane_change.xosc]. The vehicle start out in left-most lane and needs to make three lane changes in order to exit the highway.
+
+.Route waypoints and resulting trajectory in yellow
+image::follow_route_highway_exit.png[]
+
+`./bin/esmini --window 60 60 800 400 --osc ./EnvironmentSimulator/Unittest/xosc/follow_route_with_lane_change.xosc --trail_mode 1`
+
+[%autowidth,frame=none,grid=none]
+|===
+|*Domain*:| longitudinal and/or lateral (independent).
+|*Properties*:
+a| [horizontal]
+`minDistForCollision`:: affects when a lane change will happen
+`laneChangeTime`:: duration of lane changes
+`testMode`:: stop at reached destination - mainly for test purpose (`true`/`false` (default))
+|*Example*:| https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/Unittest/xosc/follow_route_with_lane_change.xosc[follow_route_with_lane_change.xosc]
+|===
+
+==== UDPDriverController
+
+An UDP interface for external driver models or vehicle simulators. The idea is to allow external devices to control entities in an ongoing esmini simulation, over network.
+
+Concept:
+
+image::udp_driver_controller_concept.png[]
+
+* Assign the controller to any scenario vehicle (in the OpenSCENARIO file)
+* Send input to esmini controller
+* The vehicle will be updated by the controller accordingly (and bypassing esmini default controller)
+* receive ground-truth (OSI over UDP) from esmini
+
+
+There are a few input mode options:
+
+1. DRIVER_INPUT +
+Control a simple vehicle model in terms of pedals and steering input. Vehicle will apply latest received values until update is received.
+[horizontal]
+Parameters: ::
+  `throttle` +
+  `brake` +
+  `steeringAngle`
+
+2. VEHICLE_STATE_XYZHPR +
+Report explicit complete state, ignoring road geometry. Useful when advanced vehicle dynamics is involved and vehicle for example is pitching as result of acceleration and rolling as result of steering. Optional flag to enable dead reckoning on esmini side, in which case esmini will move entity according to latest received heading and speed (basically extrapolating).
+[horizontal]
+Parameters: ::
+  `x` +
+  `y` +
+  `z` +
+  `h`(eading) +
+  `p`(itch) +
+  `r`(oll) +
+  `speed` +
+  `wheelAngle` (wheel yaw/stering angle) +
+  `deadReckon` (flag)
+
+3. VEHICLE_STATE_XYH +
+Report explicit partial state. `z`, `pitch` and `roll` are aligned to the road geometry.
+[horizontal]
+Parameters: ::
+  `x` +
+  `y` +
+  `h`(eading) +
+  `speed` +
+  `wheelAngle` (wheel yaw/stering angle) +
+  `deadReckon` (flag)
+
+4. VEHICLE_STATE_H +
+Minimal explicit state, useful when the driver model output is only heading and speed.
+[horizontal]
+Parameters: ::
+  `h`(eading) +
+  `speed` +
+  `wheelAngle` (wheel yaw/stering angle) +
+  `deadReckon` (flag)
+
+For more info see: https://www.dropbox.com/s/qc2n7db0h9k7urt/UDPDriverController.pdf?dl=0[UDPDriverController.pdf]
+
+Demo (running a somewhat outdated https://github.com/esmini/esmini/blob/master/scripts/udp_driver/testUDPDriver.py[testUDPDriver.py]):
+
+video::IuwuGE3BzKw[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+==== OffroadFollowerController
+
+A simple "follow-the-leader" controller which aims to keep a specified distance to a specified leading vehicle. The controller utilizes a simple 2D "bicycle" vehicle model. Each time-step the controller finds out the direction and distance to the lead vehicle. Based on this, the acceleration and steering input is calculated and provided to the vehicle model.
+
+The term off-road indicates that the controller does not consider any road network features. Note that it still can run on roads, parking lots, just that it's ignoring it in terms of lanes and road-marks.
+
+Below is a video clip showing the controller in action on an open paved area. The white lead vehicle is controlled interactively by the user via arrow keys. The controller is assigned to the red car which then strives to follow the lead car at the distance of 20 meters.
+
+video::uHqdsORPsGE[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+==== NaturalDriverController
+
+A controller designed to drive naturally on highways and urban roads, with a driver which tries to keep its desired lane, while keeping the distance to a target in front and, if the conditions are correct, will make a lane change to overtake a lead vehicle.
+
+The desired lane for the controller vehicle is set with a parameter (named "Route"), the driver will strive to reach and maintain this lane. The driver will follow the car in front following the IDM (Intelligent Driver Model) logic, https://en.wikipedia.org/wiki/Intelligent_driver_model. The driver will change lane according to MOBIL (General Lane-Changing Model for Car-Following Models), https://mtreiber.de/publications/MOBIL_TRB.pdf. The lane changing doesn't take traffic density or ramps / junctions into account, and thus the model is only suitable on roads without such geomitries.
+
+The model is fully parameterized to suit the desired need of each simulation. For all properties see `NaturalDriver` in https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc[Controllers/ControllerCatalog.xosc].
+
+Example usage can be found in https://github.com/esmini/esmini/blob/master/scripts/scenario_scripts/test_traffic.py
+
+Demo (running scenario https://github.com/esmini/esmini/blob/master/resources/xosc/highway_driver.xosc):
+
+video::JV31gvCCe3Y[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+==== FollowReferenceController
+
+The esmini implementation of the OpenSCENARIO XML default controller executes the scenario exactly as defined, without smoothing or other influence from vehicle dynamics or driver modeling. It will even perform discontinuities like step shaped lane- or speed change actions. In other words, it goes beyond kinematics, into "kinemagics".
+
+The result can be seen as a `blueprint` or reference of the specified scenario.
+
+The FollowReferenceController can be used to smoothen the blueprint, or transform it from "kinemagic" to kinematic, by follow the reference position closely with a simple bicycle kinematic model inspired by the well known Stanley controller: https://ai.stanford.edu/~gabeh/papers/hoffmann_stanley_control07.pdf. For longitudinal control a simple critically damped spring model with parameterized stiffness is used.
+
+The result becomes a smooth and continuous version of the original scenario, with a more realistic vehicle motion.
+
+Example scenario:
+https://github.com/esmini/esmini/blob/master/resources/xosc/follow_reference.xosc
+
+image::follow_reference.png[]
+
+video::gvfFI4hgw1M[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+The scenario triggers four lane changes with different https://publications.pages.asam.net/standards/ASAM_OpenSCENARIO/ASAM_OpenSCENARIO_XML/latest/generated/content/DynamicsShape.html[shapes]:
+
+. step
+. linear
+. sinusoidal
+. cubic
+
+The cross-track error gain is sligthly stiff, 2.5, but results in quite good tracking capability, also for challenging maneuvers.
+
+By default the controller will create a ghost reference entity executing the original scenario, while the main entity, to which the controller is assign, will follow the ghost in real time. Note that no head-start will happen like with the followGhost controller. Alternatively, instead of creating a ghost from the own entity, any other existing scenario object can be set as reference entity.
+
+Some controller tuning parameters:
+
+* Stanley cross error gain
+* delta heading gain
+* curvature gain
+
+For details see `followReference` in https://github.com/esmini/esmini/blob/master/resources/xosc/Catalogs/Controllers/ControllerCatalog.xosc[Controllers/ControllerCatalog.xosc]
+
+Another scenario example:
+https://github.com/esmini/esmini/blob/master/resources/xosc/follow_reference_interactive.xosc
+
+This scenario allows to interactively drive the reference entity (red) by arrow keys. The white car tries to follow using the FollowReferenceController. Initially relaxed settings. After 15 seconds stiffer settings are applied.
+
+video::1bKpl1dseHs[youtube,width=854,height=480,opts="autoplay,nocontrols,loop"]
+
+==== HIDcontroller
+
+From v2.47.0 esmini supports game controllers, allowing interactive control of one or multiple entities in a simulation. Any joystick compatible device should work, e.g. joystick, gamepad, racing wheel, etc.
+
+Controlling Ego or target vehicles can be useful for demonstrating or evaluating functions in the loop. Examples:
+
+* Adjust Ego lateral lane position to check lane-departure function characteristics
+* Control a target vehicle to put AD operated Ego in challenging situations
+
+Any number of connected devices can be used. The mapping system is a bit tricky, but flexible. It allows to use most joystick alike controllers (racing wheel, joystick, gamepad...) and assign any input axis or button to the steering, throttle and brake inputs of an entity.
+
+===== Example scenario
+https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Unittest/xosc/race_hid.xosc[race_hid.xosc] shows how to assign game controllers to one or several vehicles.
+
+The scenario puts three cars at beginning of a road. One will immediatelly start driving. The second is controlled by a game controller, which needs to be setup for specific connected device - see details below.
+
+The third can also be controlled by a game controller by uncommenting the ObjectController code in the sceenario. Otherwise, by default it will stand still.
+
+First car reaching end of road is the winner. Any car coming outside road area for more than one second will be punished by teleport back to the beginning of the road.
+
+===== Limitations
+
+Only three input channels are supported: Steering, Throttle and Brake.
+
+No automatic detection of game controllers is implemented, instead it has to be explicitly configured. See more info below.
+
+Only Windows and Linux (Ubuntu) supported, not macOS.
+
+===== Configuration
+
+To configure game controller inputs, you need to:
+
+* map steering, throttle and brake to axes or buttons of the device. If brake is not mapped, esmini will assume same axis as throttle, a combination quite common for racing wheels on Windows.
+* find out the device ID and assign it to the `deviceID` property, or `DeviceID` parameter when referring a catalog entry.
+
+ID is a sequence number and will depend on the current configuration of the system, e.g. number and order of connected game controllers. Hence, it probably needs to be adjusted for the specific setup.
+
+Mapping of input axes and buttons is independent of the ID and can be specified for any specific controller. But it will be different between Windows and Linux.
+
+A examples are provided in the separate catalog https://github.com/esmini/esmini/blob/dev/resources/xosc/Catalogs/Controllers/GameControllerCatalog.xosc[GameControllerCatalog.xosc], including:
+
+* Trust GXT 39 gamepad
+* PS4 Controller (DualShock 4)
+* PS5 Controller (DualSense)
+* Hori Racing Wheel APEX
+* Logitech Steering Wheel WingMan Formula GP
+* Logitech Steering Wheel
+
+However, it's simple to add other ones. See next sections for details.
+
+You can also use the catalog `HID_generic` controller and assign the ID and mappings via parameters.
+
+===== Mapping of axes and buttons
+
+Axes and buttons are denoted differently on Windows and Linux. The following table shows the mapping of axes and buttons for some game controllers currently in the catalog.
+
+Example: If you have a PS4 controller, you can assign the left trigger to the brake by specifying controller property `brakeInput` = `AXIS_RX` (analog) or `BTN_7` (binary).
+
+If you need to inverse an axis, just put "-" in front of the axis name, e.g. `-AXIS_Y`.
+
+++++
+<iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTIxA9xhO1GomQDd3GvamIaul80S4GLH4UHyWubsG7sm3lLuCMqMo0QcHg-6D-NfKqqFKDwGWa1W_g2/pubhtml?gid=2029882313&&widget=false&headers=false&chrome=true" frameborder="0" width="730" height="1267"></iframe>
+++++
+
+https://docs.google.com/spreadsheets/d/1Y-zhAOcks3-rkcVdz3EvwBqOhvOwyE20sGZJcFM1OvI/edit?usp=sharingLink[Link] to full table, including ranges.
+
+It's a bit tricky to find out ID and mappings. The next sections provides some help using common tools.
+
+To see received data from device set wsmini option `--log_level debug`.
+
+====== Windows tools
+
+To find out available input devices, including game controllers, you can use the `dxdiag` tool:
+
+Win+R, type `dxdiag`, press Enter.
+
+Look under "DirectInput Devices" in the "Input". It will list all connected input devices, including game controllers. The ID is found in the "Controller ID" column.
+
+For further information, run the Game Controller settings:
+
+Win+R, type `joy.cpl`, press Enter
+
+Select controller and click `Properties` to test the device.
+
+====== Linux tools
+
+To find available game controllers, you can run:
+
+`ls /dev/input/js*`
+
+Any connected game controller should appear as `/dev/input/js0`, `/dev/input/js1`, etc.
+
+For further information you can use `jstest`. Install it:
+
+`sudo apt install joystick`
+
+Example usage:
+
+`jstest /dev/input/js2`
+
+will show you information and the state of the game controller with ID 2.
+
+Also, `jstest-gtk` is a graphical tool that can be installed with:
+
+`sudo apt install jstest-gtk`
+
+===  How to add a new controller
+
+Below are the steps to add new controller in esmini:
+
+. Create a sepreate controller module in the controller folder. Suggestion is to copy one of the existing and use as a starting point.
+. Register the controller in the LoadControllers() fuction in EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/ScenarioReader.cpp
+. Create Instantiate method in the new controller. The name shall be unique eg InstantiateControllerLooming
+. In the new controller, Type name shall be unique eg, CONTROLLER_LOOMING_TYPE_NAME
+. Add controller type and it shall be unique in EnvironmentSimulator/Modules/Controllers/Controller.hpp
+

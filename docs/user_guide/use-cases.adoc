@@ -1,0 +1,626 @@
+= esmini user guide – Use cases
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== Use cases
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+Here follows basic examples showing some, but not all, features in esmini and companion tools. It should give an idea of the possibilities and limitations. For a full list of features and functions, see link:command-reference.html#_command_reference[Command reference].
+
+To quickly see available launch options, simply run the corresponding application with no arguments, for example:
+
+``./bin/odrviewer``
+
+=== View a scenario
+==== Basic features
+Specify a window and scenario file. Example: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc`
+
+Visualize trails from moving entities: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --trail_mode 3`
+
+Show entities as bounding boxes: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --bounding_boxes`
+
+.Trail and bounding box in combination
+image::cut-in_trail_and_bb.png[]
+
+==== Camera control
+
+In addition to several OSG standard camera models esmini adds a set of special purpose camera modes that follows following scenario entities in various ways. Further, the user can add custom cameras via link:esmini-lib-programming.html#_custom_camera_positions[API] or launch arguments.
+
+Top level camera mode is selected on keys '1' to '8'. Mode 2-8 are OpenSceneGraph standard cameras. Mode 1 hands over camera control to esmini. In this mode, switch camera model by pressing 'k' which will toggle between all available esmini camera model.
+
+The default camera model is esmini "orbit" which allows for rotating (left-mouse button), zooming (right-mouse button) and panning (scroll wheel / middle mouse button) while following the first entity.
+
+To follow another vehicle press `Tab` (next vehicle) or `Shift TAB` (previous vehicle). Also `Backspace` is mapped to previous vehicle, since shift-TAB do not work on all platforms.
+
+For a complete list of cameras and functions, see link:command-reference.html#_command_reference[Command reference].
+
+esmini camera mode can be selected by launch argument. Here are a few common use cases:
+
+Follow exact behind vehicle: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --camera_mode fixed`
+
+Orthogonal (no perspective) top view follow vehicle: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --camera_mode top`
+
+Follow vehicle from inside "driver" point of view: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --camera_mode driver`
+
+Follow vehicle with some flex and allow rotate, pan and zoom: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --camera_mode flex-orbit`
+
+In addition to pre-defined camera modes, the user can add custom cameras from API or via launch argument. Custom cameras can be fixed, semi-fixed (fixed position but unconstrained orientation) or relative current vehicle. Here is a few examples:
+
+Custom camera in front of vehicle, e.g. sensor mount position:
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --custom_camera 3,0,0.6,0,0`
+
+Custom camera with fixed position but dynamic orientation, always pointing at current vehicle: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --custom_fixed_camera 170,10,5`
+
+video::custom_camera_fixed_pos.mp4?raw=true[opts="loop,autoplay"]
+//video::https://github.com/esmini/resources/blob/explore/doc/images/custom_camera_fixed_pos.mp4?raw=true[opts="loop"]
+// video::JLrxu2CdX3A[youtube,width=640,height=360,opts="autoplay,nocontrols,loop"]
+
+Custom fixed camera: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --custom_fixed_camera 240,15,10,3.5,0.2`
+
+video::custom_camera_fixed_pos_and_rot.mp4?raw=true[opts="loop,autoplay"]
+// video::EWsiYcovCYQ[youtube,width=640,height=360,opts="autoplay,nocontrols,loop"]
+
+Custom fixed top view camera: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --custom_fixed_top_camera 180,-1.54,2301,4.71239`
+
+video::custom_camera_fixed_top_view.mp4?raw=true[opts="loop,autoplay"]
+// video::1Z_pCCbdxBU[youtube,width=640,height=360,opts="autoplay,nocontrols,loop"]
+
+
+==== Some key shortcut commands
+
+[horizontal]
+*Space*:: Toggle pause/play simulation
+*Enter*:: Step simulation one frame forward
+*Tab*:: Move camera to next vehicle
+*Shift-Tab or Backspace*:: Move camera to previous vehicle
+*'j'*:: Toggle show entity trail points and lines (press mulitpe times to switch modes)
+*','*:: Toggle bounding box modes
+*Esc*:: Quit
+
+See link:command-reference.html#_command_reference[Command reference] for a complete list of key shortcut commands.
+
+==== Road network visualization
+Visualize OpenDRIVE road features: +
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --road_features on`
+
+If a 3D model representation of the road network is missing (i.e. empty or missing SceneGraphFile element of the https://www.asam.net/static_downloads/ASAM_OpenSCENARIO_V1.1.1_Model_Documentation/modelDocumentation/content/RoadNetwork.html[OpenSCENARIO RoadNetwork class]), then esmini will generate a _very_ simple model.
+
+Example: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc``
+
+Add optional flat ground plane: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --ground_plane``
+
+The generated model can be saved: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --save_generated_model`` +
+Then look for `generated_road.osgb` in the current directory.
+
+==== Background color
+esmini default background color is skyish, light blue. Change by launch argument --clear-color <r,g,b>, where r, g, b are the red, green, blue components as floating numbers in the range (0:1). Some examples:
+
+Black background: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --clear-color 0,0,0``
+
+White background: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --clear-color 1,1,1``
+
+Gray background: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --clear-color 0.3,0.3,0.3``
+
+==== Anti-alias
+esmini make use of OpenSceneGraph sub-sampling method for anti-alias. Default setting is 4 (samples). This can be controlled by the launch argument `--aa_mode <samples>`. To disable anti-alias: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --aa_mode 0``
+
+=== Screenshots and video clips
+esmini can save screenshots in uncompressed https://en.wikipedia.org/wiki/Truevision_TGA[TGA] format. These images can be converted into other image formats or even video clips in a post process.
+
+esminiLib also supports grabbing screenshots via API, also from a pure off-screen rendering setup (requiring neither monitor nor graphics hardware). See https://github.com/esmini/esmini/tree/master/EnvironmentSimulator/code-examples/image-capture[image-capture] code example.
+
+Here follows a few examples using launch arguments and runtime key commands.
+
+==== Save screenshots
+Press 'c' at any time to store a single screenshot.
+
+Press 'C' at any time to start storing screen shot for every frame onward. Press 'C' again to stop.
+
+==== Create video clip of a scenario
+First, run the scenario and automatically save screenshots for all frames: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --fixed_timestep 0.033 --capture_screen``
+
+[Note]
+====
+**Note** We added the --fixed_timestep argument to make sure we get a smooth video with constant delta-time for a smooth and continuous video clip. If --fixed_timestep is skipped esmini will progress time between frames according to actual system time passed since last frame, which can vary over time for many reasons (e.g. due to esmini or other processes CPU load).
+====
+
+Then, create a video clip using ffmpeg: +
+``ffmpeg -f image2 -framerate 30 -i screen_shot_%5d.tga -c:v libx264 -vf format=yuv420p -crf 20 out.mp4``
+
+The above ffmpeg command will create a MPEG4 video with reasonable compression (crf 20). To create a lossless, but still compressed, video e.g. for further post processing:
+
+``ffmpeg -f image2 -framerate 30 -i screen_shot_%5d.tga -c:v libx264 -qp 0 out.mp4``
+
+To change framerate of the output video, use the fps filter. E.g. from input 30 fps to output 15 fps:
+
+``ffmpeg -f image2 -framerate 30 -i screen_shot_%5d.tga -c:v libx264 -vf format=yuv420p,fps=15 -crf 20 out.mp4``
+
+To concatenate multiple files, first create a text file listing the input files. Example:
+
+`video_list.txt`:
+```
+file 'no_features_10.mkv'
+file 'features_10.mkv'
+```
+
+Then run the ffmpeg command, like:
+``ffmpeg -f concat -i video_list.txt -c copy merged.mkv``
+
+*Note:* The input files must be same timebase and resolution to work well.
+
+
+Get ffmpeg: http://ffmpeg.org/download.html
+
+Some details regarding H.264 encoding can be found https://trac.ffmpeg.org/wiki/Encode/H.264[here].
+
+==== Off-screen rendering
+
+Whenever esmini is launched with the `--window <x-pos> <y-pos> <width> <height>` argument a viewer will be created with specified window. The `--headless` flag controls whether any window will be "on screen" or only off-screen. Of course, `--headless` in combination with no window (no --window argument) will skip rendering altogether, which is a very performance-saving mode to use when possible.
+
+Example: +
+``./bin/esmini.exe --window 60 60 4000 2000 --headless --capture_screen --osc .\resources\xosc\cut-in.xosc`` +
+will render images into a virtual frame buffer of size 4k x 2k pixels and then store to file. Note: The size of the virtual frame buffer is not limited by size of any connected display.
+
+To run esmini completely without rendering, just omit the --window argument: +
+``./bin/esmini.exe --osc .\resources\xosc\cut-in.xosc`` --fixed_timestep 0.01 --record sim.dat +
+will run the specified scenario quickly and store a .dat file for later analysis or viewing (with replayer).
+
+*Note:* If --fixed_timestep is omitted esmini will adapt timesteps to actual frametime, so a 30 seconds scenario will take 30 seconds - i.e. no performance gain.
+
+==== Software rendering (no gfx hw)
+
+By default any available 3D graphics hardware will be utilized. As fallback esmini (via OSG) will utilize https://www.mesa3d.org[Mesa3D] which is a software implementation of the OpenGL graphics stack including parts normally hosted in the graphics hardware system. The Mesa3D approach is useful when running on cloud/cluster machines lacking graphics hardware, perhaps even lacking a window system (like slimmed and headless Ubuntu without X11 support).
+
+*Mesa3D on Linux* +
+Mesa3D is normally installed with Linux distributions. Check OpenGL support with the following command: +
+``glxinfo -B``
+
+If the command is not available, then Mesa3D utility package is probably missing. Install as: +
+``sudo apt install mesa-utils``
+
+To run headless with a virtual frame buffer:
+
+- Activate https://en.wikipedia.org/wiki/Xvfb[xvfb]: +
+``Xvfb :99 -screen 0 1920x1080x24+32 & export DISPLAY=:99`` +
+- Then run esmini as usual
+
+For troubleshooting, the following command might give information about the graphics system: +
+``lspci -vnn | grep VGA -A 12``
+
+*Mesa3D on Windows* +
+
+- Grab the Mesa3D binary from https://downloads.fdossena.com/geth.php?r=mesa64-latest[here].
+- Unpack and place opengl32.dll in the same folder as esmini executable.
+- Then run esmini as usual
+
+=== Logging
+esmini can produce log files in different formats and for different purposes, explained next.
+
+==== The basic text log file
+By default esmini is creating a `log.txt` in the folder from which esmini is launched. In case of esminiLib it will end up in the folder that the application linking esminiLib was launched from. The log filename can be customized.
+
+The log file includes the same information normally seen in the terminal window (stdout).
+
+To disable output to terminal: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --disable_stdout``
+
+To disable creation of the logfile (`log.txt`): +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --disable_log``
+
+esmini has enhanced logger from release v2.41.0 supporting log verbosity levels, log file appending, enabling/disabling meta data and filtering on module level logging.
+
+===== Log verbosity
+There are four log verbosity levels:
+
+. error
+. warn
+. info
+. debug
+
+The log level can be set from command line argument. If not provided, then `info` level is set by default. Log verbosity goes from `error` (low) to `debug` (high). Log entries will be included from `error` up to the specified level.
+
+Example 1: `--log_level debug` will include all entries (`error`, `warn`, `info` and `debug`) as the highest level has been selected.
+
+Example 2: `--log_level warn` will include `error` and `warn` entries only.
+
+Developers can use `LOG_ERROR`, `LOG_WARN`, `LOG_INFO` and `LOG_DEBUG` macros to effectively prioritize log messages.
+
+===== Log metadata
+Logger can add source code meta data with every logged entry, including:
+
+- file name
+- function/method name
+- line number
+
+indicating the location of the log entry in the source code.
+
+`--log_meta_data` is the command line parameter for enabling meta data.
+
+===== Log append
+`--log_append` is another command line option. Instead of overwriting any existing log file, entries will be appended to the same log file. In other words, logs of multiple scenarios will be put in the same single log file.
+
+===== Log filtering on modules
+If there is a need to gather log entries of any particular module(s) i.e. hpp/cpp file then `--log_only_modules` option can be set from the command line. It will create a filter for the logger to pick only log entries from specified modules, ignoring all others. Example:
+
+`--log_only_modules playerbase`
+
+will only log from `playerbase.hpp/cpp` files. All other log entries will be skipped.
+
+Opposite to log only modules, there is an option to skip specific modules. Example:
+
+`--log_skip_modules playerbase,Replay`
+
+will skip all log entries from `playerbase.hpp/cpp` and `Replay.hpp/cpp` files. Entries from all other modules will be included.
+
+Note that `--log_only_modules` and `--log_skip_modules` are mutually exclusive. If a module is listed in both options, then priority is given to `--log_only_modules`. Hence logging will be enabled for specified module, ignoring its presence in `--log_skip_modules`.
+
+===== Log use case example
+
+Assume you're only interested in storyboard events, like actions and triggers. First step is to run a representative scenario to find out what modules you're interested in. Example:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --log_meta_data`
+
+It will show all log entries up to `info` level, including meta data. Look for the module names in the log entries. Then run the scenario again with module filter. Example:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --log_only_modules Storyboard,StoryboardElement,OSCCondition`
+
+It will show only log entries relating to storyboard, including triggering. Example excerpt:
+
+[source, text]
+----
+...
+[0.001] [info] OverTakerStartSpeedEvent standbyState -> startTransition -> runningState
+[0.001] [info] OverTakerStartSpeedAction initState -> startTransition -> runningState
+[6.179] [info] Trigger /------------------------------------------------
+[6.179] [info] CutInStartCondition == true, HWT: 0.40 > 0.40, edge rising
+[6.179] [info] Triggering entity 0: Ego
+[6.179] [info] Trigger  ------------------------------------------------/
+[6.179] [info] OverTakerStartSpeedAction runningState -> endTransition -> completeState
+[6.179] [info] OverTakerStartSpeedEvent complete after 1 execution
+[6.179] [info] OverTakerStartSpeedEvent runningState -> endTransition -> completeState
+[6.179] [info] Event OverTakerStartSpeedEvent ended, overwritten by event CutInEvent
+[6.179] [info] CutInEvent standbyState -> startTransition -> runningState
+[6.179] [info] CutInAction initState -> startTransition -> runningState
+[7.696] [info] Trigger /------------------------------------------------
+[7.696] [info] BrakeCondition_HWT_0.7 == true, HWT: 0.70 > 0.70, edge rising
+[7.696] [info] Triggering entity 0: Ego
+[7.696] [info] Trigger  ------------------------------------------------/
+[7.696] [info] Other events ongoing, OvertakerBrakeEvent will run in parallel
+[7.696] [info] OvertakerBrakeEvent standbyState -> startTransition -> runningState
+...
+----
+
+==== Scenario recording (.dat)
+From version 2.54.0 esmini implements a package-based `.dat` file format. The new format comes with increased flexibility without unnecessary file size growth. It supports gradually adding/removing content in the `.dat` files without breaking compatibility. Packages consists of header (packet ID and packet size) and the data. This file can later be used either to replay (see <<Replay scenario>>) the scenario or convert it to `.csv` for further analysis, e.g. in Excel.
+
+A list of available packet IDs and packet structure etc. can be found in: +
+https://github.com/esmini/esmini/blob/dev/EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/PacketHandler.hpp[`EnvironmentSimulator/Modules/ScenarioEngine/SourceFiles/PacketHandler.hpp`]
+
+To create a recording with regular timesteps: +
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/slow-lead-vehicle.xosc --fixed_timestep 0.05 --record sim.dat``
+
+To convert the .dat file into .csv, do: +
+``./bin/dat2csv sim.dat``
+
+Only a subset of the .dat file information is extracted. To extract some more info, e.g. road coordinates, run:
+``./bin/dat2csv sim.dat --extended`` +
+
+You can create .dat files from multiple scenarios in a single command, like this on Linux (bash):
+
+[source, bash]
+----
+for f in ./my_scenarios/*.xosc; do ./bin/esmini --headless --fixed_timestep 0.05 --osc $f --record `basename $f .xosc`.dat; done
+----
+
+It also works in Git bash on Windows.
+
+==== Scenario recording (.dat) versioning
+The new `.dat` file format starts at version 3.0, succeeding version 2. The version is written to the file header. The versioning follows semantic versioning principles, where:
+
+* Major version (X.y): Incompatible changes to the file format.
+* Minor version (x.Y): Backwards-compatible additions and/or bug fixes to the file format.
+
+Replaying a `.dat` file created with a different minor version, both previous and future, is supported. For example, replay a `.dat` file created with esmini version 3.7 using replayer version 3.5, and vice versa. However, due to the nature of the changes, the replay behavior can't be guaranteed to be identical between minor versions. For example, content added via a new package in a newer minor version will not be present when replaying with an older minor version. In summary, replayer will gracefully skip unknown packages while showing all recognized ones.
+
+If the major version of the `.dat` file differs from the replayer version, replay is not supported. For example, a `.dat` file created with version 4.1 cannot be replayed using version 3.8, and vice versa. Either the `.dat` file has to be recreated using the same major version as the replayer, or the replayer has to be updated/downgraded to match the major version of the `.dat` file.
+
+==== CSV logger
+To create a more complete csv logfile, compared to the content of the .dat file, activate the CSV_Logger:
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --fixed_timestep 0.05 --csv_logger full_log.csv``
+
+full_log.csv will contain more detailed states for all scenario entities. To also include collision detection: +
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --fixed_timestep 0.05 --csv_logger full_log.csv --collision``
+
+All collisions (overlap) between entity bounding boxes will be registered in the `collision_ids` column of each entity. It will contain the IDs of any entities overlapping at given frame.
+
+=== Replay scenario
+
+Replay a scenario recording (.dat file): +
+``./bin/replayer --window 60 60 800 400 --res_path ./resources --file sim.dat``
+
+The `--res_path` is a special path directive should normally point to esmini/resources folder, where it will look for the OpenDRIVE file, 3D models, traffic signal mappings and more. It also works to add one or multiple --path <path> directives, like for esmini.
+
+Once loaded the scenario recording will start playing in normal speed. Here are a few key commands, with gui equivalent in paranthesis:
+
+[horizontal]
+*Space (pause/play)*:: Toggle pause/play simulation
+*Tab*:: Move camera to next vehicle
+*Shift-Tab or Backspace*:: Move camera to previous vehicle
+*'n'*:: Toggle show active trajectories
+*','*:: Toggle bounding box modes
+*Esc*:: Quit
+
+Arrow keys:
+[horizontal]
+*Left (<)*:: Pause and move to previous frame
+*Right (>)*:: Pause and move to next frame
+*Shift + Left (<<)*:: Pause and jump 0.1s back
+*Shift + Right (>>)*:: Pause and jump 0.1s forward
+*Ctrl + Shift + Left (<<<)*:: Pause and jump 1.0s back
+*Ctrl + Shift + Right (>>>)*:: Pause and jump 1.0s forward
+*Ctrl + Left (|<)*:: Jump to beginning
+*Ctrl + Right (>|)*:: Jump to end
+
+See link:command-reference.html#_command_reference[Command reference] for a complete list of key shortcut commands.
+
+Some launch arguments:
+[horizontal]
+*--collision*:: Pause and move to previous frame
+*--quit_at_end*:: Quit application when reaching end of scenario
+*--repeat*:: Loop scenario
+*--dir <path>*:: Directory containing replays to overlay, pair with "file" argument, where "file" is .dat filename match substring
+
+Examples:
+
+Enable collision detection and pause playing at every occasion of collision:  +
+``./bin/replayer --window 60 60 800 400 --file sim.dat --res_path ./resources --collision``
+
+.Video clip demonstrating some features in replayer
+video::ltap-od_collision.mp4?raw=true[opts="loop,autoplay"]
+// video::54NWtG1MsRk[youtube,width=800,height=400,opts="autoplay,nocontrols,loop"]
+
+The .dat file in the clip above was created with the command: +
+``./bin/esmini --headless --osc ./resources/xosc/ltap-od.xosc --disable_controllers --fixed_timestep 0.033 --record sim.dat ``
+
+and then launched in replayer: +
+``./bin/replayer --window 60 60 800 400 --file sim.dat --res_path ./resources --collision``
+
+*Note:* The --disable_controllers flag is just specified to disable the interactive controller that normally is activated in that specific scenario. For more information about controllers, see link:controllers.html#_controllers[Controllers].
+
+
+Combine esmini and replayer in a one-liner command: +
+``./bin/esmini --headless --fixed_timestep 0.05 --record sim.dat --osc ./resources/xosc/cut-in.xosc;./bin/replayer --window 60 60 800 400 --res_path ./resources --file sim.dat``
+
+With bash (use Git Bash on Windows) preview all scenarios (.xosc files) in a folder, at double speed: +
+``for f in my_scenarios/*.xosc; do ./bin/esmini --headless --fixed_timestep 0.05 --osc $f --record `basename $f .xosc`.dat;./bin/replayer --window 60 60 1200 600 --res_path ./resources --file `basename $f .xosc`.dat --time_scale 2 --quit_at_end; done``
+
+just replace `my_scenarios` with your folder path
+
+==== Multiple scenarios in parallel
+
+Next example, play multiple variants of a scenario in parallel: +
+``./bin/replayer --window 60 60 800 400 --file sim --res_path ./resources --capture_screen --dir tmp``
+
+The `--dir` argument points to a folder containing sim1.dat, sim2.dat and sim3.dat. +
+The `--capture_screen` argument will save each frame as an image file on disk.
+
+.Video clip demonstrating parallel scenarios in replayer
+video::replay_multiple_scenario_variants.mp4?raw=true[opts="loop,autoplay"]
+// video::KqoTmAE9NmI[youtube,width=800,height=400,opts="autoplay,nocontrols,loop"]
+
+==== Save merged .dat files
+
+Merged data from multiple .dat files can be saved into one single .dat file, e.g. for plotting: +
+``./bin/replayer --file sim_ --dir . --save_merged sim_merged.dat``
+
+replayer will look in current folder (".") for any .dat file starting with "sim_", i.e. "sim_*.dat". The files will be merged and saved as sim_merged.dat.
+
+=== View road network
+
+==== Visualize OpenDRIVE geometry
+
+By default odrviewer will create a simple 3D model of the OpenDRIVE description and populate it with sparse traffic: +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr``
+
+Add OpenDRIVE features, like reference line and lanes, on top (toggle on 'o'): +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr --road_features``
+
+Remove all traffic, just visualize the road geometry: +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr --density 0``
+
+==== Evaluate OpenDRIVE connectivity
+
+Increase traffic to exercise all junctions and lanes of the road network: +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr --density 7 --road_features``
+
+Use custom 3D model: +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr --model ./resources/models/fabriksgatan.osgb --density 5``
+
+Slow down traffic: +
+``./bin/odrviewer --window 60 60 800 400 --odr ./resources/xodr/fabriksgatan.xodr --model ./resources/models/fabriksgatan.osgb --density 3 --speed_factor 0.6``
+
+==== Inspect OpenDRIVE geometry and road IDs
+
+esmini odrplot is a small application that creates a track.csv file that can be plotted with another small Python script xodr.py: +
+``./bin/odrplot ./resources/xodr/fabriksgatan.xodr`` +
+``./EnvironmentSimulator/Applications/odrplot/xodr.py track.csv``
+
+Combine in a one-liner: +
+``./bin/odrplot ./resources/xodr/fabriksgatan.xodr;./EnvironmentSimulator/Applications/odrplot/xodr.py track.csv``
+
+To navigate in the plot, click the four-arrow icon (see image below) and then use mouse according to:
+[horizontal]
+*Left button*:: Pan (move left, right, up, down)
+*Right button*:: Zoom
+
+image::odrplot_help.png[]
+
+=== Plot scenario data
+
+esmini can plot data in two ways: Off-line (plot content of .dat files) and runtime (a set of pre-defined values).
+
+==== Off-line plotting
+esmini provides a Python based script, plot_dat.py, to plot information in .dat files.
+
+First, create a .dat file. For that we don't need a window. Run esmini headless: +
+``./bin/esmini --headless --fixed_timestep 0.05 --osc ./resources/xosc/acc-test.xosc --record sim.dat``
+
+The scenario looks like this: +
+
+video::acc-test.mp4?raw=true[opts="loop,autoplay"]
+
+Next, plot speed over time: +
+``./scripts/plot_dat.py sim.dat --param speed``
+
+image::plot_dat.png[]
+
+To see what parameters are available for plot: +
+``./scripts/plot_dat.py sim.dat --list_params``
+
+will output a list similar to: +
+``
+Plottable parameters: +
+id, obj_type, obj_category, ctrl_type, time, speed, wheel_angle, wheel_rot, centerOffsetX, centerOffsetY, centerOffsetZ, width, length, height, scaleMode, visibilityMask, x, y, z, h, p, r, roadId, laneId, offset, t, s
+``
+
+Most parameters does normally not make sense to plot, but it depends on the test case. Maybe it's interesting to see when a car makes a lane change. Plot laneId over time: +
+``./scripts/plot_dat.py sim.dat --param laneId``
+
+image::plot_dat_lane_id.png[]
+
+A plot can show multiple parameters: +
+``./scripts/plot_dat.py sim.dat --param laneId --param speed``
+
+image::plot_dat_lane_speed.png[]
+
+To plot trajectories, change X-axis parameter from `time` to `x` and plot `y` parameter (over x): +
+``./scripts/plot_dat.py sim.dat --x_axis x --param y``
+
+image::plot_dat_x_y.png[]
+
+Lock axis aspect ratio, i.e. make axis scale equal: +
+``./scripts/plot_dat.py sim.dat --x_axis x --param y --equal_axis_aspect``
+
+image::plot_dat_x_y_eq_axis.png[]
+
+Plot merged .dat files (created as described in <<Save merged .dat files>>) +
+
+``./scripts/plot_dat.py --param speed sim_merged.dat``
+
+image::plot_merged_dat_files.png[]
+
+Entity IDs will get an offset multiplier of 100, corresponding to the order of which the dat files were read by replayer. The mapping between ID range and dat file is printed to the console by replayer when the merged dat file is created, as the following example of four input files:
+
+[listing]
+Scenarios corresponding to IDs (0:99): sim_fsm.dat
+Scenarios corresponding to IDs (100:199): sim_ref.dat
+Scenarios corresponding to IDs (200:299): sim_reg.dat
+Scenarios corresponding to IDs (300:399): sim_rss.dat
+
+==== Runtime plotting
+
+From version 2.32.0 esmini can plot some pre-configured data values during simulation. Simply add launch flag `--plot`.
+
+Features so far:
+
+- One or multiple entities can be selected by checkboxes on top
+- Selection of variables can be reduced by checkboxes to the right
+
+.Screenshot of a cut-in scenario with line plotting feature enabled
+image::implot.png[]
+
+By default the plotting is executing in a separate thread, having minimal impact on esmini performance. It is also possible to execute in synchronous mode, where plotting is part of esmini main thread and stepping is done in synch. The mode can be specified explicitly. Examples:
+
+Simply enable plotting, default mode:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --fixed_timestep 0.05 --plot`
+
+Enforce synchronous mode:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --fixed_timestep 0.05 --plot synchronous`
+
+Asynchronous mode can be specified as well, although it's default hence not needed:
+
+`./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --fixed_timestep 0.05 --plot asynchronous`
+
+*Note:* On macos OpenGL window must be part of main thread. Hence synchronous mode is enforced on macos.
+
+=== Save OSI data
+esmini can provide OSI groundtruth data in three ways:
+
+. Send over UDP
+. API to fetch via function call from a custom application
+. Save to OSI trace file
+
+Only trace file way is described here. To save OSI data, add argument `--osi_file [filename]`. The filename is optional. If omitted it will be named `ground_truth.osi`. Example:
+
+``./bin/esmini --window 60 60 800 400 --osc ./resources/xosc/cut-in.xosc --osi_file``
+
+will create `ground_truth.osi` in the current folder. The format is according to the OSI standard "Binary trace file", see OSI documentation https://opensimulationinterface.github.io/osi-documentation/index.html#_osi_trace_files[2.2.6 OSI trace files].
+
+esmini provides a script, osi2csv.py, that converts an OSI trace file into .csv format. The script can also serve as example how to parse and extract data from an OSI trace file:
+
+``./scripts/osi2csv.py ground_truth.osi``
+
+will create ground_truth.csv. +
+(if file type association is not setup, try: ``python ./scripts/osi2csv.py ground_truth.osi``)
+
+However the .csv file created with osi2csv will not contain all OSI information. To get a readable text file including the complete content of a OSI trace file you can make use of the Python script https://github.com/OpenSimulationInterface/open-simulation-interface/blob/v3.5.0/format/osi2read.py[format/osi2read.py] in the OSI project.
+
+Use as following example:
+
+`../open-simulation-interface/format/osi2read.py --data ./ground_truth.osi --output ground_truth --type GroundTruth`
+
+it should create `ground_truth.txth` which is readable in a text editor.
+
+[Note]
+====
+**Note**:
+
+See link:support-qa.html#_osi_for_python_on_windows[OSI for Python on Windows] for hints how to install dependencies (OSI and Protobuf).
+
+The above script link points to OSI tag v3.5.0. In more recent OSI versions the script has moved to another folder: https://github.com/OpenSimulationInterface/open-simulation-interface/blob/master/osi3trace/osi2read.py[osi3trace/osi2read.py].
+====
+
+=== esmini in Unity
+
+esmini shared library works also as plugin in Unity (Win, Linux, Mac). A simple example can be downloaded from https://www.dropbox.com/scl/fi/5d41set5lusce8lkw84xy/esmini-player_v3_0_0.unitypackage?rlkey=as9xfmmzfhlcrfo3brzsk34xu&st=y0n8g0yu&dl=1[here]. The package contains everything needed to get going:
+
+- esmini library C# wrapper
+- a generic scenario player script
+- a few example scenarios (OpenSCENARIO XML + OpenDRIVE) including 3D models
+- plugins for all platforms (can be updated of course)
+- and finally a scene connecting the player script to a game object
+
+Run:
+
+. Import package (Import Package -> Custom Package)
+. Load the scene (Assets/Scenes/esmini-scene)
+. Then just press play-button
+
+Select (click on) esmini-player in Hierarchy to show up in Inspector, where you can specify scenario file and a few parameters. Note that scenario file and dependent OpenDRIVE and optional 3D scenegraph file must be present in StreamingAssets folder.
+
+Plugins can be updated, but NOTE that you need to restart Unity to (re)load shared library plugins. And, of course, scenario files and other content can be added or replaced.
+

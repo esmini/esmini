@@ -1,0 +1,319 @@
+= esmini user guide – Build guide
+include::attributes.adoc_[]
+
+include::nav.adoc_[]
+
+== Build guide
+ifndef::monolith[]
+toc::[]
+endif::monolith[]
+esmini is primarily utilizing cmake for build configuration. The simplest way to get going, in a terminal from esmini root folder:
+
+....
+git clone https://github.com/esmini/esmini
+cd esmini
+mkdir build
+cd build
+cmake ..
+cmake --build . --config Release --target install
+....
+
+This will first fetch the esmini code from github, then configure and then build the complete esmini tool suite. And it should work on any supported platform (Win, Mac, Ubuntu).
+
+You can specify further details, like compiler version. For example: On windows to select MSVC 2017 toolset, indpendent of Visual Studio IDE version, just add directive to the generator as follows:
+
+``
+cmake .. -G "Visual Studio 16 2019" -T v141
+``
+
+A complete list of supported toolsets are available https://cmake.org/cmake/help/v3.17/variable/MSVC_TOOLSET_VERSION.html[here].
+
+Provided 3rd party lib binaries are only provided for Windows x64 architecture. To make sure you build for x64 add `-A x64`, For example:
+
+``
+cmake .. -G "Visual Studio 17 2022" -T v142 -A x64
+``
+
+To build esmini for MSVC 2019 with Visual Studio 2022.
+
+[Note]
+====
+**Note:**
+
+Provided 3rd party libs only available for x64 builds. If you need to build full esmini for Win32 (32bit), you need to compile the 3rd party libraries yourself. Perhaps the "scripts/generate_*_libs.sh" scripts can be a starting point for such an endeavor.
+
+Another possibility for Win32 is to build a slim esmini with a minimum of dependencies. See <<Slim esmini - customize configration>>.
+====
+
+
+Of course, building with a specific toolset requires it to be installed. Use https://docs.microsoft.com/en-us/visualstudio/install/install-visual-studio?view=vs-2019[Visual Studio Installer]. Steps:
+
+- choose "Modify"
+- make sure Desktop Development with C++ is checked
+- go to tab "Individual components"
+- scroll down to "Compilers, build tools, and runtimes"
+- check the MSVC versions you need, e.g. "MSVC v140 - VS 2015 C\++ build tools (v14.00)" and "MSVC v141 - VS 2017 C++ x64/x86 build tools (v14.16)"
+
+All configurations defines an "Install" build target that compiles (if needed) and copies relevant binaries into a common "esmini/bin" folder recognized by the example scripts under the "esmini/run" folder.
+
+*Note:*
+
+- For automatic downloading of external dependencies (OSG binaries) and 3D models, CMake version 3.11.4 or above is required (FetchContent_MakeAvailable was introduced). +
+
+- In Windows, if you get an error like "the c compiler identification is unknown", then please make sure to install "Windows Universal CRT SDK" from the Visual Studio Installer tool.
+
+=== External dependencies
+
+esmini is designed to link all dependencies statically. Main reason is to have a all-inclusive library for easy integration either as a shared library/DLL (e.g. plugin in Unity, or S-function in Simulink) or statically linked into a native application.
+
+*Note:* Nothing stops you from going with all dynamic linking, it's just that provided build scripts are not prepared for it.
+
+CMake scripts will download several pre-compiled 3rd party packages and 3D model resource files.
+
+Default location for these resources is Google drive. If there is an issue, try switch to the backup location at Dropbox by changing the following line in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/CMakeLists.txt[EnvironmentSimulator/CMakeLists.txt]:
+
+``set ( FILE_STORAGE "google" )`` +
+to +
+``set ( FILE_STORAGE "dropbox" )`` +
+
+Links to all packages can be found in https://github.com/esmini/esmini/blob/master/EnvironmentSimulator/CMakeLists.txt[EnvironmentSimulator/CMakeLists.txt].
+
+If you need to (re)build a 3rd party lib for some reason, e.g. for an yet unsupported system or need for a specific version, these build scripts might be a starting point:
+
+- https://github.com/esmini/esmini/blob/master/scripts/generate_osg_libs.sh[scripts/generate_osg_libs.sh]
+- https://github.com/esmini/esmini/blob/master/scripts/generate_osi_libs.sh[scripts/generate_osi_libs.sh]
+- https://github.com/esmini/esmini/blob/master/scripts/generate_sumo_libs.sh[scripts/generate_sumo_libs.sh]
+
+or this script that builds all three libs, combining the above ones:
+
+https://github.com/esmini/esmini/blob/master/scripts/generate_osi_sumo_osg_libs.sh[scripts/generate_osi_sumo_osg_libs.sh]
+
+=== Additional platform dependencies
+
+Linux Ubuntu
+
+[source]
+----
+sudo apt install build-essential gdb ninja-build git pkg-config libgl1-mesa-dev libpthread-stubs0-dev libjpeg-dev libxml2-dev libpng-dev libtiff5-dev libgdal-dev libpoppler-dev libdcmtk-dev libgstreamer1.0-dev libgtk2.0-dev libcairo2-dev libpoppler-glib-dev libxrandr-dev libxinerama-dev curl cmake black
+----
+
+Also, g\++ version >= 5 is needed for c++14 code support.
+
+Windows and Mac: Install the https://cmake.org/[cmake] application
+
+=== Debug with Linux and VSCode
+
+Here follows a brief step-by-step guide for building, running and debugging esmini with Visual Studio Code on Linux (tested on Ubuntu).
+
+Prerequisites: Visual Studio Code (VSCode) and the `CMake Tools` extension.
+
+==== Build and install all targets
+
+Note: Install means just copy binaries to local esmini bin folder, not install system wide. Root rights not needed.
+
+Before building esmini the configuration needs to be established, e.g. what build framework to use and what variant (debug/release) to build.
+
+. From esmini root folder: `code .`
+. Select a "Kit". Usually by Open the Command Palette (Ctrl+Shift+P) and write `CMake: Select a Kit`. Select the compiler you want to use. For example GCC 11.3.0. Generator will be selected automatically, typically `Ninja`, if installed, over `Make`.
+. Ctrl+Shift+P -> `CMake: Select Variant` command. Select `Release`
+. Ctrl+Shift+P -> `CMake: Set Build Target`. Select `install`
+. Click the Build button from the Status bar*
+
++*+ If not all cmake commands are visible in status bar, check global settings: Ctrl + "," then write "cmake status bar" to find `Status Bar Visibility` setting. Set to `visible`.
+
+==== Build and Debug specific target
+
+First we need to prepare a launch configuration:
+
+. In esmini root folder, create a subfolder named `.vscode`
+. In `.vscode` folder, create a file named `settings.json`, and add the following:
+
+[source,console]
+----
+{
+    "cmake.debugConfig": {
+        "args": ["${workspaceFolder}/resources/xosc/cut-in.xosc", "--config_file_path", "${workspaceFolder}/config.yml"]
+    }
+}
+----
+
+The above arguments assumes esmini being the debug target. It can easily be modified for another target, e.g. `odrviewer` or `replayer`. Just change the arguments accordingly. Further, by refering to `config.yml` you can easily change options and arguments in there.
+
+Now we can select and debug target:
+
+. Ctrl+Shift+P -> `CMake: Select Variant` command. Select `Debug`
+. Ctrl+Shift+P -> `CMake: Set Launch/Debug Target `. Select `esmini` (or another target of choice)
+. Click the Debug (bug) button from the Status bar
+
+Run without debug (e.g. skipping breakpoints): Click the Play button from the Status bar
+
+For more info see: https://code.visualstudio.com/docs/cpp/CMake-linux
+
+=== Dynamic protobuf linking
+When linking esmini with software already dependent on Google protobuf there might be need for dynamic linking of shared protobuf library. This can be achieved by defining cmake symbol DYN_PROTOBUF as following example:
+
+``cmake .. -D DYN_PROTOBUF=True``
+
+Then build as usual. It will link with protobuf shared library instead of linking with a static library.
+
+When running esmini, the protobuf shared library needs to be found. Set dynamic library path environment variable to the folder where the library is. Example:
+
+Linux: +
+``export LD_LIBRARY_PATH=./externals/OSI/linux/lib-dyn``
+
+macOS: +
+``export DYLD_LIBRARY_PATH=./externals/OSI/linux/lib-dyn``
+
+*Note:* +
+The dynamic versions of protobuf were added Aug 31 2021. So you might need to update the OSI library package. Get the latest from following links:
+
+- https://dl.dropboxusercontent.com/s/an58ckp2qfx5069/osi_v10.7z?dl=0[OSI Windows]
+- https://dl.dropboxusercontent.com/s/kwtdg0c1c8pawa1/osi_linux.7z?dl=0[OSI Linux]
+- https://dl.dropboxusercontent.com/s/m62v19gp0m73dte/osi_mac.7z?dl=0[OSI Mac]
+
+=== Slim esmini - customize configration
+
+The external dependencies OSG, OSI, SUMO and implot are optional. Also the unit test suite is optional, in effect making the dependecy to googletest framework optional as well. All these options are simply controlled by the following cmake options:
+
+- USE_OSG
+- USE_OSI
+- USE_SUMO
+- USE_GTEST
+- USE_IMPLOT
+
+So, for example, to cut dependency to OSG and SUMO, run:  +
+``cmake .. -D USE_OSG=False -D USE_SUMO=False``
+
+To disable OSG, SUMO, OSI and googletest, run:  +
+``cmake .. -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False -D USE_IMPLOT=False``
+
+All options are enabled/True as default.
+
+*Note:* +
+Disabling an external dependency will disable corresponding functionality. So, for example, disabling OSI means that no OSI data can be created by esmini. Disabling OSG means that esmini can't visualize the scenario. However it can still run the scenario and create a .dat file, which can be played and visualized later in another esmini build in which OSG is enabled (even on another platform).
+
+=== MSYS2 / MinGW-w64 support
+
+esmini slim can be compiled and executed in the MSYS2 environment. Try following steps:
+
+* Download MSYS2 from: https://www.msys2.org
+* Install with default options
+* Start MSYS2 MinGW x64 (e.g. from start menu)
+* Update MSYS2 packages, run: +
+  ``
+  pacman -Syu --disable-download-timeout --noconfirm
+  `` +
+  (MSYS2 should close automatically)
+* Restart MSYS2
+* Finalize update and install needed packages, run:
+
+[source]
+----
+pacman -Su --disable-download-timeout --noconfirm
+pacman -S --needed base-devel mingw-w64-x86_64-toolchain --disable-download-timeout --noconfirm
+pacman -S mingw-w64-x86_64-cmake --disable-download-timeout --noconfirm
+----
+
+* Optional (not needed to compile or run esmini): +
+  ``pacman -S git --disable-download-timeout --noconfirm``
+
+* Build esmini (from MSYS2 MinGW x64 command line):
+
+[source]
+----
+cmake -G "MSYS Makefiles" -D USE_OSG=False -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False ..
+cmake --build . --config Release --target install
+----
+
+=== Build esmini project
+First generate build configuration (see above)
+
+Then it should work on all platform to build using cmake as follows: +
+``cmake --build . --config Release --target install``
+
+Or you can go with platform specific ways of building:
+
+*Windows/Visual Studio*
+
+. Open generated solution, build*/EnvironmentSimulator.sln
+. Select configuration, Debug or Release
+. Build CMakePredefinedTargets/INSTALL (right-click and select build)
+
+*macOS*
+
+To generate a Xcode project file, run the initial cmake command as follows: +
+``cmake -G Xcode ..``
+
+Then build as usual: +
+``cmake --build . --config Release --target install``
+
+or using Xcode directly: +
+``xcodebuild -scheme install -configuration Release build``
+
+or open the generated project file in Xcode, and build from there.
+
+To create bundles (shared library container), do from esmini root folder: +
+
+[source]
+----
+lipo -create bin/libesminiRMLib.dylib -output bin/esminiRMLib.bundle
+lipo -create bin/libesminiLib.dylib -output bin/esminiLib.bundle
+----
+
+*Linux*
+
+Once `cmake ..` has created the build configuration, of course you can build by calling the gnu `make` applciation directly instead of going via `cmake --build` as described above.
+
+[source]
+----
+cd build
+make -j4 install
+----
+
+This will build all projects, in four parallel jobs, and copy the binaries into a dedicated folder found by the demo batch scripts.
+
+=== CentOS 7 (Linux)
+
+CentOS 7 has some limitations, e.g. old versions of C/C\++ compiler toolkits and runtimes. So it's not possible to link with provided 3rd party binary libraries targeting Ubuntu 18++.
+However, by disabling some featuers in esmini, e.g. OSI and SUMO, it can still be used for previewing scenarios.
+
+VirtualBox image for Windows host here: +
+https://www.linuxvmimages.com/images/centos-7/
+
+
+Follow steps below to build and run esmini on CentOS 7.
+
+[source]
+----
+sudo yum install git
+sudo yum install cmake
+sudo yum install gcc-c++
+
+sudo yum install freeglut-devel
+sudo yum install fontconfig-devel
+sudo yum install libXrandr-devel
+sudo yum install libXinerama-devel
+
+sudo yum install epel-release
+sudo yum install p7zip
+
+git clone https://github.com/esmini/esmini
+
+cd esmini
+
+cd externals
+mkdir OpenSceneGraph
+cd OpenSceneGraph
+curl -L "https://www.dropbox.com/s/mxztf6zbgojyntp/osg_centos.7z?dl=1" -o osg_centos.7z
+7za x osg_centos.7z
+rm osg_centos.7z
+
+cd ../..
+mkdir build
+cd build
+cmake -D USE_OSG=True -D USE_SUMO=False -D USE_OSI=False -D USE_GTEST=False ..
+cmake --build . --target install --config Release
+cd ..
+./bin/esmini.exe --headless --fixed_timestep 0.01 --record sim.dat --osc ./resources/xosc/cut-in.xosc
+----
+
