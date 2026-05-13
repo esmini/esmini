@@ -666,7 +666,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_VEGETATION);
     }
-    else if (obj_type == roadmanager::RMObject::ObjectType::BARRIER)
+    else if (obj_type == roadmanager::RMObject::ObjectType::BARRIER || obj_type == roadmanager::RMObject::ObjectType::RAILING)
     {
         obj_osi_internal.sobj->mutable_classification()->set_type(
             osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
@@ -689,7 +689,7 @@ int OSIReporter::UpdateOSIStationaryObjectODR(roadmanager::RMObject *object)
 
         source_reference->add_identifier()->assign(object->GetParkingSpace().GetRestrictions());
     }
-    else if (obj_type == roadmanager::RMObject::ObjectType::OBSTACLE || obj_type == roadmanager::RMObject::ObjectType::RAILING ||
+    else if (obj_type == roadmanager::RMObject::ObjectType::OBSTACLE ||
              obj_type == roadmanager::RMObject::ObjectType::PATCH || obj_type == roadmanager::RMObject::ObjectType::TRAFFICISLAND ||
              obj_type == roadmanager::RMObject::ObjectType::CROSSWALK || obj_type == roadmanager::RMObject::ObjectType::STREETLAMP ||
              obj_type == roadmanager::RMObject::ObjectType::GANTRY || obj_type == roadmanager::RMObject::ObjectType::SOUNDBARRIER ||
@@ -1015,7 +1015,8 @@ int OSIReporter::UpdateOSIStationaryObject(Object &obj)
             obj_osi_internal.sobj->mutable_classification()->set_type(
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_VEGETATION);
         }
-        else if (obj.category_ == MiscObject::Category::BARRIER)
+        else if (obj.category_ == static_cast<int>(MiscObject::Category::BARRIER) ||
+                 obj.category_ == static_cast<int>(MiscObject::Category::RAILING))
         {
             obj_osi_internal.sobj->mutable_classification()->set_type(
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BARRIER);
@@ -1026,7 +1027,7 @@ int OSIReporter::UpdateOSIStationaryObject(Object &obj)
                 osi3::StationaryObject_Classification_Type::StationaryObject_Classification_Type_TYPE_BUILDING);
         }
         else if (obj.category_ == MiscObject::Category::OBSTACLE || obj.category_ == MiscObject::Category::PARKINGSPACE ||
-                 obj.category_ == MiscObject::Category::RAILING || obj.category_ == MiscObject::Category::PATCH ||
+                 obj.category_ == MiscObject::Category::PATCH ||
                  obj.category_ == MiscObject::Category::TRAFFICISLAND || obj.category_ == MiscObject::Category::CROSSWALK ||
                  obj.category_ == MiscObject::Category::STREETLAMP || obj.category_ == MiscObject::Category::GANTRY ||
                  obj.category_ == MiscObject::Category::SOUNDBARRIER || obj.category_ == MiscObject::Category::WIND ||
@@ -2217,6 +2218,53 @@ int OSIReporter::UpdateOSILaneBoundary()
                 osi_laneboundary->mutable_classification()->set_type(
                     osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_STRUCTURE);
                 obj_osi_internal.lnb.push_back(osi_laneboundary);
+            }
+        }
+    }
+
+    // set barriers as lane boundaries
+    for (unsigned int i = 0; i < opendrive->GetNumOfRoads(); i++)
+    {
+        roadmanager::Road *road = opendrive->GetRoadByIdx(i);
+        if (road)
+        {
+            for (unsigned int j = 0; j < road->GetNumberOfObjects(); j++)
+            {
+                roadmanager::RMObject *object = road->GetRoadObject(j);
+                if (object)
+                {
+                    auto obj_type = object->GetType();
+                    if (obj_type == roadmanager::RMObject::ObjectType::BARRIER || obj_type == roadmanager::RMObject::ObjectType::RAILING)
+                    {
+                        osi3::LaneBoundary *osi_laneboundary = obj_osi_internal.static_gt->add_lane_boundary();
+
+                        // set id and points
+                        osi_laneboundary->mutable_id()->set_value(object->GetGlobalId());
+                        osi_laneboundary->mutable_classification()->set_type(osi3::LaneBoundary_Classification_Type::LaneBoundary_Classification_Type_TYPE_BARRIER);    //todo: differentiate between barrier and guard rail
+                        if (object->GetNumberOfOutlines() > 0)
+                        {
+                            for (unsigned int k = 0; k < object->GetNumberOfOutlines(); k++)
+                            {
+                                roadmanager::Outline *outline = object->GetOutline(k);
+                                if (outline)
+                                {
+                                    for (size_t l = 0; l < outline->corner_.size()/2; l++)  //todo: only use one side of the outline for the lane boundary, but it is not clear, if this is always the case.
+                                    {
+                                        double x, y, z;
+                                        outline->corner_[l]->GetPos(x, y, z);
+                                        osi3::LaneBoundary::BoundaryPoint *boundary_point = osi_laneboundary->add_boundary_line();
+                                        boundary_point->mutable_position()->set_x(x);
+                                        boundary_point->mutable_position()->set_y(y);
+                                        boundary_point->mutable_position()->set_z(z);
+                                        boundary_point->set_height(outline->corner_[l]->GetHeight());
+                                        boundary_point->set_width(0.1);     //todo: come up with solution to specify the width
+                                    }
+                                }
+                            }
+                        }
+                        obj_osi_internal.lnb.push_back(osi_laneboundary);
+                    }
+                }
             }
         }
     }
