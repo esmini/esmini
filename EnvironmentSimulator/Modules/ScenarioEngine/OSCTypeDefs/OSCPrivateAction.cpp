@@ -306,14 +306,6 @@ AssignRouteAction::~AssignRouteAction()
 void AssignRouteAction::Start(double simTime)
 {
     route_->setObjName(object_->GetName());
-
-    if (!route_->IsValid())
-    {
-        LOG_WARN("AssignRouteAction: Route {} is invalid, skipping route assignment for {}", route_->getName(), object_->GetName());
-        OSCAction::Start(simTime);
-        return;
-    }
-
     object_->pos_.SetRoute(route_);
     object_->dirty_.SetBits(Object::DirtyBit::ROUTE);
 
@@ -691,15 +683,7 @@ void AcquirePositionAction::Start(double simTime)
     start_wp.SetModeBits(roadmanager::Position::PosModeType::INIT, roadmanager::Position::PosMode::H_REL | roadmanager::Position::PosMode::H_SET);
     route_->AddWaypoint(start_wp);
     route_->AddWaypoint(target_position_);
-
     route_->CheckValid();
-
-    if (!route_->IsValid())
-    {
-        LOG_WARN("AcquirePositionAction: Route is invalid, skipping route assignment for {}", object_->GetName());
-        OSCAction::Start(simTime);
-        return;
-    }
 
     object_->pos_.SetRoute(route_);
     object_->dirty_.SetBits(Object::DirtyBit::ROUTE);
