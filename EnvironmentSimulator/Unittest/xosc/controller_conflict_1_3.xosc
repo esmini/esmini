@@ -135,7 +135,7 @@
                      <Action name="ActivateALKSControllerAction">
                         <PrivateAction>
                            <ControllerAction>
-                              <!-- acrtivate ALKS only on longitudinal domain, allowing lane change action to operate on the lateral -->
+                              <!-- activate ALKS only on longitudinal domain, allowing lane change action to operate on the lateral -->
                               <ActivateControllerAction longitudinal="true" lateral="false"/>
                            </ControllerAction>
                         </PrivateAction>
