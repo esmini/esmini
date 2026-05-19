@@ -1783,15 +1783,20 @@ void ScenarioReader::parseOSCOrientation(OSCOrientation &orientation, pugi::xml_
     {
         orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE;
     }
-    else if (type_str == "")
-    {
-        LOG_WARN("No orientation type specified - using absolute");
-        orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE;
-    }
     else
     {
-        LOG_WARN("Invalid orientation type: {} - using absolute", type_str);
-        orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE;
+        std::string msg = (type_str == "") ? "No" : "Invalid";
+
+        if (versionMinor_ <= 2)
+        {
+            LOG_WARN("{} orientation type specified - using absolute (default for OSC version <= 1.2)", msg);
+            orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_ABSOLUTE;
+        }
+        else
+        {
+            LOG_WARN("{} orientation type specified - using relative (default for OSC version >= 1.3)", msg);
+            orientation.type_ = roadmanager::Position::OrientationType::ORIENTATION_RELATIVE;
+        }
     }
 }
 
